@@ -26,6 +26,7 @@ import {
   ToolPlantContextPicker,
   useToolPlantContext
 } from "@/features/personal/tools/ToolPlantContextPicker";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
 
@@ -52,6 +53,8 @@ export default function NewLogScreen() {
   const initialPlantId = param(params.plantId);
   const queryToolRunId = param(params.toolRunId);
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createNewLogStyles(palette), [palette]);
   const canCreateLog =
     entitlements.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE) ||
     (entitlements as any).mode === "personal" ||
@@ -306,6 +309,7 @@ export default function NewLogScreen() {
             invalidateSuggestions();
           }}
           placeholder="Day 12 - Defoliation"
+          placeholderTextColor={palette.textMuted}
           accessibilityLabel="Log title"
         />
         <CalendarDateField
@@ -345,6 +349,7 @@ export default function NewLogScreen() {
           }}
           multiline
           placeholder="What changed today?"
+          placeholderTextColor={palette.textMuted}
           accessibilityLabel="Log notes"
         />
 
@@ -388,6 +393,7 @@ export default function NewLogScreen() {
             value={photoUrl}
             onChangeText={setPhotoUrl}
             placeholder="/uploads/grow-photo.jpg or https://..."
+            placeholderTextColor={palette.textMuted}
             accessibilityLabel="Photo URL"
           />
           <Pressable
@@ -544,134 +550,165 @@ export default function NewLogScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 40, gap: 9 },
-  title: { fontSize: 22, fontWeight: "800", color: "#0F172A" },
-  subtitle: { color: "#64748B" },
-  notice: {
-    color: "#166534",
-    backgroundColor: "#F0FDF4",
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    padding: 10,
-    fontWeight: "700"
-  },
-  label: { color: "#334155", fontWeight: "800", marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  notes: {
-    minHeight: 110,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10,
-    textAlignVertical: "top"
-  },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  photoHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-    flexWrap: "wrap"
-  },
-  photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  urlRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" },
-  urlInput: {
-    minWidth: 220,
-    flexGrow: 1,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10
-  },
-  photoTile: {
-    width: 104,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    overflow: "hidden",
-    backgroundColor: "#F8FAFC"
-  },
-  photoThumb: { width: "100%", height: 82, backgroundColor: "#E2E8F0" },
-  removePhoto: { paddingVertical: 6, alignItems: "center" },
-  removePhotoText: { color: "#B91C1C", fontSize: 11, fontWeight: "800" },
-  chip: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 6
-  },
-  chipOn: { backgroundColor: "#166534", borderColor: "#166534" },
-  chipText: { color: "#334155", fontWeight: "700", fontSize: 12 },
-  chipTextOn: { color: "#FFFFFF" },
-  chipSubtext: { color: "#64748B", fontSize: 10, fontWeight: "700" },
-  primaryButton: {
-    marginTop: 8,
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    padding: 11,
-    alignItems: "center"
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  secondaryButtonText: { color: "#166534", fontWeight: "800" },
-  disabled: { opacity: 0.5 },
-  error: {
-    color: "#991B1B",
-    backgroundColor: "#FEE2E2",
-    borderRadius: radius.card,
-    padding: 9,
-    fontWeight: "700"
-  },
-  warning: {
-    color: "#9A3412",
-    backgroundColor: "#FFEDD5",
-    borderRadius: radius.card,
-    padding: 8
-  },
-  helper: { color: "#64748B", lineHeight: 19 },
-  insightCard: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    padding: 11,
-    gap: 7
-  },
-  insightTitle: { color: "#0F172A", fontWeight: "800" },
-  tagReview: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 5,
-    backgroundColor: "#FFFFFF"
-  },
-  tagName: { color: "#334155", fontWeight: "700" },
-  reviewButton: {
-    borderRadius: radius.card,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    backgroundColor: "#E2E8F0"
-  },
-  accepted: { backgroundColor: "#BBF7D0" },
-  rejected: { backgroundColor: "#FECACA" },
-  reviewText: { color: "#0F172A", fontSize: 11, fontWeight: "800" }
-});
+export function createNewLogStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 40, gap: 9 },
+    title: { fontSize: 22, fontWeight: "800", color: palette.text },
+    subtitle: { color: palette.textMuted },
+    notice: {
+      color: palette.success,
+      backgroundColor: palette.accentSoft,
+      borderWidth: 1,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      padding: 10,
+      fontWeight: "700"
+    },
+    label: { color: palette.text, fontWeight: "800", marginTop: 4 },
+    input: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10
+    },
+    notes: {
+      minHeight: 110,
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10,
+      textAlignVertical: "top"
+    },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+    photoHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 10,
+      flexWrap: "wrap"
+    },
+    photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    urlRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      alignItems: "center"
+    },
+    urlInput: {
+      minWidth: 220,
+      flexGrow: 1,
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      padding: 10
+    },
+    photoTile: {
+      width: 104,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      overflow: "hidden",
+      backgroundColor: palette.card
+    },
+    photoThumb: {
+      width: "100%",
+      height: 82,
+      backgroundColor: palette.surfaceStrong
+    },
+    removePhoto: { paddingVertical: 6, alignItems: "center" },
+    removePhotoText: { color: palette.danger, fontSize: 11, fontWeight: "800" },
+    chip: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 9,
+      paddingVertical: 6
+    },
+    chipOn: { backgroundColor: palette.accent, borderColor: palette.accent },
+    chipText: { color: palette.text, fontWeight: "700", fontSize: 12 },
+    chipTextOn: { color: palette.accentText },
+    chipSubtext: { color: palette.textMuted, fontSize: 10, fontWeight: "700" },
+    primaryButton: {
+      marginTop: 8,
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 11,
+      alignItems: "center"
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    secondaryButtonText: { color: palette.accent, fontWeight: "800" },
+    disabled: { opacity: 0.5 },
+    error: {
+      color: palette.danger,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 9,
+      fontWeight: "700"
+    },
+    warning: {
+      color: palette.warning,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 8
+    },
+    helper: { color: palette.textMuted, lineHeight: 19 },
+    insightCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.card,
+      padding: 11,
+      gap: 7
+    },
+    insightTitle: { color: palette.text, fontWeight: "800" },
+    tagReview: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 5,
+      backgroundColor: palette.surface
+    },
+    tagName: { color: palette.text, fontWeight: "700" },
+    reviewButton: {
+      borderRadius: radius.card,
+      borderColor: palette.border,
+      borderWidth: 1,
+      paddingHorizontal: 6,
+      paddingVertical: 4,
+      backgroundColor: palette.surfaceStrong
+    },
+    accepted: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success
+    },
+    rejected: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger
+    },
+    reviewText: { color: palette.text, fontSize: 11, fontWeight: "800" }
+  });
+}

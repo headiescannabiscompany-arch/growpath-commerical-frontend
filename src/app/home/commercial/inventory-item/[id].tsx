@@ -17,6 +17,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
@@ -27,7 +28,11 @@ function safeId(params: Record<string, any>): string {
   return String(raw ?? "");
 }
 
-function renderKV(obj: AnyRec | null, key: string) {
+function renderKV(
+  obj: AnyRec | null,
+  key: string,
+  styles: ReturnType<typeof createCommercialInventoryItemDetailStyles>
+) {
   if (!obj) return null;
   const v = obj[key];
   if (v === undefined || v === null || v === "") return null;
@@ -69,6 +74,11 @@ function draftFromItem(item: AnyRec | null) {
 }
 
 export default function CommercialInventoryItemDetailRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(
+    () => createCommercialInventoryItemDetailStyles(palette),
+    [palette]
+  );
   const router = useRouter();
   const ent = useEntitlements();
   const params = useLocalSearchParams();
@@ -215,8 +225,10 @@ export default function CommercialInventoryItemDetailRoute() {
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl
+            colors={[palette.accent]}
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
           />
         }
       >
@@ -229,7 +241,7 @@ export default function CommercialInventoryItemDetailRoute() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading item...</Text>
           </View>
         ) : null}
@@ -357,6 +369,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, name: v }))}
                     style={styles.input}
                     placeholder="Item name"
+                    placeholderTextColor={palette.textMuted}
                     accessibilityLabel="Commercial detail item name"
                   />
 
@@ -366,6 +379,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, sku: v }))}
                     style={styles.input}
                     placeholder="SKU"
+                    placeholderTextColor={palette.textMuted}
                     accessibilityLabel="Commercial detail item SKU"
                   />
 
@@ -375,6 +389,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, quantity: v }))}
                     style={styles.input}
                     placeholder="0"
+                    placeholderTextColor={palette.textMuted}
                     keyboardType="numeric"
                     accessibilityLabel="Commercial detail item quantity"
                   />
@@ -385,6 +400,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, unit: v }))}
                     style={styles.input}
                     placeholder="e.g., lbs"
+                    placeholderTextColor={palette.textMuted}
                     accessibilityLabel="Commercial detail item unit"
                   />
 
@@ -394,6 +410,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, reorderPoint: v }))}
                     style={styles.input}
                     placeholder="0"
+                    placeholderTextColor={palette.textMuted}
                     keyboardType="numeric"
                     accessibilityLabel="Commercial detail reorder point"
                   />
@@ -404,6 +421,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, vendor: v }))}
                     style={styles.input}
                     placeholder="Vendor"
+                    placeholderTextColor={palette.textMuted}
                     accessibilityLabel="Commercial detail vendor"
                   />
 
@@ -413,6 +431,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, category: v }))}
                     style={styles.input}
                     placeholder="Category"
+                    placeholderTextColor={palette.textMuted}
                     accessibilityLabel="Commercial detail category"
                   />
 
@@ -422,6 +441,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, itemType: v }))}
                     style={styles.input}
                     placeholder="product, ingredient, packaging, plant, genetics..."
+                    placeholderTextColor={palette.textMuted}
                     accessibilityLabel="Commercial detail item type"
                   />
 
@@ -431,6 +451,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, location: v }))}
                     style={styles.input}
                     placeholder="Storage location"
+                    placeholderTextColor={palette.textMuted}
                     accessibilityLabel="Commercial detail location"
                   />
 
@@ -440,6 +461,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, linkedProductId: v }))}
                     style={styles.input}
                     placeholder="Linked product ID"
+                    placeholderTextColor={palette.textMuted}
                     autoCapitalize="none"
                     accessibilityLabel="Commercial detail linked product"
                   />
@@ -450,6 +472,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     }
                     style={styles.input}
                     placeholder="Linked ingredient ID"
+                    placeholderTextColor={palette.textMuted}
                     autoCapitalize="none"
                     accessibilityLabel="Commercial detail linked ingredient"
                   />
@@ -458,6 +481,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, linkedGeneticsId: v }))}
                     style={styles.input}
                     placeholder="Linked genetics ID"
+                    placeholderTextColor={palette.textMuted}
                     autoCapitalize="none"
                     accessibilityLabel="Commercial detail linked genetics"
                   />
@@ -466,6 +490,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, linkedGrowId: v }))}
                     style={styles.input}
                     placeholder="Linked product trial evidence run ID"
+                    placeholderTextColor={palette.textMuted}
                     autoCapitalize="none"
                     accessibilityLabel="Commercial detail linked product trial evidence run"
                   />
@@ -476,6 +501,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, status: v }))}
                     style={styles.input}
                     placeholder="active, low_stock, out_of_stock, archived"
+                    placeholderTextColor={palette.textMuted}
                     accessibilityLabel="Commercial detail status"
                   />
 
@@ -485,6 +511,7 @@ export default function CommercialInventoryItemDetailRoute() {
                     onChangeText={(v) => setDraft((d) => ({ ...d, notes: v }))}
                     style={[styles.input, styles.notesInput]}
                     placeholder="Notes"
+                    placeholderTextColor={palette.textMuted}
                     multiline
                     accessibilityLabel="Commercial detail notes"
                   />
@@ -515,7 +542,9 @@ export default function CommercialInventoryItemDetailRoute() {
         {item ? (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Details</Text>
-            <View style={styles.kvWrap}>{keys.map((k) => renderKV(item, k))}</View>
+            <View style={styles.kvWrap}>
+              {keys.map((k) => renderKV(item, k, styles))}
+            </View>
           </View>
         ) : null}
       </ScrollView>
@@ -523,84 +552,110 @@ export default function CommercialInventoryItemDetailRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 16, gap: 12 },
-  headerRow: { gap: 4 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  muted: { opacity: 0.7 },
-  workflowText: { color: "#475569", fontSize: 13, fontWeight: "700", lineHeight: 19 },
+export function createCommercialInventoryItemDetailStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { backgroundColor: palette.page, padding: 16, gap: 12 },
+    headerRow: { gap: 4 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    muted: { color: palette.textMuted },
+    workflowText: {
+      color: palette.textMuted,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19
+    },
 
-  loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+    loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
 
-  card: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white"
-  },
-  summaryCard: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "white",
-    gap: 8
-  },
-  summaryText: { color: "#334155", fontWeight: "800" },
-  stockPill: {
-    alignSelf: "flex-start",
-    borderRadius: 999,
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  stockOk: { color: "#065f46", backgroundColor: "#d1fae5" },
-  stockWarn: { color: "#92400e", backgroundColor: "#fef3c7" },
-  stockDanger: { color: "#991b1b", backgroundColor: "#fee2e2" },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface
+    },
+    summaryCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surfaceMuted,
+      gap: 8
+    },
+    summaryText: { color: palette.text, fontWeight: "800" },
+    stockPill: {
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderRadius: 999,
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      fontSize: 12,
+      fontWeight: "900"
+    },
+    stockOk: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success,
+      color: palette.success
+    },
+    stockWarn: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      color: palette.warning
+    },
+    stockDanger: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      color: palette.danger
+    },
 
-  kvWrap: { marginTop: 6 },
-  kv: { gap: 4, marginBottom: 10 },
-  k: { fontSize: 12, opacity: 0.7 },
-  v: { fontSize: 14 },
+    kvWrap: { marginTop: 6 },
+    kv: { gap: 4, marginBottom: 10 },
+    k: { color: palette.textMuted, fontSize: 12 },
+    v: { color: palette.text, fontSize: 14 },
 
-  sectionTitle: { fontSize: 16, fontWeight: "900", marginBottom: 8 },
-  form: { gap: 8 },
-  label: { fontSize: 12, opacity: 0.7 },
-  sectionLabel: {
-    color: "#475569",
-    fontSize: 12,
-    fontWeight: "900",
-    marginTop: 6,
-    textTransform: "uppercase"
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "white"
-  },
-  notesInput: { minHeight: 78, textAlignVertical: "top" },
-  primaryBtn: {
-    marginTop: 8,
-    backgroundColor: "#0f172a",
-    borderRadius: radius.card,
-    paddingVertical: 12,
-    alignItems: "center"
-  },
-  primaryBtnDisabled: { opacity: 0.6 },
-  primaryBtnText: { color: "white", fontWeight: "800" },
-  actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  actionBtn: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: "#f8fafc"
-  },
-  actionText: { color: "#0f172a", fontSize: 12, fontWeight: "900" }
-});
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900",
+      marginBottom: 8
+    },
+    form: { gap: 8 },
+    label: { color: palette.textMuted, fontSize: 12 },
+    sectionLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "900",
+      marginTop: 6,
+      textTransform: "uppercase"
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    notesInput: { minHeight: 78, textAlignVertical: "top" },
+    primaryBtn: {
+      marginTop: 8,
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12,
+      alignItems: "center"
+    },
+    primaryBtnDisabled: { opacity: 0.6 },
+    primaryBtnText: { color: palette.accentText, fontWeight: "800" },
+    actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    actionBtn: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      backgroundColor: palette.surfaceMuted
+    },
+    actionText: { color: palette.link, fontSize: 12, fontWeight: "900" }
+  });
+}

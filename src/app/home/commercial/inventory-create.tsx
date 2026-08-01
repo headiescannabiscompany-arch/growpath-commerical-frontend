@@ -12,6 +12,7 @@ import {
 import { endpoints } from "@/api/endpoints";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type RecordChoice = {
@@ -60,6 +61,9 @@ function RecordPicker({
   onChange: (id: string) => void;
   selectedId: string;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialInventoryCreateStyles(palette), [palette]);
+
   return (
     <View style={styles.recordPicker}>
       <Text style={styles.sectionLabel}>{label}</Text>
@@ -110,6 +114,8 @@ function RecordPicker({
 }
 
 export default function CommercialInventoryCreateRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialInventoryCreateStyles(palette), [palette]);
   const router = useRouter();
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
@@ -238,6 +244,7 @@ export default function CommercialInventoryCreateRoute() {
           onChangeText={setName}
           accessibilityLabel="Commercial inventory item name"
           placeholder="Name"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
         <TextInput
@@ -245,6 +252,7 @@ export default function CommercialInventoryCreateRoute() {
           onChangeText={setSku}
           accessibilityLabel="Commercial inventory item SKU"
           placeholder="SKU (optional)"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
         <TextInput
@@ -252,6 +260,7 @@ export default function CommercialInventoryCreateRoute() {
           onChangeText={setQty}
           accessibilityLabel="Commercial inventory item quantity"
           placeholder="Quantity"
+          placeholderTextColor={palette.textMuted}
           keyboardType="numeric"
           style={styles.input}
         />
@@ -260,6 +269,7 @@ export default function CommercialInventoryCreateRoute() {
           onChangeText={setUnit}
           accessibilityLabel="Commercial inventory item unit"
           placeholder="Unit"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
         <TextInput
@@ -267,6 +277,7 @@ export default function CommercialInventoryCreateRoute() {
           onChangeText={setReorderPoint}
           accessibilityLabel="Commercial inventory item reorder point"
           placeholder="Reorder point"
+          placeholderTextColor={palette.textMuted}
           keyboardType="numeric"
           style={styles.input}
         />
@@ -275,6 +286,7 @@ export default function CommercialInventoryCreateRoute() {
           onChangeText={setVendor}
           accessibilityLabel="Commercial inventory item vendor"
           placeholder="Vendor"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
         <TextInput
@@ -282,6 +294,7 @@ export default function CommercialInventoryCreateRoute() {
           onChangeText={setCategory}
           accessibilityLabel="Commercial inventory item category"
           placeholder="Category"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
         <Text style={styles.sectionLabel}>Item type</Text>
@@ -317,6 +330,7 @@ export default function CommercialInventoryCreateRoute() {
           onChangeText={setLocation}
           accessibilityLabel="Commercial inventory item location"
           placeholder="Storage location"
+          placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
         <Text style={styles.sectionLabel}>Optional links</Text>
@@ -380,6 +394,7 @@ export default function CommercialInventoryCreateRoute() {
               onChangeText={setItemType}
               accessibilityLabel="Commercial inventory custom item type"
               placeholder="Custom item type"
+              placeholderTextColor={palette.textMuted}
               style={styles.input}
             />
             <TextInput
@@ -387,6 +402,7 @@ export default function CommercialInventoryCreateRoute() {
               onChangeText={setLinkedProductId}
               accessibilityLabel="Commercial inventory linked product"
               placeholder="Linked product ID"
+              placeholderTextColor={palette.textMuted}
               autoCapitalize="none"
               style={styles.input}
             />
@@ -395,6 +411,7 @@ export default function CommercialInventoryCreateRoute() {
               onChangeText={setLinkedIngredientId}
               accessibilityLabel="Commercial inventory linked ingredient"
               placeholder="Linked ingredient ID"
+              placeholderTextColor={palette.textMuted}
               autoCapitalize="none"
               style={styles.input}
             />
@@ -403,6 +420,7 @@ export default function CommercialInventoryCreateRoute() {
               onChangeText={setLinkedGeneticsId}
               accessibilityLabel="Commercial inventory linked genetics"
               placeholder="Linked genetics ID"
+              placeholderTextColor={palette.textMuted}
               autoCapitalize="none"
               style={styles.input}
             />
@@ -411,6 +429,7 @@ export default function CommercialInventoryCreateRoute() {
               onChangeText={setLinkedGrowId}
               accessibilityLabel="Commercial inventory linked product trial evidence run"
               placeholder="Linked product trial evidence run ID"
+              placeholderTextColor={palette.textMuted}
               autoCapitalize="none"
               style={styles.input}
             />
@@ -421,6 +440,7 @@ export default function CommercialInventoryCreateRoute() {
           onChangeText={setNotes}
           accessibilityLabel="Commercial inventory item notes"
           placeholder="Notes"
+          placeholderTextColor={palette.textMuted}
           multiline
           style={[styles.input, styles.notesInput]}
         />
@@ -440,99 +460,111 @@ export default function CommercialInventoryCreateRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 10 },
-  header: { gap: 8 },
-  kicker: {
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "900",
-    letterSpacing: 0,
-    textTransform: "uppercase"
-  },
-  h1: { fontSize: 22, fontWeight: "900", marginBottom: 4 },
-  helpText: { color: "#475569", fontSize: 13, fontWeight: "700", lineHeight: 19 },
-  sectionLabel: {
-    color: "#475569",
-    fontSize: 12,
-    fontWeight: "900",
-    marginTop: 4,
-    textTransform: "uppercase"
-  },
-  choiceRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  choice: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  choiceSelected: {
-    backgroundColor: "#DCFCE7",
-    borderColor: "#22C55E"
-  },
-  choiceText: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  recordPicker: {
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 10
-  },
-  emptyPicker: {
-    alignItems: "flex-start",
-    gap: 8
-  },
-  loadError: {
-    alignItems: "flex-start",
-    backgroundColor: "#FEF2F2",
-    borderRadius: radius.card,
-    gap: 8,
-    padding: 10
-  },
-  errorText: {
-    color: "#991B1B",
-    fontSize: 13,
-    fontWeight: "700"
-  },
-  advancedToggle: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 4,
-    paddingVertical: 8
-  },
-  advancedToggleText: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900",
-    textDecorationLine: "underline"
-  },
-  advancedFields: {
-    gap: 10
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  notesInput: { minHeight: 78, textAlignVertical: "top" },
-  button: {
-    marginTop: 6,
-    backgroundColor: "#2563eb",
-    borderRadius: radius.card,
-    paddingVertical: 12,
-    alignItems: "center"
-  },
-  disabled: { opacity: 0.55 },
-  buttonText: { color: "#fff", fontWeight: "800" }
-});
+export function createCommercialInventoryCreateStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, padding: 16, gap: 10 },
+    header: { gap: 8 },
+    kicker: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "900",
+      letterSpacing: 0,
+      textTransform: "uppercase"
+    },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900", marginBottom: 4 },
+    helpText: {
+      color: palette.textMuted,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19
+    },
+    sectionLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "900",
+      marginTop: 4,
+      textTransform: "uppercase"
+    },
+    choiceRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    choice: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    choiceSelected: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    choiceText: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    recordPicker: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 10
+    },
+    emptyPicker: {
+      alignItems: "flex-start",
+      gap: 8
+    },
+    loadError: {
+      alignItems: "flex-start",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      gap: 8,
+      padding: 10
+    },
+    errorText: {
+      color: palette.danger,
+      fontSize: 13,
+      fontWeight: "700"
+    },
+    advancedToggle: {
+      alignSelf: "flex-start",
+      paddingHorizontal: 4,
+      paddingVertical: 8
+    },
+    advancedToggleText: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "900",
+      textDecorationLine: "underline"
+    },
+    advancedFields: {
+      gap: 10
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    notesInput: { minHeight: 78, textAlignVertical: "top" },
+    button: {
+      marginTop: 6,
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12,
+      alignItems: "center"
+    },
+    disabled: { opacity: 0.55 },
+    buttonText: { color: palette.accentText, fontWeight: "800" }
+  });
+}

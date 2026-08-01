@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 
-import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
+import SavedGrowPhotoEvidencePicker, {
+  createSavedGrowPhotoEvidenceStyles
+} from "@/components/media/SavedGrowPhotoEvidencePicker";
+import { getThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
 
 const mockListPersonalLogs = jest.fn();
@@ -58,6 +61,24 @@ describe("SavedGrowPhotoEvidencePicker", () => {
       aiUsable: true,
       qualityWarnings: []
     });
+  });
+
+  it("uses the active Night palette for private-photo evidence surfaces", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createSavedGrowPhotoEvidenceStyles(palette);
+
+    expect(styles.section.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.section.borderColor).toBe(palette.border);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.help.color).toBe(palette.textMuted);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.card.borderColor).toBe(palette.border);
+    expect(styles.preview.backgroundColor).toBe(palette.surfaceStrong);
+    expect(styles.photoTitle.color).toBe(palette.text);
+    expect(styles.meta.color).toBe(palette.textMuted);
+    expect(styles.status.color).toBe(palette.textMuted);
+    expect(styles.button.backgroundColor).toBe(palette.accent);
+    expect(styles.buttonText.color).toBe(palette.accentText);
   });
 
   it("requires an explicit selection and creates an IPM-purpose evidence link", async () => {

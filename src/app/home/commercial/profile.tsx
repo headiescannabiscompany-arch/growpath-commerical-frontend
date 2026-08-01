@@ -10,6 +10,7 @@ import AppPage from "@/components/layout/AppPage";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useEntitlements } from "@/entitlements";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import CannabisContentControls from "@/components/account/CannabisContentControls";
 
@@ -50,6 +51,9 @@ type BusinessStorefront = Storefront & {
 };
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialProfileStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="button" style={styles.action}>
@@ -92,6 +96,8 @@ function hydrateForm(storefront: BusinessStorefront | null): ProfileForm {
 }
 
 export default function CommercialProfileRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialProfileStyles(palette), [palette]);
   const { user } = useAuth();
   const entitlements = useEntitlements();
   const [storefront, setStorefront] = useState<BusinessStorefront | null>(null);
@@ -211,6 +217,7 @@ export default function CommercialProfileRoute() {
             }
             accessibilityLabel="Commercial brand name"
             placeholder="Brand name"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
           <TextInput
@@ -219,6 +226,7 @@ export default function CommercialProfileRoute() {
             accessibilityLabel="Commercial public slug"
             autoCapitalize="none"
             placeholder="public-slug"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
           <TextInput
@@ -226,6 +234,7 @@ export default function CommercialProfileRoute() {
             onChangeText={(accountType) => setForm((prev) => ({ ...prev, accountType }))}
             accessibilityLabel="Commercial brand type"
             placeholder="soil_nutrient_brand, breeder, retailer"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
           <TextInput
@@ -235,6 +244,7 @@ export default function CommercialProfileRoute() {
             }
             accessibilityLabel="Commercial storefront visibility"
             placeholder="draft, published, active"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
           <TextInput
@@ -243,6 +253,7 @@ export default function CommercialProfileRoute() {
             accessibilityLabel="Commercial website URL"
             autoCapitalize="none"
             placeholder="https://..."
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
           <TextInput
@@ -253,6 +264,7 @@ export default function CommercialProfileRoute() {
             accessibilityLabel="Commercial support email"
             autoCapitalize="none"
             placeholder={SUPPORT_CONTACTS.general}
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
           <TextInput
@@ -262,6 +274,7 @@ export default function CommercialProfileRoute() {
             }
             accessibilityLabel="Commercial forum display name"
             placeholder="Brand forum identity"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
           <TextInput
@@ -270,6 +283,7 @@ export default function CommercialProfileRoute() {
             accessibilityLabel="Commercial external links"
             autoCapitalize="none"
             placeholder="External links, comma separated"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
         </View>
@@ -279,6 +293,7 @@ export default function CommercialProfileRoute() {
           accessibilityLabel="Commercial public bio"
           multiline
           placeholder="Public profile bio"
+          placeholderTextColor={palette.textMuted}
           style={[styles.input, styles.textArea]}
         />
         <Pressable
@@ -364,145 +379,150 @@ export default function CommercialProfileRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    gap: 16
-  },
-  headerText: {
-    gap: 6
-  },
-  kicker: {
-    color: "#5f6f5f",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0,
-    textTransform: "uppercase"
-  },
-  title: {
-    color: "#172317",
-    fontSize: 28,
-    fontWeight: "800",
-    letterSpacing: 0
-  },
-  subtitle: {
-    color: "#4b5a4b",
-    fontSize: 15,
-    lineHeight: 22,
-    maxWidth: 780
-  },
-  headerActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 12
-  },
-  action: {
-    alignItems: "center",
-    borderColor: "#b9c8b9",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  actionText: {
-    color: "#1f4d2c",
-    fontSize: 14,
-    fontWeight: "700"
-  },
-  cardTitle: {
-    color: "#182618",
-    fontSize: 18,
-    fontWeight: "800",
-    marginBottom: 8
-  },
-  body: {
-    color: "#4b5a4b",
-    fontSize: 14,
-    lineHeight: 21
-  },
-  metricGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 14
-  },
-  metric: {
-    borderColor: "#d6e1d5",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 150,
-    padding: 12
-  },
-  metricValue: {
-    color: "#172317",
-    fontSize: 16,
-    fontWeight: "800"
-  },
-  metricLabel: {
-    color: "#5f6f5f",
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 4
-  },
-  formGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  input: {
-    borderColor: "#c8d6c7",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#172317",
-    flexBasis: 240,
-    flexGrow: 1,
-    fontSize: 14,
-    minHeight: 44,
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  textArea: {
-    minHeight: 88,
-    textAlignVertical: "top"
-  },
-  submit: {
-    alignItems: "center",
-    backgroundColor: "#1f4d2c",
-    borderRadius: radius.card,
-    marginTop: 14,
-    minHeight: 44,
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12
-  },
-  submitDisabled: {
-    opacity: 0.55
-  },
-  submitText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  urlList: {
-    gap: 6,
-    marginTop: 12
-  },
-  urlText: {
-    color: "#315031",
-    fontSize: 13,
-    lineHeight: 19
-  },
-  muted: {
-    color: "#6b7a6b",
-    fontSize: 13,
-    marginTop: 10
-  }
-});
+export function createCommercialProfileStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: {
+      gap: 16
+    },
+    headerText: {
+      gap: 6
+    },
+    kicker: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      letterSpacing: 0,
+      textTransform: "uppercase"
+    },
+    title: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "800",
+      letterSpacing: 0
+    },
+    subtitle: {
+      color: palette.textMuted,
+      fontSize: 15,
+      lineHeight: 22,
+      maxWidth: 780
+    },
+    headerActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 12
+    },
+    action: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    actionText: {
+      color: palette.link,
+      fontSize: 14,
+      fontWeight: "700"
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "800",
+      marginBottom: 8
+    },
+    body: {
+      color: palette.textMuted,
+      fontSize: 14,
+      lineHeight: 21
+    },
+    metricGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 14
+    },
+    metric: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 150,
+      padding: 12
+    },
+    metricValue: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "800"
+    },
+    metricLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 4
+    },
+    formGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flexBasis: 240,
+      flexGrow: 1,
+      fontSize: 14,
+      minHeight: 44,
+      marginTop: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    textArea: {
+      minHeight: 88,
+      textAlignVertical: "top"
+    },
+    submit: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 14,
+      minHeight: 44,
+      justifyContent: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 12
+    },
+    submitDisabled: {
+      opacity: 0.55
+    },
+    submitText: {
+      color: palette.accentText,
+      fontSize: 14,
+      fontWeight: "800"
+    },
+    urlList: {
+      gap: 6,
+      marginTop: 12
+    },
+    urlText: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19
+    },
+    muted: {
+      color: palette.textMuted,
+      fontSize: 13,
+      marginTop: 10
+    }
+  });
+}

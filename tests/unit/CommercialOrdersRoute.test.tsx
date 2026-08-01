@@ -121,4 +121,38 @@ describe("Commercial Orders route", () => {
     );
     expect(await screen.findByText("Living Soil Tote marked fulfilled.")).toBeTruthy();
   });
+
+  it("preserves cancel and reopen fulfillment transitions", async () => {
+    const screen = render(<CommercialOrdersRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Tote")).toBeTruthy());
+
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Cancel order Living Soil Tote"
+      })
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/orders/order-1", {
+        method: "PATCH",
+        body: { fulfillmentStatus: "canceled" }
+      })
+    );
+    expect(await screen.findByText("Living Soil Tote marked canceled.")).toBeTruthy();
+
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Reopen order Living Soil Tote"
+      })
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/orders/order-1", {
+        method: "PATCH",
+        body: { fulfillmentStatus: "unfulfilled" }
+      })
+    );
+    expect(await screen.findByText("Living Soil Tote marked unfulfilled.")).toBeTruthy();
+  });
 });

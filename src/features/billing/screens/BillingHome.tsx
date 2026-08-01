@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "@/auth/AuthContext";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { cancelSubscription } from "../../../api/subscribe";
 import { createCheckoutSession, getSubscription } from "../../../api/subscription";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
@@ -24,6 +25,8 @@ function hasPaidAccess(plan: any) {
 
 export default function BillingHome() {
   const { token } = useAuth();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createBillingHomeStyles(palette), [palette]);
   const [plan, setPlan] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<"upgrade" | "cancel" | null>(null);
@@ -126,26 +129,35 @@ export default function BillingHome() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 12, padding: 24 },
-  title: { fontSize: 20, fontWeight: "bold" },
-  meta: { color: "#475569" },
-  note: { color: "#334155", lineHeight: 20 },
-  button: {
-    backgroundColor: "#166534",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12
-  },
-  cancelButton: {
-    backgroundColor: "#fff",
-    borderColor: "#FCA5A5",
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 12
-  },
-  cancelButtonText: { color: "#DC2626", fontWeight: "800", textAlign: "center" },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#FFFFFF", fontWeight: "800", textAlign: "center" }
-});
+export const createBillingHomeStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { backgroundColor: palette.page, gap: 12, padding: 24 },
+    title: { color: palette.text, fontSize: 20, fontWeight: "bold" },
+    meta: { color: palette.textMuted },
+    note: { color: palette.textSoft, lineHeight: 20 },
+    button: {
+      backgroundColor: palette.accent,
+      borderRadius: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 12
+    },
+    cancelButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: 8,
+      borderWidth: 1,
+      paddingHorizontal: 16,
+      paddingVertical: 12
+    },
+    cancelButtonText: {
+      color: palette.danger,
+      fontWeight: "800",
+      textAlign: "center"
+    },
+    buttonDisabled: { opacity: 0.6 },
+    buttonText: {
+      color: palette.accentText,
+      fontWeight: "800",
+      textAlign: "center"
+    }
+  });

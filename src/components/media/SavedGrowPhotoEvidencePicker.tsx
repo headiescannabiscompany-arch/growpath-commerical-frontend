@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { createEvidenceAsset } from "@/api/evidence";
@@ -8,6 +8,7 @@ import {
   existingGrowPhotoEvidenceInput,
   type ExistingGrowPhotoCandidate
 } from "@/features/personal/diagnosis/existingGrowPhotoEvidence";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset, EvidencePurpose } from "@/types/evidence";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -34,6 +35,8 @@ export default function SavedGrowPhotoEvidencePicker({
   onChange,
   maxPhotos = 10
 }: Props) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createSavedGrowPhotoEvidenceStyles(palette), [palette]);
   const [candidates, setCandidates] = useState<ExistingGrowPhotoCandidate[]>([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
@@ -179,41 +182,44 @@ export default function SavedGrowPhotoEvidencePicker({
   );
 }
 
-const styles = StyleSheet.create({
-  section: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    padding: 12
-  },
-  title: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  help: { color: "#475569", fontSize: 12, lineHeight: 18 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  card: {
-    borderColor: "#D9E2EC",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 5,
-    padding: 8,
-    width: 156
-  },
-  preview: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: radius.card,
-    height: 104,
-    width: "100%"
-  },
-  photoTitle: { color: "#0F172A", fontSize: 13, fontWeight: "800" },
-  meta: { color: "#64748B", fontSize: 12 },
-  status: { color: "#475569", fontSize: 12, lineHeight: 18 },
-  button: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
-  disabled: { opacity: 0.5 }
-});
+export const createSavedGrowPhotoEvidenceStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    section: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12
+    },
+    title: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    help: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    card: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 5,
+      padding: 8,
+      width: 156
+    },
+    preview: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      height: 104,
+      width: "100%"
+    },
+    photoTitle: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    meta: { color: palette.textMuted, fontSize: 12 },
+    status: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    button: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.5 }
+  });

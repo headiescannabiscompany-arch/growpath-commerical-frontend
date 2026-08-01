@@ -22,6 +22,7 @@ import {
 } from "../../../constants/pricing";
 import { BILLING_PLANS, type BillingPlanKey } from "../planCopy";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
+import { useAppTheme, type ThemePalette } from "../../../theme/appTheme";
 
 type BillingInterval = "monthly" | "yearly";
 type CheckoutMode = "live" | "test" | "unknown";
@@ -48,6 +49,8 @@ function checkoutUrlFromResponse(response: any) {
 
 export default function UpgradePlan() {
   const { width } = useWindowDimensions();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createUpgradePlanStyles(palette), [palette]);
   const searchParams = useLocalSearchParams<{
     plan?: string | string[];
     gift?: string | string[];
@@ -299,6 +302,7 @@ export default function UpgradePlan() {
               autoCorrect={false}
               keyboardType="email-address"
               placeholder="recipient@example.com"
+              placeholderTextColor={palette.textMuted}
               style={styles.input}
               value={giftRecipientEmail}
               onChangeText={(value) => {
@@ -311,6 +315,7 @@ export default function UpgradePlan() {
               autoCapitalize="words"
               autoCorrect={false}
               placeholder="Recipient name (optional)"
+              placeholderTextColor={palette.textMuted}
               style={styles.input}
               value={giftRecipientName}
               onChangeText={(value) => {
@@ -324,6 +329,7 @@ export default function UpgradePlan() {
               autoCorrect
               multiline
               placeholder="Short gift note (optional)"
+              placeholderTextColor={palette.textMuted}
               style={[styles.input, styles.textArea]}
               value={giftMessage}
               onChangeText={(value) => {
@@ -432,117 +438,145 @@ export default function UpgradePlan() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 12, padding: 24 },
-  header: { gap: 8 },
-  title: { fontSize: 20, fontWeight: "bold" },
-  subtitle: { color: "#475569", fontSize: 14, fontWeight: "700" },
-  comparisonNote: {
-    color: "#0f172a",
-    fontSize: 13,
-    fontWeight: "800",
-    lineHeight: 18
-  },
-  segment: {
-    alignSelf: "flex-start",
-    backgroundColor: "#e2e8f0",
-    borderRadius: 8,
-    flexDirection: "row",
-    gap: 4,
-    marginTop: 8,
-    padding: 4
-  },
-  segmentButton: {
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  segmentButtonActive: { backgroundColor: "#111827" },
-  segmentText: { color: "#334155", fontSize: 12, fontWeight: "900" },
-  segmentTextActive: { color: "#ffffff" },
-  modeBanner: {
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 12
-  },
-  modeBannerLive: {
-    backgroundColor: "#fff7ed",
-    borderColor: "#fb923c"
-  },
-  modeBannerTest: {
-    backgroundColor: "#ecfdf5",
-    borderColor: "#86efac"
-  },
-  modeBannerUnknown: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#cbd5e1"
-  },
-  modeBannerText: { color: "#334155", fontWeight: "900" },
-  modeBannerTextLive: { color: "#9a3412" },
-  giftCard: { gap: 10 },
-  eyebrow: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  selectedFlag: {
-    color: "#0f766e",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  cardTitle: { color: "#111827", fontSize: 20, fontWeight: "900" },
-  sectionLabel: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  sectionText: { color: "#334155", fontSize: 13, fontWeight: "700", lineHeight: 19 },
-  price: { color: "#111827", fontSize: 30, fontWeight: "900" },
-  priceMeta: { color: "#64748b", fontSize: 13, fontWeight: "800" },
-  billingNote: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  cardDesc: { color: "#475569", fontWeight: "700", lineHeight: 20 },
-  details: { gap: 4 },
-  detail: { color: "#334155", fontSize: 12, fontWeight: "700", lineHeight: 18 },
-  helper: { color: "#64748b", fontSize: 12, fontWeight: "700", lineHeight: 18 },
-  input: {
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: 8,
-    borderWidth: 1,
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  textArea: {
-    minHeight: 92,
-    textAlignVertical: "top"
-  },
-  bullets: { gap: 6 },
-  bullet: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  feedback: {
-    backgroundColor: "#ecfdf5",
-    borderColor: "#86efac",
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 12
-  },
-  feedbackText: { color: "#166534", fontWeight: "800" },
-  planGrid: { gap: 12 },
-  planGridWide: { flexDirection: "row" },
-  planCard: { flex: 1, gap: 10 },
-  planCardFeatured: {
-    borderColor: "#0f766e"
-  },
-  button: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: 8,
-    marginTop: 4,
-    paddingVertical: 12
-  },
-  buttonDisabled: { opacity: 0.55 },
-  buttonText: { color: "#ffffff", fontWeight: "900" }
-});
+export const createUpgradePlanStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { backgroundColor: palette.page, gap: 12, padding: 24 },
+    header: { gap: 8 },
+    title: { color: palette.text, fontSize: 20, fontWeight: "bold" },
+    subtitle: { color: palette.textMuted, fontSize: 14, fontWeight: "700" },
+    comparisonNote: {
+      color: palette.text,
+      fontSize: 13,
+      fontWeight: "800",
+      lineHeight: 18
+    },
+    segment: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: 8,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 4,
+      marginTop: 8,
+      padding: 4
+    },
+    segmentButton: {
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    segmentButtonActive: { backgroundColor: palette.accent },
+    segmentText: { color: palette.textSoft, fontSize: 12, fontWeight: "900" },
+    segmentTextActive: { color: palette.accentText },
+    modeBanner: {
+      borderRadius: 8,
+      borderWidth: 1,
+      padding: 12
+    },
+    modeBannerLive: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning
+    },
+    modeBannerTest: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success
+    },
+    modeBannerUnknown: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border
+    },
+    modeBannerText: { color: palette.textSoft, fontWeight: "900" },
+    modeBannerTextLive: { color: palette.warning },
+    giftCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      gap: 10
+    },
+    eyebrow: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    selectedFlag: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    cardTitle: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    sectionLabel: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    sectionText: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19
+    },
+    price: { color: palette.text, fontSize: 30, fontWeight: "900" },
+    priceMeta: { color: palette.textMuted, fontSize: 13, fontWeight: "800" },
+    billingNote: { color: palette.textSoft, fontSize: 12, fontWeight: "800" },
+    cardDesc: { color: palette.textMuted, fontWeight: "700", lineHeight: 20 },
+    details: { gap: 4 },
+    detail: {
+      color: palette.textSoft,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 18
+    },
+    helper: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 18
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 8,
+      borderWidth: 1,
+      color: palette.text,
+      fontSize: 15,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    textArea: {
+      minHeight: 92,
+      textAlignVertical: "top"
+    },
+    bullets: { gap: 6 },
+    bullet: { color: palette.textSoft, fontSize: 13, fontWeight: "800" },
+    feedback: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.success,
+      borderRadius: 8,
+      borderWidth: 1,
+      padding: 12
+    },
+    feedbackText: { color: palette.success, fontWeight: "800" },
+    planGrid: { gap: 12 },
+    planGridWide: { flexDirection: "row" },
+    planCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      flex: 1,
+      gap: 10
+    },
+    planCardFeatured: {
+      borderColor: palette.accent
+    },
+    button: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: 8,
+      marginTop: 4,
+      paddingVertical: 12
+    },
+    buttonDisabled: { opacity: 0.55 },
+    buttonText: { color: palette.accentText, fontWeight: "900" }
+  });

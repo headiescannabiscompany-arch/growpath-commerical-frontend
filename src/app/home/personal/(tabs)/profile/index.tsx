@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -29,107 +29,137 @@ import {
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  content: { padding: 20, paddingBottom: 42 },
-  title: { fontSize: 24, fontWeight: "800", marginBottom: 6 },
-  subtitle: { fontSize: 14, color: "#64748B", marginBottom: 18 },
+export function createPersonalProfileStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 42 },
+    title: { color: palette.text, fontSize: 24, fontWeight: "800", marginBottom: 6 },
+    subtitle: { color: palette.textMuted, fontSize: 14, marginBottom: 18 },
 
-  card: {
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    marginBottom: 12
-  },
-  rowLabel: { fontSize: 12, color: "#64748B" },
-  rowValue: { marginTop: 4, fontSize: 15, fontWeight: "700" },
-  statusRow: {
-    alignItems: "center",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  statusLabel: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  statusValue: { fontSize: 12, fontWeight: "900" },
-  statusVerified: { color: "#166534" },
-  statusUnverified: { color: "#B45309" },
-  input: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-    backgroundColor: "#FFFFFF"
-  },
-  feedback: { marginTop: 8, fontSize: 12, color: "#047857", fontWeight: "700" },
-  error: { marginTop: 8, fontSize: 12, color: "#DC2626", fontWeight: "700" },
+    card: {
+      padding: 16,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.card,
+      marginBottom: 12
+    },
+    rowLabel: { fontSize: 12, color: palette.textMuted },
+    rowValue: {
+      color: palette.text,
+      marginTop: 4,
+      fontSize: 15,
+      fontWeight: "700"
+    },
+    statusRow: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    statusLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    statusValue: { color: palette.text, fontSize: 12, fontWeight: "900" },
+    statusVerified: { color: palette.success },
+    statusUnverified: { color: palette.warning },
+    input: {
+      marginTop: 8,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 15,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    feedback: {
+      marginTop: 8,
+      fontSize: 12,
+      color: palette.success,
+      fontWeight: "700"
+    },
+    error: {
+      marginTop: 8,
+      fontSize: 12,
+      color: palette.danger,
+      fontWeight: "700"
+    },
 
-  button: {
-    marginTop: 14,
-    paddingVertical: 12,
-    borderRadius: radius.card,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E2E8F0"
-  },
-  buttonPrimary: { backgroundColor: "#0F172A", borderColor: "#0F172A" },
-  buttonPrimaryText: { color: "#fff", fontWeight: "800" },
+    button: {
+      marginTop: 14,
+      paddingVertical: 12,
+      borderRadius: radius.card,
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: palette.border
+    },
+    buttonPrimary: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    buttonPrimaryText: { color: palette.accentText, fontWeight: "800" },
 
-  buttonDanger: { backgroundColor: "#fff", borderColor: "#FCA5A5" },
-  buttonDangerText: { color: "#DC2626", fontWeight: "800" },
-  buttonSecondaryText: { color: "#0F172A", fontWeight: "800" },
-  notificationRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-    paddingVertical: 8
-  },
-  notificationCopy: { flex: 1, minWidth: 0 },
-  notificationTitle: { color: "#0F172A", fontSize: 14, fontWeight: "800" },
-  notificationDescription: {
-    color: "#64748B",
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 2
-  },
+    buttonDanger: { backgroundColor: palette.surface, borderColor: palette.danger },
+    buttonDangerText: { color: palette.danger, fontWeight: "800" },
+    buttonSecondaryText: { color: palette.text, fontWeight: "800" },
+    notificationRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      paddingVertical: 8
+    },
+    notificationCopy: { flex: 1, minWidth: 0 },
+    notificationTitle: { color: palette.text, fontSize: 14, fontWeight: "800" },
+    notificationDescription: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: 2
+    },
 
-  accountAction: {
-    marginTop: 10,
-    paddingVertical: 10,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF"
-  },
-  accountActionText: { fontWeight: "800", color: "#0F172A" },
-  actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  planAction: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#166534",
-    backgroundColor: "#FFFFFF"
-  },
-  planActionPrimary: { backgroundColor: "#166534" },
-  planActionText: { color: "#166534", fontWeight: "800" },
-  planActionPrimaryText: { color: "#FFFFFF", fontWeight: "800" },
-  mutedText: { marginTop: 8, fontSize: 12, color: "#64748B", lineHeight: 18 }
-});
+    accountAction: {
+      marginTop: 10,
+      paddingVertical: 10,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      alignItems: "center",
+      backgroundColor: palette.surface
+    },
+    accountActionText: { fontWeight: "800", color: palette.text },
+    actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    planAction: {
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.accent,
+      backgroundColor: palette.surface
+    },
+    planActionPrimary: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    planActionText: { color: palette.accent, fontWeight: "800" },
+    planActionPrimaryText: { color: palette.accentText, fontWeight: "800" },
+    mutedText: {
+      marginTop: 8,
+      fontSize: 12,
+      color: palette.textMuted,
+      lineHeight: 18
+    }
+  });
+}
 
 type PlanAction = readonly [label: string, href: string, primary: boolean];
 
@@ -160,6 +190,7 @@ export default function ProfileScreen() {
   const auth = useAuth();
   const ent = useEntitlements();
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createPersonalProfileStyles(palette), [palette]);
 
   const email = auth.user?.email || "unknown";
   const [emailDraft, setEmailDraft] = useState(email === "unknown" ? "" : email);
@@ -451,6 +482,7 @@ export default function ProfileScreen() {
           autoCorrect={false}
           keyboardType="email-address"
           placeholder="email@example.com"
+          placeholderTextColor={palette.textMuted}
           value={emailDraft}
           onChangeText={(value) => {
             setEmailDraft(value);
@@ -585,6 +617,9 @@ export default function ProfileScreen() {
             </View>
             <Switch
               accessibilityLabel={option.title}
+              ios_backgroundColor={palette.surfaceStrong}
+              thumbColor={palette.accentText}
+              trackColor={{ false: palette.surfaceStrong, true: palette.accent }}
               value={Boolean(notificationPrefs[option.key])}
               onValueChange={(value) =>
                 setNotificationPrefs((current) => ({
@@ -671,6 +706,7 @@ export default function ProfileScreen() {
               ? "Current parental PIN"
               : "New 4-12 digit parental PIN"
           }
+          placeholderTextColor={palette.textMuted}
           keyboardType="number-pad"
           secureTextEntry
           autoComplete="one-time-code"
@@ -809,6 +845,7 @@ export default function ProfileScreen() {
           autoCapitalize="characters"
           autoCorrect={false}
           placeholder="Type DELETE to confirm"
+          placeholderTextColor={palette.textMuted}
           value={deleteConfirm}
           onChangeText={(value) => {
             setDeleteConfirm(value);

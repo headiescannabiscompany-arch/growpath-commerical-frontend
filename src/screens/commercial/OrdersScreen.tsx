@@ -17,6 +17,7 @@ import AppPage from "@/components/layout/AppPage";
 import AppCard from "@/components/layout/AppCard";
 import { useEntitlements } from "@/entitlements";
 import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type FulfillmentStatus = "unfulfilled" | "fulfilled" | "canceled";
@@ -85,161 +86,177 @@ function getTotal(order: CommercialOrder) {
   return Number.isFinite(total) ? total : 0;
 }
 
-const styles = StyleSheet.create({
-  headerTitle: {
-    color: "#0F172A",
-    fontSize: 28,
-    fontWeight: "800",
-    marginBottom: 4
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#64748B"
-  },
-  inner: {
-    gap: 14,
-    paddingBottom: 28
-  },
-  loading: {
-    alignItems: "center",
-    gap: 8,
-    justifyContent: "center",
-    paddingVertical: 28
-  },
-  muted: {
-    color: "#64748B",
-    fontSize: 13
-  },
-  feedback: {
-    backgroundColor: "#DCFCE7",
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "800",
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  summaryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  summaryCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 148,
-    padding: 12
-  },
-  summaryValue: {
-    color: "#0F172A",
-    fontSize: 20,
-    fontWeight: "900"
-  },
-  summaryLabel: {
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 4,
-    textTransform: "uppercase"
-  },
-  cardHeader: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between"
-  },
-  cardTitle: {
-    color: "#0F172A",
-    fontSize: 16,
-    fontWeight: "800",
-    flex: 1
-  },
-  cardDesc: {
-    fontSize: 14,
-    color: "#475569",
-    lineHeight: 20,
-    marginTop: 6
-  },
-  statusPill: {
-    backgroundColor: "#E0F2FE",
-    borderRadius: 999,
-    color: "#0369A1",
-    fontSize: 12,
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    textTransform: "capitalize"
-  },
-  fulfilledPill: {
-    backgroundColor: "#D1FAE5",
-    color: "#065F46"
-  },
-  canceledPill: {
-    backgroundColor: "#FEE2E2",
-    color: "#991B1B"
-  },
-  metaRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 10
-  },
-  metaPill: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    color: "#334155",
-    fontSize: 12,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 5
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 14
-  },
-  actionButton: {
-    alignItems: "center",
-    backgroundColor: "#2563EB",
-    borderRadius: radius.card,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryButton: {
-    backgroundColor: "#475569"
-  },
-  dangerButton: {
-    backgroundColor: "#B91C1C"
-  },
-  disabledButton: {
-    opacity: 0.5
-  },
-  actionText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  emptyCard: {
-    alignItems: "center",
-    paddingVertical: 28
-  },
-  focusedOrderCard: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#16A34A",
-    borderWidth: 2
-  }
-});
+export function createCommercialOrdersStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    headerTitle: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "800",
+      marginBottom: 4
+    },
+    headerSubtitle: {
+      fontSize: 14,
+      color: palette.textMuted
+    },
+    inner: {
+      gap: 14,
+      paddingBottom: 28
+    },
+    loading: {
+      alignItems: "center",
+      gap: 8,
+      justifyContent: "center",
+      paddingVertical: 28
+    },
+    muted: {
+      color: palette.textMuted,
+      fontSize: 13
+    },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.success,
+      fontSize: 13,
+      fontWeight: "800",
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    summaryGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    summaryCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 148,
+      padding: 12
+    },
+    summaryValue: {
+      color: palette.text,
+      fontSize: 20,
+      fontWeight: "900"
+    },
+    summaryLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 4,
+      textTransform: "uppercase"
+    },
+    cardHeader: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between"
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "800",
+      flex: 1
+    },
+    cardDesc: {
+      fontSize: 14,
+      color: palette.textMuted,
+      lineHeight: 20,
+      marginTop: 6
+    },
+    statusPill: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.info,
+      borderWidth: 1,
+      borderRadius: 999,
+      color: palette.info,
+      fontSize: 12,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      textTransform: "capitalize"
+    },
+    fulfilledPill: {
+      borderColor: palette.success,
+      color: palette.success
+    },
+    canceledPill: {
+      borderColor: palette.danger,
+      color: palette.danger
+    },
+    metaRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 10
+    },
+    metaPill: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      color: palette.text,
+      fontSize: 12,
+      fontWeight: "800",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 5
+    },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 14
+    },
+    actionButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryButton: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border
+    },
+    dangerButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.danger
+    },
+    disabledButton: {
+      opacity: 0.5
+    },
+    actionText: {
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    secondaryActionText: {
+      color: palette.text
+    },
+    dangerActionText: {
+      color: palette.danger
+    },
+    emptyCard: {
+      alignItems: "center",
+      paddingVertical: 28
+    },
+    focusedOrderCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderWidth: 2
+    }
+  });
+}
 
 export default function Orders() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialOrdersStyles(palette), [palette]);
   const params = useLocalSearchParams<{ orderId?: string | string[] }>();
   const focusedOrderId = Array.isArray(params.orderId)
     ? params.orderId[0]
@@ -345,8 +362,10 @@ export default function Orders() {
       <ScrollView
         refreshControl={
           <RefreshControl
+            colors={[palette.accent]}
             refreshing={refreshing}
             onRefresh={() => void load({ refresh: true })}
+            tintColor={palette.accent}
           />
         }
         contentContainerStyle={styles.inner}
@@ -372,7 +391,7 @@ export default function Orders() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading orders...</Text>
           </View>
         ) : null}
@@ -454,7 +473,9 @@ export default function Orders() {
                       styles.disabledButton
                   ]}
                 >
-                  <Text style={styles.actionText}>Reopen</Text>
+                  <Text style={[styles.actionText, styles.secondaryActionText]}>
+                    Reopen
+                  </Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
@@ -467,7 +488,7 @@ export default function Orders() {
                     (saving || fulfillmentStatus === "canceled") && styles.disabledButton
                   ]}
                 >
-                  <Text style={styles.actionText}>Cancel</Text>
+                  <Text style={[styles.actionText, styles.dangerActionText]}>Cancel</Text>
                 </Pressable>
               </View>
             </AppCard>

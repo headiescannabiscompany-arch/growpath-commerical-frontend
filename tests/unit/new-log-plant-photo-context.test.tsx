@@ -1,7 +1,10 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import NewLogScreen from "@/app/home/personal/(tabs)/logs/new";
+import NewLogScreen, { createNewLogStyles } from "@/app/home/personal/(tabs)/logs/new";
+import { createToolPlantContextPickerStyles } from "@/features/personal/tools/ToolPlantContextPicker";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockReplace = jest.fn();
 const mockCreatePersonalLog = jest.fn();
@@ -40,6 +43,16 @@ jest.mock("@/entitlements", () => ({
   },
   useEntitlements: () => ({ can: mockEntitlementsCan })
 }));
+
+jest.mock("@/theme/appTheme", () => {
+  const actual = jest.requireActual("@/theme/appTheme");
+  return {
+    ...actual,
+    useAppTheme: () => ({
+      palette: actual.getThemePalette("night", "dark")
+    })
+  };
+});
 
 jest.mock("@/api/logs", () => ({
   createPersonalLog: (...args: any[]) => mockCreatePersonalLog(...args)
@@ -152,6 +165,72 @@ describe("NewLogScreen plant/photo context", () => {
       })
     );
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows/grow-1/journal");
+  });
+
+  it("uses the active Night palette for journal fields, photos, and action states", async () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createNewLogStyles(palette);
+    const plantPickerStyles = createToolPlantContextPickerStyles(palette);
+    const screen = render(<NewLogScreen />);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.input).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border,
+        color: palette.text
+      })
+    );
+    expect(styles.photoTile).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.card,
+        borderColor: palette.border
+      })
+    );
+    expect(styles.error).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surfaceMuted,
+        borderColor: palette.danger,
+        color: palette.danger
+      })
+    );
+    expect(styles.primaryButton.backgroundColor).toBe(palette.accent);
+    expect(styles.secondaryButton).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.accent
+      })
+    );
+    expect(plantPickerStyles.pill).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border
+      })
+    );
+    expect(plantPickerStyles.pillText.color).toBe(palette.text);
+    expect(plantPickerStyles.pillOn.backgroundColor).toBe(palette.accent);
+
+    for (const label of ["Log title", "Log notes", "Photo URL"]) {
+      const input = screen.getByLabelText(label);
+      expect(input.props.placeholderTextColor).toBe(palette.textMuted);
+      expect(StyleSheet.flatten(input.props.style)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          color: palette.text
+        })
+      );
+    }
+
+    const plantContextLabel = await screen.findByText("Plant context");
+    expect(StyleSheet.flatten(plantContextLabel.props.style).color).toBe(palette.text);
+    expect(
+      StyleSheet.flatten(screen.getByText("Olive patio tree").props.style).color
+    ).toBe(palette.accentText);
+
+    fireEvent.press(screen.getByLabelText("Attach log photos"));
+    const remove = await screen.findByText("Remove");
+    expect(remove).toBeTruthy();
   });
 
   it("creates logs and photo metadata with selected plant context", async () => {

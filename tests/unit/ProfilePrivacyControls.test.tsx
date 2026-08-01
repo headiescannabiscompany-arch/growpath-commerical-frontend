@@ -1,8 +1,9 @@
 import React from "react";
-import { Alert } from "react-native";
+import { Alert, StyleSheet } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import Profile from "@/app/home/personal/(tabs)/profile";
+import Profile, { createPersonalProfileStyles } from "@/app/home/personal/(tabs)/profile";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockDeleteAccount = jest.fn();
 const mockExportPrivacyData = jest.fn();
@@ -52,6 +53,25 @@ jest.mock("@/entitlements", () => ({
   })
 }));
 
+jest.mock("@/theme/appTheme", () => {
+  const actual = jest.requireActual("@/theme/appTheme");
+  return {
+    ...actual,
+    useAppTheme: () => ({
+      mode: "night",
+      resolvedMode: "night",
+      palette: actual.getThemePalette("night", "dark"),
+      hydrated: true,
+      systemScheme: "night",
+      autoUsesLocation: false,
+      themeLocation: null,
+      setThemeMode: jest.fn(),
+      enableLocationAuto: jest.fn(),
+      disableLocationAuto: jest.fn()
+    })
+  };
+});
+
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     replace: mockReplace,
@@ -63,19 +83,25 @@ jest.mock("expo-router", () => ({
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children, header }: any) => React.createElement(View, null, header, children);
+  return function MockAppPage({ children, header }: any) {
+    return React.createElement(View, null, header, children);
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children }: any) => React.createElement(View, null, children);
+  return function MockAppCard({ children }: any) {
+    return React.createElement(View, null, children);
+  };
 });
 
 jest.mock("@/components/TokenBalanceWidget", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return () => React.createElement(Text, null, "10 of 10 AI tokens");
+  return function MockTokenBalanceWidget() {
+    return React.createElement(Text, null, "10 of 10 AI tokens");
+  };
 });
 
 describe("Profile privacy controls", () => {
@@ -128,6 +154,53 @@ describe("Profile privacy controls", () => {
     });
 
     alertSpy.mockRestore();
+  });
+
+  it("uses the active Night palette for sensitive fields and account actions", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createPersonalProfileStyles(palette);
+    const screen = render(<Profile />);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.card).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.card,
+        borderColor: palette.border
+      })
+    );
+    expect(styles.input).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border,
+        color: palette.text
+      })
+    );
+    expect(styles.feedback.color).toBe(palette.success);
+    expect(styles.error.color).toBe(palette.danger);
+    expect(styles.buttonDanger.backgroundColor).toBe(palette.surface);
+
+    const emailInput = screen.getByPlaceholderText("email@example.com");
+    const pinInput = screen.getByLabelText("Parental content control PIN");
+    const deleteInput = screen.getByLabelText("Delete account confirmation");
+    const workspaceAction = screen.getByLabelText("Switch workspace mode");
+
+    for (const input of [emailInput, pinInput, deleteInput]) {
+      expect(input.props.placeholderTextColor).toBe(palette.textMuted);
+      expect(StyleSheet.flatten(input.props.style)).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          color: palette.text
+        })
+      );
+    }
+    expect(StyleSheet.flatten(workspaceAction.props.style)).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border
+      })
+    );
+    expect(screen.getByLabelText("Device push")).toBeTruthy();
   });
 
   it("opens the workspace mode switcher from the personal profile", () => {

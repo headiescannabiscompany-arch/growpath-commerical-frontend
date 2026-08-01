@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export function buildToolPlantContext(plant?: PersonalPlant | null) {
   if (!plant) return null;
@@ -103,6 +104,9 @@ export function ToolPlantContextPicker({
   onSelect: (plantId: string) => void;
   description?: string;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createToolPlantContextPickerStyles(palette), [palette]);
+
   if (!plants.length) return null;
 
   return (
@@ -142,20 +146,23 @@ export function ToolPlantContextPicker({
   );
 }
 
-const styles = StyleSheet.create({
-  section: { gap: 7 },
-  label: { color: "#334155", fontWeight: "800" },
-  subtitle: { color: "#64748B", fontSize: 13, lineHeight: 19 },
-  context: { color: "#166534", fontWeight: "700" },
-  row: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
-  pill: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#E2E8F0"
-  },
-  pillOn: { backgroundColor: "#16A34A", borderColor: "#16A34A" },
-  pillText: { fontWeight: "800" },
-  pillTextOn: { color: "#FFFFFF" }
-});
+export function createToolPlantContextPickerStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    section: { gap: 7 },
+    label: { color: palette.text, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, fontSize: 13, lineHeight: 19 },
+    context: { color: palette.link, fontWeight: "700" },
+    row: { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" },
+    pill: {
+      backgroundColor: palette.surface,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: palette.border
+    },
+    pillOn: { backgroundColor: palette.accent, borderColor: palette.accent },
+    pillText: { color: palette.text, fontWeight: "800" },
+    pillTextOn: { color: palette.accentText }
+  });
+}
