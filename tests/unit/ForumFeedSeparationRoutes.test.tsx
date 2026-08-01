@@ -1,7 +1,9 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import CommunitiesDirectoryRoute from "@/app/communities";
+import CommunitiesDirectoryRoute, {
+  createStyles as createCommunitiesStyles
+} from "@/app/communities";
 import CommunityTab from "@/app/home/personal/(tabs)/community";
 import ForumRoute from "@/app/home/personal/(tabs)/forum";
 import ForumCodeRoute from "@/app/home/personal/(tabs)/forum/code";
@@ -350,6 +352,46 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText("Join Group")).toBeTruthy();
     expect(screen.queryByText("Communities")).toBeNull();
     expect(screen.queryByText("Search communities")).toBeNull();
+    expect(screen.getByText("Forum Directory").props).toEqual(
+      expect.objectContaining({ accessibilityRole: "header", "aria-level": 1 })
+    );
+    expect(screen.getByText("Start a Forum group").props).toEqual(
+      expect.objectContaining({ accessibilityRole: "header", "aria-level": 2 })
+    );
+    expect(screen.getByText("Living Soil Q&A").props).toEqual(
+      expect.objectContaining({ accessibilityRole: "header", "aria-level": 2 })
+    );
+  });
+
+  it("uses the active palette throughout the Forum Directory", () => {
+    const palette = {
+      heroText: "#FFFFFF",
+      text: "#F4F7FB",
+      textMuted: "#C9D4DF",
+      surface: "#151D27",
+      surfaceMuted: "#1A2330",
+      surfaceStrong: "#202B39",
+      border: "#283545",
+      accent: "#78AAFF",
+      accentSoft: "#16263A",
+      accentText: "#FFFFFF",
+      success: "#4ADE80",
+      info: "#78AAFF"
+    } as any;
+
+    const styles = createCommunitiesStyles(palette);
+
+    expect(styles.input).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border,
+        color: palette.text
+      })
+    );
+    expect(styles.summaryCard.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.privacyOption.backgroundColor).toBe(palette.surface);
+    expect(styles.actionButton.backgroundColor).toBe(palette.accent);
+    expect(styles.cardDesc.color).toBe(palette.textMuted);
   });
 
   it("uses forum group fallback copy in the shared directory", async () => {
