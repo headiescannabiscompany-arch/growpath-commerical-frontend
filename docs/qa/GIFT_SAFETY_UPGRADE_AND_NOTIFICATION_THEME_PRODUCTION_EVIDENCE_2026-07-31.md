@@ -451,6 +451,27 @@ while preserving the requested report reference and every backend value.
 - No link or mutation control was invoked; no compliance action, task, team,
   automation, token, audit event, AI call, or record changed.
 
+## Facility AI Validation Lab Night theme
+
+Production Facility AI Validation Lab retained black day-only title,
+instructions, section labels, and field text on the resolved Night canvas.
+Frontend `440c4d6f` moved the complete lab canvas, copy, all inputs and
+placeholders, actions, errors, choices, and response card to the active palette.
+
+- Production Build Preflight `30684066382` passed in 3m16s and Frontend CI
+  `30684066385` passed in 5m10s. The production host published the new
+  `index-fa3835fb3bb6ece69eabd842d517824d.js` asset.
+- Six focused AI Validation tests passed, including parsing and feedback safety
+  contracts plus an explicit Night-palette regression. Targeted ESLint completed
+  without errors, full frontend `tsc --noEmit` passed, and `git diff --check`
+  passed.
+- Signed-in Viewer production acceptance confirmed the Night canvas
+  `rgb(14, 20, 27)`, title and all nine field values `rgb(244, 247, 251)`,
+  supporting copy `rgb(201, 212, 223)`, field surfaces `rgb(21, 29, 39)`, and
+  borders `rgb(40, 53, 69)`. No white field or black field text remained.
+- No field was changed and no verify, compare, feedback, training export, AI,
+  credit, audit, task, or record action was invoked.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
