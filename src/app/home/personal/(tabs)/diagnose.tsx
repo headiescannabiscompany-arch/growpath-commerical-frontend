@@ -633,7 +633,7 @@ export default function DiagnoseRoute({
       backFallbackHref="/home/personal"
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
           Plant Issue Diagnosis
         </Text>
         <Text style={styles.subtitle}>
@@ -643,7 +643,9 @@ export default function DiagnoseRoute({
         <PersonalFeedPlacement placement="top" routeKey="personal_diagnose" longContent />
         {grows.length ? (
           <View style={styles.section}>
-            <Text style={styles.label}>Grow</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+              Grow
+            </Text>
             <View style={styles.row}>
               {grows.map((grow, index) => {
                 const id = String(grow.id || (grow as any)._id || "");
@@ -692,7 +694,9 @@ export default function DiagnoseRoute({
 
         {plants.length ? (
           <View style={styles.section}>
-            <Text style={styles.label}>Plant</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+              Plant
+            </Text>
             <View style={styles.row}>
               <Pressable
                 style={[styles.pill, !plantId && styles.pillOn]}
@@ -730,7 +734,9 @@ export default function DiagnoseRoute({
         />
 
         <View style={styles.section}>
-          <Text style={styles.label}>Crop identity</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+            Crop identity
+          </Text>
           <Text style={styles.subtitle}>
             Species/crop and cultivar are separate. Example: blueberry bush is not the
             same as Blueberry Muffin HSC.
@@ -776,7 +782,9 @@ export default function DiagnoseRoute({
           </View>
         </View>
 
-        <Text style={styles.label}>Stage</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+          Stage
+        </Text>
         <View style={styles.row}>
           {["unknown", "seedling", "veg", "flower", "late_flower"].map((value) => (
             <Pressable
@@ -794,7 +802,9 @@ export default function DiagnoseRoute({
           ))}
         </View>
 
-        <Text style={styles.label}>What are you observing?</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+          What are you observing?
+        </Text>
         <TextInput
           style={styles.notes}
           value={notes}
@@ -805,7 +815,9 @@ export default function DiagnoseRoute({
         />
 
         <View style={styles.section}>
-          <Text style={styles.label}>Pattern location</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+            Pattern location
+          </Text>
           <View style={styles.row}>
             {[
               "unknown",
@@ -837,7 +849,9 @@ export default function DiagnoseRoute({
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>Progression</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+            Progression
+          </Text>
           <Text style={styles.subtitle}>
             How has the symptom changed since you first noticed it?
           </Text>
@@ -867,7 +881,9 @@ export default function DiagnoseRoute({
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>Root zone</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+            Root zone
+          </Text>
           <View style={styles.row}>
             {["unknown", "too wet", "too dry", "compacted", "cold roots"].map((value) => (
               <Pressable
@@ -895,7 +911,9 @@ export default function DiagnoseRoute({
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>Environment</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+            Environment
+          </Text>
           <View style={styles.row}>
             <Text style={styles.measurementLabel}>Temperature unit</Text>
             {(["F", "C"] as const).map((value) => (
@@ -941,7 +959,9 @@ export default function DiagnoseRoute({
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>Measured numbers</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+            Measured numbers
+          </Text>
           <View style={styles.grid}>
             <TextInput
               style={styles.gridInput}
@@ -990,6 +1010,7 @@ export default function DiagnoseRoute({
         ) : null}
 
         <MediaEvidencePicker
+          titleHeadingLevel={2}
           aiUsable
           maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
           allowVideo

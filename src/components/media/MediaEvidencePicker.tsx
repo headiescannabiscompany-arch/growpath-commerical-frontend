@@ -33,6 +33,7 @@ type Props = {
   sourceContext?: EvidenceLinks;
   value?: EvidenceAsset[];
   onChange?: (assets: EvidenceAsset[]) => void;
+  titleHeadingLevel?: 2 | 3;
 };
 
 function localId() {
@@ -137,7 +138,8 @@ export default function MediaEvidencePicker({
   purpose,
   sourceContext = {},
   value,
-  onChange
+  onChange,
+  titleHeadingLevel
 }: Props) {
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
@@ -304,7 +306,13 @@ export default function MediaEvidencePicker({
   return (
     <View style={styles.container} accessibilityLabel="Media evidence picker">
       <View style={styles.header}>
-        <Text style={styles.title}>Photos and video evidence</Text>
+        <Text
+          accessibilityRole={titleHeadingLevel ? "header" : undefined}
+          aria-level={titleHeadingLevel}
+          style={styles.title}
+        >
+          Photos and video evidence
+        </Text>
         <Text style={styles.summary}>{summary}</Text>
       </View>
       <Text style={styles.help}>

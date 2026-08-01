@@ -43,6 +43,19 @@ describe("MediaEvidencePicker", () => {
     }));
   });
 
+  it("can expose its title as an explicit workflow heading", () => {
+    const screen = render(
+      <MediaEvidencePicker purpose="diagnosis" titleHeadingLevel={2} />
+    );
+
+    expect(screen.getByText("Photos and video evidence")).toMatchObject({
+      props: expect.objectContaining({
+        accessibilityRole: "header",
+        "aria-level": 2
+      })
+    });
+  });
+
   it("uploads selected photos, persists evidence, and exposes durable records", async () => {
     mockPicker.mockResolvedValue({
       canceled: false,
