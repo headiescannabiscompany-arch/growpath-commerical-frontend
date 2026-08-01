@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   evidenceReviewNextChecks,
   type EvidenceReview
 } from "@/features/personal/evidence/evidenceReview";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import { radius } from "@/theme/theme";
 
 type Props = {
   review: EvidenceReview;
@@ -18,7 +20,47 @@ function status(review: EvidenceReview) {
   return `${count} photo${count === 1 ? "" : "s"} inspected`;
 }
 
-function list(values: string[], label: string) {
+export const createEvidenceReviewPanelStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 7,
+      padding: 12
+    },
+    header: { flexDirection: "row", justifyContent: "space-between", gap: 8 },
+    title: { color: palette.text, fontWeight: "800" },
+    status: { color: palette.link, fontWeight: "800", fontSize: 12 },
+    summary: { color: palette.textMuted, fontSize: 12 },
+    warning: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.warning,
+      lineHeight: 18,
+      padding: 8
+    },
+    group: { gap: 3 },
+    groupTitle: { color: palette.text, fontWeight: "800", fontSize: 12 },
+    item: { color: palette.textMuted, lineHeight: 18, fontSize: 12 },
+    button: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    buttonText: { color: palette.link, fontWeight: "800", fontSize: 12 }
+  });
+
+type EvidenceReviewPanelStyles = ReturnType<typeof createEvidenceReviewPanelStyles>;
+
+function list(values: string[], label: string, styles: EvidenceReviewPanelStyles) {
   if (!values.length) return null;
   return (
     <View style={styles.group}>
@@ -33,6 +75,8 @@ function list(values: string[], label: string) {
 }
 
 export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createEvidenceReviewPanelStyles(palette), [palette]);
   const nextChecks = evidenceReviewNextChecks(review);
   return (
     <View style={styles.card} accessibilityLabel="Evidence review summary">
@@ -51,9 +95,9 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
           provider.
         </Text>
       ) : null}
-      {list(review.evidenceUsed, "Evidence used")}
-      {list(review.counterEvidence, "Counter-evidence")}
-      {list(evidenceReviewNextChecks(review), "Next evidence or checks")}
+      {list(review.evidenceUsed, "Evidence used", styles)}
+      {list(review.counterEvidence, "Counter-evidence", styles)}
+      {list(nextChecks, "Next evidence or checks", styles)}
       {onAddEvidence && nextChecks.length ? (
         <Pressable
           accessibilityRole="button"
@@ -67,31 +111,3 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 8,
-    backgroundColor: "#FFFFFF",
-    padding: 12,
-    gap: 7
-  },
-  header: { flexDirection: "row", justifyContent: "space-between", gap: 8 },
-  title: { color: "#0F172A", fontWeight: "800" },
-  status: { color: "#166534", fontWeight: "800", fontSize: 12 },
-  summary: { color: "#475569", fontSize: 12 },
-  warning: { color: "#9A3412", backgroundColor: "#FFF7ED", padding: 8, lineHeight: 18 },
-  group: { gap: 3 },
-  groupTitle: { color: "#334155", fontWeight: "800", fontSize: 12 },
-  item: { color: "#475569", lineHeight: 18, fontSize: 12 },
-  button: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  buttonText: { color: "#166534", fontWeight: "800", fontSize: 12 }
-});

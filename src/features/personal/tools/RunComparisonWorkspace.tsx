@@ -21,6 +21,7 @@ import { LockedScreen } from "@/entitlements/LockedScreen";
 import { hasLocalPaidPreviewOverride } from "@/utils/localPaidPreview";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type RunComparisonWorkspaceProps = {
@@ -119,7 +120,15 @@ function evidenceTotal(snapshot: Record<string, any>) {
   );
 }
 
-function EvidenceDetails({ outputs }: { outputs: Record<string, any> }) {
+type RunComparisonStyles = ReturnType<typeof createRunComparisonStyles>;
+
+function EvidenceDetails({
+  outputs,
+  styles
+}: {
+  outputs: Record<string, any>;
+  styles: RunComparisonStyles;
+}) {
   const snapshots = Array.isArray(outputs.snapshots) ? outputs.snapshots : [];
   const differences = Array.isArray(outputs.keyDifferences) ? outputs.keyDifferences : [];
   const drivers = Array.isArray(outputs.associatedDrivers)
@@ -210,6 +219,8 @@ export default function RunComparisonWorkspace({
   initialGrowId = "",
   showIntro = true
 }: RunComparisonWorkspaceProps) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createRunComparisonStyles(palette), [palette]);
   const entitlements = useEntitlements();
   const paidPreview = hasLocalPaidPreviewOverride();
   const locked =
@@ -405,7 +416,7 @@ export default function RunComparisonWorkspace({
           Select 2–5 grows. Mark the run you want to use as the reference—not an automatic
           winner.
         </Text>
-        {loading ? <ActivityIndicator /> : null}
+        {loading ? <ActivityIndicator color={palette.accent} /> : null}
         {!loading && !grows.length ? (
           <Text style={styles.emptyText}>
             No saved grows are available yet. Create and track at least two grows first.
@@ -510,6 +521,8 @@ export default function RunComparisonWorkspace({
             setTitle(value);
           }}
           placeholder="e.g. Spring room A vs summer room A"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           style={styles.input}
         />
         <Text style={styles.fieldLabel}>
@@ -523,6 +536,8 @@ export default function RunComparisonWorkspace({
             setNotes(value);
           }}
           placeholder="What stayed constant? What changed intentionally? What decision are you making?"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           multiline
           style={[styles.input, styles.multiline]}
         />
@@ -612,7 +627,7 @@ export default function RunComparisonWorkspace({
           recommendations={outputs.recommendations || []}
           uncertainty={outputs.limitations || []}
           confidence={outputs.confidence || "low"}
-          details={<EvidenceDetails outputs={outputs} />}
+          details={<EvidenceDetails outputs={outputs} styles={styles} />}
           actions={[
             {
               key: "save-comparison-log",
@@ -645,108 +660,133 @@ export default function RunComparisonWorkspace({
   );
 }
 
-const styles = StyleSheet.create({
-  workspace: { gap: 14 },
-  introCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    backgroundColor: "#F0FDF4",
-    padding: 14,
-    gap: 8
-  },
-  introTitle: { color: "#14532D", fontSize: 18, fontWeight: "800" },
-  introText: { color: "#14532D", lineHeight: 20 },
-  sectionCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    backgroundColor: "#FFFFFF",
-    padding: 14,
-    gap: 9
-  },
-  sectionTitle: { color: "#0F172A", fontSize: 17, fontWeight: "800" },
-  sectionHelp: { color: "#475569", lineHeight: 19 },
-  growCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#F8FAFC",
-    padding: 10,
-    gap: 8
-  },
-  growCardSelected: { borderColor: "#166534", backgroundColor: "#166534" },
-  growToggle: { gap: 3 },
-  growName: { color: "#0F172A", fontWeight: "800", fontSize: 15 },
-  selectedText: { color: "#FFFFFF" },
-  selectedSubtext: { color: "#DCFCE7" },
-  metaText: { color: "#64748B", fontSize: 12, lineHeight: 17 },
-  referenceButton: {
-    alignSelf: "flex-start",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#DCFCE7",
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#FFFFFF"
-  },
-  referenceButtonOn: { backgroundColor: "#DCFCE7", borderColor: "#DCFCE7" },
-  referenceButtonText: { color: "#166534", fontSize: 12, fontWeight: "800" },
-  referenceButtonTextOn: { color: "#14532D" },
-  selectionCount: { color: "#475569", fontSize: 12, fontWeight: "700" },
-  optionCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#F8FAFC",
-    padding: 10,
-    gap: 3
-  },
-  optionCardOn: { borderColor: "#16A34A", backgroundColor: "#F0FDF4" },
-  optionTitle: { color: "#0F172A", fontWeight: "800" },
-  optionDescription: { color: "#475569", fontSize: 12, lineHeight: 17 },
-  fieldLabel: { color: "#334155", fontSize: 13, fontWeight: "800", marginTop: 4 },
-  input: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#FFFFFF",
-    color: "#0F172A",
-    paddingHorizontal: 11,
-    paddingVertical: 10
-  },
-  multiline: { minHeight: 88, textAlignVertical: "top" },
-  runButton: {
-    borderRadius: radius.card,
-    backgroundColor: "#166534",
-    padding: 14,
-    alignItems: "center"
-  },
-  disabledButton: { opacity: 0.45 },
-  runButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  errorText: { color: "#B91C1C", fontWeight: "700" },
-  emptyText: { color: "#64748B", lineHeight: 19 },
-  details: { gap: 9 },
-  detailsTitle: { color: "#0F172A", fontSize: 15, fontWeight: "800", marginTop: 6 },
-  evidenceCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    backgroundColor: "#F8FAFC",
-    padding: 10,
-    gap: 4
-  },
-  driverCard: {
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "#FDE68A",
-    backgroundColor: "#FFFBEB",
-    padding: 10,
-    gap: 4
-  },
-  evidenceTitle: { color: "#0F172A", fontWeight: "800" },
-  evidenceText: { color: "#334155", lineHeight: 18 },
-  cautionText: { color: "#92400E", fontSize: 12, lineHeight: 17 },
-  nextCheckText: { color: "#166534", fontSize: 12, fontWeight: "700", lineHeight: 17 },
-  missingText: { color: "#7C2D12", lineHeight: 19 }
-});
+export const createRunComparisonStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    workspace: { gap: 14 },
+    introCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.accent,
+      backgroundColor: palette.accentSoft,
+      padding: 14,
+      gap: 8
+    },
+    introTitle: { color: palette.link, fontSize: 18, fontWeight: "800" },
+    introText: { color: palette.textSoft, lineHeight: 20 },
+    sectionCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      padding: 14,
+      gap: 9
+    },
+    sectionTitle: { color: palette.text, fontSize: 17, fontWeight: "800" },
+    sectionHelp: { color: palette.textMuted, lineHeight: 19 },
+    growCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surfaceMuted,
+      padding: 10,
+      gap: 8
+    },
+    growCardSelected: {
+      borderColor: palette.accent,
+      backgroundColor: palette.accent
+    },
+    growToggle: { gap: 3 },
+    growName: { color: palette.text, fontWeight: "800", fontSize: 15 },
+    selectedText: { color: palette.accentText },
+    selectedSubtext: { color: palette.accentText },
+    metaText: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    referenceButton: {
+      alignSelf: "flex-start",
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    referenceButtonOn: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    referenceButtonText: { color: palette.link, fontSize: 12, fontWeight: "800" },
+    referenceButtonTextOn: { color: palette.link },
+    selectionCount: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    optionCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surfaceMuted,
+      padding: 10,
+      gap: 3
+    },
+    optionCardOn: {
+      borderColor: palette.accent,
+      backgroundColor: palette.accentSoft
+    },
+    optionTitle: { color: palette.text, fontWeight: "800" },
+    optionDescription: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
+    fieldLabel: {
+      color: palette.text,
+      fontSize: 13,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    input: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      paddingHorizontal: 11,
+      paddingVertical: 10
+    },
+    multiline: { minHeight: 88, textAlignVertical: "top" },
+    runButton: {
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      padding: 14,
+      alignItems: "center"
+    },
+    disabledButton: { opacity: 0.45 },
+    runButtonText: { color: palette.accentText, fontWeight: "800" },
+    errorText: { color: palette.danger, fontWeight: "700" },
+    emptyText: { color: palette.textMuted, lineHeight: 19 },
+    details: { gap: 9 },
+    detailsTitle: {
+      color: palette.text,
+      fontSize: 15,
+      fontWeight: "800",
+      marginTop: 6
+    },
+    evidenceCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surfaceMuted,
+      padding: 10,
+      gap: 4
+    },
+    driverCard: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.warning,
+      backgroundColor: palette.surfaceStrong,
+      padding: 10,
+      gap: 4
+    },
+    evidenceTitle: { color: palette.text, fontWeight: "800" },
+    evidenceText: { color: palette.textSoft, lineHeight: 18 },
+    cautionText: { color: palette.warning, fontSize: 12, lineHeight: 17 },
+    nextCheckText: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 17
+    },
+    missingText: { color: palette.danger, lineHeight: 19 }
+  });

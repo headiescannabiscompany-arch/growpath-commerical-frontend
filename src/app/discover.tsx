@@ -17,7 +17,7 @@ import { searchPublicStorefronts } from "@/api/storefront";
 import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
@@ -37,6 +37,15 @@ type Section = {
   results: Result[];
   browseHref: string;
 };
+
+export const createDiscoverVideoFilterStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    selectedButton: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    selectedText: { color: palette.accentText }
+  });
 
 function rows(payload: any, keys: string[] = []) {
   if (Array.isArray(payload)) return payload;
@@ -78,6 +87,10 @@ function courseRows(payload: any) {
 export default function DiscoverDirectory() {
   const router = useRouter();
   const { palette } = useAppTheme();
+  const videoFilterStyles = useMemo(
+    () => createDiscoverVideoFilterStyles(palette),
+    [palette]
+  );
   const [query, setQuery] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -411,7 +424,7 @@ export default function DiscoverDirectory() {
                       backgroundColor: palette.surface,
                       borderColor: palette.border
                     },
-                    !videoFollowingOnly && styles.filterButtonSelected,
+                    !videoFollowingOnly && videoFilterStyles.selectedButton,
                     pressed && styles.buttonPressed
                   ]}
                 >
@@ -419,7 +432,7 @@ export default function DiscoverDirectory() {
                     style={[
                       styles.filterText,
                       { color: palette.textMuted },
-                      !videoFollowingOnly && styles.filterTextSelected
+                      !videoFollowingOnly && videoFilterStyles.selectedText
                     ]}
                   >
                     All videos
@@ -437,7 +450,7 @@ export default function DiscoverDirectory() {
                       backgroundColor: palette.surface,
                       borderColor: palette.border
                     },
-                    videoFollowingOnly && styles.filterButtonSelected,
+                    videoFollowingOnly && videoFilterStyles.selectedButton,
                     pressed && styles.buttonPressed
                   ]}
                 >
@@ -445,7 +458,7 @@ export default function DiscoverDirectory() {
                     style={[
                       styles.filterText,
                       { color: palette.textMuted },
-                      videoFollowingOnly && styles.filterTextSelected
+                      videoFollowingOnly && videoFilterStyles.selectedText
                     ]}
                   >
                     Following only
@@ -581,12 +594,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8
   },
-  filterButtonSelected: {
-    backgroundColor: "#DCFCE7",
-    borderColor: "#16A34A"
-  },
   filterText: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  filterTextSelected: { color: "#166534" },
   rail: { gap: 12, paddingBottom: 6, paddingRight: 16 },
   resultCard: {
     backgroundColor: "#FFFFFF",

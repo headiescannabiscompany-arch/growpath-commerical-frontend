@@ -422,6 +422,11 @@ describe("PlatformAdminRoute", () => {
       const denial = screen.UNSAFE_getByProps({ accessibilityRole: "alert" });
       expect(StyleSheet.flatten(denial.props.style).backgroundColor).toBe(palette.page);
       expect(
+        screen.getByRole("header", { name: "Platform owner access required" }).props[
+          "aria-level"
+        ]
+      ).toBe(1);
+      expect(
         StyleSheet.flatten(screen.getByText("Platform owner access required").props.style)
           .color
       ).toBe(palette.text);

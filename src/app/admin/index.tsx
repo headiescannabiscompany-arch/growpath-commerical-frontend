@@ -616,7 +616,9 @@ export default function PlatformAdminRoute() {
   if (!isAdmin) {
     return (
       <View accessibilityRole="alert" style={styles.denied}>
-        <Text style={styles.title}>Platform owner access required</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Platform owner access required
+        </Text>
         <Text style={styles.body}>
           This workspace is separate from Facility ownership.
         </Text>

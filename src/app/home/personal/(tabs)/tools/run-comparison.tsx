@@ -1,16 +1,19 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ScrollView, StyleSheet, Text } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import RunComparisonWorkspace from "@/features/personal/tools/RunComparisonWorkspace";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 function firstParam(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
 }
 
 export default function RunComparisonToolRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createRunComparisonRouteStyles(palette), [palette]);
   const { growId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const initialGrowId = firstParam(growId);
   return (
@@ -41,9 +44,10 @@ export default function RunComparisonToolRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FAFC" },
-  content: { padding: 20, paddingBottom: 40, gap: 14 },
-  title: { color: "#0F172A", fontSize: 24, fontWeight: "800" },
-  subtitle: { color: "#475569", lineHeight: 20 }
-});
+export const createRunComparisonRouteStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 40, gap: 14 },
+    title: { color: palette.text, fontSize: 24, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, lineHeight: 20 }
+  });

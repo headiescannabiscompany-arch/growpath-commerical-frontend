@@ -1,8 +1,10 @@
 import React from "react";
+import { StyleSheet } from "react-native";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 const mockPush = jest.fn();
 const mockSearchVideos = jest.fn();
+let mockThemeMode: "day" | "night" = "night";
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush })
@@ -10,7 +12,7 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/components/layout/AppPage", () => ({
   __esModule: true,
-  default: ({ header, children }: any) => {
+  default: function MockAppPage({ header, children }: any) {
     const MockView = require("react-native").View;
     return (
       <MockView>
@@ -23,7 +25,7 @@ jest.mock("@/components/layout/AppPage", () => ({
 
 jest.mock("@/components/layout/AppCard", () => ({
   __esModule: true,
-  default: ({ children }: any) => {
+  default: function MockAppCard({ children }: any) {
     const MockView = require("react-native").View;
     return <MockView>{children}</MockView>;
   }
@@ -45,13 +47,27 @@ jest.mock("@/api/courses", () => ({
 jest.mock("@/api/videos", () => ({
   searchVideos: (...args: any[]) => mockSearchVideos(...args)
 }));
+jest.mock("@/theme/appTheme", () => {
+  const actual = jest.requireActual("@/theme/appTheme");
+  return {
+    ...actual,
+    useAppTheme: () => ({
+      palette: actual.getThemePalette(
+        mockThemeMode,
+        mockThemeMode === "night" ? "dark" : "light"
+      )
+    })
+  };
+});
 
-import DiscoverDirectory from "@/app/discover";
+import DiscoverDirectory, { createDiscoverVideoFilterStyles } from "@/app/discover";
+import { getThemePalette } from "@/theme/appTheme";
 
 describe("Discover video search", () => {
   beforeEach(() => {
     mockPush.mockReset();
     mockSearchVideos.mockReset();
+    mockThemeMode = "night";
     mockSearchVideos.mockResolvedValue([
       {
         id: "video-1",
@@ -94,4 +110,39 @@ describe("Discover video search", () => {
     fireEvent.press(screen.getByLabelText("Open Tomato training"));
     expect(mockPush).toHaveBeenCalledWith("/videos/video-1");
   });
+
+  it.each(["day", "night"] as const)(
+    "uses the active %s palette for selected video filters",
+    async (mode) => {
+      mockThemeMode = mode;
+      const palette = getThemePalette(mode, mode === "night" ? "dark" : "light");
+      const filterStyles = createDiscoverVideoFilterStyles(palette);
+      render(<DiscoverDirectory />);
+
+      await waitFor(() => expect(screen.getByText("Tomato training")).toBeTruthy());
+      expect(filterStyles.selectedButton).toEqual(
+        expect.objectContaining({
+          backgroundColor: palette.accent,
+          borderColor: palette.accent
+        })
+      );
+      expect(filterStyles.selectedText.color).toBe(palette.accentText);
+      expect(StyleSheet.flatten(screen.getByText("All videos").props.style).color).toBe(
+        palette.accentText
+      );
+      expect(
+        StyleSheet.flatten(screen.getByText("Following only").props.style).color
+      ).toBe(palette.textMuted);
+
+      fireEvent.press(screen.getByLabelText("Show videos from people you follow"));
+      await waitFor(() =>
+        expect(
+          StyleSheet.flatten(screen.getByText("Following only").props.style).color
+        ).toBe(palette.accentText)
+      );
+      expect(StyleSheet.flatten(screen.getByText("All videos").props.style).color).toBe(
+        palette.textMuted
+      );
+    }
+  );
 });

@@ -1,6 +1,13 @@
 import { Link } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput as NativeTextInput,
+  type TextInputProps,
+  View
+} from "react-native";
 
 import {
   createSoilNutrientBatch,
@@ -16,6 +23,7 @@ import {
 import { InlineError } from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { askPersonalAssistant } from "@/api/personalAssistant";
 
@@ -55,6 +63,17 @@ const EMPTY_FORM: BatchForm = {
   notes: ""
 };
 
+function TextInput(props: TextInputProps) {
+  const { palette } = useAppTheme();
+  return (
+    <NativeTextInput
+      {...props}
+      placeholderTextColor={palette.textMuted}
+      selectionColor={palette.accent}
+    />
+  );
+}
+
 function batchId(batch: SoilNutrientBatch) {
   return batch.id || batch._id || batch.batchCode || batch.batchName || "batch";
 }
@@ -65,6 +84,9 @@ function numberOrUndefined(value: string) {
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialBatchPlannerStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="button" style={styles.action}>
@@ -108,6 +130,9 @@ function RecordPicker({
   onChange: (id: string) => void;
   selectedId: string;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialBatchPlannerStyles(palette), [palette]);
+
   return (
     <View style={styles.recordPicker}>
       <Text style={styles.selectorLabel}>{label}</Text>
@@ -150,6 +175,8 @@ function RecordPicker({
 }
 
 export default function CommercialBatchPlannerRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialBatchPlannerStyles(palette), [palette]);
   const [batches, setBatches] = useState<SoilNutrientBatch[]>([]);
   const [products, setProducts] = useState<CommercialProduct[]>([]);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
@@ -654,201 +681,215 @@ export default function CommercialBatchPlannerRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    justifyContent: "space-between"
-  },
-  headerText: {
-    flex: 1,
-    minWidth: 260
-  },
-  headerActions: {
-    alignContent: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    maxWidth: 440
-  },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: {
-    color: "#0F172A",
-    fontSize: 28,
-    fontWeight: "900",
-    marginTop: 4
-  },
-  subtitle: {
-    color: "#475569",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 6
-  },
-  cardTitle: {
-    color: "#0F172A",
-    fontSize: 17,
-    fontWeight: "900"
-  },
-  body: {
-    color: "#475569",
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 8
-  },
-  metricGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  metric: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 130,
-    padding: 9
-  },
-  metricValue: {
-    color: "#0F172A",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  metricLabel: {
-    color: "#64748B",
-    fontSize: 12,
-    marginTop: 2
-  },
-  formGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  input: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    flexGrow: 1,
-    fontSize: 14,
-    minWidth: 220,
-    paddingHorizontal: 10,
-    paddingVertical: 9
-  },
-  textArea: {
-    minHeight: 82,
-    marginTop: 8,
-    textAlignVertical: "top"
-  },
-  primaryAction: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryActionText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  disabled: {
-    opacity: 0.5
-  },
-  list: {
-    gap: 10,
-    marginTop: 12
-  },
-  batchRow: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  batchTitle: {
-    color: "#0F172A",
-    fontSize: 15,
-    fontWeight: "900"
-  },
-  batchMeta: {
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 3
-  },
-  batchBody: {
-    color: "#475569",
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 6
-  },
-  actions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12
-  },
-  action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  selectedAction: { backgroundColor: "#DCFCE7", borderColor: "#22C55E" },
-  actionText: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  recordPicker: {
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    minWidth: 220,
-    padding: 9
-  },
-  emptyPicker: {
-    alignItems: "flex-start",
-    gap: 8
-  },
-  selectorLabel: {
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  selectorActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  advancedToggle: {
-    alignSelf: "flex-start",
-    minWidth: 220,
-    paddingHorizontal: 4,
-    paddingVertical: 8
-  },
-  advancedToggleText: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900",
-    textDecorationLine: "underline"
-  },
-  bullet: {
-    color: "#334155",
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 6
-  },
-  muted: {
-    color: "#64748B",
-    fontSize: 13,
-    marginTop: 10
-  }
-});
+export function createCommercialBatchPlannerStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16,
+      justifyContent: "space-between"
+    },
+    headerText: {
+      flex: 1,
+      minWidth: 260
+    },
+    headerActions: {
+      alignContent: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      maxWidth: 440
+    },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "900",
+      marginTop: 4
+    },
+    subtitle: {
+      color: palette.textSoft,
+      fontSize: 15,
+      lineHeight: 22,
+      marginTop: 6
+    },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 17,
+      fontWeight: "900"
+    },
+    body: {
+      color: palette.textSoft,
+      fontSize: 14,
+      lineHeight: 21,
+      marginTop: 8
+    },
+    metricGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    metric: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 130,
+      padding: 9
+    },
+    metricValue: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    metricLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      marginTop: 2
+    },
+    formGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flexGrow: 1,
+      fontSize: 14,
+      minWidth: 220,
+      paddingHorizontal: 10,
+      paddingVertical: 9
+    },
+    textArea: {
+      minHeight: 82,
+      marginTop: 8,
+      textAlignVertical: "top"
+    },
+    primaryAction: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryActionText: {
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    disabled: {
+      opacity: 0.5
+    },
+    list: {
+      gap: 10,
+      marginTop: 12
+    },
+    batchRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 10
+    },
+    batchTitle: {
+      color: palette.text,
+      fontSize: 15,
+      fontWeight: "900"
+    },
+    batchMeta: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 3
+    },
+    batchBody: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 6
+    },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    selectedAction: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    actionText: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    recordPicker: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: 220,
+      padding: 9
+    },
+    emptyPicker: {
+      alignItems: "flex-start",
+      gap: 8
+    },
+    selectorLabel: {
+      color: palette.link,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    selectorActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 8
+    },
+    advancedToggle: {
+      alignSelf: "flex-start",
+      minWidth: 220,
+      paddingHorizontal: 4,
+      paddingVertical: 8
+    },
+    advancedToggleText: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "900",
+      textDecorationLine: "underline"
+    },
+    bullet: {
+      color: palette.textSoft,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 6
+    },
+    muted: {
+      color: palette.textMuted,
+      fontSize: 13,
+      marginTop: 10
+    }
+  });
+}

@@ -1,7 +1,13 @@
+import fs from "fs";
+import path from "path";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import RunComparisonToolRoute from "@/app/home/personal/(tabs)/tools/run-comparison";
+import RunComparisonToolRoute, {
+  createRunComparisonRouteStyles
+} from "@/app/home/personal/(tabs)/tools/run-comparison";
+import { createRunComparisonStyles } from "@/features/personal/tools/RunComparisonWorkspace";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockListPersonalGrows = jest.fn();
 const mockCompareSavedGrows = jest.fn();
@@ -34,7 +40,9 @@ jest.mock("@/utils/localPaidPreview", () => ({
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return () => React.createElement(View, { testID: "feed-placement" });
+  return function MockPersonalFeedPlacement() {
+    return React.createElement(View, { testID: "feed-placement" });
+  };
 });
 
 jest.mock("@/api/grows", () => ({
@@ -169,6 +177,69 @@ describe("RunComparisonToolRoute", () => {
     });
     mockSaveToolRunToLog.mockResolvedValue({ ok: true });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({ ok: true, taskIds: ["task-1"] });
+  });
+
+  it("themes the route and comparison workspace in Night and Day modes", () => {
+    const nightPalette = getThemePalette("night", "dark");
+    const dayPalette = getThemePalette("day", "light");
+    const nightRoute = createRunComparisonRouteStyles(nightPalette);
+    const dayRoute = createRunComparisonRouteStyles(dayPalette);
+    const nightStyles = createRunComparisonStyles(nightPalette);
+    const dayStyles = createRunComparisonStyles(dayPalette);
+
+    expect(nightRoute.container.backgroundColor).toBe(nightPalette.page);
+    expect(nightRoute.title.color).toBe(nightPalette.text);
+    expect(dayRoute.container.backgroundColor).toBe(dayPalette.page);
+    expect(dayRoute.subtitle.color).toBe(dayPalette.textMuted);
+
+    expect(nightStyles.introCard).toEqual(
+      expect.objectContaining({
+        backgroundColor: nightPalette.accentSoft,
+        borderColor: nightPalette.accent
+      })
+    );
+    expect(nightStyles.sectionCard.backgroundColor).toBe(nightPalette.surface);
+    expect(nightStyles.growCard.backgroundColor).toBe(nightPalette.surfaceMuted);
+    expect(nightStyles.growCardSelected.backgroundColor).toBe(nightPalette.accent);
+    expect(nightStyles.referenceButton.backgroundColor).toBe(nightPalette.surface);
+    expect(nightStyles.optionCardOn.backgroundColor).toBe(nightPalette.accentSoft);
+    expect(nightStyles.input).toEqual(
+      expect.objectContaining({
+        backgroundColor: nightPalette.surface,
+        borderColor: nightPalette.border,
+        color: nightPalette.text
+      })
+    );
+    expect(nightStyles.runButton.backgroundColor).toBe(nightPalette.accent);
+    expect(nightStyles.runButtonText.color).toBe(nightPalette.accentText);
+    expect(nightStyles.errorText.color).toBe(nightPalette.danger);
+    expect(nightStyles.evidenceCard.backgroundColor).toBe(nightPalette.surfaceMuted);
+    expect(nightStyles.driverCard.backgroundColor).toBe(nightPalette.surfaceStrong);
+    expect(nightStyles.cautionText.color).toBe(nightPalette.warning);
+    expect(nightStyles.missingText.color).toBe(nightPalette.danger);
+
+    expect(dayStyles.sectionCard.backgroundColor).toBe(dayPalette.surface);
+    expect(dayStyles.optionTitle.color).toBe(dayPalette.text);
+    expect(dayStyles.nextCheckText.color).toBe(dayPalette.link);
+  });
+
+  it("keeps every comparison input and source color palette-aware", () => {
+    const sources = [
+      "src/app/home/personal/(tabs)/tools/run-comparison.tsx",
+      "src/features/personal/tools/RunComparisonWorkspace.tsx"
+    ].map((file) => fs.readFileSync(path.join(process.cwd(), file), "utf8"));
+    const workspaceSource = sources[1];
+    const fields = workspaceSource.match(/<TextInput\b/g) || [];
+
+    expect(
+      workspaceSource.match(/placeholderTextColor={palette\.textMuted}/g) || []
+    ).toHaveLength(fields.length);
+    expect(workspaceSource.match(/selectionColor={palette\.accent}/g) || []).toHaveLength(
+      fields.length
+    );
+    for (const source of sources) {
+      expect(source).not.toMatch(/#[0-9a-f]{3,8}|rgba?\(/i);
+    }
   });
 
   it("compares selected owned saved grows without demo rows and creates linked actions", async () => {
