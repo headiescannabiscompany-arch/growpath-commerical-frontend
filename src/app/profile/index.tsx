@@ -19,6 +19,7 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import LegalLinks from "@/components/LegalLinks";
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function normalizeStatus(value: unknown) {
@@ -35,6 +36,8 @@ export default function Profile() {
   const router = useRouter();
   const auth = useAuth();
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = createStyles(palette);
 
   const email = auth.user?.email || "";
   const [emailDraft, setEmailDraft] = useState(email);
@@ -235,7 +238,7 @@ export default function Profile() {
             autoCorrect={false}
             keyboardType="email-address"
             placeholder="email@example.com"
-            placeholderTextColor="#64748b"
+            placeholderTextColor={palette.textMuted}
             value={emailDraft}
             onChangeText={(value) => {
               setEmailDraft(value);
@@ -255,7 +258,7 @@ export default function Profile() {
             style={[styles.primaryButton, !canSaveEmail && styles.disabledButton]}
           >
             {savingEmail ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={palette.accentText} />
             ) : (
               <Text style={styles.primaryButtonText}>Update email</Text>
             )}
@@ -432,7 +435,7 @@ export default function Profile() {
             autoCapitalize="characters"
             autoCorrect={false}
             placeholder="Type DELETE to confirm"
-            placeholderTextColor="#64748b"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
             value={deleteConfirm}
             onChangeText={(value) => {
@@ -461,128 +464,129 @@ export default function Profile() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: 6 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  headerTitle: {
-    color: "#111827",
-    fontSize: 30,
-    fontWeight: "900"
-  },
-  headerSubtitle: {
-    color: "#64748b",
-    fontSize: 14,
-    fontWeight: "700"
-  },
-  grid: { gap: 12 },
-  card: { gap: 12 },
-  cardTitle: {
-    color: "#111827",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  cardText: {
-    color: "#475569",
-    fontSize: 14,
-    fontWeight: "700",
-    lineHeight: 20
-  },
-  statusRow: {
-    alignItems: "center",
-    borderColor: "#dbe3ea",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  statusLabel: {
-    color: "#475569",
-    fontSize: 13,
-    fontWeight: "700"
-  },
-  statusValue: {
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  statusVerified: { color: "#166534" },
-  statusUnverified: { color: "#b45309" },
-  input: {
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#111827",
-    fontSize: 13,
-    paddingHorizontal: 10,
-    paddingVertical: 11
-  },
-  feedbackText: { color: "#047857", fontSize: 13, fontWeight: "800" },
-  errorText: { color: "#b91c1c", fontSize: 13, fontWeight: "800" },
-  factGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  fact: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 150,
-    padding: 10
-  },
-  factLabel: {
-    color: "#64748b",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  factValue: {
-    color: "#111827",
-    fontSize: 15,
-    fontWeight: "900",
-    marginTop: 4,
-    textTransform: "capitalize"
-  },
-  actionRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingVertical: 12
-  },
-  disabledButton: { opacity: 0.55 },
-  primaryButtonText: { color: "#ffffff", fontWeight: "900" },
-  secondaryButton: {
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexGrow: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 11
-  },
-  secondaryButtonText: { color: "#111827", fontWeight: "900" },
-  dangerButton: {
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#fecaca",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingVertical: 12
-  },
-  dangerButtonText: { color: "#b91c1c", fontWeight: "900" }
-});
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    header: { gap: 6 },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    headerTitle: {
+      color: palette.text,
+      fontSize: 30,
+      fontWeight: "900"
+    },
+    headerSubtitle: {
+      color: palette.textMuted,
+      fontSize: 14,
+      fontWeight: "700"
+    },
+    grid: { gap: 12 },
+    card: { gap: 12 },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    cardText: {
+      color: palette.textSoft,
+      fontSize: 14,
+      fontWeight: "700",
+      lineHeight: 20
+    },
+    statusRow: {
+      alignItems: "center",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    statusLabel: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "700"
+    },
+    statusValue: {
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    statusVerified: { color: palette.success },
+    statusUnverified: { color: palette.warning },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      fontSize: 13,
+      paddingHorizontal: 10,
+      paddingVertical: 11
+    },
+    feedbackText: { color: palette.success, fontSize: 13, fontWeight: "800" },
+    errorText: { color: palette.danger, fontSize: 13, fontWeight: "800" },
+    factGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    fact: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 150,
+      padding: 10
+    },
+    factLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    factValue: {
+      color: palette.text,
+      fontSize: 15,
+      fontWeight: "900",
+      marginTop: 4,
+      textTransform: "capitalize"
+    },
+    actionRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12
+    },
+    disabledButton: { opacity: 0.55 },
+    primaryButtonText: { color: palette.accentText, fontWeight: "900" },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexGrow: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 11
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "900" },
+    dangerButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingVertical: 12
+    },
+    dangerButtonText: { color: palette.danger, fontWeight: "900" }
+  });
