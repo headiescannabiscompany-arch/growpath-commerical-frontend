@@ -97,8 +97,9 @@ export default function Offers() {
   if (!usedTrialPlans.size && auth.user?.trialUsed) usedTrialPlans.add("pro");
   const trialEligibleForPlan = (plan: BillingPlanKey) =>
     trialEnabled && !usedTrialPlans.has(plan);
-  const eligibleTrialPlanTitles = BILLING_PLANS.filter((plan) =>
-    trialEligibleForPlan(plan.key)
+  const eligibleTrialPlanTitles = BILLING_PLANS.filter(
+    (plan) =>
+      trialEligibleForPlan(plan.key) && !(subscriptionActive && activePlan === plan.key)
   ).map((plan) => plan.title);
   const subscriptionResult = useMemo(() => {
     const value = searchParams.subscription;
@@ -435,7 +436,8 @@ export default function Offers() {
           const current = activePlan === plan.key && subscriptionActive;
           const loading = loadingPlan === plan.key;
           const confirmingImmediateBilling = pendingImmediatePlan === plan.key;
-          const planTrialEligible = trialEligibleForPlan(plan.key);
+          const planTrialEligible =
+            trialEligibleForPlan(plan.key) && !(subscriptionActive && current);
           const giftBlocked = giftMode && !giftRecipientValid;
           const buttonDisabled = loading || (!giftMode && current) || giftBlocked;
           return (

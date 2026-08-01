@@ -9,6 +9,8 @@ const mockRetryMe = jest.fn();
 const mockSearchParams: { subscription?: string; gift?: string } = {};
 let mockTrialUsed = true;
 let mockTrialPlansUsed = ["pro", "commercial", "facility"];
+let mockSubscriptionStatus = "inactive";
+let mockActivePlan = "free";
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockSearchParams
@@ -17,7 +19,7 @@ jest.mock("expo-router", () => ({
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
     user: {
-      subscriptionStatus: "inactive",
+      subscriptionStatus: mockSubscriptionStatus,
       trialUsed: mockTrialUsed,
       trialPlansUsed: mockTrialPlansUsed
     },
@@ -26,7 +28,7 @@ jest.mock("@/auth/AuthContext", () => ({
 }));
 
 jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({ plan: "free" })
+  useEntitlements: () => ({ plan: mockActivePlan })
 }));
 
 jest.mock("@/api/subscription", () => ({
@@ -53,6 +55,8 @@ describe("Offers billing safety", () => {
   beforeEach(() => {
     mockTrialUsed = true;
     mockTrialPlansUsed = ["pro", "commercial", "facility"];
+    mockSubscriptionStatus = "inactive";
+    mockActivePlan = "free";
     delete mockSearchParams.subscription;
     delete mockSearchParams.gift;
     mockRetryMe.mockReset();
@@ -157,6 +161,25 @@ describe("Offers billing safety", () => {
         interval: "monthly"
       })
     );
+  });
+
+  it("does not advertise the active current plan as an immediately available trial", async () => {
+    mockTrialUsed = false;
+    mockTrialPlansUsed = [];
+    mockSubscriptionStatus = "active";
+    mockActivePlan = "facility";
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "This account has a separate 30-day trial available for Pro Grower, Commercial. Each trial requires a payment method, and paid billing begins after that plan's trial unless canceled."
+        )
+      ).toBeTruthy()
+    );
+    expect(screen.getAllByText("Start 30-day trial")).toHaveLength(2);
+    expect(screen.getByText("Current plan")).toBeTruthy();
+    expect(screen.getByLabelText("Review paid Facility checkout")).toBeDisabled();
   });
 
   it("supports gift checkout with recipient details and gift return URLs", async () => {
