@@ -1781,3 +1781,27 @@ and navigation behavior did not change.
 - The adjacent `/offers` route was verified as already Night-correct and was not
   changed. `/storefront` truthfully remained Commercial-only for this Facility
   account, so no inaccessible loaded-state styling claim was made.
+
+## Shared Forum composer Night theme and hierarchy
+
+Production `/forum/new-post` retained a fixed white canvas, white title/body
+fields, light identity and interest cards, day-only copy, and no semantic
+heading structure under the signed-in Facility Viewer's resolved Night mode.
+Frontend `e3b97f8f` moves the complete composer surface to the active palette and
+establishes one `New Discussion` H1, identity and interest-workflow H2s, and all
+seven grow-interest tiers as H3s. Forum/feed separation, workspace identity,
+photo handling, interest requirements, disabled empty submit, post payload, and
+Free-plan locked behavior did not change.
+
+- Production Build Preflight `30702311422` and Frontend CI `30702311409`
+  passed. All 47 focused Forum composer/detail/photo/navigation/header tests,
+  targeted source ESLint, full frontend `tsc --noEmit`, and `git diff --check`
+  passed. Existing non-failing Expo Go and unrelated test `act` warnings remain.
+- Signed-in Facility Viewer acceptance on the clean production URL confirmed
+  one H1, two H2s, seven H3s, dark title/body fields at surface
+  `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, bright text
+  `rgb(244, 247, 251)`, and zero white page-content surfaces. The untouched
+  empty Publish action remained disabled.
+- No field, interest, photo, upload, post, campaign, Forum action, support
+  action, workspace, account, session, billing, audit event, or record action
+  was invoked, and the Viewer session remained signed in.
