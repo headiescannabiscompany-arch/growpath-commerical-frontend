@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "@/auth/AuthContext";
 import { GrowPathVideo, listVideoLibrary, VideoWorkspaceType } from "@/api/videos";
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type VideoLibraryScope = "workspace" | "mine" | "published" | "drafts";
@@ -28,6 +29,8 @@ export default function VideoLibraryPicker({
 }: Props) {
   const auth = useAuth();
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const workspaceType = entitlements.mode as VideoWorkspaceType;
   const [videos, setVideos] = useState<GrowPathVideo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,63 +165,65 @@ export default function VideoLibraryPicker({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    padding: 12
-  },
-  header: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  copy: { flex: 1 },
-  title: { color: "#0F172A", fontWeight: "800" },
-  help: { color: "#64748B", fontSize: 12, lineHeight: 18, marginTop: 3 },
-  error: { color: "#B91C1C", fontSize: 12 },
-  clearButton: {
-    borderColor: "#DC2626",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  clearText: { color: "#B91C1C", fontWeight: "800" },
-  scopeRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  scopeButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  scopeButtonSelected: {
-    backgroundColor: "#DCFCE7",
-    borderColor: "#16A34A"
-  },
-  scopeText: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  scopeTextSelected: { color: "#166534" },
-  options: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  option: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 180,
-    padding: 10
-  },
-  selected: { backgroundColor: "#166534", borderColor: "#166534" },
-  optionTitle: { color: "#0F172A", fontWeight: "800" },
-  optionMeta: { color: "#64748B", fontSize: 11, marginTop: 3 },
-  selectedText: { color: "#FFFFFF" }
-});
+export function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12
+    },
+    header: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    copy: { flex: 1 },
+    title: { color: palette.text, fontWeight: "800" },
+    help: { color: palette.textMuted, fontSize: 12, lineHeight: 18, marginTop: 3 },
+    error: { color: palette.danger, fontSize: 12 },
+    clearButton: {
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    clearText: { color: palette.danger, fontWeight: "800" },
+    scopeRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    scopeButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    scopeButtonSelected: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    scopeText: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    scopeTextSelected: { color: palette.link },
+    options: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    option: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 180,
+      padding: 10
+    },
+    selected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    optionTitle: { color: palette.text, fontWeight: "800" },
+    optionMeta: { color: palette.textMuted, fontSize: 11, marginTop: 3 },
+    selectedText: { color: palette.accentText }
+  });
+}

@@ -26,7 +26,8 @@ jest.mock("@/api/videos", () => ({
   listVideoLibrary: (...args: any[]) => mockListVideoLibrary(...args)
 }));
 
-import VideoLibraryPicker from "@/components/videos/VideoLibraryPicker";
+import VideoLibraryPicker, { createStyles } from "@/components/videos/VideoLibraryPicker";
+import { getThemePalette } from "@/theme/appTheme";
 
 describe("VideoLibraryPicker", () => {
   beforeEach(() => {
@@ -35,6 +36,18 @@ describe("VideoLibraryPicker", () => {
     mockUserId = "user-1";
     mockListVideoLibrary.mockReset();
     mockOnSelect.mockReset();
+  });
+
+  it("uses the active palette for filters and reusable video choices", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createStyles(palette);
+
+    expect(styles.card.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.scopeButton.backgroundColor).toBe(palette.surface);
+    expect(styles.scopeButton.borderColor).toBe(palette.border);
+    expect(styles.scopeButtonSelected.backgroundColor).toBe(palette.accentSoft);
+    expect(styles.option.backgroundColor).toBe(palette.surface);
+    expect(styles.optionTitle.color).toBe(palette.text);
   });
 
   it("loads reusable videos and lets the user attach one without uploading again", async () => {
