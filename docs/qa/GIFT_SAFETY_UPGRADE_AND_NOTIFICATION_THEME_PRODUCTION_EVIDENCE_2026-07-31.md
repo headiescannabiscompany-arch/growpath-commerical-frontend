@@ -1294,6 +1294,34 @@ follow-up `9010a0db` established one page H1 and level-two workflow headings.
   compliance log, audit event, billing, or record action was invoked, and the
   session remained signed in.
 
+## Facility SOP Compare Result Night theme and evidence hierarchy
+
+Production's safe no-selection SOP comparison result used the Night shell but
+its visible title was not a semantic heading. Authoritative source inspection
+also confirmed that populated comparison evidence still hardcoded white run and
+checklist cards, pale daytime-blue/yellow status surfaces, and dark day-only
+copy. Frontend `385508cb` moved empty/error/loading and complete two-run outcome,
+summary, checklist, changed-status, and metadata states to the active palette
+and established explicit page and evidence-section heading levels. Comparison
+logic, identifiers, and record behavior were not changed.
+
+- Production Build Preflight `30694868963` and Frontend CI `30694868971`
+  passed.
+- All 21 focused SOP index/detail/start/library/compare, Viewer/writer,
+  evidence, back-route, Night-palette, and hierarchy tests passed. Targeted
+  ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Viewer production acceptance confirmed one level-one `SOP Compare
+  Result` heading in bright Night text `rgb(244, 247, 251)`, the accurate
+  select-two-runs handoff, and no white page-content surface. The separate
+  Report Bug control was the only detected white element.
+- Production contains only one completed SOP run, so a genuine two-run result
+  could not be opened without manufacturing another record. Focused loaded-
+  state tests prove outcome, both run summaries, checklist evidence, and
+  changed rows use the active palette and readable hierarchy; populated live
+  acceptance remains open. No run, selection, comparison, template, step,
+  status, note, refresh, audit event, billing, or record action was invoked,
+  and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
