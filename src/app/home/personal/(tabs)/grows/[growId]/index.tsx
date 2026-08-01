@@ -29,56 +29,65 @@ import {
   fmtDate,
   isCannabisGrow
 } from "@/features/grows/routeUtils";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
-  title: { fontSize: 24, fontWeight: "700" },
-  subtitle: { marginTop: 6, color: "#64748B" },
-  panel: {
-    marginTop: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC"
-  },
-  stats: { flexDirection: "row", gap: 10, marginTop: 12, flexWrap: "wrap" },
-  stat: {
-    minWidth: 100,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF"
-  },
-  statLabel: { color: "#64748B", fontSize: 12 },
-  statValue: { fontSize: 18, fontWeight: "800", color: "#0F172A" },
-  quickRow: { flexDirection: "row", gap: 10, marginTop: 8, flexWrap: "wrap" },
-  action: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  actionText: { fontWeight: "700", color: "#0F172A" },
-  sectionTitle: { marginTop: 4, fontSize: 16, fontWeight: "800", color: "#0F172A" },
-  timelineItem: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#E2E8F0"
-  },
-  timelineMeta: { marginTop: 3, color: "#64748B", fontSize: 12 },
-  timelineTitle: { fontWeight: "800", color: "#0F172A" },
-  timelineSummary: { marginTop: 3, color: "#334155" },
-  sourceText: { marginTop: 6, fontWeight: "800", color: "#166534" },
-  empty: { marginTop: 8, color: "#64748B" },
-  error: { color: "#B91C1C", marginTop: 8 }
-});
+export const createGrowOverviewStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, padding: 20, backgroundColor: palette.page },
+    title: { fontSize: 24, fontWeight: "700", color: palette.text },
+    subtitle: { marginTop: 6, color: palette.textMuted },
+    panel: {
+      marginTop: 14,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    stats: { flexDirection: "row", gap: 10, marginTop: 12, flexWrap: "wrap" },
+    stat: {
+      minWidth: 100,
+      padding: 10,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface
+    },
+    statLabel: { color: palette.textMuted, fontSize: 12 },
+    statValue: { fontSize: 18, fontWeight: "800", color: palette.text },
+    quickRow: { flexDirection: "row", gap: 10, marginTop: 8, flexWrap: "wrap" },
+    action: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      backgroundColor: palette.surface
+    },
+    actionText: { fontWeight: "700", color: palette.link },
+    sectionTitle: {
+      marginTop: 4,
+      fontSize: 16,
+      fontWeight: "800",
+      color: palette.text
+    },
+    timelineItem: {
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: palette.border
+    },
+    timelineMeta: { marginTop: 3, color: palette.textMuted, fontSize: 12 },
+    timelineTitle: { fontWeight: "800", color: palette.text },
+    timelineSummary: { marginTop: 3, color: palette.textSoft },
+    sourceText: { marginTop: 6, fontWeight: "800", color: palette.link },
+    empty: { marginTop: 8, color: palette.textMuted },
+    error: { color: palette.danger, marginTop: 8 }
+  });
+
+type GrowOverviewStyles = ReturnType<typeof createGrowOverviewStyles>;
 
 function hasExplicitSharedSource(event: PersonalGrowTimelineEvent) {
   const row = event as any;
@@ -118,7 +127,13 @@ function shareGrowHref(grow: PersonalGrow | null, growId: string) {
   return `/home/personal/forum/new-post?${query.toString()}`;
 }
 
-function TimelinePreviewItem({ event }: { event: PersonalGrowTimelineEvent }) {
+function TimelinePreviewItem({
+  event,
+  styles
+}: {
+  event: PersonalGrowTimelineEvent;
+  styles: GrowOverviewStyles;
+}) {
   const href = timelinePreviewHref(event);
   const content = (
     <>
@@ -152,6 +167,8 @@ function TimelinePreviewItem({ event }: { event: PersonalGrowTimelineEvent }) {
 }
 
 function GrowOverviewContent() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGrowOverviewStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
@@ -208,7 +225,7 @@ function GrowOverviewContent() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }
@@ -272,7 +289,9 @@ function GrowOverviewContent() {
       <View style={styles.panel}>
         <Text style={styles.sectionTitle}>Recent timeline</Text>
         {timeline.length ? (
-          timeline.map((event) => <TimelinePreviewItem key={event.id} event={event} />)
+          timeline.map((event) => (
+            <TimelinePreviewItem key={event.id} event={event} styles={styles} />
+          ))
         ) : (
           <Text style={styles.empty}>
             Logs, photos, tasks, tool runs, diagnoses, and automation events will appear

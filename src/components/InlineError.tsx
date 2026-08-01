@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export type InlineErrorProps = {
@@ -44,6 +45,8 @@ function pickRequestId(p: InlineErrorProps) {
 }
 
 export function InlineError(props: InlineErrorProps) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createInlineErrorStyles(palette), [palette]);
   const hasSource = Boolean(
     props.error || props.title || props.message || props.requestId
   );
@@ -76,25 +79,32 @@ export function InlineError(props: InlineErrorProps) {
 
 export default InlineError;
 
-const styles = StyleSheet.create({
-  box: {
-    padding: 12,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(200,0,0,0.25)",
-    backgroundColor: "rgba(255,0,0,0.06)"
-  },
-  title: { fontSize: 14, fontWeight: "700", marginBottom: 4 },
-  message: { fontSize: 13, opacity: 0.9 },
-  meta: { fontSize: 12, opacity: 0.65, marginTop: 6 },
-  retryBtn: {
-    marginTop: 10,
-    alignSelf: "flex-start",
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.15)"
-  },
-  retryText: { fontSize: 13, fontWeight: "600" }
-});
+export const createInlineErrorStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    box: {
+      padding: 12,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.danger,
+      backgroundColor: palette.surfaceMuted
+    },
+    title: {
+      color: palette.danger,
+      fontSize: 14,
+      fontWeight: "700",
+      marginBottom: 4
+    },
+    message: { color: palette.text, fontSize: 13, opacity: 0.9 },
+    meta: { color: palette.textMuted, fontSize: 12, opacity: 0.8, marginTop: 6 },
+    retryBtn: {
+      marginTop: 10,
+      alignSelf: "flex-start",
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      borderColor: palette.accent,
+      backgroundColor: palette.surface
+    },
+    retryText: { color: palette.link, fontSize: 13, fontWeight: "600" }
+  });

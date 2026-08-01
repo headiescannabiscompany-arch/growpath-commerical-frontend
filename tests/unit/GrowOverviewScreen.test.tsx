@@ -57,12 +57,16 @@ jest.mock("@react-navigation/native", () => {
 
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   const { View } = require("react-native");
-  return () => <View testID="personal-feed-placement" />;
+  return function MockPersonalFeedPlacement() {
+    return <View testID="personal-feed-placement" />;
+  };
 });
 
 jest.mock("@/components/personal/GrowWorkspaceNav", () => {
   const { View } = require("react-native");
-  return () => <View testID="grow-workspace-nav" />;
+  return function MockGrowWorkspaceNav() {
+    return <View testID="grow-workspace-nav" />;
+  };
 });
 
 describe("GrowOverviewScreen", () => {

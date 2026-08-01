@@ -45,6 +45,16 @@ export const createAiWorkspaceThemeStyles = (palette: ThemePalette) =>
     },
     workspaceChipText: { color: palette.link },
     workspaceChipTextOn: { color: palette.accentText },
+    growChip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border
+    },
+    growChipOn: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    growChipText: { color: palette.textMuted },
+    growChipTextOn: { color: palette.accentText },
     creditNotice: {
       color: palette.textMuted,
       fontSize: 12,
@@ -137,14 +147,11 @@ const styles = StyleSheet.create({
   growPicker: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   growChip: {
     borderWidth: 1,
-    borderColor: "#CBD5E1",
     borderRadius: radius.card,
     paddingHorizontal: 10,
     paddingVertical: 7
   },
-  growChipOn: { backgroundColor: "#166534", borderColor: "#166534" },
-  growChipText: { color: "#334155", fontWeight: "700", fontSize: 12 },
-  growChipTextOn: { color: "#FFFFFF" },
+  growChipText: { fontWeight: "700", fontSize: 12 },
   msg: {
     padding: 12,
     borderWidth: 1,
@@ -1034,10 +1041,18 @@ export default function AiScreen({
                       accessibilityRole="button"
                       accessibilityLabel={`Select AI grow ${grow.name || id}`}
                       onPress={() => setSelectedGrowId(id)}
-                      style={[styles.growChip, active && styles.growChipOn]}
+                      style={[
+                        styles.growChip,
+                        workspaceThemeStyles.growChip,
+                        active && workspaceThemeStyles.growChipOn
+                      ]}
                     >
                       <Text
-                        style={[styles.growChipText, active && styles.growChipTextOn]}
+                        style={[
+                          styles.growChipText,
+                          workspaceThemeStyles.growChipText,
+                          active && workspaceThemeStyles.growChipTextOn
+                        ]}
                       >
                         {grow.name || id}
                       </Text>

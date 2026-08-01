@@ -15,6 +15,7 @@ import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
@@ -28,76 +29,77 @@ const FILTERS = [
   { key: "automation", label: "Automation" }
 ] as const;
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 32 },
-  title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
-  subtitle: { marginTop: 6, color: "#64748B" },
-  filterRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 10,
-    marginBottom: 4
-  },
-  filter: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  filterActive: { borderColor: "#166534", backgroundColor: "#166534" },
-  filterText: { fontWeight: "800", color: "#0F172A", fontSize: 12 },
-  filterTextActive: { color: "#FFFFFF" },
-  event: {
-    marginTop: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC"
-  },
-  eventTitle: { fontSize: 15, fontWeight: "800", color: "#0F172A" },
-  eventMeta: { marginTop: 4, color: "#64748B", fontSize: 12 },
-  eventSummary: { marginTop: 8, color: "#334155", lineHeight: 19 },
-  detailRow: {
-    marginTop: 6,
-    color: "#475569",
-    fontSize: 12,
-    lineHeight: 17
-  },
-  sourceAction: {
-    marginTop: 10,
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#FFFFFF"
-  },
-  sourceActionText: { color: "#0F172A", fontSize: 12, fontWeight: "800" },
-  tags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
-  tag: {
-    borderRadius: radius.card,
-    backgroundColor: "#E2E8F0",
-    paddingVertical: 4,
-    paddingHorizontal: 7
-  },
-  tagText: { color: "#334155", fontSize: 11, fontWeight: "700" },
-  empty: {
-    marginTop: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    color: "#64748B",
-    backgroundColor: "#F8FAFC"
-  },
-  error: { marginTop: 12, color: "#B91C1C" }
-});
+export const createGrowTimelineStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 32 },
+    title: { fontSize: 24, fontWeight: "800", color: palette.text },
+    subtitle: { marginTop: 6, color: palette.textMuted },
+    filterRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 10,
+      marginBottom: 4
+    },
+    filter: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingVertical: 7,
+      paddingHorizontal: 10,
+      backgroundColor: palette.surface
+    },
+    filterActive: { borderColor: palette.accent, backgroundColor: palette.accent },
+    filterText: { fontWeight: "800", color: palette.text, fontSize: 12 },
+    filterTextActive: { color: palette.accentText },
+    event: {
+      marginTop: 12,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    eventTitle: { fontSize: 15, fontWeight: "800", color: palette.text },
+    eventMeta: { marginTop: 4, color: palette.textMuted, fontSize: 12 },
+    eventSummary: { marginTop: 8, color: palette.textSoft, lineHeight: 19 },
+    detailRow: {
+      marginTop: 6,
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17
+    },
+    sourceAction: {
+      marginTop: 10,
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    sourceActionText: { color: palette.link, fontSize: 12, fontWeight: "800" },
+    tags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
+    tag: {
+      borderRadius: radius.card,
+      backgroundColor: palette.accentSoft,
+      paddingVertical: 4,
+      paddingHorizontal: 7
+    },
+    tagText: { color: palette.accent, fontSize: 11, fontWeight: "700" },
+    empty: {
+      marginTop: 14,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.textMuted,
+      backgroundColor: palette.surfaceMuted
+    },
+    error: { marginTop: 12, color: palette.danger }
+  });
 
 function eventGroup(event: PersonalGrowTimelineEvent) {
   const type = String(event.type || "").toLowerCase();
@@ -250,6 +252,8 @@ function sourceLabel(event: PersonalGrowTimelineEvent) {
 }
 
 export default function GrowTimelineScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGrowTimelineStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
@@ -324,7 +328,7 @@ export default function GrowTimelineScreen() {
         })}
       </View>
 
-      {loading ? <ActivityIndicator /> : null}
+      {loading ? <ActivityIndicator color={palette.accent} /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <PersonalFeedPlacement

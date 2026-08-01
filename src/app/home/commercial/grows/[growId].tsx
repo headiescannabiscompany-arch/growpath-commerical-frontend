@@ -1,6 +1,13 @@
 import { Link, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput as NativeTextInput,
+  type TextInputProps,
+  View
+} from "react-native";
 
 import {
   CommercialGrow,
@@ -11,7 +18,19 @@ import { InlineError } from "@/components/InlineError";
 import CommercialContextualTools from "@/components/commercial/CommercialContextualTools";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+
+function TextInput(props: TextInputProps) {
+  const { palette } = useAppTheme();
+  return (
+    <NativeTextInput
+      {...props}
+      placeholderTextColor={palette.textMuted}
+      selectionColor={palette.accent}
+    />
+  );
+}
 
 function cleanId(value: unknown) {
   return String(Array.isArray(value) ? value[0] : value || "").trim();
@@ -22,6 +41,8 @@ function titleFor(grow: CommercialGrow | null) {
 }
 
 function DetailRow({ label, value }: { label: string; value?: unknown }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialGrowDetailStyles(palette), [palette]);
   const display = String(value || "").trim();
   if (!display) return null;
   return (
@@ -33,6 +54,9 @@ function DetailRow({ label, value }: { label: string; value?: unknown }) {
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialGrowDetailStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable accessibilityRole="button" style={styles.action}>
@@ -49,6 +73,8 @@ export default function CommercialGrowDetailRoute({
   route?: any;
   routeKey?: string;
 } = {}) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialGrowDetailStyles(palette), [palette]);
   const params = useLocalSearchParams<{ growId?: string; id?: string }>();
   const growId = useMemo(
     () =>
@@ -313,73 +339,106 @@ export default function CommercialGrowDetailRoute({
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: 8 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 28, fontWeight: "900" },
-  subtitle: { color: "#475569", lineHeight: 21 },
-  cardTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  body: { color: "#475569", fontSize: 14, lineHeight: 21, marginTop: 8 },
-  muted: { color: "#64748B", fontSize: 13 },
-  detailGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  detailRow: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 180,
-    padding: 10
-  },
-  detailLabel: {
-    color: "#64748B",
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  detailValue: { color: "#0F172A", fontSize: 14, fontWeight: "800", marginTop: 4 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8
-  },
-  actionText: { color: "#166534", fontSize: 13, fontWeight: "900" },
-  formGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  input: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    flexGrow: 1,
-    fontSize: 14,
-    minWidth: 220,
-    paddingHorizontal: 10,
-    paddingVertical: 9
-  },
-  textArea: { minHeight: 90, marginTop: 8, textAlignVertical: "top" },
-  primaryAction: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryActionText: { color: "#FFFFFF", fontSize: 13, fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  success: { color: "#166534", fontSize: 13, fontWeight: "800", marginTop: 8 },
-  bullet: {
-    color: "#334155",
-    fontSize: 13,
-    fontWeight: "700",
-    lineHeight: 19,
-    marginTop: 6
-  }
-});
+export function createCommercialGrowDetailStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    header: { gap: 8 },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 28, fontWeight: "900" },
+    subtitle: { color: palette.textSoft, lineHeight: 21 },
+    cardTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    body: { color: palette.textSoft, fontSize: 14, lineHeight: 21, marginTop: 8 },
+    muted: { color: palette.textMuted, fontSize: 13 },
+    detailGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    detailRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 180,
+      padding: 10
+    },
+    detailLabel: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    detailValue: {
+      color: palette.text,
+      fontSize: 14,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    actionText: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    formGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 12
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      flexGrow: 1,
+      fontSize: 14,
+      minWidth: 220,
+      paddingHorizontal: 10,
+      paddingVertical: 9
+    },
+    textArea: { minHeight: 90, marginTop: 8, textAlignVertical: "top" },
+    primaryAction: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryActionText: {
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    disabled: { opacity: 0.55 },
+    success: {
+      color: palette.success,
+      fontSize: 13,
+      fontWeight: "800",
+      marginTop: 8
+    },
+    bullet: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19,
+      marginTop: 6
+    }
+  });
+}

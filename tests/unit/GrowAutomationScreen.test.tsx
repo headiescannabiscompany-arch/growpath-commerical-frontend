@@ -35,7 +35,9 @@ jest.mock("@react-navigation/native", () => {
 
 jest.mock("@/components/personal/GrowWorkspaceNav", () => {
   const { View } = require("react-native");
-  return () => <View testID="grow-workspace-nav" />;
+  return function MockGrowWorkspaceNav() {
+    return <View testID="grow-workspace-nav" />;
+  };
 });
 
 describe("GrowAutomationScreen", () => {
