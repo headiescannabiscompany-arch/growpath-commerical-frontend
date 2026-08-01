@@ -696,6 +696,31 @@ roster data.
   authentication, audit event, or record action was invoked. The session
   returned to the Facility dashboard without logout.
 
+## Facility Sales and Transfers heading hierarchy and Viewer read-only state
+
+Production Sales and Transfers retained the correct Night palette, truthful
+empty state, and Viewer restriction, but its tab shell owned the generic
+`Sales` level-one heading while the accurate workflow title was ordinary text.
+Frontend `fdc9cdca` established one page-owned Licensed Sales & Transfers
+heading without changing inventory loading, transfer records, role gates,
+shipment transitions, recipient details, manifests, or totals.
+
+- Production Build Preflight `30687266646` passed in 3m10s and Frontend CI
+  `30687266654` passed in 6m20s. The production host published the new
+  `index-bd5f2dcb04fe9c0f80170be006492a52.js` asset.
+- Sixteen focused Facility Transfers workflow, Viewer route, and tab-shell
+  tests passed. Targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed. The suite retained its existing Expo Go push
+  warning without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one
+  Licensed Sales & Transfers heading, the Viewer read-only notice, zero
+  create-transfer actions, the truthful zero-record/draft/revenue state, the
+  Night canvas `rgb(14, 20, 27)`, bright heading text `rgb(244, 247, 251)`, and
+  zero white content surfaces.
+- No transfer, inventory, shipment, recipient, license, manifest, carrier,
+  tracking, refresh, audit event, billing, or record action was invoked. The
+  session returned to the Facility dashboard without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
