@@ -2911,3 +2911,45 @@ read-only` H1, zero fields, and zero opaque light surfaces. Shared Courses
   analytics action, debug action, vendor submission, Commercial editor,
   workspace, account, session, billing, audit event, or record action was
   invoked, and the Viewer session remained signed in.
+
+## High-risk account, billing, journal, evidence, and Commercial operations palette
+
+Frontend `75f388cd` continues the active-palette conversion through the next
+highest-risk fixed-Day surfaces without altering their data or mutation paths:
+
+- Personal Billing and Upgrade, including plan/status copy, billing interval,
+  Stripe mode banners, plan cards, recipient fields, and cancel/upgrade actions;
+- Personal Profile and New Journal Entry, including email, parental PIN,
+  deletion confirmation, notification switches, fields, private-photo tiles,
+  AI-review states, and all actions;
+- the shared plant-context and saved private-grow-photo evidence pickers;
+- Commercial Orders, Profile, Inventory Create, and Inventory Detail, including
+  loaded/empty/status cards, all fields, order state actions, stock states, and
+  workflow links.
+
+- Thirteen focused suites passed, totaling 68 tests. The matrix retained
+  checkout/gift safety, billing cancellation, order fulfillment/cancel/reopen,
+  Commercial profile save, Commercial inventory create/detail save, Personal
+  account/privacy behavior, journal creation, and saved-photo evidence behavior
+  while adding active Night-palette guards. Forced source/test lint, full
+  frontend `tsc --noEmit`, and `git diff --check` passed. The existing
+  non-failing Expo Go notification warning appeared in two suites.
+- Production Build Preflight `30721693923` and Frontend CI `30721693927`
+  passed against exact commit `75f388cdf014f2e0471c6e86871a1d6342828fd6`.
+  Production served bundle `index-12fbc41c...` after the rollout.
+- The signed-in Facility Viewer loaded Personal Profile, Personal Billing,
+  Personal Upgrade, Personal New Journal, Commercial Orders, Commercial
+  Profile, and Commercial Inventory Create directly. Every route correctly
+  retained its workspace boundary: one themed `Access denied` H1, zero fields,
+  and zero opaque light surfaces. The Facility Dashboard remained available on
+  the same new bundle. The session and workspace were not changed.
+- Because the available account is a Facility Viewer, the corrected Personal
+  and Commercial loaded forms were verified through the 68-test behavior/theme
+  matrix rather than by switching modes or bypassing authorization. No false
+  live-populated acceptance is claimed.
+- No field, plan, interval, recipient, checkout, cancellation, subscription,
+  email, PIN, notification, deletion, logout, journal, photo, upload, AI
+  suggestion, evidence, order, fulfillment, storefront profile, inventory,
+  route action, workspace, account, session, billing, audit event, or record
+  action was invoked. The five unfinished gift frontend files remained
+  unstaged and outside the release.
