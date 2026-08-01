@@ -647,6 +647,30 @@ without changing permissions or workflow behavior.
   developer portal, room, telemetry, audit event, or record action was invoked.
   The session returned to the Facility dashboard without logout.
 
+## Facility Viewer notification-type control re-verification
+
+The earlier user report that this Facility user type could not see notification
+types was rechecked directly after the route-polish releases. No current defect
+was reproduced, so no speculative code change was made.
+
+- Five focused Notification Center tests passed, including the active Night
+  palette, workspace-correct Profile link, Facility-user category save payload,
+  source filters, single-read behavior, and mark-all-read behavior. Targeted
+  ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Facility Viewer production acceptance at
+  `/home/notifications?workspace=facility` confirmed one Notification Center
+  heading and seven visible checked switches: Device push, Task reminders,
+  Forum replies, Video activity, Courses and lives, Commerce updates, and
+  Facility alerts.
+- The inbox exposed Unread and All plus the same six category filters. Delivery
+  status explicitly listed all six enabled categories, Device push reported
+  enabled, the Profile settings link remained Facility-scoped, the Night canvas
+  was `rgb(14, 20, 27)`, and the heading was `rgb(244, 247, 251)`.
+- No switch, filter, Save, Profile, read-state, push permission, notification,
+  preference, audit event, or record action was invoked. This proves control
+  visibility and current persisted state; it does not claim an external device
+  push receipt.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
