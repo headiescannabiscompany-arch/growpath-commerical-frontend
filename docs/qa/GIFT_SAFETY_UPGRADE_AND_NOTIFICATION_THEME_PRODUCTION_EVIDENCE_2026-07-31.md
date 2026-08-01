@@ -2475,3 +2475,33 @@ commercial, product, batch, trial, source, or workspace context.
 - No connector, credential, device, file, grow, import, builder, label library,
   field, workspace, account, session, billing, audit event, or record action
   was invoked, and the Viewer session remained signed in.
+
+## Shared Products and Label Library heading ownership
+
+Production `/home/facility/tools/ingredient-library` already used the correct
+Night palette, named all 21 inputs, and retained evidence/AI draft/verification
+disclosures. Its Facility navigator used the inaccurate `Ingredients` title
+while the page visibly repeated the accurate `Products & Label Library` title;
+the visible saved/empty/form titles were not semantic. API and backend source
+inspection proved every ingredient query and mutation is scoped to the signed-in
+user, not the selected Facility. Viewer authoring is therefore intentional
+authenticated-user behavior and was preserved. Frontend `fa169ff3` makes the
+shared page own its accurate H1 and section H2s while hiding only the redundant
+Personal, Commercial, and Facility navigator headers.
+
+- Twenty-three focused Ingredient Library and Facility layout tests passed,
+  covering active Night styling, one accurate H1, saved/form H2s, reusable
+  ingredient fields, durable label evidence, AI draft extraction, and exact
+  authoring behavior. Production-source lint, full frontend `tsc --noEmit`,
+  and `git diff --check` passed.
+- Production Build Preflight `30713571891` and Frontend CI `30713571892`
+  passed. Clean signed-in Facility Viewer production verification rendered
+  exactly one visible and semantic `Products & Label Library` H1 plus the two
+  applicable `No ingredients yet` and `Create ingredient` H2s. All 21 untouched
+  fields retained explicit names and Night surface `rgb(21, 29, 39)` with
+  bright text `rgb(244, 247, 251)`; the page contained zero white/light
+  page-content surfaces.
+- No field, favorite, release speed, confidence, usage permission, evidence,
+  upload, AI analysis, ingredient, save, archive, library, workspace, account,
+  session, billing, audit event, or record action was invoked, and the Viewer
+  session remained signed in.
