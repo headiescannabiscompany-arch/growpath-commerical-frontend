@@ -9,6 +9,7 @@ import { useAppTheme } from "@/theme/appTheme";
 export const FACILITY_TASKS_TAB_LABEL = "Tasks";
 export const FACILITY_COMPLIANCE_TAB_LABEL = "Compliance";
 export const FACILITY_GROWS_TAB_LABEL = "Grows";
+export const FACILITY_INVENTORY_ROUTE_TITLE = "Facility Inventory";
 
 export function shouldHideFacilityTabBar(pathname = "") {
   return (
@@ -142,7 +143,11 @@ export default function FacilityTabsLayout() {
       />
       <Tabs.Screen
         name="inventory"
-        options={{ title: "Inventory", tabBarButton: () => null }}
+        options={{
+          title: FACILITY_INVENTORY_ROUTE_TITLE,
+          headerShown: shouldShowFacilityRouteHeader("inventory"),
+          tabBarButton: () => null
+        }}
       />
       <Tabs.Screen
         name="transfers"

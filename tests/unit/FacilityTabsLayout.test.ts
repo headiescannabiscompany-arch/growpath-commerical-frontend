@@ -1,6 +1,7 @@
 import {
   FACILITY_COMPLIANCE_TAB_LABEL,
   FACILITY_GROWS_TAB_LABEL,
+  FACILITY_INVENTORY_ROUTE_TITLE,
   FACILITY_TASKS_TAB_LABEL,
   shouldHideFacilityTabBar,
   shouldShowFacilityRouteHeader
@@ -67,6 +68,7 @@ describe("Facility tabs layout", () => {
 
   it("lets Facility Inventory own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("inventory")).toBe(false);
+    expect(FACILITY_INVENTORY_ROUTE_TITLE).toBe("Facility Inventory");
     expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
   });
 
