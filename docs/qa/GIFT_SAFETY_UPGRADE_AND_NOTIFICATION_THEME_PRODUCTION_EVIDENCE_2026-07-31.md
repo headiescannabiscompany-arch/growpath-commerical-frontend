@@ -2207,3 +2207,27 @@ availability, rights, accessibility, removal, or publication behavior.
   remove, publish, video, course, workspace, account, session, billing, audit
   event, or record action was invoked, and the Viewer session remained signed
   in.
+
+## Shared AI-credit guide Night theme and hierarchy
+
+Production `/ai/how-it-works` retained five fixed-white action-cost cards,
+day-only text/status colors, and no semantic headings under the signed-in
+Facility Viewer's resolved Night mode. Frontend `9b640242` moves the balance,
+progress, exact-cost, explanatory, warning, and status surfaces to the active
+palette; establishes one page H1 and seven H2 sections; and includes the
+Commercial workspace parameter in the balance-loading effect dependency list.
+Exact cost/refund copy, allowance lookup, workspace scoping, and ledger summary
+behavior did not change.
+
+- Four focused AI-credit guide tests passed, covering exact action costs,
+  Personal/Facility/Commercial balance scoping, active Night palette, and one
+  H1 plus structured H2 hierarchy. Forced targeted source ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed.
+- Production Build Preflight `30709772135` and Frontend CI `30709772133`
+  passed. Clean signed-in production verification measured all five cost cards
+  at Night surface `rgb(21, 29, 39)` with border `rgb(40, 53, 69)`, one bright
+  H1, seven bright H2s, the unchanged live `100 / 100` balance, and zero
+  white/light page-content surfaces.
+- No AI request, credit, balance, refresh, calculator, diagnosis, save, task,
+  log, workspace, account, session, billing, audit event, or record action was
+  invoked, and the Viewer session remained signed in.
