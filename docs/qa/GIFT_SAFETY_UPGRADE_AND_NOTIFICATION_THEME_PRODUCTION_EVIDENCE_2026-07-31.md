@@ -2505,3 +2505,38 @@ Personal, Commercial, and Facility navigator headers.
   upload, AI analysis, ingredient, save, archive, library, workspace, account,
   session, billing, audit event, or record action was invoked, and the Viewer
   session remained signed in.
+
+## Shared Nutrient and Soil Mix Builder accessibility
+
+Production Facility Nutrient and Soil Mix Builder routes already used the
+correct Night palette, retained their science/evidence and AI-credit language,
+and exposed their intended deterministic workflows. Both visibly repeated
+their titles across navigator/page ownership. Nutrient also exposed 32 of 38
+inputs/selectors without accessible names; Soil already named all 34 controls.
+Frontend `486eb658` makes each shared page own one H1 across Personal,
+Commercial, and Facility wrappers, adds a route-specific page-heading level to
+the reusable calculator surface, and explicitly names all missing Nutrient
+controls without changing calculator math, defaults, AI handoffs, presets,
+persistence, tasks, product drafts, or production-batch actions.
+
+- Thirty-three focused Facility layout, Nutrient, and Soil tests passed,
+  covering title ownership, all 32 newly named Nutrient controls, active Night
+  styling, label/elemental math, locked amendment presets, AI handoff, task
+  generation, Soil calculation, and production-batch conversion.
+  Production-source lint, full frontend `tsc --noEmit`, and `git diff --check`
+  passed; the existing non-failing Expo Go notification warning remained in
+  the layout suite.
+- Production Build Preflight `30714042809` and Frontend CI `30714042818`
+  passed. Clean signed-in Facility Viewer production verification measured
+  38/38 named Nutrient controls and 34/34 named Soil controls. Each route
+  rendered exactly one visible bright H1; Soil retained its bright `How this
+  tool works` H2. Every inspected field retained Night surface
+  `rgb(21, 29, 39)` with bright text `rgb(244, 247, 251)`, and both pages had
+  zero white/light page-content surfaces.
+- Nutrient's deeper workflow-section hierarchy remains a separate audit item;
+  this acceptance proves its page-title ownership and complete control names,
+  not an H2/H3 claim that production does not yet support.
+- No field, selector, preset, AI request, credit, calculation, recipe, ToolRun,
+  Saved Run, task, log, product, batch, grow, workspace, account, session,
+  billing, audit event, or record action was invoked, and the Viewer session
+  remained signed in.
