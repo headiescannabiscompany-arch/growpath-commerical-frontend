@@ -424,6 +424,11 @@ export default function FeedingScheduleToolScreen() {
 
         <ToolResultSurface
           title="Feeding schedule"
+          askAiBaseHref={
+            entitlements.mode === "facility"
+              ? "/home/facility/ai-ask"
+              : "/home/personal/ai"
+          }
           status={result ? "RULE REVIEW" : "READY"}
           summary={notes || "Run the endpoint to generate a schedule."}
           metrics={[

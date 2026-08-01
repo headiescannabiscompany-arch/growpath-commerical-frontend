@@ -25,7 +25,8 @@ jest.mock("@/entitlements", () => ({
     FEEDING_SCHEDULE: "FEEDING_SCHEDULE"
   },
   useEntitlements: () => ({
-    can: () => true
+    can: () => true,
+    mode: "facility"
   })
 }));
 
@@ -80,11 +81,20 @@ jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
 jest.mock("@/features/personal/tools/ToolResultSurface", () => {
   const React = require("react");
   const { Pressable, Text, View } = require("react-native");
-  return ({ title, actions = [] }: { title: string; actions?: any[] }) =>
+  return ({
+    title,
+    actions = [],
+    askAiBaseHref
+  }: {
+    title: string;
+    actions?: any[];
+    askAiBaseHref?: string;
+  }) =>
     React.createElement(
       View,
       null,
       React.createElement(Text, null, title),
+      React.createElement(Text, null, `AI destination: ${askAiBaseHref}`),
       ...actions.map((action) =>
         React.createElement(
           Pressable,
@@ -138,6 +148,12 @@ describe("FeedingScheduleToolScreen", () => {
     expect(screenStyles.input.backgroundColor).toBe(palette.surface);
     expect(screenStyles.input.color).toBe(palette.text);
     expect(screenStyles.aiCard.backgroundColor).toBe(palette.surfaceMuted);
+  });
+
+  it("keeps shared result follow-up inside Facility AI", () => {
+    const screen = render(<FeedingScheduleToolScreen />);
+
+    expect(screen.getByText("AI destination: /home/facility/ai-ask")).toBeTruthy();
   });
 
   it("creates feeding review tasks with shared Schedule metadata", async () => {

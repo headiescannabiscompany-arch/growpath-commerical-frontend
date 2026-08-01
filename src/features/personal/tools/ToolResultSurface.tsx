@@ -55,6 +55,7 @@ type ToolResultSurfaceProps = {
   copyPayload?: unknown;
   onReuseInputs?: () => void | Promise<void>;
   onAskAI?: () => void | Promise<void>;
+  askAiBaseHref?: string;
 };
 
 function canCopyText() {
@@ -181,7 +182,8 @@ export default function ToolResultSurface({
   onAddEvidence,
   copyPayload,
   onReuseInputs,
-  onAskAI
+  onAskAI,
+  askAiBaseHref = "/home/personal/ai"
 }: ToolResultSurfaceProps) {
   const router = useRouter();
   const { palette } = useAppTheme();
@@ -233,7 +235,7 @@ export default function ToolResultSurface({
           ]
             .filter(Boolean)
             .join("&");
-          router.push(`/home/personal/ai?${query}`);
+          router.push(`${askAiBaseHref}?${query}` as any);
         }
       : undefined);
   const standardActions: ToolResultAction[] = [
