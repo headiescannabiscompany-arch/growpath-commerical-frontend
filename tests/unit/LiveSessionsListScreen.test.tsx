@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import LiveSessionsListScreen from "@/screens/LiveSessionsListScreen";
+import LiveSessionsListScreen, { createStyles } from "@/screens/LiveSessionsListScreen";
 
 const mockPush = jest.fn();
 
@@ -24,11 +24,59 @@ jest.mock("@/api/apiRequest", () => ({
 }));
 
 describe("LiveSessionsListScreen", () => {
+  it("uses the active palette for every shared browser surface", () => {
+    const palette = {
+      page: "#0E141B",
+      hero: "#101823",
+      heroText: "#FFFFFF",
+      heroMuted: "#E4ECF5",
+      surface: "#151D27",
+      surfaceMuted: "#1A2330",
+      surfaceStrong: "#202B39",
+      border: "#283545",
+      borderSoft: "#334355",
+      text: "#F4F7FB",
+      textMuted: "#C9D4DF",
+      textSoft: "#DEE7F0",
+      accent: "#78AAFF",
+      accentSoft: "#16263A",
+      accentText: "#FFFFFF",
+      info: "#78AAFF",
+      danger: "#E29B9B"
+    } as any;
+
+    const styles = createStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.hero).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.hero,
+        borderColor: palette.border
+      })
+    );
+    expect(styles.statCard.backgroundColor).toBe(palette.surface);
+    expect(styles.searchInput).toEqual(
+      expect.objectContaining({
+        backgroundColor: palette.surface,
+        borderColor: palette.border,
+        color: palette.text
+      })
+    );
+    expect(styles.filterChip.backgroundColor).toBe(palette.surface);
+    expect(styles.sessionCard.backgroundColor).toBe(palette.surface);
+    expect(styles.emptyCard.backgroundColor).toBe(palette.surface);
+    expect(styles.title.color).toBe(palette.heroText);
+    expect(styles.sectionTitle.color).toBe(palette.text);
+  });
+
   it("lists public live and replay records and opens the shared player", async () => {
     const screen = render(<LiveSessionsListScreen />);
-    await waitFor(() => expect(screen.getAllByText("Living Soil Q&A").length).toBeGreaterThan(0));
+    await waitFor(() =>
+      expect(screen.getAllByText("Living Soil Q&A").length).toBeGreaterThan(0)
+    );
     expect(screen.getAllByText(/4 RSVPs/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/^Replay$/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("header", { name: "Lives" })).toHaveProp("aria-level", 1);
     fireEvent.press(screen.getAllByText("Open session")[0]);
     expect(mockPush).toHaveBeenCalledWith("/live-session?sessionId=live-1");
   });

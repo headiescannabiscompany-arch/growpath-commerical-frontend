@@ -12,6 +12,7 @@ import {
 import { useRouter } from "expo-router";
 
 import { listLives } from "../api/lives";
+import { useAppTheme, type ThemePalette } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 
 type LiveSession = Record<string, any>;
@@ -184,6 +185,8 @@ function cardLabelFor(item: LiveSession) {
 
 export default function LiveSessionsListScreen() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [sessions, setSessions] = useState<LiveSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -371,7 +374,9 @@ export default function LiveSessionsListScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.hero}>
         <Text style={styles.kicker}>Live browser</Text>
-        <Text style={styles.title}>Lives</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Lives
+        </Text>
         <Text style={styles.subtitle}>
           Browse campaign-linked live opportunities, upcoming sessions, live broadcasts,
           and replays. The detail screen handles RSVP and playback when you need it.
@@ -407,6 +412,7 @@ export default function LiveSessionsListScreen() {
           accessibilityLabel="Search live opportunities"
           onChangeText={setQuery}
           placeholder="Search lives, campaigns, channels, products, or courses"
+          placeholderTextColor={palette.textMuted}
           style={styles.searchInput}
           value={query}
         />
@@ -438,7 +444,7 @@ export default function LiveSessionsListScreen() {
 
       {loading ? (
         <View style={styles.loadingRow}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.muted}>Loading live opportunities...</Text>
         </View>
       ) : error ? (
@@ -453,7 +459,13 @@ export default function LiveSessionsListScreen() {
             <View key={section.key} style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionHeaderCopy}>
-                  <Text style={styles.sectionTitle}>{section.title}</Text>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={2}
+                    style={styles.sectionTitle}
+                  >
+                    {section.title}
+                  </Text>
                   <Text style={styles.sectionSummary}>{section.summary}</Text>
                 </View>
                 <Text style={styles.sectionCount}>{section.items.length}</Text>
@@ -471,7 +483,9 @@ export default function LiveSessionsListScreen() {
           ))
         ) : (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No live opportunities matched</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
+              No live opportunities matched
+            </Text>
             <Text style={styles.muted}>
               Clear the filters or search for a different campaign, session, or replay.
             </Text>
@@ -482,194 +496,200 @@ export default function LiveSessionsListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#F8FAFC",
-    gap: 14,
-    padding: 16,
-    paddingBottom: 40
-  },
-  hero: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D1FAE5",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 6,
-    padding: 16
-  },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    letterSpacing: 0.4,
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 30, fontWeight: "900" },
-  subtitle: { color: "#475569", lineHeight: 21 },
-  summaryCard: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    padding: 14
-  },
-  summaryRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  statCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#DCFCE7",
-    borderRadius: 12,
-    borderWidth: 1,
-    minWidth: 92,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  statValue: { color: "#14532D", fontSize: 19, fontWeight: "900" },
-  statLabel: { color: "#166534", fontSize: 12, fontWeight: "700" },
-  summaryMeta: { color: "#14532D", lineHeight: 20 },
-  searchRow: { flexDirection: "row", flexWrap: "wrap" },
-  searchInput: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flex: 1,
-    minHeight: 46,
-    minWidth: 220,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  filterRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  filterChip: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    borderWidth: 1,
-    minHeight: 38,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  filterChipSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  filterChipText: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  filterChipTextSelected: { color: "#FFFFFF" },
-  loadingRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 10,
-    paddingVertical: 6
-  },
-  muted: { color: "#64748B", lineHeight: 20 },
-  errorCard: {
-    backgroundColor: "#FEF2F2",
-    borderColor: "#FECACA",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 14
-  },
-  errorText: { color: "#B91C1C", lineHeight: 20 },
-  section: { gap: 10, marginTop: 4 },
-  sectionHeader: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  sectionHeaderCopy: { flex: 1, gap: 2 },
-  sectionTitle: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  sectionSummary: { color: "#64748B", lineHeight: 20 },
-  sectionCount: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#BBF7D0",
-    borderRadius: 999,
-    borderWidth: 1,
-    color: "#166534",
-    fontWeight: "900",
-    minWidth: 40,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    textAlign: "center"
-  },
-  cardList: { gap: 12 },
-  sessionCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    overflow: "hidden"
-  },
-  thumbnail: {
-    backgroundColor: "#E2E8F0",
-    height: 168,
-    width: "100%"
-  },
-  cardBody: {
-    gap: 8,
-    padding: 14
-  },
-  badgeRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  badge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#DCFCE7",
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6
-  },
-  badgeText: { color: "#166534", fontSize: 12, fontWeight: "900" },
-  badgeSecondary: {
-    alignSelf: "flex-start",
-    backgroundColor: "#EFF6FF",
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6
-  },
-  badgeSecondaryText: { color: "#1D4ED8", fontSize: 12, fontWeight: "800" },
-  sessionTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  description: { color: "#334155", lineHeight: 20 },
-  meta: { color: "#64748B", fontSize: 12, lineHeight: 18 },
-  actionRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 4
-  },
-  actionButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  actionButtonText: { color: "#FFFFFF", fontWeight: "900" },
-  actionButtonSecondary: {
-    alignSelf: "flex-start",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  actionButtonSecondaryText: { color: "#166534", fontWeight: "900" },
-  pressed: { opacity: 0.7 },
-  emptyCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 6,
-    padding: 14
-  },
-  emptyTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" }
-});
+export function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: palette.page,
+      gap: 14,
+      padding: 16,
+      paddingBottom: 40
+    },
+    hero: {
+      backgroundColor: palette.hero,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 6,
+      padding: 16
+    },
+    kicker: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "900",
+      letterSpacing: 0.4,
+      textTransform: "uppercase"
+    },
+    title: { color: palette.heroText, fontSize: 30, fontWeight: "900" },
+    subtitle: { color: palette.heroMuted, lineHeight: 21 },
+    summaryCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 14
+    },
+    summaryRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    statCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.borderSoft,
+      borderRadius: 12,
+      borderWidth: 1,
+      minWidth: 92,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    statValue: { color: palette.text, fontSize: 19, fontWeight: "900" },
+    statLabel: { color: palette.accent, fontSize: 12, fontWeight: "700" },
+    summaryMeta: { color: palette.textSoft, lineHeight: 20 },
+    searchRow: { flexDirection: "row", flexWrap: "wrap" },
+    searchInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flex: 1,
+      minHeight: 46,
+      minWidth: 220,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    filterRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    filterChip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      minHeight: 38,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    filterChipSelected: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    filterChipText: { color: palette.textSoft, fontSize: 13, fontWeight: "800" },
+    filterChipTextSelected: { color: palette.accentText },
+    loadingRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 10,
+      paddingVertical: 6
+    },
+    muted: { color: palette.textMuted, lineHeight: 20 },
+    errorCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 14
+    },
+    errorText: { color: palette.danger, lineHeight: 20 },
+    section: { gap: 10, marginTop: 4 },
+    sectionHeader: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    sectionHeaderCopy: { flex: 1, gap: 2 },
+    sectionTitle: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    sectionSummary: { color: palette.textMuted, lineHeight: 20 },
+    sectionCount: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      color: palette.accent,
+      fontWeight: "900",
+      minWidth: 40,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      textAlign: "center"
+    },
+    cardList: { gap: 12 },
+    sessionCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      overflow: "hidden"
+    },
+    thumbnail: {
+      backgroundColor: palette.surfaceStrong,
+      height: 168,
+      width: "100%"
+    },
+    cardBody: {
+      gap: 8,
+      padding: 14
+    },
+    badgeRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    badge: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accentSoft,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 6
+    },
+    badgeText: { color: palette.accent, fontSize: 12, fontWeight: "900" },
+    badgeSecondary: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 6
+    },
+    badgeSecondaryText: { color: palette.info, fontSize: 12, fontWeight: "800" },
+    sessionTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    description: { color: palette.textSoft, lineHeight: 20 },
+    meta: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    actionRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginTop: 4
+    },
+    actionButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    actionButtonText: { color: palette.accentText, fontWeight: "900" },
+    actionButtonSecondary: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    actionButtonSecondaryText: { color: palette.accent, fontWeight: "900" },
+    pressed: { opacity: 0.7 },
+    emptyCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 6,
+      padding: 14
+    },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "900" }
+  });
+}
