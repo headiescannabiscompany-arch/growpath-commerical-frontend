@@ -695,7 +695,9 @@ export default function BackendCalculatorToolScreen({
     return (
       <ScreenBoundary title={title} showBack backFallbackHref={backFallbackHref}>
         <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-          <Text style={styles.title}>{title}</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+            {title}
+          </Text>
           <Text style={styles.subtitle}>{subtitle}</Text>
           {bannerPolicy.top ? (
             <FeedBanner
@@ -727,7 +729,9 @@ export default function BackendCalculatorToolScreen({
   return (
     <ScreenBoundary title={title} showBack backFallbackHref={backFallbackHref}>
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{title}</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+          {title}
+        </Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
         {bannerPolicy.top ? (
           <FeedBanner
@@ -739,7 +743,9 @@ export default function BackendCalculatorToolScreen({
           />
         ) : null}
         <View style={styles.guidanceCard}>
-          <Text style={styles.resultTitle}>How this tool works</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.resultTitle}>
+            How this tool works
+          </Text>
           <Text style={styles.guidanceText}>{experienceMode}</Text>
           <Text style={styles.guidanceText}>{aiCreditMessage}</Text>
           {experience ? (

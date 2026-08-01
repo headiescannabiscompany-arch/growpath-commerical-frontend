@@ -1,7 +1,26 @@
 import React from "react";
 import { fireEvent, renderAsync, waitFor } from "@testing-library/react-native";
 
-import HarvestReadinessToolRoute from "@/app/home/personal/(tabs)/tools/harvest-readiness";
+import HarvestReadinessToolRoute, {
+  createHarvestPhotoStyles
+} from "@/app/home/personal/(tabs)/tools/harvest-readiness";
+import { getThemePalette } from "@/theme/appTheme";
+
+describe("Harvest Readiness Night theme", () => {
+  it("uses the active palette for photo evidence guidance and notes", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createHarvestPhotoStyles(palette);
+
+    expect(styles.card.backgroundColor).toBe(palette.surfaceMuted);
+    expect(styles.checklist.backgroundColor).toBe(palette.surface);
+    expect(styles.checklistTitle.color).toBe(palette.text);
+    expect(styles.checklistItem.color).toBe(palette.textMuted);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.button.backgroundColor).toBe(palette.accent);
+    expect(styles.qualityChecks.backgroundColor).toBe(palette.surface);
+  });
+});
 
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
@@ -257,7 +276,20 @@ describe("HarvestReadinessToolRoute", () => {
   it("shows actionable photo requirements before the user chooses media", async () => {
     const screen = await renderHarvestReadinessTool();
 
-    expect(screen.getByText("Photo checklist before analysis")).toBeTruthy();
+    expect(screen.getByText("Harvest Readiness Estimate").props).toMatchObject({
+      accessibilityRole: "header",
+      "aria-level": 2
+    });
+    expect(screen.getByText("AI trichome photo estimate (optional)").props).toMatchObject(
+      {
+        accessibilityRole: "header",
+        "aria-level": 2
+      }
+    );
+    expect(screen.getByText("Photo checklist before analysis").props).toMatchObject({
+      accessibilityRole: "header",
+      "aria-level": 3
+    });
     expect(screen.getByText(/at least 3 sharp macro photos/i)).toBeTruthy();
     expect(screen.getByText(/trichome gland heads on bud calyxes/i)).toBeTruthy();
     expect(screen.getByText(/neutral white light/i)).toBeTruthy();

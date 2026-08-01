@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
@@ -16,6 +16,7 @@ import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
 
 const MIN_HARVEST_PHOTOS = 4;
@@ -55,6 +56,8 @@ function HarvestPhotoAnalyzer({
   initialAnalysis: TrichomeVisionResult | null;
   onAnalysis: (result: TrichomeVisionResult | null) => void;
 }) {
+  const { palette } = useAppTheme();
+  const photoStyles = useMemo(() => createHarvestPhotoStyles(palette), [palette]);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -202,7 +205,9 @@ function HarvestPhotoAnalyzer({
 
   return (
     <View style={photoStyles.card}>
-      <Text style={photoStyles.title}>AI trichome photo estimate (optional)</Text>
+      <Text accessibilityRole="header" aria-level={2} style={photoStyles.title}>
+        AI trichome photo estimate (optional)
+      </Text>
       <Text style={photoStyles.help}>
         The free readiness calculator works from observations you enter. Optional AI photo
         review costs 1 AI credit only after a complete four-photo set is submitted. A
@@ -212,7 +217,13 @@ function HarvestPhotoAnalyzer({
         does not replace the required macro roles.
       </Text>
       <View style={photoStyles.checklist} accessibilityLabel="Harvest photo checklist">
-        <Text style={photoStyles.checklistTitle}>Photo checklist before analysis</Text>
+        <Text
+          accessibilityRole="header"
+          aria-level={3}
+          style={photoStyles.checklistTitle}
+        >
+          Photo checklist before analysis
+        </Text>
         {HARVEST_PHOTO_CHECKLIST.map((item, index) => (
           <Text key={item} style={photoStyles.checklistItem}>
             {index + 1}. {item}
@@ -249,6 +260,7 @@ function HarvestPhotoAnalyzer({
         value={notes}
         onChangeText={setNotes}
         placeholder="Optional but helpful: Photo 1 top macro, Photo 2 middle macro, Photo 3 lower macro, Photo 4 context; include lens/magnification and lighting"
+        placeholderTextColor={palette.textMuted}
         style={photoStyles.input}
       />
       <Pressable
@@ -833,75 +845,77 @@ export default function HarvestReadinessToolRoute() {
   );
 }
 
-const photoStyles = StyleSheet.create({
-  card: {
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "#D1FAE5",
-    borderRadius: radius.card,
-    backgroundColor: "#F0FDF4",
-    gap: 10
-  },
-  title: { fontSize: 17, fontWeight: "800", color: "#14532D" },
-  help: { color: "#475569", lineHeight: 19 },
-  checklist: {
-    borderWidth: 1,
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    padding: 10,
-    gap: 5
-  },
-  checklistTitle: { color: "#14532D", fontWeight: "800" },
-  checklistItem: { color: "#334155", fontSize: 12, lineHeight: 18 },
-  previewGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  previewWrap: { flexBasis: 150, flexGrow: 1, maxWidth: 240, minWidth: 130 },
-  preview: {
-    width: "100%",
-    height: 150,
-    borderRadius: radius.card,
-    backgroundColor: "#E2E8F0"
-  },
-  removeButton: {
-    alignItems: "center",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 5,
-    paddingVertical: 7
-  },
-  removeText: { color: "#991B1B", fontSize: 12, fontWeight: "800" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    padding: 10
-  },
-  button: {
-    borderRadius: radius.card,
-    backgroundColor: "#166534",
-    padding: 12,
-    alignItems: "center"
-  },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
-  disabled: { opacity: 0.45 },
-  warning: { color: "#B45309", fontWeight: "700" },
-  feedback: { color: "#334155" },
-  analysis: {
-    borderTopColor: "#BBF7D0",
-    borderTopWidth: 1,
-    gap: 6,
-    paddingTop: 10
-  },
-  analysisTitle: { color: "#14532D", fontSize: 15, fontWeight: "800" },
-  qualityChecks: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 4,
-    padding: 10
-  },
-  recommendation: { color: "#1E293B", fontWeight: "700", lineHeight: 19 }
-});
+export const createHarvestPhotoStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    card: {
+      padding: 14,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      gap: 10
+    },
+    title: { fontSize: 17, fontWeight: "800", color: palette.text },
+    help: { color: palette.textMuted, lineHeight: 19 },
+    checklist: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      padding: 10,
+      gap: 5
+    },
+    checklistTitle: { color: palette.text, fontWeight: "800" },
+    checklistItem: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    previewGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    previewWrap: { flexBasis: 150, flexGrow: 1, maxWidth: 240, minWidth: 130 },
+    preview: {
+      width: "100%",
+      height: 150,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceStrong
+    },
+    removeButton: {
+      alignItems: "center",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 5,
+      paddingVertical: 7
+    },
+    removeText: { color: palette.danger, fontSize: 12, fontWeight: "800" },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      padding: 10
+    },
+    button: {
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      padding: 12,
+      alignItems: "center"
+    },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    disabled: { opacity: 0.45 },
+    warning: { color: palette.warning, fontWeight: "700" },
+    feedback: { color: palette.textMuted },
+    analysis: {
+      borderTopColor: palette.border,
+      borderTopWidth: 1,
+      gap: 6,
+      paddingTop: 10
+    },
+    analysisTitle: { color: palette.text, fontSize: 15, fontWeight: "800" },
+    qualityChecks: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 4,
+      padding: 10
+    },
+    recommendation: { color: palette.text, fontWeight: "700", lineHeight: 19 }
+  });
