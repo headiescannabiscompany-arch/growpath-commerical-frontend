@@ -196,6 +196,29 @@ production acceptance covered:
 
 ## Automated verification
 
+## Shared Nutrient Mix Builder Night theme
+
+The shared NPK screen retained a light canvas and day-only form surfaces under
+resolved Night mode. Frontend `e3e8f975` moved the complete builder to the
+active palette. The first production retest correctly caught one remaining
+light island in the reused science-basis component; follow-up `391dc109` moved
+that shared panel to the palette as well.
+
+- Production Build Preflight `30680014007` passed in 3m13s and Frontend CI
+  `30680013998` passed in 5m29s for the final follow-up.
+- Sixteen focused NPK/back-route tests passed for the main conversion; twelve
+  focused NPK/Soil tests passed for the shared science-panel follow-up. Targeted
+  ESLint, full frontend `tsc --noEmit`, and `git diff --check` also passed.
+- Signed-in production checks of `/home/facility/tools/npk` and
+  `/home/personal/tools/npk` showed the Night canvas, science panel, AI panel,
+  form controls, presets, target profile, water baseline, and product row with
+  no remaining light island.
+- No input or preset was changed; AI, calculation, copy, save, ToolRun, task,
+  log, grow, credit, and record mutations were not invoked. The session was
+  returned to the Facility dashboard without logout.
+- The shared science component also benefits Soil Builder, but this does not
+  claim complete live Night-theme acceptance for the full Soil Builder screen.
+
 - Backend gift routes/webhooks/Facility billing: 31 focused tests passed.
 - Frontend gift checkout/API safety: 34 focused tests passed.
 - Personal upgrade heading/navigation: 23 focused tests passed.
