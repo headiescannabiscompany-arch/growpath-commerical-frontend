@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -13,8 +13,15 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import DewPointGuardTool from "@/app/home/personal/(tabs)/tools/dew-point-guard";
+import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+
+export function canImportFacilityHistory(role: string | null | undefined = "") {
+  const normalized = String(role).toUpperCase();
+  return normalized === "OWNER" || normalized === "MANAGER";
+}
 
 function growRows(response: any) {
   const rows =
@@ -28,15 +35,19 @@ function growRows(response: any) {
 
 export default function FacilityHistoryImportRoute() {
   const router = useRouter();
+  const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityHistoryImportStyles(palette), [palette]);
   const params = useLocalSearchParams<{ growId?: string; growName?: string }>();
   const { selectedId: facilityId } = useFacility();
   const growId = String(params.growId || "").trim();
   const [grows, setGrows] = useState<any[]>([]);
   const [loading, setLoading] = useState(!growId);
   const [error, setError] = useState("");
+  const canImport = canImportFacilityHistory(entitlements.facilityRole);
 
   useEffect(() => {
-    if (growId || !facilityId) return;
+    if (!canImport || growId || !facilityId) return;
     setLoading(true);
     apiRequest(endpoints.grows(facilityId))
       .then((response) => setGrows(growRows(response)))
@@ -44,7 +55,37 @@ export default function FacilityHistoryImportRoute() {
         setError(reason?.message || "Unable to load facility grows.")
       )
       .finally(() => setLoading(false));
-  }, [facilityId, growId]);
+  }, [canImport, facilityId, growId]);
+
+  if (!canImport) {
+    return (
+      <ScreenBoundary
+        title="Import Grow History"
+        showBack
+        backFallbackHref="/home/facility/integrations"
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.readOnlyCard} accessibilityRole="alert">
+            <Text accessibilityRole="header" aria-level={2} style={styles.growName}>
+              Grow history import is read-only
+            </Text>
+            <Text style={styles.copy}>
+              Your Facility role can review imported history, but only owners and managers
+              can select a grow or upload controller records.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Return to Facility integrations"
+              style={styles.returnAction}
+              onPress={() => router.push("/home/facility/integrations" as any)}
+            >
+              <Text style={styles.returnActionText}>Return to Integrations</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </ScreenBoundary>
+    );
+  }
 
   if (growId) {
     return (
@@ -70,7 +111,7 @@ export default function FacilityHistoryImportRoute() {
           analysis, tasks, and timeline remain connected. Choose the destination before
           selecting the CSV.
         </Text>
-        {loading ? <ActivityIndicator /> : null}
+        {loading ? <ActivityIndicator color={palette.accent} /> : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {!loading && !grows.length ? (
           <Text style={styles.copy}>No grows are available in this facility yet.</Text>
@@ -106,21 +147,40 @@ export default function FacilityHistoryImportRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 12, padding: 16, paddingBottom: 32 },
-  copy: { color: "#475569", lineHeight: 21 },
-  error: { color: "#b91c1c", fontWeight: "700" },
-  growCard: {
-    alignItems: "center",
-    backgroundColor: "white",
-    borderColor: "#dbe5d4",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 14
-  },
-  growName: { color: "#172317", fontSize: 17, fontWeight: "900" },
-  meta: { color: "#64748b", marginTop: 4 },
-  action: { color: "#166534", fontWeight: "900" }
-});
+export function createFacilityHistoryImportStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { backgroundColor: palette.page, gap: 12, padding: 16, paddingBottom: 32 },
+    copy: { color: palette.textMuted, lineHeight: 21 },
+    error: { color: palette.danger, fontWeight: "700" },
+    readOnlyCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 12,
+      padding: 16
+    },
+    growCard: {
+      alignItems: "center",
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      padding: 14
+    },
+    growName: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    meta: { color: palette.textMuted, marginTop: 4 },
+    action: { color: palette.link, fontWeight: "900" },
+    returnAction: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    returnActionText: { color: palette.accentText, fontWeight: "900" }
+  });
+}

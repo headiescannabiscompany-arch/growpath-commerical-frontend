@@ -13,10 +13,14 @@ const mockFetchStructure = jest.fn();
 const mockPreview = jest.fn();
 const mockConfirm = jest.fn();
 const mockAutoBuild = jest.fn();
+let mockFacilityRole = "OWNER";
 
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({ facilityRole: "OWNER", selectedFacilityId: "facility-1" })
+  useEntitlements: () => ({
+    facilityRole: mockFacilityRole,
+    selectedFacilityId: "facility-1"
+  })
 }));
 jest.mock("@/api/integrations", () => ({
   listIntegrationConnections: (...args: any[]) => mockList(...args),
@@ -48,7 +52,21 @@ describe("FacilityIntegrationsRoute", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFacilityRole = "OWNER";
     mockList.mockResolvedValue([]);
+  });
+
+  it("does not let a Viewer open either integration write flow", async () => {
+    mockFacilityRole = "VIEWER";
+    const screen = render(<FacilityIntegrationsRoute />);
+
+    const pulseAction = screen.getByLabelText("Connect Facility Pulse");
+    const historyAction = screen.getByLabelText("Import Facility grow history");
+    expect(pulseAction).toBeDisabled();
+    expect(historyAction).toBeDisabled();
+    fireEvent.press(historyAction);
+    expect(mockPush).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockList).toHaveBeenCalled());
   });
 
   it("makes Pulse and TrolMaster selectable and marks planned providers clearly", async () => {

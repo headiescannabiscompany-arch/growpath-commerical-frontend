@@ -191,6 +191,8 @@ export default function FacilityIntegrationsRoute() {
               environment history.
             </Text>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Connect Facility Pulse"
               disabled={!canConfigure}
               style={[styles.primaryAction, !canConfigure && styles.disabled]}
               onPress={() => router.push("/home/facility/tools/pulse" as any)}
@@ -324,11 +326,20 @@ export default function FacilityIntegrationsRoute() {
             analysis.
           </Text>
           <Pressable
-            style={styles.primaryAction}
+            accessibilityRole="button"
+            accessibilityLabel="Import Facility grow history"
+            disabled={!canConfigure}
+            style={[styles.primaryAction, !canConfigure && styles.disabled]}
             onPress={() => router.push("/home/facility/tools/history-import" as any)}
           >
             <Text style={styles.primaryActionText}>Import grow history</Text>
           </Pressable>
+          {!canConfigure ? (
+            <Text style={styles.body}>
+              Owners and managers can import controller history. Your role can review
+              saved Facility records.
+            </Text>
+          ) : null}
           <Text style={styles.body}>Import methods:</Text>
           <View style={styles.providerGrid}>
             <View style={styles.importProvider}>

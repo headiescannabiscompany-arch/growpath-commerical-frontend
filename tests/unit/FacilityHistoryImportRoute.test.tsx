@@ -1,11 +1,16 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import FacilityHistoryImportRoute from "@/app/home/facility/(tabs)/tools/history-import";
+import FacilityHistoryImportRoute, {
+  canImportFacilityHistory,
+  createFacilityHistoryImportStyles
+} from "@/app/home/facility/(tabs)/tools/history-import";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
 let mockParams: Record<string, string> = {};
+let mockFacilityRole = "OWNER";
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -15,6 +20,9 @@ jest.mock("@/api/endpoints", () => ({
 }));
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
+}));
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({ facilityRole: mockFacilityRole })
 }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush }),
@@ -34,12 +42,37 @@ describe("Facility history import route", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockParams = {};
+    mockFacilityRole = "OWNER";
     mockApiRequest.mockResolvedValue({
       grows: [
         { id: "grow-1", name: "Flower Cycle 12", roomName: "Flower A" },
         { id: "grow-2", name: "Veg Cycle", roomName: "Veg" }
       ]
     });
+  });
+
+  it("uses the active Night palette and restricts import to owners and managers", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilityHistoryImportStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.growCard.backgroundColor).toBe(palette.card);
+    expect(styles.copy.color).toBe(palette.textMuted);
+    expect(canImportFacilityHistory("OWNER")).toBe(true);
+    expect(canImportFacilityHistory("MANAGER")).toBe(true);
+    expect(canImportFacilityHistory("VIEWER")).toBe(false);
+  });
+
+  it("does not load grows or expose the importer to a Viewer", () => {
+    mockFacilityRole = "VIEWER";
+    mockParams = { growId: "grow-1", growName: "Flower Cycle 12" };
+    const screen = render(<FacilityHistoryImportRoute />);
+
+    expect(screen.getByText("Grow history import is read-only")).toBeTruthy();
+    expect(screen.queryByText("History importer ready")).toBeNull();
+    expect(mockApiRequest).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Return to Facility integrations"));
+    expect(mockPush).toHaveBeenCalledWith("/home/facility/integrations");
   });
 
   it("requires a destination grow before opening the importer", async () => {
