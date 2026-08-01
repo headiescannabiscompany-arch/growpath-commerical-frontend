@@ -105,6 +105,12 @@ describe("FacilityTeamTab", () => {
 
     await waitFor(() => expect(screen.getByText("Alex Grower")).toBeTruthy());
     expect(
+      screen.getByRole("header", { name: "Facility Team" }).props["aria-level"]
+    ).toBe(1);
+    expect(screen.getByRole("header", { name: "Team access" }).props["aria-level"]).toBe(
+      2
+    );
+    expect(
       screen.getByText(
         "You can view the team. Only owners and managers can assign work, and only the facility owner can manage access roles."
       )

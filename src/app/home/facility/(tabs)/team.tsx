@@ -225,13 +225,17 @@ export default function FacilityTeamTab() {
         ) : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Facility Team</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+            Facility Team
+          </Text>
           <Text style={styles.muted}>{header}</Text>
         </View>
 
         {canInvite ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Invite member</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Invite member
+            </Text>
 
             <TextInput
               accessibilityLabel="Invite team member email"
@@ -286,7 +290,9 @@ export default function FacilityTeamTab() {
           </View>
         ) : (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Team access</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Team access
+            </Text>
             <Text style={styles.muted}>
               {canAssignTasks
                 ? "You can view the team and assign work. Only the facility owner can invite members or change access roles."
