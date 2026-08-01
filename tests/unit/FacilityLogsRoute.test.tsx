@@ -7,6 +7,8 @@ const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
+let mockFacilityRole = "STAFF";
+let mockCanWriteLogs = true;
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
@@ -19,7 +21,11 @@ jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
 }));
 jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({ facilityRole: "STAFF" })
+  CAPABILITY_KEYS: { GROWLOGS_WRITE: "growlogs_write" },
+  useEntitlements: () => ({
+    facilityRole: mockFacilityRole,
+    can: () => mockCanWriteLogs
+  })
 }));
 jest.mock("@/hooks/useApiErrorHandler", () => {
   const clearError = jest.fn();
@@ -38,6 +44,8 @@ jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
 describe("FacilityLogsRoute", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFacilityRole = "STAFF";
+    mockCanWriteLogs = true;
     mockApiRequest.mockImplementation((_path: string, options?: any) =>
       Promise.resolve(
         options?.method === "POST"
@@ -53,6 +61,12 @@ describe("FacilityLogsRoute", () => {
     const screen = render(<FacilityLogsRoute />);
 
     await waitFor(() => expect(screen.getByText("Morning observation")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Summer crop → Journal" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "Add journal entry" }).props["aria-level"]
+    ).toBe(2);
     expect(mockApiRequest).toHaveBeenCalledWith(
       "/api/facility/facility-1/growlogs?growId=grow-1"
     );
@@ -82,5 +96,26 @@ describe("FacilityLogsRoute", () => {
         })
       )
     );
+  });
+
+  it("keeps a viewer read-only even if a stale capability claims write access", async () => {
+    mockFacilityRole = "VIEWER";
+    mockCanWriteLogs = true;
+
+    const screen = render(<FacilityLogsRoute />);
+
+    await waitFor(() => expect(screen.getByText("Morning observation")).toBeTruthy());
+    expect(screen.queryByLabelText("Facility journal title")).toBeNull();
+    expect(screen.queryByLabelText("Save facility journal entry")).toBeNull();
+  });
+
+  it("keeps staff read-only when the grow-log write capability is unavailable", async () => {
+    mockCanWriteLogs = false;
+
+    const screen = render(<FacilityLogsRoute />);
+
+    await waitFor(() => expect(screen.getByText("Morning observation")).toBeTruthy());
+    expect(screen.queryByLabelText("Facility journal title")).toBeNull();
+    expect(screen.queryByLabelText("Save facility journal entry")).toBeNull();
   });
 });

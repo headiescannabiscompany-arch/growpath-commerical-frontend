@@ -17,7 +17,7 @@ import { useFacility } from "@/state/useFacility";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
-import { useEntitlements } from "@/entitlements";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -56,10 +56,6 @@ function firstParam(value?: string | string[]) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function canCreateLog(role: unknown) {
-  return ["OWNER", "MANAGER", "STAFF"].includes(String(role || "").toUpperCase());
-}
-
 const LOG_TYPES = ["OBSERVATION", "WATER", "FEED", "IPM", "TRAINING"] as const;
 
 export default function FacilityLogsTab() {
@@ -71,6 +67,10 @@ export default function FacilityLogsTab() {
     contextName?: string | string[];
   }>();
   const ent = useEntitlements();
+  const facilityRole = String(ent?.facilityRole || "").toUpperCase();
+  const canWriteLogs =
+    Boolean(ent?.can?.(CAPABILITY_KEYS.GROWLOGS_WRITE)) &&
+    ["OWNER", "MANAGER", "STAFF"].includes(facilityRole);
   const { selectedId: facilityId } = useFacility();
   const contextGrowId = String(firstParam(params.growId) || "");
   const contextName = String(firstParam(params.contextName) || "");
@@ -121,7 +121,7 @@ export default function FacilityLogsTab() {
   );
 
   const addLog = useCallback(async () => {
-    if (!facilityId || !title.trim() || !canCreateLog(ent?.facilityRole)) return;
+    if (!facilityId || !title.trim() || !canWriteLogs) return;
     setSaving(true);
     setFeedback("");
     try {
@@ -152,7 +152,7 @@ export default function FacilityLogsTab() {
     note,
     type,
     contextGrowId,
-    ent?.facilityRole,
+    canWriteLogs,
     clearError,
     handleApiError,
     load
@@ -184,7 +184,7 @@ export default function FacilityLogsTab() {
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
             {contextName ? `${contextName} → Journal` : "Grow Journal"}
           </Text>
           <Text style={styles.muted}>
@@ -194,9 +194,11 @@ export default function FacilityLogsTab() {
           <Text style={styles.muted}>{header}</Text>
         </View>
 
-        {canCreateLog(ent?.facilityRole) ? (
+        {canWriteLogs ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Add journal entry</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Add journal entry
+            </Text>
             <Text style={styles.muted}>
               Record work, observations, and measurements where the team will find them
               later.
@@ -270,7 +272,9 @@ export default function FacilityLogsTab() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No log entries yet</Text>
+                <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
+                  No log entries yet
+                </Text>
                 <Text style={styles.muted}>
                   When logs exist on the backend, they’ll show up here.
                 </Text>

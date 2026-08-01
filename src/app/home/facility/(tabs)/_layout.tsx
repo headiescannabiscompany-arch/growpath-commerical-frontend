@@ -11,6 +11,7 @@ export const FACILITY_COMPLIANCE_TAB_LABEL = "Compliance";
 export const FACILITY_GROWS_TAB_LABEL = "Grows";
 export const FACILITY_INVENTORY_ROUTE_TITLE = "Facility Inventory";
 export const FACILITY_PLANTS_ROUTE_TITLE = "Facility Plants";
+export const FACILITY_LOGS_ROUTE_TITLE = "Facility Grow Journal";
 
 export function shouldHideFacilityTabBar(pathname = "") {
   return (
@@ -40,7 +41,8 @@ export function shouldShowFacilityRouteHeader(routeName = "") {
     "compliance",
     "grows",
     "inventory",
-    "plants"
+    "plants",
+    "logs"
   ].includes(routeName);
 }
 
@@ -142,7 +144,14 @@ export default function FacilityTabsLayout() {
           headerShown: shouldShowFacilityRouteHeader("compliance")
         }}
       />
-      <Tabs.Screen name="logs" options={{ title: "Logs", tabBarButton: () => null }} />
+      <Tabs.Screen
+        name="logs"
+        options={{
+          title: FACILITY_LOGS_ROUTE_TITLE,
+          headerShown: shouldShowFacilityRouteHeader("logs"),
+          tabBarButton: () => null
+        }}
+      />
       <Tabs.Screen
         name="audit-logs"
         options={{ title: "Audit", tabBarButton: () => null }}

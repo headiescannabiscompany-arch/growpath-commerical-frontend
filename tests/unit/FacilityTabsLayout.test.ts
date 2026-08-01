@@ -2,6 +2,7 @@ import {
   FACILITY_COMPLIANCE_TAB_LABEL,
   FACILITY_GROWS_TAB_LABEL,
   FACILITY_INVENTORY_ROUTE_TITLE,
+  FACILITY_LOGS_ROUTE_TITLE,
   FACILITY_PLANTS_ROUTE_TITLE,
   FACILITY_TASKS_TAB_LABEL,
   shouldHideFacilityTabBar,
@@ -44,50 +45,56 @@ describe("Facility tabs layout", () => {
 
   it("lets Facility Grow Intelligence own its accurate semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("ai-tools")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
   it("lets Facility Reports own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("reports")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
   it("lets Facility Analytics own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("analytics")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
   it("lets Facility Integrations own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("integrations")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
   it("lets Licensed Sales & Transfers own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("transfers")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
   it("lets Facility Inventory own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("inventory")).toBe(false);
     expect(FACILITY_INVENTORY_ROUTE_TITLE).toBe("Facility Inventory");
-    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
   it("lets Facility Rooms & Workspaces own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("rooms")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
   it("lets Facility Plants own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("plants")).toBe(false);
     expect(FACILITY_PLANTS_ROUTE_TITLE).toBe("Facility Plants");
-    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
+  });
+
+  it("lets Facility Grow Journal own its semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("logs")).toBe(false);
+    expect(FACILITY_LOGS_ROUTE_TITLE).toBe("Facility Grow Journal");
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
   it("lets Facility Grows own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("grows")).toBe(false);
     expect(FACILITY_GROWS_TAB_LABEL).toBe("Grows");
-    expect(shouldShowFacilityRouteHeader("logs")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("audit-logs")).toBe(true);
   });
 
   it("lets Facility Tasks own its semantic page heading", () => {
