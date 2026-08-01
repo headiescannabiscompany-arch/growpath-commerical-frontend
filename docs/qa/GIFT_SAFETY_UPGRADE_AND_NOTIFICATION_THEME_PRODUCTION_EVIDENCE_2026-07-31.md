@@ -781,6 +781,38 @@ closure.
   record action was invoked. The session returned to the Facility dashboard
   without logout.
 
+## Facility Compliance hierarchy and Viewer SOP-run permission gate
+
+Production Compliance retained the correct Night palette, readable compliance
+evidence, and most Viewer restrictions, but its tab shell owned the generic
+`Compliance` level-one heading while all workflow sections were ordinary text.
+More importantly, every SOP template row exposed a `Start run` action to the
+Viewer even though the top-level start action and other compliance writes were
+correctly hidden. Frontend `68ea5bf9` established one page-owned Facility
+Compliance heading, structured compliance sections, and applied the existing
+compliance-write gate to per-template SOP-run navigation without changing
+Owner/Manager/Staff writer behavior.
+
+- Production Build Preflight `30688565734` passed in 3m14s and Frontend CI
+  `30688565753` passed in 7m02s. The production host published the new
+  `index-e76c464995dca992ff5ae75139eeee7f.js` asset.
+- Thirty-one focused Compliance facility-label, Owner/Viewer SOP-navigation,
+  report/AI route, and tab-shell tests passed. Targeted ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. The suite retained its existing
+  Expo Go push warning without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one
+  Facility Compliance heading; six level-two workflow headings; the compact
+  selected `Compliance` tab; the real active SOP template; 67 readable audit
+  events; zero open deviations and pending verifications; the Night canvas
+  `rgb(14, 20, 27)`; bright heading text `rgb(244, 247, 251)`; and zero white
+  content surfaces.
+- The Viewer exposed zero top-level or per-template SOP-run starts, deviation
+  creation, deviation resolution, verification approval, or verification
+  rejection controls. No readiness action, export, AI request, SOP navigation,
+  audit-log navigation, deviation, verification, template, run, refresh, audit
+  event, billing, or record action was invoked. The session returned to the
+  Facility dashboard without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
