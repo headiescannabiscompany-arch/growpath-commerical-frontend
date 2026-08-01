@@ -9,10 +9,14 @@ const mockReplace = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
 let mockFacilityRole = "STAFF";
 let mockCanWriteLogs = true;
+let mockSearchParams: Record<string, string> = {
+  growId: "grow-1",
+  contextName: "Summer crop"
+};
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
-  useLocalSearchParams: () => ({ growId: "grow-1", contextName: "Summer crop" })
+  useLocalSearchParams: () => mockSearchParams
 }));
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -46,6 +50,7 @@ describe("FacilityLogsRoute", () => {
     jest.clearAllMocks();
     mockFacilityRole = "STAFF";
     mockCanWriteLogs = true;
+    mockSearchParams = { growId: "grow-1", contextName: "Summer crop" };
     mockApiRequest.mockImplementation((_path: string, options?: any) =>
       Promise.resolve(
         options?.method === "POST"
@@ -117,5 +122,22 @@ describe("FacilityLogsRoute", () => {
     await waitFor(() => expect(screen.getByText("Morning observation")).toBeTruthy());
     expect(screen.queryByLabelText("Facility journal title")).toBeNull();
     expect(screen.queryByLabelText("Save facility journal entry")).toBeNull();
+  });
+
+  it("uses one accurate root-route heading and a structured empty state", async () => {
+    mockSearchParams = {};
+    mockFacilityRole = "VIEWER";
+    mockCanWriteLogs = false;
+    mockApiRequest.mockResolvedValue({ growlogs: [] });
+
+    const screen = render(<FacilityLogsRoute />);
+
+    await waitFor(() => expect(screen.getByText("No log entries yet")).toBeTruthy());
+    expect(
+      screen.getByRole("header", { name: "Facility Grow Journal" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "No log entries yet" }).props["aria-level"]
+    ).toBe(2);
   });
 });

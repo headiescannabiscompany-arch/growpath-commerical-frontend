@@ -173,7 +173,7 @@ export default function FacilityLogsTab() {
 
   return (
     <ScreenBoundary
-      title={contextName ? `${contextName} journal` : "Grow Journal"}
+      title={contextName ? `${contextName} journal` : "Facility Grow Journal"}
       showBack={Boolean(contextGrowId)}
       backFallbackHref={
         contextGrowId ? `/home/facility/grows/${contextGrowId}` : undefined
@@ -185,7 +185,7 @@ export default function FacilityLogsTab() {
 
         <View style={styles.headerRow}>
           <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
-            {contextName ? `${contextName} → Journal` : "Grow Journal"}
+            {contextName ? `${contextName} → Journal` : "Facility Grow Journal"}
           </Text>
           <Text style={styles.muted}>
             Operational grow notes and observations. Compliance evidence and exports live
