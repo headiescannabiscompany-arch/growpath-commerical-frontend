@@ -424,6 +424,8 @@ export default function FacilityDashboardTab() {
               Facility workspace
             </Text>
             <Text
+              accessibilityRole="header"
+              aria-level={2}
               style={[styles.h1, { color: palette.heroText }, isTv ? styles.h1Tv : null]}
             >
               Operations Live
@@ -461,7 +463,11 @@ export default function FacilityDashboardTab() {
           ]}
         >
           <View style={styles.learningHeader}>
-            <Text style={[styles.sectionTitle, { color: palette.text }]}>
+            <Text
+              accessibilityRole="header"
+              aria-level={2}
+              style={[styles.sectionTitle, { color: palette.text }]}
+            >
               Learning &amp; community
             </Text>
             <Text style={[styles.learningHint, { color: palette.textMuted }]}>
@@ -509,7 +515,11 @@ export default function FacilityDashboardTab() {
         <View style={[styles.contentGrid, isDesktop ? styles.contentGridWide : null]}>
           <View style={styles.mainColumn}>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: palette.text }]}>
+              <Text
+                accessibilityRole="header"
+                aria-level={2}
+                style={[styles.sectionTitle, { color: palette.text }]}
+              >
                 At a glance
               </Text>
               <Pressable
@@ -567,7 +577,11 @@ export default function FacilityDashboardTab() {
                 { backgroundColor: palette.surface, borderColor: palette.border }
               ]}
             >
-              <Text style={[styles.cardTitle, { color: palette.text }]}>
+              <Text
+                accessibilityRole="header"
+                aria-level={2}
+                style={[styles.cardTitle, { color: palette.text }]}
+              >
                 Priority status
               </Text>
               {statusRows.map((row) => (
@@ -598,7 +612,11 @@ export default function FacilityDashboardTab() {
                 { backgroundColor: palette.surface, borderColor: palette.border }
               ]}
             >
-              <Text style={[styles.cardTitle, { color: palette.text }]}>
+              <Text
+                accessibilityRole="header"
+                aria-level={2}
+                style={[styles.cardTitle, { color: palette.text }]}
+              >
                 Command actions
               </Text>
               {actionRows.map((row) => (
