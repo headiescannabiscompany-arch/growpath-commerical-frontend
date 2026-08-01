@@ -875,7 +875,11 @@ export default function AiScreen({
     <View style={[styles.container, pageSurface]}>
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
         <View style={[styles.workspaceCard, softCard]}>
-          <Text style={[styles.contextText, styles.contextTitle, titleText]}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={[styles.contextText, styles.contextTitle, titleText]}
+          >
             AI workspace options
           </Text>
           <Text style={[styles.contextText, bodyText]}>
@@ -931,7 +935,11 @@ export default function AiScreen({
         ) : null}
         {context && (
           <View style={[styles.contextCard, surfaceCard]}>
-            <Text style={[styles.contextText, styles.contextTitle, titleText]}>
+            <Text
+              accessibilityRole="header"
+              aria-level={2}
+              style={[styles.contextText, styles.contextTitle, titleText]}
+            >
               {facilityPreset ? `${facilityPreset.title} Context` : "Context Loaded"}
             </Text>
             {facilityPreset?.key === "compliance" ? (
@@ -1249,6 +1257,7 @@ export default function AiScreen({
         </Text>
         <MediaEvidencePicker
           aiUsable
+          titleHeadingLevel={2}
           maxPhotos={10}
           allowVideo
           maxVideoSeconds={30}
@@ -1258,6 +1267,9 @@ export default function AiScreen({
           onChange={setEvidenceAssets}
         />
         <TextInput
+          accessibilityLabel={
+            facilityPreset ? `Notes for ${facilityPreset.title}` : "Ask GrowPath AI"
+          }
           style={[styles.input, inputSurface]}
           value={draft}
           onChangeText={setDraft}
