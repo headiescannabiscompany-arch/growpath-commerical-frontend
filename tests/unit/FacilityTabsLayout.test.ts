@@ -1,4 +1,5 @@
 import {
+  FACILITY_COMPLIANCE_TAB_LABEL,
   FACILITY_TASKS_TAB_LABEL,
   shouldHideFacilityTabBar,
   shouldShowFacilityRouteHeader
@@ -71,7 +72,13 @@ describe("Facility tabs layout", () => {
   it("lets Facility Tasks own its semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("tasks")).toBe(false);
     expect(FACILITY_TASKS_TAB_LABEL).toBe("Tasks");
-    expect(shouldShowFacilityRouteHeader("compliance")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("dashboard")).toBe(true);
+  });
+
+  it("lets Facility Compliance own its semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("compliance")).toBe(false);
+    expect(FACILITY_COMPLIANCE_TAB_LABEL).toBe("Compliance");
+    expect(shouldShowFacilityRouteHeader("sop-runs")).toBe(true);
   });
 
   it("lets Facility Team own its semantic page heading", () => {

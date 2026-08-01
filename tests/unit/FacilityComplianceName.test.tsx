@@ -6,6 +6,7 @@ import FacilityComplianceTab from "@/app/home/facility/(tabs)/compliance";
 const mockRouter = { push: jest.fn(), replace: jest.fn() };
 const mockClearError = jest.fn();
 const mockHandleApiError = jest.fn();
+const mockGetSOPTemplates = jest.fn();
 const mockEntitlementState = {
   can: jest.fn((_capability?: string) => true),
   facilityRole: "OWNER"
@@ -51,7 +52,7 @@ jest.mock("@/api/verification", () => ({
 
 jest.mock("@/api/sop", () => ({
   createSOPTemplate: jest.fn(),
-  getSOPTemplates: jest.fn().mockResolvedValue([])
+  getSOPTemplates: (...args: any[]) => mockGetSOPTemplates(...args)
 }));
 
 jest.mock("@/api/audit", () => ({
@@ -64,6 +65,7 @@ describe("Facility Compliance facility label", () => {
     jest.clearAllMocks();
     mockEntitlementState.can.mockReturnValue(true);
     mockEntitlementState.facilityRole = "OWNER";
+    mockGetSOPTemplates.mockResolvedValue([]);
     mockFacilityState = {
       selectedId: "507f1f77bcf86cd799439011",
       selected: {
@@ -113,6 +115,9 @@ describe("Facility Compliance facility label", () => {
   });
 
   it("keeps SOP run creation hidden for a viewer", async () => {
+    mockGetSOPTemplates.mockResolvedValue([
+      { id: "sop-1", title: "Sanitation evidence check", version: 1 }
+    ]);
     mockEntitlementState.can.mockImplementation(
       (capability?: string) => capability === "COMPLIANCE_READ"
     );
@@ -124,7 +129,40 @@ describe("Facility Compliance facility label", () => {
 
     expect(screen.queryByLabelText("Start new SOP run")).toBeNull();
     expect(
+      screen.queryByLabelText("Start SOP run from Sanitation evidence check")
+    ).toBeNull();
+    expect(
+      screen.getByRole("header", { name: "Facility Compliance" }).props["aria-level"]
+    ).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "Inspection readiness" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "SOP Templates" }).props["aria-level"]
+    ).toBe(2);
+    expect(
       screen.getByText("You do not have permission to create compliance records.")
     ).toBeTruthy();
+  });
+
+  it("keeps SOP template run navigation available to a compliance writer", async () => {
+    mockGetSOPTemplates.mockResolvedValue([
+      { id: "sop-1", title: "Sanitation evidence check", version: 1 }
+    ]);
+    const screen = render(<FacilityComplianceTab />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.press(
+      screen.getByLabelText("Start SOP run from Sanitation evidence check")
+    );
+    expect(mockRouter.push).toHaveBeenCalledWith({
+      pathname: "/home/facility/sop-runs/start",
+      params: {
+        templateId: "sop-1",
+        templateTitle: "Sanitation evidence check"
+      }
+    });
   });
 });

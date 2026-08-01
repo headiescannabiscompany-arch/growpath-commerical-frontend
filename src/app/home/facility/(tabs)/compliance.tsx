@@ -271,7 +271,9 @@ export default function FacilityComplianceTab() {
 
         <View style={styles.headerRow}>
           <View style={styles.headerText}>
-            <Text style={styles.h1}>Compliance</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+              Facility Compliance
+            </Text>
             <Text style={styles.muted}>
               Facility-scoped primitives for deviations, SOPs, verification, and audit
               events.
@@ -283,7 +285,9 @@ export default function FacilityComplianceTab() {
 
         {!canReadCompliance ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>No Compliance Access</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              No Compliance Access
+            </Text>
             <Text style={styles.muted}>
               This account does not have the `COMPLIANCE_READ` capability for the selected
               facility.
@@ -313,7 +317,9 @@ export default function FacilityComplianceTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Inspection readiness</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Inspection readiness
+              </Text>
               <Text style={styles.muted}>
                 Use the current compliance counts to export evidence, run AI readiness,
                 and keep SOP run proof current.
@@ -359,7 +365,9 @@ export default function FacilityComplianceTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Create Deviation</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Create Deviation
+              </Text>
               {!canWriteCompliance ? (
                 <Text style={styles.muted}>
                   You do not have permission to create compliance records.
@@ -408,7 +416,9 @@ export default function FacilityComplianceTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Open Deviations</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Open Deviations
+              </Text>
               {openDeviations.length ? (
                 openDeviations.map((item) => {
                   const id = rowId(item);
@@ -440,7 +450,9 @@ export default function FacilityComplianceTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Verification Queue</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Verification Queue
+              </Text>
               {pendingVerifications.length ? (
                 <>
                   <TextInput
@@ -491,7 +503,9 @@ export default function FacilityComplianceTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>SOP Templates</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                SOP Templates
+              </Text>
               {canWriteCompliance ? (
                 <View style={styles.form}>
                   <Text style={styles.muted}>
@@ -517,7 +531,7 @@ export default function FacilityComplianceTab() {
                     <View key={id || title} style={styles.row}>
                       <Text style={styles.rowTitle}>{title}</Text>
                       <Text style={styles.rowMeta}>Version {sop.version || 1}</Text>
-                      {id ? (
+                      {canWriteCompliance && id ? (
                         <Pressable
                           accessibilityRole="button"
                           accessibilityLabel={`Start SOP run from ${title}`}
@@ -542,7 +556,9 @@ export default function FacilityComplianceTab() {
 
             <View style={styles.card}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>Audit Events</Text>
+                <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                  Audit Events
+                </Text>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Open audit logs"
