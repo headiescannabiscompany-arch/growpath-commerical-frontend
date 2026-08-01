@@ -2954,6 +2954,49 @@ highest-risk fixed-Day surfaces without altering their data or mutation paths:
   action was invoked. The five unfinished gift frontend files remained
   unstaged and outside the release.
 
+## Personal and Commercial grow workspaces plus shared error/access palette
+
+Frontend `a969d25e` removes the next confirmed fixed-Day surfaces without
+changing grow, evidence, AI, error, or access behavior:
+
+- Personal Grow Overview, Timeline, and Automation, including stats, source
+  actions, filters, events, policy cards, status/error/empty/loading states,
+  and primary/secondary/danger actions;
+- Commercial Grows and Grow Detail, shared by the Evidence Runs route aliases,
+  including metrics, record/evidence/public-share panels, selected states, and
+  all 17 input surfaces and placeholder/selection colors;
+- shared Inline Error, Locked Screen, and Error State components, including
+  text, metadata, borders, retry/action controls, icons, and surfaces;
+- the remaining fixed grow-selector chip colors inside the shared Personal,
+  Commercial, and Facility Ask AI screen.
+
+- Eleven combined suites passed, totaling 62 tests across existing grow,
+  evidence-run, AI, and shared-error/access behavior plus explicit Day/Night
+  coverage. Forced source/test lint, full frontend `tsc --noEmit`, Prettier
+  verification, and `git diff --check` passed. The known non-failing Expo Go
+  remote-notification warning appeared in applicable suites.
+- Production Build Preflight `30723173184` and Frontend CI `30723173186`
+  passed against exact commit
+  `a969d25e7b598aff6054b30865a6449b29b136b6`. Production served bundle
+  `index-937e306f...` after the rollout.
+- Signed-in Facility Viewer verification confirmed Facility Dashboard retained
+  zero opaque light surfaces. Facility Ask AI loaded one named prompt field,
+  its four expected headings, its truthful zero-grow context, and zero opaque
+  light surfaces. Direct Personal Grow Overview/Timeline/Automation,
+  Commercial Grows, and Commercial Evidence Runs each retained one themed
+  `Access denied` H1, zero fields, and zero opaque light surfaces. The safe
+  `/forum/new-post` check loaded its authorized Facility form with two fields
+  and zero opaque light surfaces.
+- Production currently has zero Facility grows, so the corrected Ask AI grow
+  chips could not truthfully render there. The Personal and Commercial loaded
+  grow/evidence states, grow chips, Locked Screen branch, and failure-only
+  Inline Error/Error State branches remain behavior-and-palette test verified;
+  no role was changed, fake record created, or production failure manufactured.
+- No prompt, field, grow, evidence run, source link, automation, retry, access
+  action, forum post, route action, workspace, account, session, billing, audit
+  event, or record action was invoked. The five unfinished gift frontend files
+  remained unstaged and outside the release.
+
 ## Personal Home, Commercial commerce, and shared recovery active palette
 
 Frontend `dde14108` removes the next confirmed fixed-Day color surfaces while
