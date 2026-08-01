@@ -2747,6 +2747,35 @@ plant records, or navigation.
   session, billing, audit event, or record action was invoked, and the Viewer
   session remained signed in.
 
+## Facility Tasks loaded-card hierarchy and empty-state guidance
+
+Production Facility Tasks already used the active Night palette, named its
+filters and task link, and correctly removed creation controls from the Viewer,
+but the real completed task title was plain text under the Task queue H2. The
+shared empty state also told a read-only Viewer to `Create a task above` when no
+creator would exist. Frontend `3b3cf989` marks loaded task titles and the empty
+state as H3s, preserves the writer instruction, and gives read-only users
+accurate passive queue guidance without changing task permissions, filters,
+assignment, links, APIs, or records.
+
+- Both focused Facility Tasks/layout suites passed, totaling 29 tests and
+  covering queue/source/status filters, Viewer gating, loaded/empty hierarchy,
+  role-aware empty copy, detail routing, source-linked task creation, stale
+  reload persistence, and compact navigation. Source lint, forced test lint,
+  full frontend `tsc --noEmit`, and `git diff --check` passed. The existing
+  non-failing Expo Go notification warning remained in the layout suite.
+- Production Build Preflight `30718299288` and Frontend CI `30718299285`
+  passed. Clean signed-in Facility Viewer production verification on bundle
+  `index-7bcc3bd1...` rendered one H1, two H2s, the Status/Source H3s, and the
+  genuine `[QA cross-role 2026-07-22] Verify shared task persistence` title as
+  an H3 with its named detail link retained. The route had zero fields, zero
+  creation actions, and zero opaque white/light page-content surfaces.
+- Production contains one genuine task, so the corrected empty Viewer guidance
+  remains source/test-proven rather than manufactured live. No task, filter,
+  link, assignment, status, source, field, route, workspace, account, session,
+  billing, audit event, or record action was invoked, and the Viewer session
+  remained signed in.
+
 ## Shared Nutrient Mix Builder section hierarchy
 
 After the title/control-name correction, production Nutrient Mix Builder still
