@@ -216,6 +216,20 @@ describe("NpkToolScreen", () => {
       "NPK ingredient 1 Mo percent",
       "NPK ingredient 1 Si percent"
     ].forEach((name) => expect(screen.getByLabelText(name)).toBeTruthy());
+    [
+      "Nutrient mix science and evidence",
+      "AI-guided, calculator-verified",
+      "GrowPath cooked amendment presets",
+      "Recipe context",
+      "Target profile",
+      "Water baseline and measured feed",
+      "Product 1"
+    ].forEach((name) => {
+      expect(screen.getByRole("header", { name })).toHaveProp("aria-level", 2);
+    });
+    ["Micronutrient percentages", "Guaranteed analysis percentages"].forEach((name) => {
+      expect(screen.getByRole("header", { name })).toHaveProp("aria-level", 3);
+    });
     expect(screen.getByText("Nutrient mix science and evidence")).toBeTruthy();
     expect(screen.getByText(/verified product labels/)).toBeTruthy();
     expect(screen.getByText(/does not prove product superiority/)).toBeTruthy();

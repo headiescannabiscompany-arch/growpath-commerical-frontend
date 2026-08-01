@@ -105,6 +105,9 @@ describe("SoilBuilderToolScreen", () => {
       "aria-level",
       1
     );
+    expect(
+      screen.getByRole("header", { name: "Soil mix science and evidence" })
+    ).toHaveProp("aria-level", 2);
     expect(screen.getByText("Soil mix science and evidence")).toBeTruthy();
     expect(screen.getByText(/soil\/substrate lab tests/)).toBeTruthy();
     expect(screen.getByText(/remain uncertain without testing/)).toBeTruthy();

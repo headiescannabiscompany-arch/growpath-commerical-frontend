@@ -901,7 +901,9 @@ export default function NpkToolScreen() {
         </Text>
         <MixBuilderScienceBasis variant="nutrient" />
         <View style={styles.guidanceCard}>
-          <Text style={styles.resultTitle}>AI-guided, calculator-verified</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.resultTitle}>
+            AI-guided, calculator-verified
+          </Text>
           <Text style={styles.fieldHint}>
             Use the target profile and ingredient rows for recipe-building conversations.
             GrowPath AI should collect missing inputs and explain tradeoffs, while this
@@ -982,7 +984,9 @@ export default function NpkToolScreen() {
         />
 
         <View style={styles.guidanceCard}>
-          <Text style={styles.resultTitle}>GrowPath cooked amendment presets</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.resultTitle}>
+            GrowPath cooked amendment presets
+          </Text>
           <Text style={styles.fieldHint}>
             Load the locked 2 lb dry-amendment recipes using your guaranteed analysis,
             exact cups-per-pound densities, Greenstone as 0-0-0, and target tolerance
@@ -1009,7 +1013,9 @@ export default function NpkToolScreen() {
 
         {savedRecipes.length ? (
           <View style={styles.savedSection}>
-            <Text style={styles.label}>Saved recipes</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+              Saved recipes
+            </Text>
             {savedRecipes.map((recipe) => (
               <Pressable
                 key={recipe._id}
@@ -1040,7 +1046,9 @@ export default function NpkToolScreen() {
           </View>
         ) : null}
 
-        <Text style={styles.label}>Recipe context</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+          Recipe context
+        </Text>
         <View style={styles.row}>
           <View style={styles.selectWrap}>
             <Picker
@@ -1117,7 +1125,9 @@ export default function NpkToolScreen() {
             placeholder="Dry mix lb"
           />
         </View>
-        <Text style={styles.label}>Target profile</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+          Target profile
+        </Text>
         <Text style={styles.fieldHint}>
           Optional target label N-P2O5-K2O lets AI and the calculator compare the recipe
           goal to the actual label math. Elemental P/K conversion stays inside the
@@ -1183,7 +1193,9 @@ export default function NpkToolScreen() {
           </Pressable>
         </View>
 
-        <Text style={styles.label}>Water baseline and measured feed</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.label}>
+          Water baseline and measured feed
+        </Text>
         <Text style={styles.fieldHint}>
           Add source-water minerals and the final mixed EC/pH so recipe history matches
           what was actually fed.
@@ -1214,7 +1226,9 @@ export default function NpkToolScreen() {
         {rows.map((row, index) => (
           <View key={row.id} style={styles.product}>
             <View style={styles.productHeader}>
-              <Text style={styles.productTitle}>Product {index + 1}</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.productTitle}>
+                Product {index + 1}
+              </Text>
               {rows.length > 1 ? (
                 <Pressable
                   onPress={() =>
@@ -1332,7 +1346,9 @@ export default function NpkToolScreen() {
                 </View>
               ) : null}
             </View>
-            <Text style={styles.fieldHint}>Micronutrient percentages</Text>
+            <Text accessibilityRole="header" aria-level={3} style={styles.fieldHint}>
+              Micronutrient percentages
+            </Text>
             <View style={styles.analysisGrid}>
               {(["Fe", "Mn", "Zn", "Cu", "B", "Mo", "Si"] as const).map((key) => (
                 <View key={key} style={styles.analysisField}>
@@ -1347,7 +1363,9 @@ export default function NpkToolScreen() {
                 </View>
               ))}
             </View>
-            <Text style={styles.fieldHint}>Guaranteed analysis percentages</Text>
+            <Text accessibilityRole="header" aria-level={3} style={styles.fieldHint}>
+              Guaranteed analysis percentages
+            </Text>
             <Text style={styles.fieldHint}>
               Label N-P2O5-K2O uses elemental N with oxide label values for P and K.
               GrowPath also stores elemental P and K for recipe math using P2O5 x 0.4364
@@ -1518,7 +1536,13 @@ export default function NpkToolScreen() {
                 <>
                   {result.calculationBasis ? (
                     <>
-                      <Text style={styles.resultTitle}>Calculation basis</Text>
+                      <Text
+                        accessibilityRole="header"
+                        aria-level={3}
+                        style={styles.resultTitle}
+                      >
+                        Calculation basis
+                      </Text>
                       <Text style={styles.recommendation}>
                         {result.calculationBasis.interpretation}
                       </Text>
@@ -1526,7 +1550,13 @@ export default function NpkToolScreen() {
                   ) : null}
                   {result.targetProfile ? (
                     <>
-                      <Text style={styles.resultTitle}>Target profile comparison</Text>
+                      <Text
+                        accessibilityRole="header"
+                        aria-level={3}
+                        style={styles.resultTitle}
+                      >
+                        Target profile comparison
+                      </Text>
                       <Text style={styles.recommendation}>
                         Status: {String(result.targetProfile.status).replaceAll("_", " ")}
                         . Delivered label-equivalent ratio N-P2O5-K2O{" "}
@@ -1538,7 +1568,13 @@ export default function NpkToolScreen() {
                   ) : null}
                   {result.sourceConfidence ? (
                     <>
-                      <Text style={styles.resultTitle}>Source confidence</Text>
+                      <Text
+                        accessibilityRole="header"
+                        aria-level={3}
+                        style={styles.resultTitle}
+                      >
+                        Source confidence
+                      </Text>
                       <Text style={styles.recommendation}>
                         Overall: {result.sourceConfidence.overall}. High{" "}
                         {result.sourceConfidence.counts?.high || 0}, medium{" "}
@@ -1549,7 +1585,13 @@ export default function NpkToolScreen() {
                   ) : null}
                   {Array.isArray(result.mixingOrder) && result.mixingOrder.length ? (
                     <>
-                      <Text style={styles.resultTitle}>Mixing sequence</Text>
+                      <Text
+                        accessibilityRole="header"
+                        aria-level={3}
+                        style={styles.resultTitle}
+                      >
+                        Mixing sequence
+                      </Text>
                       {result.mixingOrder.map((step: string, index: number) => (
                         <Text key={`${step}-${index}`} style={styles.recommendation}>
                           {index + 1}. {step}
@@ -1559,7 +1601,13 @@ export default function NpkToolScreen() {
                   ) : null}
                   {result.availabilityEstimate?.windows ? (
                     <>
-                      <Text style={styles.resultTitle}>Estimated availability</Text>
+                      <Text
+                        accessibilityRole="header"
+                        aria-level={3}
+                        style={styles.resultTitle}
+                      >
+                        Estimated availability
+                      </Text>
                       <Text style={styles.fieldHint}>
                         Raw ppm is label math. Availability estimates apply release timing
                         from the product form.
@@ -1585,7 +1633,13 @@ export default function NpkToolScreen() {
                       ) : null}
                     </>
                   ) : null}
-                  <Text style={styles.resultTitle}>Release timing</Text>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={3}
+                    style={styles.resultTitle}
+                  >
+                    Release timing
+                  </Text>
                   {Object.entries(result.releaseTimeline || {}).map(
                     ([window, entries]: [string, any]) =>
                       entries.length ? (

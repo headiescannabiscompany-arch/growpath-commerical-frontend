@@ -35,7 +35,9 @@ export default function MixBuilderScienceBasis({
   const content = basis[variant];
   return (
     <View style={styles.card} accessibilityLabel={`${content.title} basis`}>
-      <Text style={styles.title}>{content.title}</Text>
+      <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+        {content.title}
+      </Text>
       <Text style={styles.line}>{content.model}</Text>
       <Text style={styles.line}>{content.evidence}</Text>
       <Text style={styles.limit}>{content.limit}</Text>
