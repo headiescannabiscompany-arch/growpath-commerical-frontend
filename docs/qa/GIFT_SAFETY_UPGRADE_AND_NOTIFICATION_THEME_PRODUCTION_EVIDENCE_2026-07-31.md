@@ -1688,6 +1688,42 @@ actions; active procedure summaries remain visible to Viewer.
   audit event, billing, or record action was invoked, and the Viewer session
   remained signed in.
 
+## Facility inventory accidental-route removal
+
+Two implementation components lived under the Expo Router `(tabs)` tree, so
+production published accidental `/home/facility/CreateInventoryItemScreen` and
+`/home/facility/InventoryItemDetailScreen` URLs in addition to the canonical
+inventory routes. The first exposed a duplicate page hierarchy around the
+Viewer's protected state; the second had no item id and remained indefinitely
+on `Loading item...`. Frontend `ba7da6a8` moves both implementations to
+`src/screens/facility`, keeps only `/home/facility/inventory/new` and
+`/home/facility/inventory/[id]`, removes obsolete tab registrations/path rules,
+updates route documentation, and gives the authorized creation form an explicit
+H1. Follow-up `8c2eaae3` updates the business/production contract to read the
+new non-route screen path.
+
+- The first exact production gates correctly failed because the business
+  contract still referenced the removed route-tree file. That contract path was
+  corrected before acceptance. Final Production Build Preflight `30701354851`
+  and Frontend CI `30701354885` passed on `8c2eaae3`.
+- Twenty-eight focused canonical inventory, hierarchy, tab-layout, route-surface,
+  and release-matrix tests passed. Forced ESLint, full frontend `tsc --noEmit`,
+  route inventory, JSON validation, business/production contract validation,
+  and `git diff --check` passed. The route inventory decreased from 266 routes /
+  280 files to 264 routes / 278 files.
+- The complete local release preflight cleared every static contract and all
+  130 focused backend/frontend release tests. Its cold-Metro Playwright stage
+  timed out seven parallel page navigations while rebuilding the bundle (one of
+  eight passed); no route assertion failed, and this local resource timeout was
+  not treated as acceptance. Both exact clean CI gates above completed instead.
+- Signed-in Facility Viewer production acceptance confirmed both accidental
+  URLs now return Expo's `Unmatched Route / Page could not be found` state.
+  Canonical `/home/facility/inventory/new` still returns the one-H1, form-free
+  read-only state with only Back and Return to Inventory.
+- No field, item, quantity, inventory movement, refresh, navigation action,
+  audit event, billing, or record action was invoked, and the Viewer session
+  remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
