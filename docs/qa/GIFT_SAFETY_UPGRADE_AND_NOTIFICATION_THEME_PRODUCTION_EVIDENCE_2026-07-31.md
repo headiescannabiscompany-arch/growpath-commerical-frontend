@@ -1380,6 +1380,33 @@ video permissions or persistence behavior.
   removal, storage, audit event, billing, or record action was invoked, and the
   session remained signed in.
 
+## Shared parental-content controls Night theme
+
+Production Facility Profile was mostly palette-correct but retained one white
+day-only island: the shared cannabis/parental-lock card and its secure PIN field
+used black text and light borders under resolved Night mode. Frontend `e6988960`
+moved the reusable card, explanatory/value copy, PIN field and placeholder,
+actions, disabled state, and feedback to the active palette and structured its
+visible title as a level-two heading. Content-control behavior, eligibility,
+PIN security, and save handlers were not changed.
+
+- Production Build Preflight `30695987549` and Frontend CI `30695987525`
+  passed.
+- Nine focused Facility Profile and account privacy/content-control tests
+  passed. Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check`
+  passed. Existing React test-timing warnings did not fail the suites.
+- Signed-in Facility Viewer production acceptance confirmed a level-two
+  `Cannabis content and parental lock` heading in bright Night text
+  `rgb(244, 247, 251)`. Its card and untouched secure PIN field use Night
+  surface `rgb(21, 29, 39)`, border `rgb(40, 53, 69)`, and bright input text.
+  No white page-content surface remained; the separate Report Bug control was
+  the only detected white element.
+- The account retained `Cannabis content: Hidden`, age eligibility `21_plus`,
+  and parental lock `Off`; Hide, Show, and disabled Enable Lock controls
+  remained present. No PIN, visibility, eligibility, lock, notification,
+  profile, audit event, billing, or record action was invoked, and the session
+  remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
