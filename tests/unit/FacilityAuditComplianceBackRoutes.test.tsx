@@ -11,7 +11,9 @@ import FacilityAuditLogsIndexRoute from "@/app/home/facility/audit-logs";
 import FacilityComplianceAiDashboardRoute, {
   createComplianceAiDashboardStyles
 } from "@/app/home/facility/compliance/ai4.dashboard";
-import FacilityComplianceReportDetailRoute from "@/app/home/facility/compliance/report-detail";
+import FacilityComplianceReportDetailRoute, {
+  createComplianceReportDetailStyles
+} from "@/app/home/facility/compliance/report-detail";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockUseAuditLogs = jest.fn();
@@ -199,12 +201,44 @@ describe("facility audit and compliance nested back behavior", () => {
 
   it("uses the shared back fallback on compliance report detail", () => {
     mockParams = { id: "latest" };
+    mockUseFacilityReport.mockReturnValue({
+      data: {
+        generatedAt: "2026-08-01T04:19:11.503Z",
+        tasks: { total: 1, open: 0, overdue: 0, completedLast7d: 0 },
+        compliance: { totalLogs: 0, missedLast7d: null, byType: {} },
+        automation: { policiesEnabled: 0, triggersLast7d: 0 },
+        team: { totalMembers: 4, byRole: { OWNER: 1, VIEWER: 1 } }
+      },
+      isLoading: false,
+      error: null
+    });
 
     const screen = render(<FacilityComplianceReportDetailRoute />);
 
     expect(screen.getByText("Shared Back /home/facility/compliance")).toBeTruthy();
-    expect(screen.getByText("Compliance Report Detail")).toBeTruthy();
-    expect(screen.getByText("reportId: latest")).toBeTruthy();
+    expect(
+      screen.getByRole("header", { name: "Compliance Report Detail" }).props["aria-level"]
+    ).toBe(1);
+    expect(screen.getByText("Report reference: latest")).toBeTruthy();
+    expect(screen.getByText("Tasks")).toBeTruthy();
+    expect(screen.getByText("Compliance records")).toBeTruthy();
+    expect(screen.getByText(/Missed in 7 days Unknown/)).toBeTruthy();
+    expect(screen.getByText("No compliance log types recorded.")).toBeTruthy();
+    expect(screen.getByText("Automation")).toBeTruthy();
+    expect(screen.getByText("Team")).toBeTruthy();
+    expect(screen.queryByText(/"facilityId"/)).toBeNull();
+  });
+
+  it("uses the active Night palette for compliance report detail", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createComplianceReportDetailStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.h1.color).toBe(palette.text);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.cardTitle.color).toBe(palette.text);
+    expect(styles.detail.color).toBe(palette.textMuted);
+    expect(styles.error.color).toBe(palette.danger);
   });
 
   it("uses the shared back fallback on compliance AI dashboard drill-in", () => {
