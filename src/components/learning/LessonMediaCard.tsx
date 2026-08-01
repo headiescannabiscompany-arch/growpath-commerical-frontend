@@ -17,6 +17,7 @@ import {
 } from "@/features/learning/lessonMedia";
 import { getVideoPlayback, VideoWorkspaceType } from "@/api/videos";
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 
@@ -67,6 +68,8 @@ export default function LessonMediaCard({
   context = "lesson"
 }: Props) {
   const entitlements = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [playerLoaded, setPlayerLoaded] = useState(false);
   const [protectedPlaybackUrl, setProtectedPlaybackUrl] = useState("");
   const [protectedPlaybackLoading, setProtectedPlaybackLoading] = useState(false);
@@ -236,7 +239,7 @@ export default function LessonMediaCard({
           accessibilityLiveRegion="polite"
           style={styles.playbackStatus}
         >
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.statusText}>Preparing protected playback…</Text>
         </View>
       ) : null}
@@ -314,100 +317,106 @@ export default function LessonMediaCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    backgroundColor: "#fff",
-    padding: 14,
-    marginBottom: 16,
-    gap: 11
-  },
-  compactCard: { marginBottom: 10 },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 10
-  },
-  headerCopy: { flex: 1 },
-  kicker: { color: "#1d4ed8", fontSize: 12, fontWeight: "800" },
-  title: { color: "#0f172a", fontSize: 17, fontWeight: "800", marginTop: 2 },
-  badge: {
-    color: "#166534",
-    backgroundColor: "#dcfce7",
-    borderRadius: 999,
-    fontSize: 11,
-    fontWeight: "700",
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    overflow: "hidden",
-    textTransform: "capitalize"
-  },
-  badgeWarning: { color: "#92400e", backgroundColor: "#fef3c7" },
-  thumbnail: { width: "100%", minHeight: 190, borderRadius: radius.card },
-  warningBox: {
-    borderWidth: 1,
-    borderColor: "#f59e0b",
-    backgroundColor: "#fffbeb",
-    borderRadius: radius.card,
-    padding: 11
-  },
-  warningTitle: { color: "#92400e", fontWeight: "800", marginBottom: 3 },
-  warningText: { color: "#78350f", fontSize: 12, lineHeight: 18 },
-  consentBox: {
-    borderWidth: 1,
-    borderColor: "#93c5fd",
-    backgroundColor: "#eff6ff",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 8
-  },
-  consentTitle: { color: "#1e3a8a", fontWeight: "800" },
-  consentText: { color: "#334155", fontSize: 12, lineHeight: 18 },
-  player: {
-    width: "100%",
-    minHeight: 260,
-    overflow: "hidden",
-    borderRadius: radius.card
-  },
-  nativePlayer: { width: "100%", minHeight: 260, backgroundColor: "#020617" },
-  summaryBox: {
-    borderLeftWidth: 4,
-    borderLeftColor: "#16a34a",
-    backgroundColor: "#f0fdf4",
-    padding: 11
-  },
-  summaryTitle: { color: "#14532d", fontWeight: "800", marginBottom: 4 },
-  summaryText: { color: "#1e293b", fontSize: 14, lineHeight: 20 },
-  accessibilityText: { color: "#475569", fontSize: 11, marginTop: 7 },
-  primaryButton: {
-    backgroundColor: "#1d4ed8",
-    borderRadius: radius.card,
-    paddingHorizontal: 13,
-    paddingVertical: 10,
-    alignItems: "center"
-  },
-  primaryButtonText: { color: "#fff", fontWeight: "800" },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#2563eb",
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    paddingHorizontal: 13,
-    paddingVertical: 10,
-    alignItems: "center"
-  },
-  secondaryButtonText: { color: "#1d4ed8", fontWeight: "800" },
-  statusText: { color: "#475569", fontSize: 12, lineHeight: 18 },
-  playbackStatus: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 9,
-    justifyContent: "center",
-    paddingVertical: 12
-  },
-  progressNote: { color: "#334155", fontSize: 12, lineHeight: 18, fontWeight: "600" },
-  checkedAt: { color: "#64748b", fontSize: 11 }
-});
+export const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      padding: 14,
+      marginBottom: 16,
+      gap: 11
+    },
+    compactCard: { marginBottom: 10 },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: 10
+    },
+    headerCopy: { flex: 1 },
+    kicker: { color: palette.info, fontSize: 12, fontWeight: "800" },
+    title: { color: palette.text, fontSize: 17, fontWeight: "800", marginTop: 2 },
+    badge: {
+      color: palette.success,
+      backgroundColor: palette.accentSoft,
+      borderRadius: 999,
+      fontSize: 11,
+      fontWeight: "700",
+      paddingHorizontal: 9,
+      paddingVertical: 5,
+      overflow: "hidden",
+      textTransform: "capitalize"
+    },
+    badgeWarning: { color: palette.warning, backgroundColor: palette.surfaceMuted },
+    thumbnail: { width: "100%", minHeight: 190, borderRadius: radius.card },
+    warningBox: {
+      borderWidth: 1,
+      borderColor: palette.warning,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 11
+    },
+    warningTitle: { color: palette.warning, fontWeight: "800", marginBottom: 3 },
+    warningText: { color: palette.text, fontSize: 12, lineHeight: 18 },
+    consentBox: {
+      borderWidth: 1,
+      borderColor: palette.info,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 8
+    },
+    consentTitle: { color: palette.info, fontWeight: "800" },
+    consentText: { color: palette.text, fontSize: 12, lineHeight: 18 },
+    player: {
+      width: "100%",
+      minHeight: 260,
+      overflow: "hidden",
+      borderRadius: radius.card
+    },
+    nativePlayer: { width: "100%", minHeight: 260, backgroundColor: "#020617" },
+    summaryBox: {
+      borderLeftWidth: 4,
+      borderLeftColor: palette.accent,
+      backgroundColor: palette.accentSoft,
+      padding: 11
+    },
+    summaryTitle: { color: palette.text, fontWeight: "800", marginBottom: 4 },
+    summaryText: { color: palette.text, fontSize: 14, lineHeight: 20 },
+    accessibilityText: { color: palette.textMuted, fontSize: 11, marginTop: 7 },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 13,
+      paddingVertical: 10,
+      alignItems: "center"
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      paddingHorizontal: 13,
+      paddingVertical: 10,
+      alignItems: "center"
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    statusText: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    playbackStatus: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 9,
+      justifyContent: "center",
+      paddingVertical: 12
+    },
+    progressNote: {
+      color: palette.text,
+      fontSize: 12,
+      lineHeight: 18,
+      fontWeight: "600"
+    },
+    checkedAt: { color: palette.textMuted, fontSize: 11 }
+  });
