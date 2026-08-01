@@ -7,6 +7,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import { useFacility } from "@/state/useFacility";
 import type { AuditLog } from "@/types/contracts";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
   formatFacilityAuditAction,
@@ -37,6 +38,8 @@ function getErrorMessage(e: unknown, fallback: string) {
 }
 
 export default function FacilityAuditLogDetailRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityAuditDetailStyles(palette), [palette]);
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { selectedId } = useFacility();
@@ -72,37 +75,41 @@ export default function FacilityAuditLogDetailRoute() {
   if (isLoading)
     return renderBoundary(
       <View style={styles.container}>
-        <Text>Loading audit log...</Text>
+        <Text style={styles.status}>Loading audit log...</Text>
       </View>
     );
   if (!selectedId)
     return renderBoundary(
       <View style={styles.container}>
-        <Text>Select a facility first.</Text>
+        <Text style={styles.status}>Select a facility first.</Text>
       </View>
     );
   if (!id)
     return renderBoundary(
       <View style={styles.container}>
-        <Text>Missing audit log id.</Text>
+        <Text style={styles.status}>Missing audit log id.</Text>
       </View>
     );
   if (error)
     return renderBoundary(
       <View style={styles.container}>
-        <Text>{getErrorMessage(error, "Failed to load audit log detail.")}</Text>
+        <Text style={styles.status}>
+          {getErrorMessage(error, "Failed to load audit log detail.")}
+        </Text>
       </View>
     );
   if (!item)
     return renderBoundary(
       <View style={styles.container}>
-        <Text>Audit log not found.</Text>
+        <Text style={styles.status}>Audit log not found.</Text>
       </View>
     );
 
   return renderBoundary(
     <View style={styles.container}>
-      <Text style={styles.h1}>Audit Log Detail</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+        Audit Log Detail
+      </Text>
       <View style={styles.summaryCard}>
         <Text style={styles.eventTitle}>{actionLabel}</Text>
         {detailSummary ? <Text style={styles.summary}>{detailSummary}</Text> : null}
@@ -155,32 +162,35 @@ export default function FacilityAuditLogDetailRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 8 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  sub: { opacity: 0.75 },
-  summaryCard: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 14
-  },
-  eventTitle: { color: "#0f172a", fontSize: 18, fontWeight: "900" },
-  summary: { color: "#334155", fontSize: 15, lineHeight: 21 },
-  metaGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  metaItem: { minWidth: 150 },
-  metaLabel: { color: "#64748b", fontSize: 12, fontWeight: "800" },
-  metaValue: { color: "#0f172a", fontWeight: "700", marginTop: 2 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#fff"
-  },
-  cardTitle: { color: "#0f172a", fontWeight: "900", marginBottom: 4 },
-  json: { fontFamily: "monospace", fontSize: 12 },
-  link: { color: "#2563eb", fontWeight: "700" }
-});
+export function createFacilityAuditDetailStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, padding: 16, gap: 8 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    status: { color: palette.text },
+    sub: { color: palette.textMuted },
+    summaryCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 14
+    },
+    eventTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    summary: { color: palette.textMuted, fontSize: 15, lineHeight: 21 },
+    metaGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    metaItem: { minWidth: 150 },
+    metaLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    metaValue: { color: palette.text, fontWeight: "700", marginTop: 2 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface
+    },
+    cardTitle: { color: palette.text, fontWeight: "900", marginBottom: 4 },
+    json: { color: palette.text, fontFamily: "monospace", fontSize: 12 },
+    link: { color: palette.link, fontWeight: "700" }
+  });
+}

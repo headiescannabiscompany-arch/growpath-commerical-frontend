@@ -1,11 +1,14 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 
-import FacilityAuditLogDetailRoute from "@/app/home/facility/audit-logs/[id]";
+import FacilityAuditLogDetailRoute, {
+  createFacilityAuditDetailStyles
+} from "@/app/home/facility/audit-logs/[id]";
 import FacilityAuditLogEntityRoute from "@/app/home/facility/audit-logs/[entity]/[entityId]";
 import FacilityAuditLogsIndexRoute from "@/app/home/facility/audit-logs";
 import FacilityComplianceAiDashboardRoute from "@/app/home/facility/compliance/ai4.dashboard";
 import FacilityComplianceReportDetailRoute from "@/app/home/facility/compliance/report-detail";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockUseAuditLogs = jest.fn();
 const mockUseFacilityReport = jest.fn();
@@ -54,6 +57,18 @@ jest.mock("@/hooks/useFacilityReport", () => ({
 }));
 
 describe("facility audit and compliance nested back behavior", () => {
+  it("uses the active Night palette for audit detail cards and raw evidence", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilityAuditDetailStyles(palette);
+
+    expect(styles.h1.color).toBe(palette.text);
+    expect(styles.summaryCard.backgroundColor).toBe(palette.card);
+    expect(styles.eventTitle.color).toBe(palette.text);
+    expect(styles.card.backgroundColor).toBe(palette.surface);
+    expect(styles.json.color).toBe(palette.text);
+    expect(styles.status.color).toBe(palette.text);
+  });
+
   beforeEach(() => {
     mockParams = {};
     mockUseAuditLogs.mockReset();
