@@ -2953,3 +2953,47 @@ highest-risk fixed-Day surfaces without altering their data or mutation paths:
   route action, workspace, account, session, billing, audit event, or record
   action was invoked. The five unfinished gift frontend files remained
   unstaged and outside the release.
+
+## Personal Home, Commercial commerce, and shared recovery active palette
+
+Frontend `dde14108` removes the next confirmed fixed-Day color surfaces while
+preserving the existing data, authorization, navigation, and mutation paths:
+
+- Personal Home and its featured feed, including command/onboarding cards,
+  pulse and metric cards, alerts, tasks, discovery cards, image fallbacks,
+  errors, loading states, and actions;
+- Commercial Storefront Owner, Products, and Product Detail, including all 77
+  text inputs, placeholder/selection colors, media previews, location and
+  publication states, product/classification cards, Stripe/payment fields,
+  warnings, status pills, and actions;
+- the root bootstrap/loading/recovery screen, global API outage banner,
+  content-report modal, and legal/support links.
+
+- Eight combined suites passed, totaling 65 tests, including existing Personal
+  Home/feed, storefront, Commercial workflow, public-route, and legal-link
+  behavior plus new Night-palette and shared-recovery coverage. Forced source
+  and test lint, full frontend `tsc --noEmit`, Prettier verification, and
+  `git diff --check` passed. The only retained fixed color is the report
+  modal's intentional translucent black scrim.
+- Production Build Preflight `30722193659` and Frontend CI `30722193626`
+  passed against exact commit
+  `dde14108b5a0e53b3101e09ddf7d2500899cd123`. Production changed from bundle
+  `index-12fbc41c...` to `index-f4b6c2a1...`.
+- Signed-in Facility Viewer production verification confirmed Facility
+  Dashboard and Profile still rendered the blue-gray Night direction with zero
+  opaque light surfaces; Profile reported `Current: AUTO / Resolved: NIGHT`
+  and retained its notification-settings section. Direct Personal Home,
+  Commercial Storefront, Commercial Products, and a no-record Product Detail
+  URL each retained the workspace boundary with one themed `Access denied` H1,
+  zero fields, and zero opaque light surfaces.
+- Because this signed-in account has no active Personal or Commercial role, the
+  corrected loaded Home/storefront/product forms remain behavior-and-theme
+  verified by the 65-test matrix rather than by changing workspace or
+  bypassing authorization. Healthy bootstrap/banner absence and the report
+  modal's loaded state are likewise source-and-test verified; no outage was
+  manufactured and no report was submitted.
+- No field, card, link, retry, session-clear, logout, report, location, media,
+  upload, publication, product, Stripe/payment, task, route action, workspace,
+  account, session, billing, audit event, or record action was invoked. The
+  five unfinished gift frontend files remained unstaged and outside the
+  release.
