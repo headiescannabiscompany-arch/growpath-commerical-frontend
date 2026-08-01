@@ -1484,6 +1484,28 @@ submission, and response handling did not change.
   disabled. No topic, field, support request, email, account, session, billing,
   or record action was invoked, and the session remained signed in.
 
+## Shared policy and account-deletion Night contrast
+
+Production `/privacy`, `/terms`, and `/account/delete` all used the shared dark
+Night canvas but retained nearly black day-only headings and body copy. Their
+policy wording, contact routing, and existing one-H1/section-H2 structure were
+already correct. Frontend `cebe4323` moved the shared PublicInfoPage canvas,
+brand, updated date, introduction, dividers, headings, and body copy to the
+active palette without changing any policy text or account-deletion behavior.
+
+- Production Build Preflight `30697745674` and Frontend CI `30697745664`
+  passed. Two focused policy-contact and shared Night-palette tests passed.
+  Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed.
+- Signed-in Facility Viewer production acceptance separately confirmed Privacy
+  with one H1/five H2s, Terms with one H1/six H2s, and Delete Account with one
+  H1/four H2s. Every heading uses bright Night text `rgb(244, 247, 251)`, and
+  every inspected introduction/section body uses readable Night text
+  `rgb(222, 231, 240)`.
+- No white page-content surface remained on any of the three routes; the
+  separate Report Bug control was the only detected white element. No policy
+  link, support request, export, delete, account, session, billing, or record
+  action was invoked, and the session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
