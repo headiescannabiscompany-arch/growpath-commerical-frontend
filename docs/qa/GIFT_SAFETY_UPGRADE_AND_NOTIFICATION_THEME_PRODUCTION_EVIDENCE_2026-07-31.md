@@ -25,6 +25,9 @@ Date: 2026-07-31 (America/New_York)
 - Facility history-import combined release: `52b42ba6`
 - Combined Frontend CI: `30678355952` (passed)
 - Combined Production Build Preflight: `30678355928` (passed)
+- Shared Environment Review active-theme fix: `af2acc6f`
+- Environment Review Frontend CI: `30678713687` (passed)
+- Environment Review Production Build Preflight: `30678713688` (passed)
 
 ## Confirmed gift defect and safety boundary
 
@@ -142,6 +145,29 @@ Live final-SHA acceptance proved:
 - No API key, file, provider request, connection, mapping, grow, or imported
   history record was created or changed.
 
+## Shared Environment Review Night theme
+
+Production Facility Environment Review reused the Personal implementation but
+retained a white canvas, light telemetry panel, white inputs, dark day-only
+labels, and green action styling under resolved Night mode. Its rule-based
+analysis was intentionally still available to the Viewer and clearly stated
+that it uses no AI credits; save remained unavailable without a selected grow,
+so no permission defect was inferred from the calculation controls.
+
+Frontend `af2acc6f` converted the shared page, labels, inputs, telemetry panel,
+status/locked treatments, and primary action to the active app palette. After
+both safeguards passed, signed-in production acceptance covered the same code
+through both routes:
+
+- `/home/facility/tools/environment` rendered the Night palette with the full
+  input set, disabled grow prefill, ready result surface, no-credit disclosure,
+  and no selected-grow save context intact.
+- `/home/personal/tools/environment-analysis` rendered the same Night palette
+  and controls after switching to Personal without logging out.
+- No input was changed, no analysis/API or AI request was submitted, no result
+  was copied, and no tool run, log, task, grow, credit, or other record changed.
+- The session was returned to `/home/facility/dashboard`.
+
 ## Automated verification
 
 - Backend gift routes/webhooks/Facility billing: 31 focused tests passed.
@@ -159,6 +185,9 @@ Live final-SHA acceptance proved:
 - Facility history/Integrations boundary: 8 focused tests passed for Night
   styling, owner/manager access, Viewer direct-route denial, disabled entry
   points, grow selection, importer handoff, and integration mapping behavior.
+- Shared Environment Review: 11 focused environment/back-route tests passed,
+  including an explicit Night palette regression and existing task metadata,
+  analysis, and shared-back contracts.
 - Targeted ESLint, full frontend `tsc --noEmit`, and `git diff --check` passed
   for the Notification Center release.
 
