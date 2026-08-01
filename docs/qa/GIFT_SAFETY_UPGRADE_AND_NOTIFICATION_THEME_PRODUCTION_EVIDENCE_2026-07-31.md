@@ -2091,3 +2091,38 @@ Public privacy filtering and the backend publication contract did not change.
 - No search, filter, location, globe, study, observation, workspace, account,
   session, billing, audit event, or record action was invoked, and the Viewer
   session remained signed in.
+
+## Shared Forum detail direct-entry safety and hierarchy
+
+Production `/forum/post` had no discussion ID but still exposed the signed-in
+comment textarea, enabled photo picker, disabled submit action, empty Comments
+section, and campaign placements. It had no page heading. Source inspection
+also showed API failure messages passed through to the page and loaded post and
+Comments titles lacked explicit levels. Frontend `c60afa8a` replaces missing,
+unavailable, and unauthorized entry with an action-free Forum handoff, sanitizes
+detail-load failures, and establishes loaded discussion H1 plus Comments H2
+without changing legitimate comment, photo, like, report, task, grow-log, or
+campaign behavior.
+
+- Twenty-one focused Forum/detail/navigation tests passed, including zero API
+  calls and zero comment/photo controls without an ID, load-error sanitization,
+  loaded H1/H2 hierarchy, task source links, held-comment moderation behavior,
+  and Feed/Forum separation. Targeted source ESLint, full frontend
+  `tsc --noEmit`, and `git diff --check` passed. Existing Expo Go and unrelated
+  asynchronous `act` warnings remained non-failing.
+- Production Build Preflight `30707758433` and Frontend CI `30707758443`
+  passed for `c60afa8a`. Live verification then caught an Expo Router web-only
+  crash: the new `Link asChild` forwarded a React Native style array to its raw
+  anchor and the browser rejected the indexed CSS property.
+- Corrective frontend `d7daf068` flattens that Link child to one style object and
+  adds a regression assertion that the handoff style is not an array. The
+  focused five-test rerun, targeted lint, full TypeScript, and diff check passed;
+  final Production Build Preflight `30708074288` and Frontend CI `30708074297`
+  passed.
+- Clean production `/forum/post` then rendered without a crash, with one bright
+  `Forum discussion unavailable` H1, truthful selection guidance, a Browse
+  Forum / Q&A handoff, zero comment/photo controls, zero white/light content
+  surfaces, and no ObjectId, model, stack, or other backend/runtime detail.
+- No Browse Forum, comment, photo, like, report, task, grow-log, campaign,
+  workspace, account, session, billing, audit event, or record action was
+  invoked, and the Viewer session remained signed in.
