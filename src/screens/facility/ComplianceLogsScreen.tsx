@@ -52,7 +52,7 @@ export default function ComplianceLogsScreen() {
       backFallbackHref="/home/facility/compliance"
     >
       <View style={styles.container}>
-        <Text accessibilityRole="header" style={styles.h1}>
+        <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
           Compliance Logs
         </Text>
         <Text style={styles.intro}>
@@ -70,7 +70,7 @@ export default function ComplianceLogsScreen() {
 
         {!isLoading && !error && canWrite ? (
           <View style={styles.card}>
-            <Text accessibilityRole="header" style={styles.h2}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.h2}>
               Record compliance log
             </Text>
             <Text style={styles.muted}>
@@ -130,7 +130,7 @@ export default function ComplianceLogsScreen() {
 
         {!isLoading && !error && logs.length === 0 ? (
           <View style={styles.card}>
-            <Text accessibilityRole="header" style={styles.h2}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.h2}>
               No compliance logs yet
             </Text>
             <Text style={styles.muted}>
@@ -143,7 +143,7 @@ export default function ComplianceLogsScreen() {
 
         {!isLoading && !error && logs.length > 0 ? (
           <View style={styles.listSection}>
-            <Text accessibilityRole="header" style={styles.h2}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.h2}>
               Recorded logs
             </Text>
             <FlatList

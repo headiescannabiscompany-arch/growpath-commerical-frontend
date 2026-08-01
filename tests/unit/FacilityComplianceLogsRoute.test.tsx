@@ -69,6 +69,7 @@ describe("Facility compliance logs direct route", () => {
 
     expect(screen.getByText("Compliance Logs")).toBeTruthy();
     expect(screen.getByText("No compliance logs yet")).toBeTruthy();
+    expect(screen.getAllByRole("header")).toHaveLength(2);
     expect(screen.queryByLabelText("Compliance log title")).toBeNull();
     expect(screen.queryByLabelText("Create compliance log")).toBeNull();
     expect(screen.getByText("Back /home/facility/compliance")).toBeTruthy();
