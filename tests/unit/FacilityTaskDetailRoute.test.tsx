@@ -1,7 +1,10 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import FacilityTaskDetail from "@/app/home/facility/tasks/[id]";
+import FacilityTaskDetail, {
+  createFacilityTaskDetailStyles
+} from "@/app/home/facility/tasks/[id]";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockCompleteFacilityTask = jest.fn();
 const mockDeleteTask = jest.fn();
@@ -122,10 +125,36 @@ describe("FacilityTaskDetail", () => {
     });
   });
 
+  it("uses the active Night palette for loaded and writer-only states", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilityTaskDetailStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.taskTitle.color).toBe(palette.text);
+    expect(styles.summaryLine.color).toBe(palette.textMuted);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.chipSelected.backgroundColor).toBe(palette.accent);
+    expect(styles.secondaryBtnText.color).toBe(palette.link);
+  });
+
   it("shows and patches facility task workflow context", async () => {
     const screen = render(<FacilityTaskDetail />);
 
     await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+    expect(screen.getByText("IPM scout").props).toMatchObject({
+      accessibilityRole: "header",
+      "aria-level": 1
+    });
+    expect(screen.getByText("Task Workflow").props).toMatchObject({
+      accessibilityRole: "header",
+      "aria-level": 2
+    });
+    expect(screen.getByText("Record Summary").props).toMatchObject({
+      accessibilityRole: "header",
+      "aria-level": 2
+    });
     expect(
       screen.getByText("Source: Sensor Alert · Linked record available")
     ).toBeTruthy();
