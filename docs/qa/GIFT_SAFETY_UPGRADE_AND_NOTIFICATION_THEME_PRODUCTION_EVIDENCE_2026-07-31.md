@@ -1261,6 +1261,39 @@ speculative code change was made.
   diagnosis, AI request, credit, result, ToolRun, task, log, grow, audit event,
   billing, or record action was invoked, and the session remained signed in.
 
+## Facility Compliance Logs direct-route theme, hierarchy, and permission repair
+
+Production `/home/facility/compliance/reports` exposed a `Record Log` action to
+the signed-in Viewer, had no semantic heading, and bypassed the active palette.
+Its zero-log writer state was also functionally incomplete: it displayed the
+action without the required title field, so an authorized user could not create
+the first record from that route. Frontend `525e0970` rebuilt the direct route
+around the centralized `COMPLIANCE_WRITE` capability plus Facility role policy,
+keeps Viewer presentation read-only, restores the complete eight-type form for
+Owner/Manager/Staff in empty and populated states, and moves all form/list/error
+states to the active palette. Live review then caught two level-one headings;
+follow-up `9010a0db` established one page H1 and level-two workflow headings.
+
+- Final Production Build Preflight `30694555875` and Frontend CI `30694555878`
+  passed. The initial implementation gates `30694315603` and `30694315630`
+  also passed before the hierarchy follow-up.
+- Eight focused Compliance direct-route, Viewer/writer, creation, palette, and
+  parent Compliance tests passed; the three direct-route cases passed again on
+  the final revision. Forced targeted ESLint, full frontend `tsc --noEmit`, and
+  `git diff --check` passed.
+- Signed-in Viewer production acceptance confirmed one level-one `Compliance
+  Logs` heading and one level-two `No compliance logs yet` heading, both in
+  bright Night text `rgb(244, 247, 251)`. The empty-state card uses Night
+  surface `rgb(21, 29, 39)` and border `rgb(40, 53, 69)`. The Viewer receives
+  zero inputs and only Back plus the separate Report Bug control; Report Bug
+  was the only detected white element.
+- Focused Staff-writer acceptance proves all eight record types, required title,
+  optional notes, and canonical creation call remain available. The production
+  workspace truthfully contains zero compliance logs, so no record was created
+  merely to force populated evidence. No type, title, notes, create, retry,
+  compliance log, audit event, billing, or record action was invoked, and the
+  session remained signed in.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
