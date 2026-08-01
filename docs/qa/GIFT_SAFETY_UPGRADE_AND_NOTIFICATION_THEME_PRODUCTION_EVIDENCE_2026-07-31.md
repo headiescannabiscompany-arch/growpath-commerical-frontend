@@ -2997,6 +2997,50 @@ changing grow, evidence, AI, error, or access behavior:
   event, or record action was invoked. The five unfinished gift frontend files
   remained unstaged and outside the release.
 
+## Commercial Lives, Nutrient Chemistry, and admin active palette
+
+Frontend `9c9f25e3` moves three broad fixed-Day surfaces onto the shared active
+palette without changing scheduling, calculation, or administration behavior:
+
+- Commercial Lives, including Twitch/EventSub connection and readiness states,
+  setup checks, visibility choices, media controls, loaded/focused live cards,
+  metadata, loading/success/error states, actions, and all 13 input surfaces;
+- Personal Nutrient Chemistry, including panels, pills, toggles, summaries,
+  compatibility/warning/recommendation/evidence states, task/save feedback,
+  actions, and all six input surfaces;
+- Platform Admin, including both the current-account denial and loaded admin
+  metrics/activity/evidence, all fields, errors/warnings/loading, and
+  primary/secondary/danger actions.
+
+- Four combined suites passed, totaling 19 tests across existing Commercial
+  live scheduling/Twitch/task behavior, Nutrient Chemistry calculations and
+  review-task payloads, and Platform Admin authorization/mutation behavior plus
+  explicit Day/Night coverage. Forced source/test lint, full frontend
+  `tsc --noEmit`, Prettier verification, and `git diff --check` passed. The
+  known non-failing Expo Go remote-notification warning appeared in the
+  Commercial theme suite.
+- Production Build Preflight `30723458670` and Frontend CI `30723458717`
+  passed against exact commit
+  `9c9f25e3b596e4299e5f14b1a8a70efa18f4dcd0`. Production served bundle
+  `index-3112f1d5...` after the rollout.
+- Signed-in Facility Viewer verification confirmed Facility Dashboard retained
+  zero opaque light surfaces. Platform Admin rendered the correctly themed
+  `Platform owner access required` denial with zero fields and zero opaque
+  light surfaces. Direct Commercial Lives and Personal Nutrient Chemistry
+  retained one themed `Access denied` H1, zero fields, and zero opaque light
+  surfaces.
+- The current account is not Platform Admin and is not in Commercial or
+  Personal mode, so loaded admin, Commercial Live, and Nutrient Chemistry
+  states remain behavior-and-palette test verified rather than permission-
+  bypassed. The admin denial currently has clear visible copy but no semantic
+  heading; that accessibility finding is recorded separately and is not
+  misreported as complete heading acceptance.
+- No admin action, account change, field, Twitch connection, EventSub action,
+  live schedule, media, visibility, nutrient calculation, recommendation,
+  save, task, route action, workspace, session, billing, audit event, or record
+  action was invoked. The five unfinished gift frontend files remained
+  unstaged and outside the release.
+
 ## Personal Home, Commercial commerce, and shared recovery active palette
 
 Frontend `dde14108` removes the next confirmed fixed-Day color surfaces while
