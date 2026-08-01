@@ -36,6 +36,7 @@ import {
 } from "@/utils/commercialFeedPolicy";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { radius } from "@/theme/theme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 const COMMERCIAL_TYPES: CommercialFeedCampaignType[] = [
   "update",
@@ -357,6 +358,8 @@ function DestinationPickerGroup({
   loading: boolean;
   onChange: (id: string) => void;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFeedCampaignStyles(palette), [palette]);
   const selected = options.find((option) => option.id === selectedId);
   return (
     <View style={styles.destinationGroup} accessibilityLabel={`${title} destinations`}>
@@ -499,6 +502,8 @@ function campaignDestination(post: CommercialFeedCampaign) {
 
 export default function CommercialFeedRoute() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFeedCampaignStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     campaignId?: string | string[];
     liveId?: string | string[];
@@ -983,7 +988,9 @@ export default function CommercialFeedRoute() {
 
       {!canManageCampaigns ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Promoted Outreach</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Promoted Outreach
+          </Text>
           <Text style={styles.linkBoxText}>
             Feed placements are advertisements and outreach from commercial and facility
             accounts. Personal grow updates, questions, and replies belong in Forum/Q&A or
@@ -994,7 +1001,9 @@ export default function CommercialFeedRoute() {
 
       {canManageCampaigns ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Create Campaign</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Create Campaign
+          </Text>
           <Text style={styles.linkBoxText}>
             Feed is advertising and outreach. Link the campaign to a product, course,
             live, storefront, or support Q&A thread. Keep threaded conversation in
@@ -1030,6 +1039,7 @@ export default function CommercialFeedRoute() {
             value={title}
             onChangeText={setTitle}
             style={styles.input}
+            placeholderTextColor={palette.textMuted}
             placeholder={isFacility ? "Educational topic" : "Title"}
             accessibilityLabel="Feed campaign title"
           />
@@ -1037,6 +1047,7 @@ export default function CommercialFeedRoute() {
             value={body}
             onChangeText={setBody}
             style={[styles.input, styles.bodyInput]}
+            placeholderTextColor={palette.textMuted}
             placeholder={
               isFacility
                 ? "Teach something useful: SOP notes, scouting lesson, compliance tip..."
@@ -1049,6 +1060,7 @@ export default function CommercialFeedRoute() {
             value={tags}
             onChangeText={setTags}
             style={styles.input}
+            placeholderTextColor={palette.textMuted}
             placeholder="Tags, comma separated"
             accessibilityLabel="Feed campaign tags"
           />
@@ -1056,6 +1068,7 @@ export default function CommercialFeedRoute() {
             value={growInterests}
             onChangeText={setGrowInterests}
             style={styles.input}
+            placeholderTextColor={palette.textMuted}
             placeholder="Grow interests for targeting, comma separated"
             accessibilityLabel="Feed campaign grow interests"
           />
@@ -1063,6 +1076,7 @@ export default function CommercialFeedRoute() {
             value={location}
             onChangeText={setLocation}
             style={styles.input}
+            placeholderTextColor={palette.textMuted}
             placeholder="Location (optional)"
             accessibilityLabel="Feed campaign location"
           />
@@ -1160,6 +1174,7 @@ export default function CommercialFeedRoute() {
                         value={linkedProductId}
                         onChangeText={setLinkedProductId}
                         style={styles.input}
+                        placeholderTextColor={palette.textMuted}
                         placeholder="Linked product ID or slug"
                         autoCapitalize="none"
                         accessibilityLabel="Linked product"
@@ -1168,6 +1183,7 @@ export default function CommercialFeedRoute() {
                         value={linkedProductLineId}
                         onChangeText={setLinkedProductLineId}
                         style={styles.input}
+                        placeholderTextColor={palette.textMuted}
                         placeholder="Linked product line ID or slug"
                         autoCapitalize="none"
                         accessibilityLabel="Linked product line"
@@ -1178,6 +1194,7 @@ export default function CommercialFeedRoute() {
                     value={linkedCourseId}
                     onChangeText={setLinkedCourseId}
                     style={styles.input}
+                    placeholderTextColor={palette.textMuted}
                     placeholder="Linked course ID or slug"
                     autoCapitalize="none"
                     accessibilityLabel="Linked course"
@@ -1186,6 +1203,7 @@ export default function CommercialFeedRoute() {
                     value={linkedLiveId}
                     onChangeText={setLinkedLiveId}
                     style={styles.input}
+                    placeholderTextColor={palette.textMuted}
                     placeholder="Linked live ID or slug"
                     autoCapitalize="none"
                     accessibilityLabel="Linked live"
@@ -1195,6 +1213,7 @@ export default function CommercialFeedRoute() {
                       value={linkedGrowId}
                       onChangeText={setLinkedGrowId}
                       style={styles.input}
+                      placeholderTextColor={palette.textMuted}
                       placeholder="Linked evidence run ID"
                       autoCapitalize="none"
                       accessibilityLabel="Linked evidence run"
@@ -1204,6 +1223,7 @@ export default function CommercialFeedRoute() {
                     value={linkedForumThreadId}
                     onChangeText={setLinkedForumThreadId}
                     style={styles.input}
+                    placeholderTextColor={palette.textMuted}
                     placeholder="Linked Forum/Q&A thread ID"
                     autoCapitalize="none"
                     accessibilityLabel="Linked forum thread"
@@ -1213,6 +1233,7 @@ export default function CommercialFeedRoute() {
                       value={storefrontSlug}
                       onChangeText={setStorefrontSlug}
                       style={styles.input}
+                      placeholderTextColor={palette.textMuted}
                       placeholder="Storefront slug"
                       autoCapitalize="none"
                       accessibilityLabel="Linked storefront slug"
@@ -1224,6 +1245,7 @@ export default function CommercialFeedRoute() {
                 value={imageUrl}
                 onChangeText={setImageUrl}
                 style={styles.input}
+                placeholderTextColor={palette.textMuted}
                 placeholder="Campaign image URL or uploaded creative"
                 autoCapitalize="none"
                 accessibilityLabel="Feed campaign image URL"
@@ -1290,6 +1312,7 @@ export default function CommercialFeedRoute() {
                   value={ctaLabel}
                   onChangeText={setCtaLabel}
                   style={[styles.input, styles.columnInput]}
+                  placeholderTextColor={palette.textMuted}
                   placeholder="CTA label"
                   accessibilityLabel="Campaign CTA label"
                 />
@@ -1297,6 +1320,7 @@ export default function CommercialFeedRoute() {
                   value={externalLinkLabel}
                   onChangeText={setExternalLinkLabel}
                   style={[styles.input, styles.columnInput]}
+                  placeholderTextColor={palette.textMuted}
                   placeholder="External link label"
                   accessibilityLabel="External link label"
                 />
@@ -1304,6 +1328,7 @@ export default function CommercialFeedRoute() {
                   value={externalLinkUrl}
                   onChangeText={setExternalLinkUrl}
                   style={[styles.input, styles.columnInput]}
+                  placeholderTextColor={palette.textMuted}
                   placeholder="https://..."
                   autoCapitalize="none"
                   accessibilityLabel="External link URL"
@@ -1431,7 +1456,9 @@ export default function CommercialFeedRoute() {
 
       {canManageCampaigns && analytics ? (
         <View style={styles.card} accessibilityLabel="Feed campaign analytics">
-          <Text style={styles.cardTitle}>Campaign Analytics</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Campaign Analytics
+          </Text>
           <View style={styles.metricRow}>
             {[
               ["Impressions", analytics.totals.impressions],
@@ -1464,7 +1491,9 @@ export default function CommercialFeedRoute() {
       ) : null}
 
       <View style={styles.filters}>
-        <Text style={styles.filterLabel}>Filter</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.filterLabel}>
+          Filter
+        </Text>
         <View
           style={styles.chipRow}
           accessibilityRole="radiogroup"
@@ -1492,6 +1521,7 @@ export default function CommercialFeedRoute() {
           value={q}
           onChangeText={setQ}
           style={styles.input}
+          placeholderTextColor={palette.textMuted}
           placeholder="Search campaigns"
           autoCapitalize="none"
           accessibilityLabel="Search campaigns"
@@ -1507,7 +1537,9 @@ export default function CommercialFeedRoute() {
 
       {!loading && items.length === 0 ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>No campaigns yet</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            No campaigns yet
+          </Text>
           <Text style={styles.muted}>
             Publish the first {isFacility ? "facility outreach" : "feed campaign"}.
           </Text>
@@ -1652,210 +1684,224 @@ export default function CommercialFeedRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#F8FAFC",
-    gap: 12,
-    padding: 16,
-    paddingBottom: 32
-  },
-  header: { gap: 5 },
-  title: { color: "#0F172A", fontSize: 25, fontWeight: "900" },
-  subtitle: { color: "#475569", fontWeight: "700", lineHeight: 21, maxWidth: 860 },
-  card: {
-    backgroundColor: "white",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    padding: 14
-  },
-  cardTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  metricRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  metricCard: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    minWidth: 105,
-    padding: 10
-  },
-  metricValue: { color: "#0F172A", fontSize: 20, fontWeight: "900" },
-  metricLabel: { color: "#64748B", fontSize: 11, fontWeight: "800" },
-  input: {
-    backgroundColor: "white",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#0F172A",
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  bodyInput: { minHeight: 110, textAlignVertical: "top" },
-  linkBox: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 10
-  },
-  linkBoxTitle: { color: "#0F172A", fontWeight: "900" },
-  linkBoxText: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
-  destinationGroup: { gap: 7, marginTop: 4 },
-  destinationTitle: { color: "#334155", fontSize: 13, fontWeight: "900" },
-  destinationLoading: { alignItems: "center", flexDirection: "row", gap: 8 },
-  destinationGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  destinationCard: {
-    backgroundColor: "white",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 180,
-    paddingHorizontal: 11,
-    paddingVertical: 9
-  },
-  destinationCardSelected: { backgroundColor: "#0F766E", borderColor: "#0F766E" },
-  destinationCardTitle: { color: "#0F172A", fontWeight: "900" },
-  destinationCardTitleSelected: { color: "white" },
-  destinationCardDetail: { color: "#64748B", fontSize: 11, marginTop: 3 },
-  destinationCardDetailSelected: { color: "#CCFBF1" },
-  emptyDestinationText: { color: "#64748B", fontSize: 12, fontStyle: "italic" },
-  selectedDestinationText: { color: "#0F766E", fontSize: 12, fontWeight: "900" },
-  advancedReferenceBox: {
-    backgroundColor: "white",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 10
-  },
-  manualReferenceFields: { gap: 8 },
-  imageTools: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  secondaryButton: {
-    alignItems: "center",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  secondaryButtonText: { color: "#0F172A", fontWeight: "800" },
-  postImagePreview: {
-    width: "100%",
-    maxWidth: 520,
-    aspectRatio: 16 / 7,
-    borderRadius: radius.card,
-    backgroundColor: "#E2E8F0"
-  },
-  warningBox: { gap: 4 },
-  warningText: { color: "#92400E", fontSize: 12, fontWeight: "800" },
-  readyText: { color: "#166534", fontSize: 12, fontWeight: "900" },
-  reviewBox: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#86EFAC",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 6,
-    padding: 10
-  },
-  twoColumn: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  columnInput: { flex: 1, minWidth: 180 },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    backgroundColor: "white",
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 7
-  },
-  chipSelected: { backgroundColor: "#0F766E", borderColor: "#0F766E" },
-  chipText: { color: "#0F172A", fontWeight: "800", textTransform: "capitalize" },
-  chipTextSelected: { color: "white" },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingVertical: 12
-  },
-  primaryButtonText: { color: "white", fontWeight: "900" },
-  disabled: { opacity: 0.55 },
-  feedback: { color: "#166534", fontWeight: "800" },
-  filters: {
-    backgroundColor: "white",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 9,
-    padding: 12
-  },
-  filterLabel: {
-    color: "#475569",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  loading: { alignItems: "center", gap: 8, paddingVertical: 20 },
-  muted: { color: "#64748B", fontWeight: "700", lineHeight: 20 },
-  post: {
-    backgroundColor: "white",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 7,
-    padding: 14
-  },
-  postFocused: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#16A34A",
-    borderWidth: 2
-  },
-  postHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  typePill: {
-    color: "#0F766E",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  engagements: { color: "#64748B", fontSize: 12, fontWeight: "800" },
-  postTitle: { color: "#0F172A", fontSize: 17, fontWeight: "900" },
-  feedImage: {
-    width: "100%",
-    maxWidth: 640,
-    aspectRatio: 16 / 7,
-    borderRadius: radius.card,
-    backgroundColor: "#E2E8F0"
-  },
-  postBody: { color: "#334155", fontWeight: "600", lineHeight: 21 },
-  tags: { color: "#2563EB", fontSize: 12, fontWeight: "800" },
-  interests: { color: "#047857", fontSize: 12, fontWeight: "800" },
-  linkMetaRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  linkMeta: {
-    backgroundColor: "#EEF2FF",
-    borderRadius: 999,
-    color: "#3730A3",
-    fontSize: 12,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4
-  },
-  ctaButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#0F766E",
-    borderRadius: radius.card,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  ctaButtonText: { color: "white", fontWeight: "900" },
-  meta: { color: "#64748B", fontSize: 12, fontWeight: "700" }
-});
+export const createFeedCampaignStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: palette.page,
+      gap: 12,
+      padding: 16,
+      paddingBottom: 32
+    },
+    header: { gap: 5 },
+    title: { color: palette.text, fontSize: 25, fontWeight: "900" },
+    subtitle: {
+      color: palette.textMuted,
+      fontWeight: "700",
+      lineHeight: 21,
+      maxWidth: 860
+    },
+    card: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 14
+    },
+    cardTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    metricRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    metricCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      minWidth: 105,
+      padding: 10
+    },
+    metricValue: { color: palette.text, fontSize: 20, fontWeight: "900" },
+    metricLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "800" },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    bodyInput: { minHeight: 110, textAlignVertical: "top" },
+    linkBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 10
+    },
+    linkBoxTitle: { color: palette.text, fontWeight: "900" },
+    linkBoxText: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 18
+    },
+    destinationGroup: { gap: 7, marginTop: 4 },
+    destinationTitle: { color: palette.text, fontSize: 13, fontWeight: "900" },
+    destinationLoading: { alignItems: "center", flexDirection: "row", gap: 8 },
+    destinationGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    destinationCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 180,
+      paddingHorizontal: 11,
+      paddingVertical: 9
+    },
+    destinationCardSelected: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    destinationCardTitle: { color: palette.text, fontWeight: "900" },
+    destinationCardTitleSelected: { color: palette.accentText },
+    destinationCardDetail: { color: palette.textMuted, fontSize: 11, marginTop: 3 },
+    destinationCardDetailSelected: { color: palette.accentText },
+    emptyDestinationText: { color: palette.textMuted, fontSize: 12, fontStyle: "italic" },
+    selectedDestinationText: { color: palette.link, fontSize: 12, fontWeight: "900" },
+    advancedReferenceBox: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 10
+    },
+    manualReferenceFields: { gap: 8 },
+    imageTools: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    secondaryButton: {
+      alignItems: "center",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    postImagePreview: {
+      width: "100%",
+      maxWidth: 520,
+      aspectRatio: 16 / 7,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceStrong
+    },
+    warningBox: { gap: 4 },
+    warningText: { color: palette.warning, fontSize: 12, fontWeight: "800" },
+    readyText: { color: palette.link, fontSize: 12, fontWeight: "900" },
+    reviewBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 6,
+      padding: 10
+    },
+    twoColumn: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    columnInput: { flex: 1, minWidth: 180 },
+    chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    chip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 7
+    },
+    chipSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+    chipText: { color: palette.text, fontWeight: "800", textTransform: "capitalize" },
+    chipTextSelected: { color: palette.accentText },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 12
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.55 },
+    feedback: { color: palette.link, fontWeight: "800" },
+    filters: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 9,
+      padding: 12
+    },
+    filterLabel: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    loading: { alignItems: "center", gap: 8, paddingVertical: 20 },
+    muted: { color: palette.textMuted, fontWeight: "700", lineHeight: 20 },
+    post: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 7,
+      padding: 14
+    },
+    postFocused: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderWidth: 2
+    },
+    postHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "space-between"
+    },
+    typePill: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    engagements: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    postTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    feedImage: {
+      width: "100%",
+      maxWidth: 640,
+      aspectRatio: 16 / 7,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceStrong
+    },
+    postBody: { color: palette.textMuted, fontWeight: "600", lineHeight: 21 },
+    tags: { color: palette.link, fontSize: 12, fontWeight: "800" },
+    interests: { color: palette.link, fontSize: 12, fontWeight: "800" },
+    linkMetaRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    linkMeta: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 999,
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "800",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 4
+    },
+    ctaButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      minHeight: 40,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    ctaButtonText: { color: palette.accentText, fontWeight: "900" },
+    meta: { color: palette.textMuted, fontSize: 12, fontWeight: "700" }
+  });
