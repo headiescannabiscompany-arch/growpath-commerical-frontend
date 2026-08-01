@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Linking,
@@ -22,6 +22,7 @@ import {
   type IntegrationConnection
 } from "@/api/integrations";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { useEntitlements } from "@/entitlements";
 
@@ -38,6 +39,8 @@ const PLANNED = [
 
 export default function FacilityIntegrationsRoute() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createFacilityIntegrationsStyles(palette), [palette]);
   const entitlements = useEntitlements();
   const role = String(entitlements.facilityRole || "VIEWER").toUpperCase();
   const facilityId = String(
@@ -369,100 +372,112 @@ export default function FacilityIntegrationsRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { backgroundColor: "#f6f7f2", gap: 14, padding: 16, paddingBottom: 32 },
-  header: { gap: 6 },
-  kicker: {
-    color: "#5f6f5f",
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase"
-  },
-  title: { color: "#172317", fontSize: 28, fontWeight: "900" },
-  subtitle: { color: "#4b5a4b", fontSize: 15, lineHeight: 22, maxWidth: 820 },
-  choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  providerChoice: {
-    backgroundColor: "white",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minWidth: 180,
-    padding: 14
-  },
-  providerChoiceActive: { borderColor: "#166534", borderWidth: 2 },
-  providerChoiceTitle: { color: "#172317", fontSize: 18, fontWeight: "900" },
-  providerChoiceText: { color: "#166534", fontSize: 12, fontWeight: "800", marginTop: 4 },
-  card: {
-    backgroundColor: "#fffdf7",
-    borderColor: "#dde6d5",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 10,
-    padding: 14
-  },
-  cardTitle: { color: "#172317", fontSize: 18, fontWeight: "900" },
-  body: { color: "#4b5a4b", fontSize: 14, lineHeight: 20 },
-  input: {
-    backgroundColor: "white",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 11
-  },
-  primaryAction: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 16,
-    paddingVertical: 11
-  },
-  primaryActionText: { color: "white", fontWeight: "900" },
-  secondaryAction: {
-    alignSelf: "flex-start",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  },
-  secondaryActionText: { color: "#166534", fontWeight: "900" },
-  status: {
-    backgroundColor: "#ecfdf5",
-    borderRadius: radius.card,
-    color: "#166534",
-    fontWeight: "800",
-    padding: 12
-  },
-  connectionRow: {
-    borderBottomColor: "#e2e8f0",
-    borderBottomWidth: 1,
-    paddingVertical: 8
-  },
-  connectionTitle: { color: "#172317", fontWeight: "900" },
-  errorText: { color: "#991b1b", fontSize: 13, marginTop: 4 },
-  wizardPanel: { borderTopColor: "#dde6d5", borderTopWidth: 1, gap: 10, paddingTop: 12 },
-  mappingRow: { gap: 6 },
-  providerGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  disabledProvider: {
-    backgroundColor: "#e5e7eb",
-    borderRadius: radius.card,
-    opacity: 0.7,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  disabledProviderText: { color: "#475569", fontWeight: "800" },
-  importProvider: {
-    backgroundColor: "#ecfdf5",
-    borderColor: "#bbf7d0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  importProviderText: { color: "#14532d", fontWeight: "800" },
-  importStatus: { color: "#166534", fontSize: 10, marginTop: 2 },
-  comingSoon: { color: "#64748b", fontSize: 10, marginTop: 2 },
-  disabled: { opacity: 0.5 }
-});
+export function createFacilityIntegrationsStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { backgroundColor: palette.page, gap: 14, padding: 16, paddingBottom: 32 },
+    header: { gap: 6 },
+    kicker: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "800",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 28, fontWeight: "900" },
+    subtitle: { color: palette.textMuted, fontSize: 15, lineHeight: 22, maxWidth: 820 },
+    choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    providerChoice: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minWidth: 180,
+      padding: 14
+    },
+    providerChoiceActive: { borderColor: palette.accent, borderWidth: 2 },
+    providerChoiceTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    providerChoiceText: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    card: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 14
+    },
+    cardTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    body: { color: palette.textMuted, fontSize: 14, lineHeight: 20 },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 11
+    },
+    primaryAction: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 16,
+      paddingVertical: 11
+    },
+    primaryActionText: { color: palette.accentText, fontWeight: "900" },
+    secondaryAction: {
+      alignSelf: "flex-start",
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    secondaryActionText: { color: palette.link, fontWeight: "900" },
+    status: {
+      backgroundColor: palette.accentSoft,
+      borderRadius: radius.card,
+      color: palette.link,
+      fontWeight: "800",
+      padding: 12
+    },
+    connectionRow: {
+      borderBottomColor: palette.borderSoft,
+      borderBottomWidth: 1,
+      paddingVertical: 8
+    },
+    connectionTitle: { color: palette.text, fontWeight: "900" },
+    errorText: { color: palette.danger, fontSize: 13, marginTop: 4 },
+    wizardPanel: {
+      borderTopColor: palette.border,
+      borderTopWidth: 1,
+      gap: 10,
+      paddingTop: 12
+    },
+    mappingRow: { gap: 6 },
+    providerGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    disabledProvider: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      opacity: 0.7,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    disabledProviderText: { color: palette.textMuted, fontWeight: "800" },
+    importProvider: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    importProviderText: { color: palette.text, fontWeight: "800" },
+    importStatus: { color: palette.success, fontSize: 10, marginTop: 2 },
+    comingSoon: { color: palette.textMuted, fontSize: 10, marginTop: 2 },
+    disabled: { opacity: 0.5 }
+  });
+}

@@ -1,7 +1,10 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import FacilityIntegrationsRoute from "@/app/home/facility/(tabs)/integrations";
+import FacilityIntegrationsRoute, {
+  createFacilityIntegrationsStyles
+} from "@/app/home/facility/(tabs)/integrations";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockPush = jest.fn();
 const mockList = jest.fn();
@@ -32,6 +35,17 @@ jest.mock("@/components/ScreenBoundary", () => {
 });
 
 describe("FacilityIntegrationsRoute", () => {
+  it("uses the active Night palette for its page, cards, and controls", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createFacilityIntegrationsStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.providerChoice.backgroundColor).toBe(palette.surface);
+    expect(styles.title.color).toBe(palette.text);
+    expect(styles.primaryAction.backgroundColor).toBe(palette.accent);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockList.mockResolvedValue([]);
