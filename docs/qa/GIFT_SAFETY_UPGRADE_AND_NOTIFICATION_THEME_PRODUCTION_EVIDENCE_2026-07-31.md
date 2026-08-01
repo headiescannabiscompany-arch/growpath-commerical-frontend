@@ -522,6 +522,29 @@ with the accurate `Facility workspace` label without changing selection logic.
   and records did not change, and the session returned to the Facility
   dashboard without logout.
 
+## Facility Plant Issue Diagnosis heading ownership
+
+Production Facility photo-diagnosis route already rendered its full form in the
+correct Night palette, but the tab shell added an inaccurate `Trichome Analysis`
+level-one heading above the page-owned `Plant Issue Diagnosis` level-one
+heading. Frontend `d625e495` hid that redundant shell header and retained the
+accurate page-owned heading without changing the diagnosis workflow.
+
+- Production Build Preflight `30685127040` passed in 3m26s and Frontend CI
+  `30685127048` passed in 6m55s. The production host published the new
+  `index-1defcf4812f84931414382aafa2bfae5.js` asset.
+- Six focused Facility tab-shell tests passed, including accurate single-heading
+  ownership for photo diagnosis. Targeted ESLint, full frontend `tsc --noEmit`,
+  and `git diff --check` passed. The test runner emitted its existing Expo Go
+  push warning without a test failure.
+- Signed-in Viewer production acceptance confirmed exactly one level-one Plant
+  Issue Diagnosis heading, all twelve inspected fields on Night surfaces
+  `rgb(21, 29, 39)` with text `rgb(244, 247, 251)`, zero white content
+  surfaces, and the empty-state Run Diagnosis action still disabled.
+- No input, photo, video, campaign, diagnosis, AI request, credit, task, log,
+  audit event, or record changed. The session returned to the Facility dashboard
+  without logout.
+
 ## Still open
 
 - Implement and verify the real gift recipient claim, email, activation, and
