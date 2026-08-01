@@ -10,7 +10,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 
 import {
   addForumComment,
@@ -204,8 +204,8 @@ export default function ForumPostDetailRoute() {
         setComments(nextComments);
         setLiked(likedByViewer(nextPost));
         setLikes(likeTotal(nextPost));
-      } catch (error: any) {
-        setFeedback(error?.message || "Unable to load discussion.");
+      } catch {
+        setFeedback("This discussion is unavailable.");
         setPost(null);
         setComments([]);
       } finally {
@@ -371,6 +371,59 @@ export default function ForumPostDetailRoute() {
     }
   }
 
+  if (!canView || !id || (!loading && !post)) {
+    const unavailableTitle = canView
+      ? "Forum discussion unavailable"
+      : "Forum unavailable";
+    const unavailableCopy = !canView
+      ? "This account does not have Forum viewing access."
+      : !id
+        ? "Choose a discussion from Forum / Q&A."
+        : feedback || "This discussion is unavailable.";
+
+    return (
+      <ScreenBoundary name="personal.forum.postDetail" showBack backFallbackHref="/forum">
+        <View style={[styles.unavailablePage, { backgroundColor: palette.page }]}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
+            <Text
+              accessibilityRole="header"
+              aria-level={1}
+              style={[styles.title, { color: palette.text }]}
+            >
+              {unavailableTitle}
+            </Text>
+            <Text style={[styles.cardText, { color: palette.textMuted }]}>
+              {unavailableCopy}
+            </Text>
+            {canView ? (
+              <Link href="/forum" asChild>
+                <Pressable
+                  accessibilityRole="button"
+                  style={[
+                    styles.secondaryBtn,
+                    {
+                      borderColor: palette.accent,
+                      backgroundColor: palette.surfaceMuted
+                    }
+                  ]}
+                >
+                  <Text style={[styles.secondaryText, { color: palette.accent }]}>
+                    Browse Forum / Q&amp;A
+                  </Text>
+                </Pressable>
+              </Link>
+            ) : null}
+          </View>
+        </View>
+      </ScreenBoundary>
+    );
+  }
+
   return (
     <ScreenBoundary name="personal.forum.postDetail" showBack backFallbackHref="/forum">
       <ScrollView
@@ -423,7 +476,11 @@ export default function ForumPostDetailRoute() {
           >
             {post ? (
               <>
-                <Text style={[styles.title, { color: palette.text }]}>
+                <Text
+                  accessibilityRole="header"
+                  aria-level={1}
+                  style={[styles.title, { color: palette.text }]}
+                >
                   {titleOf(post)}
                 </Text>
                 <PersonalFeedPlacement
@@ -583,7 +640,13 @@ export default function ForumPostDetailRoute() {
               { backgroundColor: palette.surface, borderColor: palette.border }
             ]}
           >
-            <Text style={[styles.cardTitle, { color: palette.text }]}>Comments</Text>
+            <Text
+              accessibilityRole="header"
+              aria-level={2}
+              style={[styles.cardTitle, { color: palette.text }]}
+            >
+              Comments
+            </Text>
             {canPost ? (
               <View style={styles.commentComposer}>
                 <TextInput
@@ -718,6 +781,7 @@ export default function ForumPostDetailRoute() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFFFFF" },
+  unavailablePage: { flex: 1, padding: 20 },
   content: { padding: 20, paddingBottom: 36, gap: 12 },
   title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
   body: { color: "#334155", lineHeight: 21, marginTop: 10 },

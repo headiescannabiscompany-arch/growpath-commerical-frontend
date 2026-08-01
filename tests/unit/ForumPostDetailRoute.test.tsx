@@ -11,10 +11,19 @@ const mockUnlikeForumPost = jest.fn();
 const mockReportForumPost = jest.fn();
 const mockSaveForumPostToGrowLog = jest.fn();
 const mockCreatePersonalTask = jest.fn();
+let mockParams: Record<string, string> = { id: "post-1", growId: "grow-1" };
 
-jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "post-1", growId: "grow-1" })
-}));
+jest.mock("expo-router", () => {
+  const React = require("react");
+  return {
+    Link: ({ href, children }: any) =>
+      React.cloneElement(React.Children.only(children), {
+        href,
+        testID: `forum-link-${href}`
+      }),
+    useLocalSearchParams: () => mockParams
+  };
+});
 
 jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
@@ -72,6 +81,7 @@ jest.mock("@/api/tasks", () => ({
 describe("ForumPostDetailRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockParams = { id: "post-1", growId: "grow-1" };
     mockGetForumPost.mockResolvedValue({
       id: "post-1",
       title: "Leaf spot follow-up",
@@ -92,10 +102,47 @@ describe("ForumPostDetailRoute", () => {
     mockAddForumComment.mockResolvedValue({ id: "comment-new" });
   });
 
+  it("shows an action-free handoff when no post id is present", async () => {
+    mockParams = {};
+    const screen = render(<ForumPostDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Choose a discussion from Forum / Q&A.")).toBeTruthy()
+    );
+    expect(mockGetForumPost).not.toHaveBeenCalled();
+    expect(mockListForumComments).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("header", { name: "Forum discussion unavailable" })
+    ).toHaveProp("aria-level", 1);
+    expect(screen.getByTestId("forum-link-/forum")).toBeTruthy();
+    expect(screen.queryByLabelText("Forum comment")).toBeNull();
+    expect(screen.queryByLabelText("Attach forum comment photos")).toBeNull();
+    expect(screen.queryByLabelText("Submit forum comment")).toBeNull();
+  });
+
+  it("sanitizes detail-load failures and hides the composer", async () => {
+    mockGetForumPost.mockRejectedValueOnce(
+      new Error('Cast to ObjectId failed at path "_id" for model "ForumPost"')
+    );
+    const screen = render(<ForumPostDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("This discussion is unavailable.")).toBeTruthy()
+    );
+    expect(screen.queryByText(/Cast to ObjectId/i)).toBeNull();
+    expect(screen.queryByLabelText("Forum comment")).toBeNull();
+    expect(screen.getByTestId("forum-link-/forum")).toBeTruthy();
+  });
+
   it("creates a grow task from forum advice with the forum source link", async () => {
     const screen = render(<ForumPostDetailRoute />);
 
     await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "Leaf spot follow-up" })).toHaveProp(
+      "aria-level",
+      1
+    );
+    expect(screen.getByRole("header", { name: "Comments" })).toHaveProp("aria-level", 2);
     expect(screen.getByLabelText("Shared back /forum")).toBeTruthy();
     expect(screen.getByLabelText("Forum post photo 1")).toBeTruthy();
 
