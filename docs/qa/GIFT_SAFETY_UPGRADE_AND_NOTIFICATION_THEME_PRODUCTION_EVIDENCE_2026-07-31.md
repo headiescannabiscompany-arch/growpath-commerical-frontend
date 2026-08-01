@@ -2540,6 +2540,35 @@ persistence, tasks, product drafts, or production-batch actions.
   billing, audit event, or record action was invoked, and the Viewer session
   remained signed in.
 
+## Shared Plant Issue Diagnosis workflow hierarchy
+
+Production Plant Issue Diagnosis already used the active Night palette and
+named every visible control, but its crop, symptom, environment, measurement,
+and media workflow titles were plain text beneath a lone H1. Frontend
+`e901d54c` marks the existing page title as H1 and the existing workflow titles
+as H2s. The reusable media picker exposes its title as a heading only when the
+calling workflow opts in, so unrelated media surfaces retain their existing
+structure. Diagnosis payloads, media handling, AI-credit behavior, readiness
+guards, and persistence are unchanged.
+
+- All 10 focused `MediaEvidencePicker` tests passed, including the new opt-in
+  heading contract and existing upload, persistence, capacity, preview,
+  duration, frame-extraction, failure, quality, and guidance coverage. Source
+  lint, forced test lint, full frontend `tsc --noEmit`, and `git diff --check`
+  passed.
+- Production Build Preflight `30714908559` and Frontend CI `30714908579`
+  passed. Clean signed-in Facility Viewer production verification rendered one
+  `Plant Issue Diagnosis` H1 and nine H2 workflow sections in the truthful
+  zero-grow state: Crop identity, Stage, What are you observing?, Pattern
+  location, Progression, Root zone, Environment, Measured numbers, and Photos
+  and video evidence. All 12 visible fields retained accessible names, Run
+  Diagnosis remained disabled without required evidence, and the route had
+  zero white/light page-content surfaces.
+- No field, stage, pattern, progression, root-zone, temperature-unit, media,
+  upload, diagnosis, AI request, credit, task, log, grow, plant, workspace,
+  account, session, billing, audit event, or record action was invoked, and the
+  Viewer session remained signed in.
+
 ## Shared Nutrient Mix Builder section hierarchy
 
 After the title/control-name correction, production Nutrient Mix Builder still
