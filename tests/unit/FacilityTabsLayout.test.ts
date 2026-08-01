@@ -39,6 +39,11 @@ describe("Facility tabs layout", () => {
 
   it("lets Facility Grow Intelligence own its accurate semantic page heading", () => {
     expect(shouldShowFacilityRouteHeader("ai-tools")).toBe(false);
-    expect(shouldShowFacilityRouteHeader("reports")).toBe(true);
+    expect(shouldShowFacilityRouteHeader("analytics")).toBe(true);
+  });
+
+  it("lets Facility Reports own its semantic page heading", () => {
+    expect(shouldShowFacilityRouteHeader("reports")).toBe(false);
+    expect(shouldShowFacilityRouteHeader("integrations")).toBe(true);
   });
 });

@@ -61,8 +61,11 @@ describe("FacilityReportsTab viewer access", () => {
       await Promise.resolve();
       await Promise.resolve();
     });
-    await waitFor(() => expect(screen.getByText("Facility Reports")).toBeTruthy());
-
+    await waitFor(() =>
+      expect(
+        screen.getByRole("header", { name: "Facility Reports" }).props["aria-level"]
+      ).toBe(1)
+    );
     expect(screen.queryByLabelText("Export compliance packet")).toBeNull();
     expect(screen.getByLabelText("Refresh facility reports")).toBeTruthy();
   });

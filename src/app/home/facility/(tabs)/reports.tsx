@@ -282,7 +282,9 @@ export default function FacilityReportsTab() {
 
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.h1}>Facility Reports</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+              Facility Reports
+            </Text>
             <Text style={styles.muted}>Summary from the facility reports endpoint.</Text>
           </View>
           <View style={styles.actions}>
@@ -450,7 +452,9 @@ export default function FacilityReportsTab() {
         {report ? (
           <>
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Tasks</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Tasks
+              </Text>
               <View style={styles.grid}>
                 <StatTile label="Total" value={report.tasks?.total ?? 0} />
                 <StatTile label="Open" value={report.tasks?.open ?? 0} />
@@ -464,7 +468,9 @@ export default function FacilityReportsTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Compliance</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Compliance
+              </Text>
               <View style={styles.grid}>
                 <StatTile label="Logs" value={report.compliance?.totalLogs ?? 0} />
                 <StatTile
@@ -482,7 +488,9 @@ export default function FacilityReportsTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Team</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Team
+              </Text>
               <View style={styles.grid}>
                 <StatTile label="Members" value={report.team?.totalMembers ?? 0} />
               </View>
@@ -495,7 +503,9 @@ export default function FacilityReportsTab() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Automation</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Automation
+              </Text>
               <View style={styles.grid}>
                 <StatTile
                   label="Policies"
