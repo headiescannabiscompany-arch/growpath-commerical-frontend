@@ -887,10 +887,13 @@ export default function FacilityTasksRoute() {
           ListEmptyComponent={
             !loading ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No tasks yet</Text>
+                <Text accessibilityRole="header" aria-level={3} style={styles.emptyTitle}>
+                  No tasks yet
+                </Text>
                 <Text style={styles.muted}>
-                  Create a task above or generate one from a room, SOP, alert, course,
-                  live, tool run, product, or forum source.
+                  {canWrite
+                    ? "Create a task above or generate one from a room, SOP, alert, course, live, tool run, product, or forum source."
+                    : "Tasks will appear here when an authorized team member creates one or a linked workflow generates one."}
                 </Text>
               </View>
             ) : null
@@ -907,7 +910,12 @@ export default function FacilityTasksRoute() {
                 style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle} numberOfLines={1}>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={3}
+                    style={styles.rowTitle}
+                    numberOfLines={1}
+                  >
                     {title}
                   </Text>
                   {subtitle ? (

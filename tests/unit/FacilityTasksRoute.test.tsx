@@ -174,9 +174,30 @@ describe("FacilityTasksRoute", () => {
     );
     expect(screen.getByRole("header", { name: "Status" }).props["aria-level"]).toBe(3);
     expect(screen.getByRole("header", { name: "Source" }).props["aria-level"]).toBe(3);
+    expect(
+      screen.getByRole("header", { name: "Scout Flower Room" }).props["aria-level"]
+    ).toBe(3);
     expect(screen.getByText("You do not have permission to create tasks.")).toBeTruthy();
     expect(screen.queryByLabelText("Toggle facility task creator")).toBeNull();
     expect(screen.queryByLabelText("Create facility task")).toBeNull();
+  });
+
+  it("gives a Viewer accurate guidance when the task queue is empty", async () => {
+    mockFacilityRole = "VIEWER";
+    mockCanWrite = false;
+    mockGetFacilityTasks.mockResolvedValue([]);
+    const screen = render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("No tasks yet")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "No tasks yet" }).props["aria-level"]).toBe(
+      3
+    );
+    expect(
+      screen.getByText(
+        "Tasks will appear here when an authorized team member creates one or a linked workflow generates one."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText(/Create a task above/)).toBeNull();
   });
 
   it("opens the selected task detail with a concrete web-safe route", async () => {
