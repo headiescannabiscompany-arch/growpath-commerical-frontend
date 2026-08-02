@@ -206,7 +206,11 @@ function payloadFromDraft(draft: Draft) {
   };
 }
 
-export default function IngredientLibraryRoute() {
+export default function IngredientLibraryRoute({
+  backFallbackHref = "/home/personal/tools"
+}: {
+  backFallbackHref?: string;
+} = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createIngredientLibraryStyles(palette), [palette]);
   const [items, setItems] = useState<ProductIngredient[]>([]);
@@ -380,7 +384,7 @@ export default function IngredientLibraryRoute() {
     <ScreenBoundary
       title="Products & Label Library"
       showBack
-      backFallbackHref="/home/personal/tools"
+      backFallbackHref={backFallbackHref}
     >
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
         <View style={styles.header}>

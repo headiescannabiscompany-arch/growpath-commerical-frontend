@@ -661,8 +661,15 @@ export default function CourseDetailScreen({ route, navigation = null }) {
 
   function editLesson(lesson) {
     const id = rowId(lesson);
-    if (!id || !navigation?.navigate) return;
-    navigation.navigate("EditLesson", { lessonId: id, lesson });
+    if (!id || !loadedCourseId) return;
+    if (navigation?.navigate) {
+      navigation.navigate("EditLesson", { lessonId: id, lesson });
+      return;
+    }
+    const returnHref = `/courses?courseId=${encodeURIComponent(loadedCourseId)}`;
+    router.push(
+      `/courses/edit-lesson?lessonId=${encodeURIComponent(id)}&courseId=${encodeURIComponent(loadedCourseId)}&from=${encodeURIComponent(returnHref)}`
+    );
   }
 
   if (!access.canViewCourses) {
@@ -846,8 +853,13 @@ export default function CourseDetailScreen({ route, navigation = null }) {
                   {canOpenLessons ? "Open Lesson" : "Locked — Payment Required"}
                 </Text>
               </Pressable>
-              {access.canCreateCourses && navigation?.navigate ? (
-                <Pressable onPress={() => editLesson(lesson)} style={styles.secondaryBtn}>
+              {access.canCreateCourses ? (
+                <Pressable
+                  accessibilityLabel={`Edit lesson ${lessonTitle(lesson, index)}`}
+                  accessibilityRole="button"
+                  onPress={() => editLesson(lesson)}
+                  style={styles.secondaryBtn}
+                >
                   <Text style={styles.secondaryText}>Edit</Text>
                 </Pressable>
               ) : null}

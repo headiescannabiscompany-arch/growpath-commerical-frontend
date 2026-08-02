@@ -32,10 +32,15 @@ jest.mock("@/components/layout/AppCard", () => {
   return ({ children, style }: any) => React.createElement(View, { style }, children);
 });
 
-jest.mock("@/components/home/PersonalFeaturedFeed", () => {
+jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return () => React.createElement(Text, null, "Featured feed mock");
+  return ({ placement, routeKey }: any) =>
+    React.createElement(
+      Text,
+      { testID: `feed-${routeKey}-${placement}` },
+      `${routeKey} ${placement} feed`
+    );
 });
 
 describe("PersonalGrowsRoute", () => {
@@ -45,10 +50,12 @@ describe("PersonalGrowsRoute", () => {
     mockListPersonalGrows.mockResolvedValue([]);
   });
 
-  it("shows the featured feed above the empty grows state", async () => {
+  it("uses the normal grows feed policy instead of the Home featured feed", async () => {
     const screen = render(<PersonalGrowsRoute />);
 
-    await waitFor(() => expect(screen.getByText("Featured feed mock")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId("feed-personal_grows-top")).toBeTruthy()
+    );
 
     expect(screen.getByText("Personal grow workspace")).toBeTruthy();
     expect(screen.getByText("Grows")).toBeTruthy();
@@ -59,7 +66,9 @@ describe("PersonalGrowsRoute", () => {
     expect(screen.getAllByText("Create Grow").length).toBeGreaterThan(1);
     expect(screen.getByText("Workspace summary")).toBeTruthy();
     expect(screen.getByText("No grow yet")).toBeTruthy();
-    expect(screen.getByText("Featured feed mock")).toBeTruthy();
+    expect(screen.getByTestId("feed-personal_grows-middle")).toBeTruthy();
+    expect(screen.getByTestId("feed-personal_grows-bottom")).toBeTruthy();
+    expect(screen.queryByText("Featured feed mock")).toBeNull();
   });
 
   it("shows a useful roadmap for the latest grow", async () => {

@@ -14,6 +14,21 @@ function expectOrder(contents, names) {
   }
 }
 
+function screenBlock(contents, name) {
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = contents.match(
+    new RegExp(`<Tabs\\.Screen\\s+name="${escapedName}"[\\s\\S]*?\\/>`)
+  );
+  expect(match).not.toBeNull();
+  return match[0];
+}
+
+function visibleScreenNames(contents) {
+  return Array.from(contents.matchAll(/<Tabs\.Screen\s+name="([^"]+)"[\s\S]*?\/>/g))
+    .filter((match) => !match[0].includes("href: null"))
+    .map((match) => match[1]);
+}
+
 describe("workspace bottom-tab order", () => {
   it("keeps Personal compact navigation in release order", () => {
     const contents = source("src/app/home/personal/(tabs)/_layout.tsx");
@@ -33,6 +48,14 @@ describe("workspace bottom-tab order", () => {
       "more",
       "profile"
     ]);
+    expect(visibleScreenNames(contents)).toEqual([
+      "index",
+      "storefront/index",
+      "feed",
+      "community",
+      "more",
+      "profile"
+    ]);
     for (const name of [
       "grows/index",
       "tools/index",
@@ -45,12 +68,19 @@ describe("workspace bottom-tab order", () => {
       "analytics",
       "tasks"
     ]) {
-      expect(contents).toMatch(
-        new RegExp(
-          `name="${name.replace("/", "\\/")}"[\\s\\S]*?tabBarButton: \\(\\) => null`
-        )
-      );
+      expect(screenBlock(contents, name)).toContain("href: null");
     }
+    for (const name of [
+      "index",
+      "storefront/index",
+      "feed",
+      "community",
+      "more",
+      "profile"
+    ]) {
+      expect(screenBlock(contents, name)).not.toContain("href: null");
+    }
+    expect(contents).not.toContain("tabBarButton");
     expect(contents).toContain('tabBarLabel: compactTabs ? "Feed" : "Feed / Campaigns"');
     expect(contents).toContain('tabBarLabel: "Forum"');
     expect(contents).toContain('tabBarLabel: "More"');
@@ -104,10 +134,31 @@ describe("workspace bottom-tab order", () => {
       "more",
       "profile"
     ]);
+    expect(visibleScreenNames(contents)).toEqual([
+      "dashboard",
+      "grows",
+      "tasks",
+      "compliance",
+      "more",
+      "profile"
+    ]);
     for (const name of ["rooms", "plants", "sop-runs", "logs", "ai-tools", "ai-ask"]) {
-      expect(contents).toMatch(
-        new RegExp(`name="${name}"[\\s\\S]*?tabBarButton: \\(\\) => null`)
-      );
+      expect(screenBlock(contents, name)).toContain("href: null");
+    }
+    for (const name of ["dashboard", "grows", "tasks", "compliance", "more", "profile"]) {
+      expect(screenBlock(contents, name)).not.toContain("href: null");
+    }
+    expect(contents).not.toContain("tabBarButton");
+  });
+
+  it("uses Expo Router route exclusion instead of empty tab buttons", () => {
+    for (const relativePath of [
+      "src/app/home/commercial/_layout.tsx",
+      "src/app/home/facility/(tabs)/_layout.tsx"
+    ]) {
+      const contents = source(relativePath);
+      expect(contents).toContain("href: null");
+      expect(contents).not.toContain("tabBarButton");
     }
   });
 
@@ -118,6 +169,14 @@ describe("workspace bottom-tab order", () => {
 
     expect(dashboard).toContain('to: "/home/facility/ai-tools"');
     expect(more).toContain('href: "/home/facility/ai-tools"');
+    expect(dashboard).not.toContain("<ThemeModeSelector");
+    expect(profile).toContain("<ThemeModeSelector");
+  });
+
+  it("keeps Commercial theme controls in Profile instead of the dashboard", () => {
+    const dashboard = source("src/app/home/commercial/index.tsx");
+    const profile = source("src/app/home/commercial/profile.tsx");
+
     expect(dashboard).not.toContain("<ThemeModeSelector");
     expect(profile).toContain("<ThemeModeSelector");
   });

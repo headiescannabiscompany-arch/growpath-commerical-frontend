@@ -525,12 +525,17 @@ function harvestReviewRecord(
   };
 }
 
-export default function HarvestReadinessToolRoute() {
+export default function HarvestReadinessToolRoute({
+  backFallbackHref = "/home/personal/tools"
+}: {
+  backFallbackHref?: string;
+} = {}) {
   const [vision, setVision] = useState<TrichomeVisionResult | null>(null);
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   const harvestEvidence = providerEvidencePayload(evidenceAssets);
   return (
     <BackendCalculatorToolScreen
+      backFallbackHref={backFallbackHref}
       key={
         vision?.photoUsable
           ? `${vision.clear}-${vision.cloudy}-${vision.amber}`

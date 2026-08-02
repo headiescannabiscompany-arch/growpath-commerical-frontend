@@ -124,9 +124,14 @@ function buildDryBlendAssistantBrief(payload: Record<string, any>) {
   ].join("\n");
 }
 
-export default function DryAmendmentMixToolScreen() {
+export default function DryAmendmentMixToolScreen({
+  backFallbackHref = "/home/personal/tools"
+}: {
+  backFallbackHref?: string;
+} = {}) {
   return (
     <BackendCalculatorToolScreen
+      backFallbackHref={backFallbackHref}
       tool="dry-amendment-mix"
       toolKey="dry-amendment-mix"
       title="Dry Amendment Mix Builder"

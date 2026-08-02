@@ -36,6 +36,7 @@ const facilityReports = read("src/app/home/facility/(tabs)/reports.tsx");
 const forumRoute = read("src/app/home/personal/(tabs)/forum/index.tsx");
 const commercialFeed = read("src/app/home/commercial/feed.tsx");
 const connectedTodo = read("docs/growpath-connected-workflows-master-todo-2026-07-06.md");
+const sharedVisualSystem = read("docs/frontend/11-shared-visual-system.md");
 
 const tests = {
   themeTokens: read("tests/unit/themeTokens.test.js"),
@@ -94,7 +95,10 @@ const tests = {
   ["tool shell uses ScreenBoundary", /ScreenBoundary/],
   ["tool shell uses result surface", /ToolResultSurface/],
   ["tool shell uses 8px cards", /borderRadius:\s*8/],
-  ["tool shell keeps Personal back default", /backFallbackHref\s*=\s*"\/home\/personal\/tools"/],
+  [
+    "tool shell keeps Personal back default",
+    /backFallbackHref\s*=\s*"\/home\/personal\/tools"/
+  ],
   ["tool shell uses shared back fallback", /backFallbackHref=\{backFallbackHref\}/]
 ].forEach(([description, pattern]) => {
   requireText("BackendCalculatorToolScreen", backendToolScreen, pattern, description);
@@ -121,17 +125,58 @@ const tests = {
 [
   ["Forum/Q&A discussion copy", forumRoute, /Forum \/ Q&A|discussion|Q&A/i],
   ["Feed/Campaigns outreach copy", commercialFeed, /Feed|Campaign|campaign|outreach/i],
-  ["connected workflow visual standard", connectedTodo, /Facility currently has the strongest visual appeal[\s\S]*Personal should feel like a polished grow OS[\s\S]*Commercial should feel like a polished brand\/storefront workspace/]
+  [
+    "connected workflow visual standard",
+    connectedTodo,
+    /Facility currently has the strongest visual appeal[\s\S]*Personal should feel like a polished grow OS[\s\S]*Commercial should feel like a polished brand\/storefront workspace/
+  ]
 ].forEach(([description, contents, pattern]) => {
   requireText("visual product language", contents, pattern, description);
 });
 
 [
-  ["personal tool back-route tests", tests.personalBack, /uses shared back behavior[\s\S]*PDF \/ Export[\s\S]*Nutrient Chemistry/],
-  ["facility inventory visual behavior tests", tests.facilityInventory, /No inventory items yet[\s\S]*Open inventory AI review/],
-  ["commercial inventory shell tests", tests.commercialCreate, /Shared Back \/home\/commercial\/inventory[\s\S]*Create Inventory Support Record/],
-  ["commercial workflow polished inventory tests", tests.commercialWorkflow, /Inventory Support Record[\s\S]*Inventory Support Item/],
-  ["grow workspace visual Playwright audit", tests.growVisual, /grow workspace visual audit[\s\S]*desktop[\s\S]*mobile[\s\S]*page\.screenshot/]
+  ["six labeled primary items", /exactly six text-labeled primary items/],
+  ["hidden routes use href null", /href: null/],
+  [
+    "invisible tab buttons prohibited",
+    /Never hide a route with an invisible[\s\S]*tabBarButton/
+  ],
+  ["shared back method", /Every non-landing screen has a visible shared Back control/],
+  [
+    "auto theme method",
+    /Auto is the default[\s\S]*saved sunrise\/sunset location[\s\S]*device appearance/
+  ],
+  ["production browser evidence", /Deploy the exact tested commit[\s\S]*in-app Browser/]
+].forEach(([description, pattern]) => {
+  requireText("shared visual system", sharedVisualSystem, pattern, description);
+});
+
+[
+  [
+    "personal tool back-route tests",
+    tests.personalBack,
+    /uses shared back behavior[\s\S]*PDF \/ Export[\s\S]*Nutrient Chemistry/
+  ],
+  [
+    "facility inventory visual behavior tests",
+    tests.facilityInventory,
+    /No inventory items yet[\s\S]*Open inventory AI review/
+  ],
+  [
+    "commercial inventory shell tests",
+    tests.commercialCreate,
+    /Shared Back \/home\/commercial\/inventory[\s\S]*Create Inventory Support Record/
+  ],
+  [
+    "commercial workflow polished inventory tests",
+    tests.commercialWorkflow,
+    /Inventory Support Record[\s\S]*Inventory Support Item/
+  ],
+  [
+    "grow workspace visual Playwright audit",
+    tests.growVisual,
+    /grow workspace visual audit[\s\S]*desktop[\s\S]*mobile[\s\S]*page\.screenshot/
+  ]
 ].forEach(([description, contents, pattern]) => {
   requireText("visual polish tests", contents, pattern, description);
 });

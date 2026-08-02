@@ -22,7 +22,11 @@ function coerceParam(value?: string | string[]) {
   return "";
 }
 
-export default function PdfExportScreen() {
+export default function PdfExportScreen({
+  backFallbackHref
+}: {
+  backFallbackHref?: string;
+} = {}) {
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
@@ -80,9 +84,10 @@ export default function PdfExportScreen() {
       title="Grow Reports & Export"
       showBack
       backFallbackHref={
-        growId
+        backFallbackHref ||
+        (growId
           ? `/home/personal/grows/${encodeURIComponent(growId)}/timeline`
-          : "/home/personal/profile"
+          : "/home/personal/profile")
       }
     >
       <ScrollView contentContainerStyle={styles.container}>

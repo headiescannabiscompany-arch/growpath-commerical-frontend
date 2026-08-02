@@ -34,10 +34,10 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
     expect(screen.getByLabelText("More promoted campaigns placement")).toBeTruthy();
     expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
-    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(3);
+    expect(screen.getAllByText("GrowPath shortcut").length).toBeGreaterThanOrEqual(3);
     expect(screen.getByText("Explore grower storefronts")).toBeTruthy();
     expect(screen.getByText("Learn from grower courses")).toBeTruthy();
-    expect(screen.getByText("Plan the next grow")).toBeTruthy();
+    expect(screen.getByText("Ask the grower community")).toBeTruthy();
     expect(
       screen.getAllByText(
         "Want to see fewer ads? Paid accounts get at least 50% fewer ads."
@@ -57,7 +57,7 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
     expect(screen.queryByLabelText("More promoted campaigns placement")).toBeNull();
     expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
-    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("GrowPath shortcut").length).toBeGreaterThanOrEqual(2);
   });
 
   it("keeps paid personal pages to the top placement only", () => {
@@ -80,7 +80,7 @@ describe("PersonalFeedPlacement", () => {
     );
 
     expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
-    expect(screen.getByText("Promoted campaign")).toBeTruthy();
+    expect(screen.getByText("GrowPath shortcut")).toBeTruthy();
     expect(screen.queryByLabelText("More promoted campaigns placement")).toBeNull();
     expect(screen.queryByLabelText("Recommended campaigns placement")).toBeNull();
   });
@@ -97,6 +97,6 @@ describe("PersonalFeedPlacement", () => {
     expect(screen.getByLabelText("Promoted campaigns placement")).toBeTruthy();
     expect(screen.queryByLabelText("More promoted campaigns placement")).toBeNull();
     expect(screen.getByLabelText("Recommended campaigns placement")).toBeTruthy();
-    expect(screen.getAllByText("Promoted campaign").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("GrowPath shortcut").length).toBeGreaterThanOrEqual(2);
   });
 });

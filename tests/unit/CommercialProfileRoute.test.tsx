@@ -5,6 +5,11 @@ import CommercialProfileRoute from "@/app/home/commercial/profile";
 
 const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
+let mockAuthUser: any = {
+  id: "brand-user-1",
+  email: "brand@example.com",
+  displayName: "Brand Owner"
+};
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -17,7 +22,7 @@ jest.mock("expo-router", () => {
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
-    user: { id: "brand-user-1", email: "brand@example.com", displayName: "Brand Owner" }
+    user: mockAuthUser
   })
 }));
 
@@ -53,6 +58,11 @@ describe("CommercialProfileRoute", () => {
   beforeEach(() => {
     mockApiRequest.mockReset();
     mockPush.mockReset();
+    mockAuthUser = {
+      id: "brand-user-1",
+      email: "brand@example.com",
+      displayName: "Brand Owner"
+    };
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/storefront" && !options) {
         return Promise.resolve({
@@ -168,6 +178,10 @@ describe("CommercialProfileRoute", () => {
   });
 
   it("shows the Living Soil Labs starter draft when no storefront exists", async () => {
+    mockAuthUser = {
+      ...mockAuthUser,
+      businessName: "Living Soil Labs"
+    };
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/storefront" && !options) {
         return Promise.resolve({ storefront: null });
@@ -178,12 +192,30 @@ describe("CommercialProfileRoute", () => {
     const screen = render(<CommercialProfileRoute />);
 
     await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
-    expect(screen.getAllByDisplayValue("Living Soil Labs").length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText(/starter draft/i)).toBeTruthy();
+    expect(screen.getAllByDisplayValue("Living Soil Labs").length).toBeGreaterThanOrEqual(
+      2
+    );
+    expect(screen.getByText(/authenticated business name/i)).toBeTruthy();
     expect(
       screen.getByDisplayValue(
         "Rooted in Science. Grown by Nature. Pre-launch placeholder brand. All inventory starts at zero and prices stay TBD until the owner edits them."
       )
     ).toBeTruthy();
+  });
+
+  it("never inserts Living Soil Labs into an unrelated empty commercial profile", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/storefront" && !options) {
+        return Promise.resolve({ storefront: null });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialProfileRoute />);
+
+    await waitFor(() => expect(screen.getByText("Not set")).toBeTruthy());
+    expect(screen.queryByText(/Living Soil Labs/i)).toBeNull();
+    expect(screen.queryByDisplayValue("Living Soil Labs")).toBeNull();
+    expect(screen.getByText(/never inserted/i)).toBeTruthy();
   });
 });

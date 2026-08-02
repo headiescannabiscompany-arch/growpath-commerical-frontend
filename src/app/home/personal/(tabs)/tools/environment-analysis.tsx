@@ -93,7 +93,11 @@ function environmentTaskMetadata(hasRisk: boolean) {
   };
 }
 
-export default function EnvironmentAnalysisToolScreen() {
+export default function EnvironmentAnalysisToolScreen({
+  backFallbackHref = "/home/personal/tools"
+}: {
+  backFallbackHref?: string;
+} = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createEnvironmentAnalysisStyles(palette), [palette]);
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
@@ -268,7 +272,7 @@ export default function EnvironmentAnalysisToolScreen() {
     <ScreenBoundary
       title="Environment Review"
       showBack
-      backFallbackHref="/home/personal/tools"
+      backFallbackHref={backFallbackHref}
     >
       <ScrollView contentContainerStyle={styles.container}>
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>

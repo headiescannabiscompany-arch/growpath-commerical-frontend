@@ -87,24 +87,21 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="grows/index"
-        options={{ title: "Grows", tabBarLabel: "Grows", tabBarButton: () => null }}
+        options={{ title: "Grows", tabBarLabel: "Grows", href: null }}
       />
       <Tabs.Screen
         name="tools/index"
-        options={{ title: "AI Tools", tabBarLabel: "AI Tools", tabBarButton: () => null }}
+        options={{ title: "AI Tools", tabBarLabel: "AI Tools", href: null }}
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: "Discover", tabBarLabel: "Discover", tabBarButton: () => null }}
+        options={{ title: "Discover", tabBarLabel: "Discover", href: null }}
       />
       <Tabs.Screen
         name="courses"
-        options={{ title: "Courses", tabBarLabel: "Courses", tabBarButton: () => null }}
+        options={{ title: "Courses", tabBarLabel: "Courses", href: null }}
       />
-      <Tabs.Screen
-        name="products/index"
-        options={{ title: "Products", tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="products/index" options={{ title: "Products", href: null }} />
       <Tabs.Screen
         name="feed"
         options={{
@@ -121,12 +118,12 @@ export default function CommercialTabsLayout() {
           headerShown: false
         }}
       />
-      <Tabs.Screen name="lives" options={{ title: "Lives", tabBarButton: () => null }} />
+      <Tabs.Screen name="lives" options={{ title: "Lives", href: null }} />
       <Tabs.Screen
         name="orders"
         options={{
           title: "Orders",
-          tabBarButton: () => null,
+          href: null,
           headerShown: false
         }}
       />
@@ -134,7 +131,7 @@ export default function CommercialTabsLayout() {
         name="inventory"
         options={{
           title: "Inventory Support",
-          tabBarButton: () => null,
+          href: null,
           headerShown: false
         }}
       />
@@ -143,7 +140,7 @@ export default function CommercialTabsLayout() {
         name="analytics"
         options={{
           title: "Analytics",
-          tabBarButton: () => null,
+          href: null,
           headerShown: false
         }}
       />
@@ -163,7 +160,7 @@ export default function CommercialTabsLayout() {
         name="storefront/edit"
         options={{
           title: "Edit Storefront",
-          tabBarButton: () => null,
+          href: null,
           headerShown: false
         }}
       />
@@ -171,19 +168,16 @@ export default function CommercialTabsLayout() {
         name="storefront/preview"
         options={{
           title: "Preview Storefront",
-          tabBarButton: () => null,
+          href: null,
           headerShown: false
         }}
       />
-      <Tabs.Screen
-        name="tools/library"
-        options={{ title: "Tool Library", tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="tools/library" options={{ title: "Tool Library", href: null }} />
       <Tabs.Screen
         name="batch-planner"
         options={{
           title: "Product Batches",
-          tabBarButton: () => null,
+          href: null,
           headerShown: false
         }}
       />
@@ -191,7 +185,7 @@ export default function CommercialTabsLayout() {
         name="product-lines"
         options={{
           title: "Product Lines",
-          tabBarButton: () => null,
+          href: null,
           headerShown: false
         }}
       />
@@ -199,39 +193,33 @@ export default function CommercialTabsLayout() {
         name="trials"
         options={{
           title: "Product Trials",
-          tabBarButton: () => null,
+          href: null,
           headerShown: false
         }}
       />
-      <Tabs.Screen name="tasks" options={{ title: "Tasks", tabBarButton: () => null }} />
-      <Tabs.Screen
-        name="tasks/[id]"
-        options={{ title: "Task Detail", tabBarButton: () => null }}
-      />
-      <Tabs.Screen
-        name="marketing"
-        options={{ title: "Marketing", tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="tasks" options={{ title: "Tasks", href: null }} />
+      <Tabs.Screen name="tasks/[id]" options={{ title: "Task Detail", href: null }} />
+      <Tabs.Screen name="marketing" options={{ title: "Marketing", href: null }} />
       <Tabs.Screen
         name="inventory-create"
         options={{
           title: "Add Inventory Support Record",
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
         name="inventory/new"
         options={{
           title: "Add Inventory Support Record",
-          tabBarButton: () => null
+          href: null
         }}
       />
-      <Tabs.Screen name="inventory-item/[id]" options={{ tabBarButton: () => null }} />
-      <Tabs.Screen name="inventory/[id]" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen name="inventory-item/[id]" options={{ href: null }} />
+      <Tabs.Screen name="inventory/[id]" options={{ href: null }} />
       <Tabs.Screen
         name="grows/new"
         options={{
-          tabBarButton: () => null,
+          href: null,
           title: "Create Product Trial Evidence Run",
           headerShown: false
         }}
@@ -239,14 +227,14 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen
         name="grows/[growId]"
         options={{
-          tabBarButton: () => null,
+          href: null,
           title: "Product Trial Evidence Run Detail"
         }}
       />
       <Tabs.Screen
         name="evidence-runs/index"
         options={{
-          tabBarButton: () => null,
+          href: null,
           title: "Product Trial Evidence Runs",
           headerShown: false
         }}
@@ -254,7 +242,7 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen
         name="evidence-runs/new"
         options={{
-          tabBarButton: () => null,
+          href: null,
           title: "Create Product Trial Evidence Run",
           headerShown: false
         }}
@@ -262,49 +250,40 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen
         name="evidence-runs/[id]"
         options={{
-          tabBarButton: () => null,
+          href: null,
           title: "Product Trial Evidence Run Detail"
         }}
       />
       <Tabs.Screen
         name="products/new"
-        options={{ title: "Create Product", tabBarButton: () => null }}
+        options={{ title: "Create Product", href: null }}
       />
       <Tabs.Screen
         name="products/import"
         options={{
           title: "Import Storefront Items",
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
         name="products/[productId]"
-        options={{ title: "Product Detail", tabBarButton: () => null }}
+        options={{ title: "Product Detail", href: null }}
       />
-      <Tabs.Screen name="courses/[courseId]" options={{ tabBarButton: () => null }} />
-      <Tabs.Screen
-        name="batch-planner/[batchId]"
-        options={{ tabBarButton: () => null }}
-      />
-      <Tabs.Screen name="product-lines/[lineId]" options={{ tabBarButton: () => null }} />
-      <Tabs.Screen name="trials/[trialId]" options={{ tabBarButton: () => null }} />
-      <Tabs.Screen
-        name="tools/ask-ai"
-        options={{ title: "Ask AI", tabBarButton: () => null }}
-      />
-      <Tabs.Screen
-        name="tools/diagnose"
-        options={{ title: "Diagnose", tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="courses/[courseId]" options={{ href: null }} />
+      <Tabs.Screen name="batch-planner/[batchId]" options={{ href: null }} />
+      <Tabs.Screen name="product-lines/[lineId]" options={{ href: null }} />
+      <Tabs.Screen name="trials/[trialId]" options={{ href: null }} />
+      <Tabs.Screen name="tools/ask-ai" options={{ title: "Ask AI", href: null }} />
+      <Tabs.Screen name="tools/diagnose" options={{ title: "Diagnose", href: null }} />
       <Tabs.Screen
         name="tools/environment"
-        options={{ title: "Environment Review", tabBarButton: () => null }}
+        options={{ title: "Environment Review", href: null }}
       />
       <Tabs.Screen
         name="tools/recipe-builder"
         options={{
           title: "Soil & Nutrient Mix Builders",
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -312,7 +291,7 @@ export default function CommercialTabsLayout() {
         options={{
           title: "Nutrient Mix Builder",
           headerShown: false,
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -320,36 +299,33 @@ export default function CommercialTabsLayout() {
         options={{
           title: "Soil Mix Builder",
           headerShown: false,
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
         name="tools/dry-amendment-mix"
-        options={{ title: "Dry Amendment Mix", tabBarButton: () => null }}
+        options={{ title: "Dry Amendment Mix", href: null }}
       />
       <Tabs.Screen
         name="tools/ingredient-library"
         options={{
           title: "Products & Label Library",
           headerShown: false,
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
         name="tools/harvest-readiness"
-        options={{ title: "Harvest Readiness", tabBarButton: () => null }}
+        options={{ title: "Harvest Readiness", href: null }}
       />
       <Tabs.Screen
         name="tools/soil-nutrient-batch"
         options={{
           title: "Soil & Nutrient Batch Planner",
-          tabBarButton: () => null
+          href: null
         }}
       />
-      <Tabs.Screen
-        name="tools/report"
-        options={{ title: "Export Report", tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="tools/report" options={{ title: "Export Report", href: null }} />
     </Tabs>
   );
 }

@@ -260,9 +260,14 @@ function buildSoilAssistantBrief(payload: Record<string, any>) {
   ].join("\n");
 }
 
-export default function SoilBuilderToolScreen() {
+export default function SoilBuilderToolScreen({
+  backFallbackHref = "/home/personal/tools"
+}: {
+  backFallbackHref?: string;
+} = {}) {
   return (
     <BackendCalculatorToolScreen
+      backFallbackHref={backFallbackHref}
       tool="soil-builder"
       toolKey="soil-builder"
       title="Soil Mix Builder"

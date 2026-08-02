@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 const http = require("http");
+const https = require("https");
+const net = require("net");
 const { spawn } = require("child_process");
 const path = require("path");
 
@@ -10,6 +12,13 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${port}`;
 const expoCli = path.join(ROOT, "node_modules", "expo", "bin", "cli");
 const playwrightCli = path.join(ROOT, "node_modules", "@playwright", "test", "cli.js");
 const playwrightArgs = process.argv.slice(2);
+const serverTimeoutMs = readTimeout("PLAYWRIGHT_SERVER_TIMEOUT_MS", 300000);
+const prewarmTimeoutMs = readTimeout("PLAYWRIGHT_PREWARM_TIMEOUT_MS", 300000);
+
+function readTimeout(name, fallback) {
+  const value = Number(process.env[name] || fallback);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
 
 function spawnProcess(command, args, env = {}) {
   return spawn(command, args, {
@@ -20,27 +29,130 @@ function spawnProcess(command, args, env = {}) {
   });
 }
 
-function requestUrl(url) {
+function expoStartArgs(
+  targetPort,
+  clearCache = process.env.PLAYWRIGHT_CLEAR_CACHE === "1"
+) {
+  return [
+    expoCli,
+    "start",
+    "--web",
+    "--port",
+    String(targetPort),
+    ...(clearCache ? ["--clear"] : [])
+  ];
+}
+
+function canConnect(url) {
   return new Promise((resolve) => {
-    const request = http.get(url, (response) => {
-      response.resume();
-      resolve(response.statusCode && response.statusCode < 500);
+    const target = new URL(url);
+    let settled = false;
+    const socket = net.createConnection({
+      host: target.hostname,
+      port: Number(target.port || (target.protocol === "https:" ? 443 : 80))
     });
-    request.on("error", () => resolve(false));
-    request.setTimeout(1000, () => {
-      request.destroy();
-      resolve(false);
+
+    const finish = (connected) => {
+      if (settled) return;
+      settled = true;
+      socket.destroy();
+      resolve(connected);
+    };
+
+    socket.once("connect", () => finish(true));
+    socket.once("error", () => finish(false));
+    socket.setTimeout(1000, () => {
+      finish(false);
     });
   });
 }
 
-async function waitForServer(url, timeoutMs = 180000) {
+function fetchUrl(url, timeoutMs, redirectCount = 0) {
+  return new Promise((resolve, reject) => {
+    const target = new URL(url);
+    const transport = target.protocol === "https:" ? https : http;
+    const request = transport.get(target, (response) => {
+      const statusCode = response.statusCode || 0;
+      const location = response.headers.location;
+
+      if (statusCode >= 300 && statusCode < 400 && location) {
+        response.resume();
+        if (redirectCount >= 5) {
+          reject(new Error(`Too many redirects while prewarming ${url}`));
+          return;
+        }
+        fetchUrl(new URL(location, target).toString(), timeoutMs, redirectCount + 1).then(
+          resolve,
+          reject
+        );
+        return;
+      }
+
+      const chunks = [];
+      response.on("data", (chunk) => chunks.push(chunk));
+      response.on("end", () => {
+        if (statusCode < 200 || statusCode >= 300) {
+          reject(new Error(`Expo prewarm request failed (${statusCode}) for ${target}`));
+          return;
+        }
+        resolve({
+          body: Buffer.concat(chunks).toString("utf8"),
+          url: target.toString()
+        });
+      });
+    });
+
+    request.on("error", reject);
+    request.setTimeout(timeoutMs, () => {
+      request.destroy(
+        new Error(`Expo prewarm request timed out after ${timeoutMs}ms: ${url}`)
+      );
+    });
+  });
+}
+
+function getScriptUrls(html, documentUrl) {
+  const urls = [];
+  const scriptPattern = /<script\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/gi;
+  let match;
+
+  while ((match = scriptPattern.exec(html))) {
+    const src = match[2].replace(/&amp;/g, "&");
+    const resolved = new URL(src, documentUrl);
+    if (resolved.origin === new URL(documentUrl).origin) {
+      urls.push(resolved.toString());
+    }
+  }
+
+  return [...new Set(urls)];
+}
+
+async function prewarmExpoWeb(url, timeoutMs = prewarmTimeoutMs) {
+  console.log(`[playwright-expo] Prewarming Expo web bundle at ${url}`);
+  const document = await fetchUrl(url, timeoutMs);
+  const scriptUrls = getScriptUrls(document.body, document.url);
+
+  if (scriptUrls.length === 0) {
+    throw new Error(
+      `Expo web document did not contain a same-origin script bundle: ${url}`
+    );
+  }
+
+  await Promise.all(scriptUrls.map((scriptUrl) => fetchUrl(scriptUrl, timeoutMs)));
+  console.log(
+    `[playwright-expo] Expo web prewarm complete (${scriptUrls.length} script${
+      scriptUrls.length === 1 ? "" : "s"
+    })`
+  );
+}
+
+async function waitForServer(url, timeoutMs = serverTimeoutMs) {
   const startedAt = Date.now();
   while (Date.now() - startedAt < timeoutMs) {
-    if (await requestUrl(url)) return;
+    if (await canConnect(url)) return;
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  throw new Error(`Expo web server did not become ready at ${url}`);
+  throw new Error(`Expo web server did not open a listener at ${url}`);
 }
 
 function killTree(child) {
@@ -64,19 +176,16 @@ function killTree(child) {
 }
 
 async function main() {
-  const expo = spawnProcess(
-    process.execPath,
-    [expoCli, "start", "--web", "--port", port, "--clear"],
-    {
-      CI: "1",
-      EXPO_NO_TELEMETRY: "1",
-      EXPO_PUBLIC_API_URL: process.env.EXPO_PUBLIC_API_URL || "http://localhost:5002"
-    }
-  );
+  const expo = spawnProcess(process.execPath, expoStartArgs(port), {
+    CI: "1",
+    EXPO_NO_TELEMETRY: "1",
+    EXPO_PUBLIC_API_URL: process.env.EXPO_PUBLIC_API_URL || "http://localhost:5002"
+  });
 
   let playwrightStatus = 1;
   try {
     await waitForServer(baseURL);
+    await prewarmExpoWeb(baseURL);
 
     playwrightStatus = await new Promise((resolve) => {
       const playwright = spawnProcess(
@@ -99,7 +208,15 @@ async function main() {
   process.exit(playwrightStatus);
 }
 
-main().catch(async (error) => {
-  console.error(error?.message || error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(async (error) => {
+    console.error(error?.message || error);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  expoStartArgs,
+  getScriptUrls,
+  prewarmExpoWeb
+};

@@ -64,6 +64,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 }));
 
 import CoursesScreen, {
+  courseImageSource,
   courseInterestTags,
   isExplicitQaCourse,
   matchesCourseInterests,
@@ -77,6 +78,7 @@ const mockCourses = [
     _id: "1",
     title: "Free Course",
     creator: "Alice",
+    coverImageUrl: "https://example.com/course-cover.jpg",
     thumbnail: "",
     priceCents: 0,
     lessons: [1, 2],
@@ -139,6 +141,23 @@ describe("CoursesScreen QA (capability-driven)", () => {
       </NavigationContainer>
     );
   };
+
+  it("renders saved course cover imagery and uses the existing banner fallback", async () => {
+    mockUseEntitlements.mockReturnValue({
+      ready: true,
+      mode: "personal",
+      limits: {},
+      can: (cap) => cap === "COURSES_VIEW" || cap === "SEE_PAID_COURSES"
+    });
+
+    const { findByLabelText } = await renderWithNav();
+    expect((await findByLabelText("Free Course cover")).props.source).toEqual({
+      uri: "https://example.com/course-cover.jpg"
+    });
+    expect((await findByLabelText("Pro Course cover")).props.source).toEqual(
+      courseImageSource({})
+    );
+  });
 
   it("canonicalizes legacy crop types and rejects courses for a different selected crop", () => {
     const tomatoCourse = { cropType: "Tomatoes", tags: ["Outdoor"] };

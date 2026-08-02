@@ -4,14 +4,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import VideoDetailRoute from "@/app/videos/[videoId]";
 
 const mockGetVideo = jest.fn();
-const mockBack = jest.fn();
 let mockReportProps: any = null;
 let mockLessonMediaCardProps: any = null;
+let mockAppPageProps: any = null;
 let mockUserId = "viewer-1";
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ videoId: "video-1" }),
-  useRouter: () => ({ back: mockBack })
+  useLocalSearchParams: () => ({ videoId: "video-1" })
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
@@ -50,12 +49,14 @@ jest.mock("@/components/layout/AppCard", () => ({
 }));
 jest.mock("@/components/layout/AppPage", () => ({
   __esModule: true,
-  default: ({ header, children }: any) => {
-    const { View } = require("react-native");
+  default: (props: any) => {
+    mockAppPageProps = props;
+    const { Text, View } = require("react-native");
     return (
       <View>
-        {header}
-        {children}
+        <Text accessibilityLabel={`Shared back ${props.backFallbackHref}`}>Back</Text>
+        {props.header}
+        {props.children}
       </View>
     );
   }
@@ -86,8 +87,20 @@ describe("VideoDetailRoute reporting", () => {
     jest.clearAllMocks();
     mockReportProps = null;
     mockLessonMediaCardProps = null;
+    mockAppPageProps = null;
     mockUserId = "viewer-1";
     mockGetVideo.mockResolvedValue(video);
+  });
+
+  it("uses exactly one shared back action with a videos fallback", async () => {
+    render(<VideoDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living soil walkthrough")).toBeTruthy());
+    expect(screen.getAllByLabelText("Shared back /videos")).toHaveLength(1);
+    expect(screen.queryByLabelText("Back to videos")).toBeNull();
+    expect(mockAppPageProps).toEqual(
+      expect.objectContaining({ backFallbackHref: "/videos" })
+    );
   });
 
   it("lets a signed-in non-owner open an exact video report", async () => {

@@ -10,5 +10,6 @@
 - [08-migration-plan.md](08-migration-plan.md)
 - [09-guardrails.md](09-guardrails.md)
 - [10-troubleshooting.md](10-troubleshooting.md)
+- [11-shared-visual-system.md](11-shared-visual-system.md)
 - [contracts/](contracts/) (per-vertical contracts)
 - [../frontend-cleanup.md](../frontend-cleanup.md)

@@ -163,6 +163,12 @@ export default function DiagnoseRoute({
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
   const enabled = entitlements.can(CAPABILITY_KEYS.DIAGNOSE_AI);
+  const backFallbackHref =
+    workspaceType === "facility"
+      ? "/home/facility/ai-tools"
+      : workspaceType === "commercial"
+        ? "/home/commercial/tools"
+        : "/home/personal/tools";
 
   const [grows, setGrows] = useState<PersonalGrow[]>([]);
   const [growId, setGrowId] = useState(routeGrowId);
@@ -630,7 +636,7 @@ export default function DiagnoseRoute({
     <ScreenBoundary
       title="Plant Issue Diagnosis"
       showBack
-      backFallbackHref="/home/personal"
+      backFallbackHref={backFallbackHref}
     >
       <ScrollView contentContainerStyle={styles.container}>
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>

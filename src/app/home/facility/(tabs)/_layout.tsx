@@ -110,7 +110,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Facility Rooms & Workspaces",
           headerShown: shouldShowFacilityRouteHeader("rooms"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -126,7 +126,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: FACILITY_PLANTS_ROUTE_TITLE,
           headerShown: shouldShowFacilityRouteHeader("plants"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -137,10 +137,7 @@ export default function FacilityTabsLayout() {
           headerShown: shouldShowFacilityRouteHeader("tasks")
         }}
       />
-      <Tabs.Screen
-        name="sop-runs"
-        options={{ title: "SOPs", tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="sop-runs" options={{ title: "SOPs", href: null }} />
       <Tabs.Screen
         name="compliance"
         options={{
@@ -154,19 +151,16 @@ export default function FacilityTabsLayout() {
         options={{
           title: FACILITY_LOGS_ROUTE_TITLE,
           headerShown: shouldShowFacilityRouteHeader("logs"),
-          tabBarButton: () => null
+          href: null
         }}
       />
-      <Tabs.Screen
-        name="audit-logs"
-        options={{ title: "Audit", tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="audit-logs" options={{ title: "Audit", href: null }} />
       <Tabs.Screen
         name="inventory"
         options={{
           title: FACILITY_INVENTORY_ROUTE_TITLE,
           headerShown: shouldShowFacilityRouteHeader("inventory"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -174,7 +168,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Licensed Sales & Transfers",
           headerShown: shouldShowFacilityRouteHeader("transfers"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -182,7 +176,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Facility Team",
           headerShown: shouldShowFacilityRouteHeader("team"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -190,7 +184,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Facility Reports",
           headerShown: shouldShowFacilityRouteHeader("reports"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -198,7 +192,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Facility Analytics",
           headerShown: shouldShowFacilityRouteHeader("analytics"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -206,7 +200,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Connect rooms and sensor data",
           headerShown: shouldShowFacilityRouteHeader("integrations"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -214,12 +208,12 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Facility Grow Intelligence",
           headerShown: shouldShowFacilityRouteHeader("ai-tools"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
         name="ai-ask"
-        options={{ title: "AI", tabBarLabel: "AI", tabBarButton: () => null }}
+        options={{ title: "AI", tabBarLabel: "AI", href: null }}
       />
       <Tabs.Screen
         name="more"
@@ -234,7 +228,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Plant Issue Diagnosis",
           headerShown: shouldShowFacilityRouteHeader("ai-diagnosis-photo"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -242,7 +236,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "AI Templates",
           headerShown: shouldShowFacilityRouteHeader("ai-template"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -250,7 +244,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "AI Validation Lab",
           headerShown: shouldShowFacilityRouteHeader("ai-validation"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -258,34 +252,31 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Environment Review",
           headerShown: shouldShowFacilityRouteHeader("tools/environment"),
-          tabBarButton: () => null
+          href: null
         }}
       />
-      <Tabs.Screen
-        name="tools/pulse"
-        options={{ title: "Connect Pulse", tabBarButton: () => null }}
-      />
+      <Tabs.Screen name="tools/pulse" options={{ title: "Connect Pulse", href: null }} />
       <Tabs.Screen
         name="tools/history-import"
-        options={{ title: "Import Grow History", tabBarButton: () => null }}
+        options={{ title: "Import Grow History", href: null }}
       />
       <Tabs.Screen
         name="tools/recipe-builder"
         options={{
           title: "Soil & Nutrient Mix Builders",
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
         name="tools/dry-amendment-mix"
-        options={{ title: "Dry Amendment Mix", tabBarButton: () => null }}
+        options={{ title: "Dry Amendment Mix", href: null }}
       />
       <Tabs.Screen
         name="tools/ingredient-library"
         options={{
           title: "Products & Label Library",
           headerShown: shouldShowFacilityRouteHeader("tools/ingredient-library"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -293,7 +284,7 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Nutrient Mix Builder",
           headerShown: shouldShowFacilityRouteHeader("tools/npk"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
@@ -301,16 +292,16 @@ export default function FacilityTabsLayout() {
         options={{
           title: "Soil Mix Builder",
           headerShown: shouldShowFacilityRouteHeader("tools/soil-builder"),
-          tabBarButton: () => null
+          href: null
         }}
       />
       <Tabs.Screen
         name="tools/feeding-schedule"
-        options={{ title: "Feeding Schedule", tabBarButton: () => null }}
+        options={{ title: "Feeding Schedule", href: null }}
       />
       <Tabs.Screen
         name="tools/harvest-readiness"
-        options={{ title: "Harvest Readiness", tabBarButton: () => null }}
+        options={{ title: "Harvest Readiness", href: null }}
       />
     </Tabs>
   );

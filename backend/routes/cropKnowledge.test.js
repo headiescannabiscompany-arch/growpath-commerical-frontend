@@ -48,13 +48,15 @@ jest.mock("../models/PlantGrowthProfile", () => mockPlantGrowthProfile);
 jest.mock("../models/PlantTaxon", () => mockPlantTaxon);
 jest.mock("../models/RegionalAlert", () => mockRegionalAlert);
 
-function createApp() {
+function createApp({ userId = TEST_USER, userRole, contextRole } = {}) {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    req.userId = TEST_USER;
-    req.user = { _id: TEST_USER };
-    req.ctx = { userId: TEST_USER };
+    if (userId) {
+      req.userId = userId;
+      req.user = { _id: userId, ...(userRole ? { role: userRole } : {}) };
+      req.ctx = { userId, ...(contextRole ? { appRole: contextRole } : {}) };
+    }
     next();
   });
   app.use("/api/crop-knowledge", require("./cropKnowledge"));
@@ -80,10 +82,16 @@ function leanOne(item) {
 
 describe("crop knowledge routes", () => {
   let app;
+  const originalNodeEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
     jest.clearAllMocks();
     app = createApp();
+  });
+
+  afterEach(() => {
+    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = originalNodeEnv;
   });
 
   test("creates, updates, and archives plant taxa with source provenance intact", async () => {
@@ -114,15 +122,17 @@ describe("crop knowledge routes", () => {
         archivedAt: new Date()
       });
 
-    const created = await request(app).post("/api/crop-knowledge/taxa").send({
-      scientificName: "Solanum lycopersicum",
-      commonNames: ["tomato"],
-      family: "Solanaceae",
-      genus: "Solanum",
-      species: "lycopersicum",
-      cropCategory: "vegetable",
-      sourceRecords
-    });
+    const created = await request(app)
+      .post("/api/crop-knowledge/taxa")
+      .send({
+        scientificName: "Solanum lycopersicum",
+        commonNames: ["tomato"],
+        family: "Solanaceae",
+        genus: "Solanum",
+        species: "lycopersicum",
+        cropCategory: "vegetable",
+        sourceRecords
+      });
     const updated = await request(app)
       .patch(`/api/crop-knowledge/taxa/${CROP_ID}`)
       .send({
@@ -188,6 +198,11 @@ describe("crop knowledge routes", () => {
       displayName: "Blueberry",
       sourceRecords: [expect.objectContaining({ sourceName: "Extension profile" })]
     });
+    expect(mockCropProfile.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        curationStatus: "reviewed"
+      })
+    );
     expect(created.status).toBe(201);
     expect(mockCropProfile.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -236,6 +251,7 @@ describe("crop knowledge routes", () => {
   });
 
   test("seeds starter crop profiles as license-review drafts", async () => {
+    process.env.NODE_ENV = "test";
     mockCropProfile.findOneAndUpdate.mockImplementation(async (filter, update) => ({
       _id: CROP_ID,
       cropKey: filter.cropKey,
@@ -261,6 +277,96 @@ describe("crop knowledge routes", () => {
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
   });
+
+  test("blocks ordinary users from seeding starter crop profiles in production before mutation", async () => {
+    process.env.NODE_ENV = "production";
+
+    const res = await request(createApp()).post(
+      "/api/crop-knowledge/crop-profiles/starter-seed"
+    );
+
+    expect(res.status).toBe(403);
+    expect(res.body.message).toMatch(/administrator access is required/i);
+    expect(mockCropProfile.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ["authenticated user role", { userRole: "admin" }],
+    ["request context app role", { contextRole: "admin" }]
+  ])(
+    "allows production starter seeding for an admin from the %s",
+    async (_label, auth) => {
+      process.env.NODE_ENV = "production";
+      mockCropProfile.findOneAndUpdate.mockImplementation(async (filter, update) => ({
+        _id: CROP_ID,
+        cropKey: filter.cropKey,
+        displayName: update.$set.displayName,
+        curationStatus: update.$set.curationStatus
+      }));
+
+      const res = await request(createApp(auth)).post(
+        "/api/crop-knowledge/crop-profiles/starter-seed"
+      );
+
+      expect(res.status).toBe(201);
+      expect(res.body.count).toBe(4);
+      expect(mockCropProfile.findOneAndUpdate).toHaveBeenCalledTimes(4);
+    }
+  );
+
+  test("requires authentication before starter crop profile seeding", async () => {
+    const res = await request(createApp({ userId: null })).post(
+      "/api/crop-knowledge/crop-profiles/starter-seed"
+    );
+
+    expect(res.status).toBe(401);
+    expect(mockCropProfile.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  test.each(["draft", "needs_license_review", "rejected"])(
+    "keeps %s crop profiles out of ordinary lists",
+    async (curationStatus) => {
+      const res = await request(createApp()).get(
+        `/api/crop-knowledge/crop-profiles?curationStatus=${curationStatus}`
+      );
+
+      expect(res.status).toBe(403);
+      expect(res.body.message).toMatch(/administrator access is required/i);
+      expect(mockCropProfile.find).not.toHaveBeenCalled();
+    }
+  );
+
+  test.each([
+    ["authenticated user role", { userRole: "admin" }],
+    ["request context app role", { contextRole: "admin" }]
+  ])(
+    "allows an admin from the %s to explicitly list non-reviewed crop profiles",
+    async (_label, auth) => {
+      for (const curationStatus of ["draft", "needs_license_review", "rejected"]) {
+        mockCropProfile.find.mockReturnValueOnce(
+          leanChain([
+            {
+              _id: CROP_ID,
+              displayName: "Cannabis",
+              curationStatus
+            }
+          ])
+        );
+
+        const res = await request(createApp(auth)).get(
+          `/api/crop-knowledge/crop-profiles?curationStatus=${curationStatus}`
+        );
+
+        expect(res.status).toBe(200);
+        expect(res.body.items).toEqual([
+          expect.objectContaining({ displayName: "Cannabis", curationStatus })
+        ]);
+        expect(mockCropProfile.find).toHaveBeenLastCalledWith(
+          expect.objectContaining({ curationStatus })
+        );
+      }
+    }
+  );
 
   test("creates, lists, and archives regional alerts", async () => {
     mockRegionalAlert.find.mockReturnValue(

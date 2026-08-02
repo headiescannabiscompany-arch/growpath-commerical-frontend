@@ -96,11 +96,13 @@ Current known blockers:
 
 - PARTIAL: `app.json` release metadata sign-off.
 - Owner: Mobile Engineering
-- Current values: `name` is `GrowPath`, `slug` is
-  `growpath`, `version` is `1.0.0`, iOS bundle identifier and Android
+- Current values: `name` is `GrowPath`, source-controlled Expo slug is
+  `growpath-ai`, `version` is `1.0.0`, iOS bundle identifier and Android
   package are both `com.growpathai.app`. Android verified App Links are not
-  configured because the final public domain and hosted verification files are
-  not confirmed; the app currently uses its custom scheme only. Twitch V1 uses
+  configured because the store-side records and hosted verification files for
+  `growpathai.com` are not yet confirmed; the app currently uses its custom
+  `growpath` scheme only. Do not rename the Expo slug until the release owner
+  confirms it matches the existing EAS project and both store-console records. Twitch V1 uses
   live cards and external Twitch links; `EXPO_PUBLIC_TWITCH_PARENT_HOST` is only
   required if embedded Twitch playback ships in the production build.
 - Current evidence: source-config review captured in

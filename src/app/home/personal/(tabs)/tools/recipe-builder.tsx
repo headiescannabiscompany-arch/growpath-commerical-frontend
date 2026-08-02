@@ -36,9 +36,11 @@ type MixBuilderContextParams = {
 };
 
 export default function UnifiedRecipeBuilderRoute({
-  basePath = "/home/personal/tools"
+  basePath = "/home/personal/tools",
+  backFallbackHref = basePath
 }: {
   basePath?: string;
+  backFallbackHref?: string;
 } = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createMixBuilderChooserStyles(palette), [palette]);
@@ -51,7 +53,11 @@ export default function UnifiedRecipeBuilderRoute({
   const query = contextQuery.toString();
   const libraryHref = `${basePath}/ingredient-library${query ? `?${query}` : ""}` as Href;
   return (
-    <ScreenBoundary title="Soil & Nutrient Mix Builders" showBack>
+    <ScreenBoundary
+      title="Soil & Nutrient Mix Builders"
+      showBack
+      backFallbackHref={backFallbackHref}
+    >
       <View style={styles.body}>
         <Text accessibilityRole="header" aria-level={2} style={styles.heading}>
           What are you building?

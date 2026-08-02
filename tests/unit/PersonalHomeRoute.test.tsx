@@ -211,8 +211,8 @@ describe("PersonalHomeRoute", () => {
     expect(screen.getByText("Notifications")).toBeTruthy();
     expect(screen.queryByText("Field Studies")).toBeNull();
     expect(screen.queryByText("Public Plant Map")).toBeNull();
-    expect(screen.getByText("Discover")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Discover" })).toBeTruthy();
     expect(screen.getByText("Grow Analytics")).toBeTruthy();
-    expect(screen.queryByText("Community")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Community" })).toBeNull();
   });
 });

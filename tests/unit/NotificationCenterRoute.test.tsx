@@ -14,6 +14,21 @@ jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 
+jest.mock("@/components/ScreenBoundary", () => ({
+  ScreenBoundary: ({ children, showBack, backFallbackHref }: any) => {
+    const React = require("react");
+    const { Text, View } = require("react-native");
+    return (
+      <View>
+        {showBack ? (
+          <Text accessibilityLabel={`Back to ${backFallbackHref}`}>Back</Text>
+        ) : null}
+        {children}
+      </View>
+    );
+  }
+}));
+
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
     ctx: { mode: mockWorkspaceMode },
@@ -304,6 +319,7 @@ describe("NotificationCenterRoute", () => {
     expect(
       screen.getByLabelText("Notification link /home/facility/profile")
     ).toBeTruthy();
+    expect(screen.getAllByLabelText("Back to /home/facility/profile")).toHaveLength(1);
   });
 
   it("lets facility users change and save notification types", async () => {

@@ -20,9 +20,15 @@ jest.mock("expo-router", () => {
 
 jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
-  const { View } = require("react-native");
+  const { Text, View } = require("react-native");
   return {
-    ScreenBoundary: ({ children }: any) => React.createElement(View, null, children)
+    ScreenBoundary: ({ children, backFallbackHref }: any) =>
+      React.createElement(
+        View,
+        null,
+        React.createElement(Text, null, `Shared Back ${backFallbackHref}`),
+        children
+      )
   };
 });
 
@@ -81,12 +87,18 @@ describe("mix builder chooser", () => {
       source: "batch"
     };
 
-    const screen = render(<UnifiedRecipeBuilderRoute basePath="/home/facility/tools" />);
+    const screen = render(
+      <UnifiedRecipeBuilderRoute
+        basePath="/home/facility/tools"
+        backFallbackHref="/home/facility/ai-tools"
+      />
+    );
     const query = "growId=grow-1&facilityId=facility-1&batchId=batch-1&source=batch";
 
     expect(screen.getByLabelText(`link-/home/facility/tools/npk?${query}`)).toBeTruthy();
     expect(
       screen.getByLabelText(`link-/home/facility/tools/soil-builder?${query}`)
     ).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/facility/ai-tools")).toBeTruthy();
   });
 });

@@ -187,6 +187,29 @@ describe("DiagnoseRoute", () => {
     });
   });
 
+  it("returns each workspace to its own AI tools hub", async () => {
+    const personal = render(<DiagnoseRoute />);
+    expect(personal.getByText("Shared Back /home/personal/tools")).toBeTruthy();
+    await waitForGrowContext(personal);
+    await waitFor(() =>
+      expect(personal.getByText("Diagnosis provider needs verification")).toBeTruthy()
+    );
+    personal.unmount();
+
+    const commercial = render(<DiagnoseRoute workspaceType="commercial" />);
+    expect(commercial.getByText("Shared Back /home/commercial/tools")).toBeTruthy();
+    await waitFor(() =>
+      expect(commercial.getByText("Diagnosis provider needs verification")).toBeTruthy()
+    );
+    commercial.unmount();
+
+    const facility = render(<DiagnoseRoute workspaceType="facility" />);
+    expect(facility.getByText("Shared Back /home/facility/ai-tools")).toBeTruthy();
+    await waitFor(() =>
+      expect(facility.getByText("Diagnosis provider needs verification")).toBeTruthy()
+    );
+  });
+
   it("submits multiple durable evidence photos and their record ids", async () => {
     mockGetDiagnosisProviderStatus.mockResolvedValue({
       provider: {
@@ -471,7 +494,7 @@ describe("DiagnoseRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Diagnosis provider needs verification")).toBeTruthy()
     );
-    expect(screen.getByText("Shared Back /home/personal")).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
     expect(mockGetDiagnosisProviderStatus).toHaveBeenCalled();
     expect(screen.getByText(/Photos are used for this diagnosis request/i)).toBeTruthy();
 

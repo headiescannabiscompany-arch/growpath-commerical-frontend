@@ -16,12 +16,8 @@ import {
   leaveGuild,
   listForumPosts,
   listGuilds,
-  listNotifications,
-  markAllNotificationsRead,
-  markNotificationRead,
   postId,
   type Guild,
-  type SocialNotification,
   type SocialPost
 } from "@/api/communitySocial";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -132,16 +128,11 @@ export default function CommunityTab() {
 
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [guilds, setGuilds] = useState<Guild[]>([]);
-  const [notifications, setNotifications] = useState<SocialNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
 
-  const unreadCount = useMemo(
-    () => notifications.filter((item) => !item.read).length,
-    [notifications]
-  );
   const pageSurface = { backgroundColor: palette.surface, borderColor: palette.border };
   const mutedSurface = {
     backgroundColor: palette.surfaceMuted,
@@ -159,17 +150,13 @@ export default function CommunityTab() {
       else setLoading(true);
       setFeedback("");
       try {
-        const [postResult, guildResult, notificationResult] = await Promise.allSettled([
+        const [postResult, guildResult] = await Promise.allSettled([
           listForumPosts(),
-          listGuilds(),
-          listNotifications()
+          listGuilds()
         ]);
         if (postResult.status === "rejected") throw postResult.reason;
         setPosts(postResult.value);
         setGuilds(guildResult.status === "fulfilled" ? guildResult.value : []);
-        setNotifications(
-          notificationResult.status === "fulfilled" ? notificationResult.value : []
-        );
       } catch (error: any) {
         setFeedback(error?.message || "Unable to load Forum/Q&A data.");
       } finally {
@@ -200,34 +187,6 @@ export default function CommunityTab() {
       await load({ refresh: true });
     } catch (error: any) {
       setFeedback(error?.message || "Unable to update membership.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function markRead(notification: SocialNotification) {
-    const id = rowId(notification);
-    if (!id) return;
-    setSaving(true);
-    setFeedback("");
-    try {
-      await markNotificationRead(id);
-      await load({ refresh: true });
-    } catch (error: any) {
-      setFeedback(error?.message || "Unable to update notification.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function readAll() {
-    setSaving(true);
-    setFeedback("");
-    try {
-      await markAllNotificationsRead();
-      await load({ refresh: true });
-    } catch (error: any) {
-      setFeedback(error?.message || "Unable to mark notifications read.");
     } finally {
       setSaving(false);
     }
@@ -277,12 +236,6 @@ export default function CommunityTab() {
               {guilds.length}
             </Text>
             <Text style={[styles.pulseLabel, { color: palette.accent }]}>Groups</Text>
-          </View>
-          <View style={[styles.pulse, mutedSurface]}>
-            <Text style={[styles.pulseValue, { color: palette.text }]}>
-              {unreadCount}
-            </Text>
-            <Text style={[styles.pulseLabel, { color: palette.accent }]}>Unread</Text>
           </View>
         </View>
       </View>
@@ -350,6 +303,54 @@ export default function CommunityTab() {
                 </Pressable>
               </Link>
             </View>
+            {canPost ? (
+              <View style={styles.quickComposerGrid}>
+                <Link
+                  href={{
+                    pathname: "/forum/new-post",
+                    params: {
+                      purpose: "diagnosis",
+                      title: "Diagnosis help: ",
+                      body: "What I am seeing:\n\nWhat changed recently:\n\nEnvironment / feeding details:\n"
+                    }
+                  }}
+                  asChild
+                >
+                  <Pressable
+                    style={[styles.quickComposer, pageSurface]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Ask forum for diagnosis help"
+                  >
+                    <Text style={[styles.quickComposerTitle, { color: palette.text }]}>
+                      Ask for Diagnosis Help
+                    </Text>
+                    <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                      Start with a useful issue template and add photos.
+                    </Text>
+                  </Pressable>
+                </Link>
+                <Link
+                  href={{
+                    pathname: "/forum/new-post",
+                    params: { purpose: "grow_update", title: "Grow update: " }
+                  }}
+                  asChild
+                >
+                  <Pressable
+                    style={[styles.quickComposer, pageSurface]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Share a grow update to forum"
+                  >
+                    <Text style={[styles.quickComposerTitle, { color: palette.text }]}>
+                      Share a Grow Update
+                    </Text>
+                    <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                      Attach the grow from its dashboard for full context.
+                    </Text>
+                  </Pressable>
+                </Link>
+              </View>
+            ) : null}
             {!canPost ? (
               <Text style={[styles.cardText, { color: palette.textMuted }]}>
                 Posting is not available on this account.
@@ -617,71 +618,6 @@ export default function CommunityTab() {
                 </Pressable>
               </Link>
             </View>
-
-            <View style={[styles.card, styles.secondaryPanel, pageSurface]}>
-              <View style={styles.cardHeader}>
-                <Text style={[styles.cardTitle, { color: palette.text }]}>
-                  Inbox notifications
-                </Text>
-                {unreadCount ? (
-                  <Pressable
-                    disabled={saving}
-                    onPress={readAll}
-                    accessibilityRole="button"
-                    accessibilityLabel="Mark all forum notifications read"
-                  >
-                    <Text style={[styles.cta, { color: palette.link }]}>
-                      Mark all read
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
-              <Text style={[styles.cardText, { color: palette.textMuted }]}>
-                {unreadCount} unread notifications
-              </Text>
-              <Text style={[styles.cardText, { color: palette.textMuted }]}>
-                These are inbox items, not tasks. Use Profile to control which types can
-                reach your device.
-              </Text>
-              <Link href="/home/personal/profile" asChild>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Open notification settings"
-                >
-                  <Text style={[styles.cta, { color: palette.link }]}>
-                    Notification settings
-                  </Text>
-                </Pressable>
-              </Link>
-              {notifications.slice(0, 4).map((notification) => (
-                <View key={rowId(notification) || notification.title} style={styles.row}>
-                  <Text style={[styles.rowTitle, { color: palette.text }]}>
-                    {notification.title || "Notification"}
-                  </Text>
-                  <Text style={[styles.rowMeta, { color: palette.textMuted }]}>
-                    {notification.message || ""}
-                  </Text>
-                  {!notification.read ? (
-                    <Pressable
-                      disabled={saving}
-                      onPress={() => markRead(notification)}
-                      style={[styles.secondaryBtn, mutedSurface]}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Mark ${notification.title || "notification"} read`}
-                    >
-                      <Text style={[styles.secondaryText, { color: palette.text }]}>
-                        Mark read
-                      </Text>
-                    </Pressable>
-                  ) : null}
-                </View>
-              ))}
-              {!notifications.length ? (
-                <Text style={[styles.cardText, { color: palette.textMuted }]}>
-                  No notifications.
-                </Text>
-              ) : null}
-            </View>
           </View>
 
           <View style={[styles.discoveryCard, mutedSurface]}>
@@ -784,6 +720,16 @@ export function createPersonalCommunityStyles(palette: ThemePalette) {
     composerCopy: { flex: 1, gap: 6, minWidth: 0 },
     composerTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
     composerText: { color: palette.textMuted, lineHeight: 20 },
+    quickComposerGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    quickComposer: {
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: 220,
+      flexGrow: 1,
+      gap: 4,
+      padding: 12
+    },
+    quickComposerTitle: { color: palette.text, fontSize: 15, fontWeight: "900" },
     feedHeader: {
       alignItems: "flex-end",
       flexDirection: "row",
