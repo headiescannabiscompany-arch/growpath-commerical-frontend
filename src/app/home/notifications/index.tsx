@@ -498,6 +498,9 @@ export default function NotificationCenterRoute() {
               </View>
               <Switch
                 accessibilityLabel={`Toggle ${option.title}`}
+                ios_backgroundColor={palette.surfaceStrong}
+                thumbColor={palette.accentText}
+                trackColor={{ false: palette.surfaceStrong, true: palette.accent }}
                 value={Boolean(notificationPrefs[option.key])}
                 onValueChange={(value) =>
                   setNotificationPrefs((current) => ({

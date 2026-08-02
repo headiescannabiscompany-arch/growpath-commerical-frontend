@@ -48,6 +48,7 @@ export type ThemePalette = {
   success: string;
   warning: string;
   danger: string;
+  dangerText: string;
   info: string;
   shadow: string;
 };
@@ -95,6 +96,7 @@ const DAY_PALETTE: Omit<ThemePalette, "mode" | "resolvedMode"> = {
   success: "#166534",
   warning: "#B45309",
   danger: "#DC2626",
+  dangerText: "#FFFFFF",
   info: "#2563EB",
   shadow: "#0F172A1A"
 };
@@ -124,6 +126,7 @@ const NIGHT_PALETTE: Omit<ThemePalette, "mode" | "resolvedMode"> = {
   success: "#8FA06E",
   warning: "#E3BE63",
   danger: "#E29B9B",
+  dangerText: "#0E141B",
   info: "#78AAFF",
   shadow: "#00000088"
 };

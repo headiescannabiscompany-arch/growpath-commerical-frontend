@@ -254,6 +254,9 @@ export default function InventoryItemDetailScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
           />
         }
       >
@@ -267,7 +270,7 @@ export default function InventoryItemDetailScreen() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading item...</Text>
           </View>
         ) : null}
@@ -562,5 +565,5 @@ export const createFacilityInventoryDetailStyles = (palette: ThemePalette) =>
       alignItems: "center",
       backgroundColor: palette.danger
     },
-    dangerButtonText: { color: "white", fontWeight: "900" }
+    dangerButtonText: { color: palette.dangerText, fontWeight: "900" }
   });

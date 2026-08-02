@@ -53,10 +53,12 @@ const mockNightPalette = {
   text: "#F4F7FB",
   textMuted: "#AAB6C5",
   textSoft: "#CDD6E1",
+  accent: "#78AAFF",
   accentSoft: "#163D2A",
   success: "#4ADE80",
   warning: "#FBBF24",
-  danger: "#F87171"
+  danger: "#E29B9B",
+  dangerText: "#0E141B"
 } as ThemePalette;
 
 jest.mock("@/theme/appTheme", () => ({
@@ -128,6 +130,7 @@ describe("InventoryItemDetailScreen", () => {
     expect(styles.cardTitle.color).toBe(mockNightPalette.text);
     expect(styles.recordLabel.color).toBe(mockNightPalette.textMuted);
     expect(styles.dangerButton.backgroundColor).toBe(mockNightPalette.danger);
+    expect(styles.dangerButtonText.color).toBe(mockNightPalette.dangerText);
   });
 
   it("shows one clear read-only state when the inventory record is unavailable", async () => {

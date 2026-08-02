@@ -161,7 +161,7 @@ export default function FacilityInventoryTab() {
     return (
       <ScreenBoundary title="Inventory">
         <View style={styles.center}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
         </View>
       </ScreenBoundary>
     );
@@ -269,7 +269,13 @@ export default function FacilityInventoryTab() {
             data={sorted}
             keyExtractor={(item, index) => itemId(item) || String(index)}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={palette.accent}
+                colors={[palette.accent]}
+                progressBackgroundColor={palette.surface}
+              />
             }
             contentContainerStyle={styles.list}
             ItemSeparatorComponent={() => <View style={{ height: 10 }} />}

@@ -250,6 +250,9 @@ export default function FacilityProfileRoute() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
           />
         }
       >
@@ -257,7 +260,7 @@ export default function FacilityProfileRoute() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading profile...</Text>
           </View>
         ) : null}
@@ -334,6 +337,9 @@ export default function FacilityProfileRoute() {
               </View>
               <Switch
                 accessibilityLabel={option.title}
+                ios_backgroundColor={palette.surfaceStrong}
+                thumbColor={palette.accentText}
+                trackColor={{ false: palette.surfaceStrong, true: palette.accent }}
                 value={Boolean(notificationPrefs[option.key])}
                 onValueChange={(value) =>
                   setNotificationPrefs((current) => ({
