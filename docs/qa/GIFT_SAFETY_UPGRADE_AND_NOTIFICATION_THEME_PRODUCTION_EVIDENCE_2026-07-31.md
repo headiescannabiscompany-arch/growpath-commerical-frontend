@@ -3376,7 +3376,97 @@ the public subscription capability response still reported
 `giftCheckoutConfigured: false`. No real token, checkout, payment, delivery,
 claim, refund, email, subscription, account, or record mutation was used.
 
-This is not gift-launch acceptance. Atomic multi-document claim, durable
-refund/dispute revocation, the automatic refund worker, purchaser recovery
-APIs, and cross-device verification continuation remain required before the
-feature flag may be enabled.
+This was not gift-launch acceptance. Atomic multi-document claim remained the
+next closed-feature safety slice; durable refund/dispute revocation, the
+automatic refund worker, purchaser recovery APIs, and cross-device
+verification continuation also remained required before the feature flag
+could be enabled.
+
+## Atomic and replay-safe dormant gift claims
+
+Backend `b7c567eefade73574b7cecaf3ebd3ade1fd9431a` closes the
+multi-document claim race without enabling gift checkout:
+
+- the gift and recipient subscription update now execute in one MongoDB
+  transaction using snapshot reads and majority writes;
+- deployments without transaction support fail closed with HTTP 503 instead
+  of partially consuming a gift;
+- ordinary plan-free promotional accounts remain eligible, while effective
+  Stripe, gift, provider-backed, or paid-plan access blocks an overlapping
+  entitlement;
+- a successful token can be replayed only by the same recipient, for the same
+  still-active gift entitlement, for 15 minutes; and
+- unexpected failures reach the Express error handler instead of leaving an
+  unresolved request.
+
+Six backend suites passed all 92 tests, including real `MongoMemoryReplSet`
+transaction races, route error forwarding, ordinary promotional-account
+eligibility, conflicting paid access, duplicate same-user submission,
+different-user races, expired replay resolution, and stale ownership.
+Targeted ESLint, Prettier, and `git diff --check` passed. Backend CI
+`30728156639` succeeded.
+
+The exact-SHA production deployment was GitHub deployment `5710086131` to
+`main - growpath-api`; final status `16238691041` succeeded at
+2026-08-02 02:04:25 UTC. Both `https://api.growpathai.com/health` and the
+direct Render health URL returned HTTP 200 after deployment. The public
+subscription capability response returned HTTP 200 and continued to report
+`giftCheckoutConfigured: false`. The health payload does not publish a Git
+SHA, so exact linkage comes from the Render deployment record plus the freshly
+restarted healthy runtime. No real token, claim, checkout, payment, email,
+refund, subscription, account, or record mutation was used.
+
+Gift launch remains blocked on durable refund/dispute revocation, the
+unclaimed/delivery-failure refund worker and heartbeat, purchaser-owned
+recovery APIs, server-authoritative quote/reconfirmation UI, cross-device
+verification continuation, migration readiness, Stripe webhook evidence, and
+production acceptance.
+
+## Final mounted control and filled-accent active-palette pass
+
+Frontend `7640f4272853b07e3b7cc67fd7c6713f45d90c2e` closes the
+remaining verified mounted color gaps without changing workflows or access:
+
+- all audited mounted Facility loading and pull-to-refresh controls now use
+  the active accent and surface colors;
+- the same explicit loading/refresh contract covers mapped Personal,
+  Commercial, onboarding, video, feed, marketplace, and shared routes;
+- the Commercial contextual-tools card and legacy Facility route shim no
+  longer retain Day-only canvas, text, action, or spinner defaults;
+- shared Forum filters, Follow actions, the native Field Observation globe,
+  and the reusable Loading Spinner use the active palette; and
+- Night filled-accent foreground changed from white on `#78AAFF` (2.34:1) to
+  `#0E141B` (7.93:1), with a minimum 4.5:1 regression assertion.
+
+Fifteen combined suites passed all 129 tests. The coverage includes 39
+Facility control assertions, 33 mapped non-Facility source cases, mounted
+Commercial contextual-tools and legacy-route rendering, and explicit filled-
+accent contrast. Full frontend `tsc --noEmit`, targeted source lint, forced
+lint for the ignored Marketplace source and all changed/new tests, Prettier,
+and `git diff --check` passed. An independent hostile review found no remaining
+hook-order, undefined-palette, navigation, or mounted default-control issue
+after the contrast correction.
+
+Production Build Preflight `30728377307` and Frontend CI `30728377291`
+succeeded against the exact commit. Production changed from
+`index-a27bb73bae93f4d9669d8c0e652b6c73.js` to
+`index-c6bf86741c3faa26acf3b98133b09304.js`.
+
+Signed-in Facility Viewer verification retained `Current: AUTO / Resolved:
+NIGHT`. Facility Dashboard, Facility Profile, Notification Center, read-only
+Create Inventory, Forum, Discover, Videos, and Marketplace each measured zero
+opaque light surfaces. Profile retained eight fields and seven notification
+switches; Notification Center retained the same seven switches and all named
+delivery categories. Every sampled Night accent action rendered dark visible
+text on `rgb(120, 170, 255)`. A suspected blue Forum action was inspected down
+to its rendered child: the browser-default blue existed only on the invisible
+anchor wrapper, while the visible `Open Video Library` label correctly used
+`rgb(14, 20, 27)`, so no speculative patch was made.
+
+Role-specific loaded Commercial and Personal states and native-only controls
+remain source-and-test verified because the signed-in Facility Viewer was not
+switched or permission-bypassed. Intentional video mattes, modal scrims, map
+semantic colors, and media assets were not treated as theme defects. No theme,
+location, notification, filter, refresh, field, inventory action, navigation
+action, workspace, account, session, billing, audit event, or record mutation
+was invoked.
