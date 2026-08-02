@@ -75,9 +75,23 @@ describe("workspace bottom-tab order", () => {
   it("centers Commercial text-only tabs without reserving an icon row", () => {
     const contents = source("src/app/home/commercial/_layout.tsx");
     expect(contents).toContain("tabBarIcon: () => null");
+    expect(contents).toContain('tabBarIconStyle: { display: "none" }');
+    expect(contents).toContain('tabBarLabelPosition: "beside-icon"');
     expect(contents).toContain("fontSize: compactTabs ? 9 : 12");
     expect(contents).toContain("marginStart: 0");
     expect(contents).toContain("marginEnd: 0");
+  });
+
+  it("removes the empty icon row from every text-only workspace tab bar", () => {
+    for (const relativePath of [
+      "src/app/home/personal/(tabs)/_layout.tsx",
+      "src/app/home/commercial/_layout.tsx",
+      "src/app/home/facility/(tabs)/_layout.tsx"
+    ]) {
+      const contents = source(relativePath);
+      expect(contents).toContain('tabBarIconStyle: { display: "none" }');
+      expect(contents).toContain('tabBarLabelPosition: "beside-icon"');
+    }
   });
 
   it("keeps the six Facility compact destinations in release order", () => {
@@ -95,6 +109,17 @@ describe("workspace bottom-tab order", () => {
         new RegExp(`name="${name}"[\\s\\S]*?tabBarButton: \\(\\) => null`)
       );
     }
+  });
+
+  it("routes Facility AI entry points through the full hub and keeps theme controls in Profile", () => {
+    const dashboard = source("src/app/home/facility/(tabs)/dashboard.tsx");
+    const more = source("src/app/home/facility/(tabs)/more.tsx");
+    const profile = source("src/app/home/facility/(tabs)/profile.tsx");
+
+    expect(dashboard).toContain('to: "/home/facility/ai-tools"');
+    expect(more).toContain('href: "/home/facility/ai-tools"');
+    expect(dashboard).not.toContain("<ThemeModeSelector");
+    expect(profile).toContain("<ThemeModeSelector");
   });
 
   it("keeps legacy Facility navigation anchored to the live shell order", () => {

@@ -178,6 +178,10 @@ describe("Forum and feed separation copy", () => {
     await waitFor(() => expect(mockListForumPosts).toHaveBeenCalled());
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("New Discussion")).toBeTruthy();
+    expect(screen.getByText("Ask for Diagnosis Help")).toBeTruthy();
+    expect(screen.getByLabelText("Ask forum for diagnosis help")).toBeTruthy();
+    expect(screen.getByText("Share a Grow Update")).toBeTruthy();
+    expect(screen.getByLabelText("Share a grow update to forum")).toBeTruthy();
     expect(screen.getByText("Forum Feed")).toBeTruthy();
     expect(screen.getByText("Forum videos")).toBeTruthy();
     expect(screen.getByText("1.0 MB used")).toBeTruthy();

@@ -32,6 +32,8 @@ describe("PersonalTabsLayout", () => {
         screenOptions: expect.objectContaining({
           tabBarActiveTintColor: "#166534",
           tabBarInactiveTintColor: "#5F6F5F",
+          tabBarIconStyle: { display: "none" },
+          tabBarLabelPosition: "beside-icon",
           tabBarStyle: expect.objectContaining({
             backgroundColor: "#FFFFFF",
             borderTopColor: "#D7DDD2"
@@ -65,6 +67,10 @@ describe("PersonalTabsLayout", () => {
       "more",
       "profile"
     ]);
+    const discoverScreen = React.Children.toArray(props.children).find(
+      (child: any) => child.props.name === "discover"
+    ) as any;
+    expect(discoverScreen.props.options.tabBarLabel).toBe("Discover");
     for (const child of React.Children.toArray(props.children) as any[]) {
       if (child.props.options?.href === null) {
         expect(child.props.options.tabBarButton).toBeUndefined();

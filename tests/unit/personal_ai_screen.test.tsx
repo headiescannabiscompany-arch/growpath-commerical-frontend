@@ -180,6 +180,19 @@ describe("personal AI screen", () => {
     );
   });
 
+  it("keeps useful AI context when one source is unavailable", async () => {
+    mockListPersonalLogs.mockRejectedValue(new Error("logs unavailable"));
+
+    const screen = render(<AiScreen />);
+
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+    expect(screen.getByText("Grows: 1")).toBeTruthy();
+    expect(screen.getByText("Logs: 0")).toBeTruthy();
+    expect(
+      screen.getByText(/Partial context: logs unavailable\. AI can still use/)
+    ).toBeTruthy();
+  });
+
   it("requires confirmation before creating AI-suggested tasks", async () => {
     mockAskPersonalAssistant.mockResolvedValue({
       success: true,
