@@ -6,6 +6,7 @@ import { ApiError } from "@/api/apiRequest";
 import { confirmEmailVerification } from "@/api/auth";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { claimLoginPath, parseClaimReturnPath } from "@/utils/claimReturnPath";
 
 type VerifyState = "checking" | "success" | "error";
 
@@ -13,7 +14,11 @@ export default function VerifyEmailScreen() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = createVerifyEmailStyles(palette);
-  const params = useLocalSearchParams<{ token?: string | string[] }>();
+  const params = useLocalSearchParams<{
+    token?: string | string[];
+    next?: string | string[];
+  }>();
+  const claimNext = parseClaimReturnPath(params.next);
   const token = useMemo(() => {
     const raw = params.token;
     return Array.isArray(raw) ? raw[0] || "" : raw || "";
@@ -21,6 +26,7 @@ export default function VerifyEmailScreen() {
 
   const [state, setState] = useState<VerifyState>("checking");
   const [message, setMessage] = useState("Verifying your email address...");
+  const [accountEmail, setAccountEmail] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -33,8 +39,9 @@ export default function VerifyEmailScreen() {
       }
 
       try {
-        await confirmEmailVerification(token);
+        const response = await confirmEmailVerification(token);
         if (!mounted) return;
+        setAccountEmail(String(response.user?.email || ""));
         setState("success");
         setMessage("Your email is verified. You can sign in to GrowPath.");
       } catch (err: any) {
@@ -66,7 +73,7 @@ export default function VerifyEmailScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Go to sign in"
-          onPress={() => router.replace("/login")}
+          onPress={() => router.replace(claimLoginPath(accountEmail, claimNext) as any)}
           style={styles.button}
         >
           <Text style={styles.buttonText}>Go to sign in</Text>

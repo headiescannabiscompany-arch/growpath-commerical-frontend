@@ -29,10 +29,11 @@ import { FREE_POLICY } from "@/config/freePolicy";
 
 type BillingInterval = "monthly" | "yearly";
 type CheckoutMode = "live" | "test" | "unknown";
+type FeedbackTone = "info" | "success" | "error";
 
 function isLikelyEmail(value: string) {
   const next = value.trim();
-  return /[^\s@]+@[^\s@]+\.[^\s@]+/.test(next);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next);
 }
 
 function checkoutUrlFromResponse(response: any) {
@@ -61,13 +62,13 @@ export default function Offers() {
   const { width } = useWindowDimensions();
   const searchParams = useLocalSearchParams<{
     subscription?: string | string[];
-    gift?: string | string[];
   }>();
   const isWide = width >= 980;
 
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [loadingPlan, setLoadingPlan] = useState<BillingPlanKey | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [feedbackTone, setFeedbackTone] = useState<FeedbackTone>("info");
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
   const [trialEnabled, setTrialEnabled] = useState(true);
   const [trialDays, setTrialDays] = useState(30);
@@ -76,7 +77,6 @@ export default function Offers() {
     null
   );
   const handledCheckoutResultRef = useRef("");
-  const handledGiftResultRef = useRef("");
   const [giftMode, setGiftMode] = useState(false);
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
@@ -106,12 +106,11 @@ export default function Offers() {
     const value = searchParams.subscription;
     return String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
   }, [searchParams.subscription]);
-  const giftResult = useMemo(() => {
-    const value = searchParams.gift;
-    return String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
-  }, [searchParams.gift]);
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
+  const purchasablePlans = giftMode
+    ? BILLING_PLANS.filter((plan) => plan.key === "pro")
+    : BILLING_PLANS;
 
   useEffect(() => {
     let mounted = true;
@@ -145,10 +144,12 @@ export default function Offers() {
     handledCheckoutResultRef.current = subscriptionResult;
 
     if (subscriptionResult === "success") {
+      setFeedbackTone("success");
       setFeedback(
         "Stripe checkout completed. GrowPath is refreshing your plan. If access does not update yet, reload in a moment."
       );
       void auth.retryMe().catch(() => {
+        setFeedbackTone("error");
         setFeedback(
           "Stripe checkout completed, but GrowPath could not refresh the plan yet. Reload in a moment or open Account Profile."
         );
@@ -156,27 +157,19 @@ export default function Offers() {
       return;
     }
 
+    setFeedbackTone("info");
     setFeedback("Checkout canceled. No new payment was submitted by this checkout.");
   }, [auth, subscriptionResult]);
 
-  useEffect(() => {
-    if (!["success", "canceled"].includes(giftResult)) return;
-    if (handledGiftResultRef.current === giftResult) return;
-    handledGiftResultRef.current = giftResult;
-
-    if (giftResult === "success") {
-      setFeedback(
-        "Gift checkout completed. The recipient details were included in the checkout request."
-      );
-      return;
-    }
-
-    setFeedback("Gift checkout canceled. No new payment was submitted.");
-  }, [giftResult]);
-
   async function startCheckout(plan: BillingPlanKey, confirmedImmediateBilling = false) {
     if (giftMode) {
+      if (plan !== "pro") {
+        setFeedback("Only prepaid Pro gifts are supported.");
+        setFeedbackTone("error");
+        return;
+      }
       if (!giftCheckoutConfigured) {
+        setFeedbackTone("error");
         setFeedback(
           "Gift subscriptions are not available yet. No checkout or payment was created."
         );
@@ -187,12 +180,14 @@ export default function Offers() {
       const note = giftMessage.trim();
 
       if (!giftRecipientValid) {
+        setFeedbackTone("error");
         setFeedback("Enter a valid recipient email before starting a gift checkout.");
         return;
       }
 
       setLoadingPlan(plan);
       setFeedback("");
+      setFeedbackTone("info");
       try {
         const origin =
           typeof window !== "undefined" && window.location ? window.location.origin : "";
@@ -203,20 +198,22 @@ export default function Offers() {
           giftRecipientEmail: recipient,
           ...(recipientName ? { giftRecipientName: recipientName } : {}),
           ...(note ? { giftMessage: note } : {}),
-          giftTerm: interval,
-          successUrl: origin ? `${origin}/offers?gift=success` : undefined,
-          cancelUrl: origin ? `${origin}/offers?gift=canceled` : undefined
+          successUrl: origin ? `${origin}/offers` : undefined,
+          cancelUrl: origin ? `${origin}/offers` : undefined
         });
         const url = checkoutUrlFromResponse(response);
         if (!url) {
+          setFeedbackTone("error");
           setFeedback("Checkout is unavailable. The backend did not return a URL.");
           return;
         }
         await openCheckoutUrl(url);
+        setFeedbackTone("info");
         setFeedback(
           `Gift checkout opened in a new tab for ${recipient}. Close it anytime before payment.`
         );
       } catch (e: any) {
+        setFeedbackTone("error");
         setFeedback(e?.message || "Unable to start checkout.");
       } finally {
         setLoadingPlan(null);
@@ -227,6 +224,7 @@ export default function Offers() {
     if (!trialEligibleForPlan(plan) && !confirmedImmediateBilling) {
       setPendingImmediatePlan(plan);
       const selected = BILLING_PLANS.find((item) => item.key === plan);
+      setFeedbackTone("info");
       setFeedback(
         `${selected?.title || "This plan"} has no trial remaining for this account. Review the price, then continue only if you want Stripe to bill when checkout completes.`
       );
@@ -236,16 +234,19 @@ export default function Offers() {
     setPendingImmediatePlan(null);
     setLoadingPlan(plan);
     setFeedback("");
+    setFeedbackTone("info");
     try {
       const response = await createCheckoutSession({ plan, interval });
       const url = checkoutUrlFromResponse(response);
       if (!url) {
+        setFeedbackTone("error");
         setFeedback("Checkout is unavailable. The backend did not return a URL.");
         return;
       }
       await openCheckoutUrl(url);
       setFeedback("Checkout opened in a new tab. Close it anytime before payment.");
     } catch (e: any) {
+      setFeedbackTone("error");
       setFeedback(e?.message || "Unable to start checkout.");
     } finally {
       setLoadingPlan(null);
@@ -279,12 +280,25 @@ export default function Offers() {
                   }}
                   accessibilityRole="button"
                   accessibilityLabel={
-                    item === "monthly" ? "Monthly billing" : "Yearly billing"
+                    giftMode
+                      ? item === "monthly"
+                        ? "One month of prepaid access"
+                        : "One year of prepaid access"
+                      : item === "monthly"
+                        ? "Monthly billing"
+                        : "Yearly billing"
                   }
+                  accessibilityState={{ selected: active }}
                   style={[styles.segmentButton, active && styles.segmentButtonActive]}
                 >
                   <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
-                    {item === "monthly" ? "Monthly" : "Yearly"}
+                    {giftMode
+                      ? item === "monthly"
+                        ? "One month"
+                        : "One year"
+                      : item === "monthly"
+                        ? "Monthly"
+                        : "Yearly"}
                   </Text>
                 </Pressable>
               );
@@ -331,11 +345,11 @@ export default function Offers() {
       </Pressable>
 
       <AppCard style={styles.giftCard}>
-        <Text style={styles.eyebrow}>Gift subscription</Text>
+        <Text style={styles.eyebrow}>Prepaid Pro gift</Text>
         <Text style={styles.cardTitle}>Buy for someone else</Text>
         <Text style={styles.cardDesc}>
           {giftCheckoutConfigured
-            ? "Enter the recipient email and choose the monthly or yearly gift term. Stripe opens only after recipient fulfillment is available."
+            ? "Give one prepaid month or year of Pro. Access starts when the recipient claims it and does not renew."
             : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
         </Text>
         <View style={styles.segment}>
@@ -355,6 +369,10 @@ export default function Offers() {
                   setFeedback("");
                 }}
                 accessibilityRole="button"
+                accessibilityState={{
+                  disabled: item.key === "gift" && !giftCheckoutConfigured,
+                  selected: active
+                }}
                 accessibilityLabel={
                   item.key === "gift"
                     ? giftCheckoutConfigured
@@ -382,7 +400,9 @@ export default function Offers() {
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
+              maxLength={254}
               placeholder="recipient@example.com"
+              placeholderTextColor={palette.textMuted}
               style={styles.input}
               value={giftRecipientEmail}
               onChangeText={(value) => {
@@ -394,7 +414,9 @@ export default function Offers() {
               accessibilityLabel="Gift recipient name"
               autoCapitalize="words"
               autoCorrect={false}
+              maxLength={120}
               placeholder="Recipient name (optional)"
+              placeholderTextColor={palette.textMuted}
               style={styles.input}
               value={giftRecipientName}
               onChangeText={(value) => {
@@ -406,8 +428,10 @@ export default function Offers() {
               accessibilityLabel="Gift message"
               autoCapitalize="sentences"
               autoCorrect
+              maxLength={500}
               multiline
               placeholder="Short gift note (optional)"
+              placeholderTextColor={palette.textMuted}
               style={[styles.input, styles.textArea]}
               value={giftMessage}
               onChangeText={(value) => {
@@ -416,8 +440,8 @@ export default function Offers() {
               }}
             />
             <Text style={styles.helper}>
-              The backend receives the recipient email, optional name, note, and gift term
-              with the checkout request so it can build the handoff flow.
+              The recipient receives a one-time claim link. Their prepaid Pro access
+              begins on a successful claim and ends after the selected month or year.
             </Text>
           </>
         ) : (
@@ -444,16 +468,28 @@ export default function Offers() {
 
       {feedback ? (
         <View
-          style={styles.feedback}
+          style={[
+            styles.feedback,
+            feedbackTone === "success" && styles.feedbackSuccess,
+            feedbackTone === "error" && styles.feedbackError
+          ]}
           accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
+          accessibilityLiveRegion={feedbackTone === "error" ? "assertive" : "polite"}
         >
-          <Text style={styles.feedbackText}>{feedback}</Text>
+          <Text
+            style={[
+              styles.feedbackText,
+              feedbackTone === "success" && styles.feedbackTextSuccess,
+              feedbackTone === "error" && styles.feedbackTextError
+            ]}
+          >
+            {feedback}
+          </Text>
         </View>
       ) : null}
 
       <View style={[styles.planGrid, isWide ? styles.planGridWide : null]}>
-        {BILLING_PLANS.map((plan) => {
+        {purchasablePlans.map((plan) => {
           const current = activePlan === plan.key && subscriptionActive;
           const loading = loadingPlan === plan.key;
           const confirmingImmediateBilling = pendingImmediatePlan === plan.key;
@@ -468,12 +504,15 @@ export default function Offers() {
               <Text style={styles.price}>
                 {formatPlanPrice(plan.key, interval)}
                 <Text style={styles.priceMeta}>
-                  {" "}
-                  / {interval === "monthly" ? "month" : "year"}
+                  {giftMode
+                    ? " one-time"
+                    : ` / ${interval === "monthly" ? "month" : "year"}`}
                 </Text>
               </Text>
               <Text style={styles.billingNote}>
-                {formatPlanBillingNote(plan.key, interval)}
+                {giftMode
+                  ? `One prepaid ${interval === "monthly" ? "month" : "year"} of Pro. Starts when claimed and does not renew.`
+                  : formatPlanBillingNote(plan.key, interval)}
               </Text>
               <Text style={styles.cardDesc}>{plan.description}</Text>
 
@@ -498,6 +537,7 @@ export default function Offers() {
                 onPress={() => startCheckout(plan.key, confirmingImmediateBilling)}
                 disabled={buttonDisabled}
                 accessibilityRole="button"
+                accessibilityState={{ disabled: buttonDisabled }}
                 accessibilityLabel={
                   giftMode
                     ? `Gift ${plan.title} checkout`
@@ -573,12 +613,16 @@ const createStyles = (palette: ThemePalette) =>
     segmentTextActive: { color: palette.accentText },
     feedback: {
       backgroundColor: palette.accentSoft,
-      borderColor: palette.success,
+      borderColor: palette.info,
       borderRadius: radius.card,
       borderWidth: 1,
       padding: 12
     },
+    feedbackSuccess: { borderColor: palette.success },
+    feedbackError: { borderColor: palette.danger },
     feedbackText: { color: palette.text, fontWeight: "800" },
+    feedbackTextSuccess: { color: palette.success },
+    feedbackTextError: { color: palette.danger },
     helpButton: {
       backgroundColor: palette.surface,
       borderColor: palette.accent,

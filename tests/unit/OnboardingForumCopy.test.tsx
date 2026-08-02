@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import GuildOnboardingScreen, {
   createGuildOnboardingStyles
@@ -84,6 +84,21 @@ describe("onboarding Forum/Q&A copy", () => {
     await waitFor(() => expect(mockListGuilds).toHaveBeenCalled());
     expect(screen.getByText("Forum group")).toBeTruthy();
     expect(screen.queryByText("Guild")).toBeNull();
+  });
+
+  it("continues to a tokenless gift claim route", async () => {
+    mockParams = { next: "/claim-gift?token=private-gift-token" };
+    mockAuthState = {
+      ...mockAuthState,
+      user: { ...mockAuthState.user, growInterests: { crops: ["Herbs"] } }
+    };
+    const screen = render(<GuildOnboardingScreen />);
+
+    await waitFor(() => expect(mockListGuilds).toHaveBeenCalled());
+    fireEvent.press(screen.getByLabelText("Continue after selecting forum groups"));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/claim-gift"));
+    expect(JSON.stringify(mockReplace.mock.calls)).not.toContain("private-gift-token");
   });
 
   it("keeps the Pro walkthrough explicit about Forum/Q&A separation", () => {

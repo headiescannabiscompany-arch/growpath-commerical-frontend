@@ -149,7 +149,6 @@ describe("API Wrappers Unit Tests", () => {
         giftRecipientEmail: "Friend@Example.com",
         giftRecipientName: "Friend Name",
         giftMessage: "Happy growing!",
-        giftTerm: "yearly",
         successUrl: "https://app.example/home/personal/upgrade?gift=success",
         cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled"
       });
@@ -164,12 +163,23 @@ describe("API Wrappers Unit Tests", () => {
         giftMode: true,
         giftRecipientEmail: "friend@example.com",
         giftRecipientName: "Friend Name",
-        giftMessage: "Happy growing!",
-        giftTerm: "yearly"
+        giftMessage: "Happy growing!"
       });
     } finally {
       global.window = previousWindow;
     }
+  });
+
+  it("Subscription API: previews a gift with an unauthenticated POST body", async () => {
+    await subscriptionApi.getGiftClaim("gift-token-123");
+
+    expect(fetchCalls[0].url.endsWith("/api/subscription/gifts/claim/preview")).toBe(
+      true
+    );
+    expect(fetchCalls[0].options.method).toBe("POST");
+    expect(JSON.parse(fetchCalls[0].options.body)).toEqual({ token: "gift-token-123" });
+    expect(fetchCalls[0].options.headers.Authorization).toBeUndefined();
+    expect(fetchCalls[0].options.cache).toBe("no-store");
   });
 
   it("Subscription API: createCheckoutSession defaults legacy callers to pro monthly", async () => {

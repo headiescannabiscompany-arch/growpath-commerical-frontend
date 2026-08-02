@@ -84,6 +84,31 @@ describe("email verification API wrappers", () => {
     });
   });
 
+  it("keeps a gift claim token out of password-reset continuation URLs", async () => {
+    const originalWindow = (globalThis as any).window;
+    (globalThis as any).window = { location: { origin: "https://app.example" } };
+    mockApiRequest.mockResolvedValueOnce({ ok: true, emailSent: true });
+
+    try {
+      await forgotPassword("friend@example.com", "/claim-gift?token=private-gift-token");
+
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/auth/forgot-password", {
+        method: "POST",
+        auth: false,
+        body: {
+          email: "friend@example.com",
+          resetUrl: "https://app.example/reset-password?next=%2Fclaim-gift",
+          resetUrlBase: "https://app.example/reset-password?next=%2Fclaim-gift"
+        }
+      });
+      expect(JSON.stringify(mockApiRequest.mock.calls)).not.toContain(
+        "private-gift-token"
+      );
+    } finally {
+      (globalThis as any).window = originalWindow;
+    }
+  });
+
   it("resets a password through the auth endpoint", async () => {
     mockApiRequest.mockResolvedValueOnce({ ok: true });
 

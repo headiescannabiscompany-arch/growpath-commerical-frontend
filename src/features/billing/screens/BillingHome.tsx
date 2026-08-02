@@ -23,6 +23,33 @@ function hasPaidAccess(plan: any) {
   );
 }
 
+function isGiftEntitlement(plan: any) {
+  return String(plan?.source || "").toLowerCase() === "gift";
+}
+
+function canCancelPaidSubscription(plan: any) {
+  if (!hasPaidAccess(plan) || isGiftEntitlement(plan)) return false;
+  if (String(plan?.billingOwner || "").toLowerCase() === "purchaser") return false;
+  if (plan?.canManageBilling === false || plan?.canCancelSubscription === false) {
+    return false;
+  }
+  return true;
+}
+
+export function formatGiftEntitlementEnd(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) return "Pending confirmation";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Pending confirmation";
+  return date.toLocaleString(undefined, {
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    month: "long",
+    timeZoneName: "short",
+    year: "numeric"
+  });
+}
+
 export default function BillingHome() {
   const { token } = useAuth();
   const { palette } = useAppTheme();
@@ -82,18 +109,31 @@ export default function BillingHome() {
   }
 
   const paid = hasPaidAccess(plan);
+  const giftEntitlement = isGiftEntitlement(plan);
+  const canCancel = canCancelPaidSubscription(plan);
   const currentPlan = planLabel(plan);
   const currentStatus = subscriptionStatus(plan) || "unknown";
+  const giftEndsAt = formatGiftEntitlementEnd(plan?.giftEntitlementEndsAt);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Billing</Text>
       <Text style={styles.meta}>Plan: {currentPlan}</Text>
       <Text style={styles.meta}>Status: {currentStatus}</Text>
+      {giftEntitlement ? (
+        <>
+          <Text style={styles.meta}>Access type: Prepaid gift</Text>
+          <Text style={styles.meta}>Access ends: {giftEndsAt}</Text>
+        </>
+      ) : null}
       <Text style={styles.note}>
-        {paid
-          ? "Your paid subscription is confirmed here. Cancel from this screen when you are ready. "
-          : "You are not on a paid plan yet. Use this screen to open the upgrade checkout."}
+        {giftEntitlement
+          ? paid
+            ? "Your prepaid access does not renew. Billing belongs to the gift purchaser, so there is no subscription to cancel from this account."
+            : "This prepaid gift has ended. You can choose a personal subscription if you want to continue Pro access."
+          : paid
+            ? "Your paid subscription is confirmed here. Cancel from this screen when you are ready. "
+            : "You are not on a paid plan yet. Use this screen to open the upgrade checkout."}
       </Text>
       <Pressable
         style={[styles.button, loading && styles.buttonDisabled]}
@@ -104,8 +144,11 @@ export default function BillingHome() {
           {loading ? "Refreshing..." : "Refresh Status"}
         </Text>
       </Pressable>
-      {paid ? (
+      {!loading && canCancel ? (
         <Pressable
+          accessibilityLabel="Cancel subscription"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: busy === "cancel" }}
           style={[styles.cancelButton, busy === "cancel" && styles.buttonDisabled]}
           onPress={() => void handleCancel()}
           disabled={busy === "cancel"}
@@ -114,8 +157,11 @@ export default function BillingHome() {
             {busy === "cancel" ? "Canceling..." : "Cancel Subscription"}
           </Text>
         </Pressable>
-      ) : (
+      ) : !loading && !paid ? (
         <Pressable
+          accessibilityLabel="Upgrade to Pro"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: busy === "upgrade" }}
           style={[styles.button, busy === "upgrade" && styles.buttonDisabled]}
           onPress={() => void startUpgrade()}
           disabled={busy === "upgrade"}
@@ -124,7 +170,7 @@ export default function BillingHome() {
             {busy === "upgrade" ? "Opening..." : "Upgrade to Pro"}
           </Text>
         </Pressable>
-      )}
+      ) : null}
     </View>
   );
 }

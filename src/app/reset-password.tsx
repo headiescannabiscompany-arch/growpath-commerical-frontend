@@ -14,6 +14,7 @@ import { resetPassword } from "@/api/auth";
 import BackButton from "@/components/nav/BackButton";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { claimLoginPath, parseClaimReturnPath } from "@/utils/claimReturnPath";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -25,7 +26,9 @@ export default function ResetPasswordScreen() {
     code?: string | string[];
     token_hash?: string | string[];
     access_token?: string | string[];
+    next?: string | string[];
   }>();
+  const claimNext = parseClaimReturnPath(params.next);
   const token = useMemo(() => {
     return firstTokenValue(
       params.token,
@@ -50,6 +53,8 @@ export default function ResetPasswordScreen() {
   const [error, setError] = useState<string | null>(null);
   const [accountEmail, setAccountEmail] = useState("");
   const resetComplete = Boolean(message);
+  const loginPath = claimLoginPath(accountEmail, claimNext);
+  const loginAfterReset = `${loginPath}${loginPath.includes("?") ? "&" : "?"}reset=success`;
 
   const canSubmit = useMemo(() => {
     return !submitting && !resetComplete;
@@ -97,7 +102,7 @@ export default function ResetPasswordScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.panel}>
-        <BackButton fallbackHref="/login" />
+        <BackButton fallbackHref={loginPath} />
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>
           Choose new password
         </Text>
@@ -133,7 +138,13 @@ export default function ResetPasswordScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Request another reset link"
-            onPress={() => router.replace("/forgot-password")}
+            onPress={() =>
+              router.replace(
+                (claimNext
+                  ? { pathname: "/forgot-password", params: { next: claimNext } }
+                  : "/forgot-password") as any
+              )
+            }
             style={styles.linkButton}
           >
             <Text style={styles.linkText}>Request another reset link</Text>
@@ -157,13 +168,7 @@ export default function ResetPasswordScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Go to sign in"
-          onPress={() =>
-            router.replace(
-              accountEmail
-                ? (`/login?email=${encodeURIComponent(accountEmail)}&reset=success` as any)
-                : "/login"
-            )
-          }
+          onPress={() => router.replace(loginAfterReset as any)}
           style={styles.linkButton}
         >
           <Text style={styles.linkText}>Go to sign in</Text>

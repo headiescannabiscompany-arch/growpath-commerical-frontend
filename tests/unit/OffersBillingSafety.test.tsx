@@ -197,4 +197,51 @@ describe("Offers billing safety", () => {
     expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
     expect(createCheckoutSession).not.toHaveBeenCalled();
   });
+
+  it("does not treat a gift query parameter as checkout confirmation", async () => {
+    mockSearchParams.gift = "success";
+    const screen = render(<Offers />);
+
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
+    expect(screen.queryByText(/Gift checkout completed/)).toBeNull();
+    expect(screen.queryByText(/prepaid Pro gift will be delivered/)).toBeNull();
+  });
+
+  it("limits configured gifts to one prepaid Pro cycle and sends interval only", async () => {
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "test",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 }
+    });
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled()
+    );
+    fireEvent.press(screen.getByLabelText("Gift subscription mode"));
+
+    expect(screen.getByText("Prepaid Pro gift")).toBeTruthy();
+    expect(screen.queryByLabelText("Gift Commercial checkout")).toBeNull();
+    expect(screen.queryByLabelText("Gift Facility checkout")).toBeNull();
+    fireEvent.changeText(
+      screen.getByLabelText("Gift recipient email"),
+      "Friend@Example.com"
+    );
+    fireEvent.press(screen.getByLabelText("One year of prepaid access"));
+    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+
+    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(1));
+    const request = (createCheckoutSession as jest.Mock).mock.calls[0][0];
+    expect(request).toEqual(
+      expect.objectContaining({
+        plan: "pro",
+        interval: "yearly",
+        giftMode: true,
+        giftRecipientEmail: "friend@example.com",
+        successUrl: expect.not.stringContaining("gift="),
+        cancelUrl: expect.not.stringContaining("gift=")
+      })
+    );
+    expect(request).not.toHaveProperty("giftTerm");
+  });
 });

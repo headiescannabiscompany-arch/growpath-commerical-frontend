@@ -16,6 +16,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { INTEREST_TIERS } from "@/config/interests";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { parseClaimReturnPath } from "@/utils/claimReturnPath";
 
 type InterestMap = Record<string, string[]>;
 
@@ -46,7 +47,13 @@ export default function GuildOnboardingScreen() {
     mode?: string | string[];
     plan?: string | string[];
   }>();
-  const next = singleParam(params.next) || "/";
+  const requestedNext = singleParam(params.next);
+  const claimNext = parseClaimReturnPath(requestedNext);
+  const next = claimNext
+    ? claimNext
+    : ["/", "/home/personal", "/onboarding/walkthroughs"].includes(requestedNext)
+      ? requestedNext
+      : "/";
   const mode = singleParam(params.mode);
   const plan = singleParam(params.plan);
   const { width } = useWindowDimensions();

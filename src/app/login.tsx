@@ -19,15 +19,25 @@ import LegalLinks from "@/components/LegalLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { parseClaimReturnPath } from "@/utils/claimReturnPath";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ email?: string; reset?: string }>();
+  const params = useLocalSearchParams<{
+    email?: string | string[];
+    reset?: string | string[];
+    next?: string | string[];
+  }>();
   const auth = useAuth();
   const { palette } = useAppTheme();
   const styles = createLoginStyles(palette);
+  const claimNext = parseClaimReturnPath(params.next);
+  const initialEmail = String(
+    Array.isArray(params.email) ? params.email[0] || "" : params.email || ""
+  );
+  const resetResult = Array.isArray(params.reset) ? params.reset[0] : params.reset;
 
-  const [email, setEmail] = useState(String(params.email || ""));
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
@@ -47,7 +57,7 @@ export default function LoginScreen() {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       await auth.login(normalizedEmail, password);
-      router.replace("/account/workspace");
+      router.replace((claimNext || "/account/workspace") as any);
     } catch (e: any) {
       if (e instanceof ApiError) {
         setErrMsg(loginErrorMessage(e));
@@ -124,13 +134,14 @@ export default function LoginScreen() {
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             Sign in
           </Text>
-          {params.reset === "success" ? (
+          {resetResult === "success" ? (
             <Text style={styles.successMessage}>
               Password updated. Sign in with your new password.
             </Text>
           ) : null}
 
           <TextInput
+            accessibilityLabel="Email address"
             style={styles.input}
             autoCapitalize="none"
             autoCorrect={false}
@@ -142,6 +153,7 @@ export default function LoginScreen() {
           />
 
           <TextInput
+            accessibilityLabel="Password"
             style={styles.input}
             placeholder="Password"
             placeholderTextColor={palette.textMuted}
@@ -197,7 +209,12 @@ export default function LoginScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/register")}
+            onPress={() =>
+              router.push({
+                pathname: "/register",
+                params: claimNext ? { next: claimNext } : undefined
+              } as any)
+            }
             accessibilityRole="button"
             accessibilityLabel="Create account"
             style={styles.linkBtn}
@@ -206,7 +223,15 @@ export default function LoginScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/forgot-password")}
+            onPress={() =>
+              router.push({
+                pathname: "/forgot-password",
+                params: {
+                  ...(email.trim() ? { email: email.trim().toLowerCase() } : {}),
+                  ...(claimNext ? { next: claimNext } : {})
+                }
+              } as any)
+            }
             accessibilityRole="button"
             accessibilityLabel="Forgot password"
             style={styles.linkBtnTight}

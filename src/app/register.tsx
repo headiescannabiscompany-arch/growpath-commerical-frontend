@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { SignupBody } from "@/api/auth";
@@ -19,6 +19,7 @@ import CalendarDateField from "@/components/forms/CalendarDateField";
 import LegalLinks from "@/components/LegalLinks";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { claimLoginPath, parseClaimReturnPath } from "@/utils/claimReturnPath";
 
 type AccountChoice = {
   key: "free" | "pro" | "commercial" | "facility";
@@ -80,11 +81,14 @@ function ageFromDate(value: string) {
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ next?: string | string[] }>();
   const auth = useAuth();
   const { palette } = useAppTheme();
   const styles = createRegisterStyles(palette);
   const { width } = useWindowDimensions();
   const isWide = width >= 860;
+  const claimNext = parseClaimReturnPath(params.next);
+  const giftSignupChoice = ACCOUNT_CHOICES[0];
 
   const [choice, setChoice] = useState<AccountChoice>(ACCOUNT_CHOICES[0]);
   const [name, setName] = useState("");
@@ -118,13 +122,14 @@ export default function RegisterScreen() {
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
+      const signupChoice = claimNext ? giftSignupChoice : choice;
       const payload: SignupBody = {
         name: name.trim(),
         displayName: name.trim(),
         email: normalizedEmail,
         password,
-        plan: choice.key,
-        mode: choice.mode,
+        plan: signupChoice.key,
+        mode: signupChoice.mode,
         dateOfBirth,
         showCannabisContent: cannabisEligible && showCannabisContent
       };
@@ -138,9 +143,17 @@ export default function RegisterScreen() {
         );
         return;
       }
+      if (claimNext) {
+        router.replace(claimNext as any);
+        return;
+      }
       router.replace({
         pathname: "/onboarding/guilds",
-        params: { next: choice.afterSignup, mode: choice.mode, plan: choice.key }
+        params: {
+          next: choice.afterSignup,
+          mode: choice.mode,
+          plan: choice.key
+        }
       } as any);
     } catch (e: any) {
       if (e instanceof ApiError) {
@@ -164,45 +177,55 @@ export default function RegisterScreen() {
       <AuthAutofillStyle />
       <View style={[styles.shell, isWide ? styles.shellWide : null]}>
         <View style={styles.planPanel}>
-          <Text style={styles.kicker}>Choose account</Text>
+          <Text style={styles.kicker}>
+            {claimNext ? "Gift recipient" : "Choose account"}
+          </Text>
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             Create account
           </Text>
           <Text style={styles.subtitle}>
-            Pick the workflow you need now. You can still change plans as the account
-            grows.
+            {claimNext
+              ? "Create a free personal account first. The paid gift activates only after you verify and claim it with the recipient email."
+              : "Pick the workflow you need now. You can still change plans as the account grows."}
           </Text>
 
-          <View style={styles.choiceGrid}>
-            {ACCOUNT_CHOICES.map((item) => {
-              const active = choice.key === item.key;
-              return (
-                <Pressable
-                  key={item.key}
-                  onPress={() => setChoice(item)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Select ${item.label} account`}
-                  style={({ pressed }) => [
-                    styles.choice,
-                    active && styles.choiceActive,
-                    pressed && styles.pressed
-                  ]}
-                >
-                  <View style={styles.choiceHeader}>
-                    <Text style={styles.choiceLabel}>{item.label}</Text>
-                    <View style={[styles.radio, active && styles.radioActive]} />
-                  </View>
-                  <Text style={styles.choiceTitle}>{item.title}</Text>
-                  <Text style={styles.choiceDesc}>{item.description}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          {!claimNext ? (
+            <View style={styles.choiceGrid}>
+              {ACCOUNT_CHOICES.map((item) => {
+                const active = choice.key === item.key;
+                return (
+                  <Pressable
+                    key={item.key}
+                    onPress={() => setChoice(item)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select ${item.label} account`}
+                    accessibilityState={{ selected: active }}
+                    style={({ pressed }) => [
+                      styles.choice,
+                      active && styles.choiceActive,
+                      pressed && styles.pressed
+                    ]}
+                  >
+                    <View style={styles.choiceHeader}>
+                      <Text style={styles.choiceLabel}>{item.label}</Text>
+                      <View style={[styles.radio, active && styles.radioActive]} />
+                    </View>
+                    <Text style={styles.choiceTitle}>{item.title}</Text>
+                    <Text style={styles.choiceDesc}>{item.description}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : null}
         </View>
 
         <View style={[styles.formCard, isWide ? styles.formCardWide : null]}>
-          <Text style={styles.formTitle}>{choice.title}</Text>
-          <Text style={styles.formSub}>{choice.description}</Text>
+          <Text style={styles.formTitle}>
+            {claimNext ? giftSignupChoice.title : choice.title}
+          </Text>
+          <Text style={styles.formSub}>
+            {claimNext ? giftSignupChoice.description : choice.description}
+          </Text>
 
           <TextInput
             accessibilityLabel="Register name"
@@ -294,18 +317,20 @@ export default function RegisterScreen() {
             onPress={onSubmit}
             disabled={!canSubmit}
             accessibilityRole="button"
-            accessibilityLabel={`Create ${choice.label} account`}
+            accessibilityLabel={`Create ${claimNext ? giftSignupChoice.label : choice.label} account`}
             style={[styles.button, !canSubmit && styles.buttonDisabled]}
           >
             {submitting ? (
               <ActivityIndicator color={palette.accentText} />
             ) : (
-              <Text style={styles.buttonText}>Create {choice.label} account</Text>
+              <Text style={styles.buttonText}>
+                Create {claimNext ? giftSignupChoice.label : choice.label} account
+              </Text>
             )}
           </Pressable>
 
           <Pressable
-            onPress={() => router.replace("/login")}
+            onPress={() => router.replace(claimLoginPath(email, claimNext) as any)}
             accessibilityRole="button"
             accessibilityLabel="Back to login"
             style={styles.linkBtn}

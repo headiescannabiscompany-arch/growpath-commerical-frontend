@@ -143,6 +143,28 @@ describe("LoginScreen email verification", () => {
     });
   });
 
+  it("returns a successful gift-recipient login only to a validated claim path", async () => {
+    mockParams = { next: "/claim-gift?token=gift-token-1" };
+    mockLogin.mockResolvedValueOnce({ ok: true });
+    const screen = render(<LoginScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), "friend@example.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Password"), "password123");
+    fireEvent.press(screen.getByLabelText("Sign in"));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/claim-gift"));
+    expect(JSON.stringify(mockReplace.mock.calls)).not.toContain("gift-token-1");
+  });
+
+  it("drops an untrusted next route from account creation", () => {
+    mockParams = { next: "https://evil.example/steal" };
+    const screen = render(<LoginScreen />);
+
+    fireEvent.press(screen.getByLabelText("Create account"));
+
+    expect(mockPush).toHaveBeenCalledWith({ pathname: "/register", params: undefined });
+  });
+
   it("shows an actionable failed-login message without navigating", async () => {
     mockLogin.mockRejectedValueOnce(
       new ApiError("BAD_LOGIN", 401, {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Linking,
   Pressable,
@@ -26,6 +26,7 @@ import { useAppTheme, type ThemePalette } from "../../../theme/appTheme";
 
 type BillingInterval = "monthly" | "yearly";
 type CheckoutMode = "live" | "test" | "unknown";
+type FeedbackTone = "info" | "success" | "error";
 
 function normalizePlanKey(value: unknown): BillingPlanKey | null {
   const raw = String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
@@ -34,7 +35,7 @@ function normalizePlanKey(value: unknown): BillingPlanKey | null {
 
 function isLikelyEmail(value: string) {
   const next = value.trim();
-  return /[^\s@]+@[^\s@]+\.[^\s@]+/.test(next);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next);
 }
 
 function checkoutUrlFromResponse(response: any) {
@@ -53,7 +54,6 @@ export default function UpgradePlan() {
   const styles = useMemo(() => createUpgradePlanStyles(palette), [palette]);
   const searchParams = useLocalSearchParams<{
     plan?: string | string[];
-    gift?: string | string[];
   }>();
   const isWide = width >= 980;
 
@@ -61,10 +61,6 @@ export default function UpgradePlan() {
     () => normalizePlanKey(searchParams.plan),
     [searchParams.plan]
   );
-  const giftResult = useMemo(() => {
-    const value = searchParams.gift;
-    return String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
-  }, [searchParams.gift]);
   const plans = useMemo(() => {
     if (!requestedPlan) return BILLING_PLANS;
     const selected = BILLING_PLANS.find((plan) => plan.key === requestedPlan);
@@ -75,16 +71,19 @@ export default function UpgradePlan() {
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [loadingPlan, setLoadingPlan] = useState<BillingPlanKey | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [feedbackTone, setFeedbackTone] = useState<FeedbackTone>("info");
   const [checkoutMode, setCheckoutMode] = useState<CheckoutMode>("unknown");
   const [giftCheckoutConfigured, setGiftCheckoutConfigured] = useState(false);
   const [giftMode, setGiftMode] = useState(false);
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
-  const handledGiftResultRef = useRef("");
 
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
+  const purchasablePlans = giftMode
+    ? BILLING_PLANS.filter((plan) => plan.key === "pro")
+    : plans;
 
   useEffect(() => {
     let mounted = true;
@@ -108,28 +107,20 @@ export default function UpgradePlan() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!giftResult || !["success", "canceled"].includes(giftResult)) return;
-    if (handledGiftResultRef.current === giftResult) return;
-    handledGiftResultRef.current = giftResult;
-
-    if (giftResult === "success") {
-      setFeedback(
-        "Gift checkout completed. The recipient details were included in the checkout request."
-      );
-      return;
-    }
-
-    setFeedback("Gift checkout canceled. No new payment was submitted.");
-  }, [giftResult]);
-
   async function startCheckout(plan: BillingPlanKey) {
     const selected = BILLING_PLANS.find((item) => item.key === plan);
     const recipient = giftRecipientValue;
     const recipientName = giftRecipientName.trim();
     const note = giftMessage.trim();
 
+    if (giftMode && plan !== "pro") {
+      setFeedback("Only prepaid Pro gifts are supported.");
+      setFeedbackTone("error");
+      return;
+    }
+
     if (giftMode && !giftCheckoutConfigured) {
+      setFeedbackTone("error");
       setFeedback(
         "Gift subscriptions are not available yet. No checkout or payment was created."
       );
@@ -137,12 +128,14 @@ export default function UpgradePlan() {
     }
 
     if (giftMode && !giftRecipientValid) {
+      setFeedbackTone("error");
       setFeedback("Enter a valid recipient email before starting a gift checkout.");
       return;
     }
 
     setLoadingPlan(plan);
     setFeedback("");
+    setFeedbackTone("info");
     try {
       const origin =
         typeof window !== "undefined" && window.location ? window.location.origin : "";
@@ -155,18 +148,14 @@ export default function UpgradePlan() {
               giftRecipientEmail: recipient,
               ...(recipientName ? { giftRecipientName: recipientName } : {}),
               ...(note ? { giftMessage: note } : {}),
-              giftTerm: interval,
-              successUrl: origin
-                ? `${origin}/home/personal/upgrade?gift=success`
-                : undefined,
-              cancelUrl: origin
-                ? `${origin}/home/personal/upgrade?gift=canceled`
-                : undefined
+              successUrl: origin ? `${origin}/home/personal/upgrade` : undefined,
+              cancelUrl: origin ? `${origin}/home/personal/upgrade` : undefined
             }
           : {})
       });
       const url = checkoutUrlFromResponse(response);
       if (!url) {
+        setFeedbackTone("error");
         setFeedback("Checkout is unavailable. The backend did not return a URL.");
         return;
       }
@@ -177,6 +166,7 @@ export default function UpgradePlan() {
           : `Checkout opened in a new tab for ${selected?.title || "this plan"}. Close it anytime before payment.`
       );
     } catch (e: any) {
+      setFeedbackTone("error");
       setFeedback(e?.message || "Unable to start checkout.");
     } finally {
       setLoadingPlan(null);
@@ -212,12 +202,25 @@ export default function UpgradePlan() {
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={
-                  item === "monthly" ? "Monthly billing" : "Yearly billing"
+                  giftMode
+                    ? item === "monthly"
+                      ? "One month of prepaid access"
+                      : "One year of prepaid access"
+                    : item === "monthly"
+                      ? "Monthly billing"
+                      : "Yearly billing"
                 }
+                accessibilityState={{ selected: active }}
                 style={[styles.segmentButton, active && styles.segmentButtonActive]}
               >
                 <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
-                  {item === "monthly" ? "Monthly" : "Yearly"}
+                  {giftMode
+                    ? item === "monthly"
+                      ? "One month"
+                      : "One year"
+                    : item === "monthly"
+                      ? "Monthly"
+                      : "Yearly"}
                 </Text>
               </Pressable>
             );
@@ -250,11 +253,11 @@ export default function UpgradePlan() {
       </View>
 
       <AppCard style={styles.giftCard}>
-        <Text style={styles.eyebrow}>Gift subscription</Text>
+        <Text style={styles.eyebrow}>Prepaid Pro gift</Text>
         <Text style={styles.cardTitle}>Buy for someone else</Text>
         <Text style={styles.cardDesc}>
           {giftCheckoutConfigured
-            ? "Enter the recipient email and choose the monthly or yearly gift term. Stripe opens only after recipient fulfillment is available."
+            ? "Give one prepaid month or year of Pro. Access starts when the recipient claims it and does not renew."
             : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
         </Text>
         <View style={styles.segment}>
@@ -274,6 +277,10 @@ export default function UpgradePlan() {
                   setFeedback("");
                 }}
                 accessibilityRole="button"
+                accessibilityState={{
+                  disabled: item.key === "gift" && !giftCheckoutConfigured,
+                  selected: active
+                }}
                 accessibilityLabel={
                   item.key === "gift"
                     ? giftCheckoutConfigured
@@ -301,6 +308,7 @@ export default function UpgradePlan() {
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
+              maxLength={254}
               placeholder="recipient@example.com"
               placeholderTextColor={palette.textMuted}
               style={styles.input}
@@ -314,6 +322,7 @@ export default function UpgradePlan() {
               accessibilityLabel="Gift recipient name"
               autoCapitalize="words"
               autoCorrect={false}
+              maxLength={120}
               placeholder="Recipient name (optional)"
               placeholderTextColor={palette.textMuted}
               style={styles.input}
@@ -327,6 +336,7 @@ export default function UpgradePlan() {
               accessibilityLabel="Gift message"
               autoCapitalize="sentences"
               autoCorrect
+              maxLength={500}
               multiline
               placeholder="Short gift note (optional)"
               placeholderTextColor={palette.textMuted}
@@ -338,8 +348,8 @@ export default function UpgradePlan() {
               }}
             />
             <Text style={styles.helper}>
-              The backend receives the recipient email, optional name, note, and gift term
-              with the checkout request so it can build the handoff flow.
+              The recipient receives a one-time claim link. Their prepaid Pro access
+              begins on a successful claim and ends after the selected month or year.
             </Text>
           </>
         ) : (
@@ -353,16 +363,28 @@ export default function UpgradePlan() {
 
       {feedback ? (
         <View
-          style={styles.feedback}
+          style={[
+            styles.feedback,
+            feedbackTone === "success" && styles.feedbackSuccess,
+            feedbackTone === "error" && styles.feedbackError
+          ]}
           accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
+          accessibilityLiveRegion={feedbackTone === "error" ? "assertive" : "polite"}
         >
-          <Text style={styles.feedbackText}>{feedback}</Text>
+          <Text
+            style={[
+              styles.feedbackText,
+              feedbackTone === "success" && styles.feedbackTextSuccess,
+              feedbackTone === "error" && styles.feedbackTextError
+            ]}
+          >
+            {feedback}
+          </Text>
         </View>
       ) : null}
 
       <View style={[styles.planGrid, isWide ? styles.planGridWide : null]}>
-        {plans.map((plan) => {
+        {purchasablePlans.map((plan) => {
           const loading = loadingPlan === plan.key;
           const featured = requestedPlan === plan.key;
           const giftBlocked = giftMode && !giftRecipientValid;
@@ -391,12 +413,15 @@ export default function UpgradePlan() {
               <Text style={styles.price}>
                 {formatPlanPrice(plan.key, interval)}
                 <Text style={styles.priceMeta}>
-                  {" "}
-                  / {interval === "monthly" ? "month" : "year"}
+                  {giftMode
+                    ? " one-time"
+                    : ` / ${interval === "monthly" ? "month" : "year"}`}
                 </Text>
               </Text>
               <Text style={styles.billingNote}>
-                {formatPlanBillingNote(plan.key, interval)}
+                {giftMode
+                  ? `One prepaid ${interval === "monthly" ? "month" : "year"} of Pro. Starts when claimed and does not renew.`
+                  : formatPlanBillingNote(plan.key, interval)}
               </Text>
               <Text style={styles.sectionLabel}>Billing next</Text>
               <Text style={styles.sectionText}>{plan.billingNext}</Text>
@@ -413,6 +438,7 @@ export default function UpgradePlan() {
                 onPress={() => void startCheckout(plan.key)}
                 disabled={loading || giftBlocked}
                 accessibilityRole="button"
+                accessibilityState={{ disabled: loading || giftBlocked }}
                 accessibilityLabel={
                   giftMode
                     ? `Gift ${plan.title} checkout`
@@ -553,12 +579,16 @@ export const createUpgradePlanStyles = (palette: ThemePalette) =>
     bullet: { color: palette.textSoft, fontSize: 13, fontWeight: "800" },
     feedback: {
       backgroundColor: palette.accentSoft,
-      borderColor: palette.success,
+      borderColor: palette.info,
       borderRadius: 8,
       borderWidth: 1,
       padding: 12
     },
-    feedbackText: { color: palette.success, fontWeight: "800" },
+    feedbackSuccess: { borderColor: palette.success },
+    feedbackError: { borderColor: palette.danger },
+    feedbackText: { color: palette.text, fontWeight: "800" },
+    feedbackTextSuccess: { color: palette.success },
+    feedbackTextError: { color: palette.danger },
     planGrid: { gap: 12 },
     planGridWide: { flexDirection: "row" },
     planCard: {

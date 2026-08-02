@@ -131,7 +131,20 @@ describe("ResetPasswordScreen", () => {
 
     fireEvent.press(screen.getByLabelText("Go to sign in"));
 
-    expect(mockReplace).toHaveBeenCalledWith("/login");
+    expect(mockReplace).toHaveBeenCalledWith("/login?reset=success");
+  });
+
+  it("keeps the raw gift token out of the sign-in continuation", () => {
+    mockParams = {
+      token: "reset-token",
+      next: "/claim-gift?token=private-gift-token"
+    };
+    const screen = render(<ResetPasswordScreen />);
+
+    fireEvent.press(screen.getByLabelText("Go to sign in"));
+
+    expect(mockReplace).toHaveBeenCalledWith("/login?next=%2Fclaim-gift&reset=success");
+    expect(JSON.stringify(mockReplace.mock.calls)).not.toContain("private-gift-token");
   });
 
   it("prefills the account email when continuing after a successful reset", async () => {

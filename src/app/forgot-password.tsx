@@ -7,7 +7,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { ApiError } from "@/api/apiRequest";
 import { forgotPassword } from "@/api/auth";
@@ -15,12 +15,21 @@ import BackButton from "@/components/nav/BackButton";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { claimLoginPath, parseClaimReturnPath } from "@/utils/claimReturnPath";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    email?: string | string[];
+    next?: string | string[];
+  }>();
   const { palette } = useAppTheme();
   const styles = createForgotPasswordStyles(palette);
-  const [email, setEmail] = useState("");
+  const claimNext = parseClaimReturnPath(params.next);
+  const initialEmail = String(
+    Array.isArray(params.email) ? params.email[0] || "" : params.email || ""
+  );
+  const [email, setEmail] = useState(initialEmail);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +46,9 @@ export default function ForgotPasswordScreen() {
     setError(null);
     setSubmitting(true);
     try {
-      const response = await forgotPassword(normalizedEmail);
+      const response = claimNext
+        ? await forgotPassword(normalizedEmail, claimNext)
+        : await forgotPassword(normalizedEmail);
       if (response.emailSent === false) {
         setError(
           `Password reset email is not available right now. Email ${SUPPORT_CONTACTS.general} to reset this account.`
@@ -63,7 +74,7 @@ export default function ForgotPasswordScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.panel}>
-        <BackButton fallbackHref="/login" />
+        <BackButton fallbackHref={claimLoginPath(email, claimNext)} />
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>
           Reset password
         </Text>
@@ -106,7 +117,7 @@ export default function ForgotPasswordScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Back to sign in"
-          onPress={() => router.replace("/login")}
+          onPress={() => router.replace(claimLoginPath(email, claimNext) as any)}
           style={styles.linkButton}
         >
           <Text style={styles.linkText}>Back to sign in</Text>

@@ -8,6 +8,12 @@ import {
 import UpgradePlan from "../../src/features/billing/screens/UpgradePlan";
 import { openExternalUrl } from "../../src/utils/openExternalUrl";
 
+let mockSearchParams: Record<string, string> = {};
+
+jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockSearchParams
+}));
+
 jest.mock("../../src/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
   getSubscriptionSetupStatus: jest.fn()
@@ -20,6 +26,7 @@ jest.mock("../../src/utils/openExternalUrl", () => ({
 describe("UpgradePlan pricing", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSearchParams = {};
     (createCheckoutSession as jest.Mock).mockResolvedValue({
       url: "https://checkout.example.com/session"
     });
@@ -85,6 +92,54 @@ describe("UpgradePlan pricing", () => {
     ).toBeTruthy();
     expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
     expect(createCheckoutSession).not.toHaveBeenCalled();
+    expect(openExternalUrl).not.toHaveBeenCalled();
+  });
+
+  it("does not treat a gift query parameter as checkout confirmation", async () => {
+    mockSearchParams = { gift: "success" };
+    const screen = render(<UpgradePlan />);
+
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
+    expect(screen.queryByText(/Gift checkout completed/)).toBeNull();
+    expect(screen.queryByText(/prepaid Pro gift will be delivered/)).toBeNull();
+  });
+
+  it("limits configured gifts to prepaid Pro and sends interval instead of giftTerm", async () => {
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "test",
+      giftCheckoutConfigured: true
+    });
+    (createCheckoutSession as jest.Mock).mockResolvedValueOnce({});
+    const screen = render(<UpgradePlan />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled()
+    );
+    fireEvent.press(screen.getByLabelText("Gift subscription mode"));
+
+    expect(screen.getByText("Prepaid Pro gift")).toBeTruthy();
+    expect(screen.queryByLabelText("Gift Commercial checkout")).toBeNull();
+    expect(screen.queryByLabelText("Gift Facility checkout")).toBeNull();
+    fireEvent.changeText(
+      screen.getByLabelText("Gift recipient email"),
+      "Friend@Example.com"
+    );
+    fireEvent.press(screen.getByLabelText("One year of prepaid access"));
+    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+
+    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(1));
+    const request = (createCheckoutSession as jest.Mock).mock.calls[0][0];
+    expect(request).toEqual(
+      expect.objectContaining({
+        plan: "pro",
+        interval: "yearly",
+        giftMode: true,
+        giftRecipientEmail: "friend@example.com",
+        successUrl: expect.not.stringContaining("gift="),
+        cancelUrl: expect.not.stringContaining("gift=")
+      })
+    );
+    expect(request).not.toHaveProperty("giftTerm");
     expect(openExternalUrl).not.toHaveBeenCalled();
   });
 });

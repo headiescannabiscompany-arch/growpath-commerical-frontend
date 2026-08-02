@@ -17,6 +17,39 @@ export async function getSubscription() {
   return res?.data ?? res;
 }
 
+export type GiftClaimSummary = {
+  recipientEmail: string;
+  recipientName: string;
+  plan: "pro" | "commercial" | "facility";
+  interval: "monthly" | "yearly";
+  message: string;
+};
+
+export async function getGiftClaim(token: string): Promise<GiftClaimSummary> {
+  const res = await apiRequest("/api/subscription/gifts/claim/preview", {
+    method: "POST",
+    auth: false,
+    cache: "no-store",
+    body: { token }
+  });
+  return (res?.data ?? res)?.gift;
+}
+
+export type GiftClaimResult = {
+  claimed: true;
+  plan: GiftClaimSummary["plan"];
+  interval: GiftClaimSummary["interval"];
+  nextPath?: string;
+};
+
+export async function claimGift(token: string): Promise<GiftClaimResult> {
+  const res = await apiRequest("/api/subscription/gifts/claim", {
+    method: "POST",
+    body: { token }
+  });
+  return res?.data ?? res;
+}
+
 function currentOrigin() {
   const location = (globalThis as any)?.window?.location;
   return typeof location?.origin === "string" ? location.origin : "";
@@ -33,7 +66,6 @@ export async function createCheckoutSession(
     giftRecipientEmail?: string;
     giftRecipientName?: string;
     giftMessage?: string;
-    giftTerm?: string;
   } = { plan: "pro", interval: "monthly" }
 ) {
   const origin = currentOrigin();
@@ -55,8 +87,7 @@ export async function createCheckoutSession(
     ...(data.giftRecipientName
       ? { giftRecipientName: data.giftRecipientName.trim() }
       : {}),
-    ...(data.giftMessage ? { giftMessage: data.giftMessage.trim() } : {}),
-    ...(data.giftTerm ? { giftTerm: data.giftTerm } : {})
+    ...(data.giftMessage ? { giftMessage: data.giftMessage.trim() } : {})
   };
   const res = await apiRequest("/api/subscription/create-checkout-session", {
     method: "POST",

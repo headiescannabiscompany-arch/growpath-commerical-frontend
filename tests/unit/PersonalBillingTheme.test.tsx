@@ -103,7 +103,9 @@ describe("Personal billing Night theme", () => {
     expect(styles.input.borderColor).toBe(nightPalette.border);
     expect(styles.input.color).toBe(nightPalette.text);
     expect(styles.feedback.backgroundColor).toBe(nightPalette.accentSoft);
-    expect(styles.feedback.borderColor).toBe(nightPalette.success);
+    expect(styles.feedback.borderColor).toBe(nightPalette.info);
+    expect(styles.feedbackSuccess.borderColor).toBe(nightPalette.success);
+    expect(styles.feedbackError.borderColor).toBe(nightPalette.danger);
     expect(styles.planCard.backgroundColor).toBe(nightPalette.card);
     expect(styles.planCard.borderColor).toBe(nightPalette.border);
     expect(styles.planCardFeatured.borderColor).toBe(nightPalette.accent);

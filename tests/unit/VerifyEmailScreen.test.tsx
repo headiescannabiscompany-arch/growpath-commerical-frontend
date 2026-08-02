@@ -5,7 +5,9 @@ import VerifyEmailScreen from "@/app/verify-email";
 
 const mockConfirmEmailVerification = jest.fn();
 const mockReplace = jest.fn();
-let mockParams: { token?: string | string[] } = { token: "verify-token-1" };
+let mockParams: { token?: string | string[]; next?: string | string[] } = {
+  token: "verify-token-1"
+};
 
 jest.mock("@/api/auth", () => ({
   confirmEmailVerification: (...args: any[]) => mockConfirmEmailVerification(...args)
@@ -48,7 +50,7 @@ describe("VerifyEmailScreen", () => {
 
     fireEvent.press(screen.getByLabelText("Go to sign in"));
 
-    expect(mockReplace).toHaveBeenCalledWith("/login");
+    expect(mockReplace).toHaveBeenCalledWith("/login?email=grower%40example.com");
   });
 
   it("does not call the backend when the verification token is missing", async () => {
@@ -61,5 +63,29 @@ describe("VerifyEmailScreen", () => {
     });
 
     expect(mockConfirmEmailVerification).not.toHaveBeenCalled();
+  });
+
+  it("keeps a legacy gift token out of the sign-in continuation", async () => {
+    mockParams = {
+      token: "verify-token-1",
+      next: "/claim-gift?token=private-gift-token"
+    };
+    mockConfirmEmailVerification.mockResolvedValueOnce({
+      ok: true,
+      user: { email: "friend@example.com" }
+    });
+    const screen = render(<VerifyEmailScreen />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Your email is verified. You can sign in to GrowPath.")
+      ).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Go to sign in"));
+
+    expect(mockReplace).toHaveBeenCalledWith(
+      "/login?email=friend%40example.com&next=%2Fclaim-gift"
+    );
+    expect(JSON.stringify(mockReplace.mock.calls)).not.toContain("private-gift-token");
   });
 });

@@ -5,12 +5,14 @@ import ForgotPasswordScreen from "@/app/forgot-password";
 
 const mockForgotPassword = jest.fn();
 const mockReplace = jest.fn();
+let mockParams: Record<string, string> = {};
 
 jest.mock("@/api/auth", () => ({
   forgotPassword: (...args: any[]) => mockForgotPassword(...args)
 }));
 
 jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockParams,
   useRouter: () => ({
     replace: mockReplace,
     canGoBack: () => false,
@@ -22,6 +24,7 @@ describe("ForgotPasswordScreen", () => {
   beforeEach(() => {
     mockForgotPassword.mockReset();
     mockReplace.mockReset();
+    mockParams = {};
   });
 
   it("shows a support message when reset email delivery is unavailable", async () => {
@@ -44,5 +47,21 @@ describe("ForgotPasswordScreen", () => {
         )
       ).toBeTruthy();
     });
+  });
+
+  it("preserves a validated gift claim through password reset", async () => {
+    mockParams = {
+      email: "Friend@Example.com",
+      next: "/claim-gift?token=gift-token-1"
+    };
+    mockForgotPassword.mockResolvedValueOnce({ ok: true, emailSent: true });
+    const screen = render(<ForgotPasswordScreen />);
+
+    fireEvent.press(screen.getByLabelText("Send password reset email"));
+
+    await waitFor(() =>
+      expect(mockForgotPassword).toHaveBeenCalledWith("friend@example.com", "/claim-gift")
+    );
+    expect(JSON.stringify(mockForgotPassword.mock.calls)).not.toContain("gift-token-1");
   });
 });
