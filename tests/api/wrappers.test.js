@@ -137,7 +137,7 @@ describe("API Wrappers Unit Tests", () => {
     }
   });
 
-  it("Subscription API: createCheckoutSession forwards gift metadata and custom URLs", async () => {
+  it("Subscription API: createCheckoutSession forwards gift metadata but never client return URLs", async () => {
     const previousWindow = global.window;
     global.window = { location: { origin: "https://app.example" } };
 
@@ -150,6 +150,7 @@ describe("API Wrappers Unit Tests", () => {
         giftRecipientName: "Friend Name",
         giftMessage: "Happy growing!",
         checkoutAttemptId: "a2d70c6e-6f0e-4a21-9bb7-d611bf55ee55",
+        giftQuoteToken: "1.payload.signature",
         successUrl: "https://app.example/home/personal/upgrade?gift=success",
         cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled"
       });
@@ -159,13 +160,12 @@ describe("API Wrappers Unit Tests", () => {
         interval: "monthly",
         paymentMethodTypes: ["card"],
         disallowBankDebits: true,
-        successUrl: "https://app.example/home/personal/upgrade?gift=success",
-        cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled",
         giftMode: true,
         giftRecipientEmail: "friend@example.com",
         giftRecipientName: "Friend Name",
         giftMessage: "Happy growing!",
-        checkoutAttemptId: "a2d70c6e-6f0e-4a21-9bb7-d611bf55ee55"
+        checkoutAttemptId: "a2d70c6e-6f0e-4a21-9bb7-d611bf55ee55",
+        giftQuoteToken: "1.payload.signature"
       });
     } finally {
       global.window = previousWindow;
