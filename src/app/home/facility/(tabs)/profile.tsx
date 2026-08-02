@@ -292,6 +292,11 @@ export default function FacilityProfileRoute() {
               onPress={() => router.push("/offers" as any)}
             />
             <ProfileAction
+              label="Gifts you sent"
+              accessibilityLabel="View gifts purchased by this account"
+              onPress={() => router.push("/account/sent-gifts" as any)}
+            />
+            <ProfileAction
               label="Log out"
               accessibilityLabel="Log out"
               danger

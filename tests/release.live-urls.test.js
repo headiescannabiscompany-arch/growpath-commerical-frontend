@@ -191,6 +191,19 @@ describe("live URL verifier", () => {
     expect(fallbackBlock).toContain('"account/mode"');
   });
 
+  it("keeps authenticated billing and sent-gift routes in the production fallback export", () => {
+    const exportScript = fs.readFileSync(
+      path.join(root, "scripts", "export-production-web.cjs"),
+      "utf8"
+    );
+    const fallbackBlock = exportScript.match(
+      /const fallbackRoutes = \[([\s\S]*?)\];/
+    )?.[1];
+
+    expect(fallbackBlock).toContain('"account/billing"');
+    expect(fallbackBlock).toContain('"account/sent-gifts"');
+  });
+
   it("keeps direct gift-claim email links in the production fallback export", () => {
     const exportScript = fs.readFileSync(
       path.join(root, "scripts", "export-production-web.cjs"),

@@ -6,6 +6,7 @@ import Offers from "@/app/offers";
 import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscription";
 
 const mockRetryMe = jest.fn();
+const mockPush = jest.fn();
 const mockSearchParams: { subscription?: string; gift?: string } = {};
 let mockTrialUsed = true;
 let mockTrialPlansUsed = ["pro", "commercial", "facility"];
@@ -13,7 +14,8 @@ let mockSubscriptionStatus = "inactive";
 let mockActivePlan = "free";
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => mockSearchParams
+  useLocalSearchParams: () => mockSearchParams,
+  useRouter: () => ({ push: mockPush })
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
@@ -60,6 +62,7 @@ describe("Offers billing safety", () => {
     delete mockSearchParams.subscription;
     delete mockSearchParams.gift;
     mockRetryMe.mockReset();
+    mockPush.mockReset();
     (createCheckoutSession as jest.Mock).mockReset();
     (getSubscriptionSetupStatus as jest.Mock).mockReset();
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
@@ -114,6 +117,16 @@ describe("Offers billing safety", () => {
 
     fireEvent.press(screen.getByText("Close"));
     expect(screen.queryByText("Payment Issues Help")).toBeNull();
+  });
+
+  it("opens purchaser gift history without changing workspaces", async () => {
+    const screen = render(<Offers />);
+
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
+    fireEvent.press(screen.getByLabelText("View gifts purchased by this account"));
+
+    expect(mockPush).toHaveBeenCalledWith("/account/sent-gifts");
+    expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
   it("shows success-return feedback and refreshes the account session", async () => {

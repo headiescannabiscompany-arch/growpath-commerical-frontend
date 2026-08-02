@@ -12,6 +12,10 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockClearError = jest.fn();
 const mockHandleApiError = jest.fn();
+const mockRouter = {
+  push: (...args: any[]) => mockPush(...args),
+  replace: (...args: any[]) => mockReplace(...args)
+};
 const mockAuth = {
   user: {
     id: "facility-user-1",
@@ -27,10 +31,7 @@ let mockFacilitySelection: {
 } = { selectedId: null };
 
 jest.mock("expo-router", () => ({
-  useRouter: () => ({
-    push: mockPush,
-    replace: mockReplace
-  }),
+  useRouter: () => mockRouter,
   usePathname: () => "/home/facility/profile"
 }));
 
@@ -115,15 +116,16 @@ describe("FacilityProfileRoute", () => {
       textContentType: "oneTimeCode",
       importantForAutofill: "no"
     });
-
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
     fireEvent.press(screen.getByLabelText("Open account profile"));
     fireEvent.press(screen.getByLabelText("Manage facility plan and billing"));
+    fireEvent.press(screen.getByLabelText("View gifts purchased by this account"));
     fireEvent.press(screen.getByLabelText("Log out"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
     expect(mockPush).toHaveBeenCalledWith("/profile");
     expect(mockPush).toHaveBeenCalledWith("/offers");
+    expect(mockPush).toHaveBeenCalledWith("/account/sent-gifts");
     await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
     expect(mockReplace).toHaveBeenCalledWith("/login");
     expect(screen.queryByText("Report Bug")).toBeNull();

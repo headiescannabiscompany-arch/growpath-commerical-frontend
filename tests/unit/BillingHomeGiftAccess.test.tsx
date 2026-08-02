@@ -12,7 +12,10 @@ jest.mock("@/auth/AuthContext", () => ({
 
 jest.mock("@/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
-  getSubscription: jest.fn()
+  getSubscription: jest.fn(),
+  isSentGift: (value: any) => Boolean(value?.id && value?.actions),
+  listSentGifts: jest.fn().mockResolvedValue({ gifts: [], nextCursor: null }),
+  resendSentGift: jest.fn()
 }));
 
 jest.mock("@/api/subscribe", () => ({

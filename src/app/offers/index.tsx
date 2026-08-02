@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   View
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscription";
 import { useAuth } from "@/auth/AuthContext";
@@ -56,6 +56,7 @@ async function openCheckoutUrl(url: string) {
 
 export default function Offers() {
   const auth = useAuth();
+  const router = useRouter();
   const ent = useEntitlements();
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
@@ -453,6 +454,19 @@ export default function Offers() {
         )}
       </AppCard>
 
+      <Pressable
+        accessibilityLabel="View gifts purchased by this account"
+        accessibilityRole="button"
+        onPress={() => router.push("/account/sent-gifts" as any)}
+        style={styles.historyButton}
+      >
+        <Text style={styles.historyButtonTitle}>Gifts you sent</Text>
+        <Text style={styles.historyButtonText}>
+          Check delivery, claim, refund, and support status for prepaid gifts without
+          changing workspaces.
+        </Text>
+      </Pressable>
+
       <AppCard style={styles.freeCard}>
         <Text style={styles.eyebrow}>Ad-supported Free</Text>
         <Text style={styles.cardTitle}>Test the real GrowPath experience</Text>
@@ -632,6 +646,15 @@ const createStyles = (palette: ThemePalette) =>
     },
     helpButtonTitle: { color: palette.accent, fontWeight: "900" },
     helpButtonText: { color: palette.textMuted, fontSize: 12, marginTop: 3 },
+    historyButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    historyButtonTitle: { color: palette.accent, fontWeight: "900" },
+    historyButtonText: { color: palette.textMuted, fontSize: 12, marginTop: 3 },
     giftCard: { gap: 10 },
     modeBanner: {
       borderRadius: radius.card,
