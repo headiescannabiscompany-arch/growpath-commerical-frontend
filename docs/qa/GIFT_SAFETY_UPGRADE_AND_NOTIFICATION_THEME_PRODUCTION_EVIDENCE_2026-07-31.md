@@ -3495,8 +3495,30 @@ Production `/health` returned HTTP 200. `/api/subscription/status` returned
 HTTP 200 in live mode and continued to report `giftCheckoutConfigured: false`.
 No mutation endpoint was invoked during production verification.
 
-This completes only the durable refund/dispute revocation gate. Gift launch
-remains blocked on the automatic unclaimed/delivery-failure refund worker and
-heartbeat, purchaser-owned list/status/cancel/refund APIs, server-authoritative
-quote/reconfirmation UI, cross-device verification continuation, migration
-readiness, live Stripe webhook evidence, and production acceptance.
+This completed only the durable refund/dispute revocation gate. At that
+checkpoint, gift launch remained blocked on the automatic
+unclaimed/delivery-failure refund worker and heartbeat, purchaser-owned
+list/status/cancel/refund APIs, server-authoritative quote/reconfirmation UI,
+cross-device verification continuation, migration readiness, live Stripe
+webhook evidence, and production acceptance.
+
+## Dormant automatic gift refund worker release checkpoint
+
+Backend `2fa6ff6a67f904a354bb215e5634bfb08390c929` deploys the durable,
+fail-closed automatic gift-refund worker foundation while gift checkout and
+refund processing remain disabled. GitHub Backend CI run `30732231345` and
+Render deployment `dep-d9ncbifk4qsc73alitg0` both succeeded.
+
+Read-only production checks on 2026-08-02 returned HTTP 200 from `/health`,
+`/ready`, and `/api/subscription/status`. Readiness reported the database
+connected and the gift worker `required: false`, `enabled: false`, and
+`running: false`. Subscription status reported `mode: live`,
+`giftCheckoutConfigured: false`, and blockers `feature_disabled`,
+`refund_worker_disabled`, and `refund_worker_not_ready`.
+
+No charge, refund, email, claim, account, or record mutation occurred. This was
+not gift-launch or automatic-refund acceptance. Gift checkout remains blocked
+on purchaser-owned recovery APIs, server-authoritative quote/reconfirmation
+UI, cross-device verification continuation, migration and production-index
+readiness, live Stripe webhook evidence, safe single-worker enablement, and
+mutation-capable production acceptance.
