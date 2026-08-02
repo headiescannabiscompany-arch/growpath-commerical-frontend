@@ -3593,6 +3593,11 @@ delivery is instead evidenced by the pushed SHA being current `main`, both
 exact-SHA workflows passing, the new bundle fingerprint, and the new unique UI
 appearing on the production routes.
 
+The following evidence-only frontend commit
+`5786387ba8133815e9a6faf5e59a5ea6399dcf4b` also passed Frontend CI
+`30735254950` (including tests, lint, dependency audit, Expo Doctor, and the
+browser/delivery guards).
+
 Signed-in Facility production inspection preserved the existing session and
 workspace. Facility Profile rendered the correct Night palette under `Current:
 AUTO / Resolved: NIGHT`, showed the new `Gifts you sent` action, retained Log
@@ -3629,3 +3634,52 @@ policy (or an explicit decision not to offer one), server-authoritative
 quote/reconfirmation UI, cross-device verification continuation, migration
 and production-index readiness, live Stripe evidence/key rotation, safe
 single-worker enablement, and mutation-capable production acceptance.
+
+## Dormant GiftSubscription index-safety checkpoint
+
+Backend `0ad14bf973d6b0f46f5240a4710d32874174c291` fixes a verified
+pre-launch index defect without enabling gift checkout or applying any live
+database migration. The three optional Stripe identifiers no longer declare
+`default: null` with `unique + sparse`. They now use stable, named
+partial-unique indexes that include only actual strings. Production disables
+automatic index and collection creation for this model.
+
+The release also adds a dedicated migration that is dry-run by default. Apply
+requires an explicit allow switch, both gift flags explicitly false, and the
+exact connected database name. It rejects blank, non-string, or duplicate
+Stripe identifiers and unknown index shapes; creates and verifies all three
+targets while the legacy unique guards remain; re-verifies each matching target
+immediately before a recognized legacy drop; and verifies an idempotent final
+state. It never calls `syncIndexes()` and is not run by application startup.
+
+Runtime status and checkout now fail closed with `gift_indexes_not_ready` when
+all other gift prerequisites are enabled but the exact target indexes are not
+ready or a legacy sparse form remains. Because production's feature and worker
+flags remain false, the public status continues to report the existing
+`feature_disabled`, `refund_worker_disabled`, and `refund_worker_not_ready`
+blockers without querying or changing index state.
+
+Final local verification passed:
+
+- 18 gift suites / 234 tests, including real MongoDB sparse/partial coexistence,
+  multiple null/missing identifiers, duplicate-string rejection, idempotent
+  migration reruns, and the existing transaction/race suites;
+- 3 route-drift suites / 21 tests;
+- 21 core contract suites / 145 tests; and
+- targeted ESLint with zero warnings, Prettier, and `git diff --check`.
+
+Backend CI `30736836783` passed on the exact SHA. GitHub deployment
+`5711613219` reached Render deployment `dep-d9nek6hsrm7s73f531pg`; final
+deployment status `16242868133` succeeded. Read-only production requests on
+2026-08-02 returned HTTP 200 from `/health`, `/ready`, and
+`/api/subscription/status`. Readiness reported the database connected and the
+gift worker not required, enabled, or running. Subscription status reported
+live Stripe mode, `giftCheckoutConfigured: false`, and the same three
+disabled-worker blockers.
+
+No migration command, index write, checkout, charge, refund, email, claim,
+account, Stripe, workspace, or record mutation was invoked. Production index
+dry-run/apply/post-apply evidence is intentionally still pending explicit
+authorization. The next code gate is purchaser-attempt/Stripe checkout
+idempotency plus authoritative settlement binding; cross-device continuation
+and live Stripe rotation/webhook evidence remain separate launch gates.
