@@ -80,6 +80,8 @@ export default function FacilityTabsLayout() {
         headerShown: true,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
+        tabBarIconStyle: { display: "none" },
+        tabBarLabelPosition: "beside-icon",
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },

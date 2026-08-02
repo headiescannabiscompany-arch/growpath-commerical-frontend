@@ -92,9 +92,9 @@ const workspaceGroups: Array<{
         description: "Connect room data, sensors, and read-only import previews."
       },
       {
-        label: "AI",
-        href: "/home/facility/ai-ask",
-        description: "Open facility AI prompts, review, and helper workflows."
+        label: "AI Tools",
+        href: "/home/facility/ai-tools",
+        description: "Open facility intelligence, prompts, review, and helper workflows."
       }
     ]
   },

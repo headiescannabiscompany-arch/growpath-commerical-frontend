@@ -27,7 +27,6 @@ import { getSOPTemplates } from "@/api/sop";
 import { listTeamMembers } from "@/api/team";
 import { getVerifications } from "@/api/verification";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
-import ThemeModeSelector from "@/components/ThemeModeSelector";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { useEntitlements } from "@/entitlements";
@@ -338,7 +337,11 @@ export default function FacilityDashboardTab() {
 
   const actionRows = useMemo(
     () => [
-      { label: "AI command", detail: "Ask facility AI", to: "/home/facility/ai-ask" },
+      {
+        label: "AI Tools",
+        detail: "Open facility intelligence and AI workflows",
+        to: "/home/facility/ai-tools"
+      },
       {
         label: "Export packet",
         detail: "Reports and audit evidence",
@@ -474,8 +477,6 @@ export default function FacilityDashboardTab() {
             </View>
           </View>
         </View>
-
-        <ThemeModeSelector />
 
         <View
           style={[

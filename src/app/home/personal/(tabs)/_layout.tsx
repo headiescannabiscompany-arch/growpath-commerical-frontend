@@ -39,6 +39,8 @@ export default function PersonalTabsLayout() {
         headerShown: false,
         tabBarHideOnKeyboard: true,
         tabBarIcon: () => null,
+        tabBarIconStyle: { display: "none" },
+        tabBarLabelPosition: "beside-icon",
         sceneStyle: { backgroundColor: palette.page },
         tabBarActiveTintColor: palette.tabActive,
         tabBarInactiveTintColor: palette.tabInactive,
@@ -67,7 +69,7 @@ export default function PersonalTabsLayout() {
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: "Discovery Nature", tabBarLabel: "Nature" }}
+        options={{ title: "Discovery Nature", tabBarLabel: "Discover" }}
       />
       <Tabs.Screen name="more" options={{ title: "More", tabBarLabel: "More" }} />
       <Tabs.Screen
