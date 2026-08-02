@@ -3313,3 +3313,70 @@ shared components without changing their workflow behavior:
   team, member, credit, AI request, notification, inventory, account, session,
   workspace, billing, audit event, or record action was invoked. The five
   unfinished gift frontend files remained unstaged and outside the release.
+
+## Remaining Facility controls and destructive-action contrast
+
+Frontend `6ebb8430ce7e6ba39b3ca4733262eadb1d521255` closes the
+remaining confirmed active-palette gaps without changing Facility workflows:
+
+- Notification Center and Facility Profile switches now receive the active
+  track and thumb colors instead of relying on browser/native defaults.
+- Facility inventory loading, pull-to-refresh, and detail loading indicators
+  now use the active palette.
+- A semantic `dangerText` token keeps destructive inventory-detail actions
+  readable in both palettes. The measured contrast is 4.83:1 in Day and
+  8.28:1 in Night.
+
+Six focused suites passed all 25 tests; the final three-suite confirmation
+passed all 15 tests. Targeted source and forced-test lint, full frontend
+`tsc --noEmit`, Prettier verification, and `git diff --check` passed.
+Production Build Preflight `30726699815` and Frontend CI `30726699778`
+passed against the exact commit.
+
+Signed-in Facility Viewer production checks under resolved Night confirmed
+zero opaque light surfaces on Notification Center, Profile, Create Inventory,
+Account Workspace, Courses, and Create Course. Notification Center retained
+all seven named controls: Device push plus Task, Forum, Video, Courses/Lives,
+Commerce, and Facility notification types. The current production asset was
+`index-a27bb73bae93f4d9669d8c0e652b6c73.js`. No switch, refresh, field,
+inventory action, workspace, preference, notification, account, or record was
+changed.
+
+## Dormant gift claim and settlement safety foundation
+
+Gift checkout remains disabled in production. The following work prepares the
+feature without exposing it to customers:
+
+- Frontend `1f4da040bf38b8b7e71e1ea0fafd0c683cabcb3f` adds the dormant
+  Pro-only prepaid claim flow, authoritative billing-owner/cancellation
+  presentation, and fragment-to-local-storage token handoff. It removes
+  forgeable success/cancel query-state UI and restricts auth continuation to
+  the canonical `/claim-gift` route. Fourteen suites passed all 94 tests;
+  full TypeScript, targeted source and forced-test lint, Prettier, and patch
+  validation passed. Production Build Preflight `30727028652` and Frontend CI
+  `30727028643` passed.
+- Direct production navigation initially exposed that `/claim-gift` lacked a
+  generated static fallback. Frontend `6002c9fde48d78a084851175704108e7d7ed44fe`
+  adds that fallback, excludes the claim route from indexing, and includes it
+  in live-URL verification. Two release suites passed all eight tests; a full
+  production export produced `dist/claim-gift/index.html` with the production
+  API origin. Production Build Preflight `30727394660` and Frontend CI
+  `30727394677` passed.
+- Backend `33ce15492ce9b39c5e22dffe2d703ba5227a5286` validates the
+  exact server-side Stripe price snapshot, binds settlement to one paid
+  Checkout Session, hydrates thin Stripe events, uses leased/idempotent claim
+  delivery, emits fragment-only claim links, and makes gift expiry
+  authoritative in subscription access responses. Backend CI `30727190404`
+  passed. Render deployment `5709911116` completed successfully.
+
+Live acceptance on 2026-08-01/02 confirmed the direct claim URL returns HTTP 200. A deliberately invalid token was removed from the address bar before the
+page displayed `This gift claim link is invalid or expired`; the page had zero
+opaque light surfaces. The production API health endpoint returned 200, and
+the public subscription capability response still reported
+`giftCheckoutConfigured: false`. No real token, checkout, payment, delivery,
+claim, refund, email, subscription, account, or record mutation was used.
+
+This is not gift-launch acceptance. Atomic multi-document claim, durable
+refund/dispute revocation, the automatic refund worker, purchaser recovery
+APIs, and cross-device verification continuation remain required before the
+feature flag may be enabled.
