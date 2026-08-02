@@ -1,13 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCallback, useRef } from "react";
 
 export const GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY = "growpath_gift_checkout_attempt_v1";
 
-const CLOSED_GIFT_CHECKOUT_CODES = new Set([
-  "GIFT_CHECKOUT_ATTEMPT_CLOSED",
-  "GIFT_CHECKOUT_ATTEMPT_EXPIRED",
-  "GIFT_CHECKOUT_PROVIDER_REJECTED"
-]);
+export type GiftCheckoutAttemptPhase = "quote_only" | "checkout_requested";
 
 export type GiftCheckoutFingerprintInput = {
   plan: string;
@@ -19,24 +14,26 @@ export type GiftCheckoutFingerprintInput = {
   cancelUrl?: string;
 };
 
-type StoredGiftCheckoutAttempt = {
-  version: 1;
+export type GiftCheckoutAttemptSummary = {
+  checkoutAttemptId: string;
+  phase: GiftCheckoutAttemptPhase;
+  legacyVersion: boolean;
+};
+
+type StoredGiftCheckoutAttemptV2 = {
+  version: 2;
   fingerprintHash: string;
   checkoutAttemptId: string;
+  phase: GiftCheckoutAttemptPhase;
+};
+
+type StoredGiftCheckoutAttempt = StoredGiftCheckoutAttemptV2 & {
+  legacyVersion: boolean;
 };
 
 type MemoryGiftCheckoutAttempt = StoredGiftCheckoutAttempt & {
-  canonicalFingerprint: string;
+  canonicalFingerprint: string | null;
 };
-
-export type GiftCheckoutRunResult<T> =
-  | { started: false }
-  | { started: true; checkoutAttemptId: string; value: T };
-
-type RunGiftCheckout = <T>(
-  input: GiftCheckoutFingerprintInput,
-  operation: (checkoutAttemptId: string) => Promise<T>
-) => Promise<GiftCheckoutRunResult<T>>;
 
 let memoryAttempt: MemoryGiftCheckoutAttempt | null = null;
 
@@ -147,18 +144,31 @@ function fillFallbackRandomBytes(bytes: Uint8Array): void {
 function parseStoredAttempt(value: string | null): StoredGiftCheckoutAttempt | null {
   if (!value) return null;
   try {
-    const parsed = JSON.parse(value) as Partial<StoredGiftCheckoutAttempt>;
+    const parsed = JSON.parse(value) as Record<string, unknown>;
     if (
-      parsed.version !== 1 ||
+      ![1, 2].includes(Number(parsed.version)) ||
       !/^[0-9a-f]{32}$/i.test(String(parsed.fingerprintHash || "")) ||
       !isUuidV4(parsed.checkoutAttemptId)
     ) {
       return null;
     }
+
+    if (
+      Number(parsed.version) === 2 &&
+      !["quote_only", "checkout_requested"].includes(String(parsed.phase || ""))
+    ) {
+      return null;
+    }
+
     return {
-      version: 1,
+      version: 2,
       fingerprintHash: String(parsed.fingerprintHash).toLowerCase(),
-      checkoutAttemptId: parsed.checkoutAttemptId.toLowerCase()
+      checkoutAttemptId: String(parsed.checkoutAttemptId).toLowerCase(),
+      phase:
+        Number(parsed.version) === 1
+          ? "checkout_requested"
+          : (parsed.phase as GiftCheckoutAttemptPhase),
+      legacyVersion: Number(parsed.version) === 1
     };
   } catch {
     return null;
@@ -170,6 +180,13 @@ function checkoutAttemptStorageError(
   code = "GIFT_CHECKOUT_ATTEMPT_STORAGE_UNAVAILABLE"
 ): Error & { code: string } {
   return Object.assign(new Error(message), { code });
+}
+
+function checkoutAttemptReconcileError(): Error & { code: string } {
+  return checkoutAttemptStorageError(
+    "A gift checkout may already exist for this browser session. Reconcile it before reviewing another gift price.",
+    "GIFT_CHECKOUT_ATTEMPT_RECONCILE_REQUIRED"
+  );
 }
 
 async function readStoredAttempt(): Promise<StoredGiftCheckoutAttempt | null> {
@@ -205,7 +222,7 @@ async function readStoredAttempt(): Promise<StoredGiftCheckoutAttempt | null> {
   return parsed;
 }
 
-async function writeStoredAttempt(attempt: StoredGiftCheckoutAttempt): Promise<void> {
+async function writeStoredAttempt(attempt: StoredGiftCheckoutAttemptV2): Promise<void> {
   const value = JSON.stringify(attempt);
   try {
     if (typeof window !== "undefined") {
@@ -230,96 +247,183 @@ async function writeStoredAttempt(attempt: StoredGiftCheckoutAttempt): Promise<v
 }
 
 async function persistGiftCheckoutAttempt(
-  attempt: StoredGiftCheckoutAttempt
-): Promise<void> {
+  attempt: StoredGiftCheckoutAttemptV2
+): Promise<StoredGiftCheckoutAttempt> {
   await writeStoredAttempt(attempt);
   const verified = await readStoredAttempt();
   if (
     !verified ||
-    verified.version !== attempt.version ||
+    verified.legacyVersion ||
     verified.fingerprintHash !== attempt.fingerprintHash ||
-    verified.checkoutAttemptId !== attempt.checkoutAttemptId
+    verified.checkoutAttemptId !== attempt.checkoutAttemptId ||
+    verified.phase !== attempt.phase
   ) {
     throw checkoutAttemptStorageError(
       "Secure checkout retry storage could not be verified. No checkout was created."
     );
   }
+  return verified;
 }
 
-export async function getOrCreateGiftCheckoutAttemptId(
+function memoryValue(
+  attempt: StoredGiftCheckoutAttempt,
+  canonicalFingerprint: string | null
+): MemoryGiftCheckoutAttempt {
+  return { ...attempt, canonicalFingerprint };
+}
+
+export async function prepareGiftCheckoutQuoteAttempt(
   input: GiftCheckoutFingerprintInput
-): Promise<string> {
+): Promise<GiftCheckoutAttemptSummary> {
   const canonicalFingerprint = canonicalizeGiftCheckoutFingerprint(input);
   const fingerprintHash = hashCanonicalFingerprint(canonicalFingerprint);
+  const stored = await readStoredAttempt();
 
-  if (memoryAttempt?.canonicalFingerprint === canonicalFingerprint) {
-    await persistGiftCheckoutAttempt({
-      version: memoryAttempt.version,
-      fingerprintHash: memoryAttempt.fingerprintHash,
-      checkoutAttemptId: memoryAttempt.checkoutAttemptId
-    });
-    return memoryAttempt.checkoutAttemptId;
+  if (stored?.phase === "checkout_requested") {
+    memoryAttempt = memoryValue(
+      stored,
+      stored.fingerprintHash === fingerprintHash ? canonicalFingerprint : null
+    );
+    throw checkoutAttemptReconcileError();
   }
 
-  if (!memoryAttempt) {
-    const stored = await readStoredAttempt();
-    if (stored?.fingerprintHash === fingerprintHash) {
-      memoryAttempt = { ...stored, canonicalFingerprint };
-      return stored.checkoutAttemptId;
-    }
+  if (stored?.phase === "quote_only" && stored.fingerprintHash === fingerprintHash) {
+    memoryAttempt = memoryValue(stored, canonicalFingerprint);
+    return {
+      checkoutAttemptId: stored.checkoutAttemptId,
+      phase: stored.phase,
+      legacyVersion: false
+    };
   }
 
-  const next: MemoryGiftCheckoutAttempt = {
-    version: 1,
+  if (!stored && memoryAttempt?.phase === "checkout_requested") {
+    throw checkoutAttemptReconcileError();
+  }
+
+  const checkoutAttemptId =
+    !stored &&
+    memoryAttempt?.phase === "quote_only" &&
+    memoryAttempt.canonicalFingerprint === canonicalFingerprint
+      ? memoryAttempt.checkoutAttemptId
+      : createCheckoutAttemptId();
+  const persisted = await persistGiftCheckoutAttempt({
+    version: 2,
     fingerprintHash,
-    checkoutAttemptId: createCheckoutAttemptId(),
-    canonicalFingerprint
-  };
-  await persistGiftCheckoutAttempt({
-    version: next.version,
-    fingerprintHash: next.fingerprintHash,
-    checkoutAttemptId: next.checkoutAttemptId
+    checkoutAttemptId,
+    phase: "quote_only"
   });
-  memoryAttempt = next;
-  return next.checkoutAttemptId;
+  memoryAttempt = memoryValue(persisted, canonicalFingerprint);
+  return { checkoutAttemptId, phase: "quote_only", legacyVersion: false };
 }
 
-export async function clearGiftCheckoutAttempt(): Promise<void> {
-  memoryAttempt = null;
-  try {
-    const sessionStorage = browserSessionStorage();
-    if (typeof window !== "undefined") {
-      sessionStorage?.removeItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY);
-      return;
-    }
-    await AsyncStorage.removeItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY);
-  } catch {
-    // Checkout-attempt cleanup is best-effort.
+export async function markGiftCheckoutRequested(
+  input: GiftCheckoutFingerprintInput,
+  checkoutAttemptId: string
+): Promise<GiftCheckoutAttemptSummary> {
+  const canonicalFingerprint = canonicalizeGiftCheckoutFingerprint(input);
+  const fingerprintHash = hashCanonicalFingerprint(canonicalFingerprint);
+  const stored = await readStoredAttempt();
+
+  if (
+    !stored ||
+    stored.legacyVersion ||
+    stored.phase !== "quote_only" ||
+    stored.checkoutAttemptId !== checkoutAttemptId ||
+    stored.fingerprintHash !== fingerprintHash
+  ) {
+    throw checkoutAttemptReconcileError();
   }
+
+  const persisted = await persistGiftCheckoutAttempt({
+    version: 2,
+    fingerprintHash,
+    checkoutAttemptId,
+    phase: "checkout_requested"
+  });
+  memoryAttempt = memoryValue(persisted, canonicalFingerprint);
+  return {
+    checkoutAttemptId,
+    phase: "checkout_requested",
+    legacyVersion: false
+  };
 }
 
-export async function clearClosedGiftCheckoutAttempt(error: unknown): Promise<boolean> {
-  const code = String((error as any)?.code || "");
-  if (!CLOSED_GIFT_CHECKOUT_CODES.has(code)) return false;
-  await clearGiftCheckoutAttempt();
-  return true;
+export async function downgradeGiftCheckoutToQuoteOnly(
+  input: GiftCheckoutFingerprintInput,
+  checkoutAttemptId: string
+): Promise<GiftCheckoutAttemptSummary> {
+  const canonicalFingerprint = canonicalizeGiftCheckoutFingerprint(input);
+  const fingerprintHash = hashCanonicalFingerprint(canonicalFingerprint);
+  const stored = await readStoredAttempt();
+  if (
+    !stored ||
+    stored.legacyVersion ||
+    stored.phase !== "checkout_requested" ||
+    stored.checkoutAttemptId !== checkoutAttemptId ||
+    stored.fingerprintHash !== fingerprintHash
+  ) {
+    throw checkoutAttemptReconcileError();
+  }
+
+  const persisted = await persistGiftCheckoutAttempt({
+    version: 2,
+    fingerprintHash,
+    checkoutAttemptId,
+    phase: "quote_only"
+  });
+  memoryAttempt = memoryValue(persisted, canonicalFingerprint);
+  return {
+    checkoutAttemptId,
+    phase: "quote_only",
+    legacyVersion: false
+  };
 }
 
-export function useGiftCheckoutAttempt(): { runGiftCheckout: RunGiftCheckout } {
-  const inFlightRef = useRef(false);
+export async function getStoredGiftCheckoutAttempt(): Promise<GiftCheckoutAttemptSummary | null> {
+  const stored = await readStoredAttempt();
+  if (!stored) return null;
+  memoryAttempt = memoryValue(stored, null);
+  return {
+    checkoutAttemptId: stored.checkoutAttemptId,
+    phase: stored.phase,
+    legacyVersion: stored.legacyVersion
+  };
+}
 
-  const runGiftCheckout: RunGiftCheckout = useCallback(async (input, operation) => {
-    if (inFlightRef.current) return { started: false };
-    inFlightRef.current = true;
-
-    try {
-      const checkoutAttemptId = await getOrCreateGiftCheckoutAttemptId(input);
-      const value = await operation(checkoutAttemptId);
-      return { started: true, checkoutAttemptId, value };
-    } finally {
-      inFlightRef.current = false;
+export async function clearGiftCheckoutAttemptWhenAllowed(
+  canStartNewAttempt: boolean
+): Promise<boolean> {
+  if (canStartNewAttempt !== true) return false;
+  try {
+    if (typeof window !== "undefined") {
+      const sessionStorage = browserSessionStorage();
+      if (!sessionStorage) {
+        throw checkoutAttemptStorageError(
+          "Secure checkout retry storage is unavailable. The verified attempt was not cleared."
+        );
+      }
+      sessionStorage.removeItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY);
+      if (sessionStorage.getItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY) !== null) {
+        throw checkoutAttemptStorageError(
+          "Secure checkout retry storage could not be cleared."
+        );
+      }
+    } else {
+      await AsyncStorage.removeItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY);
+      if ((await AsyncStorage.getItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY)) !== null) {
+        throw checkoutAttemptStorageError(
+          "Secure checkout retry storage could not be cleared."
+        );
+      }
     }
-  }, []);
-
-  return { runGiftCheckout };
+  } catch (error) {
+    if ((error as any)?.code === "GIFT_CHECKOUT_ATTEMPT_STORAGE_UNAVAILABLE") {
+      throw error;
+    }
+    throw checkoutAttemptStorageError(
+      "Secure checkout retry storage could not be cleared."
+    );
+  }
+  memoryAttempt = null;
+  return true;
 }

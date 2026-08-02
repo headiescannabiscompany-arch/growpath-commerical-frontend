@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Linking,
   Platform,
@@ -16,16 +16,10 @@ import { useAuth } from "@/auth/AuthContext";
 import PaymentHelpDialog from "@/components/PaymentHelpDialog";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import {
-  formatPlanBillingNote,
-  formatPlanPrice,
-  PLAN_PRICING
-} from "@/constants/pricing";
+import { formatPlanBillingNote, formatPlanPrice } from "@/constants/pricing";
 import { BILLING_PLANS, type BillingPlanKey } from "@/features/billing/planCopy";
-import {
-  clearClosedGiftCheckoutAttempt,
-  useGiftCheckoutAttempt
-} from "@/features/billing/giftCheckoutAttempt";
+import GiftCheckoutReviewAction from "@/features/billing/GiftCheckoutReviewAction";
+import GiftCheckoutRecoveryAction from "@/features/billing/GiftCheckoutRecoveryAction";
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -87,7 +81,6 @@ export default function Offers() {
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
   const [showPaymentHelp, setShowPaymentHelp] = useState(false);
-  const { runGiftCheckout } = useGiftCheckoutAttempt();
 
   const activePlan = useMemo(() => String(ent.plan || "free"), [ent.plan]);
   const subscriptionActive = ["active", "trial", "trialing"].includes(
@@ -117,6 +110,19 @@ export default function Offers() {
   const purchasablePlans = giftMode
     ? BILLING_PLANS.filter((plan) => plan.key === "pro")
     : BILLING_PLANS;
+  const giftCheckoutMaterial = useMemo(() => {
+    return {
+      plan: "pro" as const,
+      interval,
+      recipientEmail: giftRecipientValue,
+      recipientName: giftRecipientName,
+      message: giftMessage
+    };
+  }, [giftMessage, giftRecipientName, giftRecipientValue, interval]);
+  const handleGiftFeedback = useCallback((tone: FeedbackTone, message: string) => {
+    setFeedbackTone(tone);
+    setFeedback(message);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -169,79 +175,6 @@ export default function Offers() {
 
   async function startCheckout(plan: BillingPlanKey, confirmedImmediateBilling = false) {
     if (giftMode) {
-      if (plan !== "pro") {
-        setFeedback("Only prepaid Pro gifts are supported.");
-        setFeedbackTone("error");
-        return;
-      }
-      if (!giftCheckoutConfigured) {
-        setFeedbackTone("error");
-        setFeedback(
-          "Gift subscriptions are not available yet. No checkout or payment was created."
-        );
-        return;
-      }
-      const recipient = giftRecipientValue;
-      const recipientName = giftRecipientName.trim();
-      const note = giftMessage.trim();
-
-      if (!giftRecipientValid) {
-        setFeedbackTone("error");
-        setFeedback("Enter a valid recipient email before starting a gift checkout.");
-        return;
-      }
-
-      const origin =
-        typeof window !== "undefined" && window.location ? window.location.origin : "";
-      const successUrl = origin ? `${origin}/offers` : undefined;
-      const cancelUrl = origin ? `${origin}/offers` : undefined;
-
-      await runGiftCheckout(
-        {
-          plan,
-          interval,
-          recipientEmail: recipient,
-          recipientName,
-          message: note,
-          successUrl,
-          cancelUrl
-        },
-        async (checkoutAttemptId) => {
-          setLoadingPlan(plan);
-          setFeedback("");
-          setFeedbackTone("info");
-          try {
-            const response = await createCheckoutSession({
-              plan,
-              interval,
-              giftMode: true,
-              giftRecipientEmail: recipient,
-              ...(recipientName ? { giftRecipientName: recipientName } : {}),
-              ...(note ? { giftMessage: note } : {}),
-              successUrl,
-              cancelUrl,
-              checkoutAttemptId
-            });
-            const url = checkoutUrlFromResponse(response);
-            if (!url) {
-              setFeedbackTone("error");
-              setFeedback("Checkout is unavailable. The backend did not return a URL.");
-              return;
-            }
-            await openCheckoutUrl(url);
-            setFeedbackTone("info");
-            setFeedback(
-              `Stripe gift checkout opened for ${recipient}. You can leave before payment.`
-            );
-          } catch (e: any) {
-            await clearClosedGiftCheckoutAttempt(e);
-            setFeedbackTone("error");
-            setFeedback(e?.message || "Unable to start checkout.");
-          } finally {
-            setLoadingPlan(null);
-          }
-        }
-      );
       return;
     }
 
@@ -477,6 +410,8 @@ export default function Offers() {
         )}
       </AppCard>
 
+      <GiftCheckoutRecoveryAction visible={!giftMode} />
+
       <Pressable
         accessibilityLabel="View gifts purchased by this account"
         accessibilityRole="button"
@@ -532,20 +467,19 @@ export default function Offers() {
           const confirmingImmediateBilling = pendingImmediatePlan === plan.key;
           const planTrialEligible =
             trialEligibleForPlan(plan.key) && !(subscriptionActive && current);
-          const giftBlocked = giftMode && !giftRecipientValid;
-          const buttonDisabled = loading || (!giftMode && current) || giftBlocked;
+          const buttonDisabled = loading || current;
           return (
             <AppCard key={plan.key} style={[styles.planCard, current && styles.current]}>
               <Text style={styles.eyebrow}>{plan.eyebrow}</Text>
               <Text style={styles.cardTitle}>{plan.title}</Text>
-              <Text style={styles.price}>
-                {formatPlanPrice(plan.key, interval)}
-                <Text style={styles.priceMeta}>
-                  {giftMode
-                    ? " one-time"
-                    : ` / ${interval === "monthly" ? "month" : "year"}`}
+              {!giftMode ? (
+                <Text style={styles.price}>
+                  {formatPlanPrice(plan.key, interval)}
+                  <Text style={styles.priceMeta}>
+                    {` / ${interval === "monthly" ? "month" : "year"}`}
+                  </Text>
                 </Text>
-              </Text>
+              ) : null}
               <Text style={styles.billingNote}>
                 {giftMode
                   ? `One prepaid ${interval === "monthly" ? "month" : "year"} of Pro. Starts when claimed and does not renew.`
@@ -570,36 +504,42 @@ export default function Offers() {
                 ))}
               </View>
 
-              <Pressable
-                onPress={() => startCheckout(plan.key, confirmingImmediateBilling)}
-                disabled={buttonDisabled}
-                accessibilityRole="button"
-                accessibilityState={{ disabled: buttonDisabled }}
-                accessibilityLabel={
-                  giftMode
-                    ? `Gift ${plan.title} checkout`
-                    : confirmingImmediateBilling
+              {giftMode ? (
+                <GiftCheckoutReviewAction
+                  material={giftCheckoutMaterial}
+                  recipientValid={giftRecipientValid}
+                  configured={giftCheckoutConfigured}
+                  onFeedback={handleGiftFeedback}
+                  openCheckoutUrl={openCheckoutUrl}
+                />
+              ) : (
+                <Pressable
+                  onPress={() => startCheckout(plan.key, confirmingImmediateBilling)}
+                  disabled={buttonDisabled}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: buttonDisabled }}
+                  accessibilityLabel={
+                    confirmingImmediateBilling
                       ? `Continue to paid ${plan.title} checkout`
                       : planTrialEligible
                         ? `Start ${plan.title} trial checkout`
                         : `Review paid ${plan.title} checkout`
-                }
-                style={[styles.button, buttonDisabled && styles.buttonDisabled]}
-              >
-                <Text style={styles.buttonText}>
-                  {loading
-                    ? "Starting..."
-                    : !giftMode && current
-                      ? "Current plan"
-                      : giftMode
-                        ? `Gift ${plan.title}`
+                  }
+                  style={[styles.button, buttonDisabled && styles.buttonDisabled]}
+                >
+                  <Text style={styles.buttonText}>
+                    {loading
+                      ? "Starting..."
+                      : current
+                        ? "Current plan"
                         : confirmingImmediateBilling
                           ? `Continue — billed ${formatPlanPrice(plan.key, interval)}`
                           : planTrialEligible
                             ? `Start ${trialDays}-day trial`
                             : "Review paid checkout"}
-                </Text>
-              </Pressable>
+                  </Text>
+                </Pressable>
+              )}
             </AppCard>
           );
         })}

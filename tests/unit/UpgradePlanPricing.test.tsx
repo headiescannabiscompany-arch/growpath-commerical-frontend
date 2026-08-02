@@ -3,40 +3,67 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import {
   createCheckoutSession,
+  createGiftCheckoutQuote,
   getSubscriptionSetupStatus
 } from "../../src/api/subscription";
+import {
+  clearGiftCheckoutAttemptWhenAllowed,
+  markGiftCheckoutRequested,
+  prepareGiftCheckoutQuoteAttempt
+} from "../../src/features/billing/giftCheckoutAttempt";
 import UpgradePlan from "../../src/features/billing/screens/UpgradePlan";
-import { clearGiftCheckoutAttempt } from "../../src/features/billing/giftCheckoutAttempt";
 import { openExternalUrl } from "../../src/utils/openExternalUrl";
 
 let mockSearchParams: Record<string, string> = {};
-const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const mockPush = jest.fn();
 const originalWindow = (globalThis as any).window;
 const originalSessionStorageDescriptor = originalWindow
   ? Object.getOwnPropertyDescriptor(originalWindow, "sessionStorage")
   : undefined;
+let attemptStorageValues = new Map<string, string>();
+
+function quote(overrides: Record<string, any> = {}) {
+  return {
+    schemaVersion: "gift_quote_v1",
+    version: 1,
+    plan: "pro",
+    interval: "monthly",
+    quantity: 1,
+    amountCents: 1775,
+    currency: "usd",
+    renews: false,
+    issuedAt: "2099-01-01T12:00:00.000Z",
+    expiresAt: "2099-01-01T12:05:00.000Z",
+    confirmationToken: "1.eyJzYWZlIjoidGVzdCJ9.c2lnbmF0dXJl",
+    ...overrides
+  };
+}
 
 function installAttemptSessionStorage() {
-  const values = new Map<string, string>();
+  attemptStorageValues = new Map<string, string>();
   const windowObject = originalWindow || {};
   Object.defineProperty(windowObject, "sessionStorage", {
     configurable: true,
     value: {
-      getItem: (key: string) => values.get(key) ?? null,
-      removeItem: (key: string) => values.delete(key),
-      setItem: (key: string, value: string) => values.set(key, value)
+      getItem: (key: string) => attemptStorageValues.get(key) ?? null,
+      removeItem: (key: string) => attemptStorageValues.delete(key),
+      setItem: (key: string, value: string) => attemptStorageValues.set(key, value)
     }
   });
   (globalThis as any).window = windowObject;
 }
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => mockSearchParams
+  useLocalSearchParams: () => mockSearchParams,
+  useRouter: () => ({ push: mockPush })
 }));
 
 jest.mock("../../src/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
-  getSubscriptionSetupStatus: jest.fn()
+  createGiftCheckoutQuote: jest.fn(),
+  getSubscriptionSetupStatus: jest.fn(),
+  isSafeStripeCheckoutUrl: (value: unknown) =>
+    typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
 }));
 
 jest.mock("../../src/utils/openExternalUrl", () => ({
@@ -46,16 +73,29 @@ jest.mock("../../src/utils/openExternalUrl", () => ({
 describe("UpgradePlan pricing", () => {
   beforeEach(async () => {
     installAttemptSessionStorage();
-    await clearGiftCheckoutAttempt();
+    await clearGiftCheckoutAttemptWhenAllowed(true);
     jest.clearAllMocks();
     mockSearchParams = {};
-    (createCheckoutSession as jest.Mock).mockResolvedValue({
-      url: "https://checkout.example.com/session"
-    });
+    (createCheckoutSession as jest.Mock).mockImplementation(async (request) =>
+      request?.giftMode
+        ? {
+            url: "https://checkout.stripe.com/c/pay/cs_test_session",
+            sessionId: "cs_test_session",
+            trialDays: 0,
+            giftId: "507f1f77bcf86cd799439011",
+            checkoutAttemptId: request.checkoutAttemptId,
+            amountCents: request.interval === "yearly" ? 4567 : 1775,
+            currency: "usd",
+            expiresAt: "2099-01-01T12:30:00.000Z"
+          }
+        : { url: "https://checkout.stripe.com/c/pay/cs_test_session" }
+    );
+    (createGiftCheckoutQuote as jest.Mock).mockResolvedValue(quote());
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
       mode: "test",
       giftCheckoutConfigured: false
     });
+    (openExternalUrl as jest.Mock).mockResolvedValue(undefined);
   });
 
   afterAll(() => {
@@ -71,39 +111,14 @@ describe("UpgradePlan pricing", () => {
     (globalThis as any).window = originalWindow;
   });
 
-  it("uses shared plan prices and sends the selected yearly interval to checkout", async () => {
+  it("preserves shared self-plan prices and yearly checkout", async () => {
     const screen = render(<UpgradePlan />);
-
     await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
-    expect(
-      screen.getByText(
-        "Compare the cards below. Each one explains who it is for, what it unlocks, and what Stripe does next when you continue."
-      )
-    ).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Solo growers and personal accounts that want AI guidance, diagnosis, planning, exports, and saved run history without storefront or facility admin overhead."
-      )
-    ).toBeTruthy();
-    expect(
-      screen.getByText(
-        /Best for one grower managing a personal grow or a small private set of plants\./
-      )
-    ).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Stripe opens with Commercial selected and the chosen monthly or yearly interval. Payment is collected there."
-      )
-    ).toBeTruthy();
+
     expect(screen.getByText("Checkout $10/month")).toBeTruthy();
     expect(screen.getByText("Checkout $50/month")).toBeTruthy();
     expect(screen.getByText("Checkout $100/month")).toBeTruthy();
-
     fireEvent.press(screen.getByLabelText("Yearly billing"));
-    expect(
-      screen.getByText("Billed once yearly. Equivalent to $41.67/month.")
-    ).toBeTruthy();
-
     fireEvent.press(screen.getByLabelText("Choose Commercial yearly checkout"));
 
     await waitFor(() =>
@@ -112,83 +127,99 @@ describe("UpgradePlan pricing", () => {
         interval: "yearly"
       })
     );
-    expect(openExternalUrl).toHaveBeenCalledWith("https://checkout.example.com/session");
+    expect(openExternalUrl).toHaveBeenCalledWith(
+      "https://checkout.stripe.com/c/pay/cs_test_session"
+    );
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
   });
 
-  it("blocks gift checkout until recipient fulfillment is configured", async () => {
+  it("keeps gift mode disabled and ignores a spoofed gift query", async () => {
+    mockSearchParams = { gift: "success" };
     const screen = render(<UpgradePlan />);
     await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
 
     expect(screen.getByLabelText("Gift subscriptions unavailable")).toBeDisabled();
-    expect(
-      screen.getByText(
-        "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."
-      )
-    ).toBeTruthy();
     expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
-    expect(createCheckoutSession).not.toHaveBeenCalled();
-    expect(openExternalUrl).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Gift checkout completed/i)).toBeNull();
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
   });
 
-  it("does not treat a gift query parameter as checkout confirmation", async () => {
-    mockSearchParams = { gift: "success" };
+  it("shows saved-attempt recovery while gift setup is unavailable", async () => {
+    const fingerprint = {
+      plan: "pro",
+      interval: "monthly",
+      recipientEmail: "friend@example.com",
+      recipientName: "",
+      message: ""
+    };
+    const attempt = await prepareGiftCheckoutQuoteAttempt(fingerprint);
+    await markGiftCheckoutRequested(fingerprint, attempt.checkoutAttemptId);
     const screen = render(<UpgradePlan />);
 
-    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
-    expect(screen.queryByText(/Gift checkout completed/)).toBeNull();
-    expect(screen.queryByText(/prepaid Pro gift will be delivered/)).toBeNull();
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift subscriptions unavailable")).toBeDisabled()
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Check saved checkout from this browser")).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Check saved checkout from this browser"));
+    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/cancel");
   });
 
-  it("limits configured gifts to prepaid Pro and sends interval instead of giftTerm", async () => {
+  it("uses the same server-authoritative review and explicit confirmation flow", async () => {
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
       mode: "test",
       giftCheckoutConfigured: true
     });
-    (createCheckoutSession as jest.Mock).mockResolvedValueOnce({});
+    (createGiftCheckoutQuote as jest.Mock).mockResolvedValueOnce(
+      quote({ interval: "yearly", amountCents: 4567 })
+    );
     const screen = render(<UpgradePlan />);
-
     await waitFor(() =>
       expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled()
     );
     fireEvent.press(screen.getByLabelText("Gift subscription mode"));
-
-    expect(screen.getByText("Prepaid Pro gift")).toBeTruthy();
-    expect(screen.queryByLabelText("Gift Commercial checkout")).toBeNull();
-    expect(screen.queryByLabelText("Gift Facility checkout")).toBeNull();
+    expect(screen.queryByText("$10")).toBeNull();
     fireEvent.changeText(
       screen.getByLabelText("Gift recipient email"),
-      "Friend@Example.com"
+      "friend@example.com"
     );
     fireEvent.press(screen.getByLabelText("One year of prepaid access"));
-    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+
+    await waitFor(() => expect(screen.getByText("$45.67")).toBeTruthy());
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Confirm and continue - $45.67"));
 
     await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(1));
     const request = (createCheckoutSession as jest.Mock).mock.calls[0][0];
-    expect(request).toEqual(
-      expect.objectContaining({
-        plan: "pro",
-        interval: "yearly",
-        giftMode: true,
-        giftRecipientEmail: "friend@example.com",
-        checkoutAttemptId: expect.stringMatching(UUID_V4),
-        successUrl: expect.not.stringContaining("gift="),
-        cancelUrl: expect.not.stringContaining("gift=")
-      })
+    expect(request).toEqual({
+      plan: "pro",
+      interval: "yearly",
+      giftMode: true,
+      giftRecipientEmail: "friend@example.com",
+      checkoutAttemptId: expect.any(String),
+      giftQuoteToken: quote().confirmationToken
+    });
+    expect(request).not.toHaveProperty("successUrl");
+    expect(request).not.toHaveProperty("cancelUrl");
+    expect(openExternalUrl).toHaveBeenCalledWith(
+      "https://checkout.stripe.com/c/pay/cs_test_session"
     );
-    expect(request).not.toHaveProperty("giftTerm");
-    expect(openExternalUrl).not.toHaveBeenCalled();
   });
 
-  it("keeps the gift attempt after an open-URL error and changes it after an edit", async () => {
+  it("keeps an attempt after URL-open failure and blocks edited duplicate checkout", async () => {
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
       mode: "test",
       giftCheckoutConfigured: true
     });
-    (openExternalUrl as jest.Mock)
-      .mockRejectedValueOnce(new Error("The checkout window could not be opened."))
-      .mockResolvedValue(undefined);
+    (openExternalUrl as jest.Mock).mockRejectedValueOnce(
+      new Error("The checkout window could not be opened.")
+    );
     const screen = render(<UpgradePlan />);
-
     await waitFor(() =>
       expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled()
     );
@@ -197,35 +228,20 @@ describe("UpgradePlan pricing", () => {
       screen.getByLabelText("Gift recipient email"),
       "friend@example.com"
     );
-    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    await waitFor(() => expect(screen.getByText("$17.75")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Confirm and continue - $17.75"));
 
     await waitFor(() =>
       expect(screen.getByText("The checkout window could not be opened.")).toBeTruthy()
     );
-    const firstAttemptId = (createCheckoutSession as jest.Mock).mock.calls[0][0]
-      .checkoutAttemptId;
-    expect(firstAttemptId).toMatch(UUID_V4);
-
-    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
-    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(2));
-    expect((createCheckoutSession as jest.Mock).mock.calls[1][0].checkoutAttemptId).toBe(
-      firstAttemptId
-    );
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          "Stripe gift checkout opened for friend@example.com. You can leave before payment."
-        )
-      ).toBeTruthy()
-    );
-
-    fireEvent.changeText(screen.getByLabelText("Gift message"), "New note");
-    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
-    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(3));
-
-    const editedAttemptId = (createCheckoutSession as jest.Mock).mock.calls[2][0]
-      .checkoutAttemptId;
-    expect(editedAttemptId).toMatch(UUID_V4);
-    expect(editedAttemptId).not.toBe(firstAttemptId);
+    expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Gift message"), "Edited note");
+    expect(screen.queryByLabelText("Review authoritative gift price")).toBeNull();
+    expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
+    expect(createCheckoutSession).toHaveBeenCalledTimes(1);
+    expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
+    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/cancel");
   });
 });

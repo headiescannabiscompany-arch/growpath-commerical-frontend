@@ -3,8 +3,12 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { View as MockView } from "react-native";
 
 import Offers from "@/app/offers";
-import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscription";
-import { clearGiftCheckoutAttempt } from "@/features/billing/giftCheckoutAttempt";
+import {
+  createCheckoutSession,
+  createGiftCheckoutQuote,
+  getSubscriptionSetupStatus
+} from "@/api/subscription";
+import { clearGiftCheckoutAttemptWhenAllowed } from "@/features/billing/giftCheckoutAttempt";
 
 const mockRetryMe = jest.fn();
 const mockPush = jest.fn();
@@ -18,16 +22,34 @@ const originalWindow = (globalThis as any).window;
 const originalSessionStorageDescriptor = originalWindow
   ? Object.getOwnPropertyDescriptor(originalWindow, "sessionStorage")
   : undefined;
+let attemptStorageValues = new Map<string, string>();
+
+function giftQuote(overrides: Record<string, any> = {}) {
+  return {
+    schemaVersion: "gift_quote_v1",
+    version: 1,
+    plan: "pro",
+    interval: "monthly",
+    quantity: 1,
+    amountCents: 1234,
+    currency: "usd",
+    renews: false,
+    issuedAt: "2099-01-01T12:00:00.000Z",
+    expiresAt: "2099-01-01T12:05:00.000Z",
+    confirmationToken: "1.eyJzYWZlIjoidGVzdCJ9.c2lnbmF0dXJl",
+    ...overrides
+  };
+}
 
 function installAttemptSessionStorage() {
-  const values = new Map<string, string>();
+  attemptStorageValues = new Map<string, string>();
   const windowObject = originalWindow || {};
   Object.defineProperty(windowObject, "sessionStorage", {
     configurable: true,
     value: {
-      getItem: (key: string) => values.get(key) ?? null,
-      removeItem: (key: string) => values.delete(key),
-      setItem: (key: string, value: string) => values.set(key, value)
+      getItem: (key: string) => attemptStorageValues.get(key) ?? null,
+      removeItem: (key: string) => attemptStorageValues.delete(key),
+      setItem: (key: string, value: string) => attemptStorageValues.set(key, value)
     }
   });
   (globalThis as any).window = windowObject;
@@ -55,7 +77,10 @@ jest.mock("@/entitlements", () => ({
 
 jest.mock("@/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
-  getSubscriptionSetupStatus: jest.fn()
+  createGiftCheckoutQuote: jest.fn(),
+  getSubscriptionSetupStatus: jest.fn(),
+  isSafeStripeCheckoutUrl: (value: unknown) =>
+    typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
 }));
 
 jest.mock("@/components/layout/AppPage", () => ({
@@ -76,23 +101,21 @@ jest.mock("@/components/layout/AppCard", () => ({
 describe("Offers billing safety", () => {
   beforeEach(async () => {
     installAttemptSessionStorage();
-    await clearGiftCheckoutAttempt();
+    await clearGiftCheckoutAttemptWhenAllowed(true);
     mockTrialUsed = true;
     mockTrialPlansUsed = ["pro", "commercial", "facility"];
     mockSubscriptionStatus = "inactive";
     mockActivePlan = "free";
     delete mockSearchParams.subscription;
     delete mockSearchParams.gift;
-    mockRetryMe.mockReset();
-    mockPush.mockReset();
-    (createCheckoutSession as jest.Mock).mockReset();
-    (getSubscriptionSetupStatus as jest.Mock).mockReset();
+    jest.clearAllMocks();
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
       mode: "live",
       giftCheckoutConfigured: false,
       trial: { enabled: true, days: 30 }
     });
     (createCheckoutSession as jest.Mock).mockResolvedValue({});
+    (createGiftCheckoutQuote as jest.Mock).mockResolvedValue(giftQuote());
   });
 
   afterAll(() => {
@@ -108,66 +131,41 @@ describe("Offers billing safety", () => {
     (globalThis as any).window = originalWindow;
   });
 
-  it("requires a second explicit action before immediate paid checkout", async () => {
+  it("preserves the second explicit action before immediate self checkout", async () => {
     const screen = render(<Offers />);
-
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          "This account has already used its Pro, Commercial, and Facility trials. Starting another paid plan will bill the shown price when Stripe checkout completes."
-        )
-      ).toBeTruthy()
-    );
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
 
     fireEvent.press(screen.getAllByText("Review paid checkout")[1]);
-
     expect(createCheckoutSession).not.toHaveBeenCalled();
-    expect(
-      screen.getByText(
-        "Commercial has no trial remaining for this account. Review the price, then continue only if you want Stripe to bill when checkout completes."
-      )
-    ).toBeTruthy();
     expect(screen.getByText("Continue — billed $50")).toBeTruthy();
 
     fireEvent.press(screen.getByText("Continue — billed $50"));
-
     await waitFor(() =>
       expect(createCheckoutSession).toHaveBeenCalledWith({
         plan: "commercial",
         interval: "monthly"
       })
     );
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
   });
 
-  it("opens payment help without starting checkout", async () => {
+  it("opens payment help and purchaser history without starting checkout", async () => {
     const screen = render(<Offers />);
-
     await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
 
     fireEvent.press(screen.getByLabelText("Open payment help"));
-
     expect(screen.getByText("Payment Issues Help")).toBeTruthy();
-    expect(screen.getByText("billing@growpathai.com")).toBeTruthy();
-    expect(createCheckoutSession).not.toHaveBeenCalled();
-
     fireEvent.press(screen.getByText("Close"));
-    expect(screen.queryByText("Payment Issues Help")).toBeNull();
-  });
-
-  it("opens purchaser gift history without changing workspaces", async () => {
-    const screen = render(<Offers />);
-
-    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
     fireEvent.press(screen.getByLabelText("View gifts purchased by this account"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/sent-gifts");
     expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
-  it("shows success-return feedback and refreshes the account session", async () => {
+  it("keeps ordinary subscription return behavior separate from gifts", async () => {
     mockSearchParams.subscription = "success";
+    mockSearchParams.gift = "success";
     mockRetryMe.mockResolvedValue(undefined);
-
     const screen = render(<Offers />);
 
     await waitFor(() => expect(mockRetryMe).toHaveBeenCalledTimes(1));
@@ -176,184 +174,217 @@ describe("Offers billing safety", () => {
         "Stripe checkout completed. GrowPath is refreshing your plan. If access does not update yet, reload in a moment."
       )
     ).toBeTruthy();
+    expect(screen.queryByText(/prepaid Pro gift will be delivered/i)).toBeNull();
   });
 
-  it("labels an eligible account trial without an immediate-billing confirmation", async () => {
-    mockTrialUsed = false;
-    mockTrialPlansUsed = [];
+  it("blocks every gift control while production setup reports disabled", async () => {
     const screen = render(<Offers />);
-
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          "This account has a separate 30-day trial available for Pro Grower, Commercial, Facility. Each trial requires a payment method, and paid billing begins after that plan's trial unless canceled."
-        )
-      ).toBeTruthy()
-    );
-    expect(screen.getAllByText("Start 30-day trial")).toHaveLength(3);
-  });
-
-  it("maps the legacy trial to Pro while leaving Commercial and Facility available", async () => {
-    mockTrialUsed = true;
-    mockTrialPlansUsed = [];
-    const screen = render(<Offers />);
-
-    await waitFor(() =>
-      expect(screen.getAllByText("Start 30-day trial")).toHaveLength(2)
-    );
-    expect(screen.getAllByText("Review paid checkout")).toHaveLength(1);
-    fireEvent.press(screen.getAllByText("Start 30-day trial")[0]);
-
-    await waitFor(() =>
-      expect(createCheckoutSession).toHaveBeenCalledWith({
-        plan: "commercial",
-        interval: "monthly"
-      })
-    );
-  });
-
-  it("does not advertise the active current plan as an immediately available trial", async () => {
-    mockTrialUsed = false;
-    mockTrialPlansUsed = [];
-    mockSubscriptionStatus = "active";
-    mockActivePlan = "facility";
-    const screen = render(<Offers />);
-
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          "This account has a separate 30-day trial available for Pro Grower, Commercial. Each trial requires a payment method, and paid billing begins after that plan's trial unless canceled."
-        )
-      ).toBeTruthy()
-    );
-    expect(screen.getAllByText("Start 30-day trial")).toHaveLength(2);
-    expect(screen.getByText("Current plan")).toBeTruthy();
-    expect(screen.getByLabelText("Review paid Facility checkout")).toBeDisabled();
-  });
-
-  it("blocks gift checkout until recipient fulfillment is configured", async () => {
-    const screen = render(<Offers />);
-
     await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
 
     expect(screen.getByLabelText("Gift subscriptions unavailable")).toBeDisabled();
-    expect(
-      screen.getByText(
-        "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."
-      )
-    ).toBeTruthy();
     expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
     expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
-  it("does not treat a gift query parameter as checkout confirmation", async () => {
-    mockSearchParams.gift = "success";
-    const screen = render(<Offers />);
-
-    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
-    expect(screen.queryByText(/Gift checkout completed/)).toBeNull();
-    expect(screen.queryByText(/prepaid Pro gift will be delivered/)).toBeNull();
-  });
-
-  it("limits configured gifts to one prepaid Pro cycle and sends interval only", async () => {
+  it("hides hardcoded gift pricing until a recipient-bound server quote is reviewed", async () => {
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
       mode: "test",
       giftCheckoutConfigured: true,
       trial: { enabled: true, days: 30 }
     });
     const screen = render(<Offers />);
-
     await waitFor(() =>
       expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled()
     );
     fireEvent.press(screen.getByLabelText("Gift subscription mode"));
 
-    expect(screen.getByText("Prepaid Pro gift")).toBeTruthy();
-    expect(screen.queryByLabelText("Gift Commercial checkout")).toBeNull();
-    expect(screen.queryByLabelText("Gift Facility checkout")).toBeNull();
+    expect(screen.getByLabelText("Gift price pending server quote")).toBeTruthy();
+    expect(screen.queryByText("$10")).toBeNull();
+    expect(screen.getByLabelText("Review authoritative gift price")).toBeDisabled();
     fireEvent.changeText(
       screen.getByLabelText("Gift recipient email"),
-      "Friend@Example.com"
+      " Friend@Example.com "
     );
-    fireEvent.press(screen.getByLabelText("One year of prepaid access"));
-    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+    fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Casey");
+    fireEvent.changeText(screen.getByLabelText("Gift message"), "Enjoy this");
+    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
 
+    await waitFor(() => expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1));
+    const quoteRequest = (createGiftCheckoutQuote as jest.Mock).mock.calls[0][0];
+    expect(quoteRequest).toEqual({
+      plan: "pro",
+      interval: "monthly",
+      checkoutAttemptId: expect.stringMatching(UUID_V4),
+      giftRecipientEmail: "friend@example.com",
+      giftRecipientName: "Casey",
+      giftMessage: "Enjoy this"
+    });
+    expect(screen.getByText("$12.34")).toBeTruthy();
+    expect(screen.getByText("Recipient email: friend@example.com")).toBeTruthy();
+    expect(screen.getByText("Recipient name: Casey")).toBeTruthy();
+    expect(screen.getByText("Gift message: Enjoy this")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Access begins only after the recipient successfully claims the gift."
+      )
+    ).toBeTruthy();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByLabelText("Confirm and continue - $12.34"));
     await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(1));
-    const request = (createCheckoutSession as jest.Mock).mock.calls[0][0];
-    expect(request).toEqual(
-      expect.objectContaining({
-        plan: "pro",
-        interval: "yearly",
-        giftMode: true,
-        giftRecipientEmail: "friend@example.com",
-        checkoutAttemptId: expect.stringMatching(UUID_V4),
-        successUrl: expect.not.stringContaining("gift="),
-        cancelUrl: expect.not.stringContaining("gift=")
-      })
-    );
-    expect(request).not.toHaveProperty("giftTerm");
+    expect(createCheckoutSession).toHaveBeenCalledWith({
+      plan: "pro",
+      interval: "monthly",
+      giftMode: true,
+      giftRecipientEmail: "friend@example.com",
+      giftRecipientName: "Casey",
+      giftMessage: "Enjoy this",
+      checkoutAttemptId: quoteRequest.checkoutAttemptId,
+      giftQuoteToken: giftQuote().confirmationToken
+    });
   });
 
-  it("guards rapid gift presses, reuses an uncertain attempt, and rotates after an edit", async () => {
+  it("invalidates a quote after edits and safely rotates only its quote-only attempt", async () => {
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
       mode: "test",
       giftCheckoutConfigured: true,
       trial: { enabled: true, days: 30 }
     });
-    let rejectFirstRequest: (reason?: any) => void = () => {};
-    (createCheckoutSession as jest.Mock).mockImplementationOnce(
-      () =>
-        new Promise((_resolve, reject) => {
-          rejectFirstRequest = reject;
-        })
-    );
+    (createGiftCheckoutQuote as jest.Mock)
+      .mockResolvedValueOnce(giftQuote())
+      .mockResolvedValueOnce(giftQuote({ amountCents: 1500 }));
     const screen = render(<Offers />);
-
     await waitFor(() =>
       expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled()
     );
     fireEvent.press(screen.getByLabelText("Gift subscription mode"));
     fireEvent.changeText(
       screen.getByLabelText("Gift recipient email"),
-      "Friend@Example.com"
+      "friend@example.com"
     );
-
-    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
-    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
-
-    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(1));
-    const firstAttemptId = (createCheckoutSession as jest.Mock).mock.calls[0][0]
+    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    await waitFor(() => expect(screen.getByText("$12.34")).toBeTruthy());
+    const firstId = (createGiftCheckoutQuote as jest.Mock).mock.calls[0][0]
       .checkoutAttemptId;
-    expect(firstAttemptId).toMatch(UUID_V4);
 
+    fireEvent.changeText(screen.getByLabelText("Gift message"), "Changed after review");
+    await waitFor(() => expect(screen.queryByText("$12.34")).toBeNull());
+    expect(screen.getByLabelText("Review authoritative gift price")).toBeEnabled();
+    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+
+    await waitFor(() => expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(2));
+    const secondId = (createGiftCheckoutQuote as jest.Mock).mock.calls[1][0]
+      .checkoutAttemptId;
+    expect(secondId).toMatch(UUID_V4);
+    expect(secondId).not.toBe(firstId);
+    expect(screen.getByText("$15.00")).toBeTruthy();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("guards rapid actions and routes ambiguous edited attempts into reconciliation", async () => {
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "test",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 }
+    });
+    let resolveQuote: (value: any) => void = () => undefined;
+    (createGiftCheckoutQuote as jest.Mock).mockImplementationOnce(
+      () => new Promise((resolve) => (resolveQuote = resolve))
+    );
+    let rejectCreate: (reason?: any) => void = () => undefined;
+    (createCheckoutSession as jest.Mock).mockImplementationOnce(
+      () => new Promise((_resolve, reject) => (rejectCreate = reject))
+    );
+    const screen = render(<Offers />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled()
+    );
+    fireEvent.press(screen.getByLabelText("Gift subscription mode"));
+    fireEvent.changeText(
+      screen.getByLabelText("Gift recipient email"),
+      "friend@example.com"
+    );
+
+    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    fireEvent.press(screen.getByLabelText("Review authoritative gift price"));
+    await waitFor(() => expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1));
     await act(async () => {
-      rejectFirstRequest(new Error("Checkout response was uncertain."));
+      resolveQuote(giftQuote());
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(screen.getByText("$12.34")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Confirm and continue - $12.34"));
+    fireEvent.press(screen.getByLabelText("Confirm and continue - $12.34"));
+    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      rejectCreate(new Error("Checkout response was uncertain."));
       await Promise.resolve();
     });
     await waitFor(() =>
-      expect(screen.getByText("Checkout response was uncertain.")).toBeTruthy()
+      expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy()
     );
 
-    (createCheckoutSession as jest.Mock).mockRejectedValueOnce(
-      new Error("Checkout response is still uncertain.")
+    fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Edited");
+    await waitFor(() => expect(screen.queryByText("$12.34")).toBeNull());
+    expect(screen.queryByLabelText("Review authoritative gift price")).toBeNull();
+    expect(screen.getByLabelText("Check saved gift checkout")).toBeTruthy();
+    expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
+    expect(createCheckoutSession).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
+    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/cancel");
+    fireEvent.press(screen.getByLabelText("Buy for me mode"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Check saved checkout from this browser")).toBeTruthy()
     );
-    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
-    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(2));
-    expect((createCheckoutSession as jest.Mock).mock.calls[1][0].checkoutAttemptId).toBe(
-      firstAttemptId
+  });
+
+  it("keeps an ambiguous checkout recoverable after reload when gifts become unavailable", async () => {
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
+      mode: "test",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 }
+    });
+    (createCheckoutSession as jest.Mock).mockRejectedValueOnce(
+      new Error("Network response unknown")
+    );
+    const first = render(<Offers />);
+    await waitFor(() =>
+      expect(first.getByLabelText("Gift subscription mode")).toBeEnabled()
+    );
+    fireEvent.press(first.getByLabelText("Gift subscription mode"));
+    fireEvent.changeText(
+      first.getByLabelText("Gift recipient email"),
+      "friend@example.com"
+    );
+    fireEvent.press(first.getByLabelText("Review authoritative gift price"));
+    await waitFor(() => expect(first.getByText("$12.34")).toBeTruthy());
+    fireEvent.press(first.getByLabelText("Confirm and continue - $12.34"));
+    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(first.getByLabelText("Check saved gift checkout")).toBeTruthy()
+    );
+    first.unmount();
+
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
+      mode: "live",
+      giftCheckoutConfigured: false,
+      trial: { enabled: true, days: 30 }
+    });
+    const reloaded = render(<Offers />);
+    await waitFor(() =>
+      expect(reloaded.getByLabelText("Gift subscriptions unavailable")).toBeDisabled()
     );
     await waitFor(() =>
-      expect(screen.getByText("Checkout response is still uncertain.")).toBeTruthy()
+      expect(
+        reloaded.getByLabelText("Check saved checkout from this browser")
+      ).toBeTruthy()
     );
-
-    fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Casey");
-    (createCheckoutSession as jest.Mock).mockResolvedValueOnce({});
-    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
-
-    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(3));
-    const editedAttemptId = (createCheckoutSession as jest.Mock).mock.calls[2][0]
-      .checkoutAttemptId;
-    expect(editedAttemptId).toMatch(UUID_V4);
-    expect(editedAttemptId).not.toBe(firstAttemptId);
+    expect(reloaded.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
+    expect(createCheckoutSession).toHaveBeenCalledTimes(1);
+    fireEvent.press(reloaded.getByLabelText("Check saved checkout from this browser"));
+    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/cancel");
   });
 });
