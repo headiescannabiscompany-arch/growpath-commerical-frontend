@@ -595,6 +595,7 @@ export default function DiscoverDirectory() {
 const styles = StyleSheet.create({
   title: { color: "#111827", fontSize: 26, fontWeight: "800" },
   subtitle: { color: "#64748B", marginTop: 4 },
+  searchCard: { gap: 10 },
   input: {
     borderColor: "#CBD5E1",
     borderRadius: radius.card,

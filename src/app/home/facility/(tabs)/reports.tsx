@@ -661,6 +661,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   buttonDisabled: { opacity: 0.6 },
+  buttonText: { fontWeight: "900" },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" },
   success: { fontWeight: "800", marginBottom: 8 },
   exportHeader: {

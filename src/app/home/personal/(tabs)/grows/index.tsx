@@ -236,41 +236,43 @@ export default function PersonalGrowsRoute() {
     { label: "Flowering", value: statusCounts.flowering },
     { label: "Harvested", value: statusCounts.harvested }
   ];
-  const roadmapActions = latestGrow
-    ? [
-        { href: growHref(latestGrow.id), label: "Open Grow", primary: true },
-        { href: growHref(latestGrow.id, "journal"), label: "Journal" },
-        { href: growHref(latestGrow.id, "tasks"), label: "Tasks" },
-        { href: growHref(latestGrow.id, "timeline"), label: "Timeline" },
-        { href: growHref(latestGrow.id, "tools"), label: "AI Tools" }
-      ]
-    : [
-        { href: "/home/personal/grows/new", label: "Create Grow", primary: true },
-        { href: "/home/personal/tools", label: "Open AI Tools" },
-        { href: "/home/personal/diagnose", label: "Run Diagnosis" },
-        { href: "/home/personal/tasks", label: "Open Tasks" }
-      ];
-  const growToolsActions = latestGrow
-    ? [
-        {
-          href: `/home/personal/tools/integrations?growId=${id}`,
-          label: "Integrations"
-        },
-        {
-          href: `/home/personal/tools/pdf-export?growId=${id}`,
-          label: "PDF Export"
-        }
-      ]
-    : [
-        {
-          href: "/home/personal/tools/integrations?growId=",
-          label: "Integrations"
-        },
-        {
-          href: "/home/personal/tools/pdf-export?growId=",
-          label: "PDF Export"
-        }
-      ];
+  const roadmapActions: Array<{ href: string; label: string; primary?: boolean }> =
+    latestGrow
+      ? [
+          { href: growHref(latestGrow.id), label: "Open Grow", primary: true },
+          { href: growHref(latestGrow.id, "journal"), label: "Journal" },
+          { href: growHref(latestGrow.id, "tasks"), label: "Tasks" },
+          { href: growHref(latestGrow.id, "timeline"), label: "Timeline" },
+          { href: growHref(latestGrow.id, "tools"), label: "AI Tools" }
+        ]
+      : [
+          { href: "/home/personal/grows/new", label: "Create Grow", primary: true },
+          { href: "/home/personal/tools", label: "Open AI Tools" },
+          { href: "/home/personal/diagnose", label: "Run Diagnosis" },
+          { href: "/home/personal/tasks", label: "Open Tasks" }
+        ];
+  const growToolsActions: Array<{ href: string; label: string; primary?: boolean }> =
+    latestGrow
+      ? [
+          {
+            href: `/home/personal/tools/integrations?growId=${id}`,
+            label: "Integrations"
+          },
+          {
+            href: `/home/personal/tools/pdf-export?growId=${id}`,
+            label: "PDF Export"
+          }
+        ]
+      : [
+          {
+            href: "/home/personal/tools/integrations?growId=",
+            label: "Integrations"
+          },
+          {
+            href: "/home/personal/tools/pdf-export?growId=",
+            label: "PDF Export"
+          }
+        ];
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);

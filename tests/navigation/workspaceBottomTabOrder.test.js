@@ -14,11 +14,23 @@ function expectOrder(contents, names) {
   }
 }
 
+function screenBlock(contents, name) {
+  const nameIndex = contents.indexOf(`name="${name}"`);
+  expect(nameIndex).toBeGreaterThan(-1);
+  const nextScreen = contents.indexOf("<Tabs.Screen", nameIndex + 1);
+  return contents.slice(nameIndex, nextScreen === -1 ? undefined : nextScreen);
+}
+
 describe("workspace bottom-tab order", () => {
-  it("keeps Personal learning visible in task-first order", () => {
+  it("keeps six readable Personal destinations in task-first order", () => {
     const contents = source("src/app/home/personal/(tabs)/_layout.tsx");
-    expectOrder(contents, ["index", "grows", "tools", "community", "courses", "profile"]);
-    expect(contents).toContain('name="courses" options={{ title: "Courses" }}');
+    expectOrder(contents, ["index", "grows", "community", "discover", "more", "profile"]);
+    expect(contents).toContain(
+      'name="tools" options={{ href: null, tabBarButton: () => null }}'
+    );
+    expect(contents).toContain(
+      'name="courses" options={{ href: null, tabBarButton: () => null }}'
+    );
   });
 
   it("keeps Commercial compact navigation task-first without hiding workspaces", () => {
@@ -28,41 +40,27 @@ describe("workspace bottom-tab order", () => {
       "index",
       "storefront/index",
       "grows/index",
+      "community",
+      "more",
+      "profile"
+    ]);
+    expect(contents).not.toContain("const compactSecondaryHref");
+    [
       "tools/index",
       "discover",
       "courses",
-      "community",
-      "profile",
       "products/index",
       "feed",
       "lives",
       "orders",
       "inventory",
-      "analytics",
-      "more"
-    ]);
-    expect(contents).not.toContain("const compactSecondaryHref");
-    expect(contents).toContain('name="courses" options={{ title: "Courses" }}');
-    expect(contents).toContain(
-      'name="lives"\n        options={{ title: "Lives", href: null, tabBarButton: () => null }}'
-    );
-    expect(contents).toMatch(
-      /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?href: null,[\s\S]*?headerShown: false/
-    );
-    expect(contents).toContain(
-      'name="analytics"\n        options={{\n          title: "Analytics",\n          href: null,\n          tabBarButton: () => null,\n          headerShown: false\n        }}'
-    );
+      "analytics"
+    ].forEach((name) => expect(screenBlock(contents, name)).toContain("href: null"));
     expect(contents).toContain('name="community"');
-    expect(contents).toContain('tabBarLabel: compactTabs ? "Forum" : "Forum / Q&A"');
-    expect(contents).toContain(
-      'name="products/index"\n        options={{ title: "Products", href: null, tabBarButton: () => null }}'
-    );
-    expect(contents).toContain(
-      'name="feed"\n        options={{\n          title: "Feed / Campaigns",\n          href: null,'
-    );
+    expect(contents).toContain('tabBarLabel: "Forum"');
     expect(contents).toContain('name="more"');
     expect(contents).toContain(
-      'name="more"\n        options={{\n          title: "More",\n          href: null,\n          tabBarButton: () => null,\n          headerShown: false\n        }}'
+      'options={{ title: "More", tabBarLabel: "More", headerShown: false }}'
     );
     expect(contents).toContain(
       'name="storefront/edit"\n        options={{\n          title: "Edit Storefront",\n          href: null,\n          tabBarButton: () => null,\n          headerShown: false\n        }}'
@@ -83,32 +81,38 @@ describe("workspace bottom-tab order", () => {
       "/home/commercial/profile",
       "/home/commercial/tools"
     ].forEach((href) => expect(more).toContain(`href: "${href}"`));
-    expect(contents).toContain(
-      'name="tools/library"\n        options={{ href: null, title: "Tool Library", tabBarButton: () => null }}'
-    );
-    expect(contents).toContain(
-      'name="tasks"\n        options={{ title: "Tasks", href: null, tabBarButton: () => null }}'
-    );
+    expect(screenBlock(contents, "tools/library")).toContain("href: null");
+    expect(screenBlock(contents, "tasks")).toContain("href: null");
   });
 
-  it("centers Commercial text-only tabs without reserving an empty icon row", () => {
-    const contents = source("src/app/home/commercial/_layout.tsx");
+  it("centers every workspace text-only tab without reserving an icon row", () => {
+    const contents = source("src/navigation/workspaceTabOptions.ts");
 
     expect(contents).toContain('tabBarLabelPosition: "beside-icon"');
     expect(contents).toContain("tabBarIcon: () => null");
     expect(contents).toContain('tabBarIconStyle: { display: "none" }');
-    expect(contents).toContain("fontSize: compactTabs ? 11 : 12");
+    expect(contents).toContain("fontSize: compact ? 10 : 12");
     expect(contents).toContain("marginStart: 0");
     expect(contents).toContain("marginEnd: 0");
   });
 
-  it("keeps the five Facility compact destinations in task-first order", () => {
+  it("keeps six readable Facility destinations in task-first order", () => {
     const contents = source("src/app/home/facility/(tabs)/_layout.tsx");
-    expectOrder(contents, ["dashboard", "rooms", "tasks", "ai-ask", "profile"]);
-    expect(contents).toContain("href: compactTabs ? null : undefined");
+    const more = source("src/app/home/facility/(tabs)/more.tsx");
+    expectOrder(contents, [
+      "dashboard",
+      "grows",
+      "tasks",
+      "compliance",
+      "more",
+      "profile"
+    ]);
+    expect(contents).toContain('tabBarLabel: "Dashboard"');
+    expect(contents).toContain('tabBarLabel: "Compliance"');
     expect(contents).toContain(
       'name="logs"\n        options={{ title: "Logs", href: null, tabBarButton: () => null }}'
     );
+    expect(more).toContain('href: "/home/facility/ai-tools"');
   });
 
   it("keeps legacy Facility navigation anchored to the live shell order", () => {

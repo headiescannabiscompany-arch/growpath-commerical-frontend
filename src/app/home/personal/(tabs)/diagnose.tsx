@@ -1253,7 +1253,9 @@ export default function DiagnoseRoute({
                       evidenceUsed: result.evidence,
                       counterEvidence: result.counterEvidence,
                       missingInformation: result.missingData,
-                      limitations: result.limitations || []
+                      // Limitations render in the provider-detail section below; do not
+                      // duplicate the same lines in the shared evidence review.
+                      limitations: []
                     })
                   : null
               }

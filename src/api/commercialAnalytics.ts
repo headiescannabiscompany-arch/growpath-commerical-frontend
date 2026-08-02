@@ -54,6 +54,7 @@ export type CommercialAnalyticsEvent = {
   commercialAccountId?: string;
   storefrontSlug?: string;
   productId?: string;
+  courseId?: string;
   targetUrl?: string;
   source?: string;
   metadata?: Record<string, any>;

@@ -215,7 +215,142 @@ export default function ForumRoute() {
           >
             Forum / Q&A
           </Text>
+          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
+            Discussion, Q&A, grow help, course/product/live questions, and community
+            replies. Promotional feed placements around this page are campaign ads, not
+            forum threads.
+          </Text>
         </View>
+      </View>
+
+      {canPost ? (
+        <View style={styles.composerGrid}>
+          <Link href="/forum/new-post" asChild>
+            <Pressable
+              style={[
+                styles.composer,
+                { backgroundColor: palette.accentSoft, borderColor: palette.accent }
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Create forum post"
+            >
+              <Text style={[styles.composerTitle, { color: palette.accent }]}>
+                New Discussion
+              </Text>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                Ask or share with growers like you.
+              </Text>
+            </Pressable>
+          </Link>
+          <Link
+            href={{
+              pathname: "/forum/new-post",
+              params: {
+                purpose: "diagnosis",
+                title: "Diagnosis help: ",
+                body: "What I am seeing:\n\nWhat changed recently:\n\nEnvironment / feeding details:\n"
+              }
+            }}
+            asChild
+          >
+            <Pressable
+              style={[
+                styles.quickComposer,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Ask forum for diagnosis help"
+            >
+              <Text style={[styles.quickComposerTitle, { color: palette.text }]}>
+                Ask for Diagnosis Help
+              </Text>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                Start with a useful issue template and add photos.
+              </Text>
+            </Pressable>
+          </Link>
+          <Link
+            href={{
+              pathname: "/forum/new-post",
+              params: { purpose: "grow_update", title: "Grow update: " }
+            }}
+            asChild
+          >
+            <Pressable
+              style={[
+                styles.quickComposer,
+                { backgroundColor: palette.surface, borderColor: palette.border }
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Share a grow update to forum"
+            >
+              <Text style={[styles.quickComposerTitle, { color: palette.text }]}>
+                Share a Grow Update
+              </Text>
+              <Text style={[styles.cardText, { color: palette.textMuted }]}>
+                Attach the grow from its dashboard for full context.
+              </Text>
+            </Pressable>
+          </Link>
+        </View>
+      ) : null}
+
+      {!isSignedIn ? (
+        <View
+          style={[
+            styles.publicAccessCard,
+            { backgroundColor: palette.surface, borderColor: palette.border }
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: palette.text }]}>
+            Sign in to browse Forum / Q&A
+          </Text>
+          <Text style={[styles.cardText, { color: palette.textMuted }]}>
+            Public visitors can learn what the GrowPath Forum covers here. Sign in or
+            create a free account to browse discussions, follow grow interests, ask
+            questions, or reply.
+          </Text>
+          <View style={styles.publicActionRow}>
+            <Link href="/login" asChild>
+              <Pressable
+                style={[styles.primaryBtn, { backgroundColor: palette.accent }]}
+                accessibilityRole="button"
+                accessibilityLabel="Sign in to GrowPath"
+              >
+                <Text style={[styles.primaryText, { color: palette.accentText }]}>
+                  Sign in
+                </Text>
+              </Pressable>
+            </Link>
+            <Link href="/register" asChild>
+              <Pressable
+                style={[
+                  styles.secondaryBtn,
+                  { backgroundColor: palette.surfaceMuted, borderColor: palette.accent }
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Create a free GrowPath account"
+              >
+                <Text style={[styles.secondaryText, { color: palette.accent }]}>
+                  Create free account
+                </Text>
+              </Pressable>
+            </Link>
+          </View>
+        </View>
+      ) : null}
+
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: palette.surface, borderColor: palette.border }
+        ]}
+      >
+        <Text style={[styles.cardTitle, { color: palette.text }]}>Forum videos</Text>
+        <Text style={[styles.cardText, { color: palette.textMuted }]}>
+          Videos belong in Forum/Q&A. Open the shared library to upload clips, review
+          storage usage, and reuse videos in courses and other workflows.
+        </Text>
         {videoLibraryLoading ? (
           <Text style={[styles.cardText, { color: palette.textMuted }]}>
             Loading video storage…

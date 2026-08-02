@@ -37,6 +37,8 @@ describe("Personal grow limit policy", () => {
 
     expect(source).toContain("{error ? (");
     expect(source).toContain('accessibilityLabel="Try loading grows again"');
-    expect(source).toContain("<Text style={styles.ctaText}>Try again</Text>");
+    expect(source).toContain(
+      '<Text style={[styles.ctaText, { color: palette.link }]}>Try again</Text>'
+    );
   });
 });

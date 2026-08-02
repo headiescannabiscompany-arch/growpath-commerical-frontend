@@ -36,7 +36,13 @@ describe("PersonalTabsLayout", () => {
             backgroundColor: "#FFFFFF",
             borderTopColor: "#D7DDD2"
           }),
-          tabBarLabelStyle: { fontSize: 11, fontWeight: "700" }
+          tabBarIconStyle: { display: "none" },
+          tabBarLabelPosition: "beside-icon",
+          tabBarLabelStyle: expect.objectContaining({
+            fontSize: 10,
+            fontWeight: "700",
+            textAlign: "center"
+          })
         })
       })
     );

@@ -11,7 +11,10 @@ import {
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 
-import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
+import {
+  recordCommercialAnalyticsEvent,
+  type CommercialAnalyticsEvent
+} from "@/api/commercialAnalytics";
 import { startCourseCheckout } from "@/api/coursePayments";
 import { fetchPublicStorefront } from "@/api/storefront";
 import AppCard from "@/components/layout/AppCard";
@@ -109,7 +112,7 @@ async function openUrl(url: string) {
   await Linking.openURL(url);
 }
 
-function trackCommercialClick(payload: Record<string, any>) {
+function trackCommercialClick(payload: CommercialAnalyticsEvent) {
   void recordCommercialAnalyticsEvent(payload).catch(() => {
     // Public storefront navigation should not depend on analytics delivery.
   });

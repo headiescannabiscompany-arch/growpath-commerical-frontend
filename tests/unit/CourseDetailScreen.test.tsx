@@ -281,6 +281,7 @@ describe("CourseDetailScreen learner player", () => {
       _viewerOwnsCourse: true,
       priceCents: 100,
       isPublished: false,
+      visibility: "private",
       lessons: [{ id: "owner-lesson", title: "Owner lesson", content: "Ready" }]
     };
     mockGetCourse.mockImplementation(() => Promise.resolve({ ...ownerCourse }));

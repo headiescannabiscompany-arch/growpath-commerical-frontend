@@ -112,7 +112,7 @@ const NIGHT_PALETTE: Omit<ThemePalette, "mode" | "resolvedMode"> = {
   textSoft: "#DEE7F0",
   accent: "#78AAFF",
   accentSoft: "#16263A",
-  accentText: "#FFFFFF",
+  accentText: "#08111F",
   hero: "#101823",
   heroText: "#FFFFFF",
   heroMuted: "#E4ECF5",

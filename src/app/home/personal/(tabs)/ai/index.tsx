@@ -177,6 +177,7 @@ interface ContextData {
   recipes: any[];
   environmentHistory: any[];
   facilityCompliance: FacilityComplianceExport | null;
+  failedSources: string[];
 }
 
 type FacilityAiPreset = {
@@ -531,39 +532,51 @@ export default function AiScreen({
     async function loadContext() {
       try {
         const facilityScoped = workspaceType === "facility" && activeFacilityId;
+        const sourceLabels = [
+          "grows",
+          "plants",
+          "logs",
+          "tasks",
+          "tool runs",
+          "diagnoses",
+          "recipes"
+        ];
+        const contextRequests: Array<Promise<any[]>> = facilityScoped
+          ? [
+              apiRequest(endpoints.grows(activeFacilityId)).then((value) =>
+                envelopeRows(value, ["grows"])
+              ),
+              apiRequest(
+                `${endpoints.plants(activeFacilityId)}${
+                  selectedGrowId ? `?growId=${encodeURIComponent(selectedGrowId)}` : ""
+                }`
+              ).then((value) => envelopeRows(value, ["plants"])),
+              apiRequest(endpoints.growlogs(activeFacilityId)).then((value) =>
+                envelopeRows(value, ["logs", "growlogs"])
+              ),
+              getFacilityTasks(activeFacilityId),
+              listToolRuns(),
+              getDiagnosisHistory(),
+              listNutrientRecipes(selectedGrowId || undefined)
+            ]
+          : [
+              listPersonalGrows(),
+              listPersonalPlants(selectedGrowId ? { growId: selectedGrowId } : undefined),
+              listPersonalLogs(),
+              listPersonalTasks(),
+              listToolRuns(),
+              getDiagnosisHistory(),
+              listNutrientRecipes(selectedGrowId || undefined)
+            ];
+        const settledContext = await Promise.allSettled(contextRequests);
+        const failedSources = settledContext.flatMap((result, index) =>
+          result.status === "rejected" ? [sourceLabels[index]] : []
+        );
         const [grows, plants, logs, tasks, toolRuns, diagnoses, recipes] =
-          await Promise.all(
-            facilityScoped
-              ? [
-                  apiRequest(endpoints.grows(activeFacilityId)).then((value) =>
-                    envelopeRows(value, ["grows"])
-                  ),
-                  apiRequest(
-                    `${endpoints.plants(activeFacilityId)}${
-                      selectedGrowId
-                        ? `?growId=${encodeURIComponent(selectedGrowId)}`
-                        : ""
-                    }`
-                  ).then((value) => envelopeRows(value, ["plants"])),
-                  apiRequest(endpoints.growlogs(activeFacilityId)).then((value) =>
-                    envelopeRows(value, ["logs", "growlogs"])
-                  ),
-                  getFacilityTasks(activeFacilityId),
-                  listToolRuns(),
-                  getDiagnosisHistory(),
-                  listNutrientRecipes(selectedGrowId || undefined)
-                ]
-              : [
-                  listPersonalGrows(),
-                  listPersonalPlants(
-                    selectedGrowId ? { growId: selectedGrowId } : undefined
-                  ),
-                  listPersonalLogs(),
-                  listPersonalTasks(),
-                  listToolRuns(),
-                  getDiagnosisHistory(),
-                  listNutrientRecipes(selectedGrowId || undefined)
-                ]
+          settledContext.map((result) =>
+            result.status === "fulfilled" && Array.isArray(result.value)
+              ? result.value
+              : []
           );
         const activeGrowId =
           selectedGrowId ||
@@ -619,7 +632,8 @@ export default function AiScreen({
           photosMetadata,
           recipes,
           environmentHistory,
-          facilityCompliance
+          facilityCompliance,
+          failedSources
         });
         if (!selectedGrowId && activeGrowId) setSelectedGrowId(activeGrowId);
       } catch (err) {
@@ -638,7 +652,16 @@ export default function AiScreen({
           photosMetadata: [],
           recipes: [],
           environmentHistory: [],
-          facilityCompliance: null
+          facilityCompliance: null,
+          failedSources: [
+            "grows",
+            "plants",
+            "logs",
+            "tasks",
+            "tool runs",
+            "diagnoses",
+            "recipes"
+          ]
         });
       }
     }
@@ -982,6 +1005,12 @@ export default function AiScreen({
                 <Text style={[styles.contextText, bodyText]}>
                   Updated: {context.loadedAt}
                 </Text>
+                {context.failedSources.length ? (
+                  <Text style={[styles.contextText, { color: palette.warning }]}>
+                    Partial context: {context.failedSources.join(", ")} unavailable. AI
+                    can still use the records shown here.
+                  </Text>
+                ) : null}
               </>
             )}
             {facilityPreset?.key !== "compliance" && context.grows.length ? (

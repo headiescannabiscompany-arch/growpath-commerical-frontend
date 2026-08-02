@@ -3,6 +3,7 @@ import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
+import { getWorkspaceTabOptions } from "@/navigation/workspaceTabOptions";
 import { useAppTheme } from "@/theme/appTheme";
 
 export default function PersonalTabsLayout() {
@@ -28,28 +29,12 @@ export default function PersonalTabsLayout() {
 
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={getWorkspaceTabOptions({
+        compact: compactTabs,
         headerShown: false,
-        tabBarHideOnKeyboard: true,
-        tabBarIcon: () => null,
-        tabBarActiveTintColor: palette.tabActive,
-        tabBarInactiveTintColor: palette.tabInactive,
-        tabBarShowLabel: true,
-        tabBarLabelStyle: {
-          fontSize: compactTabs ? 10 : 11,
-          fontWeight: "700",
-          lineHeight: compactTabs ? 12 : 13,
-          textAlign: "center"
-        },
-        tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: 0 },
-        tabBarStyle: hideTabBar
-          ? { display: "none" }
-          : {
-              backgroundColor: palette.tabBar,
-              borderTopColor: palette.tabBarBorder,
-              ...(compactTabs ? { height: 72, paddingBottom: 22, paddingTop: 4 } : {})
-            }
-      }}
+        hideTabBar,
+        palette
+      })}
     >
       <Tabs.Screen name="index" options={{ title: "Home", tabBarLabel: "Home" }} />
       <Tabs.Screen name="grows" options={{ title: "Grows", tabBarLabel: "Grows" }} />
@@ -59,7 +44,7 @@ export default function PersonalTabsLayout() {
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: "Discovery Nature", tabBarLabel: "Nature" }}
+        options={{ title: "Discovery Nature", tabBarLabel: "Discover" }}
       />
       <Tabs.Screen name="more" options={{ title: "More", tabBarLabel: "More" }} />
       <Tabs.Screen

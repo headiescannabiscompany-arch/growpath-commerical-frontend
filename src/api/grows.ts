@@ -7,6 +7,7 @@ import routes from "./routes.js";
 
 export type Grow = {
   id: string;
+  _id?: string;
   name?: string;
   createdAt?: string;
   photo?: string;

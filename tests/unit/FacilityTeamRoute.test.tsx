@@ -60,6 +60,7 @@ describe("FacilityTeamTab", () => {
     const screen = render(<FacilityTeamTab />);
 
     expect(screen.getByText("Back /home/facility/dashboard")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("No members yet")).toBeTruthy());
     fireEvent.changeText(
       screen.getByLabelText("Invite team member email"),
       "staff@example.com"
@@ -72,6 +73,13 @@ describe("FacilityTeamTab", () => {
         email: "staff@example.com",
         role: "STAFF"
       })
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Invite saved for staff@example.com, but email delivery was not confirmed."
+        )
+      ).toBeTruthy()
     );
   });
 
@@ -135,12 +143,13 @@ describe("FacilityTeamTab", () => {
     ]);
 
     try {
-      screen = render(<FacilityTeamTab />);
+      const rendered = render(<FacilityTeamTab />);
+      screen = rendered;
 
-      await waitFor(() => expect(screen.getByText("Alex Grower")).toBeTruthy());
+      await waitFor(() => expect(rendered.getByText("Alex Grower")).toBeTruthy());
       mockListTeamMembers.mockResolvedValue([]);
       fireEvent.press(
-        screen.getByLabelText(
+        rendered.getByLabelText(
           "Remove Alex Grower - alex@example.com - staff from facility"
         )
       );
@@ -153,7 +162,7 @@ describe("FacilityTeamTab", () => {
       );
       await waitFor(() =>
         expect(
-          screen.getByText(
+          rendered.getByText(
             "Alex Grower - alex@example.com - staff no longer has access to this facility."
           )
         ).toBeTruthy()

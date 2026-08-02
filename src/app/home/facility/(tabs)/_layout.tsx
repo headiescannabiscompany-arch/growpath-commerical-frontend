@@ -3,6 +3,7 @@ import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
+import { getWorkspaceTabOptions } from "@/navigation/workspaceTabOptions";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme } from "@/theme/appTheme";
 
@@ -45,41 +46,22 @@ export default function FacilityTabsLayout() {
 
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={getWorkspaceTabOptions({
+        compact: compactTabs,
         headerShown: true,
-        tabBarHideOnKeyboard: true,
-        tabBarIcon: () => null,
-        headerStyle: { backgroundColor: palette.surface },
-        headerTintColor: palette.text,
-        headerTitleStyle: { color: palette.text },
-        tabBarActiveTintColor: palette.tabActive,
-        tabBarInactiveTintColor: palette.tabInactive,
-        tabBarShowLabel: true,
-        tabBarLabelStyle: {
-          fontSize: compactTabs ? 10 : 10,
-          fontWeight: "700",
-          lineHeight: compactTabs ? 12 : 12,
-          textAlign: "center"
-        },
-        tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: 0 },
-        tabBarStyle: hideTabBar
-          ? { display: "none" as const }
-          : {
-              backgroundColor: palette.tabBar,
-              borderTopColor: palette.tabBarBorder,
-              ...(compactTabs ? { height: 72, paddingBottom: 22, paddingTop: 4 } : {})
-            }
-      }}
+        hideTabBar,
+        palette
+      })}
     >
       <Tabs.Screen
         name="dashboard"
-        options={{ title: "Dashboard", tabBarLabel: "Dash" }}
+        options={{ title: "Dashboard", tabBarLabel: "Dashboard" }}
       />
       <Tabs.Screen name="grows" options={{ title: "Grows", tabBarLabel: "Grows" }} />
       <Tabs.Screen name="tasks" options={{ title: "Tasks", tabBarLabel: "Tasks" }} />
       <Tabs.Screen
         name="compliance"
-        options={{ title: "Compliance", tabBarLabel: "Comp" }}
+        options={{ title: "Compliance", tabBarLabel: "Compliance" }}
       />
       <Tabs.Screen name="more" options={{ title: "More", tabBarLabel: "More" }} />
       <Tabs.Screen

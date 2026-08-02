@@ -3,6 +3,7 @@ import { Tabs, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, useWindowDimensions, View } from "react-native";
 
 import { useEntitlements } from "@/entitlements";
+import { getWorkspaceTabOptions } from "@/navigation/workspaceTabOptions";
 import { useAppTheme } from "@/theme/appTheme";
 
 export default function CommercialTabsLayout() {
@@ -43,34 +44,12 @@ export default function CommercialTabsLayout() {
 
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={getWorkspaceTabOptions({
+        compact: compactTabs,
         headerShown: true,
-        tabBarHideOnKeyboard: true,
-        tabBarIcon: () => null,
-        tabBarShowIcon: false,
-        headerStyle: { backgroundColor: palette.surface },
-        headerTintColor: palette.text,
-        headerTitleStyle: { color: palette.text },
-        tabBarActiveTintColor: palette.tabActive,
-        tabBarInactiveTintColor: palette.tabInactive,
-        tabBarShowLabel: true,
-        tabBarLabelStyle: {
-          fontSize: compactTabs ? 8 : 12,
-          fontWeight: "700",
-          lineHeight: compactTabs ? 10 : 14,
-          textAlign: "center",
-          marginStart: 0,
-          marginEnd: 0
-        },
-        tabBarItemStyle: { flex: 1, minWidth: 0, paddingHorizontal: 0 },
-        tabBarStyle: hideTabBar
-          ? { display: "none" as const }
-          : {
-              backgroundColor: palette.tabBar,
-              borderTopColor: palette.tabBarBorder,
-              ...(compactTabs ? { height: 72, paddingBottom: 22, paddingTop: 4 } : {})
-            }
-      }}
+        hideTabBar,
+        palette
+      })}
     >
       <Tabs.Screen
         name="index"
@@ -85,28 +64,28 @@ export default function CommercialTabsLayout() {
         options={{ title: "Grows", tabBarLabel: "Grows" }}
       />
       <Tabs.Screen
-        name="tools/index"
-        options={{ title: "AI Tools", tabBarLabel: "AI" }}
-      />
-      <Tabs.Screen
-        name="discover"
-        options={{ title: "Discover", tabBarLabel: "Discover" }}
-      />
-      <Tabs.Screen
-        name="courses"
-        options={{ title: "Courses", tabBarLabel: "Courses" }}
-      />
-      <Tabs.Screen
         name="community"
-        options={{
-          title: "Forum / Q&A",
-          tabBarLabel: "Forum",
-          headerShown: false
-        }}
+        options={{ title: "Forum / Q&A", tabBarLabel: "Forum", headerShown: false }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{ title: "More", tabBarLabel: "More", headerShown: false }}
       />
       <Tabs.Screen
         name="profile"
         options={{ title: "Profile", tabBarLabel: "Profile" }}
+      />
+      <Tabs.Screen
+        name="tools/index"
+        options={{ title: "AI Tools", href: null, tabBarButton: () => null }}
+      />
+      <Tabs.Screen
+        name="discover"
+        options={{ title: "Discover", href: null, tabBarButton: () => null }}
+      />
+      <Tabs.Screen
+        name="courses"
+        options={{ title: "Courses", href: null, tabBarButton: () => null }}
       />
       <Tabs.Screen
         name="products/index"
@@ -150,15 +129,6 @@ export default function CommercialTabsLayout() {
         options={{
           title: "Analytics",
           href: null, tabBarButton: () => null,
-          headerShown: false
-        }}
-      />
-      <Tabs.Screen
-        name="more"
-        options={{
-          title: "More",
-          href: null,
-          tabBarButton: () => null,
           headerShown: false
         }}
       />

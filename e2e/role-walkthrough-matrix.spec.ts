@@ -158,7 +158,7 @@ async function installRoleMocks(page: any, persona: Persona) {
   let paidCourseEnrolled = false;
 
   await page.addInitScript(
-    ({ authToken, mode }) => {
+    ({ authToken, mode }: { authToken: string; mode: Persona["mode"] }) => {
       window.localStorage.clear();
       window.localStorage.setItem("auth_token_v1", authToken);
       window.localStorage.setItem("seenOnboardingCarousel", "true");

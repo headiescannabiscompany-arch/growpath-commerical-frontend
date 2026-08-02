@@ -693,6 +693,7 @@ export default function VideosRoute() {
                 helperText="Select the structured grow interests this video should be attached to. These tags power discovery and targeting."
                 value={growInterestSelections}
                 onChange={setGrowInterestSelections}
+                enabledTierIds={undefined}
                 tierOptionsOverride={{ crops: getTier1Options() }}
                 collapsible={false}
                 showEmptyTiers
