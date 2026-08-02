@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { TouchableOpacity, Text } from "react-native";
 import { followUser, unfollowUser, isFollowing } from "../api/users";
 import { radius } from "../theme/theme";
+import { useAppTheme } from "../theme/appTheme";
 
 export default function FollowButton({ userId }) {
   const [following, setFollowing] = useState(false);
+  const { palette } = useAppTheme();
 
   useEffect(() => {
     let mounted = true;
@@ -43,10 +45,15 @@ export default function FollowButton({ userId }) {
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: radius.card,
-        backgroundColor: following ? "#ddd" : "#2ecc71"
+        backgroundColor: following ? palette.surfaceMuted : palette.accent
       }}
     >
-      <Text style={{ color: following ? "#333" : "white", fontWeight: "600" }}>
+      <Text
+        style={{
+          color: following ? palette.text : palette.accentText,
+          fontWeight: "600"
+        }}
+      >
         {following ? "Following" : "Follow"}
       </Text>
     </TouchableOpacity>

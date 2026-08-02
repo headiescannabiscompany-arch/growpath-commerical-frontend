@@ -31,8 +31,15 @@ export default function CommercialTabsLayout() {
 
   if (!ent?.ready) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator />
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: palette.page
+        }}
+      >
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }

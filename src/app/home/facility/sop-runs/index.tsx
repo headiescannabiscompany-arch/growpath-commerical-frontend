@@ -118,7 +118,7 @@ export default function FacilitySopRunsIndexRoute() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }

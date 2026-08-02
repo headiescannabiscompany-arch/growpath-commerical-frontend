@@ -372,7 +372,12 @@ export default function DiscoverDirectory() {
         )}
       </AppCard>
 
-      {loading ? <ActivityIndicator accessibilityLabel="Loading discovery" /> : null}
+      {loading ? (
+        <ActivityIndicator
+          accessibilityLabel="Loading discovery"
+          color={palette.accent}
+        />
+      ) : null}
       {error ? (
         <Text style={[styles.error, { color: palette.danger }]}>{error}</Text>
       ) : null}

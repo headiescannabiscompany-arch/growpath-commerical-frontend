@@ -303,7 +303,7 @@ export default function FacilityTeamTab() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading team...</Text>
           </View>
         ) : null}
@@ -315,6 +315,9 @@ export default function FacilityTeamTab() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => load({ refresh: true })}
+              tintColor={palette.accent}
+              colors={[palette.accent]}
+              progressBackgroundColor={palette.surface}
             />
           }
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}

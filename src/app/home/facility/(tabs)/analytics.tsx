@@ -58,7 +58,7 @@ export default function FacilityAnalyticsRoute() {
         </View>
       }
     >
-      {loading ? <ActivityIndicator /> : null}
+      {loading ? <ActivityIndicator color={palette.accent} /> : null}
       {error ? <InlineError error={error} /> : null}
       <AppCard>
         <View style={styles.grid}>

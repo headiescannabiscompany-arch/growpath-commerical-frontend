@@ -420,7 +420,7 @@ export default function IngredientLibraryRoute() {
 
         {loading ? (
           <View style={styles.card}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
           </View>
         ) : items.length ? (
           <View style={styles.list}>

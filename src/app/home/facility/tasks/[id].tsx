@@ -525,6 +525,9 @@ export default function FacilityTaskDetail() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
           />
         }
       >
@@ -532,7 +535,7 @@ export default function FacilityTaskDetail() {
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading task...</Text>
           </View>
         ) : null}

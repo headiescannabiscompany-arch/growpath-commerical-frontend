@@ -103,6 +103,9 @@ export default function FacilityGrowDetail() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
           />
         }
       >
@@ -110,7 +113,7 @@ export default function FacilityGrowDetail() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading grow...</Text>
           </View>
         ) : null}

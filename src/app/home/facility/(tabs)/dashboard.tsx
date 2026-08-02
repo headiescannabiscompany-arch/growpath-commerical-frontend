@@ -417,6 +417,9 @@ export default function FacilityDashboardTab() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
           />
         }
       >
@@ -529,7 +532,7 @@ export default function FacilityDashboardTab() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={[styles.muted, { color: palette.textMuted }]}>Loading...</Text>
           </View>
         ) : null}

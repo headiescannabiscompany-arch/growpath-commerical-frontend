@@ -752,7 +752,7 @@ export default function HomeScheduleRoute() {
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       {loading ? (
         <View style={styles.card}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.meta}>Loading schedule...</Text>
         </View>
       ) : (

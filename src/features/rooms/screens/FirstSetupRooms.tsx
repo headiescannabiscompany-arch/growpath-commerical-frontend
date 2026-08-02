@@ -168,7 +168,7 @@ export default function FirstSetupRooms() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={palette.accent} />
         <Text style={styles.loadingText}>Checking rooms...</Text>
       </View>
     );

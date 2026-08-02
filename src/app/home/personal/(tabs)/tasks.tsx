@@ -802,7 +802,7 @@ export default function PersonalTaskCenterRoute() {
 
       {loading ? (
         <View style={styles.card}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
         </View>
       ) : (
         <>

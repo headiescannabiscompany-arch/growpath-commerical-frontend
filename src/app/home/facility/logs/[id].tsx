@@ -119,6 +119,9 @@ export default function FacilityLogDetail() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
           />
         }
       >
@@ -126,7 +129,7 @@ export default function FacilityLogDetail() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading log…</Text>
           </View>
         ) : null}

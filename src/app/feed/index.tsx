@@ -366,7 +366,7 @@ function DestinationPickerGroup({
       <Text style={styles.destinationTitle}>{title}</Text>
       {loading ? (
         <View style={styles.destinationLoading}>
-          <ActivityIndicator size="small" />
+          <ActivityIndicator size="small" color={palette.accent} />
           <Text style={styles.linkBoxText}>Loading {kind.toLowerCase()} choices...</Text>
         </View>
       ) : options.length ? (
@@ -970,8 +970,11 @@ export default function CommercialFeedRoute() {
       contentContainerStyle={styles.container}
       refreshControl={
         <RefreshControl
+          colors={[palette.accent]}
+          progressBackgroundColor={palette.surface}
           refreshing={refreshing}
           onRefresh={() => void load({ refresh: true })}
+          tintColor={palette.accent}
         />
       }
     >
@@ -1530,7 +1533,7 @@ export default function CommercialFeedRoute() {
 
       {loading ? (
         <View style={styles.loading}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
           <Text style={styles.muted}>Loading feed...</Text>
         </View>
       ) : null}

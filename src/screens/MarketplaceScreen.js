@@ -241,8 +241,11 @@ export default function MarketplaceScreen({ navigation }) {
           )}
           refreshControl={
             <RefreshControl
+              colors={[palette.accent]}
+              progressBackgroundColor={palette.surface}
               refreshing={refreshing}
               onRefresh={() => load(1, { refresh: true })}
+              tintColor={palette.accent}
             />
           }
           onEndReached={() => {

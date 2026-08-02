@@ -2,6 +2,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { FieldObservation } from "@/api/fieldStudies";
+import { useAppTheme } from "@/theme/appTheme";
 
 export type FieldObservationViewport = {
   west: number;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export default function FieldObservationGlobe({ observations, compact = false }: Props) {
+  const { palette } = useAppTheme();
   const mapped = observations.filter(
     (observation) =>
       Number.isFinite(Number(observation.location?.latitude)) &&
@@ -28,10 +30,16 @@ export default function FieldObservationGlobe({ observations, compact = false }:
   return (
     <View
       accessibilityLabel={`${mapped} shared plant observations. Interactive globe available in the GrowPathAI web experience.`}
-      style={[styles.panel, compact && styles.compactPanel]}
+      style={[
+        styles.panel,
+        { backgroundColor: palette.accentSoft },
+        compact && styles.compactPanel
+      ]}
     >
-      <Text style={styles.title}>{mapped} shared locations</Text>
-      <Text style={styles.body}>
+      <Text style={[styles.title, { color: palette.text }]}>
+        {mapped} shared locations
+      </Text>
+      <Text style={[styles.body, { color: palette.textMuted }]}>
         The interactive 3D globe is currently available on the GrowPathAI website. The
         complete accessible observation list remains available below.
       </Text>
@@ -42,7 +50,6 @@ export default function FieldObservationGlobe({ observations, compact = false }:
 const styles = StyleSheet.create({
   panel: {
     alignItems: "center",
-    backgroundColor: "#DBEAFE",
     borderRadius: 16,
     justifyContent: "center",
     minHeight: 280,
@@ -52,9 +59,8 @@ const styles = StyleSheet.create({
     minHeight: 220,
     padding: 16
   },
-  title: { color: "#14532D", fontSize: 22, fontWeight: "800" },
+  title: { fontSize: 22, fontWeight: "800" },
   body: {
-    color: "#334155",
     lineHeight: 21,
     marginTop: 8,
     maxWidth: 520,

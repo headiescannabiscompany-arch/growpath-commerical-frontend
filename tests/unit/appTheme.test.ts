@@ -54,8 +54,18 @@ describe("app theme modes", () => {
     expect(palette.page).toBe("#0E141B");
     expect(palette.hero).toBe("#101823");
     expect(palette.accent).toBe("#78AAFF");
+    expect(palette.accentText).toBe("#0E141B");
     expect(palette.link).toBe("#78AAFF");
     expect(palette.dangerText).toBe("#0E141B");
+  });
+
+  it.each([
+    ["day", "light"],
+    ["night", "dark"]
+  ] as const)("keeps %s filled-accent labels at accessible contrast", (mode, scheme) => {
+    const palette = getThemePalette(mode, scheme);
+
+    expect(contrastRatio(palette.accent, palette.accentText)).toBeGreaterThanOrEqual(4.5);
   });
 
   it.each([

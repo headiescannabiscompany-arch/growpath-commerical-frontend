@@ -3,9 +3,11 @@ import { Redirect, Stack, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
+import { useAppTheme } from "@/theme/appTheme";
 
 export default function FacilityLayout() {
   const pathname = usePathname();
+  const { palette } = useAppTheme();
 
   const ent = useEntitlements();
   const facilityStore: any = useFacility();
@@ -49,8 +51,15 @@ export default function FacilityLayout() {
 
   if (!ent.ready) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator />
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: palette.page
+        }}
+      >
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }
@@ -59,8 +68,15 @@ export default function FacilityLayout() {
 
   if (ent.mode === "facility" && ent.facilityId && !selectedId) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator />
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: palette.page
+        }}
+      >
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }

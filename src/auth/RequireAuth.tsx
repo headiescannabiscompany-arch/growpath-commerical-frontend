@@ -38,7 +38,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
           backgroundColor: palette.page
         }}
       >
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }

@@ -253,7 +253,7 @@ export default function FacilityLogsTab() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading logs…</Text>
           </View>
         ) : null}
@@ -265,6 +265,9 @@ export default function FacilityLogsTab() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => load({ refresh: true })}
+              tintColor={palette.accent}
+              colors={[palette.accent]}
+              progressBackgroundColor={palette.surface}
             />
           }
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}

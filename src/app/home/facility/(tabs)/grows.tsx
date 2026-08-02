@@ -154,7 +154,7 @@ export default function FacilityGrowsTab() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading grows...</Text>
           </View>
         ) : null}
@@ -166,6 +166,9 @@ export default function FacilityGrowsTab() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => load({ refresh: true })}
+              tintColor={palette.accent}
+              colors={[palette.accent]}
+              progressBackgroundColor={palette.surface}
             />
           }
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}

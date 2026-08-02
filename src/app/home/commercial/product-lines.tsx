@@ -218,7 +218,7 @@ export default function CommercialProductLinesRoute() {
         </Text>
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading product lines...</Text>
           </View>
         ) : lines.length ? (

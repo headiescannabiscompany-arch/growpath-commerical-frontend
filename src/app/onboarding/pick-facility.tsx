@@ -32,7 +32,7 @@ export default function PickFacilityScreen() {
   if (auth.isHydrating) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={palette.accent} />
       </View>
     );
   }
@@ -67,7 +67,7 @@ export default function PickFacilityScreen() {
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={palette.accent} />
           <Text style={styles.helper}>Loading facilities...</Text>
         </View>
       ) : null}

@@ -3,16 +3,25 @@ import RequireAuthGate from "@/auth/RequireAuthGate";
 import { Stack, Redirect, usePathname } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { useEntitlements } from "@/entitlements";
+import { useAppTheme } from "@/theme/appTheme";
 
 function CommercialGate() {
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
   const pathname = usePathname();
   const isFeed = pathname === "/feed" || pathname.startsWith("/feed/");
 
   if (!ent?.ready) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator />
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: palette.page
+        }}
+      >
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }

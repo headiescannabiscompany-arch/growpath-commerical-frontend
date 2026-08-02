@@ -32,7 +32,7 @@ export default function CreateFacilityScreen() {
   if (auth.isHydrating || !entitlements.ready) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={palette.accent} />
       </View>
     );
   }

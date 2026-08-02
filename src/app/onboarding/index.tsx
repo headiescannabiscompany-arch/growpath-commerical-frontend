@@ -17,7 +17,7 @@ function Splash() {
         backgroundColor: palette.page
       }}
     >
-      <ActivityIndicator size="large" />
+      <ActivityIndicator size="large" color={palette.accent} />
     </View>
   );
 }

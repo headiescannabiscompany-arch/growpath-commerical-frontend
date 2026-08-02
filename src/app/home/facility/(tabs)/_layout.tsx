@@ -61,7 +61,7 @@ export default function FacilityTabsLayout() {
   if (!ent?.ready) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }

@@ -6,16 +6,25 @@ import { useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
 import { getHomeForUser } from "@/navigation/routeAccess";
 import { useAuth } from "@/auth/AuthContext";
+import { useAppTheme } from "@/theme/appTheme";
 
 function HomeGate() {
   const ent = useEntitlements();
   const auth = useAuth();
   const { selectedId } = useFacility();
+  const { palette } = useAppTheme();
 
   if (!ent?.ready) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator />
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: palette.page
+        }}
+      >
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }

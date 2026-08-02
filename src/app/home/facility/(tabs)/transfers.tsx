@@ -192,7 +192,7 @@ export default function FacilityTransfersScreen() {
         showBack
         backFallbackHref="/home/facility/dashboard"
       >
-        <ActivityIndicator style={{ marginTop: 40 }} />
+        <ActivityIndicator color={palette.accent} style={{ marginTop: 40 }} />
       </ScreenBoundary>
     );
   }

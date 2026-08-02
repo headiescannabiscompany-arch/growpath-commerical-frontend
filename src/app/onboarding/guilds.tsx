@@ -216,7 +216,7 @@ export default function GuildOnboardingScreen() {
 
             {loadingGuilds ? (
               <View style={styles.loading}>
-                <ActivityIndicator />
+                <ActivityIndicator color={palette.accent} />
                 <Text style={styles.muted}>Loading forum groups...</Text>
               </View>
             ) : null}

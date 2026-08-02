@@ -194,8 +194,11 @@ export default function Communities() {
       <ScrollView
         refreshControl={
           <RefreshControl
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
             refreshing={refreshing}
             onRefresh={() => void load({ refresh: true })}
+            tintColor={palette.accent}
           />
         }
         contentContainerStyle={styles.inner}

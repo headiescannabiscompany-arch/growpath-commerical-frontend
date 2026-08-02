@@ -263,6 +263,9 @@ export default function FacilityComplianceTab() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
           />
         }
       >
@@ -280,7 +283,7 @@ export default function FacilityComplianceTab() {
             </Text>
             <Text style={styles.ownerLine}>Facility: {facilityName}</Text>
           </View>
-          {loading ? <ActivityIndicator /> : null}
+          {loading ? <ActivityIndicator color={palette.accent} /> : null}
         </View>
 
         {!canReadCompliance ? (

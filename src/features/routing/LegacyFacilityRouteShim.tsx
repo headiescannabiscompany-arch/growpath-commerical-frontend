@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRootNavigationState, useRouter } from "expo-ro
 import { useAccountMode } from "@/state/useAccountMode";
 import { useFacility } from "@/state/useFacility";
 import { useEntitlements } from "@/entitlements";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { decideLegacyFacilityAccess } from "./legacyFacilityAccess";
 import {
   legacyFacilitySectionToRoute,
@@ -17,6 +18,11 @@ export function LegacyFacilityRouteShim({ section }: { section: LegacyFacilitySe
   const { mode } = useAccountMode();
   const entitlements = useEntitlements();
   const { selectedId, selectFacility } = useFacility() as any;
+  const { palette } = useAppTheme();
+  const styles = React.useMemo(
+    () => createLegacyFacilityRouteShimStyles(palette),
+    [palette]
+  );
 
   React.useEffect(() => {
     if (!rootNavigationState?.key || !entitlements.ready) return;
@@ -51,18 +57,19 @@ export function LegacyFacilityRouteShim({ section }: { section: LegacyFacilitySe
   ]);
 
   return (
-    <View style={styles.centered}>
-      <ActivityIndicator />
+    <View testID="legacy-facility-route-shim" style={styles.centered}>
+      <ActivityIndicator testID="legacy-facility-route-spinner" color={palette.accent} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    flex: 1,
-    justifyContent: "center",
-    minHeight: 240
-  }
-});
+export const createLegacyFacilityRouteShimStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: "center",
+      backgroundColor: palette.page,
+      flex: 1,
+      justifyContent: "center",
+      minHeight: 240
+    }
+  });

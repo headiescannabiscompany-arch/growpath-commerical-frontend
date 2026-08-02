@@ -529,7 +529,12 @@ export default function VideosRoute() {
               <Text style={styles.primaryText}>Search Videos</Text>
             </Pressable>
           </AppCard>
-          {loading ? <ActivityIndicator accessibilityLabel="Loading videos" /> : null}
+          {loading ? (
+            <ActivityIndicator
+              accessibilityLabel="Loading videos"
+              color={palette.accent}
+            />
+          ) : null}
           <InlineError error={error} />
           {!loading && !discoverVideos.length ? (
             <AppCard>
@@ -652,7 +657,10 @@ export default function VideosRoute() {
                   accessibilityLiveRegion="polite"
                   style={styles.uploadProgress}
                 >
-                  <ActivityIndicator accessibilityLabel="Uploading video" />
+                  <ActivityIndicator
+                    accessibilityLabel="Uploading video"
+                    color={palette.accent}
+                  />
                   <View style={styles.uploadProgressCopy}>
                     <Text style={styles.fieldLabel}>Uploading video</Text>
                     <Text style={styles.help}>
@@ -784,7 +792,10 @@ export default function VideosRoute() {
             </AppCard>
           ) : null}
           {loading ? (
-            <ActivityIndicator accessibilityLabel="Loading video library" />
+            <ActivityIndicator
+              accessibilityLabel="Loading video library"
+              color={palette.accent}
+            />
           ) : null}
           {!loading && !filteredLibraryVideos.length ? (
             <AppCard>

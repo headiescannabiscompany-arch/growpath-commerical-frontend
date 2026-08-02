@@ -285,7 +285,15 @@ export default function PersonalGrowsRoute() {
       testID="screen-personal-grows"
       style={[styles.page, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.pageContent}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={
+        <RefreshControl
+          colors={[palette.accent]}
+          progressBackgroundColor={palette.surface}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={palette.accent}
+        />
+      }
     >
       <View style={styles.stack}>
         <AppCard

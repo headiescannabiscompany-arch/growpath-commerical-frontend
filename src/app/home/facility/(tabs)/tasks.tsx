@@ -808,7 +808,7 @@ export default function FacilityTasksRoute() {
         </View>
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading tasks...</Text>
           </View>
         ) : null}
@@ -880,6 +880,9 @@ export default function FacilityTasksRoute() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => load({ refresh: true })}
+              tintColor={palette.accent}
+              colors={[palette.accent]}
+              progressBackgroundColor={palette.surface}
             />
           }
           contentContainerStyle={styles.list}

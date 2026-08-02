@@ -201,7 +201,7 @@ export default function StartGrowWizard() {
 
         {isLoading ? (
           <View style={styles.loadingRow}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.helper}>Loading rooms...</Text>
           </View>
         ) : null}

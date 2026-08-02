@@ -813,6 +813,9 @@ export default function FacilityRoomsTab() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            tintColor={palette.accent}
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
           />
         }
       >
@@ -828,7 +831,7 @@ export default function FacilityRoomsTab() {
               {rooms.length} rooms | {equipment.length} equipment | {cycles.length} cycles
             </Text>
           </View>
-          {loading ? <ActivityIndicator /> : null}
+          {loading ? <ActivityIndicator color={palette.accent} /> : null}
         </View>
 
         <FacilityContextualTools

@@ -2,6 +2,7 @@ import { Link } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 export type CommercialToolKey =
@@ -58,8 +59,14 @@ export default function CommercialContextualTools({
   tools,
   ...context
 }: Props) {
+  const { palette } = useAppTheme();
+  const styles = React.useMemo(
+    () => createCommercialContextualToolsStyles(palette),
+    [palette]
+  );
+
   return (
-    <View style={styles.container}>
+    <View testID="commercial-contextual-tools" style={styles.container}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.helper}>
         Context is carried into the shared tool and saved results stay connected to this
@@ -82,26 +89,32 @@ export default function CommercialContextualTools({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    marginTop: 12,
-    padding: 12
-  },
-  title: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  helper: { color: "#64748B", fontSize: 12, fontWeight: "700", lineHeight: 18 },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  action: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 9
-  },
-  actionText: { color: "#166534", fontSize: 13, fontWeight: "900" }
-});
+export const createCommercialContextualToolsStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      marginTop: 12,
+      padding: 12
+    },
+    title: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    helper: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 18
+    },
+    row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    action: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 9
+    },
+    actionText: { color: palette.link, fontSize: 13, fontWeight: "900" }
+  });

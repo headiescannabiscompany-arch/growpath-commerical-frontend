@@ -73,7 +73,9 @@ export default function VideoDetailRoute() {
         </View>
       }
     >
-      {loading ? <ActivityIndicator accessibilityLabel="Loading video" /> : null}
+      {loading ? (
+        <ActivityIndicator accessibilityLabel="Loading video" color={palette.accent} />
+      ) : null}
       <InlineError error={error} />
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
       {video ? (

@@ -173,7 +173,7 @@ export default function AssignPlantsToGrow() {
             style={[styles.secondaryButton, !canCreate && styles.disabledButton]}
           >
             {createPlant.isPending ? (
-              <ActivityIndicator />
+              <ActivityIndicator color={palette.accent} />
             ) : (
               <Text style={styles.secondaryButtonText}>Add plant</Text>
             )}
@@ -187,7 +187,7 @@ export default function AssignPlantsToGrow() {
 
         {isLoading ? (
           <View style={styles.loadingRow}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.helper}>Loading plants...</Text>
           </View>
         ) : null}
