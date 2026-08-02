@@ -3757,3 +3757,118 @@ completion/expiry events, cross-device continuation, production-index migration
 and legacy pending-record review, live Stripe key/webhook rotation and evidence,
 safe single-worker enablement, real Stripe sandbox acceptance, and
 mutation-capable production acceptance.
+
+## Dormant authoritative gift quote, reconfirmation, and return-reconciliation checkpoint
+
+Backend `933b76755e0e8512ce05c3f580fb5df93da8b32c` and frontend
+`fbff716081a1c444aebcc7e730af68374b63d63e` close the untrusted-price and
+ambiguous-return gaps without enabling gift checkout or the automatic refund
+worker. The backend now creates a signed five-minute quote bound to the exact
+purchaser, checkout attempt, recipient details, plan, term, Stripe Price and
+Product, amount, currency, and live/test mode. Checkout creation requires that
+quote and revalidates the exact Stripe Price/Product snapshot before any gift
+record or Stripe Session write.
+
+The server owns the gift success and cancel destinations. Reconciliation is
+purchaser-scoped and reuses the existing strict Session, line-item, Product,
+Price, amount, currency, mode, PaymentIntent, attempt, and request-fingerprint
+binding. Its bounded purchaser surface distinguishes verifying, pending,
+open-and-unpaid, payment-processing, settled, expired, and support states.
+Open/unpaid recovery returns only the exact stored Stripe Checkout URL after
+host, path, Session, status, payment status, and expiry validation. A paid
+Session can be settled after a delayed webhook, and an authoritative expired
+unpaid Session can release the attempt; neither a URL nor client state can
+invent payment.
+
+Frontend `fbff7160` separates quote review from payment intent. The first action
+requests only the server price. The second displays the exact total and bound
+recipient details and requires explicit confirmation before requesting Stripe.
+The client durably distinguishes quote-only from checkout-requested attempts,
+correlates the create response to the exact attempt and quote total, preserves
+ambiguous or malformed outcomes for recovery, and cannot clear an unrelated
+saved attempt. Success requires one valid `session_id`; cancel uses only the
+exact saved attempt in this checkpoint. Both routes use the active palette,
+one level-one heading, readable alerts, and mobile-safe full-width actions.
+
+Hostile review found and closed the following release blockers before commit:
+
+- success could fall back to stale storage;
+- a second create could follow an ambiguous response;
+- one success result could clear an unrelated attempt;
+- contradictory data could be accepted as settled or open/unpaid;
+- recovery could disappear after reload or while gift configuration stayed
+  disabled; and
+- a returned-but-malformed create response or URL-opening failure could be
+  mistaken for a definite pre-write rejection.
+
+Final local verification passed:
+
+- backend focused checkout/reconciliation regression: 5 suites / 169 tests;
+- backend broader payment/gift regression: 23 suites / 351 tests;
+- backend syntax, targeted ESLint with zero warnings, Prettier, and
+  `git diff --check`;
+- frontend final focused safety pack: 7 suites / 132 tests;
+- frontend API-wrapper contract: 27 / 27 tests;
+- frontend broader pack: 16 suites / 163 tests before the last narrow parser
+  tightening, with the final focused pack covering that exact code;
+- frontend full TypeScript, source and forced-test ESLint with zero warnings,
+  Prettier, and `git diff --check`.
+
+Backend CI `30742075353` passed. GitHub deployment `5712581560` reached Render
+deploy `dep-d9nguqjbc2fs73eb8fq0`; terminal deployment status `16245560006`
+succeeded on the exact backend SHA. Read-only production requests at
+`2026-08-02T09:45:46Z` returned HTTP 200 from `/health`, `/ready`, and
+`/api/subscription/status`. Readiness reported the database connected and the
+gift worker not required, enabled, or running. Subscription status reported
+live Stripe checkout and webhook configuration, while gift checkout remained
+false with blockers `feature_disabled`, `refund_worker_disabled`,
+`refund_worker_not_ready`, and `gift_fingerprint_secret_not_configured`.
+
+The first frontend CI run `30742077590` correctly failed because the broad API
+wrapper test still expected client-owned gift success/cancel URLs. Production
+Build Preflight `30742077581` had passed. Test-only frontend correction
+`e3d3b9fa57e1b7c75296df552ff069162eaab9c6` updated that contract to require
+the signed quote token and attempt while omitting client return URLs. Frontend
+CI `30742331314` and Production Build Preflight `30742331295` then passed on
+that exact head.
+
+Production root HTML returned HTTP 200 with Last-Modified
+`2026-08-02T09:45:20Z` and bundle
+`index-671c4e31e1be05ea55c2f2fc86f99288.js`. The 5,469,900-byte bundle SHA-256
+was `670d1ee3199a2bdec247b9eb2d6a2b84beaaf53168b39949aca07718125a523b`
+and contained all four release markers: `Server-confirmed total`,
+`Check gift checkout`, `Price hidden until secure review`, and
+`A saved checkout may exist`. The frontend publishes no GitHub deployment
+record, and the final head changed only a test, so this is strong runtime-content
+and timing evidence rather than a cryptographic exact-SHA hosting attestation.
+
+Live direct-route verification then found a real delivery mismatch: both
+`/account/gift-checkout/success` and `/account/gift-checkout/cancel` returned
+HTTP 404 because the production export's explicit fallback list omitted them.
+Frontend `9c989e075e8d9974ab61a6032568e8bd23a55ccc` adds both fallbacks and excludes
+the private return namespace from indexing. The focused live-URL regression
+passed 8 / 8 tests, targeted and forced-test lint passed, formatting and patch
+validation passed, and a full production export physically created both
+`dist/account/gift-checkout/*/index.html` files with the production API URL.
+Production Build Preflight `30742794608` and Frontend CI `30742794610` passed.
+The refreshed production export had Last-Modified `2026-08-02T09:59:41Z`, and
+both canonical return routes, including a success query form, returned HTTP 200.
+
+The signed-in production Browser retained the Night palette. Offers truthfully
+kept gift checkout unavailable and its gift control disabled. The success route
+without a Session rendered one level-one `Check gift checkout` heading and the
+fail-closed message that it would not infer payment from the address. A fresh
+cancel tab with no saved attempt rendered the same hierarchy and an explicit
+`No valid Stripe session or saved gift attempt` alert. Both retained history
+and Offers exits. No checkout, quote, confirmation, resume, history, retry,
+reconciliation, payment, migration, Stripe, email, claim, refund, account,
+workspace, preference, or record mutation was invoked.
+
+This checkpoint closes server-authoritative quote/reconfirmation, distinct
+success/cancel return handling, authoritative reconciliation, and delayed
+completion/expiry recovery. Gift checkout remains disabled. Remaining launch
+gates are the purchaser cancellation/refund policy decision, cross-device and
+signed-out verification continuation with one active purchaser attempt,
+production-index migration and legacy pending-record review, live Stripe
+webhook/key rotation evidence, safe single-worker enablement, real Stripe
+sandbox acceptance, and mutation-capable production acceptance.
