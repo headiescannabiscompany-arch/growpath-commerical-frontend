@@ -2,6 +2,9 @@ const { spawnSync } = require("child_process");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const http = require("http");
+
+const { expoStartArgs, prewarmExpoWeb } = require("../scripts/run-playwright-expo.cjs");
 
 const root = path.resolve(__dirname, "..");
 
@@ -115,6 +118,63 @@ function readLog(tempRoot) {
 }
 
 describe("release preflight", () => {
+  it("reuses the Metro cache unless a cold-cache run is explicitly requested", () => {
+    const original = process.env.PLAYWRIGHT_CLEAR_CACHE;
+
+    try {
+      delete process.env.PLAYWRIGHT_CLEAR_CACHE;
+      expect(expoStartArgs("19025")).not.toContain("--clear");
+
+      process.env.PLAYWRIGHT_CLEAR_CACHE = "1";
+      expect(expoStartArgs("19025")).toContain("--clear");
+    } finally {
+      if (original === undefined) {
+        delete process.env.PLAYWRIGHT_CLEAR_CACHE;
+      } else {
+        process.env.PLAYWRIGHT_CLEAR_CACHE = original;
+      }
+    }
+  });
+
+  it("prewarms the Expo bundle before Playwright starts", async () => {
+    const requests = [];
+    let bundleFinished = false;
+    const server = http.createServer((request, response) => {
+      requests.push(request.url);
+      if (request.url === "/") {
+        response.writeHead(200, { "Content-Type": "text/html" });
+        response.end(
+          '<!doctype html><script src="/_expo/entry.bundle?platform=web&amp;dev=true"></script>'
+        );
+        return;
+      }
+
+      if (request.url === "/_expo/entry.bundle?platform=web&dev=true") {
+        setTimeout(() => {
+          bundleFinished = true;
+          response.writeHead(200, { "Content-Type": "application/javascript" });
+          response.end("globalThis.__EXPO_PREWARMED__ = true;");
+        }, 25);
+        return;
+      }
+
+      response.writeHead(404);
+      response.end();
+    });
+
+    await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+
+    try {
+      await prewarmExpoWeb(`http://127.0.0.1:${address.port}/`, 1000);
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
+
+    expect(requests).toEqual(["/", "/_expo/entry.bundle?platform=web&dev=true"]);
+    expect(bundleFinished).toBe(true);
+  });
+
   it("runs normal preflight without writing strict evidence", () => {
     const tempRoot = createPreflightRoot();
 

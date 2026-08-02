@@ -1,8 +1,9 @@
 import React from "react";
 import { StyleSheet } from "react-native";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import AdCard from "@/components/feed/AdCard";
+import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
 
 const mockFetchPublicStorefront = jest.fn();
 
@@ -53,5 +54,25 @@ describe("AdCard", () => {
     expect(StyleSheet.flatten(screen.getByText("Open →").props.style).color).toBe(
       "#C2410C"
     );
+  });
+
+  it("labels first-party shortcuts honestly and does not record campaign analytics", () => {
+    const screen = render(
+      <AdCard
+        title="Explore grower storefronts"
+        body="Browse published GrowPath brands."
+        cta="Browse storefronts"
+        href="/store"
+        isFirstPartyShortcut
+      />
+    );
+
+    fireEvent.press(
+      screen.getByLabelText("Browse storefronts for Explore grower storefronts")
+    );
+
+    expect(screen.getByText("GrowPath shortcut")).toBeTruthy();
+    expect(screen.queryByText("Promoted campaign")).toBeNull();
+    expect(recordCommercialAnalyticsEvent).not.toHaveBeenCalled();
   });
 });

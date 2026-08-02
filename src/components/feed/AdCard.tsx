@@ -23,6 +23,7 @@ type AdCardProps = {
   imageUrl?: string | null;
   strategyLabel?: string;
   compact?: boolean;
+  isFirstPartyShortcut?: boolean;
 };
 
 export default function AdCard({
@@ -34,7 +35,8 @@ export default function AdCard({
   storefrontSlug,
   imageUrl,
   strategyLabel,
-  compact = false
+  compact = false,
+  isFirstPartyShortcut = false
 }: AdCardProps) {
   const { palette } = useAppTheme();
   const campaignAccent = palette.resolvedMode === "night" ? palette.link : "#C2410C";
@@ -70,6 +72,7 @@ export default function AdCard({
   }, [storefrontSlug]);
 
   function recordAdClick() {
+    if (isFirstPartyShortcut) return;
     recordCommercialAnalyticsEvent({
       eventType: "ad_click",
       objectType: "feed_ad",
@@ -122,7 +125,9 @@ export default function AdCard({
       ) : null}
       <View style={styles.copy}>
         <View style={styles.labelRow}>
-          <Text style={[styles.label, { color: campaignAccent }]}>Promoted campaign</Text>
+          <Text style={[styles.label, { color: campaignAccent }]}>
+            {isFirstPartyShortcut ? "GrowPath shortcut" : "Promoted campaign"}
+          </Text>
           {strategyLabel ? (
             <Text style={[styles.strategy, { color: palette.textMuted }]}>
               {strategyLabel}

@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -16,7 +16,6 @@ import { radius } from "@/theme/theme";
 
 export default function VideoDetailRoute() {
   const params = useLocalSearchParams<{ videoId?: string }>();
-  const router = useRouter();
   const auth = useAuth();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -57,16 +56,9 @@ export default function VideoDetailRoute() {
   return (
     <AppPage
       routeKey="video-detail"
+      backFallbackHref="/videos"
       header={
         <View>
-          <Pressable
-            accessibilityLabel="Back to videos"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <Text style={styles.backText}>Back to Videos</Text>
-          </Pressable>
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             {video?.title || "Video"}
           </Text>
@@ -166,8 +158,6 @@ export default function VideoDetailRoute() {
 
 export const createStyles = (palette: ThemePalette) =>
   StyleSheet.create({
-    backButton: { alignSelf: "flex-start", marginBottom: 8 },
-    backText: { color: palette.link, fontWeight: "800" },
     title: { color: palette.heroText, fontSize: 28, fontWeight: "900" },
     ownerRow: {
       alignItems: "flex-start",

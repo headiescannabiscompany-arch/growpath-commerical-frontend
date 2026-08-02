@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { fetchStorefront, Storefront, updateStorefront } from "@/api/storefront";
@@ -27,16 +27,42 @@ type ProfileForm = {
 };
 
 const EMPTY_FORM: ProfileForm = {
-  businessName: "Living Soil Labs",
+  businessName: "",
   slug: "",
-  accountType: "soil_nutrient_brand",
-  bio: "Rooted in Science. Grown by Nature. Pre-launch placeholder brand. All inventory starts at zero and prices stay TBD until the owner edits them.",
+  accountType: "brand",
+  bio: "",
   websiteUrl: "",
   supportEmail: "",
   socialLinks: "",
-  forumDisplayName: "Living Soil Labs",
+  forumDisplayName: "",
   storefrontStatus: "draft"
 };
+
+type BusinessIdentityUser = {
+  businessName?: unknown;
+  companyName?: unknown;
+  business?: { name?: unknown } | null;
+};
+
+function authenticatedBusinessStarter(
+  user: BusinessIdentityUser | null | undefined
+): ProfileForm {
+  const businessName = String(
+    user?.businessName || user?.companyName || user?.business?.name || ""
+  ).trim();
+  if (!businessName) return EMPTY_FORM;
+
+  const isLivingSoilLabs = businessName.toLowerCase() === "living soil labs";
+  return {
+    ...EMPTY_FORM,
+    businessName,
+    forumDisplayName: businessName,
+    accountType: isLivingSoilLabs ? "soil_nutrient_brand" : "brand",
+    bio: isLivingSoilLabs
+      ? "Rooted in Science. Grown by Nature. Pre-launch placeholder brand. All inventory starts at zero and prices stay TBD until the owner edits them."
+      : ""
+  };
+}
 
 type BusinessStorefront = Storefront & {
   businessName?: string;
@@ -77,8 +103,11 @@ function hasStorefrontIdentity(storefront: BusinessStorefront | null) {
   );
 }
 
-function hydrateForm(storefront: BusinessStorefront | null): ProfileForm {
-  if (!storefront || !hasStorefrontIdentity(storefront)) return EMPTY_FORM;
+function hydrateForm(
+  storefront: BusinessStorefront | null,
+  starterForm: ProfileForm
+): ProfileForm {
+  if (!storefront || !hasStorefrontIdentity(storefront)) return starterForm;
   const socialLinks = Array.isArray(storefront.socialLinks)
     ? storefront.socialLinks.join(", ")
     : String(storefront.socialLinks || "");
@@ -100,8 +129,12 @@ export default function CommercialProfileRoute() {
   const styles = useMemo(() => createCommercialProfileStyles(palette), [palette]);
   const { user } = useAuth();
   const entitlements = useEntitlements();
+  const starterForm = useMemo(
+    () => authenticatedBusinessStarter(user as BusinessIdentityUser | null),
+    [user]
+  );
   const [storefront, setStorefront] = useState<BusinessStorefront | null>(null);
-  const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
+  const [form, setForm] = useState<ProfileForm>(starterForm);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -111,23 +144,23 @@ export default function CommercialProfileRoute() {
     return slug ? `/store/${encodeURIComponent(slug)}` : "";
   }, [form.slug]);
 
-  async function loadProfile() {
+  const loadProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const next = (await fetchStorefront()) as BusinessStorefront | null;
       setStorefront(next);
-      setForm(hydrateForm(next));
+      setForm(hydrateForm(next, starterForm));
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
     }
-  }
+  }, [starterForm]);
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    void loadProfile();
+  }, [loadProfile]);
 
   async function submitProfile() {
     if (!form.businessName.trim()) return;
@@ -184,8 +217,8 @@ export default function CommercialProfileRoute() {
           Commercial profile is the brand-level identity. The root profile page stays
           account-level for sign-in and privacy; storefront and public profile settings
           define how the brand appears publicly. When no storefront has been saved yet,
-          GrowPath shows a Living Soil Labs starter draft so the owner can edit a real
-          placeholder instead of an empty shell.
+          GrowPath starts with the authenticated business name when one is available.
+          Another brand&apos;s identity or storefront content is never inserted.
         </Text>
         <View style={styles.metricGrid}>
           <View style={styles.metric}>

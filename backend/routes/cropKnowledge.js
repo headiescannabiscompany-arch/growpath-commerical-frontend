@@ -11,6 +11,11 @@ const RegionalAlert = require("../models/RegionalAlert");
 const stableObjectIdFromAny = require("../helpers/stableObjectIdFromAny");
 
 const router = express.Router();
+const NON_REVIEWED_CURATION_STATUSES = new Set([
+  "draft",
+  "needs_license_review",
+  "rejected"
+]);
 
 function userId(req) {
   return String(
@@ -21,6 +26,19 @@ function userId(req) {
 function userObjectId(req) {
   const uid = userId(req);
   return uid ? stableObjectIdFromAny(uid) : null;
+}
+
+function hasAuthenticatedUser(req) {
+  return Boolean(req.userId || req.ctx?.userId || req.user?.id || req.user?._id);
+}
+
+function isAppAdmin(req) {
+  return [req.user?.role, req.ctx?.appRole].some(
+    (role) =>
+      String(role || "")
+        .trim()
+        .toLowerCase() === "admin"
+  );
 }
 
 function maybeObjectId(id) {
@@ -254,12 +272,23 @@ router.delete("/taxa/:id", async (req, res, next) => {
 
 router.get("/crop-profiles", async (req, res, next) => {
   try {
+    const requestedCurationStatus = String(req.query.curationStatus || "")
+      .trim()
+      .toLowerCase();
+    if (NON_REVIEWED_CURATION_STATUSES.has(requestedCurationStatus) && !isAppAdmin(req)) {
+      return res.status(403).json({
+        message: "Administrator access is required to review unapproved crop profiles."
+      });
+    }
     const query = addListFilters({}, req, [
       "displayName",
       "scientificName",
       "commonNames",
       "cropCategory"
     ]);
+    if (!requestedCurationStatus) {
+      query.curationStatus = "reviewed";
+    }
     const items = await listRows(CropProfile, query, req, { displayName: 1 });
     return res.json({ items });
   } catch (error) {
@@ -269,6 +298,14 @@ router.get("/crop-profiles", async (req, res, next) => {
 
 router.post("/crop-profiles/starter-seed", async (req, res, next) => {
   try {
+    if (!hasAuthenticatedUser(req)) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    if (process.env.NODE_ENV === "production" && !isAppAdmin(req)) {
+      return res.status(403).json({
+        message: "Administrator access is required to seed crop profiles in production."
+      });
+    }
     const starter = [
       ["cannabis", "Cannabis", "Cannabis sativa", "herb"],
       ["tomato", "Tomato", "Solanum lycopersicum", "vegetable"],

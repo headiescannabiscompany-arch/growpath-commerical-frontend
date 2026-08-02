@@ -39,14 +39,15 @@ type AdItem = {
   cta: string;
   href: string;
   storefrontSlug?: string;
-  createdAt: string;
-  engagementCount: number;
-  clickCount: number;
-  promotionCount: number;
+  createdAt?: string;
+  engagementCount?: number;
+  clickCount?: number;
+  promotionCount?: number;
   relevanceScore?: number;
   imageUrl: string;
   placements?: string[];
   growInterests?: string[];
+  isFirstPartyShortcut?: boolean;
 };
 
 const CONTEXT_SLOT_PATTERNS: Array<[RegExp, FeedSlotKey]> = [
@@ -203,112 +204,91 @@ function mapCampaignToAd(post: CommercialFeedCampaign): AdItem {
 
 const EDUCATION_ITEMS = [
   {
-    title: "Triple Bag: clones in production",
-    body: "Follow how production clones are selected, stabilized, and tracked before release.",
-    cta: "Open update",
-    href: "/store/triple-bag-genetics"
+    title: "Build a repeatable scouting record",
+    body: "Capture distribution, progression, measurements, photos, and the next check before assigning a cause.",
+    cta: "Open Forum / Q&A",
+    href: "/forum"
   },
   {
-    title: "Triple Bag: terpene target notes",
-    body: "How breeders think about myrcene, limonene, pinene, esters, thiols, and flavor goals.",
-    cta: "Open notes",
-    href: "/store/triple-bag-genetics"
+    title: "Learn from published grow courses",
+    body: "Browse released lessons for cultivation, product education, onboarding, and safer operating practices.",
+    cta: "Browse courses",
+    href: "/courses"
   },
   {
-    title: "Triple Bag: phenotype chemistry",
-    body: "A practical look at traits that may shape blank flavor profiles across a line.",
-    cta: "Read breakdown",
-    href: "/store/triple-bag-genetics"
+    title: "Compare evidence before changing inputs",
+    body: "Use measured conditions, saved observations, and repeat checks to separate patterns from guesses.",
+    cta: "Open grow tools",
+    href: "workspace-tools"
   }
 ];
 
-const AD_ITEMS = [
+export function resolveEducationHref(href: string, mode?: string | null) {
+  if (href !== "workspace-tools") return href;
+  if (mode === "facility") return "/home/facility/ai-tools";
+  if (mode === "commercial") return "/home/commercial/tools";
+  return "/home/personal/tools";
+}
+
+const FIRST_PARTY_SHORTCUTS = [
   {
     title: "Explore grower storefronts",
     body: "Discover products, courses, and grow education from published GrowPath brands.",
     cta: "Browse storefronts",
     href: "/store",
-    createdAt: "2026-07-05T10:00:00.000Z",
-    engagementCount: 81,
-    clickCount: 34,
-    promotionCount: 8,
-    imageUrl:
-      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=900&q=80"
+    imageUrl: "",
+    isFirstPartyShortcut: true
   },
   {
     title: "Learn from grower courses",
     body: "Find courses matched to your crops, growing methods, and experience level.",
     cta: "Browse courses",
     href: "/courses",
-    createdAt: "2026-07-03T09:30:00.000Z",
-    engagementCount: 132,
-    clickCount: 62,
-    promotionCount: 13,
-    imageUrl:
-      "https://images.unsplash.com/photo-1533038590840-1cde6e668a91?auto=format&fit=crop&w=900&q=80"
+    imageUrl: "",
+    isFirstPartyShortcut: true
   },
   {
     title: "Ask the grower community",
     body: "Share a grow, photo, diagnosis, or tool result and get contextual help.",
     cta: "Open forum",
     href: "/forum",
-    createdAt: "2026-06-29T14:15:00.000Z",
-    engagementCount: 57,
-    clickCount: 11,
-    promotionCount: 4,
-    imageUrl:
-      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=80"
+    imageUrl: "",
+    isFirstPartyShortcut: true
   },
   {
     title: "Plan the next grow",
     body: "Use GrowPath planning workflows to connect setup choices, tasks, and calendars.",
     cta: "Open GrowPath",
     href: "/home/personal/grows/new",
-    createdAt: "2026-07-04T16:45:00.000Z",
-    engagementCount: 74,
-    clickCount: 8,
-    promotionCount: 2,
-    imageUrl:
-      "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=900&q=80"
+    imageUrl: "",
+    isFirstPartyShortcut: true
   }
 ] satisfies AdItem[];
 
-const FACILITY_AD_ITEMS = [
+const FACILITY_FIRST_PARTY_SHORTCUTS = [
   {
     title: "Discover commercial suppliers",
     body: "Browse published GrowPath storefronts without leaving the facility workflow.",
     cta: "Browse storefronts",
     href: "/store",
-    createdAt: "2026-07-05T12:00:00.000Z",
-    engagementCount: 44,
-    clickCount: 19,
-    promotionCount: 6,
-    imageUrl:
-      "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=900&q=80"
+    imageUrl: "",
+    isFirstPartyShortcut: true
   },
   {
     title: "Train the cultivation team",
     body: "Use courses, live sessions, and SOP-linked tasks for repeatable operations.",
     cta: "Browse courses",
     href: "/courses",
-    createdAt: "2026-07-01T08:00:00.000Z",
-    engagementCount: 67,
-    clickCount: 9,
-    promotionCount: 3,
-    imageUrl:
-      "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=900&q=80"
+    imageUrl: "",
+    isFirstPartyShortcut: true
   },
   {
     title: "Connect with the grower community",
     body: "Share permitted facility updates and participate in crop-focused discussions.",
     cta: "Open forum",
     href: "/forum",
-    createdAt: "2026-07-04T11:00:00.000Z",
-    engagementCount: 36,
-    clickCount: 5,
-    promotionCount: 1,
-    imageUrl:
-      "https://images.unsplash.com/photo-1582719471384-894fbb16e074?auto=format&fit=crop&w=900&q=80"
+    imageUrl: "",
+    isFirstPartyShortcut: true
   }
 ] satisfies AdItem[];
 
@@ -326,14 +306,27 @@ export function selectAds(
   placement: FeedRailProps["placement"]
 ) {
   const placementOffset = PLACEMENT_OFFSET[placement || "top"] || 0;
+  if (ads.length && ads.every((item) => item.isFirstPartyShortcut)) {
+    return rotate(ads, placementOffset * Math.max(count, 1))
+      .slice(0, count)
+      .map((item) => ({ ...item, strategyLabel: undefined }));
+  }
   const rank = (compare: (a: AdItem, b: AdItem) => number): Map<string, number> =>
     new Map(
       [...ads].sort(compare).map((item, index) => [`${item.title}|${item.href}`, index])
     );
-  const newest = rank((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-  const mostLiked = rank((a, b) => b.engagementCount - a.engagementCount);
-  const leastClicked = rank((a, b) => a.clickCount - b.clickCount);
-  const leastPromoted = rank((a, b) => a.promotionCount - b.promotionCount);
+  const newest = rank(
+    (a, b) => Date.parse(b.createdAt || "") - Date.parse(a.createdAt || "")
+  );
+  const mostLiked = rank(
+    (a, b) => Number(b.engagementCount || 0) - Number(a.engagementCount || 0)
+  );
+  const leastClicked = rank(
+    (a, b) => Number(a.clickCount || 0) - Number(b.clickCount || 0)
+  );
+  const leastPromoted = rank(
+    (a, b) => Number(a.promotionCount || 0) - Number(b.promotionCount || 0)
+  );
   const mostRelevant = rank(
     (a, b) => Number(b.relevanceScore || 0) - Number(a.relevanceScore || 0)
   );
@@ -401,7 +394,9 @@ export default function FeedRail({
   if (!slots || slots <= 0) return null;
 
   const fallbackAds =
-    mode === "facility" || mode === "commercial" ? FACILITY_AD_ITEMS : AD_ITEMS;
+    mode === "facility" || mode === "commercial"
+      ? FACILITY_FIRST_PARTY_SHORTCUTS
+      : FIRST_PARTY_SHORTCUTS;
   const ads = campaignAds.length ? campaignAds : fallbackAds;
   const adSlotCount =
     railMode === "promo-only"
@@ -417,6 +412,7 @@ export default function FeedRail({
       {Array.from({ length: slots }).map((_, index) => {
         const isEducation = index % 2 === 0;
         const educationItem = EDUCATION_ITEMS[index % EDUCATION_ITEMS.length];
+        const educationHref = resolveEducationHref(educationItem.href, mode);
         const adItem = selectedAds[adIndex % selectedAds.length];
 
         if (railMode === "education-only") {
@@ -426,7 +422,7 @@ export default function FeedRail({
               title={educationItem.title}
               body={educationItem.body}
               cta={educationItem.cta}
-              href={educationItem.href}
+              href={educationHref}
             />
           );
         }
@@ -444,6 +440,7 @@ export default function FeedRail({
               imageUrl={adItem.imageUrl}
               strategyLabel={adItem.strategyLabel}
               compact={compact}
+              isFirstPartyShortcut={adItem.isFirstPartyShortcut}
             />
           );
         }
@@ -455,7 +452,7 @@ export default function FeedRail({
               title={educationItem.title}
               body={educationItem.body}
               cta={educationItem.cta}
-              href={educationItem.href}
+              href={educationHref}
             />
           );
         }
@@ -471,6 +468,7 @@ export default function FeedRail({
             imageUrl={adItem.imageUrl}
             strategyLabel={adItem.strategyLabel}
             compact={compact}
+            isFirstPartyShortcut={adItem.isFirstPartyShortcut}
           />
         );
       })}

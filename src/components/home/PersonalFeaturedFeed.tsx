@@ -81,66 +81,67 @@ function entityId(row: any) {
 
 const FALLBACK_CARDS: HighlightCard[] = [
   {
-    key: "commercial-1",
-    label: "Commercial ad",
-    title: "Explore grower storefronts",
+    key: "shortcut-storefronts",
+    label: "GrowPath shortcut",
+    title: "Browse grower storefronts",
     summary:
       "Discover products, courses, and grow education from published GrowPath brands.",
     href: "/feed",
-    meta: "Commercial"
+    meta: "Explore"
   },
   {
-    key: "commercial-2",
-    label: "Commercial ad",
-    title: "Browse new feed campaigns",
+    key: "shortcut-feed",
+    label: "GrowPath shortcut",
+    title: "Follow brand updates",
     summary:
       "See current launches, updates, offers, and education from brands you follow.",
     href: "/feed",
-    meta: "Commercial"
+    meta: "Feed"
   },
   {
-    key: "commercial-3",
-    label: "Commercial ad",
-    title: "Open product and store offers",
+    key: "shortcut-products",
+    label: "GrowPath shortcut",
+    title: "Explore products and trials",
     summary:
       "Move from a campaign straight into storefronts, products, trials, and live drops.",
     href: "/feed",
-    meta: "Commercial"
+    meta: "Discover"
   },
   {
-    key: "facility-1",
-    label: "Facility post",
-    title: "Facility education and SOPs",
+    key: "shortcut-facility-learning",
+    label: "GrowPath guide",
+    title: "Facility learning and SOPs",
     summary:
       "Training, compliance, IPM, safety, and facility outreach designed for operators.",
-    href: "/home/facility/feed",
-    meta: "Facility"
+    href: "/feed",
+    meta: "Learn"
   },
   {
-    key: "course-1",
-    label: "Course",
+    key: "shortcut-courses",
+    label: "GrowPath shortcut",
     title: "Open courses",
     summary: "Published lessons for product education, onboarding, and learning paths.",
     href: "/courses",
     meta: "Learn"
   },
   {
-    key: "forum-1",
-    label: "Forum post",
-    title: "Popular forum discussion",
+    key: "shortcut-forum",
+    label: "GrowPath shortcut",
+    title: "Join Forum / Q&A",
     summary:
       "Read a high-signal thread from the community and jump into the conversation.",
     href: "/home/personal/community",
-    meta: "Forum"
+    meta: "Community"
   }
 ];
 
-function campaignHref(campaign: any, facility = false) {
+export function campaignHref(campaign: any, _facility = false) {
   const id = entityId(campaign);
-  if (!id) return facility ? "/home/facility/feed" : "/feed";
-  return facility
-    ? "/home/facility/feed?campaignId=" + encodeURIComponent(id)
-    : "/feed?campaignId=" + encodeURIComponent(id);
+  if (!id) return "/feed";
+  // Personal Home is a public/shared discovery surface. Even a Facility-authored
+  // education card must open the shared campaign feed instead of crossing into a
+  // role-gated Facility workspace that most Personal users cannot access.
+  return "/feed?campaignId=" + encodeURIComponent(id);
 }
 
 function campaignImage(campaign: any) {
@@ -319,12 +320,11 @@ export default function PersonalFeaturedFeed() {
       <View style={styles.headerRow}>
         <View style={styles.headerCopy}>
           <Text style={styles.kicker}>Featured feed</Text>
-          <Text style={styles.title}>
-            Six smaller cards that make the home page useful
-          </Text>
+          <Text style={styles.title}>Discover across GrowPath</Text>
           <Text style={styles.subtitle}>
-            Three commercial ads, one facility education post, one course, and one popular
-            forum post.
+            Explore storefronts, practical facility knowledge, courses, and community
+            conversations. Published highlights replace the guided shortcuts as they
+            become available.
           </Text>
         </View>
         <Link href="/home/personal/discover" asChild>

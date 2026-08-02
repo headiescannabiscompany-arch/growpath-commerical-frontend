@@ -2,51 +2,162 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
-const TOOLS = [
-  [
-    "Ask AI",
-    "Use facility and grow context in a continuing conversation.",
-    "/home/facility/ai-ask"
-  ],
-  [
-    "Plant Diagnose",
-    "Review plant media and operational evidence together.",
-    "/home/facility/ai-diagnosis-photo"
-  ],
-  [
-    "Soil & Nutrient Mix Builders",
-    "Choose the science-based soil or nutrient mix workflow from the shared calculation engine.",
-    "/home/facility/tools/recipe-builder"
-  ],
-  [
-    "Environment Review",
-    "Review environmental readings, risk, and next checks.",
-    "/home/facility/tools/environment"
-  ],
-  [
-    "Saved Runs / Reports",
-    "Open facility reports and saved operational records.",
-    "/home/facility/reports"
-  ]
+export type FacilityToolHubItem = {
+  actionLabel: string;
+  credit: string;
+  description: string;
+  href: string;
+  output: string;
+  title: string;
+};
+
+export const FACILITY_CORE_TOOLS: readonly FacilityToolHubItem[] = [
+  {
+    title: "Ask AI",
+    description: "Use selected-Facility and grow context in a continuing conversation.",
+    href: "/home/facility/ai-ask",
+    credit: "Provider-backed text help uses the selected Facility's AI credits.",
+    output: "Evidence-aware guidance, limitations, and reviewable draft actions.",
+    actionLabel: "Open Ask AI"
+  },
+  {
+    title: "Plant Diagnose",
+    description:
+      "Review plant media, direct observations, and measured operational evidence together.",
+    href: "/home/facility/ai-diagnosis-photo",
+    credit: "An image-capable diagnosis uses the selected Facility's AI credits.",
+    output:
+      "Candidates, counter-evidence, missing information, confidence, and next checks.",
+    actionLabel: "Open Plant Diagnose"
+  },
+  {
+    title: "Environment Review",
+    description: "Review measured environmental readings, risk, and next checks.",
+    href: "/home/facility/tools/environment",
+    credit:
+      "The rules review is free; optional provider-backed telemetry prefill uses Facility AI credits.",
+    output: "Calculated risks, assumptions, warnings, and measured follow-up checks.",
+    actionLabel: "Open Environment Review"
+  },
+  {
+    title: "Soil & Nutrient Mix Builders",
+    description:
+      "Choose the science-based soil or nutrient mix workflow from the shared calculation engine.",
+    href: "/home/facility/tools/recipe-builder",
+    credit:
+      "The calculators are free; an optional provider-backed prefill uses Facility AI credits.",
+    output:
+      "Scaled calculations, source quality, assumptions, release timing, and warnings.",
+    actionLabel: "Choose a mix builder"
+  }
 ] as const;
 
-const LIBRARY = [
+export const FACILITY_RECORD_TOOLS: readonly FacilityToolHubItem[] = [
+  {
+    title: "Facility Grows",
+    description:
+      "Open the selected Facility's grows before running lifecycle work that needs room, plant, or stage context.",
+    href: "/home/facility/grows",
+    credit: "Opening and updating Facility records does not use AI credits.",
+    output: "Facility-scoped grow, room, plant, journal, and lifecycle context.",
+    actionLabel: "Open Facility Grows"
+  },
+  {
+    title: "Facility Tasks",
+    description:
+      "Review confirmed assignments instead of treating an AI suggestion as a completed action.",
+    href: "/home/facility/tasks",
+    credit: "Task review and updates do not use AI credits.",
+    output: "Facility-scoped assignments, owners, due dates, and evidence status.",
+    actionLabel: "Open Facility Tasks"
+  },
+  {
+    title: "Facility Reports",
+    description:
+      "Open record-backed operational summaries and controlled evidence exports.",
+    href: "/home/facility/reports",
+    credit: "Opening reports and exports does not use AI credits.",
+    output: "Facility-scoped summaries, readiness gaps, and export evidence.",
+    actionLabel: "Open Facility Reports"
+  }
+] as const;
+
+export const FACILITY_LIBRARY = [
   ["Nutrient Mix Builder", "/home/facility/tools/npk"],
   ["Soil Mix Builder", "/home/facility/tools/soil-builder"],
-  ["Ingredient catalog", "/home/facility/tools/ingredient-library"]
+  ["Products & Label Library", "/home/facility/tools/ingredient-library"]
 ] as const;
+
+export function facilityToolHref(href: string, facilityId: string) {
+  if (!href.startsWith("/home/facility/tools/")) return href;
+  const query = new URLSearchParams({ workspace: "facility" });
+  if (facilityId) query.set("facilityId", facilityId);
+  return `${href}?${query.toString()}`;
+}
+
+function ToolGrid({
+  facilityId,
+  items
+}: {
+  facilityId: string;
+  items: readonly FacilityToolHubItem[];
+}) {
+  const router = useRouter();
+  const { palette } = useAppTheme();
+
+  return (
+    <View style={styles.grid}>
+      {items.map((tool) => {
+        const href = facilityToolHref(tool.href, facilityId);
+        return (
+          <AppCard key={tool.href} style={styles.card}>
+            <Text
+              accessibilityRole="header"
+              aria-level={2}
+              style={[styles.cardTitle, { color: palette.text }]}
+            >
+              {tool.title}
+            </Text>
+            <Text style={[styles.description, { color: palette.textMuted }]}>
+              {tool.description}
+            </Text>
+            <Text style={[styles.detail, { color: palette.textMuted }]}>
+              <Text style={[styles.detailLabel, { color: palette.text }]}>Credits: </Text>
+              {tool.credit}
+            </Text>
+            <Text style={[styles.detail, { color: palette.textMuted }]}>
+              <Text style={[styles.detailLabel, { color: palette.text }]}>You get: </Text>
+              {tool.output}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={tool.actionLabel}
+              style={[styles.button, { backgroundColor: palette.accent }]}
+              onPress={() => router.push(href as any)}
+            >
+              <Text style={[styles.buttonText, { color: palette.accentText }]}>
+                {tool.actionLabel}
+              </Text>
+            </Pressable>
+          </AppCard>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function FacilityAiToolsRoute() {
   const router = useRouter();
   const { selectedId: facilityId, selected: facility } = useFacility();
   const { palette } = useAppTheme();
+  const activeFacilityId = String(facilityId || "");
   return (
     <AppPage
       routeKey="facility-ai-tools"
@@ -69,33 +180,40 @@ export default function FacilityAiToolsRoute() {
     >
       <TokenBalanceWidget
         workspaceType="facility"
-        facilityId={String(facilityId || "")}
+        facilityId={activeFacilityId}
         workspaceName={String(facility?.name || "Selected Facility")}
       />
-      <View style={styles.grid}>
-        {TOOLS.map(([title, description, href]) => (
-          <AppCard key={href} style={styles.card}>
-            <Text
-              accessibilityRole="header"
-              aria-level={2}
-              style={[styles.cardTitle, { color: palette.text }]}
-            >
-              {title}
-            </Text>
-            <Text style={[styles.description, { color: palette.textMuted }]}>
-              {description}
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Open ${title}`}
-              style={[styles.button, { backgroundColor: palette.accent }]}
-              onPress={() => router.push(href as any)}
-            >
-              <Text style={[styles.buttonText, { color: palette.accentText }]}>Open</Text>
-            </Pressable>
-          </AppCard>
-        ))}
-      </View>
+      <AppCard style={styles.scopeCard}>
+        <Text
+          accessibilityRole="header"
+          aria-level={2}
+          style={[styles.scopeTitle, { color: palette.text }]}
+        >
+          Selected Facility boundary
+        </Text>
+        <Text style={[styles.scopeText, { color: palette.textMuted }]}>
+          {facility?.name || "The selected Facility"} owns the balance above. AI never
+          turns a suggestion into an assignment, SOP approval, inventory change, or
+          compliance claim without a separate authorized action. Cannabis-only lifecycle
+          tools appear from an eligible Facility grow, not from this general hub.
+        </Text>
+      </AppCard>
+      <Text
+        accessibilityRole="header"
+        aria-level={2}
+        style={[styles.sectionHeading, { color: palette.text }]}
+      >
+        Shared grow intelligence
+      </Text>
+      <ToolGrid facilityId={activeFacilityId} items={FACILITY_CORE_TOOLS} />
+      <Text
+        accessibilityRole="header"
+        aria-level={2}
+        style={[styles.sectionHeading, { color: palette.text }]}
+      >
+        Facility records and operations
+      </Text>
+      <ToolGrid facilityId={activeFacilityId} items={FACILITY_RECORD_TOOLS} />
       <Text
         accessibilityRole="header"
         aria-level={2}
@@ -104,13 +222,13 @@ export default function FacilityAiToolsRoute() {
         Tool Library
       </Text>
       <View style={styles.library}>
-        {LIBRARY.map(([title, href]) => (
+        {FACILITY_LIBRARY.map(([title, href]) => (
           <Pressable
             key={href}
             accessibilityRole="button"
             accessibilityLabel={`Open ${title}`}
             style={[styles.libraryButton, { borderColor: palette.accent }]}
-            onPress={() => router.push(href as any)}
+            onPress={() => router.push(facilityToolHref(href, activeFacilityId) as any)}
           >
             <Text style={[styles.libraryText, { color: palette.accent }]}>{title}</Text>
           </Pressable>
@@ -132,6 +250,8 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 17, fontWeight: "900" },
   description: { lineHeight: 19 },
+  detail: { fontSize: 12, lineHeight: 18 },
+  detailLabel: { fontWeight: "900" },
   button: {
     alignSelf: "flex-start",
     borderRadius: radius.card,
@@ -152,5 +272,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9
   },
-  libraryText: { fontWeight: "800" }
+  libraryText: { fontWeight: "800" },
+  scopeCard: { gap: 6 },
+  scopeTitle: { fontSize: 17, fontWeight: "900" },
+  scopeText: { lineHeight: 20 },
+  sectionHeading: { fontSize: 19, fontWeight: "900", marginTop: 8 }
 });

@@ -19,6 +19,13 @@ jest.mock("expo-router", () => {
   };
 });
 
+jest.mock("@/components/nav/BackButton", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return ({ fallbackHref }: any) =>
+    React.createElement(Text, null, `Shared Back ${fallbackHref}`);
+});
+
 describe("HomeScheduleRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -272,6 +279,7 @@ describe("HomeScheduleRoute", () => {
   it("aggregates tasks, lives, course releases, and feed campaigns", async () => {
     const screen = render(<HomeScheduleRoute />);
 
+    expect(screen.getByText("Shared Back /account/workspace")).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Schedule / Agenda")).toBeTruthy());
     expect(screen.getByRole("header", { name: "Schedule / Agenda" })).toBeTruthy();
     ["Overdue", "Today", "Upcoming", "Completed"].forEach((name) => {

@@ -16,6 +16,12 @@ function makeDoc(row) {
 function matchValue(actual, expected) {
   if (expected && typeof expected === "object") {
     if (Array.isArray(expected.$in)) return expected.$in.includes(actual);
+    if (Object.prototype.hasOwnProperty.call(expected, "$ne")) {
+      return actual !== expected.$ne;
+    }
+    if (Object.prototype.hasOwnProperty.call(expected, "$exists")) {
+      return expected.$exists ? actual !== undefined : actual === undefined;
+    }
     if (expected.$regex) {
       return new RegExp(expected.$regex, expected.$options || "").test(
         String(actual || "")
@@ -391,6 +397,106 @@ describe("commercial backend routes", () => {
     expect(res.body.trials[0].trialName).toBe("Veg Mix Trial");
   });
 
+  test("keeps testing and explicitly QA-only records out of public storefront discovery", async () => {
+    rows.push(
+      {
+        _id: "public-storefront",
+        userId: "public-seller",
+        recordType: "storefront",
+        name: "Public Grow Shop",
+        slug: "public-grow-shop",
+        status: "published",
+        payload: { name: "Public Grow Shop", slug: "public-grow-shop" },
+        deletedAt: null
+      },
+      {
+        _id: "testing-storefront",
+        userId: "testing-seller",
+        recordType: "storefront",
+        name: "Testing Storefront",
+        slug: "testing-storefront",
+        status: "testing",
+        payload: { name: "Testing Storefront", slug: "testing-storefront" },
+        deletedAt: null
+      },
+      {
+        _id: "flagged-storefront",
+        userId: "flagged-seller",
+        recordType: "storefront",
+        name: "Flagged Storefront",
+        slug: "flagged-storefront",
+        status: "published",
+        payload: {
+          name: "Flagged Storefront",
+          slug: "flagged-storefront",
+          isTest: true
+        },
+        deletedAt: null
+      },
+      {
+        _id: "qa-namespace-storefront",
+        userId: "qa-namespace-seller",
+        recordType: "storefront",
+        name: "QA Namespace Storefront",
+        slug: "qa-namespace-storefront",
+        status: "published",
+        payload: {
+          name: "QA Namespace Storefront",
+          slug: "qa-namespace-storefront",
+          qaSeedNamespace: "growpath-qa-commercial"
+        },
+        deletedAt: null
+      },
+      {
+        _id: "public-product",
+        userId: "public-seller",
+        recordType: "product",
+        name: "Public Product",
+        status: "published",
+        payload: { name: "Public Product" },
+        deletedAt: null
+      },
+      {
+        _id: "testing-product",
+        userId: "public-seller",
+        recordType: "product",
+        name: "Testing Product",
+        status: "testing",
+        payload: { name: "Testing Product" },
+        deletedAt: null
+      },
+      {
+        _id: "qa-only-product",
+        userId: "public-seller",
+        recordType: "product",
+        name: "QA-only Product",
+        status: "published",
+        payload: { name: "QA-only Product", qaOnly: true },
+        deletedAt: null
+      }
+    );
+
+    const directory = await request(createApp(false)).get(
+      "/api/commercial/storefront/public"
+    );
+    const detail = await request(createApp(false)).get(
+      "/api/commercial/storefront/public/public-grow-shop"
+    );
+    const testingDetail = await request(createApp(false)).get(
+      "/api/commercial/storefront/public/testing-storefront"
+    );
+
+    expect(directory.status).toBe(200);
+    expect(directory.body.storefronts.map((storefront) => storefront.slug)).toEqual([
+      "public-grow-shop"
+    ]);
+    expect(detail.status).toBe(200);
+    expect(detail.body.products.map((product) => product.name)).toEqual([
+      "Public Product"
+    ]);
+    expect(testingDetail.status).toBe(404);
+  });
+
   test("searches public storefronts by storefront and product metadata", async () => {
     rows.push(
       {
@@ -704,6 +810,88 @@ describe("commercial backend routes", () => {
       storefrontSlug: "living-soil-labs"
     });
     expect(res.body.items[0].externalLinks[0].url).toBe("https://example.com/veg");
+  });
+
+  test("keeps testing and test-only records out of public feed and checkout while owners retain access", async () => {
+    rows.push(
+      {
+        _id: "public-post",
+        userId: "seller-user",
+        recordType: "post",
+        name: "Published update",
+        status: "published",
+        payload: { title: "Published update", body: "Public information." },
+        deletedAt: null
+      },
+      {
+        _id: "testing-post",
+        userId: "seller-user",
+        recordType: "post",
+        name: "Testing update",
+        status: "testing",
+        payload: { title: "Testing update", body: "Internal review." },
+        deletedAt: null
+      },
+      {
+        _id: "synthetic-post",
+        userId: "seller-user",
+        recordType: "post",
+        name: "Synthetic update",
+        status: "published",
+        payload: {
+          title: "Synthetic update",
+          body: "Synthetic QA fixture.",
+          synthetic: true
+        },
+        deletedAt: null
+      },
+      {
+        _id: "owner-testing-product",
+        userId: TEST_USER,
+        recordType: "product",
+        name: "Owner Testing Product",
+        status: "testing",
+        payload: {
+          name: "Owner Testing Product",
+          externalPurchaseUrl: "https://example.com/testing"
+        },
+        deletedAt: null
+      },
+      {
+        _id: "test-only-product",
+        userId: "seller-user",
+        recordType: "product",
+        name: "Test-only Product",
+        status: "published",
+        payload: {
+          name: "Test-only Product",
+          testOnly: true,
+          externalPurchaseUrl: "https://example.com/test-only"
+        },
+        deletedAt: null
+      }
+    );
+
+    const feed = await request(createApp(false)).get("/api/commercial/feed");
+    const anonymousTestingCheckout = await request(createApp(false))
+      .post("/api/commercial/products/owner-testing-product/checkout")
+      .send({});
+    const authenticatedTestOnlyCheckout = await request(app)
+      .post("/api/commercial/products/test-only-product/checkout")
+      .send({});
+    const ownerDetail = await request(app).get(
+      "/api/commercial/products/owner-testing-product"
+    );
+
+    expect(feed.status).toBe(200);
+    expect(feed.body.items.map((post) => post.title)).toEqual(["Published update"]);
+    expect(anonymousTestingCheckout.status).toBe(404);
+    expect(authenticatedTestOnlyCheckout.status).toBe(404);
+    expect(ownerDetail.status).toBe(200);
+    expect(ownerDetail.body.product).toMatchObject({
+      name: "Owner Testing Product",
+      status: "testing"
+    });
   });
 
   test("likes, unlikes, and comments on public commercial posts", async () => {

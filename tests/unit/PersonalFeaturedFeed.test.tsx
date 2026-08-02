@@ -2,6 +2,7 @@ import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
 import PersonalFeaturedFeed, {
+  campaignHref,
   createPersonalFeaturedFeedStyles,
   isPublicTestContent
 } from "@/components/home/PersonalFeaturedFeed";
@@ -14,7 +15,7 @@ const mockListCourses = jest.fn();
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children }: any) => React.createElement(React.Fragment, null, children)
+    Link: ({ children, href }: any) => React.cloneElement(children, { href })
   };
 });
 
@@ -105,6 +106,13 @@ describe("PersonalFeaturedFeed", () => {
     expect(isPublicTestContent({ title: "Soil testing fundamentals" })).toBe(false);
   });
 
+  it("keeps Facility-authored home highlights on the shared feed", () => {
+    expect(campaignHref({ id: "facility-education-1" }, true)).toBe(
+      "/feed?campaignId=facility-education-1"
+    );
+    expect(campaignHref({}, true)).toBe("/feed");
+  });
+
   it("keeps QA records out of the public home highlights", async () => {
     const screen = render(<PersonalFeaturedFeed />);
 
@@ -116,5 +124,22 @@ describe("PersonalFeaturedFeed", () => {
     expect(screen.getByText("Improving seedling airflow")).toBeTruthy();
     expect(screen.queryByText(/QA ONLY/)).toBeNull();
     expect(screen.queryByText("Testing post creation")).toBeNull();
+  });
+
+  it("labels empty-state cards as GrowPath shortcuts instead of fabricated content", async () => {
+    mockListCampaigns.mockRejectedValue(new Error("offline"));
+    mockListForumPosts.mockRejectedValue(new Error("offline"));
+    mockListCourses.mockRejectedValue(new Error("offline"));
+
+    const screen = render(<PersonalFeaturedFeed />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Browse grower storefronts")).toBeTruthy()
+    );
+    expect(screen.getAllByText("GrowPath shortcut").length).toBeGreaterThanOrEqual(5);
+    expect(screen.queryByText("Commercial ad")).toBeNull();
+    expect(screen.queryByText("Facility post")).toBeNull();
+    expect(screen.queryByText("Forum post")).toBeNull();
+    expect(screen.getByText("Discover across GrowPath")).toBeTruthy();
   });
 });

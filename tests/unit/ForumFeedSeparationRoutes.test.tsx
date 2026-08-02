@@ -541,6 +541,10 @@ describe("Forum and feed separation copy", () => {
     await waitFor(() => expect(screen.getByText("Community help")).toBeTruthy());
     expect(screen.queryByTestId("link-/forum/post?id=thread-community-help")).toBeNull();
     expect(screen.getByText("Start a Discussion")).toBeTruthy();
+    expect(screen.getByText("Ask for Diagnosis Help")).toBeTruthy();
+    expect(screen.getByLabelText("Ask forum for diagnosis help")).toBeTruthy();
+    expect(screen.getByText("Share a Grow Update")).toBeTruthy();
+    expect(screen.getByLabelText("Share a grow update to forum")).toBeTruthy();
     expect(screen.getByText("Forum videos")).toBeTruthy();
     expect(screen.getByText("Forum lives")).toBeTruthy();
     expect(screen.getByText("Open Video Library")).toBeTruthy();
@@ -557,6 +561,10 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByLabelText("Chronological Feed")).toBeTruthy();
     expect(screen.getByLabelText("Marketplace & Offers")).toBeTruthy();
     expect(screen.getByLabelText("Browse Discovery Directory")).toBeTruthy();
+    expect(screen.queryByText("Unread")).toBeNull();
+    expect(screen.queryByText("Inbox notifications")).toBeNull();
+    expect(screen.queryByLabelText("Open notification settings")).toBeNull();
+    expect(mockListNotifications).not.toHaveBeenCalled();
     fireEvent.press(screen.getByLabelText("Show 2 replies for Community help"));
     await waitFor(() =>
       expect(mockListForumComments).toHaveBeenCalledWith("thread-community-help")

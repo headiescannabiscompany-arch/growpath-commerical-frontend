@@ -13,7 +13,7 @@ import {
 
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import AppCard from "@/components/layout/AppCard";
-import PersonalFeaturedFeed from "@/components/home/PersonalFeaturedFeed";
+import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -404,7 +404,7 @@ export default function PersonalGrowsRoute() {
           </View>
         </AppCard>
 
-        <PersonalFeaturedFeed />
+        <PersonalFeedPlacement placement="top" routeKey="personal_grows" longContent />
 
         {error ? (
           <AppCard
@@ -492,6 +492,8 @@ export default function PersonalGrowsRoute() {
             </View>
           )}
         </AppCard>
+
+        <PersonalFeedPlacement placement="middle" routeKey="personal_grows" longContent />
 
         <AppCard
           style={[
@@ -626,6 +628,8 @@ export default function PersonalGrowsRoute() {
             );
           })}
         </View>
+
+        <PersonalFeedPlacement placement="bottom" routeKey="personal_grows" longContent />
       </View>
     </ScrollView>
   );

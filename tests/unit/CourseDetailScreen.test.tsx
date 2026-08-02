@@ -207,6 +207,18 @@ describe("CourseDetailScreen learner player", () => {
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("courseId=course-1"));
   });
 
+  it("opens the Expo lesson editor when legacy navigation is unavailable", async () => {
+    Object.assign(mockLearningAccess, { canCreateCourses: true });
+    const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Course")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit lesson Build the mix"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/courses/edit-lesson?lessonId=lesson-1&courseId=course-1&from=%2Fcourses%3FcourseId%3Dcourse-1"
+    );
+  });
+
   it("exposes an operable course report path with exact content context", async () => {
     const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
     await waitFor(() => expect(screen.getByText("Living Soil Course")).toBeTruthy());

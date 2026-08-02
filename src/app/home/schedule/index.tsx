@@ -13,6 +13,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { listPersonalTasks } from "@/api/tasks";
 import CalendarDateField from "@/components/forms/CalendarDateField";
+import BackButton from "@/components/nav/BackButton";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
@@ -566,11 +567,7 @@ export default function HomeScheduleRoute() {
       contentContainerStyle={styles.content}
     >
       <View style={styles.backRow}>
-        <Link href="/home/personal" asChild>
-          <Pressable accessibilityRole="link" style={styles.backButton}>
-            <Text style={styles.backButtonText}>Back</Text>
-          </Pressable>
-        </Link>
+        <BackButton fallbackHref="/account/workspace" />
       </View>
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
@@ -772,16 +769,6 @@ const createStyles = (palette: ThemePalette) =>
     screen: { backgroundColor: palette.page, flex: 1 },
     content: { gap: 12, padding: 20, paddingBottom: 44 },
     backRow: { marginBottom: 4 },
-    backButton: {
-      alignSelf: "flex-start",
-      backgroundColor: palette.surface,
-      borderColor: palette.border,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      paddingHorizontal: 10,
-      paddingVertical: 8
-    },
-    backButtonText: { color: palette.text, fontWeight: "900" },
     headerRow: {
       alignItems: "flex-start",
       flexDirection: "row",

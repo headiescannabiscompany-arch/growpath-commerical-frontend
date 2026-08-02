@@ -13,6 +13,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 
 import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { updateNotificationPreferences } from "@/api/users";
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
@@ -461,203 +462,208 @@ export default function NotificationCenterRoute() {
     : "Device push is off. Notifications still appear in-app.";
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>GrowPath reminders</Text>
-        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
-          Notification Center
-        </Text>
-        <Text style={styles.subtitle}>
-          One inbox for task reminders, forum replies, videos, courses, commerce, and
-          facility follow-up.
-        </Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Delivery status
-        </Text>
-        <Text style={styles.cardText}>{pushStatusText}</Text>
-        <Text style={styles.metaText}>
-          {enabledCategories.length
-            ? `Enabled categories: ${enabledCategories.join(", ")}`
-            : "All notification categories are muted in Profile."}
-        </Text>
-        <View style={styles.preferenceList}>
-          {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
-            <View key={String(option.key)} style={styles.preferenceRow}>
-              <View style={styles.preferenceCopy}>
-                <Text
-                  accessibilityRole="header"
-                  aria-level={3}
-                  style={styles.preferenceTitle}
-                >
-                  {option.title}
-                </Text>
-                <Text style={styles.metaText}>{option.description}</Text>
-              </View>
-              <Switch
-                accessibilityLabel={`Toggle ${option.title}`}
-                ios_backgroundColor={palette.surfaceStrong}
-                thumbColor={palette.accentText}
-                trackColor={{ false: palette.surfaceStrong, true: palette.accent }}
-                value={Boolean(notificationPrefs[option.key])}
-                onValueChange={(value) =>
-                  setNotificationPrefs((current) => ({
-                    ...current,
-                    [option.key]: value
-                  }))
-                }
-              />
-            </View>
-          ))}
-        </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Save notification settings"
-          disabled={preferencesSaving}
-          onPress={saveNotificationPreferences}
-          style={[styles.primaryButton, preferencesSaving && styles.disabled]}
-        >
-          <Text style={styles.primaryButtonText}>
-            {preferencesSaving ? "Saving..." : "Save notification settings"}
+    <ScreenBoundary name="NotificationCenter" showBack backFallbackHref={profileHref}>
+      <ScrollView style={styles.root} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.eyebrow}>GrowPath reminders</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Notification Center
           </Text>
-        </Pressable>
-        <Link href={profileHref as any} asChild>
-          <Pressable accessibilityRole="link" style={styles.linkButton}>
-            <Text style={styles.linkButtonText}>Open Profile settings</Text>
-          </Pressable>
-        </Link>
-      </View>
+          <Text style={styles.subtitle}>
+            One inbox for task reminders, forum replies, videos, courses, commerce, and
+            facility follow-up.
+          </Text>
+        </View>
 
-      <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
-        Notification inbox
-      </Text>
-      <View style={styles.toolbar}>
-        {filterOptions.map((item) => (
+        <View style={styles.card}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Delivery status
+          </Text>
+          <Text style={styles.cardText}>{pushStatusText}</Text>
+          <Text style={styles.metaText}>
+            {enabledCategories.length
+              ? `Enabled categories: ${enabledCategories.join(", ")}`
+              : "All notification categories are muted in Profile."}
+          </Text>
+          <View style={styles.preferenceList}>
+            {NOTIFICATION_PREFERENCE_OPTIONS.map((option) => (
+              <View key={String(option.key)} style={styles.preferenceRow}>
+                <View style={styles.preferenceCopy}>
+                  <Text
+                    accessibilityRole="header"
+                    aria-level={3}
+                    style={styles.preferenceTitle}
+                  >
+                    {option.title}
+                  </Text>
+                  <Text style={styles.metaText}>{option.description}</Text>
+                </View>
+                <Switch
+                  accessibilityLabel={`Toggle ${option.title}`}
+                  ios_backgroundColor={palette.surfaceStrong}
+                  thumbColor={palette.accentText}
+                  trackColor={{ false: palette.surfaceStrong, true: palette.accent }}
+                  value={Boolean(notificationPrefs[option.key])}
+                  onValueChange={(value) =>
+                    setNotificationPrefs((current) => ({
+                      ...current,
+                      [option.key]: value
+                    }))
+                  }
+                />
+              </View>
+            ))}
+          </View>
           <Pressable
-            key={item.key}
             accessibilityRole="button"
-            accessibilityLabel={`Notification filter ${item.key}`}
-            onPress={() => setFilter(item.key)}
-            style={[
-              styles.filterButton,
-              filter === item.key && styles.filterButtonActive
-            ]}
+            accessibilityLabel="Save notification settings"
+            disabled={preferencesSaving}
+            onPress={saveNotificationPreferences}
+            style={[styles.primaryButton, preferencesSaving && styles.disabled]}
           >
-            <Text
-              style={[
-                styles.filterButtonText,
-                filter === item.key && styles.filterButtonTextActive
-              ]}
-            >
-              {item.title}
+            <Text style={styles.primaryButtonText}>
+              {preferencesSaving ? "Saving..." : "Save notification settings"}
             </Text>
           </Pressable>
-        ))}
-      </View>
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Mark all notifications read"
-        disabled={saving || !notifications.some(isUnread)}
-        onPress={markAllRead}
-        style={[
-          styles.primaryButton,
-          (saving || !notifications.some(isUnread)) && styles.disabledButton
-        ]}
-      >
-        <Text style={styles.primaryButtonText}>
-          {saving ? "Saving..." : "Mark All Read"}
-        </Text>
-      </Pressable>
-
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      {feedback ? <Text style={styles.success}>{feedback}</Text> : null}
-
-      {loading ? <ActivityIndicator color={palette.accent} /> : null}
-
-      {!loading && !filtered.length ? (
-        <View style={styles.card}>
-          <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
-            No notifications
-          </Text>
-          <Text style={styles.cardText}>
-            Notifications that match your current filter will appear here when available.
-          </Text>
+          <Link href={profileHref as any} asChild>
+            <Pressable accessibilityRole="link" style={styles.linkButton}>
+              <Text style={styles.linkButtonText}>Open Profile settings</Text>
+            </Pressable>
+          </Link>
         </View>
-      ) : null}
 
-      {filtered.map((row) => {
-        const id = rowId(row);
-        const unread = isUnread(row);
-        const isFocused = Boolean(focusedNotificationId && focusedNotificationId === id);
-        return (
-          <View
-            key={id || row.title}
-            accessibilityLabel={
-              isFocused ? `Focused notification ${focusedNotificationId}` : undefined
-            }
-            style={[
-              styles.card,
-              unread && styles.unreadCard,
-              isFocused && styles.focusedCard
-            ]}
-          >
-            <View style={styles.cardHeader}>
-              <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
-                {row.title || "Notification"}
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+          Notification inbox
+        </Text>
+        <View style={styles.toolbar}>
+          {filterOptions.map((item) => (
+            <Pressable
+              key={item.key}
+              accessibilityRole="button"
+              accessibilityLabel={`Notification filter ${item.key}`}
+              onPress={() => setFilter(item.key)}
+              style={[
+                styles.filterButton,
+                filter === item.key && styles.filterButtonActive
+              ]}
+            >
+              <Text
+                style={[
+                  styles.filterButtonText,
+                  filter === item.key && styles.filterButtonTextActive
+                ]}
+              >
+                {item.title}
               </Text>
-              <Text style={[styles.badge, unread && styles.unreadBadge]}>
-                {unread ? "unread" : "read"}
-              </Text>
-            </View>
-            <Text style={styles.cardText}>{notificationText(row)}</Text>
-            {statusText(row, notificationPrefs) ? (
-              <Text style={styles.metaText}>{statusText(row, notificationPrefs)}</Text>
-            ) : null}
+            </Pressable>
+          ))}
+        </View>
 
-            <View style={styles.actions}>
-              {unread ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Mark all notifications read"
+          disabled={saving || !notifications.some(isUnread)}
+          onPress={markAllRead}
+          style={[
+            styles.primaryButton,
+            (saving || !notifications.some(isUnread)) && styles.disabledButton
+          ]}
+        >
+          <Text style={styles.primaryButtonText}>
+            {saving ? "Saving..." : "Mark All Read"}
+          </Text>
+        </Pressable>
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {feedback ? <Text style={styles.success}>{feedback}</Text> : null}
+
+        {loading ? <ActivityIndicator color={palette.accent} /> : null}
+
+        {!loading && !filtered.length ? (
+          <View style={styles.card}>
+            <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+              No notifications
+            </Text>
+            <Text style={styles.cardText}>
+              Notifications that match your current filter will appear here when
+              available.
+            </Text>
+          </View>
+        ) : null}
+
+        {filtered.map((row) => {
+          const id = rowId(row);
+          const unread = isUnread(row);
+          const isFocused = Boolean(
+            focusedNotificationId && focusedNotificationId === id
+          );
+          return (
+            <View
+              key={id || row.title}
+              accessibilityLabel={
+                isFocused ? `Focused notification ${focusedNotificationId}` : undefined
+              }
+              style={[
+                styles.card,
+                unread && styles.unreadCard,
+                isFocused && styles.focusedCard
+              ]}
+            >
+              <View style={styles.cardHeader}>
+                <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
+                  {row.title || "Notification"}
+                </Text>
+                <Text style={[styles.badge, unread && styles.unreadBadge]}>
+                  {unread ? "unread" : "read"}
+                </Text>
+              </View>
+              <Text style={styles.cardText}>{notificationText(row)}</Text>
+              {statusText(row, notificationPrefs) ? (
+                <Text style={styles.metaText}>{statusText(row, notificationPrefs)}</Text>
+              ) : null}
+
+              <View style={styles.actions}>
+                {unread ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Mark notification read"
+                    disabled={saving}
+                    onPress={() => markRead(row)}
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryButtonText}>Mark Read</Text>
+                  </Pressable>
+                ) : null}
+                <Link href={sourceHref(row) as any} asChild>
+                  <Pressable accessibilityRole="link" style={styles.linkButton}>
+                    <Text style={styles.linkButtonText}>View Source</Text>
+                  </Pressable>
+                </Link>
+                {row.actionUrl ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel="Open live stream from reminder"
+                    onPress={() => void Linking.openURL(String(row.actionUrl))}
+                    style={styles.linkButton}
+                  >
+                    <Text style={styles.linkButtonText}>Watch on Twitch</Text>
+                  </Pressable>
+                ) : null}
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Mark notification read"
+                  accessibilityLabel="Create task from notification"
                   disabled={saving}
-                  onPress={() => markRead(row)}
-                  style={styles.secondaryButton}
-                >
-                  <Text style={styles.secondaryButtonText}>Mark Read</Text>
-                </Pressable>
-              ) : null}
-              <Link href={sourceHref(row) as any} asChild>
-                <Pressable accessibilityRole="link" style={styles.linkButton}>
-                  <Text style={styles.linkButtonText}>View Source</Text>
-                </Pressable>
-              </Link>
-              {row.actionUrl ? (
-                <Pressable
-                  accessibilityRole="link"
-                  accessibilityLabel="Open live stream from reminder"
-                  onPress={() => void Linking.openURL(String(row.actionUrl))}
+                  onPress={() => createTaskFromNotification(row)}
                   style={styles.linkButton}
                 >
-                  <Text style={styles.linkButtonText}>Watch on Twitch</Text>
+                  <Text style={styles.linkButtonText}>Create Task</Text>
                 </Pressable>
-              ) : null}
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Create task from notification"
-                disabled={saving}
-                onPress={() => createTaskFromNotification(row)}
-                style={styles.linkButton}
-              >
-                <Text style={styles.linkButtonText}>Create Task</Text>
-              </Pressable>
+              </View>
             </View>
-          </View>
-        );
-      })}
-    </ScrollView>
+          );
+        })}
+      </ScrollView>
+    </ScreenBoundary>
   );
 }
 

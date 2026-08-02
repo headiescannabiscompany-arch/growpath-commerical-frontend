@@ -339,8 +339,8 @@ Facility currently has the strongest visual appeal and sense of operational poli
 - [x] Define a 252-record allocation across 41 disease, pest/beneficial-lookalike, and abiotic/root-zone case definitions, with at least two reviewed images required per record.
 - [x] Add planning and strict validation for ETGU order, identical GrowPath/GPT evidence envelopes, disagreement persistence, linked-record write-backs, image rights, treatment-source cross-checks, and the no-invented-pesticide rule.
 - [ ] Build disease, pest/beneficial-lookalike, and abiotic-mimic cases with multiple images plus plant, stage, distribution, progression, environment, root-zone, measurements, diagnostic signs, alternatives, confirmation method, urgency, quarantine, scout, and response fields.
-- [ ] Preserve ETGU order: pattern, medium/root zone, environment, measured values, then cautious cause ranking.
-- [ ] Send the same reviewed evidence envelope to GrowPath and GPT, store both answers and disagreements, and link Plant, Grow, Log, ToolRun, Task, and Facility records when context exists.
+- [x] Preserve ETGU order in the implemented diagnosis/IPM contract: pattern, medium/root zone, environment, measured values, then cautious cause ranking. Runtime/catalog regression coverage is recorded in `docs/qa/DIAGNOSIS_IPM_QA_PACK_2026-07-20.md`; populated rights-cleared case execution remains separate below.
+- [x] Implement one reviewed-evidence-envelope contract for GrowPath and GPT comparison, persisted disagreement fields, and linked Plant, Grow, Log, ToolRun, Task, and Facility context when available. Running that contract across the still-unpopulated reviewed case library remains open.
 - [ ] Treat PlantVillage as a candidate source until repository/dataset licensing and intended commercial QA use are explicitly reviewed; a public repository or “open access” label alone is not approval.
 
 52. Living Soil Labs commercial-commerce QA pack
@@ -351,15 +351,15 @@ Facility currently has the strongest visual appeal and sense of operational poli
 - [ ] Seed Penny Saver Soil, Living Soil, and No-Till Soil product/variant drafts plus proposed dry-mix, sample, shirt, and embroidered-hat fixtures.
 - [ ] Require verified label/guaranteed-analysis evidence before proposed 3-3-3, 3-1-2, 1-3-2, 2-6-4, or 0.5-3-3 product claims become published test facts; do not silently replace the approved GrowPath method presets.
 - [ ] Exercise inventory, out-of-stock, weights, images, labels, directions, cart, checkout, orders, discounts, taxes, shipping, cancellation, refund, and order-history states.
-- [ ] Keep the app module named Soil & Nutrient Batch Planner and keep Living Soil Labs as the seeded commercial brand/storefront.
+- [x] Keep the app module named Soil & Nutrient Batch Planner and keep Living Soil Labs as the governed commercial brand/storefront fixture; current catalog coverage guards ten products, 39 variants, zero stock, TBD pricing, and unpublished checkout.
 
 53. Facility simulation QA pack
 
 - [x] Define a private synthetic Facility graph with 5 canonical-role personas, 5 zones, 10 workflow rooms, 5 grows, 12 plants, 8 equipment records, 6 inventory records, 6 draft SOPs, and 10 planned tasks.
 - [x] Add planning and strict validation for integration safety, 15 governed telemetry metrics, normal operations plus 13 incidents, confirmation-gated write-backs, and the 13-check acceptance matrix.
-- [ ] Seed Facility -> rooms/zones -> grows -> plants with canonical Owner, Manager, Staff, and Viewer access; model grower, scout, and restricted-employee duties as assignments/permission constraints rather than inventing incompatible account roles.
-- [ ] Cover mother, clone/propagation, seedling, veg, flower, dry, cure, tissue culture, cold/storage, equipment, inventory, SOPs, recurring sanitation/scouting, and task assignment.
-- [ ] Generate normal telemetry plus humidity/dew-point, stale/offline sensor, high substrate EC, irrigation, CO2, light/exhaust, acknowledged excursion, pest quarantine, inventory shortage, missed SOP/task, permission conflict, and malformed import incidents.
+- [x] Seed Facility -> rooms/zones -> grows -> plants with canonical Owner, Manager, Staff, and Viewer access; grower, scout, and restricted-employee duties are assignments/permission constraints rather than incompatible account roles. Staging namespace and role-chain evidence are recorded under item 55.
+- [x] Cover mother, clone/propagation, seedling, veg, flower, dry, cure, tissue culture, cold/storage, equipment, inventory, SOPs, recurring sanitation/scouting, and task assignment in the governed Facility simulator fixture.
+- [x] Generate deterministic normal telemetry plus humidity/dew-point, stale/offline sensor, high substrate EC, irrigation, CO2, light/exhaust, acknowledged excursion, pest quarantine, inventory shortage, missed SOP/task, permission conflict, and malformed import incidents for staging acceptance.
 - [ ] Verify entitlements, AI-credit billing/refunds, Facility Owner access, uploads, Ask AI, alerts, persistence/reload, and tool write-backs across Plant, Grow, Log, ToolRun, Task, room, and Facility scope.
 
 54. Idempotent backend seed runner and cleanup
@@ -1103,7 +1103,7 @@ Completed and pushed:
 
 685. Forum should include a real video library and upload flow instead of pushing videos out through Discover only. Add per-user and per-workspace video views, upload controls, storage usage/allotment visibility, and preserve the ability to follow accounts and reuse video posts in courses and other workflows.
 
-- In progress in repo: Forum/community now links to the shared video library and surfaces storage/account context; the shared video page now adds workspace-versus-my-uploads views, storage counts, and the existing upload/playback flow. The reusable-library picker is now regression-tested for attach and detach behavior, and the video detail route now has a regression that verifies protected playback is forwarded into the player card. Live upload/playback validation passed on 2026-07-29 at `/videos?tab=library` and `/videos/:id`; remaining course-reuse cleanup is still open.
+- Implemented and production-verified in the shared video surfaces: Forum/community links to the shared video library, the library exposes workspace-versus-my-uploads views and storage counts, and upload/playback/delete paths passed live validation on 2026-07-29 at `/videos?tab=library` and `/videos/:id`. Staff self-removal, the reusable course-library picker, protected playback, and attach/detach behavior have regression coverage. A final live course attach/detach acceptance pass remains open.
 
 686. Discover should keep Lives framed as campaigns and surfaced opportunities, not as a plain joinable live-session list. Add a separate Lives browsing mode like the Forum video view when live sessions need to be explored, but keep the top-level Discover presentation focused on featured campaigns and discovery content.
 
@@ -1111,7 +1111,7 @@ Completed and pushed:
 
 687. Replace the misinterpreted forum tasks/notifications surface with a real notification system in Profile. Define the notification types first, then support device delivery when enabled, clear per-type on/off toggles, and visible read/unread and disabled state across the app.
 
-- In progress in repo: Profile notification preferences and push-token registration are wired, and the inbox uses the same preference taxonomy with visible delivery status. Live Facility verification on 2026-07-31 confirmed all six category toggles and corrected the shared inbox's fixed light colors: frontend `520ede43` now follows the active Day/Night/Auto palette, passed both safeguards, and rendered the production Notification Center in resolved Night mode. Device delivery propagation still needs a real push receipt for end-to-end confirmation. See `docs/qa/GIFT_SAFETY_UPGRADE_AND_NOTIFICATION_THEME_PRODUCTION_EVIDENCE_2026-07-31.md`.
+- Implemented in Profile and the shared Notification Center: notification preferences, push-token registration, the six-category taxonomy, delivery state, and read/unread handling. Forum no longer owns or renders a duplicate notification inbox. Live Facility verification on 2026-07-31 confirmed all six category toggles and the corrected Day/Night/Auto palette. Device delivery propagation still needs a physical-device push receipt for end-to-end confirmation. See `docs/qa/GIFT_SAFETY_UPGRADE_AND_NOTIFICATION_THEME_PRODUCTION_EVIDENCE_2026-07-31.md`.
 
 688. Recheck the live deployment against the current forum, video, lives, and notification decisions before any further cleanup so we do not keep editing against stale production behavior. If the live branch is outdated, rebaseline the affected screens and update the todo list before changing anything else.
 
@@ -1121,15 +1121,16 @@ Completed and pushed:
 
 - Live verification on 2026-07-29 confirms the commercial dashboard, storefront, products, feed/campaigns, lives, orders, analytics, courses, profile, tools, diagnosis, and soil/nutrient mix builder surfaces all load in the Jcindc commercial session. The remaining visible gap is launch configuration: brand profile and storefront are still draft shells with no brand slug or products set.
 - In progress in repo: the commercial command center now shows a launch-readiness checklist for public slug, product count, and storefront status, plus clearer draft-shell guidance when slug or products are missing. Focused unit coverage passes locally; live browser verification is still pending.
-- In progress in repo: the commercial More hub now exposes shared core surfaces—Dashboard, Grows, Videos, Discover, Notifications, and Tasks—so commercial remains a superset of the single-user workspace instead of hiding the shared daily workflow behind extra clicks.
-- Completed and pushed: the commercial tab bar now surfaces the shared workflow tabs first—Dashboard, Grows, AI Tools, Discover, Courses, and Profile—before the storefront/product stack so commercial reads like single-user plus commercial depth instead of a storefront-only shell.
-- Completed and pushed: personal tab cleanup hid buried utility routes, commercial tab cleanup hid buried utility routes, and the legacy facility navigator was aligned with the live shell order so the three workspace stacks match the current app layout more closely.
+- Implemented in repo: the Commercial More hub exposes shared core surfaces including Grows, Videos, Discover, Notifications, Tasks, Courses, and Lives, so Commercial remains a superset of the Personal workflow without overcrowding the mobile tab bar.
+- Canonical compact Commercial tab order is Dashboard, Storefront, Feed, Forum, More, Profile. Product management remains under Storefront, and the additional shared/commercial modules remain reachable from More or their owning pages.
+- Personal, Commercial, and Facility tab layouts now hide non-tab routes with Expo Router `href: null` instead of invisible tab buttons. Source-contract and rendered 375/390px tests verify exactly six visible labels per workspace with no blank slots; production narrow-width verification remains required after deployment.
 
 690. Facility is the second major workflow pass after Commercial is stable. Rebuild and verify the Facility workflow end-to-end, then revisit Personal/Grows only where Facility learnings require a cross-role change so we do not keep shuffling the grows experience before the shared workflow order is settled.
 691. Run a full UI consolidation pass across Personal, Commercial, and Facility with live browser verification for each user type and each top-level page. Standardize spacing, typography, card radius, button styling, and route placement; make night mode actually readable with much lighter text and dark-surfaces that stay distinct; expose the appearance switcher where each workspace can see it quickly; verify each page button goes where it should; and record the mismatches that still need work instead of treating the first pass as finished.
 
+- Canonical implementation and acceptance rules now live in `docs/frontend/11-shared-visual-system.md` and are enforced by `validate:visual-polish-contract`. The contract fixes the six-label workspace navigation, shared shell/back behavior, Day/Night/Auto ownership, workspace hierarchy, and the requirement for exact-SHA in-app Browser evidence.
 - In progress in repo: the shared night palette is now a lighter blue-gray set of surfaces, text, and links, and the common back button now renders against a visible surface-muted fill instead of disappearing into the page background.
-   - In progress in repo: the shared grow widgets and fallback shells now use the shared palette too, including the grow selector, stage slider, plant save modal, plant card, skeleton loaders, both error-boundary surfaces, and the shared AppShell / CommercialBanner / ContextBar chrome. The personal/commercial/facility tab layouts also no longer mix `href` with hidden `tabBarButton` routes on web, which was blanking the live shells.
+  - In progress in repo: the shared grow widgets and fallback shells now use the shared palette too, including the grow selector, stage slider, plant save modal, plant card, skeleton loaders, both error-boundary surfaces, and the shared AppShell / CommercialBanner / ContextBar chrome. The personal/commercial/facility tab layouts also no longer mix `href` with hidden `tabBarButton` routes on web, which was blanking the live shells.
 
 ## Post-Commercial Follow-up
 

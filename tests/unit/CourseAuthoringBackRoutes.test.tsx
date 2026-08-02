@@ -1,6 +1,6 @@
 import React from "react";
 import { Text } from "react-native";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 jest.mock("@/components/ScreenBoundary", () => ({
   ScreenBoundary: ({ children, showBack, backFallbackHref, title }: any) => {
@@ -42,8 +42,30 @@ jest.mock("@/screens/AddLessonScreen", () => ({ route, navigation }: any) => {
   );
 });
 
+jest.mock("@/screens/EditLessonScreen", () => ({ route, navigation }: any) => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return (
+    <>
+      <Text>Edit lesson form {route?.params?.lessonId || "none"}</Text>
+      <Text onPress={() => navigation?.goBack?.()}>Save edited lesson</Text>
+    </>
+  );
+});
+
+jest.mock("@/screens/CreatorAnalyticsScreen", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return () => <Text>Course analytics content</Text>;
+});
+
 const mockReplace = jest.fn();
+const mockGetCourse = jest.fn();
 const mockSearchParams: Record<string, any> = {};
+
+jest.mock("@/api/courses", () => ({
+  getCourse: (...args: any[]) => mockGetCourse(...args)
+}));
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ replace: mockReplace }),
@@ -53,6 +75,7 @@ jest.mock("expo-router", () => ({
 describe("legacy course authoring route back behavior", () => {
   beforeEach(() => {
     mockReplace.mockReset();
+    mockGetCourse.mockReset();
     Object.keys(mockSearchParams).forEach((key) => delete mockSearchParams[key]);
   });
 
@@ -92,5 +115,34 @@ describe("legacy course authoring route back behavior", () => {
     expect(screen.queryByText("Add lesson form none")).toBeNull();
     fireEvent.press(screen.getByLabelText("Browse courses"));
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/courses");
+  });
+
+  it("loads a saved lesson and returns through the shared course route after editing", async () => {
+    mockSearchParams.courseId = "course-123";
+    mockSearchParams.lessonId = "lesson-456";
+    mockGetCourse.mockResolvedValue({
+      id: "course-123",
+      lessons: [{ id: "lesson-456", title: "Build the mix" }]
+    });
+    const EditLessonRoute = require("@/app/courses/edit-lesson").default;
+
+    render(<EditLessonRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Edit lesson form lesson-456")).toBeTruthy()
+    );
+    expect(screen.getByText("Shared Back /courses?courseId=course-123")).toBeTruthy();
+
+    screen.getByText("Save edited lesson").props.onPress();
+    expect(mockReplace).toHaveBeenCalledWith("/courses?courseId=course-123");
+  });
+
+  it("gives course analytics exactly one shared back path", () => {
+    const CourseAnalyticsRoute = require("@/app/courses/analytics").default;
+
+    render(<CourseAnalyticsRoute />);
+
+    expect(screen.getAllByText("Shared Back /courses")).toHaveLength(1);
+    expect(screen.getByText("Course analytics content")).toBeTruthy();
   });
 });

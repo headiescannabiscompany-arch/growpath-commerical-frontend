@@ -133,7 +133,17 @@ function baseQuery(userId, recordType) {
 function publicStatusQuery() {
   return {
     deletedAt: null,
-    status: { $in: ["published", "active", "testing", "public"] }
+    status: { $in: ["published", "active", "public"] },
+    isTest: { $ne: true },
+    qaOnly: { $ne: true },
+    testOnly: { $ne: true },
+    synthetic: { $ne: true },
+    qaSeedNamespace: { $exists: false },
+    "payload.isTest": { $ne: true },
+    "payload.qaOnly": { $ne: true },
+    "payload.testOnly": { $ne: true },
+    "payload.synthetic": { $ne: true },
+    "payload.qaSeedNamespace": { $exists: false }
   };
 }
 

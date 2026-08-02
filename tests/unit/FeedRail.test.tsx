@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import FeedRail, {
   campaignInterestScore,
   campaignMatchesPlacement,
+  resolveEducationHref,
   resolveFeedSlotKey,
   selectAds
 } from "@/components/feed/FeedRail";
@@ -115,7 +116,7 @@ describe("FeedRail", () => {
     ]);
   });
 
-  it("keeps fallback promotional cards on valid discovery routes", async () => {
+  it("keeps truthful first-party shortcuts on valid discovery routes without ad analytics", async () => {
     mockListCommercialFeedCampaigns.mockResolvedValue({ items: [], nextCursor: null });
 
     const screen = render(<FeedRail slots={1} railMode="promo-only" placement="top" />);
@@ -127,21 +128,36 @@ describe("FeedRail", () => {
       screen.getByLabelText("Browse storefronts for Explore grower storefronts")
     );
 
-    expect(recordCommercialAnalyticsEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        eventType: "ad_click",
-        objectType: "feed_ad",
-        targetUrl: "/store",
-        source: "feed_banner",
-        metadata: expect.objectContaining({
-          title: "Explore grower storefronts",
-          cta: "Browse storefronts"
-        })
-      })
+    expect(screen.getByText("GrowPath shortcut")).toBeTruthy();
+    expect(screen.queryByText("Promoted campaign")).toBeNull();
+    expect(screen.queryByLabelText("Explore grower storefronts ad image")).toBeNull();
+    expect(recordCommercialAnalyticsEvent).not.toHaveBeenCalled();
+  });
+
+  it("uses account-neutral fallback education instead of fabricated brand posts", () => {
+    mockListCommercialFeedCampaigns.mockResolvedValue({ items: [], nextCursor: null });
+
+    const screen = render(
+      <FeedRail slots={3} railMode="education-only" placement="top" />
     );
-    expect(recordCommercialAnalyticsEvent).not.toHaveBeenCalledWith(
-      expect.objectContaining({ storefrontSlug: "living-soil-labs" })
+
+    expect(screen.getByText("Build a repeatable scouting record")).toBeTruthy();
+    expect(screen.getByText("Learn from published grow courses")).toBeTruthy();
+    expect(screen.getByText("Compare evidence before changing inputs")).toBeTruthy();
+    expect(screen.queryByText(/Triple Bag/i)).toBeNull();
+  });
+
+  it("keeps fallback education inside the active workspace", () => {
+    expect(resolveEducationHref("workspace-tools", "personal")).toBe(
+      "/home/personal/tools"
     );
+    expect(resolveEducationHref("workspace-tools", "commercial")).toBe(
+      "/home/commercial/tools"
+    );
+    expect(resolveEducationHref("workspace-tools", "facility")).toBe(
+      "/home/facility/ai-tools"
+    );
+    expect(resolveEducationHref("/forum", "facility")).toBe("/forum");
   });
 
   it("uses real feed campaigns when available and keeps Q&A links shared", async () => {

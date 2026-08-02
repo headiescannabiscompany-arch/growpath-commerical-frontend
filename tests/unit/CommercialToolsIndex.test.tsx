@@ -1,7 +1,10 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 
-import CommercialToolsIndex from "@/app/home/commercial/tools";
+import CommercialToolsIndex, {
+  COMMERCIAL_CORE_TOOLS,
+  COMMERCIAL_PRODUCTION_TOOLS
+} from "@/app/home/commercial/tools";
 
 const mockPush = jest.fn();
 const mockTokenBalanceWidget = jest.fn();
@@ -59,11 +62,45 @@ describe("CommercialToolsIndex", () => {
       )
     ).toBeTruthy();
 
-    const batchPlannerLink = screen.getByLabelText("Open Soil & Nutrient Batch Planner");
+    const batchPlannerLink = screen.getByLabelText("Open batch planner");
 
     expect(batchPlannerLink.props.target).toBe("_top");
     fireEvent.press(batchPlannerLink);
 
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/tools/soil-nutrient-batch");
+  });
+
+  it("shows truthful Commercial ownership and only supported general hub routes", () => {
+    const screen = render(<CommercialToolsIndex />);
+
+    expect(screen.getByText("Commercial workspace boundary")).toBeTruthy();
+    expect(
+      screen.getByText(/allowance for the signed-in Commercial account/i)
+    ).toBeTruthy();
+    expect(screen.getByText("Shared grow intelligence")).toBeTruthy();
+    expect(screen.getByText("Commercial production and records")).toBeTruthy();
+
+    const allItems = [...COMMERCIAL_CORE_TOOLS, ...COMMERCIAL_PRODUCTION_TOOLS];
+    for (const item of allItems) {
+      expect(screen.getByText(item.title)).toBeTruthy();
+      expect(screen.getByLabelText(item.actionLabel)).toBeTruthy();
+      expect(item.href).toMatch(/^\/home\/commercial\//);
+    }
+
+    const discoveryText = allItems
+      .map((item) => `${item.title} ${item.description}`)
+      .join(" ");
+    expect(discoveryText).not.toMatch(/harvest|trichome|dry \/ cure|pheno|genetics/i);
+    expect(screen.queryByText("Saved Runs / Reports")).toBeNull();
+  });
+
+  it("routes mix builders with explicit Commercial workspace context", () => {
+    const screen = render(<CommercialToolsIndex />);
+
+    fireEvent.press(screen.getByLabelText("Choose a mix builder"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/home/commercial/tools/recipe-builder?workspace=commercial"
+    );
   });
 });

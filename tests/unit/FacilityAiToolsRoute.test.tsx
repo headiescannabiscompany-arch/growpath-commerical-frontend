@@ -1,9 +1,14 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { fireEvent, render } from "@testing-library/react-native";
 
-import FacilityAiToolsRoute from "@/app/home/facility/(tabs)/ai-tools";
+import FacilityAiToolsRoute, {
+  FACILITY_CORE_TOOLS,
+  FACILITY_RECORD_TOOLS,
+  facilityToolHref
+} from "@/app/home/facility/(tabs)/ai-tools";
 
 const mockTokenBalanceWidget = jest.fn((_props: any) => null);
+const mockPush = jest.fn();
 
 jest.mock(
   "@/components/TokenBalanceWidget",
@@ -23,11 +28,16 @@ jest.mock("expo-router", () => {
   return {
     Redirect: ({ href }: any) => React.createElement(Text, null, String(href)),
     useLocalSearchParams: () => ({ toolRunId: "toolrun-1" }),
-    useRouter: () => ({ replace: jest.fn() })
+    useRouter: () => ({ push: mockPush, replace: jest.fn() })
   };
 });
 
 describe("FacilityAiToolsRoute", () => {
+  beforeEach(() => {
+    mockPush.mockReset();
+    mockTokenBalanceWidget.mockClear();
+  });
+
   it("consolidates the legacy second AI page into the command center", () => {
     const screen = render(<FacilityAiToolsRoute />);
     expect(
@@ -49,6 +59,50 @@ describe("FacilityAiToolsRoute", () => {
         facilityId: "facility-headies",
         workspaceName: "Headies Facility"
       })
+    );
+  });
+
+  it("shows the selected Facility as balance owner and keeps cannabis tools contextual", () => {
+    const screen = render(<FacilityAiToolsRoute />);
+
+    expect(screen.getByText("Selected Facility boundary")).toBeTruthy();
+    expect(screen.getByText(/Headies Facility owns the balance above/i)).toBeTruthy();
+    expect(screen.getByText("Shared grow intelligence")).toBeTruthy();
+    expect(screen.getByText("Facility records and operations")).toBeTruthy();
+
+    const allItems = [...FACILITY_CORE_TOOLS, ...FACILITY_RECORD_TOOLS];
+    for (const item of allItems) {
+      expect(screen.getByText(item.title)).toBeTruthy();
+      expect(screen.getByRole("button", { name: item.actionLabel })).toBeTruthy();
+      expect(item.href).toMatch(/^\/home\/facility\//);
+    }
+
+    const discoveryText = allItems
+      .map((item) => `${item.title} ${item.description}`)
+      .join(" ");
+    expect(discoveryText).not.toMatch(/harvest|trichome|dry \/ cure|pheno|genetics/i);
+  });
+
+  it("carries the selected Facility into shared calculator and library routes", () => {
+    const screen = render(<FacilityAiToolsRoute />);
+
+    fireEvent.press(screen.getByRole("button", { name: "Open Environment Review" }));
+    expect(mockPush).toHaveBeenLastCalledWith(
+      "/home/facility/tools/environment?workspace=facility&facilityId=facility-headies"
+    );
+
+    fireEvent.press(screen.getByRole("button", { name: "Open Nutrient Mix Builder" }));
+    expect(mockPush).toHaveBeenLastCalledWith(
+      "/home/facility/tools/npk?workspace=facility&facilityId=facility-headies"
+    );
+  });
+
+  it("does not invent a Facility identifier when none is selected", () => {
+    expect(facilityToolHref("/home/facility/tools/npk", "")).toBe(
+      "/home/facility/tools/npk?workspace=facility"
+    );
+    expect(facilityToolHref("/home/facility/reports", "facility-headies")).toBe(
+      "/home/facility/reports"
     );
   });
 });

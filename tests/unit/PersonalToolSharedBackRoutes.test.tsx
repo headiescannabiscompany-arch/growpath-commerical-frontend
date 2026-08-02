@@ -154,11 +154,25 @@ describe("legacy personal tool shared back routes", () => {
     expect(screen.getByText("Environment Review")).toBeTruthy();
   });
 
+  it("allows a workspace wrapper to override the Environment Review back hub", () => {
+    const screen = render(
+      <EnvironmentAnalysisToolScreen backFallbackHref="/home/facility/ai-tools" />
+    );
+
+    expect(screen.getByText("Shared Back /home/facility/ai-tools")).toBeTruthy();
+  });
+
   it("uses shared back behavior on PDF / Export", () => {
     const screen = render(<PdfExportScreen />);
 
     expect(screen.getByText("Shared Back /home/personal/profile")).toBeTruthy();
     expect(screen.getByText("Grow Reports & Export")).toBeTruthy();
+  });
+
+  it("allows a workspace wrapper to override the report back hub", () => {
+    const screen = render(<PdfExportScreen backFallbackHref="/home/commercial/tools" />);
+
+    expect(screen.getByText("Shared Back /home/commercial/tools")).toBeTruthy();
   });
 
   it("uses shared back behavior on VPD Calculator", () => {

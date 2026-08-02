@@ -581,7 +581,11 @@ function buildAiRecipeBrief(payload: Record<string, any>) {
   ].join("\n");
 }
 
-export default function NpkToolScreen() {
+export default function NpkToolScreen({
+  backFallbackHref = "/home/personal/tools"
+}: {
+  backFallbackHref?: string;
+} = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createNpkStyles(palette), [palette]);
   const router = useRouter();
@@ -874,7 +878,7 @@ export default function NpkToolScreen() {
       <ScreenBoundary
         title="Nutrient Mix Builder"
         showBack
-        backFallbackHref="/home/personal/tools"
+        backFallbackHref={backFallbackHref}
       >
         <LockedScreen
           title="Nutrient Mix Builder is a Pro tool"
@@ -888,7 +892,7 @@ export default function NpkToolScreen() {
     <ScreenBoundary
       title="Nutrient Mix Builder"
       showBack
-      backFallbackHref="/home/personal/tools"
+      backFallbackHref={backFallbackHref}
     >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>

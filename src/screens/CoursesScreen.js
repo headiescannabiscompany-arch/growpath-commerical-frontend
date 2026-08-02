@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,6 +18,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "../theme/theme";
+import { resolveImageUri } from "../utils/photoUploads";
 import {
   canonicalGrowInterestTag,
   flattenGrowInterests,
@@ -82,6 +84,21 @@ function coursePriceLabel(course) {
   if (Number.isFinite(cents) && cents > 0) return `$${(cents / 100).toFixed(2)}`;
   const dollars = Number(course?.price || 0);
   return Number.isFinite(dollars) && dollars > 0 ? `$${dollars.toFixed(2)}` : "Free";
+}
+
+const COURSE_IMAGE_FALLBACK = require("../../assets/banner.png");
+
+export function courseImageSource(course) {
+  const savedImage = resolveImageUri(
+    course?.coverImageUrl ||
+      course?.coverImage ||
+      course?.thumbnailUrl ||
+      course?.thumbnail ||
+      course?.imageUrl ||
+      course?.bannerImageUrl ||
+      ""
+  );
+  return savedImage ? { uri: savedImage } : COURSE_IMAGE_FALLBACK;
 }
 
 function isPublishedCourse(course) {
@@ -391,6 +408,12 @@ export default function CoursesScreen({ navigation } = {}) {
           disabled={!matchesCourseInterests(item, userInterests)}
           onPress={() => openCourse(item)}
         >
+          <Image
+            accessibilityLabel={`${String(item?.title || item?.name || "Untitled")} cover`}
+            resizeMode="cover"
+            source={courseImageSource(item)}
+            style={styles.courseImage}
+          />
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             {String(item?.title || item?.name || "Untitled")}
           </Text>
@@ -543,6 +566,15 @@ export const createCoursesScreenStyles = (palette) =>
       paddingVertical: 10,
       borderBottomWidth: 1,
       borderBottomColor: palette.borderSoft
+    },
+    courseImage: {
+      width: "100%",
+      maxWidth: 680,
+      aspectRatio: 16 / 9,
+      alignSelf: "center",
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      marginBottom: 10
     },
     cardTitle: { color: palette.text, fontWeight: "800" },
     btn: {
