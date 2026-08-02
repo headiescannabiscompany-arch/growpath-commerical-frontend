@@ -22,6 +22,10 @@ import {
   PLAN_PRICING
 } from "@/constants/pricing";
 import { BILLING_PLANS, type BillingPlanKey } from "@/features/billing/planCopy";
+import {
+  clearClosedGiftCheckoutAttempt,
+  useGiftCheckoutAttempt
+} from "@/features/billing/giftCheckoutAttempt";
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -83,6 +87,7 @@ export default function Offers() {
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
   const [showPaymentHelp, setShowPaymentHelp] = useState(false);
+  const { runGiftCheckout } = useGiftCheckoutAttempt();
 
   const activePlan = useMemo(() => String(ent.plan || "free"), [ent.plan]);
   const subscriptionActive = ["active", "trial", "trialing"].includes(
@@ -186,39 +191,57 @@ export default function Offers() {
         return;
       }
 
-      setLoadingPlan(plan);
-      setFeedback("");
-      setFeedbackTone("info");
-      try {
-        const origin =
-          typeof window !== "undefined" && window.location ? window.location.origin : "";
-        const response = await createCheckoutSession({
+      const origin =
+        typeof window !== "undefined" && window.location ? window.location.origin : "";
+      const successUrl = origin ? `${origin}/offers` : undefined;
+      const cancelUrl = origin ? `${origin}/offers` : undefined;
+
+      await runGiftCheckout(
+        {
           plan,
           interval,
-          giftMode: true,
-          giftRecipientEmail: recipient,
-          ...(recipientName ? { giftRecipientName: recipientName } : {}),
-          ...(note ? { giftMessage: note } : {}),
-          successUrl: origin ? `${origin}/offers` : undefined,
-          cancelUrl: origin ? `${origin}/offers` : undefined
-        });
-        const url = checkoutUrlFromResponse(response);
-        if (!url) {
-          setFeedbackTone("error");
-          setFeedback("Checkout is unavailable. The backend did not return a URL.");
-          return;
+          recipientEmail: recipient,
+          recipientName,
+          message: note,
+          successUrl,
+          cancelUrl
+        },
+        async (checkoutAttemptId) => {
+          setLoadingPlan(plan);
+          setFeedback("");
+          setFeedbackTone("info");
+          try {
+            const response = await createCheckoutSession({
+              plan,
+              interval,
+              giftMode: true,
+              giftRecipientEmail: recipient,
+              ...(recipientName ? { giftRecipientName: recipientName } : {}),
+              ...(note ? { giftMessage: note } : {}),
+              successUrl,
+              cancelUrl,
+              checkoutAttemptId
+            });
+            const url = checkoutUrlFromResponse(response);
+            if (!url) {
+              setFeedbackTone("error");
+              setFeedback("Checkout is unavailable. The backend did not return a URL.");
+              return;
+            }
+            await openCheckoutUrl(url);
+            setFeedbackTone("info");
+            setFeedback(
+              `Stripe gift checkout opened for ${recipient}. You can leave before payment.`
+            );
+          } catch (e: any) {
+            await clearClosedGiftCheckoutAttempt(e);
+            setFeedbackTone("error");
+            setFeedback(e?.message || "Unable to start checkout.");
+          } finally {
+            setLoadingPlan(null);
+          }
         }
-        await openCheckoutUrl(url);
-        setFeedbackTone("info");
-        setFeedback(
-          `Gift checkout opened in a new tab for ${recipient}. Close it anytime before payment.`
-        );
-      } catch (e: any) {
-        setFeedbackTone("error");
-        setFeedback(e?.message || "Unable to start checkout.");
-      } finally {
-        setLoadingPlan(null);
-      }
+      );
       return;
     }
 
@@ -245,7 +268,7 @@ export default function Offers() {
         return;
       }
       await openCheckoutUrl(url);
-      setFeedback("Checkout opened in a new tab. Close it anytime before payment.");
+      setFeedback("Stripe checkout opened. You can leave before payment.");
     } catch (e: any) {
       setFeedbackTone("error");
       setFeedback(e?.message || "Unable to start checkout.");

@@ -149,6 +149,7 @@ describe("API Wrappers Unit Tests", () => {
         giftRecipientEmail: "Friend@Example.com",
         giftRecipientName: "Friend Name",
         giftMessage: "Happy growing!",
+        checkoutAttemptId: "a2d70c6e-6f0e-4a21-9bb7-d611bf55ee55",
         successUrl: "https://app.example/home/personal/upgrade?gift=success",
         cancelUrl: "https://app.example/home/personal/upgrade?gift=canceled"
       });
@@ -163,11 +164,24 @@ describe("API Wrappers Unit Tests", () => {
         giftMode: true,
         giftRecipientEmail: "friend@example.com",
         giftRecipientName: "Friend Name",
-        giftMessage: "Happy growing!"
+        giftMessage: "Happy growing!",
+        checkoutAttemptId: "a2d70c6e-6f0e-4a21-9bb7-d611bf55ee55"
       });
     } finally {
       global.window = previousWindow;
     }
+  });
+
+  it("Subscription API: does not send a gift attempt id for a non-gift checkout", async () => {
+    await subscriptionApi.createCheckoutSession({
+      plan: "pro",
+      interval: "monthly",
+      checkoutAttemptId: "f5f8cf6b-0a09-4438-83de-b513bd60e559"
+    });
+
+    expect(JSON.parse(fetchCalls[0].options.body)).not.toHaveProperty(
+      "checkoutAttemptId"
+    );
   });
 
   it("Subscription API: previews a gift with an unauthenticated POST body", async () => {

@@ -222,6 +222,7 @@ export async function createCheckoutSession(
     giftRecipientEmail?: string;
     giftRecipientName?: string;
     giftMessage?: string;
+    checkoutAttemptId?: string;
   } = { plan: "pro", interval: "monthly" }
 ) {
   const origin = currentOrigin();
@@ -229,6 +230,7 @@ export async function createCheckoutSession(
     data.successUrl || (origin ? `${origin}/offers?subscription=success` : "");
   const cancelUrl =
     data.cancelUrl || (origin ? `${origin}/offers?subscription=canceled` : "");
+  const checkoutAttemptId = data.checkoutAttemptId?.trim() || "";
   const body = {
     plan: data.plan || "pro",
     interval: data.interval || data.billingInterval || "monthly",
@@ -243,7 +245,8 @@ export async function createCheckoutSession(
     ...(data.giftRecipientName
       ? { giftRecipientName: data.giftRecipientName.trim() }
       : {}),
-    ...(data.giftMessage ? { giftMessage: data.giftMessage.trim() } : {})
+    ...(data.giftMessage ? { giftMessage: data.giftMessage.trim() } : {}),
+    ...(data.giftMode && checkoutAttemptId ? { checkoutAttemptId } : {})
   };
   const res = await apiRequest("/api/subscription/create-checkout-session", {
     method: "POST",

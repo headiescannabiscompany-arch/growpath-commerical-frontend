@@ -1,9 +1,10 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { View as MockView } from "react-native";
 
 import Offers from "@/app/offers";
 import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscription";
+import { clearGiftCheckoutAttempt } from "@/features/billing/giftCheckoutAttempt";
 
 const mockRetryMe = jest.fn();
 const mockPush = jest.fn();
@@ -12,6 +13,25 @@ let mockTrialUsed = true;
 let mockTrialPlansUsed = ["pro", "commercial", "facility"];
 let mockSubscriptionStatus = "inactive";
 let mockActivePlan = "free";
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const originalWindow = (globalThis as any).window;
+const originalSessionStorageDescriptor = originalWindow
+  ? Object.getOwnPropertyDescriptor(originalWindow, "sessionStorage")
+  : undefined;
+
+function installAttemptSessionStorage() {
+  const values = new Map<string, string>();
+  const windowObject = originalWindow || {};
+  Object.defineProperty(windowObject, "sessionStorage", {
+    configurable: true,
+    value: {
+      getItem: (key: string) => values.get(key) ?? null,
+      removeItem: (key: string) => values.delete(key),
+      setItem: (key: string, value: string) => values.set(key, value)
+    }
+  });
+  (globalThis as any).window = windowObject;
+}
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockSearchParams,
@@ -54,7 +74,9 @@ jest.mock("@/components/layout/AppCard", () => ({
 }));
 
 describe("Offers billing safety", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    installAttemptSessionStorage();
+    await clearGiftCheckoutAttempt();
     mockTrialUsed = true;
     mockTrialPlansUsed = ["pro", "commercial", "facility"];
     mockSubscriptionStatus = "inactive";
@@ -71,6 +93,19 @@ describe("Offers billing safety", () => {
       trial: { enabled: true, days: 30 }
     });
     (createCheckoutSession as jest.Mock).mockResolvedValue({});
+  });
+
+  afterAll(() => {
+    if (originalWindow && originalSessionStorageDescriptor) {
+      Object.defineProperty(
+        originalWindow,
+        "sessionStorage",
+        originalSessionStorageDescriptor
+      );
+    } else if (originalWindow) {
+      delete originalWindow.sessionStorage;
+    }
+    (globalThis as any).window = originalWindow;
   });
 
   it("requires a second explicit action before immediate paid checkout", async () => {
@@ -251,10 +286,74 @@ describe("Offers billing safety", () => {
         interval: "yearly",
         giftMode: true,
         giftRecipientEmail: "friend@example.com",
+        checkoutAttemptId: expect.stringMatching(UUID_V4),
         successUrl: expect.not.stringContaining("gift="),
         cancelUrl: expect.not.stringContaining("gift=")
       })
     );
     expect(request).not.toHaveProperty("giftTerm");
+  });
+
+  it("guards rapid gift presses, reuses an uncertain attempt, and rotates after an edit", async () => {
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "test",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 }
+    });
+    let rejectFirstRequest: (reason?: any) => void = () => {};
+    (createCheckoutSession as jest.Mock).mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectFirstRequest = reject;
+        })
+    );
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift subscription mode")).toBeEnabled()
+    );
+    fireEvent.press(screen.getByLabelText("Gift subscription mode"));
+    fireEvent.changeText(
+      screen.getByLabelText("Gift recipient email"),
+      "Friend@Example.com"
+    );
+
+    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+
+    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(1));
+    const firstAttemptId = (createCheckoutSession as jest.Mock).mock.calls[0][0]
+      .checkoutAttemptId;
+    expect(firstAttemptId).toMatch(UUID_V4);
+
+    await act(async () => {
+      rejectFirstRequest(new Error("Checkout response was uncertain."));
+      await Promise.resolve();
+    });
+    await waitFor(() =>
+      expect(screen.getByText("Checkout response was uncertain.")).toBeTruthy()
+    );
+
+    (createCheckoutSession as jest.Mock).mockRejectedValueOnce(
+      new Error("Checkout response is still uncertain.")
+    );
+    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(2));
+    expect((createCheckoutSession as jest.Mock).mock.calls[1][0].checkoutAttemptId).toBe(
+      firstAttemptId
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Checkout response is still uncertain.")).toBeTruthy()
+    );
+
+    fireEvent.changeText(screen.getByLabelText("Gift recipient name"), "Casey");
+    (createCheckoutSession as jest.Mock).mockResolvedValueOnce({});
+    fireEvent.press(screen.getByLabelText("Gift Pro Grower checkout"));
+
+    await waitFor(() => expect(createCheckoutSession).toHaveBeenCalledTimes(3));
+    const editedAttemptId = (createCheckoutSession as jest.Mock).mock.calls[2][0]
+      .checkoutAttemptId;
+    expect(editedAttemptId).toMatch(UUID_V4);
+    expect(editedAttemptId).not.toBe(firstAttemptId);
   });
 });

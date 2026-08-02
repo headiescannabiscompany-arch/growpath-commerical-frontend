@@ -21,6 +21,10 @@ import {
   PLAN_PRICING
 } from "../../../constants/pricing";
 import { BILLING_PLANS, type BillingPlanKey } from "../planCopy";
+import {
+  clearClosedGiftCheckoutAttempt,
+  useGiftCheckoutAttempt
+} from "../giftCheckoutAttempt";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
 import { useAppTheme, type ThemePalette } from "../../../theme/appTheme";
 
@@ -78,6 +82,7 @@ export default function UpgradePlan() {
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
+  const { runGiftCheckout } = useGiftCheckoutAttempt();
 
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
@@ -133,26 +138,65 @@ export default function UpgradePlan() {
       return;
     }
 
-    setLoadingPlan(plan);
-    setFeedback("");
-    setFeedbackTone("info");
-    try {
-      const origin =
-        typeof window !== "undefined" && window.location ? window.location.origin : "";
-      const response = await createCheckoutSession({
-        plan,
-        interval,
-        ...(giftMode
-          ? {
+    const origin =
+      typeof window !== "undefined" && window.location ? window.location.origin : "";
+
+    if (giftMode) {
+      const successUrl = origin ? `${origin}/home/personal/upgrade` : undefined;
+      const cancelUrl = origin ? `${origin}/home/personal/upgrade` : undefined;
+      await runGiftCheckout(
+        {
+          plan,
+          interval,
+          recipientEmail: recipient,
+          recipientName,
+          message: note,
+          successUrl,
+          cancelUrl
+        },
+        async (checkoutAttemptId) => {
+          setLoadingPlan(plan);
+          setFeedback("");
+          setFeedbackTone("info");
+          try {
+            const response = await createCheckoutSession({
+              plan,
+              interval,
               giftMode: true,
               giftRecipientEmail: recipient,
               ...(recipientName ? { giftRecipientName: recipientName } : {}),
               ...(note ? { giftMessage: note } : {}),
-              successUrl: origin ? `${origin}/home/personal/upgrade` : undefined,
-              cancelUrl: origin ? `${origin}/home/personal/upgrade` : undefined
+              successUrl,
+              cancelUrl,
+              checkoutAttemptId
+            });
+            const url = checkoutUrlFromResponse(response);
+            if (!url) {
+              setFeedbackTone("error");
+              setFeedback("Checkout is unavailable. The backend did not return a URL.");
+              return;
             }
-          : {})
-      });
+            await openExternalUrl(url);
+            setFeedback(
+              `Stripe gift checkout opened for ${recipient}. You can leave before payment.`
+            );
+          } catch (e: any) {
+            await clearClosedGiftCheckoutAttempt(e);
+            setFeedbackTone("error");
+            setFeedback(e?.message || "Unable to start checkout.");
+          } finally {
+            setLoadingPlan(null);
+          }
+        }
+      );
+      return;
+    }
+
+    setLoadingPlan(plan);
+    setFeedback("");
+    setFeedbackTone("info");
+    try {
+      const response = await createCheckoutSession({ plan, interval });
       const url = checkoutUrlFromResponse(response);
       if (!url) {
         setFeedbackTone("error");
@@ -161,9 +205,7 @@ export default function UpgradePlan() {
       }
       await openExternalUrl(url);
       setFeedback(
-        giftMode
-          ? `Gift checkout opened in a new tab for ${recipient}. Close it anytime before payment.`
-          : `Checkout opened in a new tab for ${selected?.title || "this plan"}. Close it anytime before payment.`
+        `Stripe checkout opened for ${selected?.title || "this plan"}. You can leave before payment.`
       );
     } catch (e: any) {
       setFeedbackTone("error");
