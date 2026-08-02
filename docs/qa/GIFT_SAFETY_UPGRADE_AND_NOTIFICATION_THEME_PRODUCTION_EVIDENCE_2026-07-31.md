@@ -3522,3 +3522,110 @@ on purchaser-owned recovery APIs, server-authoritative quote/reconfirmation
 UI, cross-device verification continuation, migration and production-index
 readiness, live Stripe webhook evidence, safe single-worker enablement, and
 mutation-capable production acceptance.
+
+## Dormant purchaser gift history and delivery recovery checkpoint
+
+Backend `d69feffe97028a51649dc94a172ae0740d348bd8` and frontend
+`0832161f7080c4c92788f61d600bdbcd90bf4cf8` close the purchaser-history and
+explicit delivery-recovery slice without enabling gift checkout or the refund
+worker.
+
+The backend now provides purchaser-owned, non-enumerating list/detail routes
+with stable cursor pagination and a deliberately serialized public shape. It
+masks recipient email, omits claim/resolution tokens, recipient user IDs,
+Stripe/provider identifiers and operational leases/errors, and reports
+terminal, expired, ambiguous, refund, dispute, and support states with strict
+precedence. Explicit resend recovery uses durable idempotency identity,
+cooldown, acknowledgement for possible duplicates, and final ownership,
+claim-token, recipient, revocation, refund, dispute, lease, generation, and
+cooldown compare-and-set fences. Claim selection and final claim writes now use
+the same refund/dispute/revocation protections. The legacy subscription cancel
+route returns `GIFT_SUBSCRIPTION_NOT_CANCELABLE` for gift-owned access instead
+of mutating it.
+
+The frontend validates every successful gift payload before display, formats
+Stripe minor units by currency, paginates and de-duplicates history, and makes
+ambiguous resend an announced in-page confirmation that works on React Native
+Web. `/account/billing` supplies the existing authenticated global billing
+destination used after a claim. The new authenticated `/account/sent-gifts`
+route renders only purchaser history: it does not request subscription state
+and does not render Upgrade or Cancel controls. Facility Profile and Offers use
+that dedicated route. Both authenticated routes were added to the production
+static fallback export.
+
+Final local verification passed:
+
+- backend focused regression: 6 suites / 149 tests, including the real MongoDB
+  transaction/race suite;
+- backend drift stopper: 3 suites / 21 tests;
+- backend contract pack: 21 suites / 145 tests;
+- backend targeted ESLint, Prettier, and `git diff --check`;
+- frontend purchaser/history/live-route pack: 7 suites / 48 tests;
+- frontend full `tsc --noEmit`, targeted ESLint with zero warnings, Prettier,
+  and `git diff --check`.
+
+The backend repository still has unrelated whole-repository lint/type debt in
+older AI, task, telemetry, and test surfaces; this release claims only the
+listed targeted checks plus the broad drift/contract packs.
+
+Backend CI `30734705810` succeeded. Exact-SHA GitHub deployment `5711231420`
+reached Render deployment `dep-d9ndj8tbedkc73f0om0g`; final deployment status
+`16241821600` succeeded at 2026-08-02 05:47:18 UTC. Read-only production
+requests returned:
+
+- HTTP 200 from `/health`;
+- HTTP 200 from `/ready`, with the database connected and the gift refund
+  worker `required: false`, `enabled: false`, `running: false`, and
+  `ready: false`;
+- HTTP 200 from `/api/subscription/status`, with `mode: live`,
+  `giftCheckoutConfigured: false`, and blockers `feature_disabled`,
+  `refund_worker_disabled`, and `refund_worker_not_ready`; and
+- HTTP 401 with `UNAUTHENTICATED` from an unsigned
+  `/api/subscription/gifts` request.
+
+Frontend CI `30734806162` and Production Build Preflight `30734806170`
+succeeded on the exact frontend SHA. Production served bundle
+`index-54a1b98e12a4cd3a190aca5eee89a1f7.js`, and direct HTTP checks returned 200
+for `/account/billing`, `/account/sent-gifts`, `/home/facility/profile`, and
+`/offers`. The Render dashboard was not used because the user's browser policy
+blocks that site; no frontend Render deployment ID is asserted. Exact live
+delivery is instead evidenced by the pushed SHA being current `main`, both
+exact-SHA workflows passing, the new bundle fingerprint, and the new unique UI
+appearing on the production routes.
+
+Signed-in Facility production inspection preserved the existing session and
+workspace. Facility Profile rendered the correct Night palette under `Current:
+AUTO / Resolved: NIGHT`, showed the new `Gifts you sent` action, retained Log
+out, and exposed all seven notification controls: Device push, Task reminders,
+Forum replies, Video activity, Courses and lives, Commerce updates, and
+Facility alerts. At a 390-by-844 mobile viewport, Profile retained the six-tab
+Dashboard/Grows/Tasks/Compliance/More/Profile bar and readable wrapped action
+buttons. The dedicated Sent Gifts route rendered a level-one heading, Night
+surface/text/accent colors, Refresh, and the truthful empty state. It exposed
+no Upgrade or Cancel control. Offers also exposed the new history action and
+kept gift checkout disabled.
+
+No Resend button, preference switch, Save, Log out, workspace switch, Upgrade,
+Cancel, checkout, claim, charge, refund, email, account, or record mutation was
+invoked in production.
+
+Gift launch remains blocked. The owner-side Stripe work is exact and limited:
+
+1. Confirm the live webhook endpoint
+   `https://api.growpathai.com/api/payments/webhook` subscribes to
+   `checkout.session.completed`,
+   `customer.subscription.created|updated|deleted`,
+   `invoice.paid|payment_succeeded|payment_failed`, `charge.refunded`, and
+   `charge.dispute.created|updated|closed|funds_withdrawn|funds_reinstated`.
+2. Rotate the exposed live Stripe secret, replace `STRIPE_SECRET_KEY` on the
+   Render backend, redeploy, and expire the old key. Change
+   `STRIPE_WEBHOOK_SECRET` only if the endpoint signing secret changes.
+3. Do not create a separate gift product/price and do not enable
+   `GIFT_SUBSCRIPTION_ENABLED` or `GIFT_REFUND_WORKER_ENABLED` yet. The existing
+   Pro monthly/yearly prices remain the intended gift prices.
+
+Remaining launch gates are the documented purchaser cancellation/refund
+policy (or an explicit decision not to offer one), server-authoritative
+quote/reconfirmation UI, cross-device verification continuation, migration
+and production-index readiness, live Stripe evidence/key rotation, safe
+single-worker enablement, and mutation-capable production acceptance.
