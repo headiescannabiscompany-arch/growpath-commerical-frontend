@@ -65,6 +65,10 @@ function expectedUrls() {
       name: "workspace-switch",
       url: "https://growpathai.com/account/mode"
     },
+    {
+      name: "gift-claim",
+      url: "https://growpathai.com/claim-gift"
+    },
     { name: "api-health", url: `${apiBase}/health` },
     { name: "api-ready", url: `${apiBase}/ready` },
     { name: "api-health-api", url: `${apiBase}/api/health` }

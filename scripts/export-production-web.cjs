@@ -10,7 +10,8 @@ const outputDir =
     : "dist";
 const absoluteOutputDir = path.resolve(ROOT, outputDir);
 const defaultProductionApiUrl = "https://api.growpathai.com";
-const requestedProductionApiUrl = process.env.EXPO_PUBLIC_API_URL || defaultProductionApiUrl;
+const requestedProductionApiUrl =
+  process.env.EXPO_PUBLIC_API_URL || defaultProductionApiUrl;
 
 function normalizeProductionApiUrl(rawUrl) {
   try {
@@ -97,6 +98,7 @@ const fallbackRoutes = [
   "contact",
   "ai-cultivation-disclaimer",
   "accept-facility-invite",
+  "claim-gift",
   "courses",
   "courses/create",
   "courses/add-lesson",
@@ -703,6 +705,7 @@ const robotsTxt = [
   "Disallow: /courses/create",
   "Disallow: /courses/add-lesson",
   "Disallow: /accept-facility-invite",
+  "Disallow: /claim-gift",
   "Disallow: /forgot-password",
   "Disallow: /reset-password",
   "Disallow: /verify-email",
