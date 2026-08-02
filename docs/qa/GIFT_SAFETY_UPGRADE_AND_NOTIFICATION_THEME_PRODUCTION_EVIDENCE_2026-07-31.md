@@ -3260,3 +3260,56 @@ without changing their workflow behavior:
   import, account, session, billing, audit event, or record action was invoked.
   The five unfinished gift frontend files remained unstaged and outside the
   release.
+
+## Mapped Personal, course-authoring, and shared-component active palette
+
+Frontend `25a139f2be30e7cbde7db1470538db3f8131118e` removes the
+remaining verified fixed-Day colors from mounted Expo Router screens and
+shared components without changing their workflow behavior:
+
+- Personal Forum, Courses, and Team now derive page, card, filter, tab, status,
+  modal, action, input, refresh, and shadow colors from the active palette;
+- Create Course and its lesson-media editor now theme all card, image fallback,
+  action, status, input, placeholder, and selection states, covering 17 course
+  inputs plus five lesson-media inputs; and
+- the shared AI-credit balance card now themes its surface, border, text,
+  warning, progress, action, and low-balance states. Calendar Date Field and
+  Lesson Media Card were confirmed already palette-driven. Role Badge, Billing
+  Owner Badge, Inventory Row, Loading Spinner, and Task Row are not mounted by
+  the current Expo Router app and were deliberately left unchanged.
+
+- Fifteen combined suites passed all 90 tests, covering existing course,
+  authoring, route-parameter, forum-separation, team-route, calendar, lesson
+  media, video, and AI-credit behavior plus explicit Day/Night and fixed-color
+  source guards. Forced source/test lint, full frontend `tsc --noEmit`,
+  Prettier verification, and `git diff --check` passed. The known non-failing
+  Expo notification warning appeared in applicable local tests.
+- Production Build Preflight `30725036153` and Frontend CI `30725036175`
+  passed against the exact commit above. Production changed from bundle
+  `index-fd930d5c3a4193492ad16e4ead55a820.js` to
+  `index-22421bfb16130ba51e0325d8a5fc71a2.js`.
+- Before rollout, all sampled Create Course placeholders incorrectly matched
+  entered Night text at `rgb(244, 247, 251)`. After rollout, all sampled
+  placeholders resolved to the Night muted-text color `rgb(201, 212, 223)`;
+  the page retained its `Create Course` H1, seven workflow sections, sixteen
+  visible fields, and zero opaque light surfaces. The loaded Courses page
+  retained its H1, builder workflow, one invite field, and zero opaque light
+  surfaces; its invite placeholder also resolved to `rgb(201, 212, 223)`.
+- Signed-in Facility Viewer verification confirmed zero opaque light surfaces
+  on Facility Dashboard, Facility Profile with eight fields, read-only Create
+  Inventory, Notification Center with seven controls, and Account Workspace.
+  Notification Center exposed Task, Forum, Video, Courses/Lives, Commerce, and
+  Facility category controls. The live full-balance Facility AI-credit card
+  rendered on Night surface `rgb(21, 29, 39)` with border
+  `rgb(40, 53, 69)`; its low-balance danger state remains Day/Night test
+  verified because the real balance was 2000/2000.
+- Direct Personal Forum, Team, and Courses URLs each retained one themed
+  `Access denied` H1, zero fields, and zero opaque light surfaces. Their loaded
+  Personal states remain behavior-and-palette test verified because the
+  Facility Viewer session was not switched or permission-bypassed.
+- The only fixed colors retained in audited mounted shared components are the
+  intentional translucent Calendar modal backdrop and video-player mattes.
+- No field, selection, filter, refresh, invite, course, enrollment, forum,
+  team, member, credit, AI request, notification, inventory, account, session,
+  workspace, billing, audit event, or record action was invoked. The five
+  unfinished gift frontend files remained unstaged and outside the release.
