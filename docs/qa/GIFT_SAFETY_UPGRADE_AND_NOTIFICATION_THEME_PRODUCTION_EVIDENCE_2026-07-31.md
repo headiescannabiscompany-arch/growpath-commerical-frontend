@@ -3683,3 +3683,77 @@ dry-run/apply/post-apply evidence is intentionally still pending explicit
 authorization. The next code gate is purchaser-attempt/Stripe checkout
 idempotency plus authoritative settlement binding; cross-device continuation
 and live Stripe rotation/webhook evidence remain separate launch gates.
+
+## Dormant gift checkout-attempt and authoritative-settlement safety checkpoint
+
+Backend `f766c479b5fe8b96321907fab3629ada5e9e8d60` and frontend
+`2cff70c7f51433219744b995a560a4cc6b31f727` close the duplicate-checkout
+retry and untrusted-settlement gaps without enabling gift checkout or automatic
+refund processing. The client now creates, durably verifies, and reuses one
+purchaser checkout attempt before contacting the API; it fails closed when that
+guard cannot be stored and retains the attempt after ambiguous,
+paid-but-unsettled, or otherwise unsafe terminal outcomes. The backend scopes
+the attempt to the purchaser, binds it to an HMAC of all material request
+fields, reserves it atomically under a fourth named partial-unique index, and
+uses one stable Stripe idempotency key. Only an authoritative expired/unpaid
+session or a definite pre-session provider rejection may release the attempt.
+
+Settlement now retrieves the authoritative Checkout Session, line-item Product,
+Price, and PaymentIntent and requires exact purchaser, attempt, fingerprint,
+plan, term, Product, Price, amount, currency, and live/test-mode matches before
+a compare-and-set transition. Checkout is fixed to one one-time, card-only,
+automatically captured line item derived from the existing recurring Pro
+Product; paid sessions are never silently cleared or reopened. The guarded
+migration/readiness contract now covers the attempt index, and runtime requires
+a dedicated `GIFT_CLAIM_TOKEN_SECRET` of at least 32 characters. No separate
+Stripe Product or Price was introduced.
+
+Final local verification passed:
+
+- backend gift regression: 18 suites / 239 tests;
+- backend payment/subscription/webhook routes: 7 suites / 91 tests;
+- backend focused checkout/payment routes: 3 suites / 77 tests;
+- backend settlement: 1 suite / 67 tests;
+- backend production/configuration: 5 suites / 48 tests;
+- backend route drift: 3 suites / 21 tests;
+- backend core contracts: 21 suites / 145 tests;
+- backend syntax checks, targeted ESLint with zero warnings, Prettier, and
+  `git diff --check`;
+- frontend focused retry/checkout verification: 4 suites / 51 tests;
+- frontend broader billing/release/transport verification: 18 suites / 88
+  tests, for 22 suites / 139 tests total; and
+- frontend full TypeScript, exact source and forced-test ESLint, Prettier, and
+  `git diff --check`.
+
+Exact-SHA Backend CI `30739757240`, Frontend CI `30739757225`, and Production
+Build Preflight `30739757237` succeeded. GitHub deployment `5712152982` reached
+Render deployment `dep-d9nfu31t0dsc73921uv0`; final deployment status
+`16244367721` succeeded at `2026-08-02T08:27:00Z`.
+
+Read-only production requests at `2026-08-02T08:32:27Z` returned HTTP 200 from
+`/health`, `/ready`, and `/api/subscription/status`. Readiness reported the
+database connected and the gift worker not required, enabled, or running.
+Subscription status remained in live Stripe mode with
+`giftCheckoutConfigured: false` and exact blockers `feature_disabled`,
+`refund_worker_disabled`, `refund_worker_not_ready`, and
+`gift_fingerprint_secret_not_configured`.
+
+The production web app also returned HTTP 200 with Render-served bundle
+`index-212e248ac8310923af5bbedbb4446fd6.js`. Its SHA-256 was
+`c5e90ad19393a1757c5807ebf7fdb7838d909c07600c3e30c2de6da76c1ca3a7`, and
+it contained both new guarded-checkout strings introduced by frontend
+`2cff70c7`. The frontend service does not publish GitHub deployment records, so
+no frontend deployment ID is claimed. In the signed-in production browser,
+Offers truthfully displayed that gift checkout was unavailable and disabled
+the gift control; Sent Gifts retained its authenticated empty state. Offers
+logged no browser warning or error. No checkout control was invoked.
+
+No migration command, index write, checkout, Stripe mutation, charge, refund,
+email, claim, account, workspace, preference, or record mutation was invoked in
+production. Gift launch remains blocked on a purchaser cancellation/refund
+policy decision, server-authoritative quote and reconfirmation UI, distinct
+success/cancel return and authoritative reconciliation, recovery from delayed
+completion/expiry events, cross-device continuation, production-index migration
+and legacy pending-record review, live Stripe key/webhook rotation and evidence,
+safe single-worker enablement, real Stripe sandbox acceptance, and
+mutation-capable production acceptance.
