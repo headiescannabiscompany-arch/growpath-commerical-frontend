@@ -3207,3 +3207,56 @@ denied` H1, zero fields, and zero opaque light surfaces.
   account, session, billing, audit event, or record action was invoked. The
   five unfinished gift frontend files remained unstaged and outside the
   release.
+
+## Canonical workspace, AI, Forum, grow-tool, and Facility active palette
+
+Frontend `aa6825c712e08b67c020470f58ecaeb5d8948a9d` completes the
+verified canonical-route color cleanup across 49 source and regression files
+without changing their workflow behavior:
+
+- account workspace and mode choice, including the shared Mode Switcher;
+- Commercial Inventory, Storefront Product Import, More, Tool Library, and
+  Task Detail;
+- Facility Dashboard and SOP Run Detail;
+- the shared Personal/Commercial/Facility AI workspace and AI Result Card;
+- Personal Forum, Community, Forum Post Detail, and inline discussion input;
+- Personal grow Journal/Compare/Tools, cannabis access boundary, Integrations,
+  Saved Runs, Crop Steering, Pheno Matrix, Species/Crop ID, locked-tool card,
+  and plant-identification result details; and
+- Bud Rot, Dry/Cure Guard, Clone Rooting, Tissue Culture, and IPM Scout,
+  covering 126 direct and schema-driven fields through the shared calculator
+  renderer.
+
+- A combined 48-suite run passed all 244 tests, covering existing behavior,
+  navigation, access, calculation, source-link, AI, Forum, integration,
+  workspace, Facility, Commercial task/inventory/import, and tool workflows
+  plus explicit Day/Night and fixed-color source guards. Forced source/test
+  lint, full frontend `tsc --noEmit`, Prettier verification, and
+  `git diff --check` passed. Existing non-failing Expo notification and React
+  test-act warnings were not product failures.
+- Production Build Preflight `30724696141` and Frontend CI `30724696137`
+  passed against the exact commit above. Production changed from bundle
+  `index-fee33403...` to `index-fd930d5c3a4193492ad16e4ead55a820.js`.
+- Signed-in Facility Viewer verification confirmed zero opaque light surfaces
+  on Facility Dashboard, the loaded Facility AI workspace with one prompt
+  field, the read-only empty SOP Run, Account Workspace, and Account Mode.
+  Account Workspace and Account Mode retained their real available/current
+  workspace choices; neither was changed.
+- Direct Commercial Inventory, Product Import, More, and Tool Library plus
+  direct Personal Forum, Forum Post Detail, Bud Rot, Integrations,
+  Species/Crop ID, Grow Journal, and AI routes each retained one themed
+  `Access denied` H1, zero fields, and zero opaque light surfaces.
+- The Commercial Task Detail URL is blocked by the browser harness, so its
+  loaded state remains behavior-and-palette test verified. Personal and
+  Commercial role-loaded pages likewise remain test verified because the
+  Facility Viewer session was neither switched nor permission-bypassed. The
+  corrected Facility Dashboard Day metric contrast remains palette-test
+  verified because production stayed in Auto / Resolved Night.
+- A canonical fixed-color scan now leaves only the intentional translucent
+  modal scrim on Create Grow and fixed base/semantic dashboard/tool-hub values
+  that are overridden at every rendered use and protected by palette tests.
+- No workspace choice, mode switch, field, AI request, evidence, credit, SOP
+  step, Forum action, calculation, integration, saved run, task, inventory,
+  import, account, session, billing, audit event, or record action was invoked.
+  The five unfinished gift frontend files remained unstaged and outside the
+  release.
