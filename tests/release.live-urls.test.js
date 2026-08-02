@@ -191,7 +191,7 @@ describe("live URL verifier", () => {
     expect(fallbackBlock).toContain('"account/mode"');
   });
 
-  it("keeps authenticated billing and sent-gift routes in the production fallback export", () => {
+  it("keeps authenticated billing, sent-gift, and checkout-return routes in the production fallback export", () => {
     const exportScript = fs.readFileSync(
       path.join(root, "scripts", "export-production-web.cjs"),
       "utf8"
@@ -202,6 +202,9 @@ describe("live URL verifier", () => {
 
     expect(fallbackBlock).toContain('"account/billing"');
     expect(fallbackBlock).toContain('"account/sent-gifts"');
+    expect(fallbackBlock).toContain('"account/gift-checkout/success"');
+    expect(fallbackBlock).toContain('"account/gift-checkout/cancel"');
+    expect(exportScript).toContain('"Disallow: /account/gift-checkout/"');
   });
 
   it("keeps direct gift-claim email links in the production fallback export", () => {
