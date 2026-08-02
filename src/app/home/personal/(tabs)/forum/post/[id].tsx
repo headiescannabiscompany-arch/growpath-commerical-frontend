@@ -28,7 +28,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 import { flattenGrowInterests, normalizeInterestList } from "@/utils/growInterests";
@@ -163,6 +163,7 @@ function ForumImage({ uri, style, label }: { uri: string; style: any; label: str
 export default function ForumPostDetailRoute() {
   const params = useLocalSearchParams();
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createForumPostDetailStyles(palette), [palette]);
   const id = getId(params as any);
   const growId = param((params as any).growId);
   const entitlements = useEntitlements();
@@ -383,36 +384,16 @@ export default function ForumPostDetailRoute() {
 
     return (
       <ScreenBoundary name="personal.forum.postDetail" showBack backFallbackHref="/forum">
-        <View style={[styles.unavailablePage, { backgroundColor: palette.page }]}>
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: palette.surface, borderColor: palette.border }
-            ]}
-          >
-            <Text
-              accessibilityRole="header"
-              aria-level={1}
-              style={[styles.title, { color: palette.text }]}
-            >
+        <View style={styles.unavailablePage}>
+          <View style={styles.card}>
+            <Text accessibilityRole="header" aria-level={1} style={styles.title}>
               {unavailableTitle}
             </Text>
-            <Text style={[styles.cardText, { color: palette.textMuted }]}>
-              {unavailableCopy}
-            </Text>
+            <Text style={styles.cardText}>{unavailableCopy}</Text>
             {canView ? (
               <Link href="/forum" asChild>
-                <Pressable
-                  accessibilityRole="button"
-                  style={{
-                    ...styles.secondaryBtn,
-                    borderColor: palette.accent,
-                    backgroundColor: palette.surfaceMuted
-                  }}
-                >
-                  <Text style={[styles.secondaryText, { color: palette.accent }]}>
-                    Browse Forum / Q&amp;A
-                  </Text>
+                <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
+                  <Text style={styles.secondaryText}>Browse Forum / Q&amp;A</Text>
                 </Pressable>
               </Link>
             ) : null}
@@ -425,60 +406,38 @@ export default function ForumPostDetailRoute() {
   return (
     <ScreenBoundary name="personal.forum.postDetail" showBack backFallbackHref="/forum">
       <ScrollView
-        style={[styles.container, { backgroundColor: palette.page }]}
+        style={styles.container}
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
+            colors={[palette.accent]}
+            tintColor={palette.accent}
+            progressBackgroundColor={palette.surface}
           />
         }
       >
         {!canView ? (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: palette.surface, borderColor: palette.border }
-            ]}
-          >
-            <Text style={[styles.cardTitle, { color: palette.text }]}>
-              Forum unavailable
-            </Text>
-            <Text style={[styles.cardText, { color: palette.textMuted }]}>
-              This account does not have `FORUM_VIEW`.
-            </Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Forum unavailable</Text>
+            <Text style={styles.cardText}>This account does not have `FORUM_VIEW`.</Text>
           </View>
         ) : null}
 
-        {feedback ? (
-          <Text style={[styles.feedback, { color: palette.danger }]}>{feedback}</Text>
-        ) : null}
+        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
         {loading ? (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: palette.surface, borderColor: palette.border }
-            ]}
-          >
+          <View style={styles.card}>
             <ActivityIndicator color={palette.accent} />
           </View>
         ) : null}
 
         {!loading && canView ? (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: palette.surface, borderColor: palette.border }
-            ]}
-          >
+          <View style={styles.card}>
             {post ? (
               <>
-                <Text
-                  accessibilityRole="header"
-                  aria-level={1}
-                  style={[styles.title, { color: palette.text }]}
-                >
+                <Text accessibilityRole="header" aria-level={1} style={styles.title}>
                   {titleOf(post)}
                 </Text>
                 <PersonalFeedPlacement
@@ -486,38 +445,24 @@ export default function ForumPostDetailRoute() {
                   routeKey="personal_forum_post_id"
                   longContent
                 />
-                <Text style={[styles.meta, { color: palette.textMuted }]}>
+                <Text style={styles.meta}>
                   {authorName(post)}
                   {post.createdAt
                     ? ` | ${new Date(post.createdAt).toLocaleString()}`
                     : ""}
                 </Text>
-                {bodyOf(post) ? (
-                  <Text style={[styles.body, { color: palette.textMuted }]}>
-                    {bodyOf(post)}
-                  </Text>
-                ) : null}
+                {bodyOf(post) ? <Text style={styles.body}>{bodyOf(post)}</Text> : null}
                 {tagsOf(post).length ? (
                   <View style={styles.tagRow}>
                     {tagsOf(post).map((tag) => (
-                      <Text
-                        key={tag}
-                        style={[
-                          styles.tag,
-                          {
-                            backgroundColor: palette.surfaceMuted,
-                            color: palette.accent,
-                            borderColor: palette.border
-                          }
-                        ]}
-                      >
+                      <Text key={tag} style={styles.tag}>
                         {tag}
                       </Text>
                     ))}
                   </View>
                 ) : null}
                 {(post as any).growId || (post as any).linkedGrowId ? (
-                  <Text style={[styles.contextText, { color: palette.accent }]}>
+                  <Text style={styles.contextText}>
                     Attached grow: {(post as any).growId || (post as any).linkedGrowId}
                   </Text>
                 ) : null}
@@ -537,20 +482,11 @@ export default function ForumPostDetailRoute() {
                   <Pressable
                     disabled={!canPost || saving}
                     onPress={toggleLike}
-                    style={[
-                      styles.secondaryBtn,
-                      {
-                        borderColor: palette.accent,
-                        backgroundColor: palette.surfaceMuted
-                      },
-                      (!canPost || saving) && styles.disabled
-                    ]}
+                    style={[styles.secondaryBtn, (!canPost || saving) && styles.disabled]}
                     accessibilityRole="button"
                     accessibilityLabel={liked ? "Unlike forum post" : "Like forum post"}
                   >
-                    <Text style={[styles.secondaryText, { color: palette.accent }]}>
-                      {liked ? "Unlike" : "Like"}
-                    </Text>
+                    <Text style={styles.secondaryText}>{liked ? "Unlike" : "Like"}</Text>
                   </Pressable>
                   {growId ? (
                     <>
@@ -559,34 +495,24 @@ export default function ForumPostDetailRoute() {
                         onPress={saveToGrowLog}
                         style={[
                           styles.secondaryBtn,
-                          {
-                            borderColor: palette.accent,
-                            backgroundColor: palette.surfaceMuted
-                          },
                           (!canPost || saving) && styles.disabled
                         ]}
                         accessibilityRole="button"
                         accessibilityLabel="Save forum post to grow log"
                       >
-                        <Text style={[styles.secondaryText, { color: palette.accent }]}>
-                          Save to Log
-                        </Text>
+                        <Text style={styles.secondaryText}>Save to Log</Text>
                       </Pressable>
                       <Pressable
                         disabled={!canPost || creatingTask}
                         onPress={createFollowUpTask}
                         style={[
                           styles.secondaryBtn,
-                          {
-                            borderColor: palette.accent,
-                            backgroundColor: palette.surfaceMuted
-                          },
                           (!canPost || creatingTask) && styles.disabled
                         ]}
                         accessibilityRole="button"
                         accessibilityLabel="Create forum follow-up task"
                       >
-                        <Text style={[styles.secondaryText, { color: palette.accent }]}>
+                        <Text style={styles.secondaryText}>
                           {creatingTask ? "Creating..." : "Create Task"}
                         </Text>
                       </Pressable>
@@ -595,28 +521,17 @@ export default function ForumPostDetailRoute() {
                   <Pressable
                     disabled={!canPost || saving}
                     onPress={reportPost}
-                    style={[
-                      styles.dangerBtn,
-                      {
-                        borderColor: palette.danger,
-                        backgroundColor: palette.surfaceMuted
-                      },
-                      (!canPost || saving) && styles.disabled
-                    ]}
+                    style={[styles.dangerBtn, (!canPost || saving) && styles.disabled]}
                     accessibilityRole="button"
                     accessibilityLabel="Report forum post"
                   >
-                    <Text style={[styles.dangerText, { color: palette.danger }]}>
-                      Report
-                    </Text>
+                    <Text style={styles.dangerText}>Report</Text>
                   </Pressable>
-                  <Text style={[styles.meta, { color: palette.textMuted }]}>
-                    {likes} likes
-                  </Text>
+                  <Text style={styles.meta}>{likes} likes</Text>
                 </View>
               </>
             ) : (
-              <Text style={[styles.cardText, { color: palette.textMuted }]}>
+              <Text style={styles.cardText}>
                 {id ? "No post returned." : "Missing post id."}
               </Text>
             )}
@@ -632,17 +547,8 @@ export default function ForumPostDetailRoute() {
         ) : null}
 
         {canView ? (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: palette.surface, borderColor: palette.border }
-            ]}
-          >
-            <Text
-              accessibilityRole="header"
-              aria-level={2}
-              style={[styles.cardTitle, { color: palette.text }]}
-            >
+          <View style={styles.card}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
               Comments
             </Text>
             {canPost ? (
@@ -654,32 +560,18 @@ export default function ForumPostDetailRoute() {
                   multiline
                   editable={!saving}
                   placeholderTextColor={palette.textMuted}
-                  style={[
-                    styles.input,
-                    styles.commentInput,
-                    {
-                      backgroundColor: palette.surfaceMuted,
-                      borderColor: palette.border,
-                      color: palette.text
-                    }
-                  ]}
+                  selectionColor={palette.accent}
+                  style={[styles.input, styles.commentInput]}
                   accessibilityLabel="Forum comment"
                 />
                 <Pressable
                   disabled={saving}
                   onPress={pickCommentPhotos}
-                  style={[
-                    styles.secondaryBtn,
-                    {
-                      borderColor: palette.accent,
-                      backgroundColor: palette.surfaceMuted
-                    },
-                    saving && styles.disabled
-                  ]}
+                  style={[styles.secondaryBtn, saving && styles.disabled]}
                   accessibilityRole="button"
                   accessibilityLabel="Attach forum comment photos"
                 >
-                  <Text style={[styles.secondaryText, { color: palette.accent }]}>
+                  <Text style={styles.secondaryText}>
                     {commentPhotoUris.length ? "Add more photos" : "Attach photo"}
                   </Text>
                 </Pressable>
@@ -701,9 +593,7 @@ export default function ForumPostDetailRoute() {
                           accessibilityRole="button"
                           accessibilityLabel={`Remove forum comment photo ${index + 1}`}
                         >
-                          <Text style={[styles.dangerText, { color: palette.danger }]}>
-                            Remove
-                          </Text>
+                          <Text style={styles.dangerText}>Remove</Text>
                         </Pressable>
                       </View>
                     ))}
@@ -714,36 +604,27 @@ export default function ForumPostDetailRoute() {
                   onPress={submitComment}
                   style={[
                     styles.primaryBtn,
-                    { backgroundColor: palette.accent },
                     ((!commentText.trim() && !commentPhotoUris.length) || saving) &&
                       styles.disabled
                   ]}
                   accessibilityRole="button"
                   accessibilityLabel="Submit forum comment"
                 >
-                  <Text style={[styles.primaryText, { color: palette.accentText }]}>
-                    Comment
-                  </Text>
+                  <Text style={styles.primaryText}>Comment</Text>
                 </Pressable>
               </View>
             ) : (
-              <Text style={[styles.cardText, { color: palette.textMuted }]}>
-                Commenting requires `FORUM_POST`.
-              </Text>
+              <Text style={styles.cardText}>Commenting requires `FORUM_POST`.</Text>
             )}
 
             {comments.map((comment) => (
               <View
                 key={String(comment._id || comment.id || bodyOf(comment))}
-                style={[styles.comment, { borderTopColor: palette.border }]}
+                style={styles.comment}
               >
-                <Text style={[styles.rowTitle, { color: palette.text }]}>
-                  {authorName(comment)}
-                </Text>
+                <Text style={styles.rowTitle}>{authorName(comment)}</Text>
                 {visibleCommentBody(comment) ? (
-                  <Text style={[styles.cardText, { color: palette.textMuted }]}>
-                    {visibleCommentBody(comment)}
-                  </Text>
+                  <Text style={styles.cardText}>{visibleCommentBody(comment)}</Text>
                 ) : null}
                 {commentPhotos(comment).length ? (
                   <View style={styles.photoGrid}>
@@ -760,9 +641,7 @@ export default function ForumPostDetailRoute() {
               </View>
             ))}
             {!comments.length ? (
-              <Text style={[styles.cardText, { color: palette.textMuted }]}>
-                No comments yet.
-              </Text>
+              <Text style={styles.cardText}>No comments yet.</Text>
             ) : null}
           </View>
         ) : null}
@@ -777,110 +656,119 @@ export default function ForumPostDetailRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  unavailablePage: { flex: 1, padding: 20 },
-  content: { padding: 20, paddingBottom: 36, gap: 12 },
-  title: { fontSize: 24, fontWeight: "800", color: "#0F172A" },
-  body: { color: "#334155", lineHeight: 21, marginTop: 10 },
-  photoGrid: { alignItems: "center", gap: 10, marginTop: 8, width: "100%" },
-  postPhoto: {
-    width: "100%",
-    maxWidth: 720,
-    aspectRatio: 4 / 3,
-    alignSelf: "center",
-    borderRadius: radius.card,
-    backgroundColor: "#E2E8F0"
-  },
-  imageFallback: { alignItems: "center", justifyContent: "center", padding: 8 },
-  imageFallbackText: {
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "800",
-    textAlign: "center"
-  },
-  tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
-  tag: {
-    backgroundColor: "#DCFCE7",
-    borderRadius: 999,
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "800",
-    paddingHorizontal: 9,
-    paddingVertical: 4
-  },
-  contextText: { color: "#166534", fontSize: 13, fontWeight: "800", marginTop: 4 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "#F8FAFC",
-    gap: 8
-  },
-  cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
-  cardText: { color: "#475569", lineHeight: 20 },
-  rowTitle: { fontWeight: "800", color: "#0F172A" },
-  meta: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  actions: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6 },
-  commentComposer: { gap: 8 },
-  comment: {
-    borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
-    paddingTop: 10,
-    gap: 4
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  commentInput: { minHeight: 90, textAlignVertical: "top" },
-  commentPhoto: {
-    width: "100%",
-    maxWidth: 560,
-    aspectRatio: 4 / 3,
-    alignSelf: "center",
-    borderRadius: radius.card,
-    backgroundColor: "#E2E8F0"
-  },
-  primaryBtn: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryBtn: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#FFFFFF"
-  },
-  secondaryText: { color: "#0F172A", fontWeight: "800" },
-  dangerBtn: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#FCA5A5",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#FEF2F2"
-  },
-  dangerText: { color: "#991B1B", fontWeight: "800" },
-  disabled: { opacity: 0.5 },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 9,
-    fontWeight: "700"
-  }
-});
+export function createForumPostDetailStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    unavailablePage: { flex: 1, padding: 20, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 36, gap: 12 },
+    title: { fontSize: 24, fontWeight: "800", color: palette.text },
+    body: { color: palette.textMuted, lineHeight: 21, marginTop: 10 },
+    photoGrid: { alignItems: "center", gap: 10, marginTop: 8, width: "100%" },
+    postPhoto: {
+      width: "100%",
+      maxWidth: 720,
+      aspectRatio: 4 / 3,
+      alignSelf: "center",
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    imageFallback: { alignItems: "center", justifyContent: "center", padding: 8 },
+    imageFallbackText: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "800",
+      textAlign: "center"
+    },
+    tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+    tag: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: 999,
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "800",
+      paddingHorizontal: 9,
+      paddingVertical: 4
+    },
+    contextText: {
+      color: palette.accent,
+      fontSize: 13,
+      fontWeight: "800",
+      marginTop: 4
+    },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      gap: 8
+    },
+    cardTitle: { fontSize: 16, fontWeight: "800", color: palette.text },
+    cardText: { color: palette.textMuted, lineHeight: 20 },
+    rowTitle: { fontWeight: "800", color: palette.text },
+    meta: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    actions: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6 },
+    commentComposer: { gap: 8 },
+    comment: {
+      borderTopWidth: 1,
+      borderTopColor: palette.border,
+      paddingTop: 10,
+      gap: 4
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      backgroundColor: palette.surfaceMuted,
+      color: palette.text
+    },
+    commentInput: { minHeight: 90, textAlignVertical: "top" },
+    commentPhoto: {
+      width: "100%",
+      maxWidth: 560,
+      aspectRatio: 4 / 3,
+      alignSelf: "center",
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    primaryBtn: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondaryBtn: {
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surfaceMuted
+    },
+    secondaryText: { color: palette.accent, fontWeight: "800" },
+    dangerBtn: {
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surfaceMuted
+    },
+    dangerText: { color: palette.danger, fontWeight: "800" },
+    disabled: { opacity: 0.5 },
+    feedback: {
+      color: palette.danger,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 9,
+      fontWeight: "700"
+    }
+  });
+}

@@ -18,6 +18,7 @@ import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type AnyRec = Record<string, any>;
@@ -77,6 +78,8 @@ function stockStatus(x: AnyRec): "out" | "low" | "ok" {
 
 export default function CommercialInventoryRoute() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialInventoryStyles(palette), [palette]);
   const ent = useEntitlements();
   const canCreate = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
 
@@ -167,7 +170,7 @@ export default function CommercialInventoryRoute() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading inventory support...</Text>
           </View>
         ) : null}
@@ -213,8 +216,10 @@ export default function CommercialInventoryRoute() {
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
           refreshControl={
             <RefreshControl
+              colors={[palette.accent]}
               refreshing={refreshing}
               onRefresh={() => load({ refresh: true })}
+              tintColor={palette.accent}
             />
           }
           contentContainerStyle={styles.list}
@@ -289,84 +294,92 @@ export default function CommercialInventoryRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
-  headerRow: { gap: 4 },
-  h1: { fontSize: 22, fontWeight: "900" },
-  sectionTitle: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
-  muted: { opacity: 0.7 },
+export function createCommercialInventoryStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { backgroundColor: palette.page, flex: 1, gap: 12, padding: 16 },
+    headerRow: { gap: 4 },
+    h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    muted: { color: palette.textMuted },
 
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    justifyContent: "space-between"
-  },
-  createBtn: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.2)",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 6
-  },
-  createBtnText: { fontWeight: "800" },
+    headerActions: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    createBtn: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 6
+    },
+    createBtnText: { color: palette.link, fontWeight: "800" },
 
-  loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+    loading: { alignItems: "center", gap: 10, paddingVertical: 18 },
 
-  summaryCard: {
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#eff6ff",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16
-  },
-  summaryValue: { color: "#1e3a8a", fontSize: 20, fontWeight: "900" },
-  summaryLabel: { color: "#1e40af", fontSize: 12, fontWeight: "800" },
-  warnText: { color: "#b45309" },
-  dangerText: { color: "#991b1b" },
-  guideCard: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 4,
-    padding: 12
-  },
-  guideTitle: { color: "#0F172A", fontWeight: "900" },
-  guideText: { color: "#475569", fontSize: 13, fontWeight: "700", lineHeight: 19 },
+    summaryCard: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16,
+      padding: 12
+    },
+    summaryValue: { color: palette.link, fontSize: 20, fontWeight: "900" },
+    summaryLabel: { color: palette.textSoft, fontSize: 12, fontWeight: "800" },
+    warnText: { color: palette.warning },
+    dangerText: { color: palette.danger },
+    guideCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 4,
+      padding: 12
+    },
+    guideTitle: { color: palette.text, fontWeight: "900" },
+    guideText: {
+      color: palette.textSoft,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19
+    },
 
-  list: { paddingVertical: 6, gap: 10 },
+    list: { gap: 10, paddingVertical: 6 },
 
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.12)",
-    backgroundColor: "white"
-  },
-  rowPressed: { opacity: 0.85 },
-  rowTitle: { fontSize: 16, fontWeight: "800" },
-  rowSub: { opacity: 0.7 },
-  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
-  badge: {
-    borderRadius: 999,
-    overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  badgeOk: { color: "#065f46", backgroundColor: "#d1fae5" },
-  badgeWarn: { color: "#92400e", backgroundColor: "#fef3c7" },
-  badgeDanger: { color: "#991b1b", backgroundColor: "#fee2e2" },
-  chev: { fontSize: 22, opacity: 0.5, paddingLeft: 8 },
+    row: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 12,
+      padding: 14
+    },
+    rowPressed: { opacity: 0.85 },
+    rowTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    rowSub: { color: palette.textMuted },
+    badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
+    badge: {
+      borderRadius: 999,
+      fontSize: 12,
+      fontWeight: "900",
+      overflow: "hidden",
+      paddingHorizontal: 8,
+      paddingVertical: 3
+    },
+    badgeOk: { backgroundColor: palette.surfaceStrong, color: palette.success },
+    badgeWarn: { backgroundColor: palette.surfaceStrong, color: palette.warning },
+    badgeDanger: { backgroundColor: palette.surfaceStrong, color: palette.danger },
+    chev: { color: palette.textMuted, fontSize: 22, paddingLeft: 8 },
 
-  empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: "800" }
-});
+    empty: { alignItems: "center", gap: 8, paddingVertical: 26 },
+    emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "800" }
+  });
+}

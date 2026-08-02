@@ -1,9 +1,10 @@
 import { Link } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type WorkspaceDestination = {
@@ -134,6 +135,9 @@ const workspaceGroups: Array<{
 ];
 
 function WorkspaceLink({ description, href, label }: WorkspaceDestination) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialMoreStyles(palette), [palette]);
+
   return (
     <Link href={href as any} asChild>
       <Pressable
@@ -150,6 +154,9 @@ function WorkspaceLink({ description, href, label }: WorkspaceDestination) {
 }
 
 export default function CommercialMoreRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCommercialMoreStyles(palette), [palette]);
+
   return (
     <AppPage
       routeKey="commercial-more"
@@ -182,60 +189,62 @@ export default function CommercialMoreRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  destination: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: 220,
-    flexGrow: 1,
-    flexShrink: 1,
-    maxWidth: "100%",
-    minHeight: 120,
-    minWidth: 220,
-    padding: 14
-  },
-  destinationAction: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900",
-    marginTop: 10
-  },
-  destinationDescription: {
-    color: "#475569",
-    flexShrink: 1,
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 5
-  },
-  destinationGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10
-  },
-  destinationTitle: {
-    color: "#0F172A",
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  groupTitle: {
-    color: "#0F172A",
-    fontSize: 18,
-    fontWeight: "900",
-    marginBottom: 12
-  },
-  header: {
-    gap: 6
-  },
-  subtitle: {
-    color: "#475569",
-    fontSize: 14,
-    lineHeight: 20
-  },
-  title: {
-    color: "#0F172A",
-    fontSize: 28,
-    fontWeight: "900"
-  }
-});
+export function createCommercialMoreStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    destination: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: 220,
+      flexGrow: 1,
+      flexShrink: 1,
+      maxWidth: "100%",
+      minHeight: 120,
+      minWidth: 220,
+      padding: 14
+    },
+    destinationAction: {
+      color: palette.link,
+      fontSize: 13,
+      fontWeight: "900",
+      marginTop: 10
+    },
+    destinationDescription: {
+      color: palette.textMuted,
+      flexShrink: 1,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 5
+    },
+    destinationGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    },
+    destinationTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "900"
+    },
+    groupTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900",
+      marginBottom: 12
+    },
+    header: {
+      gap: 6
+    },
+    subtitle: {
+      color: palette.textMuted,
+      fontSize: 14,
+      lineHeight: 20
+    },
+    title: {
+      color: palette.text,
+      fontSize: 28,
+      fontWeight: "900"
+    }
+  });
+}

@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
+
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 function textList(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -14,7 +16,19 @@ function display(value: unknown, fallback = "Not established") {
   return text || fallback;
 }
 
-function EvidenceList({ title, values }: { title: string; values: unknown }) {
+type PlantIdentificationResultStyles = ReturnType<
+  typeof createPlantIdentificationResultStyles
+>;
+
+function EvidenceList({
+  title,
+  values,
+  styles
+}: {
+  title: string;
+  values: unknown;
+  styles: PlantIdentificationResultStyles;
+}) {
   const items = textList(values);
   if (!items.length) return null;
   return (
@@ -34,6 +48,8 @@ export default function PlantIdentificationResultDetails({
 }: {
   outputs: Record<string, any>;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createPlantIdentificationResultStyles(palette), [palette]);
   const candidates = Array.isArray(outputs.candidates) ? outputs.candidates : [];
   const sourceVerification = outputs.sourceVerification || {};
   const possibleGenera = textList(outputs.possibleGenera);
@@ -72,24 +88,46 @@ export default function PlantIdentificationResultDetails({
                   ? "source verified"
                   : "not source verified"}
               </Text>
-              <EvidenceList title="Supports" values={candidate?.evidence} />
+              <EvidenceList
+                title="Supports"
+                values={candidate?.evidence}
+                styles={styles}
+              />
               <EvidenceList
                 title="Conflicts / lookalikes"
                 values={candidate?.counterEvidence}
+                styles={styles}
               />
-              <EvidenceList title="Still needed" values={candidate?.missingEvidence} />
+              <EvidenceList
+                title="Still needed"
+                values={candidate?.missingEvidence}
+                styles={styles}
+              />
             </View>
           ))}
         </View>
       ) : null}
 
-      <EvidenceList title="Evidence used" values={outputs.evidence} />
-      <EvidenceList title="Counter-evidence" values={outputs.counterEvidence} />
-      <EvidenceList title="Missing evidence" values={outputs.missingInformation} />
-      <EvidenceList title="Next photos to add" values={outputs.requiredNextPhotos} />
+      <EvidenceList title="Evidence used" values={outputs.evidence} styles={styles} />
+      <EvidenceList
+        title="Counter-evidence"
+        values={outputs.counterEvidence}
+        styles={styles}
+      />
+      <EvidenceList
+        title="Missing evidence"
+        values={outputs.missingInformation}
+        styles={styles}
+      />
+      <EvidenceList
+        title="Next photos to add"
+        values={outputs.requiredNextPhotos}
+        styles={styles}
+      />
       <EvidenceList
         title="Questions that would narrow the ID"
         values={outputs.requiredNextQuestions}
+        styles={styles}
       />
 
       <View style={styles.verification}>
@@ -110,29 +148,31 @@ export default function PlantIdentificationResultDetails({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 12 },
-  group: { gap: 5 },
-  sectionTitle: { color: "#0F172A", fontSize: 14, fontWeight: "800" },
-  groupTitle: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  line: { color: "#334155", lineHeight: 19 },
-  listItem: { color: "#475569", lineHeight: 19 },
-  candidate: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 8,
-    backgroundColor: "#FFFFFF",
-    padding: 10,
-    gap: 5
-  },
-  candidateTitle: { color: "#0F172A", fontWeight: "800" },
-  meta: { color: "#64748B", fontSize: 12, lineHeight: 18 },
-  verification: {
-    borderWidth: 1,
-    borderColor: "#BAE6FD",
-    borderRadius: 8,
-    backgroundColor: "#F0F9FF",
-    padding: 10,
-    gap: 5
-  }
-});
+export function createPlantIdentificationResultStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { gap: 12 },
+    group: { gap: 5 },
+    sectionTitle: { color: palette.text, fontSize: 14, fontWeight: "800" },
+    groupTitle: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    line: { color: palette.textMuted, lineHeight: 19 },
+    listItem: { color: palette.textMuted, lineHeight: 19 },
+    candidate: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 8,
+      backgroundColor: palette.surface,
+      padding: 10,
+      gap: 5
+    },
+    candidateTitle: { color: palette.text, fontWeight: "800" },
+    meta: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    verification: {
+      borderWidth: 1,
+      borderColor: palette.borderSoft,
+      borderRadius: 8,
+      backgroundColor: palette.accentSoft,
+      padding: 10,
+      gap: 5
+    }
+  });
+}

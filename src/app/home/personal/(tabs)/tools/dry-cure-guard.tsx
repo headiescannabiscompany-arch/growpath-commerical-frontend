@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
@@ -12,6 +12,7 @@ import {
 } from "@/api/harvestBatches";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import { providerEvidencePayload } from "@/api/evidence";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
 
 function measuredNumber(value: string) {
@@ -200,6 +201,8 @@ function dryCureRecord(
 }
 
 export default function DryCureGuardToolScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createDryCureGuardStyles(palette), [palette]);
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   return (
     <BackendCalculatorToolScreen
@@ -533,22 +536,23 @@ export default function DryCureGuardToolScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  evidenceSection: { gap: 12 },
-  measurementCard: {
-    gap: 6,
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    backgroundColor: "#F0FDF4"
-  },
-  measurementTitle: { color: "#14532D", fontSize: 16, fontWeight: "800" },
-  measurementText: { color: "#334155", fontSize: 13, lineHeight: 19 },
-  measurementWarning: {
-    color: "#92400E",
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "700"
-  }
-});
+export const createDryCureGuardStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    evidenceSection: { gap: 12 },
+    measurementCard: {
+      gap: 6,
+      padding: 12,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surfaceMuted
+    },
+    measurementTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    measurementText: { color: palette.textMuted, fontSize: 13, lineHeight: 19 },
+    measurementWarning: {
+      color: palette.warning,
+      fontSize: 13,
+      lineHeight: 19,
+      fontWeight: "700"
+    }
+  });

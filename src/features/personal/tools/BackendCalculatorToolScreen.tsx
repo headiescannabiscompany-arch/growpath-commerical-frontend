@@ -989,6 +989,8 @@ export default function BackendCalculatorToolScreen({
                     accessibilityLabel={`${title} ${field.label}`}
                     accessibilityHint={field.helpText}
                     placeholder={field.placeholder}
+                    placeholderTextColor={palette.textMuted}
+                    selectionColor={palette.accent}
                     style={[styles.input, field.multiline && styles.textArea]}
                     value={values[field.key] ?? ""}
                     onChangeText={(value) => updateValue(field.key, value)}

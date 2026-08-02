@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Href, Link } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 
 type LockedToolCardProps = {
   title: string;
@@ -15,6 +17,9 @@ export default function LockedToolCard({
   description = "Upgrade or enable this capability to use the tool.",
   upgradeHref = "/subscribe"
 }: LockedToolCardProps) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createLockedToolCardStyles(palette), [palette]);
+
   return (
     <View style={styles.card}>
       <Text style={styles.eyebrow}>Locked</Text>
@@ -28,23 +33,25 @@ export default function LockedToolCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: "#FECACA",
-    borderRadius: 8,
-    padding: 16,
-    backgroundColor: "#FEF2F2",
-    gap: 7
-  },
-  eyebrow: {
-    color: "#991B1B",
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase"
-  },
-  title: { color: "#0F172A", fontSize: 17, fontWeight: "800" },
-  description: { color: "#475569", lineHeight: 20 },
-  capability: { color: "#991B1B", fontSize: 12, fontWeight: "700" },
-  link: { color: "#166534", fontWeight: "800", marginTop: 4 }
-});
+export function createLockedToolCardStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.danger,
+      borderRadius: 8,
+      borderWidth: 1,
+      gap: 7,
+      padding: 16
+    },
+    eyebrow: {
+      color: palette.danger,
+      fontSize: 12,
+      fontWeight: "800",
+      textTransform: "uppercase"
+    },
+    title: { color: palette.text, fontSize: 17, fontWeight: "800" },
+    description: { color: palette.textSoft, lineHeight: 20 },
+    capability: { color: palette.danger, fontSize: 12, fontWeight: "700" },
+    link: { color: palette.link, fontWeight: "800", marginTop: 4 }
+  });
+}

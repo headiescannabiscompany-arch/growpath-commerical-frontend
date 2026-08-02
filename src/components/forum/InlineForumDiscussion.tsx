@@ -202,6 +202,7 @@ export default function InlineForumDiscussion({
                 onChangeText={setReply}
                 placeholder="Write a reply..."
                 placeholderTextColor={palette.textMuted}
+                selectionColor={palette.accent}
                 style={[
                   styles.input,
                   {

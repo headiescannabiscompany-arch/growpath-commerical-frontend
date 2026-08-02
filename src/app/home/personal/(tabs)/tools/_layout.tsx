@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, Redirect, Stack, useLocalSearchParams, usePathname } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -7,6 +7,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { flattenGrowInterests } from "@/utils/growInterests";
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import { coerceParam, isCannabisGrow } from "@/features/grows/routeUtils";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 const CANNABIS_TOOL_PATHS = new Set([
   "/home/personal/tools/crop-steering-project",
@@ -47,29 +48,34 @@ export function canOpenCannabisTool(
 }
 
 export function CannabisToolAccessNotice() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCannabisToolAccessStyles(palette), [palette]);
+
   return (
-    <View
-      accessibilityRole="alert"
-      style={styles.accessNotice}
-      testID="cannabis-tool-access-notice"
-    >
-      <Text style={styles.accessTitle}>Cannabis tool access is off</Text>
-      <Text style={styles.accessBody}>
-        Harvest, dry/cure, genetics, and other cannabis-specific tools stay hidden unless
-        this Personal account shows cannabis content or the tool is opened from a cannabis
-        grow.
-      </Text>
-      <Text style={styles.accessBody}>
-        Open Profile to review cannabis visibility, or return to AI Tools for workflows
-        that do not require cannabis access.
-      </Text>
-      <View style={styles.accessLinks}>
-        <Link href="/home/personal/profile" style={styles.accessLink}>
-          Open Profile
-        </Link>
-        <Link href="/home/personal/tools" style={styles.accessLink}>
-          Back to AI Tools
-        </Link>
+    <View style={styles.accessPage}>
+      <View
+        accessibilityRole="alert"
+        style={styles.accessNotice}
+        testID="cannabis-tool-access-notice"
+      >
+        <Text style={styles.accessTitle}>Cannabis tool access is off</Text>
+        <Text style={styles.accessBody}>
+          Harvest, dry/cure, genetics, and other cannabis-specific tools stay hidden
+          unless this Personal account shows cannabis content or the tool is opened from a
+          cannabis grow.
+        </Text>
+        <Text style={styles.accessBody}>
+          Open Profile to review cannabis visibility, or return to AI Tools for workflows
+          that do not require cannabis access.
+        </Text>
+        <View style={styles.accessLinks}>
+          <Link href="/home/personal/profile" style={styles.accessLink}>
+            Open Profile
+          </Link>
+          <Link href="/home/personal/tools" style={styles.accessLink}>
+            Back to AI Tools
+          </Link>
+        </View>
       </View>
     </View>
   );
@@ -206,28 +212,34 @@ export default function ToolsLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  accessNotice: {
-    alignSelf: "center",
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FDBA74",
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: 10,
-    margin: 20,
-    maxWidth: 620,
-    padding: 18,
-    width: "90%"
-  },
-  accessTitle: { color: "#7C2D12", fontSize: 20, fontWeight: "800" },
-  accessBody: { color: "#334155", fontSize: 15, lineHeight: 22 },
-  accessLinks: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  accessLink: {
-    backgroundColor: "#166534",
-    borderRadius: 10,
-    color: "#FFFFFF",
-    fontWeight: "800",
-    paddingHorizontal: 14,
-    paddingVertical: 10
-  }
-});
+export const createCannabisToolAccessStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    accessPage: {
+      alignItems: "center",
+      backgroundColor: palette.page,
+      flex: 1
+    },
+    accessNotice: {
+      alignSelf: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: 14,
+      borderWidth: 1,
+      gap: 10,
+      margin: 20,
+      maxWidth: 620,
+      padding: 18,
+      width: "90%"
+    },
+    accessTitle: { color: palette.warning, fontSize: 20, fontWeight: "800" },
+    accessBody: { color: palette.textSoft, fontSize: 15, lineHeight: 22 },
+    accessLinks: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+    accessLink: {
+      backgroundColor: palette.accent,
+      borderRadius: 10,
+      color: palette.accentText,
+      fontWeight: "800",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    }
+  });

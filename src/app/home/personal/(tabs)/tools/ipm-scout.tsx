@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
@@ -20,6 +20,7 @@ import {
 } from "@/api/growpathModules";
 import { updateToolRun, type ToolRun } from "@/api/toolRuns";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export function normalizeIpmPrefillField({
   fieldKey,
@@ -236,6 +237,8 @@ function ipmTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
 }
 
 export default function IpmScoutToolRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createIpmScoutStyles(palette), [palette]);
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   const evidencePayload = providerEvidencePayload(evidenceAssets);
   return (
@@ -760,8 +763,9 @@ export default function IpmScoutToolRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  evidenceSection: { gap: 8 },
-  evidenceTitle: { color: "#0F172A", fontSize: 15, fontWeight: "800" },
-  evidenceGuidance: { color: "#475569", lineHeight: 19 }
-});
+export const createIpmScoutStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    evidenceSection: { gap: 8 },
+    evidenceTitle: { color: palette.text, fontSize: 15, fontWeight: "800" },
+    evidenceGuidance: { color: palette.textMuted, lineHeight: 19 }
+  });

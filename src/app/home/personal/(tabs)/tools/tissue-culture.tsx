@@ -7,6 +7,7 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
 
@@ -252,6 +253,8 @@ function tissueCultureTaskPlan(
 }
 
 export default function TissueCultureToolRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createTissueCultureStyles(palette), [palette]);
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   const evidencePayload = useMemo(
     () => providerEvidencePayload(evidenceAssets),
@@ -1119,17 +1122,23 @@ export default function TissueCultureToolRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  evidenceSection: { gap: 12 },
-  guidanceCard: {
-    gap: 7,
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    backgroundColor: "#F0FDF4",
-    padding: 14
-  },
-  guidanceTitle: { color: "#14532D", fontSize: 16, fontWeight: "800" },
-  guidanceText: { color: "#334155", fontSize: 13, lineHeight: 19 },
-  guidanceWarning: { color: "#92400E", fontSize: 13, fontWeight: "700", lineHeight: 19 }
-});
+export const createTissueCultureStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    evidenceSection: { gap: 12 },
+    guidanceCard: {
+      gap: 7,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      padding: 14
+    },
+    guidanceTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    guidanceText: { color: palette.textMuted, fontSize: 13, lineHeight: 19 },
+    guidanceWarning: {
+      color: palette.warning,
+      fontSize: 13,
+      fontWeight: "700",
+      lineHeight: 19
+    }
+  });

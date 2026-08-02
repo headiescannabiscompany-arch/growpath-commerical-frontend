@@ -35,26 +35,144 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export const createAiWorkspaceThemeStyles = (palette: ThemePalette) =>
   StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    body: { flex: 1, padding: 16 },
+    contextCard: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      marginBottom: 10,
+      backgroundColor: palette.surface
+    },
+    actionCard: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      marginBottom: 10,
+      backgroundColor: palette.surfaceMuted
+    },
+    referenceCard: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      marginBottom: 10,
+      backgroundColor: palette.surfaceMuted
+    },
+    draftCard: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      marginBottom: 10,
+      backgroundColor: palette.surfaceStrong
+    },
+    sopCard: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      marginBottom: 10,
+      backgroundColor: palette.surfaceStrong
+    },
+    sopChoice: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      backgroundColor: palette.surface
+    },
+    sopChoiceText: { color: palette.link, fontWeight: "700", fontSize: 12 },
+    workspaceCard: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      marginBottom: 10,
+      backgroundColor: palette.surfaceMuted
+    },
+    workspaceRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
     workspaceChip: {
+      borderWidth: 1,
       backgroundColor: palette.surface,
-      borderColor: palette.accent
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8
     },
     workspaceChipOn: {
       backgroundColor: palette.accent,
       borderColor: palette.accent
     },
-    workspaceChipText: { color: palette.link },
+    workspaceChipText: { color: palette.link, fontWeight: "800", fontSize: 12 },
     workspaceChipTextOn: { color: palette.accentText },
+    actionButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    actionButtonText: { color: palette.accentText, fontWeight: "800" },
+    contextText: { fontSize: 12, color: palette.textMuted, marginBottom: 4 },
+    contextTitle: { fontWeight: "700", color: palette.text },
+    growPicker: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
     growChip: {
+      borderWidth: 1,
       backgroundColor: palette.surface,
-      borderColor: palette.border
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 7
     },
     growChipOn: {
       backgroundColor: palette.accent,
       borderColor: palette.accent
     },
-    growChipText: { color: palette.textMuted },
+    growChipText: { color: palette.textMuted, fontWeight: "700", fontSize: 12 },
     growChipTextOn: { color: palette.accentText },
+    msg: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      marginBottom: 10,
+      backgroundColor: palette.surface
+    },
+    msgRole: {
+      fontSize: 12,
+      color: palette.textMuted,
+      marginBottom: 4,
+      fontWeight: "700"
+    },
+    msgText: { fontSize: 14, color: palette.text },
+    composer: {
+      padding: 12,
+      borderTopWidth: 1,
+      borderTopColor: palette.border,
+      backgroundColor: palette.page
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    send: {
+      marginTop: 10,
+      backgroundColor: palette.accent,
+      paddingVertical: 12,
+      borderRadius: radius.card,
+      alignItems: "center"
+    },
+    sendText: { color: palette.accentText, fontWeight: "800" },
+    hint: { marginTop: 8, fontSize: 12, color: palette.textMuted },
     creditNotice: {
       color: palette.textMuted,
       fontSize: 12,
@@ -62,122 +180,6 @@ export const createAiWorkspaceThemeStyles = (palette: ThemePalette) =>
       marginBottom: 8
     }
   });
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  body: { flex: 1, padding: 16 },
-  contextCard: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    marginBottom: 10,
-    backgroundColor: "#F8FAFC"
-  },
-  actionCard: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    marginBottom: 10,
-    backgroundColor: "#F0FDF4"
-  },
-  referenceCard: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-    borderRadius: radius.card,
-    marginBottom: 10,
-    backgroundColor: "#EFF6FF"
-  },
-  draftCard: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#FED7AA",
-    borderRadius: radius.card,
-    marginBottom: 10,
-    backgroundColor: "#FFF7ED"
-  },
-  sopCard: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#C4B5FD",
-    borderRadius: radius.card,
-    marginBottom: 10,
-    backgroundColor: "#F5F3FF"
-  },
-  sopChoice: {
-    borderWidth: 1,
-    borderColor: "#A78BFA",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  sopChoiceText: { color: "#5B21B6", fontWeight: "700", fontSize: 12 },
-  workspaceCard: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-    borderRadius: radius.card,
-    marginBottom: 10,
-    backgroundColor: "#EFF6FF"
-  },
-  workspaceRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  workspaceChip: {
-    borderWidth: 1,
-    borderColor: "#93C5FD",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  workspaceChipOn: { backgroundColor: "#1D4ED8", borderColor: "#1D4ED8" },
-  workspaceChipText: { color: "#1D4ED8", fontWeight: "800", fontSize: 12 },
-  workspaceChipTextOn: { color: "#FFFFFF" },
-  actionButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    marginTop: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  actionButtonText: { color: "white", fontWeight: "800" },
-  contextText: { fontSize: 12, color: "#64748B", marginBottom: 4 },
-  contextTitle: { fontWeight: "700", color: "#0F172A" },
-  growPicker: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  growChip: {
-    borderWidth: 1,
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  growChipText: { fontWeight: "700", fontSize: 12 },
-  msg: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    marginBottom: 10
-  },
-  msgRole: { fontSize: 12, color: "#64748B", marginBottom: 4, fontWeight: "700" },
-  msgText: { fontSize: 14, color: "#0F172A" },
-  composer: { padding: 12, borderTopWidth: 1, borderTopColor: "#E2E8F0" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12
-  },
-  send: {
-    marginTop: 10,
-    backgroundColor: "#16A34A",
-    paddingVertical: 12,
-    borderRadius: radius.card,
-    alignItems: "center"
-  },
-  sendText: { color: "#fff", fontWeight: "800" },
-  hint: { marginTop: 8, fontSize: 12, color: "#64748B" }
-});
 
 type Msg = { role: "user" | "assistant"; text: string };
 type AssistantAction = { label: string; href: string };
@@ -482,10 +484,7 @@ export default function AiScreen({
 }: AiScreenProps = {}) {
   const router = useRouter();
   const { palette } = useAppTheme();
-  const workspaceThemeStyles = useMemo(
-    () => createAiWorkspaceThemeStyles(palette),
-    [palette]
-  );
+  const styles = useMemo(() => createAiWorkspaceThemeStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     prompt?: string | string[];
     growId?: string | string[];
@@ -523,22 +522,6 @@ export default function AiScreen({
   const [providerLabel, setProviderLabel] = useState("");
 
   const canSend = useMemo(() => draft.trim().length > 0 && !sending, [draft, sending]);
-  const pageSurface = { backgroundColor: palette.page };
-  const surfaceCard = { backgroundColor: palette.surface, borderColor: palette.border };
-  const softCard = { backgroundColor: palette.surfaceMuted, borderColor: palette.border };
-  const strongCard = {
-    backgroundColor: palette.surfaceStrong,
-    borderColor: palette.border
-  };
-  const titleText = { color: palette.text };
-  const bodyText = { color: palette.textMuted };
-  const accentButton = { backgroundColor: palette.accent };
-  const accentButtonText = { color: palette.accentText };
-  const inputSurface = {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
-    color: palette.text
-  };
 
   useEffect(() => {
     setDraft(initialPrompt || facilityPreset?.prompt || "");
@@ -879,17 +862,17 @@ export default function AiScreen({
   }
 
   return (
-    <View style={[styles.container, pageSurface]}>
+    <View style={styles.container}>
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
-        <View style={[styles.workspaceCard, softCard]}>
+        <View style={styles.workspaceCard}>
           <Text
             accessibilityRole="header"
             aria-level={2}
-            style={[styles.contextText, styles.contextTitle, titleText]}
+            style={[styles.contextText, styles.contextTitle]}
           >
             AI workspace options
           </Text>
-          <Text style={[styles.contextText, bodyText]}>
+          <Text style={styles.contextText}>
             Show the same AI workflow in the right workspace: Single user, Commercial or
             Facility.
           </Text>
@@ -916,19 +899,12 @@ export default function AiScreen({
                 accessibilityRole="button"
                 accessibilityLabel={`Open ${item.label} AI`}
                 onPress={() => router.push(item.href as any)}
-                style={[
-                  styles.workspaceChip,
-                  workspaceThemeStyles.workspaceChip,
-                  item.active && styles.workspaceChipOn,
-                  item.active && workspaceThemeStyles.workspaceChipOn
-                ]}
+                style={[styles.workspaceChip, item.active && styles.workspaceChipOn]}
               >
                 <Text
                   style={[
                     styles.workspaceChipText,
-                    workspaceThemeStyles.workspaceChipText,
-                    item.active && styles.workspaceChipTextOn,
-                    item.active && workspaceThemeStyles.workspaceChipTextOn
+                    item.active && styles.workspaceChipTextOn
                   ]}
                 >
                   {item.label}
@@ -941,56 +917,52 @@ export default function AiScreen({
           <PersonalFeedPlacement placement="top" routeKey="personal_ai" longContent />
         ) : null}
         {context && (
-          <View style={[styles.contextCard, surfaceCard]}>
+          <View style={styles.contextCard}>
             <Text
               accessibilityRole="header"
               aria-level={2}
-              style={[styles.contextText, styles.contextTitle, titleText]}
+              style={[styles.contextText, styles.contextTitle]}
             >
               {facilityPreset ? `${facilityPreset.title} Context` : "Context Loaded"}
             </Text>
             {facilityPreset?.key === "compliance" ? (
               context.facilityCompliance ? (
                 <>
-                  <Text style={[styles.contextText, bodyText]}>
+                  <Text style={styles.contextText}>
                     Audit logs: {context.facilityCompliance.counts.auditLogs ?? 0}
                   </Text>
-                  <Text style={[styles.contextText, bodyText]}>
+                  <Text style={styles.contextText}>
                     Deviations: {context.facilityCompliance.counts.deviations ?? 0}
                   </Text>
-                  <Text style={[styles.contextText, bodyText]}>
+                  <Text style={styles.contextText}>
                     Verifications: {context.facilityCompliance.counts.verifications ?? 0}
                   </Text>
-                  <Text style={[styles.contextText, bodyText]}>
+                  <Text style={styles.contextText}>
                     SOP templates: {context.facilityCompliance.counts.sopTemplates ?? 0}
                   </Text>
-                  <Text style={[styles.contextText, bodyText]}>
+                  <Text style={styles.contextText}>
                     SOP runs: {context.facilityCompliance.counts.sopRuns ?? 0}
                   </Text>
-                  <Text style={[styles.contextText, bodyText]}>
-                    Tasks: {context.taskCount}
-                  </Text>
-                  <Text style={[styles.contextText, bodyText]}>
+                  <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
+                  <Text style={styles.contextText}>
                     Evidence generated:{" "}
                     {formatDate(context.facilityCompliance.generatedAt)}
                   </Text>
-                  <Text style={[styles.contextText, bodyText]}>
+                  <Text style={styles.contextText}>
                     Missing records remain missing evidence; AI cannot certify legal
                     compliance.
                   </Text>
                 </>
               ) : (
-                <Text style={[styles.contextText, bodyText]}>
+                <Text style={styles.contextText}>
                   Compliance evidence could not be loaded. Refresh or return to Compliance
                   before requesting a readiness review.
                 </Text>
               )
             ) : (
               <>
-                <Text style={[styles.contextText, bodyText]}>
-                  Grows: {context.growCount}
-                </Text>
-                <Text style={[styles.contextText, bodyText]}>
+                <Text style={styles.contextText}>Grows: {context.growCount}</Text>
+                <Text style={styles.contextText}>
                   Plants:{" "}
                   {
                     (selectedGrowId
@@ -1002,19 +974,15 @@ export default function AiScreen({
                     ).length
                   }
                 </Text>
-                <Text style={[styles.contextText, bodyText]}>
-                  Logs: {context.logCount}
-                </Text>
-                <Text style={[styles.contextText, bodyText]}>
-                  Tasks: {context.taskCount}
-                </Text>
-                <Text style={[styles.contextText, bodyText]}>
+                <Text style={styles.contextText}>Logs: {context.logCount}</Text>
+                <Text style={styles.contextText}>Tasks: {context.taskCount}</Text>
+                <Text style={styles.contextText}>
                   Tool runs: {context.toolRuns.length}
                 </Text>
-                <Text style={[styles.contextText, bodyText]}>
+                <Text style={styles.contextText}>
                   Diagnoses: {context.diagnoses.length}
                 </Text>
-                <Text style={[styles.contextText, bodyText]}>
+                <Text style={styles.contextText}>
                   Crop context:{" "}
                   {cropContextSummary(
                     selectedGrowId
@@ -1025,9 +993,7 @@ export default function AiScreen({
                       : context.plants
                   )}
                 </Text>
-                <Text style={[styles.contextText, bodyText]}>
-                  Updated: {context.loadedAt}
-                </Text>
+                <Text style={styles.contextText}>Updated: {context.loadedAt}</Text>
               </>
             )}
             {facilityPreset?.key !== "compliance" && context.grows.length ? (
@@ -1041,18 +1007,10 @@ export default function AiScreen({
                       accessibilityRole="button"
                       accessibilityLabel={`Select AI grow ${grow.name || id}`}
                       onPress={() => setSelectedGrowId(id)}
-                      style={[
-                        styles.growChip,
-                        workspaceThemeStyles.growChip,
-                        active && workspaceThemeStyles.growChipOn
-                      ]}
+                      style={[styles.growChip, active && styles.growChipOn]}
                     >
                       <Text
-                        style={[
-                          styles.growChipText,
-                          workspaceThemeStyles.growChipText,
-                          active && workspaceThemeStyles.growChipTextOn
-                        ]}
+                        style={[styles.growChipText, active && styles.growChipTextOn]}
                       >
                         {grow.name || id}
                       </Text>
@@ -1062,7 +1020,7 @@ export default function AiScreen({
               </View>
             ) : facilityPreset?.key === "compliance" ? null : workspaceType ===
               "facility" ? (
-              <Text style={[styles.contextText, bodyText]}>
+              <Text style={styles.contextText}>
                 No Facility grows are recorded. Facility tasks and operational records
                 remain available to the assistant.
               </Text>
@@ -1071,21 +1029,19 @@ export default function AiScreen({
                 accessibilityRole="button"
                 accessibilityLabel="Open AI-assisted Build a Grow"
                 onPress={() => router.push("/home/personal/grows/new?source=ai" as any)}
-                style={[styles.actionButton, accentButton]}
+                style={styles.actionButton}
               >
-                <Text style={[styles.actionButtonText, accentButtonText]}>
-                  Build your first grow
-                </Text>
+                <Text style={styles.actionButtonText}>Build your first grow</Text>
               </Pressable>
             )}
           </View>
         )}
         {workspaceType !== "facility" ? (
-          <View style={[styles.sopCard, strongCard]}>
-            <Text style={[styles.contextText, styles.contextTitle, titleText]}>
+          <View style={styles.sopCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
               AI procedure recommendations
             </Text>
-            <Text style={[styles.contextText, bodyText]}>
+            <Text style={styles.contextText}>
               Ask AI for a review-only SOP or checklist draft based on the selected grow
               and recorded evidence. Formal approval, assignment, uploads, and version
               history remain Facility controls.
@@ -1094,11 +1050,9 @@ export default function AiScreen({
               accessibilityRole="button"
               accessibilityLabel="Draft recommended procedures"
               onPress={() => setDraft(GENERIC_SOP_PROMPT)}
-              style={[styles.actionButton, accentButton]}
+              style={styles.actionButton}
             >
-              <Text style={[styles.actionButtonText, accentButtonText]}>
-                Recommend procedures
-              </Text>
+              <Text style={styles.actionButtonText}>Recommend procedures</Text>
             </Pressable>
             <View style={styles.growPicker}>
               {STANDARD_SOP_LIBRARY.map((template) => (
@@ -1109,65 +1063,58 @@ export default function AiScreen({
                   onPress={() => setDraft(sopPrompt(template))}
                   style={styles.sopChoice}
                 >
-                  <Text style={[styles.sopChoiceText, titleText]}>{template.title}</Text>
+                  <Text style={styles.sopChoiceText}>{template.title}</Text>
                 </Pressable>
               ))}
             </View>
-            <Text style={[styles.contextText, bodyText, { marginTop: 8 }]}>
+            <Text style={[styles.contextText, { marginTop: 8 }]}>
               Choosing a starter only fills the request. Review it before sending; no AI
               credit or record write occurs until you take the next action.
             </Text>
           </View>
         ) : null}
         {messages.map((m, idx) => (
-          <View key={idx} style={[styles.msg, surfaceCard]}>
-            <Text style={[styles.msgRole, bodyText]}>{m.role.toUpperCase()}</Text>
-            <Text style={[styles.msgText, titleText]}>{m.text}</Text>
+          <View key={idx} style={styles.msg}>
+            <Text style={styles.msgRole}>{m.role.toUpperCase()}</Text>
+            <Text style={styles.msgText}>{m.text}</Text>
           </View>
         ))}
-        {providerLabel ? (
-          <Text style={[styles.hint, bodyText]}>{providerLabel}</Text>
-        ) : null}
+        {providerLabel ? <Text style={styles.hint}>{providerLabel}</Text> : null}
         {sopRecommendations.length ? (
-          <View style={[styles.sopCard, strongCard]}>
-            <Text style={[styles.contextText, styles.contextTitle, titleText]}>
+          <View style={styles.sopCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
               Review-only procedure drafts
             </Text>
-            <Text style={[styles.contextText, bodyText]}>
+            <Text style={styles.contextText}>
               These are starting points, not approved Facility SOPs or legal compliance
               findings.
             </Text>
             {sopRecommendations.map((recommendation) => (
               <View key={recommendation.key} style={{ marginTop: 12 }}>
-                <Text style={[styles.contextText, styles.contextTitle, titleText]}>
+                <Text style={[styles.contextText, styles.contextTitle]}>
                   {recommendation.title}
                 </Text>
-                <Text style={[styles.contextText, bodyText]}>
-                  {recommendation.summary}
-                </Text>
-                <Text style={[styles.contextText, bodyText]}>
+                <Text style={styles.contextText}>{recommendation.summary}</Text>
+                <Text style={styles.contextText}>
                   Why: {recommendation.whyRecommended}
                 </Text>
                 {recommendation.checklist.map((step, index) => (
-                  <Text
-                    key={`${recommendation.key}-${index}`}
-                    style={[styles.contextText, bodyText]}
-                  >
+                  <Text key={`${recommendation.key}-${index}`} style={styles.contextText}>
                     {index + 1}. {step}
                   </Text>
                 ))}
                 {recommendation.safetyNotes ? (
-                  <Text style={[styles.contextText, bodyText]}>
+                  <Text style={styles.contextText}>
                     Safety boundary: {recommendation.safetyNotes}
                   </Text>
                 ) : null}
-                <Text style={[styles.contextText, styles.contextTitle, titleText]}>
+                <Text style={[styles.contextText, styles.contextTitle]}>
                   Resolve before use
                 </Text>
                 {recommendation.missingInformation.map((item, index) => (
                   <Text
                     key={`${recommendation.key}-missing-${index}`}
-                    style={[styles.contextText, bodyText]}
+                    style={styles.contextText}
                   >
                     - {item}
                   </Text>
@@ -1177,14 +1124,12 @@ export default function AiScreen({
                     accessibilityRole="button"
                     accessibilityLabel={`Review ${recommendation.title} as a task`}
                     onPress={() => reviewSopAsTask(recommendation)}
-                    style={[styles.actionButton, accentButton]}
+                    style={styles.actionButton}
                   >
-                    <Text style={[styles.actionButtonText, accentButtonText]}>
-                      Review as grow task
-                    </Text>
+                    <Text style={styles.actionButtonText}>Review as grow task</Text>
                   </Pressable>
                 ) : (
-                  <Text style={[styles.contextText, bodyText]}>
+                  <Text style={styles.contextText}>
                     Select a grow to turn this draft into a confirmable review task.
                   </Text>
                 )}
@@ -1194,8 +1139,8 @@ export default function AiScreen({
         ) : null}
         <PersonalFeedPlacement placement="middle" routeKey="personal_ai" longContent />
         {actions.length ? (
-          <View style={[styles.actionCard, softCard]}>
-            <Text style={[styles.contextText, styles.contextTitle, titleText]}>
+          <View style={styles.actionCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
               Suggested actions
             </Text>
             {actions.map((action) => (
@@ -1204,25 +1149,20 @@ export default function AiScreen({
                 accessibilityRole="button"
                 accessibilityLabel={action.label}
                 onPress={() => router.push(action.href as any)}
-                style={[styles.actionButton, accentButton]}
+                style={styles.actionButton}
               >
-                <Text style={[styles.actionButtonText, accentButtonText]}>
-                  {action.label}
-                </Text>
+                <Text style={styles.actionButtonText}>{action.label}</Text>
               </Pressable>
             ))}
           </View>
         ) : null}
         {references.length ? (
-          <View style={[styles.referenceCard, softCard]}>
-            <Text style={[styles.contextText, styles.contextTitle, titleText]}>
+          <View style={styles.referenceCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
               Referenced grow data
             </Text>
             {references.map((item, index) => (
-              <Text
-                key={`${item.type}-${item.id || index}`}
-                style={[styles.contextText, bodyText]}
-              >
+              <Text key={`${item.type}-${item.id || index}`} style={styles.contextText}>
                 {item.type}: {item.title}
                 {item.timestamp ? ` (${formatDate(item.timestamp)})` : ""}
               </Text>
@@ -1230,13 +1170,13 @@ export default function AiScreen({
           </View>
         ) : null}
         {proposedWrites.length ? (
-          <View style={[styles.draftCard, strongCard]}>
-            <Text style={[styles.contextText, styles.contextTitle, titleText]}>
+          <View style={styles.draftCard}>
+            <Text style={[styles.contextText, styles.contextTitle]}>
               Drafted actions require confirmation
             </Text>
             {proposedWrites.map((write, index) => (
               <View key={`${write.type}-${index}`} style={{ marginTop: 8 }}>
-                <Text style={[styles.contextText, bodyText]}>
+                <Text style={styles.contextText}>
                   {write.type}:{" "}
                   {write.payload?.title || write.payload?.notes || "AI draft"}
                 </Text>
@@ -1244,28 +1184,21 @@ export default function AiScreen({
                   accessibilityRole="button"
                   accessibilityLabel={`Confirm ${write.type}`}
                   onPress={() => confirmWrite(write)}
-                  style={[styles.actionButton, accentButton]}
+                  style={styles.actionButton}
                 >
-                  <Text style={[styles.actionButtonText, accentButtonText]}>Confirm</Text>
+                  <Text style={styles.actionButtonText}>Confirm</Text>
                 </Pressable>
               </View>
             ))}
           </View>
         ) : null}
-        {writeFeedback ? (
-          <Text style={[styles.hint, bodyText]}>{writeFeedback}</Text>
-        ) : null}
+        {writeFeedback ? <Text style={styles.hint}>{writeFeedback}</Text> : null}
 
         <PersonalFeedPlacement placement="bottom" routeKey="personal_ai" longContent />
       </ScrollView>
 
-      <View
-        style={[
-          styles.composer,
-          { borderTopColor: palette.border, backgroundColor: palette.page }
-        ]}
-      >
-        <Text style={workspaceThemeStyles.creditNotice}>
+      <View style={styles.composer}>
+        <Text style={styles.creditNotice}>
           Sending a request uses {workspaceType === "facility" ? "Facility " : ""}AI
           credits when the server accepts it for billing. Adding evidence alone does not
           use a credit.
@@ -1285,29 +1218,29 @@ export default function AiScreen({
           accessibilityLabel={
             facilityPreset ? `Notes for ${facilityPreset.title}` : "Ask GrowPath AI"
           }
-          style={[styles.input, inputSurface]}
+          style={styles.input}
           value={draft}
           onChangeText={setDraft}
           placeholder={
             facilityPreset ? `Add notes for ${facilityPreset.title}` : "Type here..."
           }
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           autoComplete="off"
           textContentType="none"
           importantForAutofill="no"
           onSubmitEditing={send}
         />
         <Pressable
-          style={[styles.send, accentButton, { opacity: canSend ? 1 : 0.5 }]}
+          style={[styles.send, { opacity: canSend ? 1 : 0.5 }]}
           disabled={!canSend}
           onPress={send}
           accessibilityRole="button"
           accessibilityLabel="Send"
         >
-          <Text style={[styles.sendText, accentButtonText]}>
-            {sending ? "Thinking..." : "Send"}
-          </Text>
+          <Text style={styles.sendText}>{sending ? "Thinking..." : "Send"}</Text>
         </Pressable>
-        <Text style={[styles.hint, bodyText]}>
+        <Text style={styles.hint}>
           {facilityPreset
             ? facilityPreset.composerHint
             : "Commands: vpd 78f 60 | vpd 25c 60"}

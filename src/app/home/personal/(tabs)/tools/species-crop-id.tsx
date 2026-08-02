@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -24,6 +24,7 @@ import {
   type GrowpathModuleUserDecision
 } from "@/api/growpathModules";
 import { updateToolRun, type ToolRun } from "@/api/toolRuns";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
 
 const PLANT_ID_AI_PROMPT = `You are GrowPathAI's plant identification assistant. Act like a cautious field botanist, not a one-photo image-matching toy.
@@ -314,6 +315,8 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
 }
 
 export default function SpeciesCropIdToolRoute() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createSpeciesCropIdStyles(palette), [palette]);
   const params = useLocalSearchParams<{ fieldStudyId?: string }>();
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   const [fieldStudies, setFieldStudies] = useState<FieldStudy[]>([]);
@@ -1170,49 +1173,51 @@ export default function SpeciesCropIdToolRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  evidenceSection: { gap: 8 },
-  evidenceTitle: { color: "#0F172A", fontSize: 15, fontWeight: "800" },
-  evidenceGuidance: { color: "#475569", lineHeight: 19 },
-  fieldStudySection: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0",
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 9,
-    marginTop: 8,
-    padding: 13
-  },
-  fieldLabel: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  choiceButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 7
-  },
-  choiceButtonSelected: {
-    backgroundColor: "#166534",
-    borderColor: "#166534"
-  },
-  sensitiveButtonSelected: {
-    backgroundColor: "#FEF3C7",
-    borderColor: "#D97706"
-  },
-  choiceText: { color: "#334155", fontSize: 12, fontWeight: "700" },
-  choiceTextSelected: { color: "#FFFFFF" },
-  secondaryButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#94A3B8",
-    borderRadius: 10,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  secondaryButtonText: { color: "#0F172A", fontWeight: "800" },
-  fieldStudyError: { color: "#B91C1C", lineHeight: 19 },
-  fieldMapLink: { gap: 8, marginTop: 4 }
-});
+export function createSpeciesCropIdStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    evidenceSection: { gap: 8 },
+    evidenceTitle: { color: palette.text, fontSize: 15, fontWeight: "800" },
+    evidenceGuidance: { color: palette.textMuted, lineHeight: 19 },
+    fieldStudySection: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: 12,
+      borderWidth: 1,
+      gap: 9,
+      marginTop: 8,
+      padding: 13
+    },
+    fieldLabel: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+    choiceButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 7
+    },
+    choiceButtonSelected: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    sensitiveButtonSelected: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.warning
+    },
+    choiceText: { color: palette.text, fontSize: 12, fontWeight: "700" },
+    choiceTextSelected: { color: palette.accentText },
+    secondaryButton: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: 10,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    fieldStudyError: { color: palette.danger, lineHeight: 19 },
+    fieldMapLink: { gap: 8, marginTop: 4 }
+  });
+}

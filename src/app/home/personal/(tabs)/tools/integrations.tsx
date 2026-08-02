@@ -31,6 +31,7 @@ import {
 import type { GrowlinkController, TelemetrySource } from "@/types/telemetry";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function message(error: any) {
@@ -266,6 +267,8 @@ function isValidHistoryWindow(startIso: string, endIso: string) {
 }
 
 export default function DataIntegrationsScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createDataIntegrationsStyles(palette), [palette]);
   const params = useLocalSearchParams<{ growId?: string }>();
   const [providers, setProviders] = useState<IntegrationProvider[]>([]);
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
@@ -581,13 +584,13 @@ export default function DataIntegrationsScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Data Integrations</Text>
       <Text style={styles.subtitle}>
         Connect grow sensors, controllers, irrigation, and environmental data. Imported
@@ -616,6 +619,8 @@ export default function DataIntegrationsScreen() {
           value={growId}
           onChangeText={setGrowId}
           placeholder="Grow ID"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           autoCapitalize="none"
         />
         <TextInput
@@ -623,12 +628,16 @@ export default function DataIntegrationsScreen() {
           value={growlinkSourceName}
           onChangeText={setGrowlinkSourceName}
           placeholder="Source name"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
         />
         <TextInput
           style={styles.input}
           value={growlinkUserName}
           onChangeText={setGrowlinkUserName}
           placeholder="Growlink email"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           autoCapitalize="none"
           keyboardType="email-address"
         />
@@ -637,6 +646,8 @@ export default function DataIntegrationsScreen() {
           value={growlinkPassword}
           onChangeText={setGrowlinkPassword}
           placeholder="Growlink password"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           secureTextEntry
           autoCapitalize="none"
         />
@@ -723,7 +734,9 @@ export default function DataIntegrationsScreen() {
           <View style={styles.sourceList}>
             <View style={styles.row}>
               <Text style={styles.sourceListTitle}>Existing Growlink sources</Text>
-              {loadingGrowlinkSources ? <ActivityIndicator size="small" /> : null}
+              {loadingGrowlinkSources ? (
+                <ActivityIndicator color={palette.accent} size="small" />
+              ) : null}
             </View>
             <View style={styles.historyWindow}>
               <View style={styles.historyInput}>
@@ -831,6 +844,8 @@ export default function DataIntegrationsScreen() {
             value={secret}
             onChangeText={setSecret}
             placeholder="API key or access token"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             secureTextEntry
             autoCapitalize="none"
           />
@@ -839,6 +854,8 @@ export default function DataIntegrationsScreen() {
             value={baseUrl}
             onChangeText={setBaseUrl}
             placeholder="Base URL or local host (optional)"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             autoCapitalize="none"
           />
           <Pressable
@@ -867,125 +884,154 @@ export default function DataIntegrationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  container: { padding: 16, paddingBottom: 40, backgroundColor: "#FFFFFF" },
-  title: { fontSize: 24, fontWeight: "700", marginBottom: 4 },
-  subtitle: { color: "#475569", marginBottom: 16 },
-  provider: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 14,
-    marginBottom: 10
-  },
-  row: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  providerName: { flex: 1, fontSize: 16, fontWeight: "700" },
-  status: { color: "#166534", fontSize: 12, textTransform: "uppercase" },
-  meta: { color: "#64748B", marginTop: 6 },
-  titleBlock: { flex: 1 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 4 },
-  growlinkPanel: {
-    borderWidth: 1,
-    borderColor: "#C7D2FE",
-    borderRadius: radius.card,
-    padding: 14,
-    marginBottom: 16,
-    backgroundColor: "#F8FAFC"
-  },
-  readOnlyBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#DCFCE7",
-    color: "#166534",
-    fontSize: 11,
-    fontWeight: "700",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999
-  },
-  actions: { flexDirection: "row", gap: 8, marginTop: 10 },
-  button: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  buttonText: { fontWeight: "700" },
-  disabledButton: { opacity: 0.6 },
-  notice: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    color: "#166534",
-    marginTop: 12,
-    padding: 10
-  },
-  controllerList: { gap: 8, marginTop: 12 },
-  controllerOption: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  controllerSelected: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
-  controllerName: { fontWeight: "700" },
-  sourceList: {
-    borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
-    marginTop: 14,
-    paddingTop: 12
-  },
-  sourceListTitle: { fontWeight: "700" },
-  importPreview: {
-    backgroundColor: "#EFF6FF",
-    borderColor: "#BFDBFE",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    marginTop: 10,
-    padding: 10
-  },
-  previewRoom: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#DBEAFE",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    padding: 10
-  },
-  previewTitle: { color: "#0F172A", fontWeight: "900" },
-  sourceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: 12,
-    paddingVertical: 10
-  },
-  historyWindow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  historyInput: { flex: 1, marginBottom: 0, minWidth: 220 },
-  sourceName: { fontWeight: "700" },
-  editor: { borderTopWidth: 1, borderTopColor: "#E2E8F0", marginTop: 12, paddingTop: 16 },
-  editorTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 12,
-    marginBottom: 10
-  },
-  primaryButton: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    padding: 12,
-    alignItems: "center"
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "700" },
-  requestDraft: {
-    backgroundColor: "#F8FAFC",
-    color: "#334155",
-    padding: 12,
-    marginTop: 12
-  }
-});
+export const createDataIntegrationsStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    center: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: palette.page
+    },
+    container: { padding: 16, paddingBottom: 40, backgroundColor: palette.page },
+    title: { color: palette.text, fontSize: 24, fontWeight: "700", marginBottom: 4 },
+    subtitle: { color: palette.textMuted, marginBottom: 16 },
+    provider: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      padding: 14,
+      marginBottom: 10
+    },
+    row: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+    providerName: { color: palette.text, flex: 1, fontSize: 16, fontWeight: "700" },
+    status: { color: palette.success, fontSize: 12, textTransform: "uppercase" },
+    meta: { color: palette.textMuted, marginTop: 6 },
+    titleBlock: { flex: 1 },
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "700",
+      marginBottom: 4
+    },
+    growlinkPanel: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      marginBottom: 16,
+      backgroundColor: palette.surfaceMuted
+    },
+    readOnlyBadge: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accentSoft,
+      color: palette.success,
+      fontSize: 11,
+      fontWeight: "700",
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 999
+    },
+    actions: { flexDirection: "row", gap: 8, marginTop: 10 },
+    button: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    buttonText: { color: palette.link, fontWeight: "700" },
+    disabledButton: { opacity: 0.6 },
+    notice: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.success,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.success,
+      marginTop: 12,
+      padding: 10
+    },
+    controllerList: { gap: 8, marginTop: 12 },
+    controllerOption: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      backgroundColor: palette.surface
+    },
+    controllerSelected: {
+      borderColor: palette.accent,
+      backgroundColor: palette.accentSoft
+    },
+    controllerName: { color: palette.text, fontWeight: "700" },
+    sourceList: {
+      borderTopWidth: 1,
+      borderTopColor: palette.border,
+      marginTop: 14,
+      paddingTop: 12
+    },
+    sourceListTitle: { color: palette.text, fontWeight: "700" },
+    importPreview: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      marginTop: 10,
+      padding: 10
+    },
+    previewRoom: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 10
+    },
+    previewTitle: { color: palette.text, fontWeight: "900" },
+    sourceRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      flexWrap: "wrap",
+      gap: 12,
+      paddingVertical: 10
+    },
+    historyWindow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    historyInput: { flex: 1, marginBottom: 0, minWidth: 220 },
+    sourceName: { color: palette.text, fontWeight: "700" },
+    editor: {
+      borderTopWidth: 1,
+      borderTopColor: palette.border,
+      marginTop: 12,
+      paddingTop: 16
+    },
+    editorTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "700",
+      marginBottom: 10
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      padding: 12,
+      marginBottom: 10
+    },
+    primaryButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 12,
+      alignItems: "center"
+    },
+    primaryText: { color: palette.accentText, fontWeight: "700" },
+    requestDraft: {
+      backgroundColor: palette.surfaceMuted,
+      color: palette.textSoft,
+      padding: 12,
+      marginTop: 12
+    }
+  });

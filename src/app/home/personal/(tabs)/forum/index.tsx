@@ -6,6 +6,8 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  type ImageStyle,
+  type StyleProp,
   Text,
   View
 } from "react-native";
@@ -18,7 +20,7 @@ import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
 import InlineForumDiscussion from "@/components/forum/InlineForumDiscussion";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { formatBytes, videoStorageFallback } from "@/features/videos/videoPresentation";
-import { useAppTheme } from "@/theme/appTheme";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
 import {
@@ -93,11 +95,19 @@ function photosOf(post: SocialPost): string[] {
     .filter((uri: string): uri is string => Boolean(uri));
 }
 
-function ForumPostImage({ photo, index }: { photo: string; index: number }) {
+function ForumPostImage({
+  photo,
+  index,
+  style
+}: {
+  photo: string;
+  index: number;
+  style: StyleProp<ImageStyle>;
+}) {
   return (
     <ExpandableForumImage
       uri={photo}
-      style={styles.photoThumb}
+      style={style}
       label={`forum post photo ${index + 1}`}
     />
   );
@@ -107,6 +117,7 @@ export default function ForumRoute() {
   const auth = useAuth();
   const entitlements = useEntitlements();
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createPersonalForumStyles(palette), [palette]);
   const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
   const canView = entitlements.can(CAPABILITY_KEYS.FORUM_VIEW);
   const canPost = isSignedIn && entitlements.can(CAPABILITY_KEYS.FORUM_POST);
@@ -204,6 +215,9 @@ export default function ForumRoute() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={() => load({ refresh: true })}
+          tintColor={palette.accent}
+          colors={[palette.accent]}
+          progressBackgroundColor={palette.surface}
         />
       }
     >
@@ -439,7 +453,7 @@ export default function ForumRoute() {
             { backgroundColor: palette.surface, borderColor: palette.border }
           ]}
         >
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
         </View>
       ) : null}
       {isSignedIn && !loading && canView && !feedback && !visiblePosts.length ? (
@@ -497,6 +511,7 @@ export default function ForumRoute() {
                       key={`${photo}-${photoIndex}`}
                       photo={photo}
                       index={photoIndex}
+                      style={styles.photoThumb}
                     />
                   ))}
                 </View>
@@ -555,170 +570,173 @@ export default function ForumRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 36, gap: 12 },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  title: { fontSize: 24, fontWeight: "800" },
-  subtitle: { color: "#64748B", marginTop: 4 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "#F8FAFC",
-    gap: 6
-  },
-  cardTitle: { fontSize: 16, fontWeight: "800", color: "#0F172A" },
-  cardText: { color: "#475569", lineHeight: 20 },
-  videoStats: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 8
-  },
-  videoStat: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: 180,
-    flexGrow: 1,
-    padding: 10
-  },
-  videoStatValue: { color: "#0F172A", fontSize: 16, fontWeight: "800" },
-  videoStatLabel: { color: "#64748B", fontSize: 12, marginTop: 2 },
-  publicAccessCard: {
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "#F0FDF4",
-    gap: 8
-  },
-  publicActionRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  publicPrimaryLink: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    color: "#FFFFFF",
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    textDecorationLine: "none"
-  },
-  publicSecondaryLink: {
-    borderColor: "#166534",
-    borderWidth: 1,
-    borderRadius: radius.card,
-    color: "#166534",
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    textDecorationLine: "none"
-  },
-  photoRow: {
-    alignItems: "center",
-    gap: 8,
-    marginTop: 6,
-    width: "100%"
-  },
-  photoThumb: {
-    width: "100%",
-    maxWidth: 680,
-    aspectRatio: 4 / 3,
-    alignSelf: "center",
-    borderRadius: radius.card,
-    backgroundColor: "#E2E8F0"
-  },
-  composer: {
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "#F0FDF4",
-    gap: 4
-  },
-  composerGrid: { gap: 10 },
-  quickComposer: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#FFFFFF",
-    gap: 4
-  },
-  quickComposerTitle: { color: "#0F172A", fontSize: 15, fontWeight: "900" },
-  composerTitle: { color: "#166534", fontSize: 16, fontWeight: "900" },
-  feedHeader: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
-    paddingTop: 6,
-    paddingBottom: 10
-  },
-  feedTitle: { color: "#0F172A", fontSize: 18, fontWeight: "900" },
-  feedSubtitle: { color: "#64748B", marginTop: 2 },
-  scopeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  scopeBtn: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingHorizontal: 11,
-    paddingVertical: 7
-  },
-  scopeBtnActive: { borderColor: "#166534", backgroundColor: "#DCFCE7" },
-  scopeText: { color: "#475569", fontSize: 12, fontWeight: "800" },
-  scopeTextActive: { color: "#166534" },
-  tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  tag: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    color: "#475569",
-    fontSize: 12,
-    fontWeight: "700"
-  },
-  emptyImageText: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  photoFallback: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 8
-  },
-  meta: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  primaryBtn: {
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryBtn: {
-    alignSelf: "flex-start",
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8
-  },
-  secondaryText: { color: "#166534", fontWeight: "800" },
-  feedback: {
-    color: "#334155",
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.card,
-    padding: 9,
-    fontWeight: "700"
-  },
-  errorCard: {
-    borderWidth: 1,
-    borderColor: "#FCA5A5",
-    borderRadius: radius.card,
-    padding: 14,
-    backgroundColor: "#FEF2F2",
-    gap: 8
-  }
-});
+export function createPersonalForumStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 36, gap: 12 },
+    headerRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+    title: { color: palette.heroText, fontSize: 24, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, marginTop: 4 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      gap: 6
+    },
+    cardTitle: { fontSize: 16, fontWeight: "800", color: palette.text },
+    cardText: { color: palette.textMuted, lineHeight: 20 },
+    videoStats: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 8
+    },
+    videoStat: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: 180,
+      flexGrow: 1,
+      padding: 10
+    },
+    videoStatValue: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    videoStatLabel: { color: palette.textMuted, fontSize: 12, marginTop: 2 },
+    publicAccessCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surface,
+      gap: 8
+    },
+    publicActionRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    publicPrimaryLink: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      color: palette.accentText,
+      fontWeight: "800",
+      overflow: "hidden",
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      textDecorationLine: "none"
+    },
+    publicSecondaryLink: {
+      borderColor: palette.accent,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      color: palette.link,
+      fontWeight: "800",
+      overflow: "hidden",
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      textDecorationLine: "none"
+    },
+    photoRow: {
+      alignItems: "center",
+      gap: 8,
+      marginTop: 6,
+      width: "100%"
+    },
+    photoThumb: {
+      width: "100%",
+      maxWidth: 680,
+      aspectRatio: 4 / 3,
+      alignSelf: "center",
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    composer: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.accentSoft,
+      gap: 4
+    },
+    composerGrid: { gap: 10 },
+    quickComposer: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surface,
+      gap: 4
+    },
+    quickComposerTitle: { color: palette.text, fontSize: 15, fontWeight: "900" },
+    composerTitle: { color: palette.accent, fontSize: 16, fontWeight: "900" },
+    feedHeader: {
+      borderBottomWidth: 1,
+      borderBottomColor: palette.border,
+      paddingTop: 6,
+      paddingBottom: 10
+    },
+    feedTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    feedSubtitle: { color: palette.textMuted, marginTop: 2 },
+    scopeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    scopeBtn: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 11,
+      paddingVertical: 7
+    },
+    scopeBtnActive: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    scopeText: { color: palette.textMuted, fontSize: 12, fontWeight: "800" },
+    scopeTextActive: { color: palette.accent },
+    tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    tag: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700"
+    },
+    emptyImageText: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    photoFallback: {
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 8
+    },
+    meta: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    primaryBtn: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondaryBtn: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    secondaryText: { color: palette.link, fontWeight: "800" },
+    feedback: {
+      color: palette.text,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      padding: 9,
+      fontWeight: "700"
+    },
+    errorCard: {
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      padding: 14,
+      backgroundColor: palette.surfaceMuted,
+      gap: 8
+    }
+  });
+}

@@ -6,6 +6,7 @@ import {
   listGrowpathModuleRecords,
   type GrowpathModuleRecord
 } from "@/api/growpathModules";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type Props = {
   growId: string;
@@ -42,6 +43,8 @@ export default function CropSteeringProjectPanel({
   onSelectProject,
   onOpenPhEc
 }: Props) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createCropSteeringProjectStyles(palette), [palette]);
   const [projects, setProjects] = useState<GrowpathModuleRecord[]>([]);
   const [entries, setEntries] = useState<GrowpathModuleRecord[]>([]);
   const [checks, setChecks] = useState<GrowpathModuleRecord[]>([]);
@@ -52,6 +55,7 @@ export default function CropSteeringProjectPanel({
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [feedbackTone, setFeedbackTone] = useState<"success" | "danger">("success");
   const selectedProjectIdRef = useRef(selectedProjectId);
 
   useEffect(() => {
@@ -92,6 +96,7 @@ export default function CropSteeringProjectPanel({
       else if (projectRows.length === 1) onSelectProject(projectRows[0]);
       else if (selectedProjectIdRef.current) onSelectProject(null);
     } catch (error: any) {
+      setFeedbackTone("danger");
       setFeedback(error?.message || "Could not reload crop steering projects.");
     } finally {
       setBusy(false);
@@ -153,8 +158,10 @@ export default function CropSteeringProjectPanel({
       onSelectProject(project);
       setName("");
       setNotes("");
+      setFeedbackTone("success");
       setFeedback("Crop steering project created and selected.");
     } catch (error: any) {
+      setFeedbackTone("danger");
       setFeedback(error?.message || "Could not create crop steering project.");
     } finally {
       setBusy(false);
@@ -216,6 +223,8 @@ export default function CropSteeringProjectPanel({
         value={name}
         onChangeText={setName}
         placeholder="Project name, for example Flower Room P1 steering"
+        placeholderTextColor={palette.textMuted}
+        selectionColor={palette.accent}
         style={styles.input}
       />
       <View style={styles.twoColumn}>
@@ -224,6 +233,8 @@ export default function CropSteeringProjectPanel({
           value={intent}
           onChangeText={setIntent}
           placeholder="Intent: vegetative, generative, recovery, finish"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           style={[styles.input, styles.flex]}
         />
         <TextInput
@@ -231,6 +242,8 @@ export default function CropSteeringProjectPanel({
           value={stage}
           onChangeText={setStage}
           placeholder="Stage"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           style={[styles.input, styles.flex]}
         />
       </View>
@@ -239,6 +252,8 @@ export default function CropSteeringProjectPanel({
         value={medium}
         onChangeText={setMedium}
         placeholder="Medium or substrate"
+        placeholderTextColor={palette.textMuted}
+        selectionColor={palette.accent}
         style={styles.input}
       />
       <TextInput
@@ -246,6 +261,8 @@ export default function CropSteeringProjectPanel({
         value={notes}
         onChangeText={setNotes}
         placeholder="Project boundaries, measurement method, stop conditions"
+        placeholderTextColor={palette.textMuted}
+        selectionColor={palette.accent}
         multiline
         style={[styles.input, styles.multiline]}
       />
@@ -293,87 +310,98 @@ export default function CropSteeringProjectPanel({
         </View>
       ) : null}
 
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {feedback ? (
+        <Text
+          style={[styles.feedback, feedbackTone === "danger" && styles.feedbackDanger]}
+        >
+          {feedback}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: "#A7F3D0",
-    backgroundColor: "#F0FDF4",
-    borderRadius: 16,
-    padding: 14,
-    gap: 10
-  },
-  headingRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  headingCopy: { flex: 1, gap: 4 },
-  title: { color: "#14532D", fontSize: 16, fontWeight: "800" },
-  help: { color: "#355E45", lineHeight: 19 },
-  empty: { color: "#64748B", fontStyle: "italic" },
-  projectList: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  projectPill: {
-    borderWidth: 1,
-    borderColor: "#86EFAC",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 999
-  },
-  projectPillSelected: { backgroundColor: "#166534", borderColor: "#166534" },
-  projectPillText: { color: "#166534", fontWeight: "700" },
-  projectPillTextSelected: { color: "#FFFFFF" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: "#0F172A"
-  },
-  multiline: { minHeight: 76, textAlignVertical: "top" },
-  twoColumn: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  flex: { flex: 1, minWidth: 150 },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#166534",
-    borderRadius: 10,
-    padding: 12
-  },
-  primaryButtonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: 10,
-    padding: 11
-  },
-  secondaryButtonText: { color: "#166534", fontWeight: "800" },
-  smallButton: {
-    borderWidth: 1,
-    borderColor: "#166534",
-    borderRadius: 9,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  smallButtonText: { color: "#166534", fontWeight: "700" },
-  disabled: { opacity: 0.45 },
-  history: {
-    borderTopWidth: 1,
-    borderColor: "#BBF7D0",
-    paddingTop: 12,
-    gap: 8
-  },
-  historyRow: {
-    borderLeftWidth: 3,
-    borderColor: "#22C55E",
-    backgroundColor: "#FFFFFF",
-    padding: 9,
-    gap: 2
-  },
-  historyTitle: { color: "#14532D", fontWeight: "700" },
-  historyMeta: { color: "#64748B", fontSize: 12 },
-  feedback: { color: "#166534", fontWeight: "600" }
-});
+export const createCropSteeringProjectStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 16,
+      padding: 14,
+      gap: 10
+    },
+    headingRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+    headingCopy: { flex: 1, gap: 4 },
+    title: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    help: { color: palette.textMuted, lineHeight: 19 },
+    empty: { color: palette.textMuted, fontStyle: "italic" },
+    projectList: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    projectPill: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      borderRadius: 999
+    },
+    projectPillSelected: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    projectPillText: { color: palette.link, fontWeight: "700" },
+    projectPillTextSelected: { color: palette.accentText },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surface,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      color: palette.text
+    },
+    multiline: { minHeight: 76, textAlignVertical: "top" },
+    twoColumn: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    flex: { flex: 1, minWidth: 150 },
+    primaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.accent,
+      borderRadius: 10,
+      padding: 12
+    },
+    primaryButtonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: 10,
+      padding: 11
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    smallButton: {
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: 9,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    smallButtonText: { color: palette.link, fontWeight: "700" },
+    disabled: { opacity: 0.45 },
+    history: {
+      borderTopWidth: 1,
+      borderColor: palette.borderSoft,
+      paddingTop: 12,
+      gap: 8
+    },
+    historyRow: {
+      borderLeftWidth: 3,
+      borderColor: palette.accent,
+      backgroundColor: palette.surface,
+      padding: 9,
+      gap: 2
+    },
+    historyTitle: { color: palette.text, fontWeight: "700" },
+    historyMeta: { color: palette.textMuted, fontSize: 12 },
+    feedback: { color: palette.success, fontWeight: "600" },
+    feedbackDanger: { color: palette.danger }
+  });

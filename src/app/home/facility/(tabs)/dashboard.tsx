@@ -29,7 +29,7 @@ import { getVerifications } from "@/api/verification";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import { radius } from "@/theme/theme";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { useEntitlements } from "@/entitlements";
 
 type AnyRec = Record<string, any>;
@@ -81,6 +81,18 @@ function dotToneStyle(tone: Tone) {
   }
 }
 
+export function createFacilityDashboardThemeStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    pulse: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border
+    },
+    pulseValue: { color: palette.text },
+    pulseLabel: { color: palette.textMuted },
+    rowDivider: { borderTopColor: palette.borderSoft }
+  });
+}
+
 export default function FacilityDashboardTab() {
   const router = useRouter();
   const entitlements = useEntitlements();
@@ -88,6 +100,10 @@ export default function FacilityDashboardTab() {
   const { selectedId: facilityId, selected: selectedFacility } = useFacility();
   const { width } = useWindowDimensions();
   const { palette } = useAppTheme();
+  const themeStyles = useMemo(
+    () => createFacilityDashboardThemeStyles(palette),
+    [palette]
+  );
   const isTablet = width >= 760;
   const isDesktop = width >= 1040;
   const isTv = width >= 1600;
@@ -441,15 +457,17 @@ export default function FacilityDashboardTab() {
             </Text>
           </View>
           <View style={styles.heroStats}>
-            <View style={styles.pulse}>
-              <Text style={styles.pulseValue}>
+            <View style={[styles.pulse, themeStyles.pulse]}>
+              <Text style={[styles.pulseValue, themeStyles.pulseValue]}>
                 {counts.verifications ? "Review" : "Clear"}
               </Text>
-              <Text style={styles.pulseLabel}>Compliance</Text>
+              <Text style={[styles.pulseLabel, themeStyles.pulseLabel]}>Compliance</Text>
             </View>
-            <View style={styles.pulse}>
-              <Text style={styles.pulseValue}>{String(counts.tasks)}</Text>
-              <Text style={styles.pulseLabel}>Tasks</Text>
+            <View style={[styles.pulse, themeStyles.pulse]}>
+              <Text style={[styles.pulseValue, themeStyles.pulseValue]}>
+                {String(counts.tasks)}
+              </Text>
+              <Text style={[styles.pulseLabel, themeStyles.pulseLabel]}>Tasks</Text>
             </View>
           </View>
         </View>
@@ -598,7 +616,11 @@ export default function FacilityDashboardTab() {
                   accessibilityRole="button"
                   accessibilityLabel={`Open ${row.label}`}
                   onPress={() => router.push(row.to as any)}
-                  style={({ pressed }) => [styles.statusRow, pressed && styles.pressed]}
+                  style={({ pressed }) => [
+                    styles.statusRow,
+                    themeStyles.rowDivider,
+                    pressed && styles.pressed
+                  ]}
                 >
                   <View style={[styles.statusDot, dotToneStyle(row.tone)]} />
                   <View style={styles.statusText}>
@@ -637,7 +659,11 @@ export default function FacilityDashboardTab() {
                   accessibilityRole="button"
                   accessibilityLabel={`Open ${row.label}`}
                   onPress={() => router.push(row.to as any)}
-                  style={({ pressed }) => [styles.actionRow, pressed && styles.pressed]}
+                  style={({ pressed }) => [
+                    styles.actionRow,
+                    themeStyles.rowDivider,
+                    pressed && styles.pressed
+                  ]}
                 >
                   <View>
                     <Text

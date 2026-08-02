@@ -21,46 +21,54 @@ import {
   type GrowTimelineItem
 } from "@/features/grows/timeline";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#FFFFFF" },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
-  subtitle: { color: "#64748B" },
-  cta: {
-    marginTop: 12,
-    alignSelf: "flex-start",
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingVertical: 10,
-    paddingHorizontal: 12
-  },
-  ctaText: { color: "#FFFFFF", fontWeight: "700" },
-  card: {
-    marginTop: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC"
-  },
-  cardTitle: { fontWeight: "700", color: "#0F172A" },
-  cardMeta: { color: "#64748B", marginTop: 4, fontSize: 12 },
-  cardAction: { color: "#166534", fontWeight: "700", marginTop: 8 },
-  empty: { marginTop: 14, color: "#64748B" },
-  chipsRow: { flexDirection: "row", gap: 8, flexWrap: "wrap", marginTop: 10 },
-  chip: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF"
-  },
-  chipOn: { borderColor: "#166534", backgroundColor: "#166534" },
-  chipText: { fontSize: 12, fontWeight: "700", color: "#0F172A" },
-  chipTextOn: { color: "#FFFFFF" }
-});
+export const createGrowJournalStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, padding: 20, backgroundColor: palette.page },
+    title: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "700",
+      marginBottom: 8
+    },
+    subtitle: { color: palette.textMuted },
+    cta: {
+      marginTop: 12,
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingVertical: 10,
+      paddingHorizontal: 12
+    },
+    ctaText: { color: palette.accentText, fontWeight: "700" },
+    card: {
+      marginTop: 12,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    cardTitle: { fontWeight: "700", color: palette.text },
+    cardText: { color: palette.textSoft },
+    cardMeta: { color: palette.textMuted, marginTop: 4, fontSize: 12 },
+    cardAction: { color: palette.link, fontWeight: "700", marginTop: 8 },
+    empty: { marginTop: 14, color: palette.textMuted },
+    chipsRow: { flexDirection: "row", gap: 8, flexWrap: "wrap", marginTop: 10 },
+    chip: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      backgroundColor: palette.surface
+    },
+    chipOn: { borderColor: palette.accent, backgroundColor: palette.accent },
+    chipText: { fontSize: 12, fontWeight: "700", color: palette.text },
+    chipTextOn: { color: palette.accentText }
+  });
 
 function sourceActionLabel(kind: GrowTimelineItem["kind"]) {
   if (kind === "tool_run") return "Open saved tool result";
@@ -69,6 +77,8 @@ function sourceActionLabel(kind: GrowTimelineItem["kind"]) {
 }
 
 export default function GrowJournalScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGrowJournalStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
@@ -183,7 +193,7 @@ export default function GrowJournalScreen() {
 
       {loading ? (
         <View style={styles.card}>
-          <ActivityIndicator />
+          <ActivityIndicator color={palette.accent} />
         </View>
       ) : filteredItems.length === 0 ? (
         <Text style={styles.empty}>No journal activity yet.</Text>
@@ -192,7 +202,9 @@ export default function GrowJournalScreen() {
           const content = (
             <>
               <Text style={styles.cardTitle}>{item.title}</Text>
-              {item.subtitle ? <Text>{item.subtitle}</Text> : null}
+              {item.subtitle ? (
+                <Text style={styles.cardText}>{item.subtitle}</Text>
+              ) : null}
               <Text style={styles.cardMeta}>
                 {item.kind.toUpperCase()}
                 {item.category ? ` (${item.category})` : ""} |{" "}

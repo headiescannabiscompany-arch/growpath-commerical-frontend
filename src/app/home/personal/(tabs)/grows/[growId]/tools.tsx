@@ -20,47 +20,59 @@ import ToolResultSurface, {
   type ToolResultNotice
 } from "@/features/personal/tools/ToolResultSurface";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, gap: 10 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },
-  subtitle: { color: "#64748B", marginBottom: 12 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    padding: 12,
-    marginTop: 10
-  },
-  cardTitle: { fontWeight: "700" },
-  cardText: { color: "#475569", marginTop: 4 },
-  action: {
-    marginTop: 10,
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 7,
-    paddingHorizontal: 10
-  },
-  actionText: { fontWeight: "700", color: "#0F172A" },
-  inlineAction: {
-    marginTop: 8,
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 7,
-    paddingHorizontal: 10
-  },
-  recentTitle: { marginTop: 12, fontWeight: "700", color: "#0F172A" },
-  recentRow: { marginTop: 6, fontSize: 12, color: "#475569" },
-  recentContext: { marginTop: 2, fontSize: 12, color: "#166534", fontWeight: "700" }
-});
+export const createGrowToolsStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, gap: 10 },
+    title: {
+      color: palette.text,
+      fontSize: 22,
+      fontWeight: "700",
+      marginBottom: 8
+    },
+    subtitle: { color: palette.textMuted, marginBottom: 12 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      padding: 12,
+      marginTop: 10
+    },
+    cardTitle: { color: palette.text, fontWeight: "700" },
+    cardText: { color: palette.textSoft, marginTop: 4 },
+    action: {
+      marginTop: 10,
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      paddingVertical: 7,
+      paddingHorizontal: 10
+    },
+    actionText: { fontWeight: "700", color: palette.link },
+    inlineAction: {
+      marginTop: 8,
+      alignSelf: "flex-start",
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      paddingVertical: 7,
+      paddingHorizontal: 10
+    },
+    recentTitle: { marginTop: 12, fontWeight: "700", color: palette.text },
+    recentRow: { marginTop: 6, fontSize: 12, color: palette.textMuted },
+    recentContext: {
+      marginTop: 2,
+      fontSize: 12,
+      color: palette.link,
+      fontWeight: "700"
+    }
+  });
 
 function withGrow(path: string, growId: string) {
   return `${path}?growId=${encodeURIComponent(growId)}`;
@@ -183,6 +195,8 @@ function toolRunNotices(run: ToolRun | null): ToolResultNotice[] {
 }
 
 export default function GrowToolsScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGrowToolsStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const [recent, setRecent] = useState<ToolRun[]>([]);

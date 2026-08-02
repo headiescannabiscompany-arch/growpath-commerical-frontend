@@ -1,6 +1,6 @@
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -11,6 +11,7 @@ import {
 import { uploadCourseMedia } from "@/api/uploads";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { parseStorefrontCsv } from "@/utils/storefrontCsvImport";
 
@@ -20,6 +21,8 @@ function batchId(batch: StorefrontImportBatch | null) {
 
 export default function StorefrontProductImportRoute() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStorefrontProductImportStyles(palette), [palette]);
   const [csvText, setCsvText] = useState("");
   const [sourceName, setSourceName] = useState("storefront-products.csv");
   const [batch, setBatch] = useState<StorefrontImportBatch | null>(null);
@@ -178,6 +181,8 @@ export default function StorefrontProductImportRoute() {
           multiline
           onChangeText={setCsvText}
           placeholder="Paste CSV here for browsers/devices that cannot read the selected file"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
           style={styles.csvInput}
           value={csvText}
         />
@@ -301,54 +306,69 @@ export default function StorefrontProductImportRoute() {
   );
 }
 
-const styles = StyleSheet.create({
-  title: { color: "#111827", fontSize: 26, fontWeight: "800" },
-  subtitle: { color: "#64748B", marginTop: 4 },
-  cardTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 10 },
-  csvInput: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    minHeight: 150,
-    padding: 12,
-    textAlignVertical: "top"
-  },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
-  button: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    paddingHorizontal: 14,
-    paddingVertical: 11
-  },
-  buttonText: { color: "#FFFFFF", fontWeight: "800" },
-  secondaryButton: {
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 11
-  },
-  secondaryText: { color: "#166534", fontWeight: "800" },
-  filterButton: {
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  filterSelected: { backgroundColor: "#DCFCE7", borderColor: "#166534" },
-  disabled: { opacity: 0.45 },
-  feedback: { color: "#166534", marginTop: 10 },
-  row: {
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    marginTop: 8,
-    padding: 12
-  },
-  selected: { backgroundColor: "#F0FDF4", borderColor: "#166534" },
-  rowTitle: { color: "#111827", fontWeight: "800" },
-  meta: { color: "#64748B", lineHeight: 19, marginTop: 4 },
-  error: { color: "#B91C1C", marginTop: 4 },
-  warning: { color: "#92400E", marginTop: 4 }
-});
+export function createStorefrontProductImportStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    title: { color: palette.text, fontSize: 26, fontWeight: "800" },
+    subtitle: { color: palette.textSoft, marginTop: 4 },
+    cardTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "800",
+      marginBottom: 10
+    },
+    csvInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      minHeight: 150,
+      padding: 12,
+      textAlignVertical: "top"
+    },
+    actions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
+    button: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 11
+    },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 11
+    },
+    secondaryText: { color: palette.link, fontWeight: "800" },
+    filterButton: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    filterSelected: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    disabled: { opacity: 0.45 },
+    feedback: { color: palette.success, marginTop: 10 },
+    row: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 8,
+      padding: 12
+    },
+    selected: { backgroundColor: palette.accentSoft, borderColor: palette.accent },
+    rowTitle: { color: palette.text, fontWeight: "800" },
+    meta: { color: palette.textMuted, lineHeight: 19, marginTop: 4 },
+    error: { color: palette.danger, marginTop: 4 },
+    warning: { color: palette.warning, marginTop: 4 }
+  });
+}

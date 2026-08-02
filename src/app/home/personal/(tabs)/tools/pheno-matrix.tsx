@@ -19,6 +19,7 @@ import {
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { savePlantGrowthProfile } from "@/api/cropKnowledge";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const initialCandidates: PhenoCandidateInput[] = [
@@ -92,6 +93,8 @@ function keeperStatusFromRecommendation(recommendation: "keeper" | "watch" | "cu
 }
 
 export default function PhenoMatrixScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createPhenoMatrixStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = coerceParam(rawGrowId);
   const entitlements = useEntitlements();
@@ -333,6 +336,8 @@ export default function PhenoMatrixScreen() {
                   value={numericText(weights[trait.key])}
                   onChangeText={(value) => updateWeight(trait.key, value)}
                   keyboardType="numeric"
+                  placeholderTextColor={palette.textMuted}
+                  selectionColor={palette.accent}
                 />
               </View>
             ))}
@@ -352,6 +357,8 @@ export default function PhenoMatrixScreen() {
                     onChangeText={(value) =>
                       updateCandidate(candidate.id, "label", value)
                     }
+                    placeholderTextColor={palette.textMuted}
+                    selectionColor={palette.accent}
                   />
                 </View>
                 <View style={styles.smallField}>
@@ -362,6 +369,8 @@ export default function PhenoMatrixScreen() {
                     onChangeText={(value) =>
                       updateCandidate(candidate.id, "generation", value)
                     }
+                    placeholderTextColor={palette.textMuted}
+                    selectionColor={palette.accent}
                   />
                 </View>
                 <View style={styles.smallField}>
@@ -372,6 +381,8 @@ export default function PhenoMatrixScreen() {
                     onChangeText={(value) =>
                       updateCandidate(candidate.id, "stage", value)
                     }
+                    placeholderTextColor={palette.textMuted}
+                    selectionColor={palette.accent}
                   />
                 </View>
               </View>
@@ -387,6 +398,8 @@ export default function PhenoMatrixScreen() {
                         updateCandidate(candidate.id, trait.key, value)
                       }
                       keyboardType="numeric"
+                      placeholderTextColor={palette.textMuted}
+                      selectionColor={palette.accent}
                     />
                   </View>
                 ))}
@@ -398,6 +411,8 @@ export default function PhenoMatrixScreen() {
                 value={candidate.notes || ""}
                 onChangeText={(value) => updateCandidate(candidate.id, "notes", value)}
                 multiline
+                placeholderTextColor={palette.textMuted}
+                selectionColor={palette.accent}
               />
             </View>
           ))}
@@ -515,111 +530,131 @@ export default function PhenoMatrixScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 44 },
-  title: { fontSize: 24, fontWeight: "700", marginBottom: 6, color: "#0F172A" },
-  subtitle: { fontSize: 14, color: "#64748B", lineHeight: 20 },
-  context: { color: "#166534", fontWeight: "800", marginTop: 8 },
-  section: { marginTop: 22 },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#475569",
-    textTransform: "uppercase",
-    marginBottom: 10
-  },
-  weightGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  weightCell: { width: 136 },
-  label: { fontSize: 12, fontWeight: "700", color: "#475569", marginBottom: 6 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 14,
-    backgroundColor: "#FFFFFF"
-  },
-  weightInput: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 14,
-    backgroundColor: "#F8FAFC"
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 14,
-    marginBottom: 12,
-    backgroundColor: "#F8FAFC"
-  },
-  row: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
-  flex: { flex: 1, minWidth: 140 },
-  smallField: { width: 104 },
-  traitGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 12,
-    marginBottom: 12
-  },
-  traitCell: { width: 104 },
-  scoreInput: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 14,
-    backgroundColor: "#FFFFFF"
-  },
-  notesInput: {
-    minHeight: 66,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 14,
-    textAlignVertical: "top",
-    backgroundColor: "#FFFFFF"
-  },
-  rankRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderWidth: 1,
-    borderColor: "#DCFCE7",
-    borderRadius: radius.card,
-    padding: 12,
-    marginBottom: 10,
-    backgroundColor: "#F0FDF4"
-  },
-  rankNumber: { width: 36, fontSize: 16, fontWeight: "800", color: "#166534" },
-  rankBody: { flex: 1 },
-  rankTitle: { fontSize: 16, fontWeight: "700", color: "#0F172A" },
-  rankMeta: { marginTop: 2, fontSize: 12, color: "#475569" },
-  scoreBadge: {
-    width: 72,
-    borderRadius: radius.card,
-    paddingVertical: 8,
-    alignItems: "center",
-    backgroundColor: "#166534"
-  },
-  scoreText: { fontSize: 18, fontWeight: "800", color: "#FFFFFF" },
-  scoreLabel: { fontSize: 11, fontWeight: "700", color: "#DCFCE7" },
-  lockedCard: {
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-    borderRadius: radius.card,
-    padding: 16,
-    backgroundColor: "#FEF2F2"
-  },
-  lockedTitle: { fontSize: 16, fontWeight: "700", color: "#991B1B" }
-});
+export const createPhenoMatrixStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 44 },
+    title: {
+      fontSize: 24,
+      fontWeight: "700",
+      marginBottom: 6,
+      color: palette.text
+    },
+    subtitle: { fontSize: 14, color: palette.textMuted, lineHeight: 20 },
+    context: { color: palette.link, fontWeight: "800", marginTop: 8 },
+    section: { marginTop: 22 },
+    sectionTitle: {
+      fontSize: 13,
+      fontWeight: "700",
+      color: palette.textSoft,
+      textTransform: "uppercase",
+      marginBottom: 10
+    },
+    weightGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    weightCell: { width: 136 },
+    label: {
+      fontSize: 12,
+      fontWeight: "700",
+      color: palette.textSoft,
+      marginBottom: 6
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      fontSize: 14,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    weightInput: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      fontSize: 14,
+      backgroundColor: palette.surfaceMuted,
+      color: palette.text
+    },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 14,
+      marginBottom: 12,
+      backgroundColor: palette.surfaceMuted
+    },
+    row: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
+    flex: { flex: 1, minWidth: 140 },
+    smallField: { width: 104 },
+    traitGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 12,
+      marginBottom: 12
+    },
+    traitCell: { width: 104 },
+    scoreInput: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      fontSize: 14,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    notesInput: {
+      minHeight: 66,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      fontSize: 14,
+      textAlignVertical: "top",
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    rankRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      padding: 12,
+      marginBottom: 10,
+      backgroundColor: palette.accentSoft
+    },
+    rankNumber: {
+      width: 36,
+      fontSize: 16,
+      fontWeight: "800",
+      color: palette.link
+    },
+    rankBody: { flex: 1 },
+    rankTitle: { fontSize: 16, fontWeight: "700", color: palette.text },
+    rankMeta: { marginTop: 2, fontSize: 12, color: palette.textMuted },
+    scoreBadge: {
+      width: 72,
+      borderRadius: radius.card,
+      paddingVertical: 8,
+      alignItems: "center",
+      backgroundColor: palette.accent
+    },
+    scoreText: { fontSize: 18, fontWeight: "800", color: palette.accentText },
+    scoreLabel: { fontSize: 11, fontWeight: "700", color: palette.accentText },
+    lockedCard: {
+      marginTop: 16,
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      padding: 16,
+      backgroundColor: palette.surfaceMuted
+    },
+    lockedTitle: { fontSize: 16, fontWeight: "700", color: palette.danger }
+  });

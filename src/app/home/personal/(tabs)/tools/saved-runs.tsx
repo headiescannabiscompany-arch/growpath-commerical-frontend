@@ -27,6 +27,7 @@ import ToolResultSurface, {
   type ToolResultNotice
 } from "@/features/personal/tools/ToolResultSurface";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { savedRunBackTarget } from "@/features/personal/tools/savedRunRoutes";
 
@@ -663,6 +664,8 @@ function runTitle(run: ToolRun | null) {
 }
 
 export default function SavedToolRunsScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createSavedToolRunsStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     growId?: string | string[];
     runId?: string | string[];
@@ -982,6 +985,8 @@ export default function SavedToolRunsScreen() {
                   onChangeText={setCorrectionDraft}
                   style={styles.input}
                   placeholder="Enter corrected common plant name"
+                  placeholderTextColor={palette.textMuted}
+                  selectionColor={palette.accent}
                 />
                 <Pressable
                   accessibilityRole="button"
@@ -1000,6 +1005,8 @@ export default function SavedToolRunsScreen() {
                 multiline
                 style={styles.input}
                 placeholder="Add a short note for this saved run"
+                placeholderTextColor={palette.textMuted}
+                selectionColor={palette.accent}
               />
               <Pressable
                 accessibilityRole="button"
@@ -1024,7 +1031,7 @@ export default function SavedToolRunsScreen() {
 
         {loading ? (
           <View style={styles.card}>
-            <ActivityIndicator />
+            <ActivityIndicator color={palette.accent} />
           </View>
         ) : runs.length ? (
           <View style={styles.list}>
@@ -1073,66 +1080,68 @@ export default function SavedToolRunsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 20, paddingBottom: 48, gap: 14 },
-  header: { gap: 6 },
-  title: { color: "#0F172A", fontSize: 24, fontWeight: "800" },
-  subtitle: { color: "#475569", lineHeight: 20 },
-  context: { color: "#166534", fontWeight: "800" },
-  filters: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  selectedResult: {
-    gap: 12,
-    borderWidth: 2,
-    borderColor: "#166534",
-    borderRadius: radius.card,
-    backgroundColor: "#F0FDF4",
-    padding: 12
-  },
-  selectedLabel: { color: "#166534", fontSize: 12, fontWeight: "800" },
-  sectionTitle: { color: "#0F172A", fontSize: 18, fontWeight: "800" },
-  chip: {
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    backgroundColor: "#FFFFFF"
-  },
-  chipOn: { borderColor: "#166534", backgroundColor: "#166534" },
-  chipText: { color: "#0F172A", fontSize: 12, fontWeight: "800" },
-  chipTextOn: { color: "#FFFFFF" },
-  list: { gap: 10 },
-  card: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    backgroundColor: "#F8FAFC",
-    padding: 12,
-    gap: 5
-  },
-  cardOn: { borderColor: "#166534", backgroundColor: "#F0FDF4" },
-  cardTitle: { color: "#0F172A", fontWeight: "800" },
-  cardText: { color: "#475569", lineHeight: 19 },
-  meta: { color: "#64748B", fontSize: 12, fontWeight: "700" },
-  editor: { gap: 8 },
-  label: { color: "#334155", fontSize: 12, fontWeight: "800" },
-  input: {
-    minHeight: 82,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    backgroundColor: "#FFFFFF",
-    padding: 10,
-    textAlignVertical: "top"
-  },
-  primary: {
-    alignSelf: "flex-start",
-    borderRadius: radius.card,
-    backgroundColor: "#166534",
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  primaryText: { color: "#FFFFFF", fontWeight: "800" },
-  feedback: { color: "#334155", fontWeight: "700" }
-});
+export const createSavedToolRunsStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 48, gap: 14 },
+    header: { gap: 6 },
+    title: { color: palette.text, fontSize: 24, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, lineHeight: 20 },
+    context: { color: palette.link, fontWeight: "800" },
+    filters: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    selectedResult: {
+      gap: 12,
+      borderWidth: 2,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      backgroundColor: palette.accentSoft,
+      padding: 12
+    },
+    selectedLabel: { color: palette.link, fontSize: 12, fontWeight: "800" },
+    sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "800" },
+    chip: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      backgroundColor: palette.surface
+    },
+    chipOn: { borderColor: palette.accent, backgroundColor: palette.accent },
+    chipText: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    chipTextOn: { color: palette.accentText },
+    list: { gap: 10 },
+    card: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      padding: 12,
+      gap: 5
+    },
+    cardOn: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    cardTitle: { color: palette.text, fontWeight: "800" },
+    cardText: { color: palette.textMuted, lineHeight: 19 },
+    meta: { color: palette.textSoft, fontSize: 12, fontWeight: "700" },
+    editor: { gap: 8 },
+    label: { color: palette.textSoft, fontSize: 12, fontWeight: "800" },
+    input: {
+      minHeight: 82,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface,
+      color: palette.text,
+      padding: 10,
+      textAlignVertical: "top"
+    },
+    primary: {
+      alignSelf: "flex-start",
+      borderRadius: radius.card,
+      backgroundColor: palette.accent,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    primaryText: { color: palette.accentText, fontWeight: "800" },
+    feedback: { color: palette.textSoft, fontWeight: "700" }
+  });

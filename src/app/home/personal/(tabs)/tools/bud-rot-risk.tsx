@@ -14,6 +14,7 @@ import {
   saveToolRunAndOpenJournal
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 function coerceParam(value?: string | string[]) {
@@ -46,6 +47,8 @@ function budRotTaskMetadata(band: string) {
 
 export default function BudRotRiskToolScreen() {
   const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createBudRotRiskStyles(palette), [palette]);
   const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
@@ -133,6 +136,8 @@ export default function BudRotRiskToolScreen() {
           onChangeText={setTempF}
           keyboardType="numeric"
           placeholder="75"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
         />
 
         <Text style={styles.label}>Relative Humidity (%)</Text>
@@ -142,6 +147,8 @@ export default function BudRotRiskToolScreen() {
           onChangeText={setRh}
           keyboardType="numeric"
           placeholder="55"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
         />
 
         <Text style={styles.label}>Airflow score (1-10)</Text>
@@ -151,6 +158,8 @@ export default function BudRotRiskToolScreen() {
           onChangeText={setAirflowScore}
           keyboardType="numeric"
           placeholder="7"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
         />
 
         <Text style={styles.label}>Wet events per week</Text>
@@ -160,6 +169,8 @@ export default function BudRotRiskToolScreen() {
           onChangeText={setWetEventsPerWeek}
           keyboardType="numeric"
           placeholder="0"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
         />
 
         <PersonalFeedPlacement
@@ -267,26 +278,33 @@ export default function BudRotRiskToolScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 30, backgroundColor: "#FFFFFF", gap: 8 },
-  title: { fontSize: 22, fontWeight: "700" },
-  subtitle: { color: "#64748B", marginBottom: 6 },
-  context: { color: "#166534", fontWeight: "700", marginBottom: 4 },
-  label: { fontWeight: "700", marginTop: 6 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#FFFFFF"
-  },
-  hint: { fontSize: 12, color: "#64748B", marginTop: 6 },
-  lockedCard: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#F8FAFC"
-  },
-  lockedTitle: { fontWeight: "800", color: "#0F172A" }
-});
+export const createBudRotRiskStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: {
+      padding: 20,
+      paddingBottom: 30,
+      backgroundColor: palette.page,
+      gap: 8
+    },
+    title: { color: palette.text, fontSize: 22, fontWeight: "700" },
+    subtitle: { color: palette.textMuted, marginBottom: 6 },
+    context: { color: palette.link, fontWeight: "700", marginBottom: 4 },
+    label: { color: palette.text, fontWeight: "700", marginTop: 6 },
+    input: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surface,
+      color: palette.text
+    },
+    hint: { fontSize: 12, color: palette.textMuted, marginTop: 6 },
+    lockedCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted
+    },
+    lockedTitle: { fontWeight: "800", color: palette.text }
+  });

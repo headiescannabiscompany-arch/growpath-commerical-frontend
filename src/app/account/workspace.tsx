@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Redirect } from "expo-router";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
@@ -10,19 +10,18 @@ import {
   availableWorkspaceModes,
   workspaceHomeHref
 } from "@/features/mode/workspaceOptions";
-import { useAppTheme } from "@/theme/appTheme";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export function LoginWorkspaceChoiceContent() {
   const entitlements = useEntitlements();
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createLoginWorkspaceChoiceStyles(palette), [palette]);
 
   if (!entitlements.ready) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator />
-        <Text style={[styles.loadingText, { color: palette.textMuted }]}>
-          Loading your workspaces...
-        </Text>
+        <ActivityIndicator color={palette.accent} />
+        <Text style={styles.loadingText}>Loading your workspaces...</Text>
       </View>
     );
   }
@@ -49,15 +48,11 @@ export function LoginWorkspaceChoiceContent() {
       routeKey="login-workspace"
       header={
         <View style={styles.header}>
-          <Text style={[styles.kicker, { color: palette.link }]}>Signed in</Text>
-          <Text
-            accessibilityRole="header"
-            aria-level={1}
-            style={[styles.title, { color: palette.text }]}
-          >
+          <Text style={styles.kicker}>Signed in</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             Choose where you are working
           </Text>
-          <Text style={[styles.subtitle, { color: palette.textMuted }]}>
+          <Text style={styles.subtitle}>
             This login has access to more than one workspace. {choiceDescription} You can
             switch again later from Profile.
           </Text>
@@ -77,35 +72,37 @@ export default function LoginWorkspaceChoicePage() {
   );
 }
 
-const styles = StyleSheet.create({
-  loading: {
-    alignItems: "center",
-    flex: 1,
-    gap: 10,
-    justifyContent: "center",
-    padding: 24
-  },
-  loadingText: {
-    color: "#475569",
-    fontSize: 14,
-    fontWeight: "700"
-  },
-  header: { gap: 6 },
-  kicker: {
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: {
-    color: "#111827",
-    fontSize: 30,
-    fontWeight: "900"
-  },
-  subtitle: {
-    color: "#64748b",
-    fontSize: 14,
-    fontWeight: "700",
-    lineHeight: 20
-  }
-});
+export function createLoginWorkspaceChoiceStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    loading: {
+      alignItems: "center",
+      flex: 1,
+      gap: 10,
+      justifyContent: "center",
+      padding: 24
+    },
+    loadingText: {
+      color: palette.textMuted,
+      fontSize: 14,
+      fontWeight: "700"
+    },
+    header: { gap: 6 },
+    kicker: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    title: {
+      color: palette.text,
+      fontSize: 30,
+      fontWeight: "900"
+    },
+    subtitle: {
+      color: palette.textMuted,
+      fontSize: 14,
+      fontWeight: "700",
+      lineHeight: 20
+    }
+  });
+}

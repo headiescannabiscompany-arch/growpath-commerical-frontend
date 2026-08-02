@@ -5,8 +5,9 @@
  * Handles confidence, recommendation, result details, and persisted write refs.
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type WriteRef = { type: string; id: string };
@@ -26,6 +27,9 @@ export function AIResultCard({
   title?: string;
   data: AIResultData | null | undefined;
 }) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createAIResultCardStyles(palette), [palette]);
+
   if (!data) return null;
 
   const writes = Array.isArray(data.writes) ? data.writes : [];
@@ -83,20 +87,32 @@ function safeStringify(v: any) {
   }
 }
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    padding: 14
-  },
-  h2: { fontSize: 16, fontWeight: "800", marginBottom: 6 },
-  status: { fontSize: 13, fontWeight: "800", marginBottom: 4 },
-  meta: { fontSize: 12, opacity: 0.7, marginBottom: 2 },
-  reco: { marginTop: 6, fontSize: 13, fontWeight: "700" },
-  sep: { height: 1, backgroundColor: "#E5E7EB", marginVertical: 10 },
-  label: { fontSize: 12, fontWeight: "800", opacity: 0.7, marginBottom: 6 },
-  mono: { fontSize: 12, fontFamily: "monospace", opacity: 0.85 },
-  write: { fontSize: 12, opacity: 0.85, marginBottom: 2 }
-});
+export function createAIResultCardStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 14
+    },
+    h2: { color: palette.text, fontSize: 16, fontWeight: "800", marginBottom: 6 },
+    status: {
+      color: palette.text,
+      fontSize: 13,
+      fontWeight: "800",
+      marginBottom: 4
+    },
+    meta: { color: palette.textMuted, fontSize: 12, marginBottom: 2 },
+    reco: { color: palette.textSoft, fontSize: 13, fontWeight: "700", marginTop: 6 },
+    sep: { backgroundColor: palette.border, height: 1, marginVertical: 10 },
+    label: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "800",
+      marginBottom: 6
+    },
+    mono: { color: palette.textSoft, fontFamily: "monospace", fontSize: 12 },
+    write: { color: palette.textSoft, fontSize: 12, marginBottom: 2 }
+  });
+}

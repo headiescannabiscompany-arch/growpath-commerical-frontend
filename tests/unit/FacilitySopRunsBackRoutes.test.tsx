@@ -334,6 +334,22 @@ describe("facility SOP run nested back behavior", () => {
     expect(styles.card.backgroundColor).toBe(palette.surface);
     expect(styles.stepCard.backgroundColor).toBe(palette.surfaceMuted);
     expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.doneBtn.backgroundColor).toBe(palette.success);
+    expect(styles.pendingBtn.backgroundColor).toBe(palette.warning);
+    expect(styles.skipBtn.backgroundColor).toBe(palette.textMuted);
+    expect(styles.stepBtnText.color).toBe(palette.page);
+    expect(styles.addBtn.backgroundColor).toBe(palette.accent);
+  });
+
+  it("uses the active Day palette for SOP run detail actions", () => {
+    const palette = getThemePalette("day", "light");
+    const styles = createFacilitySopRunDetailStyles(palette);
+
+    expect(styles.doneBtn.backgroundColor).toBe(palette.success);
+    expect(styles.pendingBtn.backgroundColor).toBe(palette.warning);
+    expect(styles.skipBtn.backgroundColor).toBe(palette.textMuted);
+    expect(styles.stepBtnText.color).toBe(palette.page);
+    expect(styles.addBtn.backgroundColor).toBe(palette.accent);
   });
 
   it("uses the active Night palette for the SOP comparison chooser", () => {

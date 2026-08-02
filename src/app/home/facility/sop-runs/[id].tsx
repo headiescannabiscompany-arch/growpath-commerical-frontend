@@ -210,13 +210,13 @@ export default function FacilitySopRunDetailRoute() {
   if (!id)
     return renderBoundary(
       <ScrollView contentContainerStyle={styles.container}>
-        <Text>Missing run id.</Text>
+        <Text style={styles.sub}>Missing run id.</Text>
       </ScrollView>
     );
   if (loading)
     return renderBoundary(
       <ScrollView contentContainerStyle={styles.container}>
-        <Text>Loading...</Text>
+        <Text style={styles.sub}>Loading...</Text>
       </ScrollView>
     );
 
@@ -339,6 +339,7 @@ export default function FacilitySopRunDetailRoute() {
           <TextInput
             accessibilityLabel="SOP step title"
             placeholder="Step title"
+            placeholderTextColor={palette.textMuted}
             value={stepTitle}
             onChangeText={setStepTitle}
             style={styles.input}
@@ -346,6 +347,7 @@ export default function FacilitySopRunDetailRoute() {
           <TextInput
             accessibilityLabel="SOP step note"
             placeholder="Note, observation, or exception"
+            placeholderTextColor={palette.textMuted}
             value={stepNote}
             onChangeText={setStepNote}
             style={[styles.input, styles.noteInput]}
@@ -468,10 +470,10 @@ export function createFacilitySopRunDetailStyles(palette: ThemePalette) {
     stepNote: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
     stepActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     stepBtn: { borderRadius: radius.card, paddingHorizontal: 10, paddingVertical: 8 },
-    doneBtn: { backgroundColor: "#16a34a" },
-    pendingBtn: { backgroundColor: "#ca8a04" },
-    skipBtn: { backgroundColor: "#64748b" },
-    stepBtnText: { color: "#fff", fontWeight: "900" },
+    doneBtn: { backgroundColor: palette.success },
+    pendingBtn: { backgroundColor: palette.warning },
+    skipBtn: { backgroundColor: palette.textMuted },
+    stepBtnText: { color: palette.page, fontWeight: "900" },
     input: {
       borderWidth: 1,
       borderColor: palette.border,
@@ -482,7 +484,7 @@ export function createFacilitySopRunDetailStyles(palette: ThemePalette) {
     },
     noteInput: { minHeight: 72, textAlignVertical: "top" },
     addBtn: {
-      backgroundColor: "#16a34a",
+      backgroundColor: palette.accent,
       borderRadius: radius.card,
       padding: 10,
       alignItems: "center"

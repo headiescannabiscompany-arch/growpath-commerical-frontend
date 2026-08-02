@@ -6,8 +6,19 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam } from "@/features/grows/routeUtils";
 import RunComparisonWorkspace from "@/features/personal/tools/RunComparisonWorkspace";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+
+export const createGrowCompareStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: palette.page },
+    content: { padding: 20, paddingBottom: 40, gap: 14 },
+    title: { color: palette.text, fontSize: 24, fontWeight: "800" },
+    subtitle: { color: palette.textMuted, lineHeight: 20 }
+  });
 
 export default function GrowCompareScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGrowCompareStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{
     growId?: string | string[];
   }>();
@@ -34,10 +45,3 @@ export default function GrowCompareScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FAFC" },
-  content: { padding: 20, paddingBottom: 40, gap: 14 },
-  title: { color: "#0F172A", fontSize: 24, fontWeight: "800" },
-  subtitle: { color: "#475569", lineHeight: 20 }
-});
