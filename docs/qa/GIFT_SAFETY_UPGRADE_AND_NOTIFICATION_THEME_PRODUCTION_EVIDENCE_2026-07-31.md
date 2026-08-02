@@ -3470,3 +3470,33 @@ semantic colors, and media assets were not treated as theme defects. No theme,
 location, notification, filter, refresh, field, inventory action, navigation
 action, workspace, account, session, billing, audit event, or record mutation
 was invoked.
+
+## Durable dormant gift refund and dispute revocation
+
+Backend `73df07ed2025d5102a64f3510dcf1b90eef8a913` closes the durable
+refund/dispute revocation gate without enabling gift checkout:
+
+- a full refund or active/lost dispute atomically revokes the gift and matching
+  recipient entitlement;
+- partial refunds and non-revoking dispute outcomes are recorded without
+  automatically revoking or regranting access;
+- terminal refund state takes precedence over later dispute outcomes;
+- exact signed PaymentIntent metadata covers refund-before-settlement ordering;
+- a superseding entitlement is preserved, and delivery completion cannot
+  resurrect a revoked gift; and
+- both the canonical and compatibility Stripe webhook paths apply the same
+  revocation behavior.
+
+Backend CI `30729684782` succeeded. The exact-SHA production release was GitHub
+deployment `5710335371` and Render deployment
+`dep-d9nb2ts9v7es73c9mutg`; final deployment status `16239369198` succeeded.
+
+Production `/health` returned HTTP 200. `/api/subscription/status` returned
+HTTP 200 in live mode and continued to report `giftCheckoutConfigured: false`.
+No mutation endpoint was invoked during production verification.
+
+This completes only the durable refund/dispute revocation gate. Gift launch
+remains blocked on the automatic unclaimed/delivery-failure refund worker and
+heartbeat, purchaser-owned list/status/cancel/refund APIs, server-authoritative
+quote/reconfirmation UI, cross-device verification continuation, migration
+readiness, live Stripe webhook evidence, and production acceptance.
