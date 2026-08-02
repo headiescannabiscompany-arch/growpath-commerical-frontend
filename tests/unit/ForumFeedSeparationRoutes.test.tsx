@@ -179,9 +179,13 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("New Discussion")).toBeTruthy();
     expect(screen.getByText("Ask for Diagnosis Help")).toBeTruthy();
-    expect(screen.getByLabelText("Ask forum for diagnosis help")).toBeTruthy();
+    const diagnosisComposer = screen.getByLabelText("Ask forum for diagnosis help");
+    expect(diagnosisComposer).toBeTruthy();
+    expect(Array.isArray(diagnosisComposer.props.style)).toBe(false);
     expect(screen.getByText("Share a Grow Update")).toBeTruthy();
-    expect(screen.getByLabelText("Share a grow update to forum")).toBeTruthy();
+    const growUpdateComposer = screen.getByLabelText("Share a grow update to forum");
+    expect(growUpdateComposer).toBeTruthy();
+    expect(Array.isArray(growUpdateComposer.props.style)).toBe(false);
     expect(screen.getByText("Forum Feed")).toBeTruthy();
     expect(screen.getByText("Forum videos")).toBeTruthy();
     expect(screen.getByText("1.0 MB used")).toBeTruthy();
@@ -542,9 +546,17 @@ describe("Forum and feed separation copy", () => {
     expect(screen.queryByTestId("link-/forum/post?id=thread-community-help")).toBeNull();
     expect(screen.getByText("Start a Discussion")).toBeTruthy();
     expect(screen.getByText("Ask for Diagnosis Help")).toBeTruthy();
-    expect(screen.getByLabelText("Ask forum for diagnosis help")).toBeTruthy();
+    const communityDiagnosisComposer = screen.getByLabelText(
+      "Ask forum for diagnosis help"
+    );
+    expect(communityDiagnosisComposer).toBeTruthy();
+    expect(Array.isArray(communityDiagnosisComposer.props.style)).toBe(false);
     expect(screen.getByText("Share a Grow Update")).toBeTruthy();
-    expect(screen.getByLabelText("Share a grow update to forum")).toBeTruthy();
+    const communityGrowUpdateComposer = screen.getByLabelText(
+      "Share a grow update to forum"
+    );
+    expect(communityGrowUpdateComposer).toBeTruthy();
+    expect(Array.isArray(communityGrowUpdateComposer.props.style)).toBe(false);
     expect(screen.getByText("Forum videos")).toBeTruthy();
     expect(screen.getByText("Forum lives")).toBeTruthy();
     expect(screen.getByText("Open Video Library")).toBeTruthy();
