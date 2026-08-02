@@ -317,7 +317,7 @@ export default function CommunityTab() {
                   asChild
                 >
                   <Pressable
-                    style={[styles.quickComposer, pageSurface]}
+                    style={StyleSheet.flatten([styles.quickComposer, pageSurface])}
                     accessibilityRole="button"
                     accessibilityLabel="Ask forum for diagnosis help"
                   >
@@ -337,7 +337,7 @@ export default function CommunityTab() {
                   asChild
                 >
                   <Pressable
-                    style={[styles.quickComposer, pageSurface]}
+                    style={StyleSheet.flatten([styles.quickComposer, pageSurface])}
                     accessibilityRole="button"
                     accessibilityLabel="Share a grow update to forum"
                   >
