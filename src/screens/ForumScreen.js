@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useMemo, useEffect } from "react";
+import React, { useCallback, useRef, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,8 +7,6 @@ import {
   Image,
   StyleSheet,
   RefreshControl,
-  ActivityIndicator,
-  Dimensions,
   Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -24,24 +22,18 @@ import {
   listForumCategories,
   listPosts
 } from "../api/forum.js";
-import useTabPressScrollReset from "../hooks/useTabPressScrollReset.js";
 import { resolveImageUrl } from "../utils/images.js";
 import { useAuth } from "@/auth/AuthContext";
-import PrimaryButton from "../components/PrimaryButton.js";
-import CommercialBanner from "../components/CommercialBanner.js";
+import { useAppTheme } from "@/theme/appTheme";
 import { INTEREST_TIERS } from "../config/interests.js";
-import {
-  flattenGrowInterests,
-  filterPostsByInterests,
-  getTier1Metadata,
-  normalizeInterestList
-} from "../utils/growInterests.js";
-import { shouldAutoFetchMore } from "../utils/forumFeed.js";
+import { getTier1Metadata, normalizeInterestList } from "../utils/growInterests.js";
 import { radius } from "../theme/theme";
 
 export default function ForumScreen() {
   const auth = useAuth();
   const { user, ctx } = auth;
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createForumScreenStyles(palette), [palette]);
   const workspaceMode = ctx?.mode || auth.mode || "personal";
   const [mode, setMode] = useState("latest");
   const [category, setCategory] = useState("all");
@@ -60,8 +52,7 @@ export default function ForumScreen() {
     [rootNavigation]
   );
 
-  const tierOneConfig = getTier1Metadata();
-  const TIER1_TAGS = new Set(tierOneConfig?.options || []);
+  const tierOneTags = useMemo(() => new Set(getTier1Metadata()?.options || []), []);
   const isFacility = workspaceMode === "facility";
   const facilityId = String(
     ctx?.facilityId ||
@@ -80,17 +71,18 @@ export default function ForumScreen() {
     ? categoryData.categories
     : [];
 
+  const growInterests = user?.growInterests;
   const normalizedUserInterests = useMemo(() => {
-    if (!user?.growInterests) return {};
+    if (!growInterests) return {};
     const mapped = {};
-    Object.entries(user.growInterests).forEach(([key, value]) => {
+    Object.entries(growInterests).forEach(([key, value]) => {
       const normalized = normalizeInterestList(value);
       if (normalized.length) {
         mapped[key] = normalized;
       }
     });
     return mapped;
-  }, [user?.growInterests]);
+  }, [growInterests]);
 
   const filterTiers = useMemo(() => {
     return INTEREST_TIERS.map((tier) => {
@@ -110,11 +102,11 @@ export default function ForumScreen() {
   const { tier1Filters, otherTierFilters } = useMemo(() => {
     const grouped = { tier1Filters: [], otherTierFilters: [] };
     activeFilters.forEach((tag) => {
-      if (TIER1_TAGS.has(tag)) grouped.tier1Filters.push(tag);
+      if (tierOneTags.has(tag)) grouped.tier1Filters.push(tag);
       else grouped.otherTierFilters.push(tag);
     });
     return grouped;
-  }, [activeFilters]);
+  }, [activeFilters, tierOneTags]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
     useInfiniteQuery({
@@ -324,25 +316,9 @@ export default function ForumScreen() {
           renderItem={renderPost}
           ListHeaderComponent={
             <View>
-              <View
-                style={{
-                  backgroundColor: "#F0FDF4",
-                  borderRadius: radius.card,
-                  padding: 12,
-                  marginBottom: 12
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#10B981",
-                    fontWeight: "600",
-                    fontSize: 15,
-                    marginBottom: 2
-                  }}
-                >
-                  Forum / Q&A
-                </Text>
-                <Text style={{ color: "#222", fontSize: 13 }}>
+              <View style={styles.contextCard}>
+                <Text style={styles.contextTitle}>Forum / Q&A</Text>
+                <Text style={styles.contextBody}>
                   Discussion, grow help, course questions, product Q&A, and live Q&A
                   belong here. Feed / Campaigns is for commercial and facility outreach,
                   ads, products, courses, lives, and storefront promotion.
@@ -469,7 +445,13 @@ export default function ForumScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           refreshControl={
-            <RefreshControl refreshing={false} onRefresh={refetch} tintColor="#2ecc71" />
+            <RefreshControl
+              refreshing={false}
+              onRefresh={refetch}
+              tintColor={palette.accent}
+              colors={[palette.accent]}
+              progressBackgroundColor={palette.surface}
+            />
           }
           contentContainerStyle={{ paddingBottom: 100 }}
         />
@@ -479,232 +461,267 @@ export default function ForumScreen() {
 }
 // ...existing code ends, styles object follows...
 
-const styles = StyleSheet.create({
-  header: {
-    marginBottom: 12,
-    paddingHorizontal: 4
-  },
-  tabRow: {
-    flexDirection: "row",
-    marginBottom: 10,
-    backgroundColor: "#eee",
-    borderRadius: radius.card,
-    padding: 4
-  },
-  createBtn: {
-    backgroundColor: "#27ae60",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: radius.card,
-    alignItems: "center"
-  },
-  createBtnText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16
-  },
-  guildHeader: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: "#f8f9fa",
-    borderBottomWidth: 2,
-    borderBottomColor: "#27ae60",
-    marginBottom: 12
-  },
-  guildTitleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  guildTitleContainer: {
-    flex: 1
-  },
-  guildTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#2c3e50",
-    marginBottom: 4
-  },
-  guildSubtitle: {
-    fontSize: 14,
-    color: "#7f8c8d",
-    fontStyle: "italic"
-  },
-  codeButton: {
-    backgroundColor: "#27ae60",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: radius.card
-  },
-  codeButtonText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600"
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    padding: 16,
-    marginVertical: 8,
-    marginHorizontal: 12,
-    elevation: 2,
-    ...(Platform.OS === "web"
-      ? { boxShadow: "0px 2px 8px rgba(0,0,0,0.12)" }
-      : {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.12,
-          shadowRadius: 6
-        })
-  },
-  userRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.pill,
-    marginRight: 12
-  },
-  avatarFallback: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#d1fae5"
-  },
-  avatarFallbackText: {
-    color: "#047857",
-    fontSize: 18,
-    fontWeight: "700"
-  },
-  username: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#222"
-  },
-  timestamp: {
-    fontSize: 12,
-    color: "#888",
-    marginBottom: 4
-  },
-  identityText: {
-    color: "#00796b",
-    fontSize: 12,
-    fontWeight: "bold"
-  },
-  workspacePill: {
-    backgroundColor: "#f9e0b7",
-    borderRadius: radius.pill,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginRight: 6
-  },
-  workspaceText: {
-    color: "#b26a00",
-    fontSize: 12,
-    fontWeight: "bold"
-  },
-  content: {
-    fontSize: 15,
-    color: "#333",
-    marginVertical: 8
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: "bold",
-    color: "#222",
-    marginVertical: 8
-  },
-  postImage: {
-    width: "100%",
-    height: 180,
-    borderRadius: radius.card,
-    marginVertical: 8
-  },
-  tagsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginVertical: 6
-  },
-  tag: {
-    backgroundColor: "#e0f7fa",
-    borderRadius: radius.pill,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginRight: 6,
-    marginBottom: 4
-  },
-  tagText: {
-    color: "#00796b",
-    fontSize: 12,
-    fontWeight: "bold"
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    marginTop: 8
-  },
-  footerText: {
-    fontSize: 13,
-    color: "#888",
-    marginRight: 16
-  },
-  threadType: { color: "#64748B", fontSize: 12, fontWeight: "700", marginTop: 6 },
-  categoryHeading: { color: "#334155", fontSize: 13, fontWeight: "800" },
-  categoryRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginVertical: 8 },
-  categoryChip: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  categoryChipActive: { backgroundColor: "#166534" },
-  categoryChipText: { color: "#334155", fontSize: 12, fontWeight: "700" },
-  categoryChipTextActive: { color: "#FFFFFF" },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-    borderRadius: radius.card,
-    backgroundColor: "transparent"
-  },
-  tabActive: {
-    backgroundColor: "#2ecc71"
-  },
-  tabText: {
-    fontSize: 16,
-    color: "#333"
-  },
-  tabTextActive: {
-    color: "#fff",
-    fontWeight: "bold"
-  },
-  headerActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 8
-  },
-  identityRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4
-  },
-  identityPill: {
-    backgroundColor: "#e0f7fa",
-    borderRadius: radius.pill,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginRight: 6
-  },
-  filterToggle: {
-    padding: 8,
-    backgroundColor: "#e0f7fa",
-    borderRadius: radius.card
-  },
-  filterToggleText: {
-    color: "#00796b",
-    fontWeight: "bold"
-  }
-});
+export const createForumScreenStyles = (palette) =>
+  StyleSheet.create({
+    contextCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 12,
+      marginBottom: 12
+    },
+    contextTitle: {
+      color: palette.accent,
+      fontWeight: "600",
+      fontSize: 15,
+      marginBottom: 2
+    },
+    contextBody: { color: palette.text, fontSize: 13 },
+    header: {
+      marginBottom: 12,
+      paddingHorizontal: 4
+    },
+    tabRow: {
+      flexDirection: "row",
+      marginBottom: 10,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 4
+    },
+    createBtn: {
+      backgroundColor: palette.accent,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: radius.card,
+      alignItems: "center"
+    },
+    createBtnText: {
+      color: palette.accentText,
+      fontWeight: "bold",
+      fontSize: 16
+    },
+    guildHeader: {
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      backgroundColor: palette.hero,
+      borderBottomWidth: 2,
+      borderBottomColor: palette.accent,
+      marginBottom: 12
+    },
+    guildTitleRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center"
+    },
+    guildTitleContainer: {
+      flex: 1
+    },
+    guildTitle: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: palette.heroText,
+      marginBottom: 4
+    },
+    guildSubtitle: {
+      fontSize: 14,
+      color: palette.heroMuted,
+      fontStyle: "italic"
+    },
+    codeButton: {
+      backgroundColor: palette.accent,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: radius.card
+    },
+    codeButtonText: {
+      color: palette.accentText,
+      fontSize: 12,
+      fontWeight: "600"
+    },
+    card: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 16,
+      marginVertical: 8,
+      marginHorizontal: 12,
+      elevation: 2,
+      ...(Platform.OS === "web"
+        ? { boxShadow: `0px 2px 8px ${palette.shadow}` }
+        : {
+            shadowColor: palette.shadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.12,
+            shadowRadius: 6
+          })
+    },
+    userRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 8
+    },
+    avatar: {
+      width: 48,
+      height: 48,
+      borderRadius: radius.pill,
+      marginRight: 12
+    },
+    avatarFallback: {
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: palette.accentSoft
+    },
+    avatarFallbackText: {
+      color: palette.accent,
+      fontSize: 18,
+      fontWeight: "700"
+    },
+    username: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: palette.text
+    },
+    timestamp: {
+      fontSize: 12,
+      color: palette.textMuted,
+      marginBottom: 4
+    },
+    identityText: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "bold"
+    },
+    workspacePill: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.warning,
+      borderWidth: 1,
+      borderRadius: radius.pill,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      marginRight: 6
+    },
+    workspaceText: {
+      color: palette.warning,
+      fontSize: 12,
+      fontWeight: "bold"
+    },
+    content: {
+      fontSize: 15,
+      color: palette.text,
+      marginVertical: 8
+    },
+    title: {
+      fontSize: 17,
+      fontWeight: "bold",
+      color: palette.text,
+      marginVertical: 8
+    },
+    postImage: {
+      width: "100%",
+      height: 180,
+      borderRadius: radius.card,
+      marginVertical: 8
+    },
+    tagsRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      marginVertical: 6
+    },
+    tag: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.pill,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      marginRight: 6,
+      marginBottom: 4
+    },
+    tagText: {
+      color: palette.accent,
+      fontSize: 12,
+      fontWeight: "bold"
+    },
+    footer: {
+      flexDirection: "row",
+      justifyContent: "flex-start",
+      marginTop: 8
+    },
+    footerText: {
+      fontSize: 13,
+      color: palette.textMuted,
+      marginRight: 16
+    },
+    threadType: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 6
+    },
+    categoryHeading: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    categoryRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginVertical: 8 },
+    categoryChip: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 7
+    },
+    categoryChipActive: { backgroundColor: palette.accent, borderColor: palette.accent },
+    categoryChipText: { color: palette.text, fontSize: 12, fontWeight: "700" },
+    categoryChipTextActive: { color: palette.accentText },
+    tab: {
+      flex: 1,
+      paddingVertical: 10,
+      alignItems: "center",
+      borderRadius: radius.card,
+      backgroundColor: "transparent"
+    },
+    tabActive: {
+      backgroundColor: palette.accent
+    },
+    tabText: {
+      fontSize: 16,
+      color: palette.text
+    },
+    tabTextActive: {
+      color: palette.accentText,
+      fontWeight: "bold"
+    },
+    headerActions: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 8
+    },
+    identityRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 4
+    },
+    identityPill: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.pill,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      marginRight: 6
+    },
+    filterToggle: {
+      padding: 8,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card
+    },
+    filterToggleText: {
+      color: palette.link,
+      fontWeight: "bold"
+    }
+  });

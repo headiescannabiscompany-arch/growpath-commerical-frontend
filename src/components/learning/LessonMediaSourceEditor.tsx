@@ -213,6 +213,8 @@ export default function LessonMediaSourceEditor({
             editable={!disabled}
             onChangeText={updateUrl}
             placeholder="Paste the video page URL, not embed code"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             style={styles.input}
             value={value.originalUrl}
           />
@@ -271,6 +273,8 @@ export default function LessonMediaSourceEditor({
             editable={!disabled}
             onChangeText={(title) => patch({ title })}
             placeholder="Optional video title shown to learners"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             style={styles.input}
             value={value.title}
           />
@@ -281,6 +285,8 @@ export default function LessonMediaSourceEditor({
             editable={!disabled}
             onChangeText={(thumbnailUrl) => patch({ thumbnailUrl })}
             placeholder="Optional thumbnail URL (YouTube fills this automatically)"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             style={styles.input}
             value={value.thumbnailUrl}
           />
@@ -302,6 +308,8 @@ export default function LessonMediaSourceEditor({
             editable={!disabled}
             onChangeText={(availabilityNote) => patch({ availabilityNote })}
             placeholder="Optional: region, age gate, login, embed, or removal note"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             style={styles.input}
             value={value.availabilityNote}
           />
@@ -363,6 +371,8 @@ export default function LessonMediaSourceEditor({
             multiline
             onChangeText={(textSummary) => patch({ textSummary })}
             placeholder="Summarize what the learner should understand if the video cannot load"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             style={[styles.input, styles.textArea]}
             value={value.textSummary}
           />

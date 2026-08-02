@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -19,10 +19,13 @@ import {
   removeTeamMember
 } from "../api/team.js";
 import { useAuth } from "@/auth/AuthContext";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "../theme/theme";
 
 export default function TeamScreen() {
   const { token } = useAuth();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createTeamScreenStyles(palette), [palette]);
   const [team, setTeam] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,11 +105,13 @@ export default function TeamScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Team</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.header}>
+        Team
+      </Text>
       {loading ? (
-        <ActivityIndicator size="small" color="#10B981" style={{ marginTop: 40 }} />
+        <ActivityIndicator size="small" color={palette.accent} style={styles.loading} />
       ) : error ? (
-        <Text style={{ color: "#ef4444", marginTop: 40 }}>{error}</Text>
+        <Text style={styles.errorText}>{error}</Text>
       ) : (
         <FlatList
           data={team}
@@ -118,20 +123,26 @@ export default function TeamScreen() {
                 <Text style={styles.memberRole}>{item.role}</Text>
               </View>
               <View style={{ flexDirection: "row", gap: 8 }}>
-                <Button title="Edit" onPress={() => openEditModal(item)} />
+                <Button
+                  title="Edit"
+                  color={palette.accent}
+                  onPress={() => openEditModal(item)}
+                />
                 <Button
                   title="Remove"
-                  color="#ef4444"
+                  color={palette.danger}
                   onPress={() => handleDelete(item)}
                 />
               </View>
             </View>
           )}
-          ListEmptyComponent={<Text>No team members available.</Text>}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No team members available.</Text>
+          }
         />
       )}
       <View style={styles.actions}>
-        <Button title="Add Member" onPress={openAddModal} />
+        <Button title="Add Member" color={palette.accent} onPress={openAddModal} />
       </View>
 
       <Modal
@@ -150,6 +161,8 @@ export default function TeamScreen() {
               placeholder="Name"
               value={name}
               onChangeText={setName}
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               autoFocus
             />
             <TextInput
@@ -157,6 +170,8 @@ export default function TeamScreen() {
               placeholder="Role"
               value={role}
               onChangeText={setRole}
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
             />
             <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
               <TouchableOpacity
@@ -180,68 +195,88 @@ export default function TeamScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  header: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
-  memberRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderColor: "#eee"
-  },
-  memberName: { fontSize: 18 },
-  memberRole: { fontSize: 16, color: "#888" },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 24
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    padding: 24,
-    width: 300,
-    alignItems: "center",
-    elevation: 4,
-    ...(Platform.OS === "web"
-      ? { boxShadow: "0px 6px 24px rgba(0,0,0,0.18)" }
-      : {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.18,
-          shadowRadius: 12
-        })
-  },
-  modalTitle: { fontSize: 18, fontWeight: "bold", color: "#222", marginBottom: 12 },
-  input: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: radius.card,
-    padding: 10,
-    marginBottom: 12,
-    fontSize: 16
-  },
-  saveBtn: {
-    backgroundColor: "#10B981",
-    borderRadius: radius.card,
-    paddingHorizontal: 18,
-    paddingVertical: 10
-  },
-  saveBtnText: { color: "white", fontWeight: "bold", fontSize: 15 },
-  cancelBtn: {
-    backgroundColor: "#ddd",
-    borderRadius: radius.card,
-    paddingHorizontal: 18,
-    paddingVertical: 10
-  },
-  cancelBtnText: { color: "#333", fontWeight: "bold", fontSize: 15 }
-});
+export const createTeamScreenStyles = (palette) =>
+  StyleSheet.create({
+    container: { flex: 1, padding: 16, backgroundColor: palette.page },
+    header: {
+      color: palette.heroText,
+      fontSize: 24,
+      fontWeight: "bold",
+      marginBottom: 16
+    },
+    loading: { marginTop: 40 },
+    errorText: { color: palette.danger, marginTop: 40 },
+    emptyText: { color: palette.textMuted },
+    memberRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderColor: palette.border
+    },
+    memberName: { color: palette.text, fontSize: 18 },
+    memberRole: { fontSize: 16, color: palette.textMuted },
+    actions: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      marginTop: 24
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: palette.shadow,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    modalContent: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 24,
+      width: 300,
+      alignItems: "center",
+      elevation: 4,
+      ...(Platform.OS === "web"
+        ? { boxShadow: `0px 6px 24px ${palette.shadow}` }
+        : {
+            shadowColor: palette.shadow,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.18,
+            shadowRadius: 12
+          })
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: palette.text,
+      marginBottom: 12
+    },
+    input: {
+      width: "100%",
+      backgroundColor: palette.surfaceMuted,
+      color: palette.text,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 10,
+      marginBottom: 12,
+      fontSize: 16
+    },
+    saveBtn: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 18,
+      paddingVertical: 10
+    },
+    saveBtnText: { color: palette.accentText, fontWeight: "bold", fontSize: 15 },
+    cancelBtn: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      paddingHorizontal: 18,
+      paddingVertical: 10
+    },
+    cancelBtnText: { color: palette.text, fontWeight: "bold", fontSize: 15 }
+  });

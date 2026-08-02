@@ -147,79 +147,14 @@ export default function CreateCourseScreen({
   const entitlements = useEntitlements();
   const access = getLearningAccess(entitlements);
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createCourseStyles(palette), [palette]);
+  const themeStyles = styles;
   const backTarget =
     entitlements.mode === "commercial"
       ? "/home/commercial/courses"
       : entitlements.mode === "facility"
         ? "/courses"
         : "/home/personal/courses";
-  const themeStyles = useMemo(
-    () => ({
-      title: [styles.title, { color: palette.heroText }],
-      workflowCard: [
-        styles.workflowCard,
-        { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
-      ],
-      workflowTitle: [styles.workflowTitle, { color: palette.link }],
-      lockedCard: [
-        styles.lockedCard,
-        { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
-      ],
-      lockedTitle: [styles.lockedTitle, { color: palette.text }],
-      sectionCard: [
-        styles.sectionCard,
-        { backgroundColor: palette.surface, borderColor: palette.border }
-      ],
-      sectionTitle: [styles.sectionTitle, { color: palette.text }],
-      label: [styles.label, { color: palette.textMuted, opacity: 1 }],
-      helpText: [styles.helpText, { color: palette.textMuted }],
-      input: [
-        styles.input,
-        {
-          backgroundColor: palette.surface,
-          borderColor: palette.border,
-          color: palette.text
-        }
-      ],
-      uploadButton: [styles.uploadButton, { borderColor: palette.accent }],
-      uploadButtonText: [styles.uploadButtonText, { color: palette.link }],
-      secondaryButton: StyleSheet.flatten([
-        styles.secondaryButton,
-        { borderColor: palette.accent }
-      ]),
-      secondaryButtonText: [styles.secondaryButtonText, { color: palette.link }],
-      button: [styles.button, { backgroundColor: palette.accent }],
-      buttonText: [styles.buttonText, { color: palette.accentText }],
-      lessonPlanner: [
-        styles.lessonPlanner,
-        { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
-      ],
-      lessonPlanCard: [
-        styles.lessonPlanCard,
-        { backgroundColor: palette.surface, borderColor: palette.border }
-      ],
-      integrationCard: [
-        styles.integrationCard,
-        { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
-      ],
-      integrationMessage: [styles.integrationMessage, { color: palette.info }],
-      integrationHelpText: [styles.integrationHelpText, { color: palette.textMuted }],
-      readyText: [styles.readyText, { color: palette.success }],
-      pricingModeButton: [
-        styles.pricingModeButton,
-        { backgroundColor: palette.surface, borderColor: palette.border }
-      ],
-      pricingModeButtonActive: [
-        styles.pricingModeButtonActive,
-        { backgroundColor: palette.accentSoft, borderColor: palette.accent }
-      ],
-      pricingModeText: [styles.pricingModeText, { color: palette.link }],
-      pricePreview: [styles.pricePreview, { color: palette.link }],
-      lessonNumber: [styles.lessonNumber, { color: palette.textMuted }],
-      uploadRowButton: styles.uploadRowButton
-    }),
-    [palette]
-  );
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [description, setDescription] = useState("");
@@ -721,6 +656,8 @@ export default function CreateCourseScreen({
             value={title}
             onChangeText={setTitle}
             placeholder="Enter a course title"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
             accessibilityLabel="Course title"
@@ -730,6 +667,8 @@ export default function CreateCourseScreen({
             value={summary}
             onChangeText={setSummary}
             placeholder="What learners will get from this course"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             multiline
             editable={access.canCreateCourses && !submitting}
             style={[themeStyles.input, styles.multiline]}
@@ -740,6 +679,8 @@ export default function CreateCourseScreen({
             value={description}
             onChangeText={setDescription}
             placeholder="Longer course description, outcomes, and prerequisites"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             multiline
             editable={access.canCreateCourses && !submitting}
             style={[themeStyles.input, styles.multiline]}
@@ -750,6 +691,8 @@ export default function CreateCourseScreen({
             value={coverImageUrl}
             onChangeText={setCoverImageUrl}
             placeholder="Paste image URL or upload from device"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
             accessibilityLabel="Course cover image URL"
@@ -781,6 +724,8 @@ export default function CreateCourseScreen({
             value={category}
             onChangeText={setCategory}
             placeholder="Plant health, living soil, lighting, business, etc."
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
             accessibilityLabel="Course category"
@@ -790,6 +735,8 @@ export default function CreateCourseScreen({
             value={difficulty}
             onChangeText={setDifficulty}
             placeholder="Beginner, intermediate, advanced, or pro"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
             accessibilityLabel="Course difficulty"
@@ -827,6 +774,8 @@ export default function CreateCourseScreen({
             value={curriculumPlan}
             onChangeText={setCurriculumPlan}
             placeholder={"Lesson 1: Soil basics\nLesson 2: Amendment timing"}
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             multiline
             editable={access.canCreateCourses && !submitting}
             style={[themeStyles.input, styles.multiline]}
@@ -912,6 +861,8 @@ export default function CreateCourseScreen({
             value={quizPlan}
             onChangeText={setQuizPlan}
             placeholder={"What controls nutrient availability? | pH | Pot color"}
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             multiline
             editable={access.canCreateCourses && !submitting}
             style={[themeStyles.input, styles.multiline]}
@@ -931,6 +882,8 @@ export default function CreateCourseScreen({
             value={documentPlan}
             onChangeText={setDocumentPlan}
             placeholder="PDFs, worksheets, checklists, SOPs, or handouts"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             multiline
             editable={access.canCreateCourses && !submitting}
             style={[themeStyles.input, styles.multiline]}
@@ -956,6 +909,8 @@ export default function CreateCourseScreen({
             value={mediaPlan}
             onChangeText={setMediaPlan}
             placeholder="Video topics, replay files, image sets, estimated storage needs"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             multiline
             editable={access.canCreateCourses && !submitting}
             style={[themeStyles.input, styles.multiline]}
@@ -1113,6 +1068,8 @@ export default function CreateCourseScreen({
             value={liveTitle}
             onChangeText={setLiveTitle}
             placeholder="Live soil-building Q&A"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
             accessibilityLabel="Live session title"
@@ -1140,6 +1097,8 @@ export default function CreateCourseScreen({
             value={liveTimezone}
             onChangeText={setLiveTimezone}
             placeholder="America/New_York"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
             accessibilityLabel="Live session timezone"
@@ -1149,6 +1108,8 @@ export default function CreateCourseScreen({
             value={twitchChannel}
             onChangeText={setTwitchChannel}
             placeholder="Channel name or twitch.tv/channel URL"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             autoCapitalize="none"
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
@@ -1252,6 +1213,8 @@ export default function CreateCourseScreen({
             value={linkedProductIds}
             onChangeText={setLinkedProductIds}
             placeholder="Linked product IDs, one per line"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             multiline
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
@@ -1261,6 +1224,8 @@ export default function CreateCourseScreen({
             value={linkedGrowIds}
             onChangeText={setLinkedGrowIds}
             placeholder="Linked grow IDs, one per line"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             multiline
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
@@ -1270,6 +1235,8 @@ export default function CreateCourseScreen({
             value={linkedForumThreadIds}
             onChangeText={setLinkedForumThreadIds}
             placeholder="Linked forum thread IDs, one per line"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
             multiline
             editable={access.canCreateCourses && !submitting}
             style={themeStyles.input}
@@ -1339,6 +1306,8 @@ export default function CreateCourseScreen({
                 onChangeText={setPrice}
                 keyboardType="decimal-pad"
                 placeholder="19.00"
+                placeholderTextColor={palette.textMuted}
+                selectionColor={palette.accent}
                 editable={
                   access.canCreateCourses && access.canSellPaidCourses && !submitting
                 }
@@ -1398,155 +1367,166 @@ export default function CreateCourseScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 10 },
-  title: { fontSize: 24, fontWeight: "800", marginBottom: 6 },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12
-  },
-  label: { fontSize: 13, opacity: 0.8 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: radius.card,
-    minHeight: 44,
-    paddingHorizontal: 12,
-    paddingVertical: 10
-  },
-  multiline: { minHeight: 96, textAlignVertical: "top" },
-  button: {
-    marginTop: 8,
-    backgroundColor: "#15803d",
-    borderRadius: radius.card,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingVertical: 12,
-    alignItems: "center"
-  },
-  buttonDisabled: { opacity: 0.55 },
-  buttonText: { color: "#fff", fontWeight: "800" },
-  uploadButton: {
-    borderWidth: 1,
-    borderColor: "#15803d",
-    borderRadius: radius.card,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingVertical: 10,
-    alignItems: "center"
-  },
-  uploadButtonText: { color: "#166534", fontWeight: "800" },
-  uploadRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  uploadRowButton: { flex: 1 },
-  coverPreview: {
-    width: "100%",
-    minHeight: 160,
-    borderRadius: radius.card,
-    backgroundColor: "#f1f5f9"
-  },
-  imageGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  imageThumb: {
-    width: 72,
-    height: 72,
-    borderRadius: radius.card,
-    backgroundColor: "#f1f5f9"
-  },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: "#15803d",
-    borderRadius: radius.card,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 10,
-    paddingVertical: 8
-  },
-  secondaryButtonText: { color: "#166534", fontWeight: "800" },
-  lockedCard: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#f8fafc"
-  },
-  lockedTitle: { fontWeight: "800" },
-  workflowCard: {
-    borderWidth: 1,
-    borderColor: "#bbf7d0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#f0fdf4"
-  },
-  workflowTitle: { color: "#166534", fontWeight: "900" },
-  lessonPlanner: {
-    backgroundColor: "#f8fafc",
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12
-  },
-  lessonPlanCard: {
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    justifyContent: "space-between",
-    padding: 10
-  },
-  lessonPlanCopy: { flex: 1, minWidth: 190 },
-  lessonNumber: {
-    color: "#64748b",
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  integrationCard: {
-    backgroundColor: "#eff6ff",
-    borderColor: "#bfdbfe",
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12
-  },
-  integrationMessage: {
-    color: "#1e3a8a",
-    fontSize: 12,
-    fontWeight: "800"
-  },
-  integrationHelpText: { color: "#475569" },
-  linkRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  readyText: { color: "#166534", fontSize: 12, fontWeight: "800" },
-  pricingModeRow: { flexDirection: "row", gap: 8 },
-  pricingModeButton: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: radius.card,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    backgroundColor: "#ffffff"
-  },
-  pricingModeButtonActive: {
-    borderColor: "#15803d",
-    backgroundColor: "#dcfce7"
-  },
-  pricingModeText: { color: "#166534", fontWeight: "900" },
-  pricePreview: { color: "#166534", fontWeight: "800" },
-  sectionCard: {
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: radius.card,
-    padding: 12,
-    gap: 8,
-    backgroundColor: "#ffffff"
-  },
-  sectionTitle: { color: "#0f172a", fontSize: 16, fontWeight: "900" },
-  helpText: { color: "#64748b", fontSize: 12 }
-});
+export function createCourseStyles(palette) {
+  return StyleSheet.create({
+    container: { flex: 1, padding: 16, gap: 10 },
+    title: {
+      color: palette.heroText,
+      fontSize: 24,
+      fontWeight: "800",
+      marginBottom: 6
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12
+    },
+    label: { color: palette.textMuted, fontSize: 13 },
+    input: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      color: palette.text,
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    multiline: { minHeight: 96, textAlignVertical: "top" },
+    button: {
+      marginTop: 8,
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingVertical: 12,
+      alignItems: "center"
+    },
+    buttonDisabled: { opacity: 0.55 },
+    buttonText: { color: palette.accentText, fontWeight: "800" },
+    uploadButton: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingVertical: 10,
+      alignItems: "center"
+    },
+    uploadButtonText: { color: palette.link, fontWeight: "800" },
+    uploadRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    uploadRowButton: { flex: 1 },
+    coverPreview: {
+      width: "100%",
+      minHeight: 160,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    imageGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    imageThumb: {
+      width: 72,
+      height: 72,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    secondaryButton: {
+      backgroundColor: palette.surface,
+      borderWidth: 1,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    lockedCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted
+    },
+    lockedTitle: { color: palette.text, fontWeight: "800" },
+    workflowCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted
+    },
+    workflowTitle: { color: palette.link, fontWeight: "900" },
+    lessonPlanner: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    lessonPlanCard: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "space-between",
+      padding: 10
+    },
+    lessonPlanCopy: { flex: 1, minWidth: 190 },
+    lessonNumber: {
+      color: palette.textMuted,
+      fontSize: 11,
+      fontWeight: "900",
+      textTransform: "uppercase"
+    },
+    integrationCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    integrationMessage: {
+      color: palette.info,
+      fontSize: 12,
+      fontWeight: "800"
+    },
+    integrationHelpText: { color: palette.textMuted },
+    linkRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    readyText: { color: palette.success, fontSize: 12, fontWeight: "800" },
+    pricingModeRow: { flexDirection: "row", gap: 8 },
+    pricingModeButton: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 18,
+      paddingVertical: 10,
+      backgroundColor: palette.surface
+    },
+    pricingModeButtonActive: {
+      borderColor: palette.accent,
+      backgroundColor: palette.accentSoft
+    },
+    pricingModeText: { color: palette.link, fontWeight: "900" },
+    pricePreview: { color: palette.link, fontWeight: "800" },
+    sectionCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      gap: 8,
+      backgroundColor: palette.surface
+    },
+    sectionTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    helpText: { color: palette.textMuted, fontSize: 12 }
+  });
+}

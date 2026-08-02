@@ -140,7 +140,7 @@ export default function CalendarDateField({
   testID
 }: CalendarDateFieldProps) {
   const { palette } = useAppTheme();
-  const styles = useMemo(() => createStyles(palette), [palette]);
+  const styles = useMemo(() => createCalendarDateFieldStyles(palette), [palette]);
   const currentYear = new Date().getFullYear();
   const storedYear =
     Number(String(value || "").slice(0, 4)) || initialYear || currentYear;
@@ -430,7 +430,7 @@ export default function CalendarDateField({
   );
 }
 
-const createStyles = (palette: ThemePalette) =>
+export const createCalendarDateFieldStyles = (palette: ThemePalette) =>
   StyleSheet.create({
     fieldWrap: { gap: 6 },
     label: { color: palette.text, fontSize: 13, fontWeight: "800" },

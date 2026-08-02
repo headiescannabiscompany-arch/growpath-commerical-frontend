@@ -29,6 +29,7 @@ export default function TokenBalanceWidget({
   const router = useRouter();
   const auth = useAuth();
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createTokenBalanceStyles(palette), [palette]);
   const normalizedWorkspaceType = String(workspaceType || "personal").toLowerCase();
   const facilityScoped = workspaceType === "facility";
   const commercialScoped = normalizedWorkspaceType === "commercial";
@@ -209,87 +210,56 @@ export default function TokenBalanceWidget({
 
   return (
     <Container
-      style={[
-        styles.container,
-        {
-          backgroundColor: palette.surface,
-          borderColor: isLow ? palette.danger : palette.border
-        },
-        isLow && styles.containerLow
-      ]}
+      style={[styles.container, isLow && styles.containerLow]}
       {...(interactive ? { onPress: onPress || (() => router.push(detailsHref)) } : {})}
     >
       <View style={styles.headerRow}>
-        <View
-          style={[
-            styles.iconContainer,
-            {
-              backgroundColor: palette.surfaceMuted,
-              borderColor: palette.border
-            }
-          ]}
-        >
-          <Text style={[styles.icon, { color: palette.accent }]}>AI</Text>
+        <View style={styles.iconContainer}>
+          <Text style={styles.icon}>AI</Text>
         </View>
         <View style={styles.headerContent}>
-          <Text style={[styles.label, { color: palette.textMuted }]}>
+          <Text style={styles.label}>
             {facilityScoped
               ? "Facility AI Credits"
               : commercialScoped
                 ? "Commercial AI Credits"
                 : "AI Credits"}
           </Text>
-          <Text style={[styles.balance, { color: palette.text }]}>
+          <Text style={styles.balance}>
             {aiTokens} / {maxTokens ?? "-"}
           </Text>
         </View>
-        <View style={[styles.barContainer, { backgroundColor: palette.border }]}>
+        <View style={styles.barContainer}>
           <View
-            style={[
-              styles.bar,
-              { width: `${percentage}%`, backgroundColor: palette.accent },
-              isLow && styles.barLow
-            ]}
+            style={[styles.bar, { width: `${percentage}%` }, isLow && styles.barLow]}
           />
         </View>
       </View>
 
       <View style={styles.details}>
-        <Text style={[styles.description, { color: palette.textMuted }]}>
-          {usageCopy}
-        </Text>
+        <Text style={styles.description}>{usageCopy}</Text>
         {verifiedPlanCopy ? (
-          <Text style={[styles.description, { color: palette.textMuted }]}>
-            {verifiedPlanCopy}
-          </Text>
+          <Text style={styles.description}>{verifiedPlanCopy}</Text>
         ) : null}
         {facilityScoped && workspaceName ? (
-          <Text style={[styles.description, { color: palette.textMuted }]}>
-            Balance owner: {workspaceName}.
-          </Text>
+          <Text style={styles.description}>Balance owner: {workspaceName}.</Text>
         ) : null}
         {weeklyUsageCopy ? (
-          <Text style={[styles.description, { color: palette.textMuted }]}>
-            {weeklyUsageCopy}
-          </Text>
+          <Text style={styles.description}>{weeklyUsageCopy}</Text>
         ) : null}
         {loading ? (
-          <Text style={[styles.description, { color: palette.textMuted }]}>
-            Checking live AI-credit balance...
-          </Text>
+          <Text style={styles.description}>Checking live AI-credit balance...</Text>
         ) : null}
-        <Text style={[styles.description, { color: palette.textMuted }]}>
-          {refillCopy}
-        </Text>
+        <Text style={styles.description}>{refillCopy}</Text>
         {allowanceMismatch ? (
-          <Text style={[styles.syncWarning, { color: palette.warning }]}>
+          <Text style={styles.syncWarning}>
             {facilityScoped ? "The Facility" : "Your paid or trial plan"} is active, but
             the server is still reporting the free 5-credit allowance. Refresh plan status
             before using AI credits.
           </Text>
         ) : null}
         {balance?.usage && !balance.usage.reconciled ? (
-          <Text style={[styles.syncWarning, { color: palette.warning }]}>
+          <Text style={styles.syncWarning}>
             Balance and usage ledger differ by {balance.usage.ledgerDifference} credits.
             Report this account for reconciliation before using more AI credits.
           </Text>
@@ -298,93 +268,99 @@ export default function TokenBalanceWidget({
 
       {interactive ? (
         <View style={styles.ctaRow}>
-          <Text style={[styles.ctaText, { color: palette.link }]}>
-            See how AI credits work
-          </Text>
+          <Text style={styles.ctaText}>See how AI credits work</Text>
         </View>
       ) : null}
     </Container>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: radius.card,
-    padding: 16,
-    marginVertical: 8,
-    borderWidth: 2,
-    borderColor: "#27ae60"
-  },
-  containerLow: {
-    borderColor: "#e74c3c"
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12
-  },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    backgroundColor: "#e8f5e9",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12
-  },
-  icon: {
-    fontSize: 14,
-    fontWeight: "900"
-  },
-  headerContent: {
-    flex: 1
-  },
-  label: {
-    fontSize: 14,
-    marginBottom: 2
-  },
-  balance: {
-    fontSize: 20,
-    fontWeight: "700"
-  },
-  barContainer: {
-    width: 96,
-    height: 8,
-    backgroundColor: "#e0e0e0",
-    borderRadius: radius.pill,
-    overflow: "hidden",
-    marginLeft: 12
-  },
-  bar: {
-    height: "100%",
-    borderRadius: radius.pill
-  },
-  barLow: {
-    backgroundColor: "#e74c3c"
-  },
-  details: {
-    marginBottom: 12
-  },
-  description: {
-    fontSize: 14,
-    color: "#374151",
-    lineHeight: 20
-  },
-  syncWarning: {
-    color: "#991B1B",
-    fontSize: 13,
-    fontWeight: "800",
-    lineHeight: 19,
-    marginTop: 8
-  },
-  ctaRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end"
-  },
-  ctaText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#047857"
-  }
-});
+export function createTokenBalanceStyles(palette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      padding: 16,
+      marginVertical: 8,
+      borderWidth: 2,
+      borderColor: palette.border
+    },
+    containerLow: {
+      borderColor: palette.danger
+    },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 12
+    },
+    iconContainer: {
+      width: 44,
+      height: 44,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 12
+    },
+    icon: {
+      color: palette.accent,
+      fontSize: 14,
+      fontWeight: "900"
+    },
+    headerContent: {
+      flex: 1
+    },
+    label: {
+      color: palette.textMuted,
+      fontSize: 14,
+      marginBottom: 2
+    },
+    balance: {
+      color: palette.text,
+      fontSize: 20,
+      fontWeight: "700"
+    },
+    barContainer: {
+      width: 96,
+      height: 8,
+      backgroundColor: palette.border,
+      borderRadius: radius.pill,
+      overflow: "hidden",
+      marginLeft: 12
+    },
+    bar: {
+      backgroundColor: palette.accent,
+      height: "100%",
+      borderRadius: radius.pill
+    },
+    barLow: {
+      backgroundColor: palette.danger
+    },
+    details: {
+      marginBottom: 12
+    },
+    description: {
+      fontSize: 14,
+      color: palette.textMuted,
+      lineHeight: 20
+    },
+    syncWarning: {
+      color: palette.warning,
+      fontSize: 13,
+      fontWeight: "800",
+      lineHeight: 19,
+      marginTop: 8
+    },
+    ctaRow: {
+      flexDirection: "row",
+      justifyContent: "flex-end"
+    },
+    ctaText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: palette.link
+    }
+  });
+}

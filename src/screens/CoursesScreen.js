@@ -123,6 +123,7 @@ export default function CoursesScreen({ navigation } = {}) {
   const ent = useEntitlements();
   const auth = useAuth();
   const { palette } = useAppTheme();
+  const styles = useMemo(() => createCoursesScreenStyles(palette), [palette]);
   const access = getLearningAccess(ent);
   const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
   const canCreateCourses = isSignedIn && access.canCreateCourses;
@@ -303,10 +304,10 @@ export default function CoursesScreen({ navigation } = {}) {
     return (
       <View
         accessibilityLabel={selectedId ? `Selected course ${selectedId}` : undefined}
-        style={[styles.container, { backgroundColor: palette.page }]}
+        style={styles.container}
       >
         <Pressable onPress={() => setSelectedCourse(null)} style={styles.backBtn}>
-          <Text style={[styles.backText, { color: palette.link }]}>Back to courses</Text>
+          <Text style={styles.backText}>Back to courses</Text>
         </Pressable>
         <CourseDetailScreen
           route={{
@@ -319,34 +320,18 @@ export default function CoursesScreen({ navigation } = {}) {
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: palette.page }]}
-      contentContainerStyle={styles.content}
-    >
-      <Text
-        accessibilityRole="header"
-        aria-level={1}
-        style={[styles.title, { color: palette.heroText }]}
-      >
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
         Courses
       </Text>
       <PersonalFeedPlacement placement="top" routeKey="personal_courses" longContent />
 
       {!isSignedIn ? (
-        <View
-          style={[
-            styles.publicCard,
-            { backgroundColor: palette.surface, borderColor: palette.border }
-          ]}
-        >
-          <Text
-            accessibilityRole="header"
-            aria-level={2}
-            style={[styles.cardTitle, { color: palette.text }]}
-          >
+        <View style={styles.publicCard}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             Published course catalog
           </Text>
-          <Text style={[styles.meta, { color: palette.textMuted }]}>
+          <Text style={styles.meta}>
             Browse courses that their creators have published. Sign in or create a free
             account before authoring, enrolling, purchasing, or saving learner progress.
           </Text>
@@ -355,74 +340,46 @@ export default function CoursesScreen({ navigation } = {}) {
               accessibilityRole="link"
               accessibilityLabel="Sign in for courses"
               onPress={() => router.push("/login")}
-              style={[styles.btn, { backgroundColor: palette.accent }]}
+              style={styles.btn}
             >
-              <Text style={[styles.btnText, { color: palette.accentText }]}>Sign in</Text>
+              <Text style={styles.btnText}>Sign in</Text>
             </Pressable>
             <Pressable
               accessibilityRole="link"
               accessibilityLabel="Create a free account for courses"
               onPress={() => router.push("/register")}
-              style={[styles.btn, { backgroundColor: palette.surface }]}
+              style={styles.secondaryBtn}
             >
-              <Text
-                style={[
-                  styles.secondaryBtnText,
-                  { color: palette.link, borderColor: palette.border }
-                ]}
-              >
-                Create free account
-              </Text>
+              <Text style={styles.secondaryBtnText}>Create free account</Text>
             </Pressable>
           </View>
         </View>
       ) : null}
 
       {!access.canViewCourses ? (
-        <View
-          style={[
-            styles.lockedCard,
-            { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
-          ]}
-        >
-          <Text
-            accessibilityRole="header"
-            aria-level={2}
-            style={[styles.cardTitle, { color: palette.text }]}
-          >
+        <View style={styles.lockedCard}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             Courses unavailable
           </Text>
-          <Text style={[styles.meta, { color: palette.textMuted }]}>
-            This account does not have `COURSES_VIEW`.
-          </Text>
+          <Text style={styles.meta}>This account does not have `COURSES_VIEW`.</Text>
         </View>
       ) : null}
 
       {loading ? (
         <View style={styles.row}>
-          <ActivityIndicator />
-          <Text style={[styles.meta, { color: palette.textMuted }]}>
-            Loading courses...
-          </Text>
+          <ActivityIndicator color={palette.accent} />
+          <Text style={styles.meta}>Loading courses...</Text>
         </View>
       ) : null}
 
-      {err ? <Text style={[styles.error, { color: palette.danger }]}>{err}</Text> : null}
+      {err ? <Text style={styles.error}>{err}</Text> : null}
       {courseActionFeedback ? (
-        <Text style={[styles.meta, { color: palette.success }]}>
-          {courseActionFeedback}
-        </Text>
+        <Text style={styles.successText}>{courseActionFeedback}</Text>
       ) : null}
-      {courseActionError ? (
-        <Text style={[styles.error, { color: palette.danger }]}>{courseActionError}</Text>
-      ) : null}
+      {courseActionError ? <Text style={styles.error}>{courseActionError}</Text> : null}
 
       {!loading && !err && courses.length === 0 ? (
-        <Text
-          accessibilityRole="header"
-          aria-level={2}
-          style={[styles.emptyTitle, { color: palette.textMuted }]}
-        >
+        <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
           {isSignedIn ? "No courses found" : "No published courses yet"}
         </Text>
       ) : null}
@@ -430,41 +387,31 @@ export default function CoursesScreen({ navigation } = {}) {
       {courses.map((item, idx) => (
         <Pressable
           key={String(item?._id || item?.id || idx)}
-          style={[styles.card, { borderBottomColor: palette.borderSoft }]}
+          style={styles.card}
           disabled={!matchesCourseInterests(item, userInterests)}
           onPress={() => openCourse(item)}
         >
-          <Text
-            accessibilityRole="header"
-            aria-level={2}
-            style={[styles.cardTitle, { color: palette.text }]}
-          >
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             {String(item?.title || item?.name || "Untitled")}
           </Text>
-          <Text style={[styles.statusText, { color: palette.success }]}>
+          <Text style={isPublishedCourse(item) ? styles.statusText : styles.draftText}>
             {isPublishedCourse(item) ? "Published" : "Draft"}
           </Text>
-          <Text style={[styles.priceText, { color: palette.text }]}>
-            {coursePriceLabel(item)}
-          </Text>
+          <Text style={styles.priceText}>{coursePriceLabel(item)}</Text>
           {courseInterestTags(item).length ? (
-            <Text style={[styles.meta, { color: palette.textMuted }]}>
+            <Text style={styles.meta}>
               Grow interests: {courseInterestTags(item).join(" | ")}
             </Text>
           ) : (
-            <Text style={[styles.meta, { color: palette.textMuted }]}>
-              Grow interests: General
-            </Text>
+            <Text style={styles.meta}>Grow interests: General</Text>
           )}
           {!matchesCourseInterests(item, userInterests) ? (
-            <Text style={[styles.lockedText, { color: palette.warning }]}>
+            <Text style={styles.lockedText}>
               Hidden from your learning path until you add a matching grow interest.
             </Text>
           ) : null}
           {hasAnalytics ? (
-            <Text style={[styles.meta, { color: palette.textMuted }]}>
-              Views: {item?.analytics?.views ?? 0}
-            </Text>
+            <Text style={styles.meta}>Views: {item?.analytics?.views ?? 0}</Text>
           ) : null}
           {isSignedIn &&
           access.canPublishCourses &&
@@ -477,14 +424,14 @@ export default function CoursesScreen({ navigation } = {}) {
               onPress={(event) => void handleUnpublish(event, item)}
               style={styles.smallBtn}
             >
-              <Text style={[styles.smallBtnText, { color: palette.link }]}>
+              <Text style={styles.smallBtnText}>
                 {courseActionId === String(item?._id || item?.id || "")
                   ? "Unpublishing..."
                   : "Unpublish"}
               </Text>
             </Pressable>
           ) : null}
-          <Text style={[styles.link, { color: palette.link }]}>
+          <Text style={styles.link}>
             {matchesCourseInterests(item, userInterests)
               ? "Open details"
               : "Outside your grow interests"}
@@ -494,40 +441,27 @@ export default function CoursesScreen({ navigation } = {}) {
 
       {canCreateCourses ? (
         <>
-          <View
-            style={[
-              styles.builderCard,
-              { backgroundColor: palette.surfaceMuted, borderColor: palette.border }
-            ]}
-          >
-            <Text
-              accessibilityRole="header"
-              aria-level={2}
-              style={[styles.cardTitle, { color: palette.text }]}
-            >
+          <View style={styles.builderCard}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
               Course Builder Workflow
             </Text>
-            <Text style={[styles.meta, { color: palette.textMuted }]}>
+            <Text style={styles.meta}>
               Start with the basics, build lessons, add media or a live session, choose
               who can access it, preview the learner experience, and publish when ready.
             </Text>
-            <Text style={[styles.meta, { color: palette.textMuted }]}>
+            <Text style={styles.meta}>
               GrowPath keeps course media, live sessions, pricing, and linked grow or
               forum resources together in this workflow.
             </Text>
           </View>
-          <Text style={[styles.meta, { color: palette.textMuted }]}>
+          <Text style={styles.meta}>
             Paid course limit:{" "}
             {access.maxPaidCourses === null
               ? "unlimited"
               : `${paidCourseCount}/${access.maxPaidCourses}`}
           </Text>
-          <Text style={[styles.meta, { color: palette.textMuted }]}>
-            Course media: ready for uploads
-          </Text>
-          <Text style={[styles.meta, { color: palette.textMuted }]}>
-            Live sessions this month: 0 scheduled
-          </Text>
+          <Text style={styles.meta}>Course media: ready for uploads</Text>
+          <Text style={styles.meta}>Live sessions this month: 0 scheduled</Text>
         </>
       ) : null}
 
@@ -541,14 +475,7 @@ export default function CoursesScreen({ navigation } = {}) {
             paidLimitReached && access.canSellPaidCourses && styles.btnDisabled
           ]}
         >
-          <Text
-            style={[
-              styles.btnText,
-              { backgroundColor: palette.accent, color: palette.accentText }
-            ]}
-          >
-            Create Course
-          </Text>
+          <Text style={styles.btnText}>Create Course</Text>
         </Pressable>
       ) : null}
 
@@ -570,16 +497,19 @@ export default function CoursesScreen({ navigation } = {}) {
             onChangeText={setInviteName}
             placeholder="Invite user name"
             placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
           />
           <Pressable
             accessibilityRole="button"
             style={styles.inviteBtn}
             onPress={handleInvite}
           >
-            <Text style={[styles.inviteText, { color: palette.link }]}>Invite</Text>
+            <Text style={styles.inviteText}>Invite</Text>
           </Pressable>
           {inviteMessage ? (
-            <Text style={[styles.meta, { color: palette.textMuted }]}>
+            <Text
+              style={inviteMessage === "Invite sent!" ? styles.successText : styles.error}
+            >
               {inviteMessage}
             </Text>
           ) : null}
@@ -590,79 +520,100 @@ export default function CoursesScreen({ navigation } = {}) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 14, backgroundColor: "#FFFFFF" },
-  content: { paddingBottom: 48, minHeight: "100%" },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 10 },
-  row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
-  meta: { marginTop: 6, fontSize: 13, opacity: 0.8 },
-  emptyTitle: { fontSize: 16, fontWeight: "800", marginTop: 8 },
-  error: { color: "crimson", marginBottom: 10 },
-  lockedText: { color: "#991B1B", fontWeight: "800", marginTop: 6 },
-  statusText: { color: "#166534", fontWeight: "800", marginTop: 4 },
-  priceText: { color: "#0F172A", fontWeight: "900", marginTop: 4 },
-  card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" },
-  cardTitle: { fontWeight: "800" },
-  btn: { marginTop: 10, paddingVertical: 10 },
-  builderCard: {
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#F0FDF4",
-    marginTop: 10
-  },
-  publicCard: {
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-    borderRadius: radius.card,
-    padding: 12,
-    backgroundColor: "#F0FDF4",
-    marginBottom: 10
-  },
-  actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  btnDisabled: { opacity: 0.5 },
-  btnText: {
-    backgroundColor: "#166534",
-    borderRadius: radius.card,
-    color: "#FFFFFF",
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    alignSelf: "flex-start"
-  },
-  secondaryBtnText: {
-    borderColor: "#166534",
-    borderWidth: 1,
-    borderRadius: radius.card,
-    color: "#166534",
-    fontWeight: "900",
-    overflow: "hidden",
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    alignSelf: "flex-start"
-  },
-  link: { color: "#166534", fontWeight: "800", marginTop: 8 },
-  backBtn: { paddingVertical: 8 },
-  backText: { color: "#166534", fontWeight: "800" },
-  lockedCard: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: radius.card,
-    marginBottom: 10
-  },
-  smallBtn: { marginTop: 8, paddingVertical: 8 },
-  smallBtnText: { fontWeight: "900" },
-  inviteCard: { marginTop: 12 },
-  inviteBtn: { marginTop: 8, paddingVertical: 10 },
-  inviteText: { fontWeight: "900" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: radius.card
-  }
-});
+export const createCoursesScreenStyles = (palette) =>
+  StyleSheet.create({
+    container: { flex: 1, padding: 14, backgroundColor: palette.page },
+    content: { paddingBottom: 48, minHeight: "100%" },
+    title: { color: palette.heroText, fontSize: 20, fontWeight: "800", marginBottom: 10 },
+    row: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+    meta: { color: palette.textMuted, marginTop: 6, fontSize: 13 },
+    emptyTitle: {
+      color: palette.textMuted,
+      fontSize: 16,
+      fontWeight: "800",
+      marginTop: 8
+    },
+    error: { color: palette.danger, marginTop: 6, marginBottom: 10 },
+    successText: { color: palette.success, marginTop: 6, fontSize: 13 },
+    lockedText: { color: palette.warning, fontWeight: "800", marginTop: 6 },
+    statusText: { color: palette.success, fontWeight: "800", marginTop: 4 },
+    draftText: { color: palette.warning, fontWeight: "800", marginTop: 4 },
+    priceText: { color: palette.text, fontWeight: "900", marginTop: 4 },
+    card: {
+      paddingVertical: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: palette.borderSoft
+    },
+    cardTitle: { color: palette.text, fontWeight: "800" },
+    btn: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      marginTop: 10,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    builderCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surfaceMuted,
+      marginTop: 10
+    },
+    publicCard: {
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      padding: 12,
+      backgroundColor: palette.surface,
+      marginBottom: 10
+    },
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    btnDisabled: { opacity: 0.5 },
+    btnText: {
+      color: palette.accentText,
+      fontWeight: "900",
+      overflow: "hidden"
+    },
+    secondaryBtn: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      marginTop: 10,
+      paddingHorizontal: 14,
+      paddingVertical: 9
+    },
+    secondaryBtnText: {
+      color: palette.link,
+      fontWeight: "900",
+      overflow: "hidden"
+    },
+    link: { color: palette.link, fontWeight: "800", marginTop: 8 },
+    backBtn: { paddingVertical: 8 },
+    backText: { color: palette.link, fontWeight: "800" },
+    lockedCard: {
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      marginBottom: 10
+    },
+    smallBtn: { marginTop: 8, paddingVertical: 8 },
+    smallBtnText: { color: palette.link, fontWeight: "900" },
+    inviteCard: { marginTop: 12 },
+    inviteBtn: { marginTop: 8, paddingVertical: 10 },
+    inviteText: { color: palette.link, fontWeight: "900" },
+    input: {
+      backgroundColor: palette.surface,
+      color: palette.text,
+      borderWidth: 1,
+      borderColor: palette.border,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      borderRadius: radius.card
+    }
+  });
