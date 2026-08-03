@@ -153,6 +153,27 @@ control, or can bypass its backend authorization boundary.
   expose a Commercial workspace in this pass. No Commercial completion is inferred
   from source tests or earlier sessions.
 
+- 2026-08-03 workspace access and route-recovery follow-up: source
+  `5d65bcca54fd755dfefc43c30c58e817c0a0edde` merged through PR `#287` as
+  `db816c6fdf22c9e1f87388ef8f81ea307979b67a`; Commercial Forum heading hotfix
+  `ed8a66e3b3aba1951483e9fca7f8feb1991a8054` merged through PR `#288` as final
+  main `a6530eec1a20d6ee42f3f21980b29e3b63a8b14f`. Main Frontend CI runs
+  `30810168803` / `30818000587` and Production Build Preflight runs `30810168752` /
+  `30818000851` passed. The connected Facility-plan owner account exposed Personal,
+  Commercial, and Facility workspace entry. Exact-SHA production desktop checks
+  passed all six Personal routes/tabs, all six Commercial routes/tabs, Facility
+  Dashboard plus Tasks/Rooms/Plants/SOP/Audit/Feed, shared Courses/Forum, and the
+  Personal Field Study unavailable/retry path with expected headings, zero horizontal
+  overflow, and zero fresh console errors. The final observed bundle was
+  `index-4cd43153d895b3b3f59d1369a1c378ef.js`. The Render dashboard was signed out, so
+  no Render deployment ID is claimed. Local regression passed all 89 frontend
+  batches, 21 backend suites / 193 tests, and desktop plus narrow/mobile-emulation
+  Playwright. Local emulation is not production-mobile or physical-device evidence.
+  Remaining role/session mutation chains, keyboard/focus/screen-reader and device
+  coverage, final screenshots/video, payment and owner-source gates, and independent
+  outside-user feedback remain open. See
+  `docs/qa/WORKSPACE_ROUTE_RECOVERY_PRODUCTION_EVIDENCE_2026-08-03.md`.
+
 - 2026-07-20 Facility staging follow-up: the governed Facility pack was exercised in
   the in-app Browser across Owner, Manager, Staff Grower, Staff Scout, and Viewer
   accounts on Facility `6a5ea11685cee9a1c3f9696d`. Manager-created task
