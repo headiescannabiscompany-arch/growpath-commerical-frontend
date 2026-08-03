@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { normalizeApiError } from "@/api/errors";
 import { endpoints } from "@/api/endpoints";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -109,17 +110,29 @@ export default function FacilitySopRunsIndexRoute() {
 
   if (!facilityId) {
     return (
-      <View style={styles.center}>
-        <Text>Select a facility first.</Text>
-      </View>
+      <ScreenBoundary
+        title="Facility SOP Library and runs"
+        showBack
+        backFallbackHref="/home/facility/dashboard"
+      >
+        <View style={styles.center}>
+          <Text>Select a facility first.</Text>
+        </View>
+      </ScreenBoundary>
     );
   }
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={palette.accent} />
-      </View>
+      <ScreenBoundary
+        title="Facility SOP Library and runs"
+        showBack
+        backFallbackHref="/home/facility/dashboard"
+      >
+        <View style={styles.center}>
+          <ActivityIndicator color={palette.accent} />
+        </View>
+      </ScreenBoundary>
     );
   }
 
@@ -131,134 +144,146 @@ export default function FacilitySopRunsIndexRoute() {
   const runsMissingSteps = items.filter((item) => runStats(item).total === 0).length;
 
   return (
-    <FlatList
-      style={styles.list}
-      data={items}
-      keyExtractor={pickId}
-      onRefresh={() => load({ refresh: true })}
-      refreshing={refreshing}
-      ListHeaderComponent={
-        <View style={styles.header}>
-          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
-            SOP Library & Runs
-          </Text>
-          <Text style={styles.summaryLabel}>
-            Manage approved facility procedures here, then assign and perform them in a
-            grow.
-          </Text>
-          <View style={styles.links}>
-            {canWriteSopRuns ? (
+    <ScreenBoundary
+      title="Facility SOP Library and runs"
+      showBack
+      backFallbackHref="/home/facility/dashboard"
+    >
+      <FlatList
+        style={styles.list}
+        data={items}
+        keyExtractor={pickId}
+        onRefresh={() => load({ refresh: true })}
+        refreshing={refreshing}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+              SOP Library & Runs
+            </Text>
+            <Text style={styles.summaryLabel}>
+              Manage approved facility procedures here, then assign and perform them in a
+              grow.
+            </Text>
+            <View style={styles.links}>
+              {canWriteSopRuns ? (
+                <Link
+                  accessibilityRole="button"
+                  accessibilityLabel="Start SOP run"
+                  href="/home/facility/sop-runs/start"
+                  style={styles.link}
+                >
+                  Start Run
+                </Link>
+              ) : null}
               <Link
                 accessibilityRole="button"
-                accessibilityLabel="Start SOP run"
-                href="/home/facility/sop-runs/start"
+                accessibilityLabel="Open SOP presets"
+                href="/home/facility/sop-runs/presets"
                 style={styles.link}
               >
-                Start Run
+                SOP Library
               </Link>
-            ) : null}
-            <Link
-              accessibilityRole="button"
-              accessibilityLabel="Open SOP presets"
-              href="/home/facility/sop-runs/presets"
-              style={styles.link}
-            >
-              SOP Library
-            </Link>
-            <Link
-              accessibilityRole="button"
-              accessibilityLabel="Compare SOP runs"
-              href="/home/facility/sop-runs/compare"
-              style={styles.link}
-            >
-              Compare
-            </Link>
-          </View>
-          {!canWriteSopRuns ? (
-            <Text style={styles.readOnlyText}>
-              SOP runs are read-only for this facility role.
-            </Text>
-          ) : null}
-          <View style={styles.summaryCard}>
-            <Text accessibilityRole="header" aria-level={2} style={styles.summaryHeading}>
-              Run evidence summary
-            </Text>
-            <View>
-              <Text style={styles.summaryValue}>
-                {completedRuns}/{totalRuns}
-              </Text>
-              <Text style={styles.summaryLabel}>completed runs</Text>
-            </View>
-            <View>
-              <Text style={styles.summaryValue}>
-                {reviewedSteps}/{totalSteps}
-              </Text>
-              <Text style={styles.summaryLabel}>reviewed steps</Text>
-            </View>
-            <View>
-              <Text style={[styles.summaryValue, pendingSteps ? styles.warnText : null]}>
-                {pendingSteps}
-              </Text>
-              <Text style={styles.summaryLabel}>pending steps</Text>
-            </View>
-          </View>
-          {runsMissingSteps ? (
-            <View style={styles.alertCard}>
-              <Text style={styles.alertTitle}>Checklist evidence missing</Text>
-              <Text style={styles.alertText}>
-                {runsMissingSteps} SOP run(s) have no checklist steps. Add evidence before
-                exporting an inspection packet.
-              </Text>
-            </View>
-          ) : null}
-          {error ? <Text style={styles.err}>{error}</Text> : null}
-          <Text accessibilityRole="header" aria-level={2} style={styles.sectionHeading}>
-            Run history
-          </Text>
-        </View>
-      }
-      ListEmptyComponent={<Text style={styles.empty}>No SOP runs found.</Text>}
-      renderItem={({ item, index }) => {
-        const id = pickId(item, index);
-        const stats = runStats(item);
-        const missingEvidence = stats.total === 0;
-        const needsReview = !missingEvidence && stats.pending > 0;
-        return (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Open SOP run ${String(item?.title || item?.name || id)}`}
-            onPress={() =>
-              router.push({ pathname: "/home/facility/sop-runs/[id]", params: { id } })
-            }
-            style={styles.card}
-          >
-            <Text style={styles.title}>
-              {String(item?.title || item?.name || "SOP Run")}
-            </Text>
-            <Text style={styles.sub}>status: {String(item?.status || "unknown")}</Text>
-            <View style={styles.progressRow}>
-              <Text style={styles.progressText}>
-                Evidence: {stats.reviewed}/{stats.total} reviewed
-              </Text>
-              <Text
-                style={[
-                  styles.badge,
-                  missingEvidence && styles.badgeDanger,
-                  needsReview && styles.badgeWarn,
-                  !missingEvidence && !needsReview && styles.badgeOk
-                ]}
+              <Link
+                accessibilityRole="button"
+                accessibilityLabel="Compare SOP runs"
+                href="/home/facility/sop-runs/compare"
+                style={styles.link}
               >
-                {missingEvidence
-                  ? "missing checklist"
-                  : needsReview
-                    ? `${stats.pending} pending`
-                    : "ready"}
-              </Text>
+                Compare
+              </Link>
             </View>
-          </Pressable>
-        );
-      }}
-    />
+            {!canWriteSopRuns ? (
+              <Text style={styles.readOnlyText}>
+                SOP runs are read-only for this facility role.
+              </Text>
+            ) : null}
+            <View style={styles.summaryCard}>
+              <Text
+                accessibilityRole="header"
+                aria-level={2}
+                style={styles.summaryHeading}
+              >
+                Run evidence summary
+              </Text>
+              <View>
+                <Text style={styles.summaryValue}>
+                  {completedRuns}/{totalRuns}
+                </Text>
+                <Text style={styles.summaryLabel}>completed runs</Text>
+              </View>
+              <View>
+                <Text style={styles.summaryValue}>
+                  {reviewedSteps}/{totalSteps}
+                </Text>
+                <Text style={styles.summaryLabel}>reviewed steps</Text>
+              </View>
+              <View>
+                <Text
+                  style={[styles.summaryValue, pendingSteps ? styles.warnText : null]}
+                >
+                  {pendingSteps}
+                </Text>
+                <Text style={styles.summaryLabel}>pending steps</Text>
+              </View>
+            </View>
+            {runsMissingSteps ? (
+              <View style={styles.alertCard}>
+                <Text style={styles.alertTitle}>Checklist evidence missing</Text>
+                <Text style={styles.alertText}>
+                  {runsMissingSteps} SOP run(s) have no checklist steps. Add evidence
+                  before exporting an inspection packet.
+                </Text>
+              </View>
+            ) : null}
+            {error ? <Text style={styles.err}>{error}</Text> : null}
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionHeading}>
+              Run history
+            </Text>
+          </View>
+        }
+        ListEmptyComponent={<Text style={styles.empty}>No SOP runs found.</Text>}
+        renderItem={({ item, index }) => {
+          const id = pickId(item, index);
+          const stats = runStats(item);
+          const missingEvidence = stats.total === 0;
+          const needsReview = !missingEvidence && stats.pending > 0;
+          return (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Open SOP run ${String(item?.title || item?.name || id)}`}
+              onPress={() =>
+                router.push({ pathname: "/home/facility/sop-runs/[id]", params: { id } })
+              }
+              style={styles.card}
+            >
+              <Text style={styles.title}>
+                {String(item?.title || item?.name || "SOP Run")}
+              </Text>
+              <Text style={styles.sub}>status: {String(item?.status || "unknown")}</Text>
+              <View style={styles.progressRow}>
+                <Text style={styles.progressText}>
+                  Evidence: {stats.reviewed}/{stats.total} reviewed
+                </Text>
+                <Text
+                  style={[
+                    styles.badge,
+                    missingEvidence && styles.badgeDanger,
+                    needsReview && styles.badgeWarn,
+                    !missingEvidence && !needsReview && styles.badgeOk
+                  ]}
+                >
+                  {missingEvidence
+                    ? "missing checklist"
+                    : needsReview
+                      ? `${stats.pending} pending`
+                      : "ready"}
+                </Text>
+              </View>
+            </Pressable>
+          );
+        }}
+      />
+    </ScreenBoundary>
   );
 }
 

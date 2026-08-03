@@ -804,8 +804,8 @@ export default function FacilityRoomsTab() {
   return (
     <ScreenBoundary
       title="Facility rooms and workspaces"
-      showBack={Boolean(routeRoomId)}
-      backFallbackHref="/home/facility/rooms"
+      showBack
+      backFallbackHref={routeRoomId ? "/home/facility/rooms" : "/home/facility/dashboard"}
     >
       <ScrollView
         contentContainerStyle={styles.container}

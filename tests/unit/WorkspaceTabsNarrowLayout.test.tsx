@@ -81,7 +81,9 @@ jest.mock("@/theme/appTheme", () => ({
       surface: "#FFFFFF",
       text: "#122012",
       tabBar: "#FFFFFF",
-      tabBarBorder: "#D7DDD2"
+      tabBarBorder: "#D7DDD2",
+      tabActive: "#166534",
+      tabInactive: "#5F6F5F"
     }
   })
 }));
@@ -131,6 +133,8 @@ describe("workspace bottom tabs at narrow widths", () => {
     expect(screen.queryByTestId("redirect")).toBeNull();
 
     const { screenOptions } = mockTabs.mock.calls[0][0];
+    expect(screenOptions.tabBarActiveTintColor).toBe("#166534");
+    expect(screenOptions.tabBarInactiveTintColor).toBe("#5F6F5F");
     expect(screenOptions.tabBarLabelStyle.fontSize).toBe(9);
     expect(screenOptions.tabBarStyle).toEqual(
       expect.objectContaining({ height: 72, paddingBottom: 22, paddingTop: 4 })
@@ -171,7 +175,18 @@ describe("workspace bottom tabs at narrow widths", () => {
     expect(screen.queryByTestId("rendered-tab-tools/harvest-readiness")).toBeNull();
     expect(screen.queryByTestId("redirect")).toBeNull();
 
-    const { screenOptions } = mockTabs.mock.calls[0][0];
+    const { children, screenOptions } = mockTabs.mock.calls[0][0];
+    const allScreens = React.Children.toArray(children) as React.ReactElement<any>[];
+    expect(
+      allScreens.find((child) => child.props.name === "sop-runs")?.props.options
+        ?.headerShown
+    ).toBe(false);
+    expect(
+      allScreens.find((child) => child.props.name === "audit-logs")?.props.options
+        ?.headerShown
+    ).toBe(false);
+    expect(screenOptions.tabBarActiveTintColor).toBe("#166534");
+    expect(screenOptions.tabBarInactiveTintColor).toBe("#5F6F5F");
     expect(screenOptions.tabBarLabelStyle.fontSize).toBe(9);
     expect(screenOptions.tabBarStyle).toEqual(
       expect.objectContaining({ height: 72, paddingBottom: 22, paddingTop: 4 })

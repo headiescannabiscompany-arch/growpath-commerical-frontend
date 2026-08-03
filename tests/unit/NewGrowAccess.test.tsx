@@ -121,8 +121,9 @@ describe("NewGrowScreen access", () => {
       )
     ).toBeTruthy();
     expect(mockListPersonalGrows).toHaveBeenCalled();
-    fireEvent.press(screen.getByText("Back to grows"));
-    expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows");
+    expect(screen.queryByText("Back to grows")).toBeNull();
+    expect(screen.getAllByText("Shared Back /home/personal/grows")).toHaveLength(1);
+    expect(mockReplace).not.toHaveBeenCalled();
     expect(mockApiRequest).not.toHaveBeenCalled();
   });
 

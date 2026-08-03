@@ -505,9 +505,11 @@ export default function FacilityTasksRoute() {
   return (
     <ScreenBoundary
       title={contextName ? `${contextName} tasks` : "Tasks"}
-      showBack={Boolean(contextGrowId)}
+      showBack
       backFallbackHref={
-        contextGrowId ? `/home/facility/grows/${contextGrowId}` : undefined
+        contextGrowId
+          ? `/home/facility/grows/${contextGrowId}`
+          : "/home/facility/dashboard"
       }
     >
       <View style={styles.container}>

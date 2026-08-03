@@ -296,9 +296,9 @@ describe("Forum and feed separation copy", () => {
     expect(screen.queryByLabelText("Forum post title")).toBeNull();
     expect(screen.queryByLabelText("Toggle grow interest Cannabis")).toBeNull();
     expect(screen.queryByLabelText("Publish forum post")).toBeNull();
-
-    fireEvent.press(screen.getByText("Back to Forum"));
-    expect(mockReplace).toHaveBeenCalledWith("/home/personal/community");
+    expect(screen.queryByText("Back to Forum")).toBeNull();
+    expect(screen.getByLabelText("Shared back /home/personal/community")).toBeTruthy();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it("stores personal forum posts with user author identity", async () => {

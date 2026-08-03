@@ -11,7 +11,7 @@ import JoinFacilityScreen, {
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockReplace = jest.fn();
-const mockEntitlements = {
+const mockEntitlements: { ready: boolean; facilityId: string | null } = {
   ready: true,
   facilityId: "facility-1"
 };
@@ -43,9 +43,15 @@ jest.mock("@/hooks/useCreateFacility", () => ({
 
 jest.mock("@/components/layout/AppPage", () => {
   const ReactModule = require("react");
-  const { View } = require("react-native");
-  return ({ header, children }: any) =>
-    ReactModule.createElement(View, null, header, children);
+  const { Text, View } = require("react-native");
+  return ({ header, children, backFallbackHref }: any) =>
+    ReactModule.createElement(
+      View,
+      null,
+      ReactModule.createElement(Text, null, `Shared Back ${backFallbackHref}`),
+      header,
+      children
+    );
 });
 
 jest.mock("@/components/layout/AppCard", () => {
@@ -55,6 +61,10 @@ jest.mock("@/components/layout/AppCard", () => {
 });
 
 describe("Facility entry routes", () => {
+  beforeEach(() => {
+    mockEntitlements.facilityId = "facility-1";
+  });
+
   it("does not expose join or create forms to an already-connected account", () => {
     const join = render(<JoinFacilityScreen />);
     expect(join.getByRole("header", { name: "Facility already connected" })).toBeTruthy();
@@ -67,6 +77,15 @@ describe("Facility entry routes", () => {
     ).toBeTruthy();
     expect(create.queryByLabelText("Facility name")).toBeNull();
     expect(create.getByLabelText("Open facility workspace")).toBeTruthy();
+  });
+
+  it("uses one shared Back action for facility creation", () => {
+    mockEntitlements.facilityId = null;
+
+    const create = render(<CreateFacilityScreen />);
+
+    expect(create.getAllByText("Shared Back /home/facility/select")).toHaveLength(1);
+    expect(create.queryByText("Back to facilities")).toBeNull();
   });
 
   it("uses the active Night palette across join and create states", () => {

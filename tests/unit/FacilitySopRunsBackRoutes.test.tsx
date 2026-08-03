@@ -5,7 +5,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import FacilitySopRunDetailRoute, {
   createFacilitySopRunDetailStyles
 } from "@/app/home/facility/sop-runs/[id]";
-import FacilitySopRunsIndexRoute from "@/app/home/facility/sop-runs";
+import FacilitySopRunsIndexRoute from "@/features/facility/routes/FacilitySopRunsIndexRoute";
 import FacilitySopRunsCompareRoute, {
   createFacilitySopCompareStyles
 } from "@/app/home/facility/sop-runs/compare";
@@ -182,6 +182,7 @@ describe("facility SOP run nested back behavior", () => {
 
     const screen = render(<FacilitySopRunsIndexRoute />);
 
+    expect(screen.getAllByText("Shared Back /home/facility/dashboard")).toHaveLength(1);
     await waitFor(() => expect(screen.getByText("Daily room check")).toBeTruthy());
     expect(screen.queryByText("Start Run")).toBeNull();
     expect(
@@ -190,6 +191,7 @@ describe("facility SOP run nested back behavior", () => {
     expect(
       screen.getByRole("header", { name: "SOP Library & Runs" }).props["aria-level"]
     ).toBe(1);
+    expect(screen.getByText("Shared Back /home/facility/dashboard")).toBeTruthy();
     expect(
       screen.getByRole("header", { name: "Run evidence summary" }).props["aria-level"]
     ).toBe(2);

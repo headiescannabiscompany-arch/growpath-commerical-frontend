@@ -51,6 +51,29 @@ jest.mock("@/theme/appTheme", () => {
   };
 });
 
+jest.mock("@/components/ScreenBoundary", () => {
+  const React = require("react");
+  const { Text, View } = require("react-native");
+  return {
+    ScreenBoundary: ({ children, showBack = true, backFallbackHref }: any) =>
+      React.createElement(
+        View,
+        null,
+        showBack
+          ? React.createElement(
+              Text,
+              {
+                accessibilityRole: "link",
+                accessibilityLabel: `Shared Back ${backFallbackHref}`
+              },
+              `Shared Back ${backFallbackHref}`
+            )
+          : null,
+        children
+      )
+  };
+});
+
 jest.mock("@/api/fieldStudies", () => ({
   addFieldStudyCollaborator: (...args: any[]) => mockAddFieldStudyCollaborator(...args),
   createFieldStudy: (...args: any[]) => mockCreateFieldStudy(...args),
@@ -177,7 +200,15 @@ describe("Personal Field Studies theme and workflow", () => {
     const palette = getThemePalette("night", "dark");
 
     await waitFor(() => expect(mockGetFieldStudy).toHaveBeenCalledWith("study-1"));
+    expect(screen.getAllByText("Shared Back /home/personal/field-studies")).toHaveLength(
+      1
+    );
+    expect(screen.queryByText("← Field Studies")).toBeNull();
     expect(screen.getByText("Patapsco plant survey")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Patapsco plant survey" })).toHaveProp(
+      "aria-level",
+      1
+    );
     expect(screen.getByText("Add Plant Observation")).toBeTruthy();
     expect(screen.getByText("Publish Study")).toBeTruthy();
     expect(screen.getByText("Add Person")).toBeTruthy();
@@ -187,5 +218,36 @@ describe("Personal Field Studies theme and workflow", () => {
     expect(screen.getByPlaceholderText("Collaborator email").props.selectionColor).toBe(
       palette.accent
     );
+  });
+
+  it("keeps the shared Back action available while detail is loading", () => {
+    mockGetFieldStudy.mockReturnValueOnce(new Promise(() => undefined));
+
+    const screen = render(<FieldStudyDetailScreen />);
+
+    expect(screen.getByText("Loading Field Study...")).toBeTruthy();
+    expect(screen.getAllByText("Shared Back /home/personal/field-studies")).toHaveLength(
+      1
+    );
+  });
+
+  it("keeps the shared Back action and retry recovery when detail loading fails", async () => {
+    mockGetFieldStudy.mockRejectedValueOnce(new Error("Survey service unavailable"));
+
+    const screen = render(<FieldStudyDetailScreen />);
+
+    await waitFor(() =>
+      expect(screen.getByRole("header", { name: "Field Study unavailable" })).toBeTruthy()
+    );
+    expect(screen.getAllByText("Shared Back /home/personal/field-studies")).toHaveLength(
+      1
+    );
+    expect(screen.getByText("Survey service unavailable")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Retry Field Study" })).toBeTruthy();
+
+    fireEvent.press(screen.getByRole("button", { name: "Retry Field Study" }));
+
+    await waitFor(() => expect(mockGetFieldStudy).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByText("Patapsco plant survey")).toBeTruthy());
   });
 });

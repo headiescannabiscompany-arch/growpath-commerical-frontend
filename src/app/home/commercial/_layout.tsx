@@ -56,6 +56,8 @@ export default function CommercialTabsLayout() {
         tabBarIcon: () => null,
         tabBarIconStyle: { display: "none" },
         tabBarLabelPosition: "beside-icon",
+        tabBarActiveTintColor: palette.tabActive,
+        tabBarInactiveTintColor: palette.tabInactive,
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },

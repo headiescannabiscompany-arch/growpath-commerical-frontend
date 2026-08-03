@@ -1,7 +1,7 @@
 # App Store / Deployment Prep TODO
 
 > Status: BLOCKED FOR SUBMISSION
-> Last reviewed: 2026-07-01
+> Last reviewed: 2026-08-02
 
 Store submission must wait until production-mode validation evidence exists.
 Current known blockers:
@@ -174,14 +174,17 @@ Current known blockers:
 - Evidence target: `tmp/spec/store_submission_2026-06-21.md`
 - Current procedure: `docs/release-signoff-runbook.md`
 
-- NOT DONE: Release notes and version information.
+- PARTIAL: Release notes and version information.
 - Owner: Product
-- Next action: Finalize changelog from verified functionality only.
+- Current evidence: `APP_STORE_LISTING.md` contains draft initial-release copy and
+  `CHANGELOG.md` contains the unreleased worktree summary.
+- Next action: Finalize changelog and store-specific release notes from verified
+  functionality only at the approved release SHA.
 - Evidence target: `tmp/spec/store_submission_2026-06-21.md`
 
 ## 6. Post-Submission
 
-- NOT DONE: Review monitoring and hotfix plan.
+- PARTIAL: Review monitoring and hotfix plan.
 - Owner: Release Manager + Support
 - Current evidence: `tmp/spec/post_submission_plan_2026-06-21.md` defines the
   review monitoring, crash/support monitoring, hotfix, and launch-comms plan.

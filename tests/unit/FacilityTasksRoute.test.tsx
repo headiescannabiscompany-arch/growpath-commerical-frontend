@@ -13,6 +13,7 @@ const mockHandleApiError = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
 let mockFacilityRole = "MANAGER";
 let mockCanWrite = true;
+let mockScreenBoundaryProps: any = null;
 
 function addDaysKey(days: number) {
   const date = new Date();
@@ -46,7 +47,10 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { View } = require("react-native");
   return {
-    ScreenBoundary: ({ children }: any) => React.createElement(View, null, children)
+    ScreenBoundary: (props: any) => {
+      mockScreenBoundaryProps = props;
+      return React.createElement(View, null, props.children);
+    }
   };
 });
 
@@ -93,6 +97,7 @@ describe("FacilityTasksRoute", () => {
     jest.resetAllMocks();
     mockFacilityRole = "MANAGER";
     mockCanWrite = true;
+    mockScreenBoundaryProps = null;
     mockGetFacilityTasks.mockResolvedValue([
       {
         id: "task-1",
@@ -155,6 +160,16 @@ describe("FacilityTasksRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Facility task queue filter overdue"));
     expect(screen.getByText("Review production batch")).toBeTruthy();
+  });
+
+  it("keeps a Back control on the top-level Facility task queue", async () => {
+    render(<FacilityTasksRoute />);
+
+    await waitFor(() => expect(mockGetFacilityTasks).toHaveBeenCalled());
+    expect(mockScreenBoundaryProps).toMatchObject({
+      showBack: true,
+      backFallbackHref: "/home/facility/dashboard"
+    });
   });
 
   it("owns a clear heading hierarchy and stays read-only for a Viewer", async () => {

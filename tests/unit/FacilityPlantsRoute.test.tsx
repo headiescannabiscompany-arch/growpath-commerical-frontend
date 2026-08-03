@@ -10,14 +10,16 @@ const mockReplace = jest.fn();
 const mockRouter = { push: mockPush, replace: mockReplace };
 let mockFacilityRole = "manager";
 let mockCanWritePlants = true;
+let mockPlantParams: Record<string, string> = {
+  growId: "grow-1",
+  roomId: "room-1",
+  contextName: "Summer crop"
+};
+let mockScreenBoundaryProps: any = null;
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
-  useLocalSearchParams: () => ({
-    growId: "grow-1",
-    roomId: "room-1",
-    contextName: "Summer crop"
-  })
+  useLocalSearchParams: () => mockPlantParams
 }));
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -52,7 +54,10 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { View } = require("react-native");
   return {
-    ScreenBoundary: ({ children }: any) => React.createElement(View, null, children)
+    ScreenBoundary: (props: any) => {
+      mockScreenBoundaryProps = props;
+      return React.createElement(View, null, props.children);
+    }
   };
 });
 jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
@@ -62,8 +67,25 @@ describe("FacilityPlantsRoute", () => {
     jest.clearAllMocks();
     mockFacilityRole = "manager";
     mockCanWritePlants = true;
+    mockPlantParams = {
+      growId: "grow-1",
+      roomId: "room-1",
+      contextName: "Summer crop"
+    };
+    mockScreenBoundaryProps = null;
     mockApiRequest.mockResolvedValue({ plants: [{ id: "plant-1", name: "Plant A" }] });
     mockCreatePlant.mockResolvedValue({ id: "plant-2" });
+  });
+
+  it("keeps a Back control on the top-level Facility plant list", async () => {
+    mockPlantParams = {};
+    render(<FacilityPlantsRoute />);
+
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
+    expect(mockScreenBoundaryProps).toMatchObject({
+      showBack: true,
+      backFallbackHref: "/home/facility/dashboard"
+    });
   });
 
   it("loads and creates plants inside the selected room and grow context", async () => {

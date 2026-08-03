@@ -57,17 +57,17 @@ Goal: make the app “3D printable”: you can wire screens deterministically wi
   - Endpoints: see contract for each tab (tasks, inventory, team, logs, grows, plants, profile)
   - All: gate on facilityId, safe-mount, no detail logic in tab
 
-- `/home/facility/(tabs)/audit-logs` (tab)
-  - Endpoints: none (tab is launchpad/stub)
-  - Navigation: routes to /home/facility/audit-logs
+- `/home/facility/(tabs)/audit-logs` (hidden tab route)
+  - Canonical URL: `/home/facility/audit-logs`
+  - Implementation: `src/features/facility/routes/FacilityAuditLogsIndexRoute.tsx`
 
-- `/home/facility/(tabs)/sop-runs` (tab)
-  - Endpoints: none (tab is launchpad/stub)
-  - Navigation: routes to /home/facility/sop-runs and /home/facility/sop-runs/presets
+- `/home/facility/(tabs)/sop-runs` (hidden tab route)
+  - Canonical URL: `/home/facility/sop-runs`
+  - Implementation: `src/features/facility/routes/FacilitySopRunsIndexRoute.tsx`
 
 ### Facility Drill-ins
 
-- `/home/facility/audit-logs` src/app/home/facility/audit-logs/index.tsx
+- `/home/facility/audit-logs` src/app/home/facility/(tabs)/audit-logs.tsx
   - Endpoints: GET /api/facility/:facilityId/audit-logs (endpoints.auditLogs(facilityId))
   - Preferred: { success: true, items: [], count: 0 }
   - Normalize: list = normalizeList(res, ["items", "auditLogs", "logs"])
@@ -77,7 +77,7 @@ Goal: make the app “3D printable”: you can wire screens deterministically wi
   - Preferred: { success: true, item: { ... } }
   - Normalize: entity = res.item || res.auditLog || res
 
-- `/home/facility/sop-runs` src/app/home/facility/sop-runs/index.tsx
+- `/home/facility/sop-runs` src/app/home/facility/(tabs)/sop-runs.tsx
   - Endpoints: GET /api/facility/:facilityId/sop-runs (endpoints.sopRuns(facilityId))
   - Preferred: { success: true, runs: [], count: 0 }
   - Normalize: list = normalizeList(res, ["runs", "items"])

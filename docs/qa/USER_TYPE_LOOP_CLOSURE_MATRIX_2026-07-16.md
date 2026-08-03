@@ -94,14 +94,12 @@ control, or can bypass its backend authorization boundary.
 
 ### Browser evidence attempts
 
-- 2026-07-19 12:45:56 EDT: the public/signed-out loop recording could not start because
-  this chat could not see an in-app Browser tab. No production URL was opened and no
-  screenshot or video was captured. The worktree baseline was
-  `2449b228cae32867939ab8764dee9a5ec8fc71d2` with uncommitted checklist implementation
-  changes, so the public loop remains pending. Follow
-  `docs/codex-browser-evidence-runbook.md`: fully restart Codex, confirm the Browser
-  plugin is enabled, start a new chat, open the in-app Browser with `Ctrl+Shift+B`, and
-  make the production tab visible before retrying.
+- 2026-07-19 12:45:56 EDT historical failed attempt: that chat could not see an in-app
+  Browser tab, so no production URL, screenshot, or video evidence was claimed against
+  worktree baseline `2449b228cae32867939ab8764dee9a5ec8fc71d2`. The Browser connected
+  later the same day and has supported subsequent live passes, including the 2026-08-02
+  exact-SHA checks below. This old attempt is retained as provenance, not as a current
+  Browser-recovery instruction or an open deployment claim.
 
 - 2026-07-19 production follow-up: the in-app Browser connected successfully and
   exercised the deployed public/signed-out, Personal Free, Personal Pro, Commercial,
@@ -132,9 +130,28 @@ control, or can bypass its backend authorization boundary.
   protected-feed empty state. Genuine Browser screenshots are retained as
   `growpath-public-courses-3888965.jpg` and
   `growpath-public-forum-3888965.jpg` in the task visualization directory. This closes
-  the public discovery/auth-boundary repair only; registration/email verification,
-  password reset, checkout entry, Support delivery, mobile coverage, video, and
-  independent outside-user validation remain open.
+  the public discovery/auth-boundary repair only. Production registration verification,
+  resend, password reset, and Support delivery were subsequently completed and are
+  retained in `docs/qa/PRODUCTION_EMAIL_STRIPE_EVIDENCE_2026-07-26.md` and the
+  full-system TODO. Signed-out checkout entry, mobile coverage, video, and independent
+  outside-user validation remain open.
+
+- 2026-08-02 consolidated release follow-up: frontend commit
+  `d3e2935af6da4eaa8b7389e6ecd8d7b7c063b96f` merged as
+  `02edbdab697c5f578837eca92561bfe34b49ccd3`; Frontend CI `30767657066`, Production
+  Build Preflight `30767657048`, and Render deploy `dep-d9nr95c9v7es73ckembg`
+  passed. The first exact-SHA Personal Forum retest exposed a real web-only
+  `CSSStyleDeclaration` crash. Hotfix `e9a208ea` merged as
+  `1e595a5dfce64cad5ab325445bdb70238b08c46b`; Frontend CI `30771959246`, Production
+  Build Preflight `30771959227`, focused real-web Playwright, and Render deploy
+  `dep-d9nt07oae00c73fiefcg` passed. Final production Forum loaded discussion content,
+  both quick workflows, and six tabs with zero browser errors. Exact-SHA Personal
+  Home, Grows, AI, Courses, Diagnose, Profile, and Schedule plus Facility AI/Profile
+  checks also loaded with zero browser errors; one real Personal Pro Ask AI request
+  persisted `100 / 100 -> 99 / 100`, one billed request, and zero refunds. Commercial
+  role-loaded acceptance did not run because the available production identity did not
+  expose a Commercial workspace in this pass. No Commercial completion is inferred
+  from source tests or earlier sessions.
 
 - 2026-07-20 Facility staging follow-up: the governed Facility pack was exercised in
   the in-app Browser across Owner, Manager, Staff Grower, Staff Scout, and Viewer
@@ -462,8 +479,10 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       on `93bb0217` and captured screenshot/DOM evidence at
       `2026-07-22T22:17:21.853Z`. The production inventory create, reload, adjustment,
       confirmed cleanup, and post-delete reload loop also passed on frontend
-      `65409b6c` and backend `3036d439` at `2026-07-22T23:06:06.403Z`; final
-      post-completion Owner task return remains open. The production template-backed
+      `65409b6c` and backend `3036d439` at `2026-07-22T23:06:06.403Z`. The final
+      post-completion Owner task return and immutable-audit review passed on the
+      shared cross-role task; forced backend authorization evidence and the exported
+      recording remain open. The production template-backed
       SOP completion, lock/reload, compliance deviation create/resolve, audit, and
       post-fix API-health loop passed on backend `0f330650` and frontend policy merge
       `c0e4f4c3` by `2026-07-22T23:43:36Z`. The 71-record report export, corrected
@@ -540,12 +559,12 @@ plants yet`, confirming that no real plant row was being hidden from the selecto
       observation. Forced backend authorization evidence and the exported recording
       remain to finish the production chain.
 - 2026-07-30 live Facility retest: owner profile shows `2000 / 2000` Facility AI
-      Credits, the viewer login lands in Facility workspace mode, the Team page
-      shows read-only access, the Tasks page denies task creation, and the shared
-      task detail remains read-only. Evidence screenshots were saved at
-      `docs/qa/evidence/2026-07-30-facility-loop/owner-profile.png`,
-      `docs/qa/evidence/2026-07-30-facility-loop/viewer-team.png`, and
-      `docs/qa/evidence/2026-07-30-facility-loop/viewer-task-detail.png`.
+  Credits, the viewer login lands in Facility workspace mode, the Team page
+  shows read-only access, the Tasks page denies task creation, and the shared
+  task detail remains read-only. Evidence screenshots were saved at
+  `docs/qa/evidence/2026-07-30-facility-loop/owner-profile.png`,
+  `docs/qa/evidence/2026-07-30-facility-loop/viewer-team.png`, and
+  `docs/qa/evidence/2026-07-30-facility-loop/viewer-task-detail.png`.
 - [ ] Outside user completes at least one core loop and submits independent feedback.
 - [ ] Findings are fixed, committed, pushed, deployed, and live-retested against timestamps.
 

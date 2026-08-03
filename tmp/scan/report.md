@@ -1,9 +1,9 @@
 # Full Scan Report
 
 ## Counts
-- src files: 970
-- test files: 323
-- total files: 1293
+- src files: 992
+- test files: 411
+- total files: 1403
 - api files: 121
 - api orphans: 0
 - legacy client callers: 0

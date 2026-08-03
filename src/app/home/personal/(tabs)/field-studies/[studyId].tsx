@@ -20,6 +20,7 @@ import {
   updateFieldStudy,
   updateFieldObservation
 } from "@/api/fieldStudies";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { sharePublicLink } from "@/utils/publicLinks";
 import { radius } from "@/theme/theme";
@@ -34,6 +35,18 @@ function observationName(observation: FieldObservation) {
 }
 
 export default function FieldStudyDetailScreen() {
+  return (
+    <ScreenBoundary
+      title="Field Study"
+      showBack
+      backFallbackHref="/home/personal/field-studies"
+    >
+      <FieldStudyDetailContent />
+    </ScreenBoundary>
+  );
+}
+
+function FieldStudyDetailContent() {
   const params = useLocalSearchParams<{ studyId?: string }>();
   const studyId = String(params.studyId || "");
   const { palette } = useAppTheme();
@@ -52,7 +65,13 @@ export default function FieldStudyDetailScreen() {
   const publicPath = study?.slug ? `/field-observations/${study.slug}` : "";
 
   const load = useCallback(async () => {
-    if (!studyId) return;
+    if (!studyId) {
+      setStudy(null);
+      setObservations([]);
+      setError("Choose a Field Study to continue.");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -60,6 +79,8 @@ export default function FieldStudyDetailScreen() {
       setStudy(response.study);
       setObservations(response.observations);
     } catch (loadError: any) {
+      setStudy(null);
+      setObservations([]);
       setError(loadError?.message || "Field Study could not be loaded.");
     } finally {
       setLoading(false);
@@ -163,24 +184,31 @@ export default function FieldStudyDetailScreen() {
   if (!study) {
     return (
       <View style={styles.centered}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
           Field Study unavailable
         </Text>
-        <Text style={styles.error}>{error || "This study could not be found."}</Text>
+        <Text accessibilityRole="alert" style={styles.error}>
+          {error || "This study could not be found."}
+        </Text>
+        {studyId ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry Field Study"
+            onPress={() => void load()}
+            style={styles.primaryButton}
+          >
+            <Text style={styles.primaryText}>Retry</Text>
+          </Pressable>
+        ) : null}
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Link href="/home/personal/field-studies" asChild>
-        <Pressable accessibilityRole="link">
-          <Text style={styles.backLink}>← Field Studies</Text>
-        </Pressable>
-      </Link>
       <View style={styles.headerRow}>
         <View style={styles.headerCopy}>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             {study.title}
           </Text>
           <Text style={styles.muted}>
@@ -461,7 +489,6 @@ export function createFieldStudyDetailStyles(palette: ThemePalette) {
       justifyContent: "center",
       padding: 24
     },
-    backLink: { color: palette.link, fontWeight: "800" },
     headerRow: {
       alignItems: "flex-start",
       flexDirection: "row",

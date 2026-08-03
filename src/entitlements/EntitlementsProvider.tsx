@@ -193,6 +193,20 @@ export function getEffectivePlan(plan: string | null, subscriptionStatus: any) {
   return hasActiveSubscriptionStatus(subscriptionStatus) ? normalizedPlan : "free";
 }
 
+export function resolveCommercialWorkspaceAccess(ctx: any, accountPlan: string | null) {
+  // Use the individual's effective plan before the selected Facility subscription
+  // overlay, so Facility-plan accounts qualify without promoting invited members.
+  const normalizedPlan = String(accountPlan || "")
+    .trim()
+    .toLowerCase();
+  return (
+    pickMode(ctx?.mode) === "commercial" ||
+    hasCommercialAccess(ctx) ||
+    normalizedPlan === "commercial" ||
+    normalizedPlan === "facility"
+  );
+}
+
 export function resolveWorkspaceAccessPlan(
   mode: EntitlementsMode,
   accountPlan: string,
@@ -459,10 +473,10 @@ function applyServerCtx(
   const plan = devPlan ?? resolveWorkspaceAccessPlan(mode, accountPlan, effectiveCtx);
   const facilityId = effectiveCtx?.facilityId ?? null;
   const facilityRole = normalizeFacilityRole(effectiveCtx?.facilityRole);
-  const commercialWorkspaceAccess =
-    pickMode(effectiveCtx?.mode) === "commercial" ||
-    hasCommercialAccess(effectiveCtx) ||
-    String(accountPlan).toLowerCase() === "commercial";
+  const commercialWorkspaceAccess = resolveCommercialWorkspaceAccess(
+    effectiveCtx,
+    accountPlan
+  );
 
   const normalized: Record<string, boolean> = {};
   const unknownKeys: string[] = [];

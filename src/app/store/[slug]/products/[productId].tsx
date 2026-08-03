@@ -376,7 +376,9 @@ export default function PublicProductRoute() {
       backFallbackHref={`/store/${encodeURIComponent(slug)}`}
       header={
         <View>
-          <Text style={styles.title}>{product?.name || "Product"}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            {product?.name || "Product"}
+          </Text>
           <Text style={styles.subtitle}>{brandName}</Text>
         </View>
       }
@@ -387,18 +389,17 @@ export default function PublicProductRoute() {
           <Text style={styles.meta}>Loading product...</Text>
         </View>
       ) : error ? (
-        <Text style={styles.error}>{error}</Text>
+        <Text accessibilityRole="alert" style={styles.error}>
+          {error}
+        </Text>
       ) : !product ? (
         <AppCard>
-          <Text style={styles.cardTitle}>Product not found</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Product not found
+          </Text>
           <Text style={styles.meta}>
             This product may be unpublished or no longer available.
           </Text>
-          <Link href={`/store/${encodeURIComponent(slug)}` as any} asChild>
-            <Pressable style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Back to Store</Text>
-            </Pressable>
-          </Link>
         </AppCard>
       ) : (
         <>
@@ -760,11 +761,6 @@ export default function PublicProductRoute() {
           <AppCard>
             <Text style={styles.cardTitle}>More Options</Text>
             <View style={styles.actionRow}>
-              <Link href={`/store/${encodeURIComponent(slug)}` as any} asChild>
-                <Pressable style={styles.secondaryButton}>
-                  <Text style={styles.secondaryButtonText}>Back to Store</Text>
-                </Pressable>
-              </Link>
               <Link href={`/brands/${encodeURIComponent(slug)}` as any} asChild>
                 <Pressable style={styles.secondaryButton}>
                   <Text style={styles.secondaryButtonText}>Legacy Profile</Text>

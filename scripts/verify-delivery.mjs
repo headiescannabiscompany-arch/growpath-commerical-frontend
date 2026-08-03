@@ -3,7 +3,15 @@ import path from "path";
 
 const ROOT = process.cwd();
 const CODE_EXTS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
-const IGNORE_DIRS = new Set(["node_modules", ".git", "dist", "build", "coverage", ".expo", ".next"]);
+const IGNORE_DIRS = new Set([
+  "node_modules",
+  ".git",
+  "dist",
+  "build",
+  "coverage",
+  ".expo",
+  ".next"
+]);
 
 const PLACEHOLDER_PATTERNS = [
   /PlannedScreen/,
@@ -25,13 +33,13 @@ const CORRUPTION_PATTERNS = [
 ];
 
 const EXPORT_SANITY_FILES = [
-  "src/app/home/facility/sop-runs/index.tsx",
+  "src/app/home/facility/(tabs)/sop-runs.tsx",
   "src/app/home/facility/sop-runs/start.tsx",
   "src/app/home/facility/sop-runs/[id].tsx",
   "src/app/home/facility/sop-runs/presets.tsx",
   "src/app/home/facility/sop-runs/compare.tsx",
   "src/app/home/facility/sop-runs/compare-result.tsx",
-  "src/app/home/facility/audit-logs/index.tsx",
+  "src/app/home/facility/(tabs)/audit-logs.tsx",
   "src/app/home/facility/audit-logs/[id].tsx",
   "src/app/home/facility/audit-logs/[entity]/[entityId].tsx",
   "src/app/home/personal/(tabs)/tools/index.tsx",
@@ -65,7 +73,12 @@ function scanFiles(files, patterns, label) {
     lines.forEach((line, idx) => {
       for (const re of patterns) {
         if (re.test(line)) {
-          findings.push({ file: rel(abs), line: idx + 1, pattern: String(re), source: line.trim() });
+          findings.push({
+            file: rel(abs),
+            line: idx + 1,
+            pattern: String(re),
+            source: line.trim()
+          });
         }
       }
     });
@@ -115,8 +128,16 @@ const corruptionFiles = [
   ...walk(path.join(ROOT, "scripts"))
 ].filter((abs) => rel(abs) !== "scripts/verify-delivery.mjs");
 
-const placeholderFindings = scanFiles(placeholderFiles, PLACEHOLDER_PATTERNS, "placeholder scan");
-const corruptionFindings = scanFiles(corruptionFiles, CORRUPTION_PATTERNS, "corruption scan");
+const placeholderFindings = scanFiles(
+  placeholderFiles,
+  PLACEHOLDER_PATTERNS,
+  "placeholder scan"
+);
+const corruptionFindings = scanFiles(
+  corruptionFiles,
+  CORRUPTION_PATTERNS,
+  "corruption scan"
+);
 const exportFindings = checkExportSanity();
 
 if (placeholderFindings.length || corruptionFindings.length || exportFindings.length) {

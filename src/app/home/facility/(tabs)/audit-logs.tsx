@@ -1,1 +1,1 @@
-export { default } from "../audit-logs/index";
+export { default } from "@/features/facility/routes/FacilityAuditLogsIndexRoute";
