@@ -29,7 +29,7 @@ const facilityLoadingFiles = [
   "src/app/home/facility/grows/[id].tsx",
   "src/app/home/facility/logs/[id].tsx",
   "src/app/home/facility/plants/[id].tsx",
-  "src/app/home/facility/sop-runs/index.tsx",
+  "src/features/facility/routes/FacilitySopRunsIndexRoute.tsx",
   "src/app/home/facility/tasks/[id].tsx",
   "src/screens/facility/FacilityInventoryItemDetailScreen.tsx"
 ];

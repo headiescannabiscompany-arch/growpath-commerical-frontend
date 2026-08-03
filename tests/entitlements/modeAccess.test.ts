@@ -6,6 +6,7 @@ import {
   resolveLocalPreviewSession
 } from "../../src/auth/AuthContext";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
+import { availableWorkspaceModes } from "../../src/features/mode/workspaceOptions";
 import {
   applyDefaultCourseLimits,
   applyFacilityRoleCapabilities,
@@ -14,6 +15,7 @@ import {
   entitlementApplicationFingerprint,
   getEffectivePlan,
   resolveDevEntitlementsPlan,
+  resolveCommercialWorkspaceAccess,
   resolveEntitlementsMode,
   resolveRequestedPlan,
   resolveWorkspaceAccessPlan,
@@ -52,6 +54,36 @@ describe("entitlement mode access", () => {
     expect(getEffectivePlan("pro", "active")).toBe("pro");
     expect(getEffectivePlan("commercial", "trialing")).toBe("commercial");
     expect(getEffectivePlan("facility", "trial")).toBe("facility");
+  });
+
+  it("offers Commercial to an active Facility-plan account without granting it from shared Facility membership", () => {
+    const facilityContext = {
+      mode: "facility",
+      facilityId: "facility-1",
+      facilityRole: "VIEWER"
+    };
+    const activeFacilityAccess = resolveCommercialWorkspaceAccess(
+      facilityContext,
+      getEffectivePlan("facility", "trialing")
+    );
+    const personalMemberAccess = resolveCommercialWorkspaceAccess(
+      facilityContext,
+      getEffectivePlan("pro", "active")
+    );
+    const inactiveFacilityAccess = resolveCommercialWorkspaceAccess(
+      facilityContext,
+      getEffectivePlan("facility", "canceled")
+    );
+
+    expect(
+      availableWorkspaceModes({
+        ...facilityContext,
+        commercialWorkspaceAccess: activeFacilityAccess,
+        can: () => false
+      })
+    ).toEqual(["personal", "commercial", "facility"]);
+    expect(personalMemberAccess).toBe(false);
+    expect(inactiveFacilityAccess).toBe(false);
   });
 
   it("prefers canonical me context over a stale free user plan", () => {

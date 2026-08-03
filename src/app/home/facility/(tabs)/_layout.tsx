@@ -82,6 +82,8 @@ export default function FacilityTabsLayout() {
         tabBarIcon: () => null,
         tabBarIconStyle: { display: "none" },
         tabBarLabelPosition: "beside-icon",
+        tabBarActiveTintColor: palette.tabActive,
+        tabBarInactiveTintColor: palette.tabInactive,
         headerStyle: { backgroundColor: palette.surface },
         headerTintColor: palette.text,
         headerTitleStyle: { color: palette.text },
@@ -137,7 +139,10 @@ export default function FacilityTabsLayout() {
           headerShown: shouldShowFacilityRouteHeader("tasks")
         }}
       />
-      <Tabs.Screen name="sop-runs" options={{ title: "SOPs", href: null }} />
+      <Tabs.Screen
+        name="sop-runs"
+        options={{ title: "SOPs", headerShown: false, href: null }}
+      />
       <Tabs.Screen
         name="compliance"
         options={{
@@ -154,7 +159,10 @@ export default function FacilityTabsLayout() {
           href: null
         }}
       />
-      <Tabs.Screen name="audit-logs" options={{ title: "Audit", href: null }} />
+      <Tabs.Screen
+        name="audit-logs"
+        options={{ title: "Audit", headerShown: false, href: null }}
+      />
       <Tabs.Screen
         name="inventory"
         options={{

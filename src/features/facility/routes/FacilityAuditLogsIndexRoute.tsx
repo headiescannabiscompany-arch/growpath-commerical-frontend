@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
 import { normalizeApiError } from "@/api/errors";
+import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useFacility } from "@/state/useFacility";
 import { useAuditLogs } from "@/hooks/useAuditLogs";
 import type { AuditLog } from "@/types/contracts";
@@ -63,56 +64,86 @@ export default function FacilityAuditLogsIndexRoute() {
     [logs]
   );
 
-  if (!selectedId) return <AuditLogsStatus message="Select a facility first." />;
-  if (isLoading) return <AuditLogsStatus message="Loading audit logs..." />;
+  if (!selectedId)
+    return (
+      <ScreenBoundary
+        title="Facility audit logs"
+        showBack
+        backFallbackHref="/home/facility/dashboard"
+      >
+        <AuditLogsStatus message="Select a facility first." />
+      </ScreenBoundary>
+    );
+  if (isLoading)
+    return (
+      <ScreenBoundary
+        title="Facility audit logs"
+        showBack
+        backFallbackHref="/home/facility/dashboard"
+      >
+        <AuditLogsStatus message="Loading audit logs..." />
+      </ScreenBoundary>
+    );
   if (error)
     return (
-      <AuditLogsStatus message={getErrorMessage(error, "Failed to load audit logs.")} />
+      <ScreenBoundary
+        title="Facility audit logs"
+        showBack
+        backFallbackHref="/home/facility/dashboard"
+      >
+        <AuditLogsStatus message={getErrorMessage(error, "Failed to load audit logs.")} />
+      </ScreenBoundary>
     );
 
   return (
-    <FlatList
-      style={styles.list}
-      onRefresh={() => {
-        void refetch();
-      }}
-      refreshing={Boolean(isRefreshing)}
-      data={items}
-      keyExtractor={pickId}
-      ListHeaderComponent={<AuditLogsHeading />}
-      ListEmptyComponent={<Text style={styles.empty}>No audit logs yet.</Text>}
-      renderItem={({ item, index }) => {
-        const id = pickId(item, index);
-        return (
-          <View style={styles.card}>
-            <Text style={styles.title}>
-              {formatFacilityAuditAction(item?.action || item?.type)}
-            </Text>
-            <Text style={styles.sub}>
-              {formatFacilityAuditDetails(
-                item?.action || item?.type,
-                item?.details ?? item?.message
-              ) || "Facility event recorded."}
-            </Text>
-            {formatFacilityAuditTimestamp(
-              item?.timestamp || item?.createdAt || item?.updatedAt
-            ) ? (
-              <Text style={styles.meta}>
-                {formatFacilityAuditTimestamp(
-                  item?.timestamp || item?.createdAt || item?.updatedAt
-                )}
+    <ScreenBoundary
+      title="Facility audit logs"
+      showBack
+      backFallbackHref="/home/facility/dashboard"
+    >
+      <FlatList
+        style={styles.list}
+        onRefresh={() => {
+          void refetch();
+        }}
+        refreshing={Boolean(isRefreshing)}
+        data={items}
+        keyExtractor={pickId}
+        ListHeaderComponent={<AuditLogsHeading />}
+        ListEmptyComponent={<Text style={styles.empty}>No audit logs yet.</Text>}
+        renderItem={({ item, index }) => {
+          const id = pickId(item, index);
+          return (
+            <View style={styles.card}>
+              <Text style={styles.title}>
+                {formatFacilityAuditAction(item?.action || item?.type)}
               </Text>
-            ) : null}
-            <Link
-              href={{ pathname: "/home/facility/audit-logs/[id]", params: { id } }}
-              style={styles.link}
-            >
-              Open Detail
-            </Link>
-          </View>
-        );
-      }}
-    />
+              <Text style={styles.sub}>
+                {formatFacilityAuditDetails(
+                  item?.action || item?.type,
+                  item?.details ?? item?.message
+                ) || "Facility event recorded."}
+              </Text>
+              {formatFacilityAuditTimestamp(
+                item?.timestamp || item?.createdAt || item?.updatedAt
+              ) ? (
+                <Text style={styles.meta}>
+                  {formatFacilityAuditTimestamp(
+                    item?.timestamp || item?.createdAt || item?.updatedAt
+                  )}
+                </Text>
+              ) : null}
+              <Link
+                href={{ pathname: "/home/facility/audit-logs/[id]", params: { id } }}
+                style={styles.link}
+              >
+                Open Detail
+              </Link>
+            </View>
+          );
+        }}
+      />
+    </ScreenBoundary>
   );
 }
 

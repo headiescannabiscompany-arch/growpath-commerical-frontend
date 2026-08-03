@@ -184,14 +184,18 @@ function fulfillJson(route: any, body: any, status = 200) {
   });
 }
 
-async function installMocks(page: any) {
+async function installMocks(page: any, browserErrors: string[]) {
   page.on("console", (message: any) => {
     const type = message.type();
+    if (type === "error") {
+      browserErrors.push(`[console:error] ${message.text()}`);
+    }
     if (type === "error" || type === "warning") {
       console.log(`[browser:${type}] ${message.text()}`);
     }
   });
   page.on("pageerror", (error: Error) => {
+    browserErrors.push(`[pageerror] ${error.message}`);
     console.log(`[pageerror] ${error.message}`);
   });
 
@@ -280,7 +284,8 @@ test.describe("grow workspace visual audit", () => {
       page
     }) => {
       await page.setViewportSize({ width: size.width, height: size.height });
-      await installMocks(page);
+      const browserErrors: string[] = [];
+      await installMocks(page, browserErrors);
 
       const base = `/home/personal/grows/${GROW.id}`;
       const checks = [
@@ -314,7 +319,7 @@ test.describe("grow workspace visual audit", () => {
         },
         {
           path: `${base}/tools`,
-          title: "Grow Tools",
+          title: "Grow Intelligence",
           evidence: ["vpd | 2026-06-30", "Blueberry patio bush | Blueberry | Bluecrop"],
           shot: "tools"
         },
@@ -341,7 +346,7 @@ test.describe("grow workspace visual audit", () => {
         {
           path: `${base}/compare`,
           title: "Compare",
-          evidence: ["Latest", "Previous", "vpd"],
+          evidence: ["Reference run", "Whole saved run", "Compare 1 saved grows"],
           shot: "compare"
         }
       ];
@@ -352,6 +357,23 @@ test.describe("grow workspace visual audit", () => {
         for (const text of check.evidence) {
           await expect(page.getByText(text).first()).toBeVisible();
         }
+        const overflow = await page.evaluate(() => ({
+          document:
+            document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          body: document.body ? document.body.scrollWidth - document.body.clientWidth : 0
+        }));
+        expect(
+          overflow.document,
+          `${check.path} must not overflow the viewport horizontally`
+        ).toBeLessThanOrEqual(1);
+        expect(
+          overflow.body,
+          `${check.path} body must not overflow the viewport horizontally`
+        ).toBeLessThanOrEqual(1);
+        expect(
+          browserErrors,
+          `${check.path} must not produce browser runtime errors`
+        ).toEqual([]);
         await page.screenshot({
           path: `tmp/screenshots/grow-workspace-${check.shot}-${size.name}.png`,
           fullPage: true

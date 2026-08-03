@@ -217,9 +217,11 @@ export default function FacilityPlantsTab() {
   return (
     <ScreenBoundary
       title={contextName ? `${contextName} plants` : "Plants"}
-      showBack={Boolean(contextGrowId)}
+      showBack
       backFallbackHref={
-        contextGrowId ? `/home/facility/grows/${contextGrowId}` : undefined
+        contextGrowId
+          ? `/home/facility/grows/${contextGrowId}`
+          : "/home/facility/dashboard"
       }
     >
       <View style={styles.container}>

@@ -41,9 +41,26 @@ jest.mock("expo-router", () => {
 
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
-  const { View } = require("react-native");
-  return function MockAppPage({ children, header }: any) {
-    return React.createElement(View, null, header, children);
+  const { Text, View } = require("react-native");
+  return function MockAppPage({
+    children,
+    header,
+    showBack = true,
+    backFallbackHref
+  }: any) {
+    return React.createElement(
+      View,
+      null,
+      showBack
+        ? React.createElement(
+            Text,
+            { accessibilityRole: "link" },
+            `Shared Back ${backFallbackHref}`
+          )
+        : null,
+      header,
+      children
+    );
   };
 });
 
@@ -456,6 +473,8 @@ describe("public commercial routes", () => {
     await waitFor(() =>
       expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
     );
+    expect(screen.getByRole("header", { name: "Veg Mix" })).toHaveProp("aria-level", 1);
+    expect(screen.getAllByText("Shared Back /store/living-soil-labs")).toHaveLength(1);
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
     expect(screen.getByText("Interests: living soil, veg")).toBeTruthy();
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
@@ -506,7 +525,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Share Product")).toBeTruthy();
     expect(screen.getByText("Report Product")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Report Veg Mix" })).toBeTruthy();
-    expect(screen.getByText("Back to Store")).toBeTruthy();
+    expect(screen.queryByText("Back to Store")).toBeNull();
     expect(screen.getByText("Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Similar Storefronts")).toBeTruthy();
     expect(screen.getByText("Return to Campaigns")).toBeTruthy();
@@ -525,6 +544,21 @@ describe("public commercial routes", () => {
         })
       )
     );
+  });
+
+  it("keeps a semantic product heading and shared recovery path on load failure", async () => {
+    mockFetchPublicStorefront.mockRejectedValueOnce(
+      new Error("Product service unavailable")
+    );
+
+    const screen = render(<PublicProductRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Product service unavailable")).toBeTruthy()
+    );
+    expect(screen.getByRole("header", { name: "Product" })).toHaveProp("aria-level", 1);
+    expect(screen.getAllByText("Shared Back /store/living-soil-labs")).toHaveLength(1);
+    expect(screen.queryByText("Back to Store")).toBeNull();
   });
 
   it("loads the /storefront/:slug/products/:productId alias through the same product route", async () => {
@@ -621,6 +655,11 @@ describe("public commercial routes", () => {
     await waitFor(() =>
       expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
     );
+    expect(screen.getByRole("header", { name: "Using Veg Mix" })).toHaveProp(
+      "aria-level",
+      1
+    );
+    expect(screen.getAllByText("Shared Back /store/living-soil-labs")).toHaveLength(1);
     expect(screen.getAllByText("Using Veg Mix").length).toBeGreaterThan(0);
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("A short setup course for the veg blend.")).toBeTruthy();
@@ -646,7 +685,7 @@ describe("public commercial routes", () => {
     expect(screen.getByText("Veg Mix Support")).toBeTruthy();
     expect(screen.getByText("Open Q&A")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/forum/post?id=thread-1");
-    expect(screen.getByText("Back to Store")).toBeTruthy();
+    expect(screen.queryByText("Back to Store")).toBeNull();
     expect(screen.getByText("Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Course Directory")).toBeTruthy();
 
@@ -675,6 +714,21 @@ describe("public commercial routes", () => {
         source: "public_storefront_course"
       })
     );
+  });
+
+  it("keeps a semantic course heading and shared recovery path on load failure", async () => {
+    mockFetchPublicStorefront.mockRejectedValueOnce(
+      new Error("Course service unavailable")
+    );
+
+    const screen = render(<PublicStorefrontCourseRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Course service unavailable")).toBeTruthy()
+    );
+    expect(screen.getByRole("header", { name: "Course" })).toHaveProp("aria-level", 1);
+    expect(screen.getAllByText("Shared Back /store/living-soil-labs")).toHaveLength(1);
+    expect(screen.queryByText("Back to Store")).toBeNull();
   });
 
   it("turns a successful Stripe return into a clear course-unlock handoff", async () => {

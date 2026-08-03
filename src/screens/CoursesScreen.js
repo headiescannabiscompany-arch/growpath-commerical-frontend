@@ -128,7 +128,18 @@ export function isExplicitQaCourse(course) {
   return /\bqa[\s-]+only\b/i.test(title) || /\btest[\s-]+only\b/i.test(title);
 }
 
-export default function CoursesScreen({ navigation } = {}) {
+/**
+ * @param {{
+ *   navigation?: any;
+ *   onDetailVisibilityChange?: (visible: boolean) => void;
+ *   catalogHref?: string;
+ * }} [props]
+ */
+export default function CoursesScreen({
+  navigation,
+  onDetailVisibilityChange,
+  catalogHref = "/courses"
+} = {}) {
   const router = useRouter();
   const params = useLocalSearchParams();
   const requestedCourseId = Array.isArray(params?.courseId)
@@ -148,6 +159,7 @@ export default function CoursesScreen({ navigation } = {}) {
 
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [dismissedRequestedCourseId, setDismissedRequestedCourseId] = useState("");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [inviteName, setInviteName] = useState("");
@@ -155,6 +167,14 @@ export default function CoursesScreen({ navigation } = {}) {
   const [courseActionId, setCourseActionId] = useState("");
   const [courseActionFeedback, setCourseActionFeedback] = useState("");
   const [courseActionError, setCourseActionError] = useState("");
+
+  useEffect(() => {
+    onDetailVisibilityChange?.(Boolean(selectedCourse));
+  }, [onDetailVisibilityChange, selectedCourse]);
+
+  useEffect(() => {
+    if (!requestedCourseId) setDismissedRequestedCourseId("");
+  }, [requestedCourseId]);
 
   useEffect(() => {
     let alive = true;
@@ -231,12 +251,26 @@ export default function CoursesScreen({ navigation } = {}) {
   ]);
 
   useEffect(() => {
-    if (!requestedCourseId || selectedCourse || courses.length === 0) return;
+    if (
+      !requestedCourseId ||
+      String(requestedCourseId) === dismissedRequestedCourseId ||
+      selectedCourse ||
+      courses.length === 0
+    )
+      return;
     const match = courses.find(
       (course) => String(course?._id || course?.id || "") === String(requestedCourseId)
     );
     if (match) setSelectedCourse(match);
-  }, [courses, requestedCourseId, selectedCourse]);
+  }, [courses, dismissedRequestedCourseId, requestedCourseId, selectedCourse]);
+
+  function closeSelectedCourse() {
+    if (requestedCourseId) {
+      setDismissedRequestedCourseId(String(requestedCourseId));
+      router.replace?.(catalogHref);
+    }
+    setSelectedCourse(null);
+  }
 
   const handleInvite = async () => {
     const name = inviteName.trim();
@@ -323,7 +357,7 @@ export default function CoursesScreen({ navigation } = {}) {
         accessibilityLabel={selectedId ? `Selected course ${selectedId}` : undefined}
         style={styles.container}
       >
-        <Pressable onPress={() => setSelectedCourse(null)} style={styles.backBtn}>
+        <Pressable onPress={closeSelectedCourse} style={styles.backBtn}>
           <Text style={styles.backText}>Back to courses</Text>
         </Pressable>
         <CourseDetailScreen

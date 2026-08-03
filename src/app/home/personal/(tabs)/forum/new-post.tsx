@@ -225,8 +225,6 @@ export default function ForumNewPostRoute() {
         <LockedScreen
           title="Forum posting unavailable"
           message="Free accounts can read discussions and replies. Upgrade to Pro to create posts and comments."
-          actionLabel="Back to Forum"
-          onAction={() => router.replace("/home/personal/community" as any)}
         />
       </ScreenBoundary>
     );

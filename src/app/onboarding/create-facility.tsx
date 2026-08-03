@@ -46,6 +46,7 @@ export default function CreateFacilityScreen() {
       <AppPage
         routeKey="create-facility"
         railOverride={null}
+        backFallbackHref="/home/facility/select"
         header={
           <View style={styles.header}>
             <Text style={styles.kicker}>Facility setup</Text>
@@ -94,6 +95,7 @@ export default function CreateFacilityScreen() {
     <AppPage
       routeKey="create-facility"
       railOverride={null}
+      backFallbackHref="/home/facility/select"
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Facility setup</Text>
@@ -175,15 +177,6 @@ export default function CreateFacilityScreen() {
             ) : (
               <Text style={styles.primaryButtonText}>Create facility</Text>
             )}
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.replace("/home/facility/select")}
-            accessibilityRole="button"
-            accessibilityLabel="Back to facilities"
-            style={styles.secondaryButton}
-          >
-            <Text style={styles.secondaryButtonText}>Back to facilities</Text>
           </Pressable>
         </View>
       </AppCard>

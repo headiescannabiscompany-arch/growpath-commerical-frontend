@@ -35,6 +35,34 @@ function toRoute(appRelativePath) {
   return "/" + segments.join("/");
 }
 
+function normalizeRoutePattern(route) {
+  return String(route || "")
+    .split("/")
+    .map((segment) => {
+      if (/^\[\[\.\.\..+\]\]$/.test(segment)) return "[[...param]]";
+      if (/^\[\.\.\..+\]$/.test(segment)) return "[...param]";
+      if (/^\[[^\]]+\]$/.test(segment)) return "[param]";
+      return segment;
+    })
+    .join("/");
+}
+
+function findNormalizedDuplicateRoutePatterns(rows) {
+  const byPattern = new Map();
+  for (const row of rows) {
+    if (row.kind !== "screen") continue;
+    const pattern = normalizeRoutePattern(row.route);
+    const matches = byPattern.get(pattern) || [];
+    matches.push(row);
+    byPattern.set(pattern, matches);
+  }
+
+  return Array.from(byPattern.entries())
+    .filter(([, matches]) => matches.length > 1)
+    .map(([pattern, matches]) => ({ pattern, matches }))
+    .sort((a, b) => a.pattern.localeCompare(b.pattern));
+}
+
 function main() {
   if (!fs.existsSync(APP_DIR)) {
     console.error("Missing src/app directory");
@@ -69,6 +97,19 @@ function main() {
     .filter((row) => !!row.route)
     .sort((a, b) => a.route.localeCompare(b.route) || a.file.localeCompare(b.file));
 
+  const duplicates = findNormalizedDuplicateRoutePatterns(rows);
+  if (duplicates.length) {
+    console.error(
+      "Route inventory found duplicate normalized screen route patterns. Keep one Expo Router screen for each canonical URL pattern:"
+    );
+    duplicates.forEach(({ pattern, matches }) => {
+      console.error(`- ${pattern}`);
+      matches.forEach((row) => console.error(`  - ${row.file} -> ${row.route}`));
+    });
+    process.exitCode = 1;
+    return;
+  }
+
   const routes = Array.from(new Set(rows.map((r) => r.route))).sort();
   const payload = {
     generatedAt: new Date().toISOString(),
@@ -101,4 +142,10 @@ function main() {
   console.log(`Routes: ${routes.length} | Files: ${rows.length}`);
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = {
+  findNormalizedDuplicateRoutePatterns,
+  normalizeRoutePattern,
+  toRoute
+};

@@ -1,1 +1,1 @@
-export { default } from "../sop-runs/index";
+export { default } from "@/features/facility/routes/FacilitySopRunsIndexRoute";

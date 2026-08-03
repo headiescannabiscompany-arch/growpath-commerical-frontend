@@ -15,21 +15,37 @@ function walk(dir, out = []) {
 const files = walk(ROOT);
 
 // Treat these as non-routes (optional): adjust as needed
-const IGNORE = [
-  /\.contract\.ts$/i,
-  /\.spec\.ts$/i,
-  /\.test\.ts$/i
-];
+const IGNORE = [/\.contract\.ts$/i, /\.spec\.ts$/i, /\.test\.ts$/i];
 
-const bad = [];
-for (const f of files) {
-  if (IGNORE.some((re) => re.test(f))) continue;
-
-  const txt = fs.readFileSync(f, "utf8");
-  const hasDefault = /export\s+default\s+/.test(txt);
-  if (!hasDefault) bad.push(path.relative(process.cwd(), f));
+function hasDefaultRouteExport(source) {
+  return (
+    /export\s+default\b/.test(source) || /export\s*{\s*default\s*}\s*from\b/.test(source)
+  );
 }
 
-console.log("Route files missing export default:\n");
-bad.forEach((f) => console.log(" -", f));
-console.log("\nTotal:", bad.length);
+function findRouteFilesMissingDefaultExport(routeFiles = files) {
+  const bad = [];
+  for (const file of routeFiles) {
+    if (IGNORE.some((re) => re.test(file))) continue;
+
+    const source = fs.readFileSync(file, "utf8");
+    if (!hasDefaultRouteExport(source)) {
+      bad.push(path.relative(process.cwd(), file));
+    }
+  }
+  return bad;
+}
+
+function main() {
+  const bad = findRouteFilesMissingDefaultExport();
+  console.log("Route files missing export default:\n");
+  bad.forEach((file) => console.log(" -", file));
+  console.log("\nTotal:", bad.length);
+}
+
+if (require.main === module) main();
+
+module.exports = {
+  findRouteFilesMissingDefaultExport,
+  hasDefaultRouteExport
+};

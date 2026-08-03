@@ -17,6 +17,7 @@ const mockListBatchCycles = jest.fn();
 const mockListEquipment = jest.fn();
 let mockRoomParams: Record<string, string> = {};
 let mockFacilityRole = "OWNER";
+let mockScreenBoundaryProps: any = null;
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockRoomParams,
@@ -53,11 +54,23 @@ jest.mock("@/api/facilityWorkflows", () => ({
   listEquipment: (...args: any[]) => mockListEquipment(...args)
 }));
 
+jest.mock("@/components/ScreenBoundary", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    ScreenBoundary: (props: any) => {
+      mockScreenBoundaryProps = props;
+      return React.createElement(View, null, props.children);
+    }
+  };
+});
+
 describe("FacilityRoomsTab", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockRoomParams = {};
     mockFacilityRole = "OWNER";
+    mockScreenBoundaryProps = null;
     mockFetchRooms.mockResolvedValue([
       {
         id: "room-existing",
@@ -93,6 +106,18 @@ describe("FacilityRoomsTab", () => {
         )
       )
     );
+  });
+
+  it("keeps a Back control on the top-level room workspace", async () => {
+    const screen = render(<FacilityRoomsTab />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Existing Dry Room").length).toBeGreaterThan(0)
+    );
+    expect(mockScreenBoundaryProps).toMatchObject({
+      showBack: true,
+      backFallbackHref: "/home/facility/dashboard"
+    });
   });
 
   it("clearly labels room workspaces and saves a reordered list", async () => {

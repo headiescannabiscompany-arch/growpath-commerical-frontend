@@ -413,8 +413,6 @@ export default function NewGrowScreen() {
               ? "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
               : `This plan includes up to ${maxGrows} active grows. Upgrade to create more.`
           }
-          actionLabel="Back to grows"
-          onAction={() => router.replace("/home/personal/grows" as any)}
         />
       </ScreenBoundary>
     );

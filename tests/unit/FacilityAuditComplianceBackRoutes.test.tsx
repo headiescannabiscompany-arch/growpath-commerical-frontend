@@ -7,7 +7,7 @@ import FacilityAuditLogDetailRoute, {
 import FacilityAuditLogEntityRoute, {
   createFacilityAuditEntityStyles
 } from "@/app/home/facility/audit-logs/[entity]/[entityId]";
-import FacilityAuditLogsIndexRoute from "@/app/home/facility/audit-logs";
+import FacilityAuditLogsIndexRoute from "@/features/facility/routes/FacilityAuditLogsIndexRoute";
 import FacilityComplianceAiDashboardRoute, {
   createComplianceAiDashboardStyles
 } from "@/app/home/facility/compliance/ai4.dashboard";
@@ -171,6 +171,7 @@ describe("facility audit and compliance nested back behavior", () => {
 
     const screen = render(<FacilityAuditLogsIndexRoute />);
 
+    expect(screen.getAllByText("Shared Back /home/facility/dashboard")).toHaveLength(1);
     expect(screen.getByRole("header", { name: "Audit Logs" }).props["aria-level"]).toBe(
       1
     );
@@ -193,6 +194,7 @@ describe("facility audit and compliance nested back behavior", () => {
 
     const screen = render(<FacilityAuditLogsIndexRoute />);
 
+    expect(screen.getAllByText("Shared Back /home/facility/dashboard")).toHaveLength(1);
     expect(screen.getByRole("header", { name: "Audit Logs" }).props["aria-level"]).toBe(
       1
     );
