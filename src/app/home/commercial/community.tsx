@@ -221,7 +221,9 @@ export default function CommercialCommunityRoute() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Brand Forum / Q&A</Text>
+            <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+              Brand Forum / Q&A
+            </Text>
             <Text style={styles.subtitle}>
               Brand Forum / Q&A is discussion and support activity for a brand. Feed /
               Campaigns stays advertising and outreach.
@@ -236,7 +238,9 @@ export default function CommercialCommunityRoute() {
       }
     >
       <AppCard>
-        <Text style={styles.cardTitle}>Brand forum identity</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Brand forum identity
+        </Text>
         <Text style={styles.body}>
           Commercial accounts should post and reply as the brand, answer product
           questions, link products/courses/product trial evidence runs, and track mentions
@@ -261,7 +265,9 @@ export default function CommercialCommunityRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Create brand support post</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Create brand support post
+        </Text>
         <Text style={styles.body}>
           Use this for product help, support answers, product trial evidence
           clarifications, and course follow-up. It publishes to Forum / Q&A as linked
@@ -363,7 +369,9 @@ export default function CommercialCommunityRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Recent brand support activity</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Recent brand support activity
+        </Text>
         {posts.length ? (
           <View style={styles.list}>
             {posts.map((post) => {
@@ -412,7 +420,9 @@ export default function CommercialCommunityRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Turn answers into support content</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Turn answers into support content
+        </Text>
         <Text style={styles.body}>
           A commercial support answer should be able to point users to the exact product,
           course, public product page, trial result, or storefront involved in the
@@ -433,7 +443,9 @@ export default function CommercialCommunityRoute() {
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Forum / Q&A discovery</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Forum / Q&A discovery
+        </Text>
         <Text style={styles.body}>
           Users should find the brand through public profile links, feed campaigns, store
           products, courses, and forum answers. Forum/Q&A support should aid discovery

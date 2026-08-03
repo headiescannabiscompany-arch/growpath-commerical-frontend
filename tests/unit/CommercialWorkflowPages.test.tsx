@@ -802,14 +802,24 @@ describe("commercial workflow pages", () => {
       )
     ).toBeTruthy();
     expect(screen.getByText("Shared core surfaces")).toBeTruthy();
-    expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial" }).length).toBeGreaterThan(0);
-    expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial/grows" }).length).toBeGreaterThan(0);
-    expect(screen.UNSAFE_getAllByProps({ href: "/videos?tab=library" }).length).toBeGreaterThan(0);
+    expect(
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial" }).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/grows" }).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.UNSAFE_getAllByProps({ href: "/videos?tab=library" }).length
+    ).toBeGreaterThan(0);
     expect(
       screen.UNSAFE_getAllByProps({ href: "/home/commercial/discover" }).length
     ).toBeGreaterThan(0);
-    expect(screen.UNSAFE_getAllByProps({ href: "/home/notifications" }).length).toBeGreaterThan(0);
-    expect(screen.UNSAFE_getAllByProps({ href: "/home/commercial/tasks" }).length).toBeGreaterThan(0);
+    expect(
+      screen.UNSAFE_getAllByProps({ href: "/home/notifications" }).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.UNSAFE_getAllByProps({ href: "/home/commercial/tasks" }).length
+    ).toBeGreaterThan(0);
     expect(screen.getByText("Action Items")).toBeTruthy();
     expect(screen.getByText("Bloom Topdress")).toBeTruthy();
     expect(screen.getByText("Restock base soil bags")).toBeTruthy();
@@ -1016,7 +1026,14 @@ describe("commercial workflow pages", () => {
   it("creates brand forum support posts with product links", async () => {
     const screen = render(<CommercialCommunityRoute />);
 
-    expect(screen.getByText("Brand Forum / Q&A")).toBeTruthy();
+    const pageHeading = screen.getByRole("header", { name: "Brand Forum / Q&A" });
+    expect(pageHeading.props["aria-level"]).toBe(1);
+    expect(
+      screen.getByRole("header", { name: "Brand forum identity" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "Forum / Q&A discovery" }).props["aria-level"]
+    ).toBe(2);
     expect(
       screen.getByText(/Brand Forum \/ Q&A is discussion and support activity/)
     ).toBeTruthy();
