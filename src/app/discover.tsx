@@ -17,6 +17,7 @@ import { searchPublicStorefronts } from "@/api/storefront";
 import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -86,6 +87,7 @@ function courseRows(payload: any) {
 
 export default function DiscoverDirectory() {
   const router = useRouter();
+  const entitlements = useEntitlements();
   const { palette } = useAppTheme();
   const videoFilterStyles = useMemo(
     () => createDiscoverVideoFilterStyles(palette),
@@ -183,8 +185,22 @@ export default function DiscoverDirectory() {
         empty: "Open Discovery Nature to see opted-in observations.",
         results: [
           {
+            id: "identify-plant",
+            title:
+              entitlements.mode === "personal"
+                ? "Identify a Plant"
+                : "Switch to Personal for Plant ID",
+            summary:
+              "Upload plant photos, review the AI candidate, add field context, and choose whether to save it privately or share an approximate map pin.",
+            href:
+              entitlements.mode === "personal"
+                ? "/home/personal/tools/species-crop-id"
+                : "/account/mode",
+            meta: "Grow optional"
+          },
+          {
             id: "field-observations",
-            title: "Open Discovery Nature",
+            title: "Explore Mapped Plant Findings",
             summary:
               "Share/view opted-in plant findings. Discover species of mapped areas and find invasive species.",
             href: "/field-observations",
@@ -285,7 +301,7 @@ export default function DiscoverDirectory() {
         browseHref: "/lives"
       }
     ];
-  }, [activeQuery, courses, feed, marketplace, stores, videos]);
+  }, [activeQuery, courses, entitlements.mode, feed, marketplace, stores, videos]);
 
   function search() {
     const q = query.trim();

@@ -248,6 +248,7 @@ export default function FieldObservationGlobe({
           attributionControl: { compact: true }
         });
         map = activeMap;
+        mapRef.current = activeMap;
 
         const emitViewport = () => {
           onViewportRef.current(viewportFromMap(activeMap));
@@ -425,7 +426,7 @@ export default function FieldObservationGlobe({
       13,
       9
     ]);
-  }, [selectedObservationId]);
+  }, [ready, selectedObservationId]);
 
   return (
     <div className="growpath-field-globe-shell">

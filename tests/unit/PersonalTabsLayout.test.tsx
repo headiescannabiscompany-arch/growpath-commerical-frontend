@@ -71,6 +71,7 @@ describe("PersonalTabsLayout", () => {
       (child: any) => child.props.name === "discover"
     ) as any;
     expect(discoverScreen.props.options.tabBarLabel).toBe("Discover");
+    expect(discoverScreen.props.options.title).toBe("Discover");
     for (const child of React.Children.toArray(props.children) as any[]) {
       if (child.props.options?.href === null) {
         expect(child.props.options.tabBarButton).toBeUndefined();

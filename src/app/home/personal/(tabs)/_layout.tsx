@@ -69,7 +69,7 @@ export default function PersonalTabsLayout() {
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: "Discovery Nature", tabBarLabel: "Discover" }}
+        options={{ title: "Discover", tabBarLabel: "Discover" }}
       />
       <Tabs.Screen name="more" options={{ title: "More", tabBarLabel: "More" }} />
       <Tabs.Screen

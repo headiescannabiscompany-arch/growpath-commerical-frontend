@@ -98,6 +98,8 @@ type BackendCalculatorToolScreenProps = {
   noGrowContextMessage?: string;
   backFallbackHref?: string;
   feedRouteKey?: string;
+  externalInputKey?: string;
+  onToolRunChange?: (toolRun: ToolRun | null) => void;
   formHeader?:
     | React.ReactNode
     | ((context: {
@@ -166,6 +168,8 @@ type BackendCalculatorToolScreenProps = {
   aiPrefill?: {
     buttonLabel?: string;
     clearUnfilled?: boolean;
+    preserveAllExistingFields?: boolean;
+    preserveExistingFields?: string[];
     evidenceAssetIds?: () => string[];
     isReady?: () => boolean;
     notReadyMessage?: string;
@@ -277,6 +281,8 @@ export default function BackendCalculatorToolScreen({
   noGrowContextMessage,
   backFallbackHref = "/home/personal/tools",
   feedRouteKey,
+  externalInputKey = "",
+  onToolRunChange,
   formHeader,
   status = "CALCULATED",
   runLabel: runLabelOverride,
@@ -381,6 +387,26 @@ export default function BackendCalculatorToolScreen({
   const [assistantBriefText, setAssistantBriefText] = useState("");
   const [prefilling, setPrefilling] = useState(false);
   const [aiPrefillPayload, setAiPrefillPayload] = useState<Record<string, any>>({});
+  const userValuesRef = React.useRef<Record<string, string>>(initialValues);
+  const externalInputKeyRef = React.useRef(externalInputKey);
+  const latestExternalInputKeyRef = React.useRef(externalInputKey);
+  const inputRevisionRef = React.useRef(0);
+  const executionLockRef = React.useRef<"prefill" | "calculate" | null>(null);
+  latestExternalInputKeyRef.current = externalInputKey;
+
+  React.useEffect(() => {
+    if (externalInputKeyRef.current === externalInputKey) return;
+    externalInputKeyRef.current = externalInputKey;
+    inputRevisionRef.current += 1;
+    setValues(userValuesRef.current);
+    setToolRun(null);
+    onToolRunChange?.(null);
+    setModuleRecord(null);
+    setOutputs(null);
+    setAiPrefillPayload({});
+    setFeedback("");
+    setAssistantBriefText("");
+  }, [externalInputKey, onToolRunChange]);
 
   React.useEffect(() => {
     if (locked) return;
@@ -402,16 +428,32 @@ export default function BackendCalculatorToolScreen({
   }, [growOptional, locked, routeGrowId]);
 
   function updateValue(key: string, value: string) {
+    inputRevisionRef.current += 1;
+    userValuesRef.current = { ...userValuesRef.current, [key]: value };
     setValues((current) => ({ ...current, [key]: value }));
     setToolRun(null);
+    onToolRunChange?.(null);
     setModuleRecord(null);
     setOutputs(null);
+    setAiPrefillPayload({});
     setFeedback("");
     setAssistantBriefText("");
   }
 
   async function prefillWithAI() {
-    if (!aiPrefill || !aiPrefillReady || (!growId && !growOptional) || prefilling) return;
+    if (
+      !aiPrefill ||
+      !aiPrefillReady ||
+      (!growId && !growOptional) ||
+      prefilling ||
+      running ||
+      executionLockRef.current
+    ) {
+      return;
+    }
+    executionLockRef.current = "prefill";
+    const requestInputRevision = inputRevisionRef.current;
+    const requestExternalInputKey = latestExternalInputKeyRef.current;
     setPrefilling(true);
     setFeedback("");
     try {
@@ -427,6 +469,12 @@ export default function BackendCalculatorToolScreen({
           values
         })
       });
+      if (
+        inputRevisionRef.current !== requestInputRevision ||
+        latestExternalInputKeyRef.current !== requestExternalInputKey
+      ) {
+        return;
+      }
       if (!response?.success || !response.reply) {
         throw new Error(
           tool === "species-crop-id"
@@ -451,10 +499,19 @@ export default function BackendCalculatorToolScreen({
           })
       );
       const resolvedValues = Object.fromEntries(
-        fields.map((field) => [
-          field.key,
-          next[field.key] ?? (aiPrefill.clearUnfilled ? "" : values[field.key] || "")
-        ])
+        fields.map((field) => {
+          const existingValue = values[field.key] || "";
+          const preserveExisting =
+            (aiPrefill.preserveAllExistingFields ||
+              aiPrefill.preserveExistingFields?.includes(field.key)) &&
+            existingValue.trim().length > 0;
+          return [
+            field.key,
+            preserveExisting
+              ? existingValue
+              : (next[field.key] ?? (aiPrefill.clearUnfilled ? "" : existingValue))
+          ];
+        })
       );
       const metadata =
         aiPrefill.buildPayloadMetadata?.({
@@ -465,7 +522,15 @@ export default function BackendCalculatorToolScreen({
       setValues(resolvedValues);
       setAiPrefillPayload(metadata);
       if (aiPrefill.runAfterPrefill) {
-        await calculateWithValues(resolvedValues, metadata);
+        await calculateWithValues(
+          resolvedValues,
+          metadata,
+          {
+            externalInputKey: requestExternalInputKey,
+            revision: requestInputRevision
+          },
+          "prefill"
+        );
       } else {
         const filledFieldCount = Object.values(next).filter((value) =>
           String(value).trim()
@@ -486,6 +551,9 @@ export default function BackendCalculatorToolScreen({
     } catch (error: any) {
       setFeedback(error?.message || "AI could not prefill this workflow.");
     } finally {
+      if (executionLockRef.current === "prefill") {
+        executionLockRef.current = null;
+      }
       setPrefilling(false);
     }
   }
@@ -513,16 +581,29 @@ export default function BackendCalculatorToolScreen({
 
   async function calculateWithValues(
     submittedValues: Record<string, string>,
-    metadata: Record<string, any> = aiPrefillPayload
+    metadata: Record<string, any> = aiPrefillPayload,
+    expectedInputState = {
+      externalInputKey: latestExternalInputKeyRef.current,
+      revision: inputRevisionRef.current
+    },
+    existingLock: "prefill" | null = null
   ) {
-    if (running) return;
     const validationMessage = validateValues?.(submittedValues);
     if (validationMessage) {
       setFeedback(validationMessage);
       return;
     }
+    const usesExistingLock =
+      existingLock === "prefill" && executionLockRef.current === "prefill";
+    if (!usesExistingLock) {
+      if (running || prefilling || executionLockRef.current) return;
+      executionLockRef.current = "calculate";
+    }
     setRunning(true);
     setFeedback("");
+    const requestIsCurrent = () =>
+      inputRevisionRef.current === expectedInputState.revision &&
+      latestExternalInputKeyRef.current === expectedInputState.externalInputKey;
     try {
       const submittedPayload = {
         ...buildPayload(submittedValues, {
@@ -534,8 +615,10 @@ export default function BackendCalculatorToolScreen({
         ...metadata
       };
       const response = await runCalculator<Record<string, any>>(tool, submittedPayload);
+      if (!requestIsCurrent()) return;
       setOutputs(response.outputs);
       setToolRun(response.toolRun);
+      onToolRunChange?.(response.toolRun);
       const modulePayload = buildModuleRecordInput({
         tool,
         title: defaultLogTitle(response.outputs),
@@ -560,6 +643,7 @@ export default function BackendCalculatorToolScreen({
           ).trim();
           if (linkedModuleRecordId) {
             const existingRecord = await getGrowpathModuleRecord(linkedModuleRecordId);
+            if (!requestIsCurrent()) return;
             setModuleRecord(existingRecord);
             setFeedback(
               existingRecord
@@ -568,10 +652,12 @@ export default function BackendCalculatorToolScreen({
             );
           } else {
             const createdRecord = await createGrowpathModuleRecord(modulePayload);
+            if (!requestIsCurrent()) return;
             setModuleRecord(createdRecord);
             setFeedback("Calculated and saved as a ToolRun and module record.");
           }
         } catch (saveError: any) {
+          if (!requestIsCurrent()) return;
           setModuleRecord(null);
           setFeedback(
             `Calculated and saved as a ToolRun. Module record save failed: ${
@@ -584,9 +670,14 @@ export default function BackendCalculatorToolScreen({
         setFeedback("Calculated and saved as a ToolRun.");
       }
     } catch (error: any) {
-      setFeedback(error?.message || "Unable to calculate.");
+      if (requestIsCurrent()) {
+        setFeedback(error?.message || "Unable to calculate.");
+      }
     } finally {
       setRunning(false);
+      if (!usesExistingLock && executionLockRef.current === "calculate") {
+        executionLockRef.current = null;
+      }
     }
   }
 
@@ -873,10 +964,15 @@ export default function BackendCalculatorToolScreen({
             ) : null}
             <Pressable
               accessibilityRole="button"
-              disabled={!aiPrefillReady || (!growId && !growOptional) || prefilling}
+              disabled={
+                !aiPrefillReady || (!growId && !growOptional) || prefilling || running
+              }
               style={[
                 styles.secondaryButton,
-                (!aiPrefillReady || (!growId && !growOptional) || prefilling) &&
+                (!aiPrefillReady ||
+                  (!growId && !growOptional) ||
+                  prefilling ||
+                  running) &&
                   styles.disabled
               ]}
               onPress={prefillWithAI}
@@ -1007,9 +1103,9 @@ export default function BackendCalculatorToolScreen({
           accessibilityRole="button"
           accessibilityLabel={runAccessibilityLabel || `Run ${title}`}
           accessibilityHint={runLabel}
-          disabled={running}
+          disabled={running || prefilling}
           onPress={calculate}
-          style={[styles.button, running && styles.disabled]}
+          style={[styles.button, (running || prefilling) && styles.disabled]}
         >
           <Text style={styles.buttonText}>{running ? "Working..." : runLabel}</Text>
         </Pressable>

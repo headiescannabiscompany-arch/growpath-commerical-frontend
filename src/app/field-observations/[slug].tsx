@@ -2,6 +2,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,6 +13,7 @@ import {
 import { FieldObservation, FieldStudy, getPublicFieldStudy } from "@/api/fieldStudies";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { resolveImageUri } from "@/utils/photoUploads";
 
 function observationName(observation: FieldObservation) {
   return (
@@ -20,6 +22,19 @@ function observationName(observation: FieldObservation) {
     observation.title ||
     "Unconfirmed plant"
   );
+}
+
+function observationImages(observation: FieldObservation) {
+  return Array.from(
+    new Set(
+      [
+        ...(observation.evidenceAssets || [])
+          .filter((asset) => asset.kind !== "video")
+          .map((asset) => String(asset.url || asset.uri || "")),
+        ...(observation.photoUrls || []).map(String)
+      ].filter(Boolean)
+    )
+  ).map(resolveImageUri);
 }
 
 export default function PublicFieldStudyScreen() {
@@ -123,8 +138,26 @@ export default function PublicFieldStudyScreen() {
       ) : (
         observations.map((observation) => {
           const location = observation.location as any;
+          const images = observationImages(observation);
           return (
             <View key={String(observation.id || observation._id)} style={styles.card}>
+              {images.length ? (
+                <ScrollView
+                  accessibilityLabel={`Photos for ${observationName(observation)}`}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.photoGallery}
+                >
+                  {images.map((uri, index) => (
+                    <Image
+                      accessibilityLabel={`Evidence photo ${index + 1} for ${observationName(observation)}`}
+                      key={uri}
+                      source={{ uri }}
+                      style={styles.photo}
+                    />
+                  ))}
+                </ScrollView>
+              ) : null}
               <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
                 {observationName(observation)}
               </Text>
@@ -216,6 +249,13 @@ export function createStyles(palette: ThemePalette) {
       borderWidth: 1,
       gap: 5,
       padding: 15
+    },
+    photoGallery: { gap: 8, paddingBottom: 5, paddingRight: 4 },
+    photo: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 10,
+      height: 150,
+      width: 190
     },
     cardTitle: { color: palette.text, fontSize: 18, fontWeight: "800" },
     scientificName: { color: palette.textSoft, fontStyle: "italic" },
