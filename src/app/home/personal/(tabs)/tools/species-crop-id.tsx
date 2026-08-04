@@ -38,7 +38,7 @@ const PLANT_ID_AI_PROMPT = `You are GrowPathAI's plant identification assistant.
 
 Inspect the attached image pixels first. Use user-entered context and selected private grow/plant context only when supplied. Narrow in this order: broad plant group, morphology, likely family, possible genera, then species only when diagnostic evidence supports it. Consider growth habit, leaf arrangement/type/margin/venation, stems, flower symmetry and parts, inflorescence, fruit/seed, special structures, habitat, geography, season, and whether the plant is wild or cultivated.
 
-Only populate growing setting, habitat, visible surface substrate, nearby associated plants, or plant size when the photos directly support them or the user supplied them. Do not guess exact location, observation date, sensory traits, measurements without visible scale, or wild-versus-cultivated provenance. Leave unsupported fields blank instead of inventing them.
+Only populate growing setting, habitat, visible surface substrate, or nearby associated plants when the photos directly support them or the user supplied them. Do not populate cultivar, wild-versus-cultivated provenance, location or region, observation date or season, sensory traits, or plant-size measurements from image analysis. Leave unsupported and user-only fields blank instead of inventing them.
 
 Return useful broader candidates when exact species is unresolved. Cannabis is an allowed crop candidate from deliberately submitted evidence. A clear cannabis flower or harvested bud may support a crop-level Cannabis draft from visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure. Never infer cultivar or strain from appearance.
 
@@ -54,7 +54,7 @@ Return JSON only with exactly these keys:
   "habitat": "visible or user-provided habitat, otherwise blank",
   "substrate": "visible surface substrate or user-provided substrate, otherwise blank",
   "associatedPlants": "comma-separated visible or user-provided nearby plants, otherwise blank",
-  "plantSize": "visible or user-provided size only when scale supports it, otherwise blank",
+  "plantSize": "",
   "broadGroup": "flowering_plant, conifer, fern, moss_or_ally, fungus_or_lichen, or unknown",
   "likelyFamily": "string",
   "possibleGenera": ["string"],
@@ -219,6 +219,21 @@ function normalizeCropIdentityPrefillField({
   value: unknown;
   parsed: Record<string, any>;
 }) {
+  if (
+    [
+      "cultivar",
+      "cultivationStatus",
+      "region",
+      "observationDate",
+      "season",
+      "plantSize",
+      "sensoryTraits"
+    ].includes(fieldKey)
+  ) {
+    // These values require a label, device/user action, direct sensory observation,
+    // date selection, or measurement. A model reply cannot establish them from pixels.
+    return "";
+  }
   if (fieldKey === "scientificName") return normalizeScientificName(value);
   if (
     [

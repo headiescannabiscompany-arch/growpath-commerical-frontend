@@ -121,6 +121,12 @@ or another measurement, or wild-versus-cultivated status. Device coordinates com
 from a separate, user-authorized device-location action; they are not AI-prefill output
 and start private.
 
+The provider request must receive the complete crop-identification output contract and
+the complete bounded user context. Transport limits must never cut off the JSON field
+list, final safety rules, or user-supplied context. When a response nevertheless includes
+a prohibited inferred field, the client must leave that field blank unless the user had
+already entered it explicitly.
+
 Narrow results in this order:
 
 1. broad group;
@@ -165,10 +171,13 @@ name the governing jurisdiction and record an authoritative source URL; identity
 community consensus alone is insufficient.
 
 Field Study media follows the ordinary crop-identification evidence ceiling and
-provenance rules. A public observation requires at least one photo, video, or extracted
-frame. Public output may show evidence, counter-evidence, missing evidence, habitat,
-region, and the contributor-approved public note, but must not expose owner-only
-identifiers or private ToolRun provenance.
+provenance rules. A public map observation requires at least one owned photo or extracted
+still that can be converted into a metadata-stripped public derivative. A private source
+video may remain attached to the contributor record, but a video by itself is not a
+public map image. Legacy or failed-derivative observations stay off the public map rather
+than appearing as identity-only pins. Public output may show evidence, counter-evidence,
+missing evidence, habitat, region, and the contributor-approved public note, but must not
+expose owner-only identifiers or private ToolRun provenance.
 
 Location starts private. Observation-level choices are owner-only, study-team exact,
 public approximate, or explicitly confirmed public exact. Public approximate
@@ -200,6 +209,12 @@ may appear only for an authenticated viewer whose cannabis/hemp grow-interest or
 controls permit it. Signed-out viewers and unrelated growers do not receive those pins.
 Publishing a botanical Field Study must not unlock or advertise other cannabis-specific
 tools.
+
+Signed-out viewers may browse photo-ready non-cannabis public observations. Optional
+authentication may add deliberately shared cannabis/hemp observations only when the
+signed-in viewer passes the ordinary interest/content-control policy; query flags never
+override that policy. All Field Study creation, editing, verification, publication, and
+withdrawal routes remain authenticated and role-scoped.
 
 The globe may begin near the viewer's already-permitted browser location; if location
 permission is not enabled it begins over the United States. Viewing the globe never

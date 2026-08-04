@@ -15,6 +15,18 @@ const mockListPersonalPlants = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockCreateEvidenceAsset = jest.fn();
 
+jest.mock("expo-device", () => ({ isDevice: false }));
+
+jest.mock("expo-notifications", () => ({
+  AndroidImportance: { DEFAULT: "default" },
+  addPushTokenListener: jest.fn(),
+  cancelScheduledNotificationAsync: jest.fn(),
+  getPermissionsAsync: jest.fn(),
+  requestPermissionsAsync: jest.fn(),
+  scheduleNotificationAsync: jest.fn(),
+  setNotificationChannelAsync: jest.fn()
+}));
+
 jest.mock("@/api/diagnose", () => ({
   analyzeDiagnosis: (...args: any[]) => mockAnalyzeDiagnosis(...args),
   diagnoseImage: (...args: any[]) => mockDiagnoseImage(...args),
@@ -299,7 +311,7 @@ describe("DiagnoseRoute", () => {
     expect(
       screen.getByText(/2 photos inspected \| usable for cautious triage/i)
     ).toBeTruthy();
-    expect(screen.getByText(/Root zone is not visible/i)).toBeTruthy();
+    expect(screen.getAllByText(/Root zone is not visible/i).length).toBeGreaterThan(0);
     expect(
       screen.getByText("What are the current root-zone EC and pH readings?")
     ).toBeTruthy();
@@ -387,14 +399,23 @@ describe("DiagnoseRoute", () => {
     fireEvent.press(screen.getByLabelText("Run diagnosis"));
 
     await waitFor(() => expect(mockDiagnoseEvidence).toHaveBeenCalled());
-    expect(screen.getAllByText(/Both photos are too blurry/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Both photos are too blurry/i).length).toBeGreaterThan(1);
     expect(
       screen.getAllByText(/A whole-plant context photo is missing/i).length
     ).toBeGreaterThan(0);
     expect(screen.getByText(/2 photos inspected \| replacement needed/i)).toBeTruthy();
-    expect(screen.getByText(/Leaf surfaces cannot be compared/i)).toBeTruthy();
+    expect(
+      screen.getAllByText(/Leaf surfaces cannot be compared/i).length
+    ).toBeGreaterThan(0);
     expect(
       screen.getByText(/Can you add one sharp whole-plant photo in neutral light/i)
+    ).toBeTruthy();
+    expect(screen.getByText("Next evidence or checks")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("How to add requested evidence"));
+    expect(
+      screen.getByText(
+        /Requested next evidence: Both photos are too blurry to inspect leaf detail/
+      )
     ).toBeTruthy();
   });
 

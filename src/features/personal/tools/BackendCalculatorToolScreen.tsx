@@ -37,38 +37,8 @@ import {
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { buildModuleRecordInput } from "@/features/personal/tools/moduleRecordPersistence";
 import { createFacilityTask } from "@/api/facilityTasks";
-import { normalizeEvidenceReview } from "@/features/personal/evidence/evidenceReview";
+import { inferEvidenceReview } from "@/features/personal/evidence/evidenceReview";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
-
-function inferEvidenceReview(outputs: Record<string, any>, payload: Record<string, any>) {
-  const media = outputs.mediaAnalysis || outputs.photoAnalysis || outputs.imageAnalysis;
-  const assetIds = Array.isArray(payload.evidenceAssetIds)
-    ? payload.evidenceAssetIds
-    : [];
-  const mediaEvidence = Array.isArray(payload.mediaEvidence) ? payload.mediaEvidence : [];
-  const photoUrls = Array.isArray(payload.photoUrls) ? payload.photoUrls : [];
-  const requested = Boolean(
-    media || assetIds.length || mediaEvidence.length || photoUrls.length
-  );
-  if (!requested) return null;
-  return normalizeEvidenceReview(
-    {
-      ...(media || {}),
-      evidenceUsed: outputs.evidenceUsed || media?.evidenceUsed,
-      counterEvidence: outputs.counterEvidence || media?.counterEvidence,
-      missingInformation: outputs.missingInformation || media?.missingInformation,
-      requiredNextPhotos: outputs.requiredNextPhotos || media?.requiredNextPhotos,
-      limitations: outputs.limitations || media?.limitations || outputs.warnings
-    },
-    {
-      requested,
-      photoCount:
-        assetIds.length ||
-        mediaEvidence.filter((item: any) => item?.type !== "video").length ||
-        photoUrls.length
-    }
-  );
-}
 
 type ToolField = {
   key: string;

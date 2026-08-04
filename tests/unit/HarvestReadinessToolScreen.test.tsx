@@ -1,5 +1,10 @@
 import React from "react";
-import { fireEvent, renderAsync, waitFor } from "@testing-library/react-native";
+import {
+  fireEvent,
+  fireEventAsync,
+  renderAsync,
+  waitFor
+} from "@testing-library/react-native";
 
 import HarvestReadinessToolRoute, {
   createHarvestPhotoStyles
@@ -332,7 +337,7 @@ describe("HarvestReadinessToolRoute", () => {
     );
     expect(mockListEvidenceAssets).toHaveBeenCalledWith({ growId: "grow-1" });
 
-    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
     await waitFor(() =>
       expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
@@ -356,7 +361,7 @@ describe("HarvestReadinessToolRoute", () => {
 
     expect(screen.getByText(/Add 3 more photos/i)).toBeTruthy();
     expect(screen.getByText(/no AI credit will be used yet/i)).toBeTruthy();
-    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
     expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
   });
 
@@ -364,7 +369,7 @@ describe("HarvestReadinessToolRoute", () => {
     const screen = await renderHarvestReadinessTool();
 
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
-    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
     await waitFor(() =>
       expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
@@ -419,7 +424,7 @@ describe("HarvestReadinessToolRoute", () => {
     const screen = await renderHarvestReadinessTool();
 
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
-    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
     await waitFor(() =>
       expect(
@@ -439,6 +444,76 @@ describe("HarvestReadinessToolRoute", () => {
     );
   });
 
+  it("shows exact missing harvest photo roles in the shared evidence review", async () => {
+    const limitedPhotoAnalysis = {
+      photoUsable: false,
+      imageQuality: "limited",
+      clear: null,
+      cloudy: null,
+      amber: null,
+      confidence: 0.24,
+      dominant: "uncertain",
+      visibleTraits: ["Gland heads are not resolved"],
+      evidence: [],
+      recommendation: "Stabilize the camera and retake the macro set.",
+      limitations: ["The top sample is blurred."],
+      qualityChecks: {
+        focus: "blocking",
+        glare: "none",
+        lighting: "neutral",
+        headVisibility: "unresolved",
+        roleCoverage: "incomplete"
+      },
+      imageFindings: [
+        {
+          imageIndex: 1,
+          role: "top_macro",
+          usableForDistribution: false,
+          trichomeRichRegion: "",
+          excludedReason: "gland heads are blurred",
+          focus: "blurred",
+          glare: "none",
+          visibleHeadDetail: "unresolved"
+        }
+      ],
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      imagesAnalyzed: 4,
+      evidenceUsed: ["64b000000000000000000001"],
+      analysisId: "usage-harvest-limited",
+      aiCreditsUsed: 1,
+      aiTokensRemaining: 56,
+      creditStatus: "charged"
+    };
+    mockAnalyzeTrichomePhotos.mockResolvedValue(limitedPhotoAnalysis);
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        readinessStatus: "insufficient_evidence",
+        confidence: "low",
+        photoAnalysis: { ...limitedPhotoAnalysis, performed: true }
+      },
+      toolRun: { id: "toolrun-limited", _id: "toolrun-limited" }
+    });
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await waitFor(() => expect(mockAnalyzeTrichomePhotos).toHaveBeenCalled());
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
+
+    await waitFor(() => expect(screen.getByText("Evidence review")).toBeTruthy());
+    expect(
+      screen.getAllByText(/Retake photo 1 \(top macro\): gland heads are blurred/).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Add a sharp macro photo.*middle bud calyx/).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Add one wider bud-context photo.*macro samples/).length
+    ).toBeGreaterThan(0);
+  });
+
   it("turns analysis-service failures into retake guidance without filling fields", async () => {
     mockAnalyzeTrichomePhotos.mockRejectedValue(
       new Error("The photo-analysis service is unavailable.")
@@ -446,7 +521,7 @@ describe("HarvestReadinessToolRoute", () => {
     const screen = await renderHarvestReadinessTool();
 
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
-    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
     await waitFor(() =>
       expect(screen.getByText(/Photo analysis did not run/i)).toBeTruthy()
