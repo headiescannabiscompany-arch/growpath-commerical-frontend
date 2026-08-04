@@ -29,8 +29,13 @@ const groups: Array<{ title: string; destinations: Destination[] }> = [
       },
       {
         label: "Field Studies",
+        href: "/home/personal/field-studies",
+        description: "Create and manage editable, collaborative plant observations."
+      },
+      {
+        label: "Discovery Nature",
         href: "/field-observations",
-        description: "Explore shared, location-aware field findings."
+        description: "Explore public, opted-in plant findings on the shared map."
       }
     ]
   },

@@ -1,7 +1,9 @@
 import {
   createStyles,
   fieldStudiesActionLabel,
-  fieldStudiesDestination
+  fieldStudiesDestination,
+  plantIdentificationActionLabel,
+  plantIdentificationDestination
 } from "@/app/field-observations";
 
 describe("Public Field Observations route", () => {
@@ -13,6 +15,14 @@ describe("Public Field Observations route", () => {
       "Switch to Personal for Field Studies"
     );
     expect(fieldStudiesDestination("commercial")).toBe("/account/mode");
+    expect(plantIdentificationDestination("personal")).toBe(
+      "/home/personal/tools/species-crop-id"
+    );
+    expect(plantIdentificationActionLabel("personal")).toBe("Identify a Plant");
+    expect(plantIdentificationDestination("facility")).toBe("/account/mode");
+    expect(plantIdentificationActionLabel("commercial")).toBe(
+      "Switch to Personal for Plant ID"
+    );
   });
 
   it("uses the active palette across search, filters, map, and result states", () => {

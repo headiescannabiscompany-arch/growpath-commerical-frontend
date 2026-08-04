@@ -113,6 +113,14 @@ Crop Identification uses a field-botany narrowing method informed by plant-syste
 
 Collect up to 12 role-diverse photos or extracted still frames: whole plant in habitat, leaf top, leaf underside, stem/node or bark, flower, fruit/seed, and diagnostic special structures. Optional structured context includes growth habit, plant size, leaf arrangement/type/margin/venation, stem traits, flower presence/symmetry/parts/inflorescence, fruit type, special structures, direct smell/sap/texture observations, wild versus cultivated status, indoor/outdoor/greenhouse setting, privacy-controlled region, observation date/season, habitat, substrate/geology, and associated plants. Never instruct a user to taste an unknown plant.
 
+AI crop-identification prefill is additive and evidence-scoped. It must preserve every
+explicit user-entered context value and may fill only traits directly visible in the
+submitted image evidence. It must never invent or overwrite an exact location,
+observation date or season, smell/sap/texture or other sensory observation, plant size
+or another measurement, or wild-versus-cultivated status. Device coordinates come only
+from a separate, user-authorized device-location action; they are not AI-prefill output
+and start private.
+
 Narrow results in this order:
 
 1. broad group;
@@ -169,6 +177,14 @@ observation-level confirmation and must be reduced to a wider regional location 
 the observation is marked sensitive. A private or collaborator-only coordinate must
 never be present in a public response.
 
+Map readiness must be visible as a requirement-by-requirement status. An observation is
+map-ready only when the contributor has selected a Field Study they may edit, the study
+has public visibility, qualifying evidence is attached, the observation is explicitly
+published, location privacy is public approximate or explicitly confirmed public exact,
+and device coordinates have been captured separately from AI. Show every unmet
+requirement instead of treating a partial draft as ready. New studies, observations,
+evidence, publication state, and coordinates remain private by default.
+
 The public discovery surface is an interactive, zoomable globe with clustered pins.
 The server queries only the rounded or explicitly approved public point that the visitor
 is allowed to see; it must never use the protected exact point for viewport filtering, as
@@ -178,11 +194,12 @@ or pin must expose the same identification evidence, review status, and Field St
 
 Cannabis/hemp identification remains allowed from deliberately submitted evidence, but
 ordinary public horticulture discovery excludes those observations. A cannabis/hemp
-observation can appear in public discovery only for an authenticated viewer whose
-existing cannabis/hemp grow interest or content setting permits it, and only after the
-owner separately confirms that public context. Signed-out viewers and unrelated growers
-do not receive those pins. Publishing a botanical Field Study must not unlock or
-advertise other cannabis-specific tools.
+pin must pass the ordinary map-readiness requirements, including deliberate observation
+publication, and the owner must separately confirm the cannabis/hemp public context. It
+may appear only for an authenticated viewer whose cannabis/hemp grow-interest or content
+controls permit it. Signed-out viewers and unrelated growers do not receive those pins.
+Publishing a botanical Field Study must not unlock or advertise other cannabis-specific
+tools.
 
 The globe may begin near the viewer's already-permitted browser location; if location
 permission is not enabled it begins over the United States. Viewing the globe never

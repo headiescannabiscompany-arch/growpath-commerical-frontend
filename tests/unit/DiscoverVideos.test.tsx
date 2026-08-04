@@ -5,6 +5,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 const mockPush = jest.fn();
 const mockSearchVideos = jest.fn();
 let mockThemeMode: "day" | "night" = "night";
+let mockWorkspaceMode: "personal" | "commercial" = "personal";
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush })
@@ -47,6 +48,9 @@ jest.mock("@/api/courses", () => ({
 jest.mock("@/api/videos", () => ({
   searchVideos: (...args: any[]) => mockSearchVideos(...args)
 }));
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({ mode: mockWorkspaceMode })
+}));
 jest.mock("@/theme/appTheme", () => {
   const actual = jest.requireActual("@/theme/appTheme");
   return {
@@ -68,6 +72,7 @@ describe("Discover video search", () => {
     mockPush.mockReset();
     mockSearchVideos.mockReset();
     mockThemeMode = "night";
+    mockWorkspaceMode = "personal";
     mockSearchVideos.mockResolvedValue([
       {
         id: "video-1",
@@ -80,6 +85,17 @@ describe("Discover video search", () => {
     ]);
   });
 
+  it("routes non-personal workspaces through the workspace switcher for Plant ID", async () => {
+    mockWorkspaceMode = "commercial";
+    render(<DiscoverDirectory />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Switch to Personal for Plant ID")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Open Switch to Personal for Plant ID"));
+    expect(mockPush).toHaveBeenCalledWith("/account/mode");
+  });
+
   it("shows accessible videos as a first-class Discover section", async () => {
     render(<DiscoverDirectory />);
 
@@ -88,6 +104,8 @@ describe("Discover video search", () => {
     });
     expect(screen.getByText("Videos")).toBeTruthy();
     expect(screen.getAllByText("Discovery Nature")).toHaveLength(1);
+    expect(screen.getByText("Identify a Plant")).toBeTruthy();
+    expect(screen.getByText("Explore Mapped Plant Findings")).toBeTruthy();
     expect(screen.queryByLabelText("Loading globe preview")).toBeNull();
     expect(screen.queryByLabelText("Open Discovery Nature globe")).toBeNull();
     expect(mockSearchVideos).toHaveBeenCalledWith({
@@ -109,6 +127,11 @@ describe("Discover video search", () => {
 
     fireEvent.press(screen.getByLabelText("Open Tomato training"));
     expect(mockPush).toHaveBeenCalledWith("/videos/video-1");
+
+    fireEvent.press(screen.getByLabelText("Open Identify a Plant"));
+    expect(mockPush).toHaveBeenCalledWith("/home/personal/tools/species-crop-id");
+    fireEvent.press(screen.getByLabelText("Open Explore Mapped Plant Findings"));
+    expect(mockPush).toHaveBeenCalledWith("/field-observations");
   });
 
   it.each(["day", "night"] as const)(

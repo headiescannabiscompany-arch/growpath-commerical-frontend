@@ -23,6 +23,8 @@ describe("PersonalMoreRoute", () => {
     expect(screen.getByLabelText("Open AI Tools")).toBeTruthy();
     expect(screen.getByLabelText("Open Courses")).toBeTruthy();
     expect(screen.getByLabelText("Open Videos")).toBeTruthy();
+    expect(screen.getByLabelText("Open Field Studies")).toBeTruthy();
+    expect(screen.getByLabelText("Open Discovery Nature")).toBeTruthy();
     expect(screen.getByLabelText("Open Switch workspace")).toBeTruthy();
   });
 });

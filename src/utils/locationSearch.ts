@@ -1,6 +1,7 @@
 export type PublicCoordinates = {
   latitude: number;
   longitude: number;
+  accuracyMeters?: number;
 };
 
 function finiteCoordinate(value: unknown, min: number, max: number) {
@@ -40,7 +41,13 @@ export function requestCurrentCoordinates(): Promise<PublicCoordinates> {
           reject(new Error("The device returned an invalid location."));
           return;
         }
-        resolve(coordinates);
+        const accuracyMeters = Number(position?.coords?.accuracy);
+        resolve({
+          ...coordinates,
+          ...(Number.isFinite(accuracyMeters) && accuracyMeters >= 0
+            ? { accuracyMeters }
+            : {})
+        });
       },
       (error: any) => {
         reject(

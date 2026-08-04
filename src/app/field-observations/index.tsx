@@ -18,6 +18,7 @@ import FieldObservationGlobe, {
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { resolveImageUri } from "@/utils/photoUploads";
 
 const VERIFICATION_FILTERS = [
   { value: "", label: "All review states" },
@@ -42,11 +43,17 @@ function observationName(observation: FieldObservation) {
   );
 }
 
-function observationImage(observation: FieldObservation) {
-  const evidenceUrl = observation.evidenceAssets?.find(
-    (asset) => asset.kind !== "video" && (asset.url || asset.uri)
-  );
-  return String(evidenceUrl?.url || evidenceUrl?.uri || observation.photoUrls?.[0] || "");
+function observationImages(observation: FieldObservation) {
+  return Array.from(
+    new Set(
+      [
+        ...(observation.evidenceAssets || [])
+          .filter((asset) => asset.kind !== "video")
+          .map((asset) => String(asset.url || asset.uri || "")),
+        ...(observation.photoUrls || []).map(String)
+      ].filter(Boolean)
+    )
+  ).map(resolveImageUri);
 }
 
 function readableStatus(value = "") {
@@ -61,6 +68,14 @@ export function fieldStudiesActionLabel(mode: string) {
   return mode === "personal"
     ? "Start a Field Study"
     : "Switch to Personal for Field Studies";
+}
+
+export function plantIdentificationDestination(mode: string) {
+  return mode === "personal" ? "/home/personal/tools/species-crop-id" : "/account/mode";
+}
+
+export function plantIdentificationActionLabel(mode: string) {
+  return mode === "personal" ? "Identify a Plant" : "Switch to Personal for Plant ID";
 }
 
 export default function PublicFieldObservationsScreen() {
@@ -81,28 +96,32 @@ export default function PublicFieldObservationsScreen() {
   const [error, setError] = useState("");
   const viewportRef = useRef<FieldObservationViewport | null>(null);
   const viewportTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadRequestRef = useRef(0);
 
   const load = useCallback(
     async (search = activeQuery) => {
+      const requestId = loadRequestRef.current + 1;
+      loadRequestRef.current = requestId;
       setLoading(true);
       setError("");
       try {
         const viewport = viewportRef.current;
-        setObservations(
-          await listPublicFieldObservations({
-            q: search,
-            bbox: viewport
-              ? [viewport.west, viewport.south, viewport.east, viewport.north]
-              : undefined,
-            verificationStatus: verificationStatus || undefined,
-            invasiveStatus: invasiveStatus || undefined,
-            limit: 500
-          })
-        );
+        const nextObservations = await listPublicFieldObservations({
+          q: search,
+          bbox: viewport
+            ? [viewport.west, viewport.south, viewport.east, viewport.north]
+            : undefined,
+          verificationStatus: verificationStatus || undefined,
+          invasiveStatus: invasiveStatus || undefined,
+          limit: 500
+        });
+        if (loadRequestRef.current !== requestId) return;
+        setObservations(nextObservations);
       } catch (loadError: any) {
+        if (loadRequestRef.current !== requestId) return;
         setError(loadError?.message || "Public observations could not be loaded.");
       } finally {
-        setLoading(false);
+        if (loadRequestRef.current === requestId) setLoading(false);
       }
     },
     [activeQuery, invasiveStatus, verificationStatus]
@@ -114,6 +133,7 @@ export default function PublicFieldObservationsScreen() {
 
   useEffect(
     () => () => {
+      loadRequestRef.current += 1;
       if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
     },
     []
@@ -175,6 +195,23 @@ export default function PublicFieldObservationsScreen() {
         compare what people are finding. Every pin was deliberately published; map points
         may be widened to protect people, private property, and sensitive species.
       </Text>
+
+      <View style={styles.primaryActions}>
+        <Link href={plantIdentificationDestination(entitlements.mode)} asChild>
+          <Pressable accessibilityRole="link" style={styles.primaryAction}>
+            <Text style={styles.primaryActionText}>
+              {plantIdentificationActionLabel(entitlements.mode)}
+            </Text>
+          </Pressable>
+        </Link>
+        <Link href={fieldStudiesDestination(entitlements.mode)} asChild>
+          <Pressable accessibilityRole="link" style={styles.secondaryAction}>
+            <Text style={styles.secondaryActionText}>
+              {fieldStudiesActionLabel(entitlements.mode)}
+            </Text>
+          </Pressable>
+        </Link>
+      </View>
 
       <View style={styles.searchRow}>
         <TextInput
@@ -290,6 +327,7 @@ export default function PublicFieldObservationsScreen() {
             <View style={styles.clusterList}>
               {highlightedObservations.map((observation) => {
                 const id = String(observation.id || observation._id);
+                const images = observationImages(observation);
                 return (
                   <Pressable
                     accessibilityRole="button"
@@ -297,16 +335,25 @@ export default function PublicFieldObservationsScreen() {
                     onPress={() => setHighlightedObservationIds([id])}
                     style={styles.clusterListItem}
                   >
-                    <Text style={styles.clusterListTitle}>
-                      {observationName(observation)}
-                    </Text>
-                    <Text style={styles.cardMeta}>
-                      {String(
-                        observation.observationContext?.region ||
-                          observation.location?.label ||
-                          "Shared map location"
-                      )}
-                    </Text>
+                    {images[0] ? (
+                      <Image
+                        accessibilityLabel={`Evidence for ${observationName(observation)}`}
+                        source={{ uri: images[0] }}
+                        style={styles.clusterListImage}
+                      />
+                    ) : null}
+                    <View style={styles.clusterListBody}>
+                      <Text style={styles.clusterListTitle}>
+                        {observationName(observation)}
+                      </Text>
+                      <Text style={styles.cardMeta}>
+                        {String(
+                          observation.observationContext?.region ||
+                            observation.location?.label ||
+                            "Shared map location"
+                        )}
+                      </Text>
+                    </View>
                   </Pressable>
                 );
               })}
@@ -315,12 +362,22 @@ export default function PublicFieldObservationsScreen() {
         ) : null}
         {selectedObservation ? (
           <View style={styles.selectedCard}>
-            {observationImage(selectedObservation) ? (
-              <Image
-                accessibilityLabel={`Evidence for ${observationName(selectedObservation)}`}
-                source={{ uri: observationImage(selectedObservation) }}
-                style={styles.selectedImage}
-              />
+            {observationImages(selectedObservation).length ? (
+              <ScrollView
+                accessibilityLabel={`Photos for ${observationName(selectedObservation)}`}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.photoGallery}
+              >
+                {observationImages(selectedObservation).map((uri, index) => (
+                  <Image
+                    accessibilityLabel={`Evidence photo ${index + 1} for ${observationName(selectedObservation)}`}
+                    key={uri}
+                    source={{ uri }}
+                    style={styles.selectedImage}
+                  />
+                ))}
+              </ScrollView>
             ) : null}
             <View style={styles.selectedBody}>
               <Text style={styles.selectedEyebrow}>Selected field finding</Text>
@@ -397,6 +454,7 @@ export default function PublicFieldObservationsScreen() {
         observations.map((observation) => {
           const studySlug = observation.study?.slug;
           const precision = (observation.location as any)?.precision;
+          const images = observationImages(observation);
           return (
             <View
               key={String(observation.id || observation._id)}
@@ -407,6 +465,13 @@ export default function PublicFieldObservationsScreen() {
                 ) && styles.cardSelected
               ]}
             >
+              {images[0] ? (
+                <Image
+                  accessibilityLabel={`Evidence for ${observationName(observation)}`}
+                  source={{ uri: images[0] }}
+                  style={styles.cardImage}
+                />
+              ) : null}
               <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
                 {observationName(observation)}
               </Text>
@@ -453,6 +518,27 @@ export const createStyles = (palette: ThemePalette) =>
     content: { gap: 15, padding: 20, paddingBottom: 56 },
     title: { color: palette.heroText, fontSize: 29, fontWeight: "800" },
     subtitle: { color: palette.textMuted, fontSize: 15, lineHeight: 22 },
+    primaryActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    primaryAction: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 42,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    primaryActionText: { color: palette.accentText, fontWeight: "800" },
+    secondaryAction: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 42,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    secondaryActionText: { color: palette.link, fontWeight: "800" },
     filterPanel: { gap: 8 },
     filterLabel: { color: palette.text, fontSize: 13, fontWeight: "800" },
     filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
@@ -525,14 +611,19 @@ export const createStyles = (palette: ThemePalette) =>
       marginTop: 4
     },
     clusterListItem: {
+      alignItems: "center",
       backgroundColor: palette.surface,
       borderColor: palette.border,
       borderRadius: 10,
       borderWidth: 1,
+      flexDirection: "row",
+      gap: 10,
       minWidth: 190,
       paddingHorizontal: 11,
       paddingVertical: 9
     },
+    clusterListImage: { borderRadius: 8, height: 56, width: 56 },
+    clusterListBody: { flex: 1, gap: 3 },
     clusterListTitle: { color: palette.text, fontWeight: "800" },
     selectedCard: {
       backgroundColor: palette.surface,
@@ -550,6 +641,7 @@ export const createStyles = (palette: ThemePalette) =>
       height: 112,
       width: 136
     },
+    photoGallery: { gap: 8, paddingRight: 4 },
     selectedBody: {
       flex: 1,
       gap: 4,
@@ -598,6 +690,13 @@ export const createStyles = (palette: ThemePalette) =>
       borderWidth: 1,
       gap: 5,
       padding: 15
+    },
+    cardImage: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: 10,
+      height: 180,
+      marginBottom: 6,
+      width: "100%"
     },
     cardSelected: { borderColor: palette.accent, borderWidth: 2 },
     cardTitle: { color: palette.text, fontSize: 18, fontWeight: "800" },
