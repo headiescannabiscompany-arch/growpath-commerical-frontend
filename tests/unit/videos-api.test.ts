@@ -327,6 +327,159 @@ describe("shared video API", () => {
     ]);
   });
 
+  it("uses Safari File metadata when the picker omits top-level MOV metadata", async () => {
+    const Platform = require("react-native").Platform;
+    const originalPlatform = Platform.OS;
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "web" });
+    const safariFile = {
+      name: "IMG_0042.MOV",
+      type: "video/quicktime",
+      size: 4096,
+      slice: jest.fn((start: number, end: number) => ({ size: end - start }))
+    };
+    mockApiRequest.mockImplementation(async (path: string) => {
+      if (path === "/api/videos/uploads/initiate") {
+        return {
+          assetId: "asset-safari-mov",
+          upload: { strategy: "multipart", totalParts: 1, partSizeBytes: 4096 }
+        };
+      }
+      if (path.endsWith("/part-url")) {
+        return { url: "https://r2.example/safari-mov-part" };
+      }
+      if (path.endsWith("/complete")) {
+        return {
+          assetId: "asset-safari-mov",
+          url: "/api/videos/uploads/asset-safari-mov/object",
+          bytes: 4096,
+          mimeType: "video/quicktime"
+        };
+      }
+      throw new Error("Unexpected API path " + path);
+    });
+    mockUploadBinary.mockImplementation(async (options) => {
+      options.onProgress(1);
+      return { status: 200, etag: '"safari-mov-part"' };
+    });
+    const { uploadVideoFile } = require("@/api/videos");
+
+    try {
+      await expect(
+        uploadVideoFile(
+          {
+            uri: "blob:safari-mov",
+            file: safariFile
+          },
+          { workspaceType: "personal" },
+          () => undefined,
+          { clientUploadKey: "safari-mov-key" }
+        )
+      ).resolves.toMatchObject({
+        assetId: "asset-safari-mov",
+        bytes: 4096,
+        mimeType: "video/quicktime"
+      });
+    } finally {
+      Object.defineProperty(Platform, "OS", {
+        configurable: true,
+        value: originalPlatform
+      });
+    }
+
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/api/videos/uploads/initiate",
+      expect.objectContaining({
+        body: expect.objectContaining({
+          fileName: "IMG_0042.MOV",
+          mimeType: "video/quicktime",
+          bytes: 4096,
+          supportsMultipart: true
+        })
+      })
+    );
+    expect(mockUploadBinary).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: "https://r2.example/safari-mov-part",
+        body: expect.any(Object),
+        mimeType: "video/quicktime"
+      })
+    );
+  });
+
+  it("rejects a missing protected upload URL before sending video bytes", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      assetId: "asset-missing-url",
+      upload: { strategy: "single", url: "" }
+    });
+    const { uploadVideoFile } = require("@/api/videos");
+
+    await expect(
+      uploadVideoFile(
+        {
+          uri: "file:///plant-walk.mov",
+          fileName: "plant-walk.mov",
+          fileSize: 2048
+        },
+        { workspaceType: "personal" },
+        () => undefined,
+        { clientUploadKey: "missing-url-key" }
+      )
+    ).rejects.toMatchObject({
+      code: "VIDEO_UPLOAD_URL_INVALID",
+      message: expect.stringContaining("secure video upload URL")
+    });
+    expect(mockUploadBinary).not.toHaveBeenCalled();
+  });
+
+  it("turns a stale video part reservation into actionable recovery guidance", async () => {
+    const Platform = require("react-native").Platform;
+    const originalPlatform = Platform.OS;
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "web" });
+    const file = {
+      size: 4096,
+      slice: jest.fn((start: number, end: number) => ({ size: end - start }))
+    };
+    mockApiRequest
+      .mockResolvedValueOnce({
+        assetId: "asset-stale",
+        upload: { strategy: "multipart", totalParts: 1, partSizeBytes: 4096 }
+      })
+      .mockRejectedValueOnce(
+        Object.assign(new Error("Not found"), {
+          status: 404,
+          code: "VIDEO_UPLOAD_NOT_FOUND"
+        })
+      );
+    const { uploadVideoFile } = require("@/api/videos");
+
+    try {
+      await expect(
+        uploadVideoFile(
+          {
+            uri: "blob:stale-video",
+            fileName: "stale-video.mov",
+            mimeType: "video/quicktime",
+            file
+          },
+          { workspaceType: "personal" },
+          () => undefined,
+          { clientUploadKey: "stale-video-key" }
+        )
+      ).rejects.toMatchObject({
+        status: 404,
+        code: "VIDEO_UPLOAD_RESERVATION_EXPIRED",
+        message: expect.stringContaining("Refresh the page")
+      });
+    } finally {
+      Object.defineProperty(Platform, "OS", {
+        configurable: true,
+        value: originalPlatform
+      });
+    }
+    expect(mockUploadBinary).not.toHaveBeenCalled();
+  });
+
   it("uploads a native one-part multipart video from its whole file URI", async () => {
     const Platform = require("react-native").Platform;
     const originalPlatform = Platform.OS;

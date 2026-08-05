@@ -238,7 +238,55 @@ function selectedFileName(file: SelectedVideoFile) {
   const fallback = String(file.uri || "")
     .split(/[\\/]/)
     .pop();
-  return String(file.fileName || file.name || fallback || "video").slice(-160);
+  return String(
+    file.fileName || file.name || (file.file as any)?.name || fallback || "video"
+  ).slice(-160);
+}
+
+function selectedMimeType(file: SelectedVideoFile) {
+  const explicit = String(file.mimeType || (file.file as any)?.type || "")
+    .trim()
+    .toLowerCase();
+  if (explicit.startsWith("video/")) return explicit;
+
+  const fileName = selectedFileName(file).toLowerCase();
+  if (fileName.endsWith(".mov")) return "video/quicktime";
+  if (fileName.endsWith(".m4v")) return "video/x-m4v";
+  if (fileName.endsWith(".webm")) return "video/webm";
+  return "video/mp4";
+}
+
+function protectedVideoUploadUrl(value: unknown) {
+  const raw = String(value || "").trim();
+  try {
+    const parsed = new URL(raw);
+    const localDevelopmentUrl =
+      process.env.NODE_ENV !== "production" &&
+      parsed.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "::1"].includes(parsed.hostname);
+    if (parsed.protocol === "https:" || localDevelopmentUrl) return raw;
+  } catch {
+    // Use the actionable error below for absent, relative, or malformed signed URLs.
+  }
+
+  const error: any = new Error(
+    "GrowPath could not prepare a secure video upload URL. Refresh the page, remove the failed video, and select it again."
+  );
+  error.code = "VIDEO_UPLOAD_URL_INVALID";
+  throw error;
+}
+
+function unavailableVideoReservation(error: any) {
+  const status = Number(error?.status || 0);
+  const code = String(error?.code || "").toUpperCase();
+  if (status !== 404 && status !== 410 && !code.includes("NOT_FOUND")) return error;
+
+  const unavailable: any = new Error(
+    "This video upload is no longer available. Refresh the page, remove the failed video, and select it again."
+  );
+  unavailable.code = "VIDEO_UPLOAD_RESERVATION_EXPIRED";
+  unavailable.status = status || 404;
+  return unavailable;
 }
 
 export async function abortVideoUpload(
@@ -266,21 +314,26 @@ export async function uploadVideoFile(
   const clientUploadKey = String(options?.clientUploadKey || "").trim();
   if (!clientUploadKey) throw new Error("A stable video upload key is required.");
   const bytes = await selectedFileBytes(file);
-  const mimeType = String(file.mimeType || "video/mp4").toLowerCase();
+  const mimeType = selectedMimeType(file);
   const supportsMultipart =
     Platform.OS === "web" && Boolean(file.file && typeof file.file.slice === "function");
-  const initiated: any = await apiRequest("/api/videos/uploads/initiate", {
-    method: "POST",
-    signal: options.signal,
-    body: {
-      fileName: selectedFileName(file),
-      mimeType,
-      bytes,
-      supportsMultipart,
-      clientUploadKey,
-      ...workspace
-    }
-  });
+  let initiated: any;
+  try {
+    initiated = await apiRequest("/api/videos/uploads/initiate", {
+      method: "POST",
+      signal: options.signal,
+      body: {
+        fileName: selectedFileName(file),
+        mimeType,
+        bytes,
+        supportsMultipart,
+        clientUploadKey,
+        ...workspace
+      }
+    });
+  } catch (error) {
+    throw unavailableVideoReservation(error);
+  }
   const assetId = String(initiated?.assetId || "");
   if (!assetId) {
     throw new Error("GrowPath did not return a valid protected upload reservation.");
@@ -305,7 +358,7 @@ export async function uploadVideoFile(
     let parts: Array<{ partNumber: number; etag: string }> = [];
     if (initiated.upload.strategy === "single") {
       await uploadBinaryToSignedUrl({
-        url: String(initiated.upload.url || ""),
+        url: protectedVideoUploadUrl(initiated.upload.url),
         uri: file.uri,
         body: file.file,
         mimeType,
@@ -347,7 +400,7 @@ export async function uploadVideoFile(
                 }
               );
               const uploaded = await uploadBinaryToSignedUrl({
-                url: String(signed?.url || ""),
+                url: protectedVideoUploadUrl(signed?.url),
                 uri: file.uri,
                 body,
                 mimeType,
@@ -413,7 +466,7 @@ export async function uploadVideoFile(
     // Network and completion failures are ambiguous: the object may already be active
     // even when the response was lost. Keep the reservation so Retry can safely reuse
     // this client key. Explicit Remove/unmount performs the bounded DELETE cleanup.
-    throw error;
+    throw unavailableVideoReservation(error);
   }
 }
 
