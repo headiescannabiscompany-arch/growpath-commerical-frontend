@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -395,6 +395,7 @@ export default function SpeciesCropIdToolRoute() {
   const [publishObservation, setPublishObservation] = useState(false);
   const [sensitiveSpecies, setSensitiveSpecies] = useState(false);
   const [locationBusy, setLocationBusy] = useState(false);
+  const [identificationBusy, setIdentificationBusy] = useState(false);
   const [newStudyTitle, setNewStudyTitle] = useState("");
   const [creatingStudy, setCreatingStudy] = useState(false);
   const [publishingStudy, setPublishingStudy] = useState(false);
@@ -407,6 +408,7 @@ export default function SpeciesCropIdToolRoute() {
   const [savedFieldObservationPublished, setSavedFieldObservationPublished] =
     useState(false);
   const [activeToolRun, setActiveToolRun] = useState<ToolRun | null>(null);
+  const activeToolRunRef = useRef<ToolRun | null>(null);
   const [fieldStudyNotice, setFieldStudyNotice] = useState("");
   const [fieldStudyError, setFieldStudyError] = useState("");
   const evidenceInputKey = useMemo(
@@ -463,6 +465,7 @@ export default function SpeciesCropIdToolRoute() {
   }, [evidenceInputKey]);
 
   useEffect(() => {
+    if (!showLocationAndSharing && !params.fieldStudyId) return;
     let active = true;
     listFieldStudies()
       .then((studies) => {
@@ -489,16 +492,17 @@ export default function SpeciesCropIdToolRoute() {
     return () => {
       active = false;
     };
-  }, [params.fieldStudyId]);
+  }, [params.fieldStudyId, showLocationAndSharing]);
 
   async function syncSavedRunLocation(nextLocation: PublicCoordinates | null) {
-    const toolRunId = String(activeToolRun?.id || activeToolRun?._id || "");
+    const sourceToolRun = activeToolRunRef.current;
+    const toolRunId = String(sourceToolRun?.id || sourceToolRun?._id || "");
     if (!toolRunId) {
       setObservationLocation(nextLocation);
       return;
     }
     const existingInput =
-      activeToolRun?.inputs || activeToolRun?.input || activeToolRun?.params || {};
+      sourceToolRun?.inputs || sourceToolRun?.input || sourceToolRun?.params || {};
     const capturedLocation = nextLocation
       ? {
           ...nextLocation,
@@ -519,13 +523,29 @@ export default function SpeciesCropIdToolRoute() {
           : "The location could not be removed from the Saved Run. Nothing changed."
       );
     }
-    setActiveToolRun(updated);
+    const currentToolRunId = String(
+      activeToolRunRef.current?.id || activeToolRunRef.current?._id || ""
+    );
+    // The coordinate change is the user's latest explicit intent for the current
+    // form, even if evidence edits invalidated the saved result while it was pending.
     setObservationLocation(nextLocation);
+    if (currentToolRunId !== toolRunId) {
+      return;
+    }
+    activeToolRunRef.current = updated;
+    setActiveToolRun(updated);
+  }
+
+  function handleToolRunChange(toolRun: ToolRun | null) {
+    activeToolRunRef.current = toolRun;
+    setActiveToolRun(toolRun);
   }
 
   async function captureCurrentLocation() {
+    if (identificationBusy) return;
     setLocationBusy(true);
     setFieldStudyError("");
+    setFieldStudyNotice("");
     try {
       await syncSavedRunLocation(await requestCurrentCoordinates());
     } catch (locationError: any) {
@@ -539,60 +559,17 @@ export default function SpeciesCropIdToolRoute() {
   }
 
   async function removeCurrentLocation() {
-    if (locationBusy) return;
+    if (locationBusy || identificationBusy) return;
     setLocationBusy(true);
     setFieldStudyError("");
-    let publicObservationWithdrawn = false;
     try {
-      if (
-        savedFieldObservationPublished &&
-        savedFieldObservationId &&
-        selectedFieldStudyId
-      ) {
-        try {
-          await updateFieldObservation(selectedFieldStudyId, savedFieldObservationId, {
-            location: {
-              ...(observationLocation || {}),
-              privacy: "private",
-              exactLocationPublicConfirmed: false
-            },
-            publication: {
-              status: "withdrawn",
-              sensitiveSpecies,
-              cannabisContextConfirmed: false,
-              publicNotes: ""
-            }
-          });
-        } catch (_withdrawError) {
-          throw new Error(
-            "The public Nature pin could not be withdrawn, so the captured location was not removed. The pin may still be public."
-          );
-        }
-        publicObservationWithdrawn = true;
-        setSavedFieldObservationPublished(false);
-        setPublishObservation(false);
-        setLocationPrivacy("private");
-        setCannabisMapConsent(false);
-        setFieldStudyNotice(
-          "The public Nature pin was withdrawn. Removing its private Saved Run location next."
-        );
-      }
       await syncSavedRunLocation(null);
-      setPublishObservation(false);
-      setLocationPrivacy("private");
-      setCannabisMapConsent(false);
       setFieldStudyNotice(
-        publicObservationWithdrawn
-          ? "The public Nature pin was withdrawn and the captured location was removed from its Saved Run."
-          : "The captured location was removed from its Saved Run."
+        "The private location was removed from this Plant ID only. Field Studies and Nature were not changed."
       );
     } catch (locationError: any) {
       setFieldStudyError(
-        publicObservationWithdrawn
-          ? `The public Nature pin was withdrawn, but the private Saved Run location could not be removed. ${
-              locationError?.message || "Try removing it again."
-            }`
-          : locationError?.message || "The captured location could not be removed."
+        locationError?.message || "The private Plant ID location could not be removed."
       );
     } finally {
       setLocationBusy(false);
@@ -610,14 +587,10 @@ export default function SpeciesCropIdToolRoute() {
       return;
     }
     setSelectedFieldStudyId(id);
+    setPublishObservation(false);
+    setLocationPrivacy("private");
     setConfirmPublicStudy(false);
     setCannabisMapConsent(false);
-    if (!wantsNatureMap) {
-      const defaultPrivacy = study.defaultLocationPrivacy;
-      setLocationPrivacy(
-        defaultPrivacy === "collaborators" ? "collaborators" : "private"
-      );
-    }
   }
 
   async function createFieldStudyHere() {
@@ -680,7 +653,10 @@ export default function SpeciesCropIdToolRoute() {
       tool="species-crop-id"
       toolKey="species-crop-id"
       externalInputKey={evidenceInputKey}
-      onToolRunChange={setActiveToolRun}
+      onToolRunChange={handleToolRunChange}
+      executionBlocked={locationBusy}
+      executionBlockedMessage="Finish the active location request before identifying this plant."
+      onExecutionBusyChange={setIdentificationBusy}
       title="Species / Crop Identification"
       subtitle="Narrow an unknown plant by combining photos, morphology, habitat, geography, and season. A grow is optional."
       growOptional
@@ -706,6 +682,79 @@ export default function SpeciesCropIdToolRoute() {
             value={evidenceAssets}
             onChange={setEvidenceAssets}
           />
+          <View style={styles.privateLocationPanel}>
+            <Text style={styles.evidenceTitle}>Private plant location</Text>
+            <Text style={styles.evidenceGuidance}>
+              Add the device location directly to this Plant ID. A Field Study is not
+              required, and the exact coordinates are never shared by this action.
+            </Text>
+            <View style={styles.choiceRow}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Include or update current location privately with this Plant ID"
+                disabled={locationBusy || identificationBusy}
+                onPress={captureCurrentLocation}
+                style={[
+                  styles.secondaryButton,
+                  (locationBusy || identificationBusy) && styles.disabled
+                ]}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {locationBusy
+                    ? "Reading location..."
+                    : observationLocation
+                      ? "Update Private Location"
+                      : "Include Current Location Privately"}
+                </Text>
+              </Pressable>
+              {observationLocation ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Remove private location from this Plant ID"
+                  disabled={locationBusy || identificationBusy}
+                  onPress={() => void removeCurrentLocation()}
+                  style={[
+                    styles.inlineLink,
+                    (locationBusy || identificationBusy) && styles.disabled
+                  ]}
+                >
+                  <Text style={styles.secondaryButtonText}>Remove Private Location</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            <Text
+              accessibilityLiveRegion="polite"
+              style={observationLocation ? styles.statusGood : styles.evidenceGuidance}
+            >
+              {observationLocation
+                ? activeToolRun
+                  ? `Exact location saved privately with this Plant ID${
+                      Number.isFinite(observationLocation.accuracyMeters)
+                        ? ` (about ${Math.round(
+                            Number(observationLocation.accuracyMeters)
+                          )} m accuracy)`
+                        : ""
+                    }. Not shared.`
+                  : `Exact location is ready to save privately when identification completes${
+                      Number.isFinite(observationLocation.accuracyMeters)
+                        ? ` (about ${Math.round(
+                            Number(observationLocation.accuracyMeters)
+                          )} m accuracy)`
+                        : ""
+                    }. Not shared.`
+                : "Optional. Plant ID works without a device location."}
+            </Text>
+          </View>
+          {fieldStudyError ? (
+            <Text accessibilityRole="alert" style={styles.fieldStudyError}>
+              {fieldStudyError}
+            </Text>
+          ) : null}
+          {fieldStudyNotice ? (
+            <Text accessibilityLiveRegion="polite" style={styles.statusGood}>
+              {fieldStudyNotice}
+            </Text>
+          ) : null}
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ expanded: showLocationAndSharing }}
@@ -714,62 +763,19 @@ export default function SpeciesCropIdToolRoute() {
           >
             <Text style={styles.secondaryButtonText}>
               {showLocationAndSharing
-                ? "Hide location & Nature sharing"
-                : "Optional: add location or share to Nature"}
+                ? "Hide Field Study & Nature sharing"
+                : "Optional: add to a Field Study or Nature"}
             </Text>
           </Pressable>
           {showLocationAndSharing ? (
             <View style={styles.fieldStudySection}>
               <Text style={styles.evidenceTitle}>
-                Step 2 — Choose location and map sharing
+                Optional — Field Study and Nature sharing
               </Text>
               <Text style={styles.evidenceGuidance}>
-                Every identification stays in Saved Runs. To place an approximate pin on
-                the Nature map, select or create a Field Study, capture its observation
-                location, make the study public, and choose Nature map below. Nothing is
-                published by default.
-              </Text>
-
-              <Text style={styles.fieldLabel}>Observation location (optional)</Text>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Use current location for this plant observation"
-                disabled={locationBusy}
-                onPress={captureCurrentLocation}
-                style={styles.secondaryButton}
-              >
-                <Text style={styles.secondaryButtonText}>
-                  {locationBusy
-                    ? "Reading location..."
-                    : observationLocation
-                      ? "Location captured — update"
-                      : "Use Current Location"}
-                </Text>
-              </Pressable>
-              {observationLocation ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Remove location from this plant observation"
-                  disabled={locationBusy}
-                  onPress={() => void removeCurrentLocation()}
-                  style={styles.inlineLink}
-                >
-                  <Text style={styles.secondaryButtonText}>Remove captured location</Text>
-                </Pressable>
-              ) : null}
-              <Text
-                accessibilityLiveRegion="polite"
-                style={observationLocation ? styles.statusGood : styles.evidenceGuidance}
-              >
-                {observationLocation
-                  ? `Location captured${
-                      Number.isFinite(observationLocation.accuracyMeters)
-                        ? ` (about ${Math.round(
-                            Number(observationLocation.accuracyMeters)
-                          )} m accuracy)`
-                        : ""
-                    }. Exact coordinates stay private. If an identification result already exists, this location is synchronized to its Saved Run before it is retained; a Nature pin uses only a protected public location.`
-                  : "You can identify the plant without location. Add a general region below if device location is unavailable."}
+                After identification, this Plant ID can keep its private location in Saved
+                Runs without a Field Study. Use this section only for collaboration or
+                deliberate Nature publishing. Nothing is published by default.
               </Text>
 
               <Text style={styles.fieldLabel}>
@@ -1037,14 +1043,6 @@ export default function SpeciesCropIdToolRoute() {
                   ) : null}
                 </>
               ) : null}
-              {fieldStudyError ? (
-                <Text style={styles.fieldStudyError}>{fieldStudyError}</Text>
-              ) : null}
-              {fieldStudyNotice ? (
-                <Text accessibilityLiveRegion="polite" style={styles.statusGood}>
-                  {fieldStudyNotice}
-                </Text>
-              ) : null}
               <View style={styles.fieldMapLink}>
                 <Text style={styles.evidenceGuidance}>
                   See public, opt-in observations on the shared Nature map. Personal
@@ -1072,8 +1070,9 @@ export default function SpeciesCropIdToolRoute() {
         clearUnfilled: false,
         preserveAllExistingFields: true,
         evidenceAssetIds: () => uploadedEvidence.evidenceAssetIds,
-        isReady: () => uploadedEvidence.images.length > 0,
-        notReadyMessage: "Upload at least one photo before starting AI identification.",
+        isReady: () => uploadedEvidence.images.length > 0 && !locationBusy,
+        notReadyMessage:
+          "Finish the photo upload and any active location request before starting AI identification.",
         runAfterPrefill: true,
         buildMessage: ({ values }) =>
           `${PLANT_ID_AI_PROMPT}\n\nUser-entered context:\n${JSON.stringify(
@@ -1791,6 +1790,14 @@ export function createSpeciesCropIdStyles(palette: ThemePalette) {
       marginTop: 8,
       padding: 13
     },
+    privateLocationPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: 12,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
     fieldLabel: { color: palette.text, fontSize: 13, fontWeight: "800" },
     choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
     choiceButton: {
@@ -1839,6 +1846,7 @@ export function createSpeciesCropIdStyles(palette: ThemePalette) {
       paddingVertical: 8
     },
     secondaryButtonText: { color: palette.link, fontWeight: "800" },
+    disabled: { opacity: 0.55 },
     inlineLink: { alignSelf: "flex-start", paddingVertical: 3 },
     readinessPanel: {
       backgroundColor: palette.surface,

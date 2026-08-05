@@ -24,9 +24,7 @@ let mockSearchParams: Record<string, string> = { growId: "grow-1" };
 let mockEvidenceAssets: any[] = [];
 
 function openLocationAndSharing(screen: any) {
-  const collapsedControl = screen.queryByText(
-    "Optional: add location or share to Nature"
-  );
+  const collapsedControl = screen.queryByText("Optional: add to a Field Study or Nature");
   if (collapsedControl) fireEvent.press(collapsedControl);
 }
 
@@ -471,6 +469,7 @@ describe("SpeciesCropIdToolRoute", () => {
         })
       )
     );
+    expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
   });
 
   it("creates crop identity tasks from species identification output", async () => {
@@ -609,6 +608,7 @@ describe("SpeciesCropIdToolRoute", () => {
         })
       )
     );
+    expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
   });
 
   it("preserves user-entered protected context when AI returns conflicting values", async () => {
@@ -929,6 +929,111 @@ describe("SpeciesCropIdToolRoute", () => {
     );
   });
 
+  it("geolocates a Plant ID privately without opening or creating a Field Study", async () => {
+    mockSearchParams = {};
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(screen.getByText("Private plant location")).toBeTruthy();
+    expect(screen.getByText("Include Current Location Privately")).toBeTruthy();
+    expect(screen.getByText("Identify Plant from Photos")).toBeTruthy();
+    expect(mockListFieldStudies).not.toHaveBeenCalled();
+
+    fireEvent.press(
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
+    );
+    expect(
+      await screen.findByText(/Exact location is ready to save privately/)
+    ).toBeTruthy();
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          capturedLocation: expect.objectContaining({
+            latitude: 39.301234,
+            longitude: -76.721234,
+            privacy: "private",
+            userAuthorized: true
+          })
+        })
+      )
+    );
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
+    expect(mockCreateFieldStudy).not.toHaveBeenCalled();
+  });
+
+  it("does not start identification while a private location request is active", async () => {
+    let resolveLocation: ((value: Record<string, number>) => void) | undefined;
+    mockRequestCurrentCoordinates.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveLocation = resolve;
+      })
+    );
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Rose"
+    );
+    fireEvent.press(
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
+    );
+    fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
+
+    expect(mockRunCalculator).not.toHaveBeenCalled();
+    await act(async () => {
+      resolveLocation?.({
+        latitude: 39.301234,
+        longitude: -76.721234,
+        accuracyMeters: 24
+      });
+    });
+    expect(
+      await screen.findByText(/Exact location is ready to save privately/)
+    ).toBeTruthy();
+  });
+
+  it("does not start location capture while identification is active", async () => {
+    let resolveIdentification:
+      | ((value: {
+          outputs: Record<string, string>;
+          toolRun: Record<string, string>;
+        }) => void)
+      | undefined;
+    mockRunCalculator.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveIdentification = resolve;
+      })
+    );
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Rose"
+    );
+    fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+    fireEvent.press(
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
+    );
+
+    expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
+    await act(async () => {
+      resolveIdentification?.({
+        outputs: { likelyCrop: "Rose" },
+        toolRun: { id: "toolrun-1", _id: "toolrun-1" }
+      });
+    });
+    expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
+  });
+
   it("opens Field Study location controls when launched from a study", async () => {
     mockSearchParams = { fieldStudyId: "study-1" };
     mockListFieldStudies.mockResolvedValueOnce([
@@ -944,8 +1049,8 @@ describe("SpeciesCropIdToolRoute", () => {
 
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    expect(screen.getByText("Hide location & Nature sharing")).toBeTruthy();
-    expect(screen.getByText(/Choose location and map sharing/)).toBeTruthy();
+    expect(screen.getByText("Hide Field Study & Nature sharing")).toBeTruthy();
+    expect(screen.getByText(/Field Study and Nature sharing/)).toBeTruthy();
     expect(await screen.findByText(/Raleigh park/)).toBeTruthy();
   });
 
@@ -1021,10 +1126,14 @@ describe("SpeciesCropIdToolRoute", () => {
     openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Roadside survey/)).toBeTruthy());
     fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
     );
     await waitFor(() =>
-      expect(screen.getAllByText(/Location captured/).length).toBeGreaterThan(0)
+      expect(
+        screen.getAllByText(/Exact location is ready to save privately/).length
+      ).toBeGreaterThan(0)
     );
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
     fireEvent.press(
@@ -1112,10 +1221,14 @@ describe("SpeciesCropIdToolRoute", () => {
     openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public roadside survey/)).toBeTruthy());
     fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
     );
     await waitFor(() =>
-      expect(screen.getAllByText(/Location captured/).length).toBeGreaterThan(0)
+      expect(
+        screen.getAllByText(/Exact location is ready to save privately/).length
+      ).toBeGreaterThan(0)
     );
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
     fireEvent.press(
@@ -1142,7 +1255,7 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(mockUpdateFieldObservation).not.toHaveBeenCalled();
   });
 
-  it("withdraws a public Nature pin before removing its Saved Run location", async () => {
+  it("removes a private Plant ID location without changing a published Nature observation", async () => {
     mockSearchParams = { fieldStudyId: "study-1" };
     mockListFieldStudies.mockResolvedValueOnce([
       {
@@ -1159,8 +1272,11 @@ describe("SpeciesCropIdToolRoute", () => {
     openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public survey/)).toBeTruthy());
     fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
     );
+    await screen.findByText(/Exact location is ready to save privately/);
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
@@ -1173,18 +1289,8 @@ describe("SpeciesCropIdToolRoute", () => {
     await waitFor(() => expect(mockCreateFieldObservation).toHaveBeenCalledTimes(1));
     mockUpdateToolRun.mockClear();
 
-    fireEvent.press(screen.getByLabelText("Remove location from this plant observation"));
+    fireEvent.press(screen.getByLabelText("Remove private location from this Plant ID"));
 
-    await waitFor(() =>
-      expect(mockUpdateFieldObservation).toHaveBeenCalledWith(
-        "study-1",
-        "observation-1",
-        expect.objectContaining({
-          location: expect.objectContaining({ privacy: "private" }),
-          publication: expect.objectContaining({ status: "withdrawn" })
-        })
-      )
-    );
     await waitFor(() =>
       expect(mockUpdateToolRun).toHaveBeenCalledWith(
         "toolrun-1",
@@ -1193,59 +1299,17 @@ describe("SpeciesCropIdToolRoute", () => {
         })
       )
     );
-    expect(mockUpdateFieldObservation.mock.invocationCallOrder[0]).toBeLessThan(
-      mockUpdateToolRun.mock.invocationCallOrder[0]
-    );
-    expect(screen.getByText("Use Current Location")).toBeTruthy();
-  });
-
-  it("keeps the public-location UI truthful when pin withdrawal fails", async () => {
-    mockSearchParams = { fieldStudyId: "study-1" };
-    mockListFieldStudies.mockResolvedValueOnce([
-      {
-        id: "study-1",
-        _id: "study-1",
-        title: "Public survey",
-        slug: "public-survey",
-        visibility: "public",
-        accessRole: "owner"
-      }
-    ]);
-    const screen = render(<SpeciesCropIdToolRoute />);
-
-    openLocationAndSharing(screen);
-    await waitFor(() => expect(screen.getByText(/Public survey/)).toBeTruthy());
-    fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
-    );
-    fireEvent.press(screen.getByText("Nature map — approximate pin"));
-    fireEvent.press(
-      screen.getByText("This is Cannabis/hemp — review public-context sharing")
-    );
-    fireEvent.press(screen.getByText("Identify Plant from Photos"));
-    await waitFor(() =>
-      expect(screen.getByText("Publish Approximate Pin to Nature")).toBeTruthy()
-    );
-    fireEvent.press(screen.getByText("Publish Approximate Pin to Nature"));
-    await waitFor(() => expect(mockCreateFieldObservation).toHaveBeenCalledTimes(1));
-    mockUpdateToolRun.mockClear();
-    mockUpdateFieldObservation.mockRejectedValueOnce(new Error("network down"));
-
-    fireEvent.press(screen.getByLabelText("Remove location from this plant observation"));
-
+    expect(mockUpdateFieldObservation).not.toHaveBeenCalled();
     expect(
       await screen.findByText(
-        "The public Nature pin could not be withdrawn, so the captured location was not removed. The pin may still be public."
+        "The private location was removed from this Plant ID only. Field Studies and Nature were not changed."
       )
     ).toBeTruthy();
-    expect(mockUpdateToolRun).not.toHaveBeenCalled();
-    expect(
-      screen.getByLabelText("Remove location from this plant observation")
-    ).toBeTruthy();
+    expect(screen.getByText("Include Current Location Privately")).toBeTruthy();
     expect(screen.getByText("Update Approximate Nature Pin")).toBeTruthy();
   });
 
-  it("shows a withdrawn pin as private when Saved Run location removal fails afterward", async () => {
+  it("keeps both records unchanged when private Plant ID location removal fails", async () => {
     mockSearchParams = { fieldStudyId: "study-1" };
     mockListFieldStudies.mockResolvedValueOnce([
       {
@@ -1262,8 +1326,11 @@ describe("SpeciesCropIdToolRoute", () => {
     openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public survey/)).toBeTruthy());
     fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
     );
+    await screen.findByText(/Exact location is ready to save privately/);
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
@@ -1276,25 +1343,18 @@ describe("SpeciesCropIdToolRoute", () => {
     await waitFor(() => expect(mockCreateFieldObservation).toHaveBeenCalledTimes(1));
     mockUpdateToolRun.mockResolvedValueOnce(null);
 
-    fireEvent.press(screen.getByLabelText("Remove location from this plant observation"));
+    fireEvent.press(screen.getByLabelText("Remove private location from this Plant ID"));
 
     expect(
       await screen.findByText(
-        /The public Nature pin was withdrawn, but the private Saved Run location could not be removed/
+        "The location could not be removed from the Saved Run. Nothing changed."
       )
     ).toBeTruthy();
-    expect(mockUpdateFieldObservation).toHaveBeenCalledWith(
-      "study-1",
-      "observation-1",
-      expect.objectContaining({
-        publication: expect.objectContaining({ status: "withdrawn" })
-      })
-    );
+    expect(mockUpdateFieldObservation).not.toHaveBeenCalled();
     expect(
-      screen.getByLabelText("Remove location from this plant observation")
+      screen.getByLabelText("Remove private location from this Plant ID")
     ).toBeTruthy();
-    expect(screen.getByText("Update Field Study Draft")).toBeTruthy();
-    expect(screen.queryByText("Update Approximate Nature Pin")).toBeNull();
+    expect(screen.getByText("Update Approximate Nature Pin")).toBeTruthy();
   });
 
   it("does not publish a Cannabis candidate without separate public-context consent", async () => {
@@ -1314,10 +1374,14 @@ describe("SpeciesCropIdToolRoute", () => {
     openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public cannabis survey/)).toBeTruthy());
     fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
     );
     await waitFor(() =>
-      expect(screen.getAllByText(/Location captured/).length).toBeGreaterThan(0)
+      expect(
+        screen.getAllByText(/Exact location is ready to save privately/).length
+      ).toBeGreaterThan(0)
     );
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
@@ -1342,7 +1406,9 @@ describe("SpeciesCropIdToolRoute", () => {
 
     openLocationAndSharing(screen);
     fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
     );
 
     expect(await screen.findByText("Location permission was not granted.")).toBeTruthy();
@@ -1353,16 +1419,20 @@ describe("SpeciesCropIdToolRoute", () => {
     const screen = render(<SpeciesCropIdToolRoute />);
     openLocationAndSharing(screen);
     fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
     );
     expect(
-      await screen.findByLabelText("Remove location from this plant observation")
+      await screen.findByLabelText("Remove private location from this Plant ID")
     ).toBeTruthy();
 
-    fireEvent.press(screen.getByLabelText("Remove location from this plant observation"));
-    await waitFor(() => expect(screen.getByText("Use Current Location")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Remove private location from this Plant ID"));
+    await waitFor(() =>
+      expect(screen.getByText("Include Current Location Privately")).toBeTruthy()
+    );
     expect(
-      screen.queryByLabelText("Remove location from this plant observation")
+      screen.queryByLabelText("Remove private location from this Plant ID")
     ).toBeNull();
   });
 
@@ -1375,7 +1445,9 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     openLocationAndSharing(screen);
     fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
     );
 
     await waitFor(() =>
@@ -1394,7 +1466,7 @@ describe("SpeciesCropIdToolRoute", () => {
       )
     );
 
-    fireEvent.press(screen.getByLabelText("Remove location from this plant observation"));
+    fireEvent.press(screen.getByLabelText("Remove private location from this Plant ID"));
     await waitFor(() =>
       expect(mockUpdateToolRun).toHaveBeenLastCalledWith(
         "toolrun-1",
@@ -1403,7 +1475,190 @@ describe("SpeciesCropIdToolRoute", () => {
         })
       )
     );
-    expect(screen.getByText("Use Current Location")).toBeTruthy();
+    expect(screen.getByText("Include Current Location Privately")).toBeTruthy();
+
+    const privateLocationControl = screen.getByLabelText(
+      "Include or update current location privately with this Plant ID"
+    );
+    await waitFor(() => expect(privateLocationControl).toBeEnabled());
+    fireEvent.press(
+      privateLocationControl
+    );
+    await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(3));
+    expect(
+      screen.queryByText(
+        "The private location was removed from this Plant ID only. Field Studies and Nature were not changed."
+      )
+    ).toBeNull();
+  });
+
+  it("does not restore an invalidated Plant ID when a location update finishes late", async () => {
+    let resolveLocationUpdate:
+      | ((value: { id: string; _id: string; inputs: Record<string, any> }) => void)
+      | undefined;
+    mockUpdateToolRun.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveLocationUpdate = resolve;
+      })
+    );
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
+    );
+    await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByLabelText("Replace test evidence"));
+    await waitFor(() =>
+      expect(screen.queryByText("Species / Crop Identification result")).toBeNull()
+    );
+
+    await act(async () => {
+      resolveLocationUpdate?.({
+        id: "toolrun-1",
+        _id: "toolrun-1",
+        inputs: {
+          capturedLocation: {
+            latitude: 39.301234,
+            longitude: -76.721234,
+            privacy: "private",
+            userAuthorized: true
+          }
+        }
+      });
+    });
+    expect(screen.queryByText("Species / Crop Identification result")).toBeNull();
+    expect(screen.getByText("Update Private Location")).toBeTruthy();
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(2));
+    expect(mockRunCalculator).toHaveBeenLastCalledWith(
+      "species-crop-id",
+      expect.objectContaining({
+        capturedLocation: expect.objectContaining({
+          latitude: 39.301234,
+          longitude: -76.721234,
+          privacy: "private",
+          userAuthorized: true
+        })
+      })
+    );
+  });
+
+  it("keeps an explicit location removal after evidence invalidates the saved result", async () => {
+    let resolveLocationRemoval:
+      | ((value: { id: string; _id: string; inputs: Record<string, any> }) => void)
+      | undefined;
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
+    );
+    await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(1));
+    expect(
+      await screen.findByLabelText("Remove private location from this Plant ID")
+    ).toBeTruthy();
+
+    mockUpdateToolRun.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveLocationRemoval = resolve;
+      })
+    );
+    fireEvent.press(screen.getByLabelText("Remove private location from this Plant ID"));
+    await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(2));
+    fireEvent.press(screen.getByLabelText("Replace test evidence"));
+    await waitFor(() =>
+      expect(screen.queryByText("Species / Crop Identification result")).toBeNull()
+    );
+
+    await act(async () => {
+      resolveLocationRemoval?.({
+        id: "toolrun-1",
+        _id: "toolrun-1",
+        inputs: { capturedLocation: null }
+      });
+    });
+    expect(screen.getByText("Include Current Location Privately")).toBeTruthy();
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(2));
+    expect(mockRunCalculator).toHaveBeenLastCalledWith(
+      "species-crop-id",
+      expect.objectContaining({ capturedLocation: undefined })
+    );
+  });
+
+  it("keeps the newest location instead of a stale coordinate after invalidation", async () => {
+    let resolveLocationUpdate:
+      | ((value: { id: string; _id: string; inputs: Record<string, any> }) => void)
+      | undefined;
+    const updatedCoordinates = {
+      latitude: 40.7128,
+      longitude: -74.006,
+      accuracyMeters: 18
+    };
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
+    );
+    await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(1));
+
+    mockRequestCurrentCoordinates.mockResolvedValueOnce(updatedCoordinates);
+    mockUpdateToolRun.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveLocationUpdate = resolve;
+      })
+    );
+    fireEvent.press(
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
+    );
+    await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(2));
+    fireEvent.press(screen.getByLabelText("Replace test evidence"));
+    await waitFor(() =>
+      expect(screen.queryByText("Species / Crop Identification result")).toBeNull()
+    );
+
+    await act(async () => {
+      resolveLocationUpdate?.({
+        id: "toolrun-1",
+        _id: "toolrun-1",
+        inputs: {
+          capturedLocation: {
+            ...updatedCoordinates,
+            privacy: "private",
+            userAuthorized: true
+          }
+        }
+      });
+    });
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(2));
+    expect(mockRunCalculator).toHaveBeenLastCalledWith(
+      "species-crop-id",
+      expect.objectContaining({
+        capturedLocation: expect.objectContaining({
+          latitude: 40.7128,
+          longitude: -74.006,
+          privacy: "private",
+          userAuthorized: true
+        })
+      })
+    );
   });
 
   it("does not mark or publish video-only evidence as map ready", async () => {
@@ -1434,10 +1689,14 @@ describe("SpeciesCropIdToolRoute", () => {
     openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public study/)).toBeTruthy());
     fireEvent.press(
-      screen.getByLabelText("Use current location for this plant observation")
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
     );
     await waitFor(() =>
-      expect(screen.getAllByText(/Location captured/).length).toBeGreaterThan(0)
+      expect(
+        screen.getAllByText(/Exact location is ready to save privately/).length
+      ).toBeGreaterThan(0)
     );
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
 

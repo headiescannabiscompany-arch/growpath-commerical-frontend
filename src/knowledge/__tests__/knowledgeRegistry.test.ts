@@ -91,6 +91,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "user correction that preserves the rejected AI draft, presents the corrected common identity first, leaves unknown exact species unverified, and requests discriminating replacement photos"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredInputs).toContain(
+      "optional separately authorized exact device location stored privately with the saved Plant ID ToolRun without requiring a Field Study"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "standalone private Plant ID location that can be added, updated, or removed without creating a Field Study observation or publishing to Nature"
+    );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "published-course discovery limited to published storefronts and explicit public fields"
     );

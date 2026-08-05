@@ -70,6 +70,9 @@ type BackendCalculatorToolScreenProps = {
   feedRouteKey?: string;
   externalInputKey?: string;
   onToolRunChange?: (toolRun: ToolRun | null) => void;
+  executionBlocked?: boolean;
+  executionBlockedMessage?: string;
+  onExecutionBusyChange?: (busy: boolean) => void;
   formHeader?:
     | React.ReactNode
     | ((context: {
@@ -253,6 +256,9 @@ export default function BackendCalculatorToolScreen({
   feedRouteKey,
   externalInputKey = "",
   onToolRunChange,
+  executionBlocked = false,
+  executionBlockedMessage = "Finish the current action before running this tool.",
+  onExecutionBusyChange,
   formHeader,
   status = "CALCULATED",
   runLabel: runLabelOverride,
@@ -359,6 +365,14 @@ export default function BackendCalculatorToolScreen({
   const [aiPrefillPayload, setAiPrefillPayload] = useState<Record<string, any>>({});
   const userValuesRef = React.useRef<Record<string, string>>(initialValues);
   const externalInputKeyRef = React.useRef(externalInputKey);
+  const lastReportedExecutionBusyRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const busy = running || prefilling;
+    if (lastReportedExecutionBusyRef.current === busy) return;
+    lastReportedExecutionBusyRef.current = busy;
+    onExecutionBusyChange?.(busy);
+  }, [onExecutionBusyChange, prefilling, running]);
   const latestExternalInputKeyRef = React.useRef(externalInputKey);
   const inputRevisionRef = React.useRef(0);
   const executionLockRef = React.useRef<"prefill" | "calculate" | null>(null);
@@ -558,6 +572,10 @@ export default function BackendCalculatorToolScreen({
     },
     existingLock: "prefill" | null = null
   ) {
+    if (executionBlocked) {
+      setFeedback(executionBlockedMessage);
+      return;
+    }
     const validationMessage = validateValues?.(submittedValues);
     if (validationMessage) {
       setFeedback(validationMessage);
@@ -1073,9 +1091,12 @@ export default function BackendCalculatorToolScreen({
           accessibilityRole="button"
           accessibilityLabel={runAccessibilityLabel || `Run ${title}`}
           accessibilityHint={runLabel}
-          disabled={running || prefilling}
+          disabled={running || prefilling || executionBlocked}
           onPress={calculate}
-          style={[styles.button, (running || prefilling) && styles.disabled]}
+          style={[
+            styles.button,
+            (running || prefilling || executionBlocked) && styles.disabled
+          ]}
         >
           <Text style={styles.buttonText}>{running ? "Working..." : runLabel}</Text>
         </Pressable>
