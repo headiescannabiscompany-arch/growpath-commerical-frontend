@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
@@ -64,6 +64,8 @@ function HarvestPhotoAnalyzer({
   const [restoreFeedback, setRestoreFeedback] = useState("");
   const [restoringEvidence, setRestoringEvidence] = useState(false);
   const [analysis, setAnalysis] = useState<TrichomeVisionResult | null>(initialAnalysis);
+  const previousGrowIdRef = useRef(growId);
+  const mountedAnalysisRef = useRef(initialAnalysis);
   const evidence = providerEvidencePayload(evidenceAssets);
   const photoCount = evidence.images.length;
   const photoEvidenceAssetIds = evidence.media
@@ -72,8 +74,14 @@ function HarvestPhotoAnalyzer({
 
   useEffect(() => {
     let active = true;
-    setAnalysis(null);
-    onAnalysis(null);
+    const growChanged = previousGrowIdRef.current !== growId;
+    previousGrowIdRef.current = growId;
+    if (growChanged || !mountedAnalysisRef.current) {
+      setAnalysis(null);
+      onAnalysis(null);
+    } else {
+      setAnalysis(mountedAnalysisRef.current);
+    }
     setRestoreFeedback("");
 
     if (!growId) {

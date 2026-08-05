@@ -50,6 +50,12 @@
           "cameraPermission": "GrowPath needs camera access to capture plant photos for diagnostics and grow logs."
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "GrowPath uses your location only when you opt in to locate a plant or Nature observation, center the Nature map, find nearby storefronts or dispensaries, or use location-based day/night themes. Observations are private by default, and public sharing requires a separate confirmation."
+        }
+      ],
       "expo-router",
       "expo-secure-store"
     ],

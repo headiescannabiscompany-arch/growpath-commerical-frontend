@@ -53,7 +53,7 @@ describe("EvidenceReviewPanel", () => {
 
       const card = screen.getByLabelText("Evidence review summary");
       const warning = screen.getByText(/files are attached/);
-      const action = screen.getByLabelText("Add requested evidence");
+      const action = screen.getByLabelText("How to add requested evidence");
 
       expect(StyleSheet.flatten(card.props.style)).toEqual(
         expect.objectContaining({
@@ -87,13 +87,22 @@ describe("EvidenceReviewPanel", () => {
         })
       );
       expect(
-        StyleSheet.flatten(
-          screen.getByText("Add requested evidence and re-run").props.style
-        ).color
+        StyleSheet.flatten(screen.getByText("How to add requested evidence").props.style)
+          .color
       ).toBe(palette.link);
 
       fireEvent.press(action);
       expect(onAddEvidence).toHaveBeenCalledTimes(1);
+      expect(
+        screen.getByText(
+          /Requested next evidence: Leaf underside; Stem close-up; No macro image/
+        )
+      ).toBeTruthy();
+      expect(
+        screen.getByText(
+          /This guidance did not upload evidence, rerun the tool, or change the current result/
+        )
+      ).toBeTruthy();
     }
   );
 
@@ -114,6 +123,31 @@ describe("EvidenceReviewPanel", () => {
 
     expect(screen.getByText("2 photos inspected")).toBeTruthy();
     expect(screen.queryByText(/files are attached/)).toBeNull();
-    expect(screen.queryByLabelText("Add requested evidence")).toBeNull();
+    expect(screen.queryByLabelText("How to add requested evidence")).toBeNull();
+  });
+
+  it("clears guidance when the requested evidence changes after rerender", () => {
+    const onAddEvidence = jest.fn();
+    const screen = render(
+      <EvidenceReviewPanel review={incompleteReview} onAddEvidence={onAddEvidence} />
+    );
+
+    fireEvent.press(screen.getByLabelText("How to add requested evidence"));
+    expect(screen.getByText(/Requested next evidence: Leaf underside/)).toBeTruthy();
+
+    screen.rerender(
+      <EvidenceReviewPanel
+        review={{
+          ...incompleteReview,
+          missingInformation: ["Whole-plant context"],
+          requiredNextPhotos: ["Sharp stem-node photo"]
+        }}
+        onAddEvidence={onAddEvidence}
+      />
+    );
+
+    expect(screen.queryByText(/Requested next evidence: Leaf underside/)).toBeNull();
+    expect(screen.getByText(/Sharp stem-node photo/)).toBeTruthy();
+    expect(screen.getByText(/Whole-plant context/)).toBeTruthy();
   });
 });

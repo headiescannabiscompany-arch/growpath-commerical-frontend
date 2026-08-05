@@ -380,10 +380,11 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     void (async () => {
-      setAutoLocationPrompted(true);
       try {
-        const coordinates = await requestCurrentCoordinates();
-        if (cancelled) return;
+        const coordinates = await requestCurrentCoordinates({
+          promptForPermission: false
+        });
+        if (cancelled || !coordinates) return;
         const nextLocation: ThemeLocationPreference = {
           ...coordinates,
           updatedAt: new Date().toISOString()

@@ -33,7 +33,10 @@ describe("FieldObservationGlobe web lifecycle", () => {
     const getCurrentPosition = jest.fn((success) =>
       success({ coords: { latitude: 39.29, longitude: -76.61 } })
     );
-    const handlers = new Map<string, Array<() => void>>();
+    const handlers = new Map<
+      string,
+      Array<{ layer?: unknown; handler: (...args: any[]) => void }>
+    >();
 
     class FakeMap {
       constructor(_options: unknown) {}
@@ -67,7 +70,15 @@ describe("FieldObservationGlobe web lifecycle", () => {
           typeof layerOrHandler === "function"
             ? (layerOrHandler as () => void)
             : maybeHandler;
-        if (handler) handlers.set(event, [...(handlers.get(event) || []), handler]);
+        if (handler) {
+          handlers.set(event, [
+            ...(handlers.get(event) || []),
+            {
+              layer: typeof layerOrHandler === "function" ? undefined : layerOrHandler,
+              handler
+            }
+          ]);
+        }
         return this;
       }
       remove = remove;
@@ -104,7 +115,7 @@ describe("FieldObservationGlobe web lifecycle", () => {
       await Promise.resolve();
     });
     await act(async () => {
-      handlers.get("load")?.forEach((handler) => handler());
+      handlers.get("load")?.forEach(({ handler }) => handler());
     });
 
     const locationButton = tree.root.find(
@@ -148,6 +159,14 @@ describe("FieldObservationGlobe web lifecycle", () => {
         ]
       })
     );
+
+    await act(async () => {
+      handlers
+        .get("click")
+        ?.find(({ layer }) => layer === "growpath-observation-pins")
+        ?.handler({ features: [{ properties: { id: "observation-2" } }] });
+    });
+    expect(onSelectObservations).toHaveBeenCalledWith(["observation-2"]);
 
     await act(async () => tree.unmount());
     expect(remove).toHaveBeenCalledTimes(1);

@@ -85,6 +85,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "optional Field Study with owner, editor, verifier, and viewer roles",
       "editable Field Study, public study visibility, qualifying evidence, explicit observation publication state, public location privacy, and separately captured device coordinates for map readiness",
       "viewer cannabis/hemp grow-interest or content controls for cannabis/hemp pin delivery",
+      "at least one owned photo or extracted still with a safe metadata-stripped public derivative before a map pin is delivered",
       "jurisdiction and authoritative source URL before invasive status is called verified",
       "grow history",
       "environment with explicit units",
@@ -124,6 +125,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "public observation projection that excludes private coordinates and owner-only provenance",
       "distinct identification verification, plant-health assessment, and jurisdiction-specific invasive status",
       "interactive clustered globe synchronized with a keyboard-accessible observation list",
+      "signed-out photo-ready non-cannabis observations with optional-auth cannabis/hemp policy enrichment",
       "cannabis/hemp pins gated by deliberate publication and public context plus viewer grow-interest or content controls"
     ],
     [
@@ -145,6 +147,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not invent scout defaults, trap context, organism identity, pesticide products, or rates.",
       "Do not require a grow for crop identification or infer a cultivar from cannabis flower appearance.",
       "Do not overwrite explicit crop-identification context or infer exact location, date or season, sensory observations, measurements, or wild-versus-cultivated status from images.",
+      "Do not truncate the crop-identification provider request before its output schema, final safety rules, or bounded user context.",
       "Do not attribute device coordinates to AI prefill; capture them through a separate user-authorized action and keep them private by default.",
       "Do not replace a defensible broader crop candidate with a confirmation placeholder merely because exact species remains unresolved.",
       "Do not store a plain-language common-name phrase as a scientific name or possible species.",
@@ -156,6 +159,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not publish an observation, coordinates, or media by default, and do not expose private or collaborator-only coordinates through public APIs.",
       "Do not mark an observation map-ready until an editable Field Study is public, evidence is attached, the observation is explicitly published, location privacy is public approximate or confirmed public exact, and coordinates are captured.",
       "Do not expose an exact public location without explicit observation-level confirmation; reduce sensitive-species locations to a wider approximate region.",
+      "Do not expose identity-only public pins; omit observations whose owned photo cannot produce a safe public derivative.",
       "Do not call a plant invasive without a jurisdiction and authoritative source record.",
       "Do not deliver cannabis or hemp pins without deliberate observation publication, separately confirmed public cannabis/hemp context, and matching viewer grow-interest or content controls.",
       "Do not filter a public viewport against protected exact coordinates; query only the stored privacy-safe public point.",

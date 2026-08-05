@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -55,7 +55,8 @@ export const createEvidenceReviewPanelStyles = (palette: ThemePalette) =>
       paddingHorizontal: 10,
       paddingVertical: 8
     },
-    buttonText: { color: palette.link, fontWeight: "800", fontSize: 12 }
+    buttonText: { color: palette.link, fontWeight: "800", fontSize: 12 },
+    followUp: { color: palette.text, fontSize: 12, lineHeight: 18 }
   });
 
 type EvidenceReviewPanelStyles = ReturnType<typeof createEvidenceReviewPanelStyles>;
@@ -78,6 +79,31 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createEvidenceReviewPanelStyles(palette), [palette]);
   const nextChecks = evidenceReviewNextChecks(review);
+  const reviewFingerprint = JSON.stringify({ review, nextChecks });
+  const [followUpFeedback, setFollowUpFeedback] = useState("");
+  const followUpBusyRef = useRef(false);
+  const previousReviewFingerprintRef = useRef(reviewFingerprint);
+
+  useEffect(() => {
+    if (previousReviewFingerprintRef.current === reviewFingerprint) return;
+    previousReviewFingerprintRef.current = reviewFingerprint;
+    setFollowUpFeedback("");
+  }, [reviewFingerprint]);
+
+  async function showRequestedEvidenceGuidance() {
+    if (!onAddEvidence || followUpBusyRef.current) return;
+    followUpBusyRef.current = true;
+    setFollowUpFeedback(
+      `Requested next evidence: ${nextChecks.join(
+        "; "
+      )}. Use the evidence uploader above to attach these items. Then run the tool again when you are ready. This guidance did not upload evidence, rerun the tool, or change the current result.`
+    );
+    try {
+      await onAddEvidence();
+    } finally {
+      followUpBusyRef.current = false;
+    }
+  }
   return (
     <View style={styles.card} accessibilityLabel="Evidence review summary">
       <View style={styles.header}>
@@ -101,12 +127,17 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
       {onAddEvidence && nextChecks.length ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Add requested evidence"
-          onPress={onAddEvidence}
+          accessibilityLabel="How to add requested evidence"
+          onPress={showRequestedEvidenceGuidance}
           style={styles.button}
         >
-          <Text style={styles.buttonText}>Add requested evidence and re-run</Text>
+          <Text style={styles.buttonText}>How to add requested evidence</Text>
         </Pressable>
+      ) : null}
+      {followUpFeedback ? (
+        <Text accessibilityLiveRegion="polite" style={styles.followUp}>
+          {followUpFeedback}
+        </Text>
       ) : null}
     </View>
   );

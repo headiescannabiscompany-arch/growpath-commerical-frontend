@@ -1,3 +1,6 @@
+import * as Location from "expo-location";
+import { Platform } from "react-native";
+
 export type PublicCoordinates = {
   latitude: number;
   longitude: number;
@@ -19,7 +22,62 @@ export function parsePublicCoordinates(
   return { latitude: parsedLatitude, longitude: parsedLongitude };
 }
 
-export function requestCurrentCoordinates(): Promise<PublicCoordinates> {
+function coordinatesFromPosition(position: any): PublicCoordinates {
+  const coordinates = parsePublicCoordinates(
+    position?.coords?.latitude,
+    position?.coords?.longitude
+  );
+  if (!coordinates) throw new Error("The device returned an invalid location.");
+  const accuracyMeters = Number(position?.coords?.accuracy);
+  return {
+    ...coordinates,
+    ...(Number.isFinite(accuracyMeters) && accuracyMeters >= 0 ? { accuracyMeters } : {})
+  };
+}
+
+async function requestNativeCoordinates(): Promise<PublicCoordinates> {
+  let permission;
+  try {
+    permission = await Location.requestForegroundPermissionsAsync();
+  } catch (error: any) {
+    throw new Error(
+      error?.message ||
+        "Location permission could not be requested. Enter a location manually instead."
+    );
+  }
+  if (permission?.status !== "granted") {
+    throw new Error(
+      "Location permission was not granted. Enter a location manually instead."
+    );
+  }
+  try {
+    const position = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced
+    });
+    return coordinatesFromPosition(position);
+  } catch (error: any) {
+    if (error?.message === "The device returned an invalid location.") throw error;
+    throw new Error(
+      error?.message ||
+        "Current location is unavailable on this device. Enter a location manually instead."
+    );
+  }
+}
+
+async function readNativeCoordinatesIfPermitted(): Promise<PublicCoordinates | null> {
+  try {
+    const permission = await Location.getForegroundPermissionsAsync();
+    if (permission?.status !== "granted") return null;
+    const position = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced
+    });
+    return coordinatesFromPosition(position);
+  } catch {
+    return null;
+  }
+}
+
+function requestBrowserCoordinates(): Promise<PublicCoordinates> {
   return new Promise((resolve, reject) => {
     const geolocation = (globalThis as any)?.navigator?.geolocation;
     if (!geolocation?.getCurrentPosition) {
@@ -33,21 +91,11 @@ export function requestCurrentCoordinates(): Promise<PublicCoordinates> {
 
     geolocation.getCurrentPosition(
       (position: any) => {
-        const coordinates = parsePublicCoordinates(
-          position?.coords?.latitude,
-          position?.coords?.longitude
-        );
-        if (!coordinates) {
-          reject(new Error("The device returned an invalid location."));
-          return;
+        try {
+          resolve(coordinatesFromPosition(position));
+        } catch (error) {
+          reject(error);
         }
-        const accuracyMeters = Number(position?.coords?.accuracy);
-        resolve({
-          ...coordinates,
-          ...(Number.isFinite(accuracyMeters) && accuracyMeters >= 0
-            ? { accuracyMeters }
-            : {})
-        });
       },
       (error: any) => {
         reject(
@@ -64,4 +112,39 @@ export function requestCurrentCoordinates(): Promise<PublicCoordinates> {
       }
     );
   });
+}
+
+async function readBrowserCoordinatesIfPermitted(): Promise<PublicCoordinates | null> {
+  const navigatorValue = (globalThis as any)?.navigator;
+  const geolocation = navigatorValue?.geolocation;
+  const permissions = navigatorValue?.permissions;
+  if (!geolocation?.getCurrentPosition || !permissions?.query) return null;
+
+  try {
+    const permission = await permissions.query({ name: "geolocation" });
+    if (permission?.state !== "granted") return null;
+    return await requestBrowserCoordinates();
+  } catch {
+    return null;
+  }
+}
+
+export type CurrentCoordinateOptions = {
+  /** False reads coordinates only when permission is already granted and never prompts. */
+  promptForPermission?: boolean;
+};
+
+export function requestCurrentCoordinates(): Promise<PublicCoordinates>;
+export function requestCurrentCoordinates(options: {
+  promptForPermission: false;
+}): Promise<PublicCoordinates | null>;
+export function requestCurrentCoordinates(
+  options: CurrentCoordinateOptions = {}
+): Promise<PublicCoordinates | null> {
+  if (options.promptForPermission === false) {
+    return Platform.OS === "web"
+      ? readBrowserCoordinatesIfPermitted()
+      : readNativeCoordinatesIfPermitted();
+  }
+  return Platform.OS === "web" ? requestBrowserCoordinates() : requestNativeCoordinates();
 }

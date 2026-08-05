@@ -38,9 +38,10 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
   const React = require("react");
   const { Pressable, Text, View } = require("react-native");
   return function MockMediaEvidencePicker(props: any) {
+    const { onChange } = props;
     React.useEffect(() => {
-      props.onChange?.(mockEvidenceAssets);
-    }, [props.onChange]);
+      onChange?.(mockEvidenceAssets);
+    }, [onChange]);
     return React.createElement(
       View,
       { testID: "media-evidence-picker" },
@@ -49,7 +50,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
         {
           accessibilityLabel: "Replace test evidence",
           onPress: () =>
-            props.onChange?.([
+            onChange?.([
               {
                 ...mockEvidenceAssets[0],
                 id: "evidence-2",
@@ -75,7 +76,10 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/components/feed/FeedBanner", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return () => React.createElement(View, { testID: "feed-banner" });
+  function MockFeedBanner() {
+    return React.createElement(View, { testID: "feed-banner" });
+  }
+  return MockFeedBanner;
 });
 
 jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
@@ -600,7 +604,26 @@ describe("SpeciesCropIdToolRoute", () => {
     );
   });
 
-  it("preserves user-entered context when AI returns only identification fields", async () => {
+  it("preserves user-entered protected context when AI returns conflicting values", async () => {
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Conflicting AI candidate",
+        scientificName: "Rosa",
+        cultivar: "Invented cultivar",
+        cultivationStatus: "cultivated",
+        region: "Invented region",
+        observationDate: "2025-01-01",
+        plantSize: "Invented size",
+        sensoryTraits: "Invented smell",
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "low"
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 }
+    });
     const screen = render(<SpeciesCropIdToolRoute />);
 
     fireEvent.changeText(
@@ -631,6 +654,16 @@ describe("SpeciesCropIdToolRoute", () => {
       screen.getByLabelText("Species / Crop Identification Habitat"),
       "Sunny roadside edge"
     );
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Approximate plant size"),
+      "User measured 90 cm"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText(
+        "Species / Crop Identification Smell, sap, texture, or other direct observations"
+      ),
+      "User observed thorny stems"
+    );
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
 
     await waitFor(() =>
@@ -643,18 +676,23 @@ describe("SpeciesCropIdToolRoute", () => {
           observationContext: expect.objectContaining({
             cultivationStatus: "wild",
             region: "Baltimore County, Maryland",
-            habitat: "Sunny roadside edge"
+            observationDate: "",
+            habitat: "Sunny roadside edge",
+            plantSize: "User measured 90 cm"
           }),
-          morphology: expect.objectContaining({ growthHabit: "shrub" })
+          morphology: expect.objectContaining({
+            growthHabit: "shrub",
+            sensoryTraits: ["User observed thorny stems"]
+          })
         })
       )
     );
     expect(mockAskPersonalAssistant.mock.calls[0][0].message).toContain(
-      "Do not guess exact location, observation date, sensory traits"
+      "Do not populate cultivar, wild-versus-cultivated provenance, location or region"
     );
   });
 
-  it("prefills defensible setting and habitat details visible in the photos", async () => {
+  it("prefills defensible visible context but not measurements", async () => {
     mockAskPersonalAssistant.mockResolvedValueOnce({
       success: true,
       reply: JSON.stringify({
@@ -687,8 +725,54 @@ describe("SpeciesCropIdToolRoute", () => {
             habitat: "disturbed roadside edge",
             substrate: "gravelly surface soil",
             associatedPlants: ["grasses", "broadleaf herbs"],
-            plantSize: "about knee-high using the visible person for scale"
+            plantSize: ""
           })
+        })
+      )
+    );
+  });
+
+  it("rejects prohibited fields from a noncompliant AI reply", async () => {
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Roadside flowering plant",
+        scientificName: "Rosa",
+        cultivar: "Invented cultivar",
+        cultivationStatus: "wild",
+        region: "Invented exact location",
+        observationDate: "2026-07-30",
+        season: "summer",
+        setting: "outdoor",
+        habitat: "disturbed roadside edge",
+        plantSize: "42 centimeters",
+        sensoryTraits: "minty smell and milky sap",
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "low"
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 }
+    });
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          cultivar: "",
+          observationContext: expect.objectContaining({
+            cultivationStatus: "unknown",
+            region: "",
+            observationDate: "",
+            setting: "outdoor",
+            habitat: "disturbed roadside edge",
+            plantSize: ""
+          }),
+          morphology: expect.objectContaining({ sensoryTraits: [] })
         })
       )
     );

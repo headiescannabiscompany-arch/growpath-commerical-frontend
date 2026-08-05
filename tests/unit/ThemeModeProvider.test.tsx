@@ -10,10 +10,13 @@ import {
 } from "@/theme/appTheme";
 
 const mockRequestCurrentCoordinates = jest.fn();
+const mockReadCurrentCoordinates = jest.fn();
 
 jest.mock("@/utils/locationSearch", () => ({
-  requestCurrentCoordinates: (...args: unknown[]) =>
-    mockRequestCurrentCoordinates(...args)
+  requestCurrentCoordinates: (...args: any[]) =>
+    args[0]?.promptForPermission === false
+      ? mockReadCurrentCoordinates(...args)
+      : mockRequestCurrentCoordinates(...args)
 }));
 
 const STORAGE_KEY = "gp.theme.mode";
@@ -58,6 +61,7 @@ describe("ThemeModeProvider integration", () => {
     appearanceListener = undefined;
     storedValues.clear();
     mockRequestCurrentCoordinates.mockReset();
+    mockReadCurrentCoordinates.mockReset();
     removeAppearanceListener.mockReset();
 
     (AsyncStorage.getItem as jest.Mock)
@@ -101,6 +105,7 @@ describe("ThemeModeProvider integration", () => {
     expect(theme().autoUsesLocation).toBe(true);
     expect(theme().themeLocation).toEqual(savedLocation);
     expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
+    expect(mockReadCurrentCoordinates).not.toHaveBeenCalled();
 
     await waitFor(() => {
       expect(storedValues.get(STORAGE_KEY)).toBe("auto");
@@ -110,8 +115,8 @@ describe("ThemeModeProvider integration", () => {
     });
   });
 
-  it("requests location automatically only once and reuses the saved preference", async () => {
-    mockRequestCurrentCoordinates.mockResolvedValue({
+  it("silently reads an already permitted location once and reuses the saved preference", async () => {
+    mockReadCurrentCoordinates.mockResolvedValue({
       latitude: 39.2904,
       longitude: -76.6122
     });
@@ -121,10 +126,13 @@ describe("ThemeModeProvider integration", () => {
     await waitFor(() => expect(theme().autoUsesLocation).toBe(true));
     await waitFor(() => {
       expect(storedValues.get(STRATEGY_KEY)).toBe("location");
-      expect(storedValues.get(PROMPTED_KEY)).toBe("1");
+      expect(storedValues.get(PROMPTED_KEY)).toBe("0");
       expect(storedValues.has(LOCATION_KEY)).toBe(true);
     });
-    expect(mockRequestCurrentCoordinates).toHaveBeenCalledTimes(1);
+    expect(mockReadCurrentCoordinates).toHaveBeenCalledWith({
+      promptForPermission: false
+    });
+    expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
 
     firstRender.unmount();
     latestTheme = null;
@@ -132,21 +140,20 @@ describe("ThemeModeProvider integration", () => {
 
     await waitFor(() => expect(theme().hydrated).toBe(true));
     expect(theme().autoUsesLocation).toBe(true);
-    expect(mockRequestCurrentCoordinates).toHaveBeenCalledTimes(1);
+    expect(mockReadCurrentCoordinates).toHaveBeenCalledTimes(1);
 
     secondRender.unmount();
   });
 
-  it("falls back to device appearance when the automatic location request is denied", async () => {
+  it("falls back to device appearance without prompting when location is not permitted", async () => {
     (Appearance.getColorScheme as jest.Mock).mockReturnValue("dark");
-    mockRequestCurrentCoordinates.mockRejectedValue(
-      new Error("Location permission was denied.")
-    );
+    mockReadCurrentCoordinates.mockResolvedValue(null);
 
     renderProvider();
 
-    await waitFor(() => expect(mockRequestCurrentCoordinates).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(storedValues.get(PROMPTED_KEY)).toBe("1"));
+    await waitFor(() => expect(mockReadCurrentCoordinates).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(storedValues.get(PROMPTED_KEY)).toBe("0"));
+    expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
     expect(theme().hydrated).toBe(true);
     expect(theme().mode).toBe("auto");
     expect(theme().resolvedMode).toBe("night");
@@ -155,18 +162,16 @@ describe("ThemeModeProvider integration", () => {
     expect(storedValues.get(STRATEGY_KEY)).toBe("device");
   });
 
-  it("allows a manual location retry after the automatic request was denied", async () => {
-    mockRequestCurrentCoordinates.mockRejectedValueOnce(
-      new Error("Location permission was denied.")
-    );
+  it("allows an explicit permission request after silent startup found no permission", async () => {
+    mockReadCurrentCoordinates.mockResolvedValue(null);
 
     renderProvider();
 
-    await waitFor(() => expect(mockRequestCurrentCoordinates).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(storedValues.get(PROMPTED_KEY)).toBe("1"));
+    await waitFor(() => expect(mockReadCurrentCoordinates).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(storedValues.get(PROMPTED_KEY)).toBe("0"));
     expect(theme().autoUsesLocation).toBe(false);
 
-    mockRequestCurrentCoordinates.mockResolvedValueOnce({
+    mockRequestCurrentCoordinates.mockResolvedValue({
       latitude: 39.2904,
       longitude: -76.6122
     });
@@ -177,9 +182,10 @@ describe("ThemeModeProvider integration", () => {
     await waitFor(() => expect(theme().autoUsesLocation).toBe(true));
     await waitFor(() => {
       expect(storedValues.get(STRATEGY_KEY)).toBe("location");
+      expect(storedValues.get(PROMPTED_KEY)).toBe("1");
       expect(storedValues.has(LOCATION_KEY)).toBe(true);
     });
-    expect(mockRequestCurrentCoordinates).toHaveBeenCalledTimes(2);
+    expect(mockRequestCurrentCoordinates).toHaveBeenCalledTimes(1);
   });
 
   it("updates auto mode when the device appearance changes", async () => {

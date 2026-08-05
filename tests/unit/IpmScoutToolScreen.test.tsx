@@ -279,6 +279,17 @@ describe("IpmScoutToolRoute", () => {
     expect(
       screen.getByText(/Save this ToolRun so the GrowPath AI scout answer and GPT review/)
     ).toBeTruthy();
+    expect(screen.getByText("Next evidence or checks")).toBeTruthy();
+    expect(screen.getAllByText(/Inspect leaf undersides at 30x/).length).toBeGreaterThan(
+      0
+    );
+    expect(screen.getAllByText(/dated sticky-trap comparison/).length).toBeGreaterThan(0);
+    fireEvent.press(screen.getByLabelText("How to add requested evidence"));
+    expect(
+      screen.getByText(
+        /Requested next evidence: dated sticky-trap comparison; Inspect leaf undersides at 30x/
+      )
+    ).toBeTruthy();
   });
 
   it("creates an IPM follow-up task with GrowPath and GPT verification context", async () => {

@@ -9,6 +9,17 @@ try {
   require("@testing-library/jest-native/extend-expect");
 } catch (e) {}
 
+// Expo SDK 54's Jest host can omit Switch in individual batched workers.
+// Supply only that missing native host so every screen keeps rendering the
+// real Switch props and behavior instead of failing before assertions run.
+const React = require("react");
+const ReactNative = require("react-native");
+if (!ReactNative.Switch) {
+  ReactNative.Switch = function MockNativeSwitch(props) {
+    return React.createElement("Switch", props);
+  };
+}
+
 try {
   jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 } catch (e) {}
