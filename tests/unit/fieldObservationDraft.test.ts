@@ -189,7 +189,7 @@ describe("private Field Study drafts from saved Plant ID runs", () => {
       }
     });
 
-    expect(result.evidenceAssets).toEqual([{ assetId: "legacy-photo-1", kind: "other" }]);
+    expect(result.evidenceAssets).toEqual([{ assetId: "legacy-photo-1", kind: "photo" }]);
   });
 
   it("keeps a user-corrected common name but does not restore a rejected scientific name", () => {

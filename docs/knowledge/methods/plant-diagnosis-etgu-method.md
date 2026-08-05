@@ -204,6 +204,17 @@ study visibility, make coordinates public, or confirm a cannabis/hemp public con
 Repeated linking of the same ToolRun to the same study must reopen or update the existing
 draft rather than creating duplicate observations. Nature sharing remains a later,
 separately confirmed workflow that must satisfy every ordinary map-readiness gate.
+If the user authorizes device location after the private draft was linked, update that
+existing observation with the exact private coordinate instead of creating another
+observation or leaving the coordinate only on the ToolRun. Identity review, publication,
+and location-sharing updates must preserve every unspecified nested identity, evidence,
+coordinate, privacy, sensitivity, cannabis-context, and public-note field. Public
+approximate sharing uses a named confirmation action and keeps the protected exact
+coordinate intact; never use an ambiguous cycling control that can silently change the
+audience or erase provenance.
+An asset ID recovered specifically from saved image-analysis `evidenceUsed` is a legacy
+photo-evidence candidate, not a generic attachment; the publication service must still
+confirm that it is an owned uploaded image and can produce the safe public derivative.
 
 The public discovery surface is an interactive, zoomable globe with clustered pins.
 The server queries only the rounded or explicitly approved public point that the visitor

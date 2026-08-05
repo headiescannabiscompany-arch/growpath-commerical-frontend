@@ -129,7 +129,7 @@ function evidenceAssets(inputs: Record<string, any>, outputs: Record<string, any
   const imageAnalysis = record(outputs.imageAnalysis);
   uniqueStrings(inputs.evidenceAssetIds, imageAnalysis.evidenceUsed).forEach(
     (assetId) => {
-      if (!byId.has(assetId)) byId.set(assetId, { assetId, kind: "other" });
+      if (!byId.has(assetId)) byId.set(assetId, { assetId, kind: "photo" });
     }
   );
 

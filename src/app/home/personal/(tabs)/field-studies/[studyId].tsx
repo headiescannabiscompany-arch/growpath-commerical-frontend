@@ -2,7 +2,6 @@ import { Link, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import {
 import {
   addFieldStudyCollaborator,
   FieldObservation,
+  FieldObservationInput,
   FieldStudy,
   getFieldStudy,
   removeFieldStudyCollaborator,
@@ -32,6 +32,87 @@ function observationName(observation: FieldObservation) {
     observation.title ||
     "Unconfirmed plant"
   );
+}
+
+function observationHasPhotoEvidence(observation: FieldObservation) {
+  return Boolean(
+    observation.photoUrls?.some(Boolean) ||
+    observation.evidenceAssets?.some(
+      (asset) =>
+        (asset.kind === "photo" || asset.kind === "video_frame") &&
+        (asset.assetId || asset.id || asset.url || asset.uri)
+    )
+  );
+}
+
+function observationIsCannabis(observation: FieldObservation) {
+  const candidateNames = (observation.identity?.candidates || []).flatMap((candidate) => [
+    candidate.commonName,
+    candidate.scientificName
+  ]);
+  return /\b(cannabis|hemp|marijuana)\b/i.test(
+    [
+      observation.title,
+      observation.identity?.commonName,
+      observation.identity?.scientificName,
+      ...candidateNames
+    ]
+      .filter(Boolean)
+      .join(" ")
+  );
+}
+
+function natureReadiness(study: FieldStudy, observation: FieldObservation) {
+  const hasCoordinates =
+    observation.location?.latitude != null && observation.location?.longitude != null;
+  const locationIsPublic =
+    observation.location?.privacy === "public_approximate" ||
+    (observation.location?.privacy === "public_exact" &&
+      observation.location?.exactLocationPublicConfirmed === true);
+  const cannabisIdentity = observationIsCannabis(observation);
+  const checks = [
+    {
+      key: "photo",
+      label: "Photo evidence attached",
+      complete: observationHasPhotoEvidence(observation)
+    },
+    {
+      key: "coordinates",
+      label: "Device coordinates captured",
+      complete: hasCoordinates
+    },
+    {
+      key: "study",
+      label: "Field Study is public",
+      complete: study.visibility === "public"
+    },
+    {
+      key: "location",
+      label:
+        observation.location?.privacy === "public_exact"
+          ? "Exact public location is explicitly confirmed"
+          : "Approximate location is shared",
+      complete: locationIsPublic
+    },
+    ...(cannabisIdentity
+      ? [
+          {
+            key: "cannabis-context",
+            label: "Cannabis/hemp public sharing is confirmed",
+            complete: observation.publication?.cannabisContextConfirmed === true
+          }
+        ]
+      : []),
+    {
+      key: "publication",
+      label: "Observation is published",
+      complete: observation.publication?.status === "published"
+    }
+  ];
+  return {
+    checks,
+    complete: checks.every((check) => check.complete)
+  };
 }
 
 export default function FieldStudyDetailScreen() {
@@ -58,6 +139,9 @@ function FieldStudyDetailContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingObservationId, setSavingObservationId] = useState("");
+  const [pendingRemovalId, setPendingRemovalId] = useState("");
+  const [pendingApproximateId, setPendingApproximateId] = useState("");
+  const [pendingCannabisId, setPendingCannabisId] = useState("");
   const [error, setError] = useState("");
 
   const canManage = study?.accessRole === "owner";
@@ -143,13 +227,29 @@ function FieldStudyDetailContent() {
   );
 
   const patchObservation = useCallback(
-    async (observation: FieldObservation, patch: Record<string, any>) => {
+    async (observation: FieldObservation, patch: FieldObservationInput) => {
       const observationId = String(observation.id || observation._id || "");
       if (!observationId || savingObservationId) return;
       setSavingObservationId(observationId);
       setError("");
       try {
-        const updated = await updateFieldObservation(studyId, observationId, patch);
+        const preservedPatch = {
+          ...patch,
+          ...(patch.identity
+            ? { identity: { ...observation.identity, ...patch.identity } }
+            : {}),
+          ...(patch.location
+            ? { location: { ...observation.location, ...patch.location } }
+            : {}),
+          ...(patch.publication
+            ? { publication: { ...observation.publication, ...patch.publication } }
+            : {})
+        };
+        const updated = await updateFieldObservation(
+          studyId,
+          observationId,
+          preservedPatch
+        );
         setObservations((current) =>
           current.map((item) =>
             String(item.id || item._id) === observationId ? updated : item
@@ -266,20 +366,7 @@ function FieldStudyDetailContent() {
           <Pressable
             accessibilityRole="button"
             disabled={saving}
-            onPress={() => {
-              if (study.visibility === "public") {
-                void publishStudy();
-                return;
-              }
-              Alert.alert(
-                "Publish this Field Study?",
-                "Only observations separately marked Published will appear. Exact coordinates stay hidden unless explicitly confirmed.",
-                [
-                  { text: "Cancel", style: "cancel" },
-                  { text: "Publish Study", onPress: () => void publishStudy() }
-                ]
-              );
-            }}
+            onPress={() => void publishStudy()}
             style={styles.secondaryButton}
           >
             <Text style={styles.secondaryText}>
@@ -327,34 +414,54 @@ function FieldStudyDetailContent() {
           >
             <Text style={styles.primaryText}>{saving ? "Saving..." : "Add Person"}</Text>
           </Pressable>
-          {(study.collaborators || []).map((collaborator) => (
-            <View key={collaborator.userId} style={styles.collaboratorRow}>
-              <Text style={styles.collaborator}>
-                {collaborator.displayName || "GrowPathAI member"} · {collaborator.role}
-              </Text>
-              <Pressable
-                disabled={saving}
-                onPress={() =>
-                  Alert.alert(
-                    "Remove collaborator?",
-                    "They will immediately lose access to this Field Study.",
-                    [
-                      { text: "Cancel", style: "cancel" },
-                      {
-                        text: "Remove",
-                        style: "destructive",
-                        onPress: () =>
-                          void removeCollaborator(String(collaborator.userId))
-                      }
-                    ]
-                  )
-                }
-                style={styles.removeButton}
-              >
-                <Text style={styles.removeButtonText}>Remove</Text>
-              </Pressable>
-            </View>
-          ))}
+          {(study.collaborators || []).map((collaborator) => {
+            const collaboratorId = String(collaborator.userId);
+            const confirmingRemoval = pendingRemovalId === collaboratorId;
+            return (
+              <View key={collaboratorId} style={styles.collaboratorBlock}>
+                <View style={styles.collaboratorRow}>
+                  <Text style={styles.collaborator}>
+                    {collaborator.displayName || "GrowPathAI member"} ·{" "}
+                    {collaborator.role}
+                  </Text>
+                  <Pressable
+                    disabled={saving}
+                    onPress={() => setPendingRemovalId(collaboratorId)}
+                    style={styles.removeButton}
+                  >
+                    <Text style={styles.removeButtonText}>Remove</Text>
+                  </Pressable>
+                </View>
+                {confirmingRemoval ? (
+                  <View style={styles.inlineConfirmation}>
+                    <Text style={styles.panelText}>
+                      Remove this person from the Field Study? They will immediately lose
+                      access.
+                    </Text>
+                    <View style={styles.observationActions}>
+                      <Pressable
+                        disabled={saving}
+                        onPress={() => {
+                          setPendingRemovalId("");
+                          void removeCollaborator(collaboratorId);
+                        }}
+                        style={styles.removeButton}
+                      >
+                        <Text style={styles.removeButtonText}>Confirm Remove</Text>
+                      </Pressable>
+                      <Pressable
+                        disabled={saving}
+                        onPress={() => setPendingRemovalId("")}
+                        style={styles.smallButton}
+                      >
+                        <Text style={styles.smallButtonText}>Cancel</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
         </View>
       ) : null}
 
@@ -375,6 +482,10 @@ function FieldStudyDetailContent() {
           const publication = observation.publication?.status || "draft";
           const locationPrivacy = observation.location?.privacy || "private";
           const observationSaving = savingObservationId === id;
+          const readiness = natureReadiness(study, observation);
+          const cannabisIdentity = observationIsCannabis(observation);
+          const confirmingApproximate = pendingApproximateId === id;
+          const confirmingCannabis = pendingCannabisId === id;
           return (
             <View key={id} style={styles.observationCard}>
               <View style={styles.headerRow}>
@@ -398,6 +509,22 @@ function FieldStudyDetailContent() {
                   Still needed: {observation.identity?.missingEvidence?.join(", ")}
                 </Text>
               ) : null}
+              <View style={styles.readinessPanel}>
+                <Text style={styles.panelTitle}>Nature map readiness</Text>
+                {readiness.checks.map((check) => (
+                  <Text
+                    key={check.key}
+                    style={check.complete ? styles.readyItem : styles.neededItem}
+                  >
+                    {check.complete ? "Ready" : "Needed"}: {check.label}
+                  </Text>
+                ))}
+                <Text style={styles.panelText}>
+                  {readiness.complete
+                    ? "Ready to appear on Nature after the server validates the owned public photo derivative."
+                    : "Complete each needed item before this finding can appear on Nature."}
+                </Text>
+              </View>
               {study.accessRole !== "viewer" ? (
                 <View style={styles.observationActions}>
                   <Pressable
@@ -446,31 +573,157 @@ function FieldStudyDetailContent() {
                         style={styles.smallButton}
                       >
                         <Text style={styles.smallButtonText}>
-                          {publication === "published" ? "Withdraw" : "Publish"}
+                          {publication === "published"
+                            ? "Withdraw Observation"
+                            : "Publish Observation"}
                         </Text>
                       </Pressable>
+                      {cannabisIdentity ? (
+                        observation.publication?.cannabisContextConfirmed ? (
+                          <Pressable
+                            disabled={observationSaving}
+                            onPress={() =>
+                              void patchObservation(observation, {
+                                publication: { cannabisContextConfirmed: false }
+                              })
+                            }
+                            style={styles.smallButton}
+                          >
+                            <Text style={styles.smallButtonText}>
+                              Revoke Cannabis Public Sharing
+                            </Text>
+                          </Pressable>
+                        ) : (
+                          <Pressable
+                            disabled={observationSaving}
+                            onPress={() => setPendingCannabisId(id)}
+                            style={styles.smallButton}
+                          >
+                            <Text style={styles.smallButtonText}>
+                              Review Cannabis/Hemp Sharing
+                            </Text>
+                          </Pressable>
+                        )
+                      ) : null}
+                      {confirmingCannabis ? (
+                        <View style={styles.inlineConfirmation}>
+                          <Text style={styles.panelText}>
+                            Confirm that this cannabis/hemp finding may be shared publicly
+                            when every other Nature requirement is complete. This does not
+                            publish it by itself.
+                          </Text>
+                          <View style={styles.observationActions}>
+                            <Pressable
+                              disabled={observationSaving}
+                              onPress={() => {
+                                setPendingCannabisId("");
+                                void patchObservation(observation, {
+                                  publication: { cannabisContextConfirmed: true }
+                                });
+                              }}
+                              style={styles.smallButton}
+                            >
+                              <Text style={styles.smallButtonText}>
+                                Confirm Cannabis/Hemp Sharing
+                              </Text>
+                            </Pressable>
+                            <Pressable
+                              disabled={observationSaving}
+                              onPress={() => setPendingCannabisId("")}
+                              style={styles.smallButton}
+                            >
+                              <Text style={styles.smallButtonText}>Cancel</Text>
+                            </Pressable>
+                          </View>
+                        </View>
+                      ) : null}
                       {observation.location?.latitude != null &&
                       observation.location?.longitude != null ? (
-                        <Pressable
-                          disabled={observationSaving}
-                          onPress={() =>
-                            void patchObservation(observation, {
-                              location: {
-                                privacy:
-                                  locationPrivacy === "private"
-                                    ? "collaborators"
-                                    : locationPrivacy === "collaborators"
-                                      ? "public_approximate"
-                                      : "private"
+                        <>
+                          {locationPrivacy === "private" ? (
+                            <Pressable
+                              disabled={observationSaving}
+                              onPress={() =>
+                                void patchObservation(observation, {
+                                  location: {
+                                    privacy: "collaborators",
+                                    exactLocationPublicConfirmed: false
+                                  }
+                                })
                               }
-                            })
-                          }
-                          style={styles.smallButton}
-                        >
-                          <Text style={styles.smallButtonText}>
-                            Change Location Sharing
-                          </Text>
-                        </Pressable>
+                              style={styles.smallButton}
+                            >
+                              <Text style={styles.smallButtonText}>
+                                Share with Study Team
+                              </Text>
+                            </Pressable>
+                          ) : null}
+                          {locationPrivacy !== "private" ? (
+                            <Pressable
+                              disabled={observationSaving}
+                              onPress={() =>
+                                void patchObservation(observation, {
+                                  location: {
+                                    privacy: "private",
+                                    exactLocationPublicConfirmed: false
+                                  }
+                                })
+                              }
+                              style={styles.smallButton}
+                            >
+                              <Text style={styles.smallButtonText}>
+                                Make Location Private
+                              </Text>
+                            </Pressable>
+                          ) : null}
+                          {locationPrivacy === "private" ||
+                          locationPrivacy === "collaborators" ? (
+                            <Pressable
+                              disabled={observationSaving}
+                              onPress={() => setPendingApproximateId(id)}
+                              style={styles.smallButton}
+                            >
+                              <Text style={styles.smallButtonText}>
+                                Share Approximate Location
+                              </Text>
+                            </Pressable>
+                          ) : null}
+                          {confirmingApproximate ? (
+                            <View style={styles.inlineConfirmation}>
+                              <Text style={styles.panelText}>
+                                Share a rounded location on Nature? GrowPath keeps the
+                                captured exact coordinates protected. Sensitive species
+                                receive a wider regional point.
+                              </Text>
+                              <View style={styles.observationActions}>
+                                <Pressable
+                                  disabled={observationSaving}
+                                  onPress={() => {
+                                    setPendingApproximateId("");
+                                    void patchObservation(observation, {
+                                      location: {
+                                        privacy: "public_approximate",
+                                        exactLocationPublicConfirmed: false
+                                      }
+                                    });
+                                  }}
+                                  style={styles.smallButton}
+                                >
+                                  <Text style={styles.smallButtonText}>
+                                    Confirm Approximate Sharing
+                                  </Text>
+                                </Pressable>
+                                <Pressable
+                                  disabled={observationSaving}
+                                  onPress={() => setPendingApproximateId("")}
+                                  style={styles.smallButton}
+                                >
+                                  <Text style={styles.smallButtonText}>Cancel</Text>
+                                </Pressable>
+                              </View>
+                            </View>
+                          ) : null}
+                        </>
                       ) : null}
                     </>
                   ) : null}
@@ -588,6 +841,7 @@ export function createFieldStudyDetailStyles(palette: ThemePalette) {
     roleTextSelected: { color: palette.accentText },
     disabled: { opacity: 0.5 },
     collaborator: { color: palette.textSoft, fontSize: 13, textTransform: "capitalize" },
+    collaboratorBlock: { gap: 7 },
     collaboratorRow: {
       alignItems: "center",
       flexDirection: "row",
@@ -627,6 +881,26 @@ export function createFieldStudyDetailStyles(palette: ThemePalette) {
     observationTitle: { color: palette.text, flex: 1, fontSize: 17, fontWeight: "800" },
     scientificName: { color: palette.textSoft, fontStyle: "italic" },
     missing: { color: palette.warning, lineHeight: 20, marginTop: 3 },
+    readinessPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 4,
+      marginTop: 8,
+      padding: 12
+    },
+    readyItem: { color: palette.success, fontWeight: "800", lineHeight: 19 },
+    neededItem: { color: palette.warning, fontWeight: "800", lineHeight: 19 },
+    inlineConfirmation: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: "100%",
+      gap: 7,
+      padding: 10
+    },
     observationActions: {
       flexDirection: "row",
       flexWrap: "wrap",
