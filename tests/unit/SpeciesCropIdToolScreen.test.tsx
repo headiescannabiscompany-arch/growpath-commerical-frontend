@@ -23,6 +23,13 @@ const mockRequestCurrentCoordinates = jest.fn();
 let mockSearchParams: Record<string, string> = { growId: "grow-1" };
 let mockEvidenceAssets: any[] = [];
 
+function openLocationAndSharing(screen: any) {
+  const collapsedControl = screen.queryByText(
+    "Optional: add location or share to Nature"
+  );
+  if (collapsedControl) fireEvent.press(collapsedControl);
+}
+
 jest.mock("expo-router", () => ({
   Link: ({ children }: any) => children,
   useLocalSearchParams: () => mockSearchParams,
@@ -922,11 +929,31 @@ describe("SpeciesCropIdToolRoute", () => {
     );
   });
 
+  it("opens Field Study location controls when launched from a study", async () => {
+    mockSearchParams = { fieldStudyId: "study-1" };
+    mockListFieldStudies.mockResolvedValueOnce([
+      {
+        id: "study-1",
+        _id: "study-1",
+        title: "Raleigh park",
+        slug: "raleigh-park",
+        visibility: "private",
+        accessRole: "owner"
+      }
+    ]);
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(screen.getByText("Hide location & Nature sharing")).toBeTruthy();
+    expect(screen.getByText(/Choose location and map sharing/)).toBeTruthy();
+    expect(await screen.findByText(/Raleigh park/)).toBeTruthy();
+  });
+
   it("creates and selects a Field Study without leaving uploaded evidence", async () => {
     mockSearchParams = {};
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     fireEvent.changeText(
       screen.getByLabelText("New Field Study name"),
       "Neighborhood plants"
@@ -957,7 +984,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ]);
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Private roadside survey/)).toBeTruthy());
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
     fireEvent.press(screen.getByText("Review public Field Study sharing"));
@@ -991,7 +1018,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ]);
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Roadside survey/)).toBeTruthy());
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
@@ -1082,7 +1109,7 @@ describe("SpeciesCropIdToolRoute", () => {
       .mockResolvedValueOnce({ observation: { id: "observation-2" } });
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public roadside survey/)).toBeTruthy());
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
@@ -1129,7 +1156,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ]);
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public survey/)).toBeTruthy());
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
@@ -1186,7 +1213,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ]);
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public survey/)).toBeTruthy());
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
@@ -1232,7 +1259,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ]);
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public survey/)).toBeTruthy());
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
@@ -1284,7 +1311,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ]);
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public cannabis survey/)).toBeTruthy());
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
@@ -1313,7 +1340,7 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
     );
@@ -1324,7 +1351,7 @@ describe("SpeciesCropIdToolRoute", () => {
 
   it("can remove captured coordinates before saving or sharing", async () => {
     const screen = render(<SpeciesCropIdToolRoute />);
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
     );
@@ -1346,7 +1373,7 @@ describe("SpeciesCropIdToolRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Species / Crop Identification result")).toBeTruthy()
     );
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
     );
@@ -1404,7 +1431,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ]);
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public study/)).toBeTruthy());
     fireEvent.press(
       screen.getByLabelText("Use current location for this plant observation")
@@ -1445,7 +1472,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ]);
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Public study/)).toBeTruthy());
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
 
@@ -1488,7 +1515,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ]);
     const screen = render(<SpeciesCropIdToolRoute />);
 
-    fireEvent.press(screen.getByText("Optional: add location or share to Nature"));
+    openLocationAndSharing(screen);
     await waitFor(() => expect(screen.getByText(/Roadside survey/)).toBeTruthy());
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() =>

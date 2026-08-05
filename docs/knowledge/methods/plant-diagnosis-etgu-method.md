@@ -194,6 +194,17 @@ and device coordinates have been captured separately from AI. Show every unmet
 requirement instead of treating a partial draft as ready. New studies, observations,
 evidence, publication state, and coordinates remain private by default.
 
+An existing saved Crop Identification ToolRun may be explicitly linked to an editable
+Field Study without rerunning AI or re-uploading its owned evidence. That link creates
+one private draft observation from the saved structured identity, context, provenance,
+and owned media references. An already user-authorized saved coordinate, or a coordinate
+captured through a separate explicit action, may be copied only as an exact private
+location. Linking must not request device location, publish the observation, change the
+study visibility, make coordinates public, or confirm a cannabis/hemp public context.
+Repeated linking of the same ToolRun to the same study must reopen or update the existing
+draft rather than creating duplicate observations. Nature sharing remains a later,
+separately confirmed workflow that must satisfy every ordinary map-readiness gate.
+
 The public discovery surface is an interactive, zoomable globe with clustered pins.
 The server queries only the rounded or explicitly approved public point that the visitor
 is allowed to see; it must never use the protected exact point for viewport filtering, as

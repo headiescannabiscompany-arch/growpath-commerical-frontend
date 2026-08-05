@@ -6,13 +6,18 @@ import SavedToolRunsRoute from "@/app/home/personal/(tabs)/tools/saved-runs";
 const mockGetToolRun = jest.fn();
 const mockListToolRuns = jest.fn();
 const mockUpdateToolRun = jest.fn();
+const mockGetFieldStudy = jest.fn();
+const mockCreateFieldObservation = jest.fn();
+const mockRequestCurrentCoordinates = jest.fn();
+let mockSearchParams: Record<string, string> = {
+  toolRunId: "run-1",
+  growId: "grow-1",
+  sourceContext: "journal"
+};
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({
-    toolRunId: "run-1",
-    growId: "grow-1",
-    sourceContext: "journal"
-  })
+  Link: ({ children }: any) => children,
+  useLocalSearchParams: () => mockSearchParams
 }));
 
 jest.mock("@react-navigation/native", () => {
@@ -31,6 +36,15 @@ jest.mock("@/api/toolRuns", () => ({
   listToolRuns: (...args: any[]) => mockListToolRuns(...args),
   saveToolRunToLog: jest.fn(),
   updateToolRun: (...args: any[]) => mockUpdateToolRun(...args)
+}));
+
+jest.mock("@/api/fieldStudies", () => ({
+  createFieldObservation: (...args: any[]) => mockCreateFieldObservation(...args),
+  getFieldStudy: (...args: any[]) => mockGetFieldStudy(...args)
+}));
+
+jest.mock("@/utils/locationSearch", () => ({
+  requestCurrentCoordinates: (...args: any[]) => mockRequestCurrentCoordinates(...args)
 }));
 
 jest.mock("@/components/ScreenBoundary", () => {
@@ -80,6 +94,11 @@ jest.mock("@/features/personal/tools/ToolResultSurface", () => {
 describe("SavedToolRunsRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockSearchParams = {
+      toolRunId: "run-1",
+      growId: "grow-1",
+      sourceContext: "journal"
+    };
     mockListToolRuns.mockResolvedValue([
       {
         id: "run-1",
@@ -100,6 +119,123 @@ describe("SavedToolRunsRoute", () => {
       outputs: { vpd: 1.2 },
       createdAt: "2026-07-07T12:00:00.000Z"
     });
+    mockRequestCurrentCoordinates.mockResolvedValue({
+      latitude: 35.7796,
+      longitude: -78.6382,
+      accuracyMeters: 25
+    });
+  });
+
+  it("links a historical Plant ID to a Field Study as a private draft", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      growId: null,
+      summary: "Magnolia candidate from one photo.",
+      inputs: {
+        mediaEvidence: [
+          {
+            id: "asset-1",
+            durableUrl: "https://example.com/magnolia.jpg",
+            kind: "photo"
+          }
+        ]
+      },
+      outputs: {
+        likelyCrop: "Magnolia",
+        scientificName: "Magnolia spp.",
+        confidence: "medium",
+        evidence: ["Broad evergreen leaf"],
+        missingInformation: ["leaf underside", "flower"]
+      },
+      createdAt: "2026-08-02T12:00:00.000Z"
+    };
+    const locatedRun = {
+      ...cropRun,
+      inputs: {
+        ...cropRun.inputs,
+        capturedLocation: {
+          latitude: 35.7796,
+          longitude: -78.6382,
+          accuracyMeters: 25,
+          privacy: "private",
+          userAuthorized: true
+        }
+      }
+    };
+    mockSearchParams = {
+      toolRunId: "run-1",
+      toolType: "species_crop_id",
+      fieldStudyId: "study-1"
+    };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+    mockUpdateToolRun.mockResolvedValue(locatedRun);
+    mockGetFieldStudy.mockResolvedValue({
+      study: {
+        id: "study-1",
+        title: "Raleigh park",
+        visibility: "private",
+        accessRole: "owner"
+      },
+      observations: []
+    });
+    mockCreateFieldObservation.mockResolvedValue({
+      observation: {
+        id: "observation-1",
+        sourceToolRunId: "run-1",
+        publication: { status: "draft" },
+        location: { privacy: "private" }
+      }
+    });
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(
+      await screen.findByText("Add this identification to a Field Study")
+    ).toBeTruthy();
+    fireEvent.press(screen.getByText("Use Current Location"));
+    await waitFor(() => expect(mockRequestCurrentCoordinates).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "run-1",
+        expect.objectContaining({
+          inputs: expect.objectContaining({
+            capturedLocation: expect.objectContaining({
+              latitude: 35.7796,
+              longitude: -78.6382,
+              privacy: "private",
+              userAuthorized: true
+            })
+          })
+        })
+      )
+    );
+    fireEvent.press(screen.getByText("Save Private Observation"));
+
+    await waitFor(() =>
+      expect(mockCreateFieldObservation).toHaveBeenCalledWith(
+        "study-1",
+        expect.objectContaining({
+          sourceToolRunId: "run-1",
+          publication: expect.objectContaining({
+            status: "draft",
+            cannabisContextConfirmed: false
+          }),
+          location: expect.objectContaining({
+            latitude: 35.7796,
+            longitude: -78.6382,
+            privacy: "private",
+            exactLocationPublicConfirmed: false
+          })
+        })
+      )
+    );
+    expect(
+      await screen.findByText("Saved privately to Raleigh park — not on Nature.")
+    ).toBeTruthy();
+    expect(screen.getByText("Already Linked")).toBeTruthy();
   });
 
   it("selects the saved ToolRun from the route query", async () => {

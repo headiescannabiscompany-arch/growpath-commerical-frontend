@@ -8,6 +8,7 @@ const {
   createTaskFromToolRun,
   createToolRun,
   getToolRun,
+  listToolRuns,
   runCalculator,
   saveToolRunToLog
 } = require("@/api/toolRuns");
@@ -139,6 +140,25 @@ describe("toolRuns API", () => {
     expect(run?.calculatorVersion).toBe("guard-v2");
   });
 
+  it("filters saved runs locally when the API returns unrelated tool types", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      items: [
+        { _id: "run-vpd", toolType: "vpd" },
+        { _id: "run-plant-1", toolType: "species_crop_id" },
+        { _id: "run-plant-2", toolName: "species-crop-identification" }
+      ]
+    });
+
+    const runs = await listToolRuns({ toolType: "species_crop_id" });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools", {
+      method: "GET",
+      cache: "no-store",
+      params: expect.objectContaining({ toolType: "species_crop_id" })
+    });
+    expect(runs.map((run: any) => run.id)).toEqual(["run-plant-1", "run-plant-2"]);
+  });
+
   it("preserves tool run links when saving a run to the grow log", async () => {
     await saveToolRunToLog("run-log-1", {
       title: "Saved VPD result",
@@ -165,17 +185,20 @@ describe("toolRuns API", () => {
       linkedGrowId: "grow-1"
     });
 
-    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools/runs/run-task-1/create-task", {
-      method: "POST",
-      body: expect.objectContaining({
-        title: "Recheck environment",
-        sourceType: "tool_run",
-        sourceObjectId: "run-task-1",
-        sourceToolRunId: "run-task-1",
-        linkedToolRunId: "run-task-1",
-        growId: "grow-1",
-        linkedGrowId: "grow-1"
-      })
-    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/tools/runs/run-task-1/create-task",
+      {
+        method: "POST",
+        body: expect.objectContaining({
+          title: "Recheck environment",
+          sourceType: "tool_run",
+          sourceObjectId: "run-task-1",
+          sourceToolRunId: "run-task-1",
+          linkedToolRunId: "run-task-1",
+          growId: "grow-1",
+          linkedGrowId: "grow-1"
+        })
+      }
+    );
   });
 });

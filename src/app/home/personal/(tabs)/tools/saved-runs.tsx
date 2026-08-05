@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -20,6 +20,12 @@ import {
   updateToolRun,
   type ToolRun
 } from "@/api/toolRuns";
+import {
+  createFieldObservation,
+  getFieldStudy,
+  type FieldObservation,
+  type FieldStudy
+} from "@/api/fieldStudies";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ToolResultSurface, {
   type ToolResultAction,
@@ -30,9 +36,18 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { savedRunBackTarget } from "@/features/personal/tools/savedRunRoutes";
+import {
+  coordinatesFromToolRun,
+  privateFieldObservationFromToolRun
+} from "@/features/personal/tools/fieldObservationDraft";
+import {
+  requestCurrentCoordinates,
+  type PublicCoordinates
+} from "@/utils/locationSearch";
 
 const TOOL_FILTERS = [
   { label: "All", value: "" },
+  { label: "Plant ID", value: "species_crop_id" },
   { label: "IPM", value: "ipm_scout" },
   { label: "Harvest", value: "harvest_readiness" },
   { label: "Pheno", value: "pheno_hunt" },
@@ -673,6 +688,7 @@ export default function SavedToolRunsScreen() {
     toolRunId?: string | string[];
     sourceContext?: string | string[];
     sourceTaskId?: string | string[];
+    fieldStudyId?: string | string[];
   }>();
   const growId = useMemo(() => coerceParam(params.growId), [params.growId]);
   const initialToolType = useMemo(() => coerceParam(params.toolType), [params.toolType]);
@@ -688,10 +704,17 @@ export default function SavedToolRunsScreen() {
     () => coerceParam(params.sourceTaskId),
     [params.sourceTaskId]
   );
-  const backTarget = useMemo(
+  const fieldStudyId = useMemo(
+    () => coerceParam(params.fieldStudyId),
+    [params.fieldStudyId]
+  );
+  const sourceBackTarget = useMemo(
     () => savedRunBackTarget({ growId, sourceContext, sourceTaskId }),
     [growId, sourceContext, sourceTaskId]
   );
+  const backTarget = fieldStudyId
+    ? `/home/personal/field-studies/${fieldStudyId}`
+    : sourceBackTarget;
   const [toolType, setToolType] = useState(initialToolType);
   const [runs, setRuns] = useState<ToolRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
@@ -699,6 +722,15 @@ export default function SavedToolRunsScreen() {
   const [correctionDraft, setCorrectionDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
+  const [fieldStudy, setFieldStudy] = useState<FieldStudy | null>(null);
+  const [fieldObservations, setFieldObservations] = useState<FieldObservation[]>([]);
+  const [fieldStudyLoading, setFieldStudyLoading] = useState(false);
+  const [fieldStudyFeedback, setFieldStudyFeedback] = useState("");
+  const [fieldCoordinates, setFieldCoordinates] = useState<PublicCoordinates | null>(
+    null
+  );
+  const [capturingFieldLocation, setCapturingFieldLocation] = useState(false);
+  const [savingFieldObservation, setSavingFieldObservation] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const pendingFocusRunIdRef = useRef("");
 
@@ -718,6 +750,48 @@ export default function SavedToolRunsScreen() {
       load();
     }, [load])
   );
+
+  useEffect(() => {
+    let active = true;
+    if (!fieldStudyId) {
+      setFieldStudy(null);
+      setFieldObservations([]);
+      setFieldStudyFeedback("");
+      return () => {
+        active = false;
+      };
+    }
+
+    setFieldStudyLoading(true);
+    setFieldStudy(null);
+    setFieldObservations([]);
+    setFieldStudyFeedback("");
+    void getFieldStudy(fieldStudyId)
+      .then((response) => {
+        if (!active) return;
+        setFieldStudy(response.study);
+        setFieldObservations(response.observations);
+      })
+      .catch((fieldStudyError: any) => {
+        if (!active) return;
+        setFieldStudy(null);
+        setFieldObservations([]);
+        setFieldStudyFeedback(
+          fieldStudyError?.message || "This Field Study could not be loaded."
+        );
+      })
+      .finally(() => {
+        if (active) setFieldStudyLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [fieldStudyId]);
+
+  useEffect(() => {
+    setFieldCoordinates(selectedRun ? coordinatesFromToolRun(selectedRun) : null);
+  }, [selectedRun]);
 
   const selectRun = useCallback(async (run: ToolRun) => {
     const id = idFor(run);
@@ -860,7 +934,88 @@ export default function SavedToolRunsScreen() {
     await load();
   }
 
+  async function capturePrivateFieldLocation() {
+    const id = selectedRun ? idFor(selectedRun) : "";
+    if (!id || !selectedRun || !isSpeciesCropRun(selectedRun)) return;
+    setCapturingFieldLocation(true);
+    setFieldStudyFeedback("");
+    try {
+      const coordinates = await requestCurrentCoordinates();
+      const nextInputs = {
+        ...runInputs(selectedRun),
+        capturedLocation: {
+          ...coordinates,
+          privacy: "private",
+          userAuthorized: true,
+          capturedAt: new Date().toISOString()
+        }
+      };
+      const updated = await updateToolRun(id, {
+        inputs: nextInputs,
+        input: nextInputs,
+        params: nextInputs
+      });
+      if (!updated) {
+        setFieldStudyFeedback(
+          "Location was not saved, so it will not be attached to this observation."
+        );
+        return;
+      }
+      setSelectedRun(updated);
+      setRuns((current) => current.map((run) => (idFor(run) === id ? updated : run)));
+      setFieldCoordinates(coordinates);
+      setFieldStudyFeedback(
+        "Current location saved privately to this Plant ID. It is not on Nature."
+      );
+    } catch (locationError: any) {
+      setFieldStudyFeedback(
+        locationError?.message || "Current location could not be captured."
+      );
+    } finally {
+      setCapturingFieldLocation(false);
+    }
+  }
+
+  async function savePrivateFieldObservation() {
+    const id = selectedRun ? idFor(selectedRun) : "";
+    const canEditStudy =
+      fieldStudy?.accessRole === "owner" || fieldStudy?.accessRole === "editor";
+    if (!id || !selectedRun || !fieldStudyId || !fieldStudy || !canEditStudy) return;
+    const alreadyLinked = fieldObservations.some(
+      (observation) => String(observation.sourceToolRunId || "") === id
+    );
+    if (alreadyLinked) {
+      setFieldStudyFeedback(
+        `This identification is already saved privately to ${fieldStudy.title}.`
+      );
+      return;
+    }
+
+    setSavingFieldObservation(true);
+    setFieldStudyFeedback("");
+    try {
+      const created = await createFieldObservation(
+        fieldStudyId,
+        privateFieldObservationFromToolRun(selectedRun, fieldCoordinates)
+      );
+      setFieldObservations((current) => [created.observation, ...current]);
+      setFieldStudyFeedback(`Saved privately to ${fieldStudy.title} — not on Nature.`);
+    } catch (saveError: any) {
+      setFieldStudyFeedback(
+        saveError?.message || "This identification could not be added to the Field Study."
+      );
+    } finally {
+      setSavingFieldObservation(false);
+    }
+  }
+
   const selectedRunId = selectedRun ? idFor(selectedRun) : "";
+  const selectedRunAlreadyLinked = Boolean(
+    selectedRunId &&
+    fieldObservations.some(
+      (observation) => String(observation.sourceToolRunId || "") === selectedRunId
+    )
+  );
   const actions: ToolResultAction[] = selectedRunId
     ? [
         {
@@ -997,6 +1152,82 @@ export default function SavedToolRunsScreen() {
                 </Pressable>
               </View>
             ) : null}
+            {isSpeciesCropRun(selectedRun) && fieldStudyId ? (
+              <View style={styles.studyPanel}>
+                <Text style={styles.cardTitle}>
+                  Add this identification to a Field Study
+                </Text>
+                {fieldStudyLoading ? (
+                  <ActivityIndicator color={palette.accent} />
+                ) : fieldStudy ? (
+                  <>
+                    <Text style={styles.cardText}>
+                      Save this historical result to {fieldStudy.title} as a private
+                      draft. It will not appear on Nature unless you deliberately publish
+                      it later.
+                    </Text>
+                    <Text style={styles.statusText}>
+                      {fieldCoordinates
+                        ? "A device location is saved privately with this Plant ID."
+                        : "No location is saved. You can still create a private observation."}
+                    </Text>
+                    {fieldStudy.accessRole === "owner" ||
+                    fieldStudy.accessRole === "editor" ? (
+                      <View style={styles.buttonRow}>
+                        <Pressable
+                          accessibilityRole="button"
+                          disabled={capturingFieldLocation || savingFieldObservation}
+                          onPress={capturePrivateFieldLocation}
+                          style={[
+                            styles.secondary,
+                            (capturingFieldLocation || savingFieldObservation) &&
+                              styles.disabled
+                          ]}
+                        >
+                          <Text style={styles.secondaryText}>
+                            {capturingFieldLocation
+                              ? "Getting Location..."
+                              : "Use Current Location"}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          disabled={savingFieldObservation || selectedRunAlreadyLinked}
+                          onPress={savePrivateFieldObservation}
+                          style={[
+                            styles.primary,
+                            (savingFieldObservation || selectedRunAlreadyLinked) &&
+                              styles.disabled
+                          ]}
+                        >
+                          <Text style={styles.primaryText}>
+                            {selectedRunAlreadyLinked
+                              ? "Already Linked"
+                              : savingFieldObservation
+                                ? "Saving..."
+                                : "Save Private Observation"}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <Text style={styles.feedback}>
+                        Only the study owner or an editor can add observations.
+                      </Text>
+                    )}
+                    <Link href={`/home/personal/field-studies/${fieldStudyId}`} asChild>
+                      <Pressable accessibilityRole="link">
+                        <Text style={styles.context}>Open {fieldStudy.title}</Text>
+                      </Pressable>
+                    </Link>
+                  </>
+                ) : null}
+                {fieldStudyFeedback ? (
+                  <Text accessibilityRole="alert" style={styles.feedback}>
+                    {fieldStudyFeedback}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
             <View style={styles.editor}>
               <Text style={styles.label}>Summary / note</Text>
               <TextInput
@@ -1124,6 +1355,16 @@ export const createSavedToolRunsStyles = (palette: ThemePalette) =>
     cardText: { color: palette.textMuted, lineHeight: 19 },
     meta: { color: palette.textSoft, fontSize: 12, fontWeight: "700" },
     editor: { gap: 8 },
+    studyPanel: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12
+    },
+    buttonRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    statusText: { color: palette.textSoft, lineHeight: 20 },
     label: { color: palette.textSoft, fontSize: 12, fontWeight: "800" },
     input: {
       minHeight: 82,
@@ -1143,5 +1384,15 @@ export const createSavedToolRunsStyles = (palette: ThemePalette) =>
       paddingVertical: 9
     },
     primaryText: { color: palette.accentText, fontWeight: "800" },
+    secondary: {
+      alignSelf: "flex-start",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryText: { color: palette.text, fontWeight: "800" },
+    disabled: { opacity: 0.55 },
     feedback: { color: palette.textSoft, fontWeight: "700" }
   });
