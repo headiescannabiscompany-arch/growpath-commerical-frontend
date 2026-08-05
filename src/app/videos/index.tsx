@@ -1,6 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -15,6 +15,7 @@ import {
   createVideo,
   deleteVideo,
   GrowPathVideo,
+  isTerminalVideoMetadataError,
   listVideoLibrary,
   searchVideos,
   uploadVideoFile,
@@ -125,6 +126,7 @@ export default function VideosRoute() {
   const [mediaDraft, setMediaDraft] = useState(() => emptyLessonMediaDraft());
   const [videoFile, setVideoFile] = useState<any>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const videoUploadKeyRef = useRef("");
 
   const loadDiscover = useCallback(async () => {
     setLoading(true);
@@ -242,6 +244,7 @@ export default function VideosRoute() {
     setCannabisSpecific(false);
     setMediaDraft(emptyLessonMediaDraft());
     setVideoFile(null);
+    videoUploadKeyRef.current = "";
     setUploadProgress(null);
   }
 
@@ -268,6 +271,9 @@ export default function VideosRoute() {
       return;
     }
     setVideoFile(asset);
+    videoUploadKeyRef.current = `video_${Date.now()}_${Math.random()
+      .toString(36)
+      .slice(2, 10)}`;
     setMediaDraft((current) => ({
       ...current,
       sourceType: "growpath_upload",
@@ -288,6 +294,7 @@ export default function VideosRoute() {
     setCannabisSpecific(video.cannabisSpecific);
     setMediaDraft(lessonMediaDraftFromLesson(video));
     setVideoFile(null);
+    videoUploadKeyRef.current = "";
     setMessage(`Editing ${video.title}.`);
   }
 
@@ -309,8 +316,11 @@ export default function VideosRoute() {
         : prepareLessonMediaSubmission(mediaDraft, mediaDraft.originalUrl);
       if (preview?.errors.length) throw new Error(preview.errors.join(" "));
       const uploaded = videoFile
-        ? await uploadVideoFile(videoFile, uploadWorkspace, (fraction) =>
-            setUploadProgress(Math.round(fraction * 100))
+        ? await uploadVideoFile(
+            videoFile,
+            uploadWorkspace,
+            (fraction) => setUploadProgress(Math.round(fraction * 100)),
+            { clientUploadKey: videoUploadKeyRef.current }
           )
         : null;
       uploadedAssetId = uploaded?.assetId || "";
@@ -357,8 +367,11 @@ export default function VideosRoute() {
       resetForm();
       await loadLibrary();
     } catch (err) {
-      if (uploadedAssetId) {
-        await abortVideoUpload(uploadedAssetId, uploadWorkspace).catch(() => undefined);
+      if (uploadedAssetId && isTerminalVideoMetadataError(err)) {
+        void abortVideoUpload(uploadedAssetId, uploadWorkspace, {
+          clientUploadKey: videoUploadKeyRef.current,
+          timeoutMs: 5000
+        }).catch(() => undefined);
       }
       setError(err);
     } finally {

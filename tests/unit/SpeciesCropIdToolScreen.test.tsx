@@ -43,7 +43,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
   const React = require("react");
   const { Pressable, Text, View } = require("react-native");
   return function MockMediaEvidencePicker(props: any) {
-    const { onChange } = props;
+    const { onBusyChange, onChange } = props;
     React.useEffect(() => {
       onChange?.(mockEvidenceAssets);
     }, [onChange]);
@@ -65,6 +65,22 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
             ])
         },
         React.createElement(Text, null, "Replace test evidence")
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Set test evidence busy",
+          onPress: () => onBusyChange?.(true)
+        },
+        React.createElement(Text, null, "Set test evidence busy")
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Finish test evidence upload",
+          onPress: () => onBusyChange?.(false)
+        },
+        React.createElement(Text, null, "Finish test evidence upload")
       )
     );
   };
@@ -273,6 +289,32 @@ describe("SpeciesCropIdToolRoute", () => {
       },
       limitations: ["Cultivar cannot be identified from appearance."]
     });
+  });
+
+  it("blocks identification until every selected evidence upload finishes", async () => {
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByLabelText("Set test evidence busy"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Identify Plant from Photos" })
+      ).toBeDisabled()
+    );
+    fireEvent.press(screen.getByRole("button", { name: "Identify Plant from Photos" }));
+    expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+    expect(mockRunCalculator).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByLabelText("Finish test evidence upload"));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Identify Plant from Photos" })
+      ).not.toBeDisabled()
+    );
+    fireEvent.press(screen.getByRole("button", { name: "Identify Plant from Photos" }));
+
+    await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
   });
 
   it("identifies a cannabis flower without requiring a grow", async () => {
@@ -1481,9 +1523,7 @@ describe("SpeciesCropIdToolRoute", () => {
       "Include or update current location privately with this Plant ID"
     );
     await waitFor(() => expect(privateLocationControl).toBeEnabled());
-    fireEvent.press(
-      privateLocationControl
-    );
+    fireEvent.press(privateLocationControl);
     await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(3));
     expect(
       screen.queryByText(

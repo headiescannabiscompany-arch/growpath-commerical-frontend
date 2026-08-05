@@ -136,4 +136,156 @@ describe("apiRequest authentication contract", () => {
     });
     expect(onUnauthorized).not.toHaveBeenCalled();
   });
+
+  it("composes caller cancellation with a timeout and reports ABORTED", async () => {
+    const caller = new AbortController();
+    let resolveFetchStarted: (() => void) | undefined;
+    const fetchStarted = new Promise<void>((resolve) => {
+      resolveFetchStarted = resolve;
+    });
+    let requestSignal: AbortSignal | undefined;
+    global.fetch = jest.fn((_url: string, options: any) => {
+      requestSignal = options.signal;
+      resolveFetchStarted?.();
+      return new Promise((_resolve, reject) => {
+        options.signal.addEventListener(
+          "abort",
+          () => {
+            const error = new Error("The operation was aborted");
+            error.name = "AbortError";
+            reject(error);
+          },
+          { once: true }
+        );
+      });
+    }) as any;
+
+    const request = apiRequest("/api/test", {
+      signal: caller.signal,
+      timeoutMs: 60_000
+    });
+    const rejection = expect(request).rejects.toMatchObject({
+      code: "ABORTED",
+      message: "The request was canceled.",
+      status: null
+    });
+
+    await fetchStarted;
+    expect(requestSignal).toBeDefined();
+    expect(requestSignal).not.toBe(caller.signal);
+    expect(requestSignal?.aborted).toBe(false);
+
+    caller.abort();
+
+    await rejection;
+    expect(requestSignal?.aborted).toBe(true);
+  });
+
+  it("keeps an un-aborted caller signal composed while reporting TIMEOUT", async () => {
+    const caller = new AbortController();
+    let requestSignal: AbortSignal | undefined;
+    global.fetch = jest.fn((_url: string, options: any) => {
+      requestSignal = options.signal;
+      return new Promise((_resolve, reject) => {
+        options.signal.addEventListener(
+          "abort",
+          () => {
+            const error = new Error("The operation was aborted");
+            error.name = "AbortError";
+            reject(error);
+          },
+          { once: true }
+        );
+      });
+    }) as any;
+
+    await expect(
+      apiRequest("/api/test", {
+        signal: caller.signal,
+        timeoutMs: 10
+      })
+    ).rejects.toMatchObject({
+      code: "TIMEOUT",
+      message: "The request timed out.",
+      status: null
+    });
+
+    expect(caller.signal.aborted).toBe(false);
+    expect(requestSignal).toBeDefined();
+    expect(requestSignal).not.toBe(caller.signal);
+    expect(requestSignal?.aborted).toBe(true);
+  });
+
+  it("keeps the timeout active while a successful response body is stalled", async () => {
+    let requestSignal: AbortSignal | undefined;
+    global.fetch = jest.fn(async (_url: string, options: any) => {
+      requestSignal = options.signal;
+      return {
+        ok: true,
+        text: () =>
+          new Promise((_resolve, reject) => {
+            options.signal.addEventListener(
+              "abort",
+              () => {
+                const error = new Error("The response body was aborted");
+                error.name = "AbortError";
+                reject(error);
+              },
+              { once: true }
+            );
+          })
+      };
+    }) as any;
+
+    await expect(
+      apiRequest("/api/stalled-body", { timeoutMs: 10 })
+    ).rejects.toMatchObject({
+      code: "TIMEOUT",
+      message: "The request timed out.",
+      status: null
+    });
+
+    expect(requestSignal).toBeDefined();
+    expect(requestSignal?.aborted).toBe(true);
+  });
+
+  it("keeps caller cancellation active while a successful response body is stalled", async () => {
+    const caller = new AbortController();
+    let bodyStarted: (() => void) | undefined;
+    const bodyPending = new Promise<void>((resolve) => {
+      bodyStarted = resolve;
+    });
+    global.fetch = jest.fn(async (_url: string, options: any) => ({
+      ok: true,
+      text: () => {
+        bodyStarted?.();
+        return new Promise((_resolve, reject) => {
+          options.signal.addEventListener(
+            "abort",
+            () => {
+              const error = new Error("The response body was aborted");
+              error.name = "AbortError";
+              reject(error);
+            },
+            { once: true }
+          );
+        });
+      }
+    })) as any;
+
+    const request = apiRequest("/api/stalled-body", {
+      signal: caller.signal,
+      timeoutMs: 60_000
+    });
+    const rejection = expect(request).rejects.toMatchObject({
+      code: "ABORTED",
+      message: "The request was canceled.",
+      status: null
+    });
+
+    await bodyPending;
+    caller.abort();
+
+    await rejection;
+  });
 });

@@ -1,5 +1,5 @@
 import React from "react";
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import AiScreen, { facilityAiPresetFor } from "@/app/home/personal/(tabs)/ai";
 
@@ -18,6 +18,7 @@ const mockApiRequest = jest.fn();
 const mockGetFacilityTasks = jest.fn();
 const mockGetFacilityComplianceExport = jest.fn();
 const mockRouterPush = jest.fn();
+const mockMediaEvidencePickerProps = jest.fn();
 let mockSearchParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => ({
@@ -28,7 +29,8 @@ jest.mock("expo-router", () => ({
 jest.mock("@/components/media/MediaEvidencePicker", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return function MockMediaEvidencePicker() {
+  return function MockMediaEvidencePicker(props: any) {
+    mockMediaEvidencePickerProps(props);
     return <Text>Attach grow evidence</Text>;
   };
 });
@@ -193,6 +195,47 @@ describe("personal AI screen", () => {
     ).toBeTruthy();
   });
 
+  it("sends the saved evidence id instead of the temporary picker id", async () => {
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: "I reviewed the saved photo.",
+      actions: [],
+      referencedData: [],
+      proposedWrites: []
+    });
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+
+    act(() => {
+      mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0]?.onChange?.([
+        {
+          id: "evidence-local-1",
+          _id: "66aa00000000000000000001",
+          assetType: "photo",
+          originalUri:
+            "/api/evidence-assets/uploads/66bb00000000000000000001/object",
+          durableUrl:
+            "/api/evidence-assets/uploads/66bb00000000000000000001/object",
+          source: "library",
+          purpose: "diagnosis",
+          uploadStatus: "uploaded",
+          aiUsable: true,
+          qualityWarnings: []
+        }
+      ]);
+    });
+    fireEvent.changeText(screen.getByPlaceholderText("Type here..."), "review photo");
+    fireEvent.press(screen.getByText("Send"));
+
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          evidenceAssetIds: ["66aa00000000000000000001"]
+        })
+      )
+    );
+  });
+
   it("requires confirmation before creating AI-suggested tasks", async () => {
     mockAskPersonalAssistant.mockResolvedValue({
       success: true,
@@ -289,6 +332,13 @@ describe("personal AI screen", () => {
 
     const screen = render(<AiScreen workspaceType="commercial" />);
     await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+    expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        videoWorkspaceType: "commercial",
+        videoWorkspaceId: undefined,
+        sourceContext: expect.objectContaining({ facilityId: undefined })
+      })
+    );
 
     fireEvent.press(screen.getByLabelText("Draft IPM Scouting and Escalation"));
     const composer = screen.getByPlaceholderText("Type here...");
@@ -358,6 +408,13 @@ describe("personal AI screen", () => {
 
     await waitFor(() =>
       expect(screen.getByText("Inspection Readiness Context")).toBeTruthy()
+    );
+    expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        videoWorkspaceType: "facility",
+        videoWorkspaceId: "facility-1",
+        sourceContext: expect.objectContaining({ facilityId: "facility-1" })
+      })
     );
     expect(screen.getByText("Audit logs: 36")).toBeTruthy();
     expect(screen.getByText("SOP runs: 0")).toBeTruthy();

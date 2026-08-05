@@ -731,8 +731,10 @@ export default function AiScreen({
       workspaceType,
       conversationId: conversationId || undefined,
       evidenceAssetIds: evidenceAssets
-        .filter((asset) => asset.uploadStatus === "uploaded" && asset.id)
-        .map((asset) => asset.id),
+        .filter(
+          (asset) => asset.uploadStatus === "uploaded" && Boolean(asset._id || asset.id)
+        )
+        .map((asset) => String(asset._id || asset.id)),
       context: context ? assistantContext() : { grows: [], logs: [], tasks: [] }
     });
 
@@ -1239,7 +1241,15 @@ export default function AiScreen({
           allowVideo
           maxVideoSeconds={30}
           purpose="other"
-          sourceContext={{ growId: selectedGrowId || undefined }}
+          sourceContext={{
+            growId: selectedGrowId || undefined,
+            facilityId:
+              workspaceType === "facility" ? activeFacilityId || undefined : undefined
+          }}
+          videoWorkspaceType={workspaceType}
+          videoWorkspaceId={
+            workspaceType === "facility" ? activeFacilityId || undefined : undefined
+          }
           value={evidenceAssets}
           onChange={setEvidenceAssets}
         />

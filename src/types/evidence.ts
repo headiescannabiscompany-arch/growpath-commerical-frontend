@@ -32,6 +32,7 @@ export type EvidenceLinks = {
 export type EvidenceAsset = EvidenceLinks & {
   id: string;
   _id?: string;
+  clientUploadKey?: string;
   assetType: EvidenceAssetType;
   originalUri: string;
   durableUrl?: string;

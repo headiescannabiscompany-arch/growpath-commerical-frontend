@@ -70,6 +70,18 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved and visible in the saved result"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredInputs).toContain(
+      "device-prepared oversized photos with final MIME type and byte size plus terminal upload status"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredInputs).toContain(
+      "protected original evidence scoped to the active personal, Commercial, or Facility workspace, with a stable retry key and a separate public derivative only after explicit Nature publication"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not leave a failed or timed-out media transfer in an indefinite uploading state, upscale an oversized photo, claim preparation restored detail, or duplicate a completed binary upload when only evidence registration needs retrying."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not publish a protected diagnostic original, charge it to the wrong workspace, or create a public Nature derivative without explicit publication consent."
+    );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "defensible common, genus, or family-level candidate retained when exact species is unresolved"
     );

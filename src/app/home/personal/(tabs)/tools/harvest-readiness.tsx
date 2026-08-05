@@ -11,6 +11,7 @@ import {
   type DryCureRecordInput
 } from "@/api/harvestBatches";
 import { analyzeTrichomePhotos, type TrichomeVisionResult } from "@/api/harvestVision";
+import type { VideoWorkspaceType } from "@/api/videos";
 import { listEvidenceAssets, providerEvidencePayload } from "@/api/evidence";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
@@ -47,7 +48,9 @@ function HarvestPhotoAnalyzer({
   evidenceAssets,
   onEvidenceAssetsChange,
   initialAnalysis,
-  onAnalysis
+  onAnalysis,
+  workspaceType,
+  workspaceId
 }: {
   growId: string;
   plantId: string;
@@ -55,6 +58,8 @@ function HarvestPhotoAnalyzer({
   onEvidenceAssetsChange: React.Dispatch<React.SetStateAction<EvidenceAsset[]>>;
   initialAnalysis: TrichomeVisionResult | null;
   onAnalysis: (result: TrichomeVisionResult | null) => void;
+  workspaceType: VideoWorkspaceType;
+  workspaceId?: string;
 }) {
   const { palette } = useAppTheme();
   const photoStyles = useMemo(() => createHarvestPhotoStyles(palette), [palette]);
@@ -259,7 +264,13 @@ function HarvestPhotoAnalyzer({
         maxVideoSeconds={599}
         purpose="harvest"
         aiUsable
-        sourceContext={{ growId: growId || undefined, plantId: plantId || undefined }}
+        sourceContext={{
+          growId: growId || undefined,
+          plantId: plantId || undefined,
+          facilityId: workspaceType === "facility" ? workspaceId : undefined
+        }}
+        videoWorkspaceType={workspaceType}
+        videoWorkspaceId={workspaceId}
         value={evidenceAssets}
         onChange={updateEvidence}
       />
@@ -534,9 +545,13 @@ function harvestReviewRecord(
 }
 
 export default function HarvestReadinessToolRoute({
-  backFallbackHref = "/home/personal/tools"
+  backFallbackHref = "/home/personal/tools",
+  workspaceType = "personal",
+  workspaceId
 }: {
   backFallbackHref?: string;
+  workspaceType?: VideoWorkspaceType;
+  workspaceId?: string;
 } = {}) {
   const [vision, setVision] = useState<TrichomeVisionResult | null>(null);
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
@@ -568,6 +583,8 @@ export default function HarvestReadinessToolRoute({
           onEvidenceAssetsChange={setEvidenceAssets}
           initialAnalysis={vision}
           onAnalysis={setVision}
+          workspaceType={workspaceType}
+          workspaceId={workspaceId}
         />
       )}
       fields={[

@@ -396,6 +396,7 @@ export default function SpeciesCropIdToolRoute() {
   const [sensitiveSpecies, setSensitiveSpecies] = useState(false);
   const [locationBusy, setLocationBusy] = useState(false);
   const [identificationBusy, setIdentificationBusy] = useState(false);
+  const [evidenceBusy, setEvidenceBusy] = useState(false);
   const [newStudyTitle, setNewStudyTitle] = useState("");
   const [creatingStudy, setCreatingStudy] = useState(false);
   const [publishingStudy, setPublishingStudy] = useState(false);
@@ -654,8 +655,12 @@ export default function SpeciesCropIdToolRoute() {
       toolKey="species-crop-id"
       externalInputKey={evidenceInputKey}
       onToolRunChange={handleToolRunChange}
-      executionBlocked={locationBusy}
-      executionBlockedMessage="Finish the active location request before identifying this plant."
+      executionBlocked={locationBusy || evidenceBusy}
+      executionBlockedMessage={
+        evidenceBusy
+          ? "Finish uploading and saving every selected photo or video before identifying this plant."
+          : "Finish the active location request before identifying this plant."
+      }
       onExecutionBusyChange={setIdentificationBusy}
       title="Species / Crop Identification"
       subtitle="Narrow an unknown plant by combining photos, morphology, habitat, geography, and season. A grow is optional."
@@ -681,6 +686,7 @@ export default function SpeciesCropIdToolRoute() {
             sourceContext={{ growId: growId || undefined }}
             value={evidenceAssets}
             onChange={setEvidenceAssets}
+            onBusyChange={setEvidenceBusy}
           />
           <View style={styles.privateLocationPanel}>
             <Text style={styles.evidenceTitle}>Private plant location</Text>
@@ -1070,7 +1076,8 @@ export default function SpeciesCropIdToolRoute() {
         clearUnfilled: false,
         preserveAllExistingFields: true,
         evidenceAssetIds: () => uploadedEvidence.evidenceAssetIds,
-        isReady: () => uploadedEvidence.images.length > 0 && !locationBusy,
+        isReady: () =>
+          uploadedEvidence.images.length > 0 && !locationBusy && !evidenceBusy,
         notReadyMessage:
           "Finish the photo upload and any active location request before starting AI identification.",
         runAfterPrefill: true,

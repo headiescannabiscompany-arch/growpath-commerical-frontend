@@ -46,6 +46,12 @@ Authorized viewers receive a short-lived playback URL after video, course-enroll
 Facility, cannabis-visibility, and owner/uploader checks. Never persist object-store
 credentials or expiring signed URLs in content records.
 
+A native upload may use multipart only when the server returns one whole-file part; the
+device uploads its original URI to that signed part and completion must include the
+returned ETag. Multi-part slicing remains a web capability. Missing ETags must stop
+completion and leave the stable reservation retryable rather than activating uncertain
+media.
+
 ## Publishing and discovery
 
 Video visibility is explicit: public, followers-only, unlisted, private, course-only, or

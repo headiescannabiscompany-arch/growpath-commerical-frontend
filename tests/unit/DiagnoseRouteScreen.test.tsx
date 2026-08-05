@@ -14,6 +14,7 @@ const mockCreatePersonalTask = jest.fn();
 const mockListPersonalPlants = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockCreateEvidenceAsset = jest.fn();
+const mockMediaEvidencePickerProps = jest.fn();
 
 jest.mock("expo-device", () => ({ isDevice: false }));
 
@@ -38,13 +39,14 @@ jest.mock("@/api/diagnose", () => ({
 jest.mock("@/components/media/MediaEvidencePicker", () => {
   const React = require("react");
   const { Pressable, Text } = require("react-native");
-  return ({ onChange }: any) =>
-    React.createElement(
+  return (props: any) => {
+    mockMediaEvidencePickerProps(props);
+    return React.createElement(
       Pressable,
       {
         accessibilityLabel: "Attach diagnosis evidence",
         onPress: () =>
-          onChange([
+          props.onChange([
             {
               id: "evidence-1",
               _id: "evidence-1",
@@ -71,6 +73,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
       },
       React.createElement(Text, null, "Attach evidence")
     );
+  };
 });
 
 jest.mock("@/api/logs", () => ({
@@ -210,13 +213,30 @@ describe("DiagnoseRoute", () => {
 
     const commercial = render(<DiagnoseRoute workspaceType="commercial" />);
     expect(commercial.getByText("Shared Back /home/commercial/tools")).toBeTruthy();
+    expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        purpose: "diagnosis",
+        videoWorkspaceType: "commercial",
+        videoWorkspaceId: undefined
+      })
+    );
     await waitFor(() =>
       expect(commercial.getByText("Diagnosis provider needs verification")).toBeTruthy()
     );
     commercial.unmount();
 
-    const facility = render(<DiagnoseRoute workspaceType="facility" />);
+    const facility = render(
+      <DiagnoseRoute workspaceType="facility" facilityId="facility-1" />
+    );
     expect(facility.getByText("Shared Back /home/facility/ai-tools")).toBeTruthy();
+    expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        purpose: "diagnosis",
+        sourceContext: expect.objectContaining({ facilityId: "facility-1" }),
+        videoWorkspaceType: "facility",
+        videoWorkspaceId: "facility-1"
+      })
+    );
     await waitFor(() =>
       expect(facility.getByText("Diagnosis provider needs verification")).toBeTruthy()
     );

@@ -36,6 +36,7 @@ const mockAnalyzeTrichomePhotos = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockListEvidenceAssets = jest.fn();
 const mockSavedGrowPhotoEvidencePicker = jest.fn();
+const mockMediaEvidencePickerProps = jest.fn();
 let mockRouteParams: Record<string, string> = { growId: "grow-1" };
 
 jest.mock("@/components/media/MediaEvidencePicker", () => {
@@ -55,15 +56,16 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
     aiUsable: true,
     qualityWarnings: []
   });
-  return ({ onChange }: any) =>
-    React.createElement(
+  return (props: any) => {
+    mockMediaEvidencePickerProps(props);
+    return React.createElement(
       View,
       { accessibilityLabel: "Media evidence picker" },
       React.createElement(
         Pressable,
         {
           accessibilityLabel: "Add one harvest evidence photo",
-          onPress: () => onChange([asset(1)])
+          onPress: () => props.onChange([asset(1)])
         },
         React.createElement(Text, null, "Add One Photo")
       ),
@@ -71,11 +73,12 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
         Pressable,
         {
           accessibilityLabel: "Add complete harvest photo set",
-          onPress: () => onChange([asset(1), asset(2), asset(3), asset(4)])
+          onPress: () => props.onChange([asset(1), asset(2), asset(3), asset(4)])
         },
         React.createElement(Text, null, "Add Complete Photo Set")
       )
     );
+  };
 });
 
 jest.mock("@/components/media/SavedGrowPhotoEvidencePicker", () => {
@@ -161,8 +164,10 @@ jest.mock("@/api/harvestVision", () => ({
   analyzeTrichomePhotos: (...args: any[]) => mockAnalyzeTrichomePhotos(...args)
 }));
 
-async function renderHarvestReadinessTool() {
-  return renderAsync(<HarvestReadinessToolRoute />);
+async function renderHarvestReadinessTool(
+  props: React.ComponentProps<typeof HarvestReadinessToolRoute> = {}
+) {
+  return renderAsync(<HarvestReadinessToolRoute {...props} />);
 }
 
 describe("HarvestReadinessToolRoute", () => {
@@ -309,6 +314,43 @@ describe("HarvestReadinessToolRoute", () => {
         maxPhotos: 12
       })
     );
+    expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        purpose: "harvest",
+        videoWorkspaceType: "personal",
+        videoWorkspaceId: undefined
+      })
+    );
+  });
+
+  it("routes Commercial and Facility harvest uploads to the active workspace", async () => {
+    const commercial = await renderHarvestReadinessTool({
+      backFallbackHref: "/home/commercial/tools",
+      workspaceType: "commercial"
+    });
+    expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        purpose: "harvest",
+        videoWorkspaceType: "commercial",
+        videoWorkspaceId: undefined
+      })
+    );
+    await commercial.unmountAsync();
+
+    const facility = await renderHarvestReadinessTool({
+      backFallbackHref: "/home/facility/ai-tools",
+      workspaceType: "facility",
+      workspaceId: "facility-1"
+    });
+    expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        purpose: "harvest",
+        sourceContext: expect.objectContaining({ facilityId: "facility-1" }),
+        videoWorkspaceType: "facility",
+        videoWorkspaceId: "facility-1"
+      })
+    );
+    await facility.unmountAsync();
   });
 
   it("restores durable harvest evidence after a page or account-session reload", async () => {

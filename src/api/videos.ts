@@ -105,6 +105,58 @@ type UploadWorkspace = {
   workspaceId?: string;
 };
 
+type VideoUploadOptions = {
+  signal?: AbortSignal;
+  clientUploadKey: string;
+  onReservation?: (reservation: { assetId: string; uploadStatus?: string }) => void;
+};
+
+const VIDEO_PART_UPLOAD_ATTEMPTS = 3;
+
+function retryableVideoPartError(error: any) {
+  const status = Number(error?.status || 0);
+  const code = String(error?.code || "").toUpperCase();
+  if (code.includes("ABORT") || error?.name === "AbortError") return false;
+  if (!status) return true;
+  return status === 408 || status === 429 || status >= 500;
+}
+
+function waitForVideoPartRetry(ms: number, signal?: AbortSignal) {
+  if (signal?.aborted) {
+    const error = new Error("The upload was canceled.");
+    error.name = "AbortError";
+    return Promise.reject(error);
+  }
+  return new Promise<void>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      signal?.removeEventListener("abort", abort);
+      resolve();
+    }, ms);
+    const abort = () => {
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", abort);
+      const error = new Error("The upload was canceled.");
+      error.name = "AbortError";
+      reject(error);
+    };
+    signal?.addEventListener("abort", abort, { once: true });
+  });
+}
+
+export function isTerminalVideoMetadataError(error: any) {
+  const status = Number(error?.status || 0);
+  const code = String(error?.code || "").toUpperCase();
+  if (
+    code.includes("NETWORK") ||
+    code === "TIMEOUT" ||
+    code === "ABORTED" ||
+    status >= 500
+  ) {
+    return false;
+  }
+  return [400, 413, 415, 422].includes(status);
+}
+
 function videoRows(value: any): GrowPathVideo[] {
   if (Array.isArray(value)) return value;
   if (Array.isArray(value?.videos)) return value.videos;
@@ -189,34 +241,64 @@ function selectedFileName(file: SelectedVideoFile) {
   return String(file.fileName || file.name || fallback || "video").slice(-160);
 }
 
-export async function abortVideoUpload(assetId: string, workspace: UploadWorkspace) {
+export async function abortVideoUpload(
+  assetId: string,
+  workspace: UploadWorkspace,
+  options: { signal?: AbortSignal; timeoutMs?: number; clientUploadKey?: string } = {}
+) {
   return apiRequest(`/api/videos/uploads/${encodeURIComponent(assetId)}`, {
     method: "DELETE",
-    body: workspace
+    signal: options.signal,
+    timeoutMs: options.timeoutMs ?? 5000,
+    body: {
+      ...workspace,
+      clientUploadKey: options.clientUploadKey || undefined
+    }
   });
 }
 
 export async function uploadVideoFile(
   file: SelectedVideoFile,
   workspace: UploadWorkspace,
-  onProgress: (fraction: number) => void = () => undefined
+  onProgress: (fraction: number) => void = () => undefined,
+  options: VideoUploadOptions
 ): Promise<CompletedVideoUpload> {
+  const clientUploadKey = String(options?.clientUploadKey || "").trim();
+  if (!clientUploadKey) throw new Error("A stable video upload key is required.");
   const bytes = await selectedFileBytes(file);
   const mimeType = String(file.mimeType || "video/mp4").toLowerCase();
   const supportsMultipart =
     Platform.OS === "web" && Boolean(file.file && typeof file.file.slice === "function");
   const initiated: any = await apiRequest("/api/videos/uploads/initiate", {
     method: "POST",
+    signal: options.signal,
     body: {
       fileName: selectedFileName(file),
       mimeType,
       bytes,
       supportsMultipart,
+      clientUploadKey,
       ...workspace
     }
   });
   const assetId = String(initiated?.assetId || "");
-  if (!assetId || !initiated?.upload?.strategy) {
+  if (!assetId) {
+    throw new Error("GrowPath did not return a valid protected upload reservation.");
+  }
+  options.onReservation?.({
+    assetId,
+    uploadStatus: String(initiated?.uploadStatus || "pending")
+  });
+  if (initiated?.uploadStatus === "active") {
+    onProgress(1);
+    return {
+      assetId,
+      url: String(initiated?.url || ""),
+      bytes: Number(initiated?.bytes || bytes),
+      mimeType: String(initiated?.mimeType || mimeType)
+    };
+  }
+  if (!initiated?.upload?.strategy) {
     throw new Error("GrowPath did not return a valid protected upload reservation.");
   }
   try {
@@ -227,16 +309,18 @@ export async function uploadVideoFile(
         uri: file.uri,
         body: file.file,
         mimeType,
+        signal: options.signal,
         onProgress
       });
-    } else {
-      if (!file.file) {
-        throw new Error("Large multipart uploads are available in the web app.");
-      }
+    } else if (initiated.upload.strategy === "multipart") {
       const totalParts = Number(initiated.upload.totalParts || 0);
       const partSizeBytes = Number(initiated.upload.partSizeBytes || 0);
       if (!totalParts || !partSizeBytes || totalParts > 10000) {
         throw new Error("GrowPath returned an invalid multipart upload plan.");
+      }
+      const canSlice = Boolean(file.file && typeof file.file.slice === "function");
+      if (totalParts > 1 && !canSlice) {
+        throw new Error("Large multipart uploads are available in the web app.");
       }
       parts = new Array(totalParts);
       const loadedByPart = new Array(totalParts).fill(0);
@@ -248,46 +332,74 @@ export async function uploadVideoFile(
           const partNumber = index + 1;
           const start = index * partSizeBytes;
           const end = Math.min(bytes, start + partSizeBytes);
-          const body = file.file!.slice(start, end, mimeType);
-          const signed: any = await apiRequest(
-            `/api/videos/uploads/${encodeURIComponent(assetId)}/part-url`,
-            {
-              method: "POST",
-              body: { ...workspace, partNumber }
-            }
-          );
-          const uploaded = await uploadBinaryToSignedUrl({
-            url: String(signed?.url || ""),
-            uri: file.uri,
-            body,
-            mimeType,
-            onProgress: (fraction) => {
-              loadedByPart[index] = body.size * fraction;
+          const body = canSlice ? file.file!.slice(start, end, mimeType) : undefined;
+          const partBytes = body?.size || bytes;
+          for (let attempt = 1; attempt <= VIDEO_PART_UPLOAD_ATTEMPTS; attempt += 1) {
+            try {
+              // Fetch a fresh signed URL for every attempt. A failed or slow phone
+              // upload may outlive the previous URL, especially on LTE.
+              const signed: any = await apiRequest(
+                `/api/videos/uploads/${encodeURIComponent(assetId)}/part-url`,
+                {
+                  method: "POST",
+                  signal: options.signal,
+                  body: { ...workspace, clientUploadKey, partNumber }
+                }
+              );
+              const uploaded = await uploadBinaryToSignedUrl({
+                url: String(signed?.url || ""),
+                uri: file.uri,
+                body,
+                mimeType,
+                signal: options.signal,
+                onProgress: (fraction) => {
+                  loadedByPart[index] = partBytes * fraction;
+                  onProgress(
+                    Math.min(
+                      1,
+                      loadedByPart.reduce((total, loaded) => total + loaded, 0) / bytes
+                    )
+                  );
+                }
+              });
+              if (!uploaded.etag) {
+                throw new Error(
+                  "Protected storage did not confirm a video part. Check R2 CORS ETag exposure."
+                );
+              }
+              parts[index] = { partNumber, etag: uploaded.etag };
+              break;
+            } catch (error) {
+              loadedByPart[index] = 0;
               onProgress(
                 Math.min(
                   1,
                   loadedByPart.reduce((total, loaded) => total + loaded, 0) / bytes
                 )
               );
+              if (
+                attempt >= VIDEO_PART_UPLOAD_ATTEMPTS ||
+                !retryableVideoPartError(error)
+              ) {
+                throw error;
+              }
+              await waitForVideoPartRetry(400 * 2 ** (attempt - 1), options.signal);
             }
-          });
-          if (!uploaded.etag) {
-            throw new Error(
-              "Protected storage did not confirm a video part. Check R2 CORS ETag exposure."
-            );
           }
-          parts[index] = { partNumber, etag: uploaded.etag };
         }
       };
       await Promise.all(
         Array.from({ length: Math.min(3, totalParts) }, () => uploadPart())
       );
+    } else {
+      throw new Error("GrowPath returned an invalid multipart upload plan.");
     }
     const completed: any = await apiRequest(
       `/api/videos/uploads/${encodeURIComponent(assetId)}/complete`,
       {
         method: "POST",
-        body: { ...workspace, parts }
+        signal: options.signal,
+        body: { ...workspace, clientUploadKey, parts }
       }
     );
     onProgress(1);
@@ -298,7 +410,9 @@ export async function uploadVideoFile(
       mimeType: String(completed?.mimeType || mimeType)
     };
   } catch (error) {
-    await abortVideoUpload(assetId, workspace).catch(() => undefined);
+    // Network and completion failures are ambiguous: the object may already be active
+    // even when the response was lost. Keep the reservation so Retry can safely reuse
+    // this client key. Explicit Remove/unmount performs the bounded DELETE cleanup.
     throw error;
   }
 }

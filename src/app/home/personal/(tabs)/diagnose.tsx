@@ -1025,6 +1025,10 @@ export default function DiagnoseRoute({
           maxVideoSeconds={599}
           purpose="diagnosis"
           sourceContext={{ growId, plantId, facilityId: facilityId || undefined }}
+          videoWorkspaceType={workspaceType}
+          videoWorkspaceId={
+            workspaceType === "facility" ? facilityId || undefined : undefined
+          }
           value={evidenceAssets}
           onChange={setEvidenceAssets}
         />
