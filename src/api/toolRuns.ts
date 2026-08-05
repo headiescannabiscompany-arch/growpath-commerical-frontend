@@ -198,6 +198,15 @@ export function normalizeToolRun(row: any): ToolRun {
   return normalized;
 }
 
+function toolTypeFilterKey(value: unknown) {
+  const key = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "_")
+    .replaceAll(" ", "_");
+  return key === "species_crop_identification" ? "species_crop_id" : key;
+}
+
 export async function runCalculator<TOutput extends Record<string, any>>(
   tool: CalculatorTool,
   payload: Record<string, any>
@@ -303,7 +312,12 @@ export async function listToolRuns(options?: {
             : Array.isArray(res?.data?.items)
               ? res.data.items
               : [];
-    return rows.map(normalizeToolRun);
+    const normalizedRows: ToolRun[] = rows.map((row: any) => normalizeToolRun(row));
+    const requestedToolType = toolTypeFilterKey(options?.toolType);
+    if (!requestedToolType) return normalizedRows;
+    return normalizedRows.filter(
+      (run) => toolTypeFilterKey(run.toolType || run.toolName) === requestedToolType
+    );
   } catch (_err) {
     return [];
   }
