@@ -210,6 +210,7 @@ describe("Personal Field Studies theme and workflow", () => {
       1
     );
     expect(screen.getByText("Add Plant Observation")).toBeTruthy();
+    expect(screen.getByText("Link Saved Plant IDs")).toBeTruthy();
     expect(screen.getByText("Publish Study")).toBeTruthy();
     expect(screen.getByText("Add Person")).toBeTruthy();
     expect(screen.getByText("Confirm Identity")).toBeTruthy();

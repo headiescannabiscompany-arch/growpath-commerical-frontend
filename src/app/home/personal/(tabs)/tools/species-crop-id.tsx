@@ -400,7 +400,9 @@ export default function SpeciesCropIdToolRoute() {
   const [publishingStudy, setPublishingStudy] = useState(false);
   const [confirmPublicStudy, setConfirmPublicStudy] = useState(false);
   const [cannabisMapConsent, setCannabisMapConsent] = useState(false);
-  const [showLocationAndSharing, setShowLocationAndSharing] = useState(false);
+  const [showLocationAndSharing, setShowLocationAndSharing] = useState(
+    Boolean(params.fieldStudyId)
+  );
   const [savedFieldObservationId, setSavedFieldObservationId] = useState("");
   const [savedFieldObservationPublished, setSavedFieldObservationPublished] =
     useState(false);

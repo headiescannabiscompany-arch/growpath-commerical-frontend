@@ -235,6 +235,16 @@ function FieldStudyDetailContent() {
             </Pressable>
           </Link>
         ) : null}
+        {canEdit ? (
+          <Link
+            href={`/home/personal/tools/saved-runs?toolType=species_crop_id&fieldStudyId=${studyId}`}
+            asChild
+          >
+            <Pressable style={styles.secondaryButton}>
+              <Text style={styles.secondaryText}>Link Saved Plant IDs</Text>
+            </Pressable>
+          </Link>
+        ) : null}
         {study.visibility !== "private" && publicPath ? (
           <Pressable
             onPress={() => void sharePublicLink(study.title, publicPath)}
@@ -355,8 +365,8 @@ function FieldStudyDetailContent() {
         <View style={styles.empty}>
           <Text style={styles.panelTitle}>No observations yet</Text>
           <Text style={styles.panelText}>
-            Run Plant ID, collect the requested photo angles and context, then save the
-            result to this study.
+            Run Plant ID and collect the requested photo angles and context, or link an
+            earlier saved Plant ID to this study as a private draft observation.
           </Text>
         </View>
       ) : (
