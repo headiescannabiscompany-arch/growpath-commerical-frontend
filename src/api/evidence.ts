@@ -17,9 +17,28 @@ function normalizeEvidenceAsset(value: any): EvidenceAsset {
   };
 }
 
-export async function createEvidenceAsset(input: EvidenceAssetCreateInput) {
+export function isTerminalEvidenceRegistrationError(error: any) {
+  const status = Number(error?.status || 0);
+  const code = String(error?.code || "").toUpperCase();
+  if (
+    code.includes("NETWORK") ||
+    code === "TIMEOUT" ||
+    code === "ABORTED" ||
+    status >= 500
+  ) {
+    return false;
+  }
+  return [400, 413, 415, 422].includes(status);
+}
+
+export async function createEvidenceAsset(
+  input: EvidenceAssetCreateInput,
+  options: { signal?: AbortSignal } = {}
+) {
   const response = await apiRequest<any>("/api/evidence-assets", {
     method: "POST",
+    signal: options.signal,
+    timeoutMs: 45000,
     body: input
   });
   return normalizeEvidenceAsset(response?.asset || response);
@@ -29,6 +48,24 @@ export async function listEvidenceAssets(links: EvidenceLinks = {}) {
   const response = await apiRequest<any>("/api/evidence-assets", { params: links });
   const rows = Array.isArray(response?.assets) ? response.assets : [];
   return rows.map(normalizeEvidenceAsset);
+}
+
+export async function deleteEvidenceAsset(
+  id: string,
+  workspace: {
+    workspaceType: "personal" | "commercial" | "facility";
+    workspaceId?: string;
+    facilityId?: string;
+  },
+  options: { signal?: AbortSignal; timeoutMs?: number } = {}
+) {
+  if (!id) return null;
+  return apiRequest(`/api/evidence-assets/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    signal: options.signal,
+    timeoutMs: options.timeoutMs ?? 5000,
+    body: workspace
+  });
 }
 
 export function providerEvidencePayload(

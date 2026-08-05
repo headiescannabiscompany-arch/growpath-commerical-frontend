@@ -18,6 +18,30 @@ Diagnosis, IPM Scout, and Harvest Readiness share an evidence-review surface aft
 
 Diagnosis and IPM may accept up to 12 photos so a user can include zoomed-out context, distribution across plants, affected and unaffected tissue, leaf tops and undersides, macro signs, root-zone evidence, and a trap or follow-up view without deleting useful evidence. The count is a ceiling, not a requirement. Reject obviously invalid or tiny files before upload and billing. Metadata alone cannot prove focus, lighting, glare, color accuracy, subject relevance, or complete view coverage; those failures require explicit image-review findings and precise retake instructions.
 
+Oversized mobile photos may be resized and JPEG-compressed on the user's device before
+upload so ordinary camera files fit the protected image limit and weak connections do not
+carry avoidable bytes. Do not upscale or claim that preparation added diagnostic detail.
+On iOS and Android, use the supported native image pipeline to decode HEIC/HEIF, write a
+real JPEG, preserve the original preview, and keep the upload at or below 4.5 MiB. A photo
+transfer with no progress for 75 seconds, or video transfer with no progress for 90
+seconds, must end in a retryable state instead of remaining indefinitely on Uploading.
+Keep enough resolution for the intended review, record the prepared MIME type and byte
+size, and retain the ordinary focus, glare, lighting, target, and view-role checks. A
+connection loss, timeout, or preparation failure must end in a visible retryable failure;
+it must never remain indefinitely in an uploading state or enter AI analysis. A successful
+binary upload whose evidence record is still pending must be retried by finishing that
+record rather than uploading a duplicate file.
+
+Store uploaded diagnostic photos as protected evidence by default. The stable client
+upload key must make reservation, completion, and evidence registration safe to retry,
+and the upload must be charged to the workspace that is actually using it. Do not expose
+the protected photo until its one-part multipart upload returns an ETag and the client
+completes that exact part with its stable key and workspace scope. Do not activate a
+photo from a bare object-store success when completion cannot confirm the uploaded part.
+Never expose the protected original through a public upload URL. When a user explicitly publishes an
+eligible Nature observation, create a separate sanitized public derivative for that
+observation; withdrawing the observation must not make the protected original public.
+
 Image review must evaluate target clarity, not only whole-frame quality. A sharp wide photo can still be diagnostically limited when the symptom occupies a small, unmarked region. Ask the user to describe or mark the intended target and add a close target view. When an IPM frame contains multiple organisms, objects, or size classes, list defensible visible traits separately, do not assume the largest or most obvious subject is the intended pest, and request a dedicated macro when the target remains ambiguous.
 
 Diagnosis, IPM Scout, and Crop Identification may each accept one private source video shorter than 10 minutes, with 9 minutes 59 seconds as the enforced maximum. Preserve the source video as non-AI evidence and extract up to 12 timestamped candidate still frames spanning the timeline on the user's device. Only uploaded still frames are eligible for provider image review, and each counts toward the ordinary 12-photo ceiling. Each frame must independently pass the workflow's context, target, focus, lighting, glare, color, and view-role checks. Do not describe this as direct video or motion analysis, infer continuity between sampled frames, or rebuild detail hidden by motion blur, compression, occlusion, or clipped highlights.

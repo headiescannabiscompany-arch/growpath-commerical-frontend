@@ -203,12 +203,15 @@ export async function uploadBinaryToSignedUrl(
   options: SignedBinaryUploadOptions
 ): Promise<SignedBinaryUploadResult> {
   const onProgress = options.onProgress || (() => undefined);
+  if (options.signal?.aborted) {
+    throw uploadError("MEDIA_UPLOAD_ABORTED", "The upload was canceled.");
+  }
   onProgress(0);
   if (Platform.OS === "web") {
     if (!options.body) {
       throw uploadError(
-        "VIDEO_UPLOAD_FILE_UNAVAILABLE",
-        "The browser could not read the selected video file."
+        "MEDIA_UPLOAD_FILE_UNAVAILABLE",
+        "The browser could not read the selected file."
       );
     }
     return new Promise((resolve, reject) => {
@@ -226,22 +229,22 @@ export async function uploadBinaryToSignedUrl(
         options.signal?.removeEventListener("abort", abort);
         reject(
           uploadError(
-            "VIDEO_UPLOAD_NETWORK_ERROR",
-            "The video upload was interrupted. Check your connection and try again."
+            "MEDIA_UPLOAD_NETWORK_ERROR",
+            "The upload was interrupted. Check your connection and try again."
           )
         );
       };
       request.onabort = () => {
         options.signal?.removeEventListener("abort", abort);
-        reject(uploadError("VIDEO_UPLOAD_ABORTED", "The video upload was canceled."));
+        reject(uploadError("MEDIA_UPLOAD_ABORTED", "The upload was canceled."));
       };
       request.onload = () => {
         options.signal?.removeEventListener("abort", abort);
         if (request.status < 200 || request.status >= 300) {
           reject(
             uploadError(
-              "VIDEO_UPLOAD_REJECTED",
-              "Protected storage rejected the video upload.",
+              "MEDIA_UPLOAD_REJECTED",
+              "Protected storage rejected the upload.",
               request.status
             )
           );
@@ -259,8 +262,8 @@ export async function uploadBinaryToSignedUrl(
 
   if (!options.uri) {
     throw uploadError(
-      "VIDEO_UPLOAD_FILE_UNAVAILABLE",
-      "The device could not read the selected video file."
+      "MEDIA_UPLOAD_FILE_UNAVAILABLE",
+      "The device could not read the selected file."
     );
   }
   const FileSystem = await import("expo-file-system/legacy");
@@ -286,12 +289,12 @@ export async function uploadBinaryToSignedUrl(
   try {
     const response = await task.uploadAsync();
     if (!response) {
-      throw uploadError("VIDEO_UPLOAD_ABORTED", "The video upload was canceled.");
+      throw uploadError("MEDIA_UPLOAD_ABORTED", "The upload was canceled.");
     }
     if (response.status < 200 || response.status >= 300) {
       throw uploadError(
-        "VIDEO_UPLOAD_REJECTED",
-        "Protected storage rejected the video upload.",
+        "MEDIA_UPLOAD_REJECTED",
+        "Protected storage rejected the upload.",
         response.status
       );
     }
@@ -346,17 +349,39 @@ export async function apiRequest<T = any>(
     const timeoutMs = opts.timeoutMs ?? opts.timeout ?? null;
     let controller: AbortController | null = null;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
     const signal = opts.signal;
+    let callerAborted = Boolean(signal?.aborted);
+    let timeoutTriggered = false;
+    let removeCallerAbortListener: () => void = () => {};
     if (
-      !signal &&
-      timeoutMs &&
-      Number(timeoutMs) > 0 &&
-      typeof AbortController !== "undefined"
+      typeof AbortController !== "undefined" &&
+      (signal || (timeoutMs && Number(timeoutMs) > 0))
     ) {
       controller = new AbortController();
-      timeoutId = setTimeout(() => controller?.abort(), Number(timeoutMs));
+      if (signal) {
+        const abortFromCaller = () => {
+          callerAborted = true;
+          controller?.abort();
+        };
+        if (signal.aborted) abortFromCaller();
+        else {
+          signal.addEventListener("abort", abortFromCaller, { once: true });
+          removeCallerAbortListener = () =>
+            signal.removeEventListener("abort", abortFromCaller);
+        }
+      }
+      if (timeoutMs && Number(timeoutMs) > 0) {
+        timeoutId = setTimeout(() => {
+          timeoutTriggered = true;
+          controller?.abort();
+        }, Number(timeoutMs));
+      }
     }
+
+    const cleanupAbort = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      removeCallerAbortListener();
+    };
 
     try {
       const res = await fetch(url, {
@@ -364,10 +389,8 @@ export async function apiRequest<T = any>(
         headers,
         body,
         cache: opts.cache,
-        signal: signal || controller?.signal
+        signal: controller?.signal || signal
       } as any);
-
-      if (timeoutId) clearTimeout(timeoutId);
 
       if (!res.ok) {
         const data = await parseResponse(res, opts.responseType ?? "auto");
@@ -383,6 +406,7 @@ export async function apiRequest<T = any>(
           }
         }
         if (res.status >= 500 && attempt <= retries) {
+          cleanupAbort();
           if (retryDelay) await sleep(retryDelay);
           continue;
         }
@@ -390,6 +414,10 @@ export async function apiRequest<T = any>(
       }
 
       const result = (await parseResponse(res, opts.responseType ?? "auto")) as T;
+      // Keep caller cancellation and the request deadline attached until the
+      // response body is fully consumed. Fetch resolves as soon as headers
+      // arrive, while a stalled or interrupted body can still hang afterward.
+      cleanupAbort();
       const reportedBalance =
         result && typeof result === "object"
           ? ((result as any).aiTokensRemaining ?? (result as any).data?.aiTokensRemaining)
@@ -406,13 +434,18 @@ export async function apiRequest<T = any>(
       emitTransportEvent({ type: "recovered" });
       return result;
     } catch (err: any) {
-      if (timeoutId) clearTimeout(timeoutId);
+      cleanupAbort();
 
-      const isAbort = err?.name === "AbortError";
+      const isAbort = err?.name === "AbortError" || Boolean(controller?.signal.aborted);
       if (isAbort) {
-        if (attempt <= retries) {
+        if (timeoutTriggered && attempt <= retries) {
           if (retryDelay) await sleep(retryDelay);
           continue;
+        }
+        if (callerAborted && !timeoutTriggered) {
+          const abortedError = new ApiError("ABORTED", null, { cause: err });
+          abortedError.message = "The request was canceled.";
+          throw abortedError;
         }
         const timeoutError = new ApiError("TIMEOUT", null, { cause: err });
         timeoutError.message = "The request timed out.";

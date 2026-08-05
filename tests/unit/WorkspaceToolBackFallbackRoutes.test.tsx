@@ -82,8 +82,12 @@ jest.mock("@/app/home/personal/(tabs)/tools/ingredient-library", () => {
 jest.mock("@/app/home/personal/(tabs)/tools/harvest-readiness", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return ({ backFallbackHref }: any) =>
-    React.createElement(Text, null, `Harvest ${backFallbackHref}`);
+  return ({ backFallbackHref, workspaceType, workspaceId }: any) =>
+    React.createElement(
+      Text,
+      null,
+      `Harvest ${backFallbackHref} ${workspaceType || ""} ${workspaceId || ""}`
+    );
 });
 
 jest.mock("@/app/home/personal/(tabs)/tools/pdf-export", () => {
@@ -139,9 +143,10 @@ describe("workspace tool back fallback routes", () => {
       </>
     );
 
-    ["Environment", "NPK", "Soil", "Dry", "Library", "Harvest", "Report"].forEach(
-      (label) => expect(screen.getByText(`${label} /home/commercial/tools`)).toBeTruthy()
+    ["Environment", "NPK", "Soil", "Dry", "Library", "Report"].forEach((label) =>
+      expect(screen.getByText(`${label} /home/commercial/tools`)).toBeTruthy()
     );
+    expect(screen.getByText("Harvest /home/commercial/tools commercial ")).toBeTruthy();
     expect(
       screen.getByText("Recipe /home/commercial/tools /home/commercial/tools")
     ).toBeTruthy();
@@ -159,9 +164,12 @@ describe("workspace tool back fallback routes", () => {
       </>
     );
 
-    ["Environment", "NPK", "Soil", "Library", "Harvest"].forEach((label) =>
+    ["Environment", "NPK", "Soil", "Library"].forEach((label) =>
       expect(screen.getByText(`${label} /home/facility/ai-tools`)).toBeTruthy()
     );
+    expect(
+      screen.getByText("Harvest /home/facility/ai-tools facility facility-1")
+    ).toBeTruthy();
     expect(
       screen.getByText("Recipe /home/facility/tools /home/facility/ai-tools")
     ).toBeTruthy();
