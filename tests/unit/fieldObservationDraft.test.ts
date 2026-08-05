@@ -174,6 +174,24 @@ describe("private Field Study drafts from saved Plant ID runs", () => {
     });
   });
 
+  it("recovers legacy photo asset IDs from saved image-analysis provenance", () => {
+    const result = privateFieldObservationFromToolRun({
+      ...plantIdRun,
+      inputs: {
+        userEnteredName: "Magnolia",
+        observationContext: { region: "Raleigh, North Carolina" }
+      },
+      outputs: {
+        likelyCrop: "Magnolia",
+        scientificName: "Magnolia spp.",
+        confidence: "medium",
+        imageAnalysis: { evidenceUsed: ["legacy-photo-1"] }
+      }
+    });
+
+    expect(result.evidenceAssets).toEqual([{ assetId: "legacy-photo-1", kind: "other" }]);
+  });
+
   it("keeps a user-corrected common name but does not restore a rejected scientific name", () => {
     const result = privateFieldObservationFromToolRun({
       ...plantIdRun,

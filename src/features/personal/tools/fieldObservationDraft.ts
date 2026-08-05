@@ -101,7 +101,7 @@ function scientificName(outputs: Record<string, any>, inputs: Record<string, any
   ).trim();
 }
 
-function evidenceAssets(inputs: Record<string, any>) {
+function evidenceAssets(inputs: Record<string, any>, outputs: Record<string, any>) {
   const media = Array.isArray(inputs.mediaEvidence) ? inputs.mediaEvidence : [];
   const byId = new Map<
     string,
@@ -126,9 +126,12 @@ function evidenceAssets(inputs: Record<string, any>) {
     });
   });
 
-  strings(inputs.evidenceAssetIds).forEach((assetId) => {
-    if (!byId.has(assetId)) byId.set(assetId, { assetId, kind: "other" });
-  });
+  const imageAnalysis = record(outputs.imageAnalysis);
+  uniqueStrings(inputs.evidenceAssetIds, imageAnalysis.evidenceUsed).forEach(
+    (assetId) => {
+      if (!byId.has(assetId)) byId.set(assetId, { assetId, kind: "other" });
+    }
+  );
 
   return Array.from(byId.values());
 }
@@ -232,7 +235,7 @@ export function privateFieldObservationFromToolRun(
       candidates: candidateRows
     },
     observationContext: { ...observationContext },
-    evidenceAssets: evidenceAssets(inputs),
+    evidenceAssets: evidenceAssets(inputs, outputs),
     location: {
       ...(selectedCoordinates || {}),
       ...(selectedCoordinates ? { precision: "exact" as const } : {}),
