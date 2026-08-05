@@ -30,15 +30,6 @@ let mockFacilitySelection: {
   selected?: Record<string, unknown>;
 } = { selectedId: null };
 
-// The SDK 54 Jest host omits Switch in this worker. Keep the real screen and
-// switch props under test by providing only the missing native host component.
-const ReactNative = require("react-native");
-if (!ReactNative.Switch) {
-  ReactNative.Switch = function MockNativeSwitch(props: any) {
-    return React.createElement("Switch", props);
-  };
-}
-
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
   usePathname: () => "/home/facility/profile"

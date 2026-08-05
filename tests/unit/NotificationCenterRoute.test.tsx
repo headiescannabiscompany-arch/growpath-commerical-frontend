@@ -10,15 +10,6 @@ const mockApiRequest = jest.fn();
 let mockWorkspaceMode = "personal";
 let mockWorkspaceParam: string | undefined;
 
-// The SDK 54 Jest host omits Switch in this worker. Keep the real screen and
-// switch props under test by providing only the missing native host component.
-const ReactNative = require("react-native");
-if (!ReactNative.Switch) {
-  ReactNative.Switch = function MockNativeSwitch(props: any) {
-    return React.createElement("Switch", props);
-  };
-}
-
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
