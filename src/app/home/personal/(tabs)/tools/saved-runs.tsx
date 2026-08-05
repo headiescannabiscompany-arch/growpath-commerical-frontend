@@ -727,6 +727,7 @@ export default function SavedToolRunsScreen() {
   const [fieldObservations, setFieldObservations] = useState<FieldObservation[]>([]);
   const [fieldStudyLoading, setFieldStudyLoading] = useState(false);
   const [fieldStudyFeedback, setFieldStudyFeedback] = useState("");
+  const [privateLocationFeedback, setPrivateLocationFeedback] = useState("");
   const [fieldCoordinates, setFieldCoordinates] = useState<PublicCoordinates | null>(
     null
   );
@@ -734,6 +735,8 @@ export default function SavedToolRunsScreen() {
   const [savingFieldObservation, setSavingFieldObservation] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const pendingFocusRunIdRef = useRef("");
+  const selectedRunIdRef = useRef("");
+  const handledTargetRunIdRef = useRef("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -791,15 +794,19 @@ export default function SavedToolRunsScreen() {
   }, [fieldStudyId]);
 
   useEffect(() => {
+    selectedRunIdRef.current = selectedRun ? idFor(selectedRun) : "";
     setFieldCoordinates(selectedRun ? coordinatesFromToolRun(selectedRun) : null);
   }, [selectedRun]);
 
   const selectRun = useCallback(async (run: ToolRun) => {
     const id = idFor(run);
     if (!id) return;
+    selectedRunIdRef.current = id;
     pendingFocusRunIdRef.current = id;
     setFeedback("");
+    setPrivateLocationFeedback("");
     const full = await getToolRun(id);
+    if (selectedRunIdRef.current !== id) return;
     const nextRun = full || run;
     setSelectedRun(nextRun);
     setSummaryDraft(nextRun.summary || "");
@@ -814,7 +821,12 @@ export default function SavedToolRunsScreen() {
   }, []);
 
   useEffect(() => {
-    if (!targetToolRunId || loading) return;
+    if (!targetToolRunId) {
+      handledTargetRunIdRef.current = "";
+      return;
+    }
+    if (loading || handledTargetRunIdRef.current === targetToolRunId) return;
+    handledTargetRunIdRef.current = targetToolRunId;
     if (selectedRun && idFor(selectedRun) === targetToolRunId) return;
     const matchingRun = runs.find((run) => idFor(run) === targetToolRunId);
     if (matchingRun) {
@@ -822,9 +834,11 @@ export default function SavedToolRunsScreen() {
       return;
     }
     void (async () => {
+      selectedRunIdRef.current = targetToolRunId;
       pendingFocusRunIdRef.current = targetToolRunId;
       setFeedback("");
       const full = await getToolRun(targetToolRunId);
+      if (selectedRunIdRef.current !== targetToolRunId) return;
       if (!full) {
         setFeedback("Unable to find the requested saved run.");
         return;
@@ -930,6 +944,7 @@ export default function SavedToolRunsScreen() {
       return;
     }
     setSelectedRun(null);
+    selectedRunIdRef.current = "";
     setSummaryDraft("");
     setFeedback("Saved run archived.");
     await load();
@@ -939,61 +954,9 @@ export default function SavedToolRunsScreen() {
     const id = selectedRun ? idFor(selectedRun) : "";
     if (!id || !selectedRun || !isSpeciesCropRun(selectedRun)) return;
     setCapturingFieldLocation(true);
-    setFieldStudyFeedback("");
+    setPrivateLocationFeedback("");
     try {
       const coordinates = await requestCurrentCoordinates();
-      let currentObservations = fieldObservations;
-      if (fieldStudyId) {
-        try {
-          const refreshedStudy = await getFieldStudy(fieldStudyId);
-          setFieldStudy(refreshedStudy.study);
-          setFieldObservations(refreshedStudy.observations);
-          currentObservations = refreshedStudy.observations;
-        } catch {
-          // Keep the already loaded study state; the update call below remains authoritative.
-        }
-      }
-      const linkedObservation = currentObservations.find(
-        (observation) => String(observation.sourceToolRunId || "") === id
-      );
-      let linkedPrivacy = "";
-      if (linkedObservation && fieldStudyId) {
-        const observationId = String(linkedObservation.id || linkedObservation._id || "");
-        if (observationId) {
-          const currentPrivacy = linkedObservation.location?.privacy || "private";
-          const nextPrivacy =
-            currentPrivacy === "public_exact" ? "private" : currentPrivacy;
-          try {
-            const updatedObservation = await updateFieldObservation(
-              fieldStudyId,
-              observationId,
-              {
-                location: {
-                  ...linkedObservation.location,
-                  ...coordinates,
-                  precision: "exact",
-                  privacy: nextPrivacy,
-                  exactLocationPublicConfirmed: false
-                }
-              }
-            );
-            setFieldObservations((current) =>
-              current.map((observation) =>
-                String(observation.id || observation._id || "") === observationId
-                  ? updatedObservation
-                  : observation
-              )
-            );
-            linkedPrivacy = nextPrivacy;
-          } catch (observationLocationError: any) {
-            setFieldStudyFeedback(
-              observationLocationError?.message ||
-                "Location was received but could not be saved to the linked Field Study observation. No Plant ID history was changed."
-            );
-            return;
-          }
-        }
-      }
       const nextInputs = {
         ...runInputs(selectedRun),
         capturedLocation: {
@@ -1009,33 +972,59 @@ export default function SavedToolRunsScreen() {
         params: nextInputs
       });
       if (!updated) {
-        setFieldStudyFeedback(
-          linkedObservation
-            ? `Location was saved to ${fieldStudy?.title || "the linked Field Study"}, but the Plant ID history could not be updated.`
-            : "Location was not saved, so it will not be attached to this observation."
+        setPrivateLocationFeedback(
+          "Location was not saved, so it will not be attached to this Plant ID."
         );
         return;
       }
-      setSelectedRun(updated);
       setRuns((current) => current.map((run) => (idFor(run) === id ? updated : run)));
+      if (selectedRunIdRef.current !== id) return;
+      setSelectedRun(updated);
       setFieldCoordinates(coordinates);
-      if (linkedObservation) {
-        const studyTitle = fieldStudy?.title || "the linked Field Study";
-        setFieldStudyFeedback(
-          linkedPrivacy === "public_approximate"
-            ? `Exact location updated for this Plant ID and ${studyTitle}; Nature still receives only an approximate point.`
-            : linkedPrivacy === "collaborators"
-              ? `Current location saved to this Plant ID and shared only with the ${studyTitle} team. It is not on Nature.`
-              : `Current location saved privately to this Plant ID and ${studyTitle}. It is not on Nature.`
-        );
-        return;
-      }
-      setFieldStudyFeedback(
-        "Current location saved privately to this Plant ID. It is not on Nature."
+      setPrivateLocationFeedback(
+        "Current location saved privately to this Plant ID only. Field Studies and Nature were not changed."
       );
     } catch (locationError: any) {
-      setFieldStudyFeedback(
+      setPrivateLocationFeedback(
         locationError?.message || "Current location could not be captured."
+      );
+    } finally {
+      setCapturingFieldLocation(false);
+    }
+  }
+
+  async function removePrivateFieldLocation() {
+    const id = selectedRun ? idFor(selectedRun) : "";
+    if (!id || !selectedRun || !isSpeciesCropRun(selectedRun) || !fieldCoordinates)
+      return;
+    setCapturingFieldLocation(true);
+    setPrivateLocationFeedback("");
+    try {
+      const nextInputs = {
+        ...runInputs(selectedRun),
+        capturedLocation: null
+      };
+      const updated = await updateToolRun(id, {
+        inputs: nextInputs,
+        input: nextInputs,
+        params: nextInputs
+      });
+      if (!updated) {
+        setPrivateLocationFeedback(
+          "The private location could not be removed. Nothing changed."
+        );
+        return;
+      }
+      setRuns((current) => current.map((run) => (idFor(run) === id ? updated : run)));
+      if (selectedRunIdRef.current !== id) return;
+      setSelectedRun(updated);
+      setFieldCoordinates(null);
+      setPrivateLocationFeedback(
+        "Private location removed from this Plant ID only. Field Studies and Nature were not changed."
+      );
+    } catch (locationError: any) {
+      setPrivateLocationFeedback(
+        locationError?.message || "The private location could not be removed."
       );
     } finally {
       setCapturingFieldLocation(false);
@@ -1075,12 +1064,85 @@ export default function SavedToolRunsScreen() {
     }
   }
 
+  async function copyPrivateLocationToLinkedFieldObservation() {
+    const id = selectedRun ? idFor(selectedRun) : "";
+    const canEditStudy =
+      fieldStudy?.accessRole === "owner" || fieldStudy?.accessRole === "editor";
+    const linkedObservation = fieldObservations.find(
+      (observation) => String(observation.sourceToolRunId || "") === id
+    );
+    const observationId = String(linkedObservation?.id || linkedObservation?._id || "");
+    if (
+      !id ||
+      !fieldStudyId ||
+      !fieldStudy ||
+      !canEditStudy ||
+      !linkedObservation ||
+      !observationId ||
+      !fieldCoordinates
+    ) {
+      return;
+    }
+    const currentPrivacy = String(linkedObservation.location?.privacy || "private");
+    const isPublic =
+      linkedObservation.publication?.status === "published" ||
+      currentPrivacy === "public_approximate" ||
+      currentPrivacy === "public_exact";
+    if (isPublic) {
+      setFieldStudyFeedback(
+        "This observation is published. Open the Field Study to review its Nature location instead of changing it from Plant ID history."
+      );
+      return;
+    }
+    const nextPrivacy = currentPrivacy === "collaborators" ? "collaborators" : "private";
+    setSavingFieldObservation(true);
+    setFieldStudyFeedback("");
+    try {
+      const updated = await updateFieldObservation(fieldStudyId, observationId, {
+        location: {
+          ...linkedObservation.location,
+          ...fieldCoordinates,
+          precision: "exact",
+          privacy: nextPrivacy,
+          exactLocationPublicConfirmed: false
+        }
+      });
+      setFieldObservations((current) =>
+        current.map((observation) =>
+          String(observation.id || observation._id || "") === observationId
+            ? updated
+            : observation
+        )
+      );
+      setFieldStudyFeedback(
+        nextPrivacy === "collaborators"
+          ? `Exact location copied to the existing ${fieldStudy.title} study-team draft. It was not published to Nature.`
+          : `Exact location copied to the existing private ${fieldStudy.title} draft. It was not published to Nature.`
+      );
+    } catch (copyError: any) {
+      setFieldStudyFeedback(
+        copyError?.message ||
+          "The private Plant ID location could not be copied to the linked Field Study draft."
+      );
+    } finally {
+      setSavingFieldObservation(false);
+    }
+  }
+
   const selectedRunId = selectedRun ? idFor(selectedRun) : "";
-  const selectedRunAlreadyLinked = Boolean(
-    selectedRunId &&
-    fieldObservations.some(
-      (observation) => String(observation.sourceToolRunId || "") === selectedRunId
-    )
+  const selectedRunLinkedObservation = selectedRunId
+    ? fieldObservations.find(
+        (observation) => String(observation.sourceToolRunId || "") === selectedRunId
+      ) || null
+    : null;
+  const selectedRunAlreadyLinked = Boolean(selectedRunLinkedObservation);
+  const linkedObservationPrivacy = String(
+    selectedRunLinkedObservation?.location?.privacy || "private"
+  );
+  const linkedObservationIsPublic = Boolean(
+    selectedRunLinkedObservation?.publication?.status === "published" ||
+    linkedObservationPrivacy === "public_approximate" ||
+    linkedObservationPrivacy === "public_exact"
   );
   const actions: ToolResultAction[] = selectedRunId
     ? [
@@ -1218,6 +1280,62 @@ export default function SavedToolRunsScreen() {
                 </Pressable>
               </View>
             ) : null}
+            {isSpeciesCropRun(selectedRun) ? (
+              <View style={styles.studyPanel}>
+                <Text style={styles.cardTitle}>Private plant location</Text>
+                <Text style={styles.cardText}>
+                  Save an exact device location directly with this Plant ID. A Field Study
+                  is optional. This private action never changes a Field Study or
+                  publishes a Nature pin.
+                </Text>
+                <Text style={styles.statusText}>
+                  {fieldCoordinates
+                    ? "Exact location saved privately · Not shared"
+                    : "No device location saved"}
+                </Text>
+                <View style={styles.buttonRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Include current location privately with this saved Plant ID"
+                    disabled={capturingFieldLocation || savingFieldObservation}
+                    onPress={capturePrivateFieldLocation}
+                    style={[
+                      styles.secondary,
+                      (capturingFieldLocation || savingFieldObservation) &&
+                        styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.secondaryText}>
+                      {capturingFieldLocation
+                        ? "Reading Location..."
+                        : fieldCoordinates
+                          ? "Update Private Location"
+                          : "Include Current Location Privately"}
+                    </Text>
+                  </Pressable>
+                  {fieldCoordinates ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Remove private location from this saved Plant ID"
+                      disabled={capturingFieldLocation || savingFieldObservation}
+                      onPress={removePrivateFieldLocation}
+                      style={[
+                        styles.secondary,
+                        (capturingFieldLocation || savingFieldObservation) &&
+                          styles.disabled
+                      ]}
+                    >
+                      <Text style={styles.secondaryText}>Remove Private Location</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+                {privateLocationFeedback ? (
+                  <Text accessibilityRole="alert" style={styles.feedback}>
+                    {privateLocationFeedback}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
             {isSpeciesCropRun(selectedRun) && fieldStudyId ? (
               <View style={styles.studyPanel}>
                 <Text style={styles.cardTitle}>
@@ -1232,49 +1350,81 @@ export default function SavedToolRunsScreen() {
                       draft. It will not appear on Nature unless you deliberately publish
                       it later.
                     </Text>
-                    <Text style={styles.statusText}>
-                      {fieldCoordinates
-                        ? "A device location is saved privately with this Plant ID."
-                        : "No location is saved. You can still create a private observation."}
-                    </Text>
                     {fieldStudy.accessRole === "owner" ||
                     fieldStudy.accessRole === "editor" ? (
-                      <View style={styles.buttonRow}>
-                        <Pressable
-                          accessibilityRole="button"
-                          disabled={capturingFieldLocation || savingFieldObservation}
-                          onPress={capturePrivateFieldLocation}
-                          style={[
-                            styles.secondary,
-                            (capturingFieldLocation || savingFieldObservation) &&
-                              styles.disabled
-                          ]}
-                        >
-                          <Text style={styles.secondaryText}>
-                            {capturingFieldLocation
-                              ? "Getting Location..."
-                              : "Use Current Location"}
-                          </Text>
-                        </Pressable>
-                        <Pressable
-                          accessibilityRole="button"
-                          disabled={savingFieldObservation || selectedRunAlreadyLinked}
-                          onPress={savePrivateFieldObservation}
-                          style={[
-                            styles.primary,
-                            (savingFieldObservation || selectedRunAlreadyLinked) &&
-                              styles.disabled
-                          ]}
-                        >
-                          <Text style={styles.primaryText}>
-                            {selectedRunAlreadyLinked
-                              ? "Already Linked"
-                              : savingFieldObservation
-                                ? "Saving..."
-                                : "Save Private Observation"}
-                          </Text>
-                        </Pressable>
-                      </View>
+                      <>
+                        <View style={styles.buttonRow}>
+                          <Pressable
+                            accessibilityRole="button"
+                            disabled={
+                              capturingFieldLocation ||
+                              savingFieldObservation ||
+                              selectedRunAlreadyLinked
+                            }
+                            onPress={savePrivateFieldObservation}
+                            style={[
+                              styles.primary,
+                              (capturingFieldLocation ||
+                                savingFieldObservation ||
+                                selectedRunAlreadyLinked) &&
+                                styles.disabled
+                            ]}
+                          >
+                            <Text style={styles.primaryText}>
+                              {selectedRunAlreadyLinked
+                                ? "Already Linked"
+                                : savingFieldObservation
+                                  ? "Saving..."
+                                  : "Save Private Observation"}
+                            </Text>
+                          </Pressable>
+                        </View>
+                        {selectedRunAlreadyLinked ? (
+                          linkedObservationIsPublic ? (
+                            <Text style={styles.feedback}>
+                              This linked observation is published. Open the Field Study
+                              to review or change its Nature location.
+                            </Text>
+                          ) : fieldCoordinates ? (
+                            <>
+                              <Text style={styles.cardText}>
+                                Separate Field Study action: copy this exact coordinate to
+                                the existing{" "}
+                                {linkedObservationPrivacy === "collaborators"
+                                  ? "study-team"
+                                  : "private"}{" "}
+                                draft. This does not create a duplicate or publish it to
+                                Nature.
+                              </Text>
+                              <Pressable
+                                accessibilityRole="button"
+                                disabled={
+                                  capturingFieldLocation || savingFieldObservation
+                                }
+                                onPress={copyPrivateLocationToLinkedFieldObservation}
+                                style={[
+                                  styles.secondary,
+                                  (capturingFieldLocation || savingFieldObservation) &&
+                                    styles.disabled
+                                ]}
+                              >
+                                <Text style={styles.secondaryText}>
+                                  {savingFieldObservation
+                                    ? "Copying..."
+                                    : linkedObservationPrivacy === "collaborators"
+                                      ? "Copy Exact Location to Study Team"
+                                      : "Copy Exact Location to Private Field Study Draft"}
+                                </Text>
+                              </Pressable>
+                            </>
+                          ) : (
+                            <Text style={styles.cardText}>
+                              Add a private Plant ID location above before copying it to
+                              this linked Field Study draft.
+                            </Text>
+                          )
+                        ) : null}
+                      </>
                     ) : (
                       <Text style={styles.feedback}>
                         Only the study owner or an editor can add observations.

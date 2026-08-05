@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import SavedToolRunsRoute from "@/app/home/personal/(tabs)/tools/saved-runs";
 
@@ -128,6 +128,140 @@ describe("SavedToolRunsRoute", () => {
     });
   });
 
+  it("adds and removes a private location from Plant ID history without a Field Study", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      growId: null,
+      summary: "Magnolia candidate.",
+      inputs: {},
+      outputs: { likelyCrop: "Magnolia", confidence: "medium" },
+      createdAt: "2026-08-02T12:00:00.000Z"
+    };
+    const locatedRun = {
+      ...cropRun,
+      inputs: {
+        capturedLocation: {
+          latitude: 35.7796,
+          longitude: -78.6382,
+          accuracyMeters: 25,
+          privacy: "private",
+          userAuthorized: true
+        }
+      }
+    };
+    const clearedRun = { ...cropRun, inputs: { capturedLocation: null } };
+    mockSearchParams = {
+      toolRunId: "run-1",
+      toolType: "species_crop_id"
+    };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+    mockUpdateToolRun.mockResolvedValueOnce(locatedRun).mockResolvedValueOnce(clearedRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(await screen.findByText("Private plant location")).toBeTruthy();
+    expect(screen.getByText("No device location saved")).toBeTruthy();
+    expect(screen.queryByText("Add this identification to a Field Study")).toBeNull();
+    fireEvent.press(screen.getByText("Include Current Location Privately"));
+
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "run-1",
+        expect.objectContaining({
+          inputs: expect.objectContaining({
+            capturedLocation: expect.objectContaining({
+              latitude: 35.7796,
+              longitude: -78.6382,
+              privacy: "private",
+              userAuthorized: true
+            })
+          })
+        })
+      )
+    );
+    expect(screen.getByText("Exact location saved privately · Not shared")).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "Current location saved privately to this Plant ID only. Field Studies and Nature were not changed."
+      )
+    ).toBeTruthy();
+    expect(mockGetFieldStudy).not.toHaveBeenCalled();
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Remove Private Location"));
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenLastCalledWith(
+        "run-1",
+        expect.objectContaining({
+          inputs: expect.objectContaining({ capturedLocation: null })
+        })
+      )
+    );
+    expect(screen.getByText("No device location saved")).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "Private location removed from this Plant ID only. Field Studies and Nature were not changed."
+      )
+    ).toBeTruthy();
+  });
+
+  it("does not reselect an older Plant ID when its location update finishes late", async () => {
+    const runOne = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      summary: "First plant",
+      inputs: {},
+      outputs: { likelyCrop: "Magnolia" }
+    };
+    const runTwo = {
+      id: "run-2",
+      _id: "run-2",
+      toolType: "species_crop_id",
+      summary: "Second plant",
+      inputs: {},
+      outputs: { likelyCrop: "Rose" }
+    };
+    const locatedRunOne = {
+      ...runOne,
+      inputs: {
+        capturedLocation: {
+          latitude: 35.7796,
+          longitude: -78.6382,
+          privacy: "private",
+          userAuthorized: true
+        }
+      }
+    };
+    let resolveUpdate: ((value: typeof locatedRunOne) => void) | undefined;
+    mockSearchParams = { toolRunId: "run-1", toolType: "species_crop_id" };
+    mockListToolRuns.mockResolvedValue([runOne, runTwo]);
+    mockGetToolRun.mockImplementation(async (id: string) =>
+      id === "run-2" ? runTwo : runOne
+    );
+    mockUpdateToolRun.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveUpdate = resolve;
+      })
+    );
+
+    const screen = render(<SavedToolRunsRoute />);
+    expect(await screen.findByLabelText("Selected saved tool run run-1")).toBeTruthy();
+    fireEvent.press(screen.getByText("Include Current Location Privately"));
+    await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByLabelText("Saved tool run run-2"));
+    expect(await screen.findByLabelText("Selected saved tool run run-2")).toBeTruthy();
+
+    await act(async () => {
+      resolveUpdate?.(locatedRunOne);
+    });
+    expect(screen.getByLabelText("Selected saved tool run run-2")).toBeTruthy();
+    expect(screen.getByText("No device location saved")).toBeTruthy();
+  });
+
   it("links a historical Plant ID to a Field Study as a private draft", async () => {
     const cropRun = {
       id: "run-1",
@@ -197,7 +331,7 @@ describe("SavedToolRunsRoute", () => {
     expect(
       await screen.findByText("Add this identification to a Field Study")
     ).toBeTruthy();
-    fireEvent.press(screen.getByText("Use Current Location"));
+    fireEvent.press(screen.getByText("Include Current Location Privately"));
     await waitFor(() => expect(mockRequestCurrentCoordinates).toHaveBeenCalledTimes(1));
     await waitFor(() =>
       expect(mockUpdateToolRun).toHaveBeenCalledWith(
@@ -240,7 +374,7 @@ describe("SavedToolRunsRoute", () => {
     expect(screen.getByText("Already Linked")).toBeTruthy();
   });
 
-  it("adds a later-authorized private location to the existing linked observation", async () => {
+  it("keeps standalone private location changes out of an existing Field Study observation", async () => {
     const cropRun = {
       id: "run-1",
       _id: "run-1",
@@ -302,7 +436,9 @@ describe("SavedToolRunsRoute", () => {
     };
     mockListToolRuns.mockResolvedValue([cropRun]);
     mockGetToolRun.mockResolvedValue(cropRun);
-    mockUpdateToolRun.mockResolvedValue(locatedRun);
+    mockUpdateToolRun
+      .mockResolvedValueOnce(locatedRun)
+      .mockResolvedValueOnce({ ...cropRun, inputs: { capturedLocation: null } });
     mockGetFieldStudy.mockResolvedValue({
       study: {
         id: "study-1",
@@ -322,12 +458,35 @@ describe("SavedToolRunsRoute", () => {
         precision: "exact"
       }
     });
-
     const screen = render(<SavedToolRunsRoute />);
 
     expect(await screen.findByText("Already Linked")).toBeTruthy();
-    fireEvent.press(screen.getByText("Use Current Location"));
+    fireEvent.press(screen.getByText("Include Current Location Privately"));
 
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "run-1",
+        expect.objectContaining({
+          inputs: expect.objectContaining({
+            capturedLocation: expect.objectContaining({
+              latitude: 35.7796,
+              longitude: -78.6382,
+              privacy: "private",
+              userAuthorized: true
+            })
+          })
+        })
+      )
+    );
+    expect(
+      await screen.findByText(
+        "Current location saved privately to this Plant ID only. Field Studies and Nature were not changed."
+      )
+    ).toBeTruthy();
+    expect(mockUpdateFieldObservation).not.toHaveBeenCalled();
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Copy Exact Location to Private Field Study Draft"));
     await waitFor(() =>
       expect(mockUpdateFieldObservation).toHaveBeenCalledWith(
         "study-1",
@@ -347,10 +506,17 @@ describe("SavedToolRunsRoute", () => {
     );
     expect(
       await screen.findByText(
-        "Current location saved privately to this Plant ID and Raleigh park. It is not on Nature."
+        "Exact location copied to the existing private Raleigh park draft. It was not published to Nature."
       )
     ).toBeTruthy();
-    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Remove Private Location"));
+    expect(
+      await screen.findByText(
+        "Private location removed from this Plant ID only. Field Studies and Nature were not changed."
+      )
+    ).toBeTruthy();
+    expect(mockUpdateFieldObservation).toHaveBeenCalledTimes(1);
   });
 
   it("selects the saved ToolRun from the route query", async () => {

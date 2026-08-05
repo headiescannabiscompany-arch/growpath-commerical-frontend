@@ -121,6 +121,17 @@ or another measurement, or wild-versus-cultivated status. Device coordinates com
 from a separate, user-authorized device-location action; they are not AI-prefill output
 and start private.
 
+A Plant ID may save an exact device location privately in its own Saved ToolRun without
+a grow, plant, Field Study, or Field Study observation. Private location capture is a
+first-class Plant ID action beside photo evidence, not something hidden inside the Field
+Study or Nature workflow. A location captured before analysis is provisional until the
+Plant ID ToolRun is saved; the interface must say that it is ready to save rather than
+already saved. Capturing after analysis updates that same Saved ToolRun. Adding, updating,
+or removing this private location never publishes it, changes a Field Study or its linked
+observation, confirms identity, or confirms a cannabis/hemp public context. Field Studies
+remain optional for collaboration and are required only for the separate public Nature
+workflow described below.
+
 The provider request must receive the complete crop-identification output contract and
 the complete bounded user context. Transport limits must never cut off the JSON field
 list, final safety rules, or user-supplied context. When a response nevertheless includes
@@ -204,11 +215,13 @@ study visibility, make coordinates public, or confirm a cannabis/hemp public con
 Repeated linking of the same ToolRun to the same study must reopen or update the existing
 draft rather than creating duplicate observations. Nature sharing remains a later,
 separately confirmed workflow that must satisfy every ordinary map-readiness gate.
-If the user authorizes device location after the private draft was linked, update that
-existing observation with the exact private coordinate instead of creating another
-observation or leaving the coordinate only on the ToolRun. Identity review, publication,
-and location-sharing updates must preserve every unspecified nested identity, evidence,
-coordinate, privacy, sensitivity, cannabis-context, and public-note field. Public
+If the user authorizes device location after a private draft was linked, the standalone
+Plant ID location action still changes only the ToolRun. Copying that coordinate into the
+existing Field Study observation requires a separate, clearly named Field Study action
+that identifies its audience and must update the same observation rather than creating a
+duplicate. Identity review, publication, and location-sharing updates must preserve every
+unspecified nested identity, evidence, coordinate, privacy, sensitivity, cannabis-context,
+and public-note field. Public
 approximate sharing uses a named confirmation action and keeps the protected exact
 coordinate intact; never use an ambiguous cycling control that can silently change the
 audience or erase provenance.
