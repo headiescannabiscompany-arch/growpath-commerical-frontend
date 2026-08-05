@@ -8,6 +8,7 @@ const mockListToolRuns = jest.fn();
 const mockUpdateToolRun = jest.fn();
 const mockGetFieldStudy = jest.fn();
 const mockCreateFieldObservation = jest.fn();
+const mockUpdateFieldObservation = jest.fn();
 const mockRequestCurrentCoordinates = jest.fn();
 let mockSearchParams: Record<string, string> = {
   toolRunId: "run-1",
@@ -40,7 +41,8 @@ jest.mock("@/api/toolRuns", () => ({
 
 jest.mock("@/api/fieldStudies", () => ({
   createFieldObservation: (...args: any[]) => mockCreateFieldObservation(...args),
-  getFieldStudy: (...args: any[]) => mockGetFieldStudy(...args)
+  getFieldStudy: (...args: any[]) => mockGetFieldStudy(...args),
+  updateFieldObservation: (...args: any[]) => mockUpdateFieldObservation(...args)
 }));
 
 jest.mock("@/utils/locationSearch", () => ({
@@ -236,6 +238,119 @@ describe("SavedToolRunsRoute", () => {
       await screen.findByText("Saved privately to Raleigh park — not on Nature.")
     ).toBeTruthy();
     expect(screen.getByText("Already Linked")).toBeTruthy();
+  });
+
+  it("adds a later-authorized private location to the existing linked observation", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      growId: null,
+      summary: "Magnolia candidate from one photo.",
+      inputs: {
+        mediaEvidence: [
+          {
+            id: "asset-1",
+            durableUrl: "https://example.com/magnolia.jpg",
+            kind: "photo"
+          }
+        ]
+      },
+      outputs: {
+        likelyCrop: "Magnolia",
+        scientificName: "Magnolia spp.",
+        confidence: "medium"
+      },
+      createdAt: "2026-08-02T12:00:00.000Z"
+    };
+    const locatedRun = {
+      ...cropRun,
+      inputs: {
+        ...cropRun.inputs,
+        capturedLocation: {
+          latitude: 35.7796,
+          longitude: -78.6382,
+          accuracyMeters: 25,
+          privacy: "private",
+          userAuthorized: true
+        }
+      }
+    };
+    const linkedObservation = {
+      id: "observation-1",
+      sourceToolRunId: "run-1",
+      identity: {
+        commonName: "Magnolia",
+        evidence: ["Broad evergreen leaf"]
+      },
+      evidenceAssets: [{ assetId: "asset-1", kind: "photo" }],
+      publication: {
+        status: "draft",
+        sensitiveSpecies: false,
+        cannabisContextConfirmed: false
+      },
+      location: {
+        label: "Raleigh park",
+        privacy: "private",
+        exactLocationPublicConfirmed: false
+      }
+    };
+    mockSearchParams = {
+      toolRunId: "run-1",
+      toolType: "species_crop_id",
+      fieldStudyId: "study-1"
+    };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+    mockUpdateToolRun.mockResolvedValue(locatedRun);
+    mockGetFieldStudy.mockResolvedValue({
+      study: {
+        id: "study-1",
+        title: "Raleigh park",
+        visibility: "private",
+        accessRole: "owner"
+      },
+      observations: [linkedObservation]
+    });
+    mockUpdateFieldObservation.mockResolvedValue({
+      ...linkedObservation,
+      location: {
+        ...linkedObservation.location,
+        latitude: 35.7796,
+        longitude: -78.6382,
+        accuracyMeters: 25,
+        precision: "exact"
+      }
+    });
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(await screen.findByText("Already Linked")).toBeTruthy();
+    fireEvent.press(screen.getByText("Use Current Location"));
+
+    await waitFor(() =>
+      expect(mockUpdateFieldObservation).toHaveBeenCalledWith(
+        "study-1",
+        "observation-1",
+        {
+          location: {
+            label: "Raleigh park",
+            privacy: "private",
+            exactLocationPublicConfirmed: false,
+            latitude: 35.7796,
+            longitude: -78.6382,
+            accuracyMeters: 25,
+            precision: "exact"
+          }
+        }
+      )
+    );
+    expect(
+      await screen.findByText(
+        "Current location saved privately to this Plant ID and Raleigh park. It is not on Nature."
+      )
+    ).toBeTruthy();
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
   });
 
   it("selects the saved ToolRun from the route query", async () => {

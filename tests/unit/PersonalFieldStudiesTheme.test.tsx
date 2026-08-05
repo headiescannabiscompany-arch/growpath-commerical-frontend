@@ -16,6 +16,7 @@ const mockListFieldStudies = jest.fn();
 const mockRemoveFieldStudyCollaborator = jest.fn();
 const mockUpdateFieldObservation = jest.fn();
 const mockUpdateFieldStudy = jest.fn();
+let mockFieldStudyResponse: any;
 
 jest.mock("@react-navigation/native", () => {
   const React = require("react");
@@ -108,7 +109,7 @@ describe("Personal Field Studies theme and workflow", () => {
       visibility: "private",
       accessRole: "owner"
     });
-    mockGetFieldStudy.mockResolvedValue({
+    mockFieldStudyResponse = {
       study: {
         id: "study-1",
         title: "Patapsco plant survey",
@@ -126,13 +127,29 @@ describe("Personal Field Studies theme and workflow", () => {
             scientificName: "Acer rubrum",
             verificationStatus: "ai_candidate",
             confidence: "medium",
+            evidence: ["Opposite leaves"],
+            counterEvidence: ["Fruit not visible"],
             missingEvidence: ["leaf underside"]
           },
-          publication: { status: "draft" },
-          location: { privacy: "private" }
+          evidenceAssets: [{ assetId: "asset-1", kind: "photo" }],
+          publication: {
+            status: "draft",
+            sensitiveSpecies: true,
+            cannabisContextConfirmed: false,
+            publicNotes: "Keep habitat wording general."
+          },
+          location: {
+            latitude: 39.31,
+            longitude: -76.62,
+            accuracyMeters: 18,
+            precision: "exact",
+            privacy: "private",
+            exactLocationPublicConfirmed: false
+          }
         }
       ]
-    });
+    };
+    mockGetFieldStudy.mockResolvedValue(mockFieldStudyResponse);
   });
 
   it("uses the active Night palette across the list and detail surfaces", () => {
@@ -215,10 +232,254 @@ describe("Personal Field Studies theme and workflow", () => {
     expect(screen.getByText("Add Person")).toBeTruthy();
     expect(screen.getByText("Confirm Identity")).toBeTruthy();
     expect(screen.getByText("Needs More Evidence")).toBeTruthy();
-    expect(screen.getByText("Publish")).toBeTruthy();
+    expect(screen.getByText("Publish Observation")).toBeTruthy();
+    expect(screen.getByText("Nature map readiness")).toBeTruthy();
+    expect(screen.getByText("Ready: Photo evidence attached")).toBeTruthy();
+    expect(screen.getByText("Needed: Field Study is public")).toBeTruthy();
     expect(screen.getByPlaceholderText("Collaborator email").props.selectionColor).toBe(
       palette.accent
     );
+  });
+
+  it("publishes the study through the web-safe named action", async () => {
+    mockUpdateFieldStudy.mockResolvedValue({
+      ...mockFieldStudyResponse.study,
+      visibility: "public"
+    });
+    const screen = render(<FieldStudyDetailScreen />);
+
+    fireEvent.press(await screen.findByText("Publish Study"));
+
+    await waitFor(() =>
+      expect(mockUpdateFieldStudy).toHaveBeenCalledWith("study-1", {
+        visibility: "public"
+      })
+    );
+  });
+
+  it("uses an in-page confirmation before removing a collaborator", async () => {
+    mockGetFieldStudy.mockResolvedValue({
+      ...mockFieldStudyResponse,
+      study: {
+        ...mockFieldStudyResponse.study,
+        collaborators: [
+          { userId: "member-1", displayName: "Field editor", role: "editor" }
+        ]
+      }
+    });
+    mockRemoveFieldStudyCollaborator.mockResolvedValue({
+      ...mockFieldStudyResponse.study,
+      collaborators: []
+    });
+    const screen = render(<FieldStudyDetailScreen />);
+
+    fireEvent.press(await screen.findByText("Remove"));
+    expect(mockRemoveFieldStudyCollaborator).not.toHaveBeenCalled();
+    expect(screen.getByText(/They will immediately lose access/i)).toBeTruthy();
+    fireEvent.press(screen.getByText("Confirm Remove"));
+
+    await waitFor(() =>
+      expect(mockRemoveFieldStudyCollaborator).toHaveBeenCalledWith("study-1", "member-1")
+    );
+  });
+
+  it("preserves coordinates, identity evidence, and publication safety fields across actions", async () => {
+    const observation = mockFieldStudyResponse.observations[0];
+    mockUpdateFieldObservation.mockImplementation(
+      async (_studyId: string, _observationId: string, patch: any) => ({
+        ...observation,
+        ...patch
+      })
+    );
+    const screen = render(<FieldStudyDetailScreen />);
+
+    await waitFor(() => expect(screen.getByText("Confirm Identity")).toBeTruthy());
+    fireEvent.press(screen.getByText("Confirm Identity"));
+    await waitFor(() =>
+      expect(mockUpdateFieldObservation).toHaveBeenCalledWith(
+        "study-1",
+        "observation-1",
+        expect.objectContaining({
+          identity: expect.objectContaining({
+            scientificName: "Acer rubrum",
+            verificationStatus: "user_confirmed",
+            evidence: ["Opposite leaves"],
+            counterEvidence: ["Fruit not visible"],
+            missingEvidence: ["leaf underside"]
+          })
+        })
+      )
+    );
+    await waitFor(() => expect(screen.queryByText("Saving observation...")).toBeNull());
+
+    fireEvent.press(screen.getByText("Publish Observation"));
+    await waitFor(() =>
+      expect(mockUpdateFieldObservation).toHaveBeenCalledWith(
+        "study-1",
+        "observation-1",
+        expect.objectContaining({
+          publication: expect.objectContaining({
+            status: "published",
+            sensitiveSpecies: true,
+            cannabisContextConfirmed: false,
+            publicNotes: "Keep habitat wording general."
+          })
+        })
+      )
+    );
+    await waitFor(() => expect(screen.queryByText("Saving observation...")).toBeNull());
+
+    fireEvent.press(screen.getByText("Share Approximate Location"));
+    expect(screen.getByText(/Share a rounded location on Nature/i)).toBeTruthy();
+    fireEvent.press(screen.getByText("Confirm Approximate Sharing"));
+    await waitFor(() =>
+      expect(mockUpdateFieldObservation).toHaveBeenCalledWith(
+        "study-1",
+        "observation-1",
+        expect.objectContaining({
+          location: expect.objectContaining({
+            latitude: 39.31,
+            longitude: -76.62,
+            accuracyMeters: 18,
+            precision: "exact",
+            privacy: "public_approximate",
+            exactLocationPublicConfirmed: false
+          })
+        })
+      )
+    );
+  });
+
+  it("does not mark a video-only observation as photo-ready", async () => {
+    mockGetFieldStudy.mockResolvedValue({
+      ...mockFieldStudyResponse,
+      observations: [
+        {
+          ...mockFieldStudyResponse.observations[0],
+          photoUrls: [],
+          evidenceAssets: [{ assetId: "video-1", kind: "video" }]
+        }
+      ]
+    });
+
+    const screen = render(<FieldStudyDetailScreen />);
+
+    expect(await screen.findByText("Needed: Photo evidence attached")).toBeTruthy();
+  });
+
+  it("requires and records separate cannabis public-sharing confirmation", async () => {
+    const observation = {
+      ...mockFieldStudyResponse.observations[0],
+      title: "Hemp observation",
+      identity: {
+        ...mockFieldStudyResponse.observations[0].identity,
+        commonName: "Hemp",
+        scientificName: "Cannabis sativa"
+      },
+      publication: {
+        ...mockFieldStudyResponse.observations[0].publication,
+        status: "published",
+        cannabisContextConfirmed: false
+      },
+      location: {
+        ...mockFieldStudyResponse.observations[0].location,
+        privacy: "public_approximate"
+      }
+    };
+    mockGetFieldStudy.mockResolvedValue({
+      study: { ...mockFieldStudyResponse.study, visibility: "public" },
+      observations: [observation]
+    });
+    mockUpdateFieldObservation.mockImplementation(
+      async (_studyId: string, _observationId: string, patch: any) => ({
+        ...observation,
+        ...patch
+      })
+    );
+
+    const screen = render(<FieldStudyDetailScreen />);
+
+    expect(
+      await screen.findByText("Needed: Cannabis/hemp public sharing is confirmed")
+    ).toBeTruthy();
+    fireEvent.press(screen.getByText("Review Cannabis/Hemp Sharing"));
+    expect(screen.getByText(/This does not publish it by itself/i)).toBeTruthy();
+    fireEvent.press(screen.getByText("Confirm Cannabis/Hemp Sharing"));
+
+    await waitFor(() =>
+      expect(mockUpdateFieldObservation).toHaveBeenCalledWith(
+        "study-1",
+        "observation-1",
+        expect.objectContaining({
+          publication: expect.objectContaining({
+            status: "published",
+            sensitiveSpecies: true,
+            cannabisContextConfirmed: true,
+            publicNotes: "Keep habitat wording general."
+          })
+        })
+      )
+    );
+  });
+
+  it("lets collaborator-only location sharing return directly to private", async () => {
+    const observation = {
+      ...mockFieldStudyResponse.observations[0],
+      location: {
+        ...mockFieldStudyResponse.observations[0].location,
+        privacy: "collaborators"
+      }
+    };
+    mockGetFieldStudy.mockResolvedValue({
+      ...mockFieldStudyResponse,
+      observations: [observation]
+    });
+    mockUpdateFieldObservation.mockImplementation(
+      async (_studyId: string, _observationId: string, patch: any) => ({
+        ...observation,
+        ...patch
+      })
+    );
+
+    const screen = render(<FieldStudyDetailScreen />);
+
+    fireEvent.press(await screen.findByText("Make Location Private"));
+    await waitFor(() =>
+      expect(mockUpdateFieldObservation).toHaveBeenCalledWith(
+        "study-1",
+        "observation-1",
+        expect.objectContaining({
+          location: expect.objectContaining({
+            latitude: 39.31,
+            longitude: -76.62,
+            privacy: "private",
+            exactLocationPublicConfirmed: false
+          })
+        })
+      )
+    );
+  });
+
+  it("labels explicitly confirmed exact-public location accurately", async () => {
+    mockGetFieldStudy.mockResolvedValue({
+      study: { ...mockFieldStudyResponse.study, visibility: "public" },
+      observations: [
+        {
+          ...mockFieldStudyResponse.observations[0],
+          location: {
+            ...mockFieldStudyResponse.observations[0].location,
+            privacy: "public_exact",
+            exactLocationPublicConfirmed: true
+          }
+        }
+      ]
+    });
+
+    const screen = render(<FieldStudyDetailScreen />);
+
+    expect(
+      await screen.findByText("Ready: Exact public location is explicitly confirmed")
+    ).toBeTruthy();
   });
 
   it("keeps the shared Back action available while detail is loading", () => {

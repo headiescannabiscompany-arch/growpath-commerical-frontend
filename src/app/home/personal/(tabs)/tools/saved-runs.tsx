@@ -23,6 +23,7 @@ import {
 import {
   createFieldObservation,
   getFieldStudy,
+  updateFieldObservation,
   type FieldObservation,
   type FieldStudy
 } from "@/api/fieldStudies";
@@ -941,6 +942,58 @@ export default function SavedToolRunsScreen() {
     setFieldStudyFeedback("");
     try {
       const coordinates = await requestCurrentCoordinates();
+      let currentObservations = fieldObservations;
+      if (fieldStudyId) {
+        try {
+          const refreshedStudy = await getFieldStudy(fieldStudyId);
+          setFieldStudy(refreshedStudy.study);
+          setFieldObservations(refreshedStudy.observations);
+          currentObservations = refreshedStudy.observations;
+        } catch {
+          // Keep the already loaded study state; the update call below remains authoritative.
+        }
+      }
+      const linkedObservation = currentObservations.find(
+        (observation) => String(observation.sourceToolRunId || "") === id
+      );
+      let linkedPrivacy = "";
+      if (linkedObservation && fieldStudyId) {
+        const observationId = String(linkedObservation.id || linkedObservation._id || "");
+        if (observationId) {
+          const currentPrivacy = linkedObservation.location?.privacy || "private";
+          const nextPrivacy =
+            currentPrivacy === "public_exact" ? "private" : currentPrivacy;
+          try {
+            const updatedObservation = await updateFieldObservation(
+              fieldStudyId,
+              observationId,
+              {
+                location: {
+                  ...linkedObservation.location,
+                  ...coordinates,
+                  precision: "exact",
+                  privacy: nextPrivacy,
+                  exactLocationPublicConfirmed: false
+                }
+              }
+            );
+            setFieldObservations((current) =>
+              current.map((observation) =>
+                String(observation.id || observation._id || "") === observationId
+                  ? updatedObservation
+                  : observation
+              )
+            );
+            linkedPrivacy = nextPrivacy;
+          } catch (observationLocationError: any) {
+            setFieldStudyFeedback(
+              observationLocationError?.message ||
+                "Location was received but could not be saved to the linked Field Study observation. No Plant ID history was changed."
+            );
+            return;
+          }
+        }
+      }
       const nextInputs = {
         ...runInputs(selectedRun),
         capturedLocation: {
@@ -957,13 +1010,26 @@ export default function SavedToolRunsScreen() {
       });
       if (!updated) {
         setFieldStudyFeedback(
-          "Location was not saved, so it will not be attached to this observation."
+          linkedObservation
+            ? `Location was saved to ${fieldStudy?.title || "the linked Field Study"}, but the Plant ID history could not be updated.`
+            : "Location was not saved, so it will not be attached to this observation."
         );
         return;
       }
       setSelectedRun(updated);
       setRuns((current) => current.map((run) => (idFor(run) === id ? updated : run)));
       setFieldCoordinates(coordinates);
+      if (linkedObservation) {
+        const studyTitle = fieldStudy?.title || "the linked Field Study";
+        setFieldStudyFeedback(
+          linkedPrivacy === "public_approximate"
+            ? `Exact location updated for this Plant ID and ${studyTitle}; Nature still receives only an approximate point.`
+            : linkedPrivacy === "collaborators"
+              ? `Current location saved to this Plant ID and shared only with the ${studyTitle} team. It is not on Nature.`
+              : `Current location saved privately to this Plant ID and ${studyTitle}. It is not on Nature.`
+        );
+        return;
+      }
       setFieldStudyFeedback(
         "Current location saved privately to this Plant ID. It is not on Nature."
       );
