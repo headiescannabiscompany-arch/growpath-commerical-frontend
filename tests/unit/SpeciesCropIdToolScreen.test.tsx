@@ -6,6 +6,7 @@ import SpeciesCropIdToolRoute, {
 } from "@/app/home/personal/(tabs)/tools/species-crop-id";
 
 const mockRunCalculator = jest.fn();
+const mockListToolRuns = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockUpdateGrowpathModuleRecord = jest.fn();
 const mockUpdateToolRun = jest.fn();
@@ -50,6 +51,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
     return React.createElement(
       View,
       { testID: "media-evidence-picker" },
+      React.createElement(Text, null, `Evidence purpose: ${props.purpose}`),
       React.createElement(
         Pressable,
         {
@@ -120,6 +122,7 @@ jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
 
 jest.mock("@/api/toolRuns", () => ({
   runCalculator: (...args: any[]) => mockRunCalculator(...args),
+  listToolRuns: (...args: any[]) => mockListToolRuns(...args),
   updateToolRun: (...args: any[]) => mockUpdateToolRun(...args)
 }));
 
@@ -177,6 +180,7 @@ describe("SpeciesCropIdToolRoute", () => {
       }
     ];
     mockListFieldStudies.mockResolvedValue([]);
+    mockListToolRuns.mockResolvedValue([]);
     mockCreateFieldStudy.mockResolvedValue({
       id: "study-new",
       _id: "study-new",
@@ -327,6 +331,10 @@ describe("SpeciesCropIdToolRoute", () => {
       ).toBeTruthy()
     );
     expect(screen.getByText("Step 1 — Add identification evidence")).toBeTruthy();
+    expect(screen.getByText("Evidence purpose: crop_identification")).toBeTruthy();
+    expect(
+      screen.getByText(/direct flash against a dark background can hide color/i)
+    ).toBeTruthy();
     expect(
       screen.getByText(/do not enter a cultivar inferred from appearance/i)
     ).toBeTruthy();
@@ -438,6 +446,734 @@ describe("SpeciesCropIdToolRoute", () => {
     );
   });
 
+  it("withholds a crop name and forces low confidence when the submitted views are limited", async () => {
+    mockSearchParams = {};
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Cabbage",
+        scientificName: "Brassica oleracea",
+        commonNames: "Cabbage",
+        imageAnalysisPerformed: "true",
+        imageQuality: "limited",
+        visualConfidence: "medium",
+        candidates: [
+          {
+            scientificName: "Brassica oleracea",
+            commonNames: ["Cabbage"],
+            rank: "species",
+            confidence: "medium"
+          }
+        ]
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 },
+      limitations: ["Direct flash and deep shadow obscure diagnostic leaf detail."]
+    });
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        likelyCrop: "Cabbage",
+        scientificName: "Brassica oleracea",
+        confidence: "low",
+        userConfirmationRequired: true,
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          quality: "limited",
+          confidence: "low",
+          photosAnalyzed: 1,
+          limitations: ["Direct flash and deep shadow obscure diagnostic leaf detail."]
+        }
+      },
+      toolRun: { id: "toolrun-limited-1", _id: "toolrun-limited-1" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          userEnteredName: "",
+          scientificName: "",
+          commonNames: "",
+          imageAnalysis: expect.objectContaining({
+            performed: true,
+            quality: "limited",
+            confidence: "low",
+            limitations: expect.arrayContaining([
+              "Direct flash and deep shadow obscure diagnostic leaf detail."
+            ])
+          }),
+          identificationDraft: expect.objectContaining({
+            candidates: [
+              expect.objectContaining({
+                scientificName: "Brassica oleracea",
+                confidence: "low"
+              })
+            ],
+            requiredNextPhotos: expect.arrayContaining([
+              expect.stringMatching(/even daylight or diffuse light/i)
+            ])
+          })
+        })
+      )
+    );
+    expect(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name").props
+        .value
+    ).toBe("");
+    expect(screen.getByRole("button", { name: "Confirm in Saved Run" })).toBeDisabled();
+  });
+
+  it("keeps a usable medium-confidence visual guess as an unconfirmable candidate", async () => {
+    mockSearchParams = {};
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Cabbage",
+        scientificName: "Brassica oleracea",
+        commonNames: "Cabbage",
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "medium",
+        candidates: [
+          {
+            scientificName: "Brassica oleracea",
+            commonNames: ["Cabbage"],
+            rank: "species",
+            confidence: "medium"
+          }
+        ]
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 }
+    });
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        likelyCrop: "Cabbage",
+        scientificName: "Brassica oleracea",
+        confidence: "medium",
+        userConfirmationRequired: true,
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          quality: "usable",
+          // Even if an older calculator incorrectly upgrades the response,
+          // the original medium-confidence image review must keep confirmation off.
+          confidence: "high",
+          photosAnalyzed: 1
+        }
+      },
+      toolRun: { id: "toolrun-medium-1", _id: "toolrun-medium-1" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          userEnteredName: "",
+          scientificName: "",
+          commonNames: "",
+          identityInputProvenance: {
+            source: "user_entry",
+            providedFields: [],
+            userEnteredName: "",
+            scientificName: "",
+            commonNames: [],
+            cultivar: ""
+          },
+          identificationDraft: expect.objectContaining({
+            candidates: [
+              expect.objectContaining({
+                scientificName: "Brassica oleracea",
+                commonNames: ["Cabbage"],
+                confidence: "medium"
+              })
+            ]
+          }),
+          imageAnalysis: expect.objectContaining({
+            performed: true,
+            quality: "usable",
+            confidence: "medium"
+          })
+        })
+      )
+    );
+    expect(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name").props
+        .value
+    ).toBe("");
+    expect(screen.getByRole("button", { name: "Confirm in Saved Run" })).toBeDisabled();
+  });
+
+  it("honors the server confirmation block and shows its reason", async () => {
+    mockSearchParams = {};
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        likelyCrop: "Cannabis",
+        scientificName: "Cannabis sativa",
+        confidence: "high",
+        confirmationAvailable: false,
+        confirmationBlockedReason:
+          "Add evenly lit diagnostic views before confirming this identity.",
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          quality: "usable",
+          confidence: "high",
+          photosAnalyzed: 1
+        }
+      },
+      toolRun: { id: "toolrun-server-block-1", _id: "toolrun-server-block-1" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    expect(
+      await screen.findByText(
+        "Confirmation unavailable: Add evenly lit diagnostic views before confirming this identity."
+      )
+    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Confirm in Saved Run" })).toBeDisabled();
+  });
+
+  it("allows a server-approved user Rose claim when attached images were not analyzed", async () => {
+    mockSearchParams = {};
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        likelyCrop: "Rose",
+        confidence: "low",
+        confirmationAvailable: true,
+        imageAnalysis: {
+          requested: true,
+          performed: false,
+          quality: "unusable",
+          confidence: "low",
+          photosAnalyzed: 0
+        }
+      },
+      toolRun: { id: "toolrun-user-rose-unseen", _id: "toolrun-user-rose-unseen" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Rose"
+    );
+    fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
+
+    expect(
+      await screen.findByText(
+        "User-entered identity: Rose. The attached images did not visually verify this identity. Confirmation saves the explicit user entry, not the AI candidate."
+      )
+    ).toBeTruthy();
+    const confirm = screen.getByRole("button", { name: "Confirm in Saved Run" });
+    expect(confirm).not.toBeDisabled();
+    fireEvent.press(confirm);
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "toolrun-user-rose-unseen",
+        expect.objectContaining({
+          outputs: expect.objectContaining({
+            likelyCrop: "Rose",
+            identitySource: "user_entry",
+            identityVisuallyVerified: false,
+            confidence: "user_confirmed"
+          })
+        })
+      )
+    );
+  });
+
+  it("lets a user Rose correction override a conflicting medium AI Cabbage candidate", async () => {
+    mockSearchParams = {};
+    mockListToolRuns.mockResolvedValueOnce([
+      {
+        id: "prior-ai-pepper",
+        toolName: "species-crop-id",
+        inputs: {
+          imageAnalysis: {
+            requested: true,
+            performed: true,
+            quality: "usable",
+            confidence: "medium",
+            evidenceUsed: ["evidence-1"],
+            evidenceFingerprint: "evidence-1"
+          },
+          identificationDraft: {
+            candidates: [
+              {
+                scientificName: "Piper nigrum",
+                commonNames: ["Black pepper"],
+                confidence: "medium"
+              }
+            ]
+          }
+        }
+      }
+    ]);
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Cabbage",
+        scientificName: "Brassica oleracea",
+        commonNames: "Cabbage",
+        candidates: [
+          {
+            scientificName: "Brassica oleracea",
+            commonNames: ["Cabbage"],
+            rank: "species",
+            confidence: "medium"
+          }
+        ],
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "medium"
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 }
+    });
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        likelyCrop: "Cabbage",
+        scientificName: "Brassica oleracea",
+        confidence: "low",
+        confirmationAvailable: true,
+        identityConflictDetected: true,
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          quality: "limited",
+          confidence: "low",
+          photosAnalyzed: 1,
+          limitations: [
+            "A repeated review of the same unchanged evidence produced a conflicting identity or unsupported quality/confidence upgrade."
+          ]
+        }
+      },
+      toolRun: { id: "toolrun-user-rose-medium", _id: "toolrun-user-rose-medium" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Rose"
+    );
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    expect(
+      await screen.findByText(
+        "User-entered identity: Rose. The attached images did not visually verify this identity. Confirmation saves the explicit user entry, not the AI candidate."
+      )
+    ).toBeTruthy();
+    const confirm = screen.getByRole("button", { name: "Confirm in Saved Run" });
+    expect(confirm).not.toBeDisabled();
+    fireEvent.press(confirm);
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "toolrun-user-rose-medium",
+        expect.objectContaining({
+          outputs: expect.objectContaining({
+            likelyCrop: "Rose",
+            scientificName: "",
+            identitySource: "user_entry",
+            identityVisuallyVerified: false,
+            confidence: "user_confirmed"
+          })
+        })
+      )
+    );
+  });
+
+  it("does not feed a prior AI identity back as user context and downgrades a contradictory same-evidence rerun", async () => {
+    mockSearchParams = {};
+    mockAskPersonalAssistant
+      .mockResolvedValueOnce({
+        success: true,
+        reply: JSON.stringify({
+          userEnteredName: "Not confirmed",
+          scientificName: "",
+          commonNames: "",
+          candidates: [
+            {
+              scientificName: "Piper nigrum",
+              commonNames: ["Black pepper"],
+              rank: "species",
+              confidence: "medium"
+            }
+          ],
+          imageAnalysisPerformed: "true",
+          imageQuality: "usable",
+          visualConfidence: "medium"
+        }),
+        provider: "openai",
+        evidenceUsed: ["evidence-1"],
+        mediaAnalysis: { photosAnalyzed: 1 }
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        reply: JSON.stringify({
+          userEnteredName: "Not confirmed",
+          scientificName: "",
+          commonNames: "",
+          candidates: [
+            {
+              scientificName: "Brassica oleracea",
+              commonNames: ["Cabbage"],
+              rank: "species",
+              confidence: "medium"
+            }
+          ],
+          imageAnalysisPerformed: "true",
+          imageQuality: "usable",
+          visualConfidence: "medium"
+        }),
+        provider: "openai",
+        evidenceUsed: ["evidence-1"],
+        mediaAnalysis: { photosAnalyzed: 1 }
+      });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+    expect(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name").props
+        .value
+    ).toBe("");
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Identify Plant from Photos" })
+      ).not.toBeDisabled()
+    );
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(2));
+    expect(mockAskPersonalAssistant.mock.calls[1][0].message).not.toContain(
+      "Black pepper"
+    );
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(2));
+    expect(mockRunCalculator.mock.calls[1][1]).toEqual(
+      expect.objectContaining({
+        userEnteredName: "",
+        scientificName: "",
+        commonNames: "",
+        imageAnalysis: expect.objectContaining({
+          quality: "limited",
+          confidence: "low",
+          limitations: expect.arrayContaining([
+            expect.stringMatching(
+              /same unchanged evidence produced a conflicting identity/i
+            )
+          ])
+        }),
+        identificationDraft: expect.objectContaining({
+          counterEvidence: expect.arrayContaining([
+            expect.stringMatching(
+              /same unchanged evidence produced a conflicting identity/i
+            )
+          ])
+        })
+      })
+    );
+  });
+
+  it("does not create a conflict when identical candidate identities are reordered", async () => {
+    mockSearchParams = {};
+    const candidateReply = (commonNames: string[]) => ({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Not confirmed",
+        scientificName: "",
+        commonNames: "",
+        candidates: [
+          {
+            scientificName: "Piper nigrum",
+            commonNames,
+            rank: "species",
+            confidence: "medium"
+          }
+        ],
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "medium"
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 }
+    });
+    mockAskPersonalAssistant
+      .mockResolvedValueOnce(candidateReply(["Black pepper", "Pepper vine"]))
+      .mockResolvedValueOnce(candidateReply(["Pepper vine", "Black pepper"]));
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(2));
+    expect(mockRunCalculator.mock.calls[1][1]).toEqual(
+      expect.objectContaining({
+        imageAnalysis: expect.objectContaining({
+          quality: "usable",
+          confidence: "medium",
+          limitations: expect.not.arrayContaining([
+            expect.stringMatching(/same unchanged evidence/i)
+          ])
+        }),
+        identificationDraft: expect.objectContaining({
+          candidates: [expect.objectContaining({ confidence: "medium" })]
+        })
+      })
+    );
+  });
+
+  it("hydrates a prior saved weak review and blocks an unchanged-evidence promotion after reload", async () => {
+    mockSearchParams = {};
+    mockListToolRuns.mockResolvedValueOnce([
+      {
+        id: "prior-run-1",
+        toolName: "species-crop-id",
+        createdAt: "2026-08-05T12:00:00.000Z",
+        inputs: {
+          evidenceAssetIds: ["evidence-1"],
+          imageAnalysis: {
+            requested: true,
+            performed: true,
+            quality: "limited",
+            confidence: "low",
+            evidenceUsed: ["evidence-1"],
+            evidenceFingerprint: "evidence-1",
+            limitations: ["Direct flash hid diagnostic detail."]
+          },
+          identificationDraft: {
+            candidates: [
+              {
+                scientificName: "Piper nigrum",
+                commonNames: ["Black pepper"],
+                confidence: "low"
+              }
+            ]
+          }
+        }
+      }
+    ]);
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Black pepper",
+        scientificName: "Piper nigrum",
+        commonNames: "Black pepper",
+        candidates: [
+          {
+            scientificName: "Piper nigrum",
+            commonNames: ["Black pepper"],
+            rank: "species",
+            confidence: "high"
+          }
+        ],
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "high"
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() => expect(mockListToolRuns).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          userEnteredName: "",
+          scientificName: "",
+          imageAnalysis: expect.objectContaining({
+            quality: "limited",
+            confidence: "low",
+            limitations: expect.arrayContaining([
+              expect.stringMatching(/same unchanged evidence/i)
+            ])
+          })
+        })
+      )
+    );
+    expect(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name").props
+        .value
+    ).toBe("");
+  });
+
+  it("keeps a user Rose claim separate from an identical saved and rerun Cabbage candidate", async () => {
+    mockSearchParams = {};
+    mockListToolRuns.mockResolvedValueOnce([
+      {
+        id: "prior-run-user-rose",
+        toolName: "species-crop-id",
+        inputs: {
+          userEnteredName: "Rose",
+          scientificName: "Rosa",
+          commonNames: "Rose",
+          identityInputProvenance: {
+            source: "user_entry",
+            providedFields: ["userEnteredName", "scientificName", "commonNames"],
+            userEnteredName: "Rose",
+            scientificName: "Rosa",
+            commonNames: ["Rose"],
+            cultivar: ""
+          },
+          evidenceAssetIds: ["evidence-1"],
+          imageAnalysis: {
+            requested: true,
+            performed: true,
+            quality: "usable",
+            confidence: "medium",
+            evidenceUsed: ["evidence-1"],
+            evidenceFingerprint: "evidence-1",
+            limitations: []
+          },
+          identificationDraft: {
+            candidates: [
+              {
+                scientificName: "Brassica oleracea",
+                commonNames: ["Cabbage"],
+                confidence: "medium"
+              }
+            ]
+          }
+        }
+      }
+    ]);
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Cabbage",
+        scientificName: "Brassica oleracea",
+        commonNames: "Cabbage",
+        candidates: [
+          {
+            scientificName: "Brassica oleracea",
+            commonNames: ["Cabbage"],
+            rank: "species",
+            confidence: "medium"
+          }
+        ],
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "medium"
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Rose"
+    );
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+    const payload = mockRunCalculator.mock.calls[0][1];
+    expect(payload).toEqual(
+      expect.objectContaining({
+        userEnteredName: "Rose",
+        identityInputProvenance: expect.objectContaining({
+          providedFields: ["userEnteredName"],
+          userEnteredName: "Rose"
+        }),
+        imageAnalysis: expect.objectContaining({
+          quality: "usable",
+          confidence: "medium",
+          limitations: expect.not.arrayContaining([
+            expect.stringMatching(/same unchanged evidence/i)
+          ])
+        }),
+        identificationDraft: expect.objectContaining({
+          candidates: [
+            expect.objectContaining({
+              scientificName: "Brassica oleracea",
+              commonNames: ["Cabbage"],
+              confidence: "medium"
+            })
+          ]
+        })
+      })
+    );
+    expect(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name").props
+        .value
+    ).toBe("Rose");
+  });
+
+  it("prevents an unchanged weak result from being upgraded to a named medium-confidence run", async () => {
+    mockSearchParams = {};
+    mockAskPersonalAssistant
+      .mockResolvedValueOnce({
+        success: true,
+        reply: JSON.stringify({
+          userEnteredName: "Unknown crop",
+          scientificName: "",
+          commonNames: "",
+          imageAnalysisPerformed: "true",
+          imageQuality: "limited",
+          visualConfidence: "low"
+        }),
+        provider: "openai",
+        evidenceUsed: ["evidence-1"],
+        mediaAnalysis: { photosAnalyzed: 1 }
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        reply: JSON.stringify({
+          userEnteredName: "Cabbage",
+          scientificName: "Brassica oleracea",
+          commonNames: "Cabbage",
+          imageAnalysisPerformed: "true",
+          imageQuality: "usable",
+          visualConfidence: "medium"
+        }),
+        provider: "openai",
+        evidenceUsed: ["evidence-1"],
+        mediaAnalysis: { photosAnalyzed: 1 }
+      });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Identify Plant from Photos" })
+      ).not.toBeDisabled()
+    );
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(2));
+
+    expect(mockRunCalculator.mock.calls[1][1]).toEqual(
+      expect.objectContaining({
+        userEnteredName: "",
+        imageAnalysis: expect.objectContaining({
+          performed: true,
+          quality: "limited",
+          confidence: "low"
+        })
+      })
+    );
+  });
+
   it("shows a defensible non-cannabis common candidate when exact species is uncertain", async () => {
     mockSearchParams = {};
     mockAskPersonalAssistant.mockResolvedValue({
@@ -469,11 +1205,22 @@ describe("SpeciesCropIdToolRoute", () => {
     });
     mockRunCalculator.mockResolvedValue({
       outputs: {
-        likelyCrop: "Mint",
-        commonNames: ["Mint"],
+        likelyCrop: "unknown crop",
+        commonNames: [],
         scientificName: null,
         confidence: "medium",
         userConfirmationRequired: true,
+        candidates: [
+          {
+            scientificName: null,
+            commonNames: ["Mint"],
+            rank: "working_candidate",
+            confidence: "medium",
+            evidence: ["Flower clusters on a leafy stem"],
+            counterEvidence: ["Exact species is unresolved"],
+            missingEvidence: ["Sharper flower and stem-node views"]
+          }
+        ],
         identifyingVisualTraits:
           "Flower clusters on a leafy stem suggest a mint-family plant.",
         imageAnalysis: {
@@ -497,9 +1244,18 @@ describe("SpeciesCropIdToolRoute", () => {
       expect(mockRunCalculator).toHaveBeenCalledWith(
         "species-crop-id",
         expect.objectContaining({
-          userEnteredName: "Mint",
+          userEnteredName: "",
           scientificName: "",
           userConfirmed: false,
+          identificationDraft: expect.objectContaining({
+            candidates: [
+              expect.objectContaining({
+                commonNames: ["Mint"],
+                rank: "working_candidate",
+                confidence: "medium"
+              })
+            ]
+          }),
           imageAnalysis: expect.objectContaining({
             performed: true,
             confidence: "medium"
@@ -510,7 +1266,8 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(
       screen.getByLabelText("Species / Crop Identification Plant or crop name").props
         .value
-    ).toBe("Mint");
+    ).toBe("");
+    expect(await screen.findByText(/1\.\s*Mint/)).toBeTruthy();
     expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
   });
 
@@ -525,7 +1282,7 @@ describe("SpeciesCropIdToolRoute", () => {
         commonNames: "Cotton plant",
         imageAnalysisPerformed: "true",
         imageQuality: "usable",
-        visualConfidence: "medium",
+        visualConfidence: "high",
         identifyingVisualTraits: "A woody branch and one pod-like structure.",
         candidates: [
           {
@@ -659,6 +1416,21 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
 
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          identityInputProvenance: {
+            source: "user_entry",
+            providedFields: ["userEnteredName", "scientificName", "cultivar"],
+            userEnteredName: "Cannabis",
+            scientificName: "Cannabis sativa",
+            commonNames: [],
+            cultivar: "Bruce Banner"
+          }
+        })
+      )
+    );
     await waitFor(() => expect(screen.getByText("Confirm & Save to Grow")).toBeTruthy());
     fireEvent.press(screen.getByText("Confirm & Save to Grow"));
 

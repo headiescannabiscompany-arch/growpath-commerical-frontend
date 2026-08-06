@@ -10,6 +10,18 @@ Output likely causes with evidence, counter-evidence, missing information and di
 
 ## Image evidence behavior
 
+For Crop Identification, explicitly inspect exposure and target lighting before proposing
+an identity. A dark or backlit subject illuminated by a harsh point light or phone flash,
+deep shadows, clipped highlights, glare, or a strong color cast is unusable when those
+conditions hide leaf, stem, flower, fruit, or true-color characters. The result must set
+overall and candidate confidence to low, leave AI-proposed common and scientific identity
+fields out of the editable user-input fields, label the result retake-required, and request
+evenly exposed neutral or diffuse-light replacements. Limited evidence may retain directly
+visible morphology and broader family/genus hypotheses in the evidence review, but it must
+not auto-populate a crop name, auto-confirm an identity, or be upgraded to a normal result
+by the calculator. A user-entered name remains a user claim and must not be described as
+visually confirmed.
+
 Photo uploads must never imply that image pixels were inspected when the active provider is text-only. In that state, preserve the photos as linked evidence, label visual analysis as not performed, and require written symptom observations before producing triage. The UI must state what the current engine can use.
 
 When image analysis is available, request a whole-plant context photo, a photo showing symptom distribution, and sharp close-ups of both leaf surfaces. A photo-only result must report whether visual analysis was actually performed and ask for replacement media when blur, lighting, distance, or missing leaf-surface coverage prevents useful review.
@@ -161,6 +173,14 @@ the complete bounded user context. Transport limits must never cut off the JSON 
 list, final safety rules, or user-supplied context. When a response nevertheless includes
 a prohibited inferred field, the client must leave that field blank unless the user had
 already entered it explicitly.
+
+Provider quality and confidence are ceilings for every downstream step. `limited` or
+`unusable` image quality forces low overall and candidate confidence and a retake-required
+state; the calculator and saved ToolRun must preserve that boundary. A usable image set
+that lacks diagnostic structures may support visible morphology or a broader hypothesis,
+but it must not promote a family-level resemblance into a specific crop or species name.
+Repeated analysis of the same evidence must never turn an earlier quality limitation into
+user-entered evidence or confirmation.
 
 Narrow results in this order:
 

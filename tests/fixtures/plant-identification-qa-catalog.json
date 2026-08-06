@@ -73,7 +73,7 @@
       "status": "preferred_pending_capture",
       "allowedLicenseFilter": ["GROWPATH_OWNED"],
       "requirements": [
-        "capture blur, partial, mixed, artificial, dead-leaf, and no-plant cases",
+        "capture blur, partial, mixed, artificial, dead-leaf, no-plant, low-light, direct-flash, glare, and mixed-color-light cases",
         "strip private metadata before fixture use"
       ]
     },
@@ -548,7 +548,7 @@
         "acceptedName": "Insufficient evidence",
         "scientificName": "",
         "lifeStage": "unknown",
-        "quota": 6,
+        "quota": 4,
         "expectedAlternatives": ["retake required"],
         "distinguishingFocus": ["blur detection", "specific retake guidance"]
       },
@@ -557,7 +557,7 @@
         "acceptedName": "Insufficient evidence",
         "scientificName": "",
         "lifeStage": "unknown",
-        "quota": 6,
+        "quota": 4,
         "expectedAlternatives": ["multiple plausible crops", "retake required"],
         "distinguishingFocus": ["missing whole-plant context", "leaf attachment missing"]
       },
@@ -566,7 +566,7 @@
         "acceptedName": "Multiple plants present",
         "scientificName": "",
         "lifeStage": "mixed",
-        "quota": 6,
+        "quota": 4,
         "expectedAlternatives": ["request subject selection"],
         "distinguishingFocus": ["do not merge identities", "ask which plant to identify"]
       },
@@ -575,7 +575,7 @@
         "acceptedName": "Insufficient identity evidence",
         "scientificName": "",
         "lifeStage": "senesced_or_dead",
-        "quota": 6,
+        "quota": 4,
         "expectedAlternatives": ["retake living plant"],
         "distinguishingFocus": [
           "lost morphology",
@@ -587,7 +587,7 @@
         "acceptedName": "Artificial plant or non-living replica",
         "scientificName": "",
         "lifeStage": "not_applicable",
-        "quota": 6,
+        "quota": 4,
         "expectedAlternatives": ["decorative replica", "uncertain non-living subject"],
         "distinguishingFocus": [
           "manufacturing cues",
@@ -599,9 +599,67 @@
         "acceptedName": "No plant detected",
         "scientificName": "",
         "lifeStage": "not_applicable",
-        "quota": 6,
+        "quota": 4,
         "expectedAlternatives": ["upload a plant photo"],
         "distinguishingFocus": ["no false crop result", "actionable upload guidance"]
+      },
+      {
+        "caseId": "low_light_underexposed",
+        "acceptedName": "Insufficient lighting evidence",
+        "scientificName": "",
+        "lifeStage": "unknown",
+        "quota": 3,
+        "expectedAlternatives": ["retake required"],
+        "distinguishingFocus": [
+          "deep shadow hides diagnostic characters",
+          "empty taxon fields",
+          "low confidence",
+          "neutral or diffuse-light retake"
+        ]
+      },
+      {
+        "caseId": "direct_flash_dark_background",
+        "acceptedName": "Insufficient lighting evidence",
+        "scientificName": "",
+        "lifeStage": "unknown",
+        "quota": 3,
+        "expectedAlternatives": ["retake required"],
+        "distinguishingFocus": [
+          "direct-flash glare and clipped highlights",
+          "dark-background shadow loss",
+          "empty taxon fields",
+          "low confidence",
+          "even daylight retake"
+        ]
+      },
+      {
+        "caseId": "blocking_glare",
+        "acceptedName": "Insufficient lighting evidence",
+        "scientificName": "",
+        "lifeStage": "unknown",
+        "quota": 3,
+        "expectedAlternatives": ["retake required"],
+        "distinguishingFocus": [
+          "glare obscures leaf or flower characters",
+          "no reconstruction of hidden detail",
+          "empty taxon fields",
+          "low confidence",
+          "change light angle"
+        ]
+      },
+      {
+        "caseId": "mixed_color_light",
+        "acceptedName": "Insufficient color evidence",
+        "scientificName": "",
+        "lifeStage": "unknown",
+        "quota": 3,
+        "expectedAlternatives": ["retake required"],
+        "distinguishingFocus": [
+          "color cast prevents reliable true-color reading",
+          "empty taxon fields",
+          "low confidence",
+          "neutral-white-light retake"
+        ]
       }
     ]
   },

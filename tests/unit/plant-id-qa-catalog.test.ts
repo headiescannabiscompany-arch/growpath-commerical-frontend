@@ -38,7 +38,7 @@ describe("plant-identification QA catalog", () => {
       .flat()
       .map((definition: any) => definition.caseId);
 
-    expect(caseIds).toHaveLength(42);
+    expect(caseIds).toHaveLength(46);
     expect(caseIds).toEqual(
       expect.arrayContaining([
         "cannabis_harvested_flower",
@@ -76,7 +76,11 @@ describe("plant-identification QA catalog", () => {
         "mixed_plants",
         "dead_leaf_only",
         "artificial_plant",
-        "no_plant_scene"
+        "no_plant_scene",
+        "low_light_underexposed",
+        "direct_flash_dark_background",
+        "blocking_glare",
+        "mixed_color_light"
       ])
     );
   });
@@ -97,6 +101,33 @@ describe("plant-identification QA catalog", () => {
         "no cultivar inference"
       ])
     );
+  });
+
+  it("requires retakes and empty taxon fields for blocking lighting failures", () => {
+    const catalog = loadCatalog();
+    const lightingCases = [
+      "low_light_underexposed",
+      "direct_flash_dark_background",
+      "blocking_glare",
+      "mixed_color_light"
+    ].map((caseId) =>
+      catalog.caseGroups.failureCases.find(
+        (definition: any) => definition.caseId === caseId
+      )
+    );
+
+    for (const definition of lightingCases) {
+      expect(definition).toEqual(
+        expect.objectContaining({
+          scientificName: "",
+          expectedAlternatives: expect.arrayContaining(["retake required"]),
+          distinguishingFocus: expect.arrayContaining([
+            "empty taxon fields",
+            "low confidence"
+          ])
+        })
+      );
+    }
   });
 
   it("allows only commercially compatible copied-media rights", () => {
