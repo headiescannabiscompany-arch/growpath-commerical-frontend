@@ -47,6 +47,7 @@ describe("providerEvidencePayload", () => {
     ]);
 
     expect(payload.evidenceAssetIds).toEqual(["photo-1", "video-1"]);
+    expect(payload.imageEvidenceAssetIds).toEqual(["photo-1"]);
     expect(payload.images).toEqual(["/uploads/photo.jpg"]);
     expect(payload.videos).toEqual(["https://cdn.example.test/video.mp4"]);
     expect(payload.media).toHaveLength(2);

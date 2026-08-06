@@ -111,7 +111,8 @@ export default function StressTestToolRoute() {
       aiPrefill={{
         buttonLabel: "Fill stress recovery from grow",
         clearUnfilled: true,
-        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        evidenceAssetIds: () =>
+          providerEvidencePayload(evidenceAssets).imageEvidenceAssetIds,
         buildMessage: () =>
           `Prefill this Stress/Recovery record from the selected grow and plant's environment excursions, missed watering/feed events, alerts, logs, tasks, diagnoses, pheno history, and attached before/after photos or video. Return JSON only with exactly these keys: {"stressType":"string","stage":"string","severity":"string","recoveryDays":"string","hoursToRecover":"string","damageScore":"string","vigorScore":"string","stabilitySignals":"string","notes":"string"}. Scores are 0-10 and must be supported by saved observations; do not invent them. Distinguish the original stress from recovery evidence. Leave unknown fields blank. In notes summarize timing, evidence, uncertainty, and what follow-up media or readings would confirm resilience.`
       }}

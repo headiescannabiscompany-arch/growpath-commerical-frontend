@@ -84,6 +84,10 @@ export function providerEvidencePayload(
   }));
   return {
     evidenceAssetIds: media.map((asset) => asset.id).filter(Boolean),
+    imageEvidenceAssetIds: media
+      .filter((asset) => asset.type === "photo")
+      .map((asset) => asset.id)
+      .filter(Boolean),
     images: media.filter((asset) => asset.type === "photo").map((asset) => asset.url),
     videos: media.filter((asset) => asset.type === "video").map((asset) => asset.url),
     media

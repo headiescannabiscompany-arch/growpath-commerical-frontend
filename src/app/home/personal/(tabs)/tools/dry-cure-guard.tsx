@@ -257,7 +257,8 @@ export default function DryCureGuardToolScreen() {
       aiPrefill={{
         buttonLabel: "Fill dry/cure review from records",
         clearUnfilled: true,
-        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        evidenceAssetIds: () =>
+          providerEvidencePayload(evidenceAssets).imageEvidenceAssetIds,
         buildMessage: () =>
           `Prefill this Dry/Cure Guard review from the selected grow's harvest batch, dry/cure records, room or device telemetry, logged temperature/RH, surface temperature, jar readings, tasks, and attached photos/video. Return JSON only with exactly these keys: {"mode":"string","daysInStage":"string","dryRoomTemp":"string","tempUnit":"string","dryRoomRH":"string","surfaceTemp":"string","jarRH":"string","hoursAtConditions":"string","measuredAt":"string","measurementSource":"string","harvestBatchId":"string","lightExposure":"string","airflow":"string","budDensity":"string","observations":"string"}. Numeric room temperature, surface temperature, room RH, jar RH, duration, and days in stage must come from saved measurements or explicit dated records; never estimate them from an image. Light exposure may be dark, brief_work_light, continuous_indirect, direct_light, or unknown and must come from an explicit record, not a visual guess. Media may support visible density, drying structure, surface condition, or airflow setup, but cannot diagnose or rule mold in or out. Leave unknowns blank. In observations summarize aroma/texture notes, evidence limitations, and the exact sensor or close-up checks still needed.`
       }}

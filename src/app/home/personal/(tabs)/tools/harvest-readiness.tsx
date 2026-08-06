@@ -73,9 +73,7 @@ function HarvestPhotoAnalyzer({
   const mountedAnalysisRef = useRef(initialAnalysis);
   const evidence = providerEvidencePayload(evidenceAssets);
   const photoCount = evidence.images.length;
-  const photoEvidenceAssetIds = evidence.media
-    .filter((item) => item.type === "photo")
-    .map((item) => item.id);
+  const photoEvidenceAssetIds = evidence.imageEvidenceAssetIds;
 
   useEffect(() => {
     let active = true;

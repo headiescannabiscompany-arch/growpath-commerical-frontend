@@ -115,7 +115,8 @@ export default function CropSteeringProjectToolRoute() {
       aiPrefill={{
         buttonLabel: "Review steering options from grow",
         clearUnfilled: true,
-        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        evidenceAssetIds: () =>
+          providerEvidencePayload(evidenceAssets).imageEvidenceAssetIds,
         buildMessage: () =>
           `Prefill this optional Crop Steering entry from the selected grow/plant stage, substrate/media, pot size, irrigation events, dryback or moisture telemetry, input/runoff EC and pH, PPFD/DLI, VPD, air temperature, relative humidity, leaf temperature, CO2, recipe, nutrient antagonism warnings, stress history, and attached media. Return JSON only with exactly these string keys: steeringIntent, stage, phase, medium, drybackPercent, irrigationTiming, dli, ppfd, vpd, airTemperature, relativeHumidity, leafTemperature, co2, temperatureUnit, inputEC, runoffEC, inputPH, runoffPH, recipeUsed, kLevel, caMgResponse, rootZoneCondition, recoveryHours, plantResponse, lightChange, techniquesToConsider, notes. Measurements must come from saved records and include no invented targets. Describe techniquesToConsider as optional, conservative choices appropriate to the actual medium and stage, including prerequisites and stop conditions; do not prescribe aggressive dryback, EC stacking, or light increases when data is missing or stress is unresolved. Leave unknowns blank. In notes explain evidence, uncertainty, recent stress, and measurements needed before applying a technique.`
       }}
