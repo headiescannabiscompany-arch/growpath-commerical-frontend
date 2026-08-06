@@ -379,7 +379,7 @@ export default function DiagnoseRoute({
             plantId,
             context,
             photoUrls: evidence.images,
-            evidenceAssetIds: evidence.evidenceAssetIds
+            evidenceAssetIds: evidence.imageEvidenceAssetIds
           })
         : await analyzeDiagnosis({ growId, plantId, ...context });
       const normalized = normalizeDiagnosisResponse(response);
@@ -488,7 +488,7 @@ export default function DiagnoseRoute({
             plantId,
             context: followUpContext,
             photoUrls: evidence.images,
-            evidenceAssetIds: evidence.evidenceAssetIds
+            evidenceAssetIds: evidence.imageEvidenceAssetIds
           })
         : await analyzeDiagnosis({ growId, plantId, ...followUpContext });
       const normalized = normalizeDiagnosisResponse(response);

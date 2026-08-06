@@ -59,7 +59,10 @@ export type EvidenceAssetCreateInput = Omit<
 >;
 
 export type ProviderEvidencePayload = {
+  /** All durable uploaded evidence IDs. Use this for persistence and audit trails. */
   evidenceAssetIds: string[];
+  /** Durable uploaded photo IDs only. Use this for photo-analysis API requests. */
+  imageEvidenceAssetIds: string[];
   images: string[];
   videos: string[];
   media: Array<{

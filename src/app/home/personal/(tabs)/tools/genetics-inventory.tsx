@@ -85,7 +85,8 @@ export default function GeneticsInventoryToolRoute() {
       aiPrefill={{
         buttonLabel: "Fill genetics record from grow",
         clearUnfilled: true,
-        evidenceAssetIds: () => providerEvidencePayload(evidenceAssets).evidenceAssetIds,
+        evidenceAssetIds: () =>
+          providerEvidencePayload(evidenceAssets).imageEvidenceAssetIds,
         buildMessage: () =>
           `Prefill this Genetics Inventory record from the selected grow and plant, seed/package or source notes, clone history, pheno records, stress/recovery, feeding response, flower timeline, harvest reviews, and attached documentation media. Return JSON only with exactly these string keys: cultivar, breeder, parentage, seedType, materialType, feedingResponse, rootingBehavior, flowerTime, stressNotes, aromaFlavorNotes, provenanceNotes. Breeder, cultivar, parentage, seed type, and material type must come from explicit saved provenance or readable documentation; never infer them from plant appearance. Media can support visible phenotype documentation but not lineage. Leave unknowns blank. In provenanceNotes distinguish verified facts, user-entered claims, AI summaries, conflicts, and missing package/source documentation.`
       }}

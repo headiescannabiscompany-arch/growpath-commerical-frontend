@@ -1075,7 +1075,7 @@ export default function SpeciesCropIdToolRoute() {
         buttonLabel: "Identify Plant from Photos",
         clearUnfilled: false,
         preserveAllExistingFields: true,
-        evidenceAssetIds: () => uploadedEvidence.evidenceAssetIds,
+        evidenceAssetIds: () => uploadedEvidence.imageEvidenceAssetIds,
         isReady: () =>
           uploadedEvidence.images.length > 0 && !locationBusy && !evidenceBusy,
         notReadyMessage:

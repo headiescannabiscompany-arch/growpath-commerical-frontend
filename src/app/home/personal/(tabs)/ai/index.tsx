@@ -17,6 +17,7 @@ import {
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { getFacilityTasks } from "@/api/facilityTasks";
+import { providerEvidencePayload } from "@/api/evidence";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import type { EvidenceAsset } from "@/types/evidence";
 import {
@@ -730,11 +731,7 @@ export default function AiScreen({
       facilityId: activeFacilityId || undefined,
       workspaceType,
       conversationId: conversationId || undefined,
-      evidenceAssetIds: evidenceAssets
-        .filter(
-          (asset) => asset.uploadStatus === "uploaded" && Boolean(asset._id || asset.id)
-        )
-        .map((asset) => String(asset._id || asset.id)),
+      evidenceAssetIds: providerEvidencePayload(evidenceAssets).imageEvidenceAssetIds,
       context: context ? assistantContext() : { grows: [], logs: [], tasks: [] }
     });
 

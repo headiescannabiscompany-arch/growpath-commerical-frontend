@@ -376,6 +376,68 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(screen.queryByText("Confirm & Save to Grow")).toBeNull();
   }, 10_000);
 
+  it("sends only uploaded photos to AI while retaining the source video in the saved run", async () => {
+    mockSearchParams = {};
+    mockEvidenceAssets = [
+      {
+        id: "frame-photo-1",
+        _id: "frame-photo-1",
+        assetType: "photo",
+        durableUrl: "https://example.com/extracted-frame.jpg",
+        uploadStatus: "uploaded",
+        purpose: "other",
+        qualityWarnings: []
+      },
+      {
+        id: "source-video-1",
+        _id: "source-video-1",
+        assetType: "video",
+        durableUrl: "https://example.com/source-video.mov",
+        uploadStatus: "uploaded",
+        purpose: "other",
+        qualityWarnings: []
+      }
+    ];
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Mustard",
+        scientificName: "Brassica spp.",
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "medium"
+      }),
+      provider: "openai",
+      evidenceUsed: ["frame-photo-1"],
+      mediaAnalysis: { photosAnalyzed: 1 }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({ evidenceAssetIds: ["frame-photo-1"] })
+      )
+    );
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          evidenceAssetIds: ["frame-photo-1", "source-video-1"],
+          mediaEvidence: expect.arrayContaining([
+            expect.objectContaining({ id: "frame-photo-1", type: "photo" }),
+            expect.objectContaining({ id: "source-video-1", type: "video" })
+          ]),
+          imageAnalysis: expect.objectContaining({
+            photoCount: 1,
+            photosAnalyzed: 1
+          })
+        })
+      )
+    );
+  });
+
   it("shows a defensible non-cannabis common candidate when exact species is uncertain", async () => {
     mockSearchParams = {};
     mockAskPersonalAssistant.mockResolvedValue({

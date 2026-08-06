@@ -257,7 +257,7 @@ export default function IpmScoutToolRoute() {
       aiPrefill={{
         buttonLabel: "Analyze Photos & Prefill Scout",
         clearUnfilled: true,
-        evidenceAssetIds: () => evidencePayload.evidenceAssetIds,
+        evidenceAssetIds: () => evidencePayload.imageEvidenceAssetIds,
         isReady: () => evidencePayload.images.length > 0,
         notReadyMessage:
           "Upload at least one clear photo before asking AI to inspect the scout evidence. You can still complete the form manually.",
