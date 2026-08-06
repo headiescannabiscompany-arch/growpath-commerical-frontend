@@ -30,13 +30,15 @@ import {
   type GrowpathModuleRecord,
   type GrowpathModuleUserDecision
 } from "@/api/growpathModules";
-import { updateToolRun, type ToolRun } from "@/api/toolRuns";
+import { listToolRuns, updateToolRun, type ToolRun } from "@/api/toolRuns";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
 
 const PLANT_ID_AI_PROMPT = `You are GrowPathAI's plant identification assistant. Act like a cautious field botanist, not a one-photo image-matching toy.
 
 Inspect the attached image pixels first. Use user-entered context and selected private grow/plant context only when supplied. Narrow in this order: broad plant group, morphology, likely family, possible genera, then species only when diagnostic evidence supports it. Consider growth habit, leaf arrangement/type/margin/venation, stems, flower symmetry and parts, inflorescence, fruit/seed, special structures, habitat, geography, season, and whether the plant is wild or cultivated.
+
+Assess the usable plant detail before naming a crop. Direct flash against a dark background, clipped highlights, deep shadow, glare, uncertain color, blur, or a target that occupies too little of the frame makes the evidence limited when diagnostic leaf, stem, flower, or fruit characters cannot be read reliably. In that state set imageQuality to "limited" or "unusable", visualConfidence to "low", leave userEnteredName and scientificName blank, retain only cautious broader candidates, and request evenly lit daylight or diffuse-light replacements. Do not upgrade the identity merely because the same unchanged images are submitted again.
 
 Only populate growing setting, habitat, visible surface substrate, or nearby associated plants when the photos directly support them or the user supplied them. Do not populate cultivar, wild-versus-cultivated provenance, location or region, observation date or season, sensory traits, or plant-size measurements from image analysis. Leave unsupported and user-only fields blank instead of inventing them.
 
@@ -130,7 +132,255 @@ function normalizeScientificName(value: unknown) {
   return name;
 }
 
-function buildIdentificationDraft(parsed: Record<string, any>) {
+type PlantIdVisionAssessment = {
+  performed: boolean;
+  reportedQuality: "usable" | "limited" | "unusable";
+  reportedConfidence: "high" | "medium" | "low";
+  quality: "usable" | "limited" | "unusable";
+  confidence: "high" | "medium" | "low";
+  identityKey: string;
+  sameEvidenceConflict: boolean;
+  withholdIdentity: boolean;
+  downgradeCandidates: boolean;
+  limitations: string[];
+};
+
+function plantIdVisionChoice<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  fallback: T
+): T {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
+  return (allowed as readonly string[]).includes(normalized)
+    ? (normalized as T)
+    : fallback;
+}
+
+function plantIdIdentityKey(parsed: Record<string, any>) {
+  const normalizeIdentityToken = (value: unknown) =>
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  const normalizedNames = (values: unknown[]) =>
+    Array.from(
+      new Set(
+        values
+          .map(normalizeIdentityToken)
+          .filter(Boolean)
+          .filter((value) => !unresolvedCropName(value))
+      )
+    ).sort();
+  const identityNames = normalizedNames([
+    parsed.userEnteredName,
+    normalizeScientificName(parsed.scientificName),
+    ...stringList(parsed.commonNames),
+    ...(Array.isArray(parsed.candidates)
+      ? parsed.candidates.flatMap((candidate: any) => [
+          normalizeScientificName(candidate?.scientificName),
+          ...stringList(candidate?.commonNames)
+        ])
+      : [])
+  ]);
+  const likelyFamily = normalizedNames([parsed.likelyFamily]);
+  const possibleGenera = normalizedNames(stringList(parsed.possibleGenera));
+  if (!identityNames.length && !likelyFamily.length && !possibleGenera.length) {
+    return "";
+  }
+  return JSON.stringify({ identityNames, likelyFamily, possibleGenera });
+}
+
+function evidenceReviewKey(evidenceAssetIds: unknown) {
+  return Array.from(new Set(stringList(evidenceAssetIds).map(String)))
+    .sort()
+    .join("|");
+}
+
+function explicitUserIdentityClaim(payload: Record<string, any>) {
+  const provenance = payload.identityInputProvenance || {};
+  const providedFields = new Set(stringList(provenance.providedFields));
+  const isUserEntry = provenance.source === "user_entry";
+  const userEnteredName =
+    isUserEntry && providedFields.has("userEnteredName")
+      ? String(provenance.userEnteredName || "").trim()
+      : "";
+  const scientificName =
+    isUserEntry && providedFields.has("scientificName")
+      ? String(provenance.scientificName || "").trim()
+      : "";
+  const commonNames =
+    isUserEntry && providedFields.has("commonNames")
+      ? stringList(provenance.commonNames)
+      : [];
+  const cultivar =
+    isUserEntry && providedFields.has("cultivar")
+      ? String(provenance.cultivar || "").trim()
+      : "";
+  const primaryName = userEnteredName || commonNames[0] || scientificName;
+  return {
+    hasIdentity: Boolean(primaryName),
+    primaryName,
+    scientificName,
+    commonNames,
+    cultivar,
+    invalidScientificName: Boolean(
+      scientificName && !normalizeScientificName(scientificName)
+    )
+  };
+}
+
+function savedPlantIdAssessment(run: ToolRun): PlantIdVisionAssessment | null {
+  const inputs = run.inputs || run.input || run.params || {};
+  const outputs = run.outputs || run.output || run.result || {};
+  const imageAnalysis = inputs.imageAnalysis || outputs.imageAnalysis || {};
+  if (imageAnalysis.requested !== true) return null;
+  const identificationDraft =
+    inputs.identificationDraft || outputs.identificationDraft || {};
+  const parsed = {
+    // Hydrated comparison is AI-to-AI only. Never mix ordinary form inputs or
+    // explicit user identity provenance into the prior AI identity signature.
+    userEnteredName: "",
+    scientificName: "",
+    commonNames: "",
+    likelyFamily: identificationDraft.likelyFamily || outputs.likelyFamily || "",
+    possibleGenera: identificationDraft.possibleGenera || outputs.possibleGenera || [],
+    candidates: identificationDraft.candidates || outputs.candidates || []
+  };
+  const quality = plantIdVisionChoice(
+    imageAnalysis.quality,
+    ["usable", "limited", "unusable"] as const,
+    "limited"
+  );
+  const confidence = plantIdVisionChoice(
+    imageAnalysis.confidence,
+    ["high", "medium", "low"] as const,
+    "low"
+  );
+  const performed = imageAnalysis.performed === true;
+  const limitations = stringList(imageAnalysis.limitations);
+  const sameEvidenceConflict = limitations.some((item) =>
+    /same unchanged evidence produced a conflicting identity/i.test(item)
+  );
+  const identityKey = plantIdIdentityKey(parsed);
+  return {
+    performed,
+    reportedQuality: quality,
+    reportedConfidence: confidence,
+    quality,
+    confidence,
+    identityKey,
+    sameEvidenceConflict,
+    withholdIdentity: !performed || quality !== "usable" || confidence !== "high",
+    downgradeCandidates:
+      !performed || quality !== "usable" || confidence === "low" || sameEvidenceConflict,
+    limitations
+  };
+}
+
+function assessPlantIdVisionReply({
+  parsed,
+  response,
+  previous
+}: {
+  parsed: Record<string, any>;
+  response: Record<string, any>;
+  previous?: PlantIdVisionAssessment;
+}): PlantIdVisionAssessment {
+  const responseLimitations = Array.isArray(response.limitations)
+    ? response.limitations.map(String)
+    : [];
+  const reportsNoVision = responseLimitations.some((item) =>
+    /text[- ]only|cannot (inspect|analyze|view)|image pixels? (were )?not|visual analysis (was )?not/i.test(
+      item
+    )
+  );
+  const evidenceUsed = Array.isArray(response.evidenceUsed)
+    ? response.evidenceUsed.filter(Boolean)
+    : [];
+  const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
+  const performed =
+    String(parsed.imageAnalysisPerformed || "").toLowerCase() === "true" &&
+    evidenceUsed.length > 0 &&
+    photosAnalyzed > 0 &&
+    !reportsNoVision;
+  const reportedQuality = plantIdVisionChoice(
+    parsed.imageQuality,
+    ["usable", "limited", "unusable"] as const,
+    "limited"
+  );
+  const reportedConfidence = plantIdVisionChoice(
+    parsed.visualConfidence,
+    ["high", "medium", "low"] as const,
+    "low"
+  );
+  const identityKey = plantIdIdentityKey(parsed);
+  const identityChanged = Boolean(
+    previous?.identityKey && identityKey && previous.identityKey !== identityKey
+  );
+  const unsupportedIdentityAppeared = Boolean(
+    previous && !previous.identityKey && identityKey && previous.withholdIdentity
+  );
+  const confidenceRank: Record<"high" | "medium" | "low", number> = {
+    low: 0,
+    medium: 1,
+    high: 2
+  };
+  const unchangedEvidenceQualityUpgrade = Boolean(
+    previous &&
+    ((previous.quality !== "usable" && reportedQuality === "usable") ||
+      confidenceRank[reportedConfidence] > confidenceRank[previous.confidence])
+  );
+  const sameEvidenceConflict =
+    identityChanged || unsupportedIdentityAppeared || unchangedEvidenceQualityUpgrade;
+  const quality = sameEvidenceConflict ? "limited" : reportedQuality;
+  const confidence =
+    !performed ||
+    quality !== "usable" ||
+    reportedConfidence === "low" ||
+    sameEvidenceConflict
+      ? "low"
+      : reportedConfidence;
+  const withholdIdentity = !performed || quality !== "usable" || confidence !== "high";
+  const downgradeCandidates =
+    !performed || quality !== "usable" || confidence === "low" || sameEvidenceConflict;
+  const limitations = [
+    ...responseLimitations,
+    ...(reportedQuality !== "usable"
+      ? [
+          "The submitted views did not provide consistently usable diagnostic detail. Retake the whole plant and diagnostic structures in even daylight or diffuse light without direct-flash glare or deep shadow."
+        ]
+      : []),
+    ...(performed && quality === "usable" && confidence !== "high"
+      ? [
+          "The image review supports only a candidate, not an identity-field prefill. Add the requested diagnostic views before promoting a plant name into the form."
+        ]
+      : []),
+    ...(sameEvidenceConflict
+      ? [
+          "A repeated review of the same unchanged evidence produced a conflicting identity or unsupported quality/confidence upgrade. The working name was withheld until the evidence changes."
+        ]
+      : [])
+  ].filter((item, index, items) => item && items.indexOf(item) === index);
+  return {
+    performed,
+    reportedQuality,
+    reportedConfidence,
+    quality,
+    confidence,
+    identityKey,
+    sameEvidenceConflict,
+    withholdIdentity,
+    downgradeCandidates,
+    limitations
+  };
+}
+
+function buildIdentificationDraft(
+  parsed: Record<string, any>,
+  assessment?: PlantIdVisionAssessment
+) {
   const candidates = Array.isArray(parsed.candidates)
     ? parsed.candidates.slice(0, 5).map((candidate: any) => {
         const suppliedScientificName = String(candidate?.scientificName || "").trim();
@@ -144,29 +394,57 @@ function buildIdentificationDraft(parsed: Record<string, any>) {
             suppliedRank === "species" && !scientificName
               ? "working_candidate"
               : suppliedRank,
-          confidence: scientificNameWithheld
-            ? "low"
-            : String(candidate?.confidence || "low").trim(),
+          confidence:
+            scientificNameWithheld || assessment?.downgradeCandidates
+              ? "low"
+              : String(candidate?.confidence || "low").trim(),
           evidence: stringList(candidate?.evidence),
           counterEvidence: [
             ...stringList(candidate?.counterEvidence),
             ...(scientificNameWithheld
               ? ["The supplied scientific-name output was not a usable botanical name."]
-              : [])
+              : []),
+            ...(assessment?.sameEvidenceConflict ? assessment.limitations : [])
           ],
           missingEvidence: stringList(candidate?.missingEvidence)
         };
       })
     : [];
+  if (!candidates.length && assessment?.identityKey) {
+    const suppliedName = String(parsed.userEnteredName || "").trim();
+    const candidateCommonNames = [
+      ...(!unresolvedCropName(suppliedName) ? [suppliedName] : []),
+      ...stringList(parsed.commonNames)
+    ].filter((item, index, items) => item && items.indexOf(item) === index);
+    candidates.push({
+      scientificName: normalizeScientificName(parsed.scientificName),
+      commonNames: candidateCommonNames,
+      rank: "working_candidate",
+      confidence: assessment.downgradeCandidates ? "low" : assessment.confidence,
+      evidence: stringList(parsed.evidence),
+      counterEvidence: assessment.withholdIdentity ? assessment.limitations : [],
+      missingEvidence: stringList(parsed.missingEvidence)
+    });
+  }
   return {
     broadGroup: String(parsed.broadGroup || "unknown").trim(),
     likelyFamily: String(parsed.likelyFamily || "").trim(),
     possibleGenera: stringList(parsed.possibleGenera),
     candidates,
     evidence: stringList(parsed.evidence),
-    counterEvidence: stringList(parsed.counterEvidence),
+    counterEvidence: [
+      ...stringList(parsed.counterEvidence),
+      ...(assessment?.withholdIdentity ? assessment.limitations : [])
+    ].filter((item, index, items) => item && items.indexOf(item) === index),
     missingEvidence: stringList(parsed.missingEvidence),
-    requiredNextPhotos: stringList(parsed.requiredNextPhotos),
+    requiredNextPhotos: [
+      ...stringList(parsed.requiredNextPhotos),
+      ...(assessment?.withholdIdentity
+        ? [
+            "Retake the whole plant and diagnostic leaf, stem, flower, or fruit views in even daylight or diffuse light without direct-flash glare or deep shadow."
+          ]
+        : [])
+    ].filter((item, index, items) => item && items.indexOf(item) === index),
     requiredNextQuestions: stringList(parsed.requiredNextQuestions),
     sourceVerificationPerformed: false
   };
@@ -213,11 +491,13 @@ export function isCannabisGenusIdentification(outputs: Record<string, any>) {
 function normalizeCropIdentityPrefillField({
   fieldKey,
   value,
-  parsed
+  parsed,
+  assessment
 }: {
   fieldKey: string;
   value: unknown;
   parsed: Record<string, any>;
+  assessment?: PlantIdVisionAssessment;
 }) {
   if (
     [
@@ -234,7 +514,9 @@ function normalizeCropIdentityPrefillField({
     // date selection, or measurement. A model reply cannot establish them from pixels.
     return "";
   }
-  if (fieldKey === "scientificName") return normalizeScientificName(value);
+  if (fieldKey === "scientificName") {
+    return assessment?.withholdIdentity ? "" : normalizeScientificName(value);
+  }
   if (
     [
       "commonNames",
@@ -244,9 +526,11 @@ function normalizeCropIdentityPrefillField({
       "specialStructures"
     ].includes(fieldKey)
   ) {
+    if (fieldKey === "commonNames" && assessment?.withholdIdentity) return "";
     return stringList(value).join(", ");
   }
   if (fieldKey !== "userEnteredName") return undefined;
+  if (assessment?.withholdIdentity) return "";
   const suppliedName = String(value || "").trim();
   if (suppliedName && !unresolvedCropName(suppliedName)) return suppliedName;
   return String(parsed.commonNames || "")
@@ -410,6 +694,9 @@ export default function SpeciesCropIdToolRoute() {
     useState(false);
   const [activeToolRun, setActiveToolRun] = useState<ToolRun | null>(null);
   const activeToolRunRef = useRef<ToolRun | null>(null);
+  const aiReviewByEvidenceRef = useRef(new Map<string, PlantIdVisionAssessment>());
+  const hydratedEvidenceReviewKeysRef = useRef(new Set<string>());
+  const evidenceReviewHydrationPromisesRef = useRef(new Map<string, Promise<void>>());
   const [fieldStudyNotice, setFieldStudyNotice] = useState("");
   const [fieldStudyError, setFieldStudyError] = useState("");
   const evidenceInputKey = useMemo(
@@ -420,7 +707,9 @@ export default function SpeciesCropIdToolRoute() {
             asset.id || asset._id || "",
             asset.uploadStatus,
             asset.durableUrl || "",
-            asset.updatedAt || ""
+            asset.updatedAt || "",
+            asset.aiUsable === false ? "not-ai-usable" : "ai-usable",
+            (asset.qualityWarnings || []).join(",")
           ].join(":")
         )
         .join("|"),
@@ -430,6 +719,47 @@ export default function SpeciesCropIdToolRoute() {
     () => providerEvidencePayload(evidenceAssets),
     [evidenceAssets]
   );
+  const activeEvidenceReviewKey = useMemo(
+    () => evidenceReviewKey(uploadedEvidence.imageEvidenceAssetIds),
+    [uploadedEvidence.imageEvidenceAssetIds]
+  );
+
+  async function hydratePriorPlantIdReview() {
+    const key = activeEvidenceReviewKey;
+    if (
+      !key ||
+      aiReviewByEvidenceRef.current.has(key) ||
+      hydratedEvidenceReviewKeysRef.current.has(key)
+    ) {
+      return;
+    }
+    const pending = evidenceReviewHydrationPromisesRef.current.get(key);
+    if (pending) return pending;
+    const hydration = (async () => {
+      const runs = await listToolRuns({ toolType: "species-crop-id" });
+      const previousRun = runs.find((run) => {
+        const inputs = run.inputs || run.input || run.params || {};
+        const storedFingerprint = String(
+          inputs.imageAnalysis?.evidenceFingerprint || ""
+        ).trim();
+        if (storedFingerprint) return storedFingerprint === key;
+        const priorIds =
+          inputs.imageAnalysis?.evidenceUsed?.length > 0
+            ? inputs.imageAnalysis.evidenceUsed
+            : inputs.evidenceAssetIds;
+        return evidenceReviewKey(priorIds) === key;
+      });
+      const priorAssessment = previousRun ? savedPlantIdAssessment(previousRun) : null;
+      if (priorAssessment && !aiReviewByEvidenceRef.current.has(key)) {
+        aiReviewByEvidenceRef.current.set(key, priorAssessment);
+      }
+      hydratedEvidenceReviewKeysRef.current.add(key);
+    })().finally(() => {
+      evidenceReviewHydrationPromisesRef.current.delete(key);
+    });
+    evidenceReviewHydrationPromisesRef.current.set(key, hydration);
+    return hydration;
+  }
 
   const selectedFieldStudy = useMemo(
     () =>
@@ -673,7 +1003,9 @@ export default function SpeciesCropIdToolRoute() {
             Start with the whole plant and its habitat, then add sharp leaf-top,
             leaf-underside, stem/node, flower, and fruit or seed views when available. You
             can use up to 12 photos or extract still frames from one short video. Location
-            is optional and can remain private.
+            is optional and can remain private. Use even daylight or diffuse neutral
+            light; direct flash against a dark background can hide color and diagnostic
+            structure in glare, clipped highlights, and deep shadow.
           </Text>
           <MediaEvidencePicker
             aiUsable
@@ -682,7 +1014,7 @@ export default function SpeciesCropIdToolRoute() {
             extractFramesFromVideo
             maxExtractedVideoFrames={12}
             maxVideoSeconds={599}
-            purpose="other"
+            purpose="crop_identification"
             sourceContext={{ growId: growId || undefined }}
             value={evidenceAssets}
             onChange={setEvidenceAssets}
@@ -1080,6 +1412,7 @@ export default function SpeciesCropIdToolRoute() {
           uploadedEvidence.images.length > 0 && !locationBusy && !evidenceBusy,
         notReadyMessage:
           "Finish the photo upload and any active location request before starting AI identification.",
+        prepare: hydratePriorPlantIdReview,
         runAfterPrefill: true,
         buildMessage: ({ values }) =>
           `${PLANT_ID_AI_PROMPT}\n\nUser-entered context:\n${JSON.stringify(
@@ -1087,42 +1420,49 @@ export default function SpeciesCropIdToolRoute() {
             null,
             2
           )}`,
-        normalizeFieldValue: normalizeCropIdentityPrefillField,
+        normalizeFieldValue: ({ fieldKey, value, parsed, response }) =>
+          normalizeCropIdentityPrefillField({
+            fieldKey,
+            value,
+            parsed,
+            assessment: assessPlantIdVisionReply({
+              parsed,
+              response,
+              previous: aiReviewByEvidenceRef.current.get(activeEvidenceReviewKey)
+            })
+          }),
         buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
           const evidenceUsed = Array.isArray(response.evidenceUsed)
             ? response.evidenceUsed
             : [];
-          const limitations = Array.isArray(response.limitations)
-            ? response.limitations
-            : [];
-          const reportsNoVision = limitations.some((item) =>
-            /text[- ]only|cannot (inspect|analyze|view)|image pixels? (were )?not|visual analysis (was )?not/i.test(
-              String(item)
-            )
-          );
           const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
+          const assessment = assessPlantIdVisionReply({
+            parsed,
+            response,
+            previous: aiReviewByEvidenceRef.current.get(activeEvidenceReviewKey)
+          });
+          if (activeEvidenceReviewKey) {
+            aiReviewByEvidenceRef.current.set(activeEvidenceReviewKey, assessment);
+            hydratedEvidenceReviewKeysRef.current.add(activeEvidenceReviewKey);
+          }
           return {
-            identificationDraft: buildIdentificationDraft(parsed),
+            identificationDraft: buildIdentificationDraft(parsed, assessment),
             imageAnalysis: {
               requested: evidenceAssetIds.length > 0,
-              performed:
-                evidenceAssetIds.length > 0 &&
-                evidenceUsed.length > 0 &&
-                photosAnalyzed > 0 &&
-                !reportsNoVision &&
-                String(parsed.imageAnalysisPerformed || "").toLowerCase() === "true",
+              performed: evidenceAssetIds.length > 0 && assessment.performed,
               photoCount: evidenceAssetIds.length,
               photosAnalyzed,
               provider: response.provider || "assistant",
               providerModel: response.mediaAnalysis?.providerModel || null,
               providerLabel: response.providerLabel || "AI crop identity review",
-              confidence: String(parsed.visualConfidence || "low").toLowerCase(),
-              quality: String(parsed.imageQuality || "limited").toLowerCase(),
+              confidence: assessment.confidence,
+              quality: assessment.quality,
               identifyingVisualTraits: String(
                 parsed.identifyingVisualTraits || ""
               ).trim(),
               evidenceUsed,
-              limitations
+              evidenceFingerprint: activeEvidenceReviewKey,
+              limitations: assessment.limitations
             }
           };
         }
@@ -1375,57 +1715,84 @@ export default function SpeciesCropIdToolRoute() {
           multiline: true
         }
       ]}
-      validateValues={(values) => {
+      validateValues={(values, validationContext) => {
         const useful = compactValues(values);
+        if (
+          validationContext?.source === "prefill" &&
+          validationContext.metadata.imageAnalysis?.requested
+        ) {
+          // A weak but completed image review is itself a meaningful saved result:
+          // preserve "unknown crop", low confidence, and exact retake guidance rather
+          // than requiring the model to invent a form value just to pass validation.
+          return null;
+        }
         return Object.keys(useful).length
           ? null
           : "Enter at least one observed trait or proposed name, or use AI photo identification.";
       }}
-      buildPayload={(values, { growId, plantContext }) => ({
-        growId,
-        ...plantContext.toolRunContext,
-        userEnteredName: values.userEnteredName,
-        scientificName: values.scientificName,
-        cultivar: values.cultivar,
-        userConfirmed: false,
-        commonNames: values.commonNames,
-        identificationNotes: values.identificationNotes || undefined,
-        observationContext: {
-          cultivationStatus: values.cultivationStatus || "unknown",
-          setting: values.setting || "unknown",
-          region: values.region || "",
-          observationDate: values.observationDate || "",
-          habitat: values.habitat || "",
-          substrate: values.substrate || "",
-          associatedPlants: stringList(values.associatedPlants),
-          plantSize: values.plantSize || ""
-        },
-        capturedLocation: observationLocation
-          ? {
-              ...observationLocation,
-              privacy: "private",
-              userAuthorized: true
-            }
-          : undefined,
-        morphology: {
-          growthHabit: values.growthHabit || "unknown",
-          leafArrangement: values.leafArrangement || "unknown",
-          leafType: values.leafType || "unknown",
-          leafMargin: values.leafMargin || "unknown",
-          venation: values.venation || "unknown",
-          flowerPresent: values.flowerPresent || "unknown",
-          flowerSymmetry: values.flowerSymmetry || "unknown",
-          fruitPresent: values.fruitPresent || "unknown",
-          stemTraits: stringList(values.stemTraits),
-          flowerPartsVisible: stringList(values.flowerPartsVisible),
-          inflorescenceType: values.inflorescenceType || "",
-          fruitType: values.fruitType || "",
-          specialStructures: stringList(values.specialStructures),
-          sensoryTraits: stringList(values.sensoryTraits)
-        },
-        evidenceAssetIds: uploadedEvidence.evidenceAssetIds,
-        mediaEvidence: uploadedEvidence.media
-      })}
+      buildPayload={(values, { growId, plantContext, userValues }) => {
+        const identityFields = {
+          userEnteredName: String(userValues.userEnteredName || "").trim(),
+          scientificName: String(userValues.scientificName || "").trim(),
+          commonNames: stringList(userValues.commonNames),
+          cultivar: String(userValues.cultivar || "").trim()
+        };
+        const providedFields = Object.entries(identityFields)
+          .filter(([, value]) =>
+            Array.isArray(value) ? value.length > 0 : Boolean(value)
+          )
+          .map(([key]) => key);
+        return {
+          growId,
+          ...plantContext.toolRunContext,
+          userEnteredName: values.userEnteredName,
+          scientificName: values.scientificName,
+          cultivar: values.cultivar,
+          userConfirmed: false,
+          commonNames: values.commonNames,
+          identityInputProvenance: {
+            source: "user_entry",
+            providedFields,
+            ...identityFields
+          },
+          identificationNotes: values.identificationNotes || undefined,
+          observationContext: {
+            cultivationStatus: values.cultivationStatus || "unknown",
+            setting: values.setting || "unknown",
+            region: values.region || "",
+            observationDate: values.observationDate || "",
+            habitat: values.habitat || "",
+            substrate: values.substrate || "",
+            associatedPlants: stringList(values.associatedPlants),
+            plantSize: values.plantSize || ""
+          },
+          capturedLocation: observationLocation
+            ? {
+                ...observationLocation,
+                privacy: "private",
+                userAuthorized: true
+              }
+            : undefined,
+          morphology: {
+            growthHabit: values.growthHabit || "unknown",
+            leafArrangement: values.leafArrangement || "unknown",
+            leafType: values.leafType || "unknown",
+            leafMargin: values.leafMargin || "unknown",
+            venation: values.venation || "unknown",
+            flowerPresent: values.flowerPresent || "unknown",
+            flowerSymmetry: values.flowerSymmetry || "unknown",
+            fruitPresent: values.fruitPresent || "unknown",
+            stemTraits: stringList(values.stemTraits),
+            flowerPartsVisible: stringList(values.flowerPartsVisible),
+            inflorescenceType: values.inflorescenceType || "",
+            fruitType: values.fruitType || "",
+            specialStructures: stringList(values.specialStructures),
+            sensoryTraits: stringList(values.sensoryTraits)
+          },
+          evidenceAssetIds: uploadedEvidence.evidenceAssetIds,
+          mediaEvidence: uploadedEvidence.media
+        };
+      }}
       buildMetrics={(outputs) => [
         { key: "crop", label: "Working identity", value: outputs.likelyCrop },
         { key: "family", label: "Likely family", value: outputs.likelyFamily || "-" },
@@ -1460,9 +1827,50 @@ export default function SpeciesCropIdToolRoute() {
           value: outputs.userConfirmationRequired ? "Yes" : "No"
         }
       ]}
-      buildNotices={(outputs) => {
+      buildNotices={(outputs, { payload }) => {
         const warnings = Array.isArray(outputs.warnings) ? outputs.warnings : [];
+        const confirmationBlockedReason = String(
+          outputs.confirmationBlockedReason || ""
+        ).trim();
+        const userIdentityClaim = explicitUserIdentityClaim(payload);
+        const payloadImageAnalysis = payload.imageAnalysis || {};
+        const outputImageAnalysis = outputs.imageAnalysis || {};
+        const userIdentityNotVisuallyVerified =
+          [payloadImageAnalysis, outputImageAnalysis].some(
+            (analysis) =>
+              analysis.requested === true &&
+              (analysis.performed !== true ||
+                analysis.quality !== "usable" ||
+                analysis.confidence !== "high")
+          ) ||
+          [
+            ...stringList(payloadImageAnalysis.limitations),
+            ...stringList(outputImageAnalysis.limitations)
+          ].some((item) => /same unchanged evidence/i.test(item));
         return [
+          ...(outputs.confirmationAvailable === false
+            ? [
+                {
+                  key: "confirmation-blocked",
+                  severity: "high" as const,
+                  message: confirmationBlockedReason
+                    ? `Confirmation unavailable: ${confirmationBlockedReason}`
+                    : "Confirmation is unavailable until the identification evidence meets the required quality and confidence checks."
+                }
+              ]
+            : []),
+          ...(userIdentityClaim.hasIdentity &&
+          !userIdentityClaim.invalidScientificName &&
+          outputs.confirmationAvailable === true &&
+          userIdentityNotVisuallyVerified
+            ? [
+                {
+                  key: "user-entered-not-visually-verified",
+                  severity: "medium" as const,
+                  message: `User-entered identity: ${userIdentityClaim.primaryName}. The attached images did not visually verify this identity. Confirmation saves the explicit user entry, not the AI candidate.`
+                }
+              ]
+            : []),
           ...(outputs.identityConflictDetected || outputs.confidence === "low"
             ? [
                 {
@@ -1526,34 +1934,89 @@ export default function SpeciesCropIdToolRoute() {
         growId,
         plantContext
       }) => {
+        const userIdentityClaim = explicitUserIdentityClaim(payload);
+        const useUserIdentityClaim =
+          userIdentityClaim.hasIdentity && !userIdentityClaim.invalidScientificName;
+        const userCorrectionCanConfirm =
+          useUserIdentityClaim && outputs.confirmationAvailable === true;
         const cropCommonName = String(
-          outputs.likelyCrop || payload.userEnteredName || ""
+          userIdentityClaim.hasIdentity
+            ? userIdentityClaim.primaryName
+            : outputs.likelyCrop || payload.userEnteredName || ""
         ).trim();
         const invalidIdentity =
           !cropCommonName || /^(unknown crop|not confirmed)$/i.test(cropCommonName);
+        const payloadImageAnalysis = payload.imageAnalysis || {};
+        const imageAnalysis = outputs.imageAnalysis || payloadImageAnalysis;
+        const sameEvidenceConflict = [
+          ...stringList(outputs.counterEvidence),
+          ...stringList(outputs.identificationDraft?.counterEvidence),
+          ...stringList(payload.identificationDraft?.counterEvidence),
+          ...stringList(imageAnalysis.limitations),
+          ...stringList(payloadImageAnalysis.limitations)
+        ].some((item) =>
+          /same unchanged evidence produced a conflicting identity/i.test(item)
+        );
+        const imageAnalysisRequested =
+          imageAnalysis.requested === true || payloadImageAnalysis.requested === true;
+        const imageEvidenceBlocksConfirmation =
+          imageAnalysisRequested &&
+          ((imageAnalysis.requested === true &&
+            (imageAnalysis.performed !== true ||
+              imageAnalysis.quality !== "usable" ||
+              imageAnalysis.confidence !== "high")) ||
+            (payloadImageAnalysis.requested === true &&
+              (payloadImageAnalysis.performed !== true ||
+                payloadImageAnalysis.quality !== "usable" ||
+                payloadImageAnalysis.confidence !== "high")));
         const target = plantContext.plantId ? "Plant" : "Grow";
         const identity = {
           growId,
           cropCommonName,
-          scientificName: String(
-            outputs.scientificName || payload.scientificName || ""
-          ).trim(),
-          commonNames: stringList(outputs.commonNames || payload.commonNames),
-          cultivar: String(
-            outputs.cultivarOrStrain || outputs.cultivar || payload.cultivar || ""
-          ).trim(),
-          cropProfileId: outputs.cropProfileSuggestion?.cropProfileId || null,
+          scientificName: useUserIdentityClaim
+            ? userIdentityClaim.scientificName
+            : String(outputs.scientificName || payload.scientificName || "").trim(),
+          commonNames: useUserIdentityClaim
+            ? userIdentityClaim.commonNames
+            : stringList(outputs.commonNames || payload.commonNames),
+          cultivar: useUserIdentityClaim
+            ? userIdentityClaim.cultivar
+            : String(
+                outputs.cultivarOrStrain || outputs.cultivar || payload.cultivar || ""
+              ).trim(),
+          cropProfileId: useUserIdentityClaim
+            ? null
+            : outputs.cropProfileSuggestion?.cropProfileId || null,
           confidence: "user_confirmed",
           sourceToolRunId: String(toolRun?.id || toolRun?._id || "") || null,
           userConfirmed: true as const
         };
+        const decisionOutputs = useUserIdentityClaim
+          ? {
+              ...outputs,
+              likelyCrop: cropCommonName,
+              scientificName: identity.scientificName,
+              commonNames: identity.commonNames,
+              cultivar: identity.cultivar,
+              identitySource: "user_entry",
+              identityVisuallyVerified: false
+            }
+          : outputs;
 
         const actions: ToolResultAction[] = [
           {
             key: "confirm-crop-identity",
             label: growId ? `Confirm & Save to ${target}` : "Confirm in Saved Run",
             pendingLabel: "Saving...",
-            disabled: invalidIdentity,
+            disabled:
+              invalidIdentity ||
+              userIdentityClaim.invalidScientificName ||
+              outputs.confirmationAvailable === false ||
+              (!userCorrectionCanConfirm &&
+                (imageEvidenceBlocksConfirmation ||
+                  sameEvidenceConflict ||
+                  outputs.identityConflictDetected === true ||
+                  payload.identityConflictDetected === true)),
             successMessage: growId
               ? `Confirmed crop identity saved to ${target.toLowerCase()}.`
               : "Confirmed identity saved to this run.",
@@ -1565,7 +2028,7 @@ export default function SpeciesCropIdToolRoute() {
               }
               await recordCropIdentificationDecision({
                 decision: "accepted",
-                outputs,
+                outputs: decisionOutputs,
                 toolRun,
                 moduleRecord
               });

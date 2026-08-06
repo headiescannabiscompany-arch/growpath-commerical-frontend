@@ -101,6 +101,18 @@ describe("GrowPath knowledge registries", () => {
       "low overall and candidate confidence plus a prominent identity-not-verified warning when proposed identity fields conflict or contain an unusable scientific name"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "crop-identification retake-required state for dark, backlit, harsh-flash, deep-shadow, glare, clipped-highlight, or color-cast evidence that hides diagnostic characters"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not auto-populate or auto-upgrade a crop or species identity from limited or unusable lighting evidence; preserve directly visible morphology only, require neutral or diffuse-light retakes, and keep user-entered names labeled as user claims."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "provider crop-identification quality and confidence preserved as ceilings that the calculator and saved ToolRun may retain or downgrade but never upgrade"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "explicit low-confidence disagreement when unchanged evidence produces a conflicting identity or unsupported quality upgrade"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "user correction that preserves the rejected AI draft, presents the corrected common identity first, leaves unknown exact species unverified, and requests discriminating replacement photos"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredInputs).toContain(

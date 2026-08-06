@@ -87,7 +87,13 @@ type BackendCalculatorToolScreenProps = {
   experienceMessage?: string;
   aiCreditMessage?: string;
   fields: ToolField[];
-  validateValues?: (values: Record<string, string>) => string | null;
+  validateValues?: (
+    values: Record<string, string>,
+    context?: {
+      metadata: Record<string, any>;
+      source: "manual" | "prefill";
+    }
+  ) => string | null;
   buildPayload: (
     values: Record<string, string>,
     context: {
@@ -95,10 +101,14 @@ type BackendCalculatorToolScreenProps = {
       facilityId: string;
       commercialAccountId: string;
       plantContext: ReturnType<typeof useToolPlantContext>;
+      userValues: Record<string, string>;
     }
   ) => Record<string, any>;
   buildMetrics?: (outputs: Record<string, any>) => ToolResultMetric[];
-  buildNotices?: (outputs: Record<string, any>) => ToolResultNotice[];
+  buildNotices?: (
+    outputs: Record<string, any>,
+    context: { payload: Record<string, any> }
+  ) => ToolResultNotice[];
   buildDetails?: (outputs: Record<string, any>) => React.ReactNode;
   defaultLogTitle: (outputs: Record<string, any>) => string;
   defaultTask?: (outputs: Record<string, any>) =>
@@ -146,6 +156,7 @@ type BackendCalculatorToolScreenProps = {
     evidenceAssetIds?: () => string[];
     isReady?: () => boolean;
     notReadyMessage?: string;
+    prepare?: () => void | Promise<void>;
     buildMessage: (context: {
       growId: string;
       plantId: string;
@@ -155,6 +166,8 @@ type BackendCalculatorToolScreenProps = {
       fieldKey: string;
       value: unknown;
       parsed: Record<string, any>;
+      response: PersonalAssistantResponse;
+      evidenceAssetIds: string[];
     }) => string | undefined;
     runAfterPrefill?: boolean;
     buildPayloadMetadata?: (context: {
@@ -441,6 +454,13 @@ export default function BackendCalculatorToolScreen({
     setPrefilling(true);
     setFeedback("");
     try {
+      await aiPrefill.prepare?.();
+      if (
+        inputRevisionRef.current !== requestInputRevision ||
+        latestExternalInputKeyRef.current !== requestExternalInputKey
+      ) {
+        return;
+      }
       const evidenceAssetIds = aiPrefill.evidenceAssetIds?.() || [];
       const response = await askPersonalAssistant({
         growId: growId || undefined,
@@ -450,7 +470,10 @@ export default function BackendCalculatorToolScreen({
         message: aiPrefill.buildMessage({
           growId,
           plantId: plantContext.plantId || "",
-          values
+          // AI-filled values are presentation drafts, not user claims. When this
+          // workflow preserves explicit user context, keep a later AI pass from
+          // feeding an earlier model answer back as if the user supplied it.
+          values: aiPrefill.preserveAllExistingFields ? userValuesRef.current : values
         })
       });
       if (
@@ -477,7 +500,9 @@ export default function BackendCalculatorToolScreen({
             const configuredValue = aiPrefill.normalizeFieldValue?.({
               fieldKey: field.key,
               value,
-              parsed
+              parsed,
+              response,
+              evidenceAssetIds
             });
             return [field.key, configuredValue ?? normalizedPrefillText(value)];
           })
@@ -485,14 +510,15 @@ export default function BackendCalculatorToolScreen({
       const resolvedValues = Object.fromEntries(
         fields.map((field) => {
           const existingValue = values[field.key] || "";
+          const userEnteredValue = userValuesRef.current[field.key] || "";
           const preserveExisting =
             (aiPrefill.preserveAllExistingFields ||
               aiPrefill.preserveExistingFields?.includes(field.key)) &&
-            existingValue.trim().length > 0;
+            userEnteredValue.trim().length > 0;
           return [
             field.key,
             preserveExisting
-              ? existingValue
+              ? userEnteredValue
               : (next[field.key] ?? (aiPrefill.clearUnfilled ? "" : existingValue))
           ];
         })
@@ -548,7 +574,8 @@ export default function BackendCalculatorToolScreen({
         growId,
         facilityId,
         commercialAccountId,
-        plantContext
+        plantContext,
+        userValues: userValuesRef.current
       }),
       ...aiPrefillPayload
     }),
@@ -576,7 +603,10 @@ export default function BackendCalculatorToolScreen({
       setFeedback(executionBlockedMessage);
       return;
     }
-    const validationMessage = validateValues?.(submittedValues);
+    const validationMessage = validateValues?.(submittedValues, {
+      metadata,
+      source: existingLock === "prefill" ? "prefill" : "manual"
+    });
     if (validationMessage) {
       setFeedback(validationMessage);
       return;
@@ -598,7 +628,8 @@ export default function BackendCalculatorToolScreen({
           growId,
           facilityId,
           commercialAccountId,
-          plantContext
+          plantContext,
+          userValues: userValuesRef.current
         }),
         ...metadata
       };
@@ -1118,7 +1149,7 @@ export default function BackendCalculatorToolScreen({
             metrics={buildMetrics(outputs)}
             inputs={payload}
             outputs={outputs}
-            notices={buildNotices(outputs)}
+            notices={buildNotices(outputs, { payload })}
             recommendations={
               Array.isArray(outputs.recommendations) ? outputs.recommendations : []
             }

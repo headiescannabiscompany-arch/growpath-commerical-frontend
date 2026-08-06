@@ -4,6 +4,7 @@ export type EvidenceUploadStatus = "local" | "uploading" | "uploaded" | "failed"
 
 export type EvidencePurpose =
   | "diagnosis"
+  | "crop_identification"
   | "ipm"
   | "clone"
   | "tissue_culture"

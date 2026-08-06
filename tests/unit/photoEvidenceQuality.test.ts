@@ -27,6 +27,20 @@ describe("plant review photo quality", () => {
         expect.stringMatching(/12 wide photos cannot replace three true macros/i)
       ])
     );
+    expect(PHOTO_CAPTURE_GUIDANCE.crop_identification).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/whole-plant photo/i),
+        expect.stringMatching(/leaf-top, leaf-underside, and stem-node/i),
+        expect.stringMatching(/direct flash against a dark background/i)
+      ])
+    );
+    expect(PHOTO_CAPTURE_GUIDANCE.crop_identification).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/whole-plant photo/i),
+        expect.stringMatching(/leaf-top, leaf-underside, and stem-node/i),
+        expect.stringMatching(/direct flash against a dark background/i)
+      ])
+    );
   });
 
   it("rejects an obviously tiny image before provider upload", () => {
@@ -39,6 +53,23 @@ describe("plant review photo quality", () => {
           mimeType: "image/jpeg"
         },
         "diagnosis"
+      )
+    ).toMatchObject({
+      accepted: false,
+      error: expect.stringMatching(/too small/i)
+    });
+  });
+
+  it("applies plant-review screening to dedicated crop-identification evidence", () => {
+    expect(
+      assessEvidencePhoto(
+        {
+          width: 240,
+          height: 180,
+          fileSizeBytes: 30 * 1024,
+          mimeType: "image/jpeg"
+        },
+        "crop_identification"
       )
     ).toMatchObject({
       accepted: false,
@@ -73,5 +104,22 @@ describe("plant review photo quality", () => {
     expect(
       assessEvidencePhoto({ width: 100, height: 100, fileSizeBytes: 2 * 1024 }, "product")
     ).toEqual({ accepted: true, warnings: [] });
+  });
+
+  it("applies the shared minimum-resolution screen to crop identification", () => {
+    expect(
+      assessEvidencePhoto(
+        {
+          width: 300,
+          height: 240,
+          fileSizeBytes: 40 * 1024,
+          mimeType: "image/jpeg"
+        },
+        "crop_identification"
+      )
+    ).toMatchObject({
+      accepted: false,
+      error: expect.stringMatching(/too small/i)
+    });
   });
 });

@@ -16,9 +16,21 @@ export type PhotoQualityAssessment = {
   warnings: string[];
 };
 
-const REVIEW_PURPOSES = new Set<EvidencePurpose>(["diagnosis", "ipm", "harvest"]);
+const REVIEW_PURPOSES = new Set<EvidencePurpose>([
+  "diagnosis",
+  "crop_identification",
+  "ipm",
+  "harvest"
+]);
 
 export const PHOTO_CAPTURE_GUIDANCE: Partial<Record<EvidencePurpose, string[]>> = {
+  crop_identification: [
+    "Start with a zoomed-out whole-plant photo showing growth habit and habitat.",
+    "Add sharp leaf-top, leaf-underside, and stem-node views from the same plant.",
+    "Add an open flower plus any fruit, seed, bark, or other diagnostic structure present.",
+    "Use even daylight or diffuse neutral light. Avoid direct flash against a dark background, glare, clipped highlights, and deep shadow that hide color or structure.",
+    "Keep the intended plant large enough to inspect and separate it from neighboring plants when possible."
+  ],
   diagnosis: [
     "One zoomed-out whole-plant photo showing the overall pattern.",
     "One mid-range photo showing where symptoms occur on the plant.",
