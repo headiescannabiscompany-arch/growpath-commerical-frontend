@@ -47,6 +47,8 @@ type Props = {
   videoWorkspaceType?: VideoWorkspaceType;
   videoWorkspaceId?: string;
   onBusyChange?: (busy: boolean) => void;
+  /** Existing Saved Run assets that Remove should only deselect, never delete. */
+  retainOnRemoveAssetIds?: readonly string[];
 };
 
 function localId() {
@@ -141,11 +143,13 @@ function toVideoFrameAsset(
   frame: VideoFrameCandidate,
   purpose: EvidencePurpose,
   sourceContext: EvidenceLinks,
-  aiUsable: boolean
+  aiUsable: boolean,
+  sourceVideoEvidenceAssetId: string
 ): EvidenceAsset {
   const local: EvidenceAsset = {
     id: localId(),
     ...sourceContext,
+    sourceVideoEvidenceAssetId,
     assetType: "photo",
     originalUri: frame.uri,
     mimeType: frame.mimeType,
@@ -159,7 +163,7 @@ function toVideoFrameAsset(
     qualityWarnings: [
       `Extracted from the source video at ${frame.timeSeconds.toFixed(
         1
-      )} seconds. Confirm the bud-site role, focus, and glare before analysis.`
+      )} seconds. Confirm the diagnostic plant structure, focus, color, and glare before analysis.`
     ]
   };
   const assessment = assessEvidencePhoto(local, purpose);
@@ -188,7 +192,8 @@ export default function MediaEvidencePicker({
   titleHeadingLevel,
   videoWorkspaceType,
   videoWorkspaceId,
-  onBusyChange
+  onBusyChange,
+  retainOnRemoveAssetIds = []
 }: Props) {
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
@@ -226,25 +231,33 @@ export default function MediaEvidencePicker({
     activeJobIds.size > 0 || assets.some((asset) => asset.uploadStatus === "uploading");
   const captureGuidance = PHOTO_CAPTURE_GUIDANCE[purpose] || [];
   const uploadWorkspace = useMemo(() => {
-    if (videoWorkspaceType) {
-      return {
-        workspaceType: videoWorkspaceType,
-        workspaceId: videoWorkspaceId || undefined,
-        facilityId:
-          videoWorkspaceType === "facility"
-            ? videoWorkspaceId || sourceContext.facilityId || undefined
-            : undefined
-      };
-    }
-    if (sourceContext.facilityId) {
+    const workspaceType =
+      videoWorkspaceType || (sourceContext.facilityId ? "facility" : "personal");
+    if (workspaceType === "facility") {
+      const facilityId = String(
+        videoWorkspaceId || sourceContext.facilityId || ""
+      ).trim();
       return {
         workspaceType: "facility" as const,
-        workspaceId: sourceContext.facilityId,
-        facilityId: sourceContext.facilityId
+        ...(facilityId ? { workspaceId: facilityId, facilityId } : {})
+      };
+    }
+    if (workspaceType === "commercial") {
+      const workspaceId = String(videoWorkspaceId || "").trim();
+      return {
+        workspaceType: "commercial" as const,
+        ...(workspaceId ? { workspaceId } : {})
       };
     }
     return { workspaceType: "personal" as const };
   }, [sourceContext.facilityId, videoWorkspaceId, videoWorkspaceType]);
+  const retainOnRemoveAssetIdSet = useMemo(
+    () =>
+      new Set(
+        retainOnRemoveAssetIds.map((id) => String(id || "").trim()).filter(Boolean)
+      ),
+    [retainOnRemoveAssetIds]
+  );
   const protectedPreviewInputKey = useMemo(
     () =>
       assets
@@ -678,9 +691,16 @@ export default function MediaEvidencePicker({
             void releasePendingMedia(local, uploaded);
             continue;
           }
-          const { error: _localError, ...cleanLocal } = local;
+          const {
+            error: _localError,
+            workspaceType: _localWorkspaceType,
+            workspaceId: _localWorkspaceId,
+            facilityId: _localFacilityId,
+            ...cleanLocal
+          } = local;
           const registrationInput: EvidenceAssetCreateInput = {
             ...cleanLocal,
+            ...uploadWorkspace,
             clientUploadKey: local.id,
             originalUri: uploaded.url,
             durableUrl: uploaded.url,
@@ -844,6 +864,13 @@ export default function MediaEvidencePicker({
       ) {
         return;
       }
+      const sourceVideoEvidenceAssetId = String(savedVideo?._id || "").trim();
+      if (!sourceVideoEvidenceAssetId) {
+        setVideoFeedback(
+          "The source video was saved without a durable evidence reference, so GrowPath did not extract frames. Retry the video or add sharp photos instead."
+        );
+        return;
+      }
 
       const availablePhotoSlots = Math.max(
         0,
@@ -870,16 +897,42 @@ export default function MediaEvidencePicker({
         });
         if (disposed.current || removedAssetIds.current.has(local.id)) return;
         const frameAssets = frames.map((frame) =>
-          toVideoFrameAsset(frame, purpose, sourceContext, aiUsable)
+          toVideoFrameAsset(
+            frame,
+            purpose,
+            sourceContext,
+            aiUsable,
+            sourceVideoEvidenceAssetId
+          )
         );
-        await uploadSelected(frameAssets);
+        const frameUploadResults = await uploadSelected(frameAssets);
         if (disposed.current || removedAssetIds.current.has(local.id)) return;
+        const uploadedFrameCount = frameAssets.filter(
+          (frame) =>
+            frameUploadResults.find((asset) => asset.id === frame.id)?.uploadStatus ===
+            "uploaded"
+        ).length;
+        const failedFrameCount = frameAssets.length - uploadedFrameCount;
         if (!disposed.current) {
-          setVideoFeedback(
-            `${frameAssets.length} still frame${
-              frameAssets.length === 1 ? "" : "s"
-            } extracted. Review them like ordinary photos; frames hidden by glare or blur will be excluded by the AI review.`
-          );
+          if (uploadedFrameCount === frameAssets.length) {
+            setVideoFeedback(
+              `${uploadedFrameCount} still frame${
+                uploadedFrameCount === 1 ? "" : "s"
+              } extracted and uploaded for image review. Review them like ordinary photos; frames hidden by glare or blur will be excluded by the AI review.`
+            );
+          } else if (uploadedFrameCount > 0) {
+            setVideoFeedback(
+              `${uploadedFrameCount} of ${frameAssets.length} extracted still frames uploaded for image review. ${failedFrameCount} frame${
+                failedFrameCount === 1 ? "" : "s"
+              } failed; tap Retry on each failed frame or add sharp photos instead.`
+            );
+          } else {
+            setVideoFeedback(
+              `The source video was saved, but none of its ${frameAssets.length} extracted still frame${
+                frameAssets.length === 1 ? "" : "s"
+              } uploaded for image review. Tap Retry on each failed frame or add sharp photos instead.`
+            );
+          }
         }
       } catch (error: any) {
         if (!disposed.current && !removedAssetIds.current.has(local.id)) {
@@ -943,9 +996,41 @@ export default function MediaEvidencePicker({
     }
   }
 
-  function removeAsset(asset: EvidenceAsset) {
+  function removeAsset(
+    asset: EvidenceAsset,
+    options: {
+      cascadeGeneratedFrames?: boolean;
+      restoreOnDeleteFailure?: boolean;
+    } = {}
+  ) {
+    const cascadeGeneratedFrames = options.cascadeGeneratedFrames !== false;
+    const restoreOnDeleteFailure = options.restoreOnDeleteFailure !== false;
+    if (cascadeGeneratedFrames && asset.assetType === "video") {
+      const sourceIds = new Set(
+        [asset.id, asset._id].map((id) => String(id || "").trim()).filter(Boolean)
+      );
+      assetsRef.current
+        .filter(
+          (candidate) =>
+            candidate.assetType === "photo" &&
+            candidate.source === "generated" &&
+            sourceIds.has(String(candidate.sourceVideoEvidenceAssetId || "").trim())
+        )
+        .forEach((frame) =>
+          removeAsset(frame, {
+            cascadeGeneratedFrames: false,
+            // The source-video delete is authoritative and cascades its generated
+            // children on the server. Never put a child frame back into the active
+            // review after the user removed its source video.
+            restoreOnDeleteFailure: false
+          })
+        );
+    }
     const originalIndex = assetsRef.current.findIndex((item) => item.id === asset.id);
     const persistedId = String(asset._id || "");
+    const retainDurableRecord = [asset.id, asset._id].some((id) =>
+      retainOnRemoveAssetIdSet.has(String(id || "").trim())
+    );
     removedAssetIds.current.add(asset.id);
     uploadControllers.current.get(asset.id)?.abort();
     uploadControllers.current.delete(asset.id);
@@ -998,10 +1083,11 @@ export default function MediaEvidencePicker({
       URL.revokeObjectURL(asset.originalUri);
     }
     commit(assetsRef.current.filter((item) => item.id !== asset.id));
-    if (persistedId) {
+    if (persistedId && !retainDurableRecord) {
       void deleteEvidenceAsset(persistedId, uploadWorkspace, { timeoutMs: 5000 }).catch(
         () => {
           if (disposed.current) return;
+          if (!restoreOnDeleteFailure) return;
           removedAssetIds.current.delete(asset.id);
           const restored = {
             ...asset,
@@ -1037,8 +1123,9 @@ export default function MediaEvidencePicker({
         <Text style={styles.help}>
           A video is kept as private evidence. GrowPath samples up to{" "}
           {Math.min(maxExtractedVideoFrames, maxPhotos)} timestamped still frames across
-          the video for image review. It keeps only sharp, glare-free gland-head evidence;
-          the AI does not guess from motion or rebuild detail hidden by blur or glare.
+          the video. Each sampled frame is uploaded for image review; AI then evaluates
+          focus, lighting, glare, and diagnostic detail and can exclude unusable frames.
+          It does not guess from motion or rebuild detail hidden by blur or glare.
         </Text>
       ) : null}
       {captureGuidance.length ? (

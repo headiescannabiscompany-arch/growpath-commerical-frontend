@@ -18,6 +18,8 @@ export type EvidencePurpose =
 
 export type EvidenceSource = "camera" | "library" | "upload" | "generated" | "external";
 
+export type EvidenceWorkspaceType = "personal" | "commercial" | "facility";
+
 export type EvidenceLinks = {
   facilityId?: string;
   growId?: string;
@@ -28,11 +30,15 @@ export type EvidenceLinks = {
   diagnosisId?: string;
   courseId?: string;
   forumPostId?: string;
+  /** Parent private source-video EvidenceAsset for an extracted still frame. */
+  sourceVideoEvidenceAssetId?: string;
 };
 
 export type EvidenceAsset = EvidenceLinks & {
   id: string;
   _id?: string;
+  workspaceType?: EvidenceWorkspaceType;
+  workspaceId?: string;
   clientUploadKey?: string;
   assetType: EvidenceAssetType;
   originalUri: string;
@@ -71,6 +77,8 @@ export type ProviderEvidencePayload = {
     type: EvidenceAssetType;
     url: string;
     mimeType?: string;
+    source?: EvidenceSource;
+    sourceVideoEvidenceAssetId?: string;
     purpose: EvidencePurpose;
     qualityWarnings: string[];
   }>;

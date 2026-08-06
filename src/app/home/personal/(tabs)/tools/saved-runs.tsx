@@ -17,8 +17,10 @@ import {
   getToolRun,
   listToolRuns,
   saveToolRunToLog,
+  updatePlantIdCorrection,
   updateToolRun,
-  type ToolRun
+  type ToolRun,
+  type ToolRunWorkspaceScope
 } from "@/api/toolRuns";
 import {
   createFieldObservation,
@@ -42,9 +44,19 @@ import {
   privateFieldObservationFromToolRun
 } from "@/features/personal/tools/fieldObservationDraft";
 import {
+  bestStructuredPlantCandidateName,
+  plantIdentificationCandidates
+} from "@/features/personal/tools/plantIdentificationCandidates";
+import PlantIdentificationResultDetails from "@/features/personal/tools/PlantIdentificationResultDetails";
+import {
   requestCurrentCoordinates,
   type PublicCoordinates
 } from "@/utils/locationSearch";
+import { useEntitlements } from "@/entitlements";
+import {
+  resolveToolWorkspaceType,
+  toolWorkspaceIdentity
+} from "@/features/personal/tools/toolWorkspaceScope";
 
 const TOOL_FILTERS = [
   { label: "All", value: "" },
@@ -65,6 +77,26 @@ function coerceParam(value?: string | string[]) {
 
 function idFor(run: ToolRun) {
   return String(run?._id || run?.id || "");
+}
+
+export function personalPlantIdRetryHref({
+  toolRunId,
+  growId,
+  fieldStudyId
+}: {
+  toolRunId: string;
+  growId?: string;
+  fieldStudyId?: string;
+}) {
+  const query = [
+    ["retryToolRunId", toolRunId],
+    ["growId", growId || ""],
+    ["fieldStudyId", fieldStudyId || ""]
+  ]
+    .filter(([, value]) => value)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join("&");
+  return `/home/personal/tools/species-crop-id?${query}`;
 }
 
 function formatDate(value?: string) {
@@ -148,13 +180,10 @@ function savedCropCandidate(outputs: Record<string, any>) {
   const commonNames = Array.isArray(outputs.commonNames)
     ? outputs.commonNames
     : String(outputs.commonNames || "").split(/[,;\n]/);
-  return (
-    commonNames
-      .map((candidate: unknown) => String(candidate || "").trim())
-      .find((candidate: string) => candidate && !unresolvedSavedCropName(candidate)) ||
-    suppliedName ||
-    "-"
-  );
+  const commonName = commonNames
+    .map((candidate: unknown) => String(candidate || "").trim())
+    .find((candidate: string) => candidate && !unresolvedSavedCropName(candidate));
+  return commonName || bestStructuredPlantCandidateName(outputs) || "-";
 }
 
 function displayOutputsFor(run: ToolRun | null) {
@@ -163,6 +192,7 @@ function displayOutputsFor(run: ToolRun | null) {
   const correction = savedUserCorrection(outputs);
   return {
     ...outputs,
+    candidates: plantIdentificationCandidates(outputs),
     likelyCrop: savedCropCandidate(outputs),
     scientificName: correction
       ? correction.scientificName || null
@@ -181,7 +211,10 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
         ? outputs.imageAnalysis
         : {};
     const suppliedPhotoCount = Number(
-      imageAnalysis.photosAnalyzed || imageAnalysis.photoCount || 0
+      imageAnalysis.stillImagesAnalyzed ||
+        imageAnalysis.photosAnalyzed ||
+        imageAnalysis.photoCount ||
+        0
     );
     const photoCount =
       Number.isFinite(suppliedPhotoCount) && suppliedPhotoCount > 0
@@ -203,9 +236,34 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
       },
       {
         key: "photos",
-        label: "Photos inspected",
-        value: imageAnalysis.performed ? String(photoCount || 1) : "0"
+        label: "Still images inspected",
+        value: imageAnalysis.performed
+          ? photoCount > 0
+            ? String(photoCount)
+            : "Count unavailable"
+          : "0"
       },
+      ...(Number(imageAnalysis.videoFramesAnalyzed || 0) > 0
+        ? [
+            {
+              key: "video-frames",
+              label: "Video frames inspected",
+              value: String(imageAnalysis.videoFramesAnalyzed)
+            }
+          ]
+        : []),
+      ...(Number(imageAnalysis.videosAttached || 0) > 0
+        ? [
+            {
+              key: "source-video",
+              label: "Source video",
+              value:
+                Number(imageAnalysis.videoFramesAnalyzed || 0) > 0
+                  ? "Saved; extracted still frames analyzed"
+                  : "Saved; no extracted frame analyzed"
+            }
+          ]
+        : []),
       {
         key: "quality",
         label: "Image quality",
@@ -593,12 +651,15 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
 
   if (isSpeciesCropRun(run) && imageAnalysis?.performed) {
     const suppliedPhotoCount = Number(
-      imageAnalysis.photosAnalyzed || imageAnalysis.photoCount || 1
+      imageAnalysis.stillImagesAnalyzed ||
+        imageAnalysis.photosAnalyzed ||
+        imageAnalysis.photoCount ||
+        0
     );
     const photoCount =
       Number.isFinite(suppliedPhotoCount) && suppliedPhotoCount > 0
         ? Math.floor(suppliedPhotoCount)
-        : 1;
+        : 0;
     const provider =
       imageAnalysis.providerLabel || imageAnalysis.provider || "AI image review";
     const model = imageAnalysis.providerModel
@@ -607,12 +668,30 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
     const evidence = Array.isArray(imageAnalysis.evidenceUsed)
       ? imageAnalysis.evidenceUsed.map(String).filter(Boolean)
       : [];
+    const videoFramesAnalyzed = Number(imageAnalysis.videoFramesAnalyzed || 0);
+    const videosAttached = Number(imageAnalysis.videosAttached || 0);
     provenance.push({
       key: "crop-id-image-provenance",
       severity: "info",
-      message: `${provider} inspected ${photoCount} uploaded photo${
-        photoCount === 1 ? "" : "s"
-      }. Image quality: ${imageAnalysis.quality || "not provided"}.${model}${
+      message: `${
+        photoCount > 0
+          ? `${provider} inspected ${photoCount} still image${
+              photoCount === 1 ? "" : "s"
+            }${
+              videoFramesAnalyzed > 0
+                ? `, including ${videoFramesAnalyzed} frame${videoFramesAnalyzed === 1 ? "" : "s"} extracted from video`
+                : ""
+            }.`
+          : `${provider} recorded a completed image review, but the saved still-image count is unavailable.${
+              videoFramesAnalyzed > 0
+                ? ` ${videoFramesAnalyzed} extracted video frame${videoFramesAnalyzed === 1 ? " was" : "s were"} recorded as inspected.`
+                : ""
+            }`
+      }${
+        videosAttached > 0
+          ? " The private source video was saved but was not analyzed directly."
+          : ""
+      } Image quality: ${imageAnalysis.quality || "not provided"}.${model}${
         evidence.length ? ` Evidence: ${evidence.join(", ")}.` : ""
       }`
     });
@@ -681,6 +760,7 @@ function runTitle(run: ToolRun | null) {
 
 export default function SavedToolRunsScreen() {
   const { palette } = useAppTheme();
+  const entitlements = useEntitlements();
   const styles = useMemo(() => createSavedToolRunsStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     growId?: string | string[];
@@ -690,8 +770,12 @@ export default function SavedToolRunsScreen() {
     sourceContext?: string | string[];
     sourceTaskId?: string | string[];
     fieldStudyId?: string | string[];
+    facilityId?: string | string[];
+    commercialAccountId?: string | string[];
+    workspace?: string | string[];
+    workspaceType?: string | string[];
   }>();
-  const growId = useMemo(() => coerceParam(params.growId), [params.growId]);
+  const requestedGrowId = useMemo(() => coerceParam(params.growId), [params.growId]);
   const initialToolType = useMemo(() => coerceParam(params.toolType), [params.toolType]);
   const targetToolRunId = useMemo(
     () => coerceParam(params.toolRunId) || coerceParam(params.runId),
@@ -705,17 +789,69 @@ export default function SavedToolRunsScreen() {
     () => coerceParam(params.sourceTaskId),
     [params.sourceTaskId]
   );
-  const fieldStudyId = useMemo(
+  const requestedFieldStudyId = useMemo(
     () => coerceParam(params.fieldStudyId),
     [params.fieldStudyId]
   );
-  const sourceBackTarget = useMemo(
-    () => savedRunBackTarget({ growId, sourceContext, sourceTaskId }),
-    [growId, sourceContext, sourceTaskId]
+  const routeFacilityId = useMemo(
+    () => coerceParam(params.facilityId),
+    [params.facilityId]
   );
-  const backTarget = fieldStudyId
-    ? `/home/personal/field-studies/${fieldStudyId}`
-    : sourceBackTarget;
+  const commercialAccountId = useMemo(
+    () => coerceParam(params.commercialAccountId),
+    [params.commercialAccountId]
+  );
+  const requestedWorkspaceType = useMemo(
+    () =>
+      (coerceParam(params.workspaceType) || coerceParam(params.workspace)).toLowerCase(),
+    [params.workspace, params.workspaceType]
+  );
+  const workspaceType = resolveToolWorkspaceType({
+    entitlementMode: entitlements.mode,
+    requestedWorkspaceType,
+    facilityId: routeFacilityId,
+    commercialAccountId
+  });
+  const facilityId =
+    workspaceType === "facility"
+      ? entitlements.mode === "facility" && entitlements.facilityId
+        ? String(entitlements.facilityId)
+        : routeFacilityId
+      : "";
+  const growId = workspaceType === "personal" ? requestedGrowId : "";
+  const fieldStudyId = workspaceType === "personal" ? requestedFieldStudyId : "";
+  const workspaceIdentityKey = toolWorkspaceIdentity({
+    workspaceType,
+    facilityId,
+    commercialAccountId
+  });
+  const toolRunScope = useMemo<ToolRunWorkspaceScope>(
+    () =>
+      workspaceType === "personal"
+        ? {}
+        : {
+            workspaceType,
+            ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
+          },
+    [facilityId, workspaceType]
+  );
+  const sourceBackTarget = useMemo(
+    () =>
+      savedRunBackTarget({
+        growId,
+        sourceContext: workspaceType === "personal" ? sourceContext : "",
+        sourceTaskId: workspaceType === "personal" ? sourceTaskId : ""
+      }),
+    [growId, sourceContext, sourceTaskId, workspaceType]
+  );
+  const backTarget =
+    workspaceType === "facility"
+      ? "/home/facility/ai-tools"
+      : workspaceType === "commercial"
+        ? "/home/commercial/tools"
+        : fieldStudyId
+          ? `/home/personal/field-studies/${fieldStudyId}`
+          : sourceBackTarget;
   const [toolType, setToolType] = useState(initialToolType);
   const [runs, setRuns] = useState<ToolRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
@@ -737,17 +873,45 @@ export default function SavedToolRunsScreen() {
   const pendingFocusRunIdRef = useRef("");
   const selectedRunIdRef = useRef("");
   const handledTargetRunIdRef = useRef("");
+  const renderedWorkspaceIdentityRef = useRef(workspaceIdentityKey);
+  const currentWorkspaceIdentityRef = useRef(workspaceIdentityKey);
+  currentWorkspaceIdentityRef.current = workspaceIdentityKey;
+
+  useEffect(() => {
+    if (renderedWorkspaceIdentityRef.current === workspaceIdentityKey) return;
+    renderedWorkspaceIdentityRef.current = workspaceIdentityKey;
+    selectedRunIdRef.current = "";
+    pendingFocusRunIdRef.current = "";
+    handledTargetRunIdRef.current = "";
+    setToolType(initialToolType);
+    setRuns([]);
+    setSelectedRun(null);
+    setSummaryDraft("");
+    setCorrectionDraft("");
+    setFeedback("");
+    setFieldStudy(null);
+    setFieldObservations([]);
+    setFieldStudyLoading(false);
+    setFieldStudyFeedback("");
+    setPrivateLocationFeedback("");
+    setFieldCoordinates(null);
+    setCapturingFieldLocation(false);
+    setSavingFieldObservation(false);
+  }, [initialToolType, workspaceIdentityKey]);
 
   const load = useCallback(async () => {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     setLoading(true);
     setFeedback("");
     const rows = await listToolRuns({
       growId: growId || undefined,
-      toolType: toolType || undefined
+      toolType: toolType || undefined,
+      ...(toolRunScope.workspaceType ? toolRunScope : {})
     });
+    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
     setRuns(rows);
     setLoading(false);
-  }, [growId, toolType]);
+  }, [growId, toolRunScope, toolType, workspaceIdentityKey]);
 
   useFocusEffect(
     useCallback(() => {
@@ -757,7 +921,8 @@ export default function SavedToolRunsScreen() {
 
   useEffect(() => {
     let active = true;
-    if (!fieldStudyId) {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    if (workspaceType !== "personal" || !fieldStudyId) {
       setFieldStudy(null);
       setFieldObservations([]);
       setFieldStudyFeedback("");
@@ -772,12 +937,14 @@ export default function SavedToolRunsScreen() {
     setFieldStudyFeedback("");
     void getFieldStudy(fieldStudyId)
       .then((response) => {
-        if (!active) return;
+        if (!active || currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity)
+          return;
         setFieldStudy(response.study);
         setFieldObservations(response.observations);
       })
       .catch((fieldStudyError: any) => {
-        if (!active) return;
+        if (!active || currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity)
+          return;
         setFieldStudy(null);
         setFieldObservations([]);
         setFieldStudyFeedback(
@@ -791,34 +958,44 @@ export default function SavedToolRunsScreen() {
     return () => {
       active = false;
     };
-  }, [fieldStudyId]);
+  }, [fieldStudyId, workspaceIdentityKey, workspaceType]);
 
   useEffect(() => {
     selectedRunIdRef.current = selectedRun ? idFor(selectedRun) : "";
     setFieldCoordinates(selectedRun ? coordinatesFromToolRun(selectedRun) : null);
   }, [selectedRun]);
 
-  const selectRun = useCallback(async (run: ToolRun) => {
-    const id = idFor(run);
-    if (!id) return;
-    selectedRunIdRef.current = id;
-    pendingFocusRunIdRef.current = id;
-    setFeedback("");
-    setPrivateLocationFeedback("");
-    const full = await getToolRun(id);
-    if (selectedRunIdRef.current !== id) return;
-    const nextRun = full || run;
-    setSelectedRun(nextRun);
-    setSummaryDraft(nextRun.summary || "");
-    const nextOutputs = runOutputs(nextRun);
-    const correction = savedUserCorrection(nextOutputs);
-    setCorrectionDraft(
-      isSpeciesCropRun(nextRun)
-        ? correction?.commonName || savedCropCandidate(nextOutputs)
-        : ""
-    );
-    if (!full) setFeedback("Unable to reload this run; showing cached list data.");
-  }, []);
+  const selectRun = useCallback(
+    async (run: ToolRun) => {
+      const requestWorkspaceIdentity = workspaceIdentityKey;
+      const id = idFor(run);
+      if (!id) return;
+      selectedRunIdRef.current = id;
+      pendingFocusRunIdRef.current = id;
+      setFeedback("");
+      setPrivateLocationFeedback("");
+      const full = toolRunScope.workspaceType
+        ? await getToolRun(id, toolRunScope)
+        : await getToolRun(id);
+      if (
+        currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity ||
+        selectedRunIdRef.current !== id
+      )
+        return;
+      const nextRun = full || run;
+      setSelectedRun(nextRun);
+      setSummaryDraft(nextRun.summary || "");
+      const nextOutputs = runOutputs(nextRun);
+      const correction = savedUserCorrection(nextOutputs);
+      setCorrectionDraft(
+        isSpeciesCropRun(nextRun)
+          ? correction?.commonName || savedCropCandidate(nextOutputs)
+          : ""
+      );
+      if (!full) setFeedback("Unable to reload this run; showing cached list data.");
+    },
+    [toolRunScope, workspaceIdentityKey]
+  );
 
   useEffect(() => {
     if (!targetToolRunId) {
@@ -834,11 +1011,18 @@ export default function SavedToolRunsScreen() {
       return;
     }
     void (async () => {
+      const requestWorkspaceIdentity = workspaceIdentityKey;
       selectedRunIdRef.current = targetToolRunId;
       pendingFocusRunIdRef.current = targetToolRunId;
       setFeedback("");
-      const full = await getToolRun(targetToolRunId);
-      if (selectedRunIdRef.current !== targetToolRunId) return;
+      const full = toolRunScope.workspaceType
+        ? await getToolRun(targetToolRunId, toolRunScope)
+        : await getToolRun(targetToolRunId);
+      if (
+        currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity ||
+        selectedRunIdRef.current !== targetToolRunId
+      )
+        return;
       if (!full) {
         setFeedback("Unable to find the requested saved run.");
         return;
@@ -853,12 +1037,24 @@ export default function SavedToolRunsScreen() {
           : ""
       );
     })();
-  }, [loading, runs, selectedRun, selectRun, targetToolRunId]);
+  }, [
+    loading,
+    runs,
+    selectedRun,
+    selectRun,
+    targetToolRunId,
+    toolRunScope,
+    workspaceIdentityKey
+  ]);
 
   async function saveSummary() {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     const id = selectedRun ? idFor(selectedRun) : "";
     if (!id) return;
-    const updated = await updateToolRun(id, { summary: summaryDraft });
+    const updated = toolRunScope.workspaceType
+      ? await updateToolRun(id, { summary: summaryDraft }, toolRunScope)
+      : await updateToolRun(id, { summary: summaryDraft });
+    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
     if (!updated) {
       setFeedback("Unable to update this saved run.");
       return;
@@ -870,6 +1066,7 @@ export default function SavedToolRunsScreen() {
   }
 
   async function saveIdentificationCorrection() {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     const id = selectedRun ? idFor(selectedRun) : "";
     const commonName = correctionDraft.trim();
     if (!id || !selectedRun || !isSpeciesCropRun(selectedRun)) return;
@@ -878,56 +1075,23 @@ export default function SavedToolRunsScreen() {
       return;
     }
 
-    const currentOutputs = runOutputs(selectedRun);
-    const correctedAt = new Date().toISOString();
-    const requiredPhotoRequests = [
-      "A new whole-plant photo showing overall growth habit and scale",
-      "A sharp full-leaf photo plus the leaf underside and stem node",
-      "A sharp open-flower close-up and any fruit or seed structure on the same plant"
-    ];
-    const requiredNextPhotos = Array.from(
-      new Set([
-        ...requiredPhotoRequests,
-        ...(Array.isArray(currentOutputs.requiredNextPhotos)
-          ? currentOutputs.requiredNextPhotos
-          : [])
-      ])
-    );
-    const nextOutputs = {
-      ...currentOutputs,
+    const correction = {
       userCorrection: {
-        status: "user_corrected",
         commonName,
         scientificName: null,
-        correctedAt,
-        previousLikelyCrop: currentOutputs.likelyCrop || null,
-        previousScientificName: currentOutputs.scientificName || null
-      },
-      confidence: "user_corrected",
-      userConfirmationRequired: false,
-      confirmationRequired: false,
-      requiredNextPhotos,
-      missingInformation: Array.from(
-        new Set([
-          ...requiredNextPhotos,
-          ...(Array.isArray(currentOutputs.missingInformation)
-            ? currentOutputs.missingInformation
-            : [])
-        ])
-      )
+        note: "User corrected the common identity; exact scientific species remains unverified."
+      }
     };
-    const summary = `User-corrected identity: ${commonName}. The original AI draft was rejected. Exact scientific species remains unverified; new whole-plant, leaf, flower, and fruit/seed photos are requested.`;
-    const updated = await updateToolRun(id, {
-      outputs: nextOutputs,
-      confidence: "user_corrected",
-      summary
-    });
+    const updated = toolRunScope.workspaceType
+      ? await updatePlantIdCorrection(id, correction, toolRunScope)
+      : await updatePlantIdCorrection(id, correction);
+    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
     if (!updated) {
       setFeedback("Unable to save this identification correction.");
       return;
     }
     setSelectedRun(updated);
-    setSummaryDraft(updated.summary || summary);
+    setSummaryDraft(updated.summary || "");
     setCorrectionDraft(commonName);
     await load();
     setFeedback(
@@ -936,9 +1100,13 @@ export default function SavedToolRunsScreen() {
   }
 
   async function archiveSelectedRun() {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     const id = selectedRun ? idFor(selectedRun) : "";
     if (!id) return;
-    const ok = await archiveToolRun(id);
+    const ok = toolRunScope.workspaceType
+      ? await archiveToolRun(id, toolRunScope)
+      : await archiveToolRun(id);
+    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
     if (!ok) {
       setFeedback("Unable to archive this saved run.");
       return;
@@ -951,6 +1119,7 @@ export default function SavedToolRunsScreen() {
   }
 
   async function capturePrivateFieldLocation() {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     const id = selectedRun ? idFor(selectedRun) : "";
     if (!id || !selectedRun || !isSpeciesCropRun(selectedRun)) return;
     setCapturingFieldLocation(true);
@@ -966,11 +1135,15 @@ export default function SavedToolRunsScreen() {
           capturedAt: new Date().toISOString()
         }
       };
-      const updated = await updateToolRun(id, {
+      const locationPatch = {
         inputs: nextInputs,
         input: nextInputs,
         params: nextInputs
-      });
+      };
+      const updated = toolRunScope.workspaceType
+        ? await updateToolRun(id, locationPatch, toolRunScope)
+        : await updateToolRun(id, locationPatch);
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       if (!updated) {
         setPrivateLocationFeedback(
           "Location was not saved, so it will not be attached to this Plant ID."
@@ -985,15 +1158,19 @@ export default function SavedToolRunsScreen() {
         "Current location saved privately to this Plant ID only. Field Studies and Nature were not changed."
       );
     } catch (locationError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setPrivateLocationFeedback(
         locationError?.message || "Current location could not be captured."
       );
     } finally {
-      setCapturingFieldLocation(false);
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setCapturingFieldLocation(false);
+      }
     }
   }
 
   async function removePrivateFieldLocation() {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     const id = selectedRun ? idFor(selectedRun) : "";
     if (!id || !selectedRun || !isSpeciesCropRun(selectedRun) || !fieldCoordinates)
       return;
@@ -1004,11 +1181,15 @@ export default function SavedToolRunsScreen() {
         ...runInputs(selectedRun),
         capturedLocation: null
       };
-      const updated = await updateToolRun(id, {
+      const locationPatch = {
         inputs: nextInputs,
         input: nextInputs,
         params: nextInputs
-      });
+      };
+      const updated = toolRunScope.workspaceType
+        ? await updateToolRun(id, locationPatch, toolRunScope)
+        : await updateToolRun(id, locationPatch);
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       if (!updated) {
         setPrivateLocationFeedback(
           "The private location could not be removed. Nothing changed."
@@ -1023,15 +1204,20 @@ export default function SavedToolRunsScreen() {
         "Private location removed from this Plant ID only. Field Studies and Nature were not changed."
       );
     } catch (locationError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setPrivateLocationFeedback(
         locationError?.message || "The private location could not be removed."
       );
     } finally {
-      setCapturingFieldLocation(false);
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setCapturingFieldLocation(false);
+      }
     }
   }
 
   async function savePrivateFieldObservation() {
+    if (workspaceType !== "personal") return;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     const id = selectedRun ? idFor(selectedRun) : "";
     const canEditStudy =
       fieldStudy?.accessRole === "owner" || fieldStudy?.accessRole === "editor";
@@ -1053,18 +1239,24 @@ export default function SavedToolRunsScreen() {
         fieldStudyId,
         privateFieldObservationFromToolRun(selectedRun, fieldCoordinates)
       );
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setFieldObservations((current) => [created.observation, ...current]);
       setFieldStudyFeedback(`Saved privately to ${fieldStudy.title} — not on Nature.`);
     } catch (saveError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setFieldStudyFeedback(
         saveError?.message || "This identification could not be added to the Field Study."
       );
     } finally {
-      setSavingFieldObservation(false);
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setSavingFieldObservation(false);
+      }
     }
   }
 
   async function copyPrivateLocationToLinkedFieldObservation() {
+    if (workspaceType !== "personal") return;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     const id = selectedRun ? idFor(selectedRun) : "";
     const canEditStudy =
       fieldStudy?.accessRole === "owner" || fieldStudy?.accessRole === "editor";
@@ -1107,6 +1299,7 @@ export default function SavedToolRunsScreen() {
           exactLocationPublicConfirmed: false
         }
       });
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setFieldObservations((current) =>
         current.map((observation) =>
           String(observation.id || observation._id || "") === observationId
@@ -1120,12 +1313,15 @@ export default function SavedToolRunsScreen() {
           : `Exact location copied to the existing private ${fieldStudy.title} draft. It was not published to Nature.`
       );
     } catch (copyError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setFieldStudyFeedback(
         copyError?.message ||
           "The private Plant ID location could not be copied to the linked Field Study draft."
       );
     } finally {
-      setSavingFieldObservation(false);
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setSavingFieldObservation(false);
+      }
     }
   }
 
@@ -1152,7 +1348,10 @@ export default function SavedToolRunsScreen() {
           variant: "secondary",
           pendingLabel: "Saving...",
           successMessage: "Saved to grow log.",
-          onPress: () => saveToolRunToLog(selectedRunId)
+          onPress: () =>
+            toolRunScope.workspaceType
+              ? saveToolRunToLog(selectedRunId, {}, toolRunScope)
+              : saveToolRunToLog(selectedRunId)
         },
         {
           key: "create-task",
@@ -1160,7 +1359,10 @@ export default function SavedToolRunsScreen() {
           variant: "secondary",
           pendingLabel: "Creating...",
           successMessage: "Task created.",
-          onPress: () => createTaskFromToolRun(selectedRunId)
+          onPress: () =>
+            toolRunScope.workspaceType
+              ? createTaskFromToolRun(selectedRunId, {}, toolRunScope)
+              : createTaskFromToolRun(selectedRunId)
         },
         {
           key: "archive",
@@ -1172,6 +1374,14 @@ export default function SavedToolRunsScreen() {
         }
       ]
     : [];
+  const plantIdRetryHref =
+    workspaceType === "personal" && selectedRunId && isSpeciesCropRun(selectedRun)
+      ? personalPlantIdRetryHref({
+          toolRunId: selectedRunId,
+          growId: growId || undefined,
+          fieldStudyId: fieldStudyId || undefined
+        })
+      : "";
 
   return (
     <ScreenBoundary
@@ -1246,6 +1456,13 @@ export default function SavedToolRunsScreen() {
               inputs={selectedRun.inputs || selectedRun.input || selectedRun.params || {}}
               outputs={displayOutputsFor(selectedRun)}
               notices={noticesFor(selectedRun)}
+              details={
+                isSpeciesCropRun(selectedRun) ? (
+                  <PlantIdentificationResultDetails
+                    outputs={displayOutputsFor(selectedRun)}
+                  />
+                ) : null
+              }
               recommendations={selectedRun.recommendations || []}
               formulas={selectedRun.formulas || []}
               uncertainty={selectedRun.uncertainty || null}
@@ -1256,6 +1473,25 @@ export default function SavedToolRunsScreen() {
             />
             {isSpeciesCropRun(selectedRun) ? (
               <View style={styles.editor}>
+                {plantIdRetryHref ? (
+                  <View style={styles.studyPanel}>
+                    <Text style={styles.cardTitle}>Run the same evidence again</Text>
+                    <Text style={styles.cardText}>
+                      Reopen the exact saved photos and private source video without
+                      uploading them again. Nothing is analyzed until you explicitly press
+                      Identify Plant from Photos.
+                    </Text>
+                    <Link href={plantIdRetryHref} asChild>
+                      <Pressable
+                        accessibilityRole="link"
+                        accessibilityLabel="Re-run Plant ID with saved evidence"
+                        style={styles.primary}
+                      >
+                        <Text style={styles.primaryText}>Re-run with Saved Evidence</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                ) : null}
                 <Text style={styles.label}>Correct this identification</Text>
                 <Text style={styles.subtitle}>
                   Save the common identity you know. GrowPath preserves the rejected AI
@@ -1336,7 +1572,9 @@ export default function SavedToolRunsScreen() {
                 ) : null}
               </View>
             ) : null}
-            {isSpeciesCropRun(selectedRun) && fieldStudyId ? (
+            {workspaceType === "personal" &&
+            isSpeciesCropRun(selectedRun) &&
+            fieldStudyId ? (
               <View style={styles.studyPanel}>
                 <Text style={styles.cardTitle}>
                   Add this identification to a Field Study

@@ -198,7 +198,7 @@ const videoFrameTest = read("tests/unit/videoFrameExtraction.test.ts");
   ],
   [
     "only extracted frames receive workflow AI approval",
-    /toVideoFrameAsset\(frame, purpose, sourceContext, aiUsable\)/
+    /toVideoFrameAsset\(\s*frame,\s*purpose,\s*sourceContext,\s*aiUsable,\s*sourceVideoEvidenceAssetId\s*\)/
   ],
   [
     "private source and no-motion disclosure",
@@ -321,7 +321,7 @@ requireText(
   [
     "private source video test",
     mediaPickerTest,
-    /keeps a harvest video private and uploads extracted still frames for AI review/
+    /keeps a Facility source video and generated frames in the same explicit workspace[\s\S]*assetType: "video"[\s\S]*aiUsable: false[\s\S]*sourceVideoEvidenceAssetId: "saved-macro-scan\.mov"[\s\S]*diagnostic plant structure/
   ],
   [
     "12-frame timeline test",

@@ -6,10 +6,20 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import PlantIdentificationResultDetails from "@/features/personal/tools/PlantIdentificationResultDetails";
-import type { ToolResultAction } from "@/features/personal/tools/ToolResultSurface";
+import {
+  bestStructuredPlantCandidateName,
+  isCannabisPlantIdentification,
+  plantIdentificationCandidates,
+  plantIdentificationEvidence,
+  safePlantIdentificationOutputs
+} from "@/features/personal/tools/plantIdentificationCandidates";
+import type {
+  ToolResultAction,
+  ToolResultMetric
+} from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
-import { providerEvidencePayload } from "@/api/evidence";
+import { getEvidenceAssetsByIds, providerEvidencePayload } from "@/api/evidence";
 import { savePersonalGrowCropIdentity } from "@/api/grows";
 import { savePersonalPlantCropIdentity } from "@/api/plants";
 import {
@@ -30,15 +40,33 @@ import {
   type GrowpathModuleRecord,
   type GrowpathModuleUserDecision
 } from "@/api/growpathModules";
-import { listToolRuns, updateToolRun, type ToolRun } from "@/api/toolRuns";
+import {
+  getToolRun,
+  listToolRuns,
+  updatePlantIdCorrection,
+  updateToolRun,
+  type ToolRun,
+  type ToolRunWorkspaceScope
+} from "@/api/toolRuns";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
+import { useEntitlements } from "@/entitlements";
+import {
+  resolveToolWorkspaceType,
+  toolWorkspaceIdentity
+} from "@/features/personal/tools/toolWorkspaceScope";
+
+const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-night-light-detail-v2";
+
+function routeParam(value?: string | string[]) {
+  return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
+}
 
 const PLANT_ID_AI_PROMPT = `You are GrowPathAI's plant identification assistant. Act like a cautious field botanist, not a one-photo image-matching toy.
 
 Inspect the attached image pixels first. Use user-entered context and selected private grow/plant context only when supplied. Narrow in this order: broad plant group, morphology, likely family, possible genera, then species only when diagnostic evidence supports it. Consider growth habit, leaf arrangement/type/margin/venation, stems, flower symmetry and parts, inflorescence, fruit/seed, special structures, habitat, geography, season, and whether the plant is wild or cultivated.
 
-Assess the usable plant detail before naming a crop. Direct flash against a dark background, clipped highlights, deep shadow, glare, uncertain color, blur, or a target that occupies too little of the frame makes the evidence limited when diagnostic leaf, stem, flower, or fruit characters cannot be read reliably. In that state set imageQuality to "limited" or "unusable", visualConfidence to "low", leave userEnteredName and scientificName blank, retain only cautious broader candidates, and request evenly lit daylight or diffuse-light replacements. Do not upgrade the identity merely because the same unchanged images are submitted again.
+Assess the usable plant detail before naming a crop. Nighttime, a dark background, phone-light illumination, or direct flash is not automatically a failed image. Treat those conditions as a quality risk, then decide whether the illuminated areas still preserve sharp diagnostic leaf, stem, flower, fruit, inflorescence, or trichome structure and sufficiently reliable color. Evaluate every submitted photo or extracted video frame separately and base the set-level result on the compatible usable views; one bad frame must not invalidate clearer evidence. Mark the evidence limited or unusable only when clipped highlights, deep shadow, glare, color distortion, blur, or a small target actually hides the characters needed for the proposed identification. In that state set imageQuality to "limited" or "unusable", visualConfidence to "low", leave userEnteredName and scientificName blank, retain only cautious broader candidates, and request targeted replacements. Do not upgrade the identity merely because the same unchanged images are submitted again.
 
 Only populate growing setting, habitat, visible surface substrate, or nearby associated plants when the photos directly support them or the user supplied them. Do not populate cultivar, wild-versus-cultivated provenance, location or region, observation date or season, sensory traits, or plant-size measurements from image analysis. Leave unsupported and user-only fields blank instead of inventing them.
 
@@ -118,6 +146,48 @@ function compactValues(values: Record<string, string>) {
   );
 }
 
+function plantIdManualInputProvenance(userValues: Record<string, string>) {
+  const pickEntered = (keys: string[]) =>
+    Object.fromEntries(
+      keys
+        .map((key) => [key, String(userValues[key] || "").trim()] as const)
+        .filter(([, value]) => value && value.toLowerCase() !== "unknown")
+    );
+  const morphology = pickEntered([
+    "growthHabit",
+    "leafArrangement",
+    "leafType",
+    "leafMargin",
+    "venation",
+    "flowerPresent",
+    "flowerSymmetry",
+    "fruitPresent",
+    "stemTraits",
+    "flowerPartsVisible",
+    "inflorescenceType",
+    "fruitType",
+    "specialStructures",
+    "sensoryTraits"
+  ]);
+  const observationContext = pickEntered([
+    "cultivationStatus",
+    "setting",
+    "region",
+    "observationDate",
+    "habitat",
+    "substrate",
+    "associatedPlants",
+    "plantSize"
+  ]);
+  const identificationNotes = String(userValues.identificationNotes || "").trim();
+  return {
+    source: "user_entry" as const,
+    morphology,
+    observationContext,
+    ...(identificationNotes ? { identificationNotes } : {})
+  };
+}
+
 function normalizeScientificName(value: unknown) {
   const name = String(value || "").trim();
   if (
@@ -133,6 +203,9 @@ function normalizeScientificName(value: unknown) {
 }
 
 type PlantIdVisionAssessment = {
+  policyVersion: string;
+  previousPolicyVersion?: string;
+  reassessedUnderUpdatedPolicy: boolean;
   performed: boolean;
   reportedQuality: "usable" | "limited" | "unusable";
   reportedConfidence: "high" | "medium" | "low";
@@ -196,6 +269,86 @@ function evidenceReviewKey(evidenceAssetIds: unknown) {
   return Array.from(new Set(stringList(evidenceAssetIds).map(String)))
     .sort()
     .join("|");
+}
+
+function savedPlantIdEvidenceIds(run: ToolRun) {
+  const inputs = run.inputs || run.input || run.params || {};
+  const mediaEvidence = Array.isArray(inputs.mediaEvidence) ? inputs.mediaEvidence : [];
+  return Array.from(
+    new Set([
+      ...stringList(inputs.evidenceAssetIds),
+      ...stringList(inputs.imageAnalysis?.evidenceUsed),
+      ...mediaEvidence
+        .map((item: any) => String(item?.id || item?.assetId || "").trim())
+        .filter(Boolean)
+    ])
+  );
+}
+
+function savedPlantIdRecoveryEligibilityError(run: ToolRun, assets: EvidenceAsset[]) {
+  const inputs = run.inputs || run.input || run.params || {};
+  const expectedTypes = new Map<string, "photo" | "video">();
+  for (const id of stringList(inputs.imageAnalysis?.evidenceUsed)) {
+    expectedTypes.set(id, "photo");
+  }
+  if (Array.isArray(inputs.mediaEvidence)) {
+    for (const item of inputs.mediaEvidence) {
+      const id = String(item?.id || item?.assetId || "").trim();
+      const type = String(item?.type || item?.assetType || "")
+        .trim()
+        .toLowerCase();
+      if (id && (type === "photo" || type === "video")) {
+        expectedTypes.set(id, type);
+      }
+    }
+  }
+
+  const photos: EvidenceAsset[] = [];
+  const videos: EvidenceAsset[] = [];
+  for (const asset of assets) {
+    const id = String(asset.id || asset._id || "").trim();
+    if (asset.purpose !== "crop_identification") {
+      return "Saved Plant ID evidence belongs to another workflow. Nothing was loaded; add fresh Plant ID photos instead.";
+    }
+    if (asset.assetType !== "photo" && asset.assetType !== "video") {
+      return "Saved Plant ID evidence contains an unsupported media type. Nothing was loaded; add fresh Plant ID photos instead.";
+    }
+    const expectedType = expectedTypes.get(id);
+    if (expectedType && asset.assetType !== expectedType) {
+      return `A saved Plant ID ${expectedType} no longer has the expected media type. Nothing was loaded; add fresh Plant ID photos instead.`;
+    }
+    if (asset.uploadStatus !== "uploaded" || !String(asset.durableUrl || "").trim()) {
+      return "Saved Plant ID evidence is no longer fully uploaded and available. Nothing was loaded; add the media again before retrying.";
+    }
+    if (asset.assetType === "photo") {
+      if (asset.aiUsable !== true) {
+        return "A saved Plant ID photo is not approved for AI analysis. Nothing was loaded; add the photo again to approve it for a new Plant ID review.";
+      }
+      photos.push(asset);
+    } else {
+      // A source video stays private, non-AI evidence. Only its selected frames are
+      // approved for image analysis, so the video itself does not require aiUsable.
+      videos.push(asset);
+    }
+  }
+  if (!photos.length) {
+    return "This Saved Plant ID no longer contains an uploaded, AI-approved photo or extracted frame. Nothing was loaded; add fresh photos before retrying.";
+  }
+  if (videos.length > 1) {
+    return "This Saved Plant ID contains more than one private source video. Nothing was loaded; add fresh Plant ID photos instead.";
+  }
+  const videosById = new Map(
+    videos.map((asset) => [String(asset.id || asset._id || "").trim(), asset])
+  );
+  for (const photo of photos) {
+    if (String(photo.source || "").toLowerCase() !== "generated") continue;
+    const sourceVideoId = String(photo.sourceVideoEvidenceAssetId || "").trim();
+    const sourceVideo = videosById.get(sourceVideoId);
+    if (!sourceVideoId || !sourceVideo || sourceVideo.purpose !== photo.purpose) {
+      return "A saved extracted frame is missing its private source video association. Nothing was loaded; add the video or fresh photos again before retrying.";
+    }
+  }
+  return "";
 }
 
 function explicitUserIdentityClaim(payload: Record<string, any>) {
@@ -265,6 +418,9 @@ function savedPlantIdAssessment(run: ToolRun): PlantIdVisionAssessment | null {
   );
   const identityKey = plantIdIdentityKey(parsed);
   return {
+    policyVersion: String(imageAnalysis.reviewPolicyVersion || "legacy"),
+    previousPolicyVersion: undefined,
+    reassessedUnderUpdatedPolicy: false,
     performed,
     reportedQuality: quality,
     reportedConfidence: confidence,
@@ -316,11 +472,21 @@ function assessPlantIdVisionReply({
     "low"
   );
   const identityKey = plantIdIdentityKey(parsed);
+  const comparablePrevious =
+    previous?.policyVersion === PLANT_ID_REVIEW_POLICY_VERSION ? previous : undefined;
+  const reassessedUnderUpdatedPolicy = Boolean(
+    previous && previous.policyVersion !== PLANT_ID_REVIEW_POLICY_VERSION
+  );
   const identityChanged = Boolean(
-    previous?.identityKey && identityKey && previous.identityKey !== identityKey
+    comparablePrevious?.identityKey &&
+    identityKey &&
+    comparablePrevious.identityKey !== identityKey
   );
   const unsupportedIdentityAppeared = Boolean(
-    previous && !previous.identityKey && identityKey && previous.withholdIdentity
+    comparablePrevious &&
+    !comparablePrevious.identityKey &&
+    identityKey &&
+    comparablePrevious.withholdIdentity
   );
   const confidenceRank: Record<"high" | "medium" | "low", number> = {
     low: 0,
@@ -328,9 +494,9 @@ function assessPlantIdVisionReply({
     high: 2
   };
   const unchangedEvidenceQualityUpgrade = Boolean(
-    previous &&
-    ((previous.quality !== "usable" && reportedQuality === "usable") ||
-      confidenceRank[reportedConfidence] > confidenceRank[previous.confidence])
+    comparablePrevious &&
+    ((comparablePrevious.quality !== "usable" && reportedQuality === "usable") ||
+      confidenceRank[reportedConfidence] > confidenceRank[comparablePrevious.confidence])
   );
   const sameEvidenceConflict =
     identityChanged || unsupportedIdentityAppeared || unchangedEvidenceQualityUpgrade;
@@ -361,9 +527,19 @@ function assessPlantIdVisionReply({
       ? [
           "A repeated review of the same unchanged evidence produced a conflicting identity or unsupported quality/confidence upgrade. The working name was withheld until the evidence changes."
         ]
+      : []),
+    ...(reassessedUnderUpdatedPolicy
+      ? [
+          "This unchanged evidence was reassessed under an updated nighttime-lighting policy. Compare this result with the prior review and explicitly confirm or reject the new candidate."
+        ]
       : [])
   ].filter((item, index, items) => item && items.indexOf(item) === index);
   return {
+    policyVersion: PLANT_ID_REVIEW_POLICY_VERSION,
+    previousPolicyVersion: reassessedUnderUpdatedPolicy
+      ? previous?.policyVersion
+      : undefined,
+    reassessedUnderUpdatedPolicy,
     performed,
     reportedQuality,
     reportedConfidence,
@@ -426,7 +602,7 @@ function buildIdentificationDraft(
       missingEvidence: stringList(parsed.missingEvidence)
     });
   }
-  return {
+  const draft = {
     broadGroup: String(parsed.broadGroup || "unknown").trim(),
     likelyFamily: String(parsed.likelyFamily || "").trim(),
     possibleGenera: stringList(parsed.possibleGenera),
@@ -448,6 +624,17 @@ function buildIdentificationDraft(
     requiredNextQuestions: stringList(parsed.requiredNextQuestions),
     sourceVerificationPerformed: false
   };
+  if (assessment?.quality === "limited" || assessment?.quality === "unusable") {
+    return safePlantIdentificationOutputs({
+      imageAnalysis: {
+        performed: assessment.performed,
+        quality: assessment.quality
+      },
+      identifyingVisualTraits: String(parsed.identifyingVisualTraits || "").trim(),
+      identificationDraft: draft
+    }).identificationDraft;
+  }
+  return draft;
 }
 
 function normalizePriority(
@@ -463,29 +650,156 @@ function unresolvedCropName(value: unknown) {
   );
 }
 
-export function isCannabisGenusIdentification(outputs: Record<string, any>) {
+function plantIdImmediateResult(rawOutputs: Record<string, any>): {
+  tone: "success" | "warning" | "error";
+  title: string;
+  description: string;
+  details?: string[];
+} | null {
+  const outputs = safePlantIdentificationOutputs(rawOutputs);
+  const imageAnalysis = outputs.imageAnalysis || {};
+  if (imageAnalysis.requested !== true) return null;
+  const performed = imageAnalysis.performed === true;
+  const quality = String(imageAnalysis.quality || "").toLowerCase();
+  const confidence = String(outputs.confidence || imageAnalysis.confidence || "low");
   const draft = outputs.identificationDraft || {};
-  const scientificNames = [
-    outputs.scientificName,
-    draft.scientificName,
-    ...stringList(outputs.possibleSpecies),
-    ...stringList(draft.possibleSpecies),
-    ...(Array.isArray(draft.candidates)
-      ? draft.candidates.map((candidate: any) => candidate?.scientificName)
-      : [])
-  ];
-  if (
-    scientificNames.some((name) => /^\s*Cannabis(?:\s|\.|$)/i.test(String(name || "")))
-  ) {
-    return true;
+  const directCandidate = String(outputs.likelyCrop || "").trim();
+  const structuredCandidate = bestStructuredPlantCandidateName(outputs);
+  const candidate =
+    (quality === "usable" && directCandidate && !unresolvedCropName(directCandidate)
+      ? directCandidate
+      : structuredCandidate) || "";
+  const limitations = [
+    ...stringList(outputs.limitations),
+    ...stringList(imageAnalysis.limitations)
+  ].filter((item, index, items) => items.indexOf(item) === index);
+  const nextPhotos = [
+    ...stringList(outputs.requiredNextPhotos),
+    ...stringList(draft.requiredNextPhotos)
+  ].filter((item, index, items) => items.indexOf(item) === index);
+  const reassessmentNote =
+    imageAnalysis.reassessedUnderUpdatedPolicy === true ||
+    limitations.some((item) =>
+      /reassessed under an updated nighttime-lighting policy/i.test(item)
+    )
+      ? "This same evidence was reevaluated under the corrected lighting policy. Compare it with the prior result and explicitly confirm or reject the candidate."
+      : "";
+
+  if (imageAnalysis.requested === true && !performed) {
+    return {
+      tone: "error",
+      title: "Images were not analyzed — try again",
+      description:
+        "GrowPath did not receive a completed image review. Your uploaded evidence is still attached; retry the identification.",
+      details: [reassessmentNote, ...limitations].filter(Boolean).slice(0, 3)
+    };
   }
-  const genera = [
-    ...stringList(outputs.possibleGenera),
-    ...stringList(draft.possibleGenera)
+  const retakeRequired =
+    imageAnalysis.retakeRequired === true ||
+    String(outputs.identityEvidenceStatus || "") === "retake_required" ||
+    quality === "unusable" ||
+    (quality === "limited" && !candidate);
+  if (performed && retakeRequired) {
+    return {
+      tone: "warning",
+      title: "Analysis finished — retake required",
+      description:
+        "The image pixels were inspected, but the diagnostic plant detail was hidden or unreliable. No plant name was accepted from this evidence.",
+      details: (nextPhotos.length || reassessmentNote
+        ? [reassessmentNote, ...nextPhotos].filter(Boolean)
+        : [
+            "Add a sharp whole-plant view and close views of leaves, stems, flowers, or fruit with the diagnostic structures clearly illuminated."
+          ]
+      ).slice(0, 3)
+    };
+  }
+  if (performed && candidate) {
+    return {
+      tone: quality === "usable" ? "success" : "warning",
+      title:
+        quality === "usable"
+          ? `Candidate found: ${candidate}`
+          : `Candidate found: ${candidate} — more evidence needed`,
+      description:
+        quality === "usable"
+          ? `Confidence: ${confidence}. Nighttime or phone-light evidence is accepted when the visible diagnostic structure remains usable. Review the detailed result below before confirming.`
+          : `Confidence: ${confidence}. The visible diagnostic structure supports this cautious crop or genus candidate, but the lighting limits exact certainty. Add the requested views before confirming.`,
+      details: [reassessmentNote, ...nextPhotos].filter(Boolean).slice(0, 3)
+    };
+  }
+  return {
+    tone: "warning",
+    title: "Analysis finished — more evidence needed",
+    description:
+      "The images were reviewed, but they did not support a defensible plant candidate yet.",
+    details: [reassessmentNote, ...(nextPhotos.length ? nextPhotos : limitations)]
+      .filter(Boolean)
+      .slice(0, 3)
+  };
+}
+
+function plantIdMetrics(rawOutputs: Record<string, any>): ToolResultMetric[] {
+  const outputs = safePlantIdentificationOutputs(rawOutputs);
+  const imageAnalysis = outputs.imageAnalysis || {};
+  const stillImagesAnalyzed = Number(
+    imageAnalysis.stillImagesAnalyzed ??
+      imageAnalysis.photosAnalyzed ??
+      imageAnalysis.photoCount ??
+      0
+  );
+  const videoFramesAnalyzed = Number(imageAnalysis.videoFramesAnalyzed || 0);
+  const videosAttached = Number(imageAnalysis.videosAttached || 0);
+  return [
+    { key: "crop", label: "Working identity", value: outputs.likelyCrop },
+    { key: "family", label: "Likely family", value: outputs.likelyFamily || "-" },
+    {
+      key: "scientific",
+      label: "Scientific name",
+      value: outputs.scientificName || "-"
+    },
+    { key: "confidence", label: "Confidence", value: outputs.confidence },
+    {
+      key: "vision",
+      label: "Still images inspected",
+      value: imageAnalysis.performed ? String(Math.max(0, stillImagesAnalyzed)) : "0"
+    },
+    ...(videoFramesAnalyzed > 0
+      ? [
+          {
+            key: "video-frames",
+            label: "Video frames inspected",
+            value: String(videoFramesAnalyzed)
+          }
+        ]
+      : []),
+    ...(videosAttached > 0
+      ? [
+          {
+            key: "source-video",
+            label: "Source video",
+            value:
+              videoFramesAnalyzed > 0
+                ? "Saved; extracted still frames analyzed"
+                : "Saved; no extracted frame analyzed"
+          }
+        ]
+      : []),
+    {
+      key: "verification",
+      label: "External verification",
+      value:
+        outputs.sourceVerification?.status === "verified" ? "Recorded" : "Not performed"
+    },
+    {
+      key: "confirm",
+      label: "Needs confirmation",
+      value: outputs.userConfirmationRequired ? "Yes" : "No"
+    }
   ];
-  if (genera.some((name) => /^\s*Cannabis\s*$/i.test(name))) return true;
-  const commonCandidate = String(outputs.likelyCrop || draft.commonName || "").trim();
-  return /^(?:cannabis|cannabis plant|marijuana|hemp)$/i.test(commonCandidate);
+}
+
+export function isCannabisGenusIdentification(outputs: Record<string, any>) {
+  return isCannabisPlantIdentification(outputs);
 }
 
 function normalizeCropIdentityPrefillField({
@@ -541,66 +855,53 @@ function normalizeCropIdentityPrefillField({
 
 async function recordCropIdentificationDecision({
   decision,
-  outputs,
   toolRun,
-  moduleRecord
+  moduleRecord,
+  workspaceScope
 }: {
-  decision: GrowpathModuleUserDecision;
-  outputs: Record<string, any>;
+  decision: Extract<GrowpathModuleUserDecision, "accepted" | "rejected" | "uncertain">;
   toolRun: ToolRun | null;
   moduleRecord: GrowpathModuleRecord | null;
+  workspaceScope: ToolRunWorkspaceScope;
 }) {
   const recordedAt = new Date().toISOString();
-  const decisionRecord = {
-    value: decision,
-    recordedAt,
-    meaning:
-      decision === "accepted"
-        ? "The user confirmed this saved identity draft. This is not external botanical-source or expert verification."
-        : decision === "rejected"
-          ? "The user marked this candidate as not matching the observed plant."
-          : "The user needs more evidence before confirming an identity."
-  };
-  const nextOutputs = {
-    ...outputs,
-    userDecision: decisionRecord,
-    ...(decision === "accepted"
-      ? { confidence: "user_confirmed", userConfirmationRequired: false }
-      : {})
-  };
   const toolRunId = String(toolRun?.id || toolRun?._id || "");
   const moduleRecordId = String(moduleRecord?.id || moduleRecord?._id || "");
-  let saved = false;
-
-  if (toolRunId) {
-    saved = Boolean(
-      await updateToolRun(toolRunId, {
-        outputs: nextOutputs,
-        output: nextOutputs,
-        result: nextOutputs
-      })
+  if (!toolRunId) {
+    throw new Error(
+      "This identification has no Saved Run. Run Plant ID again before recording a decision."
     );
   }
-  if (moduleRecordId) {
-    const updatedRecord = await updateGrowpathModuleRecord(moduleRecordId, {
-      title: moduleRecord?.title || "Species / Crop Identification",
-      status: moduleRecord?.status || "active",
-      userDecision: decision,
-      outcome: {
-        ...(moduleRecord?.outcome || {}),
-        lastDecision: decision,
-        decisionRecordedAt: recordedAt
-      },
-      warnings: moduleRecord?.warnings || [],
-      recommendations: moduleRecord?.recommendations || [],
-      limitations: moduleRecord?.limitations || [],
-      tags: moduleRecord?.tags || [],
-      linkedTaskIds: moduleRecord?.linkedTaskIds || [],
-      tasksToCreate: moduleRecord?.tasksToCreate || []
-    });
-    saved = Boolean(updatedRecord) || saved;
+  const updatedToolRun = workspaceScope.workspaceType
+    ? await updatePlantIdCorrection(toolRunId, { decision }, workspaceScope)
+    : await updatePlantIdCorrection(toolRunId, { decision });
+  if (!updatedToolRun) {
+    throw new Error("Unable to save this identification decision.");
   }
-  if (!saved) throw new Error("Unable to save this identification decision.");
+
+  if (moduleRecordId) {
+    try {
+      await updateGrowpathModuleRecord(moduleRecordId, {
+        title: moduleRecord?.title || "Species / Crop Identification",
+        status: moduleRecord?.status || "active",
+        userDecision: decision,
+        outcome: {
+          ...(moduleRecord?.outcome || {}),
+          lastDecision: decision,
+          decisionRecordedAt: recordedAt
+        },
+        warnings: moduleRecord?.warnings || [],
+        recommendations: moduleRecord?.recommendations || [],
+        limitations: moduleRecord?.limitations || [],
+        tags: moduleRecord?.tags || [],
+        linkedTaskIds: moduleRecord?.linkedTaskIds || [],
+        tasksToCreate: moduleRecord?.tasksToCreate || []
+      });
+    } catch (_error: any) {
+      // The scoped ToolRun is authoritative. A legacy Personal module record is
+      // secondary and must never manufacture success or undo the saved decision.
+    }
+  }
 }
 
 function cropIdentityCalendarMetadata(sourceStage: string) {
@@ -665,12 +966,55 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
 
 export default function SpeciesCropIdToolRoute() {
   const { palette } = useAppTheme();
+  const entitlements = useEntitlements();
   const styles = useMemo(() => createSpeciesCropIdStyles(palette), [palette]);
-  const params = useLocalSearchParams<{ fieldStudyId?: string }>();
+  const params = useLocalSearchParams<{
+    fieldStudyId?: string | string[];
+    facilityId?: string | string[];
+    commercialAccountId?: string | string[];
+    retryToolRunId?: string | string[];
+    workspace?: string | string[];
+    workspaceType?: string | string[];
+  }>();
+  const routeFacilityId = routeParam(params.facilityId);
+  const commercialAccountId = routeParam(params.commercialAccountId);
+  const retryToolRunId = routeParam(params.retryToolRunId);
+  const requestedWorkspaceType = String(
+    routeParam(params.workspaceType) || routeParam(params.workspace)
+  )
+    .trim()
+    .toLowerCase();
+  const workspaceType = resolveToolWorkspaceType({
+    entitlementMode: entitlements.mode,
+    requestedWorkspaceType,
+    facilityId: routeFacilityId,
+    commercialAccountId
+  });
+  const facilityId =
+    workspaceType === "facility"
+      ? entitlements.mode === "facility" && entitlements.facilityId
+        ? String(entitlements.facilityId)
+        : routeFacilityId
+      : "";
+  const workspaceIdentityKey = toolWorkspaceIdentity({
+    workspaceType,
+    facilityId,
+    commercialAccountId
+  });
+  const toolRunScope = useMemo<ToolRunWorkspaceScope>(
+    () =>
+      workspaceType === "personal"
+        ? {}
+        : {
+            workspaceType,
+            ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
+          },
+    [facilityId, workspaceType]
+  );
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   const [fieldStudies, setFieldStudies] = useState<FieldStudy[]>([]);
   const [selectedFieldStudyId, setSelectedFieldStudyId] = useState(
-    String(params.fieldStudyId || "")
+    workspaceType === "personal" ? routeParam(params.fieldStudyId) : ""
   );
   const [observationLocation, setObservationLocation] =
     useState<PublicCoordinates | null>(null);
@@ -687,21 +1031,186 @@ export default function SpeciesCropIdToolRoute() {
   const [confirmPublicStudy, setConfirmPublicStudy] = useState(false);
   const [cannabisMapConsent, setCannabisMapConsent] = useState(false);
   const [showLocationAndSharing, setShowLocationAndSharing] = useState(
-    Boolean(params.fieldStudyId)
+    workspaceType === "personal" && Boolean(params.fieldStudyId)
   );
   const [savedFieldObservationId, setSavedFieldObservationId] = useState("");
   const [savedFieldObservationPublished, setSavedFieldObservationPublished] =
     useState(false);
   const [activeToolRun, setActiveToolRun] = useState<ToolRun | null>(null);
   const activeToolRunRef = useRef<ToolRun | null>(null);
+  const renderedWorkspaceIdentityRef = useRef(workspaceIdentityKey);
+  const currentWorkspaceIdentityRef = useRef(workspaceIdentityKey);
+  currentWorkspaceIdentityRef.current = workspaceIdentityKey;
+  const workspaceChangedDuringRender =
+    renderedWorkspaceIdentityRef.current !== workspaceIdentityKey;
   const aiReviewByEvidenceRef = useRef(new Map<string, PlantIdVisionAssessment>());
   const hydratedEvidenceReviewKeysRef = useRef(new Set<string>());
   const evidenceReviewHydrationPromisesRef = useRef(new Map<string, Promise<void>>());
   const [fieldStudyNotice, setFieldStudyNotice] = useState("");
   const [fieldStudyError, setFieldStudyError] = useState("");
+  const [retryEvidenceNotice, setRetryEvidenceNotice] = useState("");
+  const [retryEvidenceError, setRetryEvidenceError] = useState("");
+  const [retryEvidenceLoading, setRetryEvidenceLoading] = useState(false);
+  const [retryRetainedEvidenceIds, setRetryRetainedEvidenceIds] = useState<string[]>([]);
+  const hydratedRetryToolRunRef = useRef("");
+  const currentEvidenceAssets = useMemo(
+    () => (workspaceChangedDuringRender ? [] : evidenceAssets),
+    [evidenceAssets, workspaceChangedDuringRender]
+  );
+
+  useEffect(() => {
+    if (renderedWorkspaceIdentityRef.current === workspaceIdentityKey) return;
+    renderedWorkspaceIdentityRef.current = workspaceIdentityKey;
+    activeToolRunRef.current = null;
+    aiReviewByEvidenceRef.current.clear();
+    hydratedEvidenceReviewKeysRef.current.clear();
+    evidenceReviewHydrationPromisesRef.current.clear();
+    setEvidenceAssets([]);
+    setActiveToolRun(null);
+    setObservationLocation(null);
+    setLocationPrivacy("private");
+    setPublishObservation(false);
+    setSensitiveSpecies(false);
+    setLocationBusy(false);
+    setIdentificationBusy(false);
+    setEvidenceBusy(false);
+    setFieldStudies([]);
+    setSelectedFieldStudyId(
+      workspaceType === "personal" ? routeParam(params.fieldStudyId) : ""
+    );
+    setShowLocationAndSharing(
+      workspaceType === "personal" && Boolean(routeParam(params.fieldStudyId))
+    );
+    setNewStudyTitle("");
+    setCreatingStudy(false);
+    setPublishingStudy(false);
+    setConfirmPublicStudy(false);
+    setCannabisMapConsent(false);
+    setSavedFieldObservationId("");
+    setSavedFieldObservationPublished(false);
+    setFieldStudyNotice("");
+    setFieldStudyError("");
+    setRetryEvidenceNotice("");
+    setRetryEvidenceError("");
+    setRetryEvidenceLoading(false);
+    setRetryRetainedEvidenceIds([]);
+  }, [params.fieldStudyId, workspaceIdentityKey, workspaceType]);
+
+  useEffect(() => {
+    const hydrationKey = `${workspaceIdentityKey}:${retryToolRunId}`;
+    if (workspaceType !== "personal" || !retryToolRunId) {
+      setRetryEvidenceNotice("");
+      setRetryEvidenceError("");
+      setRetryEvidenceLoading(false);
+      setRetryRetainedEvidenceIds([]);
+      return;
+    }
+    if (hydratedRetryToolRunRef.current === hydrationKey) return;
+    hydratedRetryToolRunRef.current = hydrationKey;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    let active = true;
+    setEvidenceAssets([]);
+    setActiveToolRun(null);
+    activeToolRunRef.current = null;
+    setRetryEvidenceNotice("");
+    setRetryEvidenceError("");
+    setRetryEvidenceLoading(true);
+    setRetryRetainedEvidenceIds([]);
+    void (async () => {
+      try {
+        const savedRun = await getToolRun(retryToolRunId, {
+          workspaceType: "personal"
+        });
+        if (!active || currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) {
+          return;
+        }
+        if (
+          !savedRun ||
+          !/species[_-]crop[_-]id/i.test(
+            String(savedRun.toolType || savedRun.toolName || "")
+          )
+        ) {
+          throw new Error("The requested Saved Run is not a Plant ID result.");
+        }
+        const evidenceIds = savedPlantIdEvidenceIds(savedRun);
+        if (!evidenceIds.length) {
+          throw new Error(
+            "This Saved Plant ID does not contain reusable photo evidence."
+          );
+        }
+        const ownedAssets = await getEvidenceAssetsByIds(evidenceIds, {
+          workspaceType: "personal"
+        });
+        if (!active || currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) {
+          return;
+        }
+        const byId = new Map(
+          ownedAssets.map((asset: EvidenceAsset) => [
+            String(asset.id || asset._id || ""),
+            asset
+          ])
+        );
+        const recovered = evidenceIds
+          .map((id) => byId.get(id))
+          .filter((asset): asset is EvidenceAsset => Boolean(asset));
+        if (recovered.length !== evidenceIds.length) {
+          throw new Error(
+            "Some saved evidence is no longer available. Nothing was loaded for retry."
+          );
+        }
+        const recoveryEligibilityError = savedPlantIdRecoveryEligibilityError(
+          savedRun,
+          recovered
+        );
+        if (recoveryEligibilityError) {
+          throw new Error(recoveryEligibilityError);
+        }
+        setEvidenceAssets(recovered);
+        setRetryRetainedEvidenceIds(
+          Array.from(
+            new Set(
+              recovered
+                .flatMap((asset: EvidenceAsset) => [asset.id, asset._id])
+                .filter(Boolean)
+            )
+          ).map(String)
+        );
+        const photoCount = recovered.filter(
+          (asset) => asset.assetType === "photo"
+        ).length;
+        const videoCount = recovered.filter(
+          (asset) => asset.assetType === "video"
+        ).length;
+        setRetryEvidenceNotice(
+          `Recovered ${photoCount} saved photo${photoCount === 1 ? "" : "s"}${
+            videoCount
+              ? ` and ${videoCount} private source video${videoCount === 1 ? "" : "s"}`
+              : ""
+          }. Review the evidence, then press Identify Plant from Photos to start a new analysis.`
+        );
+      } catch (error: any) {
+        if (!active || currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) {
+          return;
+        }
+        setEvidenceAssets([]);
+        setRetryRetainedEvidenceIds([]);
+        setRetryEvidenceError(
+          error?.message || "The saved Plant ID evidence could not be recovered."
+        );
+      } finally {
+        if (active && currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+          setRetryEvidenceLoading(false);
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [retryToolRunId, workspaceIdentityKey, workspaceType]);
+
   const evidenceInputKey = useMemo(
     () =>
-      evidenceAssets
+      currentEvidenceAssets
         .map((asset) =>
           [
             asset.id || asset._id || "",
@@ -713,11 +1222,11 @@ export default function SpeciesCropIdToolRoute() {
           ].join(":")
         )
         .join("|"),
-    [evidenceAssets]
+    [currentEvidenceAssets]
   );
   const uploadedEvidence = useMemo(
-    () => providerEvidencePayload(evidenceAssets),
-    [evidenceAssets]
+    () => providerEvidencePayload(currentEvidenceAssets),
+    [currentEvidenceAssets]
   );
   const activeEvidenceReviewKey = useMemo(
     () => evidenceReviewKey(uploadedEvidence.imageEvidenceAssetIds),
@@ -726,6 +1235,7 @@ export default function SpeciesCropIdToolRoute() {
 
   async function hydratePriorPlantIdReview() {
     const key = activeEvidenceReviewKey;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     if (
       !key ||
       aiReviewByEvidenceRef.current.has(key) ||
@@ -736,7 +1246,11 @@ export default function SpeciesCropIdToolRoute() {
     const pending = evidenceReviewHydrationPromisesRef.current.get(key);
     if (pending) return pending;
     const hydration = (async () => {
-      const runs = await listToolRuns({ toolType: "species-crop-id" });
+      const runs = await listToolRuns({
+        toolType: "species-crop-id",
+        ...toolRunScope
+      });
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       const previousRun = runs.find((run) => {
         const inputs = run.inputs || run.input || run.params || {};
         const storedFingerprint = String(
@@ -796,6 +1310,12 @@ export default function SpeciesCropIdToolRoute() {
   }, [evidenceInputKey]);
 
   useEffect(() => {
+    if (workspaceType !== "personal") {
+      setFieldStudies([]);
+      setSelectedFieldStudyId("");
+      setShowLocationAndSharing(false);
+      return;
+    }
     if (!showLocationAndSharing && !params.fieldStudyId) return;
     let active = true;
     listFieldStudies()
@@ -805,7 +1325,7 @@ export default function SpeciesCropIdToolRoute() {
           (study) => study.accessRole === "owner" || study.accessRole === "editor"
         );
         setFieldStudies(editable);
-        const requested = String(params.fieldStudyId || "");
+        const requested = routeParam(params.fieldStudyId);
         if (
           requested &&
           editable.some((study) => String(study.id || study._id) === requested)
@@ -823,9 +1343,13 @@ export default function SpeciesCropIdToolRoute() {
     return () => {
       active = false;
     };
-  }, [params.fieldStudyId, showLocationAndSharing]);
+  }, [params.fieldStudyId, showLocationAndSharing, workspaceType]);
 
-  async function syncSavedRunLocation(nextLocation: PublicCoordinates | null) {
+  async function syncSavedRunLocation(
+    nextLocation: PublicCoordinates | null,
+    requestWorkspaceIdentity = workspaceIdentityKey
+  ) {
+    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
     const sourceToolRun = activeToolRunRef.current;
     const toolRunId = String(sourceToolRun?.id || sourceToolRun?._id || "");
     if (!toolRunId) {
@@ -842,11 +1366,15 @@ export default function SpeciesCropIdToolRoute() {
         }
       : null;
     const nextInput = { ...existingInput, capturedLocation };
-    const updated = await updateToolRun(toolRunId, {
+    const locationPatch = {
       inputs: nextInput,
       input: nextInput,
       params: nextInput
-    });
+    };
+    const updated = toolRunScope.workspaceType
+      ? await updateToolRun(toolRunId, locationPatch, toolRunScope)
+      : await updateToolRun(toolRunId, locationPatch);
+    if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
     if (!updated) {
       throw new Error(
         nextLocation
@@ -874,40 +1402,51 @@ export default function SpeciesCropIdToolRoute() {
 
   async function captureCurrentLocation() {
     if (identificationBusy) return;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     setLocationBusy(true);
     setFieldStudyError("");
     setFieldStudyNotice("");
     try {
-      await syncSavedRunLocation(await requestCurrentCoordinates());
+      const coordinates = await requestCurrentCoordinates();
+      await syncSavedRunLocation(coordinates, requestWorkspaceIdentity);
     } catch (locationError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setFieldStudyError(
         locationError?.message ||
           "Current location is unavailable. You can still enter a general region."
       );
     } finally {
-      setLocationBusy(false);
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setLocationBusy(false);
+      }
     }
   }
 
   async function removeCurrentLocation() {
     if (locationBusy || identificationBusy) return;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
     setLocationBusy(true);
     setFieldStudyError("");
     try {
-      await syncSavedRunLocation(null);
+      await syncSavedRunLocation(null, requestWorkspaceIdentity);
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setFieldStudyNotice(
         "The private location was removed from this Plant ID only. Field Studies and Nature were not changed."
       );
     } catch (locationError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setFieldStudyError(
         locationError?.message || "The private Plant ID location could not be removed."
       );
     } finally {
-      setLocationBusy(false);
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setLocationBusy(false);
+      }
     }
   }
 
   function selectFieldStudy(study: FieldStudy) {
+    if (workspaceType !== "personal") return;
     const id = String(study.id || study._id || "");
     if (selectedFieldStudyId === id) {
       setSelectedFieldStudyId("");
@@ -925,6 +1464,12 @@ export default function SpeciesCropIdToolRoute() {
   }
 
   async function createFieldStudyHere() {
+    if (workspaceType !== "personal") {
+      setFieldStudyError(
+        "Field Studies and Nature publishing are available only from a Personal workspace."
+      );
+      return;
+    }
     const title = newStudyTitle.trim();
     if (!title || creatingStudy) {
       setFieldStudyError("Enter a Field Study name first.");
@@ -949,6 +1494,7 @@ export default function SpeciesCropIdToolRoute() {
   }
 
   async function makeSelectedStudyPublic() {
+    if (workspaceType !== "personal") return;
     if (
       !selectedFieldStudy ||
       selectedFieldStudy.accessRole !== "owner" ||
@@ -985,18 +1531,20 @@ export default function SpeciesCropIdToolRoute() {
       toolKey="species-crop-id"
       externalInputKey={evidenceInputKey}
       onToolRunChange={handleToolRunChange}
-      executionBlocked={locationBusy || evidenceBusy}
+      executionBlocked={locationBusy || evidenceBusy || retryEvidenceLoading}
       executionBlockedMessage={
-        evidenceBusy
-          ? "Finish uploading and saving every selected photo or video before identifying this plant."
-          : "Finish the active location request before identifying this plant."
+        retryEvidenceLoading
+          ? "Finish recovering the saved Plant ID evidence before starting identification."
+          : evidenceBusy
+            ? "Finish uploading and saving every selected photo or video before identifying this plant."
+            : "Finish the active location request before identifying this plant."
       }
       onExecutionBusyChange={setIdentificationBusy}
       title="Species / Crop Identification"
       subtitle="Narrow an unknown plant by combining photos, morphology, habitat, geography, and season. A grow is optional."
       growOptional
       noGrowContextMessage="This identification and your confirmation decision remain in Saved Runs. Attach a grow only to add the confirmed identity to grow or plant history."
-      formHeader={({ growId }) => (
+      formHeader={({ growId, facilityId: activeFacilityId, workspaceType }) => (
         <View style={styles.evidenceSection}>
           <Text style={styles.evidenceTitle}>Step 1 — Add identification evidence</Text>
           <Text style={styles.evidenceGuidance}>
@@ -1007,7 +1555,23 @@ export default function SpeciesCropIdToolRoute() {
             light; direct flash against a dark background can hide color and diagnostic
             structure in glare, clipped highlights, and deep shadow.
           </Text>
+          {retryEvidenceLoading ? (
+            <Text accessibilityLiveRegion="polite" style={styles.evidenceGuidance}>
+              Recovering saved Plant ID evidence...
+            </Text>
+          ) : null}
+          {retryEvidenceError ? (
+            <Text accessibilityRole="alert" style={styles.fieldStudyError}>
+              {retryEvidenceError}
+            </Text>
+          ) : null}
+          {retryEvidenceNotice ? (
+            <Text accessibilityLiveRegion="polite" style={styles.statusGood}>
+              {retryEvidenceNotice}
+            </Text>
+          ) : null}
           <MediaEvidencePicker
+            key={workspaceIdentityKey}
             aiUsable
             maxPhotos={12}
             allowVideo
@@ -1015,10 +1579,20 @@ export default function SpeciesCropIdToolRoute() {
             maxExtractedVideoFrames={12}
             maxVideoSeconds={599}
             purpose="crop_identification"
-            sourceContext={{ growId: growId || undefined }}
-            value={evidenceAssets}
+            sourceContext={{
+              growId: growId || undefined,
+              ...(workspaceType === "facility" && activeFacilityId
+                ? { facilityId: activeFacilityId }
+                : {})
+            }}
+            videoWorkspaceType={workspaceType}
+            videoWorkspaceId={
+              workspaceType === "facility" ? activeFacilityId || undefined : undefined
+            }
+            value={currentEvidenceAssets}
             onChange={setEvidenceAssets}
             onBusyChange={setEvidenceBusy}
+            retainOnRemoveAssetIds={retryRetainedEvidenceIds}
           />
           <View style={styles.privateLocationPanel}>
             <Text style={styles.evidenceTitle}>Private plant location</Text>
@@ -1093,327 +1667,347 @@ export default function SpeciesCropIdToolRoute() {
               {fieldStudyNotice}
             </Text>
           ) : null}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ expanded: showLocationAndSharing }}
-            onPress={() => setShowLocationAndSharing((value) => !value)}
-            style={styles.secondaryButton}
-          >
-            <Text style={styles.secondaryButtonText}>
-              {showLocationAndSharing
-                ? "Hide Field Study & Nature sharing"
-                : "Optional: add to a Field Study or Nature"}
-            </Text>
-          </Pressable>
-          {showLocationAndSharing ? (
-            <View style={styles.fieldStudySection}>
-              <Text style={styles.evidenceTitle}>
-                Optional — Field Study and Nature sharing
-              </Text>
-              <Text style={styles.evidenceGuidance}>
-                After identification, this Plant ID can keep its private location in Saved
-                Runs without a Field Study. Use this section only for collaboration or
-                deliberate Nature publishing. Nothing is published by default.
-              </Text>
-
-              <Text style={styles.fieldLabel}>
-                Field Study (required only for map pins)
-              </Text>
-              {fieldStudies.length ? (
-                <View style={styles.choiceRow}>
-                  {fieldStudies.map((study) => {
-                    const id = String(study.id || study._id || "");
-                    const selected = selectedFieldStudyId === id;
-                    return (
-                      <Pressable
-                        accessibilityRole="radio"
-                        accessibilityState={{ checked: selected }}
-                        key={id}
-                        onPress={() => selectFieldStudy(study)}
-                        style={[
-                          styles.choiceButton,
-                          selected && styles.choiceButtonSelected
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.choiceText,
-                            selected && styles.choiceTextSelected
-                          ]}
-                        >
-                          {study.title} · {study.visibility}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              ) : (
-                <Text style={styles.evidenceGuidance}>
-                  You do not have an editable Field Study yet. Create one here without
-                  leaving your uploaded photos.
+          {workspaceType === "personal" ? (
+            <>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: showLocationAndSharing }}
+                onPress={() => setShowLocationAndSharing((value) => !value)}
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {showLocationAndSharing
+                    ? "Hide Field Study & Nature sharing"
+                    : "Optional: add to a Field Study or Nature"}
                 </Text>
-              )}
-              <View style={styles.createStudyRow}>
-                <TextInput
-                  accessibilityLabel="New Field Study name"
-                  onChangeText={setNewStudyTitle}
-                  placeholder="New Field Study name"
-                  placeholderTextColor={palette.textMuted}
-                  style={styles.studyInput}
-                  value={newStudyTitle}
-                />
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={creatingStudy}
-                  onPress={createFieldStudyHere}
-                  style={styles.secondaryButton}
-                >
-                  <Text style={styles.secondaryButtonText}>
-                    {creatingStudy ? "Creating..." : "Create & select"}
+              </Pressable>
+              {showLocationAndSharing ? (
+                <View style={styles.fieldStudySection}>
+                  <Text style={styles.evidenceTitle}>
+                    Optional — Field Study and Nature sharing
                   </Text>
-                </Pressable>
-              </View>
-              <Link href="/home/personal/field-studies" asChild>
-                <Pressable accessibilityRole="link" style={styles.inlineLink}>
-                  <Text style={styles.secondaryButtonText}>Manage Field Studies</Text>
-                </Pressable>
-              </Link>
+                  <Text style={styles.evidenceGuidance}>
+                    After identification, this Plant ID can keep its private location in
+                    Saved Runs without a Field Study. Use this section only for
+                    collaboration or deliberate Nature publishing. Nothing is published by
+                    default.
+                  </Text>
 
-              {selectedFieldStudy ? (
-                <>
                   <Text style={styles.fieldLabel}>
-                    Save this Field Study observation as
+                    Field Study (required only for map pins)
                   </Text>
-                  <View style={styles.choiceRow}>
+                  {fieldStudies.length ? (
+                    <View style={styles.choiceRow}>
+                      {fieldStudies.map((study) => {
+                        const id = String(study.id || study._id || "");
+                        const selected = selectedFieldStudyId === id;
+                        return (
+                          <Pressable
+                            accessibilityRole="radio"
+                            accessibilityState={{ checked: selected }}
+                            key={id}
+                            onPress={() => selectFieldStudy(study)}
+                            style={[
+                              styles.choiceButton,
+                              selected && styles.choiceButtonSelected
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.choiceText,
+                                selected && styles.choiceTextSelected
+                              ]}
+                            >
+                              {study.title} · {study.visibility}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  ) : (
+                    <Text style={styles.evidenceGuidance}>
+                      You do not have an editable Field Study yet. Create one here without
+                      leaving your uploaded photos.
+                    </Text>
+                  )}
+                  <View style={styles.createStudyRow}>
+                    <TextInput
+                      accessibilityLabel="New Field Study name"
+                      onChangeText={setNewStudyTitle}
+                      placeholder="New Field Study name"
+                      placeholderTextColor={palette.textMuted}
+                      style={styles.studyInput}
+                      value={newStudyTitle}
+                    />
                     <Pressable
-                      accessibilityRole="radio"
-                      accessibilityState={{
-                        checked: !publishObservation && locationPrivacy === "private"
-                      }}
-                      onPress={() => {
-                        setPublishObservation(false);
-                        setLocationPrivacy("private");
-                        setConfirmPublicStudy(false);
-                        setCannabisMapConsent(false);
-                      }}
-                      style={[
-                        styles.choiceButton,
-                        !publishObservation &&
-                          locationPrivacy === "private" &&
-                          styles.choiceButtonSelected
-                      ]}
+                      accessibilityRole="button"
+                      disabled={creatingStudy}
+                      onPress={createFieldStudyHere}
+                      style={styles.secondaryButton}
                     >
-                      <Text
-                        style={[
-                          styles.choiceText,
-                          !publishObservation &&
-                            locationPrivacy === "private" &&
-                            styles.choiceTextSelected
-                        ]}
-                      >
-                        Private draft
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="radio"
-                      accessibilityState={{
-                        checked:
-                          !publishObservation && locationPrivacy === "collaborators"
-                      }}
-                      onPress={() => {
-                        setPublishObservation(false);
-                        setLocationPrivacy("collaborators");
-                        setConfirmPublicStudy(false);
-                        setCannabisMapConsent(false);
-                      }}
-                      style={[
-                        styles.choiceButton,
-                        !publishObservation &&
-                          locationPrivacy === "collaborators" &&
-                          styles.choiceButtonSelected
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.choiceText,
-                          !publishObservation &&
-                            locationPrivacy === "collaborators" &&
-                            styles.choiceTextSelected
-                        ]}
-                      >
-                        Study-team draft
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="radio"
-                      accessibilityState={{ checked: wantsNatureMap }}
-                      onPress={() => {
-                        setPublishObservation(true);
-                        setLocationPrivacy("public_approximate");
-                      }}
-                      style={[
-                        styles.choiceButton,
-                        wantsNatureMap && styles.choiceButtonSelected
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.choiceText,
-                          wantsNatureMap && styles.choiceTextSelected
-                        ]}
-                      >
-                        Nature map — approximate pin
+                      <Text style={styles.secondaryButtonText}>
+                        {creatingStudy ? "Creating..." : "Create & select"}
                       </Text>
                     </Pressable>
                   </View>
-                  {wantsNatureMap ? (
-                    <View style={styles.readinessPanel}>
-                      <Text style={styles.fieldLabel}>Nature map readiness</Text>
-                      {natureMapChecks.map((check) => (
-                        <Text
-                          key={check.label}
-                          style={check.ready ? styles.statusGood : styles.statusWarning}
-                        >
-                          {check.ready ? "Ready" : "Needed"}: {check.label}
-                        </Text>
-                      ))}
-                      {selectedFieldStudy.visibility !== "public" ? (
-                        selectedFieldStudy.accessRole === "owner" ? (
-                          <Pressable
-                            accessibilityRole="button"
-                            disabled={publishingStudy}
-                            onPress={() => setConfirmPublicStudy(true)}
-                            style={styles.secondaryButton}
-                          >
-                            <Text style={styles.secondaryButtonText}>
-                              Review public Field Study sharing
-                            </Text>
-                          </Pressable>
-                        ) : (
-                          <Text style={styles.statusWarning}>
-                            The Field Study owner must make this study public before its
-                            published observations can appear on the Nature map.
-                          </Text>
-                        )
-                      ) : null}
-                      {confirmPublicStudy &&
-                      selectedFieldStudy.visibility !== "public" ? (
-                        <View style={styles.confirmationPanel}>
-                          <Text style={styles.statusWarning}>
-                            Making this Field Study public affects the whole study. Any
-                            published observations already in it may become discoverable;
-                            drafts remain private. Confirm only if that matches the
-                            study&apos;s intended audience.
-                          </Text>
-                          <View style={styles.choiceRow}>
-                            <Pressable
-                              accessibilityRole="button"
-                              onPress={() => setConfirmPublicStudy(false)}
-                              style={styles.secondaryButton}
-                            >
-                              <Text style={styles.secondaryButtonText}>Cancel</Text>
-                            </Pressable>
-                            <Pressable
-                              accessibilityRole="button"
-                              disabled={publishingStudy}
-                              onPress={makeSelectedStudyPublic}
-                              style={styles.secondaryButton}
-                            >
-                              <Text style={styles.secondaryButtonText}>
-                                {publishingStudy
-                                  ? "Making study public..."
-                                  : "Confirm public Field Study"}
-                              </Text>
-                            </Pressable>
-                          </View>
-                        </View>
-                      ) : null}
-                      <Pressable
-                        accessibilityRole="checkbox"
-                        accessibilityState={{ checked: sensitiveSpecies }}
-                        onPress={() => setSensitiveSpecies((value) => !value)}
-                        style={[
-                          styles.choiceButton,
-                          sensitiveSpecies && styles.sensitiveButtonSelected
-                        ]}
-                      >
-                        <Text style={styles.choiceText}>
-                          {sensitiveSpecies
-                            ? "Sensitive species protection: on"
-                            : "Sensitive species protection: off"}
-                        </Text>
-                      </Pressable>
-                      <Pressable
-                        accessibilityRole="checkbox"
-                        accessibilityState={{ checked: cannabisMapConsent }}
-                        onPress={() => setCannabisMapConsent((value) => !value)}
-                        style={[
-                          styles.choiceButton,
-                          cannabisMapConsent && styles.choiceButtonSelected
-                        ]}
-                      >
-                        <Text
+                  <Link href="/home/personal/field-studies" asChild>
+                    <Pressable accessibilityRole="link" style={styles.inlineLink}>
+                      <Text style={styles.secondaryButtonText}>Manage Field Studies</Text>
+                    </Pressable>
+                  </Link>
+
+                  {selectedFieldStudy ? (
+                    <>
+                      <Text style={styles.fieldLabel}>
+                        Save this Field Study observation as
+                      </Text>
+                      <View style={styles.choiceRow}>
+                        <Pressable
+                          accessibilityRole="radio"
+                          accessibilityState={{
+                            checked: !publishObservation && locationPrivacy === "private"
+                          }}
+                          onPress={() => {
+                            setPublishObservation(false);
+                            setLocationPrivacy("private");
+                            setConfirmPublicStudy(false);
+                            setCannabisMapConsent(false);
+                          }}
                           style={[
-                            styles.choiceText,
-                            cannabisMapConsent && styles.choiceTextSelected
+                            styles.choiceButton,
+                            !publishObservation &&
+                              locationPrivacy === "private" &&
+                              styles.choiceButtonSelected
                           ]}
                         >
-                          {cannabisMapConsent
-                            ? "Cannabis/hemp public-context confirmation: on"
-                            : "This is Cannabis/hemp — review public-context sharing"}
+                          <Text
+                            style={[
+                              styles.choiceText,
+                              !publishObservation &&
+                                locationPrivacy === "private" &&
+                                styles.choiceTextSelected
+                            ]}
+                          >
+                            Private draft
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="radio"
+                          accessibilityState={{
+                            checked:
+                              !publishObservation && locationPrivacy === "collaborators"
+                          }}
+                          onPress={() => {
+                            setPublishObservation(false);
+                            setLocationPrivacy("collaborators");
+                            setConfirmPublicStudy(false);
+                            setCannabisMapConsent(false);
+                          }}
+                          style={[
+                            styles.choiceButton,
+                            !publishObservation &&
+                              locationPrivacy === "collaborators" &&
+                              styles.choiceButtonSelected
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.choiceText,
+                              !publishObservation &&
+                                locationPrivacy === "collaborators" &&
+                                styles.choiceTextSelected
+                            ]}
+                          >
+                            Study-team draft
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="radio"
+                          accessibilityState={{ checked: wantsNatureMap }}
+                          onPress={() => {
+                            setPublishObservation(true);
+                            setLocationPrivacy("public_approximate");
+                          }}
+                          style={[
+                            styles.choiceButton,
+                            wantsNatureMap && styles.choiceButtonSelected
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.choiceText,
+                              wantsNatureMap && styles.choiceTextSelected
+                            ]}
+                          >
+                            Nature map — approximate pin
+                          </Text>
+                        </Pressable>
+                      </View>
+                      {wantsNatureMap ? (
+                        <View style={styles.readinessPanel}>
+                          <Text style={styles.fieldLabel}>Nature map readiness</Text>
+                          {natureMapChecks.map((check) => (
+                            <Text
+                              key={check.label}
+                              style={
+                                check.ready ? styles.statusGood : styles.statusWarning
+                              }
+                            >
+                              {check.ready ? "Ready" : "Needed"}: {check.label}
+                            </Text>
+                          ))}
+                          {selectedFieldStudy.visibility !== "public" ? (
+                            selectedFieldStudy.accessRole === "owner" ? (
+                              <Pressable
+                                accessibilityRole="button"
+                                disabled={publishingStudy}
+                                onPress={() => setConfirmPublicStudy(true)}
+                                style={styles.secondaryButton}
+                              >
+                                <Text style={styles.secondaryButtonText}>
+                                  Review public Field Study sharing
+                                </Text>
+                              </Pressable>
+                            ) : (
+                              <Text style={styles.statusWarning}>
+                                The Field Study owner must make this study public before
+                                its published observations can appear on the Nature map.
+                              </Text>
+                            )
+                          ) : null}
+                          {confirmPublicStudy &&
+                          selectedFieldStudy.visibility !== "public" ? (
+                            <View style={styles.confirmationPanel}>
+                              <Text style={styles.statusWarning}>
+                                Making this Field Study public affects the whole study.
+                                Any published observations already in it may become
+                                discoverable; drafts remain private. Confirm only if that
+                                matches the study&apos;s intended audience.
+                              </Text>
+                              <View style={styles.choiceRow}>
+                                <Pressable
+                                  accessibilityRole="button"
+                                  onPress={() => setConfirmPublicStudy(false)}
+                                  style={styles.secondaryButton}
+                                >
+                                  <Text style={styles.secondaryButtonText}>Cancel</Text>
+                                </Pressable>
+                                <Pressable
+                                  accessibilityRole="button"
+                                  disabled={publishingStudy}
+                                  onPress={makeSelectedStudyPublic}
+                                  style={styles.secondaryButton}
+                                >
+                                  <Text style={styles.secondaryButtonText}>
+                                    {publishingStudy
+                                      ? "Making study public..."
+                                      : "Confirm public Field Study"}
+                                  </Text>
+                                </Pressable>
+                              </View>
+                            </View>
+                          ) : null}
+                          <Pressable
+                            accessibilityRole="checkbox"
+                            accessibilityState={{ checked: sensitiveSpecies }}
+                            onPress={() => setSensitiveSpecies((value) => !value)}
+                            style={[
+                              styles.choiceButton,
+                              sensitiveSpecies && styles.sensitiveButtonSelected
+                            ]}
+                          >
+                            <Text style={styles.choiceText}>
+                              {sensitiveSpecies
+                                ? "Sensitive species protection: on"
+                                : "Sensitive species protection: off"}
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            accessibilityRole="checkbox"
+                            accessibilityState={{ checked: cannabisMapConsent }}
+                            onPress={() => setCannabisMapConsent((value) => !value)}
+                            style={[
+                              styles.choiceButton,
+                              cannabisMapConsent && styles.choiceButtonSelected
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.choiceText,
+                                cannabisMapConsent && styles.choiceTextSelected
+                              ]}
+                            >
+                              {cannabisMapConsent
+                                ? "Cannabis/hemp public-context confirmation: on"
+                                : "This is Cannabis/hemp — review public-context sharing"}
+                            </Text>
+                          </Pressable>
+                          {cannabisMapConsent ? (
+                            <Text style={styles.evidenceGuidance}>
+                              You confirm this is a Cannabis-genus observation and want an
+                              eligible public pin shown only to viewers whose grow
+                              interests and content controls allow Cannabis/hemp findings.
+                            </Text>
+                          ) : null}
+                          <Text
+                            style={
+                              natureMapReady ? styles.statusGood : styles.statusWarning
+                            }
+                          >
+                            {natureMapReady
+                              ? "Ready to create an approximate map pin after AI review."
+                              : "Complete the needed items above, then identify the plant and publish the pin from the result."}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </>
+                  ) : null}
+                  <View style={styles.fieldMapLink}>
+                    <Text style={styles.evidenceGuidance}>
+                      See public, opt-in observations on the shared Nature map. Personal
+                      account details are not placed on pins. Cannabis/hemp findings
+                      follow deliberate publication and viewer grow-interest controls.
+                    </Text>
+                    <Link href="/field-observations" asChild>
+                      <Pressable
+                        accessibilityRole="link"
+                        accessibilityLabel="Explore the public field observation map"
+                        style={styles.secondaryButton}
+                      >
+                        <Text style={styles.secondaryButtonText}>
+                          Explore public field map
                         </Text>
                       </Pressable>
-                      {cannabisMapConsent ? (
-                        <Text style={styles.evidenceGuidance}>
-                          You confirm this is a Cannabis-genus observation and want an
-                          eligible public pin shown only to viewers whose grow interests
-                          and content controls allow Cannabis/hemp findings.
-                        </Text>
-                      ) : null}
-                      <Text
-                        style={natureMapReady ? styles.statusGood : styles.statusWarning}
-                      >
-                        {natureMapReady
-                          ? "Ready to create an approximate map pin after AI review."
-                          : "Complete the needed items above, then identify the plant and publish the pin from the result."}
-                      </Text>
-                    </View>
-                  ) : null}
-                </>
+                    </Link>
+                  </View>
+                </View>
               ) : null}
-              <View style={styles.fieldMapLink}>
-                <Text style={styles.evidenceGuidance}>
-                  See public, opt-in observations on the shared Nature map. Personal
-                  account details are not placed on pins. Cannabis/hemp findings follow
-                  deliberate publication and viewer grow-interest controls.
-                </Text>
-                <Link href="/field-observations" asChild>
-                  <Pressable
-                    accessibilityRole="link"
-                    accessibilityLabel="Explore the public field observation map"
-                    style={styles.secondaryButton}
-                  >
-                    <Text style={styles.secondaryButtonText}>
-                      Explore public field map
-                    </Text>
-                  </Pressable>
-                </Link>
-              </View>
+            </>
+          ) : (
+            <View style={styles.fieldStudySection}>
+              <Text style={styles.evidenceTitle}>Shared-workspace follow-ups</Text>
+              <Text style={styles.evidenceGuidance}>
+                This result remains in the current {workspaceType} workspace&apos;s Saved
+                Runs. Personal Field Studies, Nature publishing, Personal grow or plant
+                identity updates, and Personal follow-up tasks are not available from this
+                shared-workspace result.
+              </Text>
             </View>
-          ) : null}
+          )}
         </View>
       )}
       aiPrefill={{
         buttonLabel: "Identify Plant from Photos",
         clearUnfilled: false,
         preserveAllExistingFields: true,
-        evidenceAssetIds: () => uploadedEvidence.imageEvidenceAssetIds,
+        evidenceAssetIds: () => uploadedEvidence.evidenceAssetIds,
         isReady: () =>
           uploadedEvidence.images.length > 0 && !locationBusy && !evidenceBusy,
         notReadyMessage:
           "Finish the photo upload and any active location request before starting AI identification.",
         prepare: hydratePriorPlantIdReview,
         runAfterPrefill: true,
+        buildImmediateResult: plantIdImmediateResult,
         buildMessage: ({ values }) =>
           `${PLANT_ID_AI_PROMPT}\n\nUser-entered context:\n${JSON.stringify(
             compactValues(values),
@@ -1431,16 +2025,27 @@ export default function SpeciesCropIdToolRoute() {
               previous: aiReviewByEvidenceRef.current.get(activeEvidenceReviewKey)
             })
           }),
-        buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
+        buildPayloadMetadata: ({ response, parsed }) => {
           const evidenceUsed = Array.isArray(response.evidenceUsed)
             ? response.evidenceUsed
             : [];
           const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
+          const usedEvidenceIds = new Set(evidenceUsed.map(String));
+          const videoFramesAnalyzed = uploadedEvidence.media.filter(
+            (asset) =>
+              asset.type === "photo" &&
+              asset.source === "generated" &&
+              usedEvidenceIds.has(String(asset.id))
+          ).length;
+          const videosAttached = uploadedEvidence.media.filter(
+            (asset) => asset.type === "video"
+          ).length;
           const assessment = assessPlantIdVisionReply({
             parsed,
             response,
             previous: aiReviewByEvidenceRef.current.get(activeEvidenceReviewKey)
           });
+          const analysisReceipt = response.analysisReceipt;
           if (activeEvidenceReviewKey) {
             aiReviewByEvidenceRef.current.set(activeEvidenceReviewKey, assessment);
             hydratedEvidenceReviewKeysRef.current.add(activeEvidenceReviewKey);
@@ -1448,10 +2053,15 @@ export default function SpeciesCropIdToolRoute() {
           return {
             identificationDraft: buildIdentificationDraft(parsed, assessment),
             imageAnalysis: {
-              requested: evidenceAssetIds.length > 0,
-              performed: evidenceAssetIds.length > 0 && assessment.performed,
-              photoCount: evidenceAssetIds.length,
+              requested: uploadedEvidence.imageEvidenceAssetIds.length > 0,
+              performed:
+                uploadedEvidence.imageEvidenceAssetIds.length > 0 && assessment.performed,
+              photoCount: uploadedEvidence.imageEvidenceAssetIds.length,
               photosAnalyzed,
+              stillImagesAnalyzed: photosAnalyzed,
+              videoFramesAnalyzed,
+              videosAttached,
+              videosAnalyzed: 0,
               provider: response.provider || "assistant",
               providerModel: response.mediaAnalysis?.providerModel || null,
               providerLabel: response.providerLabel || "AI crop identity review",
@@ -1461,8 +2071,16 @@ export default function SpeciesCropIdToolRoute() {
                 parsed.identifyingVisualTraits || ""
               ).trim(),
               evidenceUsed,
-              evidenceFingerprint: activeEvidenceReviewKey,
-              limitations: assessment.limitations
+              aiUsageEventId: analysisReceipt?.aiUsageEventId || null,
+              normalizedPlantIdResultDigest:
+                analysisReceipt?.normalizedPlantIdResultDigest || null,
+              evidenceFingerprint:
+                analysisReceipt?.evidenceFingerprint || activeEvidenceReviewKey,
+              limitations: assessment.limitations,
+              reviewPolicyVersion:
+                analysisReceipt?.reviewPolicyVersion || PLANT_ID_REVIEW_POLICY_VERSION,
+              previousReviewPolicyVersion: assessment.previousPolicyVersion,
+              reassessedUnderUpdatedPolicy: assessment.reassessedUnderUpdatedPolicy
             }
           };
         }
@@ -1730,7 +2348,10 @@ export default function SpeciesCropIdToolRoute() {
           ? null
           : "Enter at least one observed trait or proposed name, or use AI photo identification.";
       }}
-      buildPayload={(values, { growId, plantContext, userValues }) => {
+      buildPayload={(
+        values,
+        { growId, facilityId, workspaceType, plantContext, userValues }
+      ) => {
         const identityFields = {
           userEnteredName: String(userValues.userEnteredName || "").trim(),
           scientificName: String(userValues.scientificName || "").trim(),
@@ -1744,6 +2365,8 @@ export default function SpeciesCropIdToolRoute() {
           .map(([key]) => key);
         return {
           growId,
+          workspaceType,
+          ...(workspaceType === "facility" && facilityId ? { facilityId } : {}),
           ...plantContext.toolRunContext,
           userEnteredName: values.userEnteredName,
           scientificName: values.scientificName,
@@ -1755,6 +2378,7 @@ export default function SpeciesCropIdToolRoute() {
             providedFields,
             ...identityFields
           },
+          manualInputProvenance: plantIdManualInputProvenance(userValues),
           identificationNotes: values.identificationNotes || undefined,
           observationContext: {
             cultivationStatus: values.cultivationStatus || "unknown",
@@ -1793,41 +2417,10 @@ export default function SpeciesCropIdToolRoute() {
           mediaEvidence: uploadedEvidence.media
         };
       }}
-      buildMetrics={(outputs) => [
-        { key: "crop", label: "Working identity", value: outputs.likelyCrop },
-        { key: "family", label: "Likely family", value: outputs.likelyFamily || "-" },
-        {
-          key: "scientific",
-          label: "Scientific name",
-          value: outputs.scientificName || "-"
-        },
-        { key: "confidence", label: "Confidence", value: outputs.confidence },
-        {
-          key: "vision",
-          label: "Photos inspected",
-          value: outputs.imageAnalysis?.performed
-            ? String(
-                outputs.imageAnalysis.photosAnalyzed ||
-                  outputs.imageAnalysis.photoCount ||
-                  1
-              )
-            : "0"
-        },
-        {
-          key: "verification",
-          label: "External verification",
-          value:
-            outputs.sourceVerification?.status === "verified"
-              ? "Recorded"
-              : "Not performed"
-        },
-        {
-          key: "confirm",
-          label: "Needs confirmation",
-          value: outputs.userConfirmationRequired ? "Yes" : "No"
-        }
-      ]}
-      buildNotices={(outputs, { payload }) => {
+      buildMetrics={plantIdMetrics}
+      prepareOutputsForDisplay={safePlantIdentificationOutputs}
+      buildNotices={(rawOutputs, { payload }) => {
+        const outputs = safePlantIdentificationOutputs(rawOutputs);
         const warnings = Array.isArray(outputs.warnings) ? outputs.warnings : [];
         const confirmationBlockedReason = String(
           outputs.confirmationBlockedReason || ""
@@ -1835,6 +2428,14 @@ export default function SpeciesCropIdToolRoute() {
         const userIdentityClaim = explicitUserIdentityClaim(payload);
         const payloadImageAnalysis = payload.imageAnalysis || {};
         const outputImageAnalysis = outputs.imageAnalysis || {};
+        const stillImagesAnalyzed = Number(
+          outputImageAnalysis.stillImagesAnalyzed ||
+            outputImageAnalysis.photosAnalyzed ||
+            outputImageAnalysis.photoCount ||
+            1
+        );
+        const videoFramesAnalyzed = Number(outputImageAnalysis.videoFramesAnalyzed || 0);
+        const videosAttached = Number(outputImageAnalysis.videosAttached || 0);
         const userIdentityNotVisuallyVerified =
           [payloadImageAnalysis, outputImageAnalysis].some(
             (analysis) =>
@@ -1888,19 +2489,17 @@ export default function SpeciesCropIdToolRoute() {
               ? ("info" as const)
               : ("medium" as const),
             message: outputs.imageAnalysis?.performed
-              ? `${outputs.imageAnalysis.providerLabel || "AI vision"} inspected ${
-                  outputs.imageAnalysis.photosAnalyzed ||
-                  outputs.imageAnalysis.photoCount ||
-                  1
-                } uploaded photo${
-                  Number(
-                    outputs.imageAnalysis.photosAnalyzed ||
-                      outputs.imageAnalysis.photoCount ||
-                      1
-                  ) === 1
-                    ? ""
-                    : "s"
-                }. The result is still a draft until you confirm it.`
+              ? `${outputs.imageAnalysis.providerLabel || "AI vision"} inspected ${stillImagesAnalyzed} still image${
+                  stillImagesAnalyzed === 1 ? "" : "s"
+                }${
+                  videoFramesAnalyzed > 0
+                    ? `, including ${videoFramesAnalyzed} frame${videoFramesAnalyzed === 1 ? "" : "s"} extracted from video`
+                    : ""
+                }.${
+                  videosAttached > 0
+                    ? " The private source video was saved but was not analyzed directly."
+                    : ""
+                } The result is still a draft until you confirm it.`
               : outputs.imageAnalysis?.requested
                 ? "The uploaded photo pixels were not analyzed. Try again with image-capable AI, or enter visible traits manually."
                 : "No photo was analyzed. This result uses only the information entered in the form."
@@ -1912,28 +2511,39 @@ export default function SpeciesCropIdToolRoute() {
           }))
         ];
       }}
-      buildDetails={(outputs) => <PlantIdentificationResultDetails outputs={outputs} />}
+      buildDetails={(outputs) => (
+        <PlantIdentificationResultDetails
+          outputs={safePlantIdentificationOutputs(outputs)}
+        />
+      )}
       defaultLogTitle={(outputs) =>
-        `Crop identity: ${outputs.likelyCrop || "unconfirmed crop"}`
+        `Crop identity: ${
+          safePlantIdentificationOutputs(outputs).likelyCrop || "unconfirmed crop"
+        }`
       }
-      defaultTask={(outputs) => ({
-        title: outputs.userConfirmationRequired
-          ? "Confirm crop identity"
-          : "Review crop profile context",
-        description:
-          outputs.recommendationContext ||
-          "Confirm species/crop profile before applying crop-specific guidance.",
-        priority: outputs.userConfirmationRequired ? "high" : "medium",
-        ...cropIdentityCalendarMetadata("crop_identity_confirmation")
-      })}
+      defaultTask={(rawOutputs) => {
+        const outputs = safePlantIdentificationOutputs(rawOutputs);
+        return {
+          title: outputs.userConfirmationRequired
+            ? "Confirm crop identity"
+            : "Review crop profile context",
+          description:
+            outputs.recommendationContext ||
+            "Confirm species/crop profile before applying crop-specific guidance.",
+          priority: outputs.userConfirmationRequired ? "high" : "medium",
+          ...cropIdentityCalendarMetadata("crop_identity_confirmation")
+        };
+      }}
       buildActions={({
-        outputs,
+        outputs: rawOutputs,
         payload,
         toolRun,
         moduleRecord,
         growId,
-        plantContext
+        plantContext,
+        workspaceType: activeWorkspaceType
       }) => {
+        const outputs = safePlantIdentificationOutputs(rawOutputs);
         const userIdentityClaim = explicitUserIdentityClaim(payload);
         const useUserIdentityClaim =
           userIdentityClaim.hasIdentity && !userIdentityClaim.invalidScientificName;
@@ -1991,18 +2601,6 @@ export default function SpeciesCropIdToolRoute() {
           sourceToolRunId: String(toolRun?.id || toolRun?._id || "") || null,
           userConfirmed: true as const
         };
-        const decisionOutputs = useUserIdentityClaim
-          ? {
-              ...outputs,
-              likelyCrop: cropCommonName,
-              scientificName: identity.scientificName,
-              commonNames: identity.commonNames,
-              cultivar: identity.cultivar,
-              identitySource: "user_entry",
-              identityVisuallyVerified: false
-            }
-          : outputs;
-
         const actions: ToolResultAction[] = [
           {
             key: "confirm-crop-identity",
@@ -2021,17 +2619,17 @@ export default function SpeciesCropIdToolRoute() {
               ? `Confirmed crop identity saved to ${target.toLowerCase()}.`
               : "Confirmed identity saved to this run.",
             onPress: async () => {
-              if (growId && plantContext.plantId) {
-                await savePersonalPlantCropIdentity(plantContext.plantId, identity);
-              } else if (growId) {
-                await savePersonalGrowCropIdentity(growId, identity);
-              }
               await recordCropIdentificationDecision({
                 decision: "accepted",
-                outputs: decisionOutputs,
                 toolRun,
-                moduleRecord
+                moduleRecord,
+                workspaceScope: toolRunScope
               });
+              if (activeWorkspaceType === "personal" && growId && plantContext.plantId) {
+                await savePersonalPlantCropIdentity(plantContext.plantId, identity);
+              } else if (activeWorkspaceType === "personal" && growId) {
+                await savePersonalGrowCropIdentity(growId, identity);
+              }
             }
           },
           {
@@ -2044,9 +2642,9 @@ export default function SpeciesCropIdToolRoute() {
             onPress: () =>
               recordCropIdentificationDecision({
                 decision: "uncertain",
-                outputs,
                 toolRun,
-                moduleRecord
+                moduleRecord,
+                workspaceScope: toolRunScope
               })
           },
           {
@@ -2058,14 +2656,14 @@ export default function SpeciesCropIdToolRoute() {
             onPress: () =>
               recordCropIdentificationDecision({
                 decision: "rejected",
-                outputs,
                 toolRun,
-                moduleRecord
+                moduleRecord,
+                workspaceScope: toolRunScope
               })
           }
         ];
 
-        if (growId) {
+        if (activeWorkspaceType === "personal" && growId) {
           actions.push({
             key: "create-crop-identity-tasks",
             label: "Create Crop Identity Tasks",
@@ -2086,7 +2684,7 @@ export default function SpeciesCropIdToolRoute() {
             }
           });
         }
-        if (selectedFieldStudyId) {
+        if (activeWorkspaceType === "personal" && selectedFieldStudyId) {
           actions.push({
             key: "save-field-observation",
             label: savedFieldObservationId
@@ -2126,6 +2724,24 @@ export default function SpeciesCropIdToolRoute() {
                 );
               }
               const draft = outputs.identificationDraft || {};
+              const structuredCandidates = plantIdentificationCandidates(outputs);
+              const structuredEvidence = plantIdentificationEvidence(outputs);
+              const structuredCandidateName = bestStructuredPlantCandidateName(outputs);
+              const primaryStructuredCandidate = structuredCandidates[0] || {};
+              const directLikelyCrop = String(outputs.likelyCrop || "").trim();
+              const primaryCandidateCommonName =
+                stringList(primaryStructuredCandidate.commonNames)[0] || "";
+              const observationCommonName =
+                directLikelyCrop && !unresolvedCropName(directLikelyCrop)
+                  ? directLikelyCrop
+                  : primaryCandidateCommonName;
+              const observationScientificName = String(
+                outputs.scientificName || primaryStructuredCandidate.scientificName || ""
+              ).trim();
+              const observationDisplayName =
+                observationCommonName ||
+                observationScientificName ||
+                structuredCandidateName;
               const media = uploadedEvidence.media;
               const confidence = ["low", "medium", "high"].includes(
                 String(outputs.confidence || draft.confidence || "").toLowerCase()
@@ -2149,29 +2765,22 @@ export default function SpeciesCropIdToolRoute() {
                 sourceToolRunId: String(toolRun?.id || toolRun?._id || "") || null,
                 growId: growId || null,
                 title:
-                  String(outputs.likelyCrop || payload.userEnteredName || "").trim() ||
+                  observationDisplayName ||
+                  String(payload.userEnteredName || "").trim() ||
                   "Unconfirmed plant observation",
                 observationDate:
                   payload.observationContext?.observationDate || new Date().toISOString(),
                 identity: {
-                  commonName: String(
-                    outputs.likelyCrop || payload.userEnteredName || ""
-                  ).trim(),
-                  scientificName: String(outputs.scientificName || "").trim(),
+                  commonName:
+                    observationCommonName || String(payload.userEnteredName || "").trim(),
+                  scientificName: observationScientificName,
                   family: String(outputs.likelyFamily || draft.likelyFamily || "").trim(),
                   confidence: confidence as "low" | "medium" | "high",
                   verificationStatus: "ai_candidate" as const,
-                  evidence: stringList(draft.evidence),
-                  counterEvidence: stringList(draft.counterEvidence),
-                  missingEvidence: [
-                    ...stringList(draft.missingEvidence),
-                    ...stringList(draft.requiredNextPhotos),
-                    ...stringList(draft.requiredNextQuestions)
-                  ],
-                  candidates: (Array.isArray(draft.candidates)
-                    ? draft.candidates
-                    : []
-                  ).map((candidate: any) => ({
+                  evidence: structuredEvidence.evidence,
+                  counterEvidence: structuredEvidence.counterEvidence,
+                  missingEvidence: structuredEvidence.missingEvidence,
+                  candidates: structuredCandidates.map((candidate: any) => ({
                     commonName: stringList(candidate.commonNames)[0] || "",
                     scientificName: String(candidate.scientificName || ""),
                     confidence: candidate.confidence || "low",

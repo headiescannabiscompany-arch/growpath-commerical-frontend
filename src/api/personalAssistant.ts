@@ -47,6 +47,12 @@ export type PersonalAssistantResponse = {
     providerModel?: string;
     providerLabel?: string;
   };
+  analysisReceipt?: {
+    aiUsageEventId: string;
+    normalizedPlantIdResultDigest: string;
+    evidenceFingerprint: string;
+    reviewPolicyVersion: string;
+  };
   missingInformation?: string[];
   limitations?: string[];
   methodIds?: string[];

@@ -48,19 +48,32 @@ export function buildToolPlantContextSummary(plant?: PersonalPlant | null) {
     .join(" | ");
 }
 
-export function useToolPlantContext(growId?: string, initialPlantId = "") {
+export function useToolPlantContext(
+  growId?: string,
+  initialPlantId = "",
+  enabled = true
+) {
   const [plants, setPlants] = useState<PersonalPlant[]>([]);
-  const [plantId, setPlantId] = useState(initialPlantId);
+  const [plantId, setPlantId] = useState(enabled ? initialPlantId : "");
 
   useEffect(() => {
-    if (!growId) {
+    if (!enabled || !growId) {
       setPlants([]);
+      setPlantId("");
       return;
     }
+    let active = true;
     listPersonalPlants({ growId })
-      .then(setPlants)
-      .catch(() => setPlants([]));
-  }, [growId]);
+      .then((nextPlants) => {
+        if (active) setPlants(nextPlants);
+      })
+      .catch(() => {
+        if (active) setPlants([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [enabled, growId]);
 
   const selectedPlant = useMemo(
     () => plants.find((plant) => String(plant.id || (plant as any)._id) === plantId),

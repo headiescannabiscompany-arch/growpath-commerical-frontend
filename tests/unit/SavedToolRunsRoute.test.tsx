@@ -1,11 +1,14 @@
 import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import SavedToolRunsRoute from "@/app/home/personal/(tabs)/tools/saved-runs";
+import SavedToolRunsRoute, {
+  personalPlantIdRetryHref
+} from "@/app/home/personal/(tabs)/tools/saved-runs";
 
 const mockGetToolRun = jest.fn();
 const mockListToolRuns = jest.fn();
 const mockUpdateToolRun = jest.fn();
+const mockUpdatePlantIdCorrection = jest.fn();
 const mockGetFieldStudy = jest.fn();
 const mockCreateFieldObservation = jest.fn();
 const mockUpdateFieldObservation = jest.fn();
@@ -15,9 +18,19 @@ let mockSearchParams: Record<string, string> = {
   growId: "grow-1",
   sourceContext: "journal"
 };
+let mockEntitlementMode: "personal" | "commercial" | "facility" = "personal";
+let mockEntitlementFacilityId = "";
 
 jest.mock("expo-router", () => ({
-  Link: ({ children }: any) => children,
+  Link: ({ children, href }: any) => {
+    const React = require("react");
+    const { View } = require("react-native");
+    return React.createElement(
+      View,
+      { accessibilityLabel: `Link to ${String(href)}` },
+      children
+    );
+  },
   useLocalSearchParams: () => mockSearchParams
 }));
 
@@ -36,7 +49,8 @@ jest.mock("@/api/toolRuns", () => ({
   getToolRun: (...args: any[]) => mockGetToolRun(...args),
   listToolRuns: (...args: any[]) => mockListToolRuns(...args),
   saveToolRunToLog: jest.fn(),
-  updateToolRun: (...args: any[]) => mockUpdateToolRun(...args)
+  updateToolRun: (...args: any[]) => mockUpdateToolRun(...args),
+  updatePlantIdCorrection: (...args: any[]) => mockUpdatePlantIdCorrection(...args)
 }));
 
 jest.mock("@/api/fieldStudies", () => ({
@@ -47,6 +61,13 @@ jest.mock("@/api/fieldStudies", () => ({
 
 jest.mock("@/utils/locationSearch", () => ({
   requestCurrentCoordinates: (...args: any[]) => mockRequestCurrentCoordinates(...args)
+}));
+
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({
+    mode: mockEntitlementMode,
+    facilityId: mockEntitlementFacilityId
+  })
 }));
 
 jest.mock("@/components/ScreenBoundary", () => {
@@ -78,7 +99,7 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
 jest.mock("@/features/personal/tools/ToolResultSurface", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return ({ title, summary, metrics, notices, outputs }: any) =>
+  return ({ title, summary, metrics, notices, outputs, details }: any) =>
     React.createElement(
       React.Fragment,
       null,
@@ -89,7 +110,8 @@ jest.mock("@/features/personal/tools/ToolResultSurface", () => {
       ),
       ...(notices || []).map((notice: any) =>
         React.createElement(Text, { key: notice.key }, notice.message)
-      )
+      ),
+      details
     );
 });
 
@@ -101,6 +123,8 @@ describe("SavedToolRunsRoute", () => {
       growId: "grow-1",
       sourceContext: "journal"
     };
+    mockEntitlementMode = "personal";
+    mockEntitlementFacilityId = "";
     mockListToolRuns.mockResolvedValue([
       {
         id: "run-1",
@@ -126,6 +150,50 @@ describe("SavedToolRunsRoute", () => {
       longitude: -78.6382,
       accuracyMeters: 25
     });
+    mockUpdatePlantIdCorrection.mockResolvedValue(null);
+  });
+
+  it("offers a Personal Plant ID re-run that carries only saved evidence and active Personal context", async () => {
+    const cropRun = {
+      id: "plant-run-retry",
+      _id: "plant-run-retry",
+      toolType: "species_crop_id",
+      growId: "grow-1",
+      summary: "Night plant candidate.",
+      inputs: { evidenceAssetIds: ["private-photo-1"] },
+      outputs: { likelyCrop: "Cannabis", confidence: "low" }
+    };
+    mockSearchParams = {
+      toolRunId: "plant-run-retry",
+      growId: "grow-1",
+      fieldStudyId: "study-1",
+      sourceContext: "journal",
+      sourceTaskId: "task-should-not-leak"
+    };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+    mockGetFieldStudy.mockResolvedValue({
+      study: {
+        id: "study-1",
+        title: "Night plants",
+        accessRole: "owner"
+      },
+      observations: []
+    });
+
+    const screen = render(<SavedToolRunsRoute />);
+    const href = personalPlantIdRetryHref({
+      toolRunId: "plant-run-retry",
+      growId: "grow-1",
+      fieldStudyId: "study-1"
+    });
+
+    expect(await screen.findByText("Re-run with Saved Evidence")).toBeTruthy();
+    expect(screen.getByLabelText(`Link to ${href}`)).toBeTruthy();
+    expect(href).toBe(
+      "/home/personal/tools/species-crop-id?retryToolRunId=plant-run-retry&growId=grow-1&fieldStudyId=study-1"
+    );
+    expect(href).not.toMatch(/sourceContext|sourceTaskId|workspace|facility|commercial/i);
   });
 
   it("adds and removes a private location from Plant ID history without a Field Study", async () => {
@@ -557,7 +625,11 @@ describe("SavedToolRunsRoute", () => {
         imageAnalysis: {
           requested: true,
           performed: true,
-          photosAnalyzed: 1,
+          photosAnalyzed: 2,
+          stillImagesAnalyzed: 2,
+          videoFramesAnalyzed: 1,
+          videosAttached: 1,
+          videosAnalyzed: 0,
           provider: "growpath_context_plus_openai",
           providerModel: "gpt-4o-mini",
           providerLabel: "GrowPath context + OpenAI image review",
@@ -576,11 +648,20 @@ describe("SavedToolRunsRoute", () => {
     await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
     expect(screen.getByText("Likely crop: Mint")).toBeTruthy();
     expect(screen.getByText("Displayed output: Mint")).toBeTruthy();
-    expect(screen.getByText("Photos inspected: 1")).toBeTruthy();
+    expect(screen.getByText("Still images inspected: 2")).toBeTruthy();
+    expect(screen.getByText("Video frames inspected: 1")).toBeTruthy();
+    expect(
+      screen.getByText("Source video: Saved; extracted still frames analyzed")
+    ).toBeTruthy();
     expect(screen.getByText("Image quality: usable")).toBeTruthy();
     expect(screen.getByText("Needs confirmation: Yes")).toBeTruthy();
     expect(
-      screen.getByText(/OpenAI image review inspected 1 uploaded photo/i)
+      screen.getByText(
+        /OpenAI image review inspected 2 still images, including 1 frame extracted from video/i
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/source video was saved but was not analyzed directly/i)
     ).toBeTruthy();
     expect(screen.getByText(/Working identification candidate: Mint/i)).toBeTruthy();
     expect(screen.getByText(/Evidence: evidence-mint-1/i)).toBeTruthy();
@@ -590,6 +671,164 @@ describe("SavedToolRunsRoute", () => {
     expect(
       screen.getByText(/Exact mint species cannot be confirmed from these views/i)
     ).toBeTruthy();
+  });
+
+  it("does not claim a failed source-video frame was analyzed", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      summary: "species_crop_id completed",
+      outputs: {
+        likelyCrop: "Rose",
+        confidence: "medium",
+        userConfirmationRequired: true,
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          photosAnalyzed: 1,
+          stillImagesAnalyzed: 1,
+          videoFramesAnalyzed: 0,
+          videosAttached: 1,
+          videosAnalyzed: 0,
+          quality: "usable"
+        }
+      },
+      createdAt: "2026-08-06T12:00:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    expect(
+      screen.getByText("Source video: Saved; no extracted frame analyzed")
+    ).toBeTruthy();
+    expect(
+      screen.queryByText(/Source video: Saved; extracted still frames analyzed/i)
+    ).toBeNull();
+  });
+
+  it("does not invent an inspected-image count for a legacy completed review", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      summary: "Legacy Plant ID result",
+      outputs: {
+        likelyCrop: "Rose",
+        confidence: "medium",
+        userConfirmationRequired: true,
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          quality: "usable"
+        }
+      },
+      createdAt: "2026-08-06T12:00:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    expect(screen.getByText("Still images inspected: Count unavailable")).toBeTruthy();
+    expect(
+      screen.getByText(
+        /completed image review, but the saved still-image count is unavailable/i
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText(/inspected 1 still image/i)).toBeNull();
+  });
+
+  it("reopens a limited-light candidate with its defensible candidate name", async () => {
+    mockSearchParams = {
+      toolRunId: "run-limited-cannabis",
+      sourceContext: "saved-runs"
+    };
+    const cropRun = {
+      id: "run-limited-cannabis",
+      _id: "run-limited-cannabis",
+      toolType: "species_crop_id",
+      summary: "species_crop_id completed",
+      outputs: {
+        likelyCrop: "unknown crop",
+        scientificName: null,
+        commonNames: [],
+        possibleGenera: [],
+        confidence: "low",
+        identityEvidenceStatus: "candidate_only",
+        userConfirmationRequired: true,
+        candidates: [
+          {
+            scientificName: "Cannabis spp.",
+            commonNames: ["Cannabis"],
+            rank: "genus",
+            confidence: "low",
+            evidence: ["Sharp bracts, pistils, and resinous sugar leaves remain visible"]
+          }
+        ],
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          photosAnalyzed: 1,
+          stillImagesAnalyzed: 1,
+          quality: "limited",
+          confidence: "low"
+        }
+      },
+      createdAt: "2026-08-06T12:00:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-limited-cannabis")
+    );
+    expect(screen.getByText("Likely crop: Cannabis")).toBeTruthy();
+    expect(screen.getByLabelText("Corrected plant or crop name").props.value).toBe(
+      "Cannabis"
+    );
+  });
+
+  it("shows a draft-only saved candidate with its evidence instead of only its name", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      summary: "Candidate-only result",
+      outputs: {
+        likelyCrop: "unknown crop",
+        scientificName: null,
+        confidence: "low",
+        userConfirmationRequired: true,
+        identificationDraft: {
+          candidates: [
+            {
+              scientificName: "Cannabis spp.",
+              commonNames: ["Cannabis"],
+              rank: "genus",
+              confidence: "low",
+              evidence: ["Sharp bracts and pistils remain visible"]
+            }
+          ]
+        }
+      },
+      createdAt: "2026-08-06T12:00:00.000Z"
+    };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    expect(screen.getByText("Likely crop: Cannabis")).toBeTruthy();
+    expect(screen.getByText(/1\. Cannabis spp\./i)).toBeTruthy();
+    expect(screen.getByText(/Sharp bracts and pistils remain visible/i)).toBeTruthy();
   });
 
   it("saves a user correction while keeping exact species unverified and requesting new photos", async () => {
@@ -629,7 +868,7 @@ describe("SavedToolRunsRoute", () => {
     };
     mockListToolRuns.mockResolvedValue([originalRun]);
     mockGetToolRun.mockResolvedValue(originalRun);
-    mockUpdateToolRun.mockResolvedValue(correctedRun);
+    mockUpdatePlantIdCorrection.mockResolvedValue(correctedRun);
 
     const screen = render(<SavedToolRunsRoute />);
 
@@ -641,33 +880,235 @@ describe("SavedToolRunsRoute", () => {
     fireEvent.press(screen.getByText("Save Identification Correction"));
 
     await waitFor(() =>
-      expect(mockUpdateToolRun).toHaveBeenCalledWith(
-        "run-1",
-        expect.objectContaining({
-          confidence: "user_corrected",
-          outputs: expect.objectContaining({
-            confidence: "user_corrected",
-            userConfirmationRequired: false,
-            userCorrection: expect.objectContaining({
-              status: "user_corrected",
-              commonName: "Rose bush",
-              scientificName: null,
-              previousLikelyCrop: "Cotton plant",
-              previousScientificName: "Rose plant"
-            }),
-            requiredNextPhotos: expect.arrayContaining([
-              "A new whole-plant photo showing overall growth habit and scale",
-              "A sharp full-leaf photo plus the leaf underside and stem node",
-              "A sharp open-flower close-up and any fruit or seed structure on the same plant"
-            ])
-          })
-        })
-      )
+      expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith("run-1", {
+        userCorrection: {
+          commonName: "Rose bush",
+          scientificName: null,
+          note: "User corrected the common identity; exact scientific species remains unverified."
+        }
+      })
     );
+    expect(mockUpdateToolRun).not.toHaveBeenCalled();
     expect(await screen.findByText("Likely crop: Rose bush")).toBeTruthy();
     expect(screen.getByText("Scientific name: -")).toBeTruthy();
     expect(screen.getByText("Confidence: user corrected")).toBeTruthy();
     expect(screen.getByText(/original AI draft was rejected/i)).toBeTruthy();
+  });
+
+  it("keeps facility Saved Run reloads and corrections inside the facility scope", async () => {
+    mockEntitlementMode = "facility";
+    mockEntitlementFacilityId = "facility-authoritative";
+    mockSearchParams = {
+      toolRunId: "facility-run-1",
+      workspace: "facility",
+      facilityId: "facility-hostile",
+      growId: "personal-grow-secret",
+      fieldStudyId: "personal-study-secret"
+    };
+    const originalRun = {
+      id: "facility-run-1",
+      _id: "facility-run-1",
+      toolType: "species_crop_id",
+      summary: "Facility Plant ID draft.",
+      outputs: {
+        likelyCrop: "Unknown flowering plant",
+        confidence: "low",
+        userConfirmationRequired: true
+      },
+      createdAt: "2026-08-06T12:00:00.000Z"
+    };
+    const correctedRun = {
+      ...originalRun,
+      outputs: {
+        ...originalRun.outputs,
+        userCorrection: {
+          status: "user_corrected",
+          commonName: "Rose bush",
+          scientificName: null
+        }
+      }
+    };
+    mockListToolRuns.mockResolvedValue([originalRun]);
+    mockGetToolRun.mockResolvedValue(originalRun);
+    mockUpdatePlantIdCorrection.mockResolvedValue(correctedRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() =>
+      expect(mockListToolRuns).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workspaceType: "facility",
+          facilityId: "facility-authoritative",
+          growId: undefined
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("facility-run-1", {
+        workspaceType: "facility",
+        facilityId: "facility-authoritative"
+      })
+    );
+    expect(mockGetFieldStudy).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("Shared Back /home/facility/ai-tools Prefer true")
+    ).toBeTruthy();
+    expect(screen.queryByText("Add this identification to a Field Study")).toBeNull();
+    expect(screen.queryByText("Re-run with Saved Evidence")).toBeNull();
+    fireEvent.changeText(
+      screen.getByLabelText("Corrected plant or crop name"),
+      "Rose bush"
+    );
+    fireEvent.press(screen.getByText("Save Identification Correction"));
+
+    await waitFor(() =>
+      expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith(
+        "facility-run-1",
+        expect.objectContaining({
+          userCorrection: expect.objectContaining({ commonName: "Rose bush" })
+        }),
+        { workspaceType: "facility", facilityId: "facility-authoritative" }
+      )
+    );
+    expect(await screen.findByText("Likely crop: Rose bush")).toBeTruthy();
+  });
+
+  it("treats a commercial account route value only as a shared-mode signal", async () => {
+    mockSearchParams = {
+      toolRunId: "commercial-run-1",
+      commercialAccountId: "untrusted-brand-route",
+      growId: "personal-grow-secret",
+      fieldStudyId: "personal-study-secret"
+    };
+    const originalRun = {
+      id: "commercial-run-1",
+      _id: "commercial-run-1",
+      toolType: "species_crop_id",
+      summary: "Commercial Plant ID draft.",
+      outputs: {
+        likelyCrop: "Unknown flowering plant",
+        confidence: "low",
+        userConfirmationRequired: true
+      },
+      createdAt: "2026-08-06T12:00:00.000Z"
+    };
+    const correctedRun = {
+      ...originalRun,
+      outputs: {
+        ...originalRun.outputs,
+        userCorrection: {
+          status: "user_corrected",
+          commonName: "Rose bush",
+          scientificName: null
+        }
+      }
+    };
+    mockListToolRuns.mockResolvedValue([originalRun]);
+    mockGetToolRun.mockResolvedValue(originalRun);
+    mockUpdatePlantIdCorrection.mockResolvedValue(correctedRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() =>
+      expect(mockListToolRuns).toHaveBeenCalledWith({
+        growId: undefined,
+        toolType: undefined,
+        workspaceType: "commercial"
+      })
+    );
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("commercial-run-1", {
+        workspaceType: "commercial"
+      })
+    );
+    expect(mockGetFieldStudy).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("Shared Back /home/commercial/tools Prefer true")
+    ).toBeTruthy();
+    expect(screen.queryByText("Add this identification to a Field Study")).toBeNull();
+    expect(JSON.stringify(mockListToolRuns.mock.calls)).not.toContain(
+      "untrusted-brand-route"
+    );
+    expect(JSON.stringify(mockGetToolRun.mock.calls)).not.toContain(
+      "untrusted-brand-route"
+    );
+
+    fireEvent.changeText(
+      screen.getByLabelText("Corrected plant or crop name"),
+      "Rose bush"
+    );
+    fireEvent.press(screen.getByText("Save Identification Correction"));
+
+    await waitFor(() =>
+      expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith(
+        "commercial-run-1",
+        expect.objectContaining({
+          userCorrection: expect.objectContaining({ commonName: "Rose bush" })
+        }),
+        { workspaceType: "commercial" }
+      )
+    );
+    expect(JSON.stringify(mockUpdatePlantIdCorrection.mock.calls)).not.toContain(
+      "untrusted-brand-route"
+    );
+    expect(await screen.findByText("Likely crop: Rose bush")).toBeTruthy();
+  });
+
+  it("clears Personal Saved Run and Field Study state when the mounted route becomes commercial", async () => {
+    const personalRun = {
+      id: "personal-run-1",
+      _id: "personal-run-1",
+      toolType: "species_crop_id",
+      growId: "personal-grow-secret",
+      summary: "Personal rose result.",
+      outputs: { likelyCrop: "Rose", confidence: "medium" },
+      createdAt: "2026-08-06T12:00:00.000Z"
+    };
+    mockSearchParams = {
+      toolRunId: "personal-run-1",
+      growId: "personal-grow-secret",
+      fieldStudyId: "personal-study-secret"
+    };
+    mockListToolRuns.mockResolvedValue([personalRun]);
+    mockGetToolRun.mockResolvedValue(personalRun);
+    mockGetFieldStudy.mockResolvedValue({
+      study: {
+        id: "personal-study-secret",
+        title: "Personal study",
+        accessRole: "owner"
+      },
+      observations: []
+    });
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(await screen.findByText("Displayed output: Rose")).toBeTruthy();
+    expect(
+      await screen.findByText("Add this identification to a Field Study")
+    ).toBeTruthy();
+
+    mockEntitlementMode = "commercial";
+    mockSearchParams = {};
+    mockListToolRuns.mockClear();
+    mockGetToolRun.mockClear();
+    mockGetFieldStudy.mockClear();
+    mockListToolRuns.mockResolvedValue([]);
+    screen.rerender(<SavedToolRunsRoute />);
+
+    await waitFor(() =>
+      expect(mockListToolRuns).toHaveBeenCalledWith({
+        growId: undefined,
+        toolType: undefined,
+        workspaceType: "commercial"
+      })
+    );
+    await waitFor(() => expect(screen.queryByText("Displayed output: Rose")).toBeNull());
+    expect(mockGetToolRun).not.toHaveBeenCalled();
+    expect(mockGetFieldStudy).not.toHaveBeenCalled();
+    expect(screen.queryByText("Add this identification to a Field Study")).toBeNull();
+    expect(
+      screen.getByText("Shared Back /home/commercial/tools Prefer true")
+    ).toBeTruthy();
   });
 
   it("keeps saved Dry Cure light and timing evidence visible", async () => {
