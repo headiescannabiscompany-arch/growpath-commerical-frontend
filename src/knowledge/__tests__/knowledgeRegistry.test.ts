@@ -103,8 +103,23 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "crop-identification retake-required state for dark, backlit, harsh-flash, deep-shadow, glare, clipped-highlight, or color-cast evidence that hides diagnostic characters"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "crop-identification use of sharp illuminated nighttime photos or extracted video frames when diagnostic morphology remains visible, without letting one unusable frame invalidate other compatible usable views"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "low-confidence candidate-only crop, family, or genus retained when artificial lighting limits exact certainty but readable diagnostic morphology remains, with AI identity prefill and confirmation still blocked"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "limited-light crop or genus candidate retained only when its own evidence contains a taxon-discriminating character combination, with Cannabis requiring visible reproductive structure plus pistil, resin, or trichome support"
+    );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
-      "Do not auto-populate or auto-upgrade a crop or species identity from limited or unusable lighting evidence; preserve directly visible morphology only, require neutral or diffuse-light retakes, and keep user-entered names labeled as user claims."
+      "Do not auto-populate or auto-upgrade a crop or species identity from limited or unusable lighting evidence; preserve directly visible morphology only, retain at most a low-confidence crop, family, or genus candidate when limited evidence remains readable, require a retake when the needed characters are hidden, and keep user-entered names labeled as user claims."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not reject nighttime, a dark background, phone-light illumination, or direct flash by label alone; reject only when the captured detail needed for the proposed identity is actually obscured or unreliable."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not retain a low-light Cannabis or other taxon guess from a generic serrated leaf, stem, or growth habit alone; request targeted retakes unless the candidate's own evidence contains a discriminating combination."
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "provider crop-identification quality and confidence preserved as ceilings that the calculator and saved ToolRun may retain or downgrade but never upgrade"
@@ -120,6 +135,24 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "standalone private Plant ID location that can be added, updated, or removed without creating a Field Study observation or publishing to Nature"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "authenticated Commercial Plant ID ToolRuns kept outside Personal Saved Runs, with unsupported Commercial journal and task actions failing explicitly"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "Plant ID evidence and protected uploads bound to one canonical Personal, Commercial, or Facility workspace, with exact recorded evidence IDs recovered through an authorized scoped lookup"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "saved Plant ID retry offered only after the complete exact evidence set is revalidated as durable Crop Identification media with every photo AI-approved and every extracted frame linked to its private source video"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not treat a route Commercial account ID as authorization, fall a Commercial Plant ID back to Personal Saved Runs, or create Personal logs or tasks from a Commercial run."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not infer legacy non-Facility evidence into Commercial scope, or recover a Saved Run by searching only a recent-evidence list instead of its exact workspace-scoped evidence IDs."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not announce that saved Plant ID evidence was recovered or submit it for analysis when any exact asset is missing, not durably uploaded, outside Crop Identification, an unsupported type, or a photo that is not explicitly AI-usable; load none of an ineligible set."
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "published-course discovery limited to published storefronts and explicit public fields"

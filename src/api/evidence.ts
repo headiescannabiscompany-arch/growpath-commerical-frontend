@@ -3,8 +3,15 @@ import type {
   EvidenceAsset,
   EvidenceAssetCreateInput,
   EvidenceLinks,
+  EvidenceWorkspaceType,
   ProviderEvidencePayload
 } from "@/types/evidence";
+
+export type EvidenceWorkspaceScope = {
+  workspaceType: EvidenceWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
+};
 
 function normalizeEvidenceAsset(value: any): EvidenceAsset {
   return {
@@ -50,13 +57,32 @@ export async function listEvidenceAssets(links: EvidenceLinks = {}) {
   return rows.map(normalizeEvidenceAsset);
 }
 
+export async function getEvidenceAssetsByIds(
+  ids: readonly string[],
+  workspace: EvidenceWorkspaceScope
+) {
+  const exactIds = Array.from(
+    new Set(ids.map((id) => String(id || "").trim()).filter(Boolean))
+  );
+  if (!exactIds.length) return [];
+  if (exactIds.length > 50) {
+    throw new Error("No more than 50 evidence assets can be recovered at once.");
+  }
+  const response = await apiRequest<any>("/api/evidence-assets", {
+    params: {
+      ids: exactIds.join(","),
+      workspaceType: workspace.workspaceType,
+      ...(workspace.workspaceId ? { workspaceId: workspace.workspaceId } : {}),
+      ...(workspace.facilityId ? { facilityId: workspace.facilityId } : {})
+    }
+  });
+  const rows = Array.isArray(response?.assets) ? response.assets : [];
+  return rows.map(normalizeEvidenceAsset);
+}
+
 export async function deleteEvidenceAsset(
   id: string,
-  workspace: {
-    workspaceType: "personal" | "commercial" | "facility";
-    workspaceId?: string;
-    facilityId?: string;
-  },
+  workspace: EvidenceWorkspaceScope,
   options: { signal?: AbortSignal; timeoutMs?: number } = {}
 ) {
   if (!id) return null;
@@ -79,6 +105,8 @@ export function providerEvidencePayload(
     type: asset.assetType,
     url: String(asset.durableUrl),
     mimeType: asset.mimeType,
+    source: asset.source,
+    sourceVideoEvidenceAssetId: asset.sourceVideoEvidenceAssetId,
     purpose: asset.purpose,
     qualityWarnings: asset.qualityWarnings || []
   }));

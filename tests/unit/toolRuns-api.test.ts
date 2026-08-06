@@ -5,12 +5,15 @@ jest.mock("@/api/apiRequest", () => ({
 }));
 
 const {
+  archiveToolRun,
   createTaskFromToolRun,
   createToolRun,
   getToolRun,
   listToolRuns,
   runCalculator,
-  saveToolRunToLog
+  saveToolRunToLog,
+  updatePlantIdCorrection,
+  updateToolRun
 } = require("@/api/toolRuns");
 
 describe("toolRuns API", () => {
@@ -157,6 +160,72 @@ describe("toolRuns API", () => {
       params: expect.objectContaining({ toolType: "species_crop_id" })
     });
     expect(runs.map((run: any) => run.id)).toEqual(["run-plant-1", "run-plant-2"]);
+  });
+
+  it("scopes facility Saved Run reads and safe mutations", async () => {
+    const scope = { workspaceType: "facility", facilityId: "facility-1" };
+
+    await getToolRun("facility-run-1", scope);
+    await updateToolRun("facility-run-1", { summary: "Reviewed" }, scope);
+    await updatePlantIdCorrection("facility-run-1", { decision: "uncertain" }, scope);
+    await saveToolRunToLog("facility-run-1", {}, scope);
+    await createTaskFromToolRun("facility-run-1", {}, scope);
+    await archiveToolRun("facility-run-1", scope);
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools/runs/facility-run-1", {
+      method: "GET",
+      cache: "no-store",
+      params: scope
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools/runs/facility-run-1", {
+      method: "PATCH",
+      body: { summary: "Reviewed", ...scope }
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/tools/runs/facility-run-1/correction",
+      {
+        method: "PATCH",
+        body: { decision: "uncertain", ...scope }
+      }
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/tools/runs/facility-run-1/save-log",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.objectContaining(scope)
+      })
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/tools/runs/facility-run-1/create-task",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.objectContaining(scope)
+      })
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools/runs/facility-run-1", {
+      method: "DELETE",
+      body: scope
+    });
+  });
+
+  it("sends facility scope when listing shared Saved Runs", async () => {
+    mockApiRequest.mockResolvedValueOnce({ items: [] });
+
+    await listToolRuns({
+      toolType: "species_crop_id",
+      workspaceType: "facility",
+      facilityId: "facility-1"
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tools", {
+      method: "GET",
+      cache: "no-store",
+      params: expect.objectContaining({
+        toolType: "species_crop_id",
+        workspaceType: "facility",
+        facilityId: "facility-1"
+      })
+    });
   });
 
   it("preserves tool run links when saving a run to the grow log", async () => {

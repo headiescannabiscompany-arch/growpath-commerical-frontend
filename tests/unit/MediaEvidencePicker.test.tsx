@@ -129,6 +129,7 @@ describe("MediaEvidencePicker", () => {
           clientUploadKey: uploadInput.clientUploadKey,
           growId: "grow-1",
           plantId: "plant-1",
+          workspaceType: "personal",
           purpose: "diagnosis",
           durableUrl: "/uploads/evidence.jpg",
           uploadStatus: "uploaded",
@@ -137,6 +138,9 @@ describe("MediaEvidencePicker", () => {
         expect.objectContaining({ signal: expect.anything() })
       )
     );
+    const personalRegistrationInput = mockCreate.mock.calls[0][0];
+    expect(personalRegistrationInput).not.toHaveProperty("workspaceId");
+    expect(personalRegistrationInput).not.toHaveProperty("facilityId");
     expect(
       screen.getByText(
         "Adding media approves AI use for this workflow only. It is not used for model training. Failed uploads are never sent to AI analysis."
@@ -149,6 +153,49 @@ describe("MediaEvidencePicker", () => {
         durableUrl: "/uploads/evidence.jpg"
       })
     ]);
+  });
+
+  it("registers Commercial evidence in the same explicit workspace as its upload", async () => {
+    mockPicker.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///commercial-leaf.jpg",
+          type: "image",
+          mimeType: "image/jpeg",
+          fileName: "commercial-leaf.jpg",
+          width: 1200,
+          height: 900
+        }
+      ]
+    });
+    const screen = render(
+      <MediaEvidencePicker
+        purpose="diagnosis"
+        videoWorkspaceType="commercial"
+        videoWorkspaceId="commercial-account-1"
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText("Add evidence photos"));
+
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
+    expect(mockUpload.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        workspaceType: "commercial",
+        workspaceId: "commercial-account-1"
+      })
+    );
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceType: "commercial",
+        workspaceId: "commercial-account-1",
+        assetType: "photo",
+        durableUrl: "/uploads/evidence.jpg"
+      }),
+      expect.objectContaining({ signal: expect.anything() })
+    );
+    expect(mockCreate.mock.calls[0][0]).not.toHaveProperty("facilityId");
   });
 
   it("does not approve ordinary record media for AI unless the surface opts in", async () => {
@@ -317,6 +364,156 @@ describe("MediaEvidencePicker", () => {
     expect(screen.getByLabelText("Evidence photo 1")).toBeTruthy();
   });
 
+  it("removes a source video and every extracted child frame from the active review", async () => {
+    function Harness() {
+      const [value, setValue] = React.useState<any[]>([
+        {
+          id: "source-video-local",
+          _id: "source-video-record",
+          assetType: "video",
+          originalUri: "/api/videos/assets/source-video/stream",
+          durableUrl: "/api/videos/assets/source-video/stream",
+          source: "upload",
+          purpose: "crop_identification",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        },
+        {
+          id: "generated-frame-one",
+          _id: "generated-frame-record-one",
+          sourceVideoEvidenceAssetId: "source-video-record",
+          assetType: "photo",
+          originalUri: "/uploads/generated-frame-one.jpg",
+          durableUrl: "/uploads/generated-frame-one.jpg",
+          source: "generated",
+          purpose: "crop_identification",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        },
+        {
+          id: "generated-frame-two",
+          _id: "generated-frame-record-two",
+          sourceVideoEvidenceAssetId: "source-video-record",
+          assetType: "photo",
+          originalUri: "/uploads/generated-frame-two.jpg",
+          durableUrl: "/uploads/generated-frame-two.jpg",
+          source: "generated",
+          purpose: "crop_identification",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        },
+        {
+          id: "unrelated-photo",
+          _id: "unrelated-photo-record",
+          assetType: "photo",
+          originalUri: "/uploads/unrelated.jpg",
+          durableUrl: "/uploads/unrelated.jpg",
+          source: "upload",
+          purpose: "crop_identification",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        }
+      ]);
+      return (
+        <MediaEvidencePicker
+          allowVideo
+          purpose="crop_identification"
+          value={value}
+          onChange={setValue}
+        />
+      );
+    }
+    const screen = render(<Harness />);
+
+    fireEvent.press(screen.getByLabelText("Remove evidence source-video-local"));
+
+    expect(screen.queryByLabelText("Remove evidence source-video-local")).toBeNull();
+    expect(screen.queryByLabelText("Remove evidence generated-frame-one")).toBeNull();
+    expect(screen.queryByLabelText("Remove evidence generated-frame-two")).toBeNull();
+    expect(screen.getByLabelText("Remove evidence unrelated-photo")).toBeTruthy();
+    await waitFor(() => expect(mockDeleteEvidence).toHaveBeenCalledTimes(3));
+    expect(mockDeleteEvidence).toHaveBeenCalledWith(
+      "source-video-record",
+      { workspaceType: "personal" },
+      { timeoutMs: 5000 }
+    );
+    expect(mockDeleteEvidence).toHaveBeenCalledWith(
+      "generated-frame-record-one",
+      { workspaceType: "personal" },
+      { timeoutMs: 5000 }
+    );
+    expect(mockDeleteEvidence).toHaveBeenCalledWith(
+      "generated-frame-record-two",
+      { workspaceType: "personal" },
+      { timeoutMs: 5000 }
+    );
+  });
+
+  it("only deselects recovered Saved Run photos and videos without deleting them", () => {
+    function Harness() {
+      const [value, setValue] = React.useState<any[]>([
+        {
+          id: "recovered-photo-local",
+          _id: "recovered-photo-record",
+          assetType: "photo",
+          originalUri: "/uploads/recovered-photo.jpg",
+          durableUrl: "/uploads/recovered-photo.jpg",
+          source: "upload",
+          purpose: "crop_identification",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        },
+        {
+          id: "recovered-video-local",
+          _id: "recovered-video-record",
+          assetType: "video",
+          originalUri: "/api/videos/assets/recovered-video/stream",
+          durableUrl: "/api/videos/assets/recovered-video/stream",
+          source: "upload",
+          purpose: "crop_identification",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        },
+        {
+          id: "recovered-frame-local",
+          _id: "recovered-frame-record",
+          sourceVideoEvidenceAssetId: "recovered-video-record",
+          assetType: "photo",
+          originalUri: "/uploads/recovered-frame.jpg",
+          durableUrl: "/uploads/recovered-frame.jpg",
+          source: "generated",
+          purpose: "crop_identification",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        }
+      ]);
+      return (
+        <MediaEvidencePicker
+          allowVideo
+          purpose="crop_identification"
+          value={value}
+          onChange={setValue}
+          retainOnRemoveAssetIds={[
+            "recovered-photo-record",
+            "recovered-video-record",
+            "recovered-frame-record"
+          ]}
+        />
+      );
+    }
+    const screen = render(<Harness />);
+
+    fireEvent.press(screen.getByLabelText("Remove evidence recovered-photo-local"));
+    fireEvent.press(screen.getByLabelText("Remove evidence recovered-video-local"));
+
+    expect(screen.queryByLabelText("Remove evidence recovered-photo-local")).toBeNull();
+    expect(screen.queryByLabelText("Remove evidence recovered-video-local")).toBeNull();
+    expect(screen.queryByLabelText("Remove evidence recovered-frame-local")).toBeNull();
+    expect(mockDeleteEvidence).not.toHaveBeenCalled();
+    expect(mockAbortEvidence).not.toHaveBeenCalled();
+    expect(mockAbortVideo).not.toHaveBeenCalled();
+  });
+
   it("rejects a video longer than the configured limit without uploading", async () => {
     mockPicker.mockResolvedValue({
       canceled: false,
@@ -341,7 +538,7 @@ describe("MediaEvidencePicker", () => {
     expect(mockUpload).not.toHaveBeenCalled();
   });
 
-  it("keeps a harvest video private and uploads extracted still frames for AI review", async () => {
+  it("keeps a Facility source video and generated frames in the same explicit workspace", async () => {
     mockPicker.mockResolvedValue({
       canceled: false,
       assets: [
@@ -395,6 +592,8 @@ describe("MediaEvidencePicker", () => {
         maxExtractedVideoFrames={12}
         maxVideoSeconds={599}
         purpose="harvest"
+        videoWorkspaceType="facility"
+        videoWorkspaceId="facility-42"
       />
     );
 
@@ -416,7 +615,11 @@ describe("MediaEvidencePicker", () => {
         fileName: "macro-scan.mov",
         mimeType: "video/quicktime"
       }),
-      { workspaceType: "personal" },
+      {
+        workspaceType: "facility",
+        workspaceId: "facility-42",
+        facilityId: "facility-42"
+      },
       expect.any(Function),
       expect.objectContaining({
         signal: expect.anything(),
@@ -425,6 +628,25 @@ describe("MediaEvidencePicker", () => {
       })
     );
     expect(mockUpload).toHaveBeenCalledTimes(2);
+    for (const [frameUploadInput] of mockUpload.mock.calls) {
+      expect(frameUploadInput).toEqual(
+        expect.objectContaining({
+          workspaceType: "facility",
+          workspaceId: "facility-42",
+          facilityId: "facility-42"
+        })
+      );
+    }
+    expect(mockCreate).toHaveBeenCalledTimes(3);
+    for (const [registrationInput] of mockCreate.mock.calls) {
+      expect(registrationInput).toEqual(
+        expect.objectContaining({
+          workspaceType: "facility",
+          workspaceId: "facility-42",
+          facilityId: "facility-42"
+        })
+      );
+    }
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         assetType: "video",
@@ -438,15 +660,86 @@ describe("MediaEvidencePicker", () => {
         assetType: "photo",
         source: "generated",
         aiUsable: true,
+        sourceVideoEvidenceAssetId: "saved-macro-scan.mov",
         originalUri: "/uploads/frame-1.jpg",
-        durableUrl: "/uploads/frame-1.jpg"
+        durableUrl: "/uploads/frame-1.jpg",
+        qualityWarnings: expect.arrayContaining([
+          "Extracted from the source video at 2.0 seconds. Confirm the diagnostic plant structure, focus, color, and glare before analysis."
+        ])
       }),
       expect.objectContaining({ signal: expect.anything() })
     );
     expect(
-      screen.getByText(/keeps only sharp, glare-free gland-head evidence/i)
+      screen.getByText(
+        "A video is kept as private evidence. GrowPath samples up to 12 timestamped still frames across the video. Each sampled frame is uploaded for image review; AI then evaluates focus, lighting, glare, and diagnostic detail and can exclude unusable frames. It does not guess from motion or rebuild detail hidden by blur or glare."
+      )
     ).toBeTruthy();
-    expect(screen.getByText(/AI does not guess from motion/i)).toBeTruthy();
+    expect(screen.getByText(/does not guess from motion/i)).toBeTruthy();
+  });
+
+  it("reports only successfully uploaded extracted frames and discloses partial failure", async () => {
+    mockPicker.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///night-scan.mov",
+          type: "video",
+          mimeType: "video/quicktime",
+          fileName: "night-scan.mov",
+          duration: 12000
+        }
+      ]
+    });
+    mockExtractVideoFrames.mockResolvedValue([
+      {
+        uri: "file:///night-frame-1.jpg",
+        fileName: "night-frame-1.jpg",
+        mimeType: "image/jpeg",
+        width: 1600,
+        height: 1200,
+        timeSeconds: 2
+      },
+      {
+        uri: "file:///night-frame-2.jpg",
+        fileName: "night-frame-2.jpg",
+        mimeType: "image/jpeg",
+        width: 1600,
+        height: 1200,
+        timeSeconds: 8
+      }
+    ]);
+    mockUpload
+      .mockRejectedValueOnce(new Error("Frame upload failed"))
+      .mockResolvedValueOnce({
+        url: "/uploads/night-frame-2.jpg",
+        mimeType: "image/jpeg"
+      });
+    mockCreate.mockImplementation(async (input) => ({
+      ...input,
+      id: `saved-${input.fileName}`,
+      _id: `saved-${input.fileName}`
+    }));
+    const screen = render(
+      <MediaEvidencePicker
+        aiUsable
+        allowVideo
+        extractFramesFromVideo
+        maxPhotos={12}
+        maxExtractedVideoFrames={12}
+        maxVideoSeconds={599}
+        purpose="crop_identification"
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText("Add evidence video"));
+
+    expect(
+      await screen.findByText(
+        "1 of 2 extracted still frames uploaded for image review. 1 frame failed; tap Retry on each failed frame or add sharp photos instead."
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("Frame upload failed")).toBeTruthy();
+    expect(screen.getByText("Retry")).toBeTruthy();
   });
 
   it("does not resume frame uploads or onChange after unmount", async () => {
@@ -790,6 +1083,13 @@ describe("MediaEvidencePicker", () => {
     fireEvent.press(screen.getByText("Remove"));
 
     await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(2));
+    for (const [registrationInput] of mockCreate.mock.calls) {
+      expect(registrationInput).toEqual(
+        expect.objectContaining({ workspaceType: "personal" })
+      );
+      expect(registrationInput).not.toHaveProperty("workspaceId");
+      expect(registrationInput).not.toHaveProperty("facilityId");
+    }
     await waitFor(() =>
       expect(mockDeleteEvidence).toHaveBeenCalledWith(
         "reconciled-record",

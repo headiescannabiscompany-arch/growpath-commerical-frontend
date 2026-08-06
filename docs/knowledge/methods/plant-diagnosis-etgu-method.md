@@ -22,6 +22,27 @@ not auto-populate a crop name, auto-confirm an identity, or be upgraded to a nor
 by the calculator. A user-entered name remains a user claim and must not be described as
 visually confirmed.
 
+Nighttime capture, a dark background, phone-light illumination, or direct flash is a
+quality risk rather than an automatic rejection. Judge each photo or extracted video frame
+by the diagnostic detail it actually preserves. If sharp, sufficiently exposed morphology
+and usable color remain visible, retain that view and allow the set to support a cautious
+crop, family, or genus candidate; one glare-obscured or shadowed frame must not invalidate
+other compatible usable views. Require a retake only when the lighting, focus, scale, or
+occlusion actually hides the characters needed for the proposed identification. When
+artificial lighting limits exact color or species certainty but sharp diagnostic structure
+still supports a crop, family, or genus, return it as a low-confidence candidate-only result
+with targeted follow-up photos; keep editable AI identity fields and confirmation blocked.
+That limited-light candidate must be supported by its own affirmative, non-hypothetical,
+non-contradicted taxon-discriminating character combination. A generic leaf margin, stem,
+or growth habit is not enough. A limited-light Cannabis candidate requires visible
+bract/calyx or inflorescence structure together with pistils, resin, or trichome support;
+otherwise request targeted retakes instead of retaining the name.
+Words naming a structure are not evidence by themselves. Statements such as `trichomes`,
+`unable to evaluate trichomes`, `cannot confirm pistils`, or `too dark to resolve the leaf
+margin` are missing-evidence statements unless they also contain an affirmative, readable
+character and value. An inconclusive comparison is not lookalike separation. These rules
+apply to every taxon, not only cannabis/hemp.
+
 Photo uploads must never imply that image pixels were inspected when the active provider is text-only. In that state, preserve the photos as linked evidence, label visual analysis as not performed, and require written symptom observations before producing triage. The UI must state what the current engine can use.
 
 When image analysis is available, request a whole-plant context photo, a photo showing symptom distribution, and sharp close-ups of both leaf surfaces. A photo-only result must report whether visual analysis was actually performed and ask for replacement media when blur, lighting, distance, or missing leaf-surface coverage prevents useful review.
@@ -57,6 +78,12 @@ observation; withdrawing the observation must not make the protected original pu
 Image review must evaluate target clarity, not only whole-frame quality. A sharp wide photo can still be diagnostically limited when the symptom occupies a small, unmarked region. Ask the user to describe or mark the intended target and add a close target view. When an IPM frame contains multiple organisms, objects, or size classes, list defensible visible traits separately, do not assume the largest or most obvious subject is the intended pest, and request a dedicated macro when the target remains ambiguous.
 
 Diagnosis, IPM Scout, and Crop Identification may each accept one private source video shorter than 10 minutes, with 9 minutes 59 seconds as the enforced maximum. Preserve the source video as non-AI evidence and extract up to 12 timestamped candidate still frames spanning the timeline on the user's device. Only uploaded still frames are eligible for provider image review, and each counts toward the ordinary 12-photo ceiling. Each frame must independently pass the workflow's context, target, focus, lighting, glare, color, and view-role checks. Do not describe this as direct video or motion analysis, infer continuity between sampled frames, or rebuild detail hidden by motion blur, compression, occlusion, or clipped highlights.
+
+Every client-extracted frame must retain the protected source-video evidence ID and remain
+in the same user or Facility, grow, plant, purpose, and selected evidence set as that video.
+The source video itself is never counted as visually analyzed. Parent linkage records the
+user-submitted association; it does not prove motion analysis or cryptographically prove
+that every pixel originated in the video, so the UI must use that narrower wording.
 
 Community and social posts may supply the language people use for questions, candidate QA cases, and poor-photo negative controls only. Facebook content must not be automatically collected without Meta authorization. Private-group access also requires the relevant group access and creator permission before a post or image can be retained. Do not use likes, comments, captions, or group consensus as the expected diagnosis. A strong evaluation case needs image-level rights, de-identification, contextual evidence, a separately confirmed outcome, and Tier A cross-checking. Poor but rights-reviewed cases may test pre-upload rejection and retake guidance. Neither set is model-training data.
 
@@ -157,6 +184,13 @@ or another measurement, or wild-versus-cultivated status. Device coordinates com
 from a separate, user-authorized device-location action; they are not AI-prefill output
 and start private.
 
+Persist explicit user-entered identity, morphology, habitat, region, date, setting, and
+sensory/context fields in a separate manual-input provenance object. A provider reply must
+not erase them or silently turn them into visual findings. Server-attested AI fields are
+rebuilt from the exact normalized provider result; manual fields are then added with their
+user-entry label. A run with no completed image receipt remains manual/unanalyzed and must
+not accept client-written provider, confidence, or visual-result claims.
+
 A Plant ID may save an exact device location privately in its own Saved ToolRun without
 a grow, plant, Field Study, or Field Study observation. Private location capture is a
 first-class Plant ID action beside photo evidence, not something hidden inside the Field
@@ -175,12 +209,16 @@ a prohibited inferred field, the client must leave that field blank unless the u
 already entered it explicitly.
 
 Provider quality and confidence are ceilings for every downstream step. `limited` or
-`unusable` image quality forces low overall and candidate confidence and a retake-required
-state; the calculator and saved ToolRun must preserve that boundary. A usable image set
-that lacks diagnostic structures may support visible morphology or a broader hypothesis,
-but it must not promote a family-level resemblance into a specific crop or species name.
-Repeated analysis of the same evidence must never turn an earlier quality limitation into
-user-entered evidence or confirmation.
+`unusable` image quality forces low overall and candidate confidence. `Unusable` evidence,
+or `limited` evidence in which the characters needed for even a broader candidate are
+hidden, requires a retake-required state. When `limited` artificial-light evidence still
+preserves readable diagnostic morphology, the calculator may instead retain only a
+crop-, family-, or genus-level candidate with targeted follow-up photos; identity prefill
+and confirmation remain blocked. The calculator and saved ToolRun must preserve that
+boundary. A usable image set that lacks diagnostic structures may support visible
+morphology or a broader hypothesis, but it must not promote a family-level resemblance
+into a specific crop or species name. Repeated analysis under the same review policy must
+never turn an earlier quality limitation into user-entered evidence or confirmation.
 
 Narrow results in this order:
 
@@ -192,6 +230,14 @@ Narrow results in this order:
 6. external name, range, habitat, season, and lookalike verification.
 
 Return ranked candidates with rank, confidence, supporting evidence, counter-evidence, missing evidence, required next photos, and discriminating next questions. High species confidence requires multiple diagnostic structures, compatible region and habitat, lookalike review, and recorded authoritative source support. Otherwise retain the defensible family, genus, or working-candidate rank. User confirmation, uncertainty, and rejection are saved decisions with timestamps; user confirmation does not mean expert or external-source verification.
+
+Species-level evidence requires role-diverse character-and-value observations rather than
+one broadly shared structure, plus affirmative lookalike separation. A comparison whose
+differences remain inconclusive, unresolved, or not ruled out does not satisfy that gate.
+Without recorded authoritative-source verification, an exact species may remain a clearly
+limited candidate but cannot be high confidence or available for ordinary AI-draft
+confirmation. An explicit user correction is still allowed, but it is stored as a user
+claim and does not rewrite the original AI result or become source verification.
 
 Keep common, nursery, and trade names separate from scientific names. When the evidence supports a genus but not an exact species, a genus-level draft such as `Mandevilla spp.` is preferable to an invented species. Withhold plain-language phrases such as "rose plant" from scientific-name and possible-species fields. A withheld or conflicting identity field must downgrade the candidate and the overall identification to low confidence, add explicit counter-evidence, and display a prominent identity-not-verified warning that asks for better evidence before confirmation.
 
@@ -206,6 +252,38 @@ Crop identification must run without a grow. Grow and plant context are optional
 When exact species is unresolved but the evidence supports a defensible common, genus, or family-level working candidate, surface that candidate with its actual confidence and limitations instead of replacing it with a confirmation placeholder. `Not confirmed` is reserved for cases where no useful plant candidate is defensible; every candidate still remains a draft until the user confirms it.
 
 When the server confirms that crop-identification pixels were analyzed, the calculator result and saved ToolRun must preserve that provenance: requested/performed state, exact photo count, provider/model label, image quality, visible identifying traits, evidence IDs, and limitations. The reopened Saved Run must surface those details instead of hiding the nested provenance object. Do not discard server-attested vision metadata and then label the same result as text-only or unanalyzed. An attachment without server-attested analysis must remain explicitly unanalyzed.
+
+The assistant response must return an opaque analysis receipt containing the exact usage
+event ID, normalized-result digest, evidence fingerprint, and review-policy version. The
+calculator save must echo and validate that exact receipt in the same authenticated
+Personal, Commercial, or Facility scope;
+selecting the latest event for the same photos is insufficient. Saved Plant ID evidence,
+AI output, receipt, and immutable snapshot cannot be replaced through a generic update.
+Evidence records and their protected uploads must carry the same canonical workspace type
+and workspace ID as the analysis. A legacy non-Facility evidence record without workspace
+fields is Personal-only; it must never become Commercial evidence by inference. Reopening
+a Saved Run retrieves the exact recorded evidence IDs through an authorized workspace-
+scoped lookup rather than searching only a recent-evidence list.
+Before offering a saved-evidence retry, revalidate the complete recovered set. Every item
+must still belong to Crop Identification and have an uploaded durable reference; every
+photo or extracted frame must still be explicitly AI-usable, and any extracted frame must
+retain its selected private source-video association. The source video itself remains
+private non-AI evidence and does not require AI-use approval. If any exact item is missing
+or ineligible, load none of the set, explain what must be added again, and do not announce
+that evidence was recovered or send a request that the server will reject.
+Only narrowly validated private-location changes, user decisions, user-authored summaries,
+and explicit corrections may change after creation, and each must preserve the original AI
+draft. Facility runs use Facility credits, are visible to current authorized members in the
+selected Facility rather than Personal Saved Runs, and create logs/tasks only in that
+Facility scope. Commercial runs are stored and reopened only as authenticated
+Commercial ToolRuns owned by that account; a route-supplied Commercial account ID is a
+navigation hint, never authorization or the persisted owner. Commercial runs must not
+fall back to Personal Saved Runs or create Personal logs or tasks. Until dedicated
+Commercial journal and task contracts exist, those follow-up actions must return an
+explicit unavailable response instead of silently writing Personal records. A workspace
+change on a mounted shared route must clear prior media, draft identity, location, grow,
+Field Study, result, receipt, and follow-up state before the new workspace can render or
+submit.
 
 Plant diagnosis uses the same server-side OpenAI credential as other image-capable GrowPath AI workflows. A successful image request must record that image analysis was requested and performed, the number of photos inspected, and the provider/model label. A failed or text-only request must say that pixels were not analyzed and request written observations or better evidence rather than presenting a generic result as visual analysis.
 

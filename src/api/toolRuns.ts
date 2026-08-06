@@ -92,6 +92,22 @@ export type RunComparisonObjective =
   | "task_execution"
   | "cycle_time";
 
+export type ToolRunWorkspaceScope = {
+  workspaceType?: "personal" | "commercial" | "facility";
+  facilityId?: string;
+};
+
+function workspaceQuery(scope: ToolRunWorkspaceScope = {}) {
+  return {
+    ...(scope.workspaceType ? { workspaceType: scope.workspaceType } : {}),
+    ...(scope.facilityId ? { facilityId: scope.facilityId } : {})
+  };
+}
+
+function workspaceBody(scope: ToolRunWorkspaceScope = {}) {
+  return workspaceQuery(scope);
+}
+
 export type SavedGrowComparisonInput = {
   growIds: string[];
   referenceGrowId?: string;
@@ -232,14 +248,16 @@ export async function saveToolRunToLog(
     linkedGrowId?: string;
     linkedPlantId?: string | null;
     linkedToolRunId?: string;
-  } = {}
+  } = {},
+  scope: ToolRunWorkspaceScope = {}
 ) {
   return apiRequest(`/api/tools/runs/${encodeURIComponent(toolRunId)}/save-log`, {
     method: "POST",
     body: {
       toolRunId,
       linkedToolRunId: toolRunId,
-      ...payload
+      ...payload,
+      ...workspaceBody(scope)
     }
   });
 }
@@ -259,7 +277,8 @@ export async function createTaskFromToolRun(
     sourceType?: string;
     sourceObjectId?: string;
     sourceToolRunId?: string;
-  } = {}
+  } = {},
+  scope: ToolRunWorkspaceScope = {}
 ) {
   return apiRequest(`/api/tools/runs/${encodeURIComponent(toolRunId)}/create-task`, {
     method: "POST",
@@ -268,16 +287,23 @@ export async function createTaskFromToolRun(
       sourceObjectId: toolRunId,
       sourceToolRunId: toolRunId,
       linkedToolRunId: toolRunId,
-      ...payload
+      ...payload,
+      ...workspaceBody(scope)
     }
   });
 }
 
-export async function getToolRun(toolRunId: string): Promise<ToolRun | null> {
+export async function getToolRun(
+  toolRunId: string,
+  scope: ToolRunWorkspaceScope = {}
+): Promise<ToolRun | null> {
   try {
+    const query = workspaceQuery(scope);
     const res: any = await apiRequest(
       `/api/tools/runs/${encodeURIComponent(toolRunId)}`,
-      { method: "GET" }
+      Object.keys(query).length
+        ? { method: "GET", cache: "no-store", params: query }
+        : { method: "GET" }
     );
     const row = res?.toolRun ?? res?.data?.toolRun ?? res;
     return normalizeToolRun(row);
@@ -290,12 +316,16 @@ export async function listToolRuns(options?: {
   growId?: string;
   toolType?: string;
   includeArchived?: boolean;
+  workspaceType?: "personal" | "commercial" | "facility";
+  facilityId?: string;
 }): Promise<ToolRun[]> {
   try {
     const params: Record<string, string> = {};
     if (options?.growId) params.growId = options.growId;
     if (options?.toolType) params.toolType = options.toolType;
     if (options?.includeArchived) params.includeArchived = "true";
+    if (options?.workspaceType) params.workspaceType = options.workspaceType;
+    if (options?.facilityId) params.facilityId = options.facilityId;
     const res: any = await apiRequest("/api/tools", {
       method: "GET",
       cache: "no-store",
@@ -342,12 +372,13 @@ export async function updateToolRun(
     sourceType: string;
     sourceObjectId: string | null;
     linkedRecipeId: string | null;
-  }>
+  }>,
+  scope: ToolRunWorkspaceScope = {}
 ): Promise<ToolRun | null> {
   try {
     const res: any = await apiRequest(
       `/api/tools/runs/${encodeURIComponent(toolRunId)}`,
-      { method: "PATCH", body: payload }
+      { method: "PATCH", body: { ...payload, ...workspaceBody(scope) } }
     );
     const row = res?.toolRun ?? res?.data?.toolRun ?? res;
     return normalizeToolRun(row);
@@ -356,15 +387,47 @@ export async function updateToolRun(
   }
 }
 
-export async function archiveToolRun(toolRunId: string): Promise<boolean> {
+export async function archiveToolRun(
+  toolRunId: string,
+  scope: ToolRunWorkspaceScope = {}
+): Promise<boolean> {
   try {
+    const body = workspaceBody(scope);
     const res: any = await apiRequest(
       `/api/tools/runs/${encodeURIComponent(toolRunId)}`,
-      { method: "DELETE" }
+      Object.keys(body).length ? { method: "DELETE", body } : { method: "DELETE" }
     );
     return Boolean(res?.archived ?? res?.data?.archived ?? true);
   } catch (_err) {
     return false;
+  }
+}
+
+export async function updatePlantIdCorrection(
+  toolRunId: string,
+  payload:
+    | { decision: "accepted" | "rejected" | "uncertain" }
+    | {
+        userCorrection: {
+          commonName: string;
+          scientificName?: string | null;
+          note?: string;
+        };
+      },
+  scope: ToolRunWorkspaceScope = {}
+): Promise<ToolRun | null> {
+  try {
+    const res: any = await apiRequest(
+      `/api/tools/runs/${encodeURIComponent(toolRunId)}/correction`,
+      {
+        method: "PATCH",
+        body: { ...payload, ...workspaceBody(scope) }
+      }
+    );
+    const row = res?.toolRun ?? res?.data?.toolRun ?? res;
+    return normalizeToolRun(row);
+  } catch (_err) {
+    return null;
   }
 }
 

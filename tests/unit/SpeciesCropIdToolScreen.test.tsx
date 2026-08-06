@@ -4,12 +4,17 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import SpeciesCropIdToolRoute, {
   isCannabisGenusIdentification
 } from "@/app/home/personal/(tabs)/tools/species-crop-id";
+import { bestStructuredPlantCandidateName } from "@/features/personal/tools/plantIdentificationCandidates";
 
 const mockRunCalculator = jest.fn();
 const mockListToolRuns = jest.fn();
+const mockGetToolRun = jest.fn();
+const mockListEvidenceAssets = jest.fn();
+const mockGetEvidenceAssetsByIds = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockUpdateGrowpathModuleRecord = jest.fn();
 const mockUpdateToolRun = jest.fn();
+const mockUpdatePlantIdCorrection = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockSavePersonalGrowCropIdentity = jest.fn();
 const mockSavePersonalPlantCropIdentity = jest.fn();
@@ -21,8 +26,11 @@ const mockCreateFieldObservation = jest.fn();
 const mockUpdateFieldObservation = jest.fn();
 const mockUpdateFieldStudy = jest.fn();
 const mockRequestCurrentCoordinates = jest.fn();
+const mockUseToolPlantContext = jest.fn();
 let mockSearchParams: Record<string, string> = { growId: "grow-1" };
 let mockEvidenceAssets: any[] = [];
+let mockEntitlementMode: "personal" | "commercial" | "facility" = "personal";
+let mockEntitlementFacilityId = "";
 
 function openLocationAndSharing(screen: any) {
   const collapsedControl = screen.queryByText("Optional: add to a Field Study or Nature");
@@ -52,6 +60,11 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
       View,
       { testID: "media-evidence-picker" },
       React.createElement(Text, null, `Evidence purpose: ${props.purpose}`),
+      React.createElement(
+        Text,
+        null,
+        `Retain on remove: ${(props.retainOnRemoveAssetIds || []).join(",")}`
+      ),
       React.createElement(
         Pressable,
         {
@@ -91,7 +104,8 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     plan: "pro",
-    mode: "personal",
+    mode: mockEntitlementMode,
+    facilityId: mockEntitlementFacilityId,
     can: () => true
   })
 }));
@@ -110,21 +124,26 @@ jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
   const { View } = require("react-native");
   return {
     ToolPlantContextPicker: () => React.createElement(View, { testID: "plant-picker" }),
-    useToolPlantContext: () => ({
-      plants: [],
-      plantId: "",
-      selectedPlant: null,
-      setPlantId: jest.fn(),
-      toolRunContext: { selectedPlantContext: null }
-    })
+    useToolPlantContext: (...args: any[]) => mockUseToolPlantContext(...args)
   };
 });
 
 jest.mock("@/api/toolRuns", () => ({
   runCalculator: (...args: any[]) => mockRunCalculator(...args),
+  getToolRun: (...args: any[]) => mockGetToolRun(...args),
   listToolRuns: (...args: any[]) => mockListToolRuns(...args),
-  updateToolRun: (...args: any[]) => mockUpdateToolRun(...args)
+  updateToolRun: (...args: any[]) => mockUpdateToolRun(...args),
+  updatePlantIdCorrection: (...args: any[]) => mockUpdatePlantIdCorrection(...args)
 }));
+
+jest.mock("@/api/evidence", () => {
+  const actual = jest.requireActual("@/api/evidence");
+  return {
+    ...actual,
+    listEvidenceAssets: (...args: any[]) => mockListEvidenceAssets(...args),
+    getEvidenceAssetsByIds: (...args: any[]) => mockGetEvidenceAssetsByIds(...args)
+  };
+});
 
 jest.mock("@/api/grows", () => ({
   listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args),
@@ -168,6 +187,8 @@ describe("SpeciesCropIdToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockSearchParams = { growId: "grow-1" };
+    mockEntitlementMode = "personal";
+    mockEntitlementFacilityId = "";
     mockEvidenceAssets = [
       {
         id: "evidence-1",
@@ -181,6 +202,9 @@ describe("SpeciesCropIdToolRoute", () => {
     ];
     mockListFieldStudies.mockResolvedValue([]);
     mockListToolRuns.mockResolvedValue([]);
+    mockGetToolRun.mockResolvedValue(null);
+    mockListEvidenceAssets.mockResolvedValue([]);
+    mockGetEvidenceAssetsByIds.mockResolvedValue([]);
     mockCreateFieldStudy.mockResolvedValue({
       id: "study-new",
       _id: "study-new",
@@ -205,6 +229,14 @@ describe("SpeciesCropIdToolRoute", () => {
       latitude: 39.301234,
       longitude: -76.721234,
       accuracyMeters: 24
+    });
+    mockUseToolPlantContext.mockReturnValue({
+      plants: [],
+      plantId: "",
+      selectedPlant: null,
+      selectedPlantContext: null,
+      setPlantId: jest.fn(),
+      toolRunContext: { selectedPlantContext: null }
     });
     mockRunCalculator.mockResolvedValue({
       outputs: {
@@ -256,6 +288,7 @@ describe("SpeciesCropIdToolRoute", () => {
     mockCreateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
     mockUpdateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
     mockUpdateToolRun.mockResolvedValue({ id: "toolrun-1" });
+    mockUpdatePlantIdCorrection.mockResolvedValue({ id: "toolrun-1" });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({
       ok: true,
       toolRunId: "toolrun-1",
@@ -350,18 +383,24 @@ describe("SpeciesCropIdToolRoute", () => {
       expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
         expect.objectContaining({
           growId: undefined,
+          workspaceType: "personal",
           evidenceAssetIds: ["evidence-1"],
+          context: expect.objectContaining({ workspaceType: "personal" }),
           message: expect.stringContaining(
             'Never put an English common-name phrase such as "rose plant" in scientificName'
           )
         })
       )
     );
+    expect(mockAskPersonalAssistant.mock.calls[0][0].message).toContain(
+      "Nighttime, a dark background, phone-light illumination, or direct flash is not automatically a failed image"
+    );
     await waitFor(() =>
       expect(mockRunCalculator).toHaveBeenCalledWith(
         "species-crop-id",
         expect.objectContaining({
           growId: "",
+          workspaceType: "personal",
           userEnteredName: "Cannabis",
           scientificName: "Cannabis sativa",
           userConfirmed: false,
@@ -377,20 +416,256 @@ describe("SpeciesCropIdToolRoute", () => {
       )
     );
     expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
-    expect(screen.getByText("Photos inspected")).toBeTruthy();
+    expect(screen.getByText("Still images inspected")).toBeTruthy();
     expect(screen.getByText("External verification")).toBeTruthy();
     expect(screen.getByText("Candidate comparison")).toBeTruthy();
-    expect(screen.getByText(/inspected 1 uploaded photo/i)).toBeTruthy();
+    expect(screen.getByText(/inspected 1 still image/i)).toBeTruthy();
     expect(screen.queryByText("Confirm & Save to Grow")).toBeNull();
   }, 10_000);
 
-  it("sends only uploaded photos to AI while retaining the source video in the saved run", async () => {
+  it("does not claim image analysis after a manual no-media calculation", async () => {
+    mockSearchParams = {};
+    mockEvidenceAssets = [];
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        likelyCrop: "Rose",
+        confidence: "user_entered",
+        userConfirmationRequired: true,
+        imageAnalysis: {
+          requested: false,
+          performed: false,
+          quality: "unreviewed",
+          photosAnalyzed: 0
+        }
+      },
+      toolRun: { id: "manual-no-media-run", _id: "manual-no-media-run" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Rose"
+    );
+    fireEvent.press(
+      screen.getByRole("button", { name: "Run Species / Crop Identification" })
+    );
+
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText(
+          "Include or update current location privately with this Plant ID"
+        )
+      ).not.toBeDisabled()
+    );
+    expect(screen.queryByText(/The images were reviewed/i)).toBeNull();
+    expect(screen.queryByText(/Images were not analyzed — try again/i)).toBeNull();
+    expect(screen.queryByText(/Analysis finished/i)).toBeNull();
+  });
+
+  it("recovers exact older Personal evidence from a Saved Run and waits for an explicit retry", async () => {
+    mockSearchParams = { retryToolRunId: "night-run-1" };
+    mockEvidenceAssets = [];
+    mockGetToolRun.mockResolvedValue({
+      id: "night-run-1",
+      _id: "night-run-1",
+      toolType: "species_crop_id",
+      inputs: {
+        evidenceAssetIds: ["older-night-photo-1", "night-frame-1", "night-video-1"],
+        imageAnalysis: { evidenceUsed: ["older-night-photo-1", "night-frame-1"] },
+        mediaEvidence: [
+          { id: "older-night-photo-1", type: "photo" },
+          { id: "night-frame-1", type: "photo" },
+          { id: "night-video-1", type: "video" }
+        ]
+      }
+    });
+    mockListEvidenceAssets.mockResolvedValue([
+      {
+        id: "recent-unrelated-photo",
+        assetType: "photo",
+        originalUri: "file:///recent-unrelated-photo.jpg",
+        durableUrl: "/protected/recent-unrelated-photo.jpg",
+        uploadStatus: "uploaded",
+        source: "library",
+        purpose: "crop_identification",
+        qualityWarnings: []
+      }
+    ]);
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      {
+        id: "night-video-1",
+        assetType: "video",
+        originalUri: "file:///night-video.mov",
+        durableUrl: "/protected/night-video.mov",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: false,
+        purpose: "crop_identification",
+        qualityWarnings: []
+      },
+      {
+        id: "night-frame-1",
+        assetType: "photo",
+        originalUri: "file:///night-frame.jpg",
+        durableUrl: "/protected/night-frame.jpg",
+        uploadStatus: "uploaded",
+        source: "generated",
+        sourceVideoEvidenceAssetId: "night-video-1",
+        aiUsable: true,
+        purpose: "crop_identification",
+        qualityWarnings: []
+      },
+      {
+        id: "older-night-photo-1",
+        assetType: "photo",
+        originalUri: "file:///older-night-photo.jpg",
+        durableUrl: "/protected/older-night-photo.jpg",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: true,
+        purpose: "crop_identification",
+        qualityWarnings: []
+      }
+    ]);
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(
+      await screen.findByText(
+        /Recovered 2 saved photos and 1 private source video.*press Identify Plant from Photos/i
+      )
+    ).toBeTruthy();
+    expect(mockGetToolRun).toHaveBeenCalledWith("night-run-1", {
+      workspaceType: "personal"
+    });
+    expect(mockGetEvidenceAssetsByIds).toHaveBeenCalledWith(
+      ["older-night-photo-1", "night-frame-1", "night-video-1"],
+      { workspaceType: "personal" }
+    );
+    expect(mockListEvidenceAssets).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        /Retain on remove: older-night-photo-1,night-frame-1,night-video-1/i
+      )
+    ).toBeTruthy();
+    expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+    expect(mockRunCalculator).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          evidenceAssetIds: ["older-night-photo-1", "night-frame-1", "night-video-1"]
+        })
+      )
+    );
+  });
+
+  it.each([
+    [
+      "is not AI-approved",
+      {
+        assetType: "photo",
+        purpose: "crop_identification",
+        uploadStatus: "uploaded",
+        durableUrl: "/protected/saved-photo.jpg",
+        aiUsable: false
+      },
+      /not approved for AI analysis.*Nothing was loaded/i
+    ],
+    [
+      "is not fully uploaded",
+      {
+        assetType: "photo",
+        purpose: "crop_identification",
+        uploadStatus: "uploading",
+        durableUrl: "/protected/saved-photo.jpg",
+        aiUsable: true
+      },
+      /no longer fully uploaded and available.*Nothing was loaded/i
+    ],
+    [
+      "has no durable reference",
+      {
+        assetType: "photo",
+        purpose: "crop_identification",
+        uploadStatus: "uploaded",
+        durableUrl: "   ",
+        aiUsable: true
+      },
+      /no longer fully uploaded and available.*Nothing was loaded/i
+    ],
+    [
+      "belongs to another workflow",
+      {
+        assetType: "photo",
+        purpose: "diagnosis",
+        uploadStatus: "uploaded",
+        durableUrl: "/protected/saved-photo.jpg",
+        aiUsable: true
+      },
+      /belongs to another workflow.*Nothing was loaded/i
+    ],
+    [
+      "no longer has the recorded photo type",
+      {
+        assetType: "video",
+        purpose: "crop_identification",
+        uploadStatus: "uploaded",
+        durableUrl: "/protected/saved-photo.jpg",
+        aiUsable: false
+      },
+      /saved Plant ID photo no longer has the expected media type.*Nothing was loaded/i
+    ]
+  ] as Array<[string, Record<string, any>, RegExp]>)(
+    "loads none of a Saved Run when exact evidence %s",
+    async (_label, asset, error) => {
+      mockSearchParams = { retryToolRunId: "saved-run-with-ineligible-evidence" };
+      mockEvidenceAssets = [];
+      mockGetToolRun.mockResolvedValue({
+        id: "saved-run-with-ineligible-evidence",
+        _id: "saved-run-with-ineligible-evidence",
+        toolType: "species_crop_id",
+        inputs: {
+          evidenceAssetIds: ["saved-photo-1"],
+          imageAnalysis: { evidenceUsed: ["saved-photo-1"] },
+          mediaEvidence: [{ id: "saved-photo-1", type: "photo" }]
+        }
+      });
+      mockGetEvidenceAssetsByIds.mockResolvedValue([
+        {
+          id: "saved-photo-1",
+          originalUri: "file:///saved-photo.jpg",
+          source: "library",
+          qualityWarnings: [],
+          ...asset
+        }
+      ]);
+
+      const screen = render(<SpeciesCropIdToolRoute />);
+
+      expect(await screen.findByText(error)).toBeTruthy();
+      expect(screen.queryByText(/Recovered 1 saved photo/i)).toBeNull();
+      expect(screen.getByText("Retain on remove:")).toBeTruthy();
+
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+      expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+      expect(mockRunCalculator).not.toHaveBeenCalled();
+    }
+  );
+
+  it("sends a generated frame with its source video so the server can verify lineage", async () => {
     mockSearchParams = {};
     mockEvidenceAssets = [
       {
         id: "frame-photo-1",
         _id: "frame-photo-1",
         assetType: "photo",
+        source: "generated",
+        sourceVideoEvidenceAssetId: "source-video-1",
         durableUrl: "https://example.com/extracted-frame.jpg",
         uploadStatus: "uploaded",
         purpose: "other",
@@ -400,6 +675,7 @@ describe("SpeciesCropIdToolRoute", () => {
         id: "source-video-1",
         _id: "source-video-1",
         assetType: "video",
+        source: "upload",
         durableUrl: "https://example.com/source-video.mov",
         uploadStatus: "uploaded",
         purpose: "other",
@@ -417,7 +693,13 @@ describe("SpeciesCropIdToolRoute", () => {
       }),
       provider: "openai",
       evidenceUsed: ["frame-photo-1"],
-      mediaAnalysis: { photosAnalyzed: 1 }
+      mediaAnalysis: { photosAnalyzed: 1 },
+      analysisReceipt: {
+        aiUsageEventId: "usage-frame-1",
+        normalizedPlantIdResultDigest: "digest-frame-1",
+        evidenceFingerprint: "frame-photo-1|source-video-1",
+        reviewPolicyVersion: "plant-id-night-light-detail-v2"
+      }
     });
 
     const screen = render(<SpeciesCropIdToolRoute />);
@@ -425,7 +707,9 @@ describe("SpeciesCropIdToolRoute", () => {
 
     await waitFor(() =>
       expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
-        expect.objectContaining({ evidenceAssetIds: ["frame-photo-1"] })
+        expect.objectContaining({
+          evidenceAssetIds: ["frame-photo-1", "source-video-1"]
+        })
       )
     );
     await waitFor(() =>
@@ -439,11 +723,193 @@ describe("SpeciesCropIdToolRoute", () => {
           ]),
           imageAnalysis: expect.objectContaining({
             photoCount: 1,
-            photosAnalyzed: 1
+            photosAnalyzed: 1,
+            stillImagesAnalyzed: 1,
+            videoFramesAnalyzed: 1,
+            videosAttached: 1,
+            videosAnalyzed: 0,
+            aiUsageEventId: "usage-frame-1",
+            normalizedPlantIdResultDigest: "digest-frame-1",
+            evidenceFingerprint: "frame-photo-1|source-video-1",
+            reviewPolicyVersion: "plant-id-night-light-detail-v2"
           })
         })
       )
     );
+  });
+
+  it("scopes facility AI and saved runs while preserving only actual manual input provenance", async () => {
+    mockSearchParams = {
+      workspace: "facility",
+      facilityId: "facility-1",
+      growId: "personal-grow-secret",
+      plantId: "personal-plant-secret",
+      fieldStudyId: "personal-study-secret"
+    };
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Roadside flowering plant",
+        scientificName: "",
+        habitat: "disturbed roadside edge",
+        growthHabit: "herb",
+        leafMargin: "serrated",
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "low"
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 },
+      analysisReceipt: {
+        aiUsageEventId: "usage-facility-1",
+        normalizedPlantIdResultDigest: "digest-facility-1",
+        evidenceFingerprint: "evidence-1",
+        reviewPolicyVersion: "plant-id-night-light-detail-v2"
+      }
+    });
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(
+      screen.getByLabelText("Species / Crop Identification Growth habit: Herb")
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Location or region"),
+      "Baltimore County, Maryland"
+    );
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workspaceType: "facility",
+          facilityId: "facility-1",
+          evidenceAssetIds: ["evidence-1"],
+          context: expect.objectContaining({
+            workspaceType: "facility",
+            facilityId: "facility-1"
+          })
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          workspaceType: "facility",
+          facilityId: "facility-1",
+          manualInputProvenance: {
+            source: "user_entry",
+            morphology: { growthHabit: "herb" },
+            observationContext: { region: "Baltimore County, Maryland" }
+          },
+          imageAnalysis: expect.objectContaining({
+            aiUsageEventId: "usage-facility-1",
+            normalizedPlantIdResultDigest: "digest-facility-1"
+          })
+        })
+      )
+    );
+    expect(mockUseToolPlantContext).toHaveBeenCalledWith("", "", false);
+    expect(mockListPersonalGrows).not.toHaveBeenCalled();
+    expect(mockListFieldStudies).not.toHaveBeenCalled();
+    expect(mockCreateGrowpathModuleRecord).not.toHaveBeenCalled();
+    expect(mockAskPersonalAssistant.mock.calls[0][0].growId).toBeUndefined();
+    expect(mockAskPersonalAssistant.mock.calls[0][0].plantId).toBeUndefined();
+    expect(mockRunCalculator.mock.calls[0][1].growId).not.toBe("personal-grow-secret");
+    expect(screen.queryByText("Optional: add to a Field Study or Nature")).toBeNull();
+    expect(screen.queryByText("Confirm & Save to Grow")).toBeNull();
+    expect(screen.queryByText("Create Crop Identity Tasks")).toBeNull();
+    expect(
+      screen.getByText(
+        /This result remains in the current facility workspace's Saved Runs/i
+      )
+    ).toBeTruthy();
+  });
+
+  it("keeps commercial Plant ID out of Personal records even with hostile route context", async () => {
+    mockSearchParams = {
+      commercialAccountId: "commercial-1",
+      retryToolRunId: "personal-run-secret",
+      growId: "personal-grow-secret",
+      plantId: "personal-plant-secret",
+      fieldStudyId: "personal-study-secret"
+    };
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+    expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+      expect.objectContaining({ workspaceType: "commercial" })
+    );
+    expect(mockRunCalculator).toHaveBeenCalledWith(
+      "species-crop-id",
+      expect.objectContaining({ workspaceType: "commercial" })
+    );
+    expect(mockListToolRuns).toHaveBeenCalledWith({
+      toolType: "species-crop-id",
+      workspaceType: "commercial"
+    });
+    expect(mockAskPersonalAssistant.mock.calls[0][0]).not.toEqual(
+      expect.objectContaining({
+        commercialAccountId: expect.anything(),
+        workspaceId: expect.anything()
+      })
+    );
+    expect(mockRunCalculator.mock.calls[0][1]).not.toEqual(
+      expect.objectContaining({
+        commercialAccountId: expect.anything(),
+        workspaceId: expect.anything()
+      })
+    );
+    expect(mockUseToolPlantContext).toHaveBeenCalledWith("", "", false);
+    expect(mockListPersonalGrows).not.toHaveBeenCalled();
+    expect(mockListFieldStudies).not.toHaveBeenCalled();
+    expect(mockGetToolRun).not.toHaveBeenCalled();
+    expect(mockGetEvidenceAssetsByIds).not.toHaveBeenCalled();
+    expect(mockListEvidenceAssets).not.toHaveBeenCalled();
+    expect(mockCreateGrowpathModuleRecord).not.toHaveBeenCalled();
+    expect(mockRunCalculator.mock.calls[0][1].growId).not.toBe("personal-grow-secret");
+    expect(screen.queryByText("Optional: add to a Field Study or Nature")).toBeNull();
+    expect(screen.queryByText("Confirm & Save to Grow")).toBeNull();
+    expect(screen.queryByText("Create Crop Identity Tasks")).toBeNull();
+    expect(
+      screen.getByText(
+        /This result remains in the current commercial workspace's Saved Runs/i
+      )
+    ).toBeTruthy();
+  });
+
+  it("clears Personal state when authenticated mode changes on the mounted route", async () => {
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Private personal draft"
+    );
+    openLocationAndSharing(screen);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(screen.getByText("Confirm & Save to Grow")).toBeTruthy());
+    await waitFor(() => expect(mockListFieldStudies).toHaveBeenCalledTimes(1));
+
+    mockEvidenceAssets = [];
+    mockSearchParams = {};
+    mockEntitlementMode = "commercial";
+    mockListPersonalGrows.mockClear();
+    mockListFieldStudies.mockClear();
+    screen.rerender(<SpeciesCropIdToolRoute />);
+
+    await waitFor(() => expect(screen.queryByText("Confirm & Save to Grow")).toBeNull());
+    expect(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name").props
+        .value
+    ).toBe("");
+    expect(screen.queryByText("Optional: add to a Field Study or Nature")).toBeNull();
+    expect(screen.getByText(/current commercial workspace's Saved Runs/i)).toBeTruthy();
+    expect(mockUseToolPlantContext).toHaveBeenLastCalledWith("", "", false);
+    expect(mockListPersonalGrows).not.toHaveBeenCalled();
+    expect(mockListFieldStudies).not.toHaveBeenCalled();
   });
 
   it("withholds a crop name and forces low confidence when the submitted views are limited", async () => {
@@ -508,12 +974,7 @@ describe("SpeciesCropIdToolRoute", () => {
             ])
           }),
           identificationDraft: expect.objectContaining({
-            candidates: [
-              expect.objectContaining({
-                scientificName: "Brassica oleracea",
-                confidence: "low"
-              })
-            ],
+            candidates: [],
             requiredNextPhotos: expect.arrayContaining([
               expect.stringMatching(/even daylight or diffuse light/i)
             ])
@@ -525,39 +986,170 @@ describe("SpeciesCropIdToolRoute", () => {
       screen.getByLabelText("Species / Crop Identification Plant or crop name").props
         .value
     ).toBe("");
+    expect(await screen.findByText("Analysis finished — retake required")).toBeTruthy();
+    expect(
+      screen.getByText(/No plant name was accepted from this evidence/i)
+    ).toBeTruthy();
+    expect(screen.queryByText("Candidate found: Cabbage")).toBeNull();
     expect(screen.getByRole("button", { name: "Confirm in Saved Run" })).toBeDisabled();
   });
 
-  it("keeps a usable medium-confidence visual guess as an unconfirmable candidate", async () => {
+  it("distinguishes an unavailable image review from evidence that needs a retake", async () => {
     mockSearchParams = {};
     mockAskPersonalAssistant.mockResolvedValueOnce({
       success: true,
       reply: JSON.stringify({
-        userEnteredName: "Cabbage",
-        scientificName: "Brassica oleracea",
-        commonNames: "Cabbage",
+        userEnteredName: "",
+        scientificName: "",
+        commonNames: "",
+        imageAnalysisPerformed: "false",
+        imageQuality: "unusable",
+        visualConfidence: "low",
+        candidates: []
+      }),
+      provider: "openai",
+      evidenceUsed: [],
+      mediaAnalysis: { photosAnalyzed: 0 },
+      limitations: ["Image analysis did not complete."]
+    });
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        likelyCrop: "unknown crop",
+        confidence: "low",
+        userConfirmationRequired: true,
+        imageAnalysis: {
+          requested: true,
+          performed: false,
+          quality: "unusable",
+          confidence: "low",
+          photosAnalyzed: 0,
+          limitations: ["Image analysis did not complete."]
+        }
+      },
+      toolRun: { id: "toolrun-provider-failure", _id: "toolrun-provider-failure" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    expect(await screen.findByText("Images were not analyzed — try again")).toBeTruthy();
+    expect(screen.getByText(/uploaded evidence is still attached/i)).toBeTruthy();
+    expect(screen.queryByText(/retake required/i)).toBeNull();
+  });
+
+  it("removes the prior result when a same-evidence AI retry fails", async () => {
+    mockSearchParams = {};
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Rose"
+    );
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    expect(await screen.findByText("Candidate found: Cannabis")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Species / Crop Identification Scientific name, if known")
+        .props.value
+    ).toBe("Cannabis sativa");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Identify Plant from Photos" })
+      ).not.toBeDisabled()
+    );
+
+    mockAskPersonalAssistant.mockRejectedValueOnce(
+      new Error("Nighttime image review could not be completed.")
+    );
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    expect(
+      await screen.findByText("Nighttime image review could not be completed.")
+    ).toBeTruthy();
+    expect(screen.queryByText("Candidate found: Cannabis")).toBeNull();
+    expect(screen.queryByText("Species / Crop Identification result")).toBeNull();
+    expect(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name").props
+        .value
+    ).toBe("Rose");
+    expect(
+      screen.getByLabelText("Species / Crop Identification Scientific name, if known")
+        .props.value
+    ).toBe("");
+    expect(mockRunCalculator).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["blank", ""],
+    ["malformed", '```json\n{"userEnteredName":"Cannabis"\n```']
+  ])(
+    "keeps uploaded evidence ready to retry when the AI returns a %s response",
+    async (_label, reply) => {
+      mockSearchParams = {};
+      mockAskPersonalAssistant.mockResolvedValueOnce({
+        success: true,
+        reply,
+        provider: "openai",
+        evidenceUsed: ["evidence-1"],
+        mediaAnalysis: { photosAnalyzed: 1 }
+      });
+      const screen = render(<SpeciesCropIdToolRoute />);
+
+      fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+      expect(
+        await screen.findByText(/could not read the AI identification response/i)
+      ).toBeTruthy();
+      expect(screen.getByText(/uploaded evidence is still attached/i)).toBeTruthy();
+      expect(mockRunCalculator).not.toHaveBeenCalled();
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", { name: "Identify Plant from Photos" })
+        ).not.toBeDisabled()
+      );
+    }
+  );
+
+  it("keeps an illuminated nighttime cannabis view as a usable unconfirmable candidate", async () => {
+    mockSearchParams = {};
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        commonNames: "Cannabis",
         imageAnalysisPerformed: "true",
         imageQuality: "usable",
         visualConfidence: "medium",
         candidates: [
           {
-            scientificName: "Brassica oleracea",
-            commonNames: ["Cabbage"],
-            rank: "species",
+            scientificName: "Cannabis spp.",
+            commonNames: ["Cannabis"],
+            rank: "genus",
             confidence: "medium"
           }
         ]
       }),
       provider: "openai",
       evidenceUsed: ["evidence-1"],
-      mediaAnalysis: { photosAnalyzed: 1 }
+      mediaAnalysis: { photosAnalyzed: 1 },
+      limitations: [
+        "Nighttime phone-light illumination is present, but sharp bracts, pistils, sugar leaves, and inflorescence structure remain visible."
+      ]
     });
     mockRunCalculator.mockResolvedValueOnce({
       outputs: {
-        likelyCrop: "Cabbage",
-        scientificName: "Brassica oleracea",
+        likelyCrop: "Cannabis",
+        scientificName: "Cannabis spp.",
         confidence: "medium",
         userConfirmationRequired: true,
+        candidates: [
+          {
+            scientificName: "Cannabis spp.",
+            commonNames: ["Cannabis"],
+            rank: "genus",
+            confidence: "medium"
+          }
+        ],
         imageAnalysis: {
           requested: true,
           performed: true,
@@ -592,8 +1184,8 @@ describe("SpeciesCropIdToolRoute", () => {
           identificationDraft: expect.objectContaining({
             candidates: [
               expect.objectContaining({
-                scientificName: "Brassica oleracea",
-                commonNames: ["Cabbage"],
+                scientificName: "Cannabis spp.",
+                commonNames: ["Cannabis"],
                 confidence: "medium"
               })
             ]
@@ -610,7 +1202,81 @@ describe("SpeciesCropIdToolRoute", () => {
       screen.getByLabelText("Species / Crop Identification Plant or crop name").props
         .value
     ).toBe("");
+    expect(await screen.findByText("Candidate found: Cannabis")).toBeTruthy();
+    expect(
+      screen.getByText(/Nighttime or phone-light evidence is accepted/i)
+    ).toBeTruthy();
+    expect(screen.queryByText(/retake required/i)).toBeNull();
     expect(screen.getByRole("button", { name: "Confirm in Saved Run" })).toBeDisabled();
+  });
+
+  it("shows a crop-level candidate when artificial lighting limits exact certainty but preserves diagnostic structure", async () => {
+    mockSearchParams = {};
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "",
+        scientificName: "",
+        commonNames: "",
+        imageAnalysisPerformed: "true",
+        imageQuality: "limited",
+        visualConfidence: "low",
+        identifyingVisualTraits:
+          "Sharp bracts, pistils, resinous sugar leaves, and inflorescence structure remain visible under phone light.",
+        candidates: [
+          {
+            scientificName: "Cannabis spp.",
+            commonNames: ["Cannabis"],
+            rank: "genus",
+            confidence: "low",
+            evidence: ["Visible bracts, pistils, and resinous sugar leaves"],
+            missingEvidence: ["Neutral-light whole-plant view"]
+          }
+        ],
+        requiredNextPhotos: ["Add a neutral-light whole-plant view."]
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 },
+      limitations: ["Phone light limits exact color confidence."]
+    });
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        likelyCrop: "unknown crop",
+        confidence: "low",
+        identityEvidenceStatus: "candidate_only",
+        userConfirmationRequired: true,
+        candidates: [
+          {
+            scientificName: "Cannabis sativa",
+            commonNames: ["Cannabis"],
+            rank: "species",
+            confidence: "medium",
+            evidence: ["Visible bracts, pistils, and resinous sugar leaves"]
+          }
+        ],
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          quality: "limited",
+          confidence: "low",
+          retakeRequired: false,
+          photosAnalyzed: 1
+        }
+      },
+      toolRun: { id: "limited-cannabis-candidate", _id: "limited-cannabis-candidate" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    expect(
+      await screen.findByText("Candidate found: Cannabis — more evidence needed")
+    ).toBeTruthy();
+    expect(screen.getByText(/lighting limits exact certainty/i)).toBeTruthy();
+    expect(screen.queryByText(/No plant name was accepted/i)).toBeNull();
+    expect(screen.queryByText("Cannabis sativa")).toBeNull();
+    expect(screen.getAllByText("Cannabis spp.").length).toBeGreaterThan(0);
   });
 
   it("honors the server confirmation block and shows its reason", async () => {
@@ -679,16 +1345,9 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(confirm).not.toBeDisabled();
     fireEvent.press(confirm);
     await waitFor(() =>
-      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+      expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith(
         "toolrun-user-rose-unseen",
-        expect.objectContaining({
-          outputs: expect.objectContaining({
-            likelyCrop: "Rose",
-            identitySource: "user_entry",
-            identityVisuallyVerified: false,
-            confidence: "user_confirmed"
-          })
-        })
+        { decision: "accepted" }
       )
     );
   });
@@ -779,17 +1438,9 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(confirm).not.toBeDisabled();
     fireEvent.press(confirm);
     await waitFor(() =>
-      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+      expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith(
         "toolrun-user-rose-medium",
-        expect.objectContaining({
-          outputs: expect.objectContaining({
-            likelyCrop: "Rose",
-            scientificName: "",
-            identitySource: "user_entry",
-            identityVisuallyVerified: false,
-            confidence: "user_confirmed"
-          })
-        })
+        { decision: "accepted" }
       )
     );
   });
@@ -953,6 +1604,7 @@ describe("SpeciesCropIdToolRoute", () => {
             confidence: "low",
             evidenceUsed: ["evidence-1"],
             evidenceFingerprint: "evidence-1",
+            reviewPolicyVersion: "plant-id-night-light-detail-v2",
             limitations: ["Direct flash hid diagnostic detail."]
           },
           identificationDraft: {
@@ -1014,6 +1666,102 @@ describe("SpeciesCropIdToolRoute", () => {
       screen.getByLabelText("Species / Crop Identification Plant or crop name").props
         .value
     ).toBe("");
+  });
+
+  it("reevaluates a legacy lighting rejection once under the detail-aware policy", async () => {
+    mockSearchParams = {};
+    mockListToolRuns.mockResolvedValueOnce([
+      {
+        id: "prior-legacy-lighting-run",
+        toolName: "species-crop-id",
+        inputs: {
+          evidenceAssetIds: ["evidence-1"],
+          imageAnalysis: {
+            requested: true,
+            performed: true,
+            quality: "limited",
+            confidence: "low",
+            evidenceUsed: ["evidence-1"],
+            evidenceFingerprint: "evidence-1",
+            limitations: ["Nighttime phone light was treated as unusable."]
+          },
+          identificationDraft: { candidates: [] }
+        }
+      }
+    ]);
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        userEnteredName: "Cannabis",
+        scientificName: "Cannabis spp.",
+        commonNames: "Cannabis",
+        candidates: [
+          {
+            scientificName: "Cannabis spp.",
+            commonNames: ["Cannabis"],
+            rank: "genus",
+            confidence: "high"
+          }
+        ],
+        imageAnalysisPerformed: "true",
+        imageQuality: "usable",
+        visualConfidence: "high"
+      }),
+      provider: "openai",
+      evidenceUsed: ["evidence-1"],
+      mediaAnalysis: { photosAnalyzed: 1 },
+      limitations: [
+        "Phone-light illumination is present, but diagnostic bracts, pistils, and inflorescence structure remain sharp."
+      ]
+    });
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        likelyCrop: "Cannabis",
+        scientificName: "Cannabis spp.",
+        confidence: "high",
+        userConfirmationRequired: true,
+        imageAnalysis: {
+          requested: true,
+          performed: true,
+          quality: "usable",
+          confidence: "high",
+          photosAnalyzed: 1,
+          reviewPolicyVersion: "plant-id-night-light-detail-v2",
+          previousReviewPolicyVersion: "legacy",
+          reassessedUnderUpdatedPolicy: true,
+          limitations: [
+            "This unchanged evidence was reassessed under an updated nighttime-lighting policy. Compare this result with the prior review and explicitly confirm or reject the new candidate."
+          ]
+        }
+      },
+      toolRun: { id: "legacy-reassessment-run", _id: "legacy-reassessment-run" }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "species-crop-id",
+        expect.objectContaining({
+          userEnteredName: "Cannabis",
+          scientificName: "Cannabis spp.",
+          imageAnalysis: expect.objectContaining({
+            quality: "usable",
+            confidence: "high",
+            reviewPolicyVersion: "plant-id-night-light-detail-v2",
+            limitations: expect.not.arrayContaining([
+              expect.stringMatching(/same unchanged evidence/i)
+            ])
+          })
+        })
+      )
+    );
+    expect(
+      await screen.findByText(
+        /same evidence was reevaluated under the corrected lighting policy/i
+      )
+    ).toBeTruthy();
   });
 
   it("keeps a user Rose claim separate from an identical saved and rerun Cabbage candidate", async () => {
@@ -1447,8 +2195,64 @@ describe("SpeciesCropIdToolRoute", () => {
         })
       )
     );
+    expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith("toolrun-1", {
+      decision: "accepted"
+    });
+    expect(mockUpdatePlantIdCorrection.mock.invocationCallOrder[0]).toBeLessThan(
+      mockSavePersonalGrowCropIdentity.mock.invocationCallOrder[0]
+    );
     expect(screen.getByText("Confirmed crop identity saved to grow.")).toBeTruthy();
   });
+
+  it("does not mutate a Personal grow when the authoritative Saved Run decision fails", async () => {
+    mockUpdatePlantIdCorrection.mockResolvedValueOnce(null);
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.changeText(
+      screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+      "Cannabis"
+    );
+    fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
+    await waitFor(() => expect(screen.getByText("Confirm & Save to Grow")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Confirm & Save to Grow"));
+
+    expect(
+      await screen.findByText("Unable to save this identification decision.")
+    ).toBeTruthy();
+    expect(mockSavePersonalGrowCropIdentity).not.toHaveBeenCalled();
+    expect(mockSavePersonalPlantCropIdentity).not.toHaveBeenCalled();
+    expect(mockUpdateGrowpathModuleRecord).not.toHaveBeenCalled();
+    expect(screen.queryByText("Confirmed crop identity saved to grow.")).toBeNull();
+  });
+
+  it.each([
+    ["Mark as Not Sure", "uncertain"],
+    ["Mark as Doesn't Match", "rejected"]
+  ])(
+    "does not report success for %s when the Saved Run update returns null",
+    async (label, decision) => {
+      mockUpdatePlantIdCorrection.mockResolvedValueOnce(null);
+      const screen = render(<SpeciesCropIdToolRoute />);
+      fireEvent.changeText(
+        screen.getByLabelText("Species / Crop Identification Plant or crop name"),
+        "Cannabis"
+      );
+      fireEvent.press(screen.getByLabelText("Run Species / Crop Identification"));
+      await waitFor(() => expect(screen.getByText(label)).toBeTruthy());
+
+      fireEvent.press(screen.getByText(label));
+
+      expect(
+        await screen.findByText("Unable to save this identification decision.")
+      ).toBeTruthy();
+      expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith("toolrun-1", {
+        decision
+      });
+      expect(mockUpdateGrowpathModuleRecord).not.toHaveBeenCalled();
+      expect(screen.queryByText(/Saved as uncertain/i)).toBeNull();
+      expect(screen.queryByText(/Saved as rejected/i)).toBeNull();
+    }
+  );
 
   it("submits click-based morphology and private observation context", async () => {
     const screen = render(<SpeciesCropIdToolRoute />);
@@ -1803,6 +2607,46 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(isCannabisGenusIdentification({ scientificName: "Cannabis sativa L." })).toBe(
       true
     );
+    expect(
+      isCannabisGenusIdentification({
+        likelyCrop: "unknown crop",
+        candidates: [
+          {
+            scientificName: "Cannabis spp.",
+            commonNames: ["Cannabis"],
+            rank: "genus"
+          }
+        ]
+      })
+    ).toBe(true);
+    expect(
+      isCannabisGenusIdentification({
+        likelyCrop: "Tomato",
+        scientificName: "Solanum lycopersicum",
+        candidates: [
+          {
+            scientificName: "Solanum lycopersicum",
+            commonNames: ["Tomato"],
+            rank: "species"
+          },
+          {
+            scientificName: "Cannabis spp.",
+            commonNames: ["Cannabis"],
+            rank: "genus"
+          }
+        ]
+      })
+    ).toBe(false);
+  });
+
+  it("surfaces a possible genus ahead of a broader family candidate", () => {
+    expect(
+      bestStructuredPlantCandidateName({
+        likelyCrop: "unknown crop",
+        likelyFamily: "Cannabaceae",
+        possibleGenera: ["Cannabis"]
+      })
+    ).toBe("Cannabis");
   });
 
   it("geolocates a Plant ID privately without opening or creating a Field Study", async () => {
@@ -2043,6 +2887,16 @@ describe("SpeciesCropIdToolRoute", () => {
       expect(mockCreateFieldObservation).toHaveBeenCalledWith(
         "study-1",
         expect.objectContaining({
+          identity: expect.objectContaining({
+            commonName: "Cannabis",
+            candidates: expect.arrayContaining([
+              expect.objectContaining({
+                commonName: "Cannabis",
+                scientificName: "Cannabis sativa"
+              })
+            ]),
+            evidence: expect.arrayContaining(["Visible bracts and pistils"])
+          }),
           location: expect.objectContaining({
             latitude: 39.301234,
             longitude: -76.721234,
@@ -2621,16 +3475,9 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(screen.getByText("Confirm in Saved Run"));
 
     await waitFor(() =>
-      expect(mockUpdateToolRun).toHaveBeenCalledWith(
-        "toolrun-1",
-        expect.objectContaining({
-          outputs: expect.objectContaining({
-            confidence: "user_confirmed",
-            userConfirmationRequired: false,
-            userDecision: expect.objectContaining({ value: "accepted" })
-          })
-        })
-      )
+      expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith("toolrun-1", {
+        decision: "accepted"
+      })
     );
   });
 
@@ -2708,5 +3555,12 @@ describe("SpeciesCropIdToolRoute", () => {
         "Low-confidence identity: do not rely on this plant name yet. Review the missing evidence and upload the requested views before confirming it."
       )
     ).toBeTruthy();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", {
+          name: "Run Species / Crop Identification"
+        })
+      ).not.toBeDisabled()
+    );
   });
 });

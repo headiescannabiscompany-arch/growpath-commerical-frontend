@@ -36,9 +36,12 @@ import {
   saveToolRunAndCreateTask
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import { buildModuleRecordInput } from "@/features/personal/tools/moduleRecordPersistence";
-import { createFacilityTask } from "@/api/facilityTasks";
 import { inferEvidenceReview } from "@/features/personal/evidence/evidenceReview";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import {
+  resolveToolWorkspaceType,
+  toolWorkspaceIdentity
+} from "@/features/personal/tools/toolWorkspaceScope";
 
 type ToolField = {
   key: string;
@@ -80,6 +83,7 @@ type BackendCalculatorToolScreenProps = {
         plantId: string;
         facilityId: string;
         commercialAccountId: string;
+        workspaceType: "personal" | "commercial" | "facility";
       }) => React.ReactNode);
   status?: string;
   runLabel?: string;
@@ -100,6 +104,7 @@ type BackendCalculatorToolScreenProps = {
       growId: string;
       facilityId: string;
       commercialAccountId: string;
+      workspaceType: "personal" | "commercial" | "facility";
       plantContext: ReturnType<typeof useToolPlantContext>;
       userValues: Record<string, string>;
     }
@@ -110,6 +115,7 @@ type BackendCalculatorToolScreenProps = {
     context: { payload: Record<string, any> }
   ) => ToolResultNotice[];
   buildDetails?: (outputs: Record<string, any>) => React.ReactNode;
+  prepareOutputsForDisplay?: (outputs: Record<string, any>) => Record<string, any>;
   defaultLogTitle: (outputs: Record<string, any>) => string;
   defaultTask?: (outputs: Record<string, any>) =>
     | {
@@ -133,6 +139,7 @@ type BackendCalculatorToolScreenProps = {
     growId: string;
     facilityId: string;
     commercialAccountId: string;
+    workspaceType: "personal" | "commercial" | "facility";
     plantContext: ReturnType<typeof useToolPlantContext>;
   }) => ToolResultAction[];
   assistantBrief?: {
@@ -175,6 +182,12 @@ type BackendCalculatorToolScreenProps = {
       parsed: Record<string, any>;
       evidenceAssetIds: string[];
     }) => Record<string, any>;
+    buildImmediateResult?: (outputs: Record<string, any>) => {
+      tone: "success" | "warning" | "error";
+      title: string;
+      description: string;
+      details?: string[];
+    } | null;
   };
 };
 
@@ -255,6 +268,24 @@ function normalizedPrefillText(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
+function parseAssistantObject(reply: unknown) {
+  const raw = String(reply || "").trim();
+  if (!raw) return null;
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]?.trim();
+  const source = fenced || raw;
+  const firstBrace = source.indexOf("{");
+  const lastBrace = source.lastIndexOf("}");
+  if (firstBrace < 0 || lastBrace <= firstBrace) return null;
+  try {
+    const parsed = JSON.parse(source.slice(firstBrace, lastBrace + 1));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, any>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export { tomorrow };
 
 export default function BackendCalculatorToolScreen({
@@ -284,6 +315,7 @@ export default function BackendCalculatorToolScreen({
   buildMetrics = defaultMetrics,
   buildNotices = defaultNotices,
   buildDetails,
+  prepareOutputsForDisplay,
   defaultLogTitle,
   defaultTask,
   buildActions,
@@ -297,16 +329,46 @@ export default function BackendCalculatorToolScreen({
     plantId?: string | string[];
     facilityId?: string | string[];
     commercialAccountId?: string | string[];
+    workspace?: string | string[];
+    workspaceType?: string | string[];
   }>();
   const params = routeParams as typeof routeParams &
     Record<string, string | string[] | undefined>;
-  const routeGrowId = coerceParam(params.growId);
-  const facilityId = coerceParam(params.facilityId);
+  const entitlements = useEntitlements();
+  const requestedGrowId = coerceParam(params.growId);
+  const routeFacilityId = coerceParam(params.facilityId);
   const commercialAccountId = coerceParam(params.commercialAccountId);
+  const requestedWorkspaceType = (
+    coerceParam(params.workspaceType) || coerceParam(params.workspace)
+  )
+    .trim()
+    .toLowerCase();
+  const workspaceType = resolveToolWorkspaceType({
+    entitlementMode: entitlements.mode,
+    requestedWorkspaceType,
+    facilityId: routeFacilityId,
+    commercialAccountId
+  });
+  const facilityId =
+    workspaceType === "facility"
+      ? entitlements.mode === "facility" && entitlements.facilityId
+        ? String(entitlements.facilityId)
+        : routeFacilityId
+      : "";
+  const workspaceIdentityKey = toolWorkspaceIdentity({
+    workspaceType,
+    facilityId,
+    commercialAccountId
+  });
+  const routeGrowId = workspaceType === "personal" ? requestedGrowId : "";
+  const routePlantId = workspaceType === "personal" ? coerceParam(params.plantId) : "";
   const [availableGrows, setAvailableGrows] = useState<PersonalGrow[]>([]);
   const [growId, setGrowId] = useState(routeGrowId);
-  const plantContext = useToolPlantContext(growId, coerceParam(params.plantId));
-  const entitlements = useEntitlements();
+  const plantContext = useToolPlantContext(
+    growId,
+    routePlantId,
+    workspaceType === "personal"
+  );
   const paidPreviewOverride = hasLocalPaidPreviewOverride();
   const plan = paidPreviewOverride ? "pro" : entitlements.plan || "free";
   const isFreePlan = !paidPreviewOverride && String(plan).toLowerCase() === "free";
@@ -376,8 +438,14 @@ export default function BackendCalculatorToolScreen({
   const [assistantBriefText, setAssistantBriefText] = useState("");
   const [prefilling, setPrefilling] = useState(false);
   const [aiPrefillPayload, setAiPrefillPayload] = useState<Record<string, any>>({});
+  const immediateAiResult =
+    outputs && aiPrefill?.buildImmediateResult
+      ? aiPrefill.buildImmediateResult(outputs)
+      : null;
+  const executionInputKey = `${workspaceIdentityKey}::${externalInputKey}`;
   const userValuesRef = React.useRef<Record<string, string>>(initialValues);
-  const externalInputKeyRef = React.useRef(externalInputKey);
+  const externalInputKeyRef = React.useRef(executionInputKey);
+  const workspaceIdentityRef = React.useRef(workspaceIdentityKey);
   const lastReportedExecutionBusyRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -386,16 +454,28 @@ export default function BackendCalculatorToolScreen({
     lastReportedExecutionBusyRef.current = busy;
     onExecutionBusyChange?.(busy);
   }, [onExecutionBusyChange, prefilling, running]);
-  const latestExternalInputKeyRef = React.useRef(externalInputKey);
+  const latestExternalInputKeyRef = React.useRef(executionInputKey);
   const inputRevisionRef = React.useRef(0);
   const executionLockRef = React.useRef<"prefill" | "calculate" | null>(null);
-  latestExternalInputKeyRef.current = externalInputKey;
+  latestExternalInputKeyRef.current = executionInputKey;
 
   React.useEffect(() => {
-    if (externalInputKeyRef.current === externalInputKey) return;
-    externalInputKeyRef.current = externalInputKey;
+    if (externalInputKeyRef.current === executionInputKey) return;
+    const workspaceChanged = workspaceIdentityRef.current !== workspaceIdentityKey;
+    externalInputKeyRef.current = executionInputKey;
+    workspaceIdentityRef.current = workspaceIdentityKey;
     inputRevisionRef.current += 1;
-    setValues(userValuesRef.current);
+    if (workspaceChanged) {
+      userValuesRef.current = initialValues;
+      setValues(initialValues);
+      setAvailableGrows([]);
+      setGrowId(routeGrowId);
+      executionLockRef.current = null;
+      setRunning(false);
+      setPrefilling(false);
+    } else {
+      setValues(userValuesRef.current);
+    }
     setToolRun(null);
     onToolRunChange?.(null);
     setModuleRecord(null);
@@ -403,10 +483,20 @@ export default function BackendCalculatorToolScreen({
     setAiPrefillPayload({});
     setFeedback("");
     setAssistantBriefText("");
-  }, [externalInputKey, onToolRunChange]);
+  }, [
+    executionInputKey,
+    initialValues,
+    onToolRunChange,
+    routeGrowId,
+    workspaceIdentityKey
+  ]);
 
   React.useEffect(() => {
-    if (locked) return;
+    if (locked || workspaceType !== "personal") {
+      setAvailableGrows([]);
+      setGrowId("");
+      return;
+    }
     let active = true;
     listPersonalGrows()
       .then((grows) => {
@@ -422,7 +512,7 @@ export default function BackendCalculatorToolScreen({
     return () => {
       active = false;
     };
-  }, [growOptional, locked, routeGrowId]);
+  }, [growOptional, locked, routeGrowId, workspaceType]);
 
   function updateValue(key: string, value: string) {
     inputRevisionRef.current += 1;
@@ -451,6 +541,14 @@ export default function BackendCalculatorToolScreen({
     executionLockRef.current = "prefill";
     const requestInputRevision = inputRevisionRef.current;
     const requestExternalInputKey = latestExternalInputKeyRef.current;
+    // A new AI attempt supersedes the visible result. Keeping the previous ToolRun
+    // on screen after this attempt fails would make stale evidence look current.
+    setOutputs(null);
+    setToolRun(null);
+    onToolRunChange?.(null);
+    setModuleRecord(null);
+    setAiPrefillPayload({});
+    setValues(userValuesRef.current);
     setPrefilling(true);
     setFeedback("");
     try {
@@ -465,8 +563,19 @@ export default function BackendCalculatorToolScreen({
       const response = await askPersonalAssistant({
         growId: growId || undefined,
         plantId: plantContext.plantId || undefined,
+        ...(isCropIdentification || workspaceType !== "personal"
+          ? { workspaceType }
+          : {}),
+        ...(workspaceType === "facility" && facilityId ? { facilityId } : {}),
         evidenceAssetIds,
-        context: { workflow: toolKey, requestedFields: fields.map((field) => field.key) },
+        context: {
+          workflow: toolKey,
+          ...(isCropIdentification || workspaceType !== "personal"
+            ? { workspaceType }
+            : {}),
+          ...(workspaceType === "facility" && facilityId ? { facilityId } : {}),
+          requestedFields: fields.map((field) => field.key)
+        },
         message: aiPrefill.buildMessage({
           growId,
           plantId: plantContext.plantId || "",
@@ -482,16 +591,21 @@ export default function BackendCalculatorToolScreen({
       ) {
         return;
       }
-      if (!response?.success || !response.reply) {
+      if (!response?.success) {
         throw new Error(
           tool === "species-crop-id"
-            ? "AI did not return an identification result."
+            ? "GrowPath could not complete the AI identification. No result was saved. Your uploaded evidence is still attached; press Identify Plant from Photos to try again."
             : "AI did not return usable prefill data for this tool."
         );
       }
-      const raw = String(response.reply || "");
-      const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
-      const parsed = JSON.parse(match?.[1] || raw.slice(raw.indexOf("{")));
+      const parsed = parseAssistantObject(response.reply);
+      if (!parsed) {
+        throw new Error(
+          tool === "species-crop-id"
+            ? "GrowPath could not read the AI identification response, so no result was saved. Your uploaded evidence is still attached; press Identify Plant from Photos to try again. If it repeats, add sharper, evenly lit views."
+            : "AI did not return usable prefill data for this tool."
+        );
+      }
       const next = Object.fromEntries(
         fields
           .filter((field) => parsed[field.key] != null)
@@ -509,7 +623,7 @@ export default function BackendCalculatorToolScreen({
       );
       const resolvedValues = Object.fromEntries(
         fields.map((field) => {
-          const existingValue = values[field.key] || "";
+          const existingValue = userValuesRef.current[field.key] || "";
           const userEnteredValue = userValuesRef.current[field.key] || "";
           const preserveExisting =
             (aiPrefill.preserveAllExistingFields ||
@@ -574,6 +688,7 @@ export default function BackendCalculatorToolScreen({
         growId,
         facilityId,
         commercialAccountId,
+        workspaceType,
         plantContext,
         userValues: userValuesRef.current
       }),
@@ -586,7 +701,8 @@ export default function BackendCalculatorToolScreen({
       facilityId,
       growId,
       plantContext,
-      values
+      values,
+      workspaceType
     ]
   );
 
@@ -628,6 +744,7 @@ export default function BackendCalculatorToolScreen({
           growId,
           facilityId,
           commercialAccountId,
+          workspaceType,
           plantContext,
           userValues: userValuesRef.current
         }),
@@ -638,23 +755,26 @@ export default function BackendCalculatorToolScreen({
       setOutputs(response.outputs);
       setToolRun(response.toolRun);
       onToolRunChange?.(response.toolRun);
-      const modulePayload = buildModuleRecordInput({
-        tool,
-        title: defaultLogTitle(response.outputs),
-        growId,
-        plantId: plantContext.plantId,
-        cropProfileId:
-          response.toolRun?.cropProfileId || submittedPayload.cropProfileId || null,
-        cropIdentity:
-          response.toolRun?.cropIdentity || submittedPayload.cropIdentity || null,
-        selectedPlantContext:
-          response.toolRun?.selectedPlantContext ||
-          submittedPayload.selectedPlantContext ||
-          null,
-        inputs: submittedPayload,
-        outputs: response.outputs,
-        toolRun: response.toolRun
-      });
+      const modulePayload =
+        workspaceType === "personal"
+          ? buildModuleRecordInput({
+              tool,
+              title: defaultLogTitle(response.outputs),
+              growId,
+              plantId: plantContext.plantId,
+              cropProfileId:
+                response.toolRun?.cropProfileId || submittedPayload.cropProfileId || null,
+              cropIdentity:
+                response.toolRun?.cropIdentity || submittedPayload.cropIdentity || null,
+              selectedPlantContext:
+                response.toolRun?.selectedPlantContext ||
+                submittedPayload.selectedPlantContext ||
+                null,
+              inputs: submittedPayload,
+              outputs: response.outputs,
+              toolRun: response.toolRun
+            })
+          : null;
       if (modulePayload) {
         try {
           const linkedModuleRecordId = String(
@@ -703,8 +823,9 @@ export default function BackendCalculatorToolScreen({
   async function calculate() {
     await calculateWithValues(values);
   }
+  const displayOutputs = outputs ? prepareOutputsForDisplay?.(outputs) || outputs : null;
   const actions: ToolResultAction[] = [];
-  if (outputs && growId) {
+  if (outputs && workspaceType === "personal" && growId) {
     actions.push({
       key: "save-log",
       label: "Save to Grow Log",
@@ -735,45 +856,25 @@ export default function BackendCalculatorToolScreen({
         pendingLabel: "Creating...",
         successMessage: "Created follow-up task in the selected workspace.",
         onPress: async () => {
-          if (facilityId) {
-            await createFacilityTask(facilityId, {
-              title: task.title,
-              description: task.description || `Follow up on ${toolKey} result.`,
-              priority: task.priority === "medium" ? "normal" : task.priority,
-              dueAt: task.dueDate
-                ? new Date(`${task.dueDate}T12:00:00.000Z`).toISOString()
-                : undefined,
-              endAt: task.endAt,
-              recurrence:
-                typeof task.recurrence === "string"
-                  ? { rule: task.recurrence }
-                  : task.recurrence,
-              reminderPlan: task.reminderPlan,
-              sourceType: "tool_run",
-              sourceObjectId: String(toolRun?.id || toolRun?._id || "") || undefined,
-              linkedToolRunId: String(toolRun?.id || toolRun?._id || "") || undefined
-            });
-          } else {
-            const result = await saveToolRunAndCreateTask({
-              growId,
-              ...plantContext.toolRunContext,
-              toolKey,
-              toolRunId: toolRun?.id || toolRun?._id,
-              input: payload,
-              output: outputs,
-              title: task.title,
-              description: task.description,
-              priority: task.priority,
-              dueDate: task.dueDate,
-              endAt: task.endAt,
-              allDay: task.allDay,
-              calendarType: task.calendarType,
-              sourceStage: task.sourceStage,
-              reminderPlan: task.reminderPlan,
-              recurrence: task.recurrence
-            });
-            if (!result.ok) throw new Error(result.error);
-          }
+          const result = await saveToolRunAndCreateTask({
+            growId,
+            ...plantContext.toolRunContext,
+            toolKey,
+            toolRunId: toolRun?.id || toolRun?._id,
+            input: payload,
+            output: outputs,
+            title: task.title,
+            description: task.description,
+            priority: task.priority,
+            dueDate: task.dueDate,
+            endAt: task.endAt,
+            allDay: task.allDay,
+            calendarType: task.calendarType,
+            sourceStage: task.sourceStage,
+            reminderPlan: task.reminderPlan,
+            recurrence: task.recurrence
+          });
+          if (!result.ok) throw new Error(result.error);
         }
       });
     }
@@ -789,6 +890,7 @@ export default function BackendCalculatorToolScreen({
           growId,
           facilityId,
           commercialAccountId,
+          workspaceType,
           plantContext
         })
       );
@@ -881,12 +983,15 @@ export default function BackendCalculatorToolScreen({
             </>
           ) : null}
           <Text style={styles.guidanceText}>
-            A successful run is saved to Saved Runs. Attach a grow to also enable
-            grow-log, task, and plant-history actions.
+            {workspaceType === "personal"
+              ? "A successful run is saved to Saved Runs. Attach a grow to also enable grow-log, task, and plant-history actions."
+              : "A successful run is saved only to this shared workspace's Saved Runs. Personal grows, plants, logs, tasks, and plant-history records are not loaded or changed here."}
           </Text>
         </View>
-        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
-        {availableGrows.length ? (
+        {workspaceType === "personal" && growId ? (
+          <Text style={styles.context}>Grow context: {growId}</Text>
+        ) : null}
+        {workspaceType === "personal" && availableGrows.length ? (
           <View style={styles.growPicker}>
             <Text style={styles.label}>
               {growOptional ? "Attach to a grow (optional)" : "Select grow"}
@@ -933,6 +1038,12 @@ export default function BackendCalculatorToolScreen({
               })}
             </View>
           </View>
+        ) : workspaceType !== "personal" ? (
+          <Text style={styles.feedback}>
+            Shared-workspace result: run Plant ID here and review it in this
+            workspace&apos;s Saved Runs. Personal grow/plant linking and Personal Field
+            Study or Nature publishing are unavailable from this result.
+          </Text>
         ) : !growId && growOptional ? (
           <Text style={styles.feedback}>
             {isCropIdentification
@@ -944,7 +1055,7 @@ export default function BackendCalculatorToolScreen({
             Create a grow first, then return here to run and save this tool.
           </Text>
         ) : null}
-        {growId || !growOptional ? (
+        {workspaceType === "personal" && (growId || !growOptional) ? (
           <ToolPlantContextPicker
             plants={plantContext.plants}
             plantId={plantContext.plantId}
@@ -958,7 +1069,8 @@ export default function BackendCalculatorToolScreen({
               growId,
               plantId: plantContext.plantId,
               facilityId,
-              commercialAccountId
+              commercialAccountId,
+              workspaceType
             })
           : formHeader}
 
@@ -1004,6 +1116,28 @@ export default function BackendCalculatorToolScreen({
                   : aiPrefill.buttonLabel || "Fill with AI"}
               </Text>
             </Pressable>
+            {immediateAiResult ? (
+              <View
+                accessibilityRole="alert"
+                accessibilityLiveRegion="polite"
+                style={[
+                  styles.aiOutcomeCard,
+                  immediateAiResult.tone === "success"
+                    ? styles.aiOutcomeSuccess
+                    : immediateAiResult.tone === "error"
+                      ? styles.aiOutcomeError
+                      : styles.aiOutcomeWarning
+                ]}
+              >
+                <Text style={styles.aiOutcomeTitle}>{immediateAiResult.title}</Text>
+                <Text style={styles.guidanceText}>{immediateAiResult.description}</Text>
+                {(immediateAiResult.details || []).map((detail, index) => (
+                  <Text key={`${index}-${detail}`} style={styles.aiOutcomeDetail}>
+                    {`\u2022 ${detail}`}
+                  </Text>
+                ))}
+              </View>
+            ) : null}
           </View>
         ) : null}
 
@@ -1142,25 +1276,27 @@ export default function BackendCalculatorToolScreen({
           />
         ) : null}
 
-        {outputs ? (
+        {outputs && displayOutputs ? (
           <ToolResultSurface
             title={`${title} result`}
             status={status}
-            metrics={buildMetrics(outputs)}
+            metrics={buildMetrics(displayOutputs)}
             inputs={payload}
-            outputs={outputs}
-            notices={buildNotices(outputs, { payload })}
+            outputs={displayOutputs}
+            notices={buildNotices(displayOutputs, { payload })}
             recommendations={
-              Array.isArray(outputs.recommendations) ? outputs.recommendations : []
+              Array.isArray(displayOutputs.recommendations)
+                ? displayOutputs.recommendations
+                : []
             }
             formulas={[
-              outputs.formulaExplanation,
-              outputs.formula,
-              outputs.releaseDisclaimer,
-              outputs.realisticNotes
+              displayOutputs.formulaExplanation,
+              displayOutputs.formula,
+              displayOutputs.releaseDisclaimer,
+              displayOutputs.realisticNotes
             ].filter(Boolean)}
-            details={buildDetails?.(outputs)}
-            evidenceReview={inferEvidenceReview(outputs, payload)}
+            details={buildDetails?.(displayOutputs)}
+            evidenceReview={inferEvidenceReview(displayOutputs, payload)}
             onAddEvidence={() =>
               setFeedback(
                 "Add the requested evidence above, then run this tool again to update the review."
@@ -1173,7 +1309,7 @@ export default function BackendCalculatorToolScreen({
                 ? undefined
                 : noGrowContextMessage || "Select a grow to enable log and task actions."
             }
-            copyPayload={{ tool, input: payload, output: outputs }}
+            copyPayload={{ tool, input: payload, output: displayOutputs }}
             footerMessage={
               moduleRecord?.id ? `Module record saved: ${moduleRecord.id}` : undefined
             }
@@ -1225,6 +1361,18 @@ export function createBackendCalculatorStyles(palette: ThemePalette) {
     resultTitle: { fontSize: 15, fontWeight: "800", color: palette.text },
     guidanceText: { color: palette.textMuted, lineHeight: 19 },
     guidanceStrong: { color: palette.text, fontWeight: "800" },
+    aiOutcomeCard: {
+      borderWidth: 2,
+      borderRadius: 8,
+      padding: 12,
+      gap: 6,
+      backgroundColor: palette.surface
+    },
+    aiOutcomeSuccess: { borderColor: palette.success },
+    aiOutcomeWarning: { borderColor: palette.warning },
+    aiOutcomeError: { borderColor: palette.danger },
+    aiOutcomeTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    aiOutcomeDetail: { color: palette.text, lineHeight: 19 },
     formSection: {
       color: palette.text,
       fontSize: 16,
