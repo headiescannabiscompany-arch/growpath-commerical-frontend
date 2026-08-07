@@ -8,6 +8,7 @@ const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockCreateSoilNutrientBatch = jest.fn();
 const mockCreateCommercialTask = jest.fn();
+const mockFetchCommercialGrows = jest.fn();
 
 jest.setTimeout(20000);
 
@@ -62,6 +63,7 @@ jest.mock("@/api/growpathModules", () => ({
 jest.mock("@/api/grows", () => ({ listPersonalGrows: () => new Promise(() => {}) }));
 
 jest.mock("@/api/commercialWorkflows", () => ({
+  fetchCommercialGrows: (...args: any[]) => mockFetchCommercialGrows(...args),
   createSoilNutrientBatch: (...args: any[]) => mockCreateSoilNutrientBatch(...args),
   createCommercialTask: (...args: any[]) => mockCreateCommercialTask(...args)
 }));
@@ -101,6 +103,7 @@ function enterRequiredBatchFields(screen: ReturnType<typeof render>) {
 describe("SoilNutrientBatchToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockFetchCommercialGrows.mockImplementation(() => new Promise(() => {}));
     mockRunCalculator.mockResolvedValue({
       outputs: {
         batchName: "Starter Mix 2026-07",

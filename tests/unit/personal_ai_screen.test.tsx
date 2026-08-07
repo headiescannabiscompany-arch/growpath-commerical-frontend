@@ -1,7 +1,11 @@
 import React from "react";
 import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import AiScreen, { facilityAiPresetFor } from "@/app/home/personal/(tabs)/ai";
+import AiScreen, {
+  assistantQuickQuestions,
+  facilityAiPresetFor,
+  textIncludesCannabisContext
+} from "@/app/home/personal/(tabs)/ai";
 
 const mockListPersonalGrows = jest.fn();
 const mockListPersonalLogs = jest.fn();
@@ -16,6 +20,8 @@ const mockListTelemetrySources = jest.fn();
 const mockGetTelemetryPoints = jest.fn();
 const mockApiRequest = jest.fn();
 const mockGetFacilityTasks = jest.fn();
+const mockCreateFacilityTask = jest.fn();
+const mockFetchCommercialGrows = jest.fn();
 const mockGetFacilityComplianceExport = jest.fn();
 const mockRouterPush = jest.fn();
 const mockMediaEvidencePickerProps = jest.fn();
@@ -79,7 +85,12 @@ jest.mock("@/api/apiRequest", () => ({
 }));
 
 jest.mock("@/api/facilityTasks", () => ({
-  getFacilityTasks: (...args: any[]) => mockGetFacilityTasks(...args)
+  getFacilityTasks: (...args: any[]) => mockGetFacilityTasks(...args),
+  createFacilityTask: (...args: any[]) => mockCreateFacilityTask(...args)
+}));
+
+jest.mock("@/api/commercialWorkflows", () => ({
+  fetchCommercialGrows: (...args: any[]) => mockFetchCommercialGrows(...args)
 }));
 
 jest.mock("@/api/complianceExport", () => ({
@@ -129,6 +140,14 @@ describe("personal AI screen", () => {
     mockCreatePersonalTask.mockResolvedValue({ id: "ai-task-1" });
     mockApiRequest.mockResolvedValue([]);
     mockGetFacilityTasks.mockResolvedValue([]);
+    mockCreateFacilityTask.mockResolvedValue({ id: "facility-task-1" });
+    mockFetchCommercialGrows.mockResolvedValue([
+      {
+        id: "commercial-grow-1",
+        growName: "Commercial Trial",
+        cropType: "hemp"
+      }
+    ]);
     mockGetFacilityComplianceExport.mockResolvedValue({
       success: true,
       exportType: "facility_compliance_packet",
@@ -212,10 +231,8 @@ describe("personal AI screen", () => {
           id: "evidence-local-1",
           _id: "66aa00000000000000000001",
           assetType: "photo",
-          originalUri:
-            "/api/evidence-assets/uploads/66bb00000000000000000001/object",
-          durableUrl:
-            "/api/evidence-assets/uploads/66bb00000000000000000001/object",
+          originalUri: "/api/evidence-assets/uploads/66bb00000000000000000001/object",
+          durableUrl: "/api/evidence-assets/uploads/66bb00000000000000000001/object",
           source: "library",
           purpose: "diagnosis",
           uploadStatus: "uploaded",
@@ -231,6 +248,176 @@ describe("personal AI screen", () => {
       expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
         expect.objectContaining({
           evidenceAssetIds: ["66aa00000000000000000001"]
+        })
+      )
+    );
+  });
+
+  it("fills a cannabis-aware quick question without spending a credit until Send", async () => {
+    mockListPersonalPlants.mockResolvedValue([
+      {
+        id: "plant-1",
+        growId: "grow-1",
+        cropCommonName: "Cannabis",
+        scientificName: "Cannabis sativa",
+        growthProfile: { confirmationStatus: "user_confirmed" }
+      }
+    ]);
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: "The visible node is not conclusive yet.",
+      actions: [],
+      referencedData: [],
+      proposedWrites: []
+    });
+
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+
+    const question =
+      "Male, female, intersex, or too early to tell? Explain exactly what is visible and what photo would confirm it.";
+    fireEvent.press(screen.getByLabelText(`Use quick question: ${question}`));
+
+    expect(screen.getByPlaceholderText("Type here...").props.value).toBe(question);
+    expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Send"));
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({ message: question, growId: "grow-1" })
+      )
+    );
+  });
+
+  it("does not surface the cannabis-specific quick question without saved context", () => {
+    const questions = assistantQuickQuestions({
+      workspaceType: "personal",
+      cannabisContext: false
+    });
+
+    expect(questions.join(" ")).not.toMatch(/male, female|intersex/i);
+    expect(questions).toContain(
+      "What do these photos show, and what evidence is missing before you are confident?"
+    );
+  });
+
+  it("recognizes canonical Personal and Commercial cannabis context shapes", () => {
+    expect(textIncludesCannabisContext({ cropTypes: ["Cannabis"] })).toBe(true);
+    expect(
+      textIncludesCannabisContext({
+        growInterests: { primary: ["hemp"], secondary: ["vegetables"] }
+      })
+    ).toBe(true);
+    expect(textIncludesCannabisContext({ cropType: "Cannabis sativa" })).toBe(true);
+    expect(textIncludesCannabisContext({ cropTypes: ["tomato"] })).toBe(false);
+    expect(
+      textIncludesCannabisContext({
+        scientificName: "Cannabis sativa",
+        growthProfile: { confirmationStatus: "user_confirmed" }
+      })
+    ).toBe(true);
+  });
+
+  it("does not expose cannabis questions from negative, unconfirmed, or rejected text", () => {
+    expect(
+      textIncludesCannabisContext({
+        cropTypes: ["tomato"],
+        notes: "This is not cannabis; compare the leaf shape only."
+      })
+    ).toBe(false);
+    expect(textIncludesCannabisContext({ cropTypes: ["not cannabis"] })).toBe(false);
+    expect(
+      textIncludesCannabisContext({
+        cropTypes: ["rose"],
+        exclusions: ["cannabis"],
+        rejectedCandidates: [{ scientificName: "Cannabis sativa" }]
+      })
+    ).toBe(false);
+    expect(
+      textIncludesCannabisContext({
+        scientificName: "Cannabis sativa",
+        growthProfile: { confirmationStatus: "needs_confirmation" }
+      })
+    ).toBe(false);
+  });
+
+  it("does not send a source video before extracted frames are ready", async () => {
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+    act(() => {
+      mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0]?.onChange?.([
+        {
+          id: "source-video",
+          _id: "66aa00000000000000000009",
+          assetType: "video",
+          durableUrl: "/uploads/source-video.mov",
+          source: "library",
+          purpose: "other",
+          uploadStatus: "uploaded",
+          aiUsable: true,
+          qualityWarnings: []
+        }
+      ]);
+    });
+    fireEvent.changeText(screen.getByPlaceholderText("Type here..."), "Male or female?");
+    fireEvent.press(screen.getByText("Send"));
+    await waitFor(() =>
+      expect(screen.getByText(/no reviewable still frames are ready yet/i)).toBeTruthy()
+    );
+    expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+  });
+
+  it("sends the exact source-video and extracted-frame set for a visual question", async () => {
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: "The visible nodes are not sufficient to confirm plant sex.",
+      actions: [],
+      referencedData: [],
+      proposedWrites: []
+    });
+    const sourceVideoId = "66aa00000000000000000009";
+    const frameIds = [
+      "66aa00000000000000000010",
+      "66aa00000000000000000011",
+      "66aa00000000000000000012"
+    ];
+    const screen = render(<AiScreen />);
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+    act(() => {
+      mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0]?.onChange?.([
+        {
+          id: "source-video",
+          _id: sourceVideoId,
+          assetType: "video",
+          durableUrl: "/uploads/source-video.mov",
+          source: "library",
+          purpose: "other",
+          uploadStatus: "uploaded",
+          aiUsable: true,
+          qualityWarnings: []
+        },
+        ...frameIds.map((id, index) => ({
+          id: `source-frame-${index + 1}`,
+          _id: id,
+          assetType: "photo",
+          durableUrl: `/uploads/source-frame-${index + 1}.jpg`,
+          source: "generated",
+          purpose: "other",
+          sourceVideoEvidenceAssetId: sourceVideoId,
+          uploadStatus: "uploaded",
+          aiUsable: true,
+          qualityWarnings: []
+        }))
+      ]);
+    });
+    fireEvent.changeText(screen.getByPlaceholderText("Type here..."), "Male or female?");
+    fireEvent.press(screen.getByText("Send"));
+
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Male or female?",
+          evidenceAssetIds: [sourceVideoId, ...frameIds]
         })
       )
     );
@@ -303,7 +490,7 @@ describe("personal AI screen", () => {
     expect(screen.getByText("AI suggested task created.")).toBeTruthy();
   });
 
-  it("offers Commercial SOP starters and requires review before creating a grow task", async () => {
+  it("loads Commercial grow context without leaking a Personal grow or task", async () => {
     mockAskPersonalAssistant.mockResolvedValue({
       success: true,
       intent: "sop_recommendation",
@@ -334,6 +521,7 @@ describe("personal AI screen", () => {
     await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
     expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
       expect.objectContaining({
+        extractFramesFromVideo: true,
         videoWorkspaceType: "commercial",
         videoWorkspaceId: undefined,
         sourceContext: expect.objectContaining({ facilityId: undefined })
@@ -351,6 +539,7 @@ describe("personal AI screen", () => {
     );
     expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
       expect.objectContaining({
+        growId: "commercial-grow-1",
         workspaceType: "commercial",
         context: expect.objectContaining({
           sopStarterLibrary: expect.arrayContaining([
@@ -381,17 +570,13 @@ describe("personal AI screen", () => {
 
     fireEvent.press(screen.getByLabelText("Confirm create_task"));
     await waitFor(() =>
-      expect(mockCreatePersonalTask).toHaveBeenCalledWith(
-        expect.objectContaining({
-          growId: "grow-1",
-          title: "Review: IPM Scouting and Escalation",
-          description: expect.stringContaining(
-            "Separate observations from suspected causes."
-          ),
-          sourceObjectId: "sop-starter:ipm_scouting_escalation:v2"
-        })
-      )
+      expect(
+        screen.getByText(
+          "This Commercial task is still a review-only draft. It was not written to a Personal workspace."
+        )
+      ).toBeTruthy()
     );
+    expect(mockCreatePersonalTask).not.toHaveBeenCalled();
   });
 
   it("loads the Facility inspection-readiness preset and its evidence context", async () => {
@@ -401,7 +586,17 @@ describe("personal AI screen", () => {
       reply: "Recorded audit coverage is present; SOP run evidence is missing.",
       actions: [],
       referencedData: [],
-      proposedWrites: []
+      proposedWrites: [
+        {
+          type: "create_task",
+          payload: {
+            title: "Review inspection evidence gaps",
+            description: "Confirm the missing SOP run evidence.",
+            priority: "medium",
+            sourceObjectId: "facility-inspection-review"
+          }
+        }
+      ]
     });
 
     const screen = render(<AiScreen workspaceType="facility" facilityId="facility-1" />);
@@ -418,6 +613,12 @@ describe("personal AI screen", () => {
     );
     expect(screen.getByText("Audit logs: 36")).toBeTruthy();
     expect(screen.getByText("SOP runs: 0")).toBeTruthy();
+    expect(mockListToolRuns).toHaveBeenCalledWith({
+      workspaceType: "facility",
+      facilityId: "facility-1"
+    });
+    expect(mockGetDiagnosisHistory).not.toHaveBeenCalled();
+    expect(mockListNutrientRecipes).not.toHaveBeenCalled();
     expect(screen.queryByText("Build your first grow")).toBeNull();
     expect(screen.queryByText(/Crop context:/)).toBeNull();
     expect(screen.queryByText("AI procedure recommendations")).toBeNull();
@@ -442,6 +643,21 @@ describe("personal AI screen", () => {
         })
       )
     );
+
+    fireEvent.press(screen.getByLabelText("Confirm create_task"));
+    await waitFor(() =>
+      expect(mockCreateFacilityTask).toHaveBeenCalledWith("facility-1", {
+        title: "Review inspection evidence gaps",
+        description: "Confirm the missing SOP run evidence.",
+        priority: "normal",
+        dueAt: undefined,
+        sourceType: "ai_assistant",
+        sourceObjectId: "facility-inspection-review",
+        reminderPlan: undefined
+      })
+    );
+    expect(mockCreatePersonalTask).not.toHaveBeenCalled();
+    expect(screen.getByText("AI suggested task created.")).toBeTruthy();
   });
 
   it("recognizes only supported Facility AI presets", () => {

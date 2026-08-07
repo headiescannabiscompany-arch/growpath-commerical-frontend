@@ -106,7 +106,9 @@ export async function createEvidenceAsset(
   return normalizeEvidenceAsset(response?.asset || response);
 }
 
-export async function listEvidenceAssets(links: EvidenceLinks = {}) {
+export async function listEvidenceAssets(
+  links: EvidenceLinks & Partial<EvidenceWorkspaceScope> = {}
+) {
   const response = await apiRequest<any>("/api/evidence-assets", { params: links });
   const rows = Array.isArray(response?.assets) ? response.assets : [];
   return rows.map(normalizeEvidenceAsset);

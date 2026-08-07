@@ -68,10 +68,46 @@ describe("GrowPath knowledge registries", () => {
       "distinct overall confidence, ranked-candidate confidence, health status, and action urgency"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "unusable diagnosis media normalized to an inconclusive low-confidence result with exact retake requests and no image-derived treatment actions"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not retain high confidence, urgent status, treatment actions, completed tasks, or issue-detected automation from diagnosis media the provider marked unusable, and do not replace explicit user crop context with a conflicting visual suggestion."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "unresolved white-mark differential with powdery mildew, thrips, mites, residue, mineral deposits, glare, physical damage, and senescence"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "authorized immutable ToolRun follow-up beside the original result with exact evidence, provider, pixel-inspection status, limitations, and one-credit disclosure"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "server-attested harvest image receipt bound to the authenticated workspace, canonical grow, optional plant, exact evidence set, normalized result digest, evidence fingerprint, and review-policy version"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "additive reviewable trichome-percentage drafts that preserve manual maturity observations and retain visual provenance"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "exact selected Harvest media set separated from the analyzed still/frame set, with a private source video retained as non-AI provenance"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "authorized Personal, Commercial, or Facility grow scope with Facility write-role and Facility-credit enforcement"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible"
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never trust client-supplied harvest provider metadata, AI percentages, evidence IDs, or an analysis ID as proof of image analysis; validate the exact server receipt and reconstruct the saved photo result."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never remount Harvest Readiness or overwrite manual maturity fields when applying AI trichome percentages; invalidate only unreviewed visual drafts when their evidence changes."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never omit an attached private source video from the selected receipt set, count it as visually analyzed, accept only a subset of its active client-generated Harvest frames, or accept a generated frame without the selected protected source and matching workspace, grow, plant, and purpose lineage."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never trust a route account or grow ID as shared-workspace authority, spend individual credits for a Facility Harvest run, or allow a Facility viewer to run the analysis."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never overwrite a user-reviewed trichome percentage with the attested AI value or continue labeling an edited distribution AI-derived; preserve it as a manual override, reconstruct each unreviewed field from the attested snapshot, clear unusable unreviewed drafts, and retain the attested photo snapshot separately."
     );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not treat one photo copied into several fields as independent evidence, treat an AI hypothesis as a directly observed organism, or headline powdery mildew from generic white marks alone."

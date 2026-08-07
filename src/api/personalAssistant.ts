@@ -49,7 +49,8 @@ export type PersonalAssistantResponse = {
   };
   analysisReceipt?: {
     aiUsageEventId: string;
-    normalizedPlantIdResultDigest: string;
+    normalizedPlantIdResultDigest?: string;
+    normalizedIpmResultDigest?: string;
     evidenceFingerprint: string;
     reviewPolicyVersion: string;
   };

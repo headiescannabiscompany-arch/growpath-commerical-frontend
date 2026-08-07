@@ -111,6 +111,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "photo count and provider/model execution evidence",
       "shared evidence review panel with pixel-analysis status, counter-evidence, missing checks, and re-run guidance",
       "distinct overall confidence, ranked-candidate confidence, health status, and action urgency",
+      "unusable diagnosis media normalized to an inconclusive low-confidence result with exact retake requests and no image-derived treatment actions",
       "IPM readiness and ranked working hypotheses",
       "IPM supporting evidence, counter-evidence, and competing candidates",
       "IPM independent evidence-channel count and confidence ceiling",
@@ -168,6 +169,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not scrape Facebook or other social groups, treat post engagement as diagnostic truth, or copy a community image without platform authorization and image-level creator rights.",
       "Use rights-reviewed community cases only as QA/evaluation leads or photo-quality negative controls; require confirmed outcomes and Tier A cross-checks before they influence diagnosis or IPM logic.",
       "Do not silently prefill diagnosis stage or symptom location, and do not present ranked-candidate confidence as overall confidence.",
+      "Do not retain high confidence, urgent status, treatment actions, completed tasks, or issue-detected automation from diagnosis media the provider marked unusable, and do not replace explicit user crop context with a conflicting visual suggestion.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
       "Preserve optional source videos as private non-AI evidence and analyze only up to 12 extracted timestamped still frames; never claim direct video or motion analysis.",
       "Do not run client thumbnail extraction for Plant ID, enable Plant ID while server frame extraction is processing, accept partial, orphan, extra, wrong-version, or wrong-attempt frame sets as AI evidence, infer completion from the source video alone, or require the same protected video to be uploaded again after a retryable extraction failure.",
@@ -477,7 +479,12 @@ export const methodRegistry: GrowPathMethod[] = [
       "evidence used, missing information, and limitations",
       "stage timing that distinguishes a 24-hour recheck from completion",
       "10-14 day controlled-dry planning context and 5-7 day fast-dry quality warning",
-      "review ID, evidence IDs, provider/model and image detail, set-level quality checks, per-image findings, visible traits, limitations, photo count, and credit status"
+      "review ID, evidence IDs, provider/model and image detail, set-level quality checks, per-image findings, visible traits, limitations, photo count, and credit status",
+      "server-attested harvest image receipt bound to the authenticated workspace, canonical grow, optional plant, exact evidence set, normalized result digest, evidence fingerprint, and review-policy version",
+      "exact selected Harvest media set separated from the analyzed still/frame set, with a private source video retained as non-AI provenance",
+      "authorized Personal, Commercial, or Facility grow scope with Facility write-role and Facility-credit enforcement",
+      "additive reviewable trichome-percentage drafts that preserve manual maturity observations and retain visual provenance",
+      "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible"
     ],
     [
       "Never estimate sensor values from images.",
@@ -494,6 +501,11 @@ export const methodRegistry: GrowPathMethod[] = [
       "Preserve an optional source video shorter than 10 minutes as non-AI evidence and analyze only up to 12 timestamped candidate still frames spanning its timeline. Each frame counts toward the 12-photo ceiling and must pass the same macro, role, focus, lighting, and glare checks. Exclude glare-obscured apparent cloudiness; classify clear, cloudy, or amber only from separate sharp, glare-free visible gland heads under neutral light.",
       "Reserve one disclosed AI credit only after evidence ownership is verified, refund provider failures, and preserve the charge/refund result in the review.",
       "Reject crop-neutral accounts and unrelated horticulture grows before loading harvest evidence or reserving an AI credit.",
+      "Never trust client-supplied harvest provider metadata, AI percentages, evidence IDs, or an analysis ID as proof of image analysis; validate the exact server receipt and reconstruct the saved photo result.",
+      "Never omit an attached private source video from the selected receipt set, count it as visually analyzed, accept only a subset of its active client-generated Harvest frames, or accept a generated frame without the selected protected source and matching workspace, grow, plant, and purpose lineage.",
+      "Never trust a route account or grow ID as shared-workspace authority, spend individual credits for a Facility Harvest run, or allow a Facility viewer to run the analysis.",
+      "Never remount Harvest Readiness or overwrite manual maturity fields when applying AI trichome percentages; invalidate only unreviewed visual drafts when their evidence changes.",
+      "Never overwrite a user-reviewed trichome percentage with the attested AI value or continue labeling an edited distribution AI-derived; preserve it as a manual override, reconstruct each unreviewed field from the attested snapshot, clear unusable unreviewed drafts, and retain the attested photo snapshot separately.",
       "Never silently coerce missing trichome observations to zero or score a distribution that does not total about 100%.",
       "Keep the shared harvest-readiness route discoverable in cannabis-aware Personal Tools and contextual cannabis grow surfaces, including untagged legacy cannabis grows and grows with attached cannabis-only workflow evidence."
     ],
