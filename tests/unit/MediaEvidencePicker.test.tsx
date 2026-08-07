@@ -677,6 +677,62 @@ describe("MediaEvidencePicker", () => {
     expect(screen.getByText(/does not guess from motion/i)).toBeTruthy();
   });
 
+  it("saves a Plant ID source video without client thumbnail extraction or frame uploads", async () => {
+    mockPicker.mockResolvedValue({
+      canceled: false,
+      assets: [
+        {
+          uri: "file:///plant-id-source.mov",
+          type: "video",
+          mimeType: "video/quicktime",
+          fileName: "plant-id-source.mov",
+          duration: 14000
+        }
+      ]
+    });
+    const onChange = jest.fn();
+    const screen = render(
+      <MediaEvidencePicker
+        aiUsable
+        allowVideo
+        serverFrameExtractionOnly
+        maxPhotos={12}
+        maxVideoSeconds={599}
+        purpose="crop_identification"
+        onChange={onChange}
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText("Add evidence video"));
+
+    expect(
+      await screen.findByText(/Private source video uploaded.*durable server job/i)
+    ).toBeTruthy();
+    expect(mockUploadVideo).toHaveBeenCalledTimes(1);
+    expect(mockExtractVideoFrames).not.toHaveBeenCalled();
+    expect(mockUpload).not.toHaveBeenCalled();
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assetType: "video",
+        purpose: "crop_identification",
+        aiUsable: false
+      }),
+      expect.objectContaining({ signal: expect.anything() })
+    );
+    expect(onChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({
+        assetType: "video",
+        aiUsable: false,
+        purpose: "crop_identification"
+      })
+    ]);
+    expect(
+      screen.getByText(/This device does not create or upload local still frames/i)
+    ).toBeTruthy();
+    expect(screen.queryByText(/still frames extracted and uploaded/i)).toBeNull();
+  });
+
   it("reports only successfully uploaded extracted frames and discloses partial failure", async () => {
     mockPicker.mockResolvedValue({
       canceled: false,
@@ -727,7 +783,7 @@ describe("MediaEvidencePicker", () => {
         maxPhotos={12}
         maxExtractedVideoFrames={12}
         maxVideoSeconds={599}
-        purpose="crop_identification"
+        purpose="ipm"
       />
     );
 
@@ -1340,5 +1396,73 @@ describe("MediaEvidencePicker", () => {
       screen.getByText(/Photo check: Screenshots often remove detail/i)
     ).toBeTruthy();
     expect(mockUpload).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables add, retry, and remove mutations while the parent workflow is locked", async () => {
+    mockPicker.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: "file:///retry-photo.jpg", type: "image" }]
+    });
+    mockUpload.mockRejectedValueOnce(new Error("Temporary upload failure"));
+    const onChange = jest.fn();
+    const screen = render(
+      <MediaEvidencePicker purpose="other" allowVideo onChange={onChange} />
+    );
+
+    fireEvent.press(screen.getByLabelText("Add evidence photos"));
+    expect(await screen.findByRole("button", { name: /Retry evidence/i })).toBeTruthy();
+
+    screen.rerender(
+      <MediaEvidencePicker purpose="other" allowVideo disabled onChange={onChange} />
+    );
+    const addPhotos = screen.getByLabelText("Add evidence photos");
+    const addVideo = screen.getByLabelText("Add evidence video");
+    const retry = screen.getByRole("button", { name: /Retry evidence/i });
+    const remove = screen.getByRole("button", { name: /Remove evidence/i });
+    expect(addPhotos).toBeDisabled();
+    expect(addVideo).toBeDisabled();
+    expect(retry).toBeDisabled();
+    expect(remove).toBeDisabled();
+
+    onChange.mockClear();
+    mockPicker.mockClear();
+    mockUpload.mockClear();
+    mockCreate.mockClear();
+    mockDeleteEvidence.mockClear();
+    fireEvent.press(addPhotos);
+    fireEvent.press(addVideo);
+    fireEvent.press(retry);
+    fireEvent.press(remove);
+    expect(mockPicker).not.toHaveBeenCalled();
+    expect(mockUpload).not.toHaveBeenCalled();
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockDeleteEvidence).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("ignores a photo selection that resolves after the workflow becomes locked", async () => {
+    let finishPicker: ((value: any) => void) | undefined;
+    mockPicker.mockReturnValue(
+      new Promise((resolve) => {
+        finishPicker = resolve;
+      })
+    );
+    const onChange = jest.fn();
+    const screen = render(<MediaEvidencePicker purpose="other" onChange={onChange} />);
+
+    fireEvent.press(screen.getByLabelText("Add evidence photos"));
+    await waitFor(() => expect(mockPicker).toHaveBeenCalledTimes(1));
+    screen.rerender(<MediaEvidencePicker purpose="other" disabled onChange={onChange} />);
+    await act(async () => {
+      finishPicker?.({
+        canceled: false,
+        assets: [{ uri: "file:///late-photo.jpg", type: "image" }]
+      });
+      await Promise.resolve();
+    });
+
+    expect(mockUpload).not.toHaveBeenCalled();
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

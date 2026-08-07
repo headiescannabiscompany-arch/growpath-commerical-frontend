@@ -107,6 +107,12 @@ describe("GrowPath knowledge registries", () => {
       "crop-identification use of sharp illuminated nighttime photos or extracted video frames when diagnostic morphology remains visible, without letting one unusable frame invalidate other compatible usable views"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "server-only Plant ID video-frame extraction for a protected private source video, with no client thumbnail generation or frame upload, persisted processing, completed, partial, or failed state, and exact ordered versioned generated-frame recovery before AI submission"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not run client thumbnail extraction for Plant ID, enable Plant ID while server frame extraction is processing, accept partial, orphan, extra, wrong-version, or wrong-attempt frame sets as AI evidence, infer completion from the source video alone, or require the same protected video to be uploaded again after a retryable extraction failure."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "low-confidence candidate-only crop, family, or genus retained when artificial lighting limits exact certainty but readable diagnostic morphology remains, with AI identity prefill and confirmation still blocked"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(

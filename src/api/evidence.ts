@@ -2,6 +2,7 @@ import { apiRequest } from "@/api/apiRequest";
 import type {
   EvidenceAsset,
   EvidenceAssetCreateInput,
+  EvidenceFrameExtractionStatus,
   EvidenceLinks,
   EvidenceWorkspaceType,
   ProviderEvidencePayload
@@ -13,6 +14,29 @@ export type EvidenceWorkspaceScope = {
   facilityId?: string;
 };
 
+export type EvidenceFrameExtraction = {
+  status: EvidenceFrameExtractionStatus;
+  attemptCount: number;
+  version?: string;
+  startedAt?: string;
+  completedAt?: string;
+  error?: string;
+  retryable: boolean;
+  frames: EvidenceAsset[];
+};
+
+export type EvidenceFrameExtractionResult = {
+  sourceVideo: EvidenceAsset;
+  extraction: EvidenceFrameExtraction;
+};
+
+export type ExtractEvidenceVideoFramesInput = EvidenceWorkspaceScope & {
+  maxFrames?: number;
+  purpose?: "crop_identification";
+  growId?: string;
+  plantId?: string;
+};
+
 function normalizeEvidenceAsset(value: any): EvidenceAsset {
   return {
     ...value,
@@ -21,6 +45,37 @@ function normalizeEvidenceAsset(value: any): EvidenceAsset {
     qualityWarnings: Array.isArray(value?.qualityWarnings)
       ? value.qualityWarnings.map(String)
       : []
+  };
+}
+
+function normalizeFrameExtraction(value: any): EvidenceFrameExtraction {
+  const status = String(value?.status || "idle") as EvidenceFrameExtractionStatus;
+  const rawAttemptCount = Number(value?.attemptCount ?? 0);
+  return {
+    status: ["idle", "processing", "completed", "partial", "failed"].includes(status)
+      ? status
+      : "idle",
+    attemptCount: Number.isFinite(rawAttemptCount)
+      ? Math.max(0, Math.trunc(rawAttemptCount))
+      : 0,
+    version: value?.version ? String(value.version) : undefined,
+    startedAt: value?.startedAt ? String(value.startedAt) : undefined,
+    completedAt: value?.completedAt ? String(value.completedAt) : undefined,
+    error: value?.error
+      ? String(value.error)
+      : value?.errorMessage
+        ? String(value.errorMessage)
+        : undefined,
+    retryable: value?.retryable !== false,
+    frames: (Array.isArray(value?.frames) ? value.frames : []).map(normalizeEvidenceAsset)
+  };
+}
+
+function normalizeFrameExtractionResult(value: any): EvidenceFrameExtractionResult {
+  const body = value?.data ?? value;
+  return {
+    sourceVideo: normalizeEvidenceAsset(body?.sourceVideo),
+    extraction: normalizeFrameExtraction(body?.extraction)
   };
 }
 
@@ -59,7 +114,8 @@ export async function listEvidenceAssets(links: EvidenceLinks = {}) {
 
 export async function getEvidenceAssetsByIds(
   ids: readonly string[],
-  workspace: EvidenceWorkspaceScope
+  workspace: EvidenceWorkspaceScope,
+  options: { signal?: AbortSignal } = {}
 ) {
   const exactIds = Array.from(
     new Set(ids.map((id) => String(id || "").trim()).filter(Boolean))
@@ -69,6 +125,7 @@ export async function getEvidenceAssetsByIds(
     throw new Error("No more than 50 evidence assets can be recovered at once.");
   }
   const response = await apiRequest<any>("/api/evidence-assets", {
+    signal: options.signal,
     params: {
       ids: exactIds.join(","),
       workspaceType: workspace.workspaceType,
@@ -94,6 +151,49 @@ export async function deleteEvidenceAsset(
   });
 }
 
+export async function extractEvidenceVideoFrames(
+  id: string,
+  input: ExtractEvidenceVideoFramesInput,
+  options: { signal?: AbortSignal } = {}
+) {
+  if (!String(id || "").trim()) {
+    throw new Error("A saved source video is required before extracting still frames.");
+  }
+  const response = await apiRequest<any>(
+    `/api/evidence-assets/${encodeURIComponent(id)}/extract-frames`,
+    {
+      method: "POST",
+      signal: options.signal,
+      timeoutMs: 45000,
+      body: input
+    }
+  );
+  return normalizeFrameExtractionResult(response);
+}
+
+export async function getEvidenceVideoFrameExtraction(
+  id: string,
+  workspace: EvidenceWorkspaceScope,
+  options: { signal?: AbortSignal } = {}
+) {
+  if (!String(id || "").trim()) {
+    throw new Error("A saved source video is required to check frame extraction.");
+  }
+  const response = await apiRequest<any>(
+    `/api/evidence-assets/${encodeURIComponent(id)}/frame-extraction`,
+    {
+      signal: options.signal,
+      timeoutMs: 30000,
+      params: {
+        workspaceType: workspace.workspaceType,
+        ...(workspace.workspaceId ? { workspaceId: workspace.workspaceId } : {}),
+        ...(workspace.facilityId ? { facilityId: workspace.facilityId } : {})
+      }
+    }
+  );
+  return normalizeFrameExtractionResult(response);
+}
+
 export function providerEvidencePayload(
   assets: EvidenceAsset[]
 ): ProviderEvidencePayload {
@@ -107,6 +207,11 @@ export function providerEvidencePayload(
     mimeType: asset.mimeType,
     source: asset.source,
     sourceVideoEvidenceAssetId: asset.sourceVideoEvidenceAssetId,
+    frameExtractionVersion: asset.frameExtractionVersion,
+    frameExtractionAttempt: asset.frameExtractionAttempt,
+    frameIndex: asset.frameIndex,
+    frameTimeSeconds: asset.frameTimeSeconds,
+    frameTimeBasis: asset.frameTimeBasis,
     purpose: asset.purpose,
     qualityWarnings: asset.qualityWarnings || []
   }));

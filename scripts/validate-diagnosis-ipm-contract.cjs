@@ -18,6 +18,10 @@ function requireText(label, contents, pattern, description) {
   if (!pattern.test(contents)) fail(`${label} missing ${description}`);
 }
 
+function forbidText(label, contents, pattern, description) {
+  if (pattern.test(contents)) fail(`${label} must not contain ${description}`);
+}
+
 const diagnoseRoute = read("backend/routes/diagnose.js");
 const toolsRoute = read("backend/routes/tools.js");
 const calculators = read("backend/services/toolCalculators.js");
@@ -27,6 +31,7 @@ const diagnosisScreen = read("src/app/home/personal/(tabs)/diagnose.tsx");
 const ipmScreen = read("src/app/home/personal/(tabs)/tools/ipm-scout.tsx");
 const speciesScreen = read("src/app/home/personal/(tabs)/tools/species-crop-id.tsx");
 const cropApi = read("src/api/cropKnowledge.ts");
+const evidenceApi = read("src/api/evidence.ts");
 const mediaPicker = read("src/components/media/MediaEvidencePicker.tsx");
 const videoFrameExtraction = read(
   "src/features/personal/harvest/videoFrameExtraction.ts"
@@ -44,6 +49,7 @@ const normalizeTest = read(
 );
 const ipmTest = read("tests/unit/IpmScoutToolScreen.test.tsx");
 const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
+const evidenceApiTest = read("tests/unit/evidence-api.test.ts");
 const mediaPickerTest = read("tests/unit/MediaEvidencePicker.test.tsx");
 const videoFrameTest = read("tests/unit/videoFrameExtraction.test.ts");
 
@@ -184,25 +190,77 @@ const videoFrameTest = read("tests/unit/videoFrameExtraction.test.ts");
 
 [
   ["12-photo ceiling", /maxPhotos=\{12\}/],
-  ["private video frame extraction", /extractFramesFromVideo/],
-  ["12 video candidate frames", /maxExtractedVideoFrames=\{12\}/],
+  ["server-only private video mode", /serverFrameExtractionOnly/],
+  ["durable extraction start", /extractEvidenceVideoFrames/],
+  ["persisted extraction status", /getEvidenceVideoFrameExtraction/],
+  ["abortable exact evidence reload", /getEvidenceAssetsByIds\([\s\S]*signal: guard\.signal/],
+  ["persisted processing poll", /FRAME_EXTRACTION_POLL_DELAYS_MS[\s\S]*FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS/],
+  ["completed source ordered IDs", /sameOrderedIds[\s\S]*sourceExtraction\?\.status !== "completed"/],
+  ["exact frame source lineage", /sourceVideoEvidenceAssetId[\s\S]*guard\.sourceId/],
+  ["exact frame extraction version", /frameExtractionVersion[\s\S]*extractionVersion/],
+  ["mandatory frame extraction attempt", /Number\.isInteger\(frame\.frameExtractionAttempt\)[\s\S]*frame\.frameExtractionAttempt === extractionAttempt/],
+  ["mandatory ordered frame index", /Number\.isInteger\(frame\.frameIndex\)[\s\S]*frame\.frameIndex === index/],
+  ["canonical provider frame order", /for \(const \[expectedIndex, frameId\] of verifiedExtraction\.frameIds\.entries\(\)\)/],
+  ["provider frames require completed verification", /plantIdProviderReadyEvidenceAssets\(\s*currentEvidenceAssets,\s*verifiedFrameExtraction,\s*currentSourceVideoFramesVerified\s*\)/],
   ["under-ten-minute video limit", /maxVideoSeconds=\{599\}/]
 ].forEach(([description, pattern]) => {
   requireText("species screen", speciesScreen, pattern, description);
 });
 
+forbidText(
+  "species screen",
+  speciesScreen,
+  /\bextractFramesFromVideo\b/,
+  "client-side video-frame extraction"
+);
+forbidText(
+  "species screen",
+  speciesScreen,
+  /\bmaxExtractedVideoFrames\b/,
+  "client-side candidate-frame configuration"
+);
+
 [
   [
-    "source video stays non-AI during frame extraction",
-    /extractFramesFromVideo \? false : aiUsable/
+    "abortable exact evidence lookup",
+    /getEvidenceAssetsByIds[\s\S]*options: \{ signal\?: AbortSignal \}[\s\S]*signal: options\.signal/
   ],
   [
-    "only extracted frames receive workflow AI approval",
+    "durable frame extraction POST",
+    /extractEvidenceVideoFrames[\s\S]*extract-frames[\s\S]*method: "POST"[\s\S]*signal: options\.signal/
+  ],
+  [
+    "persisted frame extraction GET",
+    /getEvidenceVideoFrameExtraction[\s\S]*frame-extraction[\s\S]*signal: options\.signal/
+  ],
+  [
+    "provider frame provenance",
+    /frameExtractionVersion[\s\S]*frameExtractionAttempt[\s\S]*frameIndex/
+  ]
+].forEach(([description, pattern]) => {
+  requireText("evidence API", evidenceApi, pattern, description);
+});
+
+[
+  [
+    "source video stays non-AI in client and server extraction modes",
+    /extractFramesFromVideo \|\| serverFrameExtractionOnly \? false : aiUsable/
+  ],
+  [
+    "only client-extracted frames receive workflow AI approval",
     /toVideoFrameAsset\(\s*frame,\s*purpose,\s*sourceContext,\s*aiUsable,\s*sourceVideoEvidenceAssetId\s*\)/
   ],
   [
-    "private source and no-motion disclosure",
+    "client private source and no-motion disclosure",
     /kept as private evidence[\s\S]*does not guess from motion/
+  ],
+  [
+    "server mode exits before client frame extraction",
+    /serverFrameExtractionOnly[\s\S]*savedVideo\?\.uploadStatus === "uploaded"[\s\S]*did not create or upload local frames[\s\S]*return;[\s\S]*!extractFramesFromVideo/
+  ],
+  [
+    "server extraction action guidance",
+    /serverFrameExtractionOnly[\s\S]*Extract Video Frames action[\s\S]*durable server job/
   ]
 ].forEach(([description, pattern]) => {
   requireText("media evidence picker", mediaPicker, pattern, description);
@@ -219,6 +277,14 @@ requireText(
   [
     "shared diagnosis/IPM/Crop ID video contract",
     /Diagnosis, IPM Scout, and Crop Identification[\s\S]*9 minutes 59 seconds[\s\S]*12 timestamped candidate still frames/
+  ],
+  [
+    "workflow-specific client and server extraction boundary",
+    /Diagnosis and IPM Scout may use the established device extraction path[\s\S]*Crop Identification must save only the private source video[\s\S]*durable server extraction path[\s\S]*must not create or upload client thumbnail frames/
+  ],
+  [
+    "durable server extraction state and exact lineage",
+    /Persist `idle`, `processing`,[\s\S]*`completed`, `partial`, or `failed` extraction state[\s\S]*Re-fetch the exact completed source and ordered frame IDs[\s\S]*nonblank extraction[\s\S]*version, extraction attempt, ordered frame index[\s\S]*exact canonical frame-ID allowlist/
   ],
   [
     "field-botany identification workflow",
@@ -322,6 +388,31 @@ requireText(
     "private source video test",
     mediaPickerTest,
     /keeps a Facility source video and generated frames in the same explicit workspace[\s\S]*assetType: "video"[\s\S]*aiUsable: false[\s\S]*sourceVideoEvidenceAssetId: "saved-macro-scan\.mov"[\s\S]*diagnostic plant structure/
+  ],
+  [
+    "Plant ID server-only source video test",
+    mediaPickerTest,
+    /saves a Plant ID source video without client thumbnail extraction or frame uploads[\s\S]*serverFrameExtractionOnly[\s\S]*mockExtractVideoFrames[\s\S]*not\.toHaveBeenCalled/
+  ],
+  [
+    "Diagnosis/IPM partial client-frame upload test",
+    mediaPickerTest,
+    /reports only successfully uploaded extracted frames and discloses partial failure[\s\S]*extractFramesFromVideo[\s\S]*purpose="ipm"/
+  ],
+  [
+    "Plant ID durable extraction and exact allowlist tests",
+    speciesTest,
+    /extracts server frames from a recovered source-video-only run without reuploading[\s\S]*polls persisted processing to an exactly validated completed frame set[\s\S]*keeps unverified completed frames out of AI when exact reload validation fails[\s\S]*allows only the exact ordered verified server-frame IDs and metadata/
+  ],
+  [
+    "Plant ID failed-source extraction gate test",
+    speciesTest,
+    /disables extraction with retry guidance when the source video upload failed/
+  ],
+  [
+    "server extraction API tests",
+    evidenceApiTest,
+    /starts scoped server frame extraction with expected Plant ID lineage[\s\S]*loads persisted partial extraction with normalized uploaded frame rows/
   ],
   [
     "12-frame timeline test",

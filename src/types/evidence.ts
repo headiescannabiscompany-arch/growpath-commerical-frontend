@@ -20,6 +20,25 @@ export type EvidenceSource = "camera" | "library" | "upload" | "generated" | "ex
 
 export type EvidenceWorkspaceType = "personal" | "commercial" | "facility";
 
+export type EvidenceFrameExtractionStatus =
+  | "idle"
+  | "processing"
+  | "completed"
+  | "partial"
+  | "failed";
+
+export type EvidenceFrameExtractionRecord = {
+  status: EvidenceFrameExtractionStatus;
+  attemptCount?: number;
+  version?: string;
+  startedAt?: string;
+  completedAt?: string;
+  error?: string;
+  errorMessage?: string;
+  frameAssetIds?: string[];
+  frameCount?: number;
+};
+
 export type EvidenceLinks = {
   facilityId?: string;
   growId?: string;
@@ -56,6 +75,14 @@ export type EvidenceAsset = EvidenceLinks & {
   aiUsable?: boolean;
   qualityWarnings: string[];
   error?: string;
+  /** Durable server-side still-frame extraction state for a private source video. */
+  frameExtraction?: EvidenceFrameExtractionRecord;
+  /** Canonical server extraction metadata for a generated still frame. */
+  frameExtractionVersion?: string;
+  frameExtractionAttempt?: number;
+  frameIndex?: number;
+  frameTimeSeconds?: number;
+  frameTimeBasis?: "requested" | "actual";
   createdAt?: string;
   updatedAt?: string;
 };
@@ -79,6 +106,11 @@ export type ProviderEvidencePayload = {
     mimeType?: string;
     source?: EvidenceSource;
     sourceVideoEvidenceAssetId?: string;
+    frameExtractionVersion?: string;
+    frameExtractionAttempt?: number;
+    frameIndex?: number;
+    frameTimeSeconds?: number;
+    frameTimeBasis?: "requested" | "actual";
     purpose: EvidencePurpose;
     qualityWarnings: string[];
   }>;

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -19,7 +19,15 @@ import type {
 } from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
-import { getEvidenceAssetsByIds, providerEvidencePayload } from "@/api/evidence";
+import {
+  extractEvidenceVideoFrames,
+  getEvidenceAssetsByIds,
+  getEvidenceVideoFrameExtraction,
+  providerEvidencePayload,
+  type EvidenceFrameExtraction,
+  type EvidenceFrameExtractionResult,
+  type EvidenceWorkspaceScope
+} from "@/api/evidence";
 import { savePersonalGrowCropIdentity } from "@/api/grows";
 import { savePersonalPlantCropIdentity } from "@/api/plants";
 import {
@@ -57,6 +65,8 @@ import {
 } from "@/features/personal/tools/toolWorkspaceScope";
 
 const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-night-light-detail-v2";
+const FRAME_EXTRACTION_POLL_DELAYS_MS = [1500, 3000, 5000, 8000, 12000, 20000, 30000];
+const FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS = 20;
 
 function routeParam(value?: string | string[]) {
   return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
@@ -218,6 +228,13 @@ type PlantIdVisionAssessment = {
   limitations: string[];
 };
 
+export type VerifiedPlantIdFrameExtraction = {
+  sourceId: string;
+  version: string;
+  attemptCount: number;
+  frameIds: string[];
+};
+
 function plantIdVisionChoice<T extends string>(
   value: unknown,
   allowed: readonly T[],
@@ -331,11 +348,11 @@ function savedPlantIdRecoveryEligibilityError(run: ToolRun, assets: EvidenceAsse
       videos.push(asset);
     }
   }
-  if (!photos.length) {
-    return "This Saved Plant ID no longer contains an uploaded, AI-approved photo or extracted frame. Nothing was loaded; add fresh photos before retrying.";
-  }
   if (videos.length > 1) {
     return "This Saved Plant ID contains more than one private source video. Nothing was loaded; add fresh Plant ID photos instead.";
+  }
+  if (!photos.length && !videos.length) {
+    return "This Saved Plant ID no longer contains uploaded photo or video evidence. Nothing was loaded; add fresh evidence before retrying.";
   }
   const videosById = new Map(
     videos.map((asset) => [String(asset.id || asset._id || "").trim(), asset])
@@ -349,6 +366,71 @@ function savedPlantIdRecoveryEligibilityError(run: ToolRun, assets: EvidenceAsse
     }
   }
   return "";
+}
+
+export function plantIdFrameMergeCapacityError(
+  currentAssets: EvidenceAsset[],
+  returnedFrameIds: readonly string[],
+  returnedFrameCount: number,
+  sourceVideoEvidenceAssetId = ""
+) {
+  const returnedIdSet = new Set(
+    returnedFrameIds.map((id) => String(id || "").trim()).filter(Boolean)
+  );
+  const sourceId = String(sourceVideoEvidenceAssetId || "").trim();
+  const nonReturnedPhotoCount = currentAssets.filter((asset) => {
+    if (asset.assetType !== "photo") return false;
+    const assetId = String(asset.id || asset._id || "").trim();
+    if (returnedIdSet.has(assetId)) return false;
+    return !(
+      sourceId &&
+      asset.source === "generated" &&
+      String(asset.sourceVideoEvidenceAssetId || "").trim() === sourceId
+    );
+  }).length;
+  if (nonReturnedPhotoCount + returnedFrameCount <= 12) return "";
+  return `The completed frame set would exceed the 12-photo limit because ${nonReturnedPhotoCount} other photo${
+    nonReturnedPhotoCount === 1 ? " is" : "s are"
+  } now selected. Remove photos, then restore the saved frame set again.`;
+}
+
+export function plantIdProviderReadyEvidenceAssets(
+  assets: EvidenceAsset[],
+  verifiedExtraction: VerifiedPlantIdFrameExtraction | null,
+  verifiedSetReady: boolean
+) {
+  const nonGeneratedAssets = assets.filter((asset) => asset.source !== "generated");
+  if (!verifiedSetReady || !verifiedExtraction) return nonGeneratedAssets;
+
+  const generatedFramesById = new Map<string, EvidenceAsset[]>();
+  assets.forEach((asset) => {
+    if (asset.source !== "generated" || asset.assetType !== "photo") return;
+    const assetId = String(asset.id || asset._id || "").trim();
+    if (!assetId) return;
+    const matches = generatedFramesById.get(assetId) || [];
+    matches.push(asset);
+    generatedFramesById.set(assetId, matches);
+  });
+
+  const canonicalFrames: EvidenceAsset[] = [];
+  for (const [expectedIndex, frameId] of verifiedExtraction.frameIds.entries()) {
+    const matches = generatedFramesById.get(frameId) || [];
+    if (matches.length !== 1) return nonGeneratedAssets;
+    const frame = matches[0];
+    if (
+      String(frame.sourceVideoEvidenceAssetId || "").trim() !==
+        verifiedExtraction.sourceId ||
+      String(frame.frameExtractionVersion || "").trim() !== verifiedExtraction.version ||
+      !Number.isInteger(frame.frameExtractionAttempt) ||
+      frame.frameExtractionAttempt !== verifiedExtraction.attemptCount ||
+      !Number.isInteger(frame.frameIndex) ||
+      frame.frameIndex !== expectedIndex
+    ) {
+      return nonGeneratedAssets;
+    }
+    canonicalFrames.push(frame);
+  }
+  return [...nonGeneratedAssets, ...canonicalFrames];
 }
 
 function explicitUserIdentityClaim(payload: Record<string, any>) {
@@ -1011,6 +1093,15 @@ export default function SpeciesCropIdToolRoute() {
           },
     [facilityId, workspaceType]
   );
+  const evidenceWorkspaceScope = useMemo<EvidenceWorkspaceScope>(
+    () => ({
+      workspaceType,
+      ...(workspaceType === "facility" && facilityId
+        ? { workspaceId: facilityId, facilityId }
+        : {})
+    }),
+    [facilityId, workspaceType]
+  );
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   const [fieldStudies, setFieldStudies] = useState<FieldStudy[]>([]);
   const [selectedFieldStudyId, setSelectedFieldStudyId] = useState(
@@ -1052,11 +1143,165 @@ export default function SpeciesCropIdToolRoute() {
   const [retryEvidenceError, setRetryEvidenceError] = useState("");
   const [retryEvidenceLoading, setRetryEvidenceLoading] = useState(false);
   const [retryRetainedEvidenceIds, setRetryRetainedEvidenceIds] = useState<string[]>([]);
+  const [frameExtraction, setFrameExtraction] = useState<EvidenceFrameExtraction | null>(
+    null
+  );
+  const [frameExtractionStateSourceId, setFrameExtractionStateSourceId] = useState("");
+  const [frameExtractionVerificationPending, setFrameExtractionVerificationPending] =
+    useState(false);
+  const [verifiedFrameExtractionKey, setVerifiedFrameExtractionKey] = useState("");
+  const [verifiedFrameExtraction, setVerifiedFrameExtraction] =
+    useState<VerifiedPlantIdFrameExtraction | null>(null);
+  const [frameExtractionRequestBusy, setFrameExtractionRequestBusy] = useState(false);
+  const [frameExtractionAutoPoll, setFrameExtractionAutoPoll] = useState(false);
+  const [frameExtractionNotice, setFrameExtractionNotice] = useState("");
+  const [frameExtractionError, setFrameExtractionError] = useState("");
   const hydratedRetryToolRunRef = useRef("");
+  const hydratedFrameExtractionSourceRef = useRef("");
+  const syncVideoFrameExtractionRef = useRef<
+    ((options: { begin: boolean }) => Promise<void>) | null
+  >(null);
+  const frameExtractionRequestTokenRef = useRef(0);
+  const frameExtractionRequestControllerRef = useRef<AbortController | null>(null);
+  const frameExtractionPollAttemptRef = useRef(0);
   const currentEvidenceAssets = useMemo(
     () => (workspaceChangedDuringRender ? [] : evidenceAssets),
     [evidenceAssets, workspaceChangedDuringRender]
   );
+  const sourceVideoEvidence = useMemo(
+    () => currentEvidenceAssets.find((asset) => asset.assetType === "video") || null,
+    [currentEvidenceAssets]
+  );
+  const sourceVideoEvidenceId = String(
+    sourceVideoEvidence?.id || sourceVideoEvidence?._id || ""
+  ).trim();
+  const sourceVideoExtractionUnavailableReason = sourceVideoEvidence
+    ? sourceVideoEvidence.uploadStatus === "failed"
+      ? "The source video upload failed. Retry that video upload below, or remove it and add it again, before extracting server frames."
+      : sourceVideoEvidence.uploadStatus !== "uploaded"
+        ? "Wait for the source video upload to finish before extracting server frames."
+        : !String(sourceVideoEvidence.durableUrl || "").trim()
+          ? "The source video is missing its durable saved file. Remove it and add the video again before extracting server frames."
+          : sourceVideoEvidence.purpose !== "crop_identification"
+            ? "This video is not linked to Plant ID. Remove it and add it again from this screen."
+            : ""
+    : "";
+  const currentSourceVideoEvidenceIdRef = useRef(sourceVideoEvidenceId);
+  currentSourceVideoEvidenceIdRef.current = sourceVideoEvidenceId;
+  const currentEvidenceAssetsRef = useRef(currentEvidenceAssets);
+  currentEvidenceAssetsRef.current = currentEvidenceAssets;
+  const selectedVideoFrames = useMemo(
+    () =>
+      sourceVideoEvidenceId
+        ? currentEvidenceAssets.filter(
+            (asset) =>
+              asset.assetType === "photo" &&
+              asset.source === "generated" &&
+              String(asset.sourceVideoEvidenceAssetId || "").trim() ===
+                sourceVideoEvidenceId
+          )
+        : [],
+    [currentEvidenceAssets, sourceVideoEvidenceId]
+  );
+  const uploadedVideoFrames = selectedVideoFrames.filter(
+    (asset) =>
+      asset.uploadStatus === "uploaded" &&
+      Boolean(String(asset.durableUrl || "").trim()) &&
+      asset.aiUsable === true
+  );
+  const persistedFrameExtraction = sourceVideoEvidence?.frameExtraction;
+  const localFrameExtraction =
+    frameExtractionStateSourceId === sourceVideoEvidenceId ? frameExtraction : null;
+  const effectiveFrameExtractionStatus =
+    localFrameExtraction?.status ?? persistedFrameExtraction?.status ?? "idle";
+  const rawEffectiveFrameExtractionAttemptCount = Number(
+    localFrameExtraction?.attemptCount ?? persistedFrameExtraction?.attemptCount ?? 0
+  );
+  const effectiveFrameExtractionAttemptCount = Number.isFinite(
+    rawEffectiveFrameExtractionAttemptCount
+  )
+    ? Math.max(0, Math.trunc(rawEffectiveFrameExtractionAttemptCount))
+    : 0;
+  const effectiveFrameExtractionVersion = String(
+    localFrameExtraction?.version ?? persistedFrameExtraction?.version ?? ""
+  ).trim();
+  const effectiveFrameAssetIds =
+    localFrameExtraction?.frames?.length && localFrameExtraction.status === "completed"
+      ? localFrameExtraction.frames.map((asset) => String(asset.id || asset._id || ""))
+      : Array.isArray(persistedFrameExtraction?.frameAssetIds)
+        ? persistedFrameExtraction.frameAssetIds.map(String)
+        : [];
+  const completedExtractionValidationKey =
+    sourceVideoEvidenceId && effectiveFrameExtractionStatus === "completed"
+      ? [
+          sourceVideoEvidenceId,
+          effectiveFrameExtractionVersion,
+          effectiveFrameAssetIds.join(",")
+        ].join(":")
+      : "";
+  const verificationPendingForCurrentSource =
+    frameExtractionStateSourceId === sourceVideoEvidenceId &&
+    frameExtractionVerificationPending;
+  const completedFramesMissing =
+    Boolean(sourceVideoEvidenceId) &&
+    effectiveFrameExtractionStatus === "completed" &&
+    uploadedVideoFrames.length === 0;
+  const verifiedFrameMetadataMatchesCurrent = Boolean(
+    verifiedFrameExtraction &&
+    verifiedFrameExtraction.sourceId === sourceVideoEvidenceId &&
+    verifiedFrameExtraction.version === effectiveFrameExtractionVersion &&
+    verifiedFrameExtraction.attemptCount === effectiveFrameExtractionAttemptCount &&
+    verifiedFrameExtraction.frameIds.length === effectiveFrameAssetIds.length &&
+    verifiedFrameExtraction.frameIds.every((id, index) => {
+      if (id !== effectiveFrameAssetIds[index]) return false;
+      const frame = uploadedVideoFrames.find(
+        (candidate) => String(candidate.id || candidate._id || "").trim() === id
+      );
+      if (!frame) return false;
+      if (
+        String(frame.frameExtractionVersion || "").trim() !==
+        verifiedFrameExtraction.version
+      ) {
+        return false;
+      }
+      if (
+        !Number.isInteger(frame.frameExtractionAttempt) ||
+        frame.frameExtractionAttempt !== verifiedFrameExtraction.attemptCount
+      ) {
+        return false;
+      }
+      return Number.isInteger(frame.frameIndex) && frame.frameIndex === index;
+    })
+  );
+  const completedFramesUnverified =
+    Boolean(completedExtractionValidationKey) &&
+    (verifiedFrameExtractionKey !== completedExtractionValidationKey ||
+      !verifiedFrameMetadataMatchesCurrent);
+  const frameExtractionBusy =
+    (frameExtractionRequestBusy &&
+      frameExtractionStateSourceId === sourceVideoEvidenceId) ||
+    effectiveFrameExtractionStatus === "processing" ||
+    verificationPendingForCurrentSource ||
+    completedFramesMissing ||
+    completedFramesUnverified;
+  const frameExtractionActionNonRetryable =
+    (effectiveFrameExtractionStatus === "failed" ||
+      effectiveFrameExtractionStatus === "partial") &&
+    localFrameExtraction?.retryable === false;
+  const frameExtractionActionUnavailable = Boolean(
+    sourceVideoExtractionUnavailableReason
+  );
+  const evidenceMutationLocked =
+    identificationBusy ||
+    (frameExtractionRequestBusy &&
+      frameExtractionStateSourceId === sourceVideoEvidenceId) ||
+    effectiveFrameExtractionStatus === "processing";
+  const evidenceMutationLockedRef = useRef(evidenceMutationLocked);
+  evidenceMutationLockedRef.current = evidenceMutationLocked;
+  const handleEvidencePickerChange = useCallback((nextAssets: EvidenceAsset[]) => {
+    if (evidenceMutationLockedRef.current) return;
+    setEvidenceAssets(nextAssets);
+  }, []);
 
   useEffect(() => {
     if (renderedWorkspaceIdentityRef.current === workspaceIdentityKey) return;
@@ -1094,11 +1339,34 @@ export default function SpeciesCropIdToolRoute() {
     setRetryEvidenceError("");
     setRetryEvidenceLoading(false);
     setRetryRetainedEvidenceIds([]);
+    hydratedFrameExtractionSourceRef.current = "";
+    frameExtractionRequestTokenRef.current += 1;
+    frameExtractionRequestControllerRef.current?.abort();
+    frameExtractionRequestControllerRef.current = null;
+    frameExtractionPollAttemptRef.current = 0;
+    setFrameExtraction(null);
+    setFrameExtractionStateSourceId("");
+    setFrameExtractionVerificationPending(false);
+    setVerifiedFrameExtractionKey("");
+    setVerifiedFrameExtraction(null);
+    setFrameExtractionRequestBusy(false);
+    setFrameExtractionAutoPoll(false);
+    setFrameExtractionNotice("");
+    setFrameExtractionError("");
   }, [params.fieldStudyId, workspaceIdentityKey, workspaceType]);
+
+  useEffect(
+    () => () => {
+      frameExtractionRequestTokenRef.current += 1;
+      frameExtractionRequestControllerRef.current?.abort();
+      frameExtractionRequestControllerRef.current = null;
+    },
+    []
+  );
 
   useEffect(() => {
     const hydrationKey = `${workspaceIdentityKey}:${retryToolRunId}`;
-    if (workspaceType !== "personal" || !retryToolRunId) {
+    if (!retryToolRunId) {
       setRetryEvidenceNotice("");
       setRetryEvidenceError("");
       setRetryEvidenceLoading(false);
@@ -1119,7 +1387,8 @@ export default function SpeciesCropIdToolRoute() {
     void (async () => {
       try {
         const savedRun = await getToolRun(retryToolRunId, {
-          workspaceType: "personal"
+          workspaceType,
+          ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
         });
         if (!active || currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) {
           return;
@@ -1139,7 +1408,7 @@ export default function SpeciesCropIdToolRoute() {
           );
         }
         const ownedAssets = await getEvidenceAssetsByIds(evidenceIds, {
-          workspaceType: "personal"
+          ...evidenceWorkspaceScope
         });
         if (!active || currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) {
           return;
@@ -1182,11 +1451,13 @@ export default function SpeciesCropIdToolRoute() {
           (asset) => asset.assetType === "video"
         ).length;
         setRetryEvidenceNotice(
-          `Recovered ${photoCount} saved photo${photoCount === 1 ? "" : "s"}${
-            videoCount
-              ? ` and ${videoCount} private source video${videoCount === 1 ? "" : "s"}`
-              : ""
-          }. Review the evidence, then press Identify Plant from Photos to start a new analysis.`
+          photoCount
+            ? `Recovered ${photoCount} saved photo${photoCount === 1 ? "" : "s"}${
+                videoCount
+                  ? ` and ${videoCount} private source video${videoCount === 1 ? "" : "s"}`
+                  : ""
+              }. Review the still images, then press Identify Plant from Photos to start a new analysis.`
+            : `Recovered 1 private source video. Extract timestamped still frames on the server before starting a new Plant ID analysis; the video itself remains private and is not analyzed for motion.`
         );
       } catch (error: any) {
         if (!active || currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) {
@@ -1206,28 +1477,593 @@ export default function SpeciesCropIdToolRoute() {
     return () => {
       active = false;
     };
-  }, [retryToolRunId, workspaceIdentityKey, workspaceType]);
+  }, [
+    evidenceWorkspaceScope,
+    facilityId,
+    retryToolRunId,
+    workspaceIdentityKey,
+    workspaceType
+  ]);
 
-  const evidenceInputKey = useMemo(
-    () =>
-      currentEvidenceAssets
-        .map((asset) =>
-          [
-            asset.id || asset._id || "",
-            asset.uploadStatus,
-            asset.durableUrl || "",
-            asset.updatedAt || "",
-            asset.aiUsable === false ? "not-ai-usable" : "ai-usable",
-            (asset.qualityWarnings || []).join(",")
-          ].join(":")
+  function extractionRequestIsCurrent(
+    requestToken: number,
+    requestSourceId: string,
+    requestWorkspaceIdentity: string
+  ) {
+    return (
+      frameExtractionRequestTokenRef.current === requestToken &&
+      currentSourceVideoEvidenceIdRef.current === requestSourceId &&
+      currentWorkspaceIdentityRef.current === requestWorkspaceIdentity
+    );
+  }
+
+  async function refreshServerExtractedFrames(
+    result: EvidenceFrameExtractionResult,
+    guard: {
+      requestToken: number;
+      sourceId: string;
+      workspaceIdentity: string;
+      workspaceScope: EvidenceWorkspaceScope;
+      signal: AbortSignal;
+      sourceLineage: { purpose: string; growId: string; plantId: string };
+    }
+  ) {
+    if (
+      !extractionRequestIsCurrent(
+        guard.requestToken,
+        guard.sourceId,
+        guard.workspaceIdentity
+      )
+    ) {
+      return null;
+    }
+    const responseSourceId = String(
+      result.sourceVideo?.id || result.sourceVideo?._id || ""
+    ).trim();
+    const returnedFrameIds = result.extraction.frames.map((asset) =>
+      String(asset.id || asset._id || "").trim()
+    );
+    const extractionVersion = String(result.extraction.version || "").trim();
+    if (
+      result.extraction.status !== "completed" ||
+      responseSourceId !== guard.sourceId ||
+      !extractionVersion ||
+      !returnedFrameIds.length ||
+      returnedFrameIds.some((id) => !id) ||
+      new Set(returnedFrameIds).size !== returnedFrameIds.length
+    ) {
+      throw new Error(
+        "GrowPath did not return one complete, versioned still-frame set. Retry the saved video or add sharp photos instead."
+      );
+    }
+    const exactIds = [guard.sourceId, ...returnedFrameIds];
+    const refreshed: EvidenceAsset[] = await getEvidenceAssetsByIds(
+      exactIds,
+      guard.workspaceScope,
+      { signal: guard.signal }
+    );
+    if (
+      !extractionRequestIsCurrent(
+        guard.requestToken,
+        guard.sourceId,
+        guard.workspaceIdentity
+      )
+    ) {
+      return null;
+    }
+    const refreshedById = new Map<string, EvidenceAsset>(
+      refreshed.map((asset) => [String(asset.id || asset._id || "").trim(), asset])
+    );
+    const exactRefreshed = exactIds
+      .map((id) => refreshedById.get(id))
+      .filter((asset): asset is EvidenceAsset => Boolean(asset));
+    if (exactRefreshed.length !== exactIds.length) {
+      throw new Error(
+        "Frame extraction finished, but the complete saved frame set could not be reloaded. Restore the frames again before identifying the plant."
+      );
+    }
+    const refreshedSource = exactRefreshed[0];
+    const refreshedFrames = exactRefreshed.slice(1);
+    const sourceExtraction = refreshedSource.frameExtraction;
+    const sourceFrameIds = Array.isArray(sourceExtraction?.frameAssetIds)
+      ? sourceExtraction.frameAssetIds.map(String)
+      : [];
+    const sameOrderedIds =
+      sourceFrameIds.length === returnedFrameIds.length &&
+      sourceFrameIds.every((id, index) => id === returnedFrameIds[index]);
+    const lineageValue = (value: unknown) => String(value || "").trim();
+    const sourceLineageMatches =
+      refreshedSource.assetType === "video" &&
+      lineageValue(refreshedSource.purpose) === guard.sourceLineage.purpose &&
+      lineageValue(refreshedSource.growId) === guard.sourceLineage.growId &&
+      lineageValue(refreshedSource.plantId) === guard.sourceLineage.plantId;
+    const extractionAttempt = result.extraction.attemptCount;
+    const sourceExtractionAttempt = sourceExtraction?.attemptCount;
+    const extractionAttemptMatches =
+      Number.isInteger(extractionAttempt) &&
+      Number.isInteger(sourceExtractionAttempt) &&
+      sourceExtractionAttempt === extractionAttempt;
+    const framesMatchLineage = refreshedFrames.every(
+      (frame, index) =>
+        String(frame.id || frame._id || "").trim() === returnedFrameIds[index] &&
+        frame.assetType === "photo" &&
+        frame.source === "generated" &&
+        String(frame.sourceVideoEvidenceAssetId || "").trim() === guard.sourceId &&
+        lineageValue(frame.purpose) === guard.sourceLineage.purpose &&
+        lineageValue(frame.growId) === guard.sourceLineage.growId &&
+        lineageValue(frame.plantId) === guard.sourceLineage.plantId &&
+        String(frame.frameExtractionVersion || "").trim() === extractionVersion &&
+        Number.isInteger(frame.frameExtractionAttempt) &&
+        frame.frameExtractionAttempt === extractionAttempt &&
+        Number.isInteger(frame.frameIndex) &&
+        frame.frameIndex === index
+    );
+    if (
+      sourceExtraction?.status !== "completed" ||
+      String(sourceExtraction.version || "").trim() !== extractionVersion ||
+      !extractionAttemptMatches ||
+      !sameOrderedIds ||
+      !sourceLineageMatches ||
+      !framesMatchLineage
+    ) {
+      throw new Error(
+        "The saved source video and completed frame set did not pass version, order, or Plant ID lineage checks. Restore the frames again before identifying the plant."
+      );
+    }
+    const eligibilityError = savedPlantIdRecoveryEligibilityError(
+      {
+        inputs: {
+          mediaEvidence: exactRefreshed.map((asset) => ({
+            id: String(asset.id || asset._id || ""),
+            type: asset.assetType
+          }))
+        }
+      },
+      exactRefreshed
+    );
+    if (eligibilityError) throw new Error(eligibilityError);
+
+    const currentBeforeMerge = currentEvidenceAssetsRef.current;
+    const capacityError = plantIdFrameMergeCapacityError(
+      currentBeforeMerge,
+      returnedFrameIds,
+      refreshedFrames.length,
+      guard.sourceId
+    );
+    if (capacityError) throw new Error(capacityError);
+    if (
+      !extractionRequestIsCurrent(
+        guard.requestToken,
+        guard.sourceId,
+        guard.workspaceIdentity
+      )
+    ) {
+      return null;
+    }
+    const nextAssets = [
+      ...currentBeforeMerge.filter((asset) => {
+        const id = String(asset.id || asset._id || "").trim();
+        return (
+          id !== guard.sourceId &&
+          String(asset.sourceVideoEvidenceAssetId || "").trim() !== guard.sourceId
+        );
+      }),
+      refreshedSource,
+      ...refreshedFrames
+    ];
+    if (nextAssets.filter((asset) => asset.assetType === "photo").length > 12) {
+      throw new Error(
+        "The completed frame set would exceed the 12-photo limit. Remove photos, then restore the saved frame set again."
+      );
+    }
+    setEvidenceAssets(nextAssets);
+    setRetryRetainedEvidenceIds((current) =>
+      Array.from(new Set([...current, ...exactIds]))
+    );
+    setFrameExtractionNotice(
+      `${refreshedFrames.length} timestamped still frame${
+        refreshedFrames.length === 1 ? " is" : "s are"
+      } uploaded and selected for image review. The private source video itself will not be analyzed for motion.`
+    );
+    setRetryEvidenceNotice((current) =>
+      current
+        ? `${current} Server-extracted still frames are now ready.`
+        : "Server-extracted still frames are ready for Plant ID."
+    );
+    return {
+      sourceId: guard.sourceId,
+      version: extractionVersion,
+      attemptCount: Math.trunc(extractionAttempt),
+      frameIds: returnedFrameIds
+    } satisfies VerifiedPlantIdFrameExtraction;
+  }
+
+  async function syncVideoFrameExtraction({ begin }: { begin: boolean }) {
+    if (
+      !sourceVideoEvidence ||
+      !sourceVideoEvidenceId ||
+      frameExtractionRequestBusy ||
+      evidenceBusy ||
+      identificationBusy
+    ) {
+      return;
+    }
+    if (sourceVideoExtractionUnavailableReason) {
+      setFrameExtractionError(sourceVideoExtractionUnavailableReason);
+      return;
+    }
+    const requestSourceId = sourceVideoEvidenceId;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    const requestWorkspaceScope = { ...evidenceWorkspaceScope };
+    const sourceLineage = {
+      purpose: String(sourceVideoEvidence.purpose || "").trim(),
+      growId: String(sourceVideoEvidence.growId || "").trim(),
+      plantId: String(sourceVideoEvidence.plantId || "").trim()
+    };
+    if (sourceLineage.purpose !== "crop_identification") {
+      setFrameExtractionError(
+        "This saved video is not linked to the Plant ID workflow. Remove it and add the video again."
+      );
+      return;
+    }
+    const selectedUploadedPhotos = currentEvidenceAssets.filter(
+      (asset) =>
+        asset.assetType === "photo" &&
+        asset.uploadStatus === "uploaded" &&
+        Boolean(String(asset.durableUrl || "").trim()) &&
+        asset.aiUsable === true &&
+        !(
+          asset.source === "generated" &&
+          String(asset.sourceVideoEvidenceAssetId || "").trim() === requestSourceId
         )
-        .join("|"),
-    [currentEvidenceAssets]
+    );
+    const availableFrameSlots = Math.max(0, 12 - selectedUploadedPhotos.length);
+    if (begin && !availableFrameSlots) {
+      setFrameExtractionError(
+        "All 12 photo slots are already in use. Remove a photo before extracting video frames."
+      );
+      return;
+    }
+    frameExtractionRequestControllerRef.current?.abort();
+    const requestController = new AbortController();
+    frameExtractionRequestControllerRef.current = requestController;
+    const requestToken = frameExtractionRequestTokenRef.current + 1;
+    frameExtractionRequestTokenRef.current = requestToken;
+    setFrameExtractionStateSourceId(requestSourceId);
+    setFrameExtractionRequestBusy(true);
+    setFrameExtractionError("");
+    if (begin) {
+      frameExtractionPollAttemptRef.current = 0;
+      setFrameExtractionVerificationPending(false);
+      setVerifiedFrameExtractionKey("");
+      setVerifiedFrameExtraction(null);
+    }
+    setFrameExtractionNotice(
+      begin
+        ? "GrowPath is extracting timestamped still frames from the saved private video. The server job is durable, so you can leave this page and return to check it."
+        : "Checking the saved video-frame extraction status..."
+    );
+    let validatingCompletedFrames = false;
+    try {
+      const result = begin
+        ? await extractEvidenceVideoFrames(
+            requestSourceId,
+            {
+              ...requestWorkspaceScope,
+              maxFrames: availableFrameSlots,
+              purpose: "crop_identification",
+              ...(sourceLineage.growId ? { growId: sourceLineage.growId } : {}),
+              ...(sourceLineage.plantId ? { plantId: sourceLineage.plantId } : {})
+            },
+            { signal: requestController.signal }
+          )
+        : await getEvidenceVideoFrameExtraction(requestSourceId, requestWorkspaceScope, {
+            signal: requestController.signal
+          });
+      if (
+        !extractionRequestIsCurrent(
+          requestToken,
+          requestSourceId,
+          requestWorkspaceIdentity
+        )
+      ) {
+        return;
+      }
+      setFrameExtractionStateSourceId(requestSourceId);
+      if (result.extraction.status === "processing") {
+        setFrameExtraction(result.extraction);
+        setFrameExtractionVerificationPending(false);
+        if (!begin) frameExtractionPollAttemptRef.current += 1;
+        setFrameExtractionAutoPoll(true);
+        setFrameExtractionNotice(
+          `Video frame extraction is processing on GrowPath${
+            result.extraction.attemptCount
+              ? ` (attempt ${result.extraction.attemptCount})`
+              : ""
+          }. Plant identification stays disabled until uploaded still frames are ready. You can leave this page and return later.`
+        );
+        return;
+      }
+      setFrameExtractionAutoPoll(false);
+      if (result.extraction.status === "completed") {
+        validatingCompletedFrames = true;
+        setFrameExtractionVerificationPending(true);
+        setFrameExtractionNotice(
+          "Frame extraction completed. GrowPath is verifying the exact saved frame version, order, and Plant ID links before enabling analysis."
+        );
+        const verifiedExtraction = await refreshServerExtractedFrames(result, {
+          requestToken,
+          sourceId: requestSourceId,
+          workspaceIdentity: requestWorkspaceIdentity,
+          workspaceScope: requestWorkspaceScope,
+          signal: requestController.signal,
+          sourceLineage
+        });
+        if (
+          !verifiedExtraction ||
+          !extractionRequestIsCurrent(
+            requestToken,
+            requestSourceId,
+            requestWorkspaceIdentity
+          )
+        ) {
+          return;
+        }
+        setVerifiedFrameExtraction(verifiedExtraction);
+        setVerifiedFrameExtractionKey(
+          [
+            verifiedExtraction.sourceId,
+            verifiedExtraction.version,
+            verifiedExtraction.frameIds.join(",")
+          ].join(":")
+        );
+        setFrameExtraction(result.extraction);
+        setFrameExtractionVerificationPending(false);
+        frameExtractionPollAttemptRef.current = 0;
+        return;
+      }
+      setFrameExtraction(result.extraction);
+      setFrameExtractionVerificationPending(false);
+      setVerifiedFrameExtractionKey("");
+      setVerifiedFrameExtraction(null);
+      if (
+        result.extraction.status === "failed" ||
+        result.extraction.status === "partial"
+      ) {
+        setFrameExtractionNotice("");
+        setFrameExtractionError(
+          result.extraction.error ||
+            "GrowPath could not finish every still frame. Retry the saved video or add sharp photos instead."
+        );
+        return;
+      }
+      setFrameExtractionNotice(
+        "The private source video is saved. Extract timestamped still frames before starting Plant ID."
+      );
+    } catch (error: any) {
+      const aborted =
+        requestController.signal.aborted ||
+        error?.name === "AbortError" ||
+        String(error?.code || "").toUpperCase() === "ABORT_ERR";
+      if (
+        aborted ||
+        !extractionRequestIsCurrent(
+          requestToken,
+          requestSourceId,
+          requestWorkspaceIdentity
+        )
+      ) {
+        return;
+      }
+      setFrameExtractionAutoPoll(false);
+      if (validatingCompletedFrames) {
+        setFrameExtractionVerificationPending(true);
+        setFrameExtractionNotice("");
+      }
+      setFrameExtractionError(
+        error?.message ||
+          "GrowPath could not check the saved video-frame extraction. Try again without reuploading the video."
+      );
+    } finally {
+      if (
+        extractionRequestIsCurrent(
+          requestToken,
+          requestSourceId,
+          requestWorkspaceIdentity
+        )
+      ) {
+        setFrameExtractionRequestBusy(false);
+        if (frameExtractionRequestControllerRef.current === requestController) {
+          frameExtractionRequestControllerRef.current = null;
+        }
+      }
+    }
+  }
+  syncVideoFrameExtractionRef.current = syncVideoFrameExtraction;
+
+  useEffect(() => {
+    const sourceKey = sourceVideoEvidenceId
+      ? `${workspaceIdentityKey}:${sourceVideoEvidenceId}`
+      : "";
+    if (!sourceKey) {
+      if (hydratedFrameExtractionSourceRef.current) {
+        frameExtractionRequestTokenRef.current += 1;
+        frameExtractionRequestControllerRef.current?.abort();
+        frameExtractionRequestControllerRef.current = null;
+      }
+      hydratedFrameExtractionSourceRef.current = "";
+      frameExtractionPollAttemptRef.current = 0;
+      setFrameExtraction(null);
+      setFrameExtractionStateSourceId("");
+      setFrameExtractionVerificationPending(false);
+      setVerifiedFrameExtractionKey("");
+      setVerifiedFrameExtraction(null);
+      setFrameExtractionRequestBusy(false);
+      setFrameExtractionAutoPoll(false);
+      setFrameExtractionNotice("");
+      setFrameExtractionError("");
+      return;
+    }
+    if (hydratedFrameExtractionSourceRef.current === sourceKey) return;
+    frameExtractionRequestTokenRef.current += 1;
+    frameExtractionRequestControllerRef.current?.abort();
+    frameExtractionRequestControllerRef.current = null;
+    frameExtractionPollAttemptRef.current = 0;
+    hydratedFrameExtractionSourceRef.current = sourceKey;
+    const persisted = sourceVideoEvidence?.frameExtraction;
+    const rawAttemptCount = Number(persisted?.attemptCount ?? 0);
+    const persistedExtraction: EvidenceFrameExtraction | null = persisted
+      ? {
+          status: persisted.status,
+          attemptCount: Number.isFinite(rawAttemptCount)
+            ? Math.max(0, Math.trunc(rawAttemptCount))
+            : 0,
+          version: persisted.version,
+          startedAt: persisted.startedAt,
+          completedAt: persisted.completedAt,
+          error: persisted.error || persisted.errorMessage,
+          retryable: persisted.status !== "completed",
+          frames: []
+        }
+      : null;
+    setFrameExtractionStateSourceId(sourceVideoEvidenceId);
+    setFrameExtractionRequestBusy(false);
+    setVerifiedFrameExtractionKey("");
+    setVerifiedFrameExtraction(null);
+    setFrameExtraction(persisted?.status === "completed" ? null : persistedExtraction);
+    setFrameExtractionVerificationPending(persisted?.status === "completed");
+    setFrameExtractionError(
+      persisted?.status === "failed" || persisted?.status === "partial"
+        ? String(
+            persisted.error ||
+              persisted.errorMessage ||
+              "Video frame extraction needs to be retried."
+          )
+        : ""
+    );
+    if (persisted?.status === "processing") {
+      setFrameExtractionAutoPoll(true);
+      setFrameExtractionNotice(
+        "Video frame extraction is still processing on GrowPath. Plant identification stays disabled until uploaded still frames are ready. You can leave this page and return later."
+      );
+    } else if (persisted?.status === "completed") {
+      setFrameExtractionAutoPoll(false);
+      setFrameExtractionNotice(
+        uploadedVideoFrames.length
+          ? "GrowPath previously completed frame extraction. Restore and verify the exact saved still-frame set before identifying the plant."
+          : "GrowPath previously completed frame extraction. Restore the saved still frames before identifying the plant."
+      );
+    } else if (
+      uploadedVideoFrames.length &&
+      persisted?.status !== "failed" &&
+      persisted?.status !== "partial"
+    ) {
+      setFrameExtractionNotice(
+        `${uploadedVideoFrames.length} timestamped still frame${
+          uploadedVideoFrames.length === 1 ? " is" : "s are"
+        } selected for image review. The source video itself is not analyzed for motion.`
+      );
+    } else {
+      setFrameExtractionAutoPoll(false);
+      setFrameExtractionNotice("");
+    }
+  }, [
+    sourceVideoEvidence,
+    sourceVideoEvidenceId,
+    uploadedVideoFrames.length,
+    workspaceIdentityKey
+  ]);
+
+  useEffect(() => {
+    if (
+      !frameExtractionAutoPoll ||
+      effectiveFrameExtractionStatus !== "processing" ||
+      frameExtractionRequestBusy ||
+      !sourceVideoEvidenceId
+    ) {
+      return;
+    }
+    if (frameExtractionPollAttemptRef.current >= FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS) {
+      setFrameExtractionAutoPoll(false);
+      setFrameExtractionNotice(
+        "Video frame extraction is still processing. Automatic checks paused; use Check Video Frame Progress later. The server job will continue without this page."
+      );
+      return;
+    }
+    const delayIndex = Math.min(
+      frameExtractionPollAttemptRef.current,
+      FRAME_EXTRACTION_POLL_DELAYS_MS.length - 1
+    );
+    const timer = setTimeout(() => {
+      void syncVideoFrameExtractionRef.current?.({ begin: false });
+    }, FRAME_EXTRACTION_POLL_DELAYS_MS[delayIndex]);
+    return () => clearTimeout(timer);
+  }, [
+    effectiveFrameExtractionAttemptCount,
+    effectiveFrameExtractionStatus,
+    frameExtractionAutoPoll,
+    frameExtractionRequestBusy,
+    sourceVideoEvidenceId
+  ]);
+
+  const currentSourceVideoFramesVerified =
+    effectiveFrameExtractionStatus === "completed" &&
+    !verificationPendingForCurrentSource &&
+    !completedFramesMissing &&
+    !completedFramesUnverified &&
+    verifiedFrameMetadataMatchesCurrent;
+  const evidenceInputKey = useMemo(() => {
+    const assetKey = currentEvidenceAssets
+      .map((asset) =>
+        [
+          asset.id || asset._id || "",
+          asset.uploadStatus,
+          asset.durableUrl || "",
+          asset.updatedAt || "",
+          asset.aiUsable === false ? "not-ai-usable" : "ai-usable",
+          (asset.qualityWarnings || []).join(",")
+        ].join(":")
+      )
+      .join("|");
+    return `${assetKey}|frame-extraction:${effectiveFrameExtractionStatus}:${effectiveFrameExtractionAttemptCount}:${
+      verificationPendingForCurrentSource ? "verifying" : "not-verifying"
+    }:${verifiedFrameExtractionKey || "unverified"}`;
+  }, [
+    currentEvidenceAssets,
+    effectiveFrameExtractionAttemptCount,
+    effectiveFrameExtractionStatus,
+    verificationPendingForCurrentSource,
+    verifiedFrameExtractionKey
+  ]);
+  const providerReadyEvidenceAssets = useMemo(
+    () =>
+      plantIdProviderReadyEvidenceAssets(
+        currentEvidenceAssets,
+        verifiedFrameExtraction,
+        currentSourceVideoFramesVerified
+      ),
+    [currentEvidenceAssets, currentSourceVideoFramesVerified, verifiedFrameExtraction]
   );
   const uploadedEvidence = useMemo(
-    () => providerEvidencePayload(currentEvidenceAssets),
-    [currentEvidenceAssets]
+    () => providerEvidencePayload(providerReadyEvidenceAssets),
+    [providerReadyEvidenceAssets]
   );
+  const assistantEvidenceAssetIds = useMemo(() => {
+    const requiredSourceVideoIds = new Set(
+      uploadedEvidence.media
+        .filter((asset) => asset.type === "photo" && asset.source === "generated")
+        .map((asset) => String(asset.sourceVideoEvidenceAssetId || "").trim())
+        .filter(Boolean)
+    );
+    return uploadedEvidence.media
+      .filter(
+        (asset) =>
+          asset.type === "photo" ||
+          (asset.type === "video" && requiredSourceVideoIds.has(String(asset.id)))
+      )
+      .map((asset) => String(asset.id))
+      .filter(Boolean);
+  }, [uploadedEvidence.media]);
   const activeEvidenceReviewKey = useMemo(
     () => evidenceReviewKey(uploadedEvidence.imageEvidenceAssetIds),
     [uploadedEvidence.imageEvidenceAssetIds]
@@ -1531,13 +2367,17 @@ export default function SpeciesCropIdToolRoute() {
       toolKey="species-crop-id"
       externalInputKey={evidenceInputKey}
       onToolRunChange={handleToolRunChange}
-      executionBlocked={locationBusy || evidenceBusy || retryEvidenceLoading}
+      executionBlocked={
+        locationBusy || evidenceBusy || retryEvidenceLoading || frameExtractionBusy
+      }
       executionBlockedMessage={
         retryEvidenceLoading
           ? "Finish recovering the saved Plant ID evidence before starting identification."
-          : evidenceBusy
-            ? "Finish uploading and saving every selected photo or video before identifying this plant."
-            : "Finish the active location request before identifying this plant."
+          : frameExtractionBusy
+            ? "Wait for GrowPath to finish extracting and uploading still frames from the private source video before starting identification."
+            : evidenceBusy
+              ? "Finish uploading and saving every selected photo or video before identifying this plant."
+              : "Finish the active location request before identifying this plant."
       }
       onExecutionBusyChange={setIdentificationBusy}
       title="Species / Crop Identification"
@@ -1570,13 +2410,101 @@ export default function SpeciesCropIdToolRoute() {
               {retryEvidenceNotice}
             </Text>
           ) : null}
+          {sourceVideoEvidence ? (
+            <View style={styles.frameExtractionPanel}>
+              <Text style={styles.evidenceTitle}>Video still frames</Text>
+              <Text style={styles.evidenceGuidance}>
+                The saved source video stays private and is not sent as motion analysis.
+                GrowPath identifies plants only from uploaded timestamped still frames.
+              </Text>
+              {frameExtractionNotice ? (
+                <Text accessibilityLiveRegion="polite" style={styles.statusGood}>
+                  {frameExtractionNotice}
+                </Text>
+              ) : null}
+              {frameExtractionError ? (
+                <Text accessibilityRole="alert" style={styles.fieldStudyError}>
+                  {frameExtractionError}
+                </Text>
+              ) : null}
+              {sourceVideoExtractionUnavailableReason ? (
+                <Text accessibilityRole="alert" style={styles.fieldStudyError}>
+                  {sourceVideoExtractionUnavailableReason}
+                </Text>
+              ) : null}
+              {!currentSourceVideoFramesVerified ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    frameExtractionActionUnavailable
+                      ? "Video frame extraction unavailable"
+                      : frameExtractionActionNonRetryable
+                        ? "Video frame extraction cannot be retried"
+                        : verificationPendingForCurrentSource && frameExtractionError
+                          ? "Retry restoring extracted video frames"
+                          : verificationPendingForCurrentSource ||
+                              effectiveFrameExtractionStatus === "completed"
+                            ? "Restore extracted video frames"
+                            : effectiveFrameExtractionStatus === "processing"
+                              ? "Check video frame extraction progress"
+                              : effectiveFrameExtractionStatus === "failed" ||
+                                  effectiveFrameExtractionStatus === "partial"
+                                ? "Retry video frame extraction"
+                                : "Extract video frames"
+                  }
+                  disabled={
+                    frameExtractionRequestBusy ||
+                    evidenceBusy ||
+                    identificationBusy ||
+                    frameExtractionActionUnavailable ||
+                    frameExtractionActionNonRetryable
+                  }
+                  onPress={() =>
+                    void syncVideoFrameExtraction({
+                      begin:
+                        verificationPendingForCurrentSource ||
+                        effectiveFrameExtractionStatus !== "processing"
+                    })
+                  }
+                  style={[
+                    styles.secondaryButton,
+                    (frameExtractionRequestBusy ||
+                      evidenceBusy ||
+                      identificationBusy ||
+                      frameExtractionActionUnavailable ||
+                      frameExtractionActionNonRetryable) &&
+                      styles.disabled
+                  ]}
+                >
+                  <Text style={styles.secondaryButtonText}>
+                    {frameExtractionRequestBusy
+                      ? "Checking Video Frames..."
+                      : frameExtractionActionUnavailable
+                        ? "Video Frames Unavailable"
+                        : frameExtractionActionNonRetryable
+                          ? "Video Frames Cannot Be Retried"
+                          : verificationPendingForCurrentSource && frameExtractionError
+                            ? "Retry Restoring Video Frames"
+                            : verificationPendingForCurrentSource ||
+                                effectiveFrameExtractionStatus === "completed"
+                              ? "Restore Extracted Video Frames"
+                              : effectiveFrameExtractionStatus === "processing"
+                                ? "Check Video Frame Progress"
+                                : effectiveFrameExtractionStatus === "failed" ||
+                                    effectiveFrameExtractionStatus === "partial"
+                                  ? "Retry Video Frames"
+                                  : "Extract Video Frames"}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
           <MediaEvidencePicker
             key={workspaceIdentityKey}
             aiUsable
             maxPhotos={12}
             allowVideo
-            extractFramesFromVideo
-            maxExtractedVideoFrames={12}
+            serverFrameExtractionOnly
             maxVideoSeconds={599}
             purpose="crop_identification"
             sourceContext={{
@@ -1590,7 +2518,8 @@ export default function SpeciesCropIdToolRoute() {
               workspaceType === "facility" ? activeFacilityId || undefined : undefined
             }
             value={currentEvidenceAssets}
-            onChange={setEvidenceAssets}
+            disabled={evidenceMutationLocked}
+            onChange={handleEvidencePickerChange}
             onBusyChange={setEvidenceBusy}
             retainOnRemoveAssetIds={retryRetainedEvidenceIds}
           />
@@ -2000,11 +2929,14 @@ export default function SpeciesCropIdToolRoute() {
         buttonLabel: "Identify Plant from Photos",
         clearUnfilled: false,
         preserveAllExistingFields: true,
-        evidenceAssetIds: () => uploadedEvidence.evidenceAssetIds,
+        evidenceAssetIds: () => assistantEvidenceAssetIds,
         isReady: () =>
-          uploadedEvidence.images.length > 0 && !locationBusy && !evidenceBusy,
+          uploadedEvidence.images.length > 0 &&
+          !locationBusy &&
+          !evidenceBusy &&
+          !frameExtractionBusy,
         notReadyMessage:
-          "Finish the photo upload and any active location request before starting AI identification.",
+          "Finish the photo upload, video-frame extraction, and any active location request before starting AI identification.",
         prepare: hydratePriorPlantIdReview,
         runAfterPrefill: true,
         buildImmediateResult: plantIdImmediateResult,
@@ -2870,6 +3802,14 @@ export function createSpeciesCropIdStyles(palette: ThemePalette) {
       padding: 13
     },
     privateLocationPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: 12,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    frameExtractionPanel: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.borderSoft,
       borderRadius: 12,
