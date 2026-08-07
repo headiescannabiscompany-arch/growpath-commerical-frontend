@@ -72,6 +72,7 @@ export async function askPersonalAssistant(payload: {
   facilityId?: string;
   workspaceType?: "personal" | "commercial" | "facility";
   plantId?: string;
+  sourceToolRunId?: string;
   conversationId?: string;
   evidenceAssetIds?: string[];
 }): Promise<PersonalAssistantResponse> {

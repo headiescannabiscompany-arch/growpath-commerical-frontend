@@ -109,6 +109,26 @@ Community and social posts may supply the language people use for questions, can
 
 Every result must provide a discriminating follow-up question. A follow-up must carry the prior draft crop-identity provenance forward: merely supplying a crop name in grow or form context is not an explicit confirmation, and a visual suggestion remains a visual suggestion until the user uses the confirmation action. Saved diagnoses, journal entries, tasks, attached evidence, and user-confirmed outcome feedback remain linked to the selected grow and plant.
 
+Result follow-up questions must remain beside the original result and load the authorized,
+immutable source ToolRun plus its exact evidence set; never trust an arbitrary client result
+snapshot or silently replace the original result. Show the one-credit cost, provider,
+whether any image pixels were inspected, and limitations. Suggested questions must remain
+editable before submission. Offer a saved-result follow-up only when the server reports a
+stored immutable snapshot and secure follow-up support. IPM snapshots must be created by the
+dedicated save route and attest the authorized workspace, exact selected/analyzed evidence,
+provider receipt, and normalized result digest; legacy or client-fabricated snapshots must
+require a new run. A structured IPM follow-up must be normalized by the server so its prose,
+visible observations, hypotheses, confidence, severity, missing information, and next checks
+cannot exceed the saved evidence ceilings. For an IPM result, include comparisons,
+counter-evidence, and the exact macro or underside view that separates close candidates. A
+cannabis/hemp plant-sex
+shortcut may appear only when submitted evidence, an explicit crop identity, or permitted
+grow context establishes cannabis/hemp. Classify male only from visible staminate or pollen-
+sac structures, female only from visible pistillate preflowers/bracts and pistils, and
+intersex only when both reproductive structures or visible anthers are supported. Stipules,
+stems, or undeveloped nodes alone remain unclear and require sharp node/preflower macro views;
+never infer cultivar from this follow-up.
+
 When a selected grow already contains saved photos, diagnosis must let the user
 explicitly reuse those private grow-log photos instead of requiring duplicate uploads.
 Reuse is opt-in per photo: show the source log, create a diagnosis-purpose evidence
@@ -138,6 +158,37 @@ wetness, sanitation, sticky traps, biological control, mechanical removal, consu
 label/extension, and professional testing. It must not emit pesticide products or
 doses. Product, crop/site legality, label, safety, re-entry, and harvest restrictions
 remain separate checks after identity is sufficiently supported.
+
+Keep four evidence classes separate: a directly observed organism, a directly observed
+disease sign, a damage or symptom pattern, and a hypothesis. An AI phrase such as
+`powdery-mildew-like growth, not confirmed` is a hypothesis, not a direct organism or
+disease-sign observation. One image must not become several independent evidence channels
+merely because its finding was copied into the damage field, evidence text, and image-review
+metadata. Count independent observation types and role-diverse views, retain provenance for
+every AI-prefilled field, and remove the AI-draft label only after the user edits that field.
+Editing an AI-prefilled value marks it reviewed but keeps it in the visual-derived evidence
+channel; an edit alone must not manufacture a second user-observation channel. AI prefill is
+additive: it must preserve explicit user entries and leave unobserved facts blank.
+
+White, pale, or reflective leaf marks alone require an unresolved differential rather than
+a powdery-mildew headline. Compare superficial white-to-gray powdery or felt-like growth
+with thrips or mite feeding injury, spray residue, mineral deposits, dust, glare, physical
+damage, and senescence. Powdery mildew may rise above low confidence only when a sharp,
+color-reliable close view shows superficial powdery growth and a second independent
+discriminator is recorded, such as another role-diverse view or a wipe/transfer observation.
+Thrips may rise above low confidence only when compatible silvering, stippling, streaking,
+scarring, or distortion is paired with black frass or a sharp direct view of a slender insect
+or larva. Medium confidence requires at least two independent evidence channels; high
+confidence requires direct magnified morphology, compatible damage/distribution, and
+lookalike exclusion. Limited or unusable imagery, a single view, missing target macro, or a
+missing underside inspection caps confidence at low. When close candidates remain or the
+needed discriminator is absent, headline the result as an unresolved differential and ask
+for the exact view or observation that separates them.
+
+Severity is an impact and spread assessment, not a synonym for diagnostic confidence. Without
+verified spread/count context—paired plants checked/affected, distribution plus progression,
+or a dated and comparable trap count with location, exposure, and method—return severity as
+`not_assessed` even if a working hypothesis exists.
 
 The image-capable assistant and the GPT structured second opinion are distinct evidence
 steps. Carry the photo provider, count, quality, evidence used, and limitations into the

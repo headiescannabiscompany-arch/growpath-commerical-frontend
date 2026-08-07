@@ -31,6 +31,7 @@ import ToolResultSurface, {
   type ToolResultMetric,
   type ToolResultNotice
 } from "@/features/personal/tools/ToolResultSurface";
+import ResultQuestionCard from "@/features/personal/tools/ResultQuestionCard";
 import {
   saveToolRunAndCreateLog,
   saveToolRunAndCreateTask
@@ -189,6 +190,18 @@ type BackendCalculatorToolScreenProps = {
       details?: string[];
     } | null;
   };
+  resultFollowUp?: {
+    workflow: "plant-id-follow-up" | "ipm-result-follow-up";
+    evidenceAssetIds?: () => string[];
+    suggestions: (context: {
+      outputs: Record<string, any>;
+      payload: Record<string, any>;
+      toolRun: ToolRun;
+      growId: string;
+      plantId: string;
+      workspaceType: "personal" | "commercial" | "facility";
+    }) => string[];
+  };
 };
 
 const RUN_LABELS: Record<string, string> = {
@@ -320,7 +333,8 @@ export default function BackendCalculatorToolScreen({
   defaultTask,
   buildActions,
   assistantBrief,
-  aiPrefill
+  aiPrefill,
+  resultFollowUp
 }: BackendCalculatorToolScreenProps) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createBackendCalculatorStyles(palette), [palette]);
@@ -438,6 +452,15 @@ export default function BackendCalculatorToolScreen({
   const [assistantBriefText, setAssistantBriefText] = useState("");
   const [prefilling, setPrefilling] = useState(false);
   const [aiPrefillPayload, setAiPrefillPayload] = useState<Record<string, any>>({});
+  const aiPrefilledFieldKeys = useMemo(
+    () =>
+      new Set(
+        Array.isArray(aiPrefillPayload.aiPrefillProvenance?.prefilledFields)
+          ? aiPrefillPayload.aiPrefillProvenance.prefilledFields.map(String)
+          : []
+      ),
+    [aiPrefillPayload]
+  );
   const immediateAiResult =
     outputs && aiPrefill?.buildImmediateResult
       ? aiPrefill.buildImmediateResult(outputs)
@@ -522,7 +545,79 @@ export default function BackendCalculatorToolScreen({
     onToolRunChange?.(null);
     setModuleRecord(null);
     setOutputs(null);
-    setAiPrefillPayload({});
+    setAiPrefillPayload((current) => {
+      const prefill =
+        current.aiPrefillProvenance && typeof current.aiPrefillProvenance === "object"
+          ? current.aiPrefillProvenance
+          : null;
+      const imageAnalysis =
+        current.imageAnalysis && typeof current.imageAnalysis === "object"
+          ? current.imageAnalysis
+          : null;
+      const prefilledFields = Array.isArray(prefill?.prefilledFields)
+        ? prefill.prefilledFields.map(String)
+        : Array.isArray(imageAnalysis?.prefilledFields)
+          ? imageAnalysis.prefilledFields.map(String)
+          : [];
+      if (!prefill && !imageAnalysis && !Object.keys(current).length) return current;
+
+      const remainingPrefilledFields = prefilledFields.filter(
+        (fieldKey: string) => fieldKey !== key
+      );
+      const existingFieldProvenance =
+        current.fieldProvenance && typeof current.fieldProvenance === "object"
+          ? current.fieldProvenance
+          : {};
+      const wasVisualPrefill =
+        prefilledFields.includes(key) ||
+        String(existingFieldProvenance[key] || "").startsWith("visual_prefill");
+      const userReviewedFields = Array.from(
+        new Set([
+          ...(Array.isArray(prefill?.userReviewedFields)
+            ? prefill.userReviewedFields.map(String)
+            : []),
+          key
+        ])
+      );
+      const userEditedFields = Array.from(
+        new Set([
+          ...(Array.isArray(prefill?.userEditedFields)
+            ? prefill.userEditedFields.map(String)
+            : []),
+          key
+        ])
+      );
+      const existingUserEnteredFields = Array.isArray(current.userEnteredFields)
+        ? current.userEnteredFields.map(String)
+        : [];
+
+      return {
+        ...current,
+        fieldProvenance: {
+          ...existingFieldProvenance,
+          [key]: wasVisualPrefill ? "visual_prefill_user_reviewed" : "user_reported"
+        },
+        userEnteredFields: wasVisualPrefill
+          ? existingUserEnteredFields.filter((fieldKey: string) => fieldKey !== key)
+          : Array.from(new Set([...existingUserEnteredFields, key])),
+        aiPrefillProvenance: {
+          ...(prefill || {}),
+          prefilledFields: remainingPrefilledFields,
+          userReviewedFields,
+          userEditedFields
+        },
+        ...(imageAnalysis
+          ? {
+              imageAnalysis: {
+                ...imageAnalysis,
+                prefilledFields: remainingPrefilledFields,
+                userReviewedFields,
+                userEditedFields
+              }
+            }
+          : {})
+      };
+    });
     setFeedback("");
     setAssistantBriefText("");
   }
@@ -643,12 +738,67 @@ export default function BackendCalculatorToolScreen({
           parsed,
           evidenceAssetIds
         }) || {};
+      const prefilledFields = fields
+        .filter((field) => {
+          const userEnteredValue = userValuesRef.current[field.key] || "";
+          const preserveExisting =
+            (aiPrefill.preserveAllExistingFields ||
+              aiPrefill.preserveExistingFields?.includes(field.key)) &&
+            userEnteredValue.trim().length > 0;
+          return !preserveExisting && String(next[field.key] || "").trim().length > 0;
+        })
+        .map((field) => field.key);
+      const userEnteredFields = fields
+        .filter(
+          (field) => String(userValuesRef.current[field.key] || "").trim().length > 0
+        )
+        .map((field) => field.key);
+      const fieldProvenance = Object.fromEntries(
+        fields
+          .filter(
+            (field) =>
+              prefilledFields.includes(field.key) || userEnteredFields.includes(field.key)
+          )
+          .map((field) => [
+            field.key,
+            userEnteredFields.includes(field.key)
+              ? "user_reported"
+              : "visual_prefill_unverified"
+          ])
+      );
+      const metadataWithProvenance = {
+        ...metadata,
+        fieldProvenance: {
+          ...(metadata.fieldProvenance && typeof metadata.fieldProvenance === "object"
+            ? metadata.fieldProvenance
+            : {}),
+          ...fieldProvenance
+        },
+        userEnteredFields,
+        aiPrefillProvenance: {
+          ...(metadata.aiPrefillProvenance &&
+          typeof metadata.aiPrefillProvenance === "object"
+            ? metadata.aiPrefillProvenance
+            : {}),
+          prefilledFields,
+          userReviewedFields: []
+        },
+        ...(metadata.imageAnalysis && typeof metadata.imageAnalysis === "object"
+          ? {
+              imageAnalysis: {
+                ...metadata.imageAnalysis,
+                prefilledFields,
+                userReviewedFields: []
+              }
+            }
+          : {})
+      };
       setValues(resolvedValues);
-      setAiPrefillPayload(metadata);
+      setAiPrefillPayload(metadataWithProvenance);
       if (aiPrefill.runAfterPrefill) {
         await calculateWithValues(
           resolvedValues,
-          metadata,
+          metadataWithProvenance,
           {
             externalInputKey: requestExternalInputKey,
             revision: requestInputRevision
@@ -656,13 +806,14 @@ export default function BackendCalculatorToolScreen({
           "prefill"
         );
       } else {
-        const filledFieldCount = Object.values(next).filter((value) =>
-          String(value).trim()
-        ).length;
+        const filledFieldLabels = fields
+          .filter((field) => prefilledFields.includes(field.key))
+          .map((field) => field.label);
+        const filledFieldCount = filledFieldLabels.length;
         const prefillSummary = filledFieldCount
           ? `AI filled ${filledFieldCount} non-empty field${
               filledFieldCount === 1 ? "" : "s"
-            } from available evidence. Empty or unknown values were left blank. Review before calculating.`
+            } from available evidence (${filledFieldLabels.join(", ")}). Empty or unknown values were left blank. Fields marked AI draft remain unconfirmed until you review them.`
           : "AI reviewed the available evidence but could not prefill any non-empty fields. Empty or unknown values were left blank. Add clearer evidence or complete the form manually.";
         setFeedback(
           `${prefillSummary}${
@@ -824,6 +975,56 @@ export default function BackendCalculatorToolScreen({
     await calculateWithValues(values);
   }
   const displayOutputs = outputs ? prepareOutputsForDisplay?.(outputs) || outputs : null;
+  const resultFollowUpToolRunId = String(toolRun?.id || toolRun?._id || "").trim();
+  const resultFollowUpQuestions =
+    displayOutputs && toolRun && resultFollowUp
+      ? resultFollowUp.suggestions({
+          outputs: displayOutputs,
+          payload,
+          toolRun,
+          growId,
+          plantId: plantContext.plantId,
+          workspaceType
+        })
+      : [];
+
+  async function submitResultFollowUp(question: string) {
+    if (!resultFollowUp || !resultFollowUpToolRunId) {
+      throw new Error("Save this result before asking an evidence-bound follow-up.");
+    }
+    const response = await askPersonalAssistant({
+      message: question,
+      sourceToolRunId: resultFollowUpToolRunId,
+      growId: growId || undefined,
+      plantId: plantContext.plantId || undefined,
+      workspaceType,
+      ...(workspaceType === "facility" && facilityId ? { facilityId } : {}),
+      evidenceAssetIds: resultFollowUp.evidenceAssetIds?.() || [],
+      context: {
+        workflow: resultFollowUp.workflow,
+        sourceToolRunId: resultFollowUpToolRunId,
+        sourceTool: toolKey,
+        workspaceType,
+        ...(commercialAccountId ? { commercialAccountId } : {})
+      }
+    });
+    const answer = String(response?.reply || "").trim();
+    if (!response?.success || !answer) {
+      throw new Error("AI did not return a usable follow-up answer.");
+    }
+    const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
+    return {
+      answer,
+      providerLabel: response.providerLabel || response.provider,
+      evidenceInspected:
+        photosAnalyzed > 0
+          ? true
+          : response.mediaAnalysis?.requested === true
+            ? false
+            : undefined,
+      limitations: response.limitations || []
+    };
+  }
   const actions: ToolResultAction[] = [];
   if (outputs && workspaceType === "personal" && growId) {
     actions.push({
@@ -1176,10 +1377,20 @@ export default function BackendCalculatorToolScreen({
                 <Text style={styles.formSection}>{field.section}</Text>
               ) : null}
               <View style={styles.field}>
-                <Text style={styles.label}>
-                  {field.label}
-                  {field.required ? " *" : ""}
-                </Text>
+                <View style={styles.fieldLabelRow}>
+                  <Text style={styles.label}>
+                    {field.label}
+                    {field.required ? " *" : ""}
+                  </Text>
+                  {aiPrefilledFieldKeys.has(field.key) ? (
+                    <Text
+                      accessibilityLabel={`${field.label} was filled by AI and needs review`}
+                      style={styles.aiDraftLabel}
+                    >
+                      AI draft - review
+                    </Text>
+                  ) : null}
+                </View>
                 {field.helpText ? (
                   <Text style={styles.fieldHelp}>{field.helpText}</Text>
                 ) : null}
@@ -1297,6 +1508,16 @@ export default function BackendCalculatorToolScreen({
             ].filter(Boolean)}
             details={buildDetails?.(displayOutputs)}
             evidenceReview={inferEvidenceReview(displayOutputs, payload)}
+            followUp={
+              resultFollowUp && resultFollowUpToolRunId ? (
+                <ResultQuestionCard
+                  sourceKey={resultFollowUpToolRunId}
+                  suggestions={resultFollowUpQuestions}
+                  onSubmit={submitResultFollowUp}
+                />
+              ) : null
+            }
+            enableDefaultAskAI={!resultFollowUp}
             onAddEvidence={() =>
               setFeedback(
                 "Add the requested evidence above, then run this tool again to update the review."
@@ -1400,7 +1621,24 @@ export function createBackendCalculatorStyles(palette: ThemePalette) {
     briefText: { color: palette.text, lineHeight: 19 },
     form: { gap: 10 },
     field: { gap: 6 },
+    fieldLabelRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8
+    },
     label: { fontSize: 13, fontWeight: "700", color: palette.text },
+    aiDraftLabel: {
+      color: palette.warning,
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: 999,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      fontSize: 11,
+      fontWeight: "800",
+      overflow: "hidden"
+    },
     optionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     optionCard: {
       minWidth: 150,

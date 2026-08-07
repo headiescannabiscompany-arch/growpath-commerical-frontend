@@ -12,6 +12,7 @@ const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockCreateFacilityTask = jest.fn();
 const mockUpdateToolRun = jest.fn();
 const mockUpdateGrowpathModuleRecord = jest.fn();
+const mockAskPersonalAssistant = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -72,6 +73,10 @@ jest.mock("@/api/facilityTasks", () => ({
   createFacilityTask: (...args: any[]) => mockCreateFacilityTask(...args)
 }));
 
+jest.mock("@/api/personalAssistant", () => ({
+  askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
+}));
+
 describe("IpmScoutToolRoute", () => {
   it("normalizes provider evidence arrays into readable scout observations", () => {
     expect(
@@ -99,7 +104,22 @@ describe("IpmScoutToolRoute", () => {
     ).toBe("");
     expect(
       normalizeIpmPrefillField({ fieldKey: "pestSeen", value: "not confirmed" })
-    ).toBeUndefined();
+    ).toBe("not confirmed");
+    expect(
+      normalizeIpmPrefillField({
+        fieldKey: "pestSeen",
+        value: "powdery mildew-like growth, not confirmed"
+      })
+    ).toBe("not confirmed");
+    expect(normalizeIpmPrefillField({ fieldKey: "pestSeen", value: "unknown" })).toBe(
+      "not confirmed"
+    );
+    expect(
+      normalizeIpmPrefillField({ fieldKey: "pestSeen", value: "none observed" })
+    ).toBe("not confirmed");
+    expect(normalizeIpmPrefillField({ fieldKey: "pestSeen", value: "not visible" })).toBe(
+      "not confirmed"
+    );
     expect(
       normalizeIpmPrefillField({ fieldKey: "leafDamage", value: "leaf-edge browning" })
     ).toBeUndefined();
@@ -193,6 +213,14 @@ describe("IpmScoutToolRoute", () => {
       ok: true,
       toolRunId: "toolrun-1",
       taskIds: ["task-1", "task-2", "task-3"]
+    });
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply:
+        "White marks alone do not separate powdery mildew from thrips feeding, mites, or residue. Add a neutral-light leaf-top macro, leaf underside, and a direct target close-up.",
+      providerLabel: "GrowPath evidence-bound IPM follow-up",
+      mediaAnalysis: { requested: true, photosAnalyzed: 2 },
+      limitations: ["No direct insect morphology is visible yet."]
     });
   });
 
@@ -290,6 +318,51 @@ describe("IpmScoutToolRoute", () => {
         /Requested next evidence: dated sticky-trap comparison; Inspect leaf undersides at 30x/
       )
     ).toBeTruthy();
+  });
+
+  it("asks an editable evidence-bound IPM follow-up without replacing the result", async () => {
+    const screen = render(<IpmScoutToolRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Damage or symptom pattern"),
+      "white flecks and silver streaks"
+    );
+    fireEvent.press(
+      screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
+    );
+
+    await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
+    expect(screen.queryByLabelText("Ask AI About This")).toBeNull();
+    fireEvent.press(
+      screen.getByLabelText(
+        "Use suggested question: Compare thrips, mites, and powdery mildew."
+      )
+    );
+    expect(screen.getByLabelText("Ask about this result").props.value).toBe(
+      "Compare thrips, mites, and powdery mildew."
+    );
+    fireEvent.press(screen.getByLabelText("Ask AI about this result for 1 AI credit"));
+
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Compare thrips, mites, and powdery mildew.",
+          sourceToolRunId: "toolrun-1",
+          context: expect.objectContaining({
+            workflow: "ipm-result-follow-up",
+            sourceToolRunId: "toolrun-1",
+            sourceTool: "ipm-scout"
+          })
+        })
+      )
+    );
+    expect(
+      await screen.findByText(/White marks alone do not separate powdery mildew/)
+    ).toBeTruthy();
+    expect(screen.getAllByText("Possible spider mite pressure").length).toBeGreaterThan(
+      0
+    );
+    expect(screen.getByText("Evidence inspected: Yes")).toBeTruthy();
   });
 
   it("creates an IPM follow-up task with GrowPath and GPT verification context", async () => {

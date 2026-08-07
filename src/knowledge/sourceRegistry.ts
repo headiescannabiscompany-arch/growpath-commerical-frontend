@@ -190,9 +190,10 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     reliabilityTier: "A",
     trustedFor: ["ipm", "diagnosis", "education"],
     notTrustedFor: ["cultivar_parentage", "breeder_claim", "consumer_review"],
-    notes: "Primary IPM and pest/disease principle source.",
+    notes:
+      "Primary IPM and pest/disease principle source. The UC IPM Thrips and Powdery Mildew pages support separating silvering/stippling/scarring and black frass from superficial white-to-gray powdery growth; neither page turns one ambiguous photo into a confirmed diagnosis.",
     requiresCrossCheck: false,
-    lastReviewedAt: "2026-07-18"
+    lastReviewedAt: "2026-08-06"
   },
   {
     id: "usda-aphis",
