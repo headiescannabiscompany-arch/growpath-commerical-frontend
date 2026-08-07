@@ -6,7 +6,7 @@ Cannabis-specific AI shortcuts must use structured crop types, grow interests/ta
 
 Cannabis-specific surfaces include flower-day/flip language, trichome harvest review, cultivar/genetics and mother/clone selection, cannabis pheno categories, flower dry/cure, cannabis presets and cannabis facility examples.
 
-General users receive crop-neutral identification, plant care, watering, soil/fertility, IPM, logs, courses and community language. Visibility controls presentation and discovery; it must not weaken data access control. Private cannabis media and records remain scoped to their owner/workspace.
+General users receive crop-neutral identification, plant care, watering, soil/fertility, IPM, logs, courses and community language. A crop-neutral question about visible plant sex or reproductive stage is general botany guidance and must not unlock cannabis-only tools or wording. Visibility controls presentation and discovery; it must not weaken data access control. Private cannabis media and records remain scoped to their owner/workspace.
 
 Public dispensary discovery is an explicit cannabis-retail context. Do not include dispensaries in default horticulture storefront results; surface them only after the visitor deliberately chooses state or distance-based dispensary search or follows a direct dispensary link. A published dispensary may show reviewed public inventory and hand off to its own website or in-store pickup information, but GrowPath must not offer cannabis checkout, payment, delivery, shipping, or reservation. Entering dispensary discovery must not unlock unrelated cannabis grow tools.
 

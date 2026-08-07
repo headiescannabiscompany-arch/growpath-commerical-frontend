@@ -289,13 +289,16 @@ describe("personal AI screen", () => {
     );
   });
 
-  it("does not surface the cannabis-specific quick question without saved context", () => {
+  it("offers a crop-neutral plant-sex question without surfacing cannabis wording", () => {
     const questions = assistantQuickQuestions({
       workspaceType: "personal",
       cannabisContext: false
     });
 
-    expect(questions.join(" ")).not.toMatch(/male, female|intersex/i);
+    expect(questions).toContain(
+      "Is this plant male, female, intersex, or too early to tell? Explain exactly what the photos support and what photo would confirm it."
+    );
+    expect(questions.join(" ")).not.toMatch(/cannabis|hemp|cultivar|strain/i);
     expect(questions).toContain(
       "What do these photos show, and what evidence is missing before you are confident?"
     );
