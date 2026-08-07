@@ -168,7 +168,7 @@ function ipmTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
     /needs|insufficient|unresolved/i.test(String(outputs.readiness?.status || "")) ||
     (outputs.mediaAnalysis?.requested === true &&
       outputs.mediaAnalysis?.performed !== true);
-  if (!unresolved && planned.length) {
+  if (!unresolved && planned.length > 1) {
     return planned.slice(0, 8).map((task: any, index: number) => ({
       title: String(task?.title || `IPM follow-up ${index + 1}`),
       priority: normalizePriority(task?.priority),
@@ -192,23 +192,74 @@ function ipmTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
 
   const verification = verificationAnswer(outputs.gptVerification);
   const growPath = growPathAnswer(outputs);
+  if (unresolved) {
+    return [
+      {
+        title: "Repeat IPM scout with distinguishing evidence",
+        priority: "medium",
+        dueDate: tomorrow(outputs.taskSuggestions?.[0]?.dueInDays || 3),
+        ...calendarMetadata,
+        description: [
+          growPath ? `GrowPath AI: ${growPath}` : "",
+          verification
+            ? `GPT verification: ${verification}`
+            : outputs.gptVerification?.status
+              ? `GPT verification status: ${outputs.gptVerification.status}.`
+              : "",
+          "Collect neutral-light leaf-top, leaf-underside, and target-macro evidence; repeat comparable trap and plant counts before choosing any treatment."
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
+    ];
+  }
+
+  const highSeverity = ["high", "urgent", "critical"].includes(
+    String(outputs.severity || "").toLowerCase()
+  );
+  const issue = outputs.suspectedIssue || "IPM issue";
+  const organism =
+    outputs.suspectedOrganism || outputs.suspectedPest || "unknown organism";
   return [
     {
-      title: "Repeat IPM scout with distinguishing evidence",
-      priority: "medium",
+      title: outputs.taskSuggestions?.[0]?.title || "Repeat IPM scout",
+      priority: normalizePriority(
+        outputs.taskSuggestions?.[0]?.priority,
+        highSeverity ? "high" : "medium"
+      ),
       dueDate: tomorrow(outputs.taskSuggestions?.[0]?.dueInDays || 3),
       ...calendarMetadata,
       description: [
+        `Suspected issue: ${issue}.`,
+        `Suspected organism: ${organism}.`,
         growPath ? `GrowPath AI: ${growPath}` : "",
         verification
           ? `GPT verification: ${verification}`
           : outputs.gptVerification?.status
             ? `GPT verification status: ${outputs.gptVerification.status}.`
             : "",
-        "Collect neutral-light leaf-top, leaf-underside, and target-macro evidence; repeat comparable trap and plant counts before choosing any treatment."
+        "Repeat underside inspection, trap count, and photo evidence before treatment decisions."
       ]
         .filter(Boolean)
         .join(" ")
+    },
+    {
+      title: "Document IPM evidence and treatment decision",
+      priority: highSeverity ? "high" : ("medium" as const),
+      dueDate: tomorrow(4),
+      ...calendarMetadata,
+      sourceStage: "ipm_treatment_decision",
+      description:
+        "Save leaf top/bottom photos, trap counts, affected plant locations, treatment decision, product/rate if used, and safety notes."
+    },
+    {
+      title: "Review IPM outcome",
+      priority: "medium" as const,
+      dueDate: tomorrow(7),
+      ...calendarMetadata,
+      sourceStage: "ipm_outcome_review",
+      description:
+        "Record whether the response worked, whether pest pressure changed, and whether another scout or escalation is needed."
     }
   ];
 }
