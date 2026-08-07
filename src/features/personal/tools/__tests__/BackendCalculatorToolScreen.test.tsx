@@ -11,6 +11,9 @@ const mockCreateGrowpathModuleRecord = jest.fn();
 const mockGetGrowpathModuleRecord = jest.fn();
 const mockUseEntitlements = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
+const mockListPersonalGrows = jest.fn();
+const mockListFacilityGrows = jest.fn();
+const mockFetchCommercialGrows = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1", plantId: "plant-1" }),
@@ -28,6 +31,15 @@ jest.mock("@/api/growpathModules", () => ({
 
 jest.mock("@/api/personalAssistant", () => ({
   askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
+}));
+
+jest.mock("@/api/grows", () => ({
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args),
+  listGrows: (...args: any[]) => mockListFacilityGrows(...args)
+}));
+
+jest.mock("@/api/commercialWorkflows", () => ({
+  fetchCommercialGrows: (...args: any[]) => mockFetchCommercialGrows(...args)
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -135,6 +147,12 @@ describe("BackendCalculatorToolScreen beta access", () => {
         outputs: { rootingProgress: "normal_wait" }
       }
     });
+    mockListPersonalGrows.mockResolvedValue([
+      { id: "grow-1", name: "First grow" },
+      { id: "grow-2", name: "Second grow" }
+    ]);
+    mockListFacilityGrows.mockResolvedValue([]);
+    mockFetchCommercialGrows.mockResolvedValue([]);
   });
 
   it("locks beta packet tools for free personal users", () => {
@@ -386,5 +404,185 @@ describe("BackendCalculatorToolScreen beta access", () => {
     expect(
       screen.getByLabelText("Leaf damage was filled by AI and needs review")
     ).toBeTruthy();
+  });
+
+  it("records manual fields in provenance even before any AI prefill", async () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: jest.fn(() => true)
+    });
+    render(
+      <BackendCalculatorToolScreen
+        tool="harvest-readiness"
+        toolKey="harvest-readiness"
+        title="Harvest Readiness"
+        subtitle="Review manual values."
+        fields={[
+          { key: "clearPercent", label: "Clear percent", defaultValue: "" },
+          { key: "cloudyPercent", label: "Cloudy percent", defaultValue: "" },
+          { key: "amberPercent", label: "Amber percent", defaultValue: "" }
+        ]}
+        buildPayload={(values) => values}
+        defaultLogTitle={() => "Harvest readiness"}
+      />
+    );
+    fireEvent.changeText(screen.getByLabelText("Harvest Readiness Clear percent"), "20");
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness"));
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "harvest-readiness",
+        expect.objectContaining({
+          clearPercent: "20",
+          fieldProvenance: { clearPercent: "user_reported" },
+          userEnteredFields: ["clearPercent"]
+        })
+      )
+    );
+  });
+
+  it("invalidates completed and in-flight AI drafts when the grow changes", async () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: jest.fn(() => true)
+    });
+    let resolveAssistant: (value: any) => void = () => {};
+    mockAskPersonalAssistant.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveAssistant = resolve;
+        })
+    );
+    render(
+      <BackendCalculatorToolScreen
+        tool="ipm-scout"
+        toolKey="ipm-scout"
+        title="IPM Scout"
+        subtitle="Review saved evidence."
+        fields={[{ key: "leafDamage", label: "Leaf damage", defaultValue: "" }]}
+        aiPrefill={{
+          buttonLabel: "Inspect evidence",
+          buildMessage: () => "Inspect this evidence."
+        }}
+        buildPayload={(values) => values}
+        defaultLogTitle={() => "IPM scout"}
+      />
+    );
+    await waitFor(() => expect(screen.getByText("Second grow")).toBeTruthy());
+    fireEvent.press(screen.getByText("Inspect evidence"));
+    fireEvent.press(screen.getByLabelText("Select grow Second grow"));
+    resolveAssistant({
+      success: true,
+      reply: JSON.stringify({ leafDamage: "silver streaking" })
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText("IPM Scout Leaf damage").props.value).toBe("")
+    );
+    expect(
+      screen.queryByLabelText("Leaf damage was filled by AI and needs review")
+    ).toBeNull();
+    expect(mockRunCalculator).not.toHaveBeenCalled();
+  });
+
+  it("applies external AI drafts additively and clears only unreviewed fields when evidence changes", async () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: jest.fn(() => true)
+    });
+
+    const fields = [
+      { key: "cropContext", label: "Crop context", defaultValue: "" },
+      { key: "leafDamage", label: "Leaf damage", defaultValue: "" },
+      { key: "scoutLocation", label: "Scout location", defaultValue: "" }
+    ];
+    const renderTool = (scopeKey: string, externalAiDraft: any) => (
+      <BackendCalculatorToolScreen
+        tool="ipm-scout"
+        toolKey="ipm-scout"
+        title="IPM Scout"
+        subtitle="Review saved photo evidence."
+        growOptional
+        fields={fields}
+        externalAiDraftScopeKey={scopeKey}
+        externalAiDraft={externalAiDraft}
+        buildPayload={(values) => values}
+        defaultLogTitle={() => "IPM scout"}
+      />
+    );
+    const view = render(renderTool("scope-1", null));
+
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Crop context"),
+      "user-recorded tomato"
+    );
+    view.rerender(
+      renderTool("scope-1", {
+        scopeKey: "scope-1",
+        revisionKey: "analysis-1::receipt-1",
+        growId: "grow-1",
+        values: {
+          cropContext: "AI guessed crop",
+          leafDamage: "silver streaking",
+          scoutLocation: "lower canopy"
+        },
+        metadata: { photoAnalysis: { analysisId: "analysis-1" } }
+      })
+    );
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("IPM Scout Leaf damage").props.value).toBe(
+        "silver streaking"
+      )
+    );
+    expect(screen.getByLabelText("IPM Scout Crop context").props.value).toBe(
+      "user-recorded tomato"
+    );
+    expect(screen.getByLabelText("IPM Scout Scout location").props.value).toBe(
+      "lower canopy"
+    );
+    expect(
+      screen.getByLabelText("Leaf damage was filled by AI and needs review")
+    ).toBeTruthy();
+
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Leaf damage"),
+      "user confirmed silver streaking"
+    );
+    view.rerender(renderTool("scope-2", null));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("IPM Scout Scout location").props.value).toBe("")
+    );
+    expect(screen.getByLabelText("IPM Scout Crop context").props.value).toBe(
+      "user-recorded tomato"
+    );
+    expect(screen.getByLabelText("IPM Scout Leaf damage").props.value).toBe(
+      "user confirmed silver streaking"
+    );
+    expect(
+      screen.queryByLabelText("Leaf damage was filled by AI and needs review")
+    ).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "ipm-scout",
+        expect.objectContaining({
+          cropContext: "user-recorded tomato",
+          leafDamage: "user confirmed silver streaking",
+          scoutLocation: "",
+          fieldProvenance: expect.objectContaining({
+            leafDamage: "visual_prefill_user_reviewed"
+          }),
+          aiPrefillProvenance: expect.objectContaining({
+            prefilledFields: [],
+            userReviewedFields: expect.arrayContaining(["leafDamage"])
+          })
+        })
+      )
+    );
+    expect(mockRunCalculator.mock.calls.at(-1)?.[1]).not.toHaveProperty("photoAnalysis");
   });
 });

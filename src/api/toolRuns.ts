@@ -394,6 +394,22 @@ export async function updateToolRun(
   }
 }
 
+export async function updateIpmToolRunDecision(
+  toolRunId: string,
+  decision: "accepted" | "uncertain" | "rejected",
+  scope: ToolRunWorkspaceScope = {}
+): Promise<ToolRun | null> {
+  const res: any = await apiRequest(
+    `/api/tools/runs/${encodeURIComponent(toolRunId)}/ipm-decision`,
+    {
+      method: "PATCH",
+      body: { decision, ...workspaceBody(scope) }
+    }
+  );
+  const row = res?.toolRun ?? res?.data?.toolRun ?? res;
+  return row ? normalizeToolRun(row) : null;
+}
+
 export async function archiveToolRun(
   toolRunId: string,
   scope: ToolRunWorkspaceScope = {}

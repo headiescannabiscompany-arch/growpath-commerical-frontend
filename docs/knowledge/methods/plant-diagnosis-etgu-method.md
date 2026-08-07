@@ -47,6 +47,16 @@ Photo uploads must never imply that image pixels were inspected when the active 
 
 When image analysis is available, request a whole-plant context photo, a photo showing symptom distribution, and sharp close-ups of both leaf surfaces. A photo-only result must report whether visual analysis was actually performed and ask for replacement media when blur, lighting, distance, or missing leaf-surface coverage prevents useful review.
 
+When the provider reports that the submitted image set is unusable for triage, the normalized
+diagnosis must remain inconclusive with low overall and candidate confidence. Image-derived
+issues must not create urgent status, treatment actions, or completed tasks; return exact
+replacement views and allow only cautious monitoring or collection of better evidence. A crop
+name supplied by the user or selected record remains user context even when a visual suggestion
+conflicts with it. Preserve the user value, surface the visual disagreement as an unconfirmed
+alternative, and never silently replace the form's crop or cultivar context. This state must not
+emit an issue-detected automation or create an issue log/task as though a diagnosis had been made;
+only an explicitly labeled evidence-collection action may be offered.
+
 Diagnosis, IPM Scout, and Harvest Readiness share an evidence-review surface after analysis. It must show whether pixels were actually inspected, the media quality and confidence, provider label, evidence used, counter-evidence, limitations, and exact next photos or checks. A follow-up action reuses the prior structured result and asks the user to add the requested evidence before rerunning; it must never silently upgrade confidence. When a follow-up task is created from a Facility route, it is written to the selected Facility task scope rather than the member's Personal queue.
 
 Diagnosis and IPM may accept up to 12 photos so a user can include zoomed-out context, distribution across plants, affected and unaffected tissue, leaf tops and undersides, macro signs, root-zone evidence, and a trap or follow-up view without deleting useful evidence. The count is a ceiling, not a requirement. Reject obviously invalid or tiny files before upload and billing. Metadata alone cannot prove focus, lighting, glare, color accuracy, subject relevance, or complete view coverage; those failures require explicit image-review findings and precise retake instructions.

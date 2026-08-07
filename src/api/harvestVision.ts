@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiRequest";
+import type { EvidenceWorkspaceType } from "@/types/evidence";
 
 export type TrichomeVisionResult = {
   photoUsable: boolean;
@@ -42,6 +43,13 @@ export type TrichomeVisionResult = {
   imagesAnalyzed: number;
   evidenceUsed: string[];
   analysisId: string;
+  analysisReceipt?: {
+    aiUsageEventId: string;
+    normalizedHarvestResultDigest: string;
+    evidenceFingerprint: string;
+    reviewPolicyVersion: string;
+    [key: string]: unknown;
+  };
   aiCreditsUsed: number;
   aiTokensRemaining?: number;
   creditStatus: "charged" | "refunded" | "not_charged";
@@ -50,6 +58,10 @@ export type TrichomeVisionResult = {
 export async function analyzeTrichomePhotos(input: {
   growId: string;
   evidenceAssetIds: string[];
+  workspaceType: EvidenceWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
+  plantId?: string;
   daysSinceFlip?: number;
   sampleLocation?: string;
   notes?: string;
@@ -64,5 +76,26 @@ export async function analyzeTrichomePhotos(input: {
       "The photo analysis returned an incomplete result. Please try again."
     );
   }
-  return result as TrichomeVisionResult;
+  const analysisReceipt =
+    result.analysisReceipt ??
+    response?.analysisReceipt ??
+    response?.data?.analysisReceipt;
+  const receiptIsComplete = Boolean(
+    String(analysisReceipt?.aiUsageEventId || "").trim() &&
+    /^[a-f0-9]{64}$/i.test(
+      String(analysisReceipt?.normalizedHarvestResultDigest || "").trim()
+    ) &&
+    String(analysisReceipt?.evidenceFingerprint || "").trim() &&
+    String(analysisReceipt?.reviewPolicyVersion || "").trim() ===
+      "harvest-trichome-server-attestation-v1"
+  );
+  if (!receiptIsComplete) {
+    throw new Error(
+      "The photo analysis was not securely attested, so no trichome fields were filled. Please run the photo review again."
+    );
+  }
+  return {
+    ...result,
+    analysisReceipt
+  } as TrichomeVisionResult;
 }

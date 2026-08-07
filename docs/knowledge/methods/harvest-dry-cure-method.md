@@ -16,6 +16,45 @@ Enforce cannabis/hemp eligibility at the API boundary as well as in navigation. 
 
 Server results and saved readiness runs must retain the review ID, evidence-asset IDs, number of photos inspected, provider label and model, provider image-detail setting, set-level quality checks, per-image findings, visible traits, limitations, recommendation, confidence, credit status, credits used, and remaining balance. A usable trichome distribution requires the complete acquisition set, usable image quality, neutral lighting, sufficient visible-head detail, non-blocking glare, confirmed top/middle/lower macro roles, a context view, numeric clear/cloudy/amber values totaling about 100%, and server-attested pixel analysis. Otherwise all three percentages remain blank. Manual calculator fields start unknown rather than using example maturity defaults, and missing or invalid trichome values are excluded from readiness scoring instead of silently becoming zero.
 
+The image-analysis response must include an opaque server receipt bound to the successful
+AI-usage event, authenticated workspace, canonical grow, optional selected plant, exact selected and analyzed evidence IDs,
+normalized trichome-result digest, evidence fingerprint, and review-policy version. Saving or
+calculating Harvest Readiness must validate that exact receipt and reconstruct the provider,
+quality findings, evidence set, and AI-derived percentages from the server record. A client
+payload, analysis ID, provider name, or percentage is not proof that image analysis occurred.
+Manual trichome observations remain allowed when no AI-photo claim is submitted, but they must
+stay labeled manual rather than inheriting provider provenance.
+
+The receipt's selected evidence set includes every attached still, extracted frame, and private
+source video. Its analyzed evidence set includes only the authorized stills and frames actually
+sent to vision; the source video remains attached provenance and must never be counted as
+visually analyzed. A device-extracted Harvest frame is eligible only when its selected,
+protected source video has the same workspace, grow, plant, and purpose lineage and the bounded
+frame set passes the shared frame validation. For a device-extracted Harvest set, the selected
+frame IDs must equal the complete active linked-frame set for that source video; reject a subset.
+Analysis and save must agree on both exact sets and on the optional plant scope.
+
+Personal, Commercial, and Facility Harvest runs use the authorized grow collection for that
+workspace. Commercial analysis is scoped to the authenticated Commercial account, while a
+Facility run requires an authorized write role and reserves Facility credits. A route account
+or grow identifier is never authority by itself. Resolve it against the authenticated workspace
+before evidence is loaded or a credit is reserved, and validate the same canonical workspace
+and grow again when the result is saved. Persist the canonical grow ID rather than a route alias.
+
+When a qualified photo review fills clear, cloudy, or amber percentages in the readiness form,
+apply those values as reviewable visual drafts only to fields the user has not already filled.
+Do not remount the form or erase flower day, breeder timing, pistil, bud-swell, aroma, goal, or
+other manual observations. Mark every AI-filled percentage as requiring review and preserve its
+visual provenance after an edit. Replacing or removing the analyzed evidence invalidates and
+clears only still-unreviewed visual drafts; it must not erase user-authored fields.
+When the user edits an AI-filled trichome distribution, preserve the submitted values as a
+manual override rather than silently restoring the provider percentages or continuing to label
+the edited distribution AI-derived. Keep the exact server-attested photo result separately so
+the saved run can show what the image review returned and which percentage fields the user
+overrode. Reconstruct each unreviewed percentage independently from the attested snapshot; if
+the photo set is unusable, remove every still-unreviewed visual draft instead of retaining it as
+manual evidence.
+
 Dry/cure combines measured room/container conditions, air dew point, an optional measured surface-to-dew-point margin, airflow, density, duration, aroma, texture and representative interior checks. Room temperature and RH must be simultaneous real readings. Start temperature, RH, airflow and density blank; never replace missing evidence with common targets or plausible defaults. An incomplete measurement set returns `insufficient_evidence`, keeps numeric outputs blank and tells the user what to measure next.
 
 Record days in the current stage and light exposure as explicit evidence. Drying and curing material should remain protected from light, with brief work light distinguished from continuous room light or direct light. Light exposure is a quality-preservation concern supported by `PMID 6643`; it does not determine mold safety. Keep unknown light exposure unknown rather than assuming darkness from a photo or room label.

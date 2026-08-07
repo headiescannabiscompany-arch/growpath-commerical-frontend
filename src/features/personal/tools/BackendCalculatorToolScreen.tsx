@@ -10,7 +10,8 @@ import {
   getGrowpathModuleRecord,
   type GrowpathModuleRecord
 } from "@/api/growpathModules";
-import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
+import { listGrows, listPersonalGrows } from "@/api/grows";
+import { fetchCommercialGrows } from "@/api/commercialWorkflows";
 import {
   askPersonalAssistant,
   type PersonalAssistantResponse
@@ -62,6 +63,27 @@ type ToolField = {
   }>;
 };
 
+type SelectableGrow = {
+  id?: string;
+  _id?: string;
+  name?: string;
+  growName?: string;
+};
+
+export type ExternalAiDraft = {
+  /**
+   * Identifies the evidence/workspace/grow snapshot used to produce this draft.
+   * The draft is ignored when it does not match externalAiDraftScopeKey.
+   */
+  scopeKey: string;
+  /** Identifies the specific analysis/receipt within the matching scope. */
+  revisionKey: string;
+  /** Optional extra guard for tools whose active grow can change in-place. */
+  growId?: string;
+  values: Record<string, unknown>;
+  metadata?: Record<string, any>;
+};
+
 type BackendCalculatorToolScreenProps = {
   tool: CalculatorTool;
   toolKey: string;
@@ -73,6 +95,8 @@ type BackendCalculatorToolScreenProps = {
   backFallbackHref?: string;
   feedRouteKey?: string;
   externalInputKey?: string;
+  externalAiDraftScopeKey?: string;
+  externalAiDraft?: ExternalAiDraft | null;
   onToolRunChange?: (toolRun: ToolRun | null) => void;
   executionBlocked?: boolean;
   executionBlockedMessage?: string;
@@ -312,6 +336,8 @@ export default function BackendCalculatorToolScreen({
   backFallbackHref = "/home/personal/tools",
   feedRouteKey,
   externalInputKey = "",
+  externalAiDraftScopeKey = "",
+  externalAiDraft = null,
   onToolRunChange,
   executionBlocked = false,
   executionBlockedMessage = "Finish the current action before running this tool.",
@@ -374,10 +400,10 @@ export default function BackendCalculatorToolScreen({
     facilityId,
     commercialAccountId
   });
-  const routeGrowId = workspaceType === "personal" ? requestedGrowId : "";
+  const routeGrowId = requestedGrowId;
   const routePlantId = workspaceType === "personal" ? coerceParam(params.plantId) : "";
-  const [availableGrows, setAvailableGrows] = useState<PersonalGrow[]>([]);
-  const [growId, setGrowId] = useState(routeGrowId);
+  const [availableGrows, setAvailableGrows] = useState<SelectableGrow[]>([]);
+  const [growId, setGrowId] = useState(workspaceType === "personal" ? routeGrowId : "");
   const plantContext = useToolPlantContext(
     growId,
     routePlantId,
@@ -465,8 +491,26 @@ export default function BackendCalculatorToolScreen({
     outputs && aiPrefill?.buildImmediateResult
       ? aiPrefill.buildImmediateResult(outputs)
       : null;
-  const executionInputKey = `${workspaceIdentityKey}::${externalInputKey}`;
+  // A grow change is an evidence/context revision. In-flight AI work and prior
+  // calculated output must never cross from one grow into another.
+  const executionInputKey = `${workspaceIdentityKey}::grow:${growId || "none"}::plant:${plantContext.plantId || "none"}::${externalInputKey}`;
   const userValuesRef = React.useRef<Record<string, string>>(initialValues);
+  const valuesRef = React.useRef<Record<string, string>>(values);
+  const aiPrefillPayloadRef = React.useRef<Record<string, any>>(aiPrefillPayload);
+  const userEditedFieldKeysRef = React.useRef(new Set<string>());
+  const externalAiDraftApplicationRef = React.useRef<{
+    signature: string;
+    scopeKey: string;
+    managedFields: Set<string>;
+    appliedFields: Set<string>;
+    metadataKeys: Set<string>;
+  }>({
+    signature: "",
+    scopeKey: "",
+    managedFields: new Set(),
+    appliedFields: new Set(),
+    metadataKeys: new Set()
+  });
   const externalInputKeyRef = React.useRef(executionInputKey);
   const workspaceIdentityRef = React.useRef(workspaceIdentityKey);
   const lastReportedExecutionBusyRef = React.useRef(false);
@@ -481,6 +525,8 @@ export default function BackendCalculatorToolScreen({
   const inputRevisionRef = React.useRef(0);
   const executionLockRef = React.useRef<"prefill" | "calculate" | null>(null);
   latestExternalInputKeyRef.current = executionInputKey;
+  valuesRef.current = values;
+  aiPrefillPayloadRef.current = aiPrefillPayload;
 
   React.useEffect(() => {
     if (externalInputKeyRef.current === executionInputKey) return;
@@ -490,9 +536,17 @@ export default function BackendCalculatorToolScreen({
     inputRevisionRef.current += 1;
     if (workspaceChanged) {
       userValuesRef.current = initialValues;
+      userEditedFieldKeysRef.current = new Set();
+      externalAiDraftApplicationRef.current = {
+        signature: "",
+        scopeKey: "",
+        managedFields: new Set(),
+        appliedFields: new Set(),
+        metadataKeys: new Set()
+      };
       setValues(initialValues);
       setAvailableGrows([]);
-      setGrowId(routeGrowId);
+      setGrowId(workspaceType === "personal" ? routeGrowId : "");
       executionLockRef.current = null;
       setRunning(false);
       setPrefilling(false);
@@ -511,34 +565,230 @@ export default function BackendCalculatorToolScreen({
     initialValues,
     onToolRunChange,
     routeGrowId,
+    workspaceIdentityKey,
+    workspaceType
+  ]);
+
+  const externalAiDraftFieldKey = fields.map((field) => field.key).join("|");
+  const externalAiDraftRevisionKey = String(externalAiDraft?.revisionKey || "");
+  const externalAiDraftSourceScopeKey = String(externalAiDraft?.scopeKey || "");
+  const externalAiDraftGrowId = String(externalAiDraft?.growId || "");
+
+  React.useEffect(() => {
+    const previous = externalAiDraftApplicationRef.current;
+    const activeScopeKey = String(externalAiDraftScopeKey || "").trim();
+    const sourceScopeKey = externalAiDraftSourceScopeKey.trim();
+    const revisionKey = externalAiDraftRevisionKey.trim();
+    const draftGrowMatches = !externalAiDraftGrowId || externalAiDraftGrowId === growId;
+    const validDraft = Boolean(
+      externalAiDraft &&
+      activeScopeKey &&
+      sourceScopeKey === activeScopeKey &&
+      revisionKey &&
+      draftGrowMatches
+    );
+    const signature = validDraft
+      ? `${workspaceIdentityKey}::${growId || "no-grow"}::${activeScopeKey}::${revisionKey}`
+      : "";
+
+    if (previous.signature === signature && previous.scopeKey === activeScopeKey) {
+      return;
+    }
+    if (
+      !validDraft &&
+      !previous.signature &&
+      previous.appliedFields.size === 0 &&
+      previous.metadataKeys.size === 0
+    ) {
+      externalAiDraftApplicationRef.current = {
+        ...previous,
+        scopeKey: activeScopeKey
+      };
+      return;
+    }
+
+    const knownFields = new Set(
+      externalAiDraftFieldKey.split("|").filter((fieldKey) => fieldKey.length > 0)
+    );
+    const managedFields = new Set(
+      validDraft
+        ? Object.keys(externalAiDraft?.values || {}).filter((fieldKey) =>
+            knownFields.has(fieldKey)
+          )
+        : []
+    );
+    const nextValues = { ...valuesRef.current };
+    const currentPayload = aiPrefillPayloadRef.current;
+    const currentPrefill =
+      currentPayload.aiPrefillProvenance &&
+      typeof currentPayload.aiPrefillProvenance === "object"
+        ? currentPayload.aiPrefillProvenance
+        : {};
+    const previousPrefilledFields = Array.isArray(currentPrefill.prefilledFields)
+      ? currentPrefill.prefilledFields.map(String)
+      : [];
+    const userReviewedFields = Array.isArray(currentPrefill.userReviewedFields)
+      ? currentPrefill.userReviewedFields.map(String)
+      : [];
+    const userEditedFields = Array.isArray(currentPrefill.userEditedFields)
+      ? currentPrefill.userEditedFields.map(String)
+      : [];
+    const fieldProvenance = {
+      ...(currentPayload.fieldProvenance &&
+      typeof currentPayload.fieldProvenance === "object"
+        ? currentPayload.fieldProvenance
+        : {})
+    } as Record<string, string>;
+    const appliedFields = new Set<string>();
+
+    for (const fieldKey of previous.appliedFields) {
+      const userOwnsField =
+        userEditedFieldKeysRef.current.has(fieldKey) ||
+        String(userValuesRef.current[fieldKey] || "").trim().length > 0 ||
+        userReviewedFields.includes(fieldKey);
+      const incomingValue = managedFields.has(fieldKey)
+        ? normalizedPrefillText(externalAiDraft?.values?.[fieldKey]).trim()
+        : "";
+      if (!userOwnsField && !incomingValue) {
+        nextValues[fieldKey] = "";
+        if (fieldProvenance[fieldKey] === "visual_prefill_unverified") {
+          delete fieldProvenance[fieldKey];
+        }
+      }
+    }
+
+    if (validDraft) {
+      for (const fieldKey of managedFields) {
+        const incomingValue = normalizedPrefillText(
+          externalAiDraft?.values?.[fieldKey]
+        ).trim();
+        if (!incomingValue) continue;
+
+        const userOwnsField =
+          userEditedFieldKeysRef.current.has(fieldKey) ||
+          String(userValuesRef.current[fieldKey] || "").trim().length > 0 ||
+          userReviewedFields.includes(fieldKey);
+        const currentValue = String(nextValues[fieldKey] || "").trim();
+        const occupiedByAnotherSource =
+          currentValue.length > 0 && !previous.appliedFields.has(fieldKey);
+        if (userOwnsField || occupiedByAnotherSource) continue;
+
+        nextValues[fieldKey] = incomingValue;
+        appliedFields.add(fieldKey);
+        fieldProvenance[fieldKey] = "visual_prefill_unverified";
+      }
+    }
+
+    const prefilledFields = Array.from(
+      new Set([
+        ...previousPrefilledFields.filter(
+          (fieldKey: string) => !previous.appliedFields.has(fieldKey)
+        ),
+        ...appliedFields
+      ])
+    );
+    const nextPayload = { ...currentPayload };
+    for (const metadataKey of previous.metadataKeys) {
+      delete nextPayload[metadataKey];
+    }
+    if (validDraft && externalAiDraft?.metadata) {
+      Object.assign(nextPayload, externalAiDraft.metadata);
+    }
+    nextPayload.fieldProvenance = fieldProvenance;
+    nextPayload.aiPrefillProvenance = {
+      ...currentPrefill,
+      prefilledFields,
+      userReviewedFields,
+      userEditedFields
+    };
+
+    const metadataKeys = new Set(
+      validDraft ? Object.keys(externalAiDraft?.metadata || {}) : []
+    );
+    externalAiDraftApplicationRef.current = {
+      signature,
+      scopeKey: activeScopeKey,
+      managedFields,
+      appliedFields,
+      metadataKeys
+    };
+    inputRevisionRef.current += 1;
+    valuesRef.current = nextValues;
+    aiPrefillPayloadRef.current = nextPayload;
+    setValues(nextValues);
+    setAiPrefillPayload(nextPayload);
+    setToolRun(null);
+    onToolRunChange?.(null);
+    setModuleRecord(null);
+    setOutputs(null);
+    setFeedback("");
+    setAssistantBriefText("");
+  }, [
+    externalAiDraft,
+    externalAiDraftFieldKey,
+    externalAiDraftGrowId,
+    externalAiDraftRevisionKey,
+    externalAiDraftScopeKey,
+    externalAiDraftSourceScopeKey,
+    growId,
+    onToolRunChange,
     workspaceIdentityKey
   ]);
 
   React.useEffect(() => {
-    if (locked || workspaceType !== "personal") {
+    if (workspaceType === "personal" && routeGrowId) setGrowId(routeGrowId);
+    if (locked) {
       setAvailableGrows([]);
-      setGrowId("");
+      if (workspaceType !== "personal") setGrowId("");
       return;
     }
     let active = true;
-    listPersonalGrows()
+    const growRequest: Promise<SelectableGrow[]> = Promise.resolve().then(() =>
+      workspaceType === "personal"
+        ? listPersonalGrows()
+        : workspaceType === "commercial"
+          ? fetchCommercialGrows()
+          : facilityId
+            ? listGrows(facilityId)
+            : []
+    );
+    growRequest
       .then((grows) => {
         if (!active) return;
         setAvailableGrows(grows);
-        if (!growOptional && !routeGrowId && grows.length === 1) {
-          setGrowId(String(grows[0].id || (grows[0] as any)._id || ""));
-        }
+        const availableGrowIds = new Set(
+          grows.map((grow) => String(grow.id || (grow as any)._id || "")).filter(Boolean)
+        );
+        setGrowId((current) => {
+          if (workspaceType === "personal") {
+            if (routeGrowId) return routeGrowId;
+            if (current) return current;
+          } else {
+            if (routeGrowId && availableGrowIds.has(routeGrowId)) return routeGrowId;
+            if (current && availableGrowIds.has(current)) return current;
+          }
+          if (!growOptional && grows.length === 1) {
+            return String(grows[0].id || (grows[0] as any)._id || "");
+          }
+          return "";
+        });
       })
       .catch(() => {
-        if (active) setAvailableGrows([]);
+        if (!active) return;
+        setAvailableGrows([]);
+        if (workspaceType !== "personal") setGrowId("");
       });
     return () => {
       active = false;
     };
-  }, [growOptional, locked, routeGrowId, workspaceType]);
+  }, [commercialAccountId, facilityId, growOptional, locked, routeGrowId, workspaceType]);
 
   function updateValue(key: string, value: string) {
     inputRevisionRef.current += 1;
+    userEditedFieldKeysRef.current.add(key);
+    if (externalAiDraftApplicationRef.current.managedFields.has(key)) {
+      externalAiDraftApplicationRef.current.appliedFields.delete(key);
+    }
     userValuesRef.current = { ...userValuesRef.current, [key]: value };
     setValues((current) => ({ ...current, [key]: value }));
     setToolRun(null);
@@ -559,8 +809,6 @@ export default function BackendCalculatorToolScreen({
         : Array.isArray(imageAnalysis?.prefilledFields)
           ? imageAnalysis.prefilledFields.map(String)
           : [];
-      if (!prefill && !imageAnalysis && !Object.keys(current).length) return current;
-
       const remainingPrefilledFields = prefilledFields.filter(
         (fieldKey: string) => fieldKey !== key
       );
@@ -636,14 +884,47 @@ export default function BackendCalculatorToolScreen({
     executionLockRef.current = "prefill";
     const requestInputRevision = inputRevisionRef.current;
     const requestExternalInputKey = latestExternalInputKeyRef.current;
+    const activeExternalDraft = externalAiDraftApplicationRef.current;
+    const externallyAppliedFieldsBeforePrefill = new Set(
+      activeExternalDraft.appliedFields
+    );
+    const preserveExternalDraft = Boolean(
+      aiPrefill.preserveAllExistingFields && activeExternalDraft.signature
+    );
+    const valuesBeforePrefill = preserveExternalDraft
+      ? valuesRef.current
+      : userValuesRef.current;
+    const currentPrefillMetadata = aiPrefillPayloadRef.current;
+    const metadataBeforePrefill = preserveExternalDraft
+      ? {
+          ...Object.fromEntries(
+            Array.from(activeExternalDraft.metadataKeys)
+              .filter((key) =>
+                Object.prototype.hasOwnProperty.call(currentPrefillMetadata, key)
+              )
+              .map((key) => [key, currentPrefillMetadata[key]])
+          ),
+          ...(currentPrefillMetadata.fieldProvenance
+            ? { fieldProvenance: currentPrefillMetadata.fieldProvenance }
+            : {}),
+          ...(currentPrefillMetadata.userEnteredFields
+            ? { userEnteredFields: currentPrefillMetadata.userEnteredFields }
+            : {}),
+          ...(currentPrefillMetadata.aiPrefillProvenance
+            ? {
+                aiPrefillProvenance: currentPrefillMetadata.aiPrefillProvenance
+              }
+            : {})
+        }
+      : {};
     // A new AI attempt supersedes the visible result. Keeping the previous ToolRun
     // on screen after this attempt fails would make stale evidence look current.
     setOutputs(null);
     setToolRun(null);
     onToolRunChange?.(null);
     setModuleRecord(null);
-    setAiPrefillPayload({});
-    setValues(userValuesRef.current);
+    setAiPrefillPayload(metadataBeforePrefill);
+    setValues(valuesBeforePrefill);
     setPrefilling(true);
     setFeedback("");
     try {
@@ -718,16 +999,17 @@ export default function BackendCalculatorToolScreen({
       );
       const resolvedValues = Object.fromEntries(
         fields.map((field) => {
-          const existingValue = userValuesRef.current[field.key] || "";
+          const existingValue = valuesBeforePrefill[field.key] || "";
           const userEnteredValue = userValuesRef.current[field.key] || "";
           const preserveExisting =
             (aiPrefill.preserveAllExistingFields ||
               aiPrefill.preserveExistingFields?.includes(field.key)) &&
-            userEnteredValue.trim().length > 0;
+            (userEnteredValue.trim().length > 0 ||
+              externallyAppliedFieldsBeforePrefill.has(field.key));
           return [
             field.key,
             preserveExisting
-              ? userEnteredValue
+              ? existingValue
               : (next[field.key] ?? (aiPrefill.clearUnfilled ? "" : existingValue))
           ];
         })
@@ -738,16 +1020,38 @@ export default function BackendCalculatorToolScreen({
           parsed,
           evidenceAssetIds
         }) || {};
-      const prefilledFields = fields
+      const newlyPrefilledFields = fields
         .filter((field) => {
+          const existingValue = valuesBeforePrefill[field.key] || "";
           const userEnteredValue = userValuesRef.current[field.key] || "";
           const preserveExisting =
             (aiPrefill.preserveAllExistingFields ||
               aiPrefill.preserveExistingFields?.includes(field.key)) &&
-            userEnteredValue.trim().length > 0;
+            existingValue.trim().length > 0 &&
+            (userEnteredValue.trim().length > 0 ||
+              externallyAppliedFieldsBeforePrefill.has(field.key));
           return !preserveExisting && String(next[field.key] || "").trim().length > 0;
         })
         .map((field) => field.key);
+      const existingPrefillProvenance =
+        metadataBeforePrefill.aiPrefillProvenance &&
+        typeof metadataBeforePrefill.aiPrefillProvenance === "object"
+          ? metadataBeforePrefill.aiPrefillProvenance
+          : {};
+      const retainedPrefilledFields = Array.isArray(
+        existingPrefillProvenance.prefilledFields
+      )
+        ? existingPrefillProvenance.prefilledFields
+            .map(String)
+            .filter(
+              (fieldKey: string) =>
+                externallyAppliedFieldsBeforePrefill.has(fieldKey) &&
+                !newlyPrefilledFields.includes(fieldKey)
+            )
+        : [];
+      const prefilledFields = Array.from(
+        new Set([...retainedPrefilledFields, ...newlyPrefilledFields])
+      );
       const userEnteredFields = fields
         .filter(
           (field) => String(userValuesRef.current[field.key] || "").trim().length > 0
@@ -767,8 +1071,13 @@ export default function BackendCalculatorToolScreen({
           ])
       );
       const metadataWithProvenance = {
+        ...metadataBeforePrefill,
         ...metadata,
         fieldProvenance: {
+          ...(metadataBeforePrefill.fieldProvenance &&
+          typeof metadataBeforePrefill.fieldProvenance === "object"
+            ? metadataBeforePrefill.fieldProvenance
+            : {}),
           ...(metadata.fieldProvenance && typeof metadata.fieldProvenance === "object"
             ? metadata.fieldProvenance
             : {}),
@@ -776,12 +1085,15 @@ export default function BackendCalculatorToolScreen({
         },
         userEnteredFields,
         aiPrefillProvenance: {
+          ...existingPrefillProvenance,
           ...(metadata.aiPrefillProvenance &&
           typeof metadata.aiPrefillProvenance === "object"
             ? metadata.aiPrefillProvenance
             : {}),
           prefilledFields,
-          userReviewedFields: []
+          userReviewedFields: Array.isArray(existingPrefillProvenance.userReviewedFields)
+            ? existingPrefillProvenance.userReviewedFields.map(String)
+            : []
         },
         ...(metadata.imageAnalysis && typeof metadata.imageAnalysis === "object"
           ? {
@@ -793,6 +1105,8 @@ export default function BackendCalculatorToolScreen({
             }
           : {})
       };
+      valuesRef.current = resolvedValues;
+      aiPrefillPayloadRef.current = metadataWithProvenance;
       setValues(resolvedValues);
       setAiPrefillPayload(metadataWithProvenance);
       if (aiPrefill.runAfterPrefill) {
@@ -1186,22 +1500,22 @@ export default function BackendCalculatorToolScreen({
           <Text style={styles.guidanceText}>
             {workspaceType === "personal"
               ? "A successful run is saved to Saved Runs. Attach a grow to also enable grow-log, task, and plant-history actions."
-              : "A successful run is saved only to this shared workspace's Saved Runs. Personal grows, plants, logs, tasks, and plant-history records are not loaded or changed here."}
+              : "A successful run is saved to this shared workspace's Saved Runs. Select a shared grow to scope evidence and results; Personal plant-history actions remain separate."}
           </Text>
         </View>
-        {workspaceType === "personal" && growId ? (
-          <Text style={styles.context}>Grow context: {growId}</Text>
-        ) : null}
-        {workspaceType === "personal" && availableGrows.length ? (
+        {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
+        {availableGrows.length ? (
           <View style={styles.growPicker}>
             <Text style={styles.label}>
               {growOptional ? "Attach to a grow (optional)" : "Select grow"}
             </Text>
             {growOptional ? (
               <Text style={styles.guidanceText}>
-                {isCropIdentification
-                  ? "Identification works without a grow. Attach one only to save the result, create tasks, or use plant history."
-                  : "This workflow works without a grow. Attach one to use saved crop history and create linked logs, tasks, or plant records."}
+                {workspaceType !== "personal"
+                  ? "This workflow works without a grow. Attach an authorized shared grow to scope evidence and Saved Runs within this workspace."
+                  : isCropIdentification
+                    ? "Identification works without a grow. Attach one only to save the result, create tasks, or use plant history."
+                    : "This workflow works without a grow. Attach one to use saved crop history and create linked logs, tasks, or plant records."}
               </Text>
             ) : null}
             <View style={styles.growPickerRow}>
@@ -1219,41 +1533,41 @@ export default function BackendCalculatorToolScreen({
               ) : null}
               {availableGrows.map((grow, index) => {
                 const id = String(grow.id || (grow as any)._id || "");
+                const growLabel = grow.name || grow.growName || `Grow ${index + 1}`;
                 if (!id) return null;
                 const selected = growId === id;
                 return (
                   <Pressable
                     key={id}
                     accessibilityRole="button"
-                    accessibilityLabel={`Select grow ${grow.name || index + 1}`}
+                    accessibilityLabel={`Select grow ${growLabel}`}
                     onPress={() => setGrowId(id)}
                     style={[styles.growPill, selected && styles.growPillOn]}
                   >
                     <Text
                       style={[styles.growPillText, selected && styles.growPillTextOn]}
                     >
-                      {grow.name || `Grow ${index + 1}`}
+                      {growLabel}
                     </Text>
                   </Pressable>
                 );
               })}
             </View>
           </View>
-        ) : workspaceType !== "personal" ? (
-          <Text style={styles.feedback}>
-            Shared-workspace result: run Plant ID here and review it in this
-            workspace&apos;s Saved Runs. Personal grow/plant linking and Personal Field
-            Study or Nature publishing are unavailable from this result.
-          </Text>
         ) : !growId && growOptional ? (
           <Text style={styles.feedback}>
-            {isCropIdentification
-              ? "No grow is required. Upload photos or enter what you know to identify the crop."
-              : "No grow is required. Enter direct observations or upload evidence; attach a grow later for linked history and tasks."}
+            {workspaceType !== "personal"
+              ? "No shared grow is required. Add direct evidence now, or attach an authorized grow to scope the saved result within this workspace."
+              : isCropIdentification
+                ? "No grow is required. Upload photos or enter what you know to identify the crop."
+                : "No grow is required. Enter direct observations or upload evidence; attach a grow later for linked history and tasks."}
           </Text>
         ) : !growId ? (
           <Text style={styles.feedback}>
-            Create a grow first, then return here to run and save this tool.
+            {noGrowContextMessage ||
+              `Create or select a ${
+                workspaceType === "personal" ? "grow" : `${workspaceType} grow`
+              } first, then return here to run and save this tool.`}
           </Text>
         ) : null}
         {workspaceType === "personal" && (growId || !growOptional) ? (

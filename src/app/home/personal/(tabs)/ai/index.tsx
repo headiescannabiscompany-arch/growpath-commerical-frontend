@@ -17,6 +17,8 @@ import {
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
 import { getFacilityTasks } from "@/api/facilityTasks";
+import { createFacilityTask } from "@/api/facilityTasks";
+import { fetchCommercialGrows } from "@/api/commercialWorkflows";
 import { providerEvidencePayload } from "@/api/evidence";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import type { EvidenceAsset } from "@/types/evidence";
@@ -179,6 +181,38 @@ export const createAiWorkspaceThemeStyles = (palette: ThemePalette) =>
       fontSize: 12,
       lineHeight: 18,
       marginBottom: 8
+    },
+    quickQuestionSection: {
+      gap: 8,
+      marginBottom: 10
+    },
+    quickQuestionTitle: {
+      color: palette.text,
+      fontSize: 13,
+      fontWeight: "800"
+    },
+    quickQuestionHint: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 18
+    },
+    quickQuestionRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    quickQuestion: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    quickQuestionText: {
+      color: palette.link,
+      fontSize: 12,
+      fontWeight: "700"
     }
   });
 
@@ -457,6 +491,82 @@ function cropContextSummary(plants: any[]) {
   return `${plantLabel(first) || "Plant context"} (${status})`;
 }
 
+function cannabisContextLabel(value: unknown): boolean {
+  if (!value) return false;
+  if (Array.isArray(value)) return value.some(cannabisContextLabel);
+  if (typeof value === "object") {
+    return Object.values(value as Record<string, unknown>).some(cannabisContextLabel);
+  }
+  if (typeof value !== "string") return false;
+  const label = value.trim();
+  if (
+    /\b(?:not|non[-_ ]?|without|exclude(?:d)?|no)\s*(?:a\s+)?(?:cannabis|hemp|marijuana)\b/i.test(
+      label
+    )
+  ) {
+    return false;
+  }
+  return /\b(?:cannabis|hemp|marijuana)\b/i.test(label);
+}
+
+export function textIncludesCannabisContext(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const record = value as Record<string, any>;
+  if (record.isCannabis === true || record.cannabisContextConfirmed === true) {
+    return true;
+  }
+
+  const structuredLabels = [
+    record.cropType,
+    record.cropTypes,
+    record.cropTags,
+    record.growTags,
+    record.tags,
+    record.growInterests
+  ];
+  if (structuredLabels.some(cannabisContextLabel)) return true;
+
+  const confirmationStatus = String(
+    record.growthProfile?.confirmationStatus ||
+      record.cropIdentity?.confirmationStatus ||
+      record.confirmationStatus ||
+      ""
+  )
+    .trim()
+    .toLowerCase();
+  if (!["user_confirmed", "reviewed", "verified"].includes(confirmationStatus)) {
+    return false;
+  }
+
+  return [
+    record.cropCommonName,
+    record.scientificName,
+    record.cropIdentity?.cropCommonName,
+    record.cropIdentity?.scientificName
+  ].some(cannabisContextLabel);
+}
+
+export function assistantQuickQuestions({
+  workspaceType,
+  cannabisContext
+}: {
+  workspaceType: "personal" | "commercial" | "facility";
+  cannabisContext: boolean;
+}) {
+  return [
+    ...(cannabisContext
+      ? [
+          "Male, female, intersex, or too early to tell? Explain exactly what is visible and what photo would confirm it."
+        ]
+      : []),
+    "What do these photos show, and what evidence is missing before you are confident?",
+    "What should I photograph next for a stronger answer?",
+    workspaceType === "facility"
+      ? "What recorded Facility evidence should I review before taking action?"
+      : "What should I check next in this grow before taking action?"
+  ];
+}
+
 function aiTaskMetadata(payload: Record<string, any>) {
   return {
     dueDate: payload.dueDate || undefined,
@@ -570,19 +680,35 @@ export default function AiScreen({
                 envelopeRows(value, ["logs", "growlogs"])
               ),
               getFacilityTasks(activeFacilityId),
-              listToolRuns(),
-              getDiagnosisHistory(),
-              listNutrientRecipes(selectedGrowId || undefined)
+              listToolRuns({
+                workspaceType: "facility",
+                facilityId: activeFacilityId,
+                ...(selectedGrowId ? { growId: selectedGrowId } : {})
+              }),
+              Promise.resolve([]),
+              Promise.resolve([])
             ]
-          : [
-              listPersonalGrows(),
-              listPersonalPlants(selectedGrowId ? { growId: selectedGrowId } : undefined),
-              listPersonalLogs(),
-              listPersonalTasks(),
-              listToolRuns(),
-              getDiagnosisHistory(),
-              listNutrientRecipes(selectedGrowId || undefined)
-            ];
+          : workspaceType === "commercial"
+            ? [
+                fetchCommercialGrows(),
+                Promise.resolve([]),
+                Promise.resolve([]),
+                Promise.resolve([]),
+                Promise.resolve([]),
+                Promise.resolve([]),
+                Promise.resolve([])
+              ]
+            : [
+                listPersonalGrows(),
+                listPersonalPlants(
+                  selectedGrowId ? { growId: selectedGrowId } : undefined
+                ),
+                listPersonalLogs(),
+                listPersonalTasks(),
+                listToolRuns(),
+                getDiagnosisHistory(),
+                listNutrientRecipes(selectedGrowId || undefined)
+              ];
         const settledContext = await Promise.allSettled(contextRequests);
         const failedSources = settledContext.flatMap((result, index) =>
           result.status === "rejected" ? [sourceLabels[index]] : []
@@ -610,7 +736,7 @@ export default function AiScreen({
           }
         }
         let environmentHistory: any[] = [];
-        if (activeGrowId) {
+        if (activeGrowId && workspaceType !== "commercial") {
           try {
             const sources = await listTelemetrySources(activeGrowId);
             const endIso = new Date().toISOString();
@@ -688,6 +814,20 @@ export default function AiScreen({
     () => context?.grows.find((grow) => String(grow.id || grow._id) === selectedGrowId),
     [context?.grows, selectedGrowId]
   );
+  const quickQuestions = useMemo(
+    () =>
+      assistantQuickQuestions({
+        workspaceType,
+        cannabisContext:
+          textIncludesCannabisContext(selectedGrow) ||
+          (context?.plants || []).some((plant) =>
+            !selectedGrowId || !plant?.growId || String(plant.growId) === selectedGrowId
+              ? textIncludesCannabisContext(plant)
+              : false
+          )
+      }),
+    [context?.plants, selectedGrow, selectedGrowId, workspaceType]
+  );
 
   function assistantContext() {
     const growId = selectedGrowId;
@@ -725,13 +865,19 @@ export default function AiScreen({
   }
 
   async function askBackend(text: string) {
+    const evidence = providerEvidencePayload(evidenceAssets);
+    if (evidence.videos.length > 0 && evidence.imageEvidenceAssetIds.length === 0) {
+      throw new Error(
+        "The video is saved, but no reviewable still frames are ready yet. Wait for frame extraction or add a clear photo before sending so an AI credit is not used without visual evidence."
+      );
+    }
     const res = await askPersonalAssistant({
       message: text,
       growId: selectedGrowId || undefined,
       facilityId: activeFacilityId || undefined,
       workspaceType,
       conversationId: conversationId || undefined,
-      evidenceAssetIds: providerEvidencePayload(evidenceAssets).imageEvidenceAssetIds,
+      evidenceAssetIds: evidence.evidenceAssetIds,
       context: context ? assistantContext() : { grows: [], logs: [], tasks: [] }
     });
 
@@ -794,24 +940,59 @@ export default function AiScreen({
     setWriteFeedback("");
     const payload = { ...(write.payload || {}) };
     const growId = payload.growId || selectedGrowId;
-    if (!growId) {
-      setWriteFeedback("Select a grow before confirming an AI draft.");
-      return;
-    }
     if (write.type === "create_task") {
-      const created = await createPersonalTask({
-        growId,
-        linkedGrowId: growId,
-        title: String(payload.title || "AI suggested task"),
-        description: String(payload.description || ""),
-        priority: payload.priority || "medium",
-        sourceType: "ai_assistant",
-        sourceObjectId: payload.sourceObjectId || undefined,
-        ...aiTaskMetadata(payload)
-      });
+      if (workspaceType === "commercial") {
+        setWriteFeedback(
+          "This Commercial task is still a review-only draft. It was not written to a Personal workspace."
+        );
+        return;
+      }
+      if (workspaceType === "personal" && !growId) {
+        setWriteFeedback("Select a grow before confirming an AI draft.");
+        return;
+      }
+      if (workspaceType === "facility" && !activeFacilityId) {
+        setWriteFeedback("Select a Facility before confirming an AI draft.");
+        return;
+      }
+      const taskMetadata = aiTaskMetadata(payload);
+      const created =
+        workspaceType === "facility" && activeFacilityId
+          ? await createFacilityTask(activeFacilityId, {
+              title: String(payload.title || "AI suggested task"),
+              description: String(payload.description || ""),
+              priority:
+                payload.priority === "medium" ? "normal" : payload.priority || "normal",
+              dueAt: taskMetadata.dueDate
+                ? new Date(`${taskMetadata.dueDate}T12:00:00.000Z`).toISOString()
+                : undefined,
+              sourceType: "ai_assistant",
+              sourceObjectId: payload.sourceObjectId || undefined,
+              reminderPlan: taskMetadata.reminderPlan
+            })
+          : await createPersonalTask({
+              growId: String(growId),
+              linkedGrowId: String(growId),
+              title: String(payload.title || "AI suggested task"),
+              description: String(payload.description || ""),
+              priority: payload.priority || "medium",
+              sourceType: "ai_assistant",
+              sourceObjectId: payload.sourceObjectId || undefined,
+              ...taskMetadata
+            });
       if (!created) throw new Error("Unable to create AI suggested task.");
       setWriteFeedback("AI suggested task created.");
     } else if (write.type === "draft_log") {
+      if (workspaceType !== "personal") {
+        setWriteFeedback(
+          `This ${workspaceType} log is still a review-only draft. It was not written to a Personal workspace.`
+        );
+        return;
+      }
+      if (!growId) {
+        setWriteFeedback("Select a grow before confirming an AI draft.");
+        return;
+      }
       const created = await createPersonalLog({
         growId,
         title: String(payload.title || "AI grow summary"),
@@ -1236,6 +1417,8 @@ export default function AiScreen({
           titleHeadingLevel={2}
           maxPhotos={10}
           allowVideo
+          extractFramesFromVideo
+          maxExtractedVideoFrames={12}
           maxVideoSeconds={30}
           purpose="other"
           sourceContext={{
@@ -1250,6 +1433,33 @@ export default function AiScreen({
           value={evidenceAssets}
           onChange={setEvidenceAssets}
         />
+        <View style={styles.quickQuestionSection}>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={styles.quickQuestionTitle}
+          >
+            Quick questions
+          </Text>
+          <Text style={styles.quickQuestionHint}>
+            Choose one to fill the question, then review or edit it. No AI credit is used
+            until you press Send.
+          </Text>
+          <View style={styles.quickQuestionRow}>
+            {quickQuestions.map((question) => (
+              <Pressable
+                key={question}
+                accessibilityRole="button"
+                accessibilityLabel={`Use quick question: ${question}`}
+                disabled={sending}
+                onPress={() => setDraft(question)}
+                style={styles.quickQuestion}
+              >
+                <Text style={styles.quickQuestionText}>{question}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
         <TextInput
           accessibilityLabel={
             facilityPreset ? `Notes for ${facilityPreset.title}` : "Ask GrowPath AI"

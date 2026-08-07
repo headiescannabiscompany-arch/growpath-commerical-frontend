@@ -33,11 +33,20 @@ const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockGetHarvestBatch = jest.fn();
 const mockUpdateHarvestBatch = jest.fn();
 const mockAnalyzeTrichomePhotos = jest.fn();
+const mockAskPersonalAssistant = jest.fn();
 const mockListPersonalGrows = jest.fn();
+const mockListFacilityGrows = jest.fn();
+const mockFetchCommercialGrows = jest.fn();
 const mockListEvidenceAssets = jest.fn();
 const mockSavedGrowPhotoEvidencePicker = jest.fn();
 const mockMediaEvidencePickerProps = jest.fn();
 let mockRouteParams: Record<string, string> = { growId: "grow-1" };
+let mockEntitlements: Record<string, any> = {
+  plan: "pro",
+  mode: "personal",
+  facilityId: null,
+  can: () => true
+};
 
 jest.mock("@/components/media/MediaEvidencePicker", () => {
   const React = require("react");
@@ -55,6 +64,31 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
     uploadStatus: "uploaded",
     aiUsable: true,
     qualityWarnings: []
+  });
+  const videoAsset = {
+    id: "source-video-1",
+    _id: "64b000000000000000000099",
+    assetType: "video",
+    originalUri: "file:///trichomes.mov",
+    durableUrl: "/uploads/trichomes.mov",
+    mimeType: "video/quicktime",
+    growId: "grow-1",
+    source: "library",
+    purpose: "harvest",
+    uploadStatus: "uploaded",
+    aiUsable: true,
+    qualityWarnings: []
+  };
+  const frameAsset = (index: number) => ({
+    ...asset(index),
+    id: `video-frame-${index}`,
+    _id: `64b00000000000000000001${index}`,
+    source: "generated",
+    sourceVideoEvidenceAssetId: videoAsset._id,
+    frameExtractionVersion: "client-harvest-v1",
+    frameExtractionAttempt: 1,
+    frameIndex: index,
+    frameTimeSeconds: index * 2
   });
   return (props: any) => {
     mockMediaEvidencePickerProps(props);
@@ -76,6 +110,29 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
           onPress: () => props.onChange([asset(1), asset(2), asset(3), asset(4)])
         },
         React.createElement(Text, null, "Add Complete Photo Set")
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Add harvest video and extracted frames",
+          onPress: () =>
+            props.onChange([
+              videoAsset,
+              frameAsset(1),
+              frameAsset(2),
+              frameAsset(3),
+              frameAsset(4)
+            ])
+        },
+        React.createElement(Text, null, "Add Video And Frames")
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Remove harvest evidence",
+          onPress: () => props.onChange([])
+        },
+        React.createElement(Text, null, "Remove Harvest Evidence")
       )
     );
   };
@@ -109,15 +166,16 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@/api/grows", () => ({
-  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args),
+  listGrows: (...args: any[]) => mockListFacilityGrows(...args)
+}));
+
+jest.mock("@/api/commercialWorkflows", () => ({
+  fetchCommercialGrows: (...args: any[]) => mockFetchCommercialGrows(...args)
 }));
 
 jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({
-    plan: "pro",
-    mode: "personal",
-    can: () => true
-  })
+  useEntitlements: () => mockEntitlements
 }));
 
 jest.mock("@/components/feed/FeedBanner", () => {
@@ -164,6 +222,10 @@ jest.mock("@/api/harvestVision", () => ({
   analyzeTrichomePhotos: (...args: any[]) => mockAnalyzeTrichomePhotos(...args)
 }));
 
+jest.mock("@/api/personalAssistant", () => ({
+  askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
+}));
+
 async function renderHarvestReadinessTool(
   props: React.ComponentProps<typeof HarvestReadinessToolRoute> = {}
 ) {
@@ -174,8 +236,17 @@ describe("HarvestReadinessToolRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockRouteParams = { growId: "grow-1" };
+    mockEntitlements = {
+      plan: "pro",
+      mode: "personal",
+      facilityId: null,
+      can: () => true
+    };
     mockListPersonalGrows.mockImplementation(() => new Promise(() => {}));
+    mockListFacilityGrows.mockResolvedValue([]);
+    mockFetchCommercialGrows.mockResolvedValue([]);
     mockListEvidenceAssets.mockResolvedValue([]);
+    mockAskPersonalAssistant.mockRejectedValue(new Error("assistant unavailable"));
     mockRunCalculator.mockResolvedValue({
       outputs: {
         readinessStatus: "approaching_window",
@@ -260,10 +331,65 @@ describe("HarvestReadinessToolRoute", () => {
         "64b000000000000000000004"
       ],
       analysisId: "usage-harvest-1",
+      analysisReceipt: {
+        aiUsageEventId: "usage-harvest-1",
+        normalizedHarvestResultDigest: "a".repeat(64),
+        evidenceFingerprint: [
+          "64b000000000000000000001",
+          "64b000000000000000000002",
+          "64b000000000000000000003",
+          "64b000000000000000000004"
+        ].join("|"),
+        reviewPolicyVersion: "harvest-trichome-server-attestation-v1"
+      },
       aiCreditsUsed: 1,
       aiTokensRemaining: 58,
       creditStatus: "charged"
     });
+  });
+
+  it("never accepts trichome percentages from generic grow-context AI prefill", async () => {
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply: JSON.stringify({
+        flowerDay: "58",
+        cloudyPercent: "80",
+        amberPercent: "10",
+        clearPercent: "10",
+        pistilStatus: "mostly receded"
+      })
+    });
+    const screen = await renderHarvestReadinessTool();
+
+    await fireEventAsync.press(screen.getByText("Fill readiness review from grow"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Harvest Readiness Estimate Flower day").props.value
+      ).toBe("58")
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Cloudy %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Amber %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Clear %").props.value).toBe(
+      ""
+    );
+
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "harvest-readiness",
+        expect.objectContaining({
+          cloudyPercent: "",
+          amberPercent: "",
+          clearPercent: "",
+          trichomeSource: "manual_entry"
+        })
+      )
+    );
   });
 
   it("lets a user select a grow before choosing trichome photos", async () => {
@@ -323,11 +449,59 @@ describe("HarvestReadinessToolRoute", () => {
     );
   });
 
-  it("routes Commercial and Facility harvest uploads to the active workspace", async () => {
+  it("accepts an authorized Commercial route grow, lets Facility select a grow, and scopes both analyses", async () => {
+    mockRouteParams = {
+      commercialAccountId: "commercial-1",
+      growId: "commercial-grow-1"
+    };
+    mockEntitlements = {
+      plan: "commercial",
+      mode: "commercial",
+      facilityId: null,
+      can: () => true
+    };
+    mockFetchCommercialGrows.mockResolvedValue([
+      { id: "commercial-grow-1", name: "Commercial Trial" },
+      { id: "commercial-grow-2", name: "Commercial Control" }
+    ]);
     const commercial = await renderHarvestReadinessTool({
       backFallbackHref: "/home/commercial/tools",
       workspaceType: "commercial"
     });
+    await waitFor(() =>
+      expect(commercial.getByLabelText("Select grow Commercial Trial")).toBeTruthy()
+    );
+    expect(commercial.getByText("Grow context: commercial-grow-1")).toBeTruthy();
+    expect(commercial.queryByLabelText("Saved grow photo evidence")).toBeNull();
+    await waitFor(() =>
+      expect(mockListEvidenceAssets).toHaveBeenCalledWith({
+        growId: "commercial-grow-1",
+        workspaceType: "commercial"
+      })
+    );
+    await waitFor(() =>
+      expect(commercial.queryByText("Restoring saved harvest evidence...")).toBeNull()
+    );
+    fireEvent.press(commercial.getByLabelText("Add complete harvest photo set"));
+    await fireEventAsync.press(
+      commercial.getByLabelText("Analyze harvest trichome photo")
+    );
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "commercial-grow-1",
+          workspaceType: "commercial",
+          workspaceId: undefined,
+          facilityId: undefined,
+          evidenceAssetIds: [
+            "64b000000000000000000001",
+            "64b000000000000000000002",
+            "64b000000000000000000003",
+            "64b000000000000000000004"
+          ]
+        })
+      )
+    );
     expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
       expect.objectContaining({
         purpose: "harvest",
@@ -335,13 +509,67 @@ describe("HarvestReadinessToolRoute", () => {
         videoWorkspaceId: undefined
       })
     );
+    fireEvent.press(commercial.getByLabelText("Run Harvest Readiness Estimate"));
+    await waitFor(() =>
+      expect(commercial.getByText("Harvest Readiness Estimate result")).toBeTruthy()
+    );
+    expect(commercial.queryByText("Create Harvest Decision Tasks")).toBeNull();
+    expect(commercial.queryByText("Save Harvest Review")).toBeNull();
+    expect(mockGetHarvestBatch).not.toHaveBeenCalled();
     await commercial.unmountAsync();
 
+    mockAnalyzeTrichomePhotos.mockClear();
+    mockRouteParams = {};
+    mockEntitlements = {
+      plan: "facility",
+      mode: "facility",
+      facilityId: "facility-1",
+      can: () => true
+    };
+    mockListFacilityGrows.mockResolvedValue([
+      { id: "facility-grow-1", name: "Flower Room A" },
+      { id: "facility-grow-2", name: "Flower Room B" }
+    ]);
     const facility = await renderHarvestReadinessTool({
       backFallbackHref: "/home/facility/ai-tools",
       workspaceType: "facility",
       workspaceId: "facility-1"
     });
+    await waitFor(() =>
+      expect(facility.getByLabelText("Select grow Flower Room A")).toBeTruthy()
+    );
+    fireEvent.press(facility.getByLabelText("Select grow Flower Room A"));
+    expect(facility.queryByLabelText("Saved grow photo evidence")).toBeNull();
+    await waitFor(() =>
+      expect(mockListEvidenceAssets).toHaveBeenCalledWith({
+        growId: "facility-grow-1",
+        workspaceType: "facility",
+        workspaceId: "facility-1",
+        facilityId: "facility-1"
+      })
+    );
+    await waitFor(() =>
+      expect(facility.queryByText("Restoring saved harvest evidence...")).toBeNull()
+    );
+    fireEvent.press(facility.getByLabelText("Add complete harvest photo set"));
+    await fireEventAsync.press(facility.getByLabelText("Analyze harvest trichome photo"));
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "facility-grow-1",
+          workspaceType: "facility",
+          workspaceId: "facility-1",
+          facilityId: "facility-1",
+          evidenceAssetIds: [
+            "64b000000000000000000001",
+            "64b000000000000000000002",
+            "64b000000000000000000003",
+            "64b000000000000000000004"
+          ]
+        })
+      )
+    );
+    expect(mockListFacilityGrows).toHaveBeenCalledWith("facility-1");
     expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
       expect.objectContaining({
         purpose: "harvest",
@@ -351,6 +579,29 @@ describe("HarvestReadinessToolRoute", () => {
       })
     );
     await facility.unmountAsync();
+  });
+
+  it("auto-selects the sole authorized grow for a required shared workflow", async () => {
+    mockRouteParams = {};
+    mockEntitlements = {
+      plan: "facility",
+      mode: "facility",
+      facilityId: "facility-1",
+      can: () => true
+    };
+    mockListFacilityGrows.mockResolvedValue([
+      { _id: "facility-grow-only", name: "Only Flower Room" }
+    ]);
+
+    const screen = await renderHarvestReadinessTool({
+      workspaceType: "facility",
+      workspaceId: "facility-1"
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText("Grow context: facility-grow-only")).toBeTruthy()
+    );
+    expect(screen.getByLabelText("Select grow Only Flower Room")).toBeTruthy();
   });
 
   it("restores durable harvest evidence after a page or account-session reload", async () => {
@@ -438,6 +689,240 @@ describe("HarvestReadinessToolRoute", () => {
     expect(screen.getByText(/run the rule-based readiness estimate/)).toBeTruthy();
     expect(screen.getByText(/1 charged · 58 remaining/i)).toBeTruthy();
     expect(screen.getByText(/usage-harvest-1/i)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "harvest-readiness",
+        expect.objectContaining({
+          trichomeSource: "ai_photo_estimate",
+          photoAnalysis: expect.objectContaining({
+            performed: true,
+            analysisId: "usage-harvest-1",
+            analysisReceipt: {
+              aiUsageEventId: "usage-harvest-1",
+              normalizedHarvestResultDigest: "a".repeat(64),
+              evidenceFingerprint: [
+                "64b000000000000000000001",
+                "64b000000000000000000002",
+                "64b000000000000000000003",
+                "64b000000000000000000004"
+              ].join("|"),
+              reviewPolicyVersion: "harvest-trichome-server-attestation-v1"
+            }
+          })
+        })
+      )
+    );
+  });
+
+  it("does not fill trichome fields when the analysis receipt is missing", async () => {
+    mockAnalyzeTrichomePhotos.mockResolvedValueOnce({
+      photoUsable: true,
+      imageQuality: "usable",
+      clear: 0.12,
+      cloudy: 0.73,
+      amber: 0.15,
+      confidence: 0.81,
+      dominant: "cloudy",
+      visibleTraits: [],
+      evidence: [],
+      recommendation: "Review the set.",
+      limitations: [],
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      imagesAnalyzed: 4,
+      evidenceUsed: [
+        "64b000000000000000000001",
+        "64b000000000000000000002",
+        "64b000000000000000000003",
+        "64b000000000000000000004"
+      ],
+      analysisId: "usage-without-receipt",
+      aiCreditsUsed: 1,
+      creditStatus: "charged"
+    });
+    const screen = await renderHarvestReadinessTool();
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await waitFor(() =>
+      expect(screen.getByText(/evidence receipt that does not match/i)).toBeTruthy()
+    );
+    expect(screen.queryByDisplayValue("73")).toBeNull();
+    expect(screen.queryByText("Qualified macro evidence")).toBeNull();
+  });
+
+  it("uses the exact source-video and extracted-frame set for analysis and calculation", async () => {
+    const exactEvidenceIds = [
+      "64b000000000000000000099",
+      "64b000000000000000000011",
+      "64b000000000000000000012",
+      "64b000000000000000000013",
+      "64b000000000000000000014"
+    ];
+    const analyzedFrameIds = exactEvidenceIds.slice(1);
+    mockAnalyzeTrichomePhotos.mockResolvedValueOnce({
+      photoUsable: true,
+      imageQuality: "usable",
+      clear: 0.12,
+      cloudy: 0.73,
+      amber: 0.15,
+      confidence: 0.81,
+      dominant: "cloudy",
+      visibleTraits: ["Intact opaque gland heads"],
+      evidence: ["Mostly opaque gland heads"],
+      recommendation: "Confirm across additional bud sites.",
+      limitations: [],
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      imagesAnalyzed: 4,
+      evidenceUsed: analyzedFrameIds,
+      analysisId: "usage-harvest-1",
+      analysisReceipt: {
+        aiUsageEventId: "usage-harvest-1",
+        normalizedHarvestResultDigest: "b".repeat(64),
+        evidenceFingerprint: analyzedFrameIds.join("|"),
+        reviewPolicyVersion: "harvest-trichome-server-attestation-v1"
+      },
+      aiCreditsUsed: 1,
+      aiTokensRemaining: 57,
+      creditStatus: "charged"
+    });
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add harvest video and extracted frames"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith({
+        growId: "grow-1",
+        evidenceAssetIds: exactEvidenceIds,
+        workspaceType: "personal",
+        workspaceId: undefined,
+        facilityId: undefined,
+        plantId: undefined,
+        sampleLocation: "mixed_bud_sites",
+        notes: undefined
+      })
+    );
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "harvest-readiness",
+        expect.objectContaining({
+          growId: "grow-1",
+          evidenceAssetIds: exactEvidenceIds,
+          mediaEvidence: expect.arrayContaining([
+            expect.objectContaining({
+              id: "64b000000000000000000099",
+              type: "video"
+            }),
+            expect.objectContaining({
+              id: "64b000000000000000000011",
+              type: "photo",
+              sourceVideoEvidenceAssetId: "64b000000000000000000099"
+            })
+          ])
+        })
+      )
+    );
+  });
+
+  it("keeps manual observations while clearing only unreviewed photo drafts when evidence is removed", async () => {
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Flower day"),
+      "57"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText(
+        "Harvest Readiness Estimate Hair / pistil status (fresh, dying, dark, receded)"
+      ),
+      "mostly dark and receded"
+    );
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Harvest Readiness Estimate Cloudy %").props.value
+      ).toBe("73")
+    );
+    expect(
+      screen.getByLabelText("Harvest Readiness Estimate Flower day").props.value
+    ).toBe("57");
+    expect(
+      screen.getByLabelText(
+        "Harvest Readiness Estimate Hair / pistil status (fresh, dying, dark, receded)"
+      ).props.value
+    ).toBe("mostly dark and receded");
+    expect(
+      screen.getByLabelText("Cloudy % was filled by AI and needs review")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Amber % was filled by AI and needs review")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Clear % was filled by AI and needs review")
+    ).toBeTruthy();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest Readiness Estimate Cloudy %"),
+      "70"
+    );
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "harvest-readiness",
+        expect.objectContaining({
+          cloudyPercent: "70",
+          amberPercent: "15",
+          clearPercent: "12",
+          trichomeSource: "ai_photo_estimate",
+          fieldProvenance: expect.objectContaining({
+            cloudyPercent: "visual_prefill_user_reviewed",
+            amberPercent: "visual_prefill_unverified",
+            clearPercent: "visual_prefill_unverified"
+          }),
+          aiPrefillProvenance: expect.objectContaining({
+            prefilledFields: expect.arrayContaining(["amberPercent", "clearPercent"]),
+            userReviewedFields: expect.arrayContaining(["cloudyPercent"]),
+            userEditedFields: expect.arrayContaining(["cloudyPercent"])
+          }),
+          photoAnalysis: expect.objectContaining({
+            analysisId: "usage-harvest-1",
+            performed: true
+          })
+        })
+      )
+    );
+    fireEvent.press(screen.getByLabelText("Remove harvest evidence"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Harvest Readiness Estimate Amber %").props.value
+      ).toBe("")
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Clear %").props.value).toBe(
+      ""
+    );
+    expect(screen.getByLabelText("Harvest Readiness Estimate Cloudy %").props.value).toBe(
+      "70"
+    );
+    expect(
+      screen.getByLabelText("Harvest Readiness Estimate Flower day").props.value
+    ).toBe("57");
+    expect(
+      screen.getByLabelText(
+        "Harvest Readiness Estimate Hair / pistil status (fresh, dying, dark, receded)"
+      ).props.value
+    ).toBe("mostly dark and receded");
+    expect(
+      screen.queryByLabelText("Cloudy % was filled by AI and needs review")
+    ).toBeNull();
   });
 
   it("explains when better photos are needed without filling readiness fields", async () => {
@@ -457,8 +942,24 @@ describe("HarvestReadinessToolRoute", () => {
       providerLabel: "OpenAI trichome image review",
       providerModel: "gpt-4o-mini",
       imagesAnalyzed: 4,
-      evidenceUsed: ["64b000000000000000000001"],
+      evidenceUsed: [
+        "64b000000000000000000001",
+        "64b000000000000000000002",
+        "64b000000000000000000003",
+        "64b000000000000000000004"
+      ],
       analysisId: "usage-harvest-2",
+      analysisReceipt: {
+        aiUsageEventId: "usage-harvest-2",
+        normalizedHarvestResultDigest: "c".repeat(64),
+        evidenceFingerprint: [
+          "64b000000000000000000001",
+          "64b000000000000000000002",
+          "64b000000000000000000003",
+          "64b000000000000000000004"
+        ].join("|"),
+        reviewPolicyVersion: "harvest-trichome-server-attestation-v1"
+      },
       aiCreditsUsed: 1,
       aiTokensRemaining: 57,
       creditStatus: "charged"
@@ -522,8 +1023,24 @@ describe("HarvestReadinessToolRoute", () => {
       providerLabel: "OpenAI trichome image review",
       providerModel: "gpt-4o-mini",
       imagesAnalyzed: 4,
-      evidenceUsed: ["64b000000000000000000001"],
+      evidenceUsed: [
+        "64b000000000000000000001",
+        "64b000000000000000000002",
+        "64b000000000000000000003",
+        "64b000000000000000000004"
+      ],
       analysisId: "usage-harvest-limited",
+      analysisReceipt: {
+        aiUsageEventId: "usage-harvest-limited",
+        normalizedHarvestResultDigest: "d".repeat(64),
+        evidenceFingerprint: [
+          "64b000000000000000000001",
+          "64b000000000000000000002",
+          "64b000000000000000000003",
+          "64b000000000000000000004"
+        ].join("|"),
+        reviewPolicyVersion: "harvest-trichome-server-attestation-v1"
+      },
       aiCreditsUsed: 1,
       aiTokensRemaining: 56,
       creditStatus: "charged"

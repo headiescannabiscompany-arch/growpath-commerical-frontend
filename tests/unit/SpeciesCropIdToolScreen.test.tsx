@@ -25,6 +25,8 @@ const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockSavePersonalGrowCropIdentity = jest.fn();
 const mockSavePersonalPlantCropIdentity = jest.fn();
 const mockListPersonalGrows = jest.fn();
+const mockListFacilityGrows = jest.fn();
+const mockFetchCommercialGrows = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
 const mockListFieldStudies = jest.fn();
 const mockCreateFieldStudy = jest.fn();
@@ -172,8 +174,13 @@ jest.mock("@/api/evidence", () => {
 
 jest.mock("@/api/grows", () => ({
   listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args),
+  listGrows: (...args: any[]) => mockListFacilityGrows(...args),
   savePersonalGrowCropIdentity: (...args: any[]) =>
     mockSavePersonalGrowCropIdentity(...args)
+}));
+
+jest.mock("@/api/commercialWorkflows", () => ({
+  fetchCommercialGrows: (...args: any[]) => mockFetchCommercialGrows(...args)
 }));
 
 jest.mock("@/api/plants", () => ({
@@ -235,6 +242,8 @@ describe("SpeciesCropIdToolRoute", () => {
     mockSearchParams = { growId: "grow-1" };
     mockEntitlementMode = "personal";
     mockEntitlementFacilityId = "";
+    mockListFacilityGrows.mockResolvedValue([]);
+    mockFetchCommercialGrows.mockResolvedValue([]);
     mockEvidenceAssets = [
       {
         id: "evidence-1",

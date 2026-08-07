@@ -31,6 +31,54 @@ const HARVEST_PHOTO_CHECKLIST = [
   "Photo count is not coverage: even 12 wide photos cannot replace three true macros where individual intact gland heads are visible."
 ];
 
+type HarvestAnalysisDraft = {
+  result: TrichomeVisionResult;
+  scopeKey: string;
+  revisionKey: string;
+  growId: string;
+};
+
+function harvestAnalysisScopeKey(input: {
+  workspaceType: VideoWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
+  growId: string;
+  plantId: string;
+  evidenceAssetIds: string[];
+}) {
+  const evidenceKey = [...input.evidenceAssetIds]
+    .map(String)
+    .filter(Boolean)
+    .sort()
+    .join(",");
+  return [
+    input.workspaceType,
+    String(input.workspaceId || "self"),
+    String(input.facilityId || "no-facility"),
+    String(input.growId || "no-grow"),
+    String(input.plantId || "no-plant"),
+    evidenceKey || "no-evidence"
+  ].join("::");
+}
+
+function harvestAnalysisRevisionKey(result: TrichomeVisionResult, scopeKey: string) {
+  const receipt = result.analysisReceipt;
+  return [
+    scopeKey,
+    String(result.analysisId || "no-analysis-id"),
+    String(receipt?.aiUsageEventId || "no-usage-event"),
+    String(receipt?.normalizedHarvestResultDigest || "no-result-digest"),
+    String(receipt?.evidenceFingerprint || "no-evidence-fingerprint"),
+    String(receipt?.reviewPolicyVersion || "no-review-policy")
+  ].join("::");
+}
+
+function harvestPercentageDraft(value: number | null) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? String(Math.round(value * 100))
+    : "";
+}
+
 function harvestPhotoRecoveryMessage(detail?: string) {
   return [
     detail || "Photo analysis could not run.",
@@ -48,18 +96,22 @@ function HarvestPhotoAnalyzer({
   evidenceAssets,
   onEvidenceAssetsChange,
   initialAnalysis,
-  onAnalysis,
+  onAnalysisDraft,
+  onScopeKeyChange,
   workspaceType,
-  workspaceId
+  workspaceId,
+  facilityId
 }: {
   growId: string;
   plantId: string;
   evidenceAssets: EvidenceAsset[];
   onEvidenceAssetsChange: React.Dispatch<React.SetStateAction<EvidenceAsset[]>>;
   initialAnalysis: TrichomeVisionResult | null;
-  onAnalysis: (result: TrichomeVisionResult | null) => void;
+  onAnalysisDraft: React.Dispatch<React.SetStateAction<HarvestAnalysisDraft | null>>;
+  onScopeKeyChange: React.Dispatch<React.SetStateAction<string>>;
   workspaceType: VideoWorkspaceType;
   workspaceId?: string;
+  facilityId?: string;
 }) {
   const { palette } = useAppTheme();
   const photoStyles = useMemo(() => createHarvestPhotoStyles(palette), [palette]);
@@ -73,15 +125,40 @@ function HarvestPhotoAnalyzer({
   const mountedAnalysisRef = useRef(initialAnalysis);
   const evidence = providerEvidencePayload(evidenceAssets);
   const photoCount = evidence.images.length;
-  const photoEvidenceAssetIds = evidence.imageEvidenceAssetIds;
+  const evidenceAssetKey = evidence.evidenceAssetIds.map(String).sort().join("|");
+  const analysisScopeKey = harvestAnalysisScopeKey({
+    workspaceType,
+    workspaceId,
+    facilityId,
+    growId,
+    plantId,
+    evidenceAssetIds: evidence.evidenceAssetIds
+  });
+  const analysisScopeKeyRef = useRef(analysisScopeKey);
+  const previousAnalysisScopeKeyRef = useRef(analysisScopeKey);
+  const analysisRequestRevisionRef = useRef(0);
+  analysisScopeKeyRef.current = analysisScopeKey;
+
+  useEffect(() => {
+    onScopeKeyChange(analysisScopeKey);
+  }, [analysisScopeKey, evidenceAssetKey, onScopeKeyChange]);
+
+  useEffect(() => {
+    if (previousAnalysisScopeKeyRef.current === analysisScopeKey) return;
+    previousAnalysisScopeKeyRef.current = analysisScopeKey;
+    analysisRequestRevisionRef.current += 1;
+    setAnalysis(null);
+    onAnalysisDraft(null);
+  }, [analysisScopeKey, onAnalysisDraft]);
 
   useEffect(() => {
     let active = true;
     const growChanged = previousGrowIdRef.current !== growId;
     previousGrowIdRef.current = growId;
     if (growChanged || !mountedAnalysisRef.current) {
+      if (growChanged) analysisRequestRevisionRef.current += 1;
       setAnalysis(null);
-      onAnalysis(null);
+      onAnalysisDraft(null);
     } else {
       setAnalysis(mountedAnalysisRef.current);
     }
@@ -96,7 +173,16 @@ function HarvestPhotoAnalyzer({
     }
 
     setRestoringEvidence(true);
-    listEvidenceAssets({ growId })
+    listEvidenceAssets({
+      growId,
+      ...(workspaceType !== "personal"
+        ? {
+            workspaceType,
+            ...(workspaceId ? { workspaceId } : {}),
+            ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
+          }
+        : {})
+    })
       .then((assets: EvidenceAsset[]) => {
         if (!active) return;
         const savedPhotos = assets
@@ -149,12 +235,20 @@ function HarvestPhotoAnalyzer({
     return () => {
       active = false;
     };
-  }, [growId, onAnalysis, onEvidenceAssetsChange]);
+  }, [
+    facilityId,
+    growId,
+    onAnalysisDraft,
+    onEvidenceAssetsChange,
+    workspaceId,
+    workspaceType
+  ]);
 
   function updateEvidence(next: EvidenceAsset[]) {
+    analysisRequestRevisionRef.current += 1;
     onEvidenceAssetsChange(next);
     setAnalysis(null);
-    onAnalysis(null);
+    onAnalysisDraft(null);
     const nextPhotoCount = providerEvidencePayload(next).images.length;
     setFeedback(
       nextPhotoCount >= MIN_HARVEST_PHOTOS
@@ -166,9 +260,10 @@ function HarvestPhotoAnalyzer({
   const addSavedGrowEvidence: React.Dispatch<React.SetStateAction<EvidenceAsset[]>> = (
     update
   ) => {
+    analysisRequestRevisionRef.current += 1;
     onEvidenceAssetsChange(update);
     setAnalysis(null);
-    onAnalysis(null);
+    onAnalysisDraft(null);
     setFeedback(
       "Saved grow photo added. Confirm it is a sharp macro or context view before analysis."
     );
@@ -176,17 +271,53 @@ function HarvestPhotoAnalyzer({
 
   async function analyze() {
     if (!growId || photoCount < MIN_HARVEST_PHOTOS || busy || restoringEvidence) return;
+    const requestScopeKey = analysisScopeKey;
+    const requestRevision = analysisRequestRevisionRef.current;
     setBusy(true);
     setFeedback("");
     try {
       const result = await analyzeTrichomePhotos({
         growId,
-        evidenceAssetIds: photoEvidenceAssetIds,
+        plantId: plantId || undefined,
+        // The receipt is bound to the exact selected set, including a private source
+        // video and every linked extracted frame. The backend filters provider inputs
+        // down to authorized photos/frames after validating this complete set.
+        evidenceAssetIds: evidence.evidenceAssetIds,
+        workspaceType,
+        workspaceId,
+        facilityId,
         sampleLocation: "mixed_bud_sites",
         notes: notes.trim() || undefined
       });
+      const expectedAnalyzedIds = [...evidence.imageEvidenceAssetIds].map(String).sort();
+      const actualAnalyzedIds = [...(result.evidenceUsed || [])].map(String).sort();
+      const receipt = result.analysisReceipt;
+      const receiptMatchesEvidence =
+        Boolean(receipt) &&
+        expectedAnalyzedIds.length === actualAnalyzedIds.length &&
+        expectedAnalyzedIds.every((id, index) => id === actualAnalyzedIds[index]) &&
+        receipt?.evidenceFingerprint === expectedAnalyzedIds.join("|") &&
+        result.imagesAnalyzed === expectedAnalyzedIds.length &&
+        receipt?.reviewPolicyVersion === "harvest-trichome-server-attestation-v1" &&
+        receipt?.aiUsageEventId === result.analysisId;
+      if (!receiptMatchesEvidence) {
+        throw new Error(
+          "The photo review returned an evidence receipt that does not match this exact photo and video-frame set. No trichome fields were filled."
+        );
+      }
+      if (
+        analysisScopeKeyRef.current !== requestScopeKey ||
+        analysisRequestRevisionRef.current !== requestRevision
+      ) {
+        return;
+      }
       setAnalysis(result);
-      onAnalysis(result);
+      onAnalysisDraft({
+        result,
+        scopeKey: requestScopeKey,
+        revisionKey: harvestAnalysisRevisionKey(result, requestScopeKey),
+        growId
+      });
       setFeedback(
         result.photoUsable
           ? `${result.imagesAnalyzed} photos were inspected and 1 AI credit was charged. The clear, cloudy, and amber fields below are filled. Review the evidence and other maturity signals before running the readiness estimate.`
@@ -200,8 +331,14 @@ function HarvestPhotoAnalyzer({
               .join(" ")
       );
     } catch (error: any) {
+      if (
+        analysisScopeKeyRef.current !== requestScopeKey ||
+        analysisRequestRevisionRef.current !== requestRevision
+      ) {
+        return;
+      }
       setAnalysis(null);
-      onAnalysis(null);
+      onAnalysisDraft(null);
       setFeedback(
         harvestPhotoRecoveryMessage(
           error?.message
@@ -241,14 +378,16 @@ function HarvestPhotoAnalyzer({
           </Text>
         ))}
       </View>
-      <SavedGrowPhotoEvidencePicker
-        growId={growId}
-        plantId={plantId}
-        purpose="harvest"
-        value={evidenceAssets}
-        onChange={addSavedGrowEvidence}
-        maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
-      />
+      {workspaceType === "personal" ? (
+        <SavedGrowPhotoEvidencePicker
+          growId={growId}
+          plantId={plantId}
+          purpose="harvest"
+          value={evidenceAssets}
+          onChange={addSavedGrowEvidence}
+          maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
+        />
+      ) : null}
       {restoringEvidence ? (
         <Text style={photoStyles.feedback}>Restoring saved harvest evidence...</Text>
       ) : restoreFeedback ? (
@@ -265,7 +404,7 @@ function HarvestPhotoAnalyzer({
         sourceContext={{
           growId: growId || undefined,
           plantId: plantId || undefined,
-          facilityId: workspaceType === "facility" ? workspaceId : undefined
+          facilityId: workspaceType === "facility" ? facilityId : undefined
         }}
         videoWorkspaceType={workspaceType}
         videoWorkspaceId={workspaceId}
@@ -551,17 +690,44 @@ export default function HarvestReadinessToolRoute({
   workspaceType?: VideoWorkspaceType;
   workspaceId?: string;
 } = {}) {
-  const [vision, setVision] = useState<TrichomeVisionResult | null>(null);
+  const [visionDraft, setVisionDraft] = useState<HarvestAnalysisDraft | null>(null);
+  const [activeAnalysisScopeKey, setActiveAnalysisScopeKey] = useState("");
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
+  const vision = visionDraft?.result || null;
   const harvestEvidence = providerEvidencePayload(evidenceAssets);
+  const externalHarvestDraft = useMemo(
+    () =>
+      visionDraft
+        ? {
+            scopeKey: visionDraft.scopeKey,
+            revisionKey: visionDraft.revisionKey,
+            growId: visionDraft.growId,
+            values: visionDraft.result.photoUsable
+              ? {
+                  cloudyPercent: harvestPercentageDraft(visionDraft.result.cloudy),
+                  amberPercent: harvestPercentageDraft(visionDraft.result.amber),
+                  clearPercent: harvestPercentageDraft(visionDraft.result.clear)
+                }
+              : {
+                  cloudyPercent: "",
+                  amberPercent: "",
+                  clearPercent: ""
+                },
+            metadata: {
+              photoAnalysis: {
+                ...visionDraft.result,
+                performed: true
+              }
+            }
+          }
+        : null,
+    [visionDraft]
+  );
   return (
     <BackendCalculatorToolScreen
       backFallbackHref={backFallbackHref}
-      key={
-        vision?.photoUsable
-          ? `${vision.clear}-${vision.cloudy}-${vision.amber}`
-          : "manual"
-      }
+      externalAiDraftScopeKey={activeAnalysisScopeKey}
+      externalAiDraft={externalHarvestDraft}
       tool="harvest-readiness"
       toolKey="harvest-readiness"
       title="Harvest Readiness Estimate"
@@ -570,21 +736,39 @@ export default function HarvestReadinessToolRoute({
       aiPrefill={{
         buttonLabel: "Fill readiness review from grow",
         clearUnfilled: true,
+        preserveAllExistingFields: true,
+        normalizeFieldValue: ({ fieldKey }) =>
+          ["cloudyPercent", "amberPercent", "clearPercent"].includes(fieldKey)
+            ? ""
+            : undefined,
         buildMessage: () =>
           `Prefill a Harvest Readiness review using the selected grow and plant's saved timeline, breeder/cultivar information, logs, photos and prior vision results, environment, tasks, diagnoses, and harvest records. Return JSON only with exactly these keys: {"flowerDay":"string","breederFlowerTime":"string","cloudyPercent":"string","amberPercent":"string","clearPercent":"string","pistilStatus":"string","budSwellStatus":"string","sampleLocation":"string","harvestBatchId":"string","aromaIntensity":"string","userGoal":"string","additionalInformation":"string"}. Never infer trichome percentages from ordinary plant photos; fill them only from a saved usable macro-photo analysis. If current media is missing, blurry, lacks visible trichome heads, or covers too few bud sites, leave those percentages blank and explain exactly which better photos are needed in additionalInformation. Leave unknown observations blank rather than inventing them.`
       }}
-      formHeader={({ growId, plantId }) => (
-        <HarvestPhotoAnalyzer
-          growId={growId}
-          plantId={plantId}
-          evidenceAssets={evidenceAssets}
-          onEvidenceAssetsChange={setEvidenceAssets}
-          initialAnalysis={vision}
-          onAnalysis={setVision}
-          workspaceType={workspaceType}
-          workspaceId={workspaceId}
-        />
-      )}
+      formHeader={({
+        growId,
+        plantId,
+        workspaceType: activeWorkspaceType,
+        facilityId
+      }) => {
+        const activeWorkspaceId =
+          activeWorkspaceType === "facility" ? facilityId || workspaceId : workspaceId;
+        return (
+          <HarvestPhotoAnalyzer
+            growId={growId}
+            plantId={plantId}
+            evidenceAssets={evidenceAssets}
+            onEvidenceAssetsChange={setEvidenceAssets}
+            initialAnalysis={vision}
+            onAnalysisDraft={setVisionDraft}
+            onScopeKeyChange={setActiveAnalysisScopeKey}
+            workspaceType={activeWorkspaceType}
+            workspaceId={activeWorkspaceId}
+            facilityId={
+              activeWorkspaceType === "facility" ? facilityId || workspaceId : undefined
+            }
+          />
+        );
+      }}
       fields={[
         {
           key: "flowerDay",
@@ -604,9 +788,7 @@ export default function HarvestReadinessToolRoute({
         {
           key: "cloudyPercent",
           label: "Cloudy %",
-          defaultValue: vision?.photoUsable
-            ? String(Math.round(Number(vision.cloudy) * 100))
-            : "",
+          defaultValue: "",
           keyboardType: "numeric",
           helpText:
             "Use qualified macro observations. Leave blank when heads are not sharp."
@@ -614,17 +796,13 @@ export default function HarvestReadinessToolRoute({
         {
           key: "amberPercent",
           label: "Amber %",
-          defaultValue: vision?.photoUsable
-            ? String(Math.round(Number(vision.amber) * 100))
-            : "",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "clearPercent",
           label: "Clear %",
-          defaultValue: vision?.photoUsable
-            ? String(Math.round(Number(vision.clear) * 100))
-            : "",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
@@ -669,8 +847,10 @@ export default function HarvestReadinessToolRoute({
           multiline: true
         }
       ]}
-      buildPayload={(values, { growId, plantContext }) => ({
+      buildPayload={(values, { growId, plantContext, workspaceType, facilityId }) => ({
         growId,
+        workspaceType,
+        ...(facilityId ? { facilityId, workspaceId: facilityId } : {}),
         ...plantContext.toolRunContext,
         ...values,
         budSwell: values.budSwellStatus,
@@ -816,59 +996,74 @@ export default function HarvestReadinessToolRoute({
         description:
           "Recheck trichomes, pistils, aroma, bud swell, and whole-plant maturity."
       })}
-      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
-        {
-          key: "create-harvest-readiness-task-plan",
-          label: "Create Harvest Decision Tasks",
-          variant: "secondary",
-          pendingLabel: "Creating...",
-          disabled: !growId,
-          successMessage: "Created harvest decision tasks.",
-          onPress: async () => {
-            const result = await saveToolRunAndCreateTasks({
-              growId,
-              ...plantContext.toolRunContext,
-              toolKey: "harvest-readiness",
-              toolRunId: toolRun?.id || toolRun?._id,
-              input: payload,
-              output: outputs,
-              tasks: readinessTaskPlan(outputs, payload)
-            });
-            if (!result.ok) throw new Error(result.error);
-          }
-        },
-        {
-          key: "save-harvest-review",
-          label: "Save Harvest Review",
-          variant: "secondary",
-          pendingLabel: "Saving...",
-          disabled: !growId || !payload.harvestBatchId,
-          successMessage: "Saved harvest review to batch.",
-          onPress: async () => {
-            const harvestBatchId = String(payload.harvestBatchId || "").trim();
-            const linkedToolRunId = String(toolRun?.id || toolRun?._id || "").trim();
-            if (!harvestBatchId) throw new Error("Harvest batch ID is required.");
-            if (!linkedToolRunId) throw new Error("A saved ToolRun is required.");
-            const batch = await getHarvestBatch(harvestBatchId);
-            if (!batch) throw new Error("Harvest batch not found.");
-            const existingRecords = Array.isArray(batch.dryCureRecords)
-              ? batch.dryCureRecords
-              : [];
-            const existingRunIds = Array.isArray(batch.linkedToolRunIds)
-              ? batch.linkedToolRunIds
-              : [];
-            const updated = await updateHarvestBatch(harvestBatchId, {
-              dryCureRecords: [
-                ...existingRecords,
-                harvestReviewRecord(outputs, payload, linkedToolRunId)
-              ],
-              qualityNotes: harvestReviewNotes(outputs, payload),
-              linkedToolRunIds: Array.from(new Set([...existingRunIds, linkedToolRunId]))
-            });
-            if (!updated) throw new Error("Unable to update harvest batch.");
-          }
-        }
-      ]}
+      buildActions={({
+        outputs,
+        payload,
+        toolRun,
+        growId,
+        plantContext,
+        workspaceType
+      }) =>
+        workspaceType === "personal"
+          ? [
+              {
+                key: "create-harvest-readiness-task-plan",
+                label: "Create Harvest Decision Tasks",
+                variant: "secondary",
+                pendingLabel: "Creating...",
+                disabled: !growId,
+                successMessage: "Created harvest decision tasks.",
+                onPress: async () => {
+                  const result = await saveToolRunAndCreateTasks({
+                    growId,
+                    ...plantContext.toolRunContext,
+                    toolKey: "harvest-readiness",
+                    toolRunId: toolRun?.id || toolRun?._id,
+                    input: payload,
+                    output: outputs,
+                    tasks: readinessTaskPlan(outputs, payload)
+                  });
+                  if (!result.ok) throw new Error(result.error);
+                }
+              },
+              {
+                key: "save-harvest-review",
+                label: "Save Harvest Review",
+                variant: "secondary",
+                pendingLabel: "Saving...",
+                disabled: !growId || !payload.harvestBatchId,
+                successMessage: "Saved harvest review to batch.",
+                onPress: async () => {
+                  const harvestBatchId = String(payload.harvestBatchId || "").trim();
+                  const linkedToolRunId = String(
+                    toolRun?.id || toolRun?._id || ""
+                  ).trim();
+                  if (!harvestBatchId) throw new Error("Harvest batch ID is required.");
+                  if (!linkedToolRunId) throw new Error("A saved ToolRun is required.");
+                  const batch = await getHarvestBatch(harvestBatchId);
+                  if (!batch) throw new Error("Harvest batch not found.");
+                  const existingRecords = Array.isArray(batch.dryCureRecords)
+                    ? batch.dryCureRecords
+                    : [];
+                  const existingRunIds = Array.isArray(batch.linkedToolRunIds)
+                    ? batch.linkedToolRunIds
+                    : [];
+                  const updated = await updateHarvestBatch(harvestBatchId, {
+                    dryCureRecords: [
+                      ...existingRecords,
+                      harvestReviewRecord(outputs, payload, linkedToolRunId)
+                    ],
+                    qualityNotes: harvestReviewNotes(outputs, payload),
+                    linkedToolRunIds: Array.from(
+                      new Set([...existingRunIds, linkedToolRunId])
+                    )
+                  });
+                  if (!updated) throw new Error("Unable to update harvest batch.");
+                }
+              }
+            ]
+          : []
+      }
     />
   );
 }

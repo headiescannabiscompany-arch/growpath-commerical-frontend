@@ -15,10 +15,9 @@ import type { EvidenceAsset } from "@/types/evidence";
 import { createFacilityTask } from "@/api/facilityTasks";
 import {
   updateGrowpathModuleRecord,
-  type GrowpathModuleRecord,
-  type GrowpathModuleUserDecision
+  type GrowpathModuleRecord
 } from "@/api/growpathModules";
-import { updateToolRun, type ToolRun } from "@/api/toolRuns";
+import { updateIpmToolRunDecision, type ToolRun } from "@/api/toolRuns";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -99,34 +98,26 @@ async function recordIpmDecision({
   decision,
   outputs,
   toolRun,
-  moduleRecord
+  moduleRecord,
+  workspaceType,
+  facilityId
 }: {
-  decision: GrowpathModuleUserDecision;
+  decision: "accepted" | "uncertain" | "rejected";
   outputs: Record<string, any>;
   toolRun: ToolRun | null;
   moduleRecord: GrowpathModuleRecord | null;
+  workspaceType: "personal" | "commercial" | "facility";
+  facilityId?: string;
 }) {
   const recordedAt = new Date().toISOString();
-  const decisionRecord = {
-    value: decision,
-    recordedAt,
-    meaning:
-      decision === "accepted"
-        ? "The user marked this as the most likely working hypothesis, not a confirmed organism identification."
-        : decision === "rejected"
-          ? "The user marked this result as inconsistent with later observations."
-          : "The user needs more evidence before choosing a working hypothesis."
-  };
-  const nextOutputs = { ...outputs, userDecision: decisionRecord };
   const toolRunId = String(toolRun?.id || toolRun?._id || "");
   const moduleRecordId = String(moduleRecord?.id || moduleRecord?._id || "");
   let saved = false;
 
   if (toolRunId) {
-    const updatedRun = await updateToolRun(toolRunId, {
-      outputs: nextOutputs,
-      output: nextOutputs,
-      result: nextOutputs
+    const updatedRun = await updateIpmToolRunDecision(toolRunId, decision, {
+      workspaceType,
+      ...(facilityId ? { facilityId } : {})
     });
     saved = Boolean(updatedRun);
   }
@@ -172,7 +163,12 @@ function ipmTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
       reminders: [{ offsetMinutes: -12 * 60 }]
     }
   };
-  if (planned.length > 1) {
+  const unresolved =
+    String(outputs.differentialStatus || "").startsWith("unresolved") ||
+    /needs|insufficient|unresolved/i.test(String(outputs.readiness?.status || "")) ||
+    (outputs.mediaAnalysis?.requested === true &&
+      outputs.mediaAnalysis?.performed !== true);
+  if (!unresolved && planned.length > 1) {
     return planned.slice(0, 8).map((task: any, index: number) => ({
       title: String(task?.title || `IPM follow-up ${index + 1}`),
       priority: normalizePriority(task?.priority),
@@ -194,15 +190,36 @@ function ipmTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
     }));
   }
 
+  const verification = verificationAnswer(outputs.gptVerification);
+  const growPath = growPathAnswer(outputs);
+  if (unresolved) {
+    return [
+      {
+        title: "Repeat IPM scout with distinguishing evidence",
+        priority: "medium",
+        dueDate: tomorrow(outputs.taskSuggestions?.[0]?.dueInDays || 3),
+        ...calendarMetadata,
+        description: [
+          growPath ? `GrowPath AI: ${growPath}` : "",
+          verification
+            ? `GPT verification: ${verification}`
+            : outputs.gptVerification?.status
+              ? `GPT verification status: ${outputs.gptVerification.status}.`
+              : "",
+          "Collect neutral-light leaf-top, leaf-underside, and target-macro evidence; repeat comparable trap and plant counts before choosing any treatment."
+        ]
+          .filter(Boolean)
+          .join(" ")
+      }
+    ];
+  }
+
   const highSeverity = ["high", "urgent", "critical"].includes(
     String(outputs.severity || "").toLowerCase()
   );
-  const verification = verificationAnswer(outputs.gptVerification);
-  const growPath = growPathAnswer(outputs);
   const issue = outputs.suspectedIssue || "IPM issue";
   const organism =
     outputs.suspectedOrganism || outputs.suspectedPest || "unknown organism";
-
   return [
     {
       title: outputs.taskSuggestions?.[0]?.title || "Repeat IPM scout",
@@ -247,6 +264,72 @@ function ipmTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
   ];
 }
 
+export function verifiedIpmPrefillMetadata({
+  response,
+  parsed,
+  selectedEvidenceAssetIds,
+  imageEvidenceAssetIds
+}: {
+  response: any;
+  parsed: Record<string, any>;
+  selectedEvidenceAssetIds: string[];
+  imageEvidenceAssetIds: string[];
+}) {
+  const receipt = response.analysisReceipt;
+  const evidenceUsed = Array.isArray(response.evidenceUsed)
+    ? response.evidenceUsed.map(String).sort()
+    : [];
+  const expectedImages = [...imageEvidenceAssetIds].map(String).sort();
+  const limitations = Array.isArray(response.limitations) ? response.limitations : [];
+  const reportsNoVision = limitations.some((item: unknown) =>
+    /text[- ]only|cannot (inspect|analyze|view)|image pixels? (were )?not|visual analysis (was )?not/i.test(
+      String(item)
+    )
+  );
+  const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
+  const valid = Boolean(
+    selectedEvidenceAssetIds.length > 0 &&
+    expectedImages.length > 0 &&
+    receipt?.aiUsageEventId &&
+    /^[a-f0-9]{64}$/i.test(String(receipt?.normalizedIpmResultDigest || "")) &&
+    receipt?.reviewPolicyVersion === "ipm-observation-differential-v2" &&
+    receipt?.evidenceFingerprint === expectedImages.join("|") &&
+    evidenceUsed.length === expectedImages.length &&
+    evidenceUsed.every((id: string, index: number) => id === expectedImages[index]) &&
+    photosAnalyzed === expectedImages.length &&
+    !reportsNoVision &&
+    String(parsed.imageAnalysisPerformed || "").toLowerCase() === "true"
+  );
+  if (!valid) {
+    throw new Error(
+      "The IPM photo review could not be matched to this exact photo/video-frame set. No AI observations were applied; keep your own entries and retry with the evidence still attached."
+    );
+  }
+  return {
+    imageAnalysis: {
+      requested: true,
+      performed: true,
+      photoCount: expectedImages.length,
+      photosAnalyzed,
+      provider: response.provider || "assistant",
+      providerModel: response.mediaAnalysis?.providerModel || undefined,
+      providerLabel: response.providerLabel || "AI IPM photo review",
+      status: response.mediaAnalysis?.status || "photo_pixels_analyzed",
+      confidence: String(parsed.visualConfidence || "low").toLowerCase(),
+      quality: String(parsed.imageQuality || "limited").toLowerCase(),
+      evidenceUsed,
+      limitations,
+      aiUsageEventId: receipt.aiUsageEventId,
+      normalizedIpmResultDigest: receipt.normalizedIpmResultDigest,
+      evidenceFingerprint: receipt.evidenceFingerprint,
+      reviewPolicyVersion: receipt.reviewPolicyVersion
+    },
+    assistantMethodIds: response.methodIds || [],
+    assistantSourceIds: response.sourceIds || [],
+    assistantCitations: response.citations || []
+  };
+}
+
 export default function IpmScoutToolRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createIpmScoutStyles(palette), [palette]);
@@ -254,6 +337,10 @@ export default function IpmScoutToolRoute() {
   const evidencePayload = providerEvidencePayload(evidenceAssets);
   return (
     <BackendCalculatorToolScreen
+      externalInputKey={`ipm-evidence:${[...evidencePayload.evidenceAssetIds]
+        .map(String)
+        .sort()
+        .join("|")}`}
       tool="ipm-scout"
       toolKey="ipm-scout"
       title="IPM Scout"
@@ -269,7 +356,7 @@ export default function IpmScoutToolRoute() {
         buttonLabel: "Analyze Photos & Prefill Scout",
         clearUnfilled: true,
         preserveAllExistingFields: true,
-        evidenceAssetIds: () => evidencePayload.imageEvidenceAssetIds,
+        evidenceAssetIds: () => evidencePayload.evidenceAssetIds,
         isReady: () => evidencePayload.images.length > 0,
         notReadyMessage:
           "Upload at least one clear photo before asking AI to inspect the scout evidence. You can still complete the form manually.",
@@ -291,53 +378,24 @@ Evidence rules:
 The following is explicit user-entered context. Preserve it, do not overwrite it, and do not reinterpret a suspicion as a visual fact:
 ${JSON.stringify(values, null, 2)}`,
         normalizeFieldValue: normalizeIpmPrefillField,
-        buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
-          const evidenceUsed = Array.isArray(response.evidenceUsed)
-            ? response.evidenceUsed
-            : [];
-          const limitations = Array.isArray(response.limitations)
-            ? response.limitations
-            : [];
-          const reportsNoVision = limitations.some((item) =>
-            /text[- ]only|cannot (inspect|analyze|view)|image pixels? (were )?not|visual analysis (was )?not/i.test(
-              String(item)
-            )
-          );
-          const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
-          return {
-            imageAnalysis: {
-              requested: evidenceAssetIds.length > 0,
-              performed:
-                evidenceAssetIds.length > 0 &&
-                evidenceUsed.length > 0 &&
-                photosAnalyzed > 0 &&
-                !reportsNoVision &&
-                String(parsed.imageAnalysisPerformed || "").toLowerCase() === "true",
-              photoCount: evidenceAssetIds.length,
-              photosAnalyzed,
-              provider: response.provider || "assistant",
-              providerLabel: response.providerLabel || "AI IPM photo review",
-              confidence: String(parsed.visualConfidence || "low").toLowerCase(),
-              quality: String(parsed.imageQuality || "limited").toLowerCase(),
-              evidenceUsed,
-              limitations
-            },
-            assistantMethodIds: response.methodIds || [],
-            assistantSourceIds: response.sourceIds || [],
-            assistantCitations: response.citations || []
-          };
-        }
+        buildPayloadMetadata: ({ response, parsed }) =>
+          verifiedIpmPrefillMetadata({
+            response,
+            parsed,
+            selectedEvidenceAssetIds: evidencePayload.evidenceAssetIds,
+            imageEvidenceAssetIds: evidencePayload.imageEvidenceAssetIds
+          })
       }}
       resultFollowUp={{
         workflow: "ipm-result-follow-up",
-        evidenceAssetIds: () => evidencePayload.imageEvidenceAssetIds,
+        evidenceAssetIds: () => evidencePayload.evidenceAssetIds,
         suggestions: () => [
           "Compare thrips, mites, and powdery mildew.",
           "What evidence contradicts this result?",
           "What close-up should I add to separate the leading possibilities?"
         ]
       }}
-      formHeader={({ growId, plantId, facilityId }) => (
+      formHeader={({ growId, plantId, facilityId, workspaceType }) => (
         <View style={styles.evidenceSection}>
           <Text style={styles.evidenceTitle}>Scout photos and video</Text>
           <Text style={styles.evidenceGuidance}>
@@ -349,14 +407,16 @@ ${JSON.stringify(values, null, 2)}`,
             inspect and add a dedicated macro of that target. The result will say whether
             photo pixels were actually analyzed.
           </Text>
-          <SavedGrowPhotoEvidencePicker
-            growId={growId}
-            plantId={plantId}
-            purpose="ipm"
-            value={evidenceAssets}
-            onChange={setEvidenceAssets}
-            maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
-          />
+          {workspaceType === "personal" ? (
+            <SavedGrowPhotoEvidencePicker
+              growId={growId}
+              plantId={plantId}
+              purpose="ipm"
+              value={evidenceAssets}
+              onChange={setEvidenceAssets}
+              maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
+            />
+          ) : null}
           <MediaEvidencePicker
             aiUsable
             maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
@@ -369,6 +429,8 @@ ${JSON.stringify(values, null, 2)}`,
               growId: growId || undefined,
               facilityId: facilityId || undefined
             }}
+            videoWorkspaceType={workspaceType}
+            videoWorkspaceId={workspaceType === "facility" ? facilityId : undefined}
             value={evidenceAssets}
             onChange={setEvidenceAssets}
           />
@@ -728,40 +790,32 @@ ${JSON.stringify(values, null, 2)}`,
       defaultLogTitle={(outputs) =>
         `IPM scout: ${outputs.suspectedIssue || "inspection"}`
       }
-      defaultTask={(outputs) => ({
-        title: outputs.taskSuggestions?.[0]?.title || "Repeat IPM scout",
-        priority: outputs.taskSuggestions?.[0]?.priority || "medium",
-        dueDate: tomorrow(outputs.taskSuggestions?.[0]?.dueInDays || 3),
-        allDay: true,
-        calendarType: "ipm_scout_followup",
-        sourceStage: "ipm_inspection",
-        reminderPlan: {
-          channels: ["in_app"],
-          reminders: [{ offsetMinutes: -12 * 60 }]
-        },
-        description: [
-          `Suspected issue: ${outputs.suspectedIssue || "unknown"}.`,
-          outputs.suspectedOrganism
-            ? `Suspected organism: ${outputs.suspectedOrganism}.`
-            : "",
-          growPathAnswer(outputs) ? `GrowPath AI: ${growPathAnswer(outputs)}` : "",
-          verificationAnswer(outputs.gptVerification)
-            ? `GPT verification: ${verificationAnswer(outputs.gptVerification)}`
-            : outputs.gptVerification?.status
-              ? `GPT verification status: ${outputs.gptVerification.status}.`
-              : "",
-          "Repeat underside inspection, trap count, and photo evidence before treatment decisions. Record whether the response worked after the follow-up."
-        ]
-          .filter(Boolean)
-          .join(" ")
-      })}
+      defaultTask={(outputs) => {
+        const task = ipmTaskPlan(outputs)[0];
+        return task
+          ? {
+              title: task.title,
+              description: task.description,
+              priority: task.priority,
+              dueDate: task.dueDate,
+              endAt: task.endAt || undefined,
+              allDay: task.allDay,
+              calendarType: task.calendarType || undefined,
+              sourceStage: task.sourceStage || undefined,
+              reminderPlan: task.reminderPlan || undefined,
+              recurrence: task.recurrence || undefined
+            }
+          : undefined;
+      }}
       buildActions={({
         outputs,
         payload,
         toolRun,
         moduleRecord,
         growId,
-        plantContext
+        plantContext,
+        workspaceType,
+        facilityId
       }) => [
         {
           key: "ipm-decision-likely",
@@ -773,7 +827,9 @@ ${JSON.stringify(values, null, 2)}`,
               decision: "accepted",
               outputs,
               toolRun,
-              moduleRecord
+              moduleRecord,
+              workspaceType,
+              facilityId
             })
         },
         {
@@ -788,7 +844,9 @@ ${JSON.stringify(values, null, 2)}`,
               decision: "uncertain",
               outputs,
               toolRun,
-              moduleRecord
+              moduleRecord,
+              workspaceType,
+              facilityId
             })
         },
         {
@@ -802,7 +860,9 @@ ${JSON.stringify(values, null, 2)}`,
               decision: "rejected",
               outputs,
               toolRun,
-              moduleRecord
+              moduleRecord,
+              workspaceType,
+              facilityId
             })
         },
         {
@@ -810,9 +870,14 @@ ${JSON.stringify(values, null, 2)}`,
           label: "Create IPM Task Plan",
           variant: "secondary",
           pendingLabel: "Creating...",
-          disabled: !growId && !payload.facilityId,
+          disabled: workspaceType === "commercial" || (!growId && !payload.facilityId),
           successMessage: "Created IPM tasks.",
           onPress: async () => {
+            if (workspaceType === "commercial") {
+              throw new Error(
+                "Commercial IPM task creation is not connected yet; no Personal task was created."
+              );
+            }
             const tasks = ipmTaskPlan(outputs);
             if (payload.facilityId) {
               await Promise.all(

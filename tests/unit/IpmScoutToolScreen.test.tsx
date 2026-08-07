@@ -2,7 +2,8 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import IpmScoutToolRoute, {
-  normalizeIpmPrefillField
+  normalizeIpmPrefillField,
+  verifiedIpmPrefillMetadata
 } from "@/app/home/personal/(tabs)/tools/ipm-scout";
 
 const mockRunCalculator = jest.fn();
@@ -10,7 +11,7 @@ const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTask = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockCreateFacilityTask = jest.fn();
-const mockUpdateToolRun = jest.fn();
+const mockUpdateIpmToolRunDecision = jest.fn();
 const mockUpdateGrowpathModuleRecord = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
 
@@ -55,7 +56,7 @@ jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
 
 jest.mock("@/api/toolRuns", () => ({
   runCalculator: (...args: any[]) => mockRunCalculator(...args),
-  updateToolRun: (...args: any[]) => mockUpdateToolRun(...args)
+  updateIpmToolRunDecision: (...args: any[]) => mockUpdateIpmToolRunDecision(...args)
 }));
 
 jest.mock("@/api/growpathModules", () => ({
@@ -123,6 +124,51 @@ describe("IpmScoutToolRoute", () => {
     expect(
       normalizeIpmPrefillField({ fieldKey: "leafDamage", value: "leaf-edge browning" })
     ).toBeUndefined();
+  });
+
+  it("accepts only an exact server-attested IPM photo/video-frame receipt", () => {
+    const imageIds = ["frame-b", "photo-a"];
+    const metadata = verifiedIpmPrefillMetadata({
+      response: {
+        evidenceUsed: ["photo-a", "frame-b"],
+        provider: "openai",
+        providerLabel: "OpenAI IPM review",
+        mediaAnalysis: { photosAnalyzed: 2, providerModel: "gpt-4o-mini" },
+        analysisReceipt: {
+          aiUsageEventId: "66aa00000000000000000001",
+          normalizedIpmResultDigest: "a".repeat(64),
+          evidenceFingerprint: [...imageIds].sort().join("|"),
+          reviewPolicyVersion: "ipm-observation-differential-v2"
+        }
+      },
+      parsed: {
+        imageAnalysisPerformed: "true",
+        imageQuality: "limited",
+        visualConfidence: "low"
+      },
+      selectedEvidenceAssetIds: ["source-video", ...imageIds],
+      imageEvidenceAssetIds: imageIds
+    });
+    expect(metadata.imageAnalysis).toMatchObject({
+      performed: true,
+      photoCount: 2,
+      evidenceUsed: ["frame-b", "photo-a"],
+      normalizedIpmResultDigest: "a".repeat(64)
+    });
+  });
+
+  it("rejects a stale or missing IPM receipt before applying AI observations", () => {
+    expect(() =>
+      verifiedIpmPrefillMetadata({
+        response: {
+          evidenceUsed: ["old-photo"],
+          mediaAnalysis: { photosAnalyzed: 1 }
+        },
+        parsed: { imageAnalysisPerformed: "true" },
+        selectedEvidenceAssetIds: ["new-photo"],
+        imageEvidenceAssetIds: ["new-photo"]
+      })
+    ).toThrow(/could not be matched to this exact photo\/video-frame set/i);
   });
 
   beforeEach(() => {
@@ -202,7 +248,7 @@ describe("IpmScoutToolRoute", () => {
       linkedTaskIds: [],
       tasksToCreate: []
     });
-    mockUpdateToolRun.mockResolvedValue({ id: "toolrun-1" });
+    mockUpdateIpmToolRunDecision.mockResolvedValue({ id: "toolrun-1" });
     mockUpdateGrowpathModuleRecord.mockResolvedValue({ id: "module-record-1" });
     mockSaveToolRunAndCreateTask.mockResolvedValue({
       ok: true,
@@ -400,11 +446,41 @@ describe("IpmScoutToolRoute", () => {
         })
       )
     );
-    expect(mockSaveToolRunAndCreateTask).toHaveBeenCalledWith(
-      expect.objectContaining({
-        description: expect.stringContaining("Record whether the response worked")
-      })
+  });
+
+  it("creates only an evidence-gathering task when the differential is unresolved", async () => {
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        suspectedIssue: "Unresolved foliar marks",
+        differentialStatus: "unresolved_insufficient_evidence",
+        readiness: { status: "needs_distinguishing_evidence" },
+        mediaAnalysis: { requested: true, performed: false },
+        taskSuggestions: [
+          { title: "Apply treatment", sourceStage: "ipm_treatment_decision" },
+          { title: "Review outcome", sourceStage: "ipm_outcome_review" }
+        ],
+        growPathAi: { answer: "Collect more evidence before choosing a cause." }
+      },
+      toolRun: { id: "toolrun-unresolved", _id: "toolrun-unresolved" }
+    });
+    const screen = render(<IpmScoutToolRoute />);
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Damage or symptom pattern"),
+      "white flecks and silver streaks"
     );
+    fireEvent.press(
+      screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
+    );
+    await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
+    fireEvent.press(screen.getByText("Create IPM Task Plan"));
+    await waitFor(() => expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalled());
+    const tasks = mockSaveToolRunAndCreateTasks.mock.calls.at(-1)?.[0]?.tasks;
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0]).toMatchObject({
+      title: "Repeat IPM scout with distinguishing evidence",
+      sourceStage: "ipm_inspection"
+    });
+    expect(JSON.stringify(tasks)).not.toMatch(/apply treatment|review outcome/i);
   });
 
   it("creates an IPM task plan with verification and outcome tracking", async () => {
@@ -477,13 +553,10 @@ describe("IpmScoutToolRoute", () => {
     fireEvent.press(screen.getByText("Mark as Not Sure"));
 
     await waitFor(() =>
-      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+      expect(mockUpdateIpmToolRunDecision).toHaveBeenCalledWith(
         "toolrun-1",
-        expect.objectContaining({
-          outputs: expect.objectContaining({
-            userDecision: expect.objectContaining({ value: "uncertain" })
-          })
-        })
+        "uncertain",
+        { workspaceType: "personal" }
       )
     );
     expect(mockUpdateGrowpathModuleRecord).toHaveBeenCalledWith(
