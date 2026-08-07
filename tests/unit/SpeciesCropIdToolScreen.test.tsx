@@ -2,8 +2,11 @@ import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import SpeciesCropIdToolRoute, {
-  isCannabisGenusIdentification
+  isCannabisGenusIdentification,
+  plantIdFrameMergeCapacityError,
+  plantIdProviderReadyEvidenceAssets
 } from "@/app/home/personal/(tabs)/tools/species-crop-id";
+import { providerEvidencePayload } from "@/api/evidence";
 import { bestStructuredPlantCandidateName } from "@/features/personal/tools/plantIdentificationCandidates";
 
 const mockRunCalculator = jest.fn();
@@ -11,6 +14,8 @@ const mockListToolRuns = jest.fn();
 const mockGetToolRun = jest.fn();
 const mockListEvidenceAssets = jest.fn();
 const mockGetEvidenceAssetsByIds = jest.fn();
+const mockExtractEvidenceVideoFrames = jest.fn();
+const mockGetEvidenceVideoFrameExtraction = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockUpdateGrowpathModuleRecord = jest.fn();
 const mockUpdateToolRun = jest.fn();
@@ -53,13 +58,25 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
   const { Pressable, Text, View } = require("react-native");
   return function MockMediaEvidencePicker(props: any) {
     const { onBusyChange, onChange } = props;
+    const evidenceSnapshot = mockEvidenceAssets;
+    const evidenceSnapshotKey = JSON.stringify(evidenceSnapshot);
     React.useEffect(() => {
-      onChange?.(mockEvidenceAssets);
-    }, [onChange]);
+      onChange?.(evidenceSnapshot);
+    }, [evidenceSnapshotKey]);
     return React.createElement(
       View,
       { testID: "media-evidence-picker" },
       React.createElement(Text, null, `Evidence purpose: ${props.purpose}`),
+      React.createElement(
+        Text,
+        null,
+        `Evidence picker disabled: ${props.disabled ? "yes" : "no"}`
+      ),
+      React.createElement(
+        Text,
+        null,
+        `Server frame extraction only: ${props.serverFrameExtractionOnly ? "yes" : "no"}`
+      ),
       React.createElement(
         Text,
         null,
@@ -69,6 +86,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
         Pressable,
         {
           accessibilityLabel: "Replace test evidence",
+          disabled: props.disabled,
           onPress: () =>
             onChange?.([
               {
@@ -85,6 +103,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
         Pressable,
         {
           accessibilityLabel: "Set test evidence busy",
+          disabled: props.disabled,
           onPress: () => onBusyChange?.(true)
         },
         React.createElement(Text, null, "Set test evidence busy")
@@ -93,6 +112,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
         Pressable,
         {
           accessibilityLabel: "Finish test evidence upload",
+          disabled: props.disabled,
           onPress: () => onBusyChange?.(false)
         },
         React.createElement(Text, null, "Finish test evidence upload")
@@ -141,7 +161,11 @@ jest.mock("@/api/evidence", () => {
   return {
     ...actual,
     listEvidenceAssets: (...args: any[]) => mockListEvidenceAssets(...args),
-    getEvidenceAssetsByIds: (...args: any[]) => mockGetEvidenceAssetsByIds(...args)
+    getEvidenceAssetsByIds: (...args: any[]) => mockGetEvidenceAssetsByIds(...args),
+    extractEvidenceVideoFrames: (...args: any[]) =>
+      mockExtractEvidenceVideoFrames(...args),
+    getEvidenceVideoFrameExtraction: (...args: any[]) =>
+      mockGetEvidenceVideoFrameExtraction(...args)
   };
 });
 
@@ -205,6 +229,24 @@ describe("SpeciesCropIdToolRoute", () => {
     mockGetToolRun.mockResolvedValue(null);
     mockListEvidenceAssets.mockResolvedValue([]);
     mockGetEvidenceAssetsByIds.mockResolvedValue([]);
+    mockExtractEvidenceVideoFrames.mockResolvedValue({
+      sourceVideo: {},
+      extraction: {
+        status: "idle",
+        attemptCount: 0,
+        retryable: true,
+        frames: []
+      }
+    });
+    mockGetEvidenceVideoFrameExtraction.mockResolvedValue({
+      sourceVideo: {},
+      extraction: {
+        status: "idle",
+        attemptCount: 0,
+        retryable: true,
+        frames: []
+      }
+    });
     mockCreateFieldStudy.mockResolvedValue({
       id: "study-new",
       _id: "study-new",
@@ -365,6 +407,7 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     expect(screen.getByText("Step 1 — Add identification evidence")).toBeTruthy();
     expect(screen.getByText("Evidence purpose: crop_identification")).toBeTruthy();
+    expect(screen.getByText("Server frame extraction only: yes")).toBeTruthy();
     expect(
       screen.getByText(/direct flash against a dark background can hide color/i)
     ).toBeTruthy();
@@ -558,10 +601,1079 @@ describe("SpeciesCropIdToolRoute", () => {
     await waitFor(() =>
       expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
         expect.objectContaining({
-          evidenceAssetIds: ["older-night-photo-1", "night-frame-1", "night-video-1"]
+          evidenceAssetIds: ["older-night-photo-1"]
         })
       )
     );
+  });
+
+  it("extracts server frames from a recovered source-video-only run without reuploading", async () => {
+    mockSearchParams = { retryToolRunId: "video-only-run" };
+    mockEvidenceAssets = [];
+    const sourceVideo = {
+      id: "saved-video-1",
+      _id: "saved-video-1",
+      assetType: "video",
+      originalUri: "file:///saved-video.mov",
+      durableUrl: "/protected/saved-video.mov",
+      uploadStatus: "uploaded",
+      source: "library",
+      aiUsable: false,
+      purpose: "crop_identification",
+      durationSeconds: 87,
+      qualityWarnings: [],
+      frameExtraction: { status: "idle", attemptCount: 0 }
+    };
+    const generatedFrames = ["server-frame-1", "server-frame-2"].map((id, index) => ({
+      id,
+      _id: id,
+      assetType: "photo",
+      originalUri: `/protected/${id}.jpg`,
+      durableUrl: `/protected/${id}.jpg`,
+      uploadStatus: "uploaded",
+      source: "generated",
+      sourceVideoEvidenceAssetId: "saved-video-1",
+      frameExtractionVersion: "server-frames-v1",
+      frameExtractionAttempt: 1,
+      frameIndex: index,
+      aiUsable: true,
+      purpose: "crop_identification",
+      qualityWarnings: [`Extracted from the source video at ${index + 1}.0 seconds.`]
+    }));
+    mockGetToolRun.mockResolvedValue({
+      id: "video-only-run",
+      toolType: "species_crop_id",
+      inputs: {
+        evidenceAssetIds: ["saved-video-1"],
+        mediaEvidence: [{ id: "saved-video-1", type: "video" }]
+      }
+    });
+    mockGetEvidenceAssetsByIds
+      .mockResolvedValueOnce([sourceVideo])
+      .mockResolvedValueOnce([
+        {
+          ...sourceVideo,
+          frameExtraction: {
+            status: "completed",
+            attemptCount: 1,
+            version: "server-frames-v1",
+            frameAssetIds: generatedFrames.map((frame) => frame.id)
+          }
+        },
+        ...generatedFrames
+      ]);
+    mockExtractEvidenceVideoFrames.mockResolvedValue({
+      sourceVideo,
+      extraction: {
+        status: "completed",
+        attemptCount: 1,
+        version: "server-frames-v1",
+        retryable: false,
+        frames: generatedFrames
+      }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(
+      await screen.findByText(
+        /Recovered 1 private source video.*not analyzed for motion/i
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
+
+    fireEvent.press(screen.getByRole("button", { name: "Extract video frames" }));
+
+    await waitFor(() =>
+      expect(mockExtractEvidenceVideoFrames).toHaveBeenCalledWith(
+        "saved-video-1",
+        {
+          workspaceType: "personal",
+          maxFrames: 12,
+          purpose: "crop_identification"
+        },
+        expect.objectContaining({ signal: expect.anything() })
+      )
+    );
+    await waitFor(() =>
+      expect(mockGetEvidenceAssetsByIds).toHaveBeenLastCalledWith(
+        ["saved-video-1", "server-frame-1", "server-frame-2"],
+        { workspaceType: "personal" },
+        expect.objectContaining({ signal: expect.anything() })
+      )
+    );
+    expect(
+      await screen.findByText(/2 timestamped still frames are uploaded and selected/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/source video itself will not be analyzed for motion/i)
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Identify Plant from Photos" })
+      ).not.toBeDisabled()
+    );
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          evidenceAssetIds: ["saved-video-1", "server-frame-1", "server-frame-2"]
+        })
+      )
+    );
+  });
+
+  it("reserves only the remaining photo slots when a saved video has two uploaded photos", async () => {
+    mockSearchParams = {};
+    mockEvidenceAssets = [
+      ...["night-photo-1", "night-photo-2"].map((id) => ({
+        id,
+        _id: id,
+        assetType: "photo",
+        originalUri: `/protected/${id}.jpg`,
+        durableUrl: `/protected/${id}.jpg`,
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: true,
+        purpose: "crop_identification",
+        qualityWarnings: []
+      })),
+      {
+        id: "night-video-87s",
+        _id: "night-video-87s",
+        assetType: "video",
+        originalUri: "/protected/night-video-87s.mov",
+        durableUrl: "/protected/night-video-87s.mov",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: false,
+        purpose: "crop_identification",
+        durationSeconds: 87,
+        qualityWarnings: []
+      }
+    ];
+    mockExtractEvidenceVideoFrames.mockResolvedValue({
+      sourceVideo: mockEvidenceAssets[2],
+      extraction: {
+        status: "processing",
+        attemptCount: 1,
+        retryable: true,
+        frames: []
+      }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    await act(async () => {
+      fireEvent.press(screen.getByRole("button", { name: "Extract video frames" }));
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    });
+
+    await waitFor(() =>
+      expect(mockExtractEvidenceVideoFrames).toHaveBeenCalledWith(
+        "night-video-87s",
+        {
+          workspaceType: "personal",
+          maxFrames: 10,
+          purpose: "crop_identification"
+        },
+        expect.objectContaining({ signal: expect.anything() })
+      )
+    );
+    expect(
+      screen.getByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
+  });
+
+  it("blocks AI and picker mutations immediately for a persisted processing job", async () => {
+    mockSearchParams = {};
+    mockEvidenceAssets = [
+      {
+        id: "persisted-processing-video",
+        _id: "persisted-processing-video",
+        assetType: "video",
+        originalUri: "file:///persisted-processing.mov",
+        durableUrl: "/protected/persisted-processing.mov",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: false,
+        purpose: "crop_identification",
+        qualityWarnings: [],
+        frameExtraction: { status: "processing", attemptCount: 2 }
+      }
+    ];
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(await screen.findByText("Evidence picker disabled: yes")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
+    expect(screen.getByLabelText("Replace test evidence")).toBeDisabled();
+  });
+
+  it("repairs a completed source with missing selected frames through idempotent POST", async () => {
+    mockSearchParams = {};
+    const restoredFrame = {
+      id: "restored-frame-1",
+      _id: "restored-frame-1",
+      assetType: "photo",
+      originalUri: "/protected/restored-frame-1.jpg",
+      durableUrl: "/protected/restored-frame-1.jpg",
+      uploadStatus: "uploaded",
+      source: "generated",
+      sourceVideoEvidenceAssetId: "completed-source-video",
+      frameExtractionVersion: "frames-v1",
+      frameExtractionAttempt: 1,
+      frameIndex: 0,
+      aiUsable: true,
+      purpose: "crop_identification",
+      qualityWarnings: []
+    };
+    const completedSource = {
+      id: "completed-source-video",
+      _id: "completed-source-video",
+      assetType: "video",
+      originalUri: "file:///completed-source.mov",
+      durableUrl: "/protected/completed-source.mov",
+      uploadStatus: "uploaded",
+      source: "library",
+      aiUsable: false,
+      purpose: "crop_identification",
+      qualityWarnings: [],
+      frameExtraction: {
+        status: "completed",
+        attemptCount: 1,
+        version: "frames-v1",
+        frameAssetIds: ["restored-frame-1"]
+      }
+    };
+    mockEvidenceAssets = [completedSource];
+    mockExtractEvidenceVideoFrames.mockResolvedValue({
+      sourceVideo: completedSource,
+      extraction: {
+        status: "completed",
+        attemptCount: 1,
+        version: "frames-v1",
+        retryable: false,
+        frames: [restoredFrame]
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([completedSource, restoredFrame]);
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    const restore = await screen.findByRole("button", {
+      name: "Restore extracted video frames"
+    });
+    expect(
+      screen.getByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
+    fireEvent.press(restore);
+
+    await waitFor(() =>
+      expect(mockExtractEvidenceVideoFrames).toHaveBeenCalledWith(
+        "completed-source-video",
+        expect.objectContaining({
+          workspaceType: "personal",
+          maxFrames: 12,
+          purpose: "crop_identification"
+        }),
+        expect.objectContaining({ signal: expect.anything() })
+      )
+    );
+    expect(mockGetEvidenceVideoFrameExtraction).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(/1 timestamped still frame is uploaded and selected/i)
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Identify Plant from Photos" })
+      ).not.toBeDisabled()
+    );
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          evidenceAssetIds: ["completed-source-video", "restored-frame-1"]
+        })
+      )
+    );
+  });
+
+  it("polls persisted processing to an exactly validated completed frame set", async () => {
+    jest.useFakeTimers();
+    try {
+      mockSearchParams = {};
+      const frame = {
+        id: "polled-frame-1",
+        _id: "polled-frame-1",
+        assetType: "photo",
+        originalUri: "/protected/polled-frame-1.jpg",
+        durableUrl: "/protected/polled-frame-1.jpg",
+        uploadStatus: "uploaded",
+        source: "generated",
+        sourceVideoEvidenceAssetId: "polled-video-1",
+        frameExtractionVersion: "polled-v1",
+        frameExtractionAttempt: 1,
+        frameIndex: 0,
+        aiUsable: true,
+        purpose: "crop_identification",
+        qualityWarnings: []
+      };
+      const source = {
+        id: "polled-video-1",
+        _id: "polled-video-1",
+        assetType: "video",
+        originalUri: "file:///polled-video.mov",
+        durableUrl: "/protected/polled-video.mov",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: false,
+        purpose: "crop_identification",
+        qualityWarnings: [],
+        frameExtraction: {
+          status: "processing",
+          attemptCount: 1
+        }
+      };
+      const completedSource = {
+        ...source,
+        frameExtraction: {
+          status: "completed",
+          attemptCount: 1,
+          version: "polled-v1",
+          frameAssetIds: ["polled-frame-1"]
+        }
+      };
+      mockEvidenceAssets = [source];
+      mockGetEvidenceVideoFrameExtraction.mockResolvedValue({
+        sourceVideo: completedSource,
+        extraction: {
+          status: "completed",
+          attemptCount: 1,
+          version: "polled-v1",
+          retryable: false,
+          frames: [frame]
+        }
+      });
+      mockGetEvidenceAssetsByIds.mockResolvedValue([completedSource, frame]);
+
+      const screen = render(<SpeciesCropIdToolRoute />);
+      expect(await screen.findByText("Evidence picker disabled: yes")).toBeTruthy();
+      await act(async () => {
+        jest.advanceTimersByTime(1500);
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      await waitFor(() =>
+        expect(mockGetEvidenceVideoFrameExtraction).toHaveBeenCalledWith(
+          "polled-video-1",
+          { workspaceType: "personal" },
+          expect.objectContaining({ signal: expect.anything() })
+        )
+      );
+      expect(
+        await screen.findByText(/1 timestamped still frame is uploaded and selected/i)
+      ).toBeTruthy();
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", { name: "Identify Plant from Photos" })
+        ).not.toBeDisabled()
+      );
+      expect(screen.getByText("Evidence picker disabled: no")).toBeTruthy();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("ignores a completed extraction response after the authenticated workspace changes", async () => {
+    mockSearchParams = {};
+    const source = {
+      id: "stale-source-video",
+      _id: "stale-source-video",
+      assetType: "video",
+      originalUri: "file:///stale-source.mov",
+      durableUrl: "/protected/stale-source.mov",
+      uploadStatus: "uploaded",
+      source: "library",
+      aiUsable: false,
+      purpose: "crop_identification",
+      qualityWarnings: []
+    };
+    mockEvidenceAssets = [source];
+    let resolveExtraction!: (value: any) => void;
+    mockExtractEvidenceVideoFrames.mockReturnValue(
+      new Promise((resolve) => {
+        resolveExtraction = resolve;
+      })
+    );
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(await screen.findByRole("button", { name: "Extract video frames" }));
+    await waitFor(() => expect(mockExtractEvidenceVideoFrames).toHaveBeenCalled());
+    const signal = mockExtractEvidenceVideoFrames.mock.calls[0][2].signal as AbortSignal;
+
+    mockEvidenceAssets = [];
+    mockEntitlementMode = "commercial";
+    screen.rerender(<SpeciesCropIdToolRoute />);
+    await waitFor(() => expect(signal.aborted).toBe(true));
+    await act(async () => {
+      resolveExtraction({
+        sourceVideo: source,
+        extraction: {
+          status: "completed",
+          attemptCount: 1,
+          version: "stale-v1",
+          retryable: false,
+          frames: [
+            {
+              id: "stale-frame-1",
+              assetType: "photo",
+              source: "generated",
+              sourceVideoEvidenceAssetId: "stale-source-video"
+            }
+          ]
+        }
+      });
+      await Promise.resolve();
+    });
+
+    expect(mockGetEvidenceAssetsByIds).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText(/timestamped still frame.*uploaded and selected/i)
+    ).toBeNull();
+  });
+
+  it("does not start frame extraction while plant identification is running", async () => {
+    mockSearchParams = {};
+    mockEvidenceAssets = [
+      {
+        id: "identification-photo",
+        _id: "identification-photo",
+        assetType: "photo",
+        originalUri: "file:///identification-photo.jpg",
+        durableUrl: "/protected/identification-photo.jpg",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: true,
+        purpose: "crop_identification",
+        qualityWarnings: []
+      },
+      {
+        id: "identification-video",
+        _id: "identification-video",
+        assetType: "video",
+        originalUri: "file:///identification-video.mov",
+        durableUrl: "/protected/identification-video.mov",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: false,
+        purpose: "crop_identification",
+        qualityWarnings: []
+      }
+    ];
+    let resolveAssistant!: (value: any) => void;
+    mockAskPersonalAssistant.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveAssistant = resolve;
+      })
+    );
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
+    const extract = screen.getByRole("button", { name: "Extract video frames" });
+    expect(extract).toBeDisabled();
+    expect(screen.getByLabelText("Replace test evidence")).toBeDisabled();
+    fireEvent.press(extract);
+    expect(mockExtractEvidenceVideoFrames).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveAssistant({
+        success: true,
+        reply: JSON.stringify({
+          userEnteredName: "Plant",
+          imageAnalysisPerformed: "true",
+          imageQuality: "usable",
+          visualConfidence: "low"
+        }),
+        evidenceUsed: ["identification-photo"],
+        mediaAnalysis: { photosAnalyzed: 1 }
+      });
+    });
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+  });
+
+  it("invalidates an existing Plant ID result when extraction status and attempt change", async () => {
+    mockSearchParams = {};
+    mockEvidenceAssets = [
+      {
+        id: "existing-result-photo",
+        _id: "existing-result-photo",
+        assetType: "photo",
+        originalUri: "file:///existing-result-photo.jpg",
+        durableUrl: "/protected/existing-result-photo.jpg",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: true,
+        purpose: "crop_identification",
+        qualityWarnings: []
+      },
+      {
+        id: "existing-result-video",
+        _id: "existing-result-video",
+        assetType: "video",
+        originalUri: "file:///existing-result-video.mov",
+        durableUrl: "/protected/existing-result-video.mov",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: false,
+        purpose: "crop_identification",
+        qualityWarnings: [],
+        frameExtraction: { status: "idle", attemptCount: 0 }
+      }
+    ];
+    mockExtractEvidenceVideoFrames.mockResolvedValue({
+      sourceVideo: mockEvidenceAssets[1],
+      extraction: {
+        status: "processing",
+        attemptCount: 3,
+        retryable: true,
+        frames: []
+      }
+    });
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    expect(await screen.findByText("Confirm in Saved Run")).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.press(screen.getByRole("button", { name: "Extract video frames" }));
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    });
+    await screen.findByText(/processing on GrowPath \(attempt 3\)/i);
+    await waitFor(() => expect(screen.queryByText("Confirm in Saved Run")).toBeNull());
+  });
+
+  it("keeps unverified completed frames out of AI when exact reload validation fails", async () => {
+    mockSearchParams = {};
+    const frame = {
+      id: "invalid-frame-1",
+      _id: "invalid-frame-1",
+      assetType: "photo",
+      originalUri: "/protected/invalid-frame-1.jpg",
+      durableUrl: "/protected/invalid-frame-1.jpg",
+      uploadStatus: "uploaded",
+      source: "generated",
+      sourceVideoEvidenceAssetId: "invalid-source-video",
+      frameExtractionVersion: "expected-v1",
+      frameExtractionAttempt: 1,
+      frameIndex: 0,
+      aiUsable: true,
+      purpose: "crop_identification",
+      qualityWarnings: []
+    };
+    const source = {
+      id: "invalid-source-video",
+      _id: "invalid-source-video",
+      assetType: "video",
+      originalUri: "file:///invalid-source.mov",
+      durableUrl: "/protected/invalid-source.mov",
+      uploadStatus: "uploaded",
+      source: "library",
+      aiUsable: false,
+      purpose: "crop_identification",
+      qualityWarnings: [],
+      frameExtraction: {
+        status: "completed",
+        attemptCount: 1,
+        version: "expected-v1",
+        frameAssetIds: ["invalid-frame-1"]
+      }
+    };
+    mockEvidenceAssets = [source];
+    mockExtractEvidenceVideoFrames.mockResolvedValue({
+      sourceVideo: source,
+      extraction: {
+        status: "completed",
+        attemptCount: 1,
+        version: "expected-v1",
+        retryable: false,
+        frames: [frame]
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      source,
+      { ...frame, frameExtractionVersion: "wrong-frame-v2" }
+    ]);
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    await act(async () => {
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    });
+    const restoreFramesButton = await screen.findByRole("button", {
+      name: "Restore extracted video frames"
+    });
+    await act(async () => {
+      fireEvent.press(restoreFramesButton);
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    });
+
+    expect(
+      await screen.findByText(/did not pass version, order, or Plant ID lineage checks/i)
+    ).toBeTruthy();
+    expect(screen.queryByText(/still frame is uploaded and selected/i)).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      source,
+      { ...frame, frameExtractionAttempt: undefined }
+    ]);
+    await act(async () => {
+      fireEvent.press(
+        screen.getByRole("button", { name: "Retry restoring extracted video frames" })
+      );
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    });
+    await waitFor(() => expect(mockExtractEvidenceVideoFrames).toHaveBeenCalledTimes(2));
+    expect(
+      screen.getByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", {
+          name: "Retry restoring extracted video frames"
+        })
+      ).toBeEnabled()
+    );
+
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      source,
+      { ...frame, frameIndex: undefined }
+    ]);
+    await act(async () => {
+      fireEvent.press(
+        screen.getByRole("button", { name: "Retry restoring extracted video frames" })
+      );
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    });
+    await waitFor(() => expect(mockExtractEvidenceVideoFrames).toHaveBeenCalledTimes(3));
+    expect(
+      screen.getByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
+    expect(mockGetEvidenceVideoFrameExtraction).not.toHaveBeenCalled();
+    expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+  });
+
+  it("rejects a frame merge that races beyond the 12-photo limit", () => {
+    const ordinaryPhotos = Array.from({ length: 11 }, (_, index) => ({
+      id: `ordinary-${index + 1}`,
+      assetType: "photo",
+      source: "library"
+    })) as any[];
+    expect(
+      plantIdFrameMergeCapacityError(ordinaryPhotos, ["returned-1", "returned-2"], 2)
+    ).toMatch(/12-photo limit.*11 other photos/i);
+    expect(
+      plantIdFrameMergeCapacityError(
+        [
+          ...ordinaryPhotos.slice(0, 10),
+          { id: "returned-1", assetType: "photo", source: "generated" } as any
+        ],
+        ["returned-1", "returned-2"],
+        2
+      )
+    ).toBe("");
+
+    const oldSameSourceFrames = Array.from({ length: 12 }, (_, index) => ({
+      id: `old-frame-${index + 1}`,
+      assetType: "photo",
+      source: "generated",
+      sourceVideoEvidenceAssetId: "source-video-1"
+    })) as any[];
+    const replacementIds = Array.from(
+      { length: 12 },
+      (_, index) => `new-frame-${index + 1}`
+    );
+    expect(
+      plantIdFrameMergeCapacityError(
+        oldSameSourceFrames,
+        replacementIds,
+        replacementIds.length,
+        "source-video-1"
+      )
+    ).toBe("");
+    expect(
+      plantIdFrameMergeCapacityError(
+        [
+          ...oldSameSourceFrames,
+          {
+            id: "other-source-frame",
+            assetType: "photo",
+            source: "generated",
+            sourceVideoEvidenceAssetId: "source-video-2"
+          } as any
+        ],
+        replacementIds,
+        replacementIds.length,
+        "source-video-1"
+      )
+    ).toMatch(/1 other photo/i);
+  });
+
+  it("allows only the exact ordered verified server-frame IDs and metadata", () => {
+    const verification = {
+      sourceId: "source-video-1",
+      version: "frames-v3",
+      attemptCount: 3,
+      frameIds: ["canonical-frame-1", "canonical-frame-2"]
+    };
+    const sourceVideo = {
+      id: "source-video-1",
+      assetType: "video",
+      source: "library",
+      durableUrl: "/protected/source-video-1.mov",
+      uploadStatus: "uploaded",
+      aiUsable: false,
+      purpose: "crop_identification",
+      qualityWarnings: []
+    } as any;
+    const ordinary = {
+      id: "ordinary-photo",
+      assetType: "photo",
+      source: "library",
+      durableUrl: "/protected/ordinary-photo.jpg",
+      uploadStatus: "uploaded",
+      purpose: "crop_identification",
+      qualityWarnings: []
+    } as any;
+    const canonical = {
+      id: "canonical-frame-1",
+      assetType: "photo",
+      source: "generated",
+      durableUrl: "/protected/canonical-frame-1.jpg",
+      uploadStatus: "uploaded",
+      sourceVideoEvidenceAssetId: "source-video-1",
+      frameExtractionVersion: "frames-v3",
+      frameExtractionAttempt: 3,
+      frameIndex: 0,
+      purpose: "crop_identification",
+      qualityWarnings: []
+    } as any;
+    const canonicalSecond = {
+      ...canonical,
+      id: "canonical-frame-2",
+      durableUrl: "/protected/canonical-frame-2.jpg",
+      frameIndex: 1
+    };
+    const extra = {
+      ...canonical,
+      id: "malicious-extra-frame",
+      frameIndex: 2
+    };
+    const orphan = {
+      ...canonical,
+      id: "orphan-frame",
+      sourceVideoEvidenceAssetId: undefined
+    };
+    const otherSource = {
+      ...canonical,
+      id: "other-source-frame",
+      sourceVideoEvidenceAssetId: "source-video-2"
+    };
+
+    const orderedAssets = plantIdProviderReadyEvidenceAssets(
+      [canonicalSecond, sourceVideo, ordinary, canonical, extra, orphan, otherSource],
+      verification,
+      true
+    );
+    expect(orderedAssets.map((asset) => asset.id)).toEqual([
+      "source-video-1",
+      "ordinary-photo",
+      "canonical-frame-1",
+      "canonical-frame-2"
+    ]);
+    const providerPayload = providerEvidencePayload(orderedAssets);
+    expect(providerPayload.media.map((asset) => asset.id)).toEqual([
+      "source-video-1",
+      "ordinary-photo",
+      "canonical-frame-1",
+      "canonical-frame-2"
+    ]);
+    expect(providerPayload.imageEvidenceAssetIds).toEqual([
+      "ordinary-photo",
+      "canonical-frame-1",
+      "canonical-frame-2"
+    ]);
+    expect(providerPayload.images).toEqual([
+      "/protected/ordinary-photo.jpg",
+      "/protected/canonical-frame-1.jpg",
+      "/protected/canonical-frame-2.jpg"
+    ]);
+    expect(
+      plantIdProviderReadyEvidenceAssets(
+        [{ ...canonical, frameExtractionVersion: "wrong-version" }, canonicalSecond],
+        verification,
+        true
+      )
+    ).toEqual([]);
+    expect(
+      plantIdProviderReadyEvidenceAssets(
+        [{ ...canonical, frameExtractionAttempt: 2 }, canonicalSecond],
+        verification,
+        true
+      )
+    ).toEqual([]);
+    expect(
+      plantIdProviderReadyEvidenceAssets(
+        [{ ...canonical, frameExtractionAttempt: undefined }, canonicalSecond],
+        verification,
+        true
+      )
+    ).toEqual([]);
+    expect(
+      plantIdProviderReadyEvidenceAssets(
+        [{ ...canonical, frameIndex: undefined }, canonicalSecond],
+        verification,
+        true
+      )
+    ).toEqual([]);
+    expect(plantIdProviderReadyEvidenceAssets([canonical], verification, false)).toEqual(
+      []
+    );
+  });
+
+  it("shows persisted processing and a retryable server error without enabling AI", async () => {
+    mockSearchParams = { retryToolRunId: "processing-video-run" };
+    mockEvidenceAssets = [];
+    const sourceVideo = {
+      id: "processing-video-1",
+      _id: "processing-video-1",
+      assetType: "video",
+      originalUri: "file:///processing-video.mov",
+      durableUrl: "/protected/processing-video.mov",
+      uploadStatus: "uploaded",
+      source: "library",
+      aiUsable: false,
+      purpose: "crop_identification",
+      qualityWarnings: [],
+      frameExtraction: { status: "processing", attemptCount: 1 }
+    };
+    const incompleteFrame = {
+      id: "incomplete-frame-1",
+      _id: "incomplete-frame-1",
+      assetType: "photo",
+      originalUri: "/protected/incomplete-frame-1.jpg",
+      durableUrl: "/protected/incomplete-frame-1.jpg",
+      uploadStatus: "uploaded",
+      source: "generated",
+      sourceVideoEvidenceAssetId: "processing-video-1",
+      aiUsable: true,
+      purpose: "crop_identification",
+      qualityWarnings: []
+    };
+    mockGetToolRun.mockResolvedValue({
+      id: "processing-video-run",
+      toolType: "species_crop_id",
+      inputs: {
+        evidenceAssetIds: ["processing-video-1", "incomplete-frame-1"],
+        imageAnalysis: { evidenceUsed: ["incomplete-frame-1"] },
+        mediaEvidence: [
+          { id: "processing-video-1", type: "video" },
+          { id: "incomplete-frame-1", type: "photo" }
+        ]
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([sourceVideo, incompleteFrame]);
+    mockGetEvidenceVideoFrameExtraction.mockResolvedValue({
+      sourceVideo: {
+        ...sourceVideo,
+        frameExtraction: {
+          status: "partial",
+          attemptCount: 1,
+          error: "One or more generated frames could not be finalized."
+        }
+      },
+      extraction: {
+        status: "partial",
+        attemptCount: 1,
+        error: "One or more generated frames could not be finalized.",
+        retryable: true,
+        frames: []
+      }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(
+      await screen.findByText(
+        /still processing on GrowPath.*identification stays disabled/i
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
+
+    fireEvent.press(
+      screen.getByRole("button", { name: "Check video frame extraction progress" })
+    );
+
+    expect(
+      await screen.findByText(/generated frames could not be finalized/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Retry video frame extraction" })
+    ).toBeTruthy();
+    expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+  });
+
+  it("visibly disables a server-declared non-retryable frame action", async () => {
+    mockSearchParams = {};
+    const source = {
+      id: "non-retryable-video",
+      _id: "non-retryable-video",
+      assetType: "video",
+      originalUri: "file:///non-retryable-video.mov",
+      durableUrl: "/protected/non-retryable-video.mov",
+      uploadStatus: "uploaded",
+      source: "library",
+      aiUsable: false,
+      purpose: "crop_identification",
+      qualityWarnings: []
+    };
+    mockEvidenceAssets = [source];
+    mockExtractEvidenceVideoFrames.mockResolvedValue({
+      sourceVideo: source,
+      extraction: {
+        status: "failed",
+        attemptCount: 1,
+        error: "The stored video format cannot be decoded.",
+        retryable: false,
+        frames: []
+      }
+    });
+    const screen = render(<SpeciesCropIdToolRoute />);
+    fireEvent.press(await screen.findByRole("button", { name: "Extract video frames" }));
+
+    expect(
+      await screen.findByText(/stored video format cannot be decoded/i)
+    ).toBeTruthy();
+    const disabledAction = screen.getByRole("button", {
+      name: "Video frame extraction cannot be retried"
+    });
+    expect(disabledAction).toBeDisabled();
+    expect(screen.getByText("Video Frames Cannot Be Retried")).toBeTruthy();
+  });
+
+  it("disables extraction with retry guidance when the source video upload failed", async () => {
+    mockSearchParams = {};
+    mockEvidenceAssets = [
+      {
+        id: "failed-source-video",
+        _id: "failed-source-video",
+        assetType: "video",
+        originalUri: "file:///failed-source.mov",
+        uploadStatus: "failed",
+        source: "library",
+        aiUsable: false,
+        purpose: "crop_identification",
+        error: "Video upload lost its connection.",
+        qualityWarnings: []
+      }
+    ];
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(
+      await screen.findByText(/source video upload failed.*Retry that video upload/i)
+    ).toBeTruthy();
+    const unavailable = screen.getByRole("button", {
+      name: "Video frame extraction unavailable"
+    });
+    expect(unavailable).toBeDisabled();
+    expect(screen.getByText("Video Frames Unavailable")).toBeTruthy();
+    fireEvent.press(unavailable);
+    expect(mockExtractEvidenceVideoFrames).not.toHaveBeenCalled();
+  });
+
+  it("recovers and starts frame extraction in the authenticated Facility scope", async () => {
+    mockSearchParams = {
+      retryToolRunId: "facility-video-run",
+      workspace: "facility",
+      facilityId: "facility-1"
+    };
+    mockEntitlementMode = "facility";
+    mockEntitlementFacilityId = "facility-1";
+    mockEvidenceAssets = [];
+    const sourceVideo = {
+      id: "facility-video-1",
+      _id: "facility-video-1",
+      facilityId: "facility-1",
+      workspaceType: "facility",
+      workspaceId: "facility-1",
+      assetType: "video",
+      originalUri: "file:///facility-video.mov",
+      durableUrl: "/protected/facility-video.mov",
+      uploadStatus: "uploaded",
+      source: "library",
+      aiUsable: false,
+      purpose: "crop_identification",
+      qualityWarnings: [],
+      frameExtraction: { status: "idle", attemptCount: 0 }
+    };
+    mockGetToolRun.mockResolvedValue({
+      id: "facility-video-run",
+      toolType: "species_crop_id",
+      inputs: {
+        evidenceAssetIds: ["facility-video-1"],
+        mediaEvidence: [{ id: "facility-video-1", type: "video" }]
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([sourceVideo]);
+    mockExtractEvidenceVideoFrames.mockResolvedValue({
+      sourceVideo,
+      extraction: {
+        status: "processing",
+        attemptCount: 1,
+        retryable: true,
+        frames: []
+      }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    expect(await screen.findByText(/Recovered 1 private source video/i)).toBeTruthy();
+    expect(mockGetToolRun).toHaveBeenCalledWith("facility-video-run", {
+      workspaceType: "facility",
+      facilityId: "facility-1"
+    });
+    expect(mockGetEvidenceAssetsByIds).toHaveBeenCalledWith(["facility-video-1"], {
+      workspaceType: "facility",
+      workspaceId: "facility-1",
+      facilityId: "facility-1"
+    });
+
+    await act(async () => {
+      fireEvent.press(screen.getByRole("button", { name: "Extract video frames" }));
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    });
+
+    await waitFor(() =>
+      expect(mockExtractEvidenceVideoFrames).toHaveBeenCalledWith(
+        "facility-video-1",
+        {
+          workspaceType: "facility",
+          workspaceId: "facility-1",
+          facilityId: "facility-1",
+          maxFrames: 12,
+          purpose: "crop_identification"
+        },
+        expect.objectContaining({ signal: expect.anything() })
+      )
+    );
+    expect(
+      screen.getByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
   });
 
   it.each([
@@ -657,7 +1769,7 @@ describe("SpeciesCropIdToolRoute", () => {
     }
   );
 
-  it("sends a generated frame with its source video so the server can verify lineage", async () => {
+  it("keeps an unverified generated frame and its source video out of AI", async () => {
     mockSearchParams = {};
     mockEvidenceAssets = [
       {
@@ -682,60 +1794,12 @@ describe("SpeciesCropIdToolRoute", () => {
         qualityWarnings: []
       }
     ];
-    mockAskPersonalAssistant.mockResolvedValueOnce({
-      success: true,
-      reply: JSON.stringify({
-        userEnteredName: "Mustard",
-        scientificName: "Brassica spp.",
-        imageAnalysisPerformed: "true",
-        imageQuality: "usable",
-        visualConfidence: "medium"
-      }),
-      provider: "openai",
-      evidenceUsed: ["frame-photo-1"],
-      mediaAnalysis: { photosAnalyzed: 1 },
-      analysisReceipt: {
-        aiUsageEventId: "usage-frame-1",
-        normalizedPlantIdResultDigest: "digest-frame-1",
-        evidenceFingerprint: "frame-photo-1|source-video-1",
-        reviewPolicyVersion: "plant-id-night-light-detail-v2"
-      }
-    });
-
     const screen = render(<SpeciesCropIdToolRoute />);
-    fireEvent.press(screen.getByText("Identify Plant from Photos"));
-
-    await waitFor(() =>
-      expect(mockAskPersonalAssistant).toHaveBeenCalledWith(
-        expect.objectContaining({
-          evidenceAssetIds: ["frame-photo-1", "source-video-1"]
-        })
-      )
-    );
-    await waitFor(() =>
-      expect(mockRunCalculator).toHaveBeenCalledWith(
-        "species-crop-id",
-        expect.objectContaining({
-          evidenceAssetIds: ["frame-photo-1", "source-video-1"],
-          mediaEvidence: expect.arrayContaining([
-            expect.objectContaining({ id: "frame-photo-1", type: "photo" }),
-            expect.objectContaining({ id: "source-video-1", type: "video" })
-          ]),
-          imageAnalysis: expect.objectContaining({
-            photoCount: 1,
-            photosAnalyzed: 1,
-            stillImagesAnalyzed: 1,
-            videoFramesAnalyzed: 1,
-            videosAttached: 1,
-            videosAnalyzed: 0,
-            aiUsageEventId: "usage-frame-1",
-            normalizedPlantIdResultDigest: "digest-frame-1",
-            evidenceFingerprint: "frame-photo-1|source-video-1",
-            reviewPolicyVersion: "plant-id-night-light-detail-v2"
-          })
-        })
-      )
-    );
+    expect(
+      await screen.findByRole("button", { name: "Identify Plant from Photos" })
+    ).toBeDisabled();
+    expect(mockAskPersonalAssistant).not.toHaveBeenCalled();
+    expect(mockRunCalculator).not.toHaveBeenCalled();
   });
 
   it("scopes facility AI and saved runs while preserving only actual manual input provenance", async () => {
@@ -830,7 +1894,6 @@ describe("SpeciesCropIdToolRoute", () => {
   it("keeps commercial Plant ID out of Personal records even with hostile route context", async () => {
     mockSearchParams = {
       commercialAccountId: "commercial-1",
-      retryToolRunId: "personal-run-secret",
       growId: "personal-grow-secret",
       plantId: "personal-plant-secret",
       fieldStudyId: "personal-study-secret"
@@ -880,6 +1943,78 @@ describe("SpeciesCropIdToolRoute", () => {
         /This result remains in the current commercial workspace's Saved Runs/i
       )
     ).toBeTruthy();
+  });
+
+  it("scopes a Commercial saved-video retry without trusting the route account id", async () => {
+    mockSearchParams = {
+      commercialAccountId: "untrusted-route-commercial-id",
+      retryToolRunId: "commercial-video-run"
+    };
+    mockEntitlementMode = "commercial";
+    mockEvidenceAssets = [];
+    const sourceVideo = {
+      id: "commercial-video-1",
+      _id: "commercial-video-1",
+      workspaceType: "commercial",
+      assetType: "video",
+      originalUri: "file:///commercial-video.mov",
+      durableUrl: "/protected/commercial-video.mov",
+      uploadStatus: "uploaded",
+      source: "library",
+      aiUsable: false,
+      purpose: "crop_identification",
+      qualityWarnings: []
+    };
+    mockGetToolRun.mockResolvedValue({
+      id: "commercial-video-run",
+      toolType: "species_crop_id",
+      inputs: {
+        evidenceAssetIds: ["commercial-video-1"],
+        mediaEvidence: [{ id: "commercial-video-1", type: "video" }]
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([sourceVideo]);
+    mockExtractEvidenceVideoFrames.mockResolvedValue({
+      sourceVideo,
+      extraction: {
+        status: "processing",
+        attemptCount: 1,
+        retryable: true,
+        frames: []
+      }
+    });
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+    expect(await screen.findByText(/Recovered 1 private source video/i)).toBeTruthy();
+    expect(mockGetToolRun).toHaveBeenCalledWith("commercial-video-run", {
+      workspaceType: "commercial"
+    });
+    expect(mockGetEvidenceAssetsByIds).toHaveBeenCalledWith(["commercial-video-1"], {
+      workspaceType: "commercial"
+    });
+
+    await act(async () => {
+      fireEvent.press(screen.getByRole("button", { name: "Extract video frames" }));
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    });
+
+    await waitFor(() =>
+      expect(mockExtractEvidenceVideoFrames).toHaveBeenCalledWith(
+        "commercial-video-1",
+        {
+          workspaceType: "commercial",
+          maxFrames: 12,
+          purpose: "crop_identification"
+        },
+        expect.objectContaining({ signal: expect.anything() })
+      )
+    );
+    expect(mockExtractEvidenceVideoFrames.mock.calls[0][1]).not.toEqual(
+      expect.objectContaining({
+        workspaceId: expect.anything(),
+        commercialAccountId: expect.anything()
+      })
+    );
   });
 
   it("clears Personal state when authenticated mode changes on the mounted route", async () => {
@@ -2497,7 +3632,15 @@ describe("SpeciesCropIdToolRoute", () => {
 
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
-    fireEvent.press(screen.getByLabelText("Replace test evidence"));
+    expect(screen.getByLabelText("Replace test evidence")).toBeDisabled();
+    expect(screen.getByText("Evidence picker disabled: yes")).toBeTruthy();
+    mockEvidenceAssets = [];
+    mockEntitlementMode = "commercial";
+    await act(async () => {
+      screen.rerender(<SpeciesCropIdToolRoute />);
+      await Promise.resolve();
+    });
+    await screen.findByText(/current commercial workspace's Saved Runs/i);
     await act(async () => {
       resolveAssistant({
         success: true,
@@ -2525,7 +3668,14 @@ describe("SpeciesCropIdToolRoute", () => {
 
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
-    fireEvent.press(screen.getByLabelText("Replace test evidence"));
+    expect(screen.getByLabelText("Replace test evidence")).toBeDisabled();
+    mockEvidenceAssets = [];
+    mockEntitlementMode = "commercial";
+    await act(async () => {
+      screen.rerender(<SpeciesCropIdToolRoute />);
+      await Promise.resolve();
+    });
+    await screen.findByText(/current commercial workspace's Saved Runs/i);
     await act(async () => {
       resolveCalculator({
         outputs: { likelyCrop: "Stale plant", confidence: "high" },

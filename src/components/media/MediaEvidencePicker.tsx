@@ -36,6 +36,8 @@ type Props = {
   maxPhotos?: number;
   allowVideo?: boolean;
   extractFramesFromVideo?: boolean;
+  /** Save a private source video only; a separate durable server job extracts frames. */
+  serverFrameExtractionOnly?: boolean;
   maxExtractedVideoFrames?: number;
   maxVideoSeconds?: number;
   aiUsable?: boolean;
@@ -47,6 +49,8 @@ type Props = {
   videoWorkspaceType?: VideoWorkspaceType;
   videoWorkspaceId?: string;
   onBusyChange?: (busy: boolean) => void;
+  /** Prevent adding, retrying, or removing evidence while a consuming action runs. */
+  disabled?: boolean;
   /** Existing Saved Run assets that Remove should only deselect, never delete. */
   retainOnRemoveAssetIds?: readonly string[];
 };
@@ -182,6 +186,7 @@ export default function MediaEvidencePicker({
   maxPhotos = 10,
   allowVideo = false,
   extractFramesFromVideo = false,
+  serverFrameExtractionOnly = false,
   maxExtractedVideoFrames = 6,
   maxVideoSeconds = 30,
   aiUsable = false,
@@ -193,6 +198,7 @@ export default function MediaEvidencePicker({
   videoWorkspaceType,
   videoWorkspaceId,
   onBusyChange,
+  disabled = false,
   retainOnRemoveAssetIds = []
 }: Props) {
   const { palette } = useAppTheme();
@@ -218,6 +224,8 @@ export default function MediaEvidencePicker({
   const registrationStartedAssetIds = useRef(new Set<string>());
   const pendingRegistrationInputs = useRef(new Map<string, EvidenceAssetCreateInput>());
   const pickerActive = useRef(false);
+  const disabledRef = useRef(disabled);
+  disabledRef.current = disabled;
   const disposed = useRef(false);
   const protectedPreviewExpiries = useRef<Record<string, number>>({});
   const protectedPreviewRefreshTimers = useRef(
@@ -781,7 +789,7 @@ export default function MediaEvidencePicker({
 
   async function choosePhotos() {
     const remaining = Math.max(0, maxPhotos - photoCount);
-    if (!remaining || busy || pickerActive.current) return;
+    if (!remaining || busy || disabledRef.current || pickerActive.current) return;
     const pickerJobId = "picker_photos";
     pickerActive.current = true;
     markJobActive(pickerJobId, true);
@@ -794,7 +802,7 @@ export default function MediaEvidencePicker({
         selectionLimit: remaining,
         quality: 0.85
       });
-      if (disposed.current || picked.canceled) return;
+      if (disposed.current || disabledRef.current || picked.canceled) return;
       const selected = (picked.assets || [])
         .slice(0, remaining)
         .map((asset) =>
@@ -814,7 +822,8 @@ export default function MediaEvidencePicker({
   }
 
   async function chooseVideo() {
-    if (!allowVideo || videoCount || busy || pickerActive.current) return;
+    if (!allowVideo || videoCount || busy || disabledRef.current || pickerActive.current)
+      return;
     const pickerJobId = "picker_video";
     pickerActive.current = true;
     markJobActive(pickerJobId, true);
@@ -827,13 +836,19 @@ export default function MediaEvidencePicker({
         videoMaxDuration: maxVideoSeconds,
         quality: 0.8
       });
-      if (disposed.current || picked.canceled || !picked.assets?.[0]) return;
+      if (
+        disposed.current ||
+        disabledRef.current ||
+        picked.canceled ||
+        !picked.assets?.[0]
+      )
+        return;
       const local = toLocalAsset(
         picked.assets[0],
         purpose,
         sourceContext,
         "library",
-        extractFramesFromVideo ? false : aiUsable,
+        extractFramesFromVideo || serverFrameExtractionOnly ? false : aiUsable,
         "video"
       );
       if (!local.durationSeconds) {
@@ -856,6 +871,17 @@ export default function MediaEvidencePicker({
       const withVideo = await uploadSelected([local]);
       if (disposed.current) return;
       const savedVideo = withVideo.find((asset) => asset.id === local.id);
+      if (
+        serverFrameExtractionOnly &&
+        savedVideo?.uploadStatus === "uploaded" &&
+        !disposed.current &&
+        !removedAssetIds.current.has(local.id)
+      ) {
+        setVideoFeedback(
+          "Private source video uploaded. Use the separate Extract Video Frames action to start or restore the durable server job; this device did not create or upload local frames."
+        );
+        return;
+      }
       if (
         !extractFramesFromVideo ||
         savedVideo?.uploadStatus !== "uploaded" ||
@@ -952,7 +978,7 @@ export default function MediaEvidencePicker({
   }
 
   async function retryUpload(asset: EvidenceAsset) {
-    if (busy || !retryableAssetIds.has(asset.id)) return;
+    if (busy || disabledRef.current || !retryableAssetIds.has(asset.id)) return;
     await uploadSelected([asset], true);
   }
 
@@ -1003,6 +1029,7 @@ export default function MediaEvidencePicker({
       restoreOnDeleteFailure?: boolean;
     } = {}
   ) {
+    if (disabledRef.current) return;
     const cascadeGeneratedFrames = options.cascadeGeneratedFrames !== false;
     const restoreOnDeleteFailure = options.restoreOnDeleteFailure !== false;
     if (cascadeGeneratedFrames && asset.assetType === "video") {
@@ -1119,7 +1146,14 @@ export default function MediaEvidencePicker({
           ? "Adding media approves AI use for this workflow only. It is not used for model training. Failed uploads are never sent to AI analysis."
           : "Upload clear, durable evidence. Failed uploads are never sent to AI analysis."}
       </Text>
-      {allowVideo && extractFramesFromVideo ? (
+      {allowVideo && serverFrameExtractionOnly ? (
+        <Text style={styles.help}>
+          The video is saved as private source evidence with AI use disabled. This device
+          does not create or upload local still frames. After upload, use the separate
+          Extract Video Frames action to run the durable server job, then GrowPath
+          verifies the exact saved frame set before image review.
+        </Text>
+      ) : allowVideo && extractFramesFromVideo ? (
         <Text style={styles.help}>
           A video is kept as private evidence. GrowPath samples up to{" "}
           {Math.min(maxExtractedVideoFrames, maxPhotos)} timestamped still frames across
@@ -1148,9 +1182,12 @@ export default function MediaEvidencePicker({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Add evidence photos"
-          disabled={busy || photoCount >= maxPhotos}
+          disabled={disabled || busy || photoCount >= maxPhotos}
           onPress={choosePhotos}
-          style={[styles.button, (busy || photoCount >= maxPhotos) && styles.disabled]}
+          style={[
+            styles.button,
+            (disabled || busy || photoCount >= maxPhotos) && styles.disabled
+          ]}
         >
           <Text style={styles.buttonText}>Add Photos</Text>
         </Pressable>
@@ -1158,9 +1195,12 @@ export default function MediaEvidencePicker({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Add evidence video"
-            disabled={busy || videoCount >= 1}
+            disabled={disabled || busy || videoCount >= 1}
             onPress={chooseVideo}
-            style={[styles.button, (busy || videoCount >= 1) && styles.disabled]}
+            style={[
+              styles.button,
+              (disabled || busy || videoCount >= 1) && styles.disabled
+            ]}
           >
             <Text style={styles.buttonText}>Add Video</Text>
           </Pressable>
@@ -1209,9 +1249,9 @@ export default function MediaEvidencePicker({
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Retry evidence ${asset.id}`}
-                disabled={busy}
+                disabled={disabled || busy}
                 onPress={() => void retryUpload(asset)}
-                style={[styles.retry, busy && styles.disabled]}
+                style={[styles.retry, (disabled || busy) && styles.disabled]}
               >
                 <Text style={styles.retryText}>Retry</Text>
               </Pressable>
@@ -1219,8 +1259,9 @@ export default function MediaEvidencePicker({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Remove evidence ${asset.id}`}
+              disabled={disabled}
               onPress={() => removeAsset(asset)}
-              style={styles.remove}
+              style={[styles.remove, disabled && styles.disabled]}
             >
               <Text style={styles.removeText}>Remove</Text>
             </Pressable>

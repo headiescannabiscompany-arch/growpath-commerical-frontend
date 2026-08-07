@@ -77,9 +77,27 @@ observation; withdrawing the observation must not make the protected original pu
 
 Image review must evaluate target clarity, not only whole-frame quality. A sharp wide photo can still be diagnostically limited when the symptom occupies a small, unmarked region. Ask the user to describe or mark the intended target and add a close target view. When an IPM frame contains multiple organisms, objects, or size classes, list defensible visible traits separately, do not assume the largest or most obvious subject is the intended pest, and request a dedicated macro when the target remains ambiguous.
 
-Diagnosis, IPM Scout, and Crop Identification may each accept one private source video shorter than 10 minutes, with 9 minutes 59 seconds as the enforced maximum. Preserve the source video as non-AI evidence and extract up to 12 timestamped candidate still frames spanning the timeline on the user's device. Only uploaded still frames are eligible for provider image review, and each counts toward the ordinary 12-photo ceiling. Each frame must independently pass the workflow's context, target, focus, lighting, glare, color, and view-role checks. Do not describe this as direct video or motion analysis, infer continuity between sampled frames, or rebuild detail hidden by motion blur, compression, occlusion, or clipped highlights.
+Diagnosis, IPM Scout, and Crop Identification may each accept one private source video shorter than 10 minutes, with 9 minutes 59 seconds as the enforced maximum. Preserve the source video as non-AI evidence and extract up to 12 timestamped candidate still frames spanning the timeline. Diagnosis and IPM Scout may use the established device extraction path. Crop Identification must save only the private source video on the device and use the durable server extraction path; it must not create or upload client thumbnail frames. Only uploaded still frames are eligible for provider image review, and each counts toward the ordinary 12-photo ceiling. Each frame must independently pass the workflow's context, target, focus, lighting, glare, color, and view-role checks. Do not describe this as direct video or motion analysis, infer continuity between sampled frames, or rebuild detail hidden by motion blur, compression, occlusion, or clipped highlights.
 
-Every client-extracted frame must retain the protected source-video evidence ID and remain
+When a new or Saved Plant ID retains a private source video without
+a completed still-frame set, the authorized server may extract the same bounded number of
+timestamped stills from that already protected video. Persist `idle`, `processing`,
+`completed`, `partial`, or `failed` extraction state, attempt count, policy/version,
+timestamps, friendly error, and generated-frame IDs on the source evidence record. The
+interface must resume or poll a persisted processing job, disable AI submission while it
+is processing, and offer an explicit retry after `partial` or `failed` without requiring
+the video to be uploaded again. Only a `completed` response whose generated photo records
+are durably uploaded, AI-approved, workspace-scoped, purpose-matched, and linked to that
+exact source video may enter image review. A partial set contributes zero AI evidence.
+Re-fetch the exact completed source and ordered frame IDs before enabling identification.
+Require every selected generated frame to match the completed source's nonblank extraction
+version, extraction attempt, ordered frame index, workspace, purpose, grow/plant lineage,
+and exact canonical frame-ID allowlist. Exclude orphan, stale-version, extra, partial, and
+client-generated frames. Server
+extraction does not make the private source video provider input and does not permit a
+claim of motion analysis.
+
+Every client- or server-extracted frame must retain the protected source-video evidence ID and remain
 in the same user or Facility, grow, plant, purpose, and selected evidence set as that video.
 The source video itself is never counted as visually analyzed. Parent linkage records the
 user-submitted association; it does not prove motion analysis or cryptographically prove
