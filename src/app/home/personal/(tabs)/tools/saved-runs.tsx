@@ -35,6 +35,8 @@ import ToolResultSurface, {
   type ToolResultMetric,
   type ToolResultNotice
 } from "@/features/personal/tools/ToolResultSurface";
+import ResultQuestionCard from "@/features/personal/tools/ResultQuestionCard";
+import { askPersonalAssistant } from "@/api/personalAssistant";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -45,6 +47,7 @@ import {
 } from "@/features/personal/tools/fieldObservationDraft";
 import {
   bestStructuredPlantCandidateName,
+  isCannabisPlantIdentification,
   plantIdentificationCandidates
 } from "@/features/personal/tools/plantIdentificationCandidates";
 import PlantIdentificationResultDetails from "@/features/personal/tools/PlantIdentificationResultDetails";
@@ -139,6 +142,14 @@ function isDryCureRun(run: ToolRun | null) {
     .toLowerCase()
     .replaceAll("-", "_");
   return type === "dry_cure_guard";
+}
+
+function isIpmRun(run: ToolRun | null) {
+  const type = String(run?.toolType || run?.toolName || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "_");
+  return type === "ipm_scout";
 }
 
 function isCloneRootingRun(run: ToolRun | null) {
@@ -275,6 +286,49 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
         key: "confirm",
         label: "Needs confirmation",
         value: correction ? "No" : outputs.userConfirmationRequired ? "Yes" : "No"
+      }
+    ];
+  }
+  if (isIpmRun(run)) {
+    return [
+      {
+        key: "result-type",
+        label: "Result type",
+        value: String(
+          outputs.differentialStatus || "legacy working hypothesis"
+        ).replaceAll("_", " ")
+      },
+      {
+        key: "issue",
+        label: "Issue",
+        value: formatValue(outputs.suspectedIssue)
+      },
+      {
+        key: "organism",
+        label: "Organism",
+        value: formatValue(outputs.suspectedOrganism)
+      },
+      {
+        key: "confidence",
+        label: "Confidence",
+        value: formatValue(outputs.confidence)
+      },
+      {
+        key: "severity",
+        label: "Severity / spread",
+        value: formatValue(outputs.severity)
+      },
+      {
+        key: "independent-evidence",
+        label: "Independent evidence channels",
+        value: formatValue(outputs.readiness?.completedEvidenceChannels)
+      },
+      {
+        key: "media",
+        label: "Photo pixels analyzed",
+        value: outputs.mediaAnalysis?.performed
+          ? `Yes - ${outputs.mediaAnalysis.photosAnalyzed || 0} photo(s)`
+          : "No"
       }
     ];
   }
@@ -499,6 +553,65 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
         key: "crop-id-working-candidate",
         severity: "info",
         message: `Working identification candidate: ${candidate}. Exact species remains unconfirmed; confirm the identity before applying crop-specific guidance.`
+      });
+    }
+  }
+
+  if (isIpmRun(run)) {
+    const inputs = runInputs(run);
+    const differentialStatus = String(outputs.differentialStatus || "");
+    const oldWhiteMarkResult =
+      !differentialStatus &&
+      /white\s+(?:powder|patch|spot|mark|film|residue)|powdery/i.test(
+        [inputs.leafDamage, inputs.evidence, outputs.supportingEvidence]
+          .flat()
+          .filter(Boolean)
+          .join(" ")
+      ) &&
+      !/(wipe|transfer|macro|magnif|myceli|felt[- ]like)/i.test(
+        [
+          inputs.leafDamage,
+          inputs.evidence,
+          inputs.undersideInspection,
+          inputs.magnification
+        ]
+          .filter(Boolean)
+          .join(" ")
+      );
+    if (differentialStatus.startsWith("unresolved") || oldWhiteMarkResult) {
+      provenance.push({
+        key: "ipm-unresolved-differential",
+        severity: "high",
+        message: oldWhiteMarkResult
+          ? `Legacy IPM result needs a new review: white marks alone do not separate powdery mildew from thrips or mite feeding, residue, mineral deposits, glare, or tissue damage. ${run?.secureFollowUpSupported ? "Use the evidence-bound question below or rerun" : "Rerun"} with a neutral-light macro and leaf-underside view.`
+          : "Unresolved IPM differential: the evidence does not support one confirmed pest or disease headline. Compare the candidates and complete the distinguishing checks before choosing treatment."
+      });
+    }
+    if (Array.isArray(outputs.rankedCandidates) && outputs.rankedCandidates.length) {
+      provenance.push({
+        key: "ipm-ranked-candidates",
+        severity: "info",
+        message: `Candidate comparison: ${outputs.rankedCandidates
+          .slice(0, 3)
+          .map(
+            (candidate: any) =>
+              `${candidate.suspectedOrganism || "unresolved candidate"} (${candidate.evidenceGateStatus || "pattern only"}; confidence ceiling ${candidate.confidenceCeiling || "not provided"})`
+          )
+          .join("; ")}.`
+      });
+    }
+    if (Array.isArray(outputs.confidenceCeilings) && outputs.confidenceCeilings.length) {
+      provenance.push({
+        key: "ipm-confidence-ceilings",
+        severity: "medium",
+        message: `Why confidence cannot be higher: ${outputs.confidenceCeilings.join(" ")}`
+      });
+    }
+    if (outputs.evidenceProvenance?.note) {
+      provenance.push({
+        key: "ipm-evidence-provenance",
+        severity: "info",
+        message: String(outputs.evidenceProvenance.note)
       });
     }
   }
@@ -758,6 +871,71 @@ function runTitle(run: ToolRun | null) {
   return labelize(type);
 }
 
+function savedRunFollowUpQuestions(run: ToolRun | null) {
+  if (isIpmRun(run)) {
+    return [
+      "Compare thrips, mites, and powdery mildew.",
+      "What evidence contradicts this result?",
+      "What close-up should I add to separate the leading possibilities?"
+    ];
+  }
+  if (isSpeciesCropRun(run)) {
+    const inputs = runInputs(run);
+    const explicitCropContext = [
+      inputs.userEnteredName,
+      inputs.scientificName,
+      inputs.cropCommonName,
+      inputs.cropContext,
+      inputs.selectedPlantContext?.cropCommonName,
+      inputs.selectedPlantContext?.scientificName,
+      run?.selectedPlantContext?.cropCommonName,
+      run?.selectedPlantContext?.scientificName
+    ]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean);
+    const cannabisContext =
+      isCannabisPlantIdentification(displayOutputsFor(run)) ||
+      explicitCropContext.some((value) => /\b(?:cannabis|marijuana|hemp)\b/i.test(value));
+    return [
+      ...(cannabisContext
+        ? [
+            "Male, female, intersex, or unclear from this evidence?",
+            "What node or preflower photo would confirm plant sex?"
+          ]
+        : []),
+      "What visible traits support this identification?",
+      "What photo should I add next to separate the leading candidates?"
+    ];
+  }
+  return [];
+}
+
+function savedRunFollowUpAvailable(run: ToolRun | null) {
+  if (!run?.immutableSnapshotStored || !run?.secureFollowUpSupported) return false;
+  if (isSpeciesCropRun(run) && savedUserCorrection(runOutputs(run))) return false;
+  return isIpmRun(run) || isSpeciesCropRun(run);
+}
+
+function savedRunEvidenceAssetIds(run: ToolRun | null) {
+  const inputs = runInputs(run);
+  const outputs = runOutputs(run);
+  const imageAnalysis =
+    outputs.imageAnalysis && typeof outputs.imageAnalysis === "object"
+      ? outputs.imageAnalysis
+      : {};
+  return Array.from(
+    new Set(
+      [
+        ...(Array.isArray(inputs.evidenceAssetIds) ? inputs.evidenceAssetIds : []),
+        ...(Array.isArray(imageAnalysis.evidenceUsed) ? imageAnalysis.evidenceUsed : [])
+      ]
+        .map(String)
+        .map((value) => value.trim())
+        .filter(Boolean)
+    )
+  );
+}
+
 export default function SavedToolRunsScreen() {
   const { palette } = useAppTheme();
   const entitlements = useEntitlements();
@@ -876,6 +1054,50 @@ export default function SavedToolRunsScreen() {
   const renderedWorkspaceIdentityRef = useRef(workspaceIdentityKey);
   const currentWorkspaceIdentityRef = useRef(workspaceIdentityKey);
   currentWorkspaceIdentityRef.current = workspaceIdentityKey;
+
+  async function submitSavedRunFollowUp(question: string) {
+    const sourceToolRunId = selectedRun ? idFor(selectedRun) : "";
+    const workflow = isIpmRun(selectedRun)
+      ? "ipm-result-follow-up"
+      : isSpeciesCropRun(selectedRun)
+        ? "plant-id-follow-up"
+        : "";
+    if (!sourceToolRunId || !workflow) {
+      throw new Error("This saved result does not support an evidence-bound follow-up.");
+    }
+    const response = await askPersonalAssistant({
+      message: question,
+      sourceToolRunId,
+      growId: String(selectedRun?.growId || "").trim() || undefined,
+      plantId: String(selectedRun?.plantId || "").trim() || undefined,
+      workspaceType,
+      ...(workspaceType === "facility" && facilityId ? { facilityId } : {}),
+      evidenceAssetIds: savedRunEvidenceAssetIds(selectedRun),
+      context: {
+        workflow,
+        sourceToolRunId,
+        sourceTool: isIpmRun(selectedRun) ? "ipm-scout" : "species-crop-id",
+        workspaceType,
+        ...(commercialAccountId ? { commercialAccountId } : {})
+      }
+    });
+    const answer = String(response?.reply || "").trim();
+    if (!response?.success || !answer) {
+      throw new Error("AI did not return a usable follow-up answer.");
+    }
+    const photosAnalyzed = Number(response.mediaAnalysis?.photosAnalyzed || 0);
+    return {
+      answer,
+      providerLabel: response.providerLabel || response.provider,
+      evidenceInspected:
+        photosAnalyzed > 0
+          ? true
+          : response.mediaAnalysis?.requested === true
+            ? false
+            : undefined,
+      limitations: response.limitations || []
+    };
+  }
 
   useEffect(() => {
     if (renderedWorkspaceIdentityRef.current === workspaceIdentityKey) return;
@@ -1467,6 +1689,18 @@ export default function SavedToolRunsScreen() {
               formulas={selectedRun.formulas || []}
               uncertainty={selectedRun.uncertainty || null}
               confidence={selectedRun.confidence || null}
+              followUp={
+                savedRunFollowUpAvailable(selectedRun) ? (
+                  <ResultQuestionCard
+                    sourceKey={`${selectedRunId}:immutable`}
+                    suggestions={savedRunFollowUpQuestions(selectedRun)}
+                    onSubmit={submitSavedRunFollowUp}
+                  />
+                ) : null
+              }
+              enableDefaultAskAI={
+                !isIpmRun(selectedRun) && !isSpeciesCropRun(selectedRun)
+              }
               actions={actions}
               feedback={feedback}
               copyPayload={selectedRun}

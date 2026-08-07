@@ -4,6 +4,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import SpeciesCropIdToolRoute, {
   isCannabisGenusIdentification,
   plantIdFrameMergeCapacityError,
+  plantIdResultFollowUpQuestions,
   plantIdProviderReadyEvidenceAssets
 } from "@/app/home/personal/(tabs)/tools/species-crop-id";
 import { providerEvidencePayload } from "@/api/evidence";
@@ -208,6 +209,27 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
 }));
 
 describe("SpeciesCropIdToolRoute", () => {
+  it("shows plant-sex questions only when cannabis context is established", () => {
+    expect(
+      plantIdResultFollowUpQuestions({
+        outputs: { likelyCrop: "Cannabis", scientificName: "Cannabis sativa" },
+        payload: {}
+      })
+    ).toContain("Male, female, intersex, or unclear from this evidence?");
+    expect(
+      plantIdResultFollowUpQuestions({
+        outputs: { likelyCrop: "rose", scientificName: "Rosa spp." },
+        payload: { userEnteredName: "rose" }
+      })
+    ).not.toContain("Male, female, intersex, or unclear from this evidence?");
+    expect(
+      plantIdResultFollowUpQuestions({
+        outputs: { likelyCrop: "unknown crop", confidence: "low" },
+        payload: { userEnteredName: "Cannabis, flowering" }
+      })
+    ).toContain("Male, female, intersex, or unclear from this evidence?");
+  });
+
   beforeEach(() => {
     jest.resetAllMocks();
     mockSearchParams = { growId: "grow-1" };
@@ -464,6 +486,40 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(screen.getByText("Candidate comparison")).toBeTruthy();
     expect(screen.getByText(/inspected 1 still image/i)).toBeTruthy();
     expect(screen.queryByText("Confirm & Save to Grow")).toBeNull();
+
+    expect(
+      screen.getByLabelText(
+        "Use suggested question: Male, female, intersex, or unclear from this evidence?"
+      )
+    ).toBeTruthy();
+    mockAskPersonalAssistant.mockResolvedValueOnce({
+      success: true,
+      reply:
+        "Unclear from these views. Add sharp neutral-light node and preflower macros; stems and stipules alone do not establish plant sex.",
+      providerLabel: "GrowPath evidence-bound Plant ID follow-up",
+      mediaAnalysis: { requested: true, photosAnalyzed: 1 },
+      limitations: ["Reproductive structures are not resolved."]
+    });
+    fireEvent.press(
+      screen.getByLabelText(
+        "Use suggested question: Male, female, intersex, or unclear from this evidence?"
+      )
+    );
+    fireEvent.press(screen.getByLabelText("Ask AI about this result for 1 AI credit"));
+    await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(2));
+    expect(mockAskPersonalAssistant.mock.calls[1][0]).toEqual(
+      expect.objectContaining({
+        message: "Male, female, intersex, or unclear from this evidence?",
+        sourceToolRunId: "toolrun-1",
+        evidenceAssetIds: ["evidence-1"],
+        context: expect.objectContaining({
+          workflow: "plant-id-follow-up",
+          sourceToolRunId: "toolrun-1",
+          sourceTool: "species-crop-id"
+        })
+      })
+    );
+    expect(await screen.findByText(/Unclear from these views/)).toBeTruthy();
   }, 10_000);
 
   it("does not claim image analysis after a manual no-media calculation", async () => {

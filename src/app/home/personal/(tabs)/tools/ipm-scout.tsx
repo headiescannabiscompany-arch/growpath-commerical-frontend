@@ -47,7 +47,18 @@ export function normalizeIpmPrefillField({
     /^(?:unknown|unavailable|n\/?a|not\s+(?:applicable|assessed|confirmed|determined|documented|known|observed|performed|provided|used|visible)|none\s+(?:documented|observed|provided))$/i.test(
       text
     );
-  if (fieldKey !== "pestSeen" && isUnknownPlaceholder) return "";
+  if (fieldKey === "pestSeen") {
+    if (
+      isUnknownPlaceholder ||
+      /(?:not\s+confirmed|\bpossible\b|\bsuspect(?:ed)?\b|\blikely\b|\bhypothesis\b|\bmay\s+be\b|[- ]like\b)/i.test(
+        text
+      )
+    ) {
+      return "not confirmed";
+    }
+    return undefined;
+  }
+  if (isUnknownPlaceholder) return "";
   return undefined;
 }
 
@@ -257,12 +268,28 @@ export default function IpmScoutToolRoute() {
       aiPrefill={{
         buttonLabel: "Analyze Photos & Prefill Scout",
         clearUnfilled: true,
+        preserveAllExistingFields: true,
         evidenceAssetIds: () => evidencePayload.imageEvidenceAssetIds,
         isReady: () => evidencePayload.images.length > 0,
         notReadyMessage:
           "Upload at least one clear photo before asking AI to inspect the scout evidence. You can still complete the form manually.",
-        buildMessage: () =>
-          `Inspect the attached image pixels, then prefill a cautious ETGU/IPM scout using any selected private grow or plant context. Return JSON only with exactly these string keys: {"cropContext":"","scoutLocation":"","plantsChecked":"","plantsAffected":"","pestSeen":"","leafDamage":"","distribution":"","progression":"","undersideInspection":"","magnification":"","stickyTrapCount":"","trapContext":"","environmentConditions":"","recentActions":"","evidence":"","additionalInformation":"","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low"}. Separate observations from hypotheses. When several organisms, objects, or possible targets appear, enumerate their defensible visible traits separately and do not assume the largest or most obvious subject is the intended pest. pestSeen may name an organism only when the pixels show defensible identifying traits; otherwise write "not confirmed". Never invent counts, progression, magnification, trap findings, environment, or prior actions. Leave every unknown value as an empty string; except for pestSeen, do not fill fields with placeholders such as "not determined", "not performed", "not provided", "not applicable", or "none documented". plantsChecked, plantsAffected, and stickyTrapCount must stay empty because a photo is not a completed scout count. evidence must list only visible or recorded facts. additionalInformation must ask the user to mark or describe the intended target when it is ambiguous, name plausible alternatives, and request the exact leaf-top, leaf-underside, dedicated target macro, whole-plant, root-zone, sticky-trap, or follow-up evidence that would discriminate among them. Do not recommend pesticide products or rates.`,
+        buildMessage: ({ values }) =>
+          `Inspect the attached image pixels, then prefill a cautious ETGU/IPM scout. Return JSON only with exactly these string keys: {"cropContext":"","scoutLocation":"","plantsChecked":"","plantsAffected":"","pestSeen":"","leafDamage":"","distribution":"","progression":"","undersideInspection":"","magnification":"","stickyTrapCount":"","trapContext":"","environmentConditions":"","recentActions":"","evidence":"","additionalInformation":"","imageAnalysisPerformed":"true or false","imageQuality":"usable, limited, or unusable","visualConfidence":"high, medium, or low"}.
+
+Evidence rules:
+- Keep direct organism observations, disease signs, damage patterns, and hypotheses separate.
+- pestSeen may contain an organism name only when a sharp view shows defensible body morphology, eggs, larvae, movement, webbing, frass, or another direct organism sign. Otherwise write "not confirmed". Never put "powdery mildew-like", "thrips-like", or another hypothesis in pestSeen.
+- Generic white, pale, or reflective marks alone are ambiguous. Compare superficial white/gray powdery growth with thrips or mite feeding damage, spray/residue, mineral deposits, dust, glare, and senescent or physical damage. Do not label powdery mildew from white marks alone.
+- A powdery-mildew hypothesis needs a sharp, color-reliable macro showing superficial powdery/felt-like growth plus a second independent discriminator such as another role-diverse view or a user-recorded wipe/transfer observation.
+- A thrips hypothesis needs compatible silvering, stippling, streaking, scarring, or distorted tissue plus black frass or a sharp direct view of a slender insect or larva. Do not infer thrips from generic pale marks alone.
+- If the light, glare, focus, scale, target, leaf surface, or color is limited, set imageQuality to limited or unusable and visualConfidence to low. Ask for neutral-light leaf-top, leaf-underside, and target-macro retakes that separate the leading candidates.
+- When several organisms, objects, or possible targets appear, enumerate their defensible visible traits separately and do not assume the largest or most obvious subject is the target.
+- Never invent counts, progression, magnification, trap findings, environment, prior actions, location, crop, stage, or user history. plantsChecked, plantsAffected, and stickyTrapCount must stay empty because a photo is not a completed scout count.
+- Leave every unknown value blank; except for pestSeen, do not fill fields with placeholder phrases. evidence must contain only visible facts, not media IDs or diagnoses. Put ranked hypotheses, counter-evidence, and exact discriminating retakes in additionalInformation.
+- Do not recommend pesticide products or rates.
+
+The following is explicit user-entered context. Preserve it, do not overwrite it, and do not reinterpret a suspicion as a visual fact:
+${JSON.stringify(values, null, 2)}`,
         normalizeFieldValue: normalizeIpmPrefillField,
         buildPayloadMetadata: ({ response, parsed, evidenceAssetIds }) => {
           const evidenceUsed = Array.isArray(response.evidenceUsed)
@@ -300,6 +327,15 @@ export default function IpmScoutToolRoute() {
             assistantCitations: response.citations || []
           };
         }
+      }}
+      resultFollowUp={{
+        workflow: "ipm-result-follow-up",
+        evidenceAssetIds: () => evidencePayload.imageEvidenceAssetIds,
+        suggestions: () => [
+          "Compare thrips, mites, and powdery mildew.",
+          "What evidence contradicts this result?",
+          "What close-up should I add to separate the leading possibilities?"
+        ]
       }}
       formHeader={({ growId, plantId, facilityId }) => (
         <View style={styles.evidenceSection}>
@@ -491,6 +527,24 @@ export default function IpmScoutToolRoute() {
           value: outputs.readiness?.status || "needs evidence",
           detail: outputs.readiness?.summary || "Review missing checks below."
         },
+        {
+          key: "result-type",
+          label: "Result type",
+          value: String(outputs.differentialStatus || "working_hypothesis").replaceAll(
+            "_",
+            " "
+          ),
+          detail: outputs.differentialStatus?.startsWith("unresolved")
+            ? "The saved result keeps close possibilities open until a distinguishing check is completed."
+            : "This remains a working hypothesis, not a confirmed diagnosis."
+        },
+        {
+          key: "independent-evidence",
+          label: "Independent evidence channels",
+          value: String(outputs.readiness?.completedEvidenceChannels ?? 0),
+          detail:
+            "Repeated text copied from one photo is counted once, not as separate confirmation."
+        },
         { key: "issue", label: "Issue", value: outputs.suspectedIssue },
         { key: "organism", label: "Organism", value: outputs.suspectedOrganism },
         { key: "severity", label: "Severity", value: outputs.severity },
@@ -544,6 +598,40 @@ export default function IpmScoutToolRoute() {
         }
       ]}
       buildNotices={(outputs) => [
+        ...(String(outputs.differentialStatus || "").startsWith("unresolved")
+          ? [
+              {
+                key: "unresolved-differential",
+                severity: "high" as const,
+                message:
+                  "Unresolved differential: this result does not support one confirmed pest or disease headline. Compare the ranked candidates and complete the distinguishing checks before choosing treatment."
+              }
+            ]
+          : []),
+        ...(Array.isArray(outputs.rankedCandidates) && outputs.rankedCandidates.length
+          ? [
+              {
+                key: "ranked-candidates",
+                severity: "info" as const,
+                message: `Candidate comparison: ${outputs.rankedCandidates
+                  .slice(0, 3)
+                  .map(
+                    (candidate: any) =>
+                      `${candidate.suspectedOrganism || "unresolved candidate"} (${candidate.evidenceGateStatus || "pattern only"}; confidence ceiling ${candidate.confidenceCeiling || "not provided"})`
+                  )
+                  .join("; ")}.`
+              }
+            ]
+          : []),
+        ...(Array.isArray(outputs.confidenceCeilings) && outputs.confidenceCeilings.length
+          ? [
+              {
+                key: "confidence-ceilings",
+                severity: "medium" as const,
+                message: `Why confidence cannot be higher: ${outputs.confidenceCeilings.join(" ")}`
+              }
+            ]
+          : []),
         {
           key: "photo-analysis-status",
           severity: outputs.mediaAnalysis?.performed

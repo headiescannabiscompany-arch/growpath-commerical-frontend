@@ -14,6 +14,7 @@ describe("normalizeToolRun", () => {
       status: "completed",
       formulas: ["svp = ..."],
       linkedTaskIds: ["task-1"],
+      secureFollowUpSupported: true,
       immutableSnapshot: {
         schemaVersion: 2,
         calculatorVersion: "vpd-3",
@@ -37,6 +38,8 @@ describe("normalizeToolRun", () => {
       schemaVersion: 2,
       calculatorVersion: "vpd-3"
     });
+    expect(run.immutableSnapshotStored).toBe(true);
+    expect(run.secureFollowUpSupported).toBe(true);
   });
 
   it("normalizes legacy params and result records", () => {
@@ -60,6 +63,8 @@ describe("normalizeToolRun", () => {
       inputs: { potLiters: 11 },
       outputs: { targetLiters: 2.66 }
     });
+    expect(run.immutableSnapshotStored).toBe(false);
+    expect(run.secureFollowUpSupported).toBe(false);
   });
 
   it("preserves plant and crop context in normalized runs and snapshot fallback", () => {
@@ -106,5 +111,6 @@ describe("normalizeToolRun", () => {
         phenoLabel: "early-fruiting"
       }
     });
+    expect(run.immutableSnapshotStored).toBe(false);
   });
 });

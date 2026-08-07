@@ -72,6 +72,38 @@ function routeParam(value?: string | string[]) {
   return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
 }
 
+export function plantIdResultFollowUpQuestions({
+  outputs,
+  payload
+}: {
+  outputs: Record<string, any>;
+  payload: Record<string, any>;
+}) {
+  const explicitCropContext = [
+    payload.userEnteredName,
+    payload.scientificName,
+    payload.cropCommonName,
+    payload.cropContext,
+    payload.selectedPlantContext?.cropCommonName,
+    payload.selectedPlantContext?.scientificName
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  const cannabisContext =
+    isCannabisPlantIdentification(outputs) ||
+    explicitCropContext.some((value) => /\b(?:cannabis|marijuana|hemp)\b/i.test(value));
+  return [
+    ...(cannabisContext
+      ? [
+          "Male, female, intersex, or unclear from this evidence?",
+          "What node or preflower photo would confirm plant sex?"
+        ]
+      : []),
+    "What visible traits support this identification?",
+    "What photo should I add next to separate the leading candidates?"
+  ];
+}
+
 const PLANT_ID_AI_PROMPT = `You are GrowPathAI's plant identification assistant. Act like a cautious field botanist, not a one-photo image-matching toy.
 
 Inspect the attached image pixels first. Use user-entered context and selected private grow/plant context only when supplied. Narrow in this order: broad plant group, morphology, likely family, possible genera, then species only when diagnostic evidence supports it. Consider growth habit, leaf arrangement/type/margin/venation, stems, flower symmetry and parts, inflorescence, fruit/seed, special structures, habitat, geography, season, and whether the plant is wild or cultivated.
@@ -3016,6 +3048,11 @@ export default function SpeciesCropIdToolRoute() {
             }
           };
         }
+      }}
+      resultFollowUp={{
+        workflow: "plant-id-follow-up",
+        evidenceAssetIds: () => assistantEvidenceAssetIds,
+        suggestions: plantIdResultFollowUpQuestions
       }}
       fields={[
         {

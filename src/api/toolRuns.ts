@@ -47,6 +47,8 @@ export interface ToolRun {
   linkedRecipeId?: string | null;
   linkedModuleRecordId?: string | null;
   immutableSnapshot?: Record<string, any> | null;
+  immutableSnapshotStored?: boolean;
+  secureFollowUpSupported?: boolean;
   createdAt?: string;
 }
 
@@ -188,28 +190,33 @@ export function normalizeToolRun(row: any): ToolRun {
     : row?.linkedTaskId
       ? [String(row.linkedTaskId)]
       : [];
-  normalized.immutableSnapshot =
+  const hasStoredImmutableSnapshot = Boolean(
     row?.immutableSnapshot && typeof row.immutableSnapshot === "object"
-      ? row.immutableSnapshot
-      : {
-          toolName: normalized.toolName,
-          toolType: normalized.toolType,
-          growId: row?.growId || null,
-          plantId: normalized.plantId || null,
-          facilityId: row?.facilityId || null,
-          roomId: row?.roomId || null,
-          productId: row?.productId || null,
-          batchId: row?.batchId || null,
-          courseId: row?.courseId || null,
-          cropProfileId: normalized.cropProfileId || null,
-          cropIdentity: normalized.cropIdentity || null,
-          selectedPlantContext: normalized.selectedPlantContext || null,
-          plantGrowthProfile: normalized.plantGrowthProfile || null,
-          schemaVersion: normalized.schemaVersion,
-          calculatorVersion: normalized.calculatorVersion,
-          inputs,
-          outputs
-        };
+  );
+  normalized.immutableSnapshotStored =
+    row?.immutableSnapshotStored === true || hasStoredImmutableSnapshot;
+  normalized.secureFollowUpSupported = row?.secureFollowUpSupported === true;
+  normalized.immutableSnapshot = hasStoredImmutableSnapshot
+    ? row.immutableSnapshot
+    : {
+        toolName: normalized.toolName,
+        toolType: normalized.toolType,
+        growId: row?.growId || null,
+        plantId: normalized.plantId || null,
+        facilityId: row?.facilityId || null,
+        roomId: row?.roomId || null,
+        productId: row?.productId || null,
+        batchId: row?.batchId || null,
+        courseId: row?.courseId || null,
+        cropProfileId: normalized.cropProfileId || null,
+        cropIdentity: normalized.cropIdentity || null,
+        selectedPlantContext: normalized.selectedPlantContext || null,
+        plantGrowthProfile: normalized.plantGrowthProfile || null,
+        schemaVersion: normalized.schemaVersion,
+        calculatorVersion: normalized.calculatorVersion,
+        inputs,
+        outputs
+      };
 
   return normalized;
 }

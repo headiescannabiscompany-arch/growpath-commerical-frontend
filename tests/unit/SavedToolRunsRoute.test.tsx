@@ -13,6 +13,7 @@ const mockGetFieldStudy = jest.fn();
 const mockCreateFieldObservation = jest.fn();
 const mockUpdateFieldObservation = jest.fn();
 const mockRequestCurrentCoordinates = jest.fn();
+const mockAskPersonalAssistant = jest.fn();
 let mockSearchParams: Record<string, string> = {
   toolRunId: "run-1",
   growId: "grow-1",
@@ -59,6 +60,10 @@ jest.mock("@/api/fieldStudies", () => ({
   updateFieldObservation: (...args: any[]) => mockUpdateFieldObservation(...args)
 }));
 
+jest.mock("@/api/personalAssistant", () => ({
+  askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
+}));
+
 jest.mock("@/utils/locationSearch", () => ({
   requestCurrentCoordinates: (...args: any[]) => mockRequestCurrentCoordinates(...args)
 }));
@@ -99,7 +104,7 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
 jest.mock("@/features/personal/tools/ToolResultSurface", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return ({ title, summary, metrics, notices, outputs, details }: any) =>
+  return ({ title, summary, metrics, notices, outputs, details, followUp }: any) =>
     React.createElement(
       React.Fragment,
       null,
@@ -111,7 +116,8 @@ jest.mock("@/features/personal/tools/ToolResultSurface", () => {
       ...(notices || []).map((notice: any) =>
         React.createElement(Text, { key: notice.key }, notice.message)
       ),
-      details
+      details,
+      followUp
     );
 });
 
@@ -194,6 +200,188 @@ describe("SavedToolRunsRoute", () => {
       "/home/personal/tools/species-crop-id?retryToolRunId=plant-run-retry&growId=grow-1&fieldStudyId=study-1"
     );
     expect(href).not.toMatch(/sourceContext|sourceTaskId|workspace|facility|commercial/i);
+  });
+
+  it("asks an editable evidence-bound IPM follow-up without replacing the saved result", async () => {
+    const ipmRun = {
+      id: "ipm-run-1",
+      _id: "ipm-run-1",
+      toolType: "ipm-scout",
+      immutableSnapshotStored: true,
+      secureFollowUpSupported: true,
+      growId: "grow-1",
+      plantId: "plant-1",
+      summary: "Original saved IPM result: powdery mildew was the leading hypothesis.",
+      inputs: {
+        evidenceAssetIds: ["ipm-photo-1", "ipm-photo-2", "ipm-photo-1"]
+      },
+      outputs: {
+        suspectedIssue: "Possible powdery mildew",
+        imageAnalysis: {
+          evidenceUsed: ["ipm-photo-2", "ipm-photo-3"]
+        }
+      },
+      createdAt: "2026-08-06T14:00:00.000Z"
+    };
+    mockSearchParams = {
+      toolRunId: "ipm-run-1",
+      growId: "grow-1",
+      toolType: "ipm-scout"
+    };
+    mockListToolRuns.mockResolvedValue([ipmRun]);
+    mockGetToolRun.mockResolvedValue(ipmRun);
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply:
+        "Thrips remain plausible because the photos need an underside macro showing insects, frass, or feeding scars before powdery mildew can be favored.",
+      providerLabel: "GrowPath context + OpenAI image review",
+      mediaAnalysis: { requested: true, photosAnalyzed: 3 },
+      limitations: ["No sharp leaf-underside macro was included."]
+    });
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    const compareSuggestion = await screen.findByLabelText(
+      "Use suggested question: Compare thrips, mites, and powdery mildew."
+    );
+    fireEvent.press(compareSuggestion);
+    const questionInput = screen.getByLabelText("Ask about this result");
+    expect(questionInput.props.value).toBe("Compare thrips, mites, and powdery mildew.");
+
+    fireEvent.changeText(
+      questionInput,
+      "Compare thrips and powdery mildew using only the saved photo evidence."
+    );
+    fireEvent.press(screen.getByLabelText("Ask AI about this result for 1 AI credit"));
+
+    await waitFor(() =>
+      expect(mockAskPersonalAssistant).toHaveBeenCalledWith({
+        message: "Compare thrips and powdery mildew using only the saved photo evidence.",
+        sourceToolRunId: "ipm-run-1",
+        growId: "grow-1",
+        plantId: "plant-1",
+        workspaceType: "personal",
+        evidenceAssetIds: ["ipm-photo-1", "ipm-photo-2", "ipm-photo-3"],
+        context: {
+          workflow: "ipm-result-follow-up",
+          sourceToolRunId: "ipm-run-1",
+          sourceTool: "ipm-scout",
+          workspaceType: "personal"
+        }
+      })
+    );
+    expect(
+      await screen.findByText(
+        "Thrips remain plausible because the photos need an underside macro showing insects, frass, or feeding scars before powdery mildew can be favored."
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Provider: GrowPath context + OpenAI image review")
+    ).toBeTruthy();
+    expect(screen.getByText("Evidence inspected: Yes")).toBeTruthy();
+    expect(
+      screen.getByText("- No sharp leaf-underside macro was included.")
+    ).toBeTruthy();
+    expect(
+      screen.getAllByText(
+        /Original saved IPM result: powdery mildew was the leading hypothesis\./
+      ).length
+    ).toBeGreaterThan(0);
+  });
+
+  it("does not offer plant-sex follow-up suggestions for a non-cannabis Plant ID run", async () => {
+    const magnoliaRun = {
+      id: "magnolia-run-1",
+      _id: "magnolia-run-1",
+      toolType: "species_crop_id",
+      immutableSnapshotStored: true,
+      secureFollowUpSupported: true,
+      growId: "grow-1",
+      summary: "Magnolia remains a medium-confidence candidate.",
+      inputs: { evidenceAssetIds: ["magnolia-photo-1"] },
+      outputs: {
+        likelyCrop: "Southern magnolia",
+        scientificName: "Magnolia grandiflora",
+        likelyFamily: "Magnoliaceae",
+        confidence: "medium"
+      },
+      createdAt: "2026-08-06T14:15:00.000Z"
+    };
+    mockSearchParams = {
+      toolRunId: "magnolia-run-1",
+      growId: "grow-1",
+      toolType: "species_crop_id"
+    };
+    mockListToolRuns.mockResolvedValue([magnoliaRun]);
+    mockGetToolRun.mockResolvedValue(magnoliaRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(
+      await screen.findByLabelText(
+        "Use suggested question: What visible traits support this identification?"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.queryByLabelText(
+        "Use suggested question: Male, female, intersex, or unclear from this evidence?"
+      )
+    ).toBeNull();
+    expect(
+      screen.queryByLabelText(
+        "Use suggested question: What node or preflower photo would confirm plant sex?"
+      )
+    ).toBeNull();
+  });
+
+  it("hides evidence-bound follow-up for a legacy run without a stored immutable snapshot", async () => {
+    const legacyRun = {
+      id: "legacy-ipm-run",
+      _id: "legacy-ipm-run",
+      toolType: "ipm-scout",
+      immutableSnapshotStored: true,
+      secureFollowUpSupported: false,
+      summary: "Legacy scout result",
+      outputs: { suspectedIssue: "Unverified white marks" }
+    };
+    mockSearchParams = { toolRunId: "legacy-ipm-run", toolType: "ipm-scout" };
+    mockListToolRuns.mockResolvedValue([legacyRun]);
+    mockGetToolRun.mockResolvedValue(legacyRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("legacy-ipm-run"));
+    expect(screen.queryByLabelText("Ask about this result")).toBeNull();
+  });
+
+  it("keeps the plant-sex shortcut for an inconclusive saved run with explicit Cannabis context", async () => {
+    const cannabisRun = {
+      id: "saved-dark-cannabis",
+      _id: "saved-dark-cannabis",
+      toolType: "species_crop_id",
+      immutableSnapshotStored: true,
+      secureFollowUpSupported: true,
+      summary: "Identity remains unclear in limited light.",
+      inputs: {
+        userEnteredName: "Cannabis, flowering",
+        evidenceAssetIds: ["dark-photo-1"]
+      },
+      outputs: { likelyCrop: "unknown crop", confidence: "low" }
+    };
+    mockSearchParams = {
+      toolRunId: "saved-dark-cannabis",
+      toolType: "species_crop_id"
+    };
+    mockListToolRuns.mockResolvedValue([cannabisRun]);
+    mockGetToolRun.mockResolvedValue(cannabisRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(
+      await screen.findByLabelText(
+        "Use suggested question: Male, female, intersex, or unclear from this evidence?"
+      )
+    ).toBeTruthy();
   });
 
   it("adds and removes a private location from Plant ID history without a Field Study", async () => {
@@ -613,6 +801,7 @@ describe("SavedToolRunsRoute", () => {
       id: "run-1",
       _id: "run-1",
       toolType: "species_crop_id",
+      immutableSnapshotStored: true,
       summary: "species_crop_id completed",
       outputs: {
         likelyCrop: "Not confirmed",
@@ -836,6 +1025,8 @@ describe("SavedToolRunsRoute", () => {
       id: "run-1",
       _id: "run-1",
       toolType: "species_crop_id",
+      immutableSnapshotStored: true,
+      secureFollowUpSupported: true,
       summary: "species_crop_id completed",
       outputs: {
         likelyCrop: "Cotton plant",
@@ -873,6 +1064,7 @@ describe("SavedToolRunsRoute", () => {
     const screen = render(<SavedToolRunsRoute />);
 
     await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    expect(screen.getByLabelText("Ask about this result")).toBeTruthy();
     fireEvent.changeText(
       screen.getByLabelText("Corrected plant or crop name"),
       "Rose bush"
@@ -893,6 +1085,7 @@ describe("SavedToolRunsRoute", () => {
     expect(screen.getByText("Scientific name: -")).toBeTruthy();
     expect(screen.getByText("Confidence: user corrected")).toBeTruthy();
     expect(screen.getByText(/original AI draft was rejected/i)).toBeTruthy();
+    expect(screen.queryByLabelText("Ask about this result")).toBeNull();
   });
 
   it("keeps facility Saved Run reloads and corrections inside the facility scope", async () => {

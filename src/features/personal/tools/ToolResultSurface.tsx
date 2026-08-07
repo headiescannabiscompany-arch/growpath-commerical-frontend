@@ -50,12 +50,14 @@ type ToolResultSurfaceProps = {
   contextMessage?: string;
   footerMessage?: string;
   details?: React.ReactNode;
+  followUp?: React.ReactNode;
   evidenceReview?: EvidenceReview | null;
   onAddEvidence?: () => void | Promise<void>;
   copyPayload?: unknown;
   onReuseInputs?: () => void | Promise<void>;
   onAskAI?: () => void | Promise<void>;
   askAiBaseHref?: string;
+  enableDefaultAskAI?: boolean;
 };
 
 function canCopyText() {
@@ -178,12 +180,14 @@ export default function ToolResultSurface({
   contextMessage,
   footerMessage,
   details,
+  followUp,
   evidenceReview,
   onAddEvidence,
   copyPayload,
   onReuseInputs,
   onAskAI,
-  askAiBaseHref = "/home/personal/ai"
+  askAiBaseHref = "/home/personal/ai",
+  enableDefaultAskAI = true
 }: ToolResultSurfaceProps) {
   const router = useRouter();
   const { palette } = useAppTheme();
@@ -212,32 +216,33 @@ export default function ToolResultSurface({
     objectValue(inputs, "growId"),
     objectValue(outputs, "growId")
   );
-  const defaultAskAi =
-    onAskAI ||
-    (copyPayload || inputs || outputs || metrics.length || summary
-      ? () => {
-          const prompt = buildAskAiPrompt({
-            title,
-            status,
-            summary,
-            inputs,
-            outputs,
-            metrics,
-            notices,
-            recommendations,
-            formulas,
-            confidence,
-            copyPayload
-          });
-          const query = [
-            `prompt=${encodeURIComponent(prompt)}`,
-            growId ? `growId=${encodeURIComponent(growId)}` : ""
-          ]
-            .filter(Boolean)
-            .join("&");
-          router.push(`${askAiBaseHref}?${query}` as any);
-        }
-      : undefined);
+  const defaultAskAi = enableDefaultAskAI
+    ? onAskAI ||
+      (copyPayload || inputs || outputs || metrics.length || summary
+        ? () => {
+            const prompt = buildAskAiPrompt({
+              title,
+              status,
+              summary,
+              inputs,
+              outputs,
+              metrics,
+              notices,
+              recommendations,
+              formulas,
+              confidence,
+              copyPayload
+            });
+            const query = [
+              `prompt=${encodeURIComponent(prompt)}`,
+              growId ? `growId=${encodeURIComponent(growId)}` : ""
+            ]
+              .filter(Boolean)
+              .join("&");
+            router.push(`${askAiBaseHref}?${query}` as any);
+          }
+        : undefined)
+    : undefined;
   const standardActions: ToolResultAction[] = [
     ...(canCopyText()
       ? [
@@ -368,6 +373,8 @@ export default function ToolResultSurface({
       {evidenceReview ? (
         <EvidenceReviewPanel review={evidenceReview} onAddEvidence={onAddEvidence} />
       ) : null}
+
+      {followUp ? <View style={styles.section}>{followUp}</View> : null}
 
       {recommendations.length ? (
         <View style={styles.section}>

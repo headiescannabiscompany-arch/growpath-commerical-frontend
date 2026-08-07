@@ -12,6 +12,7 @@ Reliability is use-case specific. A breeder can be authoritative for its own par
 ## Initial authorities
 
 - UC IPM, USDA/APHIS, Cornell, Penn State, NC State, Maryland, Oregon State, Colorado State, Clemson and Virginia Tech extension: Tier A for IPM, soil, fertility, water and horticultural principles.
+- UC IPM Thrips and Powdery Mildew pages, reviewed 2026-08-06: Tier A for distinguishing thrips-compatible silvering/stippling/scarring and black frass from superficial white-to-gray powdery growth. These traits support an evidence differential; they do not justify a confirmed diagnosis from one ambiguous photo.
 - Credible COAs: Tier A only for the named lab, method, sample, batch and date. Never generalize one result to a cultivar or future batch.
 - Official fertilizer/product labels: Tier A for guaranteed analysis and legal/safety label content; manufacturer pages are Tier B for instructions/specifications.
 - Breeder sites: Tier B for official name, claimed parentage, seed type and breeder flowering estimate; not proof of yield, effects, resistance or future phenotype.

@@ -290,14 +290,101 @@ describe("BackendCalculatorToolScreen beta access", () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          "AI filled 1 non-empty field from available evidence. Empty or unknown values were left blank. Review before calculating."
+          "AI filled 1 non-empty field from available evidence (Pest seen). Empty or unknown values were left blank. Fields marked AI draft remain unconfirmed until you review them."
         )
       ).toBeTruthy()
     );
+    expect(
+      screen.getByLabelText("Pest seen was filled by AI and needs review")
+    ).toBeTruthy();
     expect(screen.getByLabelText("IPM Scout Pest seen").props.value).toBe(
       "not confirmed"
     );
     expect(screen.getByLabelText("IPM Scout Direct evidence").props.value).toBe("");
     expect(screen.getByLabelText("IPM Scout Scout location").props.value).toBe("");
+
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Pest seen"),
+      "one slender insect directly observed"
+    );
+    expect(
+      screen.queryByLabelText("Pest seen was filled by AI and needs review")
+    ).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Run IPM Scout"));
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "ipm-scout",
+        expect.objectContaining({
+          pestSeen: "one slender insect directly observed",
+          fieldProvenance: expect.objectContaining({
+            pestSeen: "visual_prefill_user_reviewed"
+          }),
+          userEnteredFields: [],
+          aiPrefillProvenance: expect.objectContaining({
+            prefilledFields: [],
+            userReviewedFields: ["pestSeen"],
+            userEditedFields: ["pestSeen"]
+          })
+        })
+      )
+    );
+  });
+
+  it("preserves explicit user observations while marking only AI-filled fields as drafts", async () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: jest.fn(() => true)
+    });
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: JSON.stringify({
+        cropContext: "AI guessed crop",
+        leafDamage: "visible silver streaking"
+      })
+    });
+
+    render(
+      <BackendCalculatorToolScreen
+        tool="ipm-scout"
+        toolKey="ipm-scout"
+        title="IPM Scout"
+        subtitle="Review saved photo evidence."
+        growOptional
+        fields={[
+          { key: "cropContext", label: "Crop context", defaultValue: "" },
+          { key: "leafDamage", label: "Leaf damage", defaultValue: "" }
+        ]}
+        aiPrefill={{
+          buttonLabel: "Test protected prefill",
+          preserveAllExistingFields: true,
+          buildMessage: ({ values }) => JSON.stringify(values)
+        }}
+        buildPayload={(values) => values}
+        defaultLogTitle={() => "IPM scout"}
+      />
+    );
+
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Crop context"),
+      "user-recorded tomato, flowering"
+    );
+    fireEvent.press(screen.getByText("Test protected prefill"));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("IPM Scout Leaf damage").props.value).toBe(
+        "visible silver streaking"
+      )
+    );
+    expect(screen.getByLabelText("IPM Scout Crop context").props.value).toBe(
+      "user-recorded tomato, flowering"
+    );
+    expect(
+      screen.queryByLabelText("Crop context was filled by AI and needs review")
+    ).toBeNull();
+    expect(
+      screen.getByLabelText("Leaf damage was filled by AI and needs review")
+    ).toBeTruthy();
   });
 });

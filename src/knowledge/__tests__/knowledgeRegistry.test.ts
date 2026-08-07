@@ -68,6 +68,15 @@ describe("GrowPath knowledge registries", () => {
       "distinct overall confidence, ranked-candidate confidence, health status, and action urgency"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "unresolved white-mark differential with powdery mildew, thrips, mites, residue, mineral deposits, glare, physical damage, and senescence"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "authorized immutable ToolRun follow-up beside the original result with exact evidence, provider, pixel-inspection status, limitations, and one-credit disclosure"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not treat one photo copied into several fields as independent evidence, treat an AI hypothesis as a directly observed organism, or headline powdery mildew from generic white marks alone."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved and visible in the saved result"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredInputs).toContain(
