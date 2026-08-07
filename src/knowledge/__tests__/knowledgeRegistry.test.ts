@@ -76,6 +76,21 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not treat one photo copied into several fields as independent evidence, treat an AI hypothesis as a directly observed organism, or headline powdery mildew from generic white marks alone."
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredInputs).toContain(
+      "affirmed, negated, uncertain, and instructional assertion status for each evidence clause"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredInputs).toContain(
+      "server-attested media observations, with any diagnostic view role bound to that view's exact finding, quality, and lighting"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not convert negated findings, instructions, questions, failed media analysis, or unattested client-supplied visual text into supporting evidence, completed inspection fields, candidate scores, image gates, confidence, severity, or treatment categories."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not use a separate or unbound list of media view roles to satisfy a candidate evidence gate."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not let morphology for one candidate raise the confidence or direct-treatment status of a different leading candidate."
+    );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "crop-identification photo count, provider/model, quality, visible traits, evidence IDs, and limitations preserved and visible in the saved result"
     );

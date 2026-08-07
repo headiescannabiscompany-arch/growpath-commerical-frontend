@@ -170,6 +170,25 @@ Editing an AI-prefilled value marks it reviewed but keeps it in the visual-deriv
 channel; an edit alone must not manufacture a second user-observation channel. AI prefill is
 additive: it must preserve explicit user entries and leave unobserved facts blank.
 
+Apply the same boundary inside each written field. A speculative clause such as `unclear
+whether this is feeding stippling`, `could be powdery growth`, or `compare thrips versus
+mites` may add a candidate or question, but it must not set a direct damage, disease-sign,
+organism, or supporting-evidence flag. An explicitly observed character in a separate clause,
+such as `fine stippling was observed; the cause remains unclear`, remains observation evidence
+while its cause remains a hypothesis.
+
+Negated findings such as `no stippling was observed` are counter-evidence, not supporting
+evidence. Instructions and questions such as `look for black frass` do not count as completed
+observations. Contrast clauses must retain their separate meaning: `no mites were seen, but
+fine stippling is visible` records the stippling while leaving the organism unconfirmed. Only
+server-attested, completed media analysis may contribute visible observations. A separate list
+of view-role labels is not evidence that a particular view supplied a particular finding; a
+view may satisfy a diagnostic gate only when the server attests the role, quality, lighting,
+and exact observation together for that view. Client-supplied or failed-analysis text must not
+score a candidate, satisfy a photo gate, or bypass the direct-observation requirement.
+Candidate confidence and treatment categories must be bound to the exact affirmed clause,
+field provenance, and organism-specific morphology that supported that candidate.
+
 White, pale, or reflective leaf marks alone require an unresolved differential rather than
 a powdery-mildew headline. Compare superficial white-to-gray powdery or felt-like growth
 with thrips or mite feeding injury, spray residue, mineral deposits, dust, glare, physical
