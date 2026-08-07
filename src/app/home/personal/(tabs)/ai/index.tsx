@@ -554,11 +554,9 @@ export function assistantQuickQuestions({
   cannabisContext: boolean;
 }) {
   return [
-    ...(cannabisContext
-      ? [
-          "Male, female, intersex, or too early to tell? Explain exactly what is visible and what photo would confirm it."
-        ]
-      : []),
+    cannabisContext
+      ? "Male, female, intersex, or too early to tell? Explain exactly what is visible and what photo would confirm it."
+      : "Is this plant male, female, intersex, or too early to tell? Explain exactly what the photos support and what photo would confirm it.",
     "What do these photos show, and what evidence is missing before you are confident?",
     "What should I photograph next for a stronger answer?",
     workspaceType === "facility"
