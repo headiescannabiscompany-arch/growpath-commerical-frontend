@@ -8,6 +8,7 @@ AI is a synthesis and retrieval layer, not blind authority.
    is not used for model training, and persist the evidence as AI-usable. Ordinary record
    media stays non-AI-usable unless the user takes that explicit action.
    For every AI still-image inspection, preserve and send the untouched original at high detail. The server may also generate enlarged center and attention-selected crops from the original-resolution pixels. These are supplemental views tied to the original, never replacements, lower-resolution substitutes, additional samples, sites, photos, or independent evidence. If crop generation fails, continue with the untouched original. For multi-photo requests, keep every original while bounding derived crop count and dimensions so enlarged inspection cannot prevent provider completion.
+   For ordered extracted frames, compare adjacent frames only when the same subject or tightly matching region is visibly supported. A persistent appearance may support a lower-confidence bounded observation; changing glare, unrelated frames, or sampled timestamps do not establish object continuity, chemistry, or restored detail.
 2. Apply the relevant GrowPath method and deterministic calculators/rules.
 3. Apply source reliability by use case.
 4. Separate observation, calculation, inference and user claim.

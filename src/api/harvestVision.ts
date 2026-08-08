@@ -9,6 +9,14 @@ export type TrichomeVisionResult = {
   amber: number | null;
   confidence: number;
   dominant: "clear" | "cloudy" | "amber" | "uncertain";
+  cloudinessObservation?:
+    | "direct_cloudy"
+    | "likely_cloudy_persistent"
+    | "glare_obscured"
+    | "not_visible"
+    | "uncertain";
+  cloudinessConfidence?: number;
+  cloudinessBasis?: string;
   amberVisibility?:
     | "none_visible"
     | "isolated_visible"
