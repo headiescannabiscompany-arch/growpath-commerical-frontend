@@ -489,7 +489,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible",
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence",
       "bounded amber visibility and exact image-region basis even when a complete trichome distribution remains unavailable",
-      "bounded cloudiness observation with confidence and matched-frame basis, distinguishing directly resolved cloudiness, persistent likely cloudiness, glare-obscured whiteness, and uncertainty"
+      "bounded cloudiness observation with confidence and matched-frame basis, distinguishing directly resolved cloudiness, persistent likely cloudiness, glare-obscured whiteness, and uncertainty",
+      "exact dedicated Harvest vision model recorded in the signed review without inheriting a cost-optimized global mini model"
     ],
     [
       "Never estimate sensor values from images.",
@@ -503,6 +504,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Block provider use and spend no AI credit until three sharp macro bud-site samples plus one wider context photo are uploaded and approved for this workflow.",
       "Reject obviously tiny or invalid files before upload, but use actionable retake guidance rather than pretending metadata alone can detect blur, glare, lighting, or missing sample roles.",
       "Use provider high-detail image review, but never claim digital zoom restored pixels hidden by blur, compression, or clipped glare; exclude obscured heads and report each image's usable region or exclusion reason.",
+      "Use a dedicated configurable full-size Harvest vision model and keep every server-side evidence safeguard; a stronger model never makes unresolved pixels, missing role coverage, or incomplete distributions usable.",
       "Preserve an optional source video shorter than 10 minutes as non-AI evidence and analyze only up to 12 timestamped candidate still frames spanning its timeline. Each frame counts toward the 12-photo ceiling and must pass the same macro, role, focus, lighting, and glare checks. When the same head or tightly matching region stays diffusely white across adjacent frames while focus, angle, or highlight position changes, retain lower-confidence likely cloudiness with its matched-frame basis; treat blooming, clipped, glowing, flashing, or moving whiteness as glare-obscured. Never count that bounded likely observation alone as a complete distribution or chemical measurement.",
       "Reserve one disclosed AI credit only after evidence ownership is verified, refund provider failures, and preserve the charge/refund result in the review.",
       "Reject crop-neutral accounts and unrelated horticulture grows before loading harvest evidence or reserving an AI credit.",
