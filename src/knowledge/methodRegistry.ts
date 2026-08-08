@@ -490,7 +490,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence",
       "bounded amber visibility and exact image-region basis even when a complete trichome distribution remains unavailable",
       "bounded cloudiness observation with confidence and matched-frame basis, distinguishing directly resolved cloudiness, persistent likely cloudiness, glare-obscured whiteness, and uncertainty",
-      "exact dedicated Harvest vision model recorded in the signed review without inheriting a cost-optimized global mini model"
+      "exact dedicated Harvest vision model recorded in the signed review without inheriting a cost-optimized global mini model",
+      "center and attention-selected diagnostic views for every original in the minimum four-photo Harvest set"
     ],
     [
       "Never estimate sensor values from images.",
