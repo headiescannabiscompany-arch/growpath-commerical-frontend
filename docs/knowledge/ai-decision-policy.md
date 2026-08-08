@@ -7,6 +7,7 @@ AI is a synthesis and retrieval layer, not blind authority.
    An AI-enabled picker must disclose that the media is approved for the current workflow,
    is not used for model training, and persist the evidence as AI-usable. Ordinary record
    media stays non-AI-usable unless the user takes that explicit action.
+   For every AI still-image inspection, preserve and send the untouched original at high detail. The server may also generate enlarged center and attention-selected crops from the original-resolution pixels. These are supplemental views tied to the original, never replacements, lower-resolution substitutes, additional samples, sites, photos, or independent evidence. If crop generation fails, continue with the untouched original.
 2. Apply the relevant GrowPath method and deterministic calculators/rules.
 3. Apply source reliability by use case.
 4. Separate observation, calculation, inference and user claim.

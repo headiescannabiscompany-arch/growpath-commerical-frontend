@@ -9,6 +9,12 @@ export type TrichomeVisionResult = {
   amber: number | null;
   confidence: number;
   dominant: "clear" | "cloudy" | "amber" | "uncertain";
+  amberVisibility?:
+    | "none_visible"
+    | "isolated_visible"
+    | "substantial_visible"
+    | "uncertain";
+  amberEvidenceBasis?: string;
   visibleTraits: string[];
   evidence: string[];
   recommendation: string;
@@ -41,6 +47,7 @@ export type TrichomeVisionResult = {
   providerModel: string;
   imageDetail?: "low" | "high" | "original" | "auto";
   imagesAnalyzed: number;
+  diagnosticViewsAnalyzed?: number;
   evidenceUsed: string[];
   analysisId: string;
   analysisReceipt?: {
