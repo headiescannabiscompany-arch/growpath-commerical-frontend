@@ -103,6 +103,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "exact dedicated Harvest vision model recorded in the signed review without inheriting a cost-optimized global mini model"
     );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "center and attention-selected diagnostic views for every original in the minimum four-photo Harvest set"
+    );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never convert missing qualified trichome evidence into a generic three-to-seven-day estimate, dated harvest decision, or dry/cure deadline; return insufficient evidence and request the missing observations."
     );
