@@ -109,6 +109,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "follow-up analysis that preserves the original structured evidence",
       "image analysis performed status",
       "photo count and provider/model execution evidence",
+      "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence",
       "shared evidence review panel with pixel-analysis status, counter-evidence, missing checks, and re-run guidance",
       "distinct overall confidence, ranked-candidate confidence, health status, and action urgency",
       "unusable diagnosis media normalized to an inconclusive low-confidence result with exact retake requests and no image-derived treatment actions",
@@ -171,6 +172,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not silently prefill diagnosis stage or symptom location, and do not present ranked-candidate confidence as overall confidence.",
       "Do not retain high confidence, urgent status, treatment actions, completed tasks, or issue-detected automation from diagnosis media the provider marked unusable, and do not replace explicit user crop context with a conflicting visual suggestion.",
       "Do not imply attached photos were visually analyzed by a text-only provider.",
+      "Do not replace or downscale an original AI-inspection image; enlarged diagnostic crops supplement the original and remain bound to it rather than counting as another photo, sample, site, view role, or observation.",
       "Preserve optional source videos as private non-AI evidence and analyze only up to 12 extracted timestamped still frames; never claim direct video or motion analysis.",
       "Do not run client thumbnail extraction for Plant ID, enable Plant ID while server frame extraction is processing, accept partial, orphan, extra, wrong-version, or wrong-attempt frame sets as AI evidence, infer completion from the source video alone, or require the same protected video to be uploaded again after a retryable extraction failure.",
       "Keep every client-extracted frame linked to its selected protected source video in the same workspace and context; describe that as user-submitted parent linkage, not cryptographic pixel proof.",
@@ -484,7 +486,9 @@ export const methodRegistry: GrowPathMethod[] = [
       "exact selected Harvest media set separated from the analyzed still/frame set, with a private source video retained as non-AI provenance",
       "authorized Personal, Commercial, or Facility grow scope with Facility write-role and Facility-credit enforcement",
       "additive reviewable trichome-percentage drafts that preserve manual maturity observations and retain visual provenance",
-      "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible"
+      "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible",
+      "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence",
+      "bounded amber visibility and exact image-region basis even when a complete trichome distribution remains unavailable"
     ],
     [
       "Never estimate sensor values from images.",
@@ -507,6 +511,9 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never remount Harvest Readiness or overwrite manual maturity fields when applying AI trichome percentages; invalidate only unreviewed visual drafts when their evidence changes.",
       "Never overwrite a user-reviewed trichome percentage with the attested AI value or continue labeling an edited distribution AI-derived; preserve it as a manual override, reconstruct each unreviewed field from the attested snapshot, clear unusable unreviewed drafts, and retain the attested photo snapshot separately.",
       "Never silently coerce missing trichome observations to zero or score a distribution that does not total about 100%.",
+      "Never replace or downscale the original image for AI inspection; diagnostic crops supplement the original and remain bound to it rather than counting as another photo, sample, site, or observation.",
+      "Never convert missing qualified trichome evidence into a generic three-to-seven-day estimate, dated harvest decision, or dry/cure deadline; return insufficient evidence and request the missing observations.",
+      "Never let fresh pistils alone overrule a qualified representative advanced-amber distribution; surface the open harvest window and explain uneven or newly developing tissue as a possible conflict to review.",
       "Keep the shared harvest-readiness route discoverable in cannabis-aware Personal Tools and contextual cannabis grow surfaces, including untagged legacy cannabis grows and grows with attached cannabis-only workflow evidence."
     ],
     ["harvest-readiness", "dry-cure-guard"]

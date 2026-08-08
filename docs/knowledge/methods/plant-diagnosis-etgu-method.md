@@ -10,6 +10,13 @@ Output likely causes with evidence, counter-evidence, missing information and di
 
 ## Image evidence behavior
 
+Diagnosis, IPM, and Crop Identification must inspect the untouched original-resolution
+image at high detail and may additionally inspect source-bound enlarged diagnostic crops.
+The crops expose existing pixels without replacing or downscaling the original. They must
+never count as additional photos, sample sites, view roles, observations, agreement, or
+independent evidence. Inspect available enlarged regions before declaring existing detail
+unreadable; crop generation failure falls back to the original rather than rejecting it.
+
 For Crop Identification, explicitly inspect exposure and target lighting before proposing
 an identity. A dark or backlit subject illuminated by a harsh point light or phone flash,
 deep shadows, clipped highlights, glare, or a strong color cast is unusable when those

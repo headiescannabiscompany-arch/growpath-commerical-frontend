@@ -469,6 +469,12 @@ function HarvestPhotoAnalyzer({
             Inspected by {analysis.providerLabel} ({analysis.providerModel}) · Photos:{" "}
             {analysis.imagesAnalyzed}
           </Text>
+          {typeof analysis.diagnosticViewsAnalyzed === "number" ? (
+            <Text style={photoStyles.feedback}>
+              Enlarged diagnostic views inspected: {analysis.diagnosticViewsAnalyzed}.
+              These supplement the original-resolution photos and are not extra samples.
+            </Text>
+          ) : null}
           {analysis.imageDetail ? (
             <Text style={photoStyles.feedback}>
               Provider image detail: {analysis.imageDetail}
@@ -490,6 +496,11 @@ function HarvestPhotoAnalyzer({
               {Math.round(Number(analysis.clear) * 100)}% clear.
             </Text>
           ) : null}
+          <Text style={photoStyles.feedback}>
+            Amber visibility:{" "}
+            {(analysis.amberVisibility || "uncertain").replaceAll("_", " ")}
+            {analysis.amberEvidenceBasis ? ` · ${analysis.amberEvidenceBasis}` : ""}
+          </Text>
           {analysis.qualityChecks ? (
             <View style={photoStyles.qualityChecks}>
               <Text style={photoStyles.checklistTitle}>Set quality checks</Text>
@@ -580,6 +591,32 @@ function harvestCalendarMetadata(sourceStage: string) {
 }
 
 function readinessTaskPlan(outputs: Record<string, any>, payload: Record<string, any>) {
+  const readinessStatus = String(outputs.readinessStatus || "");
+  const hasNumericWindow =
+    outputs.estimatedWindow &&
+    typeof outputs.estimatedWindow === "object" &&
+    Number.isFinite(Number(outputs.estimatedWindow.startDay)) &&
+    Number.isFinite(Number(outputs.estimatedWindow.targetDay));
+  if (readinessStatus === "insufficient_evidence" || !hasNumericWindow) {
+    return [
+      {
+        title: "Capture representative trichome macros",
+        priority: "high" as const,
+        dueDate: tomorrow(1),
+        ...harvestCalendarMetadata("trichome_photo_capture"),
+        description:
+          "Capture sharp neutral-light calyx macros from top, middle, and lower bud sites plus a wider context view. The current evidence does not support a dated harvest window."
+      },
+      {
+        title: "Complete harvest maturity observations",
+        priority: "medium" as const,
+        dueDate: tomorrow(1),
+        ...harvestCalendarMetadata("harvest_evidence_review"),
+        description:
+          "Record flower day, breeder timing as context, pistil pattern, bud swell, aroma trend, sample locations, and the intended effect goal before calculating again."
+      }
+    ];
+  }
   const flowerDay = numberOrFallback(payload.flowerDay, 0);
   const startDay = numberOrFallback(outputs.estimatedWindow?.startDay, flowerDay + 3);
   const targetDay = numberOrFallback(

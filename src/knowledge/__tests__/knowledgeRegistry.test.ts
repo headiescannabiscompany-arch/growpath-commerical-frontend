@@ -70,6 +70,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "unusable diagnosis media normalized to an inconclusive low-confidence result with exact retake requests and no image-derived treatment actions"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence"
+    );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not retain high confidence, urgent status, treatment actions, completed tasks, or issue-detected automation from diagnosis media the provider marked unusable, and do not replace explicit user crop context with a conflicting visual suggestion."
     );
@@ -93,6 +96,12 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence"
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never convert missing qualified trichome evidence into a generic three-to-seven-day estimate, dated harvest decision, or dry/cure deadline; return insufficient evidence and request the missing observations."
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never trust client-supplied harvest provider metadata, AI percentages, evidence IDs, or an analysis ID as proof of image analysis; validate the exact server receipt and reconstruct the saved photo result."
