@@ -42,6 +42,7 @@ export type PersonalAssistantResponse = {
     requested?: boolean;
     photosAttached?: number;
     photosAnalyzed?: number;
+    diagnosticViewsAnalyzed?: number;
     status?: string;
     provider?: string;
     providerModel?: string;

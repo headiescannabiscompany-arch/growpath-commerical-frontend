@@ -488,7 +488,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "additive reviewable trichome-percentage drafts that preserve manual maturity observations and retain visual provenance",
       "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible",
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence",
-      "bounded amber visibility and exact image-region basis even when a complete trichome distribution remains unavailable"
+      "bounded amber visibility and exact image-region basis even when a complete trichome distribution remains unavailable",
+      "bounded cloudiness observation with confidence and matched-frame basis, distinguishing directly resolved cloudiness, persistent likely cloudiness, glare-obscured whiteness, and uncertainty"
     ],
     [
       "Never estimate sensor values from images.",
@@ -502,7 +503,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Block provider use and spend no AI credit until three sharp macro bud-site samples plus one wider context photo are uploaded and approved for this workflow.",
       "Reject obviously tiny or invalid files before upload, but use actionable retake guidance rather than pretending metadata alone can detect blur, glare, lighting, or missing sample roles.",
       "Use provider high-detail image review, but never claim digital zoom restored pixels hidden by blur, compression, or clipped glare; exclude obscured heads and report each image's usable region or exclusion reason.",
-      "Preserve an optional source video shorter than 10 minutes as non-AI evidence and analyze only up to 12 timestamped candidate still frames spanning its timeline. Each frame counts toward the 12-photo ceiling and must pass the same macro, role, focus, lighting, and glare checks. Exclude glare-obscured apparent cloudiness; classify clear, cloudy, or amber only from separate sharp, glare-free visible gland heads under neutral light.",
+      "Preserve an optional source video shorter than 10 minutes as non-AI evidence and analyze only up to 12 timestamped candidate still frames spanning its timeline. Each frame counts toward the 12-photo ceiling and must pass the same macro, role, focus, lighting, and glare checks. When the same head or tightly matching region stays diffusely white across adjacent frames while focus, angle, or highlight position changes, retain lower-confidence likely cloudiness with its matched-frame basis; treat blooming, clipped, glowing, flashing, or moving whiteness as glare-obscured. Never count that bounded likely observation alone as a complete distribution or chemical measurement.",
       "Reserve one disclosed AI credit only after evidence ownership is verified, refund provider failures, and preserve the charge/refund result in the review.",
       "Reject crop-neutral accounts and unrelated horticulture grows before loading harvest evidence or reserving an AI credit.",
       "Never trust client-supplied harvest provider metadata, AI percentages, evidence IDs, or an analysis ID as proof of image analysis; validate the exact server receipt and reconstruct the saved photo result.",

@@ -501,6 +501,14 @@ function HarvestPhotoAnalyzer({
             {(analysis.amberVisibility || "uncertain").replaceAll("_", " ")}
             {analysis.amberEvidenceBasis ? ` · ${analysis.amberEvidenceBasis}` : ""}
           </Text>
+          <Text style={photoStyles.feedback}>
+            Cloudiness observation:{" "}
+            {(analysis.cloudinessObservation || "uncertain").replaceAll("_", " ")}
+            {typeof analysis.cloudinessConfidence === "number"
+              ? ` · ${Math.round(analysis.cloudinessConfidence * 100)}% confidence`
+              : ""}
+            {analysis.cloudinessBasis ? ` · ${analysis.cloudinessBasis}` : ""}
+          </Text>
           {analysis.qualityChecks ? (
             <View style={photoStyles.qualityChecks}>
               <Text style={photoStyles.checklistTitle}>Set quality checks</Text>

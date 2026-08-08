@@ -34,7 +34,7 @@ export const aiDecisionPolicy = {
     "Treat social posts as authorized QA leads only, never diagnostic ground truth or model-training data.",
     "Expose rule/GPT disagreement and fallback provider labels.",
     "Treat outcome aggregates as observational review evidence, exclude synthetic QA records, and never rewrite runtime methods automatically.",
-    "Preserve every original-resolution AI image at high detail; any enlarged diagnostic crop supplements and remains bound to its original rather than counting as another photo, sample, site, or independent observation.",
+    "Preserve every original-resolution AI image at high detail; any enlarged diagnostic crop supplements and remains bound to its original rather than counting as another photo, sample, site, or independent observation. Bound derived crop count and dimensions so enlarged inspection cannot prevent a multi-photo provider request from completing.",
     "Require user confirmation before writes and consequential decisions."
   ]
 };

@@ -296,6 +296,10 @@ describe("HarvestReadinessToolRoute", () => {
       amber: 0.15,
       confidence: 0.81,
       dominant: "cloudy",
+      cloudinessObservation: "likely_cloudy_persistent",
+      cloudinessConfidence: 0.61,
+      cloudinessBasis:
+        "The same region stayed diffusely white while the highlight moved.",
       visibleTraits: ["Intact opaque gland heads"],
       evidence: ["Mostly opaque gland heads"],
       recommendation: "Confirm across additional bud sites.",
@@ -686,6 +690,9 @@ describe("HarvestReadinessToolRoute", () => {
     expect(screen.getByText("Per-photo zoom review")).toBeTruthy();
     expect(screen.getByText(/best region: center calyx/i)).toBeTruthy();
     expect(screen.getByText(/Provider image detail: high/i)).toBeTruthy();
+    expect(screen.getByText(/likely cloudy persistent/i)).toBeTruthy();
+    expect(screen.getByText(/61% confidence/i)).toBeTruthy();
+    expect(screen.getByText(/highlight moved/i)).toBeTruthy();
     expect(screen.getByText(/run the rule-based readiness estimate/)).toBeTruthy();
     expect(screen.getByText(/1 charged · 58 remaining/i)).toBeTruthy();
     expect(screen.getByText(/usage-harvest-1/i)).toBeTruthy();
