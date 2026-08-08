@@ -3023,6 +3023,9 @@ export default function SpeciesCropIdToolRoute() {
               photoCount: uploadedEvidence.imageEvidenceAssetIds.length,
               photosAnalyzed,
               stillImagesAnalyzed: photosAnalyzed,
+              diagnosticViewsAnalyzed: Number(
+                response.mediaAnalysis?.diagnosticViewsAnalyzed || 0
+              ),
               videoFramesAnalyzed,
               videosAttached,
               videosAnalyzed: 0,
