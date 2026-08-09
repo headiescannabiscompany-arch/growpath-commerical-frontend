@@ -2298,6 +2298,77 @@
         "mark fresh injuries and recheck for continued expansion or secondary infection"
       ],
       "expectedIpmResponse": "Recognize event-compatible physical injury without turning tears and holes into an automatic pest or disease diagnosis. Use timing, distribution, edge character, pest evidence, and progression to separate hail from chewing, abrasion, spray injury, temperature injury, and lesions with tissue loss."
+    },
+    {
+      "recordId": "diagnosis-herbicide-injury-pattern-boundary-open-001",
+      "caseId": "spray_burn",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-herbicide-injury-soybeans-9620828435",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Herbicide_Injury_to_Soybeans_(9620828435).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Herbicide_Injury_to_Soybeans_(9620828435).jpg",
+          "creator": "United Soybean Board",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Herbicide injury to soybeans by United Soybean Board, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-herbicide-injury-soybeans-9620826895",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Herbicide_Injury_to_Soybeans_(9620826895).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Herbicide_Injury_to_Soybeans_(9620826895).jpg",
+          "creator": "United Soybean Board",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Herbicide injury to soybeans by United Soybean Board, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "soybean",
+      "cultivar": "unknown",
+      "lifeStage": "established crop foliage",
+      "affectedLocation": "foliage and growing points visible in documented herbicide-injury observations",
+      "distribution": "multiple affected soybean plants and leaves; field pattern and spray-direction gradient not recorded",
+      "progression": "two same-date herbicide-injury observations; application timing, onset, and later recovery not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "field context; temperature, humidity, wind, and spray conditions not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "documented herbicide injury with symptom variation across soybean foliage",
+        "growth and tissue distortion compatible with chemical exposure but not sufficient to identify an active ingredient",
+        "multiple views requiring separation from disease, pests, nutrition, and environmental stress"
+      ],
+      "plausibleAlternatives": [
+        "mosaic virus or other systemic disease",
+        "broad mites or other growing-point pests",
+        "nutrient deficiency, excess, lockout, or antagonism",
+        "heat, cold, drought, or root-zone stress",
+        "wind or mechanical injury",
+        "genetic or normal developmental variation"
+      ],
+      "confirmationMethod": "Correlate symptoms with a complete application and drift history, affected-versus-unaffected field pattern, wind direction, dose and overlap zones, onset, new growth, and measured root-zone conditions; identify the product only from verified records or qualified investigation, never from leaf shape alone.",
+      "expectedCauseRanking": [
+        "other_abiotic",
+        "insufficient_evidence",
+        "disease",
+        "pest",
+        "deficiency"
+      ],
+      "expectedUrgency": "promptly stop repeat exposure, preserve application records, assess drift or overlap, and monitor new growth",
+      "expectedQuarantineGuidance": "Do not quarantine for chemical injury alone; isolate suspect inputs or equipment and prevent repeated exposure while disease and pest alternatives are checked.",
+      "expectedScoutingSteps": [
+        "photograph affected and unaffected plants across field position, row, height, and growing points",
+        "record every recent foliar, irrigation, cleaning, and neighboring application with product, concentration, time, weather, and equipment",
+        "map symptom boundaries against spray direction, overlap, drift, runoff, and protected areas",
+        "inspect for pests and pathogen signs, measure root-zone conditions, and track whether healthy new growth resumes"
+      ],
+      "expectedIpmResponse": "Recognize a chemical-injury pattern without naming an herbicide from appearance. Require application and spatial evidence, keep virus, pests, nutrition, environment, and development in the differential, prevent repeat exposure, and avoid invented remediation or pesticide instructions."
     }
   ]
 }
