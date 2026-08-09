@@ -1327,6 +1327,71 @@
         "compare nearby healthy and affected tissue and check for wounds or dead material"
       ],
       "expectedIpmResponse": "Use these images to recognize generic Botrytis evidence, not to assert cannabis bud rot from visual similarity alone. Require crop-specific tissue views and internal rot evidence before a cannabis bud-rot conclusion, and distinguish gray sporulation from flat powdery residue or normal fading."
+    },
+    {
+      "recordId": "diagnosis-pythium-wilt-insufficient-root-evidence-open-001",
+      "caseId": "pythium_root_rot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-root-rot-awa-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Root_rot_awa.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Root_rot_awa.jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Young kava wilting from documented Pythium splendens root rot by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-awa-pythium-wilt-young-plant-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Awa_Pythium_Root_Rot_--_wilt_on_young_plant.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Awa_Pythium_Root_Rot_--_wilt_on_young_plant.jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Kava wilt associated with documented Pythium splendens root rot by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "young kava (Piper methysticum)",
+      "cultivar": "unknown",
+      "lifeStage": "young plant",
+      "affectedLocation": "whole-plant wilt; roots not visible",
+      "distribution": "individual wilted plants in documented Pythium splendens cases",
+      "progression": "endpoint wilt shown; onset and rate not recorded",
+      "mediumRootZone": "not shown or measured",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "whole-plant wilt in cases documented as Pythium splendens",
+        "loss of turgor compatible with impaired root function",
+        "no visible root lesion, discoloration, sloughing, or pathogen structure in the submitted views"
+      ],
+      "plausibleAlternatives": [
+        "underwatering or interrupted irrigation",
+        "waterlogging or low root-zone oxygen without confirmed pathogen",
+        "heat or high-vapor-pressure stress",
+        "root aphids or other root pests",
+        "transplant or physical root injury",
+        "vascular wilt or other root pathogens"
+      ],
+      "confirmationMethod": "Inspect washed roots and crown, record substrate moisture, temperature, oxygenation or drainage, and irrigation history, and confirm Pythium with culture, microscopy, or an appropriate test when species-level certainty matters.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest"],
+      "expectedUrgency": "prompt root-zone inspection when wilt persists despite appropriate moisture",
+      "expectedQuarantineGuidance": "Avoid sharing runoff, tools, or root-zone material until contagious root disease is excluded; do not label ordinary transient wilt contagious without supporting evidence.",
+      "expectedScoutingSteps": [
+        "photograph washed healthy and affected roots plus the crown transition",
+        "record irrigation timing, substrate moisture, drainage, root-zone temperature, and oxygenation context",
+        "inspect for discoloration, sloughing, odor, root insects, and vascular symptoms",
+        "compare affected and unaffected plants and obtain a pathogen test when consequences are high"
+      ],
+      "expectedIpmResponse": "Treat wilt as compatible with root dysfunction but not diagnostic of Pythium. Do not confirm root rot from foliage alone, do not invent a pathogen treatment, and request root images, root-zone measurements, irrigation history, and confirmatory testing."
     }
   ]
 }

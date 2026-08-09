@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(11);
+    expect(catalog.mediaRecords).toHaveLength(12);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -201,6 +201,10 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "diagnosis-botrytis-gray-mold-open-001",
           caseId: "botrytis_gray_mold_bud_rot"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-pythium-wilt-insufficient-root-evidence-open-001",
+          caseId: "pythium_root_rot"
         })
       ])
     );
