@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(48);
+    expect(catalog.mediaRecords).toHaveLength(49);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -159,6 +159,11 @@ describe("diagnosis/IPM QA catalog", () => {
               intendedUseApproved: true
             })
           ])
+        }),
+        expect.objectContaining({
+          recordId: "ipm-thrips-mildew-lookalike-boundary-open-002",
+          caseId: "thrips",
+          expectedCauseRanking: ["insufficient_evidence", "pest", "disease", "other_abiotic"]
         }),
         expect.objectContaining({
           recordId: "ipm-two-spotted-spider-mites-open-001",
