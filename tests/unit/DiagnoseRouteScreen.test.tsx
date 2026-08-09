@@ -752,7 +752,7 @@ describe("DiagnoseRoute", () => {
     mockSearchParams = { retryToolRunId: "diagnosis-run-1" };
     mockGetToolRun.mockResolvedValue({
       id: "diagnosis-run-1",
-      toolType: "diagnosis",
+      toolType: "ai diagnosis",
       inputs: { evidenceAssetIds: ["diagnosis-photo-1"] }
     });
     mockGetEvidenceAssetsByIds.mockResolvedValue([
@@ -771,13 +771,10 @@ describe("DiagnoseRoute", () => {
 
     const screen = render(<DiagnoseRoute />);
 
-    expect(
-      await screen.findByText(/Recovered 1 private saved photo/i)
-    ).toBeTruthy();
-    expect(mockGetEvidenceAssetsByIds).toHaveBeenCalledWith(
-      ["diagnosis-photo-1"],
-      { workspaceType: "personal" }
-    );
+    expect(await screen.findByText(/Recovered 1 private saved photo/i)).toBeTruthy();
+    expect(mockGetEvidenceAssetsByIds).toHaveBeenCalledWith(["diagnosis-photo-1"], {
+      workspaceType: "personal"
+    });
     expect(mockDiagnoseEvidence).not.toHaveBeenCalled();
     const latestPickerProps = mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0];
     expect(latestPickerProps.value).toEqual([

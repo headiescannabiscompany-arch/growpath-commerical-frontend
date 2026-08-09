@@ -172,6 +172,26 @@ describe("SavedToolRunsRoute", () => {
     mockUpdatePlantIdCorrection.mockResolvedValue(null);
   });
 
+  it("offers the retry for the historical ai diagnosis saved-run type", async () => {
+    const diagnosisRun = {
+      id: "diagnosis-run-legacy-type",
+      _id: "diagnosis-run-legacy-type",
+      toolType: "ai diagnosis",
+      summary: "Historical Diagnosis result.",
+      inputs: { evidenceAssetIds: ["diagnosis-photo-1"] },
+      outputs: { overallHealth: "watch" }
+    };
+    mockSearchParams = { toolRunId: "diagnosis-run-legacy-type" };
+    mockListToolRuns.mockResolvedValue([diagnosisRun]);
+    mockGetToolRun.mockResolvedValue(diagnosisRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(
+      await screen.findByLabelText("Re-run Diagnosis with saved evidence")
+    ).toBeTruthy();
+  });
+
   it("offers a Personal Plant ID re-run that carries only saved evidence and active Personal context", async () => {
     const cropRun = {
       id: "plant-run-retry",

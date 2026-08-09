@@ -176,8 +176,8 @@ function isDiagnosisRun(run: ToolRun | null) {
   const type = String(run?.toolType || run?.toolName || "")
     .trim()
     .toLowerCase()
-    .replaceAll("-", "_");
-  return type === "diagnosis" || type === "plant_diagnosis";
+    .replace(/[\s-]+/g, "_");
+  return type === "diagnosis" || type === "ai_diagnosis" || type === "plant_diagnosis";
 }
 
 function isHarvestRun(run: ToolRun | null) {
