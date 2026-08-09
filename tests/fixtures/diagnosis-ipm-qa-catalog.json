@@ -2228,6 +2228,76 @@
         "compare powdery mildew, residue, edema, leaf spots, and insect injury and obtain confirmation when species matters"
       ],
       "expectedIpmResponse": "Recognize downy-mildew-compatible host, lesion, and lower-surface sporulation evidence without equating every pale patch or white material with Plasmopara. Keep powdery mildew, residue, leaf spots, edema, insects, and aging visible until matched surfaces, environment, progression, or confirmation support the diagnosis."
+    },
+    {
+      "recordId": "diagnosis-physical-hail-damage-boundary-open-001",
+      "caseId": "physical_damage",
+      "imageSet": [
+        {
+          "imageId": "usda-nrcs-corn-hail-damage-38851124922",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Plants_NR_85_(38851124922).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Plants_NR_85_(38851124922).jpg",
+          "creator": "USDA NRCS Montana",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Corn leaf with hail damage, Ekalaka, Montana, by USDA NRCS Montana; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-nrcs-corn-hail-damage-38846985982",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Misc_NR_14_(38846985982).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Misc_NR_14_(38846985982).jpg",
+          "creator": "Nikki Romero, USDA NRCS",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Hail damage on a corn leaf, Plevna, Montana, by Nikki Romero, USDA NRCS; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "corn",
+      "cultivar": "unknown",
+      "lifeStage": "established vegetative foliage",
+      "affectedLocation": "leaf blades",
+      "distribution": "localized tears, holes, and damaged tissue on documented hail-affected corn leaves; field-wide distribution not recorded",
+      "progression": "two separate July 2013 observations in Montana; post-event healing and secondary progression not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor field observations following hail; storm timing and intensity not recorded in the image metadata",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "irregular torn and missing leaf tissue documented after hail",
+        "physical injury patterns without an identified feeding organism or pathogen sign",
+        "two independent corn examples showing variation in hail injury"
+      ],
+      "plausibleAlternatives": [
+        "caterpillar, beetle, slug, or other chewing injury",
+        "wind abrasion or mechanical handling",
+        "bacterial or fungal lesions followed by tissue loss",
+        "spray burn",
+        "cold or heat injury",
+        "animal damage"
+      ],
+      "confirmationMethod": "Correlate fresh injury with weather and handling history, inspect edge character and field-facing distribution, and scout for insects, frass, eggs, lesions, or continuing damage; physical damage is supported when injury appears synchronously after an event and does not progress without secondary complications.",
+      "expectedCauseRanking": [
+        "other_abiotic",
+        "insufficient_evidence",
+        "pest",
+        "disease"
+      ],
+      "expectedUrgency": "assess structural loss, growing-point injury, and secondary infection risk; emergency pest or disease treatment is not justified by torn tissue alone",
+      "expectedQuarantineGuidance": "Do not quarantine for physical damage alone; separate damaged material only when sanitation, structural safety, or suspected secondary disease requires it.",
+      "expectedScoutingSteps": [
+        "capture close views of injury edges plus whole-plant and field-facing distribution",
+        "record hail, wind, handling, animal, equipment, temperature, and spray events with timestamps",
+        "inspect both leaf surfaces for insects, frass, eggs, mines, pathogen structures, and lesion margins",
+        "mark fresh injuries and recheck for continued expansion or secondary infection"
+      ],
+      "expectedIpmResponse": "Recognize event-compatible physical injury without turning tears and holes into an automatic pest or disease diagnosis. Use timing, distribution, edge character, pest evidence, and progression to separate hail from chewing, abrasion, spray injury, temperature injury, and lesions with tissue loss."
     }
   ]
 }

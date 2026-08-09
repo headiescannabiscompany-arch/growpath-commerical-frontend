@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(24);
+    expect(catalog.mediaRecords).toHaveLength(25);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -253,6 +253,10 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "diagnosis-downy-mildew-surface-boundary-open-001",
           caseId: "downy_mildew"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-physical-hail-damage-boundary-open-001",
+          caseId: "physical_damage"
         })
       ])
     );
