@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(19);
+    expect(catalog.mediaRecords).toHaveLength(20);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -233,6 +233,10 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "ipm-beneficial-harmless-lookalikes-open-001",
           caseId: "beneficial_and_harmless_lookalikes"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-rust-pustule-host-boundary-open-001",
+          caseId: "rust"
         })
       ])
     );

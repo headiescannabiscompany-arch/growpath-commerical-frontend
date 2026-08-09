@@ -1878,6 +1878,76 @@
         "preserve the organism while seeking expert identification when its role is unresolved"
       ],
       "expectedIpmResponse": "Do not recommend treatment from organism appearance alone. Recognize springtails as usually harmless decomposer-associated organisms and ladybird larvae as aphid predators when morphology and behavior support those roles; investigate moisture or the prey population without killing beneficials."
+    },
+    {
+      "recordId": "diagnosis-rust-pustule-host-boundary-open-001",
+      "caseId": "rust",
+      "imageSet": [
+        {
+          "imageId": "usda-d517-1-stripe-rust-wheat-leaf",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Stripe_rust_on_wheat.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Stripe_rust_on_wheat.jpg",
+          "creator": "Yue Jin, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Stripe rust (Puccinia striiformis) on wheat by Yue Jin, USDA Agricultural Research Service. Image D517-1; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-k11192-1-stem-rust-wheat-close-up",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Stem_rust_close_up.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Stem_rust_close_up.jpg",
+          "creator": "Yue Jin, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Stem rust (Puccinia graminis) on wheat by Yue Jin, USDA Agricultural Research Service. Image K11192-1; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "wheat",
+      "cultivar": "unknown",
+      "lifeStage": "crop foliage and stems with documented rust diseases",
+      "affectedLocation": "leaf blade and stem surfaces",
+      "distribution": "linear stripe-rust pustules on foliage and elongated stem-rust pustules on stems",
+      "progression": "established sporulating symptoms shown; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "field context; leaf wetness, temperature, humidity, and host susceptibility not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "raised colored pustules on host tissue",
+        "stripe-like leaf distribution in documented Puccinia striiformis",
+        "elongated rupturing stem pustules in documented Puccinia graminis"
+      ],
+      "plausibleAlternatives": [
+        "edema or corking",
+        "scale insects",
+        "mineral or spray residue",
+        "bacterial or fungal leaf spots",
+        "normal pigmentation or senescence",
+        "other rust fungi with host-specific biology"
+      ],
+      "confirmationMethod": "Confirm raised pustules, spore transfer, affected surface, host identity, and distribution; microscopy, extension review, or laboratory confirmation is required when the rust species affects management or reporting.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "pest",
+        "other_abiotic"
+      ],
+      "expectedUrgency": "promptly assess active sporulation, susceptible nearby hosts, and spread",
+      "expectedQuarantineGuidance": "Limit movement of actively sporulating material and inspect compatible hosts while the pathogen is identified; do not transfer wheat-specific quarantine claims to unrelated crops.",
+      "expectedScoutingSteps": [
+        "photograph pustules sharply from top and side views plus whole-plant distribution",
+        "check whether pigment or spores transfer with a clean diagnostic swab",
+        "record host, affected surface, symptom progression, recent moisture, humidity, and temperature",
+        "compare scale insects, corking, residue, and leaf spots and obtain confirmation when species matters"
+      ],
+      "expectedIpmResponse": "Recognize rust-compatible raised pustules and distribution, but do not name a rust species or copy wheat management to another crop from orange or brown spots alone. Preserve edema, scale, residue, and other disease alternatives until pustule and host evidence support rust."
     }
   ]
 }
