@@ -2583,6 +2583,76 @@
         "compare spread over time and submit representative tissue for qualified confirmation when the decision consequence warrants it"
       ],
       "expectedIpmResponse": "Recognize a documented powdery surface-colony pattern while keeping organism identity separate from the causal-disease claim. Explain the cross-host boundary, request the missing distribution and environmental evidence, retain residue and lookalike alternatives, and avoid inventing a pesticide, rate, interval, or host label."
+    },
+    {
+      "recordId": "ipm-aphid-morphology-damage-boundary-open-002",
+      "caseId": "aphids",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-d2459-1-greenbug-aphid-mouthparts",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/apr12/d2459-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/apr12/d2459-1.jpg",
+          "creator": "Kent Loeffler, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Greenbug aphid (Schizaphis graminum) mouthparts. Photo by Kent Loeffler, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-d2491-1-russian-wheat-aphid-adult-young",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/apr12/d2491-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/apr12/d2491-1.jpg",
+          "creator": "Gary Puterka, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Russian wheat aphid adult with young. Photo by Gary Puterka, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "cereal-host reference context",
+      "cultivar": "unknown",
+      "lifeStage": "adult and juvenile aphid reference stages",
+      "affectedLocation": "organism-level macro views; host tissue and whole-plant injury are not shown well enough for a damage diagnosis",
+      "distribution": "isolated reference organisms rather than a mapped colony or crop distribution",
+      "progression": "not available; the images do not document population growth, feeding duration, plant decline, or response to management",
+      "mediumRootZone": "not relevant to organism morphology and not supplied for the associated host plants",
+      "environment": "crop, temperature, humidity, season, production setting, natural enemies, and recent inputs are not documented as a shared case",
+      "measuredValues": "no colony counts, trap counts, plant-damage measurements, honeydew assessment, or environmental measurements accompany the paired images",
+      "diagnosticSigns": [
+        "USDA ARS identifies the photographed organisms as two aphid species",
+        "piercing-sucking mouthparts are visible in the greenbug macro reference",
+        "an adult and young are visible together in the Russian wheat aphid reference"
+      ],
+      "plausibleAlternatives": [
+        "another aphid species requiring host and morphological confirmation",
+        "beneficial parasitoid mummies or predators near an aphid colony",
+        "whitefly, psyllid, scale crawler, or another small sap-feeding insect",
+        "incidental individual organisms without an economically meaningful infestation",
+        "plant symptoms caused primarily by disease, nutrition, water, roots, environment, or chemical injury"
+      ],
+      "confirmationMethod": "Use the macro references to support aphid morphology only. Confirm an infestation and its consequence with leaf-top and underside colony views, host identity, honeydew or cast skins, affected-versus-unaffected distribution, repeated counts, natural-enemy observations, and qualified identification when species or virus-vector status changes the decision.",
+      "expectedCauseRanking": [
+        "pest",
+        "insufficient_evidence",
+        "disease",
+        "other_abiotic",
+        "deficiency"
+      ],
+      "expectedUrgency": "scout the crop promptly and preserve representative organism and host-tissue evidence before deciding whether action is needed",
+      "expectedQuarantineGuidance": "Avoid moving infested plant material between clean areas while scouting, but do not infer crop-wide spread, virus transmission, or treatment need from isolated reference organisms.",
+      "expectedScoutingSteps": [
+        "inspect and photograph leaf tops, undersides, stems, growing points, and adjacent plants for colonies, cast skins, honeydew, and sooty growth",
+        "record host, room or field position, affected-versus-unaffected distribution, and repeat counts using the same method",
+        "look for parasitoid mummies, predators, and other beneficial organisms before recommending disruption",
+        "separate organism identification from plant-damage attribution and obtain qualified confirmation when species or vector status matters"
+      ],
+      "expectedIpmResponse": "Identify aphid morphology when supported while refusing to turn two isolated organism macros into a crop-damage, virus, or treatment claim. Ask for colony, host, distribution, honeydew, cast-skin, and natural-enemy evidence; preserve harmless or beneficial context; and avoid invented pesticide directions."
     }
   ]
 }
