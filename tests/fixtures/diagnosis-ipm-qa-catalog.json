@@ -2513,6 +2513,76 @@
         "inspect for lesions, decay, odor, insects, feeding injury, pruning, and container or hardpan restriction and submit representative samples when needed"
       ],
       "expectedIpmResponse": "Identify a serious root-zone pattern compatible with documented acid-soil aluminum toxicity while refusing to infer numeric pH from an image. Require calibrated measurements and representative testing, preserve physical, oxygen, water, salt, disease, pest, and handling alternatives, and avoid unmeasured correction rates."
+    },
+    {
+      "recordId": "diagnosis-powdery-mildew-cross-host-boundary-open-002",
+      "caseId": "powdery_mildew",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-d785-2-zinnia-powdery-mildew",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/featuredphoto/jan22/powderymildew/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/images/photos/featuredphoto/Jan22/D785-2w.jpg",
+          "creator": "Steve Ausmus, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Powdery mildew on zinnia. Photo by Steve Ausmus, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-d3989-1-hop-powdery-mildew",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/sep18/d3989-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/images/photos/sep18/d3989-1.jpg",
+          "creator": "David Gent, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Powdery mildew signs on a hop leaf. Photo by David Gent, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "zinnia and hop reference hosts",
+      "cultivar": "unknown",
+      "lifeStage": "established plants with symptomatic foliage",
+      "affectedLocation": "leaf surfaces with documented powdery-mildew signs",
+      "distribution": "severe zinnia foliage involvement and a separate symptomatic hop leaf; whole-plant and production-block distributions are not documented together",
+      "progression": "single-time reference images from different hosts; onset, spread rate, and response to management are not recorded",
+      "mediumRootZone": "not documented with either image and therefore unavailable for causal ranking beyond the visible foliar pattern",
+      "environment": "humidity, leaf wetness, airflow, temperature, canopy density, and recent treatment history are not supplied with the paired references",
+      "measuredValues": "no environmental, root-zone, microscopy, culture, or molecular measurements accompany the images",
+      "diagnosticSigns": [
+        "USDA ARS documentation identifies powdery mildew on both reference hosts",
+        "visible pale powdery surface colonies on foliage",
+        "cross-host comparison demonstrates a symptom class while not proving the same pathogen species or treatment across hosts"
+      ],
+      "plausibleAlternatives": [
+        "spray residue, mineral deposit, dust, or dried foliar product",
+        "downy mildew or another foliar disease with surface growth",
+        "trichomes, wax, or normal host surface texture",
+        "thrips or mite feeding that produces pale tissue without removable colonies",
+        "senescence, nutrient stress, or chemical injury"
+      ],
+      "confirmationMethod": "Inspect affected and unaffected leaf tops and undersides at macro scale, test whether the surface material transfers or wipes without injuring tissue, document distribution and environment, and use microscopy or a qualified plant-disease laboratory when host-specific pathogen identity or a high-consequence management decision is required.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "pest",
+        "deficiency"
+      ],
+      "expectedUrgency": "promptly document spread and reduce avoidable cross-contact while confirmation is pursued",
+      "expectedQuarantineGuidance": "Separate symptomatic material and tools from unaffected production areas when practical, but do not claim a host-specific pathogen or prescribe treatment from these two images alone.",
+      "expectedScoutingSteps": [
+        "capture whole-plant distribution plus matching leaf-top, leaf-underside, and macro views from affected and unaffected tissue",
+        "record humidity, temperature, airflow, canopy density, irrigation, condensation, and recent foliar applications",
+        "check whether the pale surface material transfers and inspect it under magnification",
+        "compare spread over time and submit representative tissue for qualified confirmation when the decision consequence warrants it"
+      ],
+      "expectedIpmResponse": "Recognize a documented powdery surface-colony pattern while keeping organism identity separate from the causal-disease claim. Explain the cross-host boundary, request the missing distribution and environmental evidence, retain residue and lookalike alternatives, and avoid inventing a pesticide, rate, interval, or host label."
     }
   ]
 }
