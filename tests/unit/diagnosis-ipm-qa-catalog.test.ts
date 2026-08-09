@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(5);
+    expect(catalog.mediaRecords).toHaveLength(6);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -177,6 +177,10 @@ describe("diagnosis/IPM QA catalog", () => {
               intendedUseApproved: true
             })
           ])
+        }),
+        expect.objectContaining({
+          recordId: "ipm-normal-senescence-open-001",
+          caseId: "normal_senescence"
         })
       ])
     );

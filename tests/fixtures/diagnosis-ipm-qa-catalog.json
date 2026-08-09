@@ -946,6 +946,69 @@
         "inspect for direct mites, eggs, webbing, frass, colonies, or fungal growth"
       ],
       "expectedIpmResponse": "Preserve chemical or spray injury as an abiotic hypothesis when exposure history and distribution fit; never invent a product, rate, or remedy, and do not headline a pest or disease without direct signs."
+    },
+    {
+      "recordId": "ipm-normal-senescence-open-001",
+      "caseId": "normal_senescence",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-poison-ivy-autumn-red-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Red_leaves_on_poison_ivy.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Red_leaves_on_poison_ivy.jpg",
+          "creator": "Bachrach44",
+          "licenseId": "PUBLIC-DOMAIN-DEDICATION",
+          "attributionText": "Poison ivy showing red leaves in fall by Bachrach44; released into the public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-dead-fallen-leaf-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_dead_leaf.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/A_dead_leaf.jpg",
+          "creator": "John Harvey",
+          "licenseId": "PUBLIC-DOMAIN-DEDICATION",
+          "attributionText": "A dead fallen leaf by John Harvey; released into the public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "poison ivy autumn foliage and an unidentified fallen leaf",
+      "cultivar": "not applicable",
+      "lifeStage": "seasonal autumn change and fully senesced fallen tissue",
+      "affectedLocation": "older leaves",
+      "distribution": "seasonal coloration and isolated dead fallen tissue; whole-plant distribution is incompletely represented",
+      "progression": "seasonal progression is described for the autumn foliage; the fallen leaf is an endpoint only",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor seasonal context",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "season-linked red autumn foliage",
+        "fully senesced fallen leaf",
+        "absence of documented pest bodies, colonies, webbing, frass, or fungal growth"
+      ],
+      "plausibleAlternatives": [
+        "nutrient remobilization or deficiency",
+        "cold stress",
+        "root stress",
+        "leaf-spot disease",
+        "physical damage"
+      ],
+      "confirmationMethod": "Require crop stage, season, older-versus-new tissue distribution, progression, and absence of spreading diagnostic signs; color alone cannot prove normal senescence.",
+      "expectedCauseRanking": ["other_abiotic", "insufficient_evidence"],
+      "expectedUrgency": "low only when timing and distribution support normal aging and no spreading signs exist",
+      "expectedQuarantineGuidance": "Do not recommend quarantine for normal senescence; escalate only if direct contagious signs or unexpected spread appear.",
+      "expectedScoutingSteps": [
+        "compare old and new growth",
+        "record crop stage, season, and progression",
+        "inspect lesion margins, undersides, roots, and nearby plants for contradictory signs"
+      ],
+      "expectedIpmResponse": "Treat senescence as a context-dependent hypothesis, not a photo-only diagnosis; avoid pest, disease, or deficiency certainty without distribution, progression, and supporting evidence."
     }
   ]
 }
