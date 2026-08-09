@@ -4108,6 +4108,48 @@
       "expectedIpmResponse": "Do not diagnose damaging fungus gnats from one adult, a fungus-gnat-family larva outside crop media, or generic root decline. Require production-media larvae, adult trends, and compatible root context; distinguish harmless or predatory organisms; separately evaluate Phytophthora, Pythium, other root disease, and moisture/oxygen failures; and avoid inventing pesticide or disease-control directions."
     },
     {
+      "recordId": "diagnosis-botrytis-cross-host-flower-boundary-open-002",
+      "caseId": "botrytis_gray_mold_bud_rot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-botrytised-grape-cluster",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Botrytisgrape.JPG",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Botrytisgrape.JPG",
+          "creator": "Tomhaehn",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Botrytised grape cluster photographed by Tomhaehn; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc-by-2-close-botrytis-grapes-david-lytle",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Close_up_of_botrytis_infected_grapes.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Close_up_of_botrytis_infected_grapes.jpg",
+          "creator": "David Lytle",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Close view of Botrytis-infected grapes photographed by David Lytle; CC BY 2.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "grape clusters with documented Botrytis or noble-rot context; no cannabis or hemp flower is represented",
+      "cultivar": "unknown", "lifeStage": "mature fruit clusters with established colonization",
+      "affectedLocation": "external fruit surfaces and cluster tissue; internal cannabis flower structure is not represented",
+      "distribution": "two cross-host cluster views without a mapped crop distribution, affected-unaffected comparison, or internal flower dissection",
+      "progression": "single-time images without onset, spread, internal browning sequence, condensation history, or response to a confirmed intervention",
+      "mediumRootZone": "not relevant to the visible fruit colonization and not documented",
+      "environment": "humidity, condensation, leaf wetness, rainfall, airflow, temperature, canopy density, handling injury, and drying conditions are not paired with the images",
+      "measuredValues": "no humidity or temperature trend, tissue-moisture result, spore microscopy, culture, molecular assay, or crop-loss measure accompanies the pair",
+      "diagnosticSigns": ["both references document Botrytis-associated grape-cluster changes", "visible cross-host colonization does not establish cannabis flower infection or its crop consequence", "external browning alone cannot substitute for internal tissue, sporulation, progression, and environment evidence"],
+      "plausibleAlternatives": ["normal flower, pistil, bract, fruit, or leaf senescence", "physical bruising, abrasion, pressure, insect feeding, or handling injury", "drying, heat, light, cold, drought, nutrient, or root-zone stress", "another fungal or bacterial flower and fruit disease", "dust, fibers, residue, trichomes, glare, or normal surface texture"],
+      "confirmationMethod": "Capture whole-plant and affected-unaffected distribution, gently open representative suspect flowers when safe, photograph internal browning and collapse in neutral light, inspect for compatible gray sporulation, record humidity/condensation/airflow and progression, and obtain qualified microscopy or laboratory confirmation when disposition depends on the result.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic"],
+      "expectedUrgency": "promptly isolate and inspect internally when dense flowers show progressive browning, collapse, odor, or gray sporulation, while avoiding a crop-wide conclusion from one cross-host-like surface view",
+      "expectedQuarantineGuidance": "Limit movement and contact of a plant with credible progressive flower rot while confirming it; do not destroy or quarantine from ordinary browning, aging pistils, residue, or a cross-host resemblance alone.",
+      "expectedScoutingSteps": ["capture whole-plant, canopy-distribution, affected and unaffected flower, exterior macro, and safe internal flower views in neutral light", "inspect for internal browning, soft or collapsed tissue, gray sporulation, odor, and spread beyond aging pistils", "record humidity, condensation, airflow, canopy density, temperature, irrigation, rain, injury, and progression", "compare normal senescence and physical injury and obtain qualified microscopy, culture, or laboratory confirmation when consequences are high"],
+      "expectedIpmResponse": "Use the grape references only to recognize compatible Botrytis context, never as proof of cannabis bud rot. Require internal flower injury, sporulation when present, progression, and humidity or condensation evidence; distinguish normal aging and physical browning; state cross-host limits; request exact missing views; and avoid inventing fungicide, harvest, or destruction directions."
+    },
+    {
       "recordId": "diagnosis-compost-organic-release-timing-open-001",
       "caseId": "organic_release_timing",
       "imageSet": [
