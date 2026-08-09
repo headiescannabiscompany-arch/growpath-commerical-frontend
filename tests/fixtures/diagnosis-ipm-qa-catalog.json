@@ -4496,6 +4496,108 @@
       "expectedQuarantineGuidance": "Do not quarantine for suspected edema, dew, or surface water alone; reduce wet handling and limit movement only when an actively spreading infectious pattern is credible.",
       "expectedScoutingSteps": ["capture whole-plant distribution plus sharp leaf top, underside, edge, cross-section, blister or lesion center and margin, and unaffected new-growth views", "test whether apparent bumps, water, residue, organisms, or growth are removable or tissue-integrated without destroying all diagnostic evidence", "record irrigation, rain, wetness duration, moisture and drainage trends, roots, temperature, humidity or VPD, airflow, recent sprays, and symptom timing", "mark tissue and compare blistering, corking, lesion expansion, surface drying, and new growth; obtain qualified pathogen confirmation when infectious water-soaking persists"],
       "expectedIpmResponse": "Do not diagnose edema from wet-looking tissue, translucence, droplets, bumps, or water context alone. Distinguish tissue-integrated blistering and corking from bacterial hydrosis, dew, guttation, residue, pests, disease, spray, and root disorders; require paired views, measured water balance and environment, roots, distribution, progression, and qualified testing for consequential pathogen claims; and avoid unmeasured irrigation or pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-ph-chart-chlorosis-measurement-boundary-open-002",
+      "caseId": "ph_problem",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-soil-ph-nutrient-availability-chart", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Soil-pH.svg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Soil-pH.svg",
+          "creator": "FMoeckel", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Nutrient availability in relation to soil pH chart by FMoeckel, released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-high-ph-blueberry-chlorosis", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:ChloroticBlueberryLeaf.JPG", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/ChloroticBlueberryLeaf.JPG",
+          "creator": "Reznil", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Blueberry chlorosis described as associated with high soil pH and impaired iron uptake, photographed by Reznil and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "blueberry with documented chlorosis context and a generalized soil-pH nutrient-availability chart; neither supplies the user's root-zone measurement",
+      "cultivar": "unknown", "lifeStage": "established blueberry foliage; chart is not a plant observation",
+      "affectedLocation": "blueberry foliage without paired roots, stems, old-new leaf map, whole-plant distribution, or unaffected control",
+      "distribution": "one plant-level view and one generalized chart without representative root-zone sampling, irrigation zones, container depths, or affected-unaffected comparisons",
+      "progression": "single-time foliage image without symptom onset, measured pH trend, input history, new-growth response, or recovery",
+      "mediumRootZone": "the caption attributes chlorosis to high soil pH, but substrate type, sampling method, pH, EC, alkalinity, moisture, oxygen, roots, and irrigation water are not reported with the image",
+      "environment": "temperature, humidity, VPD, light, irrigation, rainfall, and recent inputs are absent",
+      "measuredValues": "no calibrated case-linked pH, EC, alkalinity, nutrient, tissue, moisture, or root measurement accompanies the image pair",
+      "diagnosticSigns": ["the blueberry caption documents a high-pH and impaired-iron-uptake interpretation but does not provide the measurement", "the chart describes generalized nutrient availability relationships rather than a universal crop diagnosis", "chlorosis and a pH chart cannot reveal numeric root-zone pH from pixels"],
+      "plausibleAlternatives": ["iron, nitrogen, magnesium, sulfur, manganese, or another deficiency, antagonism, or excess", "high alkalinity, bicarbonate, EC, salinity, unsuitable fertilizer ratio, or irrigation-water effect", "root disease, low oxygen, water stress, compaction, damaged roots, or container restriction", "mites, pests, viral or vascular disease, spray injury, light stress, cold, or normal pigmentation", "sampling, meter, extraction, calibration, or chart-application error"],
+      "confirmationMethod": "Use a calibrated method appropriate to soil, soilless substrate, solution, runoff, or tissue; sample representative affected and unaffected root zones at defined depths and times; pair pH with EC, alkalinity and input history, roots, moisture and oxygen context, and method-appropriate nutrient or tissue testing; then track new growth after one evidence-based correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "lockout", "deficiency", "other_abiotic", "disease", "pest"],
+      "expectedUrgency": "preserve representative samples and measure promptly before adding acids, bases, nutrients, or flushes that would erase the diagnostic state",
+      "expectedQuarantineGuidance": "Do not quarantine for pH, chlorosis, or nutrient availability alone; isolate only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": ["capture whole plants, old and new leaves, veins and interveinal tissue, roots, irrigation zones, and matched affected-unaffected controls", "measure calibrated pH and EC with the correct medium-specific method, defined sample depth, timing, temperature, and calibration record", "record water alkalinity, source and drain values, fertilizer and amendment history, moisture, drainage, oxygen context, root condition, and recent environmental changes", "obtain method-appropriate soil, solution, substrate, water, or tissue testing and track new growth after one reviewed correction"],
+      "expectedIpmResponse": "Do not infer numeric pH or prescribe a correction from chlorosis or a generalized chart. Require calibrated medium-specific measurements, representative sampling, EC and alkalinity context, roots, inputs, distribution, and progression; preserve deficiency, antagonism, salinity, water, root, pest, disease, spray, and environmental alternatives; and avoid universal pH targets or unmeasured acid, base, nutrient, and flushing directions."
+    },
+    {
+      "recordId": "diagnosis-visible-salt-ec-measurement-boundary-open-002",
+      "caseId": "ec_problem",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usda-pd-salt-affected-colorado-soil", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Salinity.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Salinity.jpg",
+          "creator": "USDA employee", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Salt-affected rangeland soil in Colorado photographed by a USDA employee; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-pd-saline-seep03-montana", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Saline_Seep03_(38176469695).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Saline_Seep03_(38176469695).jpg",
+          "creator": "USDA NRCS Montana", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Saline seep documented by USDA NRCS Montana; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "salt-affected rangeland and a saline seep; no case-linked crop symptom or solution measurement is provided",
+      "cultivar": "unknown", "lifeStage": "landscape and soil context rather than a controlled crop-stage observation",
+      "affectedLocation": "soil-surface and landscape zones without paired leaves, roots, crowns, emitters, or unaffected crop controls",
+      "distribution": "field-scale salt and seep context without root-zone depth profile, irrigation-zone map, source-drain comparison, or repeated crop sampling",
+      "progression": "single-time references without salt accumulation trend, irrigation history, crop response, leaching event, or recovery",
+      "mediumRootZone": "visible salts and saline landscape context are documented, but water content, texture, drainage, ions, pH, EC, SAR, alkalinity, roots, and oxygen are not case-linked",
+      "environment": "rainfall, evapotranspiration, irrigation source, temperature, humidity, wind, and water-table behavior are absent",
+      "measuredValues": "no case-linked calibrated EC, extraction method, temperature compensation, ion analysis, source/drain value, pH, SAR, alkalinity, moisture, or tissue result accompanies the images",
+      "diagnosticSigns": ["visible surface salt and a saline seep establish saline context but not a numeric crop-root-zone EC", "surface residue does not identify which ions are present or whether a particular plant is injured", "EC measures total ionic conductivity and cannot by itself identify nutrient balance, toxicity, or the causal input"],
+      "plausibleAlternatives": ["fertilizer accumulation, sodium or chloride injury, bicarbonate or alkalinity, unsuitable source water, or evaporative concentration", "drought, high VPD, heat, excess light, wind, cold, or irrigation failure", "pH-related lockout, nutrient deficiency, antagonism, excess, or root-zone stratification", "waterlogging, poor drainage, root disease, low oxygen, compaction, or damaged roots", "spray residue, mineral deposits without plant injury, pests, disease, or natural senescence"],
+      "confirmationMethod": "Measure EC using a calibrated, temperature-aware method appropriate to soil, soilless substrate, solution, source water, runoff, drain, or saturated extract; sample representative affected and unaffected zones and depths; pair EC with pH, alkalinity, ion or nutrient analysis, moisture, drainage, roots, input history, and crop response before attributing symptoms or selecting a correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "excess", "lockout", "other_abiotic", "deficiency", "disease"],
+      "expectedUrgency": "preserve samples and measure promptly before flushing, fertilizing, or changing irrigation, especially when roots or young tissue are actively declining",
+      "expectedQuarantineGuidance": "Do not quarantine for visible salts, saline soil, or suspected EC stress alone; contain runoff or material only when environmental, contamination, or regulated-risk evidence requires it.",
+      "expectedScoutingSteps": ["capture whole plants, roots, salt or residue distribution, irrigation zones, emitters, source and drain points, affected-unaffected plants, and depth context", "measure EC and pH with the correct calibrated method, temperature handling, defined sample timing, depth, and medium while recording source, input, runoff, and drain values", "record irrigation volume, frequency, drainage, evaporation, moisture, water source, fertilizer and amendment history, alkalinity, and root condition", "obtain ion, nutrient, water, soil, substrate, or tissue analysis when the decision depends on composition and track new growth after one reviewed correction"],
+      "expectedIpmResponse": "Do not infer numeric EC, ion composition, or crop injury from visible salts or scorch. Require calibrated method-specific measurements, representative depths and zones, source-to-drain context, pH and alkalinity, roots, moisture and drainage, input history, and composition testing; distinguish salinity from drought, waterlogging, nutrition, pH, disease, spray, and environmental stress; and avoid automatic flushing or fertilizer directions."
+    },
+    {
+      "recordId": "diagnosis-seasonal-color-senescence-boundary-open-002",
+      "caseId": "normal_senescence",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-sugar-maple-autumnleaves", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Autumnleaves.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Autumnleaves.jpg",
+          "creator": "Koalacuddles", "licenseId": "CC0-1.0", "attributionText": "Autumn leaves on a sugar maple photographed by Koalacuddles; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-fallen-yellow-leaves-unsplash", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fallen_yellow_leaves_(Unsplash).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fallen_yellow_leaves_(Unsplash).jpg",
+          "creator": "Maria Chantal Rodríguez Nilsson", "licenseId": "CC0-1.0", "attributionText": "Fallen yellow leaves photographed by Maria Chantal Rodríguez Nilsson and published under CC0 before the Unsplash license change.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "sugar maple in autumn and fallen yellow leaves in a separate seasonal context",
+      "cultivar": "unknown", "lifeStage": "mature seasonal foliage and detached fallen leaves",
+      "affectedLocation": "canopy foliage and fallen leaves without paired young growth, roots, stems, fruiting stage, or diseased tissue",
+      "distribution": "seasonal canopy and ground-level examples without within-plant age map, affected-unaffected control, evergreen comparison, or crop-zone distribution",
+      "progression": "single-time autumn references without onset date, marked-leaf sequence, abscission timing, new growth, or off-season persistence",
+      "mediumRootZone": "roots, moisture, oxygen, temperature, salinity, pH, EC, and drainage are not shown or measured",
+      "environment": "autumn context is documented, but photoperiod, temperature trend, frost, irrigation, rainfall, humidity, and exposure are not measured",
+      "measuredValues": "no leaf-age map, chlorophyll, nutrient, moisture, pH, EC, temperature, photoperiod, lesion progression, pest count, or pathogen result accompanies the pair",
+      "diagnosticSigns": ["autumn canopy color and fallen yellow leaves are compatible with normal seasonal senescence", "detached leaves cannot establish the health of the source plant or the cause of abscission", "yellowing is not automatically normal when timing, tissue age, distribution, crop stage, or progression conflicts with expected senescence"],
+      "plausibleAlternatives": ["nitrogen, magnesium, iron, sulfur, potassium, or another deficiency, antagonism, excess, pH, or EC problem", "underwatering, overwatering, root disease, low oxygen, heat, cold, light, or transplant stress", "viral, vascular, foliar, crown, or root disease", "mites, aphids, scale, whiteflies, thrips, or another pest", "spray injury, herbicide drift, natural cultivar pigmentation, harvest-stage remobilization, or camera color artifact"],
+      "confirmationMethod": "Identify species, expected deciduous or production-stage behavior, tissue age and position, season and photoperiod; map old versus new tissue and affected versus unaffected plants; inspect roots, pests, lesions and vascular signs; measure root-zone and environmental conditions; and document marked-leaf progression and new-growth health before classifying yellowing as normal.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "deficiency", "disease", "pest", "lockout"],
+      "expectedUrgency": "routine observation is appropriate for expected seasonal or stage-linked color change, but rapid off-season spread, young-growth symptoms, wilting, lesions, or vascular decline requires prompt investigation",
+      "expectedQuarantineGuidance": "Do not quarantine for expected senescence or fallen leaves alone; use pest or disease precautions only when transmissible evidence or progressive patterns support them.",
+      "expectedScoutingSteps": ["capture whole plants, canopy position, old and new leaves, veins, stems, roots, fallen tissue, nearby plants, and affected-unaffected comparisons", "record species, deciduous behavior, crop stage, harvest or reproduction timing, season, photoperiod, temperature trend, frost, irrigation, and recent inputs", "inspect for pests, eggs, frass, lesions, pathogen structures, vascular discoloration, root decay, residue, and spray or drift patterns", "mark leaves and track color, abscission, spread, and new-growth health while measuring moisture, pH, EC, and method-appropriate nutrient or tissue context"],
+      "expectedIpmResponse": "Treat senescence as a timing-and-distribution diagnosis, not a synonym for yellow leaves. Require species and stage, tissue age, season or harvest context, old-versus-new distribution, roots, environment, progression, and exclusion of pests, disease, nutrition, pH, EC, water, spray, and camera effects; preserve uncertainty when detached leaves lack source context and avoid reflex feeding or treatment."
     }
   ]
 }
