@@ -3772,6 +3772,48 @@
       "expectedIpmResponse": "Do not infer antagonism from color charts. Require measured competing ions, complete input history, pH, EC, roots, tissue or solution confirmation, and response; distinguish deficiency, excess, lockout, genetics, environment, and disease; and avoid supplement stacking."
     },
     {
+      "recordId": "ipm-broad-mite-virus-curl-boundary-open-002",
+      "caseId": "broad_mites",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc-by-4-broad-mite-scientific-illustration",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:ACAR_Tarsonemidae_Polyphagotarsonemus_latus.png",
+          "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ad/ACAR_Tarsonemidae_Polyphagotarsonemus_latus.png",
+          "creator": "Desmond W. Helmore, Manaaki Whenua - Landcare Research",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Broad mite (Polyphagotarsonemus latus) scientific illustration by Desmond W. Helmore, Manaaki Whenua - Landcare Research; CC BY 4.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-chili-yellow-leaf-curl-disease",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Yellow_curl_leaf_disease_Pj_IMG_3162.jpg",
+          "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/1/19/Yellow_curl_leaf_disease_Pj_IMG_3162.jpg",
+          "creator": "Kembangraps",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Yellow leaf curl disease symptoms on chili pepper by Kembangraps; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "direct broad-mite morphology reference and chili pepper with documented yellow leaf curl disease",
+      "cultivar": "unknown", "lifeStage": "adult broad-mite illustration and established symptomatic pepper foliage",
+      "affectedLocation": "organism morphology and distorted/yellowed new foliage",
+      "distribution": "cross-source comparison without mites collected from the symptomatic pepper or a matched affected-unaffected plant series",
+      "progression": "single-time references without organism counts, symptom onset, vector history, assay, or response sequence",
+      "mediumRootZone": "not documented with either reference and therefore unavailable for ruling out root-zone distortion",
+      "environment": "temperature, humidity, irrigation, light, heat, and foliar-application histories are not case-linked",
+      "measuredValues": "no mite or egg count, microscopy from symptomatic tissue, pathogen assay, pH, EC, root assessment, or environmental trend accompanies the comparison",
+      "diagnosticSigns": ["the scientific illustration documents broad-mite body morphology", "the pepper image documents a disease-associated yellow curl pattern that can resemble pest or abiotic distortion", "no direct broad mite or egg is documented on the symptomatic pepper"],
+      "plausibleAlternatives": ["yellow leaf curl virus or another virus-like disease", "cyclamen, russet, spider, or other mites", "thrips, aphids, or another vector or feeding pest", "herbicide, spray, heat, light, wind, drought, calcium, or root-zone injury", "genetic, developmental, or normal host morphology"],
+      "confirmationMethod": "Inspect the youngest affected and unaffected leaves, buds, and protected sites under sufficient magnification for mites and eggs; capture organism-scale evidence; map symptom distribution and vectors; record spray, environment, roots, pH, and EC; and obtain qualified mite identification or pathogen testing when the distinction changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "promptly inspect progressing new-growth distortion while avoiding destructive or broad treatment from leaf curl alone",
+      "expectedQuarantineGuidance": "Limit movement while a microscopic pest or transmissible disease is being confirmed, but do not declare broad mites or a virus solely from distorted foliage.",
+      "expectedScoutingSteps": ["capture whole-plant distribution and matched youngest-leaf top, underside, bud, and high-magnification views", "look directly for broad mites and eggs and distinguish them from cyclamen, russet, and other mites", "record vectors, sprays, herbicides, heat, light, irrigation, roots, pH, EC, and affected-unaffected patterns", "seek qualified mite identification or pathogen testing when management or disposition depends on the answer"],
+      "expectedIpmResponse": "Do not diagnose broad mites from curled or distorted new growth alone. Use direct body and egg morphology to support the pest, keep virus-like disease, other mites, vectors, chemical injury, environment, and root-zone causes visible, request the missing organism-scale and contextual evidence, and avoid inventing a pesticide or disease-control direction."
+    },
+    {
       "recordId": "ipm-russet-mite-cross-host-gall-boundary-open-002",
       "caseId": "russet_mites",
       "imageSet": [
