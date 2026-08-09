@@ -94,7 +94,13 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       headings and no visible failed, unauthorized, not-found, or unable-to-load state.
       The compact six-word tab bar also exposed AI Tools, Courses, Videos, Logs, Tasks,
       Discovery Nature, and workspace switching through More. This is a route and
-      session slice, not completion of the full Personal Pro behavioral loop.
+      session slice, not completion of the full Personal Pro behavioral loop. The same
+      login switched into Triple Bag Genetics as the actual Staff member, loaded the
+      Facility route set, showed the Facility-owned 2000/2000 credit balance instead of
+      the Personal balance, kept inventory read-only, and withheld assignment controls
+      with the explicit owner/manager rule. The live Team roster identified the current
+      production roles as Owner, Manager, Staff, and Viewer without inferring them from
+      account plan labels.
 - [~] Verify login/session/workspace selection and recovery across Free, Pro,
       Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
       server-down, reload, logout, and multi-workspace states. The same Personal Pro
@@ -102,9 +108,14 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       Personal workspace as current, exposed the shared Facility workspace as
       available, and entered `/home/personal` without reauthentication. Logout,
       failure/recovery states, and the remaining plans/roles are still open.
-- [ ] Finish the all-route/button checklist: correct destination, back behavior,
+- [~] Finish the all-route/button checklist: correct destination, back behavior,
       role gate, readable empty/loading/error state, persistence, and no dead or duplicate
-      controls.
+      controls. Personal Pro top-level and More destinations plus Facility Staff
+      Dashboard, Grows, Tasks, Compliance, More, Profile, Rooms, Inventory, Team, and
+      AI routes passed the 2026-08-09 production heading/error-state sweep. Facility
+      Inventory resolved from its loading state to a readable zero-item, read-only
+      result. Button mutations, mobile/visual evidence, and the remaining roles/routes
+      are not accepted by this sweep.
 - [ ] Retest content-report admin email deep links as an authorized platform owner
       for Forum, Feed, product, course, video, and live-session reports.
 - [ ] Create only approved temporary production/staging records needed to verify
