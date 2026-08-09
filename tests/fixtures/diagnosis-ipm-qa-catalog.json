@@ -1678,6 +1678,76 @@
         "record irrigation, drainage, substrate moisture, root color, odor, sloughing, and above-ground symptoms"
       ],
       "expectedIpmResponse": "Use these images as a morphology and evidence-boundary reference, not as a cannabis root-aphid species label. Do not diagnose root aphids from wilt, yellowing, or small flying insects alone; request root-level media, distinguish fungus gnats and harmless soil organisms, and preserve root-disease and abiotic alternatives until direct organisms are resolved."
+    },
+    {
+      "recordId": "ipm-fungus-gnat-adult-evidence-boundary-open-001",
+      "caseId": "fungus_gnats",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-mycetophilid-fungus-gnat-adult-30538336453",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fungus_Gnat_(30538336453).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fungus_Gnat_(30538336453).jpg",
+          "creator": "Katja Schulz",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Adult fungus gnat photographed by Katja Schulz, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-bradysia-fungicola-adult-23982637712",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bradysia_fungicola_,_Trawscoed,_North_Wales,_June_2014_-_Flickr_-_janetgraham84.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bradysia_fungicola_,_Trawscoed,_North_Wales,_June_2014_-_Flickr_-_janetgraham84.jpg",
+          "creator": "Janet Graham",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Adult Bradysia fungicola photographed by Janet Graham, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "adult fungus-gnat morphology references without a crop host",
+      "cultivar": "not applicable",
+      "lifeStage": "adult flies",
+      "affectedLocation": "adult insects away from a documented crop root zone",
+      "distribution": "two isolated adult references; trap density and crop distribution are not represented",
+      "progression": "not recorded",
+      "mediumRootZone": "not represented",
+      "environment": "outdoor observations; production moisture and sanitation context not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "small slender gnat-like adult morphology",
+        "long legs and antennae with narrow wings",
+        "one identified Bradysia adult reference"
+      ],
+      "plausibleAlternatives": [
+        "shore flies",
+        "other harmless small flies or midges",
+        "winged root aphids",
+        "winged above-ground aphids",
+        "drain flies",
+        "unrelated outdoor fungus gnats"
+      ],
+      "confirmationMethod": "Combine sharp adult morphology with repeated trap counts, direct larvae in the growing medium, and root-zone moisture and injury context; one adult near a plant is insufficient.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "pest",
+        "other_abiotic",
+        "disease"
+      ],
+      "expectedUrgency": "monitor and inspect the root zone; escalate when counts rise, larvae are present, or vulnerable roots are declining",
+      "expectedQuarantineGuidance": "Do not quarantine from a single adult sighting. Limit movement of wet media or affected starts only when an active production infestation is supported.",
+      "expectedScoutingSteps": [
+        "use consistent yellow-card placement and record adult counts over time",
+        "inspect moist medium and drainage areas for translucent larvae with dark head capsules",
+        "record irrigation frequency, surface moisture, algae, organic debris, drainage, and root condition",
+        "photograph adults, larvae, the medium surface, and representative washed roots"
+      ],
+      "expectedIpmResponse": "Use the images to recognize compatible adult morphology only. Do not infer root feeding, crop damage, or a treatment need from one small fly; require trend counts, larval evidence, moisture context, and root assessment, and distinguish winged root aphids and harmless flies."
     }
   ]
 }
