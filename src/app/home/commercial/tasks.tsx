@@ -12,6 +12,7 @@ import { Link } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import BackButton from "@/components/nav/BackButton";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -503,6 +504,7 @@ export default function CommercialTasksRoute() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <BackButton fallbackHref="/home/commercial" />
       <Text style={styles.kicker}>Commercial workspace</Text>
       <Text style={styles.title}>Commercial Task Center</Text>
       <Text style={styles.subtitle}>

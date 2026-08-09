@@ -19,6 +19,7 @@ jest.mock("expo-router", () => {
   const React = require("react");
   const { Text } = require("react-native");
   return {
+    useRouter: () => ({ back: jest.fn(), canGoBack: () => true }),
     Link: ({ children, href }: any) =>
       React.createElement(
         React.Fragment,
@@ -145,6 +146,13 @@ describe("CommercialTasksRoute", () => {
       }
       return Promise.resolve({});
     });
+  });
+
+  it("keeps a visible Back control on the task center", async () => {
+    const screen = render(<CommercialTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Connect Stripe price")).toBeTruthy());
+    expect(screen.getByLabelText("Back")).toBeTruthy();
   });
 
   it("filters the commercial queue by assignment, status, and source", async () => {

@@ -6,6 +6,7 @@ import CommercialFeedRoute from "@/app/feed";
 const mockApiRequest = jest.fn();
 const mockPersistImageUri = jest.fn();
 const mockPush = jest.fn();
+const mockBack = jest.fn();
 let mockMode = "commercial";
 let mockFacilityRole = "OWNER";
 let mockRouteParams: Record<string, string> = { campaignId: "campaign-1" };
@@ -26,7 +27,7 @@ function chooseDateTime(screen: ReturnType<typeof render>, label: string, value:
 jest.mock("expo-router", () => ({
   Redirect: () => null,
   useLocalSearchParams: () => mockRouteParams,
-  useRouter: () => ({ push: mockPush })
+  useRouter: () => ({ push: mockPush, back: mockBack, canGoBack: () => true })
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -67,6 +68,7 @@ describe("CommercialFeedRoute", () => {
     mockApiRequest.mockReset();
     mockPersistImageUri.mockReset();
     mockPush.mockReset();
+    mockBack.mockReset();
     mockPersistImageUri.mockImplementation(async (uri) => uri);
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/feed") {
@@ -102,6 +104,13 @@ describe("CommercialFeedRoute", () => {
       }
       return Promise.resolve({});
     });
+  });
+
+  it("keeps a visible Back control on the campaign workspace", async () => {
+    const screen = render(<CommercialFeedRoute />);
+
+    await waitFor(() => expect(screen.getByText("Feed / Campaigns")).toBeTruthy());
+    expect(screen.getByLabelText("Back")).toBeTruthy();
   });
 
   it("keeps a Facility viewer in read-only outreach mode", async () => {
