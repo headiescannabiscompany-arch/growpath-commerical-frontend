@@ -108,7 +108,19 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       Forum/Q&A, Orders, Analytics, Grows, AI Tools, Discover, Tasks, and Profile without
       a visible failed, unauthorized, not-found, or unable-to-load state. Commercial AI
       credits resolved to 2000/2000 under the Facility trial. This remains a route and
-      permissions slice, not populated commercial workflow acceptance.
+      permissions slice, not populated commercial workflow acceptance. The real John
+      Collins login then entered the same shared Facility as the Viewer roster member,
+      retained its Personal workspace choice, and loaded the Facility-owned 2000/2000
+      credit balance with Triple Bag Genetics, llc identified as balance owner. The
+      account entered Personal and returned to Facility through the workspace chooser
+      without reauthentication or a visible load/access error. Team,
+      Tasks, Plants, Compliance, Inventory, integrations, and Facility Outreach withheld
+      or disabled mutation controls and exposed the Viewer/owner-manager boundary without
+      changing production records. Viewer also reopened completed shared task
+      `6a6140ec67a6aeadb8f4a0c9` with persisted status/timestamps and no update controls.
+      Together with the retained Owner-create, Manager-reassign, Staff-complete, and
+      Owner-audit evidence, the cross-role shared-record chain remains complete. The
+      independent outside-user loop remains open.
 - [~] Verify login/session/workspace selection and recovery across Free, Pro,
       Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
       server-down, reload, logout, and multi-workspace states. The same Personal Pro
@@ -123,10 +135,16 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       AI routes passed the 2026-08-09 production heading/error-state sweep. Facility
       Inventory resolved from its loading state to a readable zero-item, read-only
       result. The Commercial sweep found missing Back controls on Feed/Campaigns and
-      Tasks; the shared themed Back control and focused regression coverage are now in
-      the release path and require deployed live retest before acceptance. Button
-      mutations, mobile/visual evidence, and the remaining roles/routes are not accepted
-      by this sweep.
+      Tasks. Frontend merge `79c6dba2`, Render deployment
+      `dep-d9s2mvhsrm7s73aumnig`, and the cache-busted production retest added one
+      shared themed Back control to each exact route with no visible load or access
+      error. The real Facility Viewer then passed the production heading/error/back
+      sweep for Dashboard, Grows, Tasks, Compliance, More, Profile, Rooms, Plants, SOPs,
+      Inventory, Team, Transfers, Reports, Analytics, Integrations, AI Tools, Facility
+      Outreach, Courses, Videos, Forum/Q&A, and Notifications. Compliance explicitly
+      denied deviation creation, while Pulse and controller imports were disabled with
+      the owner/manager rule. Button mutations, mobile/visual evidence, and the remaining
+      shared-record behavior are not accepted by this sweep.
 - [ ] Retest content-report admin email deep links as an authorized platform owner
       for Forum, Feed, product, course, video, and live-session reports.
 - [ ] Create only approved temporary production/staging records needed to verify
