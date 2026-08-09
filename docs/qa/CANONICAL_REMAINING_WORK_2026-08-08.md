@@ -85,10 +85,10 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 
 ## B. Personal, Commercial, Facility, and public user loops
 
-- [~] Complete and record Personal Pro, Commercial, Facility Owner, Facility Viewer,
-      cross-role shared-record, and independent outside-user sessions. Preserve already
-      completed Public, Personal Free, Manager, and Staff evidence unless regression
-      testing fails. On 2026-08-09 the signed-in Headies Personal Pro session loaded
+- [~] Complete and record the independent outside-user session. Preserve the completed
+      Public, Personal Free/Pro, Commercial, Facility Owner/Manager/Staff/Viewer, and
+      cross-role shared-record evidence unless regression testing fails. On 2026-08-09
+      the signed-in Headies Personal Pro session loaded
       Home, Grows, Forum/Q&A, Discover, Profile, AI Tools, Courses, Videos, Lives, and
       Notifications at their intended production routes with their expected primary
       headings and no visible failed, unauthorized, not-found, or unable-to-load state.
@@ -133,6 +133,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       fields; the cache-busted production retest showed the request-new-invitation
       message and Go to sign in recovery action. A genuine expired-token case remains
       open and must use a real expired invitation rather than a fabricated substitute.
+      Production also rejected a malformed password-reset token through the real backend
+      path with the explicit invalid-or-expired message and Request another reset link
+      action. Retained delivered-email evidence already covers initial verification,
+      resend, both verified logins, password-reset delivery, replacement-password
+      acceptance, and subsequent login; do not reopen those completed cases.
 - [~] Finish the all-route/button checklist: correct destination, back behavior,
       role gate, readable empty/loading/error state, persistence, and no dead or duplicate
       controls. Personal Pro top-level and More destinations plus Facility Staff
