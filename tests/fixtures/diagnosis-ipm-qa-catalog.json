@@ -5108,6 +5108,74 @@
       "expectedQuarantineGuidance": "Limit movement of a plant with credible progressive flower rot while confirming it; do not destroy or quarantine for ordinary flower structures, pollen, aging or surface browning alone.",
       "expectedScoutingSteps": ["capture whole plants, canopy distribution, affected and unaffected flowers, neutral-light exterior macros and safe internal views", "record humidity, condensation, airflow, temperature, canopy density, rain, irrigation, injury, odor, onset and progression", "inspect for internal browning, soft collapse, attached gray sporulation, ordinary pollen and flower structures, pests and physical damage", "preserve representative tissue and obtain qualified confirmation when harvest, disposal or isolation depends on identity"],
       "expectedIpmResponse": "Do not diagnose Botrytis or bud rot from gray, brown, fuzzy or reflective flower material alone. Require internal tissue evidence, compatible attached sporulation, progression, distribution and humidity or condensation context; distinguish pollen, hairs, trichomes, normal aging, physical injury and other diseases; state cross-host limits and avoid invented fungicide, harvest or disposal directions."
+    },
+    {
+      "recordId": "diagnosis-downy-mildew-droplet-boundary-open-003",
+      "caseId": "downy_mildew",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-downy-mildew-tobacco-page-5", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Downy_mildew_of_tobacco_(Page_5)_BHL41659454.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Downy_mildew_of_tobacco_(Page_5)_BHL41659454.jpg",
+          "creator": "Biodiversity Heritage Library", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Public-domain historical Downy mildew of tobacco page scan supplied by the Biodiversity Heritage Library.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-water-drops-green-leaf-bmaric", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Water_drops_on_a_leaf.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Water_drops_on_a_leaf.jpg",
+          "creator": "Boris Maric", "licenseId": "CC0-1.0", "attributionText": "Water drops on a green leaf photographed by Boris Maric; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "historical tobacco downy-mildew material and a separate healthy leaf bearing water droplets",
+      "cultivar": "unknown", "lifeStage": "established foliage in unrelated references",
+      "affectedLocation": "limited leaf evidence without matched top and underside, whole plants, lesion margins, stems or controls",
+      "distribution": "cross-host references without canopy map, wetness gradient, repeated plants or affected-unaffected comparison",
+      "progression": "single-time media without wetness-linked lesion emergence, underside sporulation, droplet evaporation or marked-leaf follow-up",
+      "mediumRootZone": "roots, moisture, oxygen, pH, EC, temperature and drainage are not shown or measured",
+      "environment": "leaf-wetness duration, rainfall, irrigation, humidity, dew point, airflow, temperature and recent products are absent",
+      "measuredValues": "no wetness duration, paired-surface correspondence, transfer test, microscopy, culture or molecular result accompanies the pair",
+      "diagnosticSigns": ["droplets can magnify texture and create pale, reflective or translucent marks without disease", "downy mildew requires tissue-integrated lesions and compatible underside sporulation rather than wet appearance alone", "paired surfaces, drying follow-up, distribution, host and microscopy separate water from an oomycete sign"],
+      "plausibleAlternatives": ["dew, guttation, irrigation droplets, mineral residue, spray residue, wax or glare", "powdery mildew, Botrytis, bacterial water-soaking or another foliar disease", "mites, whiteflies, eggs, cast skins, trichomes or insect residue", "edema, spray injury, nutrition, roots, heat, cold or senescence"],
+      "confirmationMethod": "Capture matched top and underside macros before and after droplets dry, lesion centers and margins, whole-plant distribution and controls; record wetness and environment; test limited removability while preserving evidence; and obtain qualified microscopy or molecular confirmation when identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest"],
+      "expectedUrgency": "document paired surfaces and active spread promptly during suspected sporulation conditions before wiping or spraying",
+      "expectedQuarantineGuidance": "Reduce wet handling only when actively spreading infectious disease is credible; do not quarantine for droplets, glare or pale marks alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy pattern, matched leaf surfaces, lesion margins, droplets before and after drying, nearby plants and controls", "record host, tissue age, wetness, rainfall, irrigation, humidity, dew point, airflow, temperature, products and progression", "inspect for tissue-integrated lesions, underside sporulation, removable residue, pests, wax, trichomes and droplet optics", "obtain qualified confirmation when intervention depends on downy-mildew identity"],
+      "expectedIpmResponse": "Do not diagnose downy mildew from wet leaves, droplets, pale spots, underside fuzz or glare alone. Require paired surfaces, drying and progression evidence, host and distribution, wetness history, compatible sporulation and qualified confirmation; preserve residue, powdery mildew, pests, edema, bacterial lesions and abiotic alternatives; avoid invented treatment directions."
+    },
+    {
+      "recordId": "diagnosis-leaf-spot-leaf-miner-boundary-open-003",
+      "caseId": "septoria_and_leaf_spots",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usgov-pd-cherry-leaf-spot", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cherry_Leaf_Spot_2.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cherry_Leaf_Spot_2.jpg",
+          "creator": "Glen R. Stanosz and Mary L. Torsello / USDA Forest Service", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Cherry leaf-spot lesions documented by Glen R. Stanosz and Mary L. Torsello via the USDA Forest Service; U.S. public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-horse-chestnut-leaf-miner-damage", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Leaf-miner-damage.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Leaf-miner-damage.jpg",
+          "creator": "Saintswithin", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Horse-chestnut leaf-miner damage photographed by Saintswithin and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "cherry with documented leaf spot and horse chestnut with documented leaf-miner damage",
+      "cultivar": "unknown", "lifeStage": "established foliage in separate hosts",
+      "affectedLocation": "leaf surfaces without matched undersides, whole plants, petioles, stems, fruit or controls from one case",
+      "distribution": "cross-host views without canopy position, mine path, splash gradient, repeated plants or affected-unaffected comparison",
+      "progression": "single-time images without lesion expansion, mine development, frass path, defoliation sequence or follow-up",
+      "mediumRootZone": "roots and root-zone measurements are absent",
+      "environment": "wetness, rainfall, irrigation, humidity, temperature, airflow, pest pressure and recent applications are absent",
+      "measuredValues": "no lesion or mine counts, underside correspondence, larval evidence, microscopy, culture or molecular result accompanies the pair",
+      "diagnosticSigns": ["documented fungal lesions and insect mines can both create brown, pale or haloed leaf areas", "serpentine or expanding internal mines, frass and larvae support leaf miners; lesion structures and wetness-linked spread support disease", "host, both surfaces, distribution, progression and close structural evidence are required before attribution"],
+      "plausibleAlternatives": ["Septoria, Cercospora, Alternaria, anthracnose, bacterial spot or mixed disease", "leaf miners, thrips, mites, chewing injury, eggs or frass", "spray burn, herbicide drift, abrasion, hail, sunscald, edema or cold", "nutrition, pH, EC, roots, water, senescence, residue or camera artifact"],
+      "confirmationMethod": "Capture whole plants, both leaf surfaces, lesion or mine centers and margins, transmitted-light views, frass or larvae, nearby plants and controls; record progression and wetness; inspect for diagnostic structures and pests; and obtain qualified organism or pathogen confirmation when management depends on identity.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "pest", "other_abiotic", "deficiency"],
+      "expectedUrgency": "document actively expanding lesions or mines promptly while preserving representative tissue and any larva or frass",
+      "expectedQuarantineGuidance": "Limit splash or infested-plant movement only when the relevant disease or pest is independently credible; do not quarantine for generic spots alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy distribution, paired leaf surfaces, sharp centers and margins, transmitted-light views, nearby plants and controls", "record host, tissue age, onset, progression, wetness, rainfall, irrigation, environment, pest activity and sprays", "inspect for mines, frass, larvae, exit holes, pycnidia or other structures, residue, edema and spray patterns", "preserve representative evidence and obtain qualified confirmation when organism identity changes intervention"],
+      "expectedIpmResponse": "Do not label every brown, pale or haloed patch as Septoria or another leaf spot. Separate tissue lesions from mines and feeding using paths, frass, larvae, both surfaces, distribution, progression, wetness and diagnostic structures; preserve pest, bacterial, spray, edema, environmental, root and nutrient alternatives; avoid invented pesticide or fungicide directions."
     }
   ]
 }
