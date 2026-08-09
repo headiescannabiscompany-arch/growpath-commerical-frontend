@@ -161,9 +161,17 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 
 ## E. Visual, accessibility, device, and notification acceptance
 
-- [ ] Review every major Personal, Commercial, Facility, and public route in Day,
+- [~] Review every major Personal, Commercial, Facility, and public route in Day,
       Night, and Auto themes on desktop and mobile; fix contrast, hardcoded surfaces,
       navigation spacing, overflow, hierarchy, consistent headers, and responsive layout.
+      A signed-in Facility Staff night-theme desktop screenshot found the global Report
+      Bug action covering lower-right Priority Status controls. Frontend merge
+      `9c14dafa`, Render deployment `dep-d9s2b8ou01pc73drr88g`, moved the shared action
+      into a separate dock at every real viewport width. The cache-busted production
+      retest at `/home/facility/dashboard?release=9c14dafa&verify=report-bug-dock`
+      showed the settled 15-room/68-audit-event dashboard with both Priority Status and
+      the support action unobstructed. This is one desktop/night/Staff viewport, not the
+      remaining theme, role, route, or mobile matrix.
 - [ ] Verify keyboard and focus order, visible focus, actionable labels, screen-reader
       names, heading hierarchy, font scaling, touch targets, loading/error/empty states,
       and back navigation.
