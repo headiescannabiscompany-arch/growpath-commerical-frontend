@@ -85,13 +85,23 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 
 ## B. Personal, Commercial, Facility, and public user loops
 
-- [ ] Complete and record Personal Pro, Commercial, Facility Owner, Facility Viewer,
+- [~] Complete and record Personal Pro, Commercial, Facility Owner, Facility Viewer,
       cross-role shared-record, and independent outside-user sessions. Preserve already
       completed Public, Personal Free, Manager, and Staff evidence unless regression
-      testing fails.
-- [ ] Verify login/session/workspace selection and recovery across Free, Pro,
+      testing fails. On 2026-08-09 the signed-in Headies Personal Pro session loaded
+      Home, Grows, Forum/Q&A, Discover, Profile, AI Tools, Courses, Videos, Lives, and
+      Notifications at their intended production routes with their expected primary
+      headings and no visible failed, unauthorized, not-found, or unable-to-load state.
+      The compact six-word tab bar also exposed AI Tools, Courses, Videos, Logs, Tasks,
+      Discovery Nature, and workspace switching through More. This is a route and
+      session slice, not completion of the full Personal Pro behavioral loop.
+- [~] Verify login/session/workspace selection and recovery across Free, Pro,
       Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
-      server-down, reload, logout, and multi-workspace states.
+      server-down, reload, logout, and multi-workspace states. The same Personal Pro
+      session remained signed in across a hard page reload, correctly identified the
+      Personal workspace as current, exposed the shared Facility workspace as
+      available, and entered `/home/personal` without reauthentication. Logout,
+      failure/recovery states, and the remaining plans/roles are still open.
 - [ ] Finish the all-route/button checklist: correct destination, back behavior,
       role gate, readable empty/loading/error state, persistence, and no dead or duplicate
       controls.
