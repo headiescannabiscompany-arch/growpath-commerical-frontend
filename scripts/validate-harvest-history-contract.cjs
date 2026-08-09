@@ -215,7 +215,7 @@ requireText(
     screens.harvest,
     /No trichome fields were filled/
   ],
-  ["harvest decision tasks", screens.harvest, /Create Harvest Decision Tasks/],
+  ["harvest follow-up tasks", screens.harvest, /Create Harvest Follow-up Tasks/],
   ["harvest batch save", screens.harvest, /Save Harvest Review[\s\S]*updateHarvestBatch/],
   [
     "harvest schedule metadata",
@@ -345,7 +345,7 @@ requireText(
   [
     "harvest UI tests",
     tests.harvest,
-    /Create Harvest Decision Tasks[\s\S]*saves harvest readiness review to a harvest batch record/
+    /Create Harvest Follow-up Tasks[\s\S]*saves harvest readiness review to a harvest batch record/
   ],
   [
     "dry/cure UI tests",
