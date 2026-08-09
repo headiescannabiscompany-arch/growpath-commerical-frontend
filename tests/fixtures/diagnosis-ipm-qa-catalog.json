@@ -4598,6 +4598,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for expected senescence or fallen leaves alone; use pest or disease precautions only when transmissible evidence or progressive patterns support them.",
       "expectedScoutingSteps": ["capture whole plants, canopy position, old and new leaves, veins, stems, roots, fallen tissue, nearby plants, and affected-unaffected comparisons", "record species, deciduous behavior, crop stage, harvest or reproduction timing, season, photoperiod, temperature trend, frost, irrigation, and recent inputs", "inspect for pests, eggs, frass, lesions, pathogen structures, vascular discoloration, root decay, residue, and spray or drift patterns", "mark leaves and track color, abscission, spread, and new-growth health while measuring moisture, pH, EC, and method-appropriate nutrient or tissue context"],
       "expectedIpmResponse": "Treat senescence as a timing-and-distribution diagnosis, not a synonym for yellow leaves. Require species and stage, tissue age, season or harvest context, old-versus-new distribution, roots, environment, progression, and exclusion of pests, disease, nutrition, pH, EC, water, spray, and camera effects; preserve uncertainty when detached leaves lack source context and avoid reflex feeding or treatment."
+    },
+    {
+      "recordId": "diagnosis-chlorosis-deficiency-root-boundary-open-002",
+      "caseId": "nutrient_deficiency",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-sweetgum-interveinal-chlorosis", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sweetgum-leaf-interveinal-chlorosis.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sweetgum-leaf-interveinal-chlorosis.jpg",
+          "creator": "Jim Conrad", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Sweetgum leaf showing interveinal chlorosis photographed by Jim Conrad and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-green-fern-leaves-joselodos", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Leaves_of_a_green_fern.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Leaves_of_a_green_fern.jpg",
+          "creator": "Joselodos", "licenseId": "CC0-1.0", "attributionText": "Green fern leaves photographed by Joselodos; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "sweetgum with documented interveinal chlorosis and a separate green fern foliage control; neither identifies a missing nutrient by itself",
+      "cultivar": "unknown", "lifeStage": "established foliage in separate hosts",
+      "affectedLocation": "one sweetgum leaf and fern foliage without whole-plant, old-new tissue, roots, stems, or matched unaffected controls from the same case",
+      "distribution": "cross-host close views without within-plant age map, canopy position, irrigation zone, repeated plants, or affected-unaffected sampling",
+      "progression": "single-time images without onset, spread, input history, measured correction, new-growth response, or recovery",
+      "mediumRootZone": "moisture, oxygen, roots, temperature, pH, EC, alkalinity, nutrient availability, drainage, and irrigation water are not case-linked",
+      "environment": "light, temperature, humidity, VPD, irrigation, rainfall, and recent applications are absent",
+      "measuredValues": "no calibrated pH or EC, water alkalinity, nutrient or tissue analysis, moisture, root measurement, chlorophyll value, or response result accompanies the pair",
+      "diagnosticSigns": ["the sweetgum reference documents interveinal chlorosis and only a probable nutrient-deficiency interpretation", "green foliage is a negative control and cannot establish adequate nutrition without crop and tissue context", "color pattern may guide sampling but cannot identify the limiting element, dose, availability, or root cause from pixels"],
+      "plausibleAlternatives": ["pH or EC lockout, alkalinity, salinity, antagonism, nutrient excess, unsuitable ratio, or impaired uptake", "root disease, low oxygen, waterlogging, drought, compaction, damaged roots, or container restriction", "light, heat, cold, high VPD, spray injury, herbicide drift, or natural pigmentation", "mites, aphids, whiteflies, thrips, viral, vascular, or foliar disease", "normal tissue age, seasonal senescence, camera exposure, or white-balance artifact"],
+      "confirmationMethod": "Identify crop and tissue age; map symptoms across old and new growth; inspect roots and irrigation; measure pH, EC, alkalinity, moisture and oxygen context with suitable calibrated methods; record complete input history; and obtain method-appropriate water, soil, substrate, solution, or tissue testing before naming a nutrient or rate.",
+      "expectedCauseRanking": ["insufficient_evidence", "deficiency", "lockout", "other_abiotic", "excess", "disease", "pest"],
+      "expectedUrgency": "preserve representative roots, media, water, and tissue samples before adding nutrients or changing multiple inputs when symptoms are progressing",
+      "expectedQuarantineGuidance": "Do not quarantine for chlorosis or suspected deficiency alone; isolate only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": ["capture whole plants, old and new leaves, veins and interveinal tissue, stems, roots, irrigation zones, and matched affected-unaffected controls", "measure root-zone pH, EC, moisture, temperature and oxygen context plus source-water pH, EC and alkalinity using calibrated appropriate methods", "record fertilizer, amendment, foliar, irrigation, runoff, drainage, environmental, and crop-stage history", "obtain method-appropriate nutrient and tissue testing and track marked old tissue plus new growth after one reviewed correction"],
+      "expectedIpmResponse": "Use chlorosis pattern to guide evidence collection, not to name a nutrient or prescribe a dose. Require crop and tissue age, old-new distribution, roots, calibrated pH and EC, alkalinity, moisture and oxygen context, complete inputs, and method-appropriate testing; preserve lockout, excess, antagonism, water, root, environment, spray, pest, disease, senescence, and camera alternatives; and avoid nutrient stacking from color alone."
+    },
+    {
+      "recordId": "diagnosis-root-density-calcium-uptake-boundary-open-002",
+      "caseId": "calcium_root_environment",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc-by-2-root-bound-spider-plant", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Root-bound_Chlorophytum_comosum.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Root-bound_Chlorophytum_comosum.jpg",
+          "creator": "Maja Dumat", "licenseId": "CC-BY-2.0", "attributionText": "Root-bound Chlorophytum comosum photographed by Maja Dumat; CC BY 2.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-pd-corn-roots-soil-health-md01", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Soil_Survey_MD01_(25205892888).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Soil_Survey_MD01_(25205892888).jpg",
+          "creator": "USDA NRCS Montana", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Corn roots shown in soil-health context near Baker, Montana, photographed by USDA NRCS Montana; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "healthy but root-bound spider plant and corn roots shown in soil-health context; neither is a calcium-deficiency diagnosis",
+      "cultivar": "unknown", "lifeStage": "mature container plant and established field crop in separate observations",
+      "affectedLocation": "exposed root systems without paired young leaves, growing points, fruit, flowers, stems, root-zone measurements, or symptomatic controls",
+      "distribution": "cross-host root examples without container, row, depth, irrigation, canopy, or affected-unaffected distribution from one case",
+      "progression": "single-time references without root development trend, young-tissue symptoms, transpiration history, correction response, or recovery",
+      "mediumRootZone": "root density and field-root context are visible, but moisture, oxygen, temperature, pH, EC, calcium availability, salinity, compaction, drainage, and usable volume are not measured",
+      "environment": "humidity, VPD, airflow, leaf temperature, irrigation, rainfall, transpiration demand, and growth rate are absent",
+      "measuredValues": "no calcium, tissue, solution, pH, EC, moisture, oxygen, VPD, root-volume, uptake, or transpiration measurement accompanies the pair",
+      "diagnosticSigns": ["the root-bound spider plant caption explicitly notes that the plant remained healthy, flowered, and produced runners", "visible root density does not establish calcium deficiency or impaired uptake", "calcium-related young-tissue symptoms require separation of supply, root function, water movement, transpiration, growth rate, and local tissue demand"],
+      "plausibleAlternatives": ["healthy root density or normal mature container occupancy without disorder", "restricted volume, compaction, low oxygen, waterlogging, drought, damaged roots, root disease, or root pests", "pH, EC, salinity, alkalinity, nutrient antagonism, excess, or actual calcium shortage", "high or low VPD, poor airflow, heat, cold, rapid growth, irregular irrigation, or local transpiration limitation", "boron or other nutrient disorder, spray injury, disease, pests, genetics, or physical damage"],
+      "confirmationMethod": "Pair sharp young-tissue and affected-organ views with washed roots and unaffected controls; measure moisture, oxygen context, pH, EC, temperature, usable root volume, irrigation delivery, humidity or VPD, airflow and growth rate; review nutrient and alkalinity history; and obtain method-appropriate solution, medium or tissue testing before attributing symptoms to calcium supply or uptake.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "lockout", "deficiency", "excess", "disease", "pest"],
+      "expectedUrgency": "inspect active young-tissue, fruit, flower, or growing-point injury and root function promptly while avoiding blind calcium addition",
+      "expectedQuarantineGuidance": "Do not quarantine for root density or suspected calcium-uptake disorder alone; isolate only when separate evidence supports a transmissible root, pest, or disease cause.",
+      "expectedScoutingSteps": ["capture whole plants, young and old tissue, growing points, fruit or flowers, stems, washed roots, containers or field zones, and matched affected-unaffected controls", "measure root-zone moisture, oxygen context, temperature, pH, EC, drainage, usable volume and irrigation delivery plus humidity or VPD, airflow and leaf temperature", "record calcium and complete nutrient inputs, water alkalinity, salinity, amendments, growth rate, crop load, transplant and root-disturbance history", "obtain method-appropriate solution, medium, water or tissue testing and track new growth after one reviewed root-zone or environment correction"],
+      "expectedIpmResponse": "Do not infer calcium deficiency from root density, distorted young tissue, blossom-end symptoms, or one root photo. Separate nutrient supply from pH or EC availability, root function, water movement, VPD and airflow, rapid growth, local tissue demand, disease, pests, and physical restriction; require measurements and method-appropriate testing; and avoid automatic calcium, flushing, irrigation, or repotting directions."
     }
   ]
 }
