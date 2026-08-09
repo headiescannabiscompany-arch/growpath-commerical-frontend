@@ -4066,6 +4066,48 @@
       "expectedIpmResponse": "Do not diagnose whiteflies from one white flying insect or pale underside dots. Require compatible adult or attached immature morphology, seek multiple life stages and distribution, distinguish residue and scale-like organisms, separately classify predators and parasitoids, avoid treating parasitized nymphs as healthy pest counts, and do not invent pesticide directions or thresholds."
     },
     {
+      "recordId": "ipm-fungus-gnat-root-disease-boundary-open-002",
+      "caseId": "fungus_gnats",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc-by-2-predaceous-keroplatid-larva",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Predaceous_Fungus_Gnat_larva_-_Keroplatidae_family,_Footprint_Cave,_Armenia,_Cayo,_Belize.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Predaceous_Fungus_Gnat_larva_-_Keroplatidae_family,_Footprint_Cave,_Armenia,_Cayo,_Belize.jpg",
+          "creator": "Judy Gallagher",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Predaceous fungus gnat larva in a Belize cave photographed by Judy Gallagher; CC BY 2.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-pineapple-phytophthora-root-rot-5829323251",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pineapple_root_rot_Phytophthora_cinnamomi_(5829323251).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pineapple_root_rot_Phytophthora_cinnamomi_(5829323251).jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Pineapple root rot caused by Phytophthora cinnamomi photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "predaceous cave-dwelling fungus-gnat-family larva reference and pineapple with documented Phytophthora root rot",
+      "cultivar": "unknown", "lifeStage": "larval insect reference and established pineapple root-rot injury; production-media fungus-gnat larvae are not represented",
+      "affectedLocation": "non-crop cave larva context and root-zone disease injury in the pineapple reference",
+      "distribution": "separate references without trap counts, growing-media larval distribution, washed-root images, or affected-unaffected crop comparison",
+      "progression": "single-time references without fly-count trend, larval population trend, root decline sequence, moisture history, or response to a confirmed intervention",
+      "mediumRootZone": "the disease label supplies root-rot context, but case-linked root color, integrity, oxygenation, substrate moisture, drainage, irrigation, and production-media organisms are not measured",
+      "environment": "the larva is from a cave rather than crop media; production temperature, humidity, algae, organic debris, sanitation, and irrigation are not paired with either reference",
+      "measuredValues": "no sticky-card count, larval sample, root-health grade, substrate-moisture trend, dissolved oxygen, root-zone temperature, pH, EC, or pathogen assay result accompanies the image pair",
+      "diagnosticSigns": ["the fungus-gnat-family larva reference is explicitly predaceous and outside crop media", "the pineapple reference is explicitly associated with Phytophthora root rot rather than fungus-gnat injury", "the pair demonstrates that insect family resemblance and generic root decline cannot establish a damaging production infestation"],
+      "plausibleAlternatives": ["Phytophthora, Pythium, or another root disease", "overwatering, low oxygen, poor drainage, heat, salinity, pH, or irrigation failure", "shore flies, drain flies, harmless midges, springtails, predatory larvae, or other soil organisms", "root aphids, root mealybugs, or another root-associated pest", "true fungus-gnat adults and larvae present without being the primary cause of decline"],
+      "confirmationMethod": "Use consistent sticky-card counts, inspect representative moist media for translucent larvae with dark head capsules, capture sharp body-scale images, wash and inspect roots, record moisture and drainage trends, and obtain qualified pathogen confirmation when root disease changes management; do not infer causation from adult presence or wilt alone.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "pest", "other_abiotic"],
+      "expectedUrgency": "promptly inspect roots and the moisture/oxygen pattern when wilt or root decline is present, while monitoring adult and larval trends",
+      "expectedQuarantineGuidance": "Do not quarantine from one gnat-like organism or wilt alone; limit movement of wet media or affected starts only when a transmissible infestation or root disease is independently supported.",
+      "expectedScoutingSteps": ["place and record yellow cards consistently and inspect representative moist media for translucent dark-headed larvae", "capture body-scale images of adults and larvae plus the media surface, crown, drainage areas, and washed roots", "record irrigation, substrate moisture, drainage, oxygen context, algae, organic debris, root color, odor, integrity, pH, EC, and root-zone temperature", "separate insect counts from root-disease and abiotic evidence and obtain organism or pathogen confirmation when required"],
+      "expectedIpmResponse": "Do not diagnose damaging fungus gnats from one adult, a fungus-gnat-family larva outside crop media, or generic root decline. Require production-media larvae, adult trends, and compatible root context; distinguish harmless or predatory organisms; separately evaluate Phytophthora, Pythium, other root disease, and moisture/oxygen failures; and avoid inventing pesticide or disease-control directions."
+    },
+    {
       "recordId": "diagnosis-compost-organic-release-timing-open-001",
       "caseId": "organic_release_timing",
       "imageSet": [
