@@ -5448,6 +5448,74 @@
       "expectedQuarantineGuidance": "Limit movement of affected propagules or touching plants only when reproducing broad mites are credible; do not quarantine from distorted growth alone.",
       "expectedScoutingSteps": ["map affected growing points and propagation links; capture whole plants, new growth, folded undersides, stems, fruit and controls", "use adequate magnification and scale to count characteristic eggs and mites on marked tissue", "record heat, humidity, light, sprays, growth regulators, irrigation, pH, EC and progression", "distinguish other mites, thrips, nutrient, root, spray, genetic and viral alternatives before species-specific action"],
       "expectedIpmResponse": "Do not diagnose broad mites from distorted or bronzed new growth, a generic mite, or low-detail imagery. Require case-linked characteristic eggs or qualified mite identification at adequate magnification, mapped growing-point distribution, progression and abiotic exclusions; avoid invented miticide directions."
+    },
+    {
+      "recordId": "diagnosis-russet-mite-cross-species-boundary-open-003",
+      "caseId": "russet_mites",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-aceria-cephalonea-gall-mite", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aceria_cephalonea_123658289.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aceria_cephalonea_123658289.jpg",
+          "creator": "Stephen James McWilliam", "licenseId": "CC0-1.0", "attributionText": "Sycamore cherry mite Aceria cephalonea and associated gall context photographed by Stephen James McWilliam; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-coconut-eriophyid-mite-diagram", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Eriophyes_guerreronis_(Keifer).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Eriophyes_guerreronis_(Keifer).jpg",
+          "creator": "Hartford Hammond Keifer / California Department of Agriculture", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Public-domain California Department of Agriculture diagram of the eriophyid coconut mite Aceria guerreronis by Hartford Hammond Keifer.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "cross-species eriophyid-mite references without a linked cannabis, hemp or crop symptom case",
+      "cultivar": "not applicable", "lifeStage": "organism and gall-context references without a case-linked population",
+      "affectedLocation": "mite and gall references without shoot tips, petioles, stems, flowers, leaf undersides or healthy controls from one crop",
+      "distribution": "no plant, propagation, bench, edge, airflow or affected-unaffected map",
+      "progression": "no sequence of bronzing, russeting, curling, brittle growth, mite increase or recovery",
+      "mediumRootZone": "roots, pH, EC, moisture, temperature and nutrient availability are not measured",
+      "environment": "heat, humidity, light, sprays, propagation, sanitation, irrigation and nearby hosts are absent",
+      "measuredValues": "no mites per field, magnification and scale record, tissue-damage score, pH, EC or marked-growth follow-up accompanies the pair",
+      "diagnosticSigns": ["eriophyid body form and host-associated gall damage cannot be transferred to a different russet-mite species or crop", "bronzing, curling and brittle growth overlap with broad mites, thrips, sprays, light, heat, nutrition and roots", "case attribution requires adequate-magnification mites on affected tissue, host-aware identification, distribution and progression"],
+      "plausibleAlternatives": ["broad mites, cyclamen mites, spider mites, other eriophyids, predatory mites or incidental mites", "thrips, aphids, leafhoppers, disease, galls or mixed pests", "spray, herbicide or growth-regulator injury, heat, high light, drought, wind or abrasion", "nutrient deficiency, pH or EC lockout, root stress, genetics or senescence"],
+      "confirmationMethod": "Capture whole plants and sharp shoot-tip, petiole, stem, flower and underside views with scale; count mites in stated fields at adequate magnification; map propagation and symptom progression; record environment and sprays; and obtain qualified host-aware specimen identification when the species label changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "deficiency", "lockout", "disease"],
+      "expectedUrgency": "preserve and inspect actively bronzing or deforming tissue promptly because eriophyid mites are minute and easily missed",
+      "expectedQuarantineGuidance": "Limit movement of affected propagules and touching plants only when reproducing pest mites are credible; do not quarantine from bronzing or distortion alone.",
+      "expectedScoutingSteps": ["map affected plants, growing points and propagation links; capture whole plants, shoot tips, petioles, stems, flowers, undersides and controls", "use adequate magnification and scale to count mites on marked tissue and repeat over time", "record heat, humidity, light, sprays, growth regulators, irrigation, pH, EC and progression", "distinguish broad and spider mites, thrips, nutrients, roots, chemicals and genetics before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose russet mites from bronzing, curling, brittle growth, a gall, or a cross-species eriophyid reference. Require case-linked mites at adequate magnification, host-aware identification, counts, mapped distribution and progression plus abiotic exclusions; avoid invented miticide directions."
+    },
+    {
+      "recordId": "diagnosis-thrips-organism-damage-boundary-open-003",
+      "caseId": "thrips",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-mango-redbanded-thrips-injury", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mango_trhips.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mango_trhips.jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Redbanded-thrips feeding injury on mango photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-thrips-generic-illustration", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Thrips_(PSF)_(white_background).png", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Thrips_(PSF)_(white_background).png",
+          "creator": "Pearson Scott Foresman", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Generic thrips illustration donated by Pearson Scott Foresman and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "mango with documented redbanded-thrips injury and a separate generic thrips illustration",
+      "cultivar": "unknown", "lifeStage": "established mango foliage and non-case organism illustration",
+      "affectedLocation": "limited feeding injury and generic morphology without paired leaf surfaces, flowers, growing points, fruit, whole plants or controls from one case",
+      "distribution": "cross-source evidence without canopy map, flower or edge concentration, neighboring plants or affected-unaffected comparison",
+      "progression": "no sequence of larvae or adult increase, silvering, scarring, distortion, frass accumulation or recovery",
+      "mediumRootZone": "roots and root-zone measurements are absent",
+      "environment": "temperature, humidity, airflow, dust, flowers, nearby hosts, sprays and sanitation are absent",
+      "measuredValues": "no larvae or adult counts, sticky-card data, tap sample, frass count, magnification record or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["documented mango injury cannot transfer a redbanded-thrips diagnosis to another crop", "silvering, pale scars and black specks overlap with mites, mildew, residue, abrasion and spray injury", "case attribution requires direct larvae or adults plus compatible feeding or frass, mapped distribution and progression"],
+      "plausibleAlternatives": ["spider, broad or russet mites, leafhoppers, aphids, whiteflies or leaf miners", "powdery or downy mildew, bacterial or fungal leaf spot and mixed disease", "spray or mineral residue, dust, abrasion, edema, heat, light, wind or drought", "nutrient deficiency, pH or EC lockout, root stress, senescence or camera artifact"],
+      "confirmationMethod": "Capture whole-plant distribution plus sharp upper and underside, flower, growing-point, fruit and control views; tap or inspect marked tissue and count larvae, adults and frass with stated magnification; record progression and environment; and obtain qualified specimen identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic", "deficiency"],
+      "expectedUrgency": "inspect and count active feeding sites promptly while larvae, adults and fresh frass remain present",
+      "expectedQuarantineGuidance": "Limit plant contact and flower or propagule movement only when reproducing thrips are credible; do not quarantine from pale scarring or black specks alone.",
+      "expectedScoutingSteps": ["map affected plants and canopy zones; capture paired leaf surfaces, flowers, growing points, fruit and controls", "tap or inspect marked tissue and count larvae, adults and frass with stated magnification", "record temperature, humidity, airflow, dust, nearby hosts, flowering, sprays and progression", "distinguish mites, mildew, residue, abrasion and abiotic injury before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose thrips from silvering, pale scars, black specks, cross-host damage or a generic illustration alone. Require direct case-linked larvae or adults plus compatible feeding or frass, counts, mapped distribution and progression; preserve mite, disease, residue and abiotic alternatives and avoid invented pesticide directions."
     }
   ]
 }
