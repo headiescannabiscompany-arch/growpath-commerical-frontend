@@ -4188,6 +4188,42 @@
       "expectedQuarantineGuidance": "Do not quarantine for slow organic nutrient release alone; contain material only when contamination, pathogens, or unsafe immature compost is independently supported.",
       "expectedScoutingSteps": ["document amendment label, source, maturity, analysis, rate, placement, date, and crop demand stage", "inspect roots and measure temperature, moisture, aeration context, pH, and EC", "obtain available-nutrient, soil, solution, compost-maturity, or tissue testing appropriate to the decision", "track marked plants and new growth over a justified interval before adding overlapping inputs"],
       "expectedIpmResponse": "Do not equate total organic-input nutrients with immediate availability. Explain that release depends on material, maturity, microbes, temperature, moisture, oxygen, placement, and time; require roots and method-appropriate testing; distinguish immobilization, deficiency, excess, lockout, and disease; and avoid automatic top-dressing or supplement stacking."
+    },
+    {
+      "recordId": "diagnosis-bacterial-leaf-spot-abiotic-boundary-open-002",
+      "caseId": "bacterial_leaf_spot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-soybean-bacterial-leaf-spot-12074577444", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Soybean_Bacterial_leaf_spot_(Pathogen_Pseudomonas_syringae_pv._glycinea)_(12074577444).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Soybean_Bacterial_leaf_spot_(Pathogen_Pseudomonas_syringae_pv._glycinea)_(12074577444).jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Soybean bacterial leaf spot associated with Pseudomonas syringae pv. glycinea, photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-bacterial-leaf-spot-pepper-netty4299", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bacterial_leaf_spot_on_pepper.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bacterial_leaf_spot_on_pepper.jpg",
+          "creator": "Netty4299", "licenseId": "CC0-1.0", "attributionText": "Bacterial leaf spot on pepper photographed by Netty4299; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "soybean and pepper with separately documented bacterial leaf-spot context",
+      "cultivar": "unknown", "lifeStage": "established foliage; host age and crop stage are not paired across the references",
+      "affectedLocation": "visible leaf surfaces; matched top-and-underside macros and stem or fruit views are not supplied",
+      "distribution": "two cross-host observations without mapped within-plant, canopy, row, splash, spray, or affected-unaffected distribution",
+      "progression": "single-time references without lesion onset, expansion, weather sequence, recent application history, or response to an intervention",
+      "mediumRootZone": "root condition, moisture, oxygen, pH, EC, and drainage are not documented and cannot be inferred from leaf lesions",
+      "environment": "leaf wetness, rainfall or irrigation splash, humidity, temperature, airflow, crowding, and recent foliar applications are not paired with the images",
+      "measuredValues": "no lesion count over time, wetness duration, spray record, microscopy, culture, molecular assay, or crop-loss measurement accompanies the pair",
+      "diagnosticSigns": ["both images are explicitly documented as bacterial leaf spot rather than labeled from appearance by GrowPathAI", "the references demonstrate variation in lesion appearance across two hosts", "water-soaked, angular, haloed, or necrotic lesions can be compatible evidence but are not pathogen confirmation"],
+      "plausibleAlternatives": ["spray injury, droplet burn, herbicide drift, residue, or phytotoxicity", "edema or another water-balance disorder", "fungal or oomycete leaf spot including downy mildew", "thrips, mites, leaf miners, or other feeding injury", "physical abrasion, sunscald, cold injury, nutrient disorder, root-zone stress, or senescence"],
+      "confirmationMethod": "Capture neutral-light whole-plant distribution and sharp lesion-center, margin, top, and underside views; record progression, splash and wetness, recent sprays, weather, and affected leaf age; compare protected and exposed tissue; inspect for pests and fungal structures; and obtain extension, microscopy, culture, molecular, or qualified laboratory confirmation when pathogen identity changes treatment, disposal, or reporting.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest"],
+      "expectedUrgency": "promptly document active expansion, defoliation, splash spread, and nearby susceptible plants while separating disease from exposure injury",
+      "expectedQuarantineGuidance": "Reduce splash and wet handling and limit movement only when an actively spreading infectious pattern is credible; do not quarantine or destroy plants for isolated spots, a spray-shaped pattern, edema, or photo resemblance alone.",
+      "expectedScoutingSteps": ["capture whole-plant and canopy distribution plus sharp neutral-light lesion-center, margin, top, underside, stem, fruit, and unaffected-tissue views", "record lesion change over time, affected leaf age, irrigation splash, rain, leaf wetness, humidity, airflow, and every recent foliar application", "map symptoms against spray coverage, drift direction, droplet boundaries, protected tissue, irrigation zones, and neighboring plants", "inspect for edema, residue, insects, fungal structures, root stress, and obtain qualified pathogen confirmation when the decision depends on bacterial identity"],
+      "expectedIpmResponse": "Treat bacterial leaf spot as a supported hypothesis only when lesion morphology, distribution, progression, wetness or splash context, and exclusion of lookalikes align. Explicitly preserve spray injury, edema, fungal disease, pests, physical injury, nutrition, and root stress; request the missing evidence; require confirmation for high-consequence decisions; and never invent bactericide, pesticide, disposal, or application directions."
     }
   ]
 }

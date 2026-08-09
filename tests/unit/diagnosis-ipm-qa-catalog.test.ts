@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(57);
+    expect(catalog.mediaRecords).toHaveLength(58);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -208,6 +208,11 @@ describe("diagnosis/IPM QA catalog", () => {
           recordId: "diagnosis-botrytis-cross-host-flower-boundary-open-002",
           caseId: "botrytis_gray_mold_bud_rot",
           expectedCauseRanking: ["insufficient_evidence", "disease", "other_abiotic"]
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-bacterial-leaf-spot-abiotic-boundary-open-002",
+          caseId: "bacterial_leaf_spot",
+          expectedCauseRanking: ["insufficient_evidence", "disease", "other_abiotic", "pest"]
         }),
         expect.objectContaining({
           recordId: "ipm-aphids-beneficial-context-open-001",
