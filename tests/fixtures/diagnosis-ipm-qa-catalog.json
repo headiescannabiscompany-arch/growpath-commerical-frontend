@@ -1009,6 +1009,68 @@
         "inspect lesion margins, undersides, roots, and nearby plants for contradictory signs"
       ],
       "expectedIpmResponse": "Treat senescence as a context-dependent hypothesis, not a photo-only diagnosis; avoid pest, disease, or deficiency certainty without distribution, progression, and supporting evidence."
+    },
+    {
+      "recordId": "ipm-mealybugs-wax-lookalike-open-001",
+      "caseId": "mealybugs",
+      "imageSet": [
+        {
+          "imageId": "usda-k10880-1-citrophilus-mealybugs",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/dec03/k10880-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/300dpi/kesa/k10880-1.jpg",
+          "creator": "Q. Holdman, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by Q. Holdman, USDA Agricultural Research Service. Image K10880-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-mealybugs-hibiscus-bud-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mealy_bugs_on_hibiscus_bud.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mealy_bugs_on_hibiscus_bud.jpg",
+          "creator": "Kaveri.dhavan",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Mealy bugs on hibiscus bud by Kaveri.dhavan, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "hibiscus and USDA reference host context",
+      "cultivar": "unknown",
+      "lifeStage": "visible mealybug colonies; exact mixed life stages not independently recorded",
+      "affectedLocation": "bud and protected plant sites",
+      "distribution": "clustered wax-covered insects rather than a flat powder across leaf tissue",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "segmented insect bodies beneath wax",
+        "clustered colonies in protected sites",
+        "distinct body-scale wax rather than continuous fungal growth"
+      ],
+      "plausibleAlternatives": [
+        "powdery mildew",
+        "cottony scale or egg sacs",
+        "residue or fibers",
+        "beneficial larvae with waxy coverings"
+      ],
+      "confirmationMethod": "Require sharp body morphology beneath wax and colony placement; inspect for movement, honeydew, crawlers, and attached scale structures before choosing the pest class.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "prompt inspection of protected sites and nearby plants",
+      "expectedQuarantineGuidance": "Limit plant movement while checking spread, but preserve beneficial lookalikes until identified.",
+      "expectedScoutingSteps": [
+        "inspect buds, nodes, petioles, leaf undersides, and container edges",
+        "capture a sharp macro showing body segmentation and wax filaments",
+        "look for honeydew, ants, crawlers, and attached scale covers"
+      ],
+      "expectedIpmResponse": "Do not call white material powdery mildew when discrete wax-covered bodies are visible; do not call mealybugs when only flat white marks or residue are present."
     }
   ]
 }
