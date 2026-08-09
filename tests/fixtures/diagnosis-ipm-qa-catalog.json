@@ -4666,6 +4666,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for root density or suspected calcium-uptake disorder alone; isolate only when separate evidence supports a transmissible root, pest, or disease cause.",
       "expectedScoutingSteps": ["capture whole plants, young and old tissue, growing points, fruit or flowers, stems, washed roots, containers or field zones, and matched affected-unaffected controls", "measure root-zone moisture, oxygen context, temperature, pH, EC, drainage, usable volume and irrigation delivery plus humidity or VPD, airflow and leaf temperature", "record calcium and complete nutrient inputs, water alkalinity, salinity, amendments, growth rate, crop load, transplant and root-disturbance history", "obtain method-appropriate solution, medium, water or tissue testing and track new growth after one reviewed root-zone or environment correction"],
       "expectedIpmResponse": "Do not infer calcium deficiency from root density, distorted young tissue, blossom-end symptoms, or one root photo. Separate nutrient supply from pH or EC availability, root function, water movement, VPD and airflow, rapid growth, local tissue demand, disease, pests, and physical restriction; require measurements and method-appropriate testing; and avoid automatic calcium, flushing, irrigation, or repotting directions."
+    },
+    {
+      "recordId": "diagnosis-fusarium-verticillium-vascular-boundary-open-002",
+      "caseId": "fusarium",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usda-pd-fusarium-oxysporum-plate", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:K7725-1-sm.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/K7725-1-sm.jpg",
+          "creator": "Keith Weller, USDA-ARS", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Plant-pathogenic Fusarium oxysporum culture photographed by Keith Weller, USDA-ARS; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-pd-verticillium-strawberry-comparison", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Verticillium_wilt.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Verticillium_wilt.jpg",
+          "creator": "Brian Prechtel, USDA-ARS", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Healthy and Verticillium-wilt-affected strawberry comparison photographed by Brian Prechtel, USDA-ARS; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "laboratory culture of Fusarium oxysporum and a separate strawberry field comparison documented as Verticillium wilt",
+      "cultivar": "unknown", "lifeStage": "pathogen culture and established strawberry plants in separate references",
+      "affectedLocation": "culture morphology and whole-plant wilt comparison without case-linked roots, crown, stem cross-section, or vascular sampling",
+      "distribution": "separate laboratory and field references without a shared host, site, row map, irrigation zone, or affected-unaffected sampling plan",
+      "progression": "single-time references without symptom onset, wilt recovery, vascular-discoloration sequence, spread, or post-confirmation response",
+      "mediumRootZone": "moisture, oxygen, temperature, pH, EC, drainage, root integrity, and inoculum linkage are not measured for the paired references",
+      "environment": "irrigation, rainfall, temperature, humidity, VPD, airflow, transplant history, and recent root disturbance are absent",
+      "measuredValues": "no case-linked moisture, pH, EC, root oxygen, vascular distribution, culture isolation, microscopy, molecular assay, or pathogenicity result accompanies the pair",
+      "diagnosticSigns": ["the culture reference documents a plant-pathogenic Fusarium oxysporum strain but is not tissue sampled from the shown plants", "the strawberry comparison documents Verticillium wilt and demonstrates a visually overlapping vascular-wilt alternative", "wilting, yellowing, stunting, vascular browning, and a pathogen image cannot be linked into one diagnosis without case-specific sampling"],
+      "plausibleAlternatives": ["Verticillium, bacterial wilt, another vascular pathogen, or mixed infection", "Pythium, Phytophthora, Rhizoctonia, other root or crown disease, or root pests", "drought, waterlogging, low oxygen, heat, cold, salinity, pH, EC, nutrient, transplant, or physical root injury", "stem damage, graft failure, irrigation nonuniformity, senescence, or crop-load stress"],
+      "confirmationMethod": "Map wilt and vascular symptoms across affected and unaffected plants; inspect roots and crown; measure root-zone and irrigation conditions; collect representative vascular and root samples before destructive changes; and use qualified culture, microscopy, molecular testing, and host-context interpretation when Fusarium identity affects sanitation, movement, disposal, or reporting.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "lockout", "pest"],
+      "expectedUrgency": "preserve representative roots, crown, vascular tissue, media, and unaffected controls promptly when wilt is progressing",
+      "expectedQuarantineGuidance": "Limit movement of suspect plants, tools, media, and runoff only when a transmissible vascular or root disease is credible; do not declare Fusarium from wilt or a stock pathogen image alone.",
+      "expectedScoutingSteps": ["capture whole plants, wilt distribution, roots, crown, stem cross-sections, vascular pattern, irrigation zones, and matched unaffected controls", "record onset, progression, daytime recovery, irrigation, drainage, moisture, oxygen context, temperature, pH, EC, transplant, injury, and input history", "inspect for root sloughing, crown lesions, stem damage, pests, bacterial streaming, and contradictory foliar or environmental patterns", "preserve and submit representative symptomatic margins plus controls for qualified pathogen testing before pathogen-specific action"],
+      "expectedIpmResponse": "Do not diagnose Fusarium from wilt, yellowing, vascular browning, a culture photograph, or a visually similar field case. Require case-linked roots and vascular tissue, spatial and temporal pattern, root-zone measurements, and qualified pathogen confirmation; keep Verticillium, bacterial wilt, other root diseases, pests, water, salinity, nutrition, temperature, and physical injury visible; and avoid invented fungicide, disposal, or quarantine instructions."
+    },
+    {
+      "recordId": "diagnosis-pythium-other-root-rot-boundary-open-002",
+      "caseId": "pythium_root_rot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-clitocybe-root-rot-windbreak", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Clitocybe_root_rot_of_woody_plants_in_the_southeastern_United_States_(1950)_(20468957140).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Clitocybe_root_rot_of_woody_plants_in_the_southeastern_United_States_(1950)_(20468957140).jpg",
+          "creator": "Arthur S. Rhoads; USDA National Agricultural Library", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "USDA reference showing defoliation associated with documented Clitocybe root rot in an Australian-pine windbreak; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-florida-pd-fusarium-root-rot-wilt", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fusarium_oxysporum.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fusarium_oxysporum.jpg",
+          "creator": "Florida Department of Agriculture and Consumer Services, Bugwood.org", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Fusarium oxysporum root rot and wilt image from the Florida Department of Agriculture and Consumer Services; Florida public record in the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "woody windbreak with documented Clitocybe root rot and a separate plant reference documented as Fusarium oxysporum root rot and wilt; neither is Pythium",
+      "cultivar": "unknown", "lifeStage": "established plants in separate hosts and disease contexts",
+      "affectedLocation": "whole-plant decline views without case-linked washed roots, crown margins, root cross-sections, or lower-stem tissue",
+      "distribution": "separate examples without common crop, medium, irrigation system, bench or row map, affected-unaffected roots, or spread chronology",
+      "progression": "single-time references without root discoloration sequence, sloughing progression, wilt recovery, spread, or response to a measured correction",
+      "mediumRootZone": "moisture, oxygen, temperature, pH, EC, drainage, compaction, root-zone volume, and irrigation delivery are not case-linked",
+      "environment": "temperature, humidity, VPD, rainfall, irrigation frequency, standing water, sanitation, and recent transplant or propagation history are absent",
+      "measuredValues": "no root-zone moisture or oxygen trend, pH, EC, temperature, lesion measurement, microscopy, baiting, culture, molecular assay, or pathogenicity evidence accompanies the pair",
+      "diagnosticSigns": ["both references demonstrate that root diseases other than Pythium can produce decline or wilt", "whole-plant collapse and defoliation do not identify the organism or prove that roots are the initiating site", "Pythium-level attribution requires affected root or crown evidence linked to appropriate laboratory and environmental context"],
+      "plausibleAlternatives": ["Fusarium, Phytophthora, Rhizoctonia, Clitocybe, bacterial soft rot, another root or crown disease, or mixed infection", "waterlogging, low oxygen, drought, heat, cold, salinity, pH, EC, compaction, transplant damage, or irrigation failure", "root aphids, fungus-gnat larvae, nematodes, rodents, or other root pests", "vascular wilt, stem injury, nutrient disorder, herbicide or spray injury, or natural decline"],
+      "confirmationMethod": "Capture and compare intact washed roots, fine-root tips, crown and lower stem from affected and unaffected plants; map irrigation and spread; measure moisture, oxygen context, temperature, pH, EC and drainage; preserve samples; and obtain qualified microscopy, culture, baiting, or molecular testing when organism identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest", "lockout"],
+      "expectedUrgency": "preserve intact root and crown samples promptly when rapid wilt, sloughing, crown collapse, or spread is active",
+      "expectedQuarantineGuidance": "Reduce transfer of suspect media, runoff, tools, trays, and plants while an infectious root disease remains credible, but do not label or cull for Pythium from canopy decline alone.",
+      "expectedScoutingSteps": ["capture whole plants and mapped distribution plus intact washed fine roots, crown, lower stem, lesion margins, and matched unaffected controls", "record irrigation volume and timing, drainage, standing water, moisture, oxygen context, temperature, pH, EC, propagation, transplant, sanitation, and spread history", "inspect for sloughing, discoloration, odor, crown lesions, vascular browning, root pests, mechanical injury, compaction, and emitter nonuniformity", "preserve representative symptomatic margins and controls for qualified organism testing before pathogen-specific treatment or disposal"],
+      "expectedIpmResponse": "Do not diagnose Pythium from wilt, defoliation, brown roots, wet media, or a generic root-rot image. Require intact root and crown evidence, spatial progression, irrigation and root-zone measurements, and qualified confirmation; distinguish Fusarium, Phytophthora, Rhizoctonia, other fungi, bacteria, pests, water, oxygen, salinity, pH, compaction, and physical injury; and avoid invented treatment or disposal directions."
     }
   ]
 }
