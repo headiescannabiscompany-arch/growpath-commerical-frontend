@@ -71,10 +71,16 @@ describe("GrowPath knowledge registries", () => {
       "unusable diagnosis media normalized to an inconclusive low-confidence result with exact retake requests and no image-derived treatment actions"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "visual-only Diagnosis crop identity capped at medium confidence with exact species broadened to a user-confirmable crop or genus-level draft"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence"
     );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not retain high confidence, urgent status, treatment actions, completed tasks, or issue-detected automation from diagnosis media the provider marked unusable, and do not replace explicit user crop context with a conflicting visual suggestion."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not promote a visual-only Diagnosis crop suggestion to high-confidence identity, exact species, or cultivar, even when a separate visible issue candidate has higher confidence."
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "unresolved white-mark differential with powdery mildew, thrips, mites, residue, mineral deposits, glare, physical damage, and senescence"

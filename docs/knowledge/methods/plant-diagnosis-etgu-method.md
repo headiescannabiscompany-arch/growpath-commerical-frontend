@@ -416,6 +416,14 @@ submit.
 
 Plant diagnosis uses the same server-side OpenAI credential as other image-capable GrowPath AI workflows. A successful image request must record that image analysis was requested and performed, the number of photos inspected, and the provider/model label. A failed or text-only request must say that pixels were not analyzed and request written observations or better evidence rather than presenting a generic result as visual analysis.
 
+A crop identity proposed only from Diagnosis images remains a visual suggestion. Cap it at
+medium confidence, require user confirmation, never infer a cultivar, and do not present an
+exact species as established. When the image supports a crop or genus but not authoritative
+species identification, retain a genus-level scientific draft such as `Cannabis spp.` rather
+than `Cannabis sativa`. This identity ceiling is separate from issue-candidate confidence: a
+visible reproductive structure, pest sign, or symptom may have its own bounded confidence
+without increasing crop-identity certainty.
+
 ## Shared Field Studies and public observations
 
 A Field Study is the shared parent for public-space or field-botany observations. It is
