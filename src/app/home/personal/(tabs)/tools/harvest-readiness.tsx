@@ -1138,11 +1138,11 @@ export default function HarvestReadinessToolRoute({
           ? [
               {
                 key: "create-harvest-readiness-task-plan",
-                label: "Create Harvest Decision Tasks",
+                label: "Create Harvest Follow-up Tasks",
                 variant: "secondary",
                 pendingLabel: "Creating...",
                 disabled: !growId,
-                successMessage: "Created harvest decision tasks.",
+                successMessage: "Created harvest follow-up tasks.",
                 onPress: async () => {
                   const result = await saveToolRunAndCreateTasks({
                     growId,

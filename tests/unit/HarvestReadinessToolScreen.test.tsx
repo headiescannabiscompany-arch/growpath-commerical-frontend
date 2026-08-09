@@ -563,7 +563,7 @@ describe("HarvestReadinessToolRoute", () => {
     await waitFor(() =>
       expect(commercial.getByText("Harvest Readiness Estimate result")).toBeTruthy()
     );
-    expect(commercial.queryByText("Create Harvest Decision Tasks")).toBeNull();
+    expect(commercial.queryByText("Create Harvest Follow-up Tasks")).toBeNull();
     expect(commercial.queryByText("Save Harvest Review")).toBeNull();
     expect(mockGetHarvestBatch).not.toHaveBeenCalled();
     await commercial.unmountAsync();
@@ -1192,7 +1192,7 @@ describe("HarvestReadinessToolRoute", () => {
       expect(screen.getByText("Harvest Readiness Estimate result")).toBeTruthy()
     );
 
-    fireEvent.press(screen.getByText("Create Harvest Decision Tasks"));
+    fireEvent.press(screen.getByText("Create Harvest Follow-up Tasks"));
 
     await waitFor(() =>
       expect(mockSaveToolRunAndCreateTasks).toHaveBeenCalledWith(
