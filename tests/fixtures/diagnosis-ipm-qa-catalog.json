@@ -4024,6 +4024,48 @@
       "expectedIpmResponse": "Require attached scale-body or cover morphology before diagnosing scale insects, distinguish tissue-integrated edema or corking and removable residue, and do not assign every lesion to scale when disease can coexist. Report the insect-supported and disease-compatible patterns separately, request crawler and lesion evidence, preserve beneficial organisms, and avoid inventing pesticide or disease-control directions."
     },
     {
+      "recordId": "ipm-whitefly-adult-egg-evidence-boundary-open-002",
+      "caseId": "whiteflies",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc-by-4-whitefly-adult-sabamohammad",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Whitefly.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Whitefly.jpg",
+          "creator": "Sabamohammad",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Whitefly adult photographed by Sabamohammad; CC BY 4.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-orchamoplatus-citri-adult-eggs",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Australian_Citrus_Whitefly.png",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Australian_Citrus_Whitefly.png",
+          "creator": "corunastylis",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Australian citrus whitefly (Orchamoplatus citri) with eggs photographed by corunastylis; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "isolated adult whitefly reference and an Australian citrus whitefly observation with eggs on a leaf",
+      "cultivar": "unknown", "lifeStage": "adult morphology and an adult-plus-egg observation; attached nymph stages are not represented",
+      "affectedLocation": "adult body reference and leaf surface with eggs",
+      "distribution": "two separate observations without a whole-plant underside survey, density count, or affected-unaffected comparison",
+      "progression": "single-time references without egg hatch, nymph development, population trend, honeydew progression, or crop response",
+      "mediumRootZone": "not relevant to direct morphology and not documented for either host",
+      "environment": "temperature, humidity, airflow, host stress, ant activity, and recent treatments are not paired with the observations",
+      "measuredValues": "no adult or egg count per leaf, attached-nymph count, trap trend, honeydew assessment, or crop-injury measurement accompanies the pair",
+      "diagnosticSigns": ["one image supplies compatible small white winged adult morphology", "the second observation pairs a identified whitefly adult with eggs on leaf tissue", "neither image alone establishes crop-wide density, injury, or a treatment threshold"],
+      "plausibleAlternatives": ["a small moth, harmless fly, shed skin, dust, wax, residue, or glare", "aphids, mealybugs, scale insects, or another underside organism", "lacewing larvae, parasitoids, predatory mites, or other beneficial organisms", "parasitized whitefly nymphs that must not be counted as healthy active pests", "sooty growth, disease, chemical residue, or abiotic stress occurring with or without whiteflies"],
+      "confirmationMethod": "Inspect representative upper, middle, and lower leaf undersides for sharp adult, egg, and attached-nymph morphology; record density and distribution; distinguish predators, parasitoids, and parasitized nymphs; and use gentle flight response only as supporting evidence rather than a species or injury diagnosis.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "promptly inspect leaf undersides and quantify multiple life stages when repeated adults, honeydew, or plant stress are present",
+      "expectedQuarantineGuidance": "Limit movement only when an active multi-stage infestation is supported; do not quarantine for one white flying insect, residue, an isolated egg-like structure, or an identified beneficial.",
+      "expectedScoutingSteps": ["capture whole-plant distribution and sharp underside macros from representative upper, middle, and lower leaves", "count adults, eggs, attached nymphs, honeydew, and sooty growth consistently over time", "separate healthy nymphs from parasitized nymphs and identify lacewings, parasitoids, and other predators before counting pests", "record host, environment, recent applications, ant activity, injury pattern, and comparable unaffected plants"],
+      "expectedIpmResponse": "Do not diagnose whiteflies from one white flying insect or pale underside dots. Require compatible adult or attached immature morphology, seek multiple life stages and distribution, distinguish residue and scale-like organisms, separately classify predators and parasitoids, avoid treating parasitized nymphs as healthy pest counts, and do not invent pesticide directions or thresholds."
+    },
+    {
       "recordId": "diagnosis-compost-organic-release-timing-open-001",
       "caseId": "organic_release_timing",
       "imageSet": [
