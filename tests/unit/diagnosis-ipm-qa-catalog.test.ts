@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(15);
+    expect(catalog.mediaRecords).toHaveLength(16);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -217,6 +217,10 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "ipm-russet-mite-eriophyid-boundary-open-001",
           caseId: "russet_mites"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-root-aphid-phylloxera-evidence-boundary-open-001",
+          caseId: "root_aphids"
         })
       ])
     );

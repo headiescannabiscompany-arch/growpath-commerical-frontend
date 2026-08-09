@@ -1382,7 +1382,12 @@
         "vascular wilt or other root pathogens"
       ],
       "confirmationMethod": "Inspect washed roots and crown, record substrate moisture, temperature, oxygenation or drainage, and irrigation history, and confirm Pythium with culture, microscopy, or an appropriate test when species-level certainty matters.",
-      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest"],
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "disease",
+        "other_abiotic",
+        "pest"
+      ],
       "expectedUrgency": "prompt root-zone inspection when wilt persists despite appropriate moisture",
       "expectedQuarantineGuidance": "Avoid sharing runoff, tools, or root-zone material until contagious root disease is excluded; do not label ordinary transient wilt contagious without supporting evidence.",
       "expectedScoutingSteps": [
@@ -1447,7 +1452,12 @@
         "other viruses with overlapping symptoms"
       ],
       "confirmationMethod": "Use whole-plant distribution, progression, vector or propagation history, and comparison with new growth; confirm a specific virus with an appropriate laboratory test rather than appearance alone.",
-      "expectedCauseRanking": ["insufficient_evidence", "disease", "pest", "other_abiotic"],
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "disease",
+        "pest",
+        "other_abiotic"
+      ],
       "expectedUrgency": "promptly assess spread and propagation risk when a virus-like pattern appears on new growth",
       "expectedQuarantineGuidance": "Separate suspect plants and avoid sharing cutting tools or propagation material until contagious disease is excluded, while avoiding destructive action based only on color pattern.",
       "expectedScoutingSteps": [
@@ -1513,7 +1523,12 @@
         "heat or light stress"
       ],
       "confirmationMethod": "Require magnified direct mite or egg evidence from affected new growth and distinguish broad mites from cyclamen, russet, and other mites; plant distortion alone cannot identify the mite.",
-      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "disease"],
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "pest",
+        "other_abiotic",
+        "disease"
+      ],
       "expectedUrgency": "prompt magnified inspection of affected new growth when distortion is progressing",
       "expectedQuarantineGuidance": "Limit plant movement while a microscopic pest is being confirmed, but do not destroy plants or broadly treat based only on distorted foliage.",
       "expectedScoutingSteps": [
@@ -1578,7 +1593,12 @@
         "normal corking, russeting, or physical injury"
       ],
       "confirmationMethod": "Require high-magnification body-scale evidence from the affected tissue and expert comparison when species matters; bronzing, curling, or russeting alone cannot establish an eriophyid species.",
-      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "disease"],
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "pest",
+        "other_abiotic",
+        "disease"
+      ],
       "expectedUrgency": "prompt magnified inspection when progressive bronzing, curling, or protected-site injury is present",
       "expectedQuarantineGuidance": "Limit plant movement during confirmation of a microscopic pest, while avoiding destruction or broad treatment based only on nonspecific injury.",
       "expectedScoutingSteps": [
@@ -1588,6 +1608,76 @@
         "seek expert or laboratory identification when the crop, jurisdiction, or disposition makes species important"
       ],
       "expectedIpmResponse": "Use the reference to recognize eriophyid body form, not to label every russeted crop as russet mites or to transfer one host-specific species to another. On cannabis or hemp, require direct compatible mites from the plant before naming hemp russet mite and keep abiotic, viral, and other-pest alternatives visible."
+    },
+    {
+      "recordId": "ipm-root-aphid-phylloxera-evidence-boundary-open-001",
+      "caseId": "root_aphids",
+      "imageSet": [
+        {
+          "imageId": "public-domain-phylloxera-root-feeding-1911-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:EB1911_-_Phylloxera_-_Fig_1.png",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/EB1911_-_Phylloxera_-_Fig_1.png",
+          "creator": "Encyclopaedia Britannica",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Root-inhabiting grape phylloxera feeding on a vine root, Encyclopaedia Britannica (1911); public domain in the United States.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "public-domain-phylloxera-adult-illustration-1909-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Phylloxera_vastatrix_illustration.png",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Phylloxera_vastatrix_illustration.png",
+          "creator": "Richard Hertwig after Ludwig-Leunis",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Phylloxera vastatrix illustration from Richard Hertwig's A Manual of Zoology (1909), after Ludwig-Leunis; public domain in the United States.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "grapevine root and grape phylloxera morphology references",
+      "cultivar": "unknown",
+      "lifeStage": "root-inhabiting feeding form and adult morphology illustration",
+      "affectedLocation": "root tissue and direct insect reference",
+      "distribution": "single root-feeding interaction plus isolated morphology reference; no whole-plant infestation pattern",
+      "progression": "not recorded",
+      "mediumRootZone": "root contact is illustrated; substrate, moisture, oxygenation, and irrigation are not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "aphid-like phylloxera body morphology",
+        "proboscis inserted into root tissue in the root-inhabiting reference",
+        "direct root-zone organism evidence rather than foliage symptoms alone"
+      ],
+      "plausibleAlternatives": [
+        "fungus gnat larvae",
+        "springtails or other harmless soil organisms",
+        "above-ground aphids or shed skins",
+        "root mealybugs",
+        "root rot or low-oxygen root injury",
+        "irrigation or substrate failure"
+      ],
+      "confirmationMethod": "Require sharp direct views of colonies or insects on washed roots and confirm aphid morphology, waxy residue, and root association; foliage wilt or flying insects near media are insufficient.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "pest",
+        "disease",
+        "other_abiotic"
+      ],
+      "expectedUrgency": "prompt root-zone inspection when decline persists or root-associated colonies are suspected",
+      "expectedQuarantineGuidance": "Limit movement of rooted plants and shared substrate only when a root-associated pest is directly supported; do not quarantine solely for ordinary soil organisms or fungus-gnat adults.",
+      "expectedScoutingSteps": [
+        "inspect the pot edge, drainage openings, crown, and representative washed roots with magnification",
+        "capture sharp body-scale images of organisms plus colony distribution and root injury",
+        "compare adults, larvae, cast skins, wax, and movement with fungus gnats, springtails, and root mealybugs",
+        "record irrigation, drainage, substrate moisture, root color, odor, sloughing, and above-ground symptoms"
+      ],
+      "expectedIpmResponse": "Use these images as a morphology and evidence-boundary reference, not as a cannabis root-aphid species label. Do not diagnose root aphids from wilt, yellowing, or small flying insects alone; request root-level media, distinguish fungus gnats and harmless soil organisms, and preserve root-disease and abiotic alternatives until direct organisms are resolved."
     }
   ]
 }
