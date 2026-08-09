@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(17);
+    expect(catalog.mediaRecords).toHaveLength(18);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -225,6 +225,10 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "ipm-fungus-gnat-adult-evidence-boundary-open-001",
           caseId: "fungus_gnats"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-caterpillar-sawfly-chewing-boundary-open-001",
+          caseId: "caterpillars"
         })
       ])
     );

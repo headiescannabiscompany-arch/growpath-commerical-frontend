@@ -1748,6 +1748,71 @@
         "photograph adults, larvae, the medium surface, and representative washed roots"
       ],
       "expectedIpmResponse": "Use the images to recognize compatible adult morphology only. Do not infer root feeding, crop damage, or a treatment need from one small fly; require trend counts, larval evidence, moisture context, and root assessment, and distinguish winged root aphids and harmless flies."
+    },
+    {
+      "recordId": "ipm-caterpillar-sawfly-chewing-boundary-open-001",
+      "caseId": "caterpillars",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-caterpillar-feeding-leaf-motunrayo-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Caterpillar_feeding_on_leaf.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Caterpillar_feeding_on_leaf.jpg",
+          "creator": "Motunrayo1234",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Caterpillar feeding on a leaf by Motunrayo1234, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-euura-ribesii-sawfly-larva-feeding-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Caterpillar_feeding_on_leaf_-_20140906_121127.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Caterpillar_feeding_on_leaf_-_20140906_121127.jpg",
+          "creator": "Daniel Mietchen",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Euura ribesii sawfly larva feeding on a leaf by Daniel Mietchen, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified leaf host and a leaf fed on by Euura ribesii",
+      "cultivar": "unknown",
+      "lifeStage": "feeding caterpillar and feeding sawfly larva lookalike",
+      "affectedLocation": "leaf margins and lamina adjacent to visible larvae",
+      "distribution": "localized feeding interactions; whole-plant damage distribution not recorded",
+      "progression": "active feeding shown at one time point",
+      "mediumRootZone": "not relevant to the visible feeding evidence and not recorded",
+      "environment": "outdoor observations; detailed conditions not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "visible larva directly associated with fresh leaf chewing",
+        "missing tissue beginning at or extending from a leaf edge",
+        "a sawfly larva that demonstrates caterpillar-like morphology is not taxonomically sufficient"
+      ],
+      "plausibleAlternatives": [
+        "sawfly larvae",
+        "beetles or beetle larvae",
+        "slugs or snails",
+        "grasshoppers or other chewing insects",
+        "leaf-cutter bees",
+        "wind, handling, or mechanical tears"
+      ],
+      "confirmationMethod": "Associate fresh chewing with a directly observed larva, egg, frass, webbing, shelter, or repeated nighttime observation; use body features or expert review before narrowing caterpillar versus sawfly or another larva.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence", "other_abiotic"],
+      "expectedUrgency": "assess active feeding, crop stage, larval density, and spread before intervention",
+      "expectedQuarantineGuidance": "Inspect nearby plants and avoid moving confirmed larvae or infested material, but do not quarantine for isolated old holes without an active organism.",
+      "expectedScoutingSteps": [
+        "inspect both leaf surfaces, margins, folded leaves, buds, and nearby substrate during day and night",
+        "capture sharp dorsal and side views of larvae plus fresh feeding boundaries",
+        "look for frass, eggs, silk, shelters, slime trails, and repeated damage",
+        "compare leg and proleg pattern or seek expert identification before assigning a larval family"
+      ],
+      "expectedIpmResponse": "Confirm chewing injury separately from the organism identity. Do not label every hole as caterpillar damage and do not call a sawfly larva a caterpillar from overall shape; retain beetle, slug, other chewing insect, and physical-damage alternatives until direct evidence resolves them."
     }
   ]
 }
