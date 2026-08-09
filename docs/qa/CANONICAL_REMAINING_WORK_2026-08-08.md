@@ -100,7 +100,15 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       the Personal balance, kept inventory read-only, and withheld assignment controls
       with the explicit owner/manager rule. The live Team roster identified the current
       production roles as Owner, Manager, Staff, and Viewer without inferring them from
-      account plan labels.
+      account plan labels. The signed-in Triple Bag Genetics Owner session then verified
+      the production Facility roster and Owner-only invite, role-change, remove, task
+      assignment, and inventory-create controls without mutating records. The same login
+      switched to Commercial and loaded Dashboard, Storefront, Products, Product Lines,
+      Batch Planner, Inventory, Trials, Evidence Runs, Courses, Lives, Feed/Campaigns,
+      Forum/Q&A, Orders, Analytics, Grows, AI Tools, Discover, Tasks, and Profile without
+      a visible failed, unauthorized, not-found, or unable-to-load state. Commercial AI
+      credits resolved to 2000/2000 under the Facility trial. This remains a route and
+      permissions slice, not populated commercial workflow acceptance.
 - [~] Verify login/session/workspace selection and recovery across Free, Pro,
       Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
       server-down, reload, logout, and multi-workspace states. The same Personal Pro
@@ -114,8 +122,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       Dashboard, Grows, Tasks, Compliance, More, Profile, Rooms, Inventory, Team, and
       AI routes passed the 2026-08-09 production heading/error-state sweep. Facility
       Inventory resolved from its loading state to a readable zero-item, read-only
-      result. Button mutations, mobile/visual evidence, and the remaining roles/routes
-      are not accepted by this sweep.
+      result. The Commercial sweep found missing Back controls on Feed/Campaigns and
+      Tasks; the shared themed Back control and focused regression coverage are now in
+      the release path and require deployed live retest before acceptance. Button
+      mutations, mobile/visual evidence, and the remaining roles/routes are not accepted
+      by this sweep.
 - [ ] Retest content-report admin email deep links as an authorized platform owner
       for Forum, Feed, product, course, video, and live-session reports.
 - [ ] Create only approved temporary production/staging records needed to verify

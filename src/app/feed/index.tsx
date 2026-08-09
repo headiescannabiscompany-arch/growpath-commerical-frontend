@@ -29,6 +29,7 @@ import {
 } from "@/api/commercialFeed";
 import { useEntitlements } from "@/entitlements";
 import CalendarDateField from "@/components/forms/CalendarDateField";
+import BackButton from "@/components/nav/BackButton";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import {
   facilitySalesPolicyText,
@@ -978,6 +979,9 @@ export default function CommercialFeedRoute() {
         />
       }
     >
+      <BackButton
+        fallbackHref={isFacility ? "/home/facility/dashboard" : "/home/commercial"}
+      />
       <View style={styles.header}>
         <Text accessibilityRole="header" style={styles.title}>
           {isFacility
