@@ -122,6 +122,26 @@ export function personalDiagnosisRetryHref({
   return `/home/personal/diagnose?${query}`;
 }
 
+export function personalIpmRetryHref({
+  toolRunId,
+  growId,
+  plantId
+}: {
+  toolRunId: string;
+  growId?: string;
+  plantId?: string;
+}) {
+  const query = [
+    ["retryToolRunId", toolRunId],
+    ["growId", growId || ""],
+    ["plantId", plantId || ""]
+  ]
+    .filter(([, value]) => value)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join("&");
+  return `/home/personal/tools/ipm-scout?${query}`;
+}
+
 function formatDate(value?: string) {
   return value ? String(value).slice(0, 10) : "unsaved";
 }
@@ -1790,6 +1810,14 @@ export default function SavedToolRunsScreen() {
           plantId: String(selectedRun?.plantId || "").trim() || undefined
         })
       : "";
+  const ipmRetryHref =
+    workspaceType === "personal" && selectedRunId && isIpmRun(selectedRun)
+      ? personalIpmRetryHref({
+          toolRunId: selectedRunId,
+          growId: String(selectedRun?.growId || "").trim() || undefined,
+          plantId: String(selectedRun?.plantId || "").trim() || undefined
+        })
+      : "";
 
   return (
     <ScreenBoundary
@@ -1904,6 +1932,27 @@ export default function SavedToolRunsScreen() {
                     <Pressable
                       accessibilityRole="link"
                       accessibilityLabel="Re-run Diagnosis with saved evidence"
+                      style={styles.primary}
+                    >
+                      <Text style={styles.primaryText}>Re-run with Saved Evidence</Text>
+                    </Pressable>
+                  </Link>
+                </View>
+              </View>
+            ) : null}
+            {ipmRetryHref ? (
+              <View style={styles.editor}>
+                <View style={styles.studyPanel}>
+                  <Text style={styles.cardTitle}>Recheck with the saved scout media</Text>
+                  <Text style={styles.cardText}>
+                    Reopen the exact private IPM photos and extracted video frames. The
+                    historical result stays unchanged, and no new analysis or credit use
+                    starts until you choose an AI action.
+                  </Text>
+                  <Link href={ipmRetryHref} asChild>
+                    <Pressable
+                      accessibilityRole="link"
+                      accessibilityLabel="Re-run IPM Scout with saved evidence"
                       style={styles.primary}
                     >
                       <Text style={styles.primaryText}>Re-run with Saved Evidence</Text>
