@@ -1523,6 +1523,71 @@
         "compare affected and unaffected new growth and obtain expert identification when morphology is unresolved"
       ],
       "expectedIpmResponse": "Recognize the direct broad-mite reference but do not transfer the cyclamen-mite damage label to broad mites. For user plants, call only tarsonemid-mite-compatible distortion until direct organisms or eggs support a narrower identification, and retain chemical, nutritional, viral, and environmental alternatives."
+    },
+    {
+      "recordId": "ipm-russet-mite-eriophyid-boundary-open-001",
+      "caseId": "russet_mites",
+      "imageSet": [
+        {
+          "imageId": "usda-k9077-23-aceria-anthocoptes",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rust_Mite,_Aceria_anthocoptes.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rust_Mite,_Aceria_anthocoptes.jpg",
+          "creator": "Eric Erbe and Chris Pooley, USDA Agricultural Research Service Electron Microscopy Unit",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Rust mite Aceria anthocoptes micrograph by Eric Erbe and Chris Pooley, USDA Agricultural Research Service Electron Microscopy Unit. Image K9077-23; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "public-domain-eriophyid-coconut-injury-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Coconuts_injured_by_Eriophyes_guerreronis.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Coconuts_injured_by_Eriophyes_guerreronis.jpg",
+          "creator": "Hartford Hammond Keifer",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Coconuts injured by the eriophyid coconut mite, Hartford Hammond Keifer; public-domain government work.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "Canada thistle rust-mite reference and coconut with eriophyid-mite injury",
+      "cultivar": "unknown",
+      "lifeStage": "adult eriophyid reference; injury image does not resolve individual mites",
+      "affectedLocation": "direct mite micrograph and damaged coconut fruit tissue",
+      "distribution": "cross-species eriophyid morphology and injury context, not a same-host diagnostic pair",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "elongated microscopic eriophyid body morphology",
+        "documented crop injury from a different eriophyid species",
+        "absence of visible mites in the host-injury image"
+      ],
+      "plausibleAlternatives": [
+        "broad or cyclamen mites",
+        "thrips or spider-mite feeding",
+        "spray or herbicide injury",
+        "nutrient or root-zone stress",
+        "virus-like symptoms",
+        "normal corking, russeting, or physical injury"
+      ],
+      "confirmationMethod": "Require high-magnification body-scale evidence from the affected tissue and expert comparison when species matters; bronzing, curling, or russeting alone cannot establish an eriophyid species.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "disease"],
+      "expectedUrgency": "prompt magnified inspection when progressive bronzing, curling, or protected-site injury is present",
+      "expectedQuarantineGuidance": "Limit plant movement during confirmation of a microscopic pest, while avoiding destruction or broad treatment based only on nonspecific injury.",
+      "expectedScoutingSteps": [
+        "inspect protected new growth and symptom boundaries with sufficient magnification for individual mites",
+        "capture sharp body-scale images plus whole-plant and affected-versus-healthy context",
+        "record symptom progression, spray history, environment, and root-zone measurements",
+        "seek expert or laboratory identification when the crop, jurisdiction, or disposition makes species important"
+      ],
+      "expectedIpmResponse": "Use the reference to recognize eriophyid body form, not to label every russeted crop as russet mites or to transfer one host-specific species to another. On cannabis or hemp, require direct compatible mites from the plant before naming hemp russet mite and keep abiotic, viral, and other-pest alternatives visible."
     }
   ]
 }
