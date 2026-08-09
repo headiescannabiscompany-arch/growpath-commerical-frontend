@@ -1,5 +1,9 @@
 # GrowPathAI Full System TODO
 
+> Canonical remaining execution work is consolidated in
+> `docs/qa/CANONICAL_REMAINING_WORK_2026-08-08.md`. This file remains the detailed
+> implementation/evidence ledger and must not be treated as a competing work order.
+
 This checklist tracks the current full-system build. Keep it updated before and after every implementation slice.
 
 Legend:
