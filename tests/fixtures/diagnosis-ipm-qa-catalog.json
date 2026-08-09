@@ -4870,6 +4870,40 @@
       "expectedQuarantineGuidance": "Limit propagation and vector-mediated movement only when a transmissible virus remains credible; do not destroy or quarantine plants from mottling alone.",
       "expectedScoutingSteps": ["capture color-referenced whole plants, old and new leaves, veins, distortion, stems, flowers or fruit, nearby plants, and matched unaffected controls", "record host, cultivar, propagation source, onset, systemic progression, vector presence, treatments, herbicide or spray exposure, and environmental history", "measure pH, EC, moisture and root condition and inspect for pests, feeding patterns, nutrient distribution, natural variegation, and camera artifacts", "preserve representative tissue and obtain validated virus testing when management depends on identity"],
       "expectedIpmResponse": "Do not diagnose mosaic virus from mottling, vein contrast, variegation, distortion, or a stock virus image. Require host and cultivar, old-new and systemic distribution, progression, propagation or vector pathway, root and nutrient context, pest and spray inspection, and validated testing; preserve normal pigmentation, nutrition, pH, EC, roots, environment, herbicide, pest, and other disease alternatives; and avoid automatic culling."
+    },
+    {
+      "recordId": "diagnosis-seedling-emergence-damping-off-boundary-open-002",
+      "caseId": "damping_off",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-lettuce-seedlings", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Seedlings.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Seedlings.jpg",
+          "creator": "Leon Brooks", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Lettuce seedlings photographed by Leon Brooks and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-cucumber-seedling", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cucumber_Seedling.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cucumber_Seedling.jpg",
+          "creator": "Peter Chastain", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Cucumber seedling photographed by Peter Chastain and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "healthy lettuce and cucumber seedlings in separate observations; neither is a damping-off case",
+      "cultivar": "unknown", "lifeStage": "emergence through first true-leaf development",
+      "affectedLocation": "seedlings and cotyledons without symptomatic stem-line lesions, exposed roots, crown sections, or collapsed controls",
+      "distribution": "separate healthy examples without tray, plug, bench, bed, irrigation-zone, emergence-gap, or mortality mapping",
+      "progression": "single-time images without germination baseline, pre-emergence loss, constriction, collapse, spread, or recovery",
+      "mediumRootZone": "moisture, oxygen, temperature, pH, EC, depth, compaction, drainage, sanitation, and root condition are not measured",
+      "environment": "humidity, airflow, light, irrigation frequency, water source, temperature, density, and propagation history are absent",
+      "measuredValues": "no emergence rate, mortality count, stem diameter, lesion length, moisture, temperature, pH, EC, microscopy, culture, or molecular result accompanies the pair",
+      "diagnosticSigns": ["upright healthy seedlings provide a negative boundary and do not establish absence of future disease", "cotyledon shape, soil contact, small stems, uneven emergence, and one bent seedling are not damping-off by themselves", "damping-off requires mapped loss or collapse, stem or root evidence, progression, propagation conditions, and organism confirmation when identity matters"],
+      "plausibleAlternatives": ["normal germination timing, phototropism, cotyledon aging, seed-coat retention, weak seed, or planting-depth variation", "underwatering, overwatering, heat, cold, low light, excessive light, compaction, salinity, fertilizer or chemical injury", "Pythium, Rhizoctonia, Fusarium, Phytophthora, bacterial rot, another pathogen, or mixed disease", "fungus-gnat larvae, root pests, physical handling, transplant injury, or irrigation impact"],
+      "confirmationMethod": "Map emergence and mortality by tray or bed; capture upright, constricted and collapsed seedlings plus stem-line, crown and washed-root macros and controls; measure moisture, temperature, oxygen context, pH, EC, density and irrigation; track progression; and use qualified microscopy, culture or molecular testing when organism identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest", "excess"],
+      "expectedUrgency": "preserve freshly collapsing seedlings and representative medium promptly because advanced decay can erase the initiating margin",
+      "expectedQuarantineGuidance": "Limit transfer of suspect trays, tools, media and runoff only when clustered progressive collapse suggests transmissible disease; do not quarantine for uneven emergence or small seedlings alone.",
+      "expectedScoutingSteps": ["capture tray or bed maps, healthy and affected seedlings, stem-line constriction, crown, intact washed roots, emergence gaps, and matched controls", "record seed lot, sowing depth and date, emergence count, mortality progression, density, irrigation, drainage, moisture, temperature, humidity, airflow, light, sanitation, pH and EC", "inspect for root discoloration, sloughing, lesions, soft rot, fungus-gnat larvae, compaction, salt pattern, physical injury, and emitter nonuniformity", "preserve fresh symptomatic margins, seedlings, media and controls for qualified testing when management depends on the organism"],
+      "expectedIpmResponse": "Do not diagnose damping-off from one leaning seedling, uneven emergence, wet-looking media, small stems, cotyledon color, or a propagation caption. Require mapped emergence and collapse, stem-line and root evidence, progression, moisture and temperature context, irrigation and sanitation history, abiotic and pest exclusions, and qualified confirmation; avoid automatic fungicide, disposal, or irrigation prescriptions."
     }
   ]
 }
