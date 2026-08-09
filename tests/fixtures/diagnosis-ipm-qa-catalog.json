@@ -4904,6 +4904,74 @@
       "expectedQuarantineGuidance": "Limit transfer of suspect trays, tools, media and runoff only when clustered progressive collapse suggests transmissible disease; do not quarantine for uneven emergence or small seedlings alone.",
       "expectedScoutingSteps": ["capture tray or bed maps, healthy and affected seedlings, stem-line constriction, crown, intact washed roots, emergence gaps, and matched controls", "record seed lot, sowing depth and date, emergence count, mortality progression, density, irrigation, drainage, moisture, temperature, humidity, airflow, light, sanitation, pH and EC", "inspect for root discoloration, sloughing, lesions, soft rot, fungus-gnat larvae, compaction, salt pattern, physical injury, and emitter nonuniformity", "preserve fresh symptomatic margins, seedlings, media and controls for qualified testing when management depends on the organism"],
       "expectedIpmResponse": "Do not diagnose damping-off from one leaning seedling, uneven emergence, wet-looking media, small stems, cotyledon color, or a propagation caption. Require mapped emergence and collapse, stem-line and root evidence, progression, moisture and temperature context, irrigation and sanitation history, abiotic and pest exclusions, and qualified confirmation; avoid automatic fungicide, disposal, or irrigation prescriptions."
+    },
+    {
+      "recordId": "diagnosis-organic-release-timing-compost-boundary-open-002",
+      "caseId": "organic_release_timing",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-compost-pile-ksd5", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Compost_pile.JPG", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Compost_pile.JPG",
+          "creator": "Ksd5 (Siddharth Patil)", "licenseId": "CC0-1.0", "attributionText": "Materials in a compost bin photographed by Ksd5 (Siddharth Patil); CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-aged-compost-mulch", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Compost.mulch.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Compost.mulch.jpg",
+          "creator": "Red58bill", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Aged coarse home compost photographed by Red58bill and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "no plant is shown; separate references depict fresh compost-bin material and aged coarse home compost",
+      "cultivar": "not applicable", "lifeStage": "organic material at visually different but analytically unverified stages",
+      "affectedLocation": "compost surfaces without a crop, root zone, application area, pile cross-section, or matched untreated control",
+      "distribution": "separate contextual images without sampling map, application uniformity, incorporation depth, crop response, or batch comparison",
+      "progression": "single-time images without feedstock history, temperature curve, curing interval, decomposition rate, mineralization, immobilization, or crop uptake",
+      "mediumRootZone": "crop substrate, moisture, oxygen, pH, EC, temperature, texture, drainage, and nutrient availability are not shown or measured",
+      "environment": "pile moisture, oxygen, temperature, turning, rainfall, cover, climate, storage, and application history are absent",
+      "measuredValues": "no C:N ratio, maturity or stability test, respiration, temperature log, pH, EC, nutrient analysis, application rate, tissue result, or root-zone trend accompanies the pair",
+      "diagnosticSigns": ["visible organic material establishes presence and broad physical condition, not plant-available nutrient release", "dark color, crumb structure, age labels, warmth, or steam cannot quantify mineralization or immobilization", "release timing depends on feedstock, maturity, biology, moisture, oxygen, temperature, particle size, incorporation, soil conditions, and crop demand"],
+      "plausibleAlternatives": ["slow release, rapid mineralization, temporary immobilization, incomplete decomposition, mature stable material, or mixed stages", "nutrient deficiency, excess, antagonism, pH or EC lockout, salinity, root disease, water stress, or environmental stress", "uneven placement, irrigation nonuniformity, compaction, poor oxygen, temperature, crop-stage demand, or inaccurate input records", "normal crop variation or an unrelated pest, disease, spray, or physical injury"],
+      "confirmationMethod": "Document feedstocks, dates, process and application; measure pile or product maturity, pH, EC, moisture, temperature and nutrient composition as appropriate; measure the crop root zone and tissue when warranted; compare treated and untreated areas over time; and interpret release against crop stage and environment rather than appearance alone.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "deficiency", "lockout", "excess", "disease", "pest"],
+      "expectedUrgency": "collect process, product, root-zone and crop measurements before adding more inputs when nutrient release is uncertain",
+      "expectedQuarantineGuidance": "No quarantine is supported by the appearance of compost or organic material alone; isolate only when contamination, active disease, or regulated material is independently credible.",
+      "expectedScoutingSteps": ["capture feedstock, pile or product, cross-section, application pattern, root zone, whole plants, affected and unaffected tissue, and matched comparison areas", "record source, batch, age, processing, storage, application amount and date, incorporation, irrigation, crop stage, temperature and symptom progression", "measure maturity or stability where appropriate plus pH, EC, moisture, temperature, nutrient content, root condition and tissue values when justified", "compare crop response and measurements over time before attributing symptoms to slow or fast organic nutrient release"],
+      "expectedIpmResponse": "Do not infer organic nutrient-release timing from compost color, texture, age wording, warmth, steam, or presence in a photo. Require feedstock and process history, maturity or stability evidence, root-zone and crop measurements, application records, progression, and treated-control comparison; retain deficiency, excess, antagonism, lockout, roots, water, environment, pest, disease, and placement alternatives; and do not invent an application rate."
+    },
+    {
+      "recordId": "diagnosis-nutrient-excess-input-presence-boundary-open-002",
+      "caseId": "nutrient_excess",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usgov-pd-man-applying-fertilizer", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Man_applying_fertilizer.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Man_applying_fertilizer.jpg",
+          "creator": "CDC / Dawn Arlotta", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "A person applying fertilizer photographed by CDC / Dawn Arlotta; U.S. public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-npk-fertilizer-bag", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:NPK_Fertilizer.png", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/NPK_Fertilizer.png",
+          "creator": "DBlaine83", "licenseId": "CC0-1.0", "attributionText": "A flowering-crop NPK fertilizer bag photographed by DBlaine83; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "fertilizer application context and a labeled fertilizer package; no symptomatic plant is linked to either reference",
+      "cultivar": "unknown", "lifeStage": "unknown crop stage and a product package",
+      "affectedLocation": "field-scale application and package view without plant tissue, roots, root-zone sampling, application calibration, or controls",
+      "distribution": "separate context images without dose map, emitter or spreader uniformity, crop pattern, edge effect, runoff path, or affected-unaffected comparison",
+      "progression": "single-time references without baseline, application-to-symptom interval, root-zone trend, tissue change, growth response, or recovery",
+      "mediumRootZone": "moisture, oxygen, pH, EC, temperature, texture, drainage, salt distribution, and nutrient availability are not measured",
+      "environment": "irrigation, rainfall, leaching, evaporation, heat, light, humidity, airflow, and recent applications are absent",
+      "measuredValues": "a package ratio and visible application do not provide actual dose, concentration, runoff, root-zone EC, individual ions, tissue levels, water volume, calibration, or crop uptake",
+      "diagnosticSigns": ["fertilizer presence or a high printed analysis does not prove that a plant received or absorbed an excessive dose", "tip burn, clawing, dark foliage, chlorosis, necrosis, crust, or residue can overlap with salinity, water, roots, disease, sprays and environment", "excess attribution requires product and dose records, water and root-zone measurements, plant distribution, progression, and nutrient-specific evidence"],
+      "plausibleAlternatives": ["appropriate feeding, uneven delivery, concentration or mixing error, salinity from another source, nutrient antagonism, or pH and EC lockout", "underwatering, overwatering, heat, cold, light, low oxygen, compaction, irrigation failure, or root damage", "root or vascular disease, pests, spray injury, herbicide exposure, physical damage, or senescence", "deficiency, crop-stage demand, cultivar expression, residue, dust, glare, or camera color error"],
+      "confirmationMethod": "Identify every input and its guaranteed analysis; reconstruct mixed concentration, volume, frequency and delivery; calibrate equipment; map symptoms against application; measure source water, runoff or drainage and root-zone pH and EC; inspect roots; obtain nutrient or tissue analysis when justified; and compare trends before and after a controlled correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "excess", "lockout", "other_abiotic", "deficiency", "disease", "pest"],
+      "expectedUrgency": "measure root-zone conditions and verify the application record promptly when acute wilt, burn, rapid EC rise, or a mixing error is credible",
+      "expectedQuarantineGuidance": "No quarantine is supported by fertilizer presence or suspected nutrient excess alone; restrict movement only if a separate infectious or regulated hazard remains credible.",
+      "expectedScoutingSteps": ["capture whole plants, old and new tissue, tips and margins, roots, root-zone surface, delivery hardware, product labels, mixing records, and matched unaffected controls", "record product, batch, guaranteed analysis, concentration, volume, frequency, water source, irrigation, runoff, crop stage, environment, onset and progression", "measure input, root-zone and drainage pH and EC, moisture, temperature and delivery uniformity and obtain nutrient-specific or tissue analysis when warranted", "map symptoms against application zones and compare measurement and crop trends before concluding excess or recommending a correction"],
+      "expectedIpmResponse": "Do not diagnose nutrient excess because fertilizer is visible, a package has a high NPK number, or a plant shows generic burn, clawing, dark color, chlorosis, necrosis, or residue. Require verified product and dose records, calibration, distribution, progression, roots, water and root-zone pH and EC, and nutrient-specific evidence; preserve lockout, antagonism, salinity, water, environment, roots, disease, pests, sprays, and normal variation; and do not invent a flush or feeding rate."
     }
   ]
 }
