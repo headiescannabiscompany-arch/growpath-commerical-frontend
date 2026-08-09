@@ -4972,6 +4972,74 @@
       "expectedQuarantineGuidance": "No quarantine is supported by fertilizer presence or suspected nutrient excess alone; restrict movement only if a separate infectious or regulated hazard remains credible.",
       "expectedScoutingSteps": ["capture whole plants, old and new tissue, tips and margins, roots, root-zone surface, delivery hardware, product labels, mixing records, and matched unaffected controls", "record product, batch, guaranteed analysis, concentration, volume, frequency, water source, irrigation, runoff, crop stage, environment, onset and progression", "measure input, root-zone and drainage pH and EC, moisture, temperature and delivery uniformity and obtain nutrient-specific or tissue analysis when warranted", "map symptoms against application zones and compare measurement and crop trends before concluding excess or recommending a correction"],
       "expectedIpmResponse": "Do not diagnose nutrient excess because fertilizer is visible, a package has a high NPK number, or a plant shows generic burn, clawing, dark color, chlorosis, necrosis, or residue. Require verified product and dose records, calibration, distribution, progression, roots, water and root-zone pH and EC, and nutrient-specific evidence; preserve lockout, antagonism, salinity, water, environment, roots, disease, pests, sprays, and normal variation; and do not invent a flush or feeding rate."
+    },
+    {
+      "recordId": "diagnosis-nutrient-lockout-ph-salinity-boundary-open-002",
+      "caseId": "nutrient_lockout",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-electronic-ph-meter", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:PH-meter.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/PH-meter.jpg",
+          "creator": "Soulkeeper", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Electronic pH meter photographed by Soulkeeper and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-irrigation-salinity-diagram", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Salinity_from_irrigation.png", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Salinity_from_irrigation.png",
+          "creator": "Nico Düsing", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Irrigation-salinity process diagram created by Nico Düsing and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "no symptomatic plant is shown; references depict a pH instrument and a general irrigation-salinity process",
+      "cultivar": "not applicable", "lifeStage": "unlinked measurement and process context",
+      "affectedLocation": "instrument and diagram without crop tissue, roots, sampled root zone, water source, runoff, drainage, or controls",
+      "distribution": "no plant, bed, container, irrigation-zone, salt-gradient, emitter, or affected-unaffected map is provided",
+      "progression": "single-time contextual media without pH or EC trend, accumulation interval, nutrient availability, crop response, or recovery",
+      "mediumRootZone": "actual pH, EC, moisture, oxygen, temperature, texture, alkalinity, ions, drainage, and root condition are not measured in a case",
+      "environment": "irrigation volume, rainfall, evaporation, heat, light, humidity, airflow, source water and leaching history are absent",
+      "measuredValues": "the presence of a meter or salinity diagram supplies no calibrated case reading, sampling method, target range, nutrient concentration, alkalinity, tissue value, or uptake result",
+      "diagnosticSigns": ["pH and salinity can restrict nutrient availability, but contextual media do not prove that either is occurring in a plant", "deficiency-like color, edge injury, burn, stunting, wilt, or root decline cannot distinguish lockout from low supply, excess, water, roots, disease or environment", "lockout requires representative calibrated measurements, sampling context, root evidence, input records, distribution and response over time"],
+      "plausibleAlternatives": ["true nutrient deficiency, nutrient excess, antagonism, normal crop demand, inaccurate target, or measurement error", "salinity, alkalinity, irrigation nonuniformity, drought, waterlogging, low oxygen, temperature, compaction, or root injury", "root or vascular disease, pests, spray or herbicide injury, physical damage, or senescence", "cultivar expression, lighting, white balance, residue, dust, glare, or unrelated stress"],
+      "confirmationMethod": "Calibrate instruments and use a documented representative sampling method; measure source water, input solution, root zone and drainage or runoff pH and EC over time; inspect roots and irrigation uniformity; reconstruct inputs and alkalinity; obtain nutrient-specific or tissue analysis when warranted; and compare plant response after a controlled evidence-based correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "lockout", "deficiency", "excess", "other_abiotic", "disease", "pest"],
+      "expectedUrgency": "verify calibration, sampling and root-zone measurements promptly when severe decline or a large pH or EC excursion is credible",
+      "expectedQuarantineGuidance": "No quarantine is supported by suspected nutrient lockout alone; isolate only if an independent infectious or regulated hazard remains credible.",
+      "expectedScoutingSteps": ["capture whole plants, old and new tissue, roots, root-zone surface, irrigation delivery, inputs, drainage, and matched unaffected controls", "record water source, alkalinity if known, products, concentrations, volumes, dates, irrigation and drainage, crop stage, environment, onset and progression", "calibrate and measure representative input, root-zone and drainage pH and EC plus moisture, temperature, root condition and delivery uniformity", "obtain nutrient-specific or tissue testing when justified and compare trends and crop response before labeling lockout"],
+      "expectedIpmResponse": "Do not diagnose nutrient lockout from a leaf photo, a generic pH value, meter presence, salt diagram, deficiency-like symptom, or product history. Require calibrated representative input, root-zone and drainage measurements, alkalinity and input records, roots, distribution, progression, and nutrient-specific evidence; preserve true deficiency, excess, antagonism, water, oxygen, temperature, salinity, roots, disease, pests, sprays, and normal variation; and do not invent pH-adjustment or flushing directions."
+    },
+    {
+      "recordId": "diagnosis-nutrient-antagonism-mixture-testing-boundary-open-002",
+      "caseId": "nutrient_antagonism",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-commercial-fertilizer-mixture-samples", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Samples_of_commercial_fertilizer_and_concentrated_fertilizer_mixtures_-_DPLA_-_3cce1cdd60b886634354ef1e56651930.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Samples_of_commercial_fertilizer_and_concentrated_fertilizer_mixtures_-_DPLA_-_3cce1cdd60b886634354ef1e56651930.jpg",
+          "creator": "Science History Institute / DPLA", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Historical commercial and concentrated fertilizer-mixture samples from the Science History Institute via DPLA; public domain in the United States.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usarmy-pd-chemical-soil-testing", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Flickr_-_The_U.S._Army_-_Chemical_soil_testing.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Flickr_-_The_U.S._Army_-_Chemical_soil_testing.jpg",
+          "creator": "U.S. Army", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Chemical soil testing instruction photographed by the U.S. Army; U.S. public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "no symptomatic crop is linked to the historical fertilizer samples or chemical soil-testing context",
+      "cultivar": "not applicable", "lifeStage": "unlinked fertilizer and testing context",
+      "affectedLocation": "sample containers and a testing demonstration without plant tissue, roots, root-zone map, actual inputs, or controls",
+      "distribution": "no crop, application pattern, irrigation zone, tissue-age gradient, affected-unaffected comparison, or repeated plant evidence is present",
+      "progression": "single-time contextual images without dose history, ion trends, tissue change, crop response, or controlled correction",
+      "mediumRootZone": "actual pH, EC, moisture, oxygen, temperature, texture, drainage, exchange capacity, individual ions, and root condition are not measured",
+      "environment": "water source, alkalinity, irrigation, rainfall, leaching, heat, light, humidity and recent applications are absent",
+      "measuredValues": "visible mixtures and a testing scene provide no case-linked guaranteed analyses, concentrations, ratios, calibrated results, tissue values, uptake evidence, or statistical comparison",
+      "diagnosticSigns": ["multiple nutrients or concentrated products may interact, but their presence does not establish antagonism", "antagonism cannot be distinguished from low supply, excess, pH or EC lockout, salinity, root stress, water or disease by leaf appearance alone", "a defensible interaction requires verified inputs, representative chemistry, crop-stage context, root and tissue evidence, and response to a controlled change"],
+      "plausibleAlternatives": ["true deficiency, nutrient excess, pH or EC lockout, salinity, inappropriate target, measurement error, or uneven delivery", "drought, waterlogging, low oxygen, heat, cold, light, compaction, root damage, or irrigation failure", "root or vascular disease, pests, spray or herbicide injury, physical damage, or senescence", "cultivar expression, residue, dust, glare, camera color error, or mixed causes"],
+      "confirmationMethod": "Inventory all products and guaranteed analyses; reconstruct concentrations, ratios, volumes, timing and water source; calibrate and measure representative input, root zone and drainage; inspect roots and distribution; obtain individual nutrient and tissue analysis when warranted; compare against crop-stage targets; and confirm the suspected interaction through a controlled correction and trend rather than appearance.",
+      "expectedCauseRanking": ["insufficient_evidence", "lockout", "deficiency", "excess", "other_abiotic", "disease", "pest"],
+      "expectedUrgency": "preserve input records and collect representative root-zone and tissue samples promptly before changing multiple variables",
+      "expectedQuarantineGuidance": "No quarantine is supported by suspected nutrient antagonism alone; isolate only when an independent infectious or regulated hazard remains credible.",
+      "expectedScoutingSteps": ["capture whole plants, old and new tissue, roots, delivery equipment, product labels, mixing records, root-zone and drainage sampling, and matched unaffected controls", "record products, guaranteed analyses, concentrations, ratios, volume, timing, water source, irrigation, crop stage, environment, onset and progression", "calibrate and measure input, root-zone and drainage pH and EC and obtain individual nutrient, water, substrate or tissue results when justified", "map symptoms against delivery and compare controlled measurement and crop-response trends before naming an antagonistic pair"],
+      "expectedIpmResponse": "Do not diagnose nutrient antagonism from leaf color, a fertilizer label, multiple products, a ratio in isolation, or a generic soil test. Require verified inputs and ratios, representative calibrated chemistry, roots, distribution, progression, crop-stage targets, nutrient-specific and tissue evidence when warranted, and controlled response; preserve deficiency, excess, lockout, salinity, water, environment, roots, disease, pests, sprays, and normal variation; and do not invent a nutrient correction."
     }
   ]
 }
