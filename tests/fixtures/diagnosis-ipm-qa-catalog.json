@@ -4802,6 +4802,74 @@
       "expectedQuarantineGuidance": "Reduce wet handling and movement of actively sporulating suspect material while unresolved, but do not declare downy mildew from pale spots or fuzz alone.",
       "expectedScoutingSteps": ["capture whole plants plus matched top and underside macros, lesion centers and margins, old and new leaves, stems, fruit, nearby plants, and unaffected controls", "record leaf wetness, rainfall, irrigation, humidity, temperature, dew point, airflow, light, host, tissue age, and progression", "test a limited marked area for removable residue while preserving untouched evidence and inspect for mites, whiteflies, wax, trichomes, droplets, and mixed disease", "reinspect during suspected sporulation conditions and obtain qualified microscopy or molecular confirmation when intervention depends on identity"],
       "expectedIpmResponse": "Do not diagnose downy mildew from yellow spots, underside fuzz, wetness, or one photograph. Separate it from powdery mildew, Botrytis, residue, droplets, wax, trichomes, pests, edema, bacterial lesions, and abiotic injury using paired surfaces, host and distribution, wetness-linked progression, removability, and qualified confirmation; allow mixed causes; and avoid invented fungicide directions."
+    },
+    {
+      "recordId": "diagnosis-rust-orange-spot-boundary-open-002",
+      "caseId": "rust",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-fig-rust", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fig_rust.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fig_rust.jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Fig rust caused by Cerotelium fici photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-generic-leaf-closeup-zirguezi", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Leaf_Closeup.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Leaf_Closeup.jpg",
+          "creator": "Zirguezi", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Generic leaf close-up photographed by Zirguezi and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "fig with documented Cerotelium fici rust and a separate unidentified leaf without a disease diagnosis",
+      "cultivar": "unknown", "lifeStage": "established foliage in separate observations",
+      "affectedLocation": "limited leaf views without matched top and underside, whole-plant distribution, stems, petioles, fruit, or unaffected controls",
+      "distribution": "cross-host references without canopy position, repeated plants, exposure gradient, spread map, or host-neighbor comparison",
+      "progression": "single-time images without pustule emergence, spore release, lesion expansion, defoliation, or marked-leaf follow-up",
+      "mediumRootZone": "roots, moisture, oxygen, pH, EC, temperature, and drainage are not shown or measured",
+      "environment": "leaf wetness, rainfall, irrigation, temperature, humidity, airflow, light, and recent applications are absent",
+      "measuredValues": "no pustule count, top-underside correspondence, spore microscopy, culture, molecular assay, or progression measurement accompanies the pair",
+      "diagnosticSigns": ["the fig reference is documented as rust, but that label cannot be transferred to another crop from color similarity", "orange, brown, yellow, or raised marks may be spores, necrosis, residue, edema, insects, or pigmentation", "rust attribution requires host-aware pustule structure, surface position, progression, and confirmation when management depends on identity"],
+      "plausibleAlternatives": ["bacterial or fungal leaf spot, anthracnose, Septoria, Cercospora, Alternaria, or mixed disease", "mites, scale, thrips, eggs, frass, galls, or leaf miners", "spray residue, fertilizer deposit, dust, pollen, edema, abrasion, sunscald, cold, or herbicide injury", "nutrient, pH, EC, root, water, senescence, natural pigment, or camera artifact"],
+      "confirmationMethod": "Identify the host; capture matched top and underside macros, lesion and pustule margins, whole-plant distribution and controls; test limited removability while preserving evidence; record wetness and progression; inspect for pests and residue; and obtain qualified microscopy or molecular confirmation when a rust identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "pest", "other_abiotic", "deficiency"],
+      "expectedUrgency": "document active pustule development, spread, and defoliation promptly before wiping or spraying",
+      "expectedQuarantineGuidance": "Limit wet handling and movement only when actively sporulating infectious material is credible; do not quarantine for orange or brown spots alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy distribution, matched leaf surfaces, sharp pustule or lesion centers and margins, stems, nearby plants, and unaffected controls", "record host, tissue age, onset, spread, wetness, rainfall, irrigation, temperature, humidity, airflow, light, and recent sprays", "inspect for removable residue, insects, eggs, frass, edema, spray patterns, and diagnostic spore structures", "preserve representative tissue and obtain qualified confirmation when intervention depends on the rust organism"],
+      "expectedIpmResponse": "Do not diagnose rust from orange, brown, yellow, raised, or powdery marks alone. Require host, paired leaf surfaces, true pustule structure, distribution, progression, wetness context, pest and residue inspection, and qualified confirmation; preserve leaf-spot, insect, spray, edema, nutrition, root, environment, senescence, and pigment alternatives; and avoid invented fungicide instructions."
+    },
+    {
+      "recordId": "diagnosis-mosaic-virus-variegation-boundary-open-002",
+      "caseId": "mosaic_virus_symptoms",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-tulip-mosaic-virus", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tulip_mosaic_virus.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tulip_mosaic_virus.jpg",
+          "creator": "I. Sachek, senior", "licenseId": "CC0-1.0", "attributionText": "Tulip documented with mosaic-virus damage photographed by I. Sachek, senior; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-healthy-squash-leaf-detail", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Squash_Leaf_Detail_(2713317188).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Squash_Leaf_Detail_(2713317188).jpg",
+          "creator": "Alan Levine (cogdogblog)", "licenseId": "CC0-1.0", "attributionText": "Healthy yellow-squash leaf detail photographed by Alan Levine; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "tulip documented with mosaic-virus damage and a separate healthy yellow-squash leaf showing ordinary host texture",
+      "cultivar": "unknown", "lifeStage": "established foliage in separate hosts",
+      "affectedLocation": "limited foliage views without whole-plant, old-new tissue, veins, stems, flowers, fruit, roots, or matched controls from one case",
+      "distribution": "cross-host examples without within-plant pattern, repeated plants, vector distribution, propagation history, or affected-unaffected comparison",
+      "progression": "single-time images without emergence on new growth, systemic spread, distortion sequence, recovery, or transmission evidence",
+      "mediumRootZone": "roots, moisture, oxygen, pH, EC, temperature, drainage, and nutrient availability are not measured",
+      "environment": "light, temperature, humidity, VPD, irrigation, sprays, herbicide exposure, and propagation conditions are absent",
+      "measuredValues": "no color standard, chlorophyll, pH, EC, nutrient result, vector count, immunoassay, PCR, sequencing, or progression measurement accompanies the pair",
+      "diagnosticSigns": ["the tulip reference is documented as virus-damaged, but mosaic-like color cannot transfer that diagnosis across hosts", "healthy squash foliage can contain strong vein, texture, and color contrast that must not be treated as virus automatically", "systemic distribution, new-growth expression, host compatibility, vectors or propagation pathway, and testing are needed for a virus claim"],
+      "plausibleAlternatives": ["normal variegation, cultivar pattern, juvenile color, anthocyanin, senescence, or lighting and white-balance artifact", "nutrient deficiency, antagonism, pH or EC lockout, root stress, water stress, heat, cold, or light stress", "herbicide, spray, mechanical, or feeding injury from mites, thrips, leafhoppers, aphids, or whiteflies", "fungal, bacterial, vascular, or mixed disease"],
+      "confirmationMethod": "Identify host and cultivar; capture color-referenced whole plants, old and new tissue, veins, distortion, stems and matched controls; map systemic progression and vectors or propagation links; measure root-zone and environmental conditions; and use validated immunoassay or molecular testing when a virus label changes movement, disposal, or crop decisions.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "deficiency", "lockout", "other_abiotic", "pest"],
+      "expectedUrgency": "preserve representative new and old tissue and document potential propagation or vector links promptly when systemic spread is suspected",
+      "expectedQuarantineGuidance": "Limit propagation and vector-mediated movement only when a transmissible virus remains credible; do not destroy or quarantine plants from mottling alone.",
+      "expectedScoutingSteps": ["capture color-referenced whole plants, old and new leaves, veins, distortion, stems, flowers or fruit, nearby plants, and matched unaffected controls", "record host, cultivar, propagation source, onset, systemic progression, vector presence, treatments, herbicide or spray exposure, and environmental history", "measure pH, EC, moisture and root condition and inspect for pests, feeding patterns, nutrient distribution, natural variegation, and camera artifacts", "preserve representative tissue and obtain validated virus testing when management depends on identity"],
+      "expectedIpmResponse": "Do not diagnose mosaic virus from mottling, vein contrast, variegation, distortion, or a stock virus image. Require host and cultivar, old-new and systemic distribution, progression, propagation or vector pathway, root and nutrient context, pest and spray inspection, and validated testing; preserve normal pigmentation, nutrition, pH, EC, roots, environment, herbicide, pest, and other disease alternatives; and avoid automatic culling."
     }
   ]
 }
