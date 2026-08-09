@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(61);
+    expect(catalog.mediaRecords).toHaveLength(62);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -228,6 +228,11 @@ describe("diagnosis/IPM QA catalog", () => {
           recordId: "diagnosis-water-presence-root-function-boundary-open-002",
           caseId: "overwatering",
           expectedCauseRanking: ["insufficient_evidence", "other_abiotic", "disease", "lockout", "excess"]
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-arid-context-water-deficit-boundary-open-002",
+          caseId: "underwatering",
+          expectedCauseRanking: ["insufficient_evidence", "other_abiotic", "disease", "excess", "pest"]
         }),
         expect.objectContaining({
           recordId: "ipm-aphids-beneficial-context-open-001",
