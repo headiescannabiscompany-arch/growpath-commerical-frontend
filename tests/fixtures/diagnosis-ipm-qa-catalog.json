@@ -5176,6 +5176,74 @@
       "expectedQuarantineGuidance": "Limit splash or infested-plant movement only when the relevant disease or pest is independently credible; do not quarantine for generic spots alone.",
       "expectedScoutingSteps": ["capture whole plants, canopy distribution, paired leaf surfaces, sharp centers and margins, transmitted-light views, nearby plants and controls", "record host, tissue age, onset, progression, wetness, rainfall, irrigation, environment, pest activity and sprays", "inspect for mines, frass, larvae, exit holes, pycnidia or other structures, residue, edema and spray patterns", "preserve representative evidence and obtain qualified confirmation when organism identity changes intervention"],
       "expectedIpmResponse": "Do not label every brown, pale or haloed patch as Septoria or another leaf spot. Separate tissue lesions from mines and feeding using paths, frass, larvae, both surfaces, distribution, progression, wetness and diagnostic structures; preserve pest, bacterial, spray, edema, environmental, root and nutrient alternatives; avoid invented pesticide or fungicide directions."
+    },
+    {
+      "recordId": "diagnosis-fusarium-organism-symptom-boundary-open-003",
+      "caseId": "fusarium",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usgov-pd-fusarium-verticillioides-micrograph", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fusarium_verticillioides_01.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fusarium_verticillioides_01.jpg",
+          "creator": "Centers for Disease Control and Prevention", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Fusarium verticillioides conidiophores and conidia imaged by the CDC; U.S. public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-fusarium-culture", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fusarium.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fusarium.jpg",
+          "creator": "Manurx27", "licenseId": "CC0-1.0", "attributionText": "Five-day Fusarium culture photographed by Manurx27; dedicated to the public domain under CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "no symptomatic crop is shown; references depict Fusarium organisms under laboratory or culture conditions",
+      "cultivar": "not applicable", "lifeStage": "laboratory organism evidence without a linked plant case",
+      "affectedLocation": "microscopy and culture views without roots, crown, stem vascular tissue, canopy, soil or controls",
+      "distribution": "no crop map, row pattern, irrigation zone, propagation link or affected-unaffected comparison",
+      "progression": "no plant symptom onset, vascular progression, wilt sequence, spread or recovery is represented",
+      "mediumRootZone": "moisture, oxygen, pH, EC, temperature, drainage, roots and crown are not measured",
+      "environment": "irrigation, heat, light, humidity, airflow, sanitation, injury and propagation history are absent",
+      "measuredValues": "no plant-linked isolation, vascular discoloration measure, culture provenance, molecular assay or pathogenicity evidence accompanies the pair",
+      "diagnosticSigns": ["an organism reference teaches morphology but does not prove that Fusarium caused a photographed plant symptom", "Fusarium species and strains differ in host association and pathogenicity", "plant attribution requires compatible roots or vascular tissue, distribution, progression and qualified case-linked confirmation"],
+      "plausibleAlternatives": ["Verticillium, Pythium, Phytophthora, Rhizoctonia, bacterial wilt or another vascular or root disease", "drought, waterlogging, low oxygen, heat, cold, salinity, pH, EC, compaction or irrigation failure", "stem injury, transplant damage, root pests, rodents, herbicide or spray injury", "nonpathogenic or secondary Fusarium presence, contamination or mixed causes"],
+      "confirmationMethod": "Capture whole plants, distribution, intact roots, crown and lower stem plus vascular cross-sections and controls; record irrigation, root-zone and progression data; preserve symptomatic margins; and obtain qualified case-linked culture or molecular testing with host-aware interpretation when identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest", "lockout"],
+      "expectedUrgency": "preserve fresh roots, crown and vascular margins promptly during progressive wilt before decay or treatment obscures evidence",
+      "expectedQuarantineGuidance": "Limit transfer of suspect plants, media, runoff and tools only when progressive transmissible vascular or root disease is credible; do not quarantine from organism reference resemblance alone.",
+      "expectedScoutingSteps": ["capture whole plants, mapped distribution, intact roots, crown, lower stem, vascular cross-sections and matched controls", "record onset, spread, irrigation, drainage, moisture, oxygen context, temperature, pH, EC, sanitation, propagation and injury", "inspect for vascular browning, root lesions, sloughing, odor, stem damage, pests and emitter nonuniformity", "preserve representative margins and obtain qualified case-linked organism testing before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose Fusarium from wilt, vascular browning, a culture image or a micrograph alone. Require host-compatible case-linked roots and vascular evidence, mapped progression, root-zone and irrigation measurements, exclusion of Verticillium and abiotic injury, and qualified confirmation; avoid invented treatment or disposal directions."
+    },
+    {
+      "recordId": "diagnosis-pythium-poster-healthy-root-boundary-open-003",
+      "caseId": "pythium_root_rot",
+      "imageSet": [
+        {
+          "imageId": "usda-pd-potato-pythium-leak-poster", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Potato_diseases_-_A,_B._Scald,_caused_by_exposure_to_sun_after_digging._A,_local_type;_B,_general_type_;_C,_D._Leak_(Pythium_species)_(IA_CAT31342951).pdf", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Potato_diseases_-_A,_B._Scald,_caused_by_exposure_to_sun_after_digging._A,_local_type;_B,_general_type_;_C,_D._Leak_(Pythium_species)_(IA_CAT31342951).pdf",
+          "creator": "USDA National Agricultural Library", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Public-domain USDA plant-disease poster comparing potato scald and Pythium leak.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-exposed-tree-roots", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tree_Roots.JPG", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tree_Roots.JPG",
+          "creator": "Edwin Klein (Quichot)", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Exposed tree roots photographed by Edwin Klein and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "historical potato disease comparisons and unrelated exposed tree roots; neither represents a current crop root case",
+      "cultivar": "unknown", "lifeStage": "harvested tubers and mature woody roots in separate contexts",
+      "affectedLocation": "poster imagery and exposed root surfaces without intact crop crown, fine-root tips, medium or controls",
+      "distribution": "no tray, bed, container, irrigation-zone, runoff or affected-unaffected map",
+      "progression": "single-time references without root discoloration, sloughing, crown collapse, spread or recovery sequence",
+      "mediumRootZone": "moisture, oxygen, pH, EC, temperature, drainage and irrigation delivery are not measured",
+      "environment": "water source, saturation, heat, handling, storage, sanitation and transplant history are absent",
+      "measuredValues": "no intact-root grade, moisture, oxygen, temperature, pH, EC, microscopy, culture or molecular assay accompanies the pair",
+      "diagnosticSigns": ["Pythium can cause compatible root or storage-tissue disease, but cross-crop poster resemblance is not case proof", "brown, wet, exposed or rough roots can reflect age, soil, oxidation, handling, low oxygen or other diseases", "intact fine roots, crown, spatial progression and qualified organism testing are needed when identity matters"],
+      "plausibleAlternatives": ["Phytophthora, Rhizoctonia, Fusarium, bacterial soft rot or another root disease", "waterlogging, low oxygen, drought, heat, cold, salinity, pH, EC, compaction or irrigation failure", "normal woody roots, staining, soil, oxidation, harvest or washing injury", "root aphids, fungus-gnat larvae, nematodes, transplant injury or mixed causes"],
+      "confirmationMethod": "Capture mapped whole plants plus intact washed fine roots, tips, crown and lower stem from affected and unaffected zones; measure moisture, oxygen context, temperature, pH, EC and drainage; track progression; preserve fresh margins; and obtain qualified microscopy, culture or molecular testing when organism identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest", "lockout"],
+      "expectedUrgency": "preserve fresh fine-root and crown evidence promptly when rapid wilt, sloughing or crown collapse is active",
+      "expectedQuarantineGuidance": "Reduce movement of suspect wet media, runoff, tools and plants only when progressive infectious root disease is credible; do not quarantine for brown or exposed roots alone.",
+      "expectedScoutingSteps": ["capture whole plants, mapped distribution, intact washed fine roots, tips, crown, lower stem and matched controls", "record irrigation, drainage, saturation, moisture, oxygen context, temperature, pH, EC, sanitation, propagation and progression", "inspect for sloughing, lesions, odor, vascular browning, pests, physical injury, compaction and emitter nonuniformity", "preserve fresh symptomatic margins and obtain qualified organism confirmation before pathogen-specific action"],
+      "expectedIpmResponse": "Do not diagnose Pythium from brown roots, wet media, wilt, a poster or generic root imagery. Require intact fine roots and crown, mapped progression, irrigation and root-zone measurements, pest and abiotic exclusions, and qualified case-linked confirmation; distinguish other root diseases and avoid invented treatment or disposal directions."
     }
   ]
 }
