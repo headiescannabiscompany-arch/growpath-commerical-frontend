@@ -2441,6 +2441,78 @@
         "collect representative substrate and tissue samples under the applicable laboratory protocol and track new growth after any measured correction"
       ],
       "expectedIpmResponse": "Recognize a nutrient-disorder pattern while treating the root zone, environment, and measurements as the diagnostic boundary. Keep deficiency, lockout, aluminum or root injury, water stress, disease, pests, and chemical injury in the differential; request testing and never prescribe a nutrient or rate from color alone."
+    },
+    {
+      "recordId": "diagnosis-acid-soil-aluminum-root-boundary-open-001",
+      "caseId": "ph_problem",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-aluminum-toxicity-maize-roots-6164",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aluminium_toxocity_maize_roots_2017_01_05_6164.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aluminium_toxocity_maize_roots_2017_01_05_6164.jpg",
+          "creator": "Alandmanson",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Maize roots affected by aluminum toxicity by Alandmanson, CC BY 4.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-aluminum-toxicity-maize-roots-6248",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aluminium_toxocity_maize_roots_2017_01_05_6248.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aluminium_toxocity_maize_roots_2017_01_05_6248.jpg",
+          "creator": "Alandmanson",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Maize roots affected by aluminum toxicity by Alandmanson, CC BY 4.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "maize",
+      "cultivar": "unknown",
+      "lifeStage": "established crop with excavated roots",
+      "affectedLocation": "root systems showing reduced, malformed, thickened, and stubby growth",
+      "distribution": "two distinct root views from the same documented soil-acidity and aluminum-toxicity reference series; field-zone distribution is not recorded",
+      "progression": "same-day observations; prior root development, numeric growth change, and later recovery are not recorded",
+      "mediumRootZone": "highly weathered acid soil is documented as the context for aluminum toxicity and restricted maize root growth",
+      "environment": "field-grown maize in KwaZulu-Natal; irrigation, rainfall, temperature, compaction, and oxygen measurements are not included with the images",
+      "measuredValues": "no numeric root-zone pH, EC, aluminum saturation, nutrient analysis, or water-content values accompany these image references",
+      "diagnosticSigns": [
+        "documented aluminum-toxicity injury to maize roots in acid soil",
+        "reduced root growth with malformed, thickened, and stubby roots",
+        "root restriction capable of producing secondary water and nutrient-uptake symptoms above ground"
+      ],
+      "plausibleAlternatives": [
+        "compaction, low oxygen, waterlogging, or physical root restriction",
+        "root disease or root-feeding pests",
+        "fertilizer salt injury or another chemical exposure",
+        "root pruning, transplant injury, or container restriction",
+        "nutrient deficiency, lockout, or antagonism without aluminum toxicity",
+        "drought or irrigation failure"
+      ],
+      "confirmationMethod": "Treat root form as evidence of a root-zone problem, not a numeric pH reading. Confirm with a calibrated, medium-appropriate root-zone pH and EC protocol, representative soil or substrate testing including exchangeable acidity or aluminum where applicable, root-zone moisture and oxygen context, affected-versus-unaffected comparisons, and qualified interpretation.",
+      "expectedCauseRanking": [
+        "other_abiotic",
+        "lockout",
+        "deficiency",
+        "insufficient_evidence",
+        "disease",
+        "pest"
+      ],
+      "expectedUrgency": "measure and preserve representative root-zone samples promptly before changing inputs or conditions",
+      "expectedQuarantineGuidance": "Do not quarantine for pH or aluminum injury alone; keep affected samples and zones distinct while transmissible root disease and pests are evaluated.",
+      "expectedScoutingSteps": [
+        "compare intact roots from affected and unaffected zones using the same excavation and washing method",
+        "measure calibrated root-zone pH and EC at representative depths and locations",
+        "record moisture, drainage, compaction, irrigation, fertilizer, liming, amendment, and prior chemical history",
+        "inspect for lesions, decay, odor, insects, feeding injury, pruning, and container or hardpan restriction and submit representative samples when needed"
+      ],
+      "expectedIpmResponse": "Identify a serious root-zone pattern compatible with documented acid-soil aluminum toxicity while refusing to infer numeric pH from an image. Require calibrated measurements and representative testing, preserve physical, oxygen, water, salt, disease, pest, and handling alternatives, and avoid unmeasured correction rates."
     }
   ]
 }
