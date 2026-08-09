@@ -2158,6 +2158,76 @@
         "seek extension or laboratory confirmation before destructive sanitation or pathogen-specific claims"
       ],
       "expectedIpmResponse": "Treat wilt and yellowing as a syndrome that requires root-zone and vascular evidence. Fusarium becomes more plausible with compatible vascular necrosis, host, distribution, and progression, but water stress, hypoxia, other root diseases, bacterial wilt, injury, and chemical root dysfunction must remain visible until confirmed."
+    },
+    {
+      "recordId": "diagnosis-downy-mildew-surface-boundary-open-001",
+      "caseId": "downy_mildew",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-plasmopara-viticola-305150831",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Plasmopara_viticola_305150831.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Plasmopara_viticola_305150831.jpg",
+          "creator": "Bruce Cook",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Grape downy mildew (Plasmopara viticola) by Bruce Cook, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-plasmopara-viticola-305150939",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Plasmopara_viticola_305150939.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Plasmopara_viticola_305150939.jpg",
+          "creator": "Bruce Cook",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Grape downy mildew (Plasmopara viticola) by Bruce Cook, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "grapevine",
+      "cultivar": "unknown",
+      "lifeStage": "established foliage",
+      "affectedLocation": "leaf surfaces",
+      "distribution": "localized symptoms on documented grape foliage; whole-vine and vineyard distribution not recorded",
+      "progression": "two same-session views from one verified observation; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor Vermont observation; recent leaf wetness, humidity, and temperature not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "multiple complementary views documented as Plasmopara viticola on grape",
+        "surface symptoms requiring comparison between upper and lower leaf faces",
+        "host and observation context consistent with a downy-mildew reference case"
+      ],
+      "plausibleAlternatives": [
+        "powdery mildew",
+        "spray or mineral residue",
+        "bacterial or fungal leaf spot",
+        "edema",
+        "insect feeding injury",
+        "nutrient or senescence-associated discoloration"
+      ],
+      "confirmationMethod": "Compare matched upper- and lower-surface symptoms, sporulation, lesion boundaries, host identity, progression, and recent leaf wetness; microscopy, extension review, or laboratory confirmation is required when the pathogen identity changes management.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "pest"
+      ],
+      "expectedUrgency": "promptly inspect active sporulation, leaf wetness, susceptible nearby foliage, and spread",
+      "expectedQuarantineGuidance": "Reduce wet handling and movement of actively sporulating suspect foliage while the cause is resolved; do not declare downy mildew from pale or white surface material alone.",
+      "expectedScoutingSteps": [
+        "capture matched sharp views of the same lesion from both leaf surfaces and a whole-plant distribution view",
+        "record host, affected leaf age, symptom progression, recent rain or irrigation, humidity, and temperature",
+        "test whether visible material is structured growth, removable residue, insects, or surface glare without damaging the sample",
+        "compare powdery mildew, residue, edema, leaf spots, and insect injury and obtain confirmation when species matters"
+      ],
+      "expectedIpmResponse": "Recognize downy-mildew-compatible host, lesion, and lower-surface sporulation evidence without equating every pale patch or white material with Plasmopara. Keep powdery mildew, residue, leaf spots, edema, insects, and aging visible until matched surfaces, environment, progression, or confirmation support the diagnosis."
     }
   ]
 }
