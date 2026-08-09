@@ -4734,6 +4734,74 @@
       "expectedQuarantineGuidance": "Reduce transfer of suspect media, runoff, tools, trays, and plants while an infectious root disease remains credible, but do not label or cull for Pythium from canopy decline alone.",
       "expectedScoutingSteps": ["capture whole plants and mapped distribution plus intact washed fine roots, crown, lower stem, lesion margins, and matched unaffected controls", "record irrigation volume and timing, drainage, standing water, moisture, oxygen context, temperature, pH, EC, propagation, transplant, sanitation, and spread history", "inspect for sloughing, discoloration, odor, crown lesions, vascular browning, root pests, mechanical injury, compaction, and emitter nonuniformity", "preserve representative symptomatic margins and controls for qualified organism testing before pathogen-specific treatment or disposal"],
       "expectedIpmResponse": "Do not diagnose Pythium from wilt, defoliation, brown roots, wet media, or a generic root-rot image. Require intact root and crown evidence, spatial progression, irrigation and root-zone measurements, and qualified confirmation; distinguish Fusarium, Phytophthora, Rhizoctonia, other fungi, bacteria, pests, water, oxygen, salinity, pH, compaction, and physical injury; and avoid invented treatment or disposal directions."
+    },
+    {
+      "recordId": "diagnosis-septoria-cercospora-leaf-spot-boundary-open-002",
+      "caseId": "septoria_and_leaf_spots",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-tomato-septoria-3007", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3007.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3007.jpg",
+          "creator": "Wolan268", "licenseId": "CC0-1.0", "attributionText": "Tomato Septoria leaf spot reference photographed by Wolan268; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-spinach-cercospora-leaf-spot", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Spinach-_Cercospora_leaf_spot.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Spinach-_Cercospora_leaf_spot.jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Cercospora leaf spot on spinach photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "tomato with documented Septoria leaf spot and spinach with documented Cercospora leaf spot in separate observations",
+      "cultivar": "unknown", "lifeStage": "established foliage on separate hosts",
+      "affectedLocation": "leaf surfaces without case-linked undersides, petioles, stems, fruit, whole plants, or unaffected controls",
+      "distribution": "cross-host close views without lower-upper canopy map, splash gradient, row pattern, repeated plants, or affected-unaffected comparison",
+      "progression": "single-time images without lesion onset, expansion, coalescence, defoliation, sporulation timing, or recovery",
+      "mediumRootZone": "roots, moisture, oxygen, pH, EC, temperature, drainage, and irrigation delivery are not shown or measured",
+      "environment": "leaf wetness duration, rainfall, splash, irrigation, temperature, humidity, airflow, and recent applications are absent",
+      "measuredValues": "no lesion counts, dimensions, wetness duration, microscopy, culture, molecular assay, or host-linked confirmation accompanies the pair",
+      "diagnosticSigns": ["both references show documented but different fungal leaf-spot diseases", "spot color, yellow halos, dark margins, and necrotic centers can overlap across pathogens and noninfectious injury", "host, lesion distribution, pycnidia or other structures, progression, wetness history, and testing are needed before species-level attribution"],
+      "plausibleAlternatives": ["Cercospora, Alternaria, anthracnose, rust, bacterial leaf spot, another Septoria-like fungus, or mixed disease", "thrips, mites, leaf miners, chewing injury, or insect frass", "spray or fertilizer burn, herbicide drift, edema, sunscald, cold, hail, or abrasion", "nutrient, pH, EC, root, water, senescence, residue, or camera artifact"],
+      "confirmationMethod": "Identify the host; capture lesion centers, margins and both surfaces plus whole-plant distribution and matched controls; record progression and leaf wetness; inspect for removable residue, insects and diagnostic structures; and use qualified microscopy, culture, or molecular testing when pathogen identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "pest", "other_abiotic", "deficiency"],
+      "expectedUrgency": "document actively expanding lesions and defoliation promptly while preserving representative tissue before treatment",
+      "expectedQuarantineGuidance": "Reduce splash and wet handling and limit movement only when an actively spreading infectious pattern is credible; do not quarantine for generic spots alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy distribution, sharp lesion centers and margins, both leaf surfaces, stems, fruit, nearby plants, and matched unaffected tissue", "record host, tissue age, onset, progression, rainfall, irrigation splash, wetness duration, humidity, temperature, airflow, and recent sprays", "inspect for pycnidia or other structures, residue, insects, frass, mines, edema, spray patterns, and contradictory root or environmental symptoms", "preserve lesion margins and controls for qualified testing when a species label affects treatment, disposal, or reporting"],
+      "expectedIpmResponse": "Do not label every circular or haloed leaf spot as Septoria. Require host, both leaf surfaces, canopy and splash distribution, progression, wetness history, diagnostic structures, and qualified confirmation; retain Cercospora, Alternaria, bacterial spots, pests, sprays, edema, environment, roots, nutrition, and senescence alternatives; and avoid invented fungicide instructions."
+    },
+    {
+      "recordId": "diagnosis-downy-powdery-mildew-boundary-open-002",
+      "caseId": "downy_mildew",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usda-pd-downy-powdery-grape", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Downy_and_Powdery_mildew_on_grape_leaf.JPG", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Downy_and_Powdery_mildew_on_grape_leaf.JPG",
+          "creator": "David B. Langston, University of Georgia / USDA-ARS", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Downy and powdery mildew shown on a grape leaf by David B. Langston via USDA-ARS; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-downy-mildew-tobacco-page-4", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Downy_mildew_of_tobacco_(Page_4)_BHL41659453.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Downy_mildew_of_tobacco_(Page_4)_BHL41659453.jpg",
+          "creator": "Biodiversity Heritage Library", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Public-domain historical Downy mildew of tobacco page scan supplied by the Biodiversity Heritage Library.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "grape leaf documented with both downy and powdery mildew and a separate historical tobacco downy-mildew reference",
+      "cultivar": "unknown", "lifeStage": "established foliage in separate hosts and eras",
+      "affectedLocation": "limited leaf views without case-linked top-versus-underside pairs, whole plants, lesion margins, stems, fruit, or unaffected controls",
+      "distribution": "cross-host references without canopy position, leaf-age map, wetness gradient, protected-exposed comparison, or spread pattern",
+      "progression": "single-time references without emergence after wetness, sporulation timing, lesion expansion, removal test, or treatment-free follow-up",
+      "mediumRootZone": "roots, moisture, oxygen, pH, EC, temperature, and drainage are not shown or measured",
+      "environment": "leaf wetness, rainfall, irrigation, temperature, humidity, dew point, airflow, and light history are absent",
+      "measuredValues": "no wetness duration, lesion count, top-underside correspondence, microscopy, spore morphology, culture, or molecular result accompanies the pair",
+      "diagnosticSigns": ["one USDA reference explicitly contains both downy- and powdery-mildew evidence on a grape leaf", "co-occurrence demonstrates that a single disease label need not explain all pale or fuzzy material", "surface position, tissue-integrated lesions, removable residue, wetness-linked sporulation, host, and microscopy are required to separate downy mildew, powdery mildew, residue, and lookalikes"],
+      "plausibleAlternatives": ["powdery mildew, Botrytis, another fungal or oomycete disease, or mixed infection", "dew, guttation, mineral or spray residue, dust, wax, trichomes, or glare", "mites, whiteflies, scale, eggs, insect cast skins, or webbing", "edema, bacterial water-soaking, spray burn, nutrient, pH, EC, root, light, cold, or senescence injury"],
+      "confirmationMethod": "Capture matched top and underside macro views, lesion margins, whole-plant distribution and controls before disturbing evidence; test removability on a limited marked area; record wetness and environment; reinspect during conditions favorable for sporulation; and obtain qualified microscopy or molecular testing when identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest"],
+      "expectedUrgency": "document active spread and collect paired leaf-surface evidence promptly before wiping, spraying, or changing the environment",
+      "expectedQuarantineGuidance": "Reduce wet handling and movement of actively sporulating suspect material while unresolved, but do not declare downy mildew from pale spots or fuzz alone.",
+      "expectedScoutingSteps": ["capture whole plants plus matched top and underside macros, lesion centers and margins, old and new leaves, stems, fruit, nearby plants, and unaffected controls", "record leaf wetness, rainfall, irrigation, humidity, temperature, dew point, airflow, light, host, tissue age, and progression", "test a limited marked area for removable residue while preserving untouched evidence and inspect for mites, whiteflies, wax, trichomes, droplets, and mixed disease", "reinspect during suspected sporulation conditions and obtain qualified microscopy or molecular confirmation when intervention depends on identity"],
+      "expectedIpmResponse": "Do not diagnose downy mildew from yellow spots, underside fuzz, wetness, or one photograph. Separate it from powdery mildew, Botrytis, residue, droplets, wax, trichomes, pests, edema, bacterial lesions, and abiotic injury using paired surfaces, host and distribution, wetness-linked progression, removability, and qualified confirmation; allow mixed causes; and avoid invented fungicide directions."
     }
   ]
 }
