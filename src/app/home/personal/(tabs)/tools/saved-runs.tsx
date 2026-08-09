@@ -152,6 +152,29 @@ function isIpmRun(run: ToolRun | null) {
   return type === "ipm_scout";
 }
 
+function isHarvestRun(run: ToolRun | null) {
+  const type = String(run?.toolType || run?.toolName || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "_");
+  return type === "harvest_readiness";
+}
+
+function savedHarvestPhotoAnalysis(outputs: Record<string, any>) {
+  return outputs.photoAnalysis && typeof outputs.photoAnalysis === "object"
+    ? outputs.photoAnalysis
+    : null;
+}
+
+function savedHarvestSampleEstimate(photo: Record<string, any> | null) {
+  if (!photo?.visibleSampleEstimateUsable) return "Not available";
+  const value = (key: string) => {
+    const percent = Number(photo[key]);
+    return Number.isFinite(percent) ? `${Math.round(percent * 100)}%` : "-";
+  };
+  return `Clear ${value("sampleClear")} · Cloudy ${value("sampleCloudy")} · Amber ${value("sampleAmber")} · Cloudy or glare ${value("sampleCloudyOrGlare")}`;
+}
+
 function isCloneRootingRun(run: ToolRun | null) {
   const type = String(run?.toolType || run?.toolName || "")
     .trim()
@@ -329,6 +352,49 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
         value: outputs.mediaAnalysis?.performed
           ? `Yes - ${outputs.mediaAnalysis.photosAnalyzed || 0} photo(s)`
           : "No"
+      }
+    ];
+  }
+  if (isHarvestRun(run)) {
+    const photo = savedHarvestPhotoAnalysis(outputs);
+    return [
+      {
+        key: "readiness",
+        label: "Readiness",
+        value: formatValue(outputs.readinessStatus)
+      },
+      {
+        key: "photo-review",
+        label: "Photo review",
+        value: photo?.performed
+          ? `${photo.imagesAnalyzed || 0} image(s) inspected · ${photo.imageQuality || "quality not provided"}`
+          : "Not performed for this saved run"
+      },
+      {
+        key: "visible-sample",
+        label: "Visible sampled heads",
+        value: savedHarvestSampleEstimate(photo)
+      },
+      {
+        key: "amber-visibility",
+        label: "Amber visibility",
+        value: photo?.performed
+          ? String(photo.amberVisibility || "not provided").replaceAll("_", " ")
+          : "Not assessed"
+      },
+      {
+        key: "provider",
+        label: "Photo provider",
+        value: photo?.performed
+          ? `${photo.providerLabel || "Provider not labeled"} · ${photo.providerModel || "model not recorded"}`
+          : "None"
+      },
+      {
+        key: "credit",
+        label: "Photo-review credit",
+        value: photo?.performed
+          ? `${photo.aiCreditsUsed ?? "-"} · ${photo.creditStatus || "status not recorded"}`
+          : "No verified photo-review charge"
       }
     ];
   }
@@ -612,6 +678,48 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
         key: "ipm-evidence-provenance",
         severity: "info",
         message: String(outputs.evidenceProvenance.note)
+      });
+    }
+  }
+
+  if (isHarvestRun(run)) {
+    const photo = savedHarvestPhotoAnalysis(outputs);
+    if (photo?.performed) {
+      provenance.push({
+        key: "harvest-photo-provenance",
+        severity: "info",
+        message: `${photo.providerLabel || "AI Harvest photo review"} inspected ${photo.imagesAnalyzed || 0} image(s) at ${photo.imageDetail || "unrecorded"} detail. The visible-sample estimate describes only intact heads visible in the inspected regions, not the whole plant.`
+      });
+      if (photo.visibleSampleEstimateUsable) {
+        provenance.push({
+          key: "harvest-visible-sample",
+          severity: "info",
+          message: `${savedHarvestSampleEstimate(photo)}. ${photo.sampleEstimateBasis || "Review the saved image findings for the exact sampled regions."}`
+        });
+      }
+      if (photo.amberEvidenceBasis) {
+        provenance.push({
+          key: "harvest-amber-basis",
+          severity: "medium",
+          message: `Amber evidence: ${photo.amberEvidenceBasis}`
+        });
+      }
+      const limitations = Array.isArray(photo.limitations)
+        ? photo.limitations.map(String).filter(Boolean)
+        : [];
+      limitations.slice(0, 4).forEach((message: string, index: number) => {
+        provenance.push({
+          key: `harvest-photo-limitation-${index}`,
+          severity: "medium",
+          message
+        });
+      });
+    } else if (Array.isArray(runInputs(run).evidenceAssetIds)) {
+      provenance.push({
+        key: "harvest-photos-not-analyzed",
+        severity: "high",
+        message:
+          "Photos were attached, but this saved run has no verified photo-analysis receipt. It does not claim that their pixels were inspected; reopen Harvest Readiness and run Analyze Photos / Frames before calculating."
       });
     }
   }

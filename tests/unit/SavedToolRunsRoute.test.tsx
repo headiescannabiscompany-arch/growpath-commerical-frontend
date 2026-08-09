@@ -289,6 +289,63 @@ describe("SavedToolRunsRoute", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("shows the bounded visible-sample Harvest review instead of hiding it inside receipt metadata", async () => {
+    const harvestRun = {
+      id: "harvest-run-1",
+      _id: "harvest-run-1",
+      toolType: "harvest_readiness",
+      growId: "grow-1",
+      summary: "Harvest review saved.",
+      inputs: { evidenceAssetIds: ["top", "middle", "lower", "context"] },
+      outputs: {
+        readinessStatus: "insufficient_evidence",
+        photoAnalysis: {
+          performed: true,
+          imagesAnalyzed: 4,
+          imageQuality: "limited",
+          imageDetail: "high",
+          providerLabel: "OpenAI Harvest image review",
+          providerModel: "gpt-5.1",
+          aiCreditsUsed: 1,
+          creditStatus: "charged",
+          visibleSampleEstimateUsable: true,
+          sampleClear: 0.1,
+          sampleCloudy: 0.45,
+          sampleAmber: 0.3,
+          sampleCloudyOrGlare: 0.15,
+          sampleEstimateBasis: "Glare-free calyx regions in images 1 and 3.",
+          amberVisibility: "substantial_visible",
+          amberEvidenceBasis: "Multiple intact amber heads were visible in image 3.",
+          limitations: ["Top, middle, and lower role coverage was not confirmed."]
+        }
+      },
+      createdAt: "2026-08-08T22:00:00.000Z"
+    };
+    mockSearchParams = { toolRunId: "harvest-run-1", growId: "grow-1" };
+    mockListToolRuns.mockResolvedValue([harvestRun]);
+    mockGetToolRun.mockResolvedValue(harvestRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(
+      await screen.findByText(
+        "Visible sampled heads: Clear 10% · Cloudy 45% · Amber 30% · Cloudy or glare 15%"
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("Amber visibility: substantial visible")).toBeTruthy();
+    expect(
+      screen.getByText(
+        /visible-sample estimate describes only intact heads visible in the inspected regions, not the whole plant/i
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Multiple intact amber heads were visible in image 3/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Top, middle, and lower role coverage was not confirmed/i)
+    ).toBeTruthy();
+  });
+
   it("does not offer plant-sex follow-up suggestions for a non-cannabis Plant ID run", async () => {
     const magnoliaRun = {
       id: "magnolia-run-1",
