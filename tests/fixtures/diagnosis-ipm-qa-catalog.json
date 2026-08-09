@@ -3772,6 +3772,48 @@
       "expectedIpmResponse": "Do not infer antagonism from color charts. Require measured competing ions, complete input history, pH, EC, roots, tissue or solution confirmation, and response; distinguish deficiency, excess, lockout, genetics, environment, and disease; and avoid supplement stacking."
     },
     {
+      "recordId": "ipm-russet-mite-cross-host-gall-boundary-open-002",
+      "caseId": "russet_mites",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-aceria-kuko-leaf-gall",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aceria_kuko_leaf_gall.jpg",
+          "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Aceria_kuko_leaf_gall.jpg",
+          "creator": "iNaturalist user megachile",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Goji mite (Aceria kuko) leaf gall photographed by iNaturalist user megachile; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-poison-ivy-leaf-mite",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Poison_Ivy_Leaf_Mite_imported_from_iNaturalist_photo_125991874_on_9_November_2023.jpg",
+          "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e9/Poison_Ivy_Leaf_Mite_imported_from_iNaturalist_photo_125991874_on_9_November_2023.jpg",
+          "creator": "iNaturalist contributor; no rights reserved",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Poison ivy leaf mite (Aculops rhois) observation from iNaturalist; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "goji-family host leaf gall and poison ivy leaf-mite reference",
+      "cultivar": "unknown", "lifeStage": "established host tissue; individual mite life stages are not resolved in both field views",
+      "affectedLocation": "leaf gall and eriophyid-associated host tissue",
+      "distribution": "two cross-host observations without a same-plant organism-to-symptom sequence or cannabis/hemp evidence",
+      "progression": "single-time observations without onset, spread, mite counts, or recovery after a confirmed intervention",
+      "mediumRootZone": "not documented and not inferable from the images",
+      "environment": "temperature, humidity, wind, drought, foliar applications, and root-zone conditions are not paired with the observations",
+      "measuredValues": "no magnified mite count, morphology series, tissue assay, environmental series, or crop-specific confirmation accompanies the pair",
+      "diagnosticSigns": ["both observations document eriophyid-associated host effects", "the gall and host response differ from generic bronzing or curling", "neither cross-host image is evidence of hemp russet mite on cannabis or hemp"],
+      "plausibleAlternatives": ["another eriophyid species with a different host relationship", "broad, cyclamen, spider, or other mites", "thrips, aphids, galls, disease, or physiological distortion", "spray, herbicide, heat, light, wind, nutrient, root-zone, or physical injury", "normal host structure, corking, or senescence"],
+      "confirmationMethod": "Collect direct high-magnification images or specimens from the affected tissue, compare diagnostic body morphology with a qualified key or expert, document host and symptom distribution, and keep host-specific species identity unresolved unless the organism itself supports it.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "disease"],
+      "expectedUrgency": "promptly inspect protected new growth and symptom boundaries when injury is spreading, while avoiding species-level treatment decisions from cross-host symptoms",
+      "expectedQuarantineGuidance": "Limit movement during confirmation of a plausible microscopic pest, but do not destroy or broadly treat plants based on galling, bronzing, curling, or russeting alone.",
+      "expectedScoutingSteps": ["capture whole-plant distribution and sharp high-magnification views from protected new growth and symptom boundaries", "inspect affected and unaffected tissue for individual mites and distinguish gall tissue from surface feeding injury", "record host, progression, sprays, environment, roots, pH, EC, and other concurrent symptoms", "seek qualified organism identification when species changes quarantine, disposition, or treatment"],
+      "expectedIpmResponse": "Use the images to recognize that eriophyid mites can produce host-specific effects, not to label every bronzed, curled, galled, or russeted plant as russet mites. On cannabis or hemp, require direct compatible mites before naming hemp russet mite, preserve chemical, root-zone, viral, and other-pest alternatives, and do not invent a pesticide direction."
+    },
+    {
       "recordId": "ipm-two-spotted-mite-mosaic-cooccurrence-open-002",
       "caseId": "two_spotted_spider_mites",
       "imageSet": [
