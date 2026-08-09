@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(20);
+    expect(catalog.mediaRecords).toHaveLength(21);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -237,6 +237,10 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "diagnosis-rust-pustule-host-boundary-open-001",
           caseId: "rust"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-septoria-leaf-spot-boundary-open-001",
+          caseId: "septoria_and_leaf_spots"
         })
       ])
     );

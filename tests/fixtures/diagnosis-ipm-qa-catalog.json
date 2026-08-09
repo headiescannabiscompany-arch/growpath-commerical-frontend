@@ -1948,6 +1948,76 @@
         "compare scale insects, corking, residue, and leaf spots and obtain confirmation when species matters"
       ],
       "expectedIpmResponse": "Recognize rust-compatible raised pustules and distribution, but do not name a rust species or copy wheat management to another crop from orange or brown spots alone. Preserve edema, scale, residue, and other disease alternatives until pustule and host evidence support rust."
+    },
+    {
+      "recordId": "diagnosis-septoria-leaf-spot-boundary-open-001",
+      "caseId": "septoria_and_leaf_spots",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-tomato-septoria-leaf-spot-3006",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3006.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3006.jpg",
+          "creator": "Wolan268",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Tomato leaves with Septoria leaf spot by Wolan268, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-tomato-septoria-leaf-spot-3047",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3047.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3047.jpg",
+          "creator": "Wolan268",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Tomato leaves with Septoria leaf spot by Wolan268, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "tomato",
+      "cultivar": "unknown",
+      "lifeStage": "vegetative foliage",
+      "affectedLocation": "leaf surfaces",
+      "distribution": "multiple discrete leaf spots on documented affected tomato foliage; whole-plant vertical distribution not recorded",
+      "progression": "two same-session observations; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "multiple discrete necrotic leaf lesions",
+        "defined lesion centers and margins across affected foliage",
+        "two documented Septoria leaf-spot views from the same host and session"
+      ],
+      "plausibleAlternatives": [
+        "bacterial leaf spot",
+        "Alternaria or other fungal leaf spots",
+        "spray injury or droplet burn",
+        "edema",
+        "insect feeding injury",
+        "nutrient or senescence-associated necrosis"
+      ],
+      "confirmationMethod": "Compare lesion margins, centers, fruiting structures, affected leaf age, whole-plant distribution, and progression; microscopy, culture, extension review, or laboratory testing is required when the pathogen identity changes management.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "pest"
+      ],
+      "expectedUrgency": "promptly assess active lesion expansion, defoliation risk, and spread",
+      "expectedQuarantineGuidance": "Limit movement and wet handling of actively spreading suspect foliage while distinguishing fungal and bacterial causes; do not declare the crop contagious from isolated old spots alone.",
+      "expectedScoutingSteps": [
+        "capture sharp close-ups of lesion centers and margins plus both leaf surfaces",
+        "record lower-versus-upper canopy distribution, affected leaf age, progression, and recent leaf wetness",
+        "inspect for insects, spray patterns, edema, fruiting bodies, and lesions on stems or fruit",
+        "compare healthy and affected plants and obtain pathogen confirmation when treatment or disposal depends on species"
+      ],
+      "expectedIpmResponse": "Recognize a leaf-spot syndrome without treating every circular lesion as Septoria. Keep bacterial, other fungal, spray, edema, insect, and senescence alternatives visible, and avoid pathogen-specific treatment until host, distribution, progression, and confirmatory evidence support it."
     }
   ]
 }
