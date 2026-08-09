@@ -111,7 +111,9 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       permissions slice, not populated commercial workflow acceptance. The real John
       Collins login then entered the same shared Facility as the Viewer roster member,
       retained its Personal workspace choice, and loaded the Facility-owned 2000/2000
-      credit balance with Triple Bag Genetics, llc identified as balance owner. Team,
+      credit balance with Triple Bag Genetics, llc identified as balance owner. The
+      account entered Personal and returned to Facility through the workspace chooser
+      without reauthentication or a visible load/access error. Team,
       Tasks, Plants, Compliance, Inventory, integrations, and Facility Outreach withheld
       or disabled mutation controls and exposed the Viewer/owner-manager boundary without
       changing production records. The role-session list still requires the cross-role
