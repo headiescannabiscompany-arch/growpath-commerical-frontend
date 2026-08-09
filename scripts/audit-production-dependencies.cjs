@@ -89,11 +89,12 @@ function classify(report) {
 
   const direct = vulnerabilities["image-size"];
   const directIds = (direct?.via || []).map(advisoryId).filter(Boolean);
+  const uniqueDirectIds = new Set(directIds);
   const directHasOnlyReviewedAdvisories =
     direct &&
-    directIds.length === IMAGE_SIZE_EXCEPTION.advisoryIds.size &&
-    directIds.every((id) => IMAGE_SIZE_EXCEPTION.advisoryIds.has(id)) &&
-    [...IMAGE_SIZE_EXCEPTION.advisoryIds].every((id) => directIds.includes(id));
+    uniqueDirectIds.size === IMAGE_SIZE_EXCEPTION.advisoryIds.size &&
+    [...uniqueDirectIds].every((id) => IMAGE_SIZE_EXCEPTION.advisoryIds.has(id)) &&
+    [...IMAGE_SIZE_EXCEPTION.advisoryIds].every((id) => uniqueDirectIds.has(id));
 
   if (directHasOnlyReviewedAdvisories) allowed.add("image-size");
 
