@@ -5040,6 +5040,74 @@
       "expectedQuarantineGuidance": "No quarantine is supported by suspected nutrient antagonism alone; isolate only when an independent infectious or regulated hazard remains credible.",
       "expectedScoutingSteps": ["capture whole plants, old and new tissue, roots, delivery equipment, product labels, mixing records, root-zone and drainage sampling, and matched unaffected controls", "record products, guaranteed analyses, concentrations, ratios, volume, timing, water source, irrigation, crop stage, environment, onset and progression", "calibrate and measure input, root-zone and drainage pH and EC and obtain individual nutrient, water, substrate or tissue results when justified", "map symptoms against delivery and compare controlled measurement and crop-response trends before naming an antagonistic pair"],
       "expectedIpmResponse": "Do not diagnose nutrient antagonism from leaf color, a fertilizer label, multiple products, a ratio in isolation, or a generic soil test. Require verified inputs and ratios, representative calibrated chemistry, roots, distribution, progression, crop-stage targets, nutrient-specific and tissue evidence when warranted, and controlled response; preserve deficiency, excess, lockout, salinity, water, environment, roots, disease, pests, sprays, and normal variation; and do not invent a nutrient correction."
+    },
+    {
+      "recordId": "diagnosis-powdery-mildew-trichome-boundary-open-003",
+      "caseId": "powdery_mildew",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-mango-powdery-mildew-mycelium", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mango_powdery_mildew_mycelium_leaf_surface_1.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mango_powdery_mildew_mycelium_leaf_surface_1.jpg",
+          "creator": "Scot Nelson and Wayne Nishijima", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Mango powdery-mildew mycelium photographed by Scot Nelson and Wayne Nishijima and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc-by-2-drosera-trichome-closeup", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Trichome_Closeup_(25853749933).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Trichome_Closeup_(25853749933).jpg",
+          "creator": "incidencematrix", "licenseId": "CC-BY-2.0", "attributionText": "Drosera hartmeyerorum trichome close-up photographed by incidencematrix; CC BY 2.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "mango with documented powdery mildew and a separate Drosera trichome macro; neither is cannabis",
+      "cultivar": "unknown", "lifeStage": "established leaf surfaces in separate hosts",
+      "affectedLocation": "leaf-surface macros without paired tops and undersides, whole plants, lesion margins, stems, flowers, or controls from one case",
+      "distribution": "cross-host close views without canopy map, repeated plants, protected-exposed pattern, treatment boundary, or affected-unaffected comparison",
+      "progression": "single-time images without colony expansion, transfer test, trichome development, treatment history, or marked-area follow-up",
+      "mediumRootZone": "roots, moisture, oxygen, pH, EC, temperature and drainage are not shown or measured",
+      "environment": "humidity, airflow, temperature, light, condensation, leaf wetness and recent foliar products are absent",
+      "measuredValues": "no macro scale, surface-transfer result, microscopy, spore morphology, culture, molecular assay or environmental trend accompanies the pair",
+      "diagnosticSigns": ["documented powdery mycelium and normal glandular trichomes can both appear pale or reflective in close images", "shape, attachment, distribution and persistence across focus or viewing angle matter more than whiteness alone", "host-aware paired surfaces, removability, progression and microscopy are needed before a mildew claim"],
+      "plausibleAlternatives": ["normal trichomes, wax, cystoliths, hairs or host texture", "spray residue, mineral deposit, dust, pollen, fibers, droplets or glare", "downy mildew, Botrytis, another fungal disease or mixed infection", "thrips, mites, whiteflies, eggs, cast skins, nutrient stress or chemical injury"],
+      "confirmationMethod": "Capture color-referenced whole plants, both leaf surfaces and stable macro views at several angles and focus planes; preserve an untouched area; test limited transfer or removal; record environment and progression; inspect for pests and normal structures; and use qualified microscopy when identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest", "deficiency"],
+      "expectedUrgency": "document suspected expanding colonies promptly before wiping or spraying while preserving an untouched sample",
+      "expectedQuarantineGuidance": "Reduce contact and movement only when transferable or expanding infectious growth is credible; do not quarantine for trichomes, glare or residue alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy distribution, paired leaf surfaces, sharp surface macros at multiple angles and focus planes, nearby plants and controls", "record host, tissue age, humidity, airflow, temperature, light, condensation, wetness, products, onset and progression", "preserve untouched evidence and inspect limited transfer, attachment, branching, repeating host structures, insects, residue and glare", "obtain qualified microscopy or laboratory confirmation when intervention depends on mildew identity"],
+      "expectedIpmResponse": "Do not classify whiteness, sparkle or a high-magnification surface as powdery mildew automatically. Separate colonies from trichomes, wax, residue, droplets, glare and pests using attachment, repeated structure, paired surfaces, removability, distribution, progression and qualified confirmation; request the exact missing evidence and avoid invented treatment directions."
+    },
+    {
+      "recordId": "diagnosis-botrytis-flower-structure-boundary-open-003",
+      "caseId": "botrytis_gray_mold_bud_rot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-botrytis-cinerea-microscopy", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Myku_i_hirt.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Myku_i_hirt.jpg",
+          "creator": "Aristonlipa", "licenseId": "CC0-1.0", "attributionText": "Botrytis cinerea hyphae under microscopy photographed by Aristonlipa; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-lily-flower-closeup", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Flower_closeup_macro.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Flower_closeup_macro.jpg",
+          "creator": "Rosendahl", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Healthy lily flower macro by Rosendahl, released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "documented Botrytis cinerea microscopy and a separate healthy lily flower macro; neither image documents a cannabis case",
+      "cultivar": "unknown", "lifeStage": "mature reproductive structures in separate hosts",
+      "affectedLocation": "external surfaces without a case-linked internal flower dissection, whole plant, stem, nearby tissue or controls",
+      "distribution": "cross-host macros without canopy map, repeated plants, condensation gradient, injury boundary or affected-unaffected comparison",
+      "progression": "single-time images without browning sequence, collapse, sporulation development, odor change, spread or recovery",
+      "mediumRootZone": "roots and root-zone conditions are not shown or measured",
+      "environment": "humidity, condensation, airflow, temperature, rain, irrigation, canopy density, injury and drying conditions are absent",
+      "measuredValues": "no tissue-moisture result, environmental trend, internal-lesion measurement, microscopy, culture or molecular assay accompanies the pair",
+      "diagnosticSigns": ["documented Botrytis context cannot transfer across hosts from gray or brown appearance alone", "healthy flower hairs, pollen, anthers, aging tissue and surface texture may resemble fibers, dust or sporulation", "internal collapse, compatible sporulation, progression and moisture history are required for a consequential flower-rot claim"],
+      "plausibleAlternatives": ["normal flower maturation, pollen, pistils, anthers, trichomes, bracts or senescence", "bruising, abrasion, pressure, insect feeding, handling injury, heat, cold, drought or drying", "another fungal or bacterial flower disease or mixed infection", "dust, fibers, residue, glare, nutrient stress or root-zone stress"],
+      "confirmationMethod": "Capture whole-plant distribution and affected-unaffected flowers; inspect exterior and safe internal tissue in neutral light; document attachment, collapse, odor and gray sporulation; record humidity, condensation, airflow and progression; and obtain qualified microscopy or laboratory confirmation when disposition depends on identity.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest"],
+      "expectedUrgency": "promptly preserve and inspect internally when dense reproductive tissue shows progressive browning, collapse, odor or gray sporulation",
+      "expectedQuarantineGuidance": "Limit movement of a plant with credible progressive flower rot while confirming it; do not destroy or quarantine for ordinary flower structures, pollen, aging or surface browning alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy distribution, affected and unaffected flowers, neutral-light exterior macros and safe internal views", "record humidity, condensation, airflow, temperature, canopy density, rain, irrigation, injury, odor, onset and progression", "inspect for internal browning, soft collapse, attached gray sporulation, ordinary pollen and flower structures, pests and physical damage", "preserve representative tissue and obtain qualified confirmation when harvest, disposal or isolation depends on identity"],
+      "expectedIpmResponse": "Do not diagnose Botrytis or bud rot from gray, brown, fuzzy or reflective flower material alone. Require internal tissue evidence, compatible attached sporulation, progression, distribution and humidity or condensation context; distinguish pollen, hairs, trichomes, normal aging, physical injury and other diseases; state cross-host limits and avoid invented fungicide, harvest or disposal directions."
     }
   ]
 }
