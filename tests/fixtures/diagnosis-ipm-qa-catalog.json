@@ -2369,6 +2369,78 @@
         "inspect for pests and pathogen signs, measure root-zone conditions, and track whether healthy new growth resumes"
       ],
       "expectedIpmResponse": "Recognize a chemical-injury pattern without naming an herbicide from appearance. Require application and spatial evidence, keep virus, pests, nutrition, environment, and development in the differential, prevent repeat exposure, and avoid invented remediation or pesticide instructions."
+    },
+    {
+      "recordId": "diagnosis-acid-soil-nutrient-deficiency-boundary-open-001",
+      "caseId": "nutrient_deficiency",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-acid-induced-phosphorus-deficiency-hlokozi-2005",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:2005_1214_0928_Hlokozi_-_Acid-induced_P_deficiency.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/2005_1214_0928_Hlokozi_-_Acid-induced_P_deficiency.jpg",
+          "creator": "Alandmanson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Maize seedling with acid-induced phosphorus-deficiency symptoms at Hlokozi by Alandmanson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-magnesium-deficiency-maize-vulindlela-1995",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mg_deficiency_Vulindlela_1995-3-30_2018_01_23_2235.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mg_deficiency_Vulindlela_1995-3-30_2018_01_23_2235.jpg",
+          "creator": "Alandmanson",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Maize leaves with magnesium-deficiency symptoms in acid soil at Vulindlela by Alandmanson, CC BY 4.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "maize",
+      "cultivar": "unknown",
+      "lifeStage": "seedling to established field crop",
+      "affectedLocation": "seedling growth and maize foliage in two documented acid-soil nutrient-deficiency references",
+      "distribution": "field symptoms documented at separate sites; within-field gradients and unaffected controls are not available in the references",
+      "progression": "single-time reference observations from different years; onset, correction response, and later growth are not recorded",
+      "mediumRootZone": "acid, highly weathered field soils are documented; one reference reports high acid saturation restricting root growth and phosphorus uptake, while the other reports low magnesium reserves and suppressed uptake under high acid saturation",
+      "environment": "field conditions in KwaZulu-Natal; contemporaneous temperature, moisture, irrigation, and weather measurements are not recorded",
+      "measuredValues": "no numeric substrate pH, EC, tissue analysis, or extractable nutrient values are included with these image references",
+      "diagnosticSigns": [
+        "documented phosphorus-deficiency symptoms associated with acid saturation and restricted root growth",
+        "documented magnesium-deficiency symptoms on maize foliage in acid soil",
+        "two examples showing why visible deficiency symptoms may reflect root-zone chemistry and uptake rather than a missing fertilizer application"
+      ],
+      "plausibleAlternatives": [
+        "aluminum toxicity or other root injury as the primary constraint",
+        "nutrient lockout, antagonism, or impaired uptake",
+        "nitrogen, potassium, sulfur, or another nutrient disorder",
+        "drought, waterlogging, compaction, or root disease",
+        "herbicide or other chemical injury",
+        "disease or pest stress producing similar color and growth patterns"
+      ],
+      "confirmationMethod": "Use symptom position and field pattern only to form a differential. Confirm with calibrated root-zone pH and EC, representative substrate and tissue testing, root inspection, irrigation and fertility history, affected-versus-unaffected comparisons, and response of new growth after a measured correction; do not name or dose a nutrient from leaf color alone.",
+      "expectedCauseRanking": [
+        "deficiency",
+        "lockout",
+        "other_abiotic",
+        "insufficient_evidence",
+        "disease",
+        "pest"
+      ],
+      "expectedUrgency": "measure the root zone and prevent unverified fertilizer additions before the affected area and growth loss expand",
+      "expectedQuarantineGuidance": "Do not quarantine for a nutrient disorder alone; separate or flag affected zones for comparison while transmissible disease and root-pest alternatives are checked.",
+      "expectedScoutingSteps": [
+        "photograph whole plants and upper, middle, and lower foliage in affected and unaffected field zones",
+        "measure calibrated root-zone pH and EC and record irrigation, fertilizer, liming, amendment, and weather history",
+        "inspect roots for restriction, discoloration, decay, compaction, saturation, and feeding injury",
+        "collect representative substrate and tissue samples under the applicable laboratory protocol and track new growth after any measured correction"
+      ],
+      "expectedIpmResponse": "Recognize a nutrient-disorder pattern while treating the root zone, environment, and measurements as the diagnostic boundary. Keep deficiency, lockout, aluminum or root injury, water stress, disease, pests, and chemical injury in the differential; request testing and never prescribe a nutrient or rate from color alone."
     }
   ]
 }

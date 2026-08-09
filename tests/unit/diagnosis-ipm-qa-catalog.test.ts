@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(26);
+    expect(catalog.mediaRecords).toHaveLength(27);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -261,6 +261,10 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "diagnosis-herbicide-injury-pattern-boundary-open-001",
           caseId: "spray_burn"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-acid-soil-nutrient-deficiency-boundary-open-001",
+          caseId: "nutrient_deficiency"
         })
       ])
     );
