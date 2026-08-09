@@ -27,10 +27,21 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   case records and 56 of at least 504 rights-reviewed images are present. Continue
   disease, pest/beneficial-lookalike, root-zone, nutrient, chemical, physical, and
   normal-aging variants; keep strict validation blocked until all records pass.
-- [ ] Run every completed Diagnosis/IPM case through the GrowPath primary path and
+- [~] Run every completed Diagnosis/IPM case through the GrowPath primary path and
       GPT second opinion with the identical evidence envelope; persist evidence,
       counter-evidence, disagreements, confidence, requested follow-ups, billing, and
-      linked Plant/Grow/Log/ToolRun/Task/Facility records.
+      linked Plant/Grow/Log/ToolRun/Task/Facility records. Production now preserves
+      the governed Diagnosis visual-identity ceiling and an explicit unresolved
+      cannabis-sex result unless reproductive markers are visible (backend
+      `1279a0bd`, `b6af9f71`; retained live ToolRun `6a781133112d9897821bceb9`).
+      IPM production now accepts the current vision receipt, keeps ambiguous pale or
+      reflective marks as one neutral observation, and persists a one-photo result as
+      organism `not confirmed`, severity `not_assessed`, confidence `low`, with one
+      structured-review credit and no promoted treatment (backend `1ac4433f`,
+      `718eada4`, `382796bb`; live module records
+      `6a7814edd7c346d88c36c95e`, `6a78180b84a6023fdec3fbcc`, and
+      `6a781e01cb31b57928cb0a1c`). This is one retained IPM case, not completion of
+      the governed catalog or cross-record write-back matrix.
 - [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
       licenses, and exact follow-up-photo expectations. Never use the pack as training
@@ -46,13 +57,27 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       and reloaded the exact evidence receipt from Saved Runs. Production also verified
       automatic credit refunds for failed provider reviews while fixing the nested JSON
       response and stale vision-receipt contract. Direct private geolocation, opt-in
-      Discovery Nature photo-pin publication/privacy, and correction/confirmation remain.
-- [ ] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
+      Discovery Nature photo-pin publication/privacy remain. The correction flow is
+      live-verified on the same retained run: saving the common identity `cannabis`
+      marks it user-corrected, preserves/rejects the original AI draft, keeps exact
+      scientific species unverified, and clears the confirmation requirement.
+- [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
       visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
       inference warnings, pistil/bud-development context, top/middle/lower/context
       sampling, video frames, exact retake guidance, and saved-run comparisons.
+      Production retained run `6a77ea01b6f7eb6b90cd3595` returns an Aug 5-19
+      planning range centered Aug 12, explains the user's approximate date and
+      declining smell as reasons the window may be open, and preserves unfinished
+      swelling, fresh pistils, and unconfirmed trichomes as reasons to wait. Ordinary
+      phone-photo percentage accuracy remains. The same saved run was reopened in
+      production and successfully wrote both a grow-log entry and a follow-up task to
+      attached grow `6a603a8fda5c5bfdc030ac1b`.
 - [ ] Run one rightful production Harvest set through provider output, provenance,
       exact one-credit billing, saved-run reopen, and downstream task/batch write-back.
+      The reopen plus grow-log/task write-back path is verified for the planning run
+      above, but that run truthfully reports no verified photo-analysis receipt or
+      photo-review charge. Fresh rightful media is still required to accept the
+      provider/provenance/billing portion; a batch write-back is also still unverified.
 - [ ] Obtain independent qualified review of Plant ID, Diagnosis, IPM, and Harvest
       accuracy; record disagreements rather than silently changing expected labels.
 - [ ] Capture a naturally occurring provider failure for Diagnosis/IPM/Harvest and
