@@ -3000,6 +3000,146 @@
         "inspect for pests, pathogen signs, chemical pattern, and physical injury before attributing all damage to cold"
       ],
       "expectedIpmResponse": "Use the paired damaged and undamaged references to show that cold attribution requires exposure and tissue-pattern evidence, not a universal temperature cutoff. Report the observed boundary, request duration and acclimation context, retain physical, root, chemical, disease, and pest alternatives, and avoid unmeasured remediation claims."
+    },
+    {
+      "recordId": "diagnosis-pine-seedling-damping-off-boundary-open-001",
+      "caseId": "damping_off",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usda-1921-forest-nursery-damping-off",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Damping-off_in_forest_nurseries_(1921)_(20821720002).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Damping-off_in_forest_nurseries_(1921)_(20821720002).jpg",
+          "creator": "Carl Pierce Hartley; digitized by Internet Archive Book Images",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Public-domain 1921 Damping-off in forest nurseries reference by Carl Pierce Hartley, digitized by Internet Archive Book Images.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-phytophthora-sporangium-400x",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sporangium_of_Phytophthora_%E2%80%93_400x.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sporangium_of_Phytophthora_%E2%80%93_400x.jpg",
+          "creator": "Arpitoon",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Laboratory-culture Phytophthora sporangium at 400x by Arpitoon, CC0 1.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "conifer seedlings in a historical forest-nursery reference; separate microscopy reference is not from the same case",
+      "cultivar": "unknown",
+      "lifeStage": "recently emerged seedling",
+      "affectedLocation": "seedling stem and root-zone interface; the reference view does not expose roots or a cut stem",
+      "distribution": "one symptomatic seedling rather than a mapped tray, bench, bed, or emergence pattern",
+      "progression": "single-time symptom reference without pre-emergence loss, collapse sequence, spread, or recovery observations",
+      "mediumRootZone": "medium moisture, drainage, temperature, sanitation, root color, and root integrity are not documented",
+      "environment": "air and root-zone temperature, humidity, irrigation frequency, airflow, light, density, and contamination history are absent",
+      "measuredValues": "no moisture, temperature, emergence, mortality, stem-diameter, lesion-length, or laboratory measurements accompany the symptom image",
+      "diagnosticSigns": [
+        "the rights-reviewed historical reference addresses damping-off in forest nurseries",
+        "seedling collapse and stem-line rot can support a damping-off syndrome but are not established by a title or isolated reference scan alone",
+        "the separate Phytophthora sporangium reference illustrates why organism-level claims require microscopy or laboratory linkage to the affected tissue"
+      ],
+      "plausibleAlternatives": [
+        "underwatering, heat, cold, or transplant shock",
+        "chemical, fertilizer, or salt injury",
+        "stem constriction, burial, handling, insect, or other physical injury",
+        "root rot or seedling disease caused by Pythium, Rhizoctonia, Fusarium, Phytophthora, Botrytis, or another organism",
+        "poor emergence or seed failure without post-emergence damping-off"
+      ],
+      "confirmationMethod": "Document emergence and collapse timing across the propagation area, inspect the stem line and washed roots, record medium moisture and temperature, compare affected and unaffected seedlings, and submit representative tissue or medium for qualified culture, microscopy, or molecular testing before naming a pathogen.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "excess",
+        "pest"
+      ],
+      "expectedUrgency": "isolate and document the active seedling-loss pattern promptly while representative affected and unaffected seedlings remain available",
+      "expectedQuarantineGuidance": "Separate affected propagation material and tools as a precaution when spread is active, but do not claim a specific transmissible pathogen from collapse appearance alone.",
+      "expectedScoutingSteps": [
+        "photograph the whole tray or bed, emergence gaps, upright and collapsed seedlings, stem line, and washed roots",
+        "count emerged, symptomatic, collapsed, and missing seedlings by repeated area and time point",
+        "record medium source, sanitation, irrigation, moisture, drainage, temperature, humidity, airflow, density, and recent inputs",
+        "retain representative affected and unaffected specimens for qualified pathogen confirmation"
+      ],
+      "expectedIpmResponse": "Recognize a documented damping-off syndrome while refusing to identify the causal organism from one collapsed seedling. Require propagation distribution, timing, stem and root evidence, measured moisture and temperature, and linked laboratory confirmation; retain abiotic and physical alternatives; and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-plant-edema-host-boundary-open-001",
+      "caseId": "edema",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-agave-attenuata-environmental-edema-0707",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Starr-230107-0707-Agave_attenuata-showing_signs_of_oedema_on_leaves_from_environmental_conditions-Hawea_Pl_Olinda-Maui_(52665849529).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Starr-230107-0707-Agave_attenuata-showing_signs_of_oedema_on_leaves_from_environmental_conditions-Hawea_Pl_Olinda-Maui_(52665849529).jpg",
+          "creator": "Forest and Kim Starr",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Environmental edema on Agave attenuata by Forest and Kim Starr, CC BY 2.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-agave-attenuata-environmental-edema",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Starr-230107-0699-Agave_attenuata-showing_signs_of_oedema_on_leaves_from_environmental_conditions-Hawea_Pl_Olinda-Maui_(52666055188).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Starr-230107-0699-Agave_attenuata-showing_signs_of_oedema_on_leaves_from_environmental_conditions-Hawea_Pl_Olinda-Maui_(52666055188).jpg",
+          "creator": "Forest and Kim Starr",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Environmental edema on Agave attenuata by Forest and Kim Starr, CC BY 2.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "Agave attenuata",
+      "cultivar": "unknown",
+      "lifeStage": "established foliage",
+      "affectedLocation": "leaf tissue; complete top-and-underside pairs are not supplied for both hosts",
+      "distribution": "separate host references without mapped within-plant, canopy, irrigation-zone, or population distribution",
+      "progression": "single-time references without blister development, corking, water-balance correction, or new-growth comparison",
+      "mediumRootZone": "moisture trend, drainage, root oxygen, temperature, and root condition are not measured",
+      "environment": "one image is described as environmental edema, but irrigation, cool or humid conditions, transpiration, airflow, and exposure timing are not quantified",
+      "measuredValues": "no substrate moisture, irrigation volume, root-zone temperature, humidity, vapor-pressure, airflow, or progression measurements accompany the references",
+      "diagnosticSigns": [
+        "two rights-reviewed views document environmental edema on Agave attenuata",
+        "edema can present as blistered, raised, or corky tissue rather than an attached organism or transferable surface growth",
+        "host appearance alone does not prove the water-uptake and transpiration imbalance without root-zone and environment evidence"
+      ],
+      "plausibleAlternatives": [
+        "scale insects, mites, thrips, galls, or other attached or feeding organisms",
+        "bacterial, fungal, or oomycete leaf spots",
+        "spray burn, herbicide injury, or residue",
+        "physical abrasion, sunscald, cold injury, or natural host texture",
+        "waterlogging, root disease, or another root-zone disorder occurring with similar stress"
+      ],
+      "confirmationMethod": "Inspect sharp top, underside, edge, and cross-sectional views for tissue-integrated blisters or corking rather than removable organisms or growth; measure moisture, drainage, root condition, temperature, humidity, and airflow; compare affected and new leaves after corrected water balance; and obtain qualified pest or disease testing when contradictory signs remain.",
+      "expectedCauseRanking": [
+        "other_abiotic",
+        "insufficient_evidence",
+        "pest",
+        "disease",
+        "excess"
+      ],
+      "expectedUrgency": "measure the water and environment pattern promptly and inspect for pests or progressive disease before changing irrigation broadly",
+      "expectedQuarantineGuidance": "Do not quarantine for edema alone; keep suspect plants observable and apply pest or disease precautions only when transferable signs, organisms, or progression support them.",
+      "expectedScoutingSteps": [
+        "photograph whole-plant distribution plus sharp leaf top, underside, edge, blister, and unaffected new-growth views",
+        "test whether apparent bumps are tissue-integrated, removable organisms, residue, or surface growth without damaging all evidence",
+        "record irrigation timing and volume, substrate moisture trend, drainage, root condition, temperature, humidity, airflow, and recent sprays",
+        "reinspect new growth and comparable plants after measured water-balance changes and seek qualified confirmation when lesions spread"
+      ],
+      "expectedIpmResponse": "Treat edema as an abiotic hypothesis requiring tissue structure and measured water-balance evidence, not a photo-only certainty. Distinguish integrated blisters or corking from scale, mites, residue, and disease; request top-and-underside macro views and root-zone measurements; retain concurrent root disease; and avoid unmeasured irrigation prescriptions."
     }
   ]
 }
