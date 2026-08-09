@@ -5516,6 +5516,74 @@
       "expectedQuarantineGuidance": "Limit plant contact and flower or propagule movement only when reproducing thrips are credible; do not quarantine from pale scarring or black specks alone.",
       "expectedScoutingSteps": ["map affected plants and canopy zones; capture paired leaf surfaces, flowers, growing points, fruit and controls", "tap or inspect marked tissue and count larvae, adults and frass with stated magnification", "record temperature, humidity, airflow, dust, nearby hosts, flowering, sprays and progression", "distinguish mites, mildew, residue, abrasion and abiotic injury before species-specific action"],
       "expectedIpmResponse": "Do not diagnose thrips from silvering, pale scars, black specks, cross-host damage or a generic illustration alone. Require direct case-linked larvae or adults plus compatible feeding or frass, counts, mapped distribution and progression; preserve mite, disease, residue and abiotic alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-aphid-colony-host-boundary-open-003",
+      "caseId": "aphids",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-rose-aphid-colony", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aphids.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aphids.jpg",
+          "creator": "Lucis", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Aphids on a rosebush photographed by Lucis and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-black-cherry-aphid", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Black_Cherry_Aphid.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Black_Cherry_Aphid.jpg",
+          "creator": "ML5", "licenseId": "CC0-1.0", "attributionText": "Black cherry aphids photographed by ML5; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "rose and cherry with visible aphid colonies on separate hosts",
+      "cultivar": "unknown", "lifeStage": "established foliage and shoots with mixed aphid stages",
+      "affectedLocation": "limited colony views without whole plants, shoot-tip distribution, leaf undersides, honeydew effects, predators or controls from one case",
+      "distribution": "cross-host examples without plant, canopy, edge, ant, propagation or affected-unaffected map",
+      "progression": "single-time images without colony growth, winged forms, curling, honeydew, sooty mold or recovery sequence",
+      "mediumRootZone": "roots and root-zone measurements are absent",
+      "environment": "temperature, humidity, airflow, nitrogen status, ants, nearby hosts, sprays and sanitation are absent",
+      "measuredValues": "no aphids per shoot, life-stage counts, ant activity, honeydew extent, magnification record or marked-growth follow-up accompanies the pair",
+      "diagnosticSigns": ["direct colonies support aphids, but species and host relationships cannot transfer between rose, cherry and another crop", "curling, sticky leaves and sooty growth can occur with other sap feeders or unrelated stress", "case attribution requires direct insects with cornicles or qualified morphology plus counts, distribution and compatible injury"],
+      "plausibleAlternatives": ["whiteflies, scale, mealybugs, psyllids, leafhoppers or other sap feeders", "thrips, mites, leaf miners, disease or galls", "residue, guttation, edema, spray injury, heat, light, drought or wind", "nutrient excess or deficiency, pH or EC lockout, roots, genetics or mixed causes"],
+      "confirmationMethod": "Capture whole-plant and shoot-tip distribution plus sharp upper and underside views with scale; count insects by marked shoot and life stage; document honeydew, ants, cast skins and progression; inspect lookalikes and beneficials; obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence", "other_abiotic", "disease"],
+      "expectedUrgency": "count actively expanding colonies promptly while adults, nymphs, cast skins and honeydew remain visible",
+      "expectedQuarantineGuidance": "Limit movement of infested shoots or touching plants only when reproducing aphids are confirmed; do not quarantine from curling or stickiness alone.",
+      "expectedScoutingSteps": ["map plants, shoot tips and undersides; capture direct insects, cast skins, honeydew, ants, damage and controls", "count aphids by marked shoot and life stage and repeat over time", "record temperature, humidity, airflow, nitrogen status, nearby hosts, sprays and sanitation", "distinguish whiteflies, scale, mealybugs, beneficials, residue and abiotic injury before species-specific action"],
+      "expectedIpmResponse": "Recognize direct aphid colonies without transferring a host-specific species diagnosis. Require case-linked insects with compatible morphology, counts, mapped distribution, life stages and progression; preserve other sap feeders, beneficials, residue and abiotic alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-whitefly-adult-reference-boundary-open-003",
+      "caseId": "whiteflies",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usda-pd-bemisia-tabaci-adults", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bemisia_tabaci_from_USDA_2.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bemisia_tabaci_from_USDA_2.jpg",
+          "creator": "United States Department of Agriculture", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Adult Bemisia tabaci reference, USDA image D288-23; U.S. public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-pd-greenhouse-whitefly-circular", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_greenhouse_white_fly_(Alyrodes_vaporariorum_Westw.)_(IA_greenhousewhitef257morr).pdf", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/The_greenhouse_white_fly_(Alyrodes_vaporariorum_Westw.)_(IA_greenhousewhitef257morr).pdf",
+          "creator": "A. W. Morrill / USDA Bureau of Entomology", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Public-domain 1905 USDA Bureau of Entomology circular on greenhouse whitefly by A. W. Morrill.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "adult Bemisia tabaci reference and a historical greenhouse-whitefly circular without one linked crop case",
+      "cultivar": "not applicable", "lifeStage": "adult reference and historical multi-stage description without current case evidence",
+      "affectedLocation": "organism and document views without live leaf undersides, eggs, nymphs, exuviae, honeydew, whole plants or controls",
+      "distribution": "no plant, canopy, greenhouse, edge, airflow or affected-unaffected map",
+      "progression": "no sequence of adult flights, egg or nymph increase, chlorosis, honeydew, sooty mold or recovery",
+      "mediumRootZone": "roots and root-zone measurements are absent",
+      "environment": "temperature, humidity, airflow, nearby hosts, incoming plants, sprays and sanitation are absent",
+      "measuredValues": "no adults per tap, eggs or nymphs per leaf, sticky-card counts, honeydew extent, magnification record or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["adult whitefly morphology and historical material do not prove an infestation in unrelated plant images", "white specks, pale wings, cast skins and honeydew overlap with other sap feeders, residue, fungi and ordinary leaf structures", "case attribution requires direct adults plus underside eggs or nymphs or qualified identification, counts, distribution and progression"],
+      "plausibleAlternatives": ["aphids, scale, mealybugs, psyllids, leafhoppers, moths or other small pale insects", "powdery or downy mildew, cast skins, trichomes, wax, residue, dust or glare", "thrips, mites, edema, spray injury, heat, light or drought", "nutrition, pH or EC lockout, roots, disease or mixed causes"],
+      "confirmationMethod": "Capture whole-plant distribution, tap-flight response and sharp leaf-underside views with scale; count adults, eggs, nymphs and exuviae on marked leaves and sticky cards; document honeydew and progression; inspect lookalikes; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect leaf undersides and count adults and immature stages promptly when flight or colonies are increasing",
+      "expectedQuarantineGuidance": "Limit movement of infested plants only when reproducing whiteflies are credible; do not quarantine from white specks, residue or one flying insect alone.",
+      "expectedScoutingSteps": ["map plants and canopy zones; capture tap-flight response, leaf undersides, adults, eggs, nymphs, exuviae, honeydew and controls", "count life stages on marked leaves and sticky cards and repeat over time", "record temperature, humidity, airflow, incoming plants, nearby hosts, sprays and sanitation", "distinguish aphids, scale, mealybugs, moths, fungi, residue and trichomes before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose whiteflies from white specks, a flying insect, honeydew, a historical document or an adult reference alone. Require case-linked adults plus eggs or nymphs or qualified identification, counts, mapped distribution and progression; preserve sap-feeder, fungal, residue and abiotic alternatives and avoid invented pesticide directions."
     }
   ]
 }
