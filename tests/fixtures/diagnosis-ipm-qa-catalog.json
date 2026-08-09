@@ -3940,6 +3940,48 @@
       "expectedIpmResponse": "Do not convert ambiguous stippling or pale marks into confirmed thrips. State that the damage reference itself preserves a mite-versus-thrips ambiguity, compare direct-organism and frass evidence against fungal surface growth and residues, request the missing views and history, and avoid inventing a pesticide or host-label direction."
     },
     {
+      "recordId": "ipm-root-aphid-fungus-gnat-boundary-open-002",
+      "caseId": "root_aphids",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc-by-2-citronella-ants-root-aphids-15218085228",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Citronella_ants_caring_for_root_aphids_(15218085228).jpg",
+          "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/2/26/Citronella_ants_caring_for_root_aphids_%2815218085228%29.jpg",
+          "creator": "NY State IPM Program at Cornell University",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Citronella ants tending root aphids, photographed by the NY State IPM Program at Cornell University; CC BY 2.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-sciara-militaris-fungus-gnat",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sciara_militaris.jpg",
+          "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Sciara_militaris.jpg",
+          "creator": "Petter Bøckman",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Fungus gnat Sciara militaris illustrated by Petter Bøckman; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "root-aphid colony context and adult fungus-gnat morphology reference without a shared crop host",
+      "cultivar": "unknown", "lifeStage": "root-associated aphids with tending ants and an adult fungus gnat reference",
+      "affectedLocation": "root-zone organism context versus an isolated adult fly",
+      "distribution": "separate references; neither documents a whole-crop symptom distribution, trap trend, or affected-unaffected root comparison",
+      "progression": "single-time references without population counts, spread, root-decline sequence, or response to a confirmed intervention",
+      "mediumRootZone": "root contact is visible in the aphid reference, but substrate moisture, drainage, oxygenation, irrigation, roots, and larval distribution are not case-linked",
+      "environment": "temperature, humidity, media moisture, sanitation, algae, irrigation frequency, and ant distribution are not paired across the references",
+      "measuredValues": "no root-zone insect count, trap trend, larval sample, root-health grade, moisture series, pH, EC, or laboratory identification accompanies the pair",
+      "diagnosticSigns": ["the root-aphid reference directly shows aphid-like organisms associated with roots", "ant attendance is compatible supporting context but is not universal or independently diagnostic", "the fungus-gnat reference shows a small adult fly and does not establish root aphids or crop injury"],
+      "plausibleAlternatives": ["fungus-gnat adults or larvae", "winged above-ground aphids or another small fly", "springtails, predatory mites, or other harmless soil organisms", "root mealybugs or another root-associated pest", "root disease, overwatering, low oxygen, salinity, pH, irrigation, or substrate failure"],
+      "confirmationMethod": "Inspect representative washed roots, the crown, pot edge, drainage openings, media surface, and sticky cards; capture body-scale images of organisms and colonies; distinguish aphid morphology from adult flies and translucent fungus-gnat larvae with dark head capsules; and document root condition, moisture, drainage, pH, EC, and population trends.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "promptly inspect roots when decline or colonies are present, while monitoring small-fly counts rather than escalating from one adult sighting",
+      "expectedQuarantineGuidance": "Limit movement of rooted plants and shared substrate only when a root-associated infestation is supported; do not quarantine solely for one small fly, ant activity, wilt, or ordinary soil organisms.",
+      "expectedScoutingSteps": ["capture sharp body-scale images of organisms on representative washed roots plus the crown, media surface, and drainage areas", "use consistent sticky-card placement and inspect moist media for fungus-gnat larvae while recording counts over time", "record ant attendance as supporting context only and distinguish winged aphids, flies, root mealybugs, and harmless soil organisms", "document irrigation, drainage, moisture, roots, odor, sloughing, pH, EC, and above-ground symptom distribution"],
+      "expectedIpmResponse": "Do not diagnose root aphids from small flying insects near moist media, ant activity, wilt, or generic root decline. Require direct compatible aphid morphology and root association, distinguish fungus-gnat adults and larvae and harmless soil organisms, retain root-disease and abiotic alternatives, request the missing root-level evidence, and avoid inventing a pesticide direction."
+    },
+    {
       "recordId": "diagnosis-compost-organic-release-timing-open-001",
       "caseId": "organic_release_timing",
       "imageSet": [

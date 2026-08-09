@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(52);
+    expect(catalog.mediaRecords).toHaveLength(53);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -182,6 +182,11 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "ipm-broad-mite-virus-curl-boundary-open-002",
           caseId: "broad_mites",
+          expectedCauseRanking: ["insufficient_evidence", "pest", "disease", "other_abiotic"]
+        }),
+        expect.objectContaining({
+          recordId: "ipm-root-aphid-fungus-gnat-boundary-open-002",
+          caseId: "root_aphids",
           expectedCauseRanking: ["insufficient_evidence", "pest", "disease", "other_abiotic"]
         }),
         expect.objectContaining({
