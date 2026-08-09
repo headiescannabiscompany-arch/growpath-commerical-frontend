@@ -1813,6 +1813,71 @@
         "compare leg and proleg pattern or seek expert identification before assigning a larval family"
       ],
       "expectedIpmResponse": "Confirm chewing injury separately from the organism identity. Do not label every hole as caterpillar damage and do not call a sawfly larva a caterpillar from overall shape; retain beetle, slug, other chewing insect, and physical-damage alternatives until direct evidence resolves them."
+    },
+    {
+      "recordId": "ipm-beneficial-harmless-lookalikes-open-001",
+      "caseId": "beneficial_and_harmless_lookalikes",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-springtail-soil-decomposer-38498259930",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Springtail_(38498259930).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Springtail_(38498259930).jpg",
+          "creator": "Melissa McMasters",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Springtail photographed by Melissa McMasters, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ladybird-larva-eating-aphid-16475286350",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:14-spotted_Ladybird_larva_eating_an_aphid_(16475286350).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/14-spotted_Ladybird_larva_eating_an_aphid_(16475286350).jpg",
+          "creator": "Line Sabroe",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Fourteen-spotted ladybird larva eating an aphid, photographed by Line Sabroe, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "soil-organism and aphid-predation reference contexts",
+      "cultivar": "not applicable",
+      "lifeStage": "springtail and predatory ladybird larva",
+      "affectedLocation": "moist organic habitat and foliage with aphid prey",
+      "distribution": "isolated organism references; crop-wide distribution not recorded",
+      "progression": "not recorded",
+      "mediumRootZone": "springtail reference is associated with damp soil and decomposing organic material; crop root condition is not shown",
+      "environment": "outdoor observations; detailed production environment not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "springtail body form associated with moist organic habitat",
+        "ladybird larva directly observed consuming an aphid",
+        "predatory behavior and prey context that contradict automatic pest classification"
+      ],
+      "plausibleAlternatives": [
+        "root aphids",
+        "fungus gnat larvae",
+        "thrips or other slender plant pests",
+        "mealybugs or waxy root pests",
+        "caterpillars or beetle larvae",
+        "other beneficial predators or decomposers"
+      ],
+      "confirmationMethod": "Use sharp body morphology, movement, habitat, feeding behavior, and prey context; confirm plant injury separately and do not infer harmfulness from the mere presence of an arthropod.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic"],
+      "expectedUrgency": "observe and identify before intervening unless direct plant injury is also present",
+      "expectedQuarantineGuidance": "No quarantine or treatment for an identified beneficial or harmless organism alone; inspect for a separate pest population when predators are present.",
+      "expectedScoutingSteps": [
+        "capture sharp top and side views plus organism movement and habitat",
+        "record whether the organism is feeding on plant tissue, prey, fungi, or decaying material",
+        "inspect plants for independent injury, honeydew, colonies, eggs, larvae, or root decline",
+        "preserve the organism while seeking expert identification when its role is unresolved"
+      ],
+      "expectedIpmResponse": "Do not recommend treatment from organism appearance alone. Recognize springtails as usually harmless decomposer-associated organisms and ladybird larvae as aphid predators when morphology and behavior support those roles; investigate moisture or the prey population without killing beneficials."
     }
   ]
 }
