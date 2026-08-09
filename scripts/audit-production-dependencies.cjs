@@ -9,7 +9,7 @@ const HIGH_SEVERITIES = new Set(["high", "critical"]);
 const IMAGE_SIZE_EXCEPTION = {
   expires: "2026-09-08",
   installedVersion: "1.2.1",
-  advisoryIds: new Set(["GHSA-w3rx-r6r6-pgpr", "GHSA-5p2g-fcmc-qvqq"]),
+  advisoryIds: new Set(["GHSA-W3RX-R6R6-PGPR", "GHSA-5P2G-FCMC-QVQQ"]),
   packages: new Set([
     "image-size",
     "metro",
@@ -138,22 +138,6 @@ try {
     for (const [name, value] of blocked) {
       console.error(
         `- ${name}: ${value.severity} (${value.range || "range unavailable"})`
-      );
-    }
-    if (blocked.some(([name]) => name === "image-size")) {
-      console.error(
-        `image-size advisory fields: ${JSON.stringify(
-          (report.vulnerabilities?.["image-size"]?.via || []).map((entry) =>
-            typeof entry === "string"
-              ? entry
-              : {
-                  source: entry.source,
-                  name: entry.name,
-                  title: entry.title,
-                  url: entry.url
-                }
-          )
-        )}`
       );
     }
     process.exit(1);
