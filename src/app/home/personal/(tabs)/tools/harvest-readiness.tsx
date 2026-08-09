@@ -507,13 +507,12 @@ function HarvestPhotoAnalyzer({
                 {Math.round(Number(analysis.sampleClear) * 100)}% clear ·{" "}
                 {Math.round(Number(analysis.sampleCloudy) * 100)}% cloudy ·{" "}
                 {Math.round(Number(analysis.sampleAmber) * 100)}% amber ·{" "}
-                {Math.round(Number(analysis.sampleCloudyOrGlare) * 100)}% cloudy or
-                glare
+                {Math.round(Number(analysis.sampleCloudyOrGlare) * 100)}% cloudy or glare
               </Text>
               <Text style={photoStyles.warning}>
-                This estimates only the intact heads visible in the inspected photo
-                areas. It is never a whole-plant percentage and does not prove that
-                other bud sites match.
+                This estimates only the intact heads visible in the inspected photo areas.
+                It is never a whole-plant percentage and does not prove that other bud
+                sites match.
               </Text>
               {analysis.sampleEstimateBasis ? (
                 <Text style={photoStyles.feedback}>
