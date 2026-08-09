@@ -2861,6 +2861,145 @@
         "record beneficial predators or parasitoids separately and preserve specimens for qualified identification when needed"
       ],
       "expectedIpmResponse": "Recognize documented looper larvae and active feeding while refusing to infer species, population severity, or treatment threshold from two references. Require fresh chewing, frass, morphology, distribution, and count evidence; distinguish beneficial larvae and physical damage; and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "ipm-citrus-leafminer-gallery-boundary-open-002",
+      "caseId": "leafminers",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-d1852-1-citrus-leafminer-gallery",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/aug10/d1852-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/aug10/d1852-1.jpg",
+          "creator": "Peggy Greb, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Citrus leafminer larva, gallery, and fecal trail. Photo by Peggy Greb, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-eiku-citrus-leafminer-underside-galleries",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Citrus_leaf_miner_-_underside_of_an_orange_tree_leaf_with_galleries.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Citrus_leaf_miner_-_underside_of_an_orange_tree_leaf_with_galleries.jpg",
+          "creator": "Eiku",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Underside of an orange leaf with citrus leafminer galleries by Eiku, CC BY 4.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "citrus",
+      "cultivar": "unknown",
+      "lifeStage": "established citrus foliage with active or established mines",
+      "affectedLocation": "inside leaf tissue, including a documented larval gallery and underside gallery pattern",
+      "distribution": "individual-leaf evidence; shoot, canopy, tree, and orchard distributions are not shown",
+      "progression": "single-time references without mine-age sequence, flush timing, larval survival, or later leaf and tree response",
+      "mediumRootZone": "not documented and cannot be excluded as a concurrent source of foliage stress",
+      "environment": "flush stage, season, temperature, weather, irrigation, recent inputs, and natural-enemy context are not supplied as a shared case",
+      "measuredValues": "no mine counts, affected-leaf percentage, larval density, flush-growth measurement, or environmental values accompany the images",
+      "diagnosticSigns": [
+        "USDA ARS documents a citrus leafminer larva creating an internal gallery and fecal trail",
+        "a second rights-reviewed image documents galleries on the underside of citrus foliage",
+        "internal mine structure and a larval or frass trail distinguish mining from flat surface discoloration"
+      ],
+      "plausibleAlternatives": [
+        "another leaf-mining insect requiring host and organism confirmation",
+        "thrips or mite scarring on the leaf surface",
+        "edema, physiological blistering, or chemical injury",
+        "bacterial or fungal lesions and citrus canker",
+        "old physical abrasion or folding without an internal larva or frass trail"
+      ],
+      "confirmationMethod": "Backlight and inspect both leaf surfaces to confirm a mine between epidermal layers, locate the larva, pupa, exit point, or frass trail, document host and new-flush distribution, and use qualified identification when species, quarantine, or canker-risk decisions require it.",
+      "expectedCauseRanking": [
+        "pest",
+        "insufficient_evidence",
+        "disease",
+        "other_abiotic"
+      ],
+      "expectedUrgency": "promptly inspect new flush and nearby citrus while representative active mines can still be documented",
+      "expectedQuarantineGuidance": "Limit movement of actively infested foliage when appropriate, but do not infer species, orchard-wide spread, or canker infection from mine appearance alone.",
+      "expectedScoutingSteps": [
+        "backlight young and mature leaves and photograph whole-leaf, underside, gallery-edge, larva or pupa, exit, and frass views",
+        "count active and old mines consistently across affected and unaffected shoots, trees, and nearby citrus",
+        "record flush age, progression, weather, irrigation, recent foliar inputs, and natural enemies",
+        "inspect lesions independently for disease signs and obtain qualified confirmation when quarantine or citrus-canker consequences apply"
+      ],
+      "expectedIpmResponse": "Recognize a documented internal citrus-leaf mine pattern while separating leafminer evidence from species, severity, and secondary disease claims. Require active-mine structure, larva or frass, host distribution, and new-flush context; preserve surface-injury and disease alternatives; and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-brussels-sprout-frost-threshold-boundary-open-001",
+      "caseId": "cold_damage",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-brussels-sprout-frost-damage-minus-9c",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rosenkohl_Kopf_Froschschaden_nach_-9%C2%B0C-Josef_Schlaghecken.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rosenkohl_Kopf_Froschschaden_nach_-9%C2%B0C-Josef_Schlaghecken.jpg",
+          "creator": "Schlaghecken Josef",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Slight frost damage to Brussels sprout after -9 C by Schlaghecken Josef, CC BY 4.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-brussels-sprout-no-frost-damage-minus-5c",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rosenkohl_bei_minus_5%C2%B0C-Josef_Schlaghecken.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rosenkohl_bei_minus_5%C2%B0C-Josef_Schlaghecken.jpg",
+          "creator": "Schlaghecken Josef",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Brussels sprout without frost damage after -5 C by Schlaghecken Josef, CC BY 4.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "Brussels sprout (Brassica oleracea var. gemmifera)",
+      "cultivar": "unknown",
+      "lifeStage": "established crop with developed sprouts and young foliage",
+      "affectedLocation": "youngest leaves in the documented -9 C example; the -5 C comparison is documented as undamaged",
+      "distribution": "close plant views rather than a mapped field pattern; within-field exposure gradients are not available",
+      "progression": "separate post-exposure observations without freeze duration, thaw rate, prior acclimation, later necrosis, or recovery sequence",
+      "mediumRootZone": "field root-zone temperature, moisture, drainage, and freeze depth are not documented",
+      "environment": "minimum temperatures are documented in captions, but exposure duration, wind, humidity, radiation, snow cover, acclimation, and plant position are not",
+      "measuredValues": "reported minimum temperatures are -9 C for slight young-leaf injury and -5 C for no documented damage; no tissue temperature or exposure-duration measurements are provided",
+      "diagnosticSigns": [
+        "documented slight injury to youngest Brussels-sprout leaves after -9 C",
+        "documented undamaged Brussels-sprout comparison after -5 C",
+        "paired examples demonstrate that temperature alone does not establish injury without tissue pattern, duration, acclimation, and later progression"
+      ],
+      "plausibleAlternatives": [
+        "wind abrasion, hail, handling, or other physical injury",
+        "drought, waterlogging, or root-zone freeze injury",
+        "chemical or fertilizer injury",
+        "disease or pest damage that predates the cold event",
+        "normal varietal, developmental, or acclimation differences"
+      ],
+      "confirmationMethod": "Correlate the affected tissue and spatial pattern with recorded air and canopy minimums, exposure duration, wind and protection gradients, acclimation history, and symptom progression after thaw; compare protected and exposed plants and inspect for contradictory pest, disease, root, and chemical evidence.",
+      "expectedCauseRanking": [
+        "other_abiotic",
+        "insufficient_evidence",
+        "disease",
+        "pest",
+        "deficiency"
+      ],
+      "expectedUrgency": "document conditions and progression promptly after thaw while avoiding premature removal of tissue whose final injury is not yet visible",
+      "expectedQuarantineGuidance": "Do not quarantine for cold injury alone; keep affected zones marked for comparison while transmissible disease and pest alternatives are evaluated.",
+      "expectedScoutingSteps": [
+        "photograph protected and exposed plants, upper and lower canopy, young and old tissue, and field or room gradients",
+        "record minimum air and canopy temperature, duration, wind, humidity, protection, irrigation, root-zone condition, and acclimation history",
+        "reinspect after thaw for water-soaking, collapse, discoloration, necrosis, and new-growth recovery",
+        "inspect for pests, pathogen signs, chemical pattern, and physical injury before attributing all damage to cold"
+      ],
+      "expectedIpmResponse": "Use the paired damaged and undamaged references to show that cold attribution requires exposure and tissue-pattern evidence, not a universal temperature cutoff. Report the observed boundary, request duration and acclimation context, retain physical, root, chemical, disease, and pest alternatives, and avoid unmeasured remediation claims."
     }
   ]
 }
