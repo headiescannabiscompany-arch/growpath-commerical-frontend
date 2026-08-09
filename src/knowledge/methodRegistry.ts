@@ -113,6 +113,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence",
       "shared evidence review panel with pixel-analysis status, counter-evidence, missing checks, and re-run guidance",
       "Saved Diagnosis evidence retry that preserves the immutable historical result, revalidates every exact durable AI-approved Diagnosis photo, and starts no analysis or credit use until the user submits",
+      "Saved IPM evidence retry that preserves the immutable historical result, revalidates the complete exact durable AI-approved IPM photo/video/frame set, and starts no prefill, second opinion, or credit use until the user submits",
       "distinct overall confidence, ranked-candidate confidence, health status, and action urgency",
       "unusable diagnosis media normalized to an inconclusive low-confidence result with exact retake requests and no image-derived treatment actions",
       "visual-only Diagnosis crop identity capped at medium confidence with exact species broadened to a user-confirmable crop or genus-level draft",

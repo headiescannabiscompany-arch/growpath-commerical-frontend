@@ -3,6 +3,8 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import IpmScoutToolRoute, {
   normalizeIpmPrefillField,
+  reusableIpmEvidenceError,
+  savedIpmEvidenceIds,
   verifiedIpmPrefillMetadata
 } from "@/app/home/personal/(tabs)/tools/ipm-scout";
 
@@ -79,6 +81,52 @@ jest.mock("@/api/personalAssistant", () => ({
 }));
 
 describe("IpmScoutToolRoute", () => {
+  it("recovers only exact durable IPM photos and extracted frames", () => {
+    expect(
+      savedIpmEvidenceIds({
+        toolType: "ipm_scout",
+        inputs: {
+          evidenceAssetIds: ["photo-a", "frame-b"],
+          mediaEvidence: [{ id: "source-video" }]
+        },
+        outputs: { imageAnalysis: { evidenceUsed: ["frame-b"] } }
+      } as any)
+    ).toEqual(["photo-a", "frame-b", "source-video"]);
+
+    expect(
+      reusableIpmEvidenceError([
+        {
+          id: "photo-a",
+          purpose: "ipm",
+          assetType: "photo",
+          uploadStatus: "uploaded",
+          durableUrl: "/api/evidence-assets/photo-a/object",
+          aiUsable: true
+        },
+        {
+          id: "frame-b",
+          purpose: "ipm",
+          assetType: "video_frame",
+          uploadStatus: "uploaded",
+          durableUrl: "/api/evidence-assets/frame-b/object",
+          aiUsable: true
+        }
+      ] as any)
+    ).toBe("");
+    expect(
+      reusableIpmEvidenceError([
+        {
+          id: "diagnosis-photo",
+          purpose: "diagnosis",
+          assetType: "photo",
+          uploadStatus: "uploaded",
+          durableUrl: "/api/evidence-assets/diagnosis-photo/object",
+          aiUsable: true
+        }
+      ] as any)
+    ).toMatch(/another workflow/i);
+  });
+
   it("normalizes provider evidence arrays into readable scout observations", () => {
     expect(
       normalizeIpmPrefillField({

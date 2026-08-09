@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
@@ -10,14 +11,14 @@ import {
 } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
-import { providerEvidencePayload } from "@/api/evidence";
+import { getEvidenceAssetsByIds, providerEvidencePayload } from "@/api/evidence";
 import type { EvidenceAsset } from "@/types/evidence";
 import { createFacilityTask } from "@/api/facilityTasks";
 import {
   updateGrowpathModuleRecord,
   type GrowpathModuleRecord
 } from "@/api/growpathModules";
-import { updateIpmToolRunDecision, type ToolRun } from "@/api/toolRuns";
+import { getToolRun, updateIpmToolRunDecision, type ToolRun } from "@/api/toolRuns";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -65,6 +66,53 @@ function firstText(...values: unknown[]) {
   for (const value of values) {
     const text = String(value || "").trim();
     if (text) return text;
+  }
+  return "";
+}
+
+function routeParam(value?: string | string[]) {
+  return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
+}
+
+function stringList(value: unknown) {
+  return Array.isArray(value)
+    ? value.map((item) => String(item || "").trim()).filter(Boolean)
+    : [];
+}
+
+export function savedIpmEvidenceIds(run: ToolRun) {
+  const inputs = run.inputs || run.input || run.params || {};
+  const outputs = run.outputs || run.result || {};
+  const mediaEvidence = Array.isArray(inputs.mediaEvidence) ? inputs.mediaEvidence : [];
+  return Array.from(
+    new Set([
+      ...stringList(inputs.evidenceAssetIds),
+      ...stringList(inputs.imageAnalysis?.evidenceUsed),
+      ...stringList(outputs.imageAnalysis?.evidenceUsed),
+      ...stringList(outputs.mediaAnalysis?.evidenceUsed),
+      ...mediaEvidence
+        .map((item: any) => String(item?.id || item?.assetId || "").trim())
+        .filter(Boolean)
+    ])
+  );
+}
+
+export function reusableIpmEvidenceError(assets: EvidenceAsset[]) {
+  if (!assets.length) return "This Saved IPM Scout no longer contains reusable media.";
+  for (const asset of assets) {
+    if (
+      asset.purpose !== "ipm" ||
+      !["photo", "video", "video_frame"].includes(asset.assetType)
+    ) {
+      return "Saved IPM evidence belongs to another workflow or unsupported media type. Nothing was loaded.";
+    }
+    if (
+      asset.uploadStatus !== "uploaded" ||
+      !String(asset.durableUrl || "").trim() ||
+      asset.aiUsable !== true
+    ) {
+      return "Saved IPM evidence is no longer fully uploaded and approved for image review. Nothing was loaded.";
+    }
   }
   return "";
 }
@@ -331,10 +379,94 @@ export function verifiedIpmPrefillMetadata({
 }
 
 export default function IpmScoutToolRoute() {
+  const params = useLocalSearchParams<{ retryToolRunId?: string | string[] }>();
+  const retryToolRunId = routeParam(params.retryToolRunId);
   const { palette } = useAppTheme();
   const styles = useMemo(() => createIpmScoutStyles(palette), [palette]);
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
+  const [retryEvidenceLoading, setRetryEvidenceLoading] = useState(false);
+  const [retryEvidenceNotice, setRetryEvidenceNotice] = useState("");
+  const [retryEvidenceError, setRetryEvidenceError] = useState("");
+  const [retryRetainedEvidenceIds, setRetryRetainedEvidenceIds] = useState<string[]>([]);
+  const hydratedRetryToolRunRef = useRef("");
   const evidencePayload = providerEvidencePayload(evidenceAssets);
+
+  useEffect(() => {
+    if (!retryToolRunId) {
+      setRetryEvidenceLoading(false);
+      setRetryEvidenceNotice("");
+      setRetryEvidenceError("");
+      setRetryRetainedEvidenceIds([]);
+      return;
+    }
+    if (hydratedRetryToolRunRef.current === retryToolRunId) return;
+    hydratedRetryToolRunRef.current = retryToolRunId;
+    let active = true;
+    setEvidenceAssets([]);
+    setRetryEvidenceLoading(true);
+    setRetryEvidenceNotice("");
+    setRetryEvidenceError("");
+    setRetryRetainedEvidenceIds([]);
+    void (async () => {
+      try {
+        const savedRun = await getToolRun(retryToolRunId);
+        if (!active) return;
+        const type = String(savedRun?.toolType || savedRun?.toolName || "")
+          .trim()
+          .toLowerCase()
+          .replace(/[\s-]+/g, "_");
+        if (!savedRun || type !== "ipm_scout") {
+          throw new Error("The requested Saved Run is not an IPM Scout result.");
+        }
+        const evidenceIds = savedIpmEvidenceIds(savedRun);
+        if (!evidenceIds.length) {
+          throw new Error(
+            "This Saved IPM Scout does not contain reusable photo evidence."
+          );
+        }
+        const ownedAssets = await getEvidenceAssetsByIds(evidenceIds, {
+          workspaceType: "personal"
+        });
+        if (!active) return;
+        const byId = new Map(
+          ownedAssets.map((asset: EvidenceAsset) => [
+            String(asset.id || asset._id || ""),
+            asset
+          ])
+        );
+        const recovered = evidenceIds
+          .map((id) => byId.get(id))
+          .filter((asset): asset is EvidenceAsset => Boolean(asset));
+        if (recovered.length !== evidenceIds.length) {
+          throw new Error(
+            "Some saved IPM evidence is no longer available. Nothing was loaded."
+          );
+        }
+        const eligibilityError = reusableIpmEvidenceError(recovered);
+        if (eligibilityError) throw new Error(eligibilityError);
+        setEvidenceAssets(recovered);
+        setRetryRetainedEvidenceIds(evidenceIds);
+        setRetryEvidenceNotice(
+          `Recovered ${recovered.length} private saved media item${
+            recovered.length === 1 ? "" : "s"
+          }. Review the scout fields before choosing photo prefill or running a new scout.`
+        );
+      } catch (error: any) {
+        if (!active) return;
+        setEvidenceAssets([]);
+        setRetryRetainedEvidenceIds([]);
+        setRetryEvidenceError(
+          error?.message || "The saved IPM evidence could not be recovered."
+        );
+      } finally {
+        if (active) setRetryEvidenceLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [retryToolRunId]);
+
   return (
     <BackendCalculatorToolScreen
       externalInputKey={`ipm-evidence:${[...evidencePayload.evidenceAssetIds]
@@ -407,6 +539,17 @@ ${JSON.stringify(values, null, 2)}`,
             inspect and add a dedicated macro of that target. The result will say whether
             photo pixels were actually analyzed.
           </Text>
+          {retryEvidenceLoading ? (
+            <Text style={styles.evidenceGuidance}>
+              Loading the exact saved IPM evidence...
+            </Text>
+          ) : null}
+          {retryEvidenceNotice ? (
+            <Text style={styles.evidenceGuidance}>{retryEvidenceNotice}</Text>
+          ) : null}
+          {retryEvidenceError ? (
+            <Text style={styles.retryError}>{retryEvidenceError}</Text>
+          ) : null}
           {workspaceType === "personal" ? (
             <SavedGrowPhotoEvidencePicker
               growId={growId}
@@ -433,6 +576,8 @@ ${JSON.stringify(values, null, 2)}`,
             videoWorkspaceId={workspaceType === "facility" ? facilityId : undefined}
             value={evidenceAssets}
             onChange={setEvidenceAssets}
+            disabled={retryEvidenceLoading}
+            retainOnRemoveAssetIds={retryRetainedEvidenceIds}
           />
         </View>
       )}
@@ -920,5 +1065,6 @@ export const createIpmScoutStyles = (palette: ThemePalette) =>
   StyleSheet.create({
     evidenceSection: { gap: 8 },
     evidenceTitle: { color: palette.text, fontSize: 15, fontWeight: "800" },
-    evidenceGuidance: { color: palette.textMuted, lineHeight: 19 }
+    evidenceGuidance: { color: palette.textMuted, lineHeight: 19 },
+    retryError: { color: palette.danger, fontWeight: "700", lineHeight: 19 }
   });

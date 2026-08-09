@@ -264,6 +264,15 @@ because it exists. The same photo count limit applies to saved and newly uploade
 State that selected photos are included only in the current IPM request and are not used for
 model training.
 
+A Saved IPM Scout with retained AI-approved photos, private source video, or extracted
+video frames must offer an explicit re-run path that authorizes and reloads the exact
+immutable evidence IDs in the current Personal workspace. Reopening keeps the historical
+result immutable and does not start photo prefill, the structured second opinion, or any
+credit use. Revalidate the complete set as uploaded, durable, IPM-purpose media approved
+for AI use; if an exact asset is missing or ineligible, load none of the set and explain
+why. Removing retained evidence from the new draft deselects it without deleting the
+protected source asset.
+
 Newly added IPM or diagnosis photos must follow the same explicit boundary. The media picker
 must state that adding the file approves AI use for the current workflow only and not model
 training, then persist the uploaded evidence as AI-usable. A successfully uploaded file must
