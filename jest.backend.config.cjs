@@ -5,9 +5,16 @@ module.exports = {
   // `npm run test:backend` scopes to dependency-free backend units.
   // `npm run test:backend:all` also loads route tests that require supertest.
   testMatch: ["<rootDir>/backend/**/*.test.js"],
-  testPathIgnorePatterns: ["/node_modules/", "<rootDir>/tmp/"],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "<rootDir>/.artifacts/",
+    "<rootDir>/.tools/",
+    "<rootDir>/tmp/"
+  ],
   modulePathIgnorePatterns: [
     "<rootDir>/backend-media-storage/",
+    "<rootDir>/.artifacts/",
+    "<rootDir>/.tools/",
     "<rootDir>/tmp/"
   ],
   clearMocks: true,

@@ -21,6 +21,8 @@ module.exports = {
     "<rootDir>/e2e/",
     "<rootDir>/backend/",
     "<rootDir>/backend-media-storage/",
+    "<rootDir>/.artifacts/",
+    "<rootDir>/.tools/",
     "<rootDir>/tmp/",
     "<rootDir>/tests/growLogs.spec.js"
   ],
@@ -30,6 +32,8 @@ module.exports = {
   // frontend test discovery.
   modulePathIgnorePatterns: [
     "<rootDir>/backend-media-storage/",
+    "<rootDir>/.artifacts/",
+    "<rootDir>/.tools/",
     "<rootDir>/tmp/"
   ],
 

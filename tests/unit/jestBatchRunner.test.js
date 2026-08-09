@@ -6,6 +6,21 @@ describe("batched Jest CI runner", () => {
     path.join(__dirname, "../../scripts/run-jest-batched.cjs"),
     "utf8"
   );
+  const frontendConfig = fs.readFileSync(
+    path.join(__dirname, "../../jest.config.cjs"),
+    "utf8"
+  );
+  const backendConfig = fs.readFileSync(
+    path.join(__dirname, "../../jest.backend.config.cjs"),
+    "utf8"
+  );
+
+  it("excludes archived and tool-owned worktrees from both Jest projects", () => {
+    for (const config of [frontendConfig, backendConfig]) {
+      expect(config).toContain('"<rootDir>/.artifacts/"');
+      expect(config).toContain('"<rootDir>/.tools/"');
+    }
+  });
 
   it("allows noisy test batches to exceed Node's default sync output buffer", () => {
     expect(source).toContain("JEST_CI_OUTPUT_BUFFER_MB");
