@@ -4326,6 +4326,40 @@
       "expectedQuarantineGuidance": "Do not quarantine for visible water, intentional flooded culture, hydroponics, or overwatering alone; limit movement only when a transmissible root pathogen or regulated contaminant is independently supported.",
       "expectedScoutingSteps": ["identify crop, stage, production method, container or field design, and intentional flooded or hydroponic context before interpreting visible water", "record irrigation and rain volume, frequency, runoff, standing-water depth and duration, drainage, substrate or soil texture, compaction, and water-table context", "measure moisture repeatedly and compare root color, branching, integrity, odor, crown tissue, oxygen context, temperature, pH, EC, and recovery across affected and unaffected plants", "reinspect progression after conditions change and obtain qualified root-disease testing when lesions, decay, or decline continue"],
       "expectedIpmResponse": "Do not diagnose overwatering from a wet surface, one watering event, intentional flooded culture, hydroponics, or a root photo. Require crop and production context, measured moisture and drainage trends, oxygen context, affected-unaffected roots, and progression; separate excess water from root disease, salinity, pH, nutrition, irrigation failure, and environmental stress; and avoid universal watering or flushing directions."
+    },
+    {
+      "recordId": "diagnosis-arid-context-water-deficit-boundary-open-002",
+      "caseId": "underwatering",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-drought-dried-land-alabama-extension", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Drought_or_dried_out.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Drought_or_dried_out.jpg",
+          "creator": "Alabama Extension / Bruce Dupree", "licenseId": "CC0-1.0", "attributionText": "Drought and dried land photographed for Alabama Extension by Bruce Dupree; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-watering-plant-arid-area", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Watering_plant_in_an_arid_area.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Watering_plant_in_an_arid_area.jpg",
+          "creator": "Mohsen Eslamian", "licenseId": "CC0-1.0", "attributionText": "Watering a plant in an arid area photographed by Mohsen Eslamian; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "drought-affected landscape context and a shrub being watered in an arid area; no paired crop-level water-deficit diagnosis",
+      "cultivar": "unknown", "lifeStage": "landscape vegetation and established shrub in separate observations",
+      "affectedLocation": "landscape-scale dry ground and a watering point; roots, crowns, full symptom distribution, and unaffected controls are not paired",
+      "distribution": "separate context images without container, row, emitter, canopy, depth, affected-unaffected, or irrigation-zone mapping",
+      "progression": "single-time observations without pre-wilt condition, dryback curve, measured irrigation dose, turgor response, overnight recovery, or irreversible injury sequence",
+      "mediumRootZone": "dry-looking landscape and active watering are visible, but moisture by depth, water potential, texture, hydrophobicity, salinity, root integrity, oxygen, and drainage are not measured",
+      "environment": "arid context is visible, but air and leaf temperature, humidity or VPD, radiation, wind, rainfall, evapotranspiration, and exposure duration are not quantified",
+      "measuredValues": "no root-zone moisture, matric or plant water potential, irrigation volume, emitter delivery, runoff, pH, EC, leaf temperature, VPD, or recovery measurement accompanies the pair",
+      "diagnosticSigns": ["one reference documents drought and dried land at landscape scale", "one reference documents watering behavior in an arid area rather than measured plant deficit", "neither arid context nor the act of watering establishes that a specific plant was under-watered, how severe any deficit was, or whether roots could take up water"],
+      "plausibleAlternatives": ["overwatering, waterlogging, low root oxygen, Phytophthora, Pythium, Fusarium, or other root and vascular disease", "heat, high VPD, excess light, wind, transplant shock, or normal midday posture", "failed emitter, uneven delivery, hydrophobic medium, damaged roots, compaction, or unsuitable container volume", "salinity, nutrient excess, pH or EC stress, chemical injury, or root pests", "normal flower or leaf senescence without whole-plant water deficit"],
+      "confirmationMethod": "Measure root-zone moisture or water potential at representative depths before irrigation, verify delivery and runoff, inspect roots and crowns, compare affected and unaffected plants, record environmental demand, and document a timed response to an appropriate measured irrigation event; persistent wilt despite available water requires root, vascular, disease, salinity, and uptake investigation.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "disease", "excess", "pest"],
+      "expectedUrgency": "measure the root zone, delivery, and environmental demand promptly before adding water, because severe deficit and saturated or diseased roots can produce similar wilt",
+      "expectedQuarantineGuidance": "Do not quarantine for arid context, wilt, or suspected underwatering alone; isolate only when linked pest or disease evidence supports a transmissible cause.",
+      "expectedScoutingSteps": ["capture whole plants, affected and unaffected tissue, container or field distribution, irrigation zones, crowns, and washed roots", "measure root-zone moisture or water potential at multiple depths before irrigation and record air and leaf temperature, humidity or VPD, radiation or PPFD, wind, and exposure duration", "verify emitter output, irrigation volume and frequency, runoff, drainage, hydrophobicity, root contact, salinity, pH, EC, and recent disturbance", "mark plants and document timed turgor response and overnight recovery after evidence-based irrigation, then investigate disease and roots when recovery does not match"],
+      "expectedIpmResponse": "Treat wilt, dry surroundings, and the act of watering as context rather than proof of underwatering. Require pre-irrigation moisture or water-potential evidence, delivery checks, roots, distribution, environmental demand, and recovery response; preserve saturated-root, disease, salinity, heat, high-VPD, light, and senescence alternatives; and avoid reflex watering or universal schedules from a photo."
     }
   ]
 }
