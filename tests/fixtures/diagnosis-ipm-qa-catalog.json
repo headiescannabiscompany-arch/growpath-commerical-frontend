@@ -3982,6 +3982,48 @@
       "expectedIpmResponse": "Do not diagnose root aphids from small flying insects near moist media, ant activity, wilt, or generic root decline. Require direct compatible aphid morphology and root association, distinguish fungus-gnat adults and larvae and harmless soil organisms, retain root-disease and abiotic alternatives, request the missing root-level evidence, and avoid inventing a pesticide direction."
     },
     {
+      "recordId": "ipm-scale-insect-disease-cooccurrence-open-002",
+      "caseId": "scale_insects",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-citrus-scale-insects-14627165158",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Scale_insects_on_locally_grown_citrus_fruit_-_14627165158.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scale_insects_on_locally_grown_citrus_fruit_-_14627165158.jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Scale insects on locally grown citrus fruit photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-polyscias-scale-bacterial-blight-15263962534",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Panax_(Polycias_guilfoylei)_Scale_insects_and_bacterial_leaf_blight_(15263962534).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Panax_(Polycias_guilfoylei)_Scale_insects_and_bacterial_leaf_blight_(15263962534).jpg",
+          "creator": "Jamie Komata / Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Polyscias foliage with scale insects and bacterial leaf blight, photographed by Jamie Komata and published by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "citrus fruit and Polyscias foliage with documented scale insects; the Polyscias reference also documents bacterial leaf blight",
+      "cultivar": "unknown", "lifeStage": "attached scale stages visible at field-photo resolution; crawler stages are not resolved",
+      "affectedLocation": "fruit surface and foliage with attached organisms plus a concurrent lesion process",
+      "distribution": "two separate host references without a matched whole-plant map, crawler survey, or affected-unaffected comparison",
+      "progression": "single-time references without crawler emergence, spread rate, lesion progression, or response to a confirmed intervention",
+      "mediumRootZone": "not documented and not inferable from the images",
+      "environment": "temperature, humidity, leaf wetness, airflow, irrigation, ant activity, and recent applications are not paired with the references",
+      "measuredValues": "no crawler count, body measurement, honeydew assessment, lesion culture, molecular test, environmental series, or crop-loss measure accompanies the pair",
+      "diagnosticSigns": ["discrete attached scale bodies or covers are visible rather than inferred from discoloration alone", "one reference explicitly documents scale insects coexisting with bacterial leaf blight", "the co-occurrence prevents assigning every lesion or necrotic area to the confirmed insect"],
+      "plausibleAlternatives": ["edema, corking, lenticels, galls, or normal stem and fruit texture", "mealybugs, whitefly nymphs, aphids, mites, or another attached organism", "bacterial, fungal, or oomycete leaf disease occurring alone or with scale", "mineral deposits, spray residue, dust, wax, or glare", "chemical, physical, environmental, nutrient, or root-zone injury"],
+      "confirmationMethod": "Capture sharp top and side macros showing whether each suspected structure is an attached body or cover, inspect protected sites for crawlers and honeydew, map lesions separately from insects, test whether residue transfers without destroying all evidence, and obtain qualified organism or disease confirmation when the distinction changes management.",
+      "expectedCauseRanking": ["pest", "disease", "insufficient_evidence", "other_abiotic"],
+      "expectedUrgency": "promptly quantify attached insects and inspect new tissue while separately evaluating progressive lesions or decline",
+      "expectedQuarantineGuidance": "Limit movement of confirmed infested material and inspect contacts, but do not attribute or quarantine for a concurrent disease without separate evidence; preserve predators and parasitoids until identified.",
+      "expectedScoutingSteps": ["capture whole-plant distribution plus sharp top and side macros of attached structures on leaves, stems, petioles, and fruit", "inspect protected sites and new growth for crawlers, honeydew, ants, cast material, predators, and parasitoids", "map attached insects separately from water-soaked, angular, spreading, or necrotic lesions and compare unaffected tissue", "record environment, irrigation, leaf wetness, recent applications, progression, and obtain organism or pathogen confirmation when needed"],
+      "expectedIpmResponse": "Require attached scale-body or cover morphology before diagnosing scale insects, distinguish tissue-integrated edema or corking and removable residue, and do not assign every lesion to scale when disease can coexist. Report the insect-supported and disease-compatible patterns separately, request crawler and lesion evidence, preserve beneficial organisms, and avoid inventing pesticide or disease-control directions."
+    },
+    {
       "recordId": "diagnosis-compost-organic-release-timing-open-001",
       "caseId": "organic_release_timing",
       "imageSet": [
