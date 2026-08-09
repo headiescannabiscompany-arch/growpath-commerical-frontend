@@ -2,6 +2,7 @@ import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import SavedToolRunsRoute, {
+  personalDiagnosisRetryHref,
   personalPlantIdRetryHref
 } from "@/app/home/personal/(tabs)/tools/saved-runs";
 
@@ -122,6 +123,18 @@ jest.mock("@/features/personal/tools/ToolResultSurface", () => {
 });
 
 describe("SavedToolRunsRoute", () => {
+  it("builds a Diagnosis saved-evidence retry without unrelated route context", () => {
+    const href = personalDiagnosisRetryHref({
+      toolRunId: "diagnosis-run-1",
+      growId: "grow-1",
+      plantId: "plant-1"
+    });
+
+    expect(href).toBe(
+      "/home/personal/diagnose?retryToolRunId=diagnosis-run-1&growId=grow-1&plantId=plant-1"
+    );
+    expect(href).not.toMatch(/sourceContext|workspace|facility|commercial/i);
+  });
   beforeEach(() => {
     jest.resetAllMocks();
     mockSearchParams = {

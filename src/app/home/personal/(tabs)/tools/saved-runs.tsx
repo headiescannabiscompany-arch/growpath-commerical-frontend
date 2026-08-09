@@ -102,6 +102,26 @@ export function personalPlantIdRetryHref({
   return `/home/personal/tools/species-crop-id?${query}`;
 }
 
+export function personalDiagnosisRetryHref({
+  toolRunId,
+  growId,
+  plantId
+}: {
+  toolRunId: string;
+  growId?: string;
+  plantId?: string;
+}) {
+  const query = [
+    ["retryToolRunId", toolRunId],
+    ["growId", growId || ""],
+    ["plantId", plantId || ""]
+  ]
+    .filter(([, value]) => value)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join("&");
+  return `/home/personal/diagnose?${query}`;
+}
+
 function formatDate(value?: string) {
   return value ? String(value).slice(0, 10) : "unsaved";
 }
@@ -150,6 +170,14 @@ function isIpmRun(run: ToolRun | null) {
     .toLowerCase()
     .replaceAll("-", "_");
   return type === "ipm_scout";
+}
+
+function isDiagnosisRun(run: ToolRun | null) {
+  const type = String(run?.toolType || run?.toolName || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "_");
+  return type === "diagnosis" || type === "plant_diagnosis";
 }
 
 function isHarvestRun(run: ToolRun | null) {
@@ -1754,6 +1782,14 @@ export default function SavedToolRunsScreen() {
           fieldStudyId: fieldStudyId || undefined
         })
       : "";
+  const diagnosisRetryHref =
+    workspaceType === "personal" && selectedRunId && isDiagnosisRun(selectedRun)
+      ? personalDiagnosisRetryHref({
+          toolRunId: selectedRunId,
+          growId: String(selectedRun?.growId || "").trim() || undefined,
+          plantId: String(selectedRun?.plantId || "").trim() || undefined
+        })
+      : "";
 
   return (
     <ScreenBoundary
@@ -1855,6 +1891,27 @@ export default function SavedToolRunsScreen() {
               feedback={feedback}
               copyPayload={selectedRun}
             />
+            {diagnosisRetryHref ? (
+              <View style={styles.editor}>
+                <View style={styles.studyPanel}>
+                  <Text style={styles.cardTitle}>Recheck with the saved photo</Text>
+                  <Text style={styles.cardText}>
+                    Reopen the exact private Diagnosis evidence without uploading it
+                    again. The historical result stays unchanged, and no new analysis or
+                    credit use starts until you press Run Diagnosis.
+                  </Text>
+                  <Link href={diagnosisRetryHref} asChild>
+                    <Pressable
+                      accessibilityRole="link"
+                      accessibilityLabel="Re-run Diagnosis with saved evidence"
+                      style={styles.primary}
+                    >
+                      <Text style={styles.primaryText}>Re-run with Saved Evidence</Text>
+                    </Pressable>
+                  </Link>
+                </View>
+              </View>
+            ) : null}
             {isSpeciesCropRun(selectedRun) ? (
               <View style={styles.editor}>
                 {plantIdRetryHref ? (
