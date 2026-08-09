@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(69);
+    expect(catalog.mediaRecords).toHaveLength(71);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
