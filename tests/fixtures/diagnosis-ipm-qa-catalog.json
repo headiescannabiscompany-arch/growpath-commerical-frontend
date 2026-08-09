@@ -3280,6 +3280,146 @@
         "document timed turgor response after evidence-based irrigation and investigate disease or roots if recovery does not match"
       ],
       "expectedIpmResponse": "Treat wilt as a symptom, not proof of underwatering. Require pre-irrigation moisture or water-potential evidence, roots, distribution, environmental demand, delivery checks, and recovery response; explicitly preserve saturated-root and vascular-disease alternatives; and avoid reflex watering from a photo."
+    },
+    {
+      "recordId": "diagnosis-sunlit-leaf-light-stress-boundary-open-001",
+      "caseId": "light_stress",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-leaf-under-sun",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Leaf_under_sun.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Leaf_under_sun.jpg",
+          "creator": "Acagastya",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Leaf under direct sun by Acagastya, CC0 1.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-guava-leaves-sunlight",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Guava_leaves_sunlight.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Guava_leaves_sunlight.jpg",
+          "creator": "Wikimedia user Minuzig",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Guava leaves in sunlight by Wikimedia user Minuzig, CC0 1.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified green leaf and guava leaves used as sun-exposure negative controls",
+      "cultivar": "unknown",
+      "lifeStage": "established foliage",
+      "affectedLocation": "sunlit foliage; no confirmed lesion or injured canopy zone is documented",
+      "distribution": "isolated sunlit views without top-to-bottom canopy comparison, fixture footprint, shaded control, or repeated plant pattern",
+      "progression": "single-time photographs provide no before-and-after exposure, acclimation, bleaching, necrosis, or recovery sequence",
+      "mediumRootZone": "not shown or measured",
+      "environment": "direct sunlight is visible, but duration, spectrum, photoperiod, fixture distance, leaf temperature, humidity, and airflow are unknown",
+      "measuredValues": "no PPFD, DLI, photoperiod, spectrum, fixture distance, leaf temperature, or canopy map accompanies either image",
+      "diagnosticSigns": [
+        "sunlight and backlighting are visible but are exposures, not diagnostic injury signs",
+        "the leaves do not provide a measured canopy gradient or a confirmed bleached, scorched, or light-facing lesion pattern",
+        "color and transmitted light can be altered by exposure and camera rendering"
+      ],
+      "plausibleAlternatives": [
+        "normal sunlit or backlit foliage with no disorder",
+        "heat, high vapor-pressure demand, drought, or wind injury",
+        "nutrient deficiency, excess, pH or EC stress, or root limitation",
+        "spray burn, pathogen lesion, physical damage, or natural pigmentation",
+        "camera exposure, white balance, glare, or compression artifact"
+      ],
+      "confirmationMethod": "Measure PPFD at the affected leaf and matched canopy positions, calculate or obtain DLI and photoperiod, record fixture distance and spectrum when applicable, compare light-facing and shaded tissue, measure leaf temperature, and document progression after a controlled evidence-based light adjustment without changing multiple variables at once.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "other_abiotic",
+        "deficiency",
+        "excess",
+        "disease"
+      ],
+      "expectedUrgency": "measure exposure and leaf temperature promptly when active bleaching or crisping is progressing, but do not dim lights from a bright photograph alone",
+      "expectedQuarantineGuidance": "Do not quarantine for suspected light stress alone; isolate only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": [
+        "capture whole-canopy, top-middle-lower, affected-unaffected, light-facing, and shaded comparison views",
+        "map PPFD across the canopy and record DLI, schedule, spectrum, fixture distance, dimming, and recent lighting changes",
+        "measure leaf and air temperature, humidity, airflow, root-zone moisture, pH, and EC to separate coupled heat and water stress",
+        "reinspect the same marked leaves after one documented light adjustment and preserve disease, spray, and nutrient alternatives"
+      ],
+      "expectedIpmResponse": "Do not infer light stress from brightness, yellow color, or sun exposure alone. Require PPFD/DLI, photoperiod, fixture geometry, canopy distribution, leaf temperature, and progression; distinguish light injury from heat, water, nutrient, spray, disease, and camera effects; and recommend only a measured reversible adjustment when evidence supports it."
+    },
+    {
+      "recordId": "diagnosis-cotton-heat-measurement-boundary-open-001",
+      "caseId": "heat_stress",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-d1010-15-cotton-heat-stress-experiment",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/feb08/d1010-15/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/feb08/d1010-15.jpg",
+          "creator": "Stephen Ausmus, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Cotton heat-stress experiment by Stephen Ausmus, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-d2686-1-canopy-temperature-measurement",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/nov12/d2686-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/nov12/d2686-1.jpg",
+          "creator": "Dong Wang, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Peach canopy temperature measurement by Dong Wang, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "cotton in a heat-stress experiment and peach canopy in a separate temperature-measurement reference",
+      "cultivar": "unknown",
+      "lifeStage": "established reproductive cotton and established peach trees in separate references",
+      "affectedLocation": "research plants and canopy measurement context; no single symptom lesion is offered as proof of heat injury",
+      "distribution": "research-scale views without a complete hot-zone, cool-zone, shaded, irrigated, and unaffected symptom map",
+      "progression": "the images document heat-stress research and temperature measurement, not a timed symptom onset and recovery sequence",
+      "mediumRootZone": "root condition, soil moisture, salinity, irrigation uniformity, and root-zone temperature are not visible in the images",
+      "environment": "heat-stress context is documented, but the image captions do not supply the complete air temperature, humidity, radiation, wind, or duration series needed for diagnosis",
+      "measuredValues": "the USDA references demonstrate the need for leaf or canopy temperature measurement; case-specific temperature, VPD, PPFD, and water-status values are not embedded in the photographs",
+      "diagnosticSigns": [
+        "USDA documents cotton being evaluated under heat-stress conditions",
+        "USDA documents infrared canopy-temperature measurement and notes stressed leaves can be warmer than nonstressed leaves",
+        "the references support measurement and comparison rather than diagnosing heat from curl, wilt, or scorch alone"
+      ],
+      "plausibleAlternatives": [
+        "underwatering, root-zone saturation, salinity, or failed irrigation delivery",
+        "excess light or radiant load without independently confirmed heat injury",
+        "wind exposure, low humidity, transplant shock, or physical damage",
+        "vascular disease, root disease, pest injury, or spray burn",
+        "normal midday leaf posture or flower drop depending on species and stage"
+      ],
+      "confirmationMethod": "Record time-series leaf or canopy temperature with matched air temperature, humidity or VPD, radiation, and wind; compare affected and unaffected zones; verify root-zone water status and irrigation; document event timing and overnight recovery; and investigate roots, vascular tissue, pests, and sprays when symptoms persist outside the heat event.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "other_abiotic",
+        "disease",
+        "excess",
+        "pest"
+      ],
+      "expectedUrgency": "reduce immediate unsafe thermal exposure when measured leaf temperatures and active damage support it, while recording conditions before broad changes obscure the cause",
+      "expectedQuarantineGuidance": "Do not quarantine for heat stress alone; isolate only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": [
+        "photograph whole plants and mapped hot, cool, shaded, affected, and unaffected canopy positions",
+        "measure leaf or canopy temperature plus air temperature, humidity or VPD, PPFD or solar radiation, wind, and event duration",
+        "check root-zone moisture, temperature, drainage, salinity, and irrigation delivery before attributing wilt or scorch to heat",
+        "mark tissue and document evening, overnight, and next-day recovery or progression while retaining disease, spray, and pest alternatives"
+      ],
+      "expectedIpmResponse": "Treat curl, wilt, scorch, and flower drop as nonspecific until thermal exposure is measured. Require leaf-versus-air temperature, VPD, radiation, wind, duration, spatial distribution, root-zone water status, and recovery; separate heat from light and water stress; and avoid universal temperature thresholds across crops and stages."
     }
   ]
 }
