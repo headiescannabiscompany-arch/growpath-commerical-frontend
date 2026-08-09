@@ -4258,6 +4258,40 @@
       "expectedQuarantineGuidance": "Do not quarantine for heat, drought, excess light, or sunscald alone; limit movement only when a confirmed active pest or transmissible disease independently warrants it.",
       "expectedScoutingSteps": ["capture whole-plant and mapped exposed, shaded, hot, cool, affected, unaffected, upper, and lower leaf views", "measure leaf or canopy temperature, air temperature, humidity or VPD, radiation or PPFD, wind, duration, root-zone moisture, temperature, drainage, and irrigation delivery", "capture sharp insect body and feeding-site macros, identify life stages, and record standardized density separately from abiotic injury", "mark tissue and document evening, overnight, and next-day recovery or progression while checking spray, disease, nutrition, and physical-injury alternatives"],
       "expectedIpmResponse": "Do not turn scorch, curl, wilt, or pale scars into a heat diagnosis without measured thermal and water evidence. Separate heat from drought and solar injury, report directly visible pest morphology and feeding as a concurrent cause when supported, retain disease and spray alternatives, request exact missing measurements and views, and avoid universal thresholds or invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-frost-exposure-injury-boundary-open-002",
+      "caseId": "cold_damage",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-frost-on-plant-rosendahl", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Frost_on_plant.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Frost_on_plant.jpg",
+          "creator": "Rosendahl", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Frost on a plant by Rosendahl, released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc-by-2-frozen-leaf-6886708197", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Frozen_Leaf_(6886708197).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Frozen_Leaf_(6886708197).jpg",
+          "creator": "Domenico Salvagnin", "licenseId": "CC-BY-2.0", "attributionText": "Frozen leaf in a pond photographed by Domenico Salvagnin; CC BY 2.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified frost-covered plant and a detached frozen leaf in a pond; neither is a documented production-crop injury outcome",
+      "cultivar": "unknown", "lifeStage": "unknown live plant context and detached dead leaf context",
+      "affectedLocation": "visible exterior frost or ice; living tissue injury and internal damage are not documented",
+      "distribution": "close exposure views without protected-versus-exposed plants, canopy gradients, field zones, or unaffected controls",
+      "progression": "single-time frozen views without pre-event condition, exposure duration, thaw sequence, delayed necrosis, or recovery",
+      "mediumRootZone": "root-zone temperature, freeze depth, moisture, drainage, oxygen, and root integrity are not documented",
+      "environment": "frost or ice is visible, but minimum air and tissue temperatures, duration, wind, humidity, radiation, snow cover, acclimation, and thaw rate are absent",
+      "measuredValues": "no minimum temperature, tissue temperature, exposure duration, root-zone measurement, electrolyte leakage, or post-thaw injury assessment accompanies the images",
+      "diagnosticSigns": ["visible frost or ice supports cold exposure but not living-tissue injury severity", "one image is a detached leaf frozen in a pond and cannot establish a crop diagnosis", "the pair demonstrates why exposure appearance must be separated from post-thaw tissue collapse, discoloration, necrosis, and recovery"],
+      "plausibleAlternatives": ["no injury despite visible frost because of hardiness, acclimation, duration, protection, or tissue state", "drought, heat, excess light, wind, hail, abrasion, or other physical injury", "overwatering, frozen roots, low root oxygen, salinity, or irrigation failure", "spray, fertilizer, or herbicide injury", "disease, pests, senescence, or pre-existing dead tissue unrelated to the cold event"],
+      "confirmationMethod": "Record minimum air, canopy, tissue, and root-zone temperatures, duration, wind, protection, acclimation, and thaw conditions; compare living protected and exposed plants; mark tissue; and document water-soaking, collapse, discoloration, necrosis, and new-growth recovery after thaw while checking disease, pest, root, spray, and physical alternatives.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "disease", "pest"],
+      "expectedUrgency": "document exposure and post-thaw progression promptly, while delaying irreversible conclusions until living tissue expresses injury",
+      "expectedQuarantineGuidance": "Do not quarantine for frost exposure or cold injury alone; isolate only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": ["capture living whole plants plus protected and exposed zones, upper and lower canopy, young and old tissue, and unaffected controls", "record minimum air, canopy, tissue, and root-zone temperature, duration, wind, humidity, radiation, protection, irrigation, and acclimation", "mark suspect tissue and reinspect through thaw for water-soaking, collapse, discoloration, necrosis, and new-growth recovery", "inspect roots, vascular tissue, pests, pathogen signs, application patterns, and physical injury before attributing all damage to cold"],
+      "expectedIpmResponse": "Do not diagnose cold injury from visible frost, ice, or one dead leaf. Report exposure separately from injury; require measured temperature and duration, living-tissue distribution, acclimation, protected controls, and post-thaw progression; preserve root, water, heat, light, physical, spray, pest, disease, and senescence alternatives; and avoid universal temperature thresholds or unmeasured remedies."
     }
   ]
 }
