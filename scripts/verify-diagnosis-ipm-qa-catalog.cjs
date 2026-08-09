@@ -107,6 +107,7 @@ function main() {
   requireCondition(
     [
       "CC0-1.0",
+      "CC-BY-2.0",
       "CC-BY-4.0",
       "US-PUBLIC-DOMAIN",
       "PUBLIC-DOMAIN-DEDICATION",

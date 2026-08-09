@@ -34,6 +34,7 @@
     "licenseRecheckBeforeExecution": true,
     "allowedCopiedMediaLicenses": [
       "CC0-1.0",
+      "CC-BY-2.0",
       "CC-BY-4.0",
       "US-PUBLIC-DOMAIN",
       "PUBLIC-DOMAIN-DEDICATION",
@@ -881,6 +882,70 @@
         "separate predators and parasitoid mummies from active aphids"
       ],
       "expectedIpmResponse": "Report aphids only from direct colony/body evidence; explicitly identify beneficial predator context and avoid recommending actions that indiscriminately remove beneficials."
+    },
+    {
+      "recordId": "ipm-chemical-spray-injury-open-001",
+      "caseId": "spray_burn",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-herbicide-soybean-9620825285",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Herbicide_Injury_to_Soybeans_(9620825285).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Herbicide_Injury_to_Soybeans_(9620825285).jpg",
+          "creator": "United Soybean Board / Soybean Checkoff",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Herbicide Injury to Soybeans by United Soybean Board / Soybean Checkoff, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-herbicide-soybean-9620825933",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Herbicide_Injury_to_Soybeans_(9620825933).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Herbicide_Injury_to_Soybeans_(9620825933).jpg",
+          "creator": "United Soybean Board / Soybean Checkoff",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Herbicide Injury to Soybeans by United Soybean Board / Soybean Checkoff, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "soybean",
+      "cultivar": "unknown",
+      "lifeStage": "field vegetative growth",
+      "affectedLocation": "exposed foliage and growing points",
+      "distribution": "field injury views; exact application distribution not included in image metadata",
+      "progression": "photographed after herbicide injury; timing and recovery not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "field conditions; weather and application conditions not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "chemical-injury reference context",
+        "distorted and injured foliage without direct pest bodies",
+        "multiple views from the documented injury set"
+      ],
+      "plausibleAlternatives": [
+        "broad or russet mites",
+        "heat or light stress",
+        "nutrient or pH-related distortion",
+        "viral symptoms",
+        "physical damage"
+      ],
+      "confirmationMethod": "Require product, concentration, coverage, application time, light/temperature, and symptom-onset history; do not infer the chemical or active ingredient from appearance.",
+      "expectedCauseRanking": ["other_abiotic", "insufficient_evidence"],
+      "expectedUrgency": "stop repeat exposure and document the event before recommending any corrective action",
+      "expectedQuarantineGuidance": "Do not label chemical injury contagious; separately scout for pests or disease when direct signs exist.",
+      "expectedScoutingSteps": [
+        "map injury against spray or drift coverage",
+        "compare protected and exposed tissue",
+        "record product, rate, timing, weather, light, and symptom onset",
+        "inspect for direct mites, eggs, webbing, frass, colonies, or fungal growth"
+      ],
+      "expectedIpmResponse": "Preserve chemical or spray injury as an abiotic hypothesis when exposure history and distribution fit; never invent a product, rate, or remedy, and do not headline a pest or disease without direct signs."
     }
   ]
 }

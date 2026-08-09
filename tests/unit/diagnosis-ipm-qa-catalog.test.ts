@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(4);
+    expect(catalog.mediaRecords).toHaveLength(5);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -167,6 +167,16 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "ipm-aphids-beneficial-context-open-001",
           caseId: "aphids"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-chemical-spray-injury-open-001",
+          caseId: "spray_burn",
+          imageSet: expect.arrayContaining([
+            expect.objectContaining({
+              licenseId: "CC-BY-2.0",
+              intendedUseApproved: true
+            })
+          ])
         })
       ])
     );
