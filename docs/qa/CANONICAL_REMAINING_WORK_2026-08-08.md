@@ -35,9 +35,18 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
       licenses, and exact follow-up-photo expectations. Never use the pack as training
       data without a separately approved policy.
-- [ ] Production-retest Plant ID autofill, direct optional geolocation without a
+- [~] Production-retest Plant ID autofill, direct optional geolocation without a
       Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
       extraction, prompt length, saved-run reload, and correction/confirmation flows.
+      The retained-media analysis path is live-verified: frontend `4829d2ff`, backend
+      `1144dadc`, ToolRun `6a77f67895931a1ea2ab10d9`. The Headies Personal account
+      restored 12 still images plus one private source video, analyzed all 12 stills
+      including 10 server-extracted frames, persisted a usable/medium `Cannabis spp.`
+      candidate with Cannabaceae/Cannabis narrowing, withheld species/cultivar certainty,
+      and reloaded the exact evidence receipt from Saved Runs. Production also verified
+      automatic credit refunds for failed provider reviews while fixing the nested JSON
+      response and stale vision-receipt contract. Direct private geolocation, opt-in
+      Discovery Nature photo-pin publication/privacy, and correction/confirmation remain.
 - [ ] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
       visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
       inference warnings, pistil/bud-development context, top/middle/lower/context
