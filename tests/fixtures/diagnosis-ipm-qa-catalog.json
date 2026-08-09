@@ -4360,6 +4360,40 @@
       "expectedQuarantineGuidance": "Do not quarantine for arid context, wilt, or suspected underwatering alone; isolate only when linked pest or disease evidence supports a transmissible cause.",
       "expectedScoutingSteps": ["capture whole plants, affected and unaffected tissue, container or field distribution, irrigation zones, crowns, and washed roots", "measure root-zone moisture or water potential at multiple depths before irrigation and record air and leaf temperature, humidity or VPD, radiation or PPFD, wind, and exposure duration", "verify emitter output, irrigation volume and frequency, runoff, drainage, hydrophobicity, root contact, salinity, pH, EC, and recent disturbance", "mark plants and document timed turgor response and overnight recovery after evidence-based irrigation, then investigate disease and roots when recovery does not match"],
       "expectedIpmResponse": "Treat wilt, dry surroundings, and the act of watering as context rather than proof of underwatering. Require pre-irrigation moisture or water-potential evidence, delivery checks, roots, distribution, environmental demand, and recovery response; preserve saturated-root, disease, salinity, heat, high-VPD, light, and senescence alternatives; and avoid reflex watering or universal schedules from a photo."
+    },
+    {
+      "recordId": "diagnosis-wind-exposure-abrasion-boundary-open-002",
+      "caseId": "wind_burn",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-d2539-1-field-wind-tunnel", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/is/graphics/photos/jul12/d2539-1.htm", "mediaUrl": "https://www.ars.usda.gov/is/graphics/photos/jul12/d2539-1.jpg",
+          "creator": "Brenton Sharratt / USDA Agricultural Research Service", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Field wind tunnel used to measure soil-particle erosion near recently planted wheat, photographed by Brenton Sharratt, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-d4527-1-red-cedar-windbreak", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/nov20/d4527-1/", "mediaUrl": "https://www.ars.usda.gov/oc/images/photos/nov20/d4527-1.jpg",
+          "creator": "Tom Sauer / USDA Agricultural Research Service", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Five-row red cedar windbreak at the University of Nebraska-Lincoln photographed by Tom Sauer, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "recently planted wheat in a field wind-erosion experiment and established red cedar rows used as a windbreak; neither image documents leaf-level wind injury",
+      "cultivar": "unknown", "lifeStage": "recently planted field crop and established woody windbreak in separate references",
+      "affectedLocation": "field-scale exposure and shelter context; no fan-facing leaf margin, stem, windward surface, or sheltered tissue pair is shown",
+      "distribution": "separate research and windbreak views without measured windward-to-leeward injury, row-edge gradient, plant asymmetry, or affected-unaffected controls",
+      "progression": "single-time context images without pre-event condition, exposure duration, abrasion onset, tissue progression, correction response, or recovery",
+      "mediumRootZone": "soil erosion context is documented, but root exposure, moisture, oxygen, salinity, pH, EC, delivery, and root integrity are not paired with plant symptoms",
+      "environment": "wind research and shelter are documented, but canopy-height speed, direction, gusts, particle flux, temperature, humidity, VPD, radiation, and duration are not supplied as a diagnostic series",
+      "measuredValues": "no case-linked air-speed map, particle flux, leaf temperature, VPD, moisture trend, abrasion count, directional lesion map, or recovery measurement accompanies the pair",
+      "diagnosticSigns": ["the field reference documents a wind tunnel measuring soil-particle erosion rather than a diagnosed plant injury", "the windbreak reference documents a shelter structure rather than proof that nearby plants were wind burned", "the pair supports measuring exposure and comparing windward and sheltered zones instead of labeling dry or torn foliage from appearance"],
+      "plausibleAlternatives": ["drought, failed irrigation, high VPD, heat, excess light, sunscald, or normal midday posture", "sandblast, hail, handling, rubbing, equipment, wildlife, or another mechanical injury", "spray burn, herbicide drift, fertilizer or salt injury, residue, or phytotoxicity", "thrips, mites, chewing pests, leaf miners, or another feeding injury", "bacterial, fungal, viral, root, crown, or vascular disease and normal senescence"],
+      "confirmationMethod": "Map symptoms against fans, vents, prevailing wind, row edges, barriers, and sheltered controls; measure canopy-height speed, direction, gusts, particle load, duration, temperature, humidity or VPD, radiation, and root-zone water status; inspect directional abrasion and pests; record applications and event timing; and document progression after one safe reversible airflow correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "pest", "disease"],
+      "expectedUrgency": "document and reduce clearly unsafe direct airflow or active particle abrasion promptly, while avoiding broad ventilation shutdown from appearance alone",
+      "expectedQuarantineGuidance": "Do not quarantine for wind exposure, wind burn, or mechanical abrasion alone; limit movement only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": ["capture whole plants plus windward, leeward, fan-facing, sheltered, canopy-edge, row-edge, affected, and unaffected views", "measure air speed and direction at leaf height across positions and record gusts, fan schedule, recent wind events, particle load, temperature, humidity or VPD, radiation, and duration", "inspect leaf margins, surfaces, stems, and contact points for directional abrasion, debris impact, pests, lesions, residue, hail, or handling patterns", "measure root-zone moisture, delivery, pH, and EC; record applications; mark tissue; and compare progression after one safe reversible exposure correction"],
+      "expectedIpmResponse": "Do not diagnose wind burn from wind context, a fan, a windbreak, dry margins, curl, or tears alone. Require measured canopy exposure, windward-versus-sheltered distribution, event timing, directional abrasion, water and atmospheric demand, and response to a reversible correction; preserve drought, heat, light, spray, salt, mechanical, pest, disease, root, and senescence alternatives; and never invent ventilation or pesticide directions."
     }
   ]
 }
