@@ -109,8 +109,11 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "visible sampled-head estimate split into clear, cloudy, amber, and cloudy-or-glare with exact region basis and an explicit no-whole-plant-percentage boundary"
     );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "explicit user-date or breeder-timing planning range with separate reasons the window may be open, reasons to wait, missing evidence, confidence, and a non-trichome-date boundary"
+    );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
-      "Never convert missing qualified trichome evidence into a generic three-to-seven-day estimate, dated harvest decision, or dry/cure deadline; return insufficient evidence and request the missing observations."
+      "Never convert missing qualified trichome evidence into a generic three-to-seven-day harvest recommendation or imply trichome maturity was assessed. A low-confidence planning range is allowed only from an explicit user approximate date or explicit flower-day plus breeder timing, with separate reasons to harvest, reasons to wait, missing evidence, and range provenance; it cannot create an automatic harvest decision or dry/cure deadline."
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never trust client-supplied harvest provider metadata, AI percentages, evidence IDs, or an analysis ID as proof of image analysis; validate the exact server receipt and reconstruct the saved photo result."

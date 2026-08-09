@@ -5536,8 +5536,23 @@ function calculateGeneticsInventory(input = {}) {
 }
 
 function calculateHarvestReadiness(input = {}) {
-  const flowerDay = number(input.flowerDay ?? 49, "Flower day");
-  const breederFlowerTime = number(input.breederFlowerTime ?? 63, "Breeder flower time");
+  const hasFlowerDay =
+    input.flowerDay !== undefined &&
+    input.flowerDay !== null &&
+    String(input.flowerDay).trim() !== "";
+  const hasBreederFlowerTime =
+    input.breederFlowerTime !== undefined &&
+    input.breederFlowerTime !== null &&
+    String(input.breederFlowerTime).trim() !== "";
+  const flowerDay = hasFlowerDay ? number(input.flowerDay, "Flower day") : null;
+  const breederFlowerTime = hasBreederFlowerTime
+    ? number(input.breederFlowerTime, "Breeder flower time")
+    : null;
+  const approximateHarvestDate = /^\d{4}-\d{2}-\d{2}$/.test(
+    String(input.approximateHarvestDate || "").trim()
+  )
+    ? String(input.approximateHarvestDate).trim()
+    : null;
   const trichomeInputsComplete = [
     input.cloudyPercent,
     input.amberPercent,
@@ -5565,7 +5580,8 @@ function calculateHarvestReadiness(input = {}) {
   const userGoal = String(
     input.userGoal || input.userEffectGoal || "balanced"
   ).toLowerCase();
-  const remaining = breederFlowerTime - flowerDay;
+  const hasFlowerDayRange = flowerDay != null && breederFlowerTime != null;
+  const remaining = hasFlowerDayRange ? breederFlowerTime - flowerDay : null;
   const structurallyFinished = /fully|finished|done|complete/.test(budSwellStatus);
   const structurallyDeveloping = /still|building|uneven|developing|not_done/.test(
     budSwellStatus
@@ -5583,10 +5599,16 @@ function calculateHarvestReadiness(input = {}) {
       "Trichome percentages are missing. Enter confirmed manual observations or use usable macro-photo analysis before relying on harvest timing."
     );
   }
-  if (trichomeInputsComplete && remaining <= 10 && cloudyPercent >= 50)
+  if (
+    trichomeInputsComplete &&
+    remaining != null &&
+    remaining <= 10 &&
+    cloudyPercent >= 50
+  )
     readinessStatus = "checking_window";
   if (
     trichomeInputsComplete &&
+    remaining != null &&
     remaining <= 3 &&
     cloudyPercent >= 60 &&
     amberPercent >= 5
@@ -5615,6 +5637,88 @@ function calculateHarvestReadiness(input = {}) {
       "Aroma is reported as dropping. Compare daily: waiting for more amber may trade away peak smell and flavor."
     );
   }
+  const explicitTimingContext = Boolean(approximateHarvestDate || hasFlowerDayRange);
+  const hasWholePlantSignal =
+    pistilStatus !== "unknown" ||
+    budSwellStatus !== "unknown" ||
+    aromaStatus !== "unknown";
+  if (!trichomeInputsComplete && explicitTimingContext && hasWholePlantSignal) {
+    readinessStatus = "timing_review_window";
+  }
+  const reasonsWindowMayBeOpen = [
+    approximateHarvestDate
+      ? `The user-supplied approximate harvest date is ${approximateHarvestDate}.`
+      : null,
+    hasFlowerDayRange && remaining <= 0
+      ? `Flower day ${flowerDay} has reached or passed the breeder day-${breederFlowerTime} reference.`
+      : hasFlowerDayRange && remaining <= 7
+        ? `Flower day ${flowerDay} is within one week of the breeder day-${breederFlowerTime} reference.`
+        : null,
+    aromaDropping
+      ? "Aroma is reported as dropping, which can mean the peak flavor window is passing."
+      : null,
+    pistilsDying
+      ? "Dying, darkening, or receding pistils support maturity when other signals agree."
+      : null,
+    structurallyFinished
+      ? "Bud/calyx swelling is reported as finished across the reviewed sites."
+      : null,
+    trichomeInputsComplete && cloudyPercent >= 50
+      ? `The entered sample is cloudy-dominant (${cloudyPercent}% cloudy).`
+      : null,
+    trichomeInputsComplete && amberPercent >= 5
+      ? `Amber heads are entered at ${amberPercent}% in the sampled areas.`
+      : null
+  ].filter(Boolean);
+  const reasonsToWait = [
+    structurallyDeveloping
+      ? "Bud/calyx swelling is reported as unfinished, so more structural development may remain."
+      : null,
+    pistilsStillGrowing
+      ? "Substantial fresh or newly appearing pistils can indicate continued development or stress-driven reflowering."
+      : null,
+    trichomeInputsComplete && clearPercent > 25
+      ? `Clear heads remain prominent (${clearPercent}% in the entered sample).`
+      : null,
+    !trichomeInputsComplete
+      ? "A complete qualified trichome distribution is not available, so trichome development cannot support the timing decision yet."
+      : null
+  ].filter(Boolean);
+  const missingDecisionEvidence = [
+    !trichomeInputsComplete
+      ? "Qualified clear/cloudy/amber observations from representative bud-calyx samples"
+      : null,
+    budSwellStatus === "unknown" ? "Whether bud/calyx swelling is still active" : null,
+    pistilStatus === "unknown" ? "Current fresh/dark/receded pistil pattern" : null,
+    aromaStatus === "unknown" ? "Aroma trend compared with its recent peak" : null,
+    !explicitTimingContext
+      ? "An approximate harvest date or explicit current flower day and breeder timing"
+      : null
+  ].filter(Boolean);
+  const shiftedDate = (dateValue, days) => {
+    const date = new Date(`${dateValue}T12:00:00.000Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  };
+  const planningWindow = approximateHarvestDate
+    ? {
+        kind: "user_date_planning_range",
+        startDate: shiftedDate(approximateHarvestDate, -7),
+        targetDate: approximateHarvestDate,
+        endDate: shiftedDate(approximateHarvestDate, 7),
+        confidence: trichomeInputsComplete ? "medium" : "low",
+        source: "user_approximate_date"
+      }
+    : hasFlowerDayRange
+      ? {
+          kind: "breeder_timing_planning_range",
+          startDay: Math.max(flowerDay, breederFlowerTime - 7),
+          targetDay: breederFlowerTime,
+          endDay: breederFlowerTime + 14,
+          confidence: trichomeInputsComplete ? "medium" : "low",
+          source: "flower_day_and_breeder_reference"
+        }
+      : null;
   const goalInterpretation = userGoal.includes("bright")
     ? "Bright effect goal: prefer mostly cloudy with low amber only when pistils, swell, and aroma agree."
     : userGoal.includes("heavy")
@@ -5625,9 +5729,12 @@ function calculateHarvestReadiness(input = {}) {
   const evidence = [
     {
       factor: "flower_day",
-      observation: `Flower day ${flowerDay}`,
-      interpretation:
-        remaining > 10 ? "Earlier than breeder window." : "Near breeder reference window."
+      observation: flowerDay == null ? "Not entered" : `Flower day ${flowerDay}`,
+      interpretation: !hasFlowerDayRange
+        ? "Flower day and breeder timing are incomplete, so no timing range was inferred."
+        : remaining > 10
+          ? "Earlier than breeder window."
+          : "Near breeder reference window."
     },
     {
       factor: "trichomes",
@@ -5673,18 +5780,25 @@ function calculateHarvestReadiness(input = {}) {
   ];
   return {
     readinessStatus,
-    estimatedWindow: {
-      startDay: Math.max(flowerDay, breederFlowerTime - 7),
-      targetDay: breederFlowerTime,
-      endDay: breederFlowerTime + 14,
-      confidence: warnings.length > 2 ? "medium" : "planning"
+    estimatedWindow: planningWindow,
+    harvestWindowReview: {
+      range: planningWindow,
+      reasonsWindowMayBeOpen,
+      reasonsToWait,
+      missingEvidence: missingDecisionEvidence,
+      confidence: planningWindow?.confidence || "insufficient",
+      boundary: trichomeInputsComplete
+        ? "This range combines entered timing and maturity observations."
+        : "This is a timing-context planning range, not a trichome-derived harvest date."
     },
-    breederTimelineInterpretation: `Breeder day ${breederFlowerTime} is a reference, not a deadline. Begin close checks near day ${Math.max(
-      1,
-      breederFlowerTime - 7
-    )}, compare peak smell and flavor at day ${breederFlowerTime}, and treat day ${
-      breederFlowerTime + 14
-    } as the late edge rather than an automatic harvest date.`,
+    breederTimelineInterpretation: hasFlowerDayRange
+      ? `Breeder day ${breederFlowerTime} is a reference, not a deadline. Begin close checks near day ${Math.max(
+          1,
+          breederFlowerTime - 7
+        )}, compare peak smell and flavor at day ${breederFlowerTime}, and treat day ${
+          breederFlowerTime + 14
+        } as the late edge rather than an automatic harvest date.`
+      : "Enter both current flower day and breeder timing to show a breeder-centered planning range.",
     evidence,
     trichomeInterpretation: !trichomeInputsComplete
       ? "Trichome evidence is missing. Add confirmed manual values or usable macro-photo analysis."
@@ -5728,11 +5842,15 @@ function calculateHarvestReadiness(input = {}) {
         dueInDays: readinessStatus === "ready_soon" ? 1 : 3,
         priority: "medium"
       },
-      {
-        title: "Prepare dry room",
-        dueInDays: readinessStatus === "ready_soon" ? 1 : 5,
-        priority: readinessStatus === "ready_soon" ? "high" : "medium"
-      }
+      ...(trichomeInputsComplete
+        ? [
+            {
+              title: "Prepare dry room",
+              dueInDays: readinessStatus === "ready_soon" ? 1 : 5,
+              priority: readinessStatus === "ready_soon" ? "high" : "medium"
+            }
+          ]
+        : [])
     ],
     recommendations: [
       !trichomeInputsComplete
@@ -5753,7 +5871,11 @@ function calculateHarvestReadiness(input = {}) {
       aromaDropping
         ? "Smell is dropping: consider harvesting within the current window instead of waiting only for more amber."
         : "Track aroma daily and note the first decline from peak smell and flavor.",
-      `Use breeder day ${breederFlowerTime} as the center reference; the displayed range runs from one week before it through two weeks after it.`
+      approximateHarvestDate
+        ? `Use ${approximateHarvestDate} as the user-supplied center reference; review the displayed planning range against swelling, trichomes, pistils, and aroma rather than treating it as a deadline.`
+        : hasFlowerDayRange
+          ? `Use breeder day ${breederFlowerTime} as the center reference; the displayed range runs from one week before it through two weeks after it.`
+          : "Add an approximate harvest date or both flower day and breeder timing to display a planning range."
     ],
     recommendation:
       readinessStatus === "ready_soon"

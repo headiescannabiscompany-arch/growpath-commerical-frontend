@@ -1702,6 +1702,18 @@ describe("Tools Router (tools.js)", () => {
         sampleLocation: "mixed_bud_sites"
       })
     );
+    const harvestConflictingSignals = await authed(
+      request(app).post("/api/tools/harvest-readiness").send({
+        growId: "grow_1",
+        approximateHarvestDate: "2026-08-12",
+        cloudyPercent: "",
+        amberPercent: "",
+        clearPercent: "",
+        pistilStatus: "fresh_and_receding_mixed",
+        budSwellStatus: "still_developing",
+        aromaIntensity: "dropping"
+      })
+    );
 
     expect(genetics.status).toBe(201);
     expect(genetics.body.outputs).toMatchObject({
@@ -1735,13 +1747,31 @@ describe("Tools Router (tools.js)", () => {
     expect(harvest.status).toBe(201);
     expect(harvestWithoutTrichomes.status).toBe(201);
     expect(harvestWithoutTrichomes.body.outputs).toMatchObject({
-      readinessStatus: "early",
+      readinessStatus: "timing_review_window",
       trichomeObservation: {
         clearPercent: null,
         cloudyPercent: null,
         amberPercent: null,
         sampleLocation: "mixed_bud_sites",
         evidenceStatus: "missing"
+      },
+      harvestWindowReview: {
+        range: expect.objectContaining({
+          kind: "breeder_timing_planning_range",
+          startDay: 61,
+          targetDay: 63,
+          endDay: 77,
+          confidence: "low"
+        }),
+        reasonsWindowMayBeOpen: expect.arrayContaining([
+          expect.stringMatching(/within one week of the breeder/i),
+          expect.stringMatching(/receding pistils support maturity/i),
+          expect.stringMatching(/swelling is reported as finished/i)
+        ]),
+        reasonsToWait: expect.arrayContaining([
+          expect.stringMatching(/complete qualified trichome distribution/i)
+        ]),
+        boundary: expect.stringMatching(/not a trichome-derived harvest date/i)
       }
     });
     expect(harvestWithoutTrichomes.body.outputs.warnings).toEqual(
@@ -1749,6 +1779,31 @@ describe("Tools Router (tools.js)", () => {
         expect.stringContaining("Trichome percentages are missing")
       ])
     );
+    expect(harvestWithoutTrichomes.body.outputs.tasksToCreate).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ title: "Prepare dry room" })])
+    );
+    expect(harvestConflictingSignals.status).toBe(201);
+    expect(harvestConflictingSignals.body.outputs).toMatchObject({
+      readinessStatus: "timing_review_window",
+      harvestWindowReview: {
+        range: {
+          kind: "user_date_planning_range",
+          startDate: "2026-08-05",
+          targetDate: "2026-08-12",
+          endDate: "2026-08-19",
+          confidence: "low",
+          source: "user_approximate_date"
+        },
+        reasonsWindowMayBeOpen: expect.arrayContaining([
+          expect.stringMatching(/user-supplied approximate harvest date/i),
+          expect.stringMatching(/aroma is reported as dropping/i)
+        ]),
+        reasonsToWait: expect.arrayContaining([
+          expect.stringMatching(/swelling is reported as unfinished/i),
+          expect.stringMatching(/trichome distribution is not available/i)
+        ])
+      }
+    });
     expect(harvest.body.outputs).toMatchObject({
       readinessStatus: "ready_soon",
       harvestTask: expect.objectContaining({ title: "Recheck harvest readiness" }),

@@ -625,20 +625,36 @@ function harvestCalendarMetadata(sourceStage: string) {
 
 function readinessTaskPlan(outputs: Record<string, any>, payload: Record<string, any>) {
   const readinessStatus = String(outputs.readinessStatus || "");
+  const hasQualifiedTrichomeDistribution =
+    outputs.trichomeObservation?.evidenceStatus === "entered" &&
+    ["clearPercent", "cloudyPercent", "amberPercent"].every((key) =>
+      Number.isFinite(Number(outputs.trichomeObservation?.[key]))
+    );
   const hasNumericWindow =
     outputs.estimatedWindow &&
     typeof outputs.estimatedWindow === "object" &&
     Number.isFinite(Number(outputs.estimatedWindow.startDay)) &&
     Number.isFinite(Number(outputs.estimatedWindow.targetDay));
-  if (readinessStatus === "insufficient_evidence" || !hasNumericWindow) {
+  if (
+    readinessStatus === "insufficient_evidence" ||
+    readinessStatus === "timing_review_window" ||
+    !hasNumericWindow ||
+    !hasQualifiedTrichomeDistribution
+  ) {
+    const range = outputs.harvestWindowReview?.range;
+    const planningRange =
+      range?.startDate && range?.endDate
+        ? ` A user-timing planning range of ${range.startDate} to ${range.endDate} is available, but it is not trichome-derived.`
+        : range?.startDay != null && range?.endDay != null
+          ? ` A breeder-centered planning range of flower day ${range.startDay} to ${range.endDay} is available, but it is not trichome-derived.`
+          : "";
     return [
       {
         title: "Capture representative trichome macros",
         priority: "high" as const,
         dueDate: tomorrow(1),
         ...harvestCalendarMetadata("trichome_photo_capture"),
-        description:
-          "Capture sharp neutral-light calyx macros from top, middle, and lower bud sites plus a wider context view. The current evidence does not support a dated harvest window."
+        description: `Capture sharp neutral-light calyx macros from top, middle, and lower bud sites plus a wider context view. The current evidence does not support an automatic harvest decision.${planningRange}`
       },
       {
         title: "Complete harvest maturity observations",
@@ -723,9 +739,11 @@ function harvestReviewNotes(outputs: Record<string, any>, payload: Record<string
   return [
     `Readiness: ${String(outputs.readinessStatus || "unknown").replaceAll("_", " ")}.`,
     outputs.estimatedWindow
-      ? `Window: flower day ${outputs.estimatedWindow.startDay ?? "-"} to ${
-          outputs.estimatedWindow.endDay ?? "-"
-        }, target ${outputs.estimatedWindow.targetDay ?? "-"}.`
+      ? outputs.estimatedWindow.startDate && outputs.estimatedWindow.endDate
+        ? `User-timing planning range: ${outputs.estimatedWindow.startDate} to ${outputs.estimatedWindow.endDate}, centered on ${outputs.estimatedWindow.targetDate}.`
+        : `Window: flower day ${outputs.estimatedWindow.startDay ?? "-"} to ${
+            outputs.estimatedWindow.endDay ?? "-"
+          }, target ${outputs.estimatedWindow.targetDay ?? "-"}.`
       : "",
     `Trichomes: cloudy ${payload.cloudyPercent || "-"}%, amber ${
       payload.amberPercent || "-"
@@ -812,7 +830,7 @@ export default function HarvestReadinessToolRoute({
             ? ""
             : undefined,
         buildMessage: () =>
-          `Prefill a Harvest Readiness review using the selected grow and plant's saved timeline, breeder/cultivar information, logs, photos and prior vision results, environment, tasks, diagnoses, and harvest records. Return JSON only with exactly these keys: {"flowerDay":"string","breederFlowerTime":"string","cloudyPercent":"string","amberPercent":"string","clearPercent":"string","pistilStatus":"string","budSwellStatus":"string","sampleLocation":"string","harvestBatchId":"string","aromaIntensity":"string","userGoal":"string","additionalInformation":"string"}. Never infer trichome percentages from ordinary plant photos; fill them only from a saved usable macro-photo analysis. If current media is missing, blurry, lacks visible trichome heads, or covers too few bud sites, leave those percentages blank and explain exactly which better photos are needed in additionalInformation. Leave unknown observations blank rather than inventing them.`
+          `Prefill a Harvest Readiness review using the selected grow and plant's saved timeline, breeder/cultivar information, logs, photos and prior vision results, environment, tasks, diagnoses, and harvest records. Return JSON only with exactly these keys: {"flowerDay":"string","breederFlowerTime":"string","approximateHarvestDate":"string","cloudyPercent":"string","amberPercent":"string","clearPercent":"string","pistilStatus":"string","budSwellStatus":"string","sampleLocation":"string","harvestBatchId":"string","aromaIntensity":"string","userGoal":"string","additionalInformation":"string"}. Fill approximateHarvestDate only from an explicit saved user date, formatted YYYY-MM-DD; never invent one from breeder timing. Never infer trichome percentages from ordinary plant photos; fill them only from a saved usable macro-photo analysis. If current media is missing, blurry, lacks visible trichome heads, or covers too few bud sites, leave those percentages blank and explain exactly which better photos are needed in additionalInformation. Leave unknown observations blank rather than inventing them.`
       }}
       formHeader={({
         growId,
@@ -854,6 +872,14 @@ export default function HarvestReadinessToolRoute({
           defaultValue: "",
           keyboardType: "numeric",
           helpText: "Reference only—not proof that this phenotype is ready."
+        },
+        {
+          key: "approximateHarvestDate",
+          label: "Your approximate harvest date (optional)",
+          defaultValue: "",
+          inputType: "date",
+          helpText:
+            "This becomes the center of a low-confidence planning range, not an automatic harvest date."
         },
         {
           key: "cloudyPercent",
@@ -945,7 +971,9 @@ export default function HarvestReadinessToolRoute({
           value:
             typeof outputs.estimatedWindow === "string"
               ? outputs.estimatedWindow.replaceAll("_", " ")
-              : undefined
+              : outputs.estimatedWindow?.startDate && outputs.estimatedWindow?.endDate
+                ? `${outputs.estimatedWindow.startDate} to ${outputs.estimatedWindow.endDate}`
+                : undefined
         },
         { key: "start", label: "Start day", value: outputs.estimatedWindow?.startDay },
         {
@@ -954,6 +982,11 @@ export default function HarvestReadinessToolRoute({
           value: outputs.estimatedWindow?.targetDay
         },
         { key: "end", label: "End day", value: outputs.estimatedWindow?.endDay },
+        {
+          key: "range-boundary",
+          label: "Range meaning",
+          value: outputs.harvestWindowReview?.boundary
+        },
         {
           key: "pistils",
           label: "Pistils",
@@ -1024,8 +1057,35 @@ export default function HarvestReadinessToolRoute({
       ]}
       buildNotices={(outputs) => {
         const warnings = Array.isArray(outputs.warnings) ? outputs.warnings : [];
+        const review =
+          outputs.harvestWindowReview && typeof outputs.harvestWindowReview === "object"
+            ? outputs.harvestWindowReview
+            : {};
         const photo = outputs.photoAnalysis;
         return [
+          ...(Array.isArray(review.reasonsWindowMayBeOpen)
+            ? review.reasonsWindowMayBeOpen.map((message: string, index: number) => ({
+                key: `window-open-${index}`,
+                severity: "info" as const,
+                message: `Reason the window may be open: ${message}`
+              }))
+            : []),
+          ...(Array.isArray(review.reasonsToWait)
+            ? review.reasonsToWait.map((message: string, index: number) => ({
+                key: `window-wait-${index}`,
+                severity: "medium" as const,
+                message: `Reason to wait: ${message}`
+              }))
+            : []),
+          ...(Array.isArray(review.missingEvidence) && review.missingEvidence.length
+            ? [
+                {
+                  key: "window-missing-evidence",
+                  severity: "medium" as const,
+                  message: `Still needed: ${review.missingEvidence.join("; ")}.`
+                }
+              ]
+            : []),
           ...(photo?.performed
             ? [
                 {
