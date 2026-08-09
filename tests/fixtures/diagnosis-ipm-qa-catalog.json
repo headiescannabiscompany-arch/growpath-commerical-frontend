@@ -5244,6 +5244,74 @@
       "expectedQuarantineGuidance": "Reduce movement of suspect wet media, runoff, tools and plants only when progressive infectious root disease is credible; do not quarantine for brown or exposed roots alone.",
       "expectedScoutingSteps": ["capture whole plants, mapped distribution, intact washed fine roots, tips, crown, lower stem and matched controls", "record irrigation, drainage, saturation, moisture, oxygen context, temperature, pH, EC, sanitation, propagation and progression", "inspect for sloughing, lesions, odor, vascular browning, pests, physical injury, compaction and emitter nonuniformity", "preserve fresh symptomatic margins and obtain qualified organism confirmation before pathogen-specific action"],
       "expectedIpmResponse": "Do not diagnose Pythium from brown roots, wet media, wilt, a poster or generic root imagery. Require intact fine roots and crown, mapped progression, irrigation and root-zone measurements, pest and abiotic exclusions, and qualified case-linked confirmation; distinguish other root diseases and avoid invented treatment or disposal directions."
+    },
+    {
+      "recordId": "diagnosis-damping-off-normal-emergence-boundary-open-003",
+      "caseId": "damping_off",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usda-pd-germination-illustration", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Germination_usda.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Germination_usda.jpg",
+          "creator": "USDA NRCS Pullman", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Seed-germination illustration prepared by USDA NRCS Pullman; U.S. public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usfs-pd-newly-planted-seedling", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Newly_planted_seedling_(33992387248).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Newly_planted_seedling_(33992387248).jpg",
+          "creator": "USDA Forest Service, Northern Region", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Newly planted ponderosa pine seedling photographed by the USDA Forest Service Northern Region; U.S. public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "normal germination stages and a newly planted ponderosa pine seedling; neither reference documents damping-off",
+      "cultivar": "unknown", "lifeStage": "germinating seed through newly transplanted seedling",
+      "affectedLocation": "illustrated germination structures and one field seedling without a documented stem-line lesion, collapsed hypocotyl, roots or tray controls",
+      "distribution": "no propagation-tray map, emergence count, wet pocket, irrigation pattern or affected-unaffected comparison",
+      "progression": "no sequence showing failed emergence, constriction, collapse, spread or recovery",
+      "mediumRootZone": "moisture, oxygen, temperature, pH, EC, compaction and drainage are not measured",
+      "environment": "irrigation frequency, humidity, airflow, light, heat, sanitation, seed handling and transplant history are absent",
+      "measuredValues": "no emergence percentage, collapse count, stem diameter, root grade, moisture, temperature, microscopy, culture or molecular result accompanies the pair",
+      "diagnosticSigns": ["normal cotyledon emergence, curved hypocotyls and delicate stems are not damping-off by themselves", "a newly planted or leaning seedling may reflect handling, orientation, wind or transplant stress", "damping-off attribution requires mapped loss or progressive collapse plus stem-line or root lesions and propagation context"],
+      "plausibleAlternatives": ["normal germination posture, phototropism, transplant angle or mechanical handling", "drought, waterlogging, low oxygen, heat, cold, salinity, pH, EC or compaction", "seed-quality or emergence failure, nutrient stress, herbicide or spray injury", "Pythium, Rhizoctonia, Fusarium, Phytophthora, bacterial disease, fungus-gnat larvae or mixed causes"],
+      "confirmationMethod": "Map emergence and collapse by cell or zone; capture intact seedlings, stem line, crown and washed roots with healthy controls; measure moisture and temperature; record irrigation and progression; and obtain qualified case-linked organism testing when identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "disease", "pest"],
+      "expectedUrgency": "document and preserve newly collapsing seedlings promptly before decomposition or handling removes stem and root evidence",
+      "expectedQuarantineGuidance": "Limit movement of suspect wet media, runoff and tools only when progressive infectious loss is credible; do not quarantine for normal emergence posture or one leaning transplant.",
+      "expectedScoutingSteps": ["count emergence, upright seedlings and collapse by tray cell or propagation zone", "capture intact stem lines, crowns, washed roots, medium surfaces and matched healthy controls", "record irrigation, drainage, moisture, temperature, humidity, airflow, light, sanitation and progression", "inspect for constriction, water-soaking, root loss, pests and physical injury; obtain qualified confirmation before organism-specific action"],
+      "expectedIpmResponse": "Do not diagnose damping-off from germination posture, a thin stem, one leaning seedling, wet-looking media or transplant stress. Require mapped emergence and progressive collapse, stem-line and root evidence, measured propagation conditions, abiotic and pest exclusions, and qualified confirmation; avoid automatic fungicide, disposal or watering directions."
+    },
+    {
+      "recordId": "diagnosis-rust-cross-host-structure-boundary-open-003",
+      "caseId": "rust",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usda-pd-soybean-rust-uredinia", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:LSoybean_rust_infection.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/LSoybean_rust_infection.jpg",
+          "creator": "USDA Agricultural Research Service", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Advanced soybean rust infection with chlorosis and uredinia from USDA Agricultural Research Service material; U.S. public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-rose-rust-leaf", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rose-Rust-2.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rose-Rust-2.jpg",
+          "creator": "Cec-clp", "licenseId": "CC0-1.0", "attributionText": "Rose leaf infected with rust photographed by Cec-clp; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "soybean and rose leaves with separately documented rust infections",
+      "cultivar": "unknown", "lifeStage": "established foliage on unrelated hosts",
+      "affectedLocation": "limited leaf views without matched upper and lower surfaces, whole plants, stems, nearby plants or controls from one case",
+      "distribution": "cross-host examples without canopy pattern, field map, wetness gradient or repeated affected-unaffected plants",
+      "progression": "single-time references without pustule emergence, spore release, lesion expansion, defoliation or marked-leaf follow-up",
+      "mediumRootZone": "roots and root-zone conditions are not shown or measured",
+      "environment": "leaf wetness, rainfall, irrigation, humidity, temperature, airflow, light and recent products are absent",
+      "measuredValues": "no pustule count, paired-surface correspondence, spore-transfer observation, microscopy or molecular result accompanies the pair",
+      "diagnosticSigns": ["documented uredinia and rust pustules show useful structures, but their organism labels cannot transfer across hosts", "chlorosis and orange, brown or raised marks overlap with leaf spots, edema, scale insects, residue and spray injury", "host identity, pustule structure and surface, spore evidence, distribution and progression are required before attribution"],
+      "plausibleAlternatives": ["another rust fungus, Cercospora, Septoria, anthracnose, bacterial spot or mixed disease", "scale insects, mites, thrips, eggs, frass or leaf-miner injury", "edema, mineral or spray residue, fertilizer or pesticide injury, sunscald or abrasion", "nutrition, pH, EC, roots, water stress, senescence, pigmentation or camera artifact"],
+      "confirmationMethod": "Identify the host; capture whole-plant distribution plus matched upper and lower leaf macros, true pustule centers and margins, stems and controls; test spore transfer without destroying all evidence; record wetness and progression; and obtain qualified microscopy or molecular confirmation when organism identity changes management.",
+      "expectedCauseRanking": ["disease", "insufficient_evidence", "pest", "other_abiotic"],
+      "expectedUrgency": "document active pustules and preserve representative tissue promptly before rain, wiping or spraying removes spores",
+      "expectedQuarantineGuidance": "Limit wet handling or plant movement only when actively spreading host-compatible rust is credible; do not quarantine for orange or brown spots alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy distribution, matched upper and lower surfaces, sharp pustule centers and margins, stems and controls", "record host, tissue age, onset, spread, wetness, rainfall, irrigation, humidity, temperature, airflow, light and products", "inspect for raised pustules, transferable spores, residue, edema, scale, mites, frass and spray patterns", "preserve representative tissue and obtain qualified confirmation before organism-specific intervention"],
+      "expectedIpmResponse": "Recognize compatible rust structures without transferring a soybean or rose diagnosis to another host. Require host identity, paired surfaces, true pustules or uredinia, spore evidence, distribution, progression and environmental context; preserve disease, pest, residue, edema and abiotic alternatives; avoid invented fungicide directions."
     }
   ]
 }
