@@ -4428,6 +4428,40 @@
       "expectedQuarantineGuidance": "Do not quarantine for suspected light stress or pigmentation alone; limit movement only when separate evidence supports a transmissible pest or disease.",
       "expectedScoutingSteps": ["capture color-referenced whole-canopy, top-middle-lower, new-old, light-facing-shaded, affected-unaffected, and leaf top-and-underside views", "map PPFD and record DLI, photoperiod, spectrum, fixture or sun geometry, duration, dimming, acclimation, and recent lighting changes", "measure leaf and air temperature, humidity or VPD, airflow, root-zone moisture, temperature, pH, EC, drainage, and irrigation delivery", "mark leaves and compare progression after one measured reversible light correction while inspecting pests, lesions, residue, spray patterns, roots, and normal pigmentation"],
       "expectedIpmResponse": "Do not diagnose light stress from sunlight, brightness, glare, pale or golden foliage, or a caption claiming sunlight-related color change. Require PPFD and DLI, timing and geometry, canopy distribution, leaf temperature, standardized progression, roots, and response to one reversible correction; distinguish normal pigmentation and camera effects from nutrient, root, heat, water, spray, pest, and disease causes; and avoid universal light targets or simultaneous changes."
+    },
+    {
+      "recordId": "diagnosis-visible-damage-cause-boundary-open-002",
+      "caseId": "physical_damage",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-fallen-maple-leaf-raysonho", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:FallenMapleLeaf.JPG", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/FallenMapleLeaf.JPG",
+          "creator": "Raysonho", "licenseId": "CC0-1.0", "attributionText": "Fallen maple leaf photographed by Raysonho; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-broken-branch-001", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Broken_branch_001.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Broken_branch_001.jpg",
+          "creator": "MNK00000001", "licenseId": "CC0-1.0", "attributionText": "Broken branch photographed by MNK00000001; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "fallen maple leaf and unidentified broken woody branch; detachment or breakage is visible but its initiating cause is not",
+      "cultivar": "unknown", "lifeStage": "established foliage and established woody tissue in separate observations",
+      "affectedLocation": "one detached leaf and one broken branch close view without crown, growing point, whole plant, original attachment, or neighboring tissue context",
+      "distribution": "isolated damage views without within-plant, row, canopy, windward, equipment-path, animal-access, spray, or affected-unaffected mapping",
+      "progression": "single-time images without pre-event condition, event timestamp, fresh-edge sequence, continuing tissue loss, healing, secondary decay, or recovery",
+      "mediumRootZone": "roots, anchorage, moisture, oxygen, salinity, pH, EC, drainage, and recent disturbance are not shown or measured",
+      "environment": "weather, wind, hail, temperature, humidity, radiation, equipment, handling, animal access, applications, and structural load are not paired with either image",
+      "measuredValues": "no event record, force or load, wind or hail measurement, lesion expansion, tissue-loss count, pest density, microscopy, culture, or recovery observation accompanies the pair",
+      "diagnosticSigns": ["detachment or disrupted woody tissue is visible in the references", "the captions identify fallen or broken state rather than the event or organism that caused it", "a fallen leaf or broken branch can support physical change while remaining insufficient to distinguish normal abscission, weather, handling, animals, pests, disease, or pre-existing weakness"],
+      "plausibleAlternatives": ["hail, wind, rubbing, equipment, pruning, transport, tying, handling, foot traffic, animals, or structural overload", "caterpillars, beetles, slugs, rodents, birds, or another chewing or breakage pest", "bacterial, fungal, oomycete, canker, rot, vascular, or lesion disease followed by tissue failure", "spray burn, herbicide injury, cold, heat, sunscald, drought, salinity, or nutrient and root stress", "normal abscission, senescence, weak attachment, dead tissue, or damage after detachment"],
+      "confirmationMethod": "Capture whole-plant and site distribution, attachment and fracture surfaces, fresh edge macros, both leaf surfaces, neighboring affected and unaffected tissue, and event geometry; record weather, handling, equipment, animal, pruning, tying, and application history; inspect for pests, frass, eggs, mines, lesions, decay, and vascular weakness; then mark damage and recheck for expansion, healing, or secondary infection.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "pest", "disease"],
+      "expectedUrgency": "stabilize an active structural hazard or ongoing crushing, rubbing, or equipment exposure after documenting it, and assess growing-point or vascular failure promptly",
+      "expectedQuarantineGuidance": "Do not quarantine for torn, missing, or broken tissue alone; limit movement only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": ["capture whole plant, growing point, attachment, fracture, fresh edges, leaf top and underside, nearby plants, and mapped affected-unaffected distribution", "record hail, wind, rubbing, equipment, pruning, tying, handling, transport, animal, temperature, and spray events with exact timing and geometry", "inspect edges and internal tissue for insects, frass, eggs, mines, tooth or scrape patterns, lesions, decay, vascular discoloration, and pre-existing weakness", "mark injuries and recheck for continued expansion, new feeding, healing, wilting beyond the break, or secondary infection before assigning cause"],
+      "expectedIpmResponse": "Describe visible damage without inventing its cause. Require event timing, spatial geometry, edge and fracture character, pest and pathogen evidence, pre-existing tissue condition, and progression to distinguish mechanical, weather, animal, pest, disease, spray, and physiological causes; address immediate structural hazards, preserve uncertainty, and never invent pesticide or disposal directions."
     }
   ]
 }
