@@ -127,7 +127,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       session remained signed in across a hard page reload, correctly identified the
       Personal workspace as current, exposed the shared Facility workspace as
       available, and entered `/home/personal` without reauthentication. Logout,
-      failure/recovery states, and the remaining plans/roles are still open.
+      failure/recovery states, and the remaining plans/roles are still open. Frontend
+      merge `bfdff9be` and Render deployment `dep-d9s39sbl550s73dvs9vg` now reject a
+      malformed Facility invitation before rendering name, birth-date, or password
+      fields; the cache-busted production retest showed the request-new-invitation
+      message and Go to sign in recovery action. A genuine expired-token case remains
+      open and must use a real expired invitation rather than a fabricated substitute.
 - [~] Finish the all-route/button checklist: correct destination, back behavior,
       role gate, readable empty/loading/error state, persistence, and no dead or duplicate
       controls. Personal Pro top-level and More destinations plus Facility Staff
