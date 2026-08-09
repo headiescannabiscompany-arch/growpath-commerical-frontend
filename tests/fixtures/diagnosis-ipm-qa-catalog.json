@@ -3560,6 +3560,134 @@
         "compare first and later fruit and obtain soil, solution, or tissue confirmation before prescribing calcium products"
       ],
       "expectedIpmResponse": "Recognize a blossom-end-rot pattern while refusing to equate it with low calcium supply. Explain calcium transport through active roots and water movement; require moisture, roots, pH, EC, competing-ion, heat, and growth evidence; distinguish secondary decay; and avoid automatic eggshell, gypsum, lime, foliar calcium, or fertilizer instructions."
+    },
+    {
+      "recordId": "diagnosis-brown-foliage-nutrient-excess-boundary-open-001",
+      "caseId": "nutrient_excess",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-drought-sensitive-brown-foliage",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Queen_of_the_Prairie,_Meadowsweet_Filipendula_rubra._(23371872170).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Queen_of_the_Prairie,_Meadowsweet_Filipendula_rubra._(23371872170).jpg",
+          "creator": "Bernard Spragg",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Filipendula rubra reference by Bernard Spragg, CC0 1.0; source notes drying can cause brown leaves.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-plantain-drying-leaf-context",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Heavy_Yielding_Plantain_Sucker.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Heavy_Yielding_Plantain_Sucker.jpg",
+          "creator": "Paul The Writer",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Plantain with drying brown foliage by Paul The Writer, CC0 1.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "Filipendula rubra and plantain used as brown-foliage negative controls",
+      "cultivar": "unknown",
+      "lifeStage": "established vegetative and fruiting plants in separate references",
+      "affectedLocation": "brown or drying foliage without a documented fertilizer-linked pattern",
+      "distribution": "context photographs without tip-to-margin progression, old-new tissue comparison, root-zone gradient, or treated control",
+      "progression": "no input increase, symptom onset, EC trend, correction, or recovery sequence is documented",
+      "mediumRootZone": "medium, roots, irrigation water, drainage, fertilizer placement, pH, and EC are not shown",
+      "environment": "moisture, heat, humidity, light, airflow, rainfall, and seasonal senescence context are incomplete",
+      "measuredValues": "no calibrated input, substrate, leachate, runoff, soil-extract, or tissue values accompany the images",
+      "diagnosticSigns": [
+        "brown and drying foliage is visible but is nonspecific",
+        "one source explicitly describes drought sensitivity, demonstrating a water-stress mimic",
+        "neither image links damage to fertilizer dose, salt accumulation, roots, or measured EC"
+      ],
+      "plausibleAlternatives": [
+        "underwatering, heat, wind, excess light, or normal senescence",
+        "root disease, low oxygen, damaged roots, or irrigation nonuniformity",
+        "spray burn, pest feeding, pathogen lesion, or physical injury",
+        "nutrient deficiency, antagonism, pH lockout, or salinity from source water",
+        "species-specific normal aging of lower or older foliage"
+      ],
+      "confirmationMethod": "Review complete fertilizer and water-source history; inspect roots and distribution; measure calibrated input and medium-appropriate substrate, leachate, runoff, or soil-extract EC and pH using a documented method; compare affected and unaffected plants; and confirm response after correcting the identified source rather than assuming fertilizer excess from tips.",
+      "expectedCauseRanking": ["insufficient_evidence", "excess", "other_abiotic", "lockout", "disease"],
+      "expectedUrgency": "measure before changing feed; act promptly only when calibrated values, roots, and progression support an active excess or salinity hazard",
+      "expectedQuarantineGuidance": "Do not quarantine for suspected nutrient excess alone; isolate only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": [
+        "capture whole-plant, old-new, top-middle-lower, affected-unaffected, root, medium-surface, and drainage views",
+        "record product, concentration, frequency, water source, irrigation volume, runoff, recent changes, and crop stage",
+        "calibrate meters and measure input plus medium-appropriate EC and pH with method, units, temperature, and sample timing",
+        "compare roots and marked-tissue progression after correcting one confirmed source without stacking flushes or supplements"
+      ],
+      "expectedIpmResponse": "Do not label brown tips, dark leaves, curl, or wilt as nutrient excess from photos alone. Require input history, calibrated method-specific EC and pH trends, water source, roots, distribution, and response; preserve water, heat, disease, spray, deficiency, antagonism, and normal-aging alternatives; and do not recommend flushing blindly."
+    },
+    {
+      "recordId": "diagnosis-salinity-ec-measurement-boundary-open-001",
+      "caseId": "ec_problem",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-d929-1-soil-ec-map",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/nov07/d929-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/nov07/d929-1.jpg",
+          "creator": "Stephen Ausmus, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Soil electrical-conductivity mapping by Stephen Ausmus, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-salt-affected-soil-grand-valley",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/dof/the-salt-of-the-earth/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/dof/aug24/SaltAffectedSoilDonSuarez.jpg",
+          "creator": "Don Suarez, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Salt-affected agricultural soil in Grand Valley, Colorado, courtesy Don Suarez, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "field vegetation and salt-affected agricultural soil measurement context",
+      "cultivar": "unknown",
+      "lifeStage": "established field system",
+      "affectedLocation": "field and soil context rather than a single diagnostic leaf",
+      "distribution": "field-scale salinity and EC-mapping references without crop-specific root-zone samples tied to symptoms",
+      "progression": "no complete multi-date EC, irrigation, rainfall, yield, symptom, or remediation sequence accompanies the images",
+      "mediumRootZone": "salt-affected soil is documented, but extraction method, depth, texture, drainage, sodicity, ions, roots, and local crop threshold are absent",
+      "environment": "arid irrigation context is relevant; rainfall, evapotranspiration, water quality, water table, and leaching fraction are not quantified in the images",
+      "measuredValues": "the references demonstrate EC mapping and salinity context but do not provide a case-specific value, sampling method, units, temperature correction, or crop threshold",
+      "diagnosticSigns": [
+        "USDA documents EC mapping as an estimate of field nutrient levels and salinity",
+        "USDA documents visibly salt-affected agricultural soil",
+        "neither image alone establishes root-zone EC, causal ions, plant injury, or a correct remediation volume"
+      ],
+      "plausibleAlternatives": [
+        "localized fertilizer placement, saline source water, sodicity, or shallow water table",
+        "drought, waterlogging, compaction, poor drainage, or irrigation nonuniformity",
+        "pH lockout, nutrient imbalance, root disease, or species-specific salt tolerance",
+        "surface deposits unrelated to the active sampled root zone",
+        "method or unit mismatch between saturated paste, dilution, runoff, leachate, and solution readings"
+      ],
+      "confirmationMethod": "Calibrate the meter; define medium, sampling depth, extraction or leachate method, sample timing, units, and temperature correction; measure source water, input, root zone, and drainage across affected and unaffected zones; identify major ions or sodicity when relevant; and interpret against crop-, stage-, and method-specific guidance before remediation.",
+      "expectedCauseRanking": ["insufficient_evidence", "excess", "lockout", "other_abiotic", "antagonism"],
+      "expectedUrgency": "confirm method and source promptly when roots or yield are declining; do not calculate leaching or flushing from an unqualified EC number",
+      "expectedQuarantineGuidance": "Do not quarantine for an EC or salinity problem alone; control movement of contaminated water or medium only when the measured source and operational risk justify it.",
+      "expectedScoutingSteps": [
+        "map symptoms, irrigation zones, elevation, drainage, visible deposits, roots, and affected-unaffected comparisons",
+        "record meter calibration, method, depth, timing, units, temperature, crop, stage, medium, and recent irrigation or rainfall",
+        "measure source water, fertilizer input, root zone, and drainage and obtain ion or sodicity analysis when management depends on composition",
+        "document response to a calculated source correction while monitoring drainage quality and avoiding disposal harm"
+      ],
+      "expectedIpmResponse": "Treat EC as method-dependent evidence, not a universal diagnosis. Require calibration, sampling method, units, temperature, medium, crop threshold, source water, spatial trend, roots, and ion context; distinguish fertilizer excess from salinity, sodicity, drought, drainage, and pH problems; and never prescribe a blind flush from appearance or one number."
     }
   ]
 }
