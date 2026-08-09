@@ -116,8 +116,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       without reauthentication or a visible load/access error. Team,
       Tasks, Plants, Compliance, Inventory, integrations, and Facility Outreach withheld
       or disabled mutation controls and exposed the Viewer/owner-manager boundary without
-      changing production records. The role-session list still requires the cross-role
-      shared-record and independent outside-user loops.
+      changing production records. Viewer also reopened completed shared task
+      `6a6140ec67a6aeadb8f4a0c9` with persisted status/timestamps and no update controls.
+      Together with the retained Owner-create, Manager-reassign, Staff-complete, and
+      Owner-audit evidence, the cross-role shared-record chain remains complete. The
+      independent outside-user loop remains open.
 - [~] Verify login/session/workspace selection and recovery across Free, Pro,
       Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
       server-down, reload, logout, and multi-workspace states. The same Personal Pro
