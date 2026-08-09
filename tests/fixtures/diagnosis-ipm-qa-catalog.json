@@ -1071,6 +1071,134 @@
         "look for honeydew, ants, crawlers, and attached scale covers"
       ],
       "expectedIpmResponse": "Do not call white material powdery mildew when discrete wax-covered bodies are visible; do not call mealybugs when only flat white marks or residue are present."
+    },
+    {
+      "recordId": "ipm-whiteflies-beneficial-context-open-001",
+      "caseId": "whiteflies",
+      "imageSet": [
+        {
+          "imageId": "usda-k4600-7-silverleaf-whitefly",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Silverleaf_whitefly.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Silverleaf_whitefly.jpg",
+          "creator": "Scott Bauer, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Silverleaf whitefly by Scott Bauer, USDA Agricultural Research Service. Image K4600-7.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-k7545-9-lacewing-whitefly-nymphs",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:K7545-9_(8456921974).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/K7545-9_(8456921974).jpg",
+          "creator": "Jack Dykinga, USDA Agricultural Research Service",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Green lacewing larva feeding on whitefly nymphs by Jack Dykinga, USDA Agricultural Research Service, CC BY 2.0. Image K7545-9.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "reference host foliage",
+      "cultivar": "unknown",
+      "lifeStage": "adult silverleaf whitefly and nymphs with a green lacewing larva predator",
+      "affectedLocation": "leaf undersides",
+      "distribution": "adults and sessile nymphs on foliage; plant-wide distribution not recorded",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "small white winged adult morphology",
+        "flattened whitefly nymphs attached to leaf tissue",
+        "beneficial lacewing larva predation context"
+      ],
+      "plausibleAlternatives": [
+        "aphids or shed aphid skins",
+        "scale insects",
+        "mealybugs",
+        "moths or harmless flies",
+        "beneficial lacewings"
+      ],
+      "confirmationMethod": "Inspect leaf undersides for attached nymphs and sharp adult morphology; use gentle disturbance only as supporting evidence, and separately classify predators rather than counting them as pests.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "promptly assess nymph density, honeydew, plant stress, and spread",
+      "expectedQuarantineGuidance": "Inspect nearby plants and limit movement when multiple life stages are confirmed while preserving lacewings and other identified beneficials.",
+      "expectedScoutingSteps": [
+        "inspect multiple leaf undersides for adults, nymphs, and eggs",
+        "photograph attached nymphs and adults sharply at body scale",
+        "check for honeydew, sooty growth, cast skins, and distribution",
+        "separate lacewings and other predators from pest counts"
+      ],
+      "expectedIpmResponse": "Require direct adult or nymph evidence before calling whiteflies; distinguish attached nymphs from scale and distinguish beneficial lacewing larvae from pests."
+    },
+    {
+      "recordId": "ipm-leafminers-damage-larva-open-001",
+      "caseId": "leafminers",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-chard-leafminer-blisters-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chard_leaf_miner_damage_(blisters).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Chard_leaf_miner_damage_(blisters).jpg",
+          "creator": "Babahu",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Chard leaf miner damage (blisters) by Babahu, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-d912-1-leafminer-larva-spinach",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/oct07/d912-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/300dpi/kesa/d912-1.jpg",
+          "creator": "Peggy Greb, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Leafminer larva on spinach by Peggy Greb, USDA Agricultural Research Service. Image D912-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "chard and spinach",
+      "cultivar": "unknown",
+      "lifeStage": "larva and documented feeding damage",
+      "affectedLocation": "inside leaf tissue between upper and lower surfaces",
+      "distribution": "localized translucent blisters or mines; whole-plant distribution not recorded",
+      "progression": "damage image shows established mines; timing not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor or production context not fully recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "feeding path or blister contained within leaf tissue",
+        "leafminer larva associated with the mine",
+        "intact outer leaf surfaces around mined tissue"
+      ],
+      "plausibleAlternatives": [
+        "thrips feeding scars",
+        "edema or physiological blistering",
+        "leaf-spot disease",
+        "sunscald or chemical injury",
+        "surface chewing damage"
+      ],
+      "confirmationMethod": "Confirm that damage is between the leaf surfaces and look for a larva or frass within an active mine; a pale or brown patch alone is insufficient.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "assess active mines, affected leaf area, crop stage, and spread before intervention",
+      "expectedQuarantineGuidance": "Inspect nearby susceptible plants and avoid moving heavily infested foliage when active larvae are confirmed.",
+      "expectedScoutingSteps": [
+        "backlight leaves to trace mines and locate larvae or frass",
+        "compare active translucent mine edges with old necrotic tissue",
+        "inspect multiple leaves and nearby plants for distribution",
+        "capture both a whole-leaf pattern view and a sharp mine close-up"
+      ],
+      "expectedIpmResponse": "Call leafminers only when an internal mine pattern is supported by larvae, frass, or active mine structure; retain physiological and disease alternatives for unstructured pale patches."
     }
   ]
 }
