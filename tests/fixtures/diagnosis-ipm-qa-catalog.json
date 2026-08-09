@@ -3140,6 +3140,146 @@
         "reinspect new growth and comparable plants after measured water-balance changes and seek qualified confirmation when lesions spread"
       ],
       "expectedIpmResponse": "Treat edema as an abiotic hypothesis requiring tissue structure and measured water-balance evidence, not a photo-only certainty. Distinguish integrated blisters or corking from scale, mites, residue, and disease; request top-and-underside macro views and root-zone measurements; retain concurrent root disease; and avoid unmeasured irrigation prescriptions."
+    },
+    {
+      "recordId": "diagnosis-cotton-field-waterlogging-boundary-open-001",
+      "caseId": "overwatering",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usda-saturated-cotton-field-0623",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Irrigation_and_Water_(20210603-NRCS-LSC-0623).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Irrigation_and_Water_(20210603-NRCS-LSC-0623).jpg",
+          "creator": "Lance Cheung, U.S. Department of Agriculture",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Flooded, rain-saturated cotton field by Lance Cheung, U.S. Department of Agriculture, public domain.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-saturated-cotton-stress-0445",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Irrigation_and_Water_(20210603-NRCS-LSC-0445).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Irrigation_and_Water_(20210603-NRCS-LSC-0445).jpg",
+          "creator": "Lance Cheung, U.S. Department of Agriculture",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Cotton stress after prolonged saturation and flooding by Lance Cheung, U.S. Department of Agriculture, public domain.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "cotton field",
+      "cultivar": "unknown",
+      "lifeStage": "established field crop",
+      "affectedLocation": "flooded portions of a cotton field, with stressed red plants documented after prolonged saturation",
+      "distribution": "aerial field-scale saturation pattern; individual roots, stems, leaves, and unaffected comparison plants are not shown in diagnostic detail",
+      "progression": "images document the flooded event and later visible stress, but not pre-event condition, drainage sequence, root recovery, or disease progression",
+      "mediumRootZone": "field soil is documented as saturated after days of heavy rain; oxygen, drainage rate, soil texture, compaction, roots, and water-table depth are not measured",
+      "environment": "storm water and repeated heavy rain are documented; temperature, humidity, wind, evapotranspiration, and prior irrigation are not quantified",
+      "measuredValues": "no volumetric water content, matric potential, dissolved oxygen, water depth, saturation duration, root-zone temperature, or recovery measurements accompany the images",
+      "diagnosticSigns": [
+        "USDA documents days of heavy rain, field saturation, and standing water",
+        "USDA documents stressed red cotton and plant deterioration after prolonged suffocation or drowning",
+        "field-scale water distribution supports excess-water stress while not proving root disease, irreversible loss, or irrigation error"
+      ],
+      "plausibleAlternatives": [
+        "Phytophthora, Pythium, Fusarium, or another root and crown disease promoted by saturation",
+        "nutrient loss, lockout, salinity shift, or chemical movement after flooding",
+        "cold, heat, wind, hail, or other storm injury",
+        "compaction, poor drainage, high water table, or damaged roots independent of irrigation volume",
+        "pest or disease injury that predates or follows the flood event"
+      ],
+      "confirmationMethod": "Map standing-water and symptom gradients; measure root-zone moisture, oxygen when available, temperature, and drainage over time; inspect washed roots and crowns from affected and unaffected zones; review rain and irrigation history; and test progressive root lesions before assigning a pathogen or irrigation cause.",
+      "expectedCauseRanking": [
+        "other_abiotic",
+        "insufficient_evidence",
+        "disease",
+        "lockout",
+        "excess"
+      ],
+      "expectedUrgency": "document and relieve unsafe standing-water conditions promptly while preserving representative roots and zone comparisons for diagnosis",
+      "expectedQuarantineGuidance": "Do not quarantine for excess water alone; limit movement of suspect soil, water, or plants only when a transmissible root pathogen or regulated contaminant is supported.",
+      "expectedScoutingSteps": [
+        "map flooded, draining, and unaffected zones and photograph field, whole-plant, crown, and washed-root evidence",
+        "record rainfall, irrigation, standing-water depth and duration, drainage, soil texture, compaction, and water-table context",
+        "measure moisture repeatedly and compare root color, integrity, odor, oxygen context, and recovery across zones",
+        "reinspect progression and obtain qualified root-disease testing when lesions or decline continue after drainage"
+      ],
+      "expectedIpmResponse": "Recognize documented saturation and flood stress without collapsing all symptoms into overwatering. Require measured moisture and drainage trends, roots, spatial gradients, and rain-versus-irrigation history; retain disease, nutrient, and storm alternatives; and avoid universal watering or flushing instructions."
+    },
+    {
+      "recordId": "diagnosis-wilt-water-deficit-boundary-open-001",
+      "caseId": "underwatering",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-wilted-flower-reference",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wilted_flower.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Wilted_flower.jpg",
+          "creator": "500px contributor; imported by Rodrigo.Argenton",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Wilted flower reference imported from 500px, CC0 1.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-d1102-1-cotton-water-stress-measurement",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/apr08/d1102-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/apr08/d1102-1.jpg",
+          "creator": "Brice Ruthardt, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Cotton water-stress measurement plot by Brice Ruthardt, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified flowering plant as a wilt reference; separate cotton plot demonstrates measured water-stress assessment",
+      "cultivar": "unknown",
+      "lifeStage": "established flowering tissue and established field cotton in separate references",
+      "affectedLocation": "wilted flower tissue; roots, full plant, growing medium, and distribution are not visible",
+      "distribution": "single close wilt reference without plant-, container-, row-, canopy-, or irrigation-zone pattern",
+      "progression": "no pre-wilt, dryback, irrigation response, overnight recovery, or irreversible injury sequence is supplied",
+      "mediumRootZone": "not shown or measured for the wilt reference",
+      "environment": "temperature, humidity, radiation, wind, vapor-pressure demand, irrigation, rainfall, and root-zone conditions are absent",
+      "measuredValues": "the wilt image has no moisture or water-potential values; the separate USDA reference demonstrates that leaf water potential and temperature can be measured but represents a normally irrigated plot",
+      "diagnosticSigns": [
+        "visible wilting documents loss of tissue turgor but not its cause",
+        "the USDA comparison demonstrates measurement of leaf water potential and temperature rather than diagnosing water deficit by posture alone",
+        "no dry medium, measured dryback, root evidence, or recovery response links the wilt reference to underwatering"
+      ],
+      "plausibleAlternatives": [
+        "overwatering, waterlogging, root rot, or low root-zone oxygen",
+        "heat, high vapor-pressure demand, wind, transplant shock, or cut-stem senescence",
+        "vascular wilt, crown disease, root pest, or mechanical root damage",
+        "salinity, nutrient excess, chemical injury, or pH and EC stress",
+        "normal flower senescence without whole-plant water deficit"
+      ],
+      "confirmationMethod": "Measure root-zone moisture or water potential before watering, inspect roots and crowns, compare affected and unaffected zones, record environmental demand, and document a timed response to an appropriate measured irrigation event; persistent wilt despite adequate moisture requires disease, root, and vascular investigation.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "other_abiotic",
+        "disease",
+        "excess",
+        "pest"
+      ],
+      "expectedUrgency": "measure the root zone and environment promptly before watering, because both severe deficit and saturated-root failure can present as wilt",
+      "expectedQuarantineGuidance": "Do not quarantine for wilt or suspected underwatering alone; isolate only when linked pest or disease evidence supports a transmissible cause.",
+      "expectedScoutingSteps": [
+        "photograph the whole plant, affected and unaffected tissue, container or field distribution, crown, and roots",
+        "measure root-zone moisture at multiple depths or positions before changing irrigation and record temperature, humidity, light, and airflow",
+        "review irrigation delivery, emitter function, runoff, drainage, salinity, and recent root disturbance",
+        "document timed turgor response after evidence-based irrigation and investigate disease or roots if recovery does not match"
+      ],
+      "expectedIpmResponse": "Treat wilt as a symptom, not proof of underwatering. Require pre-irrigation moisture or water-potential evidence, roots, distribution, environmental demand, delivery checks, and recovery response; explicitly preserve saturated-root and vascular-disease alternatives; and avoid reflex watering from a photo."
     }
   ]
 }
