@@ -167,6 +167,16 @@ link only after selection, preserve grow/plant/log provenance, and state that th
 will be included in the diagnosis request but not used for model training. Never send
 an existing private photo merely because it is present in the grow history.
 
+A Saved Diagnosis with retained AI-approved photo evidence must offer an explicit re-run
+path that authorizes and reloads the exact immutable evidence IDs in the current Personal
+workspace. Reopening does not modify the historical result, start analysis, spend a credit,
+or carry an old AI-proposed crop identity into the new form. Revalidate that every asset is
+an uploaded durable Diagnosis photo approved for AI use; if any exact asset is missing or
+ineligible, load none of the set and explain why. A grow or plant is selected only from an
+explicit route/context choice or a new user action. Do not silently select the account's
+active grow and then describe that grow's crop identity as evidence supplied for an
+otherwise grow-optional Diagnosis.
+
 ## IPM Scout
 
 IPM Scout is a crop-neutral observation and decision workflow. A grow or facility adds

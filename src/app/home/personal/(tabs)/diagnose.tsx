@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -32,9 +32,56 @@ import { providerEvidencePayload } from "@/api/evidence";
 import { normalizeEvidenceReview } from "@/features/personal/evidence/evidenceReview";
 import { apiRequest } from "@/api/apiRequest";
 import { endpoints } from "@/api/endpoints";
+import { getEvidenceAssetsByIds } from "@/api/evidence";
+import { getToolRun, type ToolRun } from "@/api/toolRuns";
 
 function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
+}
+
+function stringList(value: unknown) {
+  return Array.isArray(value)
+    ? value.map((item) => String(item || "").trim()).filter(Boolean)
+    : [];
+}
+
+function savedDiagnosisEvidenceIds(run: ToolRun) {
+  const inputs = run.inputs || run.input || run.params || {};
+  const mediaEvidence = Array.isArray(inputs.mediaEvidence) ? inputs.mediaEvidence : [];
+  return Array.from(
+    new Set([
+      ...stringList(inputs.evidenceAssetIds),
+      ...stringList(inputs.imageAnalysis?.evidenceUsed),
+      ...mediaEvidence
+        .map((item: any) => String(item?.id || item?.assetId || "").trim())
+        .filter(Boolean)
+    ])
+  );
+}
+
+function diagnosisRun(run: ToolRun | null) {
+  const type = String(run?.toolType || run?.toolName || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("-", "_");
+  return type === "diagnosis" || type === "plant_diagnosis";
+}
+
+function reusableDiagnosisEvidenceError(assets: EvidenceAsset[]) {
+  if (!assets.length) return "This Saved Diagnosis no longer contains reusable photos.";
+  for (const asset of assets) {
+    if (asset.purpose !== "diagnosis" || asset.assetType !== "photo") {
+      return "Saved Diagnosis evidence belongs to another workflow or media type. Nothing was loaded.";
+    }
+    if (
+      asset.uploadStatus !== "uploaded" ||
+      !String(asset.durableUrl || "").trim() ||
+      asset.aiUsable !== true
+    ) {
+      return "Saved Diagnosis evidence is no longer fully uploaded and approved for image review. Nothing was loaded.";
+    }
+  }
+  return "";
 }
 
 function addDaysIso(days: number) {
@@ -156,9 +203,11 @@ export default function DiagnoseRoute({
   const params = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
+    retryToolRunId?: string | string[];
   }>();
   const routeGrowId = param(params.growId);
   const initialPlantId = param(params.plantId);
+  const retryToolRunId = param(params.retryToolRunId);
   const entitlements = useEntitlements();
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
@@ -203,6 +252,11 @@ export default function DiagnoseRoute({
     null
   );
   const [providerStatusError, setProviderStatusError] = useState("");
+  const [retryEvidenceLoading, setRetryEvidenceLoading] = useState(false);
+  const [retryEvidenceNotice, setRetryEvidenceNotice] = useState("");
+  const [retryEvidenceError, setRetryEvidenceError] = useState("");
+  const [retryRetainedEvidenceIds, setRetryRetainedEvidenceIds] = useState<string[]>([]);
+  const hydratedRetryToolRunRef = useRef("");
 
   useEffect(() => {
     if (workspaceType !== "personal") return;
@@ -211,19 +265,6 @@ export default function DiagnoseRoute({
       .then((rows) => {
         if (!mounted) return;
         setGrows(rows);
-        if (!routeGrowId && rows.length) {
-          const active = [...rows]
-            .filter((grow) => grow.status !== "harvested")
-            .sort(
-              (a, b) =>
-                new Date(b.updatedAt || 0).getTime() -
-                new Date(a.updatedAt || 0).getTime()
-            )[0];
-          const fallback = active || rows[0];
-          setGrowId(
-            (current) => current || String(fallback.id || (fallback as any)._id || "")
-          );
-        }
       })
       .catch(() => {
         if (mounted) setGrows([]);
@@ -280,6 +321,79 @@ export default function DiagnoseRoute({
       mounted = false;
     };
   }, [enabled]);
+
+  useEffect(() => {
+    if (workspaceType !== "personal" || !retryToolRunId) {
+      setRetryEvidenceLoading(false);
+      setRetryEvidenceNotice("");
+      setRetryEvidenceError("");
+      setRetryRetainedEvidenceIds([]);
+      return;
+    }
+    if (hydratedRetryToolRunRef.current === retryToolRunId) return;
+    hydratedRetryToolRunRef.current = retryToolRunId;
+    let active = true;
+    setEvidenceAssets([]);
+    setResult(null);
+    setRetryEvidenceLoading(true);
+    setRetryEvidenceNotice("");
+    setRetryEvidenceError("");
+    setRetryRetainedEvidenceIds([]);
+    void (async () => {
+      try {
+        const savedRun = await getToolRun(retryToolRunId);
+        if (!active) return;
+        if (!savedRun || !diagnosisRun(savedRun)) {
+          throw new Error("The requested Saved Run is not a Diagnosis result.");
+        }
+        const evidenceIds = savedDiagnosisEvidenceIds(savedRun);
+        if (!evidenceIds.length) {
+          throw new Error(
+            "This Saved Diagnosis does not contain reusable photo evidence."
+          );
+        }
+        const ownedAssets = await getEvidenceAssetsByIds(evidenceIds, {
+          workspaceType: "personal"
+        });
+        if (!active) return;
+        const byId = new Map(
+          ownedAssets.map((asset: EvidenceAsset) => [
+            String(asset.id || asset._id || ""),
+            asset
+          ])
+        );
+        const recovered = evidenceIds
+          .map((id) => byId.get(id))
+          .filter((asset): asset is EvidenceAsset => Boolean(asset));
+        if (recovered.length !== evidenceIds.length) {
+          throw new Error(
+            "Some saved Diagnosis evidence is no longer available. Nothing was loaded."
+          );
+        }
+        const eligibilityError = reusableDiagnosisEvidenceError(recovered);
+        if (eligibilityError) throw new Error(eligibilityError);
+        setEvidenceAssets(recovered);
+        setRetryRetainedEvidenceIds(evidenceIds);
+        setRetryEvidenceNotice(
+          `Recovered ${recovered.length} private saved photo${
+            recovered.length === 1 ? "" : "s"
+          }. Review the evidence and context, then press Run Diagnosis to start a new analysis.`
+        );
+      } catch (error: any) {
+        if (!active) return;
+        setEvidenceAssets([]);
+        setRetryRetainedEvidenceIds([]);
+        setRetryEvidenceError(
+          error?.message || "The saved Diagnosis evidence could not be recovered."
+        );
+      } finally {
+        if (active) setRetryEvidenceLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [retryToolRunId, workspaceType]);
 
   const selectedPlant = useMemo(
     () => plants.find((plant) => String(plant.id || (plant as any)._id) === plantId),
@@ -647,6 +761,17 @@ export default function DiagnoseRoute({
           certainty.
         </Text>
         <PersonalFeedPlacement placement="top" routeKey="personal_diagnose" longContent />
+        {retryEvidenceLoading ? (
+          <Text style={styles.feedback}>
+            Loading the exact saved Diagnosis evidence...
+          </Text>
+        ) : null}
+        {retryEvidenceNotice ? (
+          <Text style={styles.photoReady}>{retryEvidenceNotice}</Text>
+        ) : null}
+        {retryEvidenceError ? (
+          <Text style={styles.photoWarning}>{retryEvidenceError}</Text>
+        ) : null}
         {grows.length ? (
           <View style={styles.section}>
             <Text accessibilityRole="header" aria-level={2} style={styles.label}>
@@ -1031,6 +1156,8 @@ export default function DiagnoseRoute({
           }
           value={evidenceAssets}
           onChange={setEvidenceAssets}
+          disabled={retryEvidenceLoading || running}
+          retainOnRemoveAssetIds={retryRetainedEvidenceIds}
         />
         <Text style={styles.photoPolicy}>
           Photos are used for this diagnosis request. They are not used to train GrowPath

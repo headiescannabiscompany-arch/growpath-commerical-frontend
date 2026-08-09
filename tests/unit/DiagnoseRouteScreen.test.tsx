@@ -14,7 +14,10 @@ const mockCreatePersonalTask = jest.fn();
 const mockListPersonalPlants = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockCreateEvidenceAsset = jest.fn();
+const mockGetEvidenceAssetsByIds = jest.fn();
+const mockGetToolRun = jest.fn();
 const mockMediaEvidencePickerProps = jest.fn();
+let mockSearchParams: Record<string, string> = { growId: "grow-1" };
 
 jest.mock("expo-device", () => ({ isDevice: false }));
 
@@ -85,9 +88,14 @@ jest.mock("@/api/evidence", () => {
   const actual = jest.requireActual("@/api/evidence");
   return {
     ...actual,
-    createEvidenceAsset: (...args: any[]) => mockCreateEvidenceAsset(...args)
+    createEvidenceAsset: (...args: any[]) => mockCreateEvidenceAsset(...args),
+    getEvidenceAssetsByIds: (...args: any[]) => mockGetEvidenceAssetsByIds(...args)
   };
 });
+
+jest.mock("@/api/toolRuns", () => ({
+  getToolRun: (...args: any[]) => mockGetToolRun(...args)
+}));
 
 jest.mock("@/api/tasks", () => ({
   createPersonalTask: (...args: any[]) => mockCreatePersonalTask(...args)
@@ -107,7 +115,7 @@ jest.mock("@/entitlements", () => ({
 }));
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-1" }),
+  useLocalSearchParams: () => mockSearchParams,
   useRouter: () => ({ back: jest.fn() })
 }));
 
@@ -147,6 +155,7 @@ describe("DiagnoseRoute", () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    mockSearchParams = { growId: "grow-1" };
     mockListPersonalPlants.mockResolvedValue([]);
     mockListPersonalLogs.mockResolvedValue([]);
     mockListPersonalGrows.mockResolvedValue([
@@ -728,5 +737,52 @@ describe("DiagnoseRoute", () => {
     await waitFor(() => expect(mockListPersonalGrows).toHaveBeenCalled());
     expect(screen.getByLabelText("Select diagnosis grow Bruce Banner")).toBeTruthy();
     await waitForGrowContext(screen);
+  });
+
+  it("does not silently select an active grow for grow-optional diagnosis", async () => {
+    mockSearchParams = {};
+    const screen = render(<DiagnoseRoute />);
+
+    await waitFor(() => expect(mockListPersonalGrows).toHaveBeenCalled());
+    expect(screen.queryByText("Grow context: Bruce Banner")).toBeNull();
+    expect(screen.getByLabelText("Diagnosis crop common name").props.value).toBe("");
+  });
+
+  it("recovers the exact authorized Saved Diagnosis photo without starting analysis", async () => {
+    mockSearchParams = { retryToolRunId: "diagnosis-run-1" };
+    mockGetToolRun.mockResolvedValue({
+      id: "diagnosis-run-1",
+      toolType: "diagnosis",
+      inputs: { evidenceAssetIds: ["diagnosis-photo-1"] }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      {
+        id: "diagnosis-photo-1",
+        _id: "diagnosis-photo-1",
+        assetType: "photo",
+        durableUrl: "/api/evidence-assets/diagnosis-photo-1/content",
+        source: "library",
+        purpose: "diagnosis",
+        uploadStatus: "uploaded",
+        aiUsable: true,
+        qualityWarnings: []
+      }
+    ]);
+
+    const screen = render(<DiagnoseRoute />);
+
+    expect(
+      await screen.findByText(/Recovered 1 private saved photo/i)
+    ).toBeTruthy();
+    expect(mockGetEvidenceAssetsByIds).toHaveBeenCalledWith(
+      ["diagnosis-photo-1"],
+      { workspaceType: "personal" }
+    );
+    expect(mockDiagnoseEvidence).not.toHaveBeenCalled();
+    const latestPickerProps = mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0];
+    expect(latestPickerProps.value).toEqual([
+      expect.objectContaining({ id: "diagnosis-photo-1", aiUsable: true })
+    ]);
+    expect(latestPickerProps.retainOnRemoveAssetIds).toEqual(["diagnosis-photo-1"]);
   });
 });
