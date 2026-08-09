@@ -348,7 +348,9 @@ export default function DiagnoseRoute({
         }
         const evidenceIds = savedDiagnosisEvidenceIds(savedRun);
         if (!evidenceIds.length) {
-          throw new Error("This Saved Diagnosis does not contain reusable photo evidence.");
+          throw new Error(
+            "This Saved Diagnosis does not contain reusable photo evidence."
+          );
         }
         const ownedAssets = await getEvidenceAssetsByIds(evidenceIds, {
           workspaceType: "personal"
@@ -760,7 +762,9 @@ export default function DiagnoseRoute({
         </Text>
         <PersonalFeedPlacement placement="top" routeKey="personal_diagnose" longContent />
         {retryEvidenceLoading ? (
-          <Text style={styles.feedback}>Loading the exact saved Diagnosis evidence...</Text>
+          <Text style={styles.feedback}>
+            Loading the exact saved Diagnosis evidence...
+          </Text>
         ) : null}
         {retryEvidenceNotice ? (
           <Text style={styles.photoReady}>{retryEvidenceNotice}</Text>
