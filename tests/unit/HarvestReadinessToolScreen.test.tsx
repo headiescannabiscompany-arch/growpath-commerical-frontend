@@ -255,9 +255,32 @@ describe("HarvestReadinessToolRoute", () => {
           targetDay: 63,
           endDay: 66
         },
+        harvestWindowReview: {
+          range: {
+            kind: "breeder_timing_planning_range",
+            startDay: 60,
+            targetDay: 63,
+            endDay: 66,
+            confidence: "low"
+          },
+          reasonsWindowMayBeOpen: [
+            "The user-supplied approximate harvest date has been reached.",
+            "Aroma is reported as dropping."
+          ],
+          reasonsToWait: ["Bud/calyx swelling is reported as unfinished."],
+          missingEvidence: ["Representative trichome observations"],
+          boundary:
+            "This is a timing-context planning range, not a trichome-derived harvest date."
+        },
         wholePlantMaturity: {
           pistilStatus: "mixed",
           budSwellStatus: "mostly_swollen"
+        },
+        trichomeObservation: {
+          clearPercent: 10,
+          cloudyPercent: 75,
+          amberPercent: 15,
+          evidenceStatus: "entered"
         },
         harvestTask: {
           title: "Recheck harvest window",
@@ -350,6 +373,29 @@ describe("HarvestReadinessToolRoute", () => {
       aiTokensRemaining: 58,
       creditStatus: "charged"
     });
+  });
+
+  it("shows an optional calendar date and explains both sides of the harvest range", async () => {
+    const screen = await renderHarvestReadinessTool();
+
+    expect(
+      screen.getByLabelText(
+        "Harvest Readiness Estimate Your approximate harvest date (optional)"
+      )
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
+
+    expect(
+      await screen.findByText(
+        /Reason the window may be open: The user-supplied approximate harvest date has been reached/i
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Reason to wait: Bud\/calyx swelling is reported as unfinished/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Still needed: Representative trichome observations/i)
+    ).toBeTruthy();
   });
 
   it("never accepts trichome percentages from generic grow-context AI prefill", async () => {
@@ -983,9 +1029,7 @@ describe("HarvestReadinessToolRoute", () => {
     await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
     await waitFor(() =>
-      expect(
-        screen.getByText("Visible-area estimate — review before using")
-      ).toBeTruthy()
+      expect(screen.getByText("Visible-area estimate — review before using")).toBeTruthy()
     );
     expect(
       screen.getByText("10% clear · 35% cloudy · 30% amber · 25% cloudy or glare")

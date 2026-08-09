@@ -357,11 +357,23 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
   }
   if (isHarvestRun(run)) {
     const photo = savedHarvestPhotoAnalysis(outputs);
+    const range = outputs.harvestWindowReview?.range || outputs.estimatedWindow;
+    const rangeLabel =
+      range?.startDate && range?.endDate
+        ? `${range.startDate} to ${range.endDate}`
+        : range?.startDay != null && range?.endDay != null
+          ? `Flower day ${range.startDay} to ${range.endDay}`
+          : "Not available";
     return [
       {
         key: "readiness",
         label: "Readiness",
         value: formatValue(outputs.readinessStatus)
+      },
+      {
+        key: "planning-range",
+        label: "Planning range",
+        value: rangeLabel
       },
       {
         key: "photo-review",
@@ -684,6 +696,36 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
 
   if (isHarvestRun(run)) {
     const photo = savedHarvestPhotoAnalysis(outputs);
+    const review =
+      outputs.harvestWindowReview && typeof outputs.harvestWindowReview === "object"
+        ? outputs.harvestWindowReview
+        : {};
+    (Array.isArray(review.reasonsWindowMayBeOpen)
+      ? review.reasonsWindowMayBeOpen
+      : []
+    ).forEach((message: string, index: number) => {
+      provenance.push({
+        key: `harvest-window-open-${index}`,
+        severity: "info",
+        message: `Reason the window may be open: ${message}`
+      });
+    });
+    (Array.isArray(review.reasonsToWait) ? review.reasonsToWait : []).forEach(
+      (message: string, index: number) => {
+        provenance.push({
+          key: `harvest-window-wait-${index}`,
+          severity: "medium",
+          message: `Reason to wait: ${message}`
+        });
+      }
+    );
+    if (review.boundary) {
+      provenance.push({
+        key: "harvest-window-boundary",
+        severity: "info",
+        message: String(review.boundary)
+      });
+    }
     if (photo?.performed) {
       provenance.push({
         key: "harvest-photo-provenance",
