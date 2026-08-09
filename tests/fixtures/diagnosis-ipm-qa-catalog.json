@@ -4224,6 +4224,40 @@
       "expectedQuarantineGuidance": "Reduce splash and wet handling and limit movement only when an actively spreading infectious pattern is credible; do not quarantine or destroy plants for isolated spots, a spray-shaped pattern, edema, or photo resemblance alone.",
       "expectedScoutingSteps": ["capture whole-plant and canopy distribution plus sharp neutral-light lesion-center, margin, top, underside, stem, fruit, and unaffected-tissue views", "record lesion change over time, affected leaf age, irrigation splash, rain, leaf wetness, humidity, airflow, and every recent foliar application", "map symptoms against spray coverage, drift direction, droplet boundaries, protected tissue, irrigation zones, and neighboring plants", "inspect for edema, residue, insects, fungal structures, root stress, and obtain qualified pathogen confirmation when the decision depends on bacterial identity"],
       "expectedIpmResponse": "Treat bacterial leaf spot as a supported hypothesis only when lesion morphology, distribution, progression, wetness or splash context, and exclusion of lookalikes align. Explicitly preserve spray injury, edema, fungal disease, pests, physical injury, nutrition, and root stress; request the missing evidence; require confirmation for high-consequence decisions; and never invent bactericide, pesticide, disposal, or application directions."
+    },
+    {
+      "recordId": "diagnosis-heat-drought-pest-sunscald-boundary-open-002",
+      "caseId": "heat_stress",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-bagrada-heat-drought-stressed-collards", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bagrada_hilaris.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bagrada_hilaris.jpg",
+          "creator": "Downtowngal", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Bagrada bugs and feeding injury on heat- and drought-stressed collard greens, photographed by Downtowngal and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-sun-scald-ash", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sun_Scald_on_ash.JPG", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sun_Scald_on_ash.JPG",
+          "creator": "Rosser1954 / Roger Griffith", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Sunscald on ash photographed by Rosser1954 / Roger Griffith and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "collard greens with documented Bagrada feeding under heat-and-drought stress, and ash with documented sunscald",
+      "cultivar": "unknown", "lifeStage": "established foliage and established woody bark in separate cross-host references",
+      "affectedLocation": "collard foliage with visible insects and feeding scars, and exposed ash bark with sunscald",
+      "distribution": "two separate observations without measured hot-versus-cool, wet-versus-dry, exposed-versus-shaded, or pest-density maps",
+      "progression": "single-time references without event duration, overnight recovery, pest-count trend, or tissue progression",
+      "mediumRootZone": "moisture, root integrity, temperature, oxygen, salinity, and irrigation delivery are not measured",
+      "environment": "heat and drought are documented for the collard observation and sun exposure is documented for ash, but temperature, humidity, VPD, radiation, wind, duration, and water status are absent",
+      "measuredValues": "no leaf or canopy temperature, air temperature, humidity, VPD, PPFD, solar radiation, wind, soil moisture, irrigation volume, or standardized insect count accompanies the pair",
+      "diagnosticSigns": ["the collard reference explicitly documents heat and drought stress together with several Bagrada life stages and feeding injury", "the ash reference explicitly documents sunscald rather than generic discoloration", "the cross-host evidence demonstrates that thermal, water, solar, and pest injury can overlap but cannot be collapsed into one photo-only diagnosis"],
+      "plausibleAlternatives": ["underwatering, irrigation failure, low root oxygen, salinity, or root disease", "excess light or radiant load, sunscald, or reflected heat without whole-zone heat stress", "Bagrada bugs, mites, thrips, or another feeding pest occurring alone or with abiotic stress", "spray burn, herbicide injury, wind abrasion, transplant shock, cold injury, or physical damage", "vascular disease, leaf disease, nutrient disorder, or normal midday posture"],
+      "confirmationMethod": "Measure leaf or canopy and air temperature with humidity or VPD, radiation or PPFD, wind, event duration, and root-zone water status; compare exposed, shaded, hot, cool, affected, and unaffected tissue; record overnight recovery; and separately document direct pest bodies, life stages, density, and feeding pattern before ranking co-occurring causes.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "pest", "disease"],
+      "expectedUrgency": "reduce immediately unsafe measured thermal or water exposure and quantify active pests while preserving evidence that distinguishes each contributor",
+      "expectedQuarantineGuidance": "Do not quarantine for heat, drought, excess light, or sunscald alone; limit movement only when a confirmed active pest or transmissible disease independently warrants it.",
+      "expectedScoutingSteps": ["capture whole-plant and mapped exposed, shaded, hot, cool, affected, unaffected, upper, and lower leaf views", "measure leaf or canopy temperature, air temperature, humidity or VPD, radiation or PPFD, wind, duration, root-zone moisture, temperature, drainage, and irrigation delivery", "capture sharp insect body and feeding-site macros, identify life stages, and record standardized density separately from abiotic injury", "mark tissue and document evening, overnight, and next-day recovery or progression while checking spray, disease, nutrition, and physical-injury alternatives"],
+      "expectedIpmResponse": "Do not turn scorch, curl, wilt, or pale scars into a heat diagnosis without measured thermal and water evidence. Separate heat from drought and solar injury, report directly visible pest morphology and feeding as a concurrent cause when supported, retain disease and spray alternatives, request exact missing measurements and views, and avoid universal thresholds or invented pesticide directions."
     }
   ]
 }
