@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(22);
+    expect(catalog.mediaRecords).toHaveLength(23);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -245,6 +245,10 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "diagnosis-bacterial-leaf-spot-boundary-open-001",
           caseId: "bacterial_leaf_spot"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-fusarium-wilt-vascular-boundary-open-001",
+          caseId: "fusarium"
         })
       ])
     );

@@ -2088,6 +2088,76 @@
         "compare healthy and affected plants and obtain pathogen confirmation when intervention depends on bacterial identity"
       ],
       "expectedIpmResponse": "Recognize bacterial-leaf-spot-compatible evidence without labeling every necrotic lesion as Xanthomonas. Keep fungal leaf spots, spray injury, edema, insects, senescence, and other bacteria visible, reduce spread-promoting handling while unresolved, and avoid pathogen-specific treatment until the evidence or confirmation supports it."
+    },
+    {
+      "recordId": "diagnosis-fusarium-wilt-vascular-boundary-open-001",
+      "caseId": "fusarium",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-banana-fusarium-wilt-40318106271",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Banana_(Variety-_Koa_e_Kea)-_Fusarium_wilt_(Panama_disease)_-_40318106271.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Banana_(Variety-_Koa_e_Kea)-_Fusarium_wilt_(Panama_disease)_-_40318106271.jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Koa e Kea banana with Fusarium wilt (Panama disease) by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-banana-fusarium-wilt-40318105651",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Banana_(Variety-_Koa_e_Kea)-_Fusarium_wilt_(Panama_disease).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Banana_(Variety-_Koa_e_Kea)-_Fusarium_wilt_(Panama_disease).jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Koa e Kea banana with Fusarium wilt (Panama disease) by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "banana (Koa e Kea variety)",
+      "cultivar": "Koa e Kea",
+      "lifeStage": "established banana with incipient wilt symptoms",
+      "affectedLocation": "foliage, pseudostem, peduncle, petioles, and fruit as documented by the source",
+      "distribution": "documented foliar yellowing and wilt with vascular necrosis; full planting distribution not recorded",
+      "progression": "two observations approximately five minutes apart from the same documented session; longer progression not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "Hawaii, Big Island; production conditions and recent irrigation not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "wilt and foliar yellowing documented with Fusarium oxysporum f. sp. cubense race 1",
+        "documented vascular necrosis in internal and connected plant tissues",
+        "multiple views from the same host variety and session"
+      ],
+      "plausibleAlternatives": [
+        "overwatering, underwatering, or root hypoxia",
+        "Pythium or another root and crown disease",
+        "bacterial wilt",
+        "vascular injury or stem damage",
+        "nutrient or salinity root dysfunction",
+        "heat or transplant stress"
+      ],
+      "confirmationMethod": "Evaluate root-zone moisture and oxygen, irrigation history, vascular discoloration pattern, affected-plant distribution, progression, and host susceptibility; obtain qualified extension or laboratory confirmation when Fusarium identity changes sanitation, movement, disposal, or reporting.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "deficiency"
+      ],
+      "expectedUrgency": "promptly assess vascular symptoms, root-zone failure, affected-plant distribution, and spread",
+      "expectedQuarantineGuidance": "Limit movement of suspect plants, soil, water, and tools while vascular wilt is investigated, but do not declare Fusarium from yellowing or wilt alone.",
+      "expectedScoutingSteps": [
+        "photograph the whole plant, symptom distribution, roots and crown, and clean cross-sections of affected vascular tissue",
+        "record substrate moisture, oxygenation, irrigation timing, EC, pH, temperature, and recent physical stress",
+        "compare symptomatic and healthy plants and map whether decline follows water, soil, or tool movement",
+        "seek extension or laboratory confirmation before destructive sanitation or pathogen-specific claims"
+      ],
+      "expectedIpmResponse": "Treat wilt and yellowing as a syndrome that requires root-zone and vascular evidence. Fusarium becomes more plausible with compatible vascular necrosis, host, distribution, and progression, but water stress, hypoxia, other root diseases, bacterial wilt, injury, and chemical root dysfunction must remain visible until confirmed."
     }
   ]
 }
