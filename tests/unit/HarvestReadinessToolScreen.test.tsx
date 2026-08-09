@@ -932,13 +932,19 @@ describe("HarvestReadinessToolRoute", () => {
     ).toBeNull();
   });
 
-  it("explains when better photos are needed without filling readiness fields", async () => {
+  it("shows a sampled-area estimate without filling representative readiness fields", async () => {
     mockAnalyzeTrichomePhotos.mockResolvedValue({
       photoUsable: false,
       imageQuality: "limited",
       clear: null,
       cloudy: null,
       amber: null,
+      visibleSampleEstimateUsable: true,
+      sampleClear: 0.1,
+      sampleCloudy: 0.35,
+      sampleAmber: 0.3,
+      sampleCloudyOrGlare: 0.25,
+      sampleEstimateBasis: "Visible intact heads in the center calyx regions.",
       confidence: 0.24,
       dominant: "uncertain",
       visibleTraits: ["Pistils visible; gland heads blurred"],
@@ -978,9 +984,13 @@ describe("HarvestReadinessToolRoute", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText("Better photos needed — no percentages filled")
+        screen.getByText("Visible-area estimate — review before using")
       ).toBeTruthy()
     );
+    expect(
+      screen.getByText("10% clear · 35% cloudy · 30% amber · 25% cloudy or glare")
+    ).toBeTruthy();
+    expect(screen.getByText(/never a whole-plant percentage/i)).toBeTruthy();
     expect(screen.getByText("Move closer and stabilize the camera.")).toBeTruthy();
     expect(screen.getByText("Limitation: Trichome heads are out of focus.")).toBeTruthy();
     expect(screen.getByLabelText("Harvest Readiness Estimate Cloudy %").props.value).toBe(

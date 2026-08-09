@@ -7,6 +7,12 @@ export type TrichomeVisionResult = {
   clear: number | null;
   cloudy: number | null;
   amber: number | null;
+  visibleSampleEstimateUsable?: boolean;
+  sampleClear?: number | null;
+  sampleCloudy?: number | null;
+  sampleAmber?: number | null;
+  sampleCloudyOrGlare?: number | null;
+  sampleEstimateBasis?: string;
   confidence: number;
   dominant: "clear" | "cloudy" | "amber" | "uncertain";
   cloudinessObservation?:

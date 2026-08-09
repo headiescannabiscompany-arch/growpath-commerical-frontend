@@ -459,7 +459,9 @@ function HarvestPhotoAnalyzer({
           <Text style={photoStyles.analysisTitle}>
             {analysis.photoUsable
               ? "Qualified macro evidence"
-              : "Better photos needed — no percentages filled"}
+              : analysis.visibleSampleEstimateUsable
+                ? "Visible-area estimate — review before using"
+                : "Better photos needed — no sampled-head estimate"}
           </Text>
           <Text style={photoStyles.feedback}>
             Image quality: {analysis.imageQuality} · Confidence:{" "}
@@ -495,6 +497,30 @@ function HarvestPhotoAnalyzer({
               {Math.round(Number(analysis.amber) * 100)}% amber,{" "}
               {Math.round(Number(analysis.clear) * 100)}% clear.
             </Text>
+          ) : null}
+          {analysis.visibleSampleEstimateUsable ? (
+            <View style={photoStyles.qualityChecks}>
+              <Text style={photoStyles.checklistTitle}>
+                Visible sampled-head estimate
+              </Text>
+              <Text style={photoStyles.feedback}>
+                {Math.round(Number(analysis.sampleClear) * 100)}% clear ·{" "}
+                {Math.round(Number(analysis.sampleCloudy) * 100)}% cloudy ·{" "}
+                {Math.round(Number(analysis.sampleAmber) * 100)}% amber ·{" "}
+                {Math.round(Number(analysis.sampleCloudyOrGlare) * 100)}% cloudy or
+                glare
+              </Text>
+              <Text style={photoStyles.warning}>
+                This estimates only the intact heads visible in the inspected photo
+                areas. It is never a whole-plant percentage and does not prove that
+                other bud sites match.
+              </Text>
+              {analysis.sampleEstimateBasis ? (
+                <Text style={photoStyles.feedback}>
+                  Basis: {analysis.sampleEstimateBasis}
+                </Text>
+              ) : null}
+            </View>
           ) : null}
           <Text style={photoStyles.feedback}>
             Amber visibility:{" "}
