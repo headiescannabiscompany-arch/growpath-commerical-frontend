@@ -2653,6 +2653,214 @@
         "separate organism identification from plant-damage attribution and obtain qualified confirmation when species or vector status matters"
       ],
       "expectedIpmResponse": "Identify aphid morphology when supported while refusing to turn two isolated organism macros into a crop-damage, virus, or treatment claim. Ask for colony, host, distribution, honeydew, cast-skin, and natural-enemy evidence; preserve harmless or beneficial context; and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "ipm-pink-hibiscus-mealybug-organism-damage-open-002",
+      "caseId": "mealybugs",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-d081-1-female-pink-hibiscus-mealybug",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/apr05/d081-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/apr05/d081-1.jpg",
+          "creator": "David Hall, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Female pink hibiscus mealybug. Photo by David Hall, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-d044-7-pink-hibiscus-mealybug-damage",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/apr05/d044-7/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/apr05/d044-7.jpg",
+          "creator": "Stephen Ausmus, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Healthy hibiscus and severe pink hibiscus mealybug damage. Photo by Stephen Ausmus, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "hibiscus",
+      "cultivar": "unknown",
+      "lifeStage": "established ornamental plant and adult female mealybug reference",
+      "affectedLocation": "new growth, shoots, foliage, and terminal growth in the documented severe-damage comparison",
+      "distribution": "a healthy-versus-severely-damaged plant comparison plus a separate organism macro; colony distribution on the damaged plant is not visible at body scale",
+      "progression": "the paired sources document organism identity and severe outcome but do not provide onset dates, intermediate stages, population counts, or recovery",
+      "mediumRootZone": "not documented and therefore unavailable for ruling out concurrent root or irrigation stress",
+      "environment": "temperature, humidity, production setting, irrigation, recent inputs, and natural-enemy abundance are not recorded with the paired images",
+      "measuredValues": "no colony counts, honeydew measurement, growth measurements, environmental readings, or laboratory confirmation accompany the image pair",
+      "diagnosticSigns": [
+        "USDA ARS identifies the macro organism as a female pink hibiscus mealybug",
+        "USDA ARS documents the comparison plant as severe damage caused by pink hibiscus mealybugs",
+        "the paired organism and whole-plant views connect morphology with a documented host outcome without showing the missing colony-scale evidence"
+      ],
+      "plausibleAlternatives": [
+        "another wax-covered mealybug or scale species requiring qualified identification",
+        "powdery mildew, residue, wax, or debris when discrete bodies are not visible",
+        "aphids, whiteflies, or another honeydew-producing sap feeder",
+        "herbicide, growth-regulator, nutrient, root-zone, heat, or water stress causing malformed or stunted growth",
+        "disease or multiple simultaneous stresses"
+      ],
+      "confirmationMethod": "Confirm discrete segmented wax-covered bodies and colonies in protected plant sites, capture host and affected-versus-unaffected distribution, inspect honeydew and cast material, record progression and natural enemies, and obtain qualified species confirmation when quarantine or crop-specific management depends on exact identity.",
+      "expectedCauseRanking": [
+        "pest",
+        "insufficient_evidence",
+        "other_abiotic",
+        "disease",
+        "deficiency"
+      ],
+      "expectedUrgency": "promptly inspect adjacent plants and propagation material because severe damage is documented, while preserving organisms for confirmation",
+      "expectedQuarantineGuidance": "Limit movement of suspect plant material and tools from affected areas when colonies are confirmed, but do not declare a regulated species or facility-wide infestation from appearance alone.",
+      "expectedScoutingSteps": [
+        "capture whole-plant and growing-point views plus sharp macros of bodies, wax, eggs or young, and protected colony sites",
+        "inspect adjacent plants and propagation material using a consistent count and location method",
+        "record honeydew, sooty growth, cast material, progression, recent inputs, environment, and root-zone condition",
+        "identify parasitoids and predators separately and obtain qualified confirmation when species identity changes quarantine or management"
+      ],
+      "expectedIpmResponse": "Connect documented mealybug morphology with a documented severe hibiscus outcome while stating what the two images do not show. Require colony and distribution evidence, preserve non-pest and concurrent-stress alternatives, separate species identity from damage attribution, protect beneficials, and avoid invented pesticide instructions."
+    },
+    {
+      "recordId": "ipm-beneficial-predator-feeding-context-open-002",
+      "caseId": "beneficial_and_harmless_lookalikes",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-k7549-8-minute-pirate-bug-whitefly-predation",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/feb97/k7549-8/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/feb97/k7549-8.jpg",
+          "creator": "Jack Dykinga, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Minute pirate bug feeding on whitefly nymphs. Photo by Jack Dykinga, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-k7636-1-green-lacewing-cabbage-looper-predation",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/jul97/k7636-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/jul97/k7636-1.jpg",
+          "creator": "Jack Dykinga, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Green lacewing larva attacking a cabbage looper larva. Photo by Jack Dykinga, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "reference host foliage with predator-prey interactions",
+      "cultivar": "unknown",
+      "lifeStage": "predatory minute pirate bug and green lacewing larva with prey",
+      "affectedLocation": "organism-scale interactions on host foliage; whole-plant injury and crop distribution are not shown",
+      "distribution": "two isolated, documented predator-prey interactions rather than pest or beneficial population distributions",
+      "progression": "single-time images; prey suppression, plant recovery, predator persistence, and later population trends are not recorded",
+      "mediumRootZone": "not documented and not relevant to classifying the visible predator-prey interaction",
+      "environment": "crop setting, temperature, humidity, pesticide history, and surrounding arthropod community are not supplied as a shared case",
+      "measuredValues": "no pest density, predator density, prey-consumption count, plant-damage measurement, or time-series values accompany the images",
+      "diagnosticSigns": [
+        "USDA ARS documents a minute pirate bug feeding on whitefly nymphs",
+        "USDA ARS documents a green lacewing larva attacking a cabbage looper larva",
+        "direct feeding behavior establishes beneficial predation context rather than pest identity from body shape alone"
+      ],
+      "plausibleAlternatives": [
+        "a similar-looking predatory or omnivorous true bug requiring morphology and behavior review",
+        "a lacewing larva mistaken for a crop-feeding caterpillar or beetle larva",
+        "incidental contact rather than predation when feeding behavior is not visible",
+        "a pest organism near damaged tissue but not responsible for the visible injury",
+        "multiple pest and beneficial species present simultaneously"
+      ],
+      "confirmationMethod": "Classify organism morphology and observed behavior separately, photograph the predator and prey sharply at body scale, record repeated observations and pest-versus-beneficial counts, and use qualified identification when a management decision could disrupt natural enemies.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "pest",
+        "disease",
+        "other_abiotic"
+      ],
+      "expectedUrgency": "pause broad-spectrum action long enough to distinguish beneficial predation from crop feeding unless an immediate plant-health or regulatory risk is independently confirmed",
+      "expectedQuarantineGuidance": "Do not quarantine or destroy plants because a predator is present; base any movement restriction on confirmed pest, disease, or regulatory evidence and preserve beneficial organisms where practical.",
+      "expectedScoutingSteps": [
+        "capture sharp dorsal, side, and feeding-behavior views of the suspected predator and prey",
+        "count pests and beneficials separately across affected and unaffected plants using the same method",
+        "map plant damage independently from organism presence and record whether predators occur where prey is concentrated",
+        "review recent pesticide use and avoid recommendations that unnecessarily disrupt confirmed natural enemies"
+      ],
+      "expectedIpmResponse": "Recognize documented predator-prey behavior and prevent beneficial organisms from being labeled as crop pests. Separate morphology, behavior, pest density, and plant-damage attribution; request missing population evidence; and avoid treatment recommendations that could destroy natural control."
+    },
+    {
+      "recordId": "ipm-looper-larvae-chewing-boundary-open-002",
+      "caseId": "caterpillars",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-k10873-1-cabbage-looper-potato-leaves",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/dec03/k10873-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/dec03/k10873-1.jpg",
+          "creator": "Peggy Greb, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Cabbage looper larvae on potato leaves. Photo by Peggy Greb, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-k11568-1-alfalfa-looper-potato-feeding",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/nov04/k11568-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/nov04/k11568-1.jpg",
+          "creator": "Peggy Greb, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Alfalfa looper moth larva consuming potato foliage. Photo by Peggy Greb, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "potato",
+      "cultivar": "unknown",
+      "lifeStage": "established foliage with cabbage-looper and alfalfa-looper larval references",
+      "affectedLocation": "foliage where larvae are present or actively consuming tissue",
+      "distribution": "organism-and-leaf reference views; whole-plant defoliation pattern and field distribution are not documented",
+      "progression": "single-time observations without prior injury, feeding duration, larval counts over time, or later plant response",
+      "mediumRootZone": "not documented and cannot be excluded as a concurrent source of plant stress",
+      "environment": "field or production conditions, temperature, weather, recent inputs, and natural-enemy context are not provided as a shared case",
+      "measuredValues": "no larval density, defoliation percentage, frass count, growth loss, or environmental measurements accompany the images",
+      "diagnosticSigns": [
+        "USDA ARS identifies cabbage looper larvae on potato foliage",
+        "USDA ARS documents an alfalfa looper larva consuming potato foliage",
+        "larval presence plus visible feeding behavior supports a chewing-pest class while not establishing crop-wide severity"
+      ],
+      "plausibleAlternatives": [
+        "another moth or butterfly larva requiring morphological or qualified confirmation",
+        "sawfly, beetle, grasshopper, slug, snail, or other chewing organism",
+        "beneficial lacewing or predatory larva near prey",
+        "old physical tearing, hail, equipment, or handling damage without active feeding",
+        "leafminer or disease injury when tissue loss and larval evidence are absent"
+      ],
+      "confirmationMethod": "Confirm active chewing with larvae, fresh tissue margins, and frass; capture dorsal, side, head, proleg, and whole-leaf views; record repeated plant-level counts and defoliation distribution; and obtain qualified identification when species-specific or regulated decisions are required.",
+      "expectedCauseRanking": [
+        "pest",
+        "insufficient_evidence",
+        "other_abiotic",
+        "disease"
+      ],
+      "expectedUrgency": "scout promptly for active larvae and expanding defoliation while preserving representative specimens and beneficial context",
+      "expectedQuarantineGuidance": "Limit movement of infested plant material when active larvae are confirmed, but do not infer species, crop-wide spread, or treatment threshold from isolated reference images.",
+      "expectedScoutingSteps": [
+        "inspect upper and lower foliage, growing points, stems, and nearby plants for larvae, eggs, fresh chewing, and frass",
+        "photograph whole-plant distribution plus sharp dorsal, side, head, and proleg views of representative larvae",
+        "count larvae and estimate affected foliage consistently across affected and unaffected plants",
+        "record beneficial predators or parasitoids separately and preserve specimens for qualified identification when needed"
+      ],
+      "expectedIpmResponse": "Recognize documented looper larvae and active feeding while refusing to infer species, population severity, or treatment threshold from two references. Require fresh chewing, frass, morphology, distribution, and count evidence; distinguish beneficial larvae and physical damage; and avoid invented pesticide directions."
     }
   ]
 }
