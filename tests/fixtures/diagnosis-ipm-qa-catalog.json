@@ -3772,6 +3772,48 @@
       "expectedIpmResponse": "Do not infer antagonism from color charts. Require measured competing ions, complete input history, pH, EC, roots, tissue or solution confirmation, and response; distinguish deficiency, excess, lockout, genetics, environment, and disease; and avoid supplement stacking."
     },
     {
+      "recordId": "ipm-thrips-mildew-lookalike-boundary-open-002",
+      "caseId": "thrips",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc-by-4-tomato-mite-or-thrips-damage",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Solanum_lycopersicum_leaves_with_spider_mite_or_thrips_damage_in_Dnipro_by_baby-bear.org.jpg",
+          "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d6/Solanum_lycopersicum_leaves_with_spider_mite_or_thrips_damage_in_Dnipro_by_baby-bear.org.jpg",
+          "creator": "Natalka Ukraine (baby-bear.org)",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Tomato foliage with mite- or thrips-compatible damage by Natalka Ukraine (baby-bear.org), CC BY 4.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-downy-powdery-mildew-grape-leaf",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Downy_and_Powdery_mildew_on_grape_leaf.JPG",
+          "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Downy_and_Powdery_mildew_on_grape_leaf.JPG",
+          "creator": "David B. Langston, University of Georgia; USDA Agricultural Research Service source",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Downy and powdery mildew on grape leaf by David B. Langston, University of Georgia; USDA ARS public-domain image.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "tomato feeding-damage reference and grape mildew differential reference",
+      "cultivar": "unknown", "lifeStage": "established plants with symptomatic foliage",
+      "affectedLocation": "leaf surfaces",
+      "distribution": "separate cross-host references; neither supplies a matched whole-plant distribution or affected-unaffected comparison",
+      "progression": "single-time images without symptom onset, spread, organism counts, wipe behavior, or treatment response",
+      "mediumRootZone": "not documented and not inferable from either image",
+      "environment": "temperature, humidity, leaf wetness, airflow, irrigation, and recent foliar applications are not documented together",
+      "measuredValues": "no organism count, microscopy, culture, molecular test, environmental series, or residue history accompanies the pair",
+      "diagnosticSigns": ["the tomato image is explicitly described as spider-mite- or thrips-compatible damage rather than a confirmed causal identification", "the grape image documents visible downy- and powdery-mildew signs that can overlap pale or white foliar symptom language", "neither reference contains the direct thrips body plus compatible injury evidence required for a confident thrips attribution"],
+      "plausibleAlternatives": ["spider mites or another stippling-producing pest", "powdery mildew, downy mildew, or another foliar disease", "spray residue, mineral deposits, dust, glare, wax, or normal surface texture", "physical, chemical, environmental, or senescence-related tissue damage", "more than one concurrent cause"],
+      "confirmationMethod": "Capture sharp neutral-light macros of the leaf top and underside plus the whole-plant distribution; look for a slender body, larvae, black frass, silvered or scarred tissue, mites, eggs, webbing, and removable surface growth; record recent sprays and environment; and use magnification or qualified laboratory confirmation when the management consequence warrants it.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "promptly inspect nearby plants and protected sites, but do not select a treatment from these ambiguous symptom images alone",
+      "expectedQuarantineGuidance": "Limit cross-contact while scouting when a transmissible pest or disease remains plausible; do not declare or quarantine for thrips solely from pale feeding-like marks.",
+      "expectedScoutingSteps": ["capture matched whole-plant, leaf-top, leaf-underside, and macro views in neutral light", "inspect flowers, folds, and undersides for slender insects, larvae, black frass, mites, eggs, and webbing", "test whether white surface material transfers and record sprays, residue, humidity, leaf wetness, and spread", "compare affected and unaffected plants over time and obtain microscopy or qualified confirmation when needed"],
+      "expectedIpmResponse": "Do not convert ambiguous stippling or pale marks into confirmed thrips. State that the damage reference itself preserves a mite-versus-thrips ambiguity, compare direct-organism and frass evidence against fungal surface growth and residues, request the missing views and history, and avoid inventing a pesticide or host-label direction."
+    },
+    {
       "recordId": "diagnosis-compost-organic-release-timing-open-001",
       "caseId": "organic_release_timing",
       "imageSet": [
