@@ -3688,6 +3688,88 @@
         "document response to a calculated source correction while monitoring drainage quality and avoiding disposal harm"
       ],
       "expectedIpmResponse": "Treat EC as method-dependent evidence, not a universal diagnosis. Require calibration, sampling method, units, temperature, medium, crop threshold, source water, spatial trend, roots, and ion context; distinguish fertilizer excess from salinity, sodicity, drought, drainage, and pH problems; and never prescribe a blind flush from appearance or one number."
+    },
+    {
+      "recordId": "diagnosis-soil-sampling-nutrient-lockout-boundary-open-001",
+      "caseId": "nutrient_lockout",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-d2819-1-soil-phosphorus-sample",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/apr13/d2819-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/apr13/d2819-1.jpg",
+          "creator": "Mike Bryant, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Soil sample preparation for phosphorus measurement by Mike Bryant, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-k8392-1-georeferenced-soil-sampling",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/mar99/k8392-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/mar99/k8392-1.jpg",
+          "creator": "Keith Weller, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Georeferenced soil sampling by Keith Weller, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "soil and nutrient sampling context; no symptom plant is used as proof",
+      "cultivar": "unknown", "lifeStage": "not applicable to measurement references",
+      "affectedLocation": "unknown; references demonstrate sampling rather than a diagnosed plant",
+      "distribution": "no crop, root-zone, affected-unaffected, or spatial symptom comparison is supplied",
+      "progression": "no pH shift, availability trend, correction, or plant response is documented",
+      "mediumRootZone": "soil sampling is shown, but texture, organic matter, roots, moisture, pH, EC, and extraction method are not case-linked",
+      "environment": "temperature, moisture, irrigation, rainfall, and biological activity are unknown",
+      "measuredValues": "no case-specific calibrated pH, EC, soil-test availability, solution, or tissue values accompany the images",
+      "diagnosticSigns": ["USDA references demonstrate that soil nutrient status requires representative sampling", "nutrient presence and plant availability are not equivalent", "no leaf appearance is accepted as proof of lockout"],
+      "plausibleAlternatives": ["true deficiency or low input", "root disease, low oxygen, compaction, or poor moisture", "nutrient excess, antagonism, salinity, or sampling error", "pest, disease, spray, light, heat, or water stress", "method mismatch between soil, soilless media, solution, runoff, and tissue tests"],
+      "confirmationMethod": "Identify medium and crop; inspect roots; calibrate instruments; measure pH and EC with a documented medium-appropriate method; obtain correlated soil, solution, or tissue evidence; compare affected and unaffected zones; and document response to one justified pH or root-zone correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "lockout", "deficiency", "antagonism", "other_abiotic"],
+      "expectedUrgency": "measure before adjusting pH because unverified acid or base additions can worsen roots and availability",
+      "expectedQuarantineGuidance": "Do not quarantine for suspected nutrient lockout alone.",
+      "expectedScoutingSteps": ["capture whole plant, tissue-age pattern, roots, medium, and affected-unaffected comparisons", "record medium, water alkalinity, fertilizers, amendments, irrigation, runoff, and recent changes", "measure calibrated method-specific pH and EC and obtain correlated nutrient testing when needed", "track marked-tissue and new-growth response after one evidence-based correction"],
+      "expectedIpmResponse": "Do not call lockout from leaf color. Require medium-specific pH and EC, roots, water alkalinity, inputs, availability testing, distribution, and response; distinguish actual shortage, antagonism, salinity, disease, and abiotic stress; and avoid blind pH adjustment."
+    },
+    {
+      "recordId": "diagnosis-foliage-nutrient-antagonism-boundary-open-001",
+      "caseId": "nutrient_antagonism",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-golden-foliage-negative-control",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sunshine_plant.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sunshine_plant.jpg",
+          "creator": "Nithyashree Balasupramaniyan", "licenseId": "CC0-1.0",
+          "attributionText": "Golden-yellow foliage by Nithyashree Balasupramaniyan, CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-k11068-1-controlled-compost-comparison",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/may04/k11068-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/may04/k11068-1.jpg",
+          "creator": "Peggy Greb, USDA Agricultural Research Service", "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Controlled compost-level plant comparison by Peggy Greb, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified golden foliage and marigolds in a controlled compost comparison",
+      "cultivar": "unknown", "lifeStage": "established foliage",
+      "affectedLocation": "foliage color without confirmed tissue-age or ion-interaction pattern",
+      "distribution": "separate references do not provide matched solution, tissue, root, or affected-unaffected data",
+      "progression": "no input ratio, tissue trend, correction, or recovery sequence is supplied",
+      "mediumRootZone": "compost treatment differs in one reference, but pH, EC, roots, and individual ion activities are unavailable",
+      "environment": "light, temperature, humidity, irrigation, and growth rate are not diagnostic measurements here",
+      "measuredValues": "no competing-ion ratios, solution analysis, tissue analysis, pH, or EC accompanies the images",
+      "diagnosticSigns": ["gold foliage can be normal pigmentation", "controlled treatment comparisons are more informative than isolated color", "antagonism requires evidence of competing ions and reduced uptake"],
+      "plausibleAlternatives": ["normal pigmentation", "true deficiency, pH lockout, salinity, or root limitation", "light, heat, water, spray, pest, or disease stress", "cultivar or developmental difference", "camera white balance and exposure"],
+      "confirmationMethod": "Review complete inputs and ratios; measure pH and EC; inspect roots; obtain solution or soil analysis and correctly sampled tissue analysis; compare affected and unaffected plants; and confirm new-growth response after correcting the evidenced competing input.",
+      "expectedCauseRanking": ["insufficient_evidence", "antagonism", "deficiency", "lockout", "excess"],
+      "expectedUrgency": "stop stacking speculative supplements and measure the nutrient system before changing ratios",
+      "expectedQuarantineGuidance": "Do not quarantine for suspected nutrient antagonism alone.",
+      "expectedScoutingSteps": ["map tissue age and distribution and inspect roots", "record every nutrient, amendment, water source, and recent change", "measure calibrated pH and EC and obtain solution or soil plus tissue evidence", "track new growth after one ratio correction supported by measurements"],
+      "expectedIpmResponse": "Do not infer antagonism from color charts. Require measured competing ions, complete input history, pH, EC, roots, tissue or solution confirmation, and response; distinguish deficiency, excess, lockout, genetics, environment, and disease; and avoid supplement stacking."
     }
   ]
 }
