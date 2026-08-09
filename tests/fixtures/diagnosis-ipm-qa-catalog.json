@@ -1457,6 +1457,72 @@
         "obtain a crop-appropriate virus test when the result would change disposition"
       ],
       "expectedIpmResponse": "Describe mosaic or virus-like symptoms without naming a virus from pixels alone. Rank nutritional, mite, chemical, genetic, and environmental lookalikes, request progression and exposure evidence, and require testing before high-confidence quarantine or destruction decisions."
+    },
+    {
+      "recordId": "ipm-broad-mite-tarsonemid-lookalike-open-001",
+      "caseId": "broad_mites",
+      "imageSet": [
+        {
+          "imageId": "usda-polyphagotarsonemus-latus-barc-001",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Polyphagotarsonemus_latus,_USDA_BARC.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Polyphagotarsonemus_latus,_USDA_BARC.jpg",
+          "creator": "Eric Erbe and Chris Pooley, USDA Agricultural Research Service Electron Microscopy Unit",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Broad mite (Polyphagotarsonemus latus) micrograph by Eric Erbe and Chris Pooley, USDA Agricultural Research Service Electron Microscopy Unit; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cyclamen-mite-pepper-damage-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pepper_with_Cyclamen_Mite_damage.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pepper_with_Cyclamen_Mite_damage.jpg",
+          "creator": "Hardyplants",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Bell pepper with cyclamen mite damage by Hardyplants, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "broad-mite reference specimen and bell pepper with documented cyclamen-mite damage",
+      "cultivar": "unknown",
+      "lifeStage": "adult broad-mite reference; cyclamen-mite life stage not visible in the damage view",
+      "affectedLocation": "mite body reference and distorted pepper foliage",
+      "distribution": "single-organism micrograph plus host-level tarsonemid damage context; not a same-species paired case",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "microscopic broad-mite body morphology in the direct reference",
+        "distorted and damaged new foliage in a related tarsonemid-mite case",
+        "absence of visible broad mites in the host-damage image"
+      ],
+      "plausibleAlternatives": [
+        "cyclamen mites or other tarsonemid mites",
+        "russet mites",
+        "thrips",
+        "herbicide or spray injury",
+        "calcium or root-zone dysfunction",
+        "virus-like symptoms",
+        "heat or light stress"
+      ],
+      "confirmationMethod": "Require magnified direct mite or egg evidence from affected new growth and distinguish broad mites from cyclamen, russet, and other mites; plant distortion alone cannot identify the mite.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "disease"],
+      "expectedUrgency": "prompt magnified inspection of affected new growth when distortion is progressing",
+      "expectedQuarantineGuidance": "Limit plant movement while a microscopic pest is being confirmed, but do not destroy plants or broadly treat based only on distorted foliage.",
+      "expectedScoutingSteps": [
+        "inspect the underside of the youngest distorted leaves, buds, and protected growth with magnification",
+        "capture sharp body-scale images of mites and eggs plus whole-plant distribution",
+        "record spray, herbicide, root-zone, heat, and light history",
+        "compare affected and unaffected new growth and obtain expert identification when morphology is unresolved"
+      ],
+      "expectedIpmResponse": "Recognize the direct broad-mite reference but do not transfer the cyclamen-mite damage label to broad mites. For user plants, call only tarsonemid-mite-compatible distortion until direct organisms or eggs support a narrower identification, and retain chemical, nutritional, viral, and environmental alternatives."
     }
   ]
 }

@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(13);
+    expect(catalog.mediaRecords).toHaveLength(14);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -209,6 +209,10 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "diagnosis-mosaic-virus-symptom-class-open-001",
           caseId: "mosaic_virus_symptoms"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-broad-mite-tarsonemid-lookalike-open-001",
+          caseId: "broad_mites"
         })
       ])
     );
