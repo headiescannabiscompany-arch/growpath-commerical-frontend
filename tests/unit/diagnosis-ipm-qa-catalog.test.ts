@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(2);
+    expect(catalog.mediaRecords).toHaveLength(4);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -159,6 +159,14 @@ describe("diagnosis/IPM QA catalog", () => {
               intendedUseApproved: true
             })
           ])
+        }),
+        expect.objectContaining({
+          recordId: "ipm-two-spotted-spider-mites-open-001",
+          caseId: "two_spotted_spider_mites"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-aphids-beneficial-context-open-001",
+          caseId: "aphids"
         })
       ])
     );

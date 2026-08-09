@@ -757,6 +757,130 @@
         "look for silvering, streaking, scarring, distortion, and black frass"
       ],
       "expectedIpmResponse": "Separate direct thrips identification from the causal claim that thrips produced the submitted damage; retain powdery mildew, mites, residue, and physical injury when discriminators are absent."
+    },
+    {
+      "recordId": "ipm-two-spotted-spider-mites-open-001",
+      "caseId": "two_spotted_spider_mites",
+      "imageSet": [
+        {
+          "imageId": "usda-d3685-1-two-spotted-spider-mite",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/oct16/d3685-1",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/300dpi/kesa/d3685-1.jpg",
+          "creator": "USDA ARS Electron and Confocal Microscopy Unit",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by USDA ARS Electron and Confocal Microscopy Unit. Image D3685-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-spider-mites-gardenia-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Spidermites-gardenia.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Spidermites-gardenia.jpg",
+          "creator": "Lucis / Samuel Grant",
+          "licenseId": "PUBLIC-DOMAIN-DEDICATION",
+          "attributionText": "Spider mites on gardenia by Wikimedia user Lucis; all rights released by the copyright holder.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "gardenia plus USDA organism reference",
+      "cultivar": "unknown",
+      "lifeStage": "adult/immature mites; exact host-view life stages not independently recorded",
+      "affectedLocation": "leaf surfaces and fine webbing zones",
+      "distribution": "direct mite morphology in macro reference and a separate host infestation view",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "direct two-spotted spider-mite morphology",
+        "fine webbing associated with host tissue",
+        "colony-scale host context"
+      ],
+      "plausibleAlternatives": [
+        "true spider webbing without mites",
+        "thrips feeding injury",
+        "dust or fibers",
+        "other mite species"
+      ],
+      "confirmationMethod": "Require direct mites or eggs under magnification, or compatible stippling plus fine mite webbing; do not diagnose from pale marks alone.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "prompt population and spread assessment",
+      "expectedQuarantineGuidance": "Inspect neighboring plants and avoid moving infested plant material until distribution is understood.",
+      "expectedScoutingSteps": [
+        "inspect leaf undersides with magnification",
+        "look for mites, round eggs, cast skins, stippling, and fine webbing",
+        "distinguish fine colony webbing from an ordinary spider web"
+      ],
+      "expectedIpmResponse": "Favor spider mites only when direct organism/egg evidence or the combined stippling-and-fine-webbing pattern is present; retain thrips, residue, and physical injury otherwise."
+    },
+    {
+      "recordId": "ipm-aphids-beneficial-context-open-001",
+      "caseId": "aphids",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-banana-aphid-colony-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Banana_aphid_colony.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Banana_aphid_colony.jpg",
+          "creator": "Plant pests and diseases",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Banana aphid colony by Plant pests and diseases, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ladybug-eating-aphids-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ladybug_eating_aphids._(49485764276).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ladybug_eating_aphids._(49485764276).jpg",
+          "creator": "David S. Ferry III",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Ladybug eating aphids by David S. Ferry III, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "banana and an additional garden host",
+      "cultivar": "unknown",
+      "lifeStage": "aphid colonies with mixed visible sizes; beneficial adult predator present in comparison view",
+      "affectedLocation": "stems and leaf-adjacent feeding sites",
+      "distribution": "clustered colonies rather than isolated pale marks",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "clustered soft-bodied aphid morphology",
+        "multiple aphid sizes in a colony",
+        "beneficial lady beetle predation context"
+      ],
+      "plausibleAlternatives": [
+        "whiteflies",
+        "root aphids without root-zone evidence",
+        "shed skins",
+        "beneficial insects or parasitoid mummies"
+      ],
+      "confirmationMethod": "Confirm live soft-bodied aphids and colony distribution; separately classify predators, cast skins, and parasitoid mummies rather than counting every visible insect as a pest.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "assess colony size, plant stress, honeydew, and spread before choosing a response",
+      "expectedQuarantineGuidance": "Inspect adjacent plants and protected growth sites while preserving identified beneficial predators.",
+      "expectedScoutingSteps": [
+        "inspect new growth, stems, and leaf undersides",
+        "look for live colonies, honeydew, cast skins, and distorted growth",
+        "separate predators and parasitoid mummies from active aphids"
+      ],
+      "expectedIpmResponse": "Report aphids only from direct colony/body evidence; explicitly identify beneficial predator context and avoid recommending actions that indiscriminately remove beneficials."
     }
   ]
 }
