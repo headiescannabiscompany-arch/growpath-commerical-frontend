@@ -5380,6 +5380,74 @@
       "expectedQuarantineGuidance": "Limit propagation and vector movement only when transmissible systemic disease is credible; do not destroy or quarantine for one mottled leaf alone.",
       "expectedScoutingSteps": ["capture whole plants, repeated new growth, neutral-light leaf patterns, veins, stems, roots, neighboring plants and controls", "record host, propagation, onset, recurrence, vector activity, light, temperature, irrigation, sprays, pH and EC", "inspect for aphids, whiteflies, thrips, mites, feeding injury, variegation, root stress and nutrient patterns", "obtain qualified host-appropriate virus testing before organism-specific action"],
       "expectedIpmResponse": "Do not diagnose a mosaic virus from mottling, color break, distortion or a cross-host reference alone. Require systemic recurrence, host and propagation context, vector inspection, neutral-light evidence, pH and EC plus nutrient and abiotic exclusions, and qualified case-linked testing; avoid automatic disposal or pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-two-spotted-spider-mite-organism-boundary-open-003",
+      "caseId": "two_spotted_spider_mites",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby4-two-spotted-spider-mite-study", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_two-spotted_spider_mite_T._urticae_-_2_(16191962958).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/The_two-spotted_spider_mite_T._urticae_-_2_(16191962958).jpg",
+          "creator": "Wybouw et al.", "licenseId": "CC-BY-4.0", "attributionText": "Two-spotted spider mite research image by Wybouw et al.; CC BY 4.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ccby4-two-spotted-spider-mite-illustration", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:ACAR_Tetranychidae_Tetranychus_urticae.png", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/ACAR_Tetranychidae_Tetranychus_urticae.png",
+          "creator": "Des Helmore / Manaaki Whenua–Landcare Research", "licenseId": "CC-BY-4.0", "attributionText": "Tetranychus urticae scientific illustration by Des Helmore, Manaaki Whenua–Landcare Research; CC BY 4.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "organism-focused two-spotted spider-mite references without a linked symptomatic plant case",
+      "cultivar": "not applicable", "lifeStage": "adult mite morphology in research photography and illustration",
+      "affectedLocation": "mite views without leaf surfaces, eggs, webbing, stippling, canopy distribution or controls",
+      "distribution": "no plant, bench, edge, hotspot, airflow or affected-unaffected map",
+      "progression": "no sequence of egg, nymph and adult increase, stippling, bronzing, webbing or plant decline",
+      "mediumRootZone": "roots and root-zone measurements are absent",
+      "environment": "temperature, humidity, airflow, dust, drought stress, sprays and nearby hosts are absent",
+      "measuredValues": "no underside mite or egg counts, webbing extent, leaf-damage score, magnification record or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["organism morphology can confirm a collected specimen but does not prove it caused an unrelated plant symptom", "stippling and bronzing overlap with thrips, other mites, nutrition, sprays, drought and light injury", "case attribution requires underside mites or eggs, characteristic webbing or feeding, mapped distribution and progression"],
+      "plausibleAlternatives": ["thrips, broad mites, russet mites, predatory or incidental mites, aphids or leafhoppers", "dust, spray residue, abrasion, edema, high light, heat, drought or cold", "nutrient deficiency, pH or EC lockout, root stress, disease or senescence", "camera artifact, fibers or ordinary spider webbing"],
+      "confirmationMethod": "Capture whole-plant distribution and sharp upper and underside macros; count mobile mites and eggs by marked leaf and magnification; document webbing attachment and feeding progression; inspect lookalikes; and obtain qualified specimen identification when species changes intervention.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "deficiency", "lockout"],
+      "expectedUrgency": "inspect and count leaf undersides promptly when stippling or webbing is actively expanding",
+      "expectedQuarantineGuidance": "Limit plant-to-plant contact and movement only when reproducing pest mites are credible; do not quarantine from stippling, dust or generic webbing alone.",
+      "expectedScoutingSteps": ["map affected plants and canopy positions; capture upper and underside macros, petioles, webbing and controls", "count mites and eggs on marked leaves with stated magnification and repeat over time", "record temperature, humidity, airflow, dust, drought, sprays and nearby hosts", "distinguish thrips, other mites, beneficials, residue and abiotic injury before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose two-spotted spider mites from stippling, bronzing, webbing or an organism reference alone. Require case-linked underside mites or eggs, characteristic feeding or webbing, counts, distribution and progression; preserve pest and abiotic alternatives and avoid invented miticide directions."
+    },
+    {
+      "recordId": "diagnosis-broad-mite-microscopy-lookalike-boundary-open-003",
+      "caseId": "broad_mites",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby4-broad-mite-illustration", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:ACAR_Tarsonemidae_Polyphagotarsonemus_latus.png", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/ACAR_Tarsonemidae_Polyphagotarsonemus_latus.png",
+          "creator": "Des Helmore / Manaaki Whenua–Landcare Research", "licenseId": "CC-BY-4.0", "attributionText": "Polyphagotarsonemus latus scientific illustration by Des Helmore, Manaaki Whenua–Landcare Research; CC BY 4.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-pd-yellow-mite-lookalike", "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Yellow_mite_(Tydeidae)_Lorryia_formosa_2_edit.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Yellow_mite_(Tydeidae)_Lorryia_formosa_2_edit.jpg",
+          "creator": "Eric Erbe and Christopher Pooley, USDA-ARS", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Yellow mite Lorryia formosa micrograph by Eric Erbe with colorization by Christopher Pooley, USDA-ARS; U.S. public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "broad-mite illustration and an unrelated yellow-mite micrograph without linked crop damage",
+      "cultivar": "not applicable", "lifeStage": "mite morphology references without eggs or a symptomatic host",
+      "affectedLocation": "magnified organisms without shoot tips, folded new leaves, undersides, fruit, stems or healthy controls",
+      "distribution": "no growing-point, plant, bench, propagation or affected-unaffected map",
+      "progression": "no sequence of new-growth distortion, bronzing, russeting, feeding increase or recovery",
+      "mediumRootZone": "roots, pH, EC, moisture, temperature and nutrient availability are not measured",
+      "environment": "heat, humidity, light, sprays, hormones, propagation, irrigation and nearby hosts are absent",
+      "measuredValues": "no broad-mite or characteristic egg counts, magnification record, shoot-tip damage score, pH, EC or marked-growth follow-up accompanies the pair",
+      "diagnosticSigns": ["magnified mite resemblance is insufficient because small mites require trained morphology and scale", "twisted, hardened or bronzed new growth overlaps with russet mites, thrips, herbicide, spray, heat, light and nutrient problems", "case attribution requires characteristic eggs or identified mites on affected growing points plus compatible distribution and progression"],
+      "plausibleAlternatives": ["russet mites, cyclamen mites, spider mites, predatory or incidental mites, thrips or aphids", "herbicide, plant-growth-regulator or spray injury, heat, high light, wind or mechanical damage", "boron, calcium, zinc or other nutrient availability problems, pH or EC lockout and root stress", "virus, genetics, edema or mixed causes"],
+      "confirmationMethod": "Capture whole plants and sharp growing-point, folded-leaf underside, stem and fruit macros with scale; inspect and count characteristic eggs and mites using adequate magnification; record progression and environment; and obtain qualified specimen identification when the pest label changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "deficiency", "lockout", "disease"],
+      "expectedUrgency": "preserve and inspect actively deforming new growth promptly because tiny mites and eggs are easily missed or removed",
+      "expectedQuarantineGuidance": "Limit movement of affected propagules or touching plants only when reproducing broad mites are credible; do not quarantine from distorted growth alone.",
+      "expectedScoutingSteps": ["map affected growing points and propagation links; capture whole plants, new growth, folded undersides, stems, fruit and controls", "use adequate magnification and scale to count characteristic eggs and mites on marked tissue", "record heat, humidity, light, sprays, growth regulators, irrigation, pH, EC and progression", "distinguish other mites, thrips, nutrient, root, spray, genetic and viral alternatives before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose broad mites from distorted or bronzed new growth, a generic mite, or low-detail imagery. Require case-linked characteristic eggs or qualified mite identification at adequate magnification, mapped growing-point distribution, progression and abiotic exclusions; avoid invented miticide directions."
     }
   ]
 }
