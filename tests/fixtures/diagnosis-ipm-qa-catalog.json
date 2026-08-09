@@ -4462,6 +4462,40 @@
       "expectedQuarantineGuidance": "Do not quarantine for torn, missing, or broken tissue alone; limit movement only when separate evidence supports a transmissible pest or disease.",
       "expectedScoutingSteps": ["capture whole plant, growing point, attachment, fracture, fresh edges, leaf top and underside, nearby plants, and mapped affected-unaffected distribution", "record hail, wind, rubbing, equipment, pruning, tying, handling, transport, animal, temperature, and spray events with exact timing and geometry", "inspect edges and internal tissue for insects, frass, eggs, mines, tooth or scrape patterns, lesions, decay, vascular discoloration, and pre-existing weakness", "mark injuries and recheck for continued expansion, new feeding, healing, wilting beyond the break, or secondary infection before assigning cause"],
       "expectedIpmResponse": "Describe visible damage without inventing its cause. Require event timing, spatial geometry, edge and fracture character, pest and pathogen evidence, pre-existing tissue condition, and progression to distinguish mechanical, weather, animal, pest, disease, spray, and physiological causes; address immediate structural hazards, preserve uncertainty, and never invent pesticide or disposal directions."
+    },
+    {
+      "recordId": "diagnosis-edema-water-soaking-surface-water-boundary-open-002",
+      "caseId": "edema",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-bacterial-hydrosis-syngonium", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hydrosis_(plant_pathogenic)_(32994496382).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hydrosis_(plant_pathogenic)_(32994496382).jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Bacterial water-soaking (hydrosis) on Syngonium auritum associated with Xanthomonas sp., photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-dew-on-wet-leaf-adpz1960", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dew_on_wet_leaf.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Dew_on_wet_leaf.jpg",
+          "creator": "AdPZ1960", "licenseId": "CC0-1.0", "attributionText": "Dew on a wet leaf photographed by AdPZ1960; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "Syngonium auritum with documented bacterial hydrosis and an unidentified leaf with surface dew; neither is a documented physiological-edema case",
+      "cultivar": "unknown", "lifeStage": "established foliage in separate observations",
+      "affectedLocation": "visible leaf surfaces without paired underside, edge, cross-section, whole-plant, root, or unaffected new-growth views",
+      "distribution": "separate close views without within-plant, canopy, irrigation-zone, splash, wetness, protected-exposed, or affected-unaffected mapping",
+      "progression": "single-time images without blister formation, water-soaked lesion expansion, corking, surface drying, water-balance change, or new-growth response",
+      "mediumRootZone": "moisture, drainage, oxygen, temperature, salinity, pH, EC, root integrity, and irrigation delivery are not shown or measured",
+      "environment": "surface water is visible in one reference, but irrigation, rainfall, leaf wetness duration, humidity, temperature, VPD, airflow, transpiration demand, and exposure timing are not paired across the cases",
+      "measuredValues": "no moisture trend, irrigation volume, drainage time, root-zone oxygen, temperature, humidity, VPD, wetness duration, lesion count, microscopy, culture, molecular assay, or response measurement accompanies the pair",
+      "diagnosticSigns": ["the Syngonium reference explicitly documents bacterial water-soaking associated with Xanthomonas rather than physiological edema", "the dew reference shows removable surface water rather than tissue-integrated blistering or corking", "wet appearance, translucence, droplets, bumps, or water context alone cannot distinguish edema from infection, pests, residue, or normal surface water"],
+      "plausibleAlternatives": ["bacterial hydrosis, bacterial leaf spot, soft rot, or another infectious water-soaked lesion", "dew, guttation, rain, irrigation droplets, condensation, residue, or removable surface growth", "scale insects, mites, thrips, galls, eggs, or other attached or feeding organisms", "fungal or oomycete leaf spot, spray burn, herbicide injury, sunscald, cold, or physical abrasion", "waterlogging, root disease, salinity, pH, EC, nutrient, or normal host texture occurring alone or concurrently"],
+      "confirmationMethod": "Capture sharp top, underside, edge, cross-sectional, whole-plant, and new-growth views; test whether apparent water or bumps are surface-removable or tissue-integrated while preserving evidence; measure moisture, drainage, roots, temperature, humidity, VPD, airflow, irrigation and wetness timing; map progression; and obtain qualified microscopy, culture, or molecular testing when infectious water-soaking remains credible.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "disease", "pest", "excess"],
+      "expectedUrgency": "document active water-soaked lesion expansion or rapid softening promptly and separate it from stable corking, removable droplets, and old scars before changing irrigation broadly",
+      "expectedQuarantineGuidance": "Do not quarantine for suspected edema, dew, or surface water alone; reduce wet handling and limit movement only when an actively spreading infectious pattern is credible.",
+      "expectedScoutingSteps": ["capture whole-plant distribution plus sharp leaf top, underside, edge, cross-section, blister or lesion center and margin, and unaffected new-growth views", "test whether apparent bumps, water, residue, organisms, or growth are removable or tissue-integrated without destroying all diagnostic evidence", "record irrigation, rain, wetness duration, moisture and drainage trends, roots, temperature, humidity or VPD, airflow, recent sprays, and symptom timing", "mark tissue and compare blistering, corking, lesion expansion, surface drying, and new growth; obtain qualified pathogen confirmation when infectious water-soaking persists"],
+      "expectedIpmResponse": "Do not diagnose edema from wet-looking tissue, translucence, droplets, bumps, or water context alone. Distinguish tissue-integrated blistering and corking from bacterial hydrosis, dew, guttation, residue, pests, disease, spray, and root disorders; require paired views, measured water balance and environment, roots, distribution, progression, and qualified testing for consequential pathogen claims; and avoid unmeasured irrigation or pesticide directions."
     }
   ]
 }
