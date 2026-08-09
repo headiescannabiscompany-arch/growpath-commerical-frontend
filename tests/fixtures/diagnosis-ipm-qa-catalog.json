@@ -1392,6 +1392,71 @@
         "compare affected and unaffected plants and obtain a pathogen test when consequences are high"
       ],
       "expectedIpmResponse": "Treat wilt as compatible with root dysfunction but not diagnostic of Pythium. Do not confirm root rot from foliage alone, do not invent a pathogen treatment, and request root images, root-zone measurements, irrigation history, and confirmatory testing."
+    },
+    {
+      "recordId": "diagnosis-mosaic-virus-symptom-class-open-001",
+      "caseId": "mosaic_virus_symptoms",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-yellow-mosaic-squash-leaf-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Yellow_Mosaic_Virus_on_yellow_squash_leaf.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Yellow_Mosaic_Virus_on_yellow_squash_leaf.jpg",
+          "creator": "Babahu",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Yellow mosaic virus symptoms on a yellow squash leaf by Babahu, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-papaya-ringspot-leaf-mosaic-34085901974",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Papaya_(Carica_papaya)-_Leaf_mosaic_(Papaya_ringspot_virus,_PRSV)_-_34085901974.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Papaya_(Carica_papaya)-_Leaf_mosaic_(Papaya_ringspot_virus,_PRSV)_-_34085901974.jpg",
+          "creator": "Plant pests and diseases / Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Papaya leaf mosaic associated with papaya ringspot virus by Plant pests and diseases / Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "yellow squash and papaya",
+      "cultivar": "unknown",
+      "lifeStage": "vegetative foliage",
+      "affectedLocation": "leaves",
+      "distribution": "mottled chlorotic patterns on affected leaves; full plant progression incompletely represented",
+      "progression": "single-time observations",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor observations; detailed environment not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "irregular intermingled green and chlorotic mosaic pattern",
+        "pattern crosses multiple tissue areas rather than following a single lesion margin",
+        "documented virus-associated examples on two different hosts"
+      ],
+      "plausibleAlternatives": [
+        "nutrient deficiency or antagonism",
+        "broad or russet mite injury",
+        "herbicide or growth-regulator injury",
+        "genetic variegation",
+        "temperature or root-zone stress",
+        "other viruses with overlapping symptoms"
+      ],
+      "confirmationMethod": "Use whole-plant distribution, progression, vector or propagation history, and comparison with new growth; confirm a specific virus with an appropriate laboratory test rather than appearance alone.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "pest", "other_abiotic"],
+      "expectedUrgency": "promptly assess spread and propagation risk when a virus-like pattern appears on new growth",
+      "expectedQuarantineGuidance": "Separate suspect plants and avoid sharing cutting tools or propagation material until contagious disease is excluded, while avoiding destructive action based only on color pattern.",
+      "expectedScoutingSteps": [
+        "photograph whole-plant distribution plus old and new growth",
+        "inspect for mites, vectors, feeding damage, and herbicide exposure patterns",
+        "record propagation source, tool sharing, symptom progression, and nearby affected plants",
+        "obtain a crop-appropriate virus test when the result would change disposition"
+      ],
+      "expectedIpmResponse": "Describe mosaic or virus-like symptoms without naming a virus from pixels alone. Rank nutritional, mite, chemical, genetic, and environmental lookalikes, request progression and exposure evidence, and require testing before high-confidence quarantine or destruction decisions."
     }
   ]
 }
