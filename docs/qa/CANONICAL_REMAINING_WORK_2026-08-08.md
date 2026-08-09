@@ -123,10 +123,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       AI routes passed the 2026-08-09 production heading/error-state sweep. Facility
       Inventory resolved from its loading state to a readable zero-item, read-only
       result. The Commercial sweep found missing Back controls on Feed/Campaigns and
-      Tasks; the shared themed Back control and focused regression coverage are now in
-      the release path and require deployed live retest before acceptance. Button
-      mutations, mobile/visual evidence, and the remaining roles/routes are not accepted
-      by this sweep.
+      Tasks. Frontend merge `79c6dba2`, Render deployment
+      `dep-d9s2mvhsrm7s73aumnig`, and the cache-busted production retest added one
+      shared themed Back control to each exact route with no visible load or access
+      error. Button mutations, mobile/visual evidence, and the remaining roles/routes
+      are not accepted by this sweep.
 - [ ] Retest content-report admin email deep links as an authorized platform owner
       for Forum, Feed, product, course, video, and live-session reports.
 - [ ] Create only approved temporary production/staging records needed to verify
