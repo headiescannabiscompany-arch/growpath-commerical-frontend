@@ -4292,6 +4292,40 @@
       "expectedQuarantineGuidance": "Do not quarantine for frost exposure or cold injury alone; isolate only when separate evidence supports a transmissible pest or disease.",
       "expectedScoutingSteps": ["capture living whole plants plus protected and exposed zones, upper and lower canopy, young and old tissue, and unaffected controls", "record minimum air, canopy, tissue, and root-zone temperature, duration, wind, humidity, radiation, protection, irrigation, and acclimation", "mark suspect tissue and reinspect through thaw for water-soaking, collapse, discoloration, necrosis, and new-growth recovery", "inspect roots, vascular tissue, pests, pathogen signs, application patterns, and physical injury before attributing all damage to cold"],
       "expectedIpmResponse": "Do not diagnose cold injury from visible frost, ice, or one dead leaf. Report exposure separately from injury; require measured temperature and duration, living-tissue distribution, acclimation, protected controls, and post-thaw progression; preserve root, water, heat, light, physical, spray, pest, disease, and senescence alternatives; and avoid universal temperature thresholds or unmeasured remedies."
+    },
+    {
+      "recordId": "diagnosis-water-presence-root-function-boundary-open-002",
+      "caseId": "overwatering",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc-by-2-intentional-field-waterlogging-35534947113", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Preparing_the_field_before_waterlogging_it_for_plantation_(35534947113).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Preparing_the_field_before_waterlogging_it_for_plantation_(35534947113).jpg",
+          "creator": "shankar s.", "licenseId": "CC-BY-2.0", "attributionText": "Field preparation before intentional waterlogging for plantation photographed by shankar s.; CC BY 2.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-peppermint-roots-rhizomes", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Peppermint_roots_and_rhizomes.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Peppermint_roots_and_rhizomes.jpg",
+          "creator": "Joshua T Polito", "licenseId": "CC0-1.0", "attributionText": "Greenhouse-grown peppermint roots and rhizomes photographed by Joshua T Polito; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "an intentionally waterlogged planting field and greenhouse-grown peppermint roots and rhizomes in separate references",
+      "cultivar": "unknown", "lifeStage": "pre-plant field preparation and established peppermint root/rhizome material",
+      "affectedLocation": "field surface water and exposed root/rhizome structures; no affected living crop is paired across the references",
+      "distribution": "separate context images without a moisture gradient, irrigation-zone map, container comparison, or affected-unaffected plant distribution",
+      "progression": "single-time images without watering history, saturation duration, drainage curve, oxygen trend, plant decline, or recovery",
+      "mediumRootZone": "surface water is visible in one context and roots are visible in another, but moisture, matric potential, dissolved oxygen, drainage, texture, compaction, temperature, odor, and integrity are not case-linked",
+      "environment": "rain, irrigation source, crop water requirement, evapotranspiration, temperature, humidity, airflow, and intentional production method are not jointly documented",
+      "measuredValues": "no irrigation volume, runoff, drainage time, water depth, volumetric moisture, matric potential, dissolved oxygen, root-zone temperature, pH, EC, or pathogen result accompanies the pair",
+      "diagnosticSigns": ["the field image explicitly documents intentional waterlogging before plantation rather than plant injury", "the peppermint image documents recognizable roots and rhizomes but no excess-water diagnosis", "the pair demonstrates that visible water or roots alone cannot establish harmful overwatering, low oxygen, root rot, or causation"],
+      "plausibleAlternatives": ["intentional flooded, paddy, hydroponic, propagation, or other water-based production without injury", "Phytophthora, Pythium, Fusarium, bacterial soft rot, or another root and crown disease", "underwatering, uneven irrigation delivery, heat, cold, salinity, pH, EC, or nutrient stress", "compaction, poor drainage, high water table, damaged roots, transplant shock, or unsuitable container volume", "pests, vascular disease, foliar disease, spray injury, or senescence unrelated to water volume"],
+      "confirmationMethod": "Identify the production method and crop requirement; record irrigation and rain volume, frequency, runoff, saturation and drainage time; measure root-zone moisture and oxygen context over time; inspect washed roots and crowns from affected and unaffected plants; and obtain qualified pathogen testing when progressive lesions, decay, odor, or decline remain after water conditions normalize.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "disease", "lockout", "excess"],
+      "expectedUrgency": "measure and relieve unsafe standing water or low-oxygen conditions promptly when a vulnerable crop and active decline support them, while preserving roots for diagnosis",
+      "expectedQuarantineGuidance": "Do not quarantine for visible water, intentional flooded culture, hydroponics, or overwatering alone; limit movement only when a transmissible root pathogen or regulated contaminant is independently supported.",
+      "expectedScoutingSteps": ["identify crop, stage, production method, container or field design, and intentional flooded or hydroponic context before interpreting visible water", "record irrigation and rain volume, frequency, runoff, standing-water depth and duration, drainage, substrate or soil texture, compaction, and water-table context", "measure moisture repeatedly and compare root color, branching, integrity, odor, crown tissue, oxygen context, temperature, pH, EC, and recovery across affected and unaffected plants", "reinspect progression after conditions change and obtain qualified root-disease testing when lesions, decay, or decline continue"],
+      "expectedIpmResponse": "Do not diagnose overwatering from a wet surface, one watering event, intentional flooded culture, hydroponics, or a root photo. Require crop and production context, measured moisture and drainage trends, oxygen context, affected-unaffected roots, and progression; separate excess water from root disease, salinity, pH, nutrition, irrigation failure, and environmental stress; and avoid universal watering or flushing directions."
     }
   ]
 }
