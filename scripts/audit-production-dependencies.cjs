@@ -140,6 +140,22 @@ try {
         `- ${name}: ${value.severity} (${value.range || "range unavailable"})`
       );
     }
+    if (blocked.some(([name]) => name === "image-size")) {
+      console.error(
+        `image-size advisory fields: ${JSON.stringify(
+          (report.vulnerabilities?.["image-size"]?.via || []).map((entry) =>
+            typeof entry === "string"
+              ? entry
+              : {
+                  source: entry.source,
+                  name: entry.name,
+                  title: entry.title,
+                  url: entry.url
+                }
+          )
+        )}`
+      );
+    }
     process.exit(1);
   }
 
