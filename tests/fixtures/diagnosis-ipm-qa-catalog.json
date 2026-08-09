@@ -3420,6 +3420,146 @@
         "mark tissue and document evening, overnight, and next-day recovery or progression while retaining disease, spray, and pest alternatives"
       ],
       "expectedIpmResponse": "Treat curl, wilt, scorch, and flower drop as nonspecific until thermal exposure is measured. Require leaf-versus-air temperature, VPD, radiation, wind, duration, spatial distribution, root-zone water status, and recovery; separate heat from light and water stress; and avoid universal temperature thresholds across crops and stages."
+    },
+    {
+      "recordId": "diagnosis-leaf-damage-wind-boundary-open-001",
+      "caseId": "wind_burn",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-nonspecific-damaged-leaf",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Damaged_Leaf.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Damaged_Leaf.jpg",
+          "creator": "Harsha099",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Nonspecific damaged leaf by Harsha099, CC0 1.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-k5096-19-wind-tunnel-plants",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/k5096-19",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/k5096-19.jpg",
+          "creator": "Scott Bauer, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Live plants in a USDA wind-tunnel erosion experiment by Scott Bauer, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified damaged leaf; separate USDA wind-tunnel plant reference",
+      "cultivar": "unknown",
+      "lifeStage": "established foliage and experimental live plants in separate references",
+      "affectedLocation": "localized leaf damage without documented fan-facing, windward, row-edge, or canopy-edge orientation",
+      "distribution": "single damaged-leaf view without whole-plant asymmetry; the USDA reference documents controlled wind research but not this leaf's cause",
+      "progression": "no pre-event condition, wind event, abrasion progression, sheltered comparison, or recovery sequence is shown",
+      "mediumRootZone": "not shown or measured for the damaged leaf",
+      "environment": "air speed, direction, duration, humidity, temperature, debris load, fan distance, and plant movement are unknown",
+      "measuredValues": "no anemometer reading, fan setting, VPD, leaf temperature, moisture status, or event timeline accompanies the damaged-leaf image",
+      "diagnosticSigns": [
+        "leaf injury is visible but its morphology and orientation do not establish wind as the cause",
+        "USDA wind-tunnel work demonstrates that wind and entrained particles can be tested under controlled conditions",
+        "the required windward-versus-sheltered distribution and measured air movement are absent"
+      ],
+      "plausibleAlternatives": [
+        "physical handling, animal feeding, hail, rubbing, pruning, or equipment damage",
+        "heat, low humidity, drought, excess light, or salt injury",
+        "spray burn, nutrient stress, pathogen lesion, or insect feeding",
+        "camera framing that omits the actual whole-plant distribution",
+        "windblown particle abrasion rather than desiccating airflow alone"
+      ],
+      "confirmationMethod": "Map damage relative to fans, vents, prevailing wind, row edges, and sheltered controls; measure air speed and direction at canopy height; inspect for directional tears and particle abrasion; record temperature, humidity, VPD, moisture, and event timing; and document response to one reversible airflow correction.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "other_abiotic",
+        "pest",
+        "disease",
+        "excess"
+      ],
+      "expectedUrgency": "reduce clearly unsafe direct airflow or active particle abrasion after documenting it, but do not broadly disable ventilation from a damaged-leaf photo alone",
+      "expectedQuarantineGuidance": "Do not quarantine for suspected wind injury alone; isolate only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": [
+        "capture the whole plant, windward and sheltered sides, canopy edges, fan or vent geometry, and affected-unaffected tissue",
+        "measure air speed and direction at leaf height across several positions and record fan schedule and recent wind events",
+        "inspect tears, margins, stems, and leaf surfaces for directional abrasion, debris impact, pests, lesions, or spray patterns",
+        "record root-zone moisture, temperature, humidity or VPD, and recovery after one documented airflow adjustment"
+      ],
+      "expectedIpmResponse": "Do not diagnose wind burn from torn, curled, or dry foliage alone. Require fan-facing or windward distribution, measured air movement, event timing, abrasion evidence, environmental demand, and response to a reversible correction; retain physical, pest, disease, spray, heat, water, and salt alternatives."
+    },
+    {
+      "recordId": "diagnosis-tomato-blossom-end-calcium-transport-open-001",
+      "caseId": "calcium_root_environment",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-blossom-end-rot-tomatoes-group",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Blossom_end_rot_tomatoes_2017_A.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Blossom_end_rot_tomatoes_2017_A.jpg",
+          "creator": "Fructibus",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Tomatoes with blossom-end rot by Fructibus, CC0 1.0.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-public-domain-blossom-end-rot-dissection",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Blossomrotcloseup.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Blossomrotcloseup.jpg",
+          "creator": "Siltloam",
+          "licenseId": "PUBLIC-DOMAIN-DEDICATION",
+          "attributionText": "Blossom-end rot tomato dissection by Siltloam, released to the public domain.",
+          "retrievedAt": "2026-08-09",
+          "rightsReviewedAt": "2026-08-09",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "tomato",
+      "cultivar": "unknown",
+      "lifeStage": "fruiting",
+      "affectedLocation": "blossom ends of developing tomato fruit; foliage, roots, and whole-plant distribution are not shown",
+      "distribution": "multiple affected harvested fruits and a separate lesion dissection without first-versus-later fruit, plant, bed, emitter, or cultivar comparisons",
+      "progression": "established lesions are visible, but moisture fluctuations, fruit expansion, root injury, tissue calcium, and later-fruit outcome are not documented",
+      "mediumRootZone": "soil or substrate calcium, pH, EC, moisture trend, competing ions, root integrity, and irrigation uniformity are unknown",
+      "environment": "temperature, humidity, VPD, heat events, growth rate, rainfall, irrigation, and transpiration context are absent",
+      "measuredValues": "no soil, solution, tissue, sap, pH, EC, moisture, irrigation, or environmental measurements accompany the images",
+      "diagnosticSigns": [
+        "tan-to-black flattened blossom-end lesions and internal affected tissue are consistent with blossom-end rot",
+        "the visible fruit disorder supports inadequate calcium reaching developing fruit but does not prove low calcium in the root medium",
+        "the images cannot separate moisture fluctuation, root injury, rapid growth, heat, or competing salts"
+      ],
+      "plausibleAlternatives": [
+        "secondary fungal or bacterial colonization of already damaged fruit",
+        "sunscald, fruit cracking, physical injury, or another fruit rot",
+        "irregular irrigation, drought-to-wet cycling, poor roots, or low root-zone oxygen",
+        "excess ammonium, potassium, magnesium, sodium, salinity, or pH-mediated uptake limitation",
+        "cultivar susceptibility and rapid fruit growth under hot conditions"
+      ],
+      "confirmationMethod": "Confirm blossom-end lesion position and internal pattern; inspect roots and irrigation delivery; trend moisture, pH, and EC using medium-appropriate methods; review heat, growth, and fertilizer history; test soil, solution, or tissue when action depends on calcium supply; and compare first and later fruit response before concluding the root medium lacks calcium.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "other_abiotic",
+        "lockout",
+        "antagonism",
+        "deficiency"
+      ],
+      "expectedUrgency": "stabilize documented moisture and root-zone hazards promptly and remove badly affected fruit when appropriate, but do not add calcium or salts blindly",
+      "expectedQuarantineGuidance": "Do not quarantine for blossom-end rot or suspected calcium transport limitation alone; separate rotting fruit hygienically when secondary decay is present.",
+      "expectedScoutingSteps": [
+        "photograph fruit attachment, blossom end, lesion margin, dissection, whole plant, roots, and affected-unaffected fruit sets",
+        "record irrigation timing and volume, moisture at multiple depths, drainage, root injury, heat events, humidity or VPD, and growth stage",
+        "measure medium-appropriate pH and EC and review calcium plus ammonium, potassium, magnesium, sodium, and total salinity inputs",
+        "compare first and later fruit and obtain soil, solution, or tissue confirmation before prescribing calcium products"
+      ],
+      "expectedIpmResponse": "Recognize a blossom-end-rot pattern while refusing to equate it with low calcium supply. Explain calcium transport through active roots and water movement; require moisture, roots, pH, EC, competing-ion, heat, and growth evidence; distinguish secondary decay; and avoid automatic eggshell, gypsum, lime, foliar calcium, or fertilizer instructions."
     }
   ]
 }
