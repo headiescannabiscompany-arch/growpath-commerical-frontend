@@ -130,7 +130,7 @@ describe("diagnosis/IPM QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(59);
+    expect(catalog.mediaRecords).toHaveLength(60);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -218,6 +218,11 @@ describe("diagnosis/IPM QA catalog", () => {
           recordId: "diagnosis-heat-drought-pest-sunscald-boundary-open-002",
           caseId: "heat_stress",
           expectedCauseRanking: ["insufficient_evidence", "other_abiotic", "pest", "disease"]
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-frost-exposure-injury-boundary-open-002",
+          caseId: "cold_damage",
+          expectedCauseRanking: ["insufficient_evidence", "other_abiotic", "disease", "pest"]
         }),
         expect.objectContaining({
           recordId: "ipm-aphids-beneficial-context-open-001",
