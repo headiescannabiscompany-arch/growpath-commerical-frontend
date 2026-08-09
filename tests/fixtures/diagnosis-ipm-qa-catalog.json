@@ -5312,6 +5312,74 @@
       "expectedQuarantineGuidance": "Limit wet handling or plant movement only when actively spreading host-compatible rust is credible; do not quarantine for orange or brown spots alone.",
       "expectedScoutingSteps": ["capture whole plants, canopy distribution, matched upper and lower surfaces, sharp pustule centers and margins, stems and controls", "record host, tissue age, onset, spread, wetness, rainfall, irrigation, humidity, temperature, airflow, light and products", "inspect for raised pustules, transferable spores, residue, edema, scale, mites, frass and spray patterns", "preserve representative tissue and obtain qualified confirmation before organism-specific intervention"],
       "expectedIpmResponse": "Recognize compatible rust structures without transferring a soybean or rose diagnosis to another host. Require host identity, paired surfaces, true pustules or uredinia, spore evidence, distribution, progression and environmental context; preserve disease, pest, residue, edema and abiotic alternatives; avoid invented fungicide directions."
+    },
+    {
+      "recordId": "diagnosis-bacterial-leaf-spot-cross-host-boundary-open-003",
+      "caseId": "bacterial_leaf_spot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-panax-bacterial-leaf-spot", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bacterial_leaf_spot_of_panax_(9521101870).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bacterial_leaf_spot_of_panax_(9521101870).jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Bacterial leaf spot of Panax photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-panax-bacterial-leaf-blight", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Panax_Bacterial_leaf_spot_or_blight_(20200006953).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Panax_Bacterial_leaf_spot_or_blight_(20200006953).jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Bacterial leaf spot or blight of Panax photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "Panax and pepper with separately documented bacterial leaf-spot disease",
+      "cultivar": "unknown", "lifeStage": "established foliage on unrelated hosts",
+      "affectedLocation": "limited leaf views without matched undersides, whole plants, stems, fruit, splash zones or controls from one case",
+      "distribution": "cross-host references without canopy map, splash gradient, handling pattern or affected-unaffected comparison",
+      "progression": "single-time images without water-soaking, halo development, lesion expansion, coalescence, spread or recovery sequence",
+      "mediumRootZone": "roots and root-zone conditions are not shown or measured",
+      "environment": "leaf wetness, rain, overhead irrigation, humidity, temperature, airflow, handling and recent products are absent",
+      "measuredValues": "no lesion counts, paired-surface correspondence, bacterial streaming, microscopy, culture or molecular result accompanies the pair",
+      "diagnosticSigns": ["documented bacterial spots across two hosts demonstrate overlap rather than a transferable species diagnosis", "dark, angular, water-soaked or haloed lesions also overlap with fungal spots, edema, spray injury and feeding", "host, distribution, progression, splash or wetness context and case-linked testing are required when identity matters"],
+      "plausibleAlternatives": ["Septoria, Cercospora, Alternaria, anthracnose, rust or another fungal leaf spot", "thrips, mites, leaf miners, chewing injury, eggs or frass", "edema, spray or fertilizer burn, herbicide drift, sunscald, cold, hail or abrasion", "nutrition, pH, EC, roots, water stress, senescence, residue or mixed causes"],
+      "confirmationMethod": "Capture whole-plant distribution and splash zones plus matched leaf surfaces, sharp lesion centers and margins, stems, fruit and controls; record wetness, handling and progression; inspect for pests and residue; and obtain qualified case-linked culture or molecular confirmation when bacterial identity changes management.",
+      "expectedCauseRanking": ["disease", "insufficient_evidence", "other_abiotic", "pest"],
+      "expectedUrgency": "document actively expanding water-soaked or coalescing lesions promptly before wiping, rain or spraying alters evidence",
+      "expectedQuarantineGuidance": "Reduce wet handling and splash movement only when progressive bacterial disease is credible; do not quarantine for generic spots or halos alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy and splash distribution, matched leaf surfaces, sharp lesion centers and margins, stems, fruit and controls", "record host, tissue age, onset, spread, rain, irrigation, wetness, humidity, temperature, airflow, handling and products", "inspect for water-soaking, angular vein limits, exudate, pests, residue, edema and spray patterns", "preserve representative margins and obtain qualified confirmation before bacterium-specific intervention"],
+      "expectedIpmResponse": "Do not diagnose bacterial leaf spot from dark, angular, wet-looking or haloed lesions alone or transfer a Panax or pepper label to another host. Require distribution, progression, paired surfaces, wetness and handling context, pest and abiotic exclusions, and qualified case-linked confirmation; avoid invented bactericide directions."
+    },
+    {
+      "recordId": "diagnosis-mosaic-cross-host-pattern-boundary-open-003",
+      "caseId": "mosaic_virus_symptoms",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-dasheen-mosaic-virus", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dasheen_mosaic_virus_P2120105.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Dasheen_mosaic_virus_P2120105.jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Dasheen mosaic symptoms on taro photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-dasheen-mosaic-virus-second-view", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dasheen_mosaic_virus_P2120111.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Dasheen_mosaic_virus_P2120111.jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Second view of Dasheen mosaic symptoms on taro photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "taro and tulip with separately documented virus-associated mosaic symptoms",
+      "cultivar": "unknown", "lifeStage": "established foliage and flowering ornamental tissue on unrelated hosts",
+      "affectedLocation": "limited symptomatic views without whole-plant architecture, new growth, roots, vectors, neighboring plants or controls from one case",
+      "distribution": "cross-host examples without plant-to-plant map, propagation link, vector pattern or affected-unaffected comparison",
+      "progression": "single-time images without new-growth recurrence, systemic spread, recovery, vector history or propagation sequence",
+      "mediumRootZone": "root condition, pH, EC, moisture, temperature and nutrient availability are not measured",
+      "environment": "light, heat, cold, irrigation, sprays, propagation, sanitation and vector pressure are absent",
+      "measuredValues": "no color calibration, tissue nutrient result, pH, EC, vector count, indicator host, immunoassay or molecular result accompanies the pair",
+      "diagnosticSigns": ["mottling and color break can be compatible with virus but are not organism-specific across hosts", "nutrition, pH or EC, herbicide, light, temperature, genetics and camera color can create mosaic-like patterns", "systemic recurrence, host and propagation context, vector evidence and case-linked testing are required before a virus claim"],
+      "plausibleAlternatives": ["iron, magnesium, manganese, zinc or other nutrient availability problems", "pH or EC lockout, root injury, water stress, heat, cold, high light or variegation", "herbicide or spray injury, genetic chimera, senescence or camera white balance", "mites, thrips, whiteflies, aphids, another virus, viroid or mixed causes"],
+      "confirmationMethod": "Capture whole plants, repeated new growth, matched neutral-light leaves, veins, stems, roots, neighboring plants and controls; record propagation, vector and progression history plus pH and EC; inspect vectors; and obtain host-appropriate qualified immunoassay or molecular confirmation before naming a virus.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "deficiency", "lockout", "other_abiotic", "pest"],
+      "expectedUrgency": "preserve representative new and older tissue promptly when systemic patterning or vector-linked spread is increasing",
+      "expectedQuarantineGuidance": "Limit propagation and vector movement only when transmissible systemic disease is credible; do not destroy or quarantine for one mottled leaf alone.",
+      "expectedScoutingSteps": ["capture whole plants, repeated new growth, neutral-light leaf patterns, veins, stems, roots, neighboring plants and controls", "record host, propagation, onset, recurrence, vector activity, light, temperature, irrigation, sprays, pH and EC", "inspect for aphids, whiteflies, thrips, mites, feeding injury, variegation, root stress and nutrient patterns", "obtain qualified host-appropriate virus testing before organism-specific action"],
+      "expectedIpmResponse": "Do not diagnose a mosaic virus from mottling, color break, distortion or a cross-host reference alone. Require systemic recurrence, host and propagation context, vector inspection, neutral-light evidence, pH and EC plus nutrient and abiotic exclusions, and qualified case-linked testing; avoid automatic disposal or pesticide directions."
     }
   ]
 }
