@@ -1263,6 +1263,70 @@
         "compare removable residue with firmly attached insect structures"
       ],
       "expectedIpmResponse": "Require discrete attached scale morphology before diagnosing scale insects; distinguish scales from mealybugs, whitefly nymphs, residue, and physiological corking, and do not identify a scale species from host damage alone."
+    },
+    {
+      "recordId": "diagnosis-botrytis-gray-mold-open-001",
+      "caseId": "botrytis_gray_mold_bud_rot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-botrytis-cinerea-179936706",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Botrytis_cinerea_179936706.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Botrytis_cinerea_179936706.jpg",
+          "creator": "Zeke Marshall",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Grey fruit mould (Botrytis cinerea) by Zeke Marshall, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-botrytis-cinerea-242541931",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Botrytis_cinerea_242541931.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Botrytis_cinerea_242541931.jpg",
+          "creator": "Stephen James McWilliam",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Grey fruit mould (Botrytis cinerea) by Stephen James McWilliam, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified fruiting plant material in verified Botrytis observations",
+      "cultivar": "unknown",
+      "lifeStage": "senescing or infected reproductive tissue; crop stage not recorded",
+      "affectedLocation": "fruiting or reproductive tissue",
+      "distribution": "localized gray fungal growth and decaying tissue; whole-plant distribution not recorded",
+      "progression": "established mold shown; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor observations; humidity, airflow, and wetness duration not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "gray fuzzy sporulating growth associated with decaying tissue",
+        "localized tissue collapse or rot beneath fungal growth",
+        "two independently verified Botrytis cinerea observation images"
+      ],
+      "plausibleAlternatives": [
+        "powdery mildew",
+        "other saprophytic mold on dead tissue",
+        "bacterial soft rot",
+        "normal senescence",
+        "physical damage followed by secondary colonization"
+      ],
+      "confirmationMethod": "Confirm gray sporulation arising from actively collapsing tissue and collect environment and progression context; species-level confirmation may require microscopy, culture, or laboratory testing.",
+      "expectedCauseRanking": ["disease", "insufficient_evidence"],
+      "expectedUrgency": "prompt isolation and inspection when active rot is suspected, especially in dense or humid reproductive tissue",
+      "expectedQuarantineGuidance": "Limit contact and movement of suspect material, inspect adjacent tissue, and avoid spreading spores; follow crop-appropriate sanitation rules.",
+      "expectedScoutingSteps": [
+        "inspect inside and outside affected reproductive tissue without contaminating healthy sites",
+        "capture sharp views of the gray growth, lesion boundary, and underlying tissue collapse",
+        "record humidity, airflow, recent wetness, temperature, and progression",
+        "compare nearby healthy and affected tissue and check for wounds or dead material"
+      ],
+      "expectedIpmResponse": "Use these images to recognize generic Botrytis evidence, not to assert cannabis bud rot from visual similarity alone. Require crop-specific tissue views and internal rot evidence before a cannabis bud-rot conclusion, and distinguish gray sporulation from flat powdery residue or normal fading."
     }
   ]
 }
