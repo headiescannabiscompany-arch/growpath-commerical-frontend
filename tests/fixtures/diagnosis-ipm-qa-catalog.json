@@ -3770,6 +3770,46 @@
       "expectedQuarantineGuidance": "Do not quarantine for suspected nutrient antagonism alone.",
       "expectedScoutingSteps": ["map tissue age and distribution and inspect roots", "record every nutrient, amendment, water source, and recent change", "measure calibrated pH and EC and obtain solution or soil plus tissue evidence", "track new growth after one ratio correction supported by measurements"],
       "expectedIpmResponse": "Do not infer antagonism from color charts. Require measured competing ions, complete input history, pH, EC, roots, tissue or solution confirmation, and response; distinguish deficiency, excess, lockout, genetics, environment, and disease; and avoid supplement stacking."
+    },
+    {
+      "recordId": "diagnosis-compost-organic-release-timing-open-001",
+      "caseId": "organic_release_timing",
+      "imageSet": [
+        {
+          "imageId": "usda-ars-d1635-8-compost-temperature-inspection",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/sep09/d1635-8/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/sep09/d1635-8.jpg",
+          "creator": "Stephen Ausmus, USDA Agricultural Research Service", "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Food-waste compost temperature inspection by Stephen Ausmus, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-ars-k10595-1-compost-temperature-moisture-sampling",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/aug03/k10595-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/aug03/k10595-1.jpg",
+          "creator": "Stephen Ausmus, USDA Agricultural Research Service", "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Compost sampling with temperature and moisture data collection by Stephen Ausmus, USDA Agricultural Research Service.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "compost and organic-amendment process context; no plant symptom is used as proof",
+      "cultivar": "unknown", "lifeStage": "not applicable to process references",
+      "affectedLocation": "unknown; images document amendment processing and sampling",
+      "distribution": "no crop, bed, container, root-zone, amendment-placement, or affected-unaffected pattern is provided",
+      "progression": "no application date, decomposition curve, mineralization measurement, crop uptake, or response sequence is supplied",
+      "mediumRootZone": "amendment maturity, carbon-to-nitrogen ratio, particle size, placement, oxygen, roots, pH, EC, and microbial activity are not case-linked",
+      "environment": "USDA documents temperature and moisture as measured compost variables; case-specific soil temperature, moisture, oxygen, and season are absent",
+      "measuredValues": "no available nitrogen or other mineral nutrient release, temperature-time curve, moisture trend, respiration, maturity, soil, solution, or tissue result accompanies the images",
+      "diagnosticSigns": ["USDA references demonstrate compost temperature and moisture measurement", "organic decomposition and stabilization are biological time-dependent processes", "total amendment analysis does not establish current plant-available nutrient supply"],
+      "plausibleAlternatives": ["true nutrient deficiency or excess", "pH lockout, salinity, antagonism, or root disease", "immature compost, nitrogen immobilization, poor oxygen, or unsuitable moisture", "cold or dry conditions slowing mineralization", "pest, disease, light, heat, or irrigation stress unrelated to the amendment"],
+      "confirmationMethod": "Record amendment identity, source, maturity, analysis, amount, placement, particle size, and application date; measure root-zone temperature, moisture, oxygen context, pH, and EC; inspect roots; obtain available-nutrient or tissue evidence when needed; and compare crop response over a biologically plausible interval.",
+      "expectedCauseRanking": ["insufficient_evidence", "organic_release_timing", "deficiency", "lockout", "other_abiotic"],
+      "expectedUrgency": "investigate unsafe immature material, heating, odor, salinity, or root injury promptly; otherwise avoid rapid supplement stacking while release is being measured",
+      "expectedQuarantineGuidance": "Do not quarantine for slow organic nutrient release alone; contain material only when contamination, pathogens, or unsafe immature compost is independently supported.",
+      "expectedScoutingSteps": ["document amendment label, source, maturity, analysis, rate, placement, date, and crop demand stage", "inspect roots and measure temperature, moisture, aeration context, pH, and EC", "obtain available-nutrient, soil, solution, compost-maturity, or tissue testing appropriate to the decision", "track marked plants and new growth over a justified interval before adding overlapping inputs"],
+      "expectedIpmResponse": "Do not equate total organic-input nutrients with immediate availability. Explain that release depends on material, maturity, microbes, temperature, moisture, oxygen, placement, and time; require roots and method-appropriate testing; distinguish immobilization, deficiency, excess, lockout, and disease; and avoid automatic top-dressing or supplement stacking."
     }
   ]
 }
