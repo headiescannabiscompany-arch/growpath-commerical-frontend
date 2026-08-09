@@ -57,7 +57,7 @@ describe("AcceptFacilityInviteScreen", () => {
       facilityId: null,
       setPreferredMode: (...args: any[]) => mockSetPreferredMode(...args)
     };
-    mockParams = { token: "invite-token" };
+    mockParams = { token: "a".repeat(64) };
     mockApiRequest.mockResolvedValue({
       accepted: true,
       email: "member@example.com",
@@ -109,6 +109,20 @@ describe("AcceptFacilityInviteScreen", () => {
 
     expect(screen.getByRole("header", { name: "Join facility workspace" })).toBeTruthy();
     expect(screen.getByText("This invitation link is missing its token.")).toBeTruthy();
+    expect(screen.queryByPlaceholderText("Password (8+ characters)")).toBeNull();
+    expect(screen.queryByText("Accept invitation and sign in")).toBeNull();
+  });
+
+  it("rejects a malformed invitation before collecting account details", () => {
+    mockParams = { token: "invalid-production-verification-token" };
+    const screen = render(<AcceptFacilityInviteScreen />);
+
+    expect(
+      screen.getByText(
+        "This invitation link is invalid or incomplete. Request a new invitation from the Facility owner."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByPlaceholderText("Your name")).toBeNull();
     expect(screen.queryByPlaceholderText("Password (8+ characters)")).toBeNull();
     expect(screen.queryByText("Accept invitation and sign in")).toBeNull();
   });

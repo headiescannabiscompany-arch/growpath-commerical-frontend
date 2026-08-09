@@ -28,6 +28,8 @@ export default function AcceptFacilityInviteScreen() {
   const styles = createAcceptFacilityInviteStyles(palette);
   const { setMode } = useAccountMode();
   const { token } = useLocalSearchParams<{ token?: string }>();
+  const inviteToken = typeof token === "string" ? token.trim() : "";
+  const hasValidTokenFormat = /^[a-f0-9]{64}$/i.test(inviteToken);
   const [displayName, setDisplayName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [password, setPassword] = useState("");
@@ -59,9 +61,12 @@ export default function AcceptFacilityInviteScreen() {
   const canSubmit = useMemo(
     () =>
       Boolean(
-        token && password.length >= 8 && password === confirmPassword && !submitting
+        hasValidTokenFormat &&
+        password.length >= 8 &&
+        password === confirmPassword &&
+        !submitting
       ),
-    [confirmPassword, password, submitting, token]
+    [confirmPassword, hasValidTokenFormat, password, submitting]
   );
 
   async function acceptInvite() {
@@ -72,7 +77,7 @@ export default function AcceptFacilityInviteScreen() {
     try {
       const result: any = await apiRequest("/api/auth/accept-facility-invite", {
         method: "POST",
-        body: { token, displayName, password, dateOfBirth }
+        body: { token: inviteToken, displayName, password, dateOfBirth }
       });
       const facilityId = String(result?.facilityId || "").trim();
       if (!facilityId) {
@@ -98,14 +103,18 @@ export default function AcceptFacilityInviteScreen() {
     }
   }
 
-  if (!token) {
+  if (!inviteToken || !hasValidTokenFormat) {
     return (
       <ScrollView contentContainerStyle={styles.page}>
         <View style={styles.card}>
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             Join facility workspace
           </Text>
-          <Text style={styles.copy}>This invitation link is missing its token.</Text>
+          <Text style={styles.copy}>
+            {!inviteToken
+              ? "This invitation link is missing its token."
+              : "This invitation link is invalid or incomplete. Request a new invitation from the Facility owner."}
+          </Text>
           <Pressable
             onPress={() => router.replace("/login")}
             style={styles.button}
