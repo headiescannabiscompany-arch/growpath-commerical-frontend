@@ -1199,6 +1199,70 @@
         "capture both a whole-leaf pattern view and a sharp mine close-up"
       ],
       "expectedIpmResponse": "Call leafminers only when an internal mine pattern is supported by larvae, frass, or active mine structure; retain physiological and disease alternatives for unstructured pale patches."
+    },
+    {
+      "recordId": "ipm-scale-insects-necrosis-open-001",
+      "caseId": "scale_insects",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cycad-scale-necrotic-leaf-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cycad-_Scale_insects_on_necrotic_leaf.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cycad-_Scale_insects_on_necrotic_leaf.jpg",
+          "creator": "Plant pests and diseases / Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Cycad scale insects on a necrotic leaf by Plant pests and diseases / Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cycad-scale-leaf-necrosis-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cycad-_Leaf_necrosis_caused_by_the_Cycad_scale_insects.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cycad-_Leaf_necrosis_caused_by_the_Cycad_scale_insects.jpg",
+          "creator": "Plant pests and diseases / Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Leaf necrosis associated with cycad scale insects by Plant pests and diseases / Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "cycad",
+      "cultivar": "unknown",
+      "lifeStage": "attached scale insects; exact crawler and adult composition not recorded",
+      "affectedLocation": "leaf surfaces with associated necrotic tissue",
+      "distribution": "dense attached infestation and host-level leaf injury",
+      "progression": "necrotic endpoint shown; timing not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor context; detailed environment not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "numerous discrete attached scale covers",
+        "fixed body-scale structures rather than flat residue",
+        "leaf necrosis associated with heavy infestation"
+      ],
+      "plausibleAlternatives": [
+        "mealybugs",
+        "whitefly nymphs",
+        "powdery residue or mineral deposits",
+        "edema or corking",
+        "leaf-spot disease"
+      ],
+      "confirmationMethod": "Require sharp attached body or cover morphology and inspect for crawlers, honeydew, and distribution; do not infer scale from white or brown dots alone.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "promptly assess infestation density, active crawlers, tissue decline, and spread",
+      "expectedQuarantineGuidance": "Limit movement of confirmed infested plants and inspect contacts while preserving predators and parasitoids until identified.",
+      "expectedScoutingSteps": [
+        "inspect both leaf surfaces, petioles, stems, and protected sites",
+        "capture sharp side and top views of attached covers or bodies",
+        "look for crawlers, honeydew, ants, and new tissue injury",
+        "compare removable residue with firmly attached insect structures"
+      ],
+      "expectedIpmResponse": "Require discrete attached scale morphology before diagnosing scale insects; distinguish scales from mealybugs, whitefly nymphs, residue, and physiological corking, and do not identify a scale species from host damage alone."
     }
   ]
 }
