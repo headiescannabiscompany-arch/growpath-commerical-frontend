@@ -17,9 +17,9 @@ describe("GlobalReportBugButton", () => {
     expect(shouldDockReportBugButton(599)).toBe(true);
   });
 
-  it("keeps the global control floating on wider screens", () => {
-    expect(shouldDockReportBugButton(600)).toBe(false);
-    expect(shouldDockReportBugButton(1440)).toBe(false);
+  it("docks the global control on wider screens so it cannot cover page actions", () => {
+    expect(shouldDockReportBugButton(600)).toBe(true);
+    expect(shouldDockReportBugButton(1440)).toBe(true);
   });
 
   it("uses the active palette for the shared mobile dock and report control", () => {

@@ -6,7 +6,9 @@ import ReportBugButton from "@/components/ReportBugButton";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export function shouldDockReportBugButton(width: number) {
-  return width < 600;
+  // Keep the global support action in document flow at every real viewport width.
+  // A floating desktop control can cover page actions near the lower-right corner.
+  return width >= 0;
 }
 
 export default function GlobalReportBugButton() {
