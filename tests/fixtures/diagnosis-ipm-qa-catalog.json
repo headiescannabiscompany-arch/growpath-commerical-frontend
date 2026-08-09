@@ -4394,6 +4394,40 @@
       "expectedQuarantineGuidance": "Do not quarantine for wind exposure, wind burn, or mechanical abrasion alone; limit movement only when separate evidence supports a transmissible pest or disease.",
       "expectedScoutingSteps": ["capture whole plants plus windward, leeward, fan-facing, sheltered, canopy-edge, row-edge, affected, and unaffected views", "measure air speed and direction at leaf height across positions and record gusts, fan schedule, recent wind events, particle load, temperature, humidity or VPD, radiation, and duration", "inspect leaf margins, surfaces, stems, and contact points for directional abrasion, debris impact, pests, lesions, residue, hail, or handling patterns", "measure root-zone moisture, delivery, pH, and EC; record applications; mark tissue; and compare progression after one safe reversible exposure correction"],
       "expectedIpmResponse": "Do not diagnose wind burn from wind context, a fan, a windbreak, dry margins, curl, or tears alone. Require measured canopy exposure, windward-versus-sheltered distribution, event timing, directional abrasion, water and atmospheric demand, and response to a reversible correction; preserve drought, heat, light, spray, salt, mechanical, pest, disease, root, and senescence alternatives; and never invent ventilation or pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-sunlight-color-light-injury-boundary-open-002",
+      "caseId": "light_stress",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-plant-changing-colour-sunlight", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_plant_changing_colour.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/A_plant_changing_colour.jpg",
+          "creator": "Ayyuha Sideeq", "licenseId": "CC0-1.0", "attributionText": "Plant described as changing color due to sunlight, photographed by Ayyuha Sideeq; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-green-plant-ayyuhasideeq", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_picture_of_a_green_plant.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/A_picture_of_a_green_plant.jpg",
+          "creator": "Ayyuha Sideeq", "licenseId": "CC0-1.0", "attributionText": "Green plant photographed by Ayyuha Sideeq; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified plants with sunlight-associated color and ordinary green-foliage captions; neither is a measured excess-light injury case",
+      "cultivar": "unknown", "lifeStage": "established foliage in separate observations",
+      "affectedLocation": "visible foliage without mapped light-facing, shaded, upper, middle, lower, new-growth, or old-growth comparisons",
+      "distribution": "separate close views without canopy map, fixture footprint, sun-exposure gradient, shaded control, repeated plant pattern, or affected-unaffected comparison",
+      "progression": "single-time photographs without baseline color, acclimation, exposure change, bleaching onset, necrosis, marked-leaf progression, or recovery",
+      "mediumRootZone": "roots, moisture, oxygen, temperature, salinity, pH, EC, drainage, and irrigation delivery are not shown or measured",
+      "environment": "sunlight and foliage color are described, but PPFD, DLI, photoperiod, spectrum, fixture or sun geometry, duration, leaf temperature, humidity, VPD, airflow, and recent changes are absent",
+      "measuredValues": "no PPFD map, DLI, photoperiod, spectrum, fixture distance, leaf or air temperature, humidity, VPD, moisture, pH, EC, chlorophyll measurement, or color-standardized progression accompanies the pair",
+      "diagnosticSigns": ["one caption associates color change with sunlight but supplies no measurements or injury confirmation", "the separate green-plant reference is a negative control showing that visible foliage and outdoor light do not establish stress", "sunlight, brightness, pale color, glare, and exposure are context and cannot establish harmful light stress"],
+      "plausibleAlternatives": ["normal cultivar, developmental, seasonal, variegated, anthocyanin, carotenoid, or senescent pigmentation", "nitrogen, magnesium, iron, sulfur, or another nutrient deficiency, antagonism, excess, pH, EC, or root-zone limitation", "heat, high VPD, drought, wind, sunscald, cold, or transplant stress", "spray burn, residue, herbicide drift, disease, pests, or physical injury", "camera exposure, white balance, transmitted light, glare, compression, or editing artifact"],
+      "confirmationMethod": "Capture calibrated whole-canopy and matched light-facing versus shaded tissue; measure PPFD across affected and unaffected positions, DLI, photoperiod, spectrum and geometry, leaf temperature, humidity or VPD, and root-zone conditions; document recent changes and marked-leaf progression after one measured reversible adjustment while preserving nutrient, root, spray, pest, disease, and normal-pigment alternatives.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "deficiency", "excess", "disease", "pest"],
+      "expectedUrgency": "measure exposure and leaf temperature promptly when active bleaching, crisping, or necrosis is progressing, but do not dim lights or shade plants from pale color or a bright photograph alone",
+      "expectedQuarantineGuidance": "Do not quarantine for suspected light stress or pigmentation alone; limit movement only when separate evidence supports a transmissible pest or disease.",
+      "expectedScoutingSteps": ["capture color-referenced whole-canopy, top-middle-lower, new-old, light-facing-shaded, affected-unaffected, and leaf top-and-underside views", "map PPFD and record DLI, photoperiod, spectrum, fixture or sun geometry, duration, dimming, acclimation, and recent lighting changes", "measure leaf and air temperature, humidity or VPD, airflow, root-zone moisture, temperature, pH, EC, drainage, and irrigation delivery", "mark leaves and compare progression after one measured reversible light correction while inspecting pests, lesions, residue, spray patterns, roots, and normal pigmentation"],
+      "expectedIpmResponse": "Do not diagnose light stress from sunlight, brightness, glare, pale or golden foliage, or a caption claiming sunlight-related color change. Require PPFD and DLI, timing and geometry, canopy distribution, leaf temperature, standardized progression, roots, and response to one reversible correction; distinguish normal pigmentation and camera effects from nutrient, root, heat, water, spray, pest, and disease causes; and avoid universal light targets or simultaneous changes."
     }
   ]
 }
