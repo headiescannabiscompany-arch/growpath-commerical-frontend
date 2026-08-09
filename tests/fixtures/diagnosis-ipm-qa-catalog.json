@@ -2018,6 +2018,76 @@
         "compare healthy and affected plants and obtain pathogen confirmation when treatment or disposal depends on species"
       ],
       "expectedIpmResponse": "Recognize a leaf-spot syndrome without treating every circular lesion as Septoria. Keep bacterial, other fungal, spray, edema, insect, and senescence alternatives visible, and avoid pathogen-specific treatment until host, distribution, progression, and confirmatory evidence support it."
+    },
+    {
+      "recordId": "diagnosis-bacterial-leaf-spot-boundary-open-001",
+      "caseId": "bacterial_leaf_spot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-bacterial-leaf-spot-pepper-43614805831",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bacterial_leaf_spot_of_pepper_(Capsicum_sp.)_(43614805831).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bacterial_leaf_spot_of_pepper_(Capsicum_sp.)_(43614805831).jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Bacterial leaf spot of pepper (Capsicum sp.), Xanthomonas sp., by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-bacterial-leaf-spot-pepper-14954536360",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bacterial_leaf_spot_of_pepper_(14954536360).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bacterial_leaf_spot_of_pepper_(14954536360).jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Bacterial leaf spot of pepper, Xanthomonas sp., by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "pepper (Capsicum sp.)",
+      "cultivar": "unknown",
+      "lifeStage": "vegetative foliage",
+      "affectedLocation": "leaf surfaces",
+      "distribution": "multiple lesions across documented affected pepper leaves; whole-plant and canopy distribution not recorded",
+      "progression": "two documented bacterial leaf-spot examples; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "multiple discrete necrotic lesions on pepper foliage",
+        "documented Xanthomonas bacterial leaf spot with variation between examples",
+        "lesion evidence that requires separation from fungal spots and noninfectious injury"
+      ],
+      "plausibleAlternatives": [
+        "Septoria, Alternaria, or another fungal leaf spot",
+        "spray injury or droplet burn",
+        "edema",
+        "insect feeding injury",
+        "nutrient or senescence-associated necrosis",
+        "other bacterial pathogens"
+      ],
+      "confirmationMethod": "Compare lesion margins, water-soaked or angular features when present, affected leaf age, whole-plant distribution, progression, and recent leaf wetness; extension review, microscopy, culture, molecular testing, or a qualified laboratory is required when bacterial identity changes treatment, disposal, or reporting.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "pest"
+      ],
+      "expectedUrgency": "promptly assess active lesion expansion, defoliation, splash spread, and nearby susceptible plants",
+      "expectedQuarantineGuidance": "Reduce splash and wet handling and limit movement of actively spreading suspect material while bacterial and fungal causes are distinguished; do not declare bacterial disease from spots alone.",
+      "expectedScoutingSteps": [
+        "capture sharp close-ups of lesion centers and margins plus both leaf surfaces",
+        "record lower-versus-upper canopy distribution, affected leaf age, progression, irrigation splash, and recent leaf wetness",
+        "inspect for insects, spray patterns, edema, fungal structures, and lesions on stems or fruit",
+        "compare healthy and affected plants and obtain pathogen confirmation when intervention depends on bacterial identity"
+      ],
+      "expectedIpmResponse": "Recognize bacterial-leaf-spot-compatible evidence without labeling every necrotic lesion as Xanthomonas. Keep fungal leaf spots, spray injury, edema, insects, senescence, and other bacteria visible, reduce spread-promoting handling while unresolved, and avoid pathogen-specific treatment until the evidence or confirmation supports it."
     }
   ]
 }
