@@ -126,11 +126,42 @@ describe("diagnosis/IPM QA catalog", () => {
     );
   });
 
-  it("keeps sources and media in planning until explicitly reviewed", () => {
+  it("admits only explicitly reviewed media while the complete catalog remains in planning", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toEqual([]);
+    expect(catalog.mediaRecords).toHaveLength(2);
+    expect(catalog.mediaRecords).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          recordId: "ipm-powdery-mildew-open-001",
+          caseId: "powdery_mildew",
+          imageSet: expect.arrayContaining([
+            expect.objectContaining({
+              sourceId: "usda_ars_image_gallery",
+              licenseId: "US-PUBLIC-DOMAIN",
+              intendedUseApproved: true
+            }),
+            expect.objectContaining({
+              sourceId: "wikimedia_individual_public_domain",
+              licenseId: "PUBLIC-DOMAIN-DEDICATION",
+              intendedUseApproved: true
+            })
+          ])
+        }),
+        expect.objectContaining({
+          recordId: "ipm-thrips-open-001",
+          caseId: "thrips",
+          imageSet: expect.arrayContaining([
+            expect.objectContaining({
+              sourceId: "usda_ars_image_gallery",
+              licenseId: "US-PUBLIC-DOMAIN",
+              intendedUseApproved: true
+            })
+          ])
+        })
+      ])
+    );
     expect(catalog.sourcePlan).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -148,6 +179,14 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           sourceId: "facebook_grower_groups",
           status: "external_lead_only_pending_platform_and_creator_permission"
+        }),
+        expect.objectContaining({
+          sourceId: "usda_ars_image_gallery",
+          status: "approved"
+        }),
+        expect.objectContaining({
+          sourceId: "wikimedia_individual_public_domain",
+          status: "approved"
         })
       ])
     );

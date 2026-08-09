@@ -35,6 +35,8 @@
     "allowedCopiedMediaLicenses": [
       "CC0-1.0",
       "CC-BY-4.0",
+      "US-PUBLIC-DOMAIN",
+      "PUBLIC-DOMAIN-DEDICATION",
       "OWNER_PERMISSION",
       "GROWPATH_OWNED"
     ],
@@ -218,6 +220,26 @@
         "separately confirm outcomes and cross-check diagnostic labels with Tier A sources",
         "never use post engagement or comment consensus as ground truth",
         "do not use for model training"
+      ]
+    },
+    {
+      "sourceId": "usda_ars_image_gallery",
+      "status": "approved",
+      "purpose": "Public-domain pest, disease, host, and visible-sign evaluation cases with USDA identifiers and creator credits.",
+      "requirements": [
+        "individual page must identify the asset as copyright-free or covered by the ARS gallery public-domain policy",
+        "retain USDA image identifier, original page, original-resolution media URL, photographer, and ARS credit",
+        "separately review organism identity, visible sign, host, and diagnostic limits"
+      ]
+    },
+    {
+      "sourceId": "wikimedia_individual_public_domain",
+      "status": "approved",
+      "purpose": "Individually reviewed public-domain IPM comparison images when creator, dedication, source page, and original file are retained.",
+      "requirements": [
+        "verify the individual file page rather than relying on category membership",
+        "retain creator, exact public-domain statement, source URL, original media URL, and retrieval date",
+        "cross-check the candidate label and visible sign against Tier A sources"
       ]
     }
   ],
@@ -612,5 +634,129 @@
       }
     ]
   },
-  "mediaRecords": []
+  "mediaRecords": [
+    {
+      "recordId": "ipm-powdery-mildew-open-001",
+      "caseId": "powdery_mildew",
+      "imageSet": [
+        {
+          "imageId": "usda-d785-2-powdery-zinnia",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/featuredphoto/jan22/powderymildew/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/images/photos/300dpi/kesa/D785-2.jpg",
+          "creator": "Steve Ausmus, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by Steve Ausmus, USDA Agricultural Research Service. Image D785-2.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-powdery-pumpkin-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Powdery_mildew_on_pumpkin_leaves_1.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Powdery_mildew_on_pumpkin_leaves_1.jpg",
+          "creator": "Jeff Kubina",
+          "licenseId": "PUBLIC-DOMAIN-DEDICATION",
+          "attributionText": "Photo by Jeff Kubina; dedicated to the public domain by the copyright holder.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "zinnia and pumpkin comparison hosts",
+      "cultivar": "unknown",
+      "lifeStage": "established vegetative/flowering plants",
+      "affectedLocation": "leaf surfaces",
+      "distribution": "multiple visible superficial white colonies across leaf tissue",
+      "progression": "severe established examples; progression timing not recorded",
+      "mediumRootZone": "not recorded and not inferable from images",
+      "environment": "not recorded and not inferable from images",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "superficial white powdery colonies",
+        "colony texture extends across multiple leaf regions",
+        "USDA caption independently identifies severe powdery mildew"
+      ],
+      "plausibleAlternatives": [
+        "spray residue",
+        "mineral deposits",
+        "dust",
+        "thrips or mite feeding without direct organism signs"
+      ],
+      "confirmationMethod": "Compare sharp neutral-light surface texture and wipe/transfer behavior; confirm spores or fungal structures when consequential.",
+      "expectedCauseRanking": ["disease", "insufficient_evidence"],
+      "expectedUrgency": "prompt scouting and isolation review; treatment choice remains label- and crop-dependent",
+      "expectedQuarantineGuidance": "Inspect nearby plants and avoid presenting these cross-host examples as proof of the user's crop diagnosis.",
+      "expectedScoutingSteps": [
+        "inspect upper and lower leaf surfaces in neutral light",
+        "record whether material wipes or transfers",
+        "look for thrips, mites, frass, webbing, residue pattern, and spread"
+      ],
+      "expectedIpmResponse": "Return powdery mildew as a supported hypothesis only when submitted evidence shows comparable superficial growth and a second discriminator; otherwise preserve the white-mark differential."
+    },
+    {
+      "recordId": "ipm-thrips-open-001",
+      "caseId": "thrips",
+      "imageSet": [
+        {
+          "imageId": "usda-d486-1-thrips-palmi",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/may06/d486-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/300dpi/kesa/d486-1.jpg",
+          "creator": "J. Marie Metz, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by J. Marie Metz, USDA Agricultural Research Service. Image D486-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-d4993-1-thrips-host",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/oct22/D4993-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/images/photos/300dpi/kesa/D4993-1.jpg",
+          "creator": "Dale Halbritter, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by Dale Halbritter, USDA Agricultural Research Service. Image D4993-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "multiple USDA reference hosts including Brazilian peppertree",
+      "cultivar": "not applicable",
+      "lifeStage": "thrips adults and larvae",
+      "affectedLocation": "leaf and branch surfaces",
+      "distribution": "direct organisms visible; one source shows larvae and adults feeding on the host",
+      "progression": "not recorded",
+      "mediumRootZone": "not relevant to direct organism morphology",
+      "environment": "not recorded",
+      "measuredValues": "adult Thrips palmi captioned by USDA at approximately 1.5 mm",
+      "diagnosticSigns": [
+        "slender thrips body morphology",
+        "larval and adult life stages visible on host tissue",
+        "USDA image identifiers and organism captions"
+      ],
+      "plausibleAlternatives": [
+        "other small slender insects",
+        "incidental organism not responsible for a separate plant symptom",
+        "mite feeding or residue when no organism body is visible"
+      ],
+      "confirmationMethod": "Require a sharp direct organism or larval view plus compatible feeding injury or frass before attributing a user's plant damage to thrips.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "prompt scouting; severity depends on crop-wide distribution and confirmed injury",
+      "expectedQuarantineGuidance": "Inspect adjacent plants, leaf undersides, flowers, and protected sites; avoid claiming the reference species from damage alone.",
+      "expectedScoutingSteps": [
+        "capture a sharp macro of the organism",
+        "inspect leaf undersides and flowers for larvae and adults",
+        "look for silvering, streaking, scarring, distortion, and black frass"
+      ],
+      "expectedIpmResponse": "Separate direct thrips identification from the causal claim that thrips produced the submitted damage; retain powdery mildew, mites, residue, and physical injury when discriminators are absent."
+    }
+  ]
 }
