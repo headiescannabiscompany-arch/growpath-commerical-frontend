@@ -46,7 +46,7 @@
     "lint:ci": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\" --max-warnings 0",
     "lint:fix": "eslint \"src/{app,api,auth,components,entitlements,hooks,ui,utils}/**/*.{js,jsx,ts,tsx}\" --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json}\"",
-    "audit:ci": "npm audit --omit=dev --audit-level=high",
+    "audit:ci": "node scripts/audit-production-dependencies.cjs",
     "check:sensitive-copy": "node scripts/check-sensitive-copy.js",
     "drift:scan": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Get-ChildItem .\\src -Recurse -File -Include *.js,*.jsx,*.ts,*.tsx | Where-Object { $_.FullName -notlike '*\\src\\api\\uriToBlob.ts' } | Select-String -Pattern '\\bfetch\\s*\\(|\\baxios\\b|\\bXMLHttpRequest\\b' | Where-Object { $_.Path -notlike '*\\src\\api\\client.ts' -and $_.Path -notlike '*\\src\\api\\apiRequest.ts' } | Where-Object { $_.Line -notmatch '\\bapiRequest\\b' } | Select-Object Path,LineNumber,Line | Sort-Object Path,LineNumber\"",
     "normalize:mojibake": "node scripts/normalize-mojibake.mjs",

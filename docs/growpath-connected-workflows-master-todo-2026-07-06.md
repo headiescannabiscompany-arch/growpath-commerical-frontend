@@ -1,5 +1,10 @@
 # GrowPath AI Connected Workflows Master Todo
 
+> Canonical remaining execution work is consolidated in
+> `docs/qa/CANONICAL_REMAINING_WORK_2026-08-08.md`. This numbered document remains
+> the historical decision and implementation ledger; superseded sequencing here
+> does not reopen work already accepted by deployed evidence.
+
 Date: 2026-07-06
 
 Status: Execution backlog. Owner approved Codex to work through this list without asking for every small permission.

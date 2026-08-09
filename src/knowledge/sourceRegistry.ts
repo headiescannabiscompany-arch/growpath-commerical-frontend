@@ -429,6 +429,48 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-07-25"
   },
   {
+    id: "usda-ars-image-gallery",
+    name: "USDA Agricultural Research Service Image Gallery",
+    domain: "ars.usda.gov",
+    sourceType: "government",
+    reliabilityTier: "A",
+    trustedFor: ["qa_evaluation", "photo_quality_guidance", "education"],
+    notTrustedFor: ["diagnosis", "lab_result", "legal_regulatory"],
+    notes:
+      "Rights-cleared IPM evaluation candidates only when the individual asset is marked copyright-free/public domain. Preserve URL, ARS identifier, caption, photographer, original, and review date. Independently verify the organism, visible sign, host, and evaluation label; exclude assets marked otherwise or with ambiguous rights.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["uc-ipm", "usda-aphis", "growpath-method"],
+    lastReviewedAt: "2026-08-08"
+  },
+  {
+    id: "usda-ipm-images",
+    name: "IPM Images / Bugwood via USDA Ag Data Commons",
+    domain: "agdatacommons.nal.usda.gov",
+    sourceType: "government",
+    reliabilityTier: "A",
+    trustedFor: ["qa_evaluation", "photo_quality_guidance", "education"],
+    notTrustedFor: ["diagnosis", "lab_result", "legal_regulatory"],
+    notes:
+      "Government catalog context for public-domain pest, disease, damage, commodity, and biological-control media. Admit only assets with retained individual image page, credit, identifier, rights statement, host, visible sign, and reviewer-confirmed label; collection membership is not app-ready diagnostic ground truth.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["uc-ipm", "usda-aphis", "growpath-method"],
+    lastReviewedAt: "2026-08-08"
+  },
+  {
+    id: "inaturalist-licensed-ipm-media",
+    name: "iNaturalist licensed observation images for IPM evaluation",
+    domain: "inaturalist.org",
+    sourceType: "botanical_database",
+    reliabilityTier: "C",
+    trustedFor: ["qa_evaluation", "photo_quality_guidance"],
+    notTrustedFor: ["diagnosis", "ipm", "lab_result", "legal_regulatory"],
+    notes:
+      "Candidate organism shape, life-stage, host, and field-context media only. Commercial intake requires the individual photo's CC0 or CC BY license; preserve attribution and license metadata. Observation licenses and community/Research Grade status are not image rights or diagnostic ground truth. Exclude NC, ND, all-rights-reserved, missing-license, and ambiguous media.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["uc-ipm", "usda-aphis", "growpath-method"],
+    lastReviewedAt: "2026-08-08"
+  },
+  {
     id: "seo-affiliate-blog",
     name: "SEO or affiliate grow blog",
     sourceType: "seo_blog",

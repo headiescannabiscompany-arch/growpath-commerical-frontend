@@ -34,7 +34,10 @@
     "licenseRecheckBeforeExecution": true,
     "allowedCopiedMediaLicenses": [
       "CC0-1.0",
+      "CC-BY-2.0",
       "CC-BY-4.0",
+      "US-PUBLIC-DOMAIN",
+      "PUBLIC-DOMAIN-DEDICATION",
       "OWNER_PERMISSION",
       "GROWPATH_OWNED"
     ],
@@ -218,6 +221,26 @@
         "separately confirm outcomes and cross-check diagnostic labels with Tier A sources",
         "never use post engagement or comment consensus as ground truth",
         "do not use for model training"
+      ]
+    },
+    {
+      "sourceId": "usda_ars_image_gallery",
+      "status": "approved",
+      "purpose": "Public-domain pest, disease, host, and visible-sign evaluation cases with USDA identifiers and creator credits.",
+      "requirements": [
+        "individual page must identify the asset as copyright-free or covered by the ARS gallery public-domain policy",
+        "retain USDA image identifier, original page, original-resolution media URL, photographer, and ARS credit",
+        "separately review organism identity, visible sign, host, and diagnostic limits"
+      ]
+    },
+    {
+      "sourceId": "wikimedia_individual_public_domain",
+      "status": "approved",
+      "purpose": "Individually reviewed public-domain IPM comparison images when creator, dedication, source page, and original file are retained.",
+      "requirements": [
+        "verify the individual file page rather than relying on category membership",
+        "retain creator, exact public-domain statement, source URL, original media URL, and retrieval date",
+        "cross-check the candidate label and visible sign against Tier A sources"
       ]
     }
   ],
@@ -612,5 +635,1884 @@
       }
     ]
   },
-  "mediaRecords": []
+  "mediaRecords": [
+    {
+      "recordId": "ipm-powdery-mildew-open-001",
+      "caseId": "powdery_mildew",
+      "imageSet": [
+        {
+          "imageId": "usda-d785-2-powdery-zinnia",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/featuredphoto/jan22/powderymildew/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/images/photos/300dpi/kesa/D785-2.jpg",
+          "creator": "Steve Ausmus, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by Steve Ausmus, USDA Agricultural Research Service. Image D785-2.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-powdery-pumpkin-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Powdery_mildew_on_pumpkin_leaves_1.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Powdery_mildew_on_pumpkin_leaves_1.jpg",
+          "creator": "Jeff Kubina",
+          "licenseId": "PUBLIC-DOMAIN-DEDICATION",
+          "attributionText": "Photo by Jeff Kubina; dedicated to the public domain by the copyright holder.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "zinnia and pumpkin comparison hosts",
+      "cultivar": "unknown",
+      "lifeStage": "established vegetative/flowering plants",
+      "affectedLocation": "leaf surfaces",
+      "distribution": "multiple visible superficial white colonies across leaf tissue",
+      "progression": "severe established examples; progression timing not recorded",
+      "mediumRootZone": "not recorded and not inferable from images",
+      "environment": "not recorded and not inferable from images",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "superficial white powdery colonies",
+        "colony texture extends across multiple leaf regions",
+        "USDA caption independently identifies severe powdery mildew"
+      ],
+      "plausibleAlternatives": [
+        "spray residue",
+        "mineral deposits",
+        "dust",
+        "thrips or mite feeding without direct organism signs"
+      ],
+      "confirmationMethod": "Compare sharp neutral-light surface texture and wipe/transfer behavior; confirm spores or fungal structures when consequential.",
+      "expectedCauseRanking": ["disease", "insufficient_evidence"],
+      "expectedUrgency": "prompt scouting and isolation review; treatment choice remains label- and crop-dependent",
+      "expectedQuarantineGuidance": "Inspect nearby plants and avoid presenting these cross-host examples as proof of the user's crop diagnosis.",
+      "expectedScoutingSteps": [
+        "inspect upper and lower leaf surfaces in neutral light",
+        "record whether material wipes or transfers",
+        "look for thrips, mites, frass, webbing, residue pattern, and spread"
+      ],
+      "expectedIpmResponse": "Return powdery mildew as a supported hypothesis only when submitted evidence shows comparable superficial growth and a second discriminator; otherwise preserve the white-mark differential."
+    },
+    {
+      "recordId": "ipm-thrips-open-001",
+      "caseId": "thrips",
+      "imageSet": [
+        {
+          "imageId": "usda-d486-1-thrips-palmi",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/may06/d486-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/300dpi/kesa/d486-1.jpg",
+          "creator": "J. Marie Metz, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by J. Marie Metz, USDA Agricultural Research Service. Image D486-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-d4993-1-thrips-host",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/oct22/D4993-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/images/photos/300dpi/kesa/D4993-1.jpg",
+          "creator": "Dale Halbritter, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by Dale Halbritter, USDA Agricultural Research Service. Image D4993-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "multiple USDA reference hosts including Brazilian peppertree",
+      "cultivar": "not applicable",
+      "lifeStage": "thrips adults and larvae",
+      "affectedLocation": "leaf and branch surfaces",
+      "distribution": "direct organisms visible; one source shows larvae and adults feeding on the host",
+      "progression": "not recorded",
+      "mediumRootZone": "not relevant to direct organism morphology",
+      "environment": "not recorded",
+      "measuredValues": "adult Thrips palmi captioned by USDA at approximately 1.5 mm",
+      "diagnosticSigns": [
+        "slender thrips body morphology",
+        "larval and adult life stages visible on host tissue",
+        "USDA image identifiers and organism captions"
+      ],
+      "plausibleAlternatives": [
+        "other small slender insects",
+        "incidental organism not responsible for a separate plant symptom",
+        "mite feeding or residue when no organism body is visible"
+      ],
+      "confirmationMethod": "Require a sharp direct organism or larval view plus compatible feeding injury or frass before attributing a user's plant damage to thrips.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "prompt scouting; severity depends on crop-wide distribution and confirmed injury",
+      "expectedQuarantineGuidance": "Inspect adjacent plants, leaf undersides, flowers, and protected sites; avoid claiming the reference species from damage alone.",
+      "expectedScoutingSteps": [
+        "capture a sharp macro of the organism",
+        "inspect leaf undersides and flowers for larvae and adults",
+        "look for silvering, streaking, scarring, distortion, and black frass"
+      ],
+      "expectedIpmResponse": "Separate direct thrips identification from the causal claim that thrips produced the submitted damage; retain powdery mildew, mites, residue, and physical injury when discriminators are absent."
+    },
+    {
+      "recordId": "ipm-two-spotted-spider-mites-open-001",
+      "caseId": "two_spotted_spider_mites",
+      "imageSet": [
+        {
+          "imageId": "usda-d3685-1-two-spotted-spider-mite",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/oct16/d3685-1",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/300dpi/kesa/d3685-1.jpg",
+          "creator": "USDA ARS Electron and Confocal Microscopy Unit",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by USDA ARS Electron and Confocal Microscopy Unit. Image D3685-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-spider-mites-gardenia-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Spidermites-gardenia.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Spidermites-gardenia.jpg",
+          "creator": "Lucis / Samuel Grant",
+          "licenseId": "PUBLIC-DOMAIN-DEDICATION",
+          "attributionText": "Spider mites on gardenia by Wikimedia user Lucis; all rights released by the copyright holder.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "gardenia plus USDA organism reference",
+      "cultivar": "unknown",
+      "lifeStage": "adult/immature mites; exact host-view life stages not independently recorded",
+      "affectedLocation": "leaf surfaces and fine webbing zones",
+      "distribution": "direct mite morphology in macro reference and a separate host infestation view",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "direct two-spotted spider-mite morphology",
+        "fine webbing associated with host tissue",
+        "colony-scale host context"
+      ],
+      "plausibleAlternatives": [
+        "true spider webbing without mites",
+        "thrips feeding injury",
+        "dust or fibers",
+        "other mite species"
+      ],
+      "confirmationMethod": "Require direct mites or eggs under magnification, or compatible stippling plus fine mite webbing; do not diagnose from pale marks alone.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "prompt population and spread assessment",
+      "expectedQuarantineGuidance": "Inspect neighboring plants and avoid moving infested plant material until distribution is understood.",
+      "expectedScoutingSteps": [
+        "inspect leaf undersides with magnification",
+        "look for mites, round eggs, cast skins, stippling, and fine webbing",
+        "distinguish fine colony webbing from an ordinary spider web"
+      ],
+      "expectedIpmResponse": "Favor spider mites only when direct organism/egg evidence or the combined stippling-and-fine-webbing pattern is present; retain thrips, residue, and physical injury otherwise."
+    },
+    {
+      "recordId": "ipm-aphids-beneficial-context-open-001",
+      "caseId": "aphids",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-banana-aphid-colony-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Banana_aphid_colony.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Banana_aphid_colony.jpg",
+          "creator": "Plant pests and diseases",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Banana aphid colony by Plant pests and diseases, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ladybug-eating-aphids-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ladybug_eating_aphids._(49485764276).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ladybug_eating_aphids._(49485764276).jpg",
+          "creator": "David S. Ferry III",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Ladybug eating aphids by David S. Ferry III, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "banana and an additional garden host",
+      "cultivar": "unknown",
+      "lifeStage": "aphid colonies with mixed visible sizes; beneficial adult predator present in comparison view",
+      "affectedLocation": "stems and leaf-adjacent feeding sites",
+      "distribution": "clustered colonies rather than isolated pale marks",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "clustered soft-bodied aphid morphology",
+        "multiple aphid sizes in a colony",
+        "beneficial lady beetle predation context"
+      ],
+      "plausibleAlternatives": [
+        "whiteflies",
+        "root aphids without root-zone evidence",
+        "shed skins",
+        "beneficial insects or parasitoid mummies"
+      ],
+      "confirmationMethod": "Confirm live soft-bodied aphids and colony distribution; separately classify predators, cast skins, and parasitoid mummies rather than counting every visible insect as a pest.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "assess colony size, plant stress, honeydew, and spread before choosing a response",
+      "expectedQuarantineGuidance": "Inspect adjacent plants and protected growth sites while preserving identified beneficial predators.",
+      "expectedScoutingSteps": [
+        "inspect new growth, stems, and leaf undersides",
+        "look for live colonies, honeydew, cast skins, and distorted growth",
+        "separate predators and parasitoid mummies from active aphids"
+      ],
+      "expectedIpmResponse": "Report aphids only from direct colony/body evidence; explicitly identify beneficial predator context and avoid recommending actions that indiscriminately remove beneficials."
+    },
+    {
+      "recordId": "ipm-chemical-spray-injury-open-001",
+      "caseId": "spray_burn",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-herbicide-soybean-9620825285",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Herbicide_Injury_to_Soybeans_(9620825285).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Herbicide_Injury_to_Soybeans_(9620825285).jpg",
+          "creator": "United Soybean Board / Soybean Checkoff",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Herbicide Injury to Soybeans by United Soybean Board / Soybean Checkoff, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-herbicide-soybean-9620825933",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Herbicide_Injury_to_Soybeans_(9620825933).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Herbicide_Injury_to_Soybeans_(9620825933).jpg",
+          "creator": "United Soybean Board / Soybean Checkoff",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Herbicide Injury to Soybeans by United Soybean Board / Soybean Checkoff, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "soybean",
+      "cultivar": "unknown",
+      "lifeStage": "field vegetative growth",
+      "affectedLocation": "exposed foliage and growing points",
+      "distribution": "field injury views; exact application distribution not included in image metadata",
+      "progression": "photographed after herbicide injury; timing and recovery not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "field conditions; weather and application conditions not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "chemical-injury reference context",
+        "distorted and injured foliage without direct pest bodies",
+        "multiple views from the documented injury set"
+      ],
+      "plausibleAlternatives": [
+        "broad or russet mites",
+        "heat or light stress",
+        "nutrient or pH-related distortion",
+        "viral symptoms",
+        "physical damage"
+      ],
+      "confirmationMethod": "Require product, concentration, coverage, application time, light/temperature, and symptom-onset history; do not infer the chemical or active ingredient from appearance.",
+      "expectedCauseRanking": ["other_abiotic", "insufficient_evidence"],
+      "expectedUrgency": "stop repeat exposure and document the event before recommending any corrective action",
+      "expectedQuarantineGuidance": "Do not label chemical injury contagious; separately scout for pests or disease when direct signs exist.",
+      "expectedScoutingSteps": [
+        "map injury against spray or drift coverage",
+        "compare protected and exposed tissue",
+        "record product, rate, timing, weather, light, and symptom onset",
+        "inspect for direct mites, eggs, webbing, frass, colonies, or fungal growth"
+      ],
+      "expectedIpmResponse": "Preserve chemical or spray injury as an abiotic hypothesis when exposure history and distribution fit; never invent a product, rate, or remedy, and do not headline a pest or disease without direct signs."
+    },
+    {
+      "recordId": "ipm-normal-senescence-open-001",
+      "caseId": "normal_senescence",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-poison-ivy-autumn-red-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Red_leaves_on_poison_ivy.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Red_leaves_on_poison_ivy.jpg",
+          "creator": "Bachrach44",
+          "licenseId": "PUBLIC-DOMAIN-DEDICATION",
+          "attributionText": "Poison ivy showing red leaves in fall by Bachrach44; released into the public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-dead-fallen-leaf-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_dead_leaf.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/A_dead_leaf.jpg",
+          "creator": "John Harvey",
+          "licenseId": "PUBLIC-DOMAIN-DEDICATION",
+          "attributionText": "A dead fallen leaf by John Harvey; released into the public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "poison ivy autumn foliage and an unidentified fallen leaf",
+      "cultivar": "not applicable",
+      "lifeStage": "seasonal autumn change and fully senesced fallen tissue",
+      "affectedLocation": "older leaves",
+      "distribution": "seasonal coloration and isolated dead fallen tissue; whole-plant distribution is incompletely represented",
+      "progression": "seasonal progression is described for the autumn foliage; the fallen leaf is an endpoint only",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor seasonal context",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "season-linked red autumn foliage",
+        "fully senesced fallen leaf",
+        "absence of documented pest bodies, colonies, webbing, frass, or fungal growth"
+      ],
+      "plausibleAlternatives": [
+        "nutrient remobilization or deficiency",
+        "cold stress",
+        "root stress",
+        "leaf-spot disease",
+        "physical damage"
+      ],
+      "confirmationMethod": "Require crop stage, season, older-versus-new tissue distribution, progression, and absence of spreading diagnostic signs; color alone cannot prove normal senescence.",
+      "expectedCauseRanking": ["other_abiotic", "insufficient_evidence"],
+      "expectedUrgency": "low only when timing and distribution support normal aging and no spreading signs exist",
+      "expectedQuarantineGuidance": "Do not recommend quarantine for normal senescence; escalate only if direct contagious signs or unexpected spread appear.",
+      "expectedScoutingSteps": [
+        "compare old and new growth",
+        "record crop stage, season, and progression",
+        "inspect lesion margins, undersides, roots, and nearby plants for contradictory signs"
+      ],
+      "expectedIpmResponse": "Treat senescence as a context-dependent hypothesis, not a photo-only diagnosis; avoid pest, disease, or deficiency certainty without distribution, progression, and supporting evidence."
+    },
+    {
+      "recordId": "ipm-mealybugs-wax-lookalike-open-001",
+      "caseId": "mealybugs",
+      "imageSet": [
+        {
+          "imageId": "usda-k10880-1-citrophilus-mealybugs",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/dec03/k10880-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/300dpi/kesa/k10880-1.jpg",
+          "creator": "Q. Holdman, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Photo by Q. Holdman, USDA Agricultural Research Service. Image K10880-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-mealybugs-hibiscus-bud-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mealy_bugs_on_hibiscus_bud.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mealy_bugs_on_hibiscus_bud.jpg",
+          "creator": "Kaveri.dhavan",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Mealy bugs on hibiscus bud by Kaveri.dhavan, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "hibiscus and USDA reference host context",
+      "cultivar": "unknown",
+      "lifeStage": "visible mealybug colonies; exact mixed life stages not independently recorded",
+      "affectedLocation": "bud and protected plant sites",
+      "distribution": "clustered wax-covered insects rather than a flat powder across leaf tissue",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "segmented insect bodies beneath wax",
+        "clustered colonies in protected sites",
+        "distinct body-scale wax rather than continuous fungal growth"
+      ],
+      "plausibleAlternatives": [
+        "powdery mildew",
+        "cottony scale or egg sacs",
+        "residue or fibers",
+        "beneficial larvae with waxy coverings"
+      ],
+      "confirmationMethod": "Require sharp body morphology beneath wax and colony placement; inspect for movement, honeydew, crawlers, and attached scale structures before choosing the pest class.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "prompt inspection of protected sites and nearby plants",
+      "expectedQuarantineGuidance": "Limit plant movement while checking spread, but preserve beneficial lookalikes until identified.",
+      "expectedScoutingSteps": [
+        "inspect buds, nodes, petioles, leaf undersides, and container edges",
+        "capture a sharp macro showing body segmentation and wax filaments",
+        "look for honeydew, ants, crawlers, and attached scale covers"
+      ],
+      "expectedIpmResponse": "Do not call white material powdery mildew when discrete wax-covered bodies are visible; do not call mealybugs when only flat white marks or residue are present."
+    },
+    {
+      "recordId": "ipm-whiteflies-beneficial-context-open-001",
+      "caseId": "whiteflies",
+      "imageSet": [
+        {
+          "imageId": "usda-k4600-7-silverleaf-whitefly",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Silverleaf_whitefly.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Silverleaf_whitefly.jpg",
+          "creator": "Scott Bauer, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Silverleaf whitefly by Scott Bauer, USDA Agricultural Research Service. Image K4600-7.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-k7545-9-lacewing-whitefly-nymphs",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:K7545-9_(8456921974).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/K7545-9_(8456921974).jpg",
+          "creator": "Jack Dykinga, USDA Agricultural Research Service",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Green lacewing larva feeding on whitefly nymphs by Jack Dykinga, USDA Agricultural Research Service, CC BY 2.0. Image K7545-9.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "reference host foliage",
+      "cultivar": "unknown",
+      "lifeStage": "adult silverleaf whitefly and nymphs with a green lacewing larva predator",
+      "affectedLocation": "leaf undersides",
+      "distribution": "adults and sessile nymphs on foliage; plant-wide distribution not recorded",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "small white winged adult morphology",
+        "flattened whitefly nymphs attached to leaf tissue",
+        "beneficial lacewing larva predation context"
+      ],
+      "plausibleAlternatives": [
+        "aphids or shed aphid skins",
+        "scale insects",
+        "mealybugs",
+        "moths or harmless flies",
+        "beneficial lacewings"
+      ],
+      "confirmationMethod": "Inspect leaf undersides for attached nymphs and sharp adult morphology; use gentle disturbance only as supporting evidence, and separately classify predators rather than counting them as pests.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "promptly assess nymph density, honeydew, plant stress, and spread",
+      "expectedQuarantineGuidance": "Inspect nearby plants and limit movement when multiple life stages are confirmed while preserving lacewings and other identified beneficials.",
+      "expectedScoutingSteps": [
+        "inspect multiple leaf undersides for adults, nymphs, and eggs",
+        "photograph attached nymphs and adults sharply at body scale",
+        "check for honeydew, sooty growth, cast skins, and distribution",
+        "separate lacewings and other predators from pest counts"
+      ],
+      "expectedIpmResponse": "Require direct adult or nymph evidence before calling whiteflies; distinguish attached nymphs from scale and distinguish beneficial lacewing larvae from pests."
+    },
+    {
+      "recordId": "ipm-leafminers-damage-larva-open-001",
+      "caseId": "leafminers",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-chard-leafminer-blisters-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chard_leaf_miner_damage_(blisters).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Chard_leaf_miner_damage_(blisters).jpg",
+          "creator": "Babahu",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Chard leaf miner damage (blisters) by Babahu, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-d912-1-leafminer-larva-spinach",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://www.ars.usda.gov/oc/images/photos/oct07/d912-1/",
+          "mediaUrl": "https://www.ars.usda.gov/ARSUserFiles/oc/graphics/photos/300dpi/kesa/d912-1.jpg",
+          "creator": "Peggy Greb, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Leafminer larva on spinach by Peggy Greb, USDA Agricultural Research Service. Image D912-1.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "chard and spinach",
+      "cultivar": "unknown",
+      "lifeStage": "larva and documented feeding damage",
+      "affectedLocation": "inside leaf tissue between upper and lower surfaces",
+      "distribution": "localized translucent blisters or mines; whole-plant distribution not recorded",
+      "progression": "damage image shows established mines; timing not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor or production context not fully recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "feeding path or blister contained within leaf tissue",
+        "leafminer larva associated with the mine",
+        "intact outer leaf surfaces around mined tissue"
+      ],
+      "plausibleAlternatives": [
+        "thrips feeding scars",
+        "edema or physiological blistering",
+        "leaf-spot disease",
+        "sunscald or chemical injury",
+        "surface chewing damage"
+      ],
+      "confirmationMethod": "Confirm that damage is between the leaf surfaces and look for a larva or frass within an active mine; a pale or brown patch alone is insufficient.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "assess active mines, affected leaf area, crop stage, and spread before intervention",
+      "expectedQuarantineGuidance": "Inspect nearby susceptible plants and avoid moving heavily infested foliage when active larvae are confirmed.",
+      "expectedScoutingSteps": [
+        "backlight leaves to trace mines and locate larvae or frass",
+        "compare active translucent mine edges with old necrotic tissue",
+        "inspect multiple leaves and nearby plants for distribution",
+        "capture both a whole-leaf pattern view and a sharp mine close-up"
+      ],
+      "expectedIpmResponse": "Call leafminers only when an internal mine pattern is supported by larvae, frass, or active mine structure; retain physiological and disease alternatives for unstructured pale patches."
+    },
+    {
+      "recordId": "ipm-scale-insects-necrosis-open-001",
+      "caseId": "scale_insects",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cycad-scale-necrotic-leaf-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cycad-_Scale_insects_on_necrotic_leaf.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cycad-_Scale_insects_on_necrotic_leaf.jpg",
+          "creator": "Plant pests and diseases / Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Cycad scale insects on a necrotic leaf by Plant pests and diseases / Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cycad-scale-leaf-necrosis-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cycad-_Leaf_necrosis_caused_by_the_Cycad_scale_insects.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cycad-_Leaf_necrosis_caused_by_the_Cycad_scale_insects.jpg",
+          "creator": "Plant pests and diseases / Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Leaf necrosis associated with cycad scale insects by Plant pests and diseases / Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "cycad",
+      "cultivar": "unknown",
+      "lifeStage": "attached scale insects; exact crawler and adult composition not recorded",
+      "affectedLocation": "leaf surfaces with associated necrotic tissue",
+      "distribution": "dense attached infestation and host-level leaf injury",
+      "progression": "necrotic endpoint shown; timing not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor context; detailed environment not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "numerous discrete attached scale covers",
+        "fixed body-scale structures rather than flat residue",
+        "leaf necrosis associated with heavy infestation"
+      ],
+      "plausibleAlternatives": [
+        "mealybugs",
+        "whitefly nymphs",
+        "powdery residue or mineral deposits",
+        "edema or corking",
+        "leaf-spot disease"
+      ],
+      "confirmationMethod": "Require sharp attached body or cover morphology and inspect for crawlers, honeydew, and distribution; do not infer scale from white or brown dots alone.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence"],
+      "expectedUrgency": "promptly assess infestation density, active crawlers, tissue decline, and spread",
+      "expectedQuarantineGuidance": "Limit movement of confirmed infested plants and inspect contacts while preserving predators and parasitoids until identified.",
+      "expectedScoutingSteps": [
+        "inspect both leaf surfaces, petioles, stems, and protected sites",
+        "capture sharp side and top views of attached covers or bodies",
+        "look for crawlers, honeydew, ants, and new tissue injury",
+        "compare removable residue with firmly attached insect structures"
+      ],
+      "expectedIpmResponse": "Require discrete attached scale morphology before diagnosing scale insects; distinguish scales from mealybugs, whitefly nymphs, residue, and physiological corking, and do not identify a scale species from host damage alone."
+    },
+    {
+      "recordId": "diagnosis-botrytis-gray-mold-open-001",
+      "caseId": "botrytis_gray_mold_bud_rot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-botrytis-cinerea-179936706",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Botrytis_cinerea_179936706.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Botrytis_cinerea_179936706.jpg",
+          "creator": "Zeke Marshall",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Grey fruit mould (Botrytis cinerea) by Zeke Marshall, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-botrytis-cinerea-242541931",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Botrytis_cinerea_242541931.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Botrytis_cinerea_242541931.jpg",
+          "creator": "Stephen James McWilliam",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Grey fruit mould (Botrytis cinerea) by Stephen James McWilliam, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified fruiting plant material in verified Botrytis observations",
+      "cultivar": "unknown",
+      "lifeStage": "senescing or infected reproductive tissue; crop stage not recorded",
+      "affectedLocation": "fruiting or reproductive tissue",
+      "distribution": "localized gray fungal growth and decaying tissue; whole-plant distribution not recorded",
+      "progression": "established mold shown; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor observations; humidity, airflow, and wetness duration not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "gray fuzzy sporulating growth associated with decaying tissue",
+        "localized tissue collapse or rot beneath fungal growth",
+        "two independently verified Botrytis cinerea observation images"
+      ],
+      "plausibleAlternatives": [
+        "powdery mildew",
+        "other saprophytic mold on dead tissue",
+        "bacterial soft rot",
+        "normal senescence",
+        "physical damage followed by secondary colonization"
+      ],
+      "confirmationMethod": "Confirm gray sporulation arising from actively collapsing tissue and collect environment and progression context; species-level confirmation may require microscopy, culture, or laboratory testing.",
+      "expectedCauseRanking": ["disease", "insufficient_evidence"],
+      "expectedUrgency": "prompt isolation and inspection when active rot is suspected, especially in dense or humid reproductive tissue",
+      "expectedQuarantineGuidance": "Limit contact and movement of suspect material, inspect adjacent tissue, and avoid spreading spores; follow crop-appropriate sanitation rules.",
+      "expectedScoutingSteps": [
+        "inspect inside and outside affected reproductive tissue without contaminating healthy sites",
+        "capture sharp views of the gray growth, lesion boundary, and underlying tissue collapse",
+        "record humidity, airflow, recent wetness, temperature, and progression",
+        "compare nearby healthy and affected tissue and check for wounds or dead material"
+      ],
+      "expectedIpmResponse": "Use these images to recognize generic Botrytis evidence, not to assert cannabis bud rot from visual similarity alone. Require crop-specific tissue views and internal rot evidence before a cannabis bud-rot conclusion, and distinguish gray sporulation from flat powdery residue or normal fading."
+    },
+    {
+      "recordId": "diagnosis-pythium-wilt-insufficient-root-evidence-open-001",
+      "caseId": "pythium_root_rot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-root-rot-awa-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Root_rot_awa.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Root_rot_awa.jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Young kava wilting from documented Pythium splendens root rot by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-awa-pythium-wilt-young-plant-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Awa_Pythium_Root_Rot_--_wilt_on_young_plant.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Awa_Pythium_Root_Rot_--_wilt_on_young_plant.jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Kava wilt associated with documented Pythium splendens root rot by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "young kava (Piper methysticum)",
+      "cultivar": "unknown",
+      "lifeStage": "young plant",
+      "affectedLocation": "whole-plant wilt; roots not visible",
+      "distribution": "individual wilted plants in documented Pythium splendens cases",
+      "progression": "endpoint wilt shown; onset and rate not recorded",
+      "mediumRootZone": "not shown or measured",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "whole-plant wilt in cases documented as Pythium splendens",
+        "loss of turgor compatible with impaired root function",
+        "no visible root lesion, discoloration, sloughing, or pathogen structure in the submitted views"
+      ],
+      "plausibleAlternatives": [
+        "underwatering or interrupted irrigation",
+        "waterlogging or low root-zone oxygen without confirmed pathogen",
+        "heat or high-vapor-pressure stress",
+        "root aphids or other root pests",
+        "transplant or physical root injury",
+        "vascular wilt or other root pathogens"
+      ],
+      "confirmationMethod": "Inspect washed roots and crown, record substrate moisture, temperature, oxygenation or drainage, and irrigation history, and confirm Pythium with culture, microscopy, or an appropriate test when species-level certainty matters.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "disease",
+        "other_abiotic",
+        "pest"
+      ],
+      "expectedUrgency": "prompt root-zone inspection when wilt persists despite appropriate moisture",
+      "expectedQuarantineGuidance": "Avoid sharing runoff, tools, or root-zone material until contagious root disease is excluded; do not label ordinary transient wilt contagious without supporting evidence.",
+      "expectedScoutingSteps": [
+        "photograph washed healthy and affected roots plus the crown transition",
+        "record irrigation timing, substrate moisture, drainage, root-zone temperature, and oxygenation context",
+        "inspect for discoloration, sloughing, odor, root insects, and vascular symptoms",
+        "compare affected and unaffected plants and obtain a pathogen test when consequences are high"
+      ],
+      "expectedIpmResponse": "Treat wilt as compatible with root dysfunction but not diagnostic of Pythium. Do not confirm root rot from foliage alone, do not invent a pathogen treatment, and request root images, root-zone measurements, irrigation history, and confirmatory testing."
+    },
+    {
+      "recordId": "diagnosis-mosaic-virus-symptom-class-open-001",
+      "caseId": "mosaic_virus_symptoms",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-yellow-mosaic-squash-leaf-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Yellow_Mosaic_Virus_on_yellow_squash_leaf.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Yellow_Mosaic_Virus_on_yellow_squash_leaf.jpg",
+          "creator": "Babahu",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Yellow mosaic virus symptoms on a yellow squash leaf by Babahu, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-papaya-ringspot-leaf-mosaic-34085901974",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Papaya_(Carica_papaya)-_Leaf_mosaic_(Papaya_ringspot_virus,_PRSV)_-_34085901974.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Papaya_(Carica_papaya)-_Leaf_mosaic_(Papaya_ringspot_virus,_PRSV)_-_34085901974.jpg",
+          "creator": "Plant pests and diseases / Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Papaya leaf mosaic associated with papaya ringspot virus by Plant pests and diseases / Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "yellow squash and papaya",
+      "cultivar": "unknown",
+      "lifeStage": "vegetative foliage",
+      "affectedLocation": "leaves",
+      "distribution": "mottled chlorotic patterns on affected leaves; full plant progression incompletely represented",
+      "progression": "single-time observations",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor observations; detailed environment not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "irregular intermingled green and chlorotic mosaic pattern",
+        "pattern crosses multiple tissue areas rather than following a single lesion margin",
+        "documented virus-associated examples on two different hosts"
+      ],
+      "plausibleAlternatives": [
+        "nutrient deficiency or antagonism",
+        "broad or russet mite injury",
+        "herbicide or growth-regulator injury",
+        "genetic variegation",
+        "temperature or root-zone stress",
+        "other viruses with overlapping symptoms"
+      ],
+      "confirmationMethod": "Use whole-plant distribution, progression, vector or propagation history, and comparison with new growth; confirm a specific virus with an appropriate laboratory test rather than appearance alone.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "disease",
+        "pest",
+        "other_abiotic"
+      ],
+      "expectedUrgency": "promptly assess spread and propagation risk when a virus-like pattern appears on new growth",
+      "expectedQuarantineGuidance": "Separate suspect plants and avoid sharing cutting tools or propagation material until contagious disease is excluded, while avoiding destructive action based only on color pattern.",
+      "expectedScoutingSteps": [
+        "photograph whole-plant distribution plus old and new growth",
+        "inspect for mites, vectors, feeding damage, and herbicide exposure patterns",
+        "record propagation source, tool sharing, symptom progression, and nearby affected plants",
+        "obtain a crop-appropriate virus test when the result would change disposition"
+      ],
+      "expectedIpmResponse": "Describe mosaic or virus-like symptoms without naming a virus from pixels alone. Rank nutritional, mite, chemical, genetic, and environmental lookalikes, request progression and exposure evidence, and require testing before high-confidence quarantine or destruction decisions."
+    },
+    {
+      "recordId": "ipm-broad-mite-tarsonemid-lookalike-open-001",
+      "caseId": "broad_mites",
+      "imageSet": [
+        {
+          "imageId": "usda-polyphagotarsonemus-latus-barc-001",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Polyphagotarsonemus_latus,_USDA_BARC.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Polyphagotarsonemus_latus,_USDA_BARC.jpg",
+          "creator": "Eric Erbe and Chris Pooley, USDA Agricultural Research Service Electron Microscopy Unit",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Broad mite (Polyphagotarsonemus latus) micrograph by Eric Erbe and Chris Pooley, USDA Agricultural Research Service Electron Microscopy Unit; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cyclamen-mite-pepper-damage-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pepper_with_Cyclamen_Mite_damage.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pepper_with_Cyclamen_Mite_damage.jpg",
+          "creator": "Hardyplants",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Bell pepper with cyclamen mite damage by Hardyplants, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "broad-mite reference specimen and bell pepper with documented cyclamen-mite damage",
+      "cultivar": "unknown",
+      "lifeStage": "adult broad-mite reference; cyclamen-mite life stage not visible in the damage view",
+      "affectedLocation": "mite body reference and distorted pepper foliage",
+      "distribution": "single-organism micrograph plus host-level tarsonemid damage context; not a same-species paired case",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "microscopic broad-mite body morphology in the direct reference",
+        "distorted and damaged new foliage in a related tarsonemid-mite case",
+        "absence of visible broad mites in the host-damage image"
+      ],
+      "plausibleAlternatives": [
+        "cyclamen mites or other tarsonemid mites",
+        "russet mites",
+        "thrips",
+        "herbicide or spray injury",
+        "calcium or root-zone dysfunction",
+        "virus-like symptoms",
+        "heat or light stress"
+      ],
+      "confirmationMethod": "Require magnified direct mite or egg evidence from affected new growth and distinguish broad mites from cyclamen, russet, and other mites; plant distortion alone cannot identify the mite.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "pest",
+        "other_abiotic",
+        "disease"
+      ],
+      "expectedUrgency": "prompt magnified inspection of affected new growth when distortion is progressing",
+      "expectedQuarantineGuidance": "Limit plant movement while a microscopic pest is being confirmed, but do not destroy plants or broadly treat based only on distorted foliage.",
+      "expectedScoutingSteps": [
+        "inspect the underside of the youngest distorted leaves, buds, and protected growth with magnification",
+        "capture sharp body-scale images of mites and eggs plus whole-plant distribution",
+        "record spray, herbicide, root-zone, heat, and light history",
+        "compare affected and unaffected new growth and obtain expert identification when morphology is unresolved"
+      ],
+      "expectedIpmResponse": "Recognize the direct broad-mite reference but do not transfer the cyclamen-mite damage label to broad mites. For user plants, call only tarsonemid-mite-compatible distortion until direct organisms or eggs support a narrower identification, and retain chemical, nutritional, viral, and environmental alternatives."
+    },
+    {
+      "recordId": "ipm-russet-mite-eriophyid-boundary-open-001",
+      "caseId": "russet_mites",
+      "imageSet": [
+        {
+          "imageId": "usda-k9077-23-aceria-anthocoptes",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rust_Mite,_Aceria_anthocoptes.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rust_Mite,_Aceria_anthocoptes.jpg",
+          "creator": "Eric Erbe and Chris Pooley, USDA Agricultural Research Service Electron Microscopy Unit",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Rust mite Aceria anthocoptes micrograph by Eric Erbe and Chris Pooley, USDA Agricultural Research Service Electron Microscopy Unit. Image K9077-23; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "public-domain-eriophyid-coconut-injury-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Coconuts_injured_by_Eriophyes_guerreronis.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Coconuts_injured_by_Eriophyes_guerreronis.jpg",
+          "creator": "Hartford Hammond Keifer",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Coconuts injured by the eriophyid coconut mite, Hartford Hammond Keifer; public-domain government work.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "Canada thistle rust-mite reference and coconut with eriophyid-mite injury",
+      "cultivar": "unknown",
+      "lifeStage": "adult eriophyid reference; injury image does not resolve individual mites",
+      "affectedLocation": "direct mite micrograph and damaged coconut fruit tissue",
+      "distribution": "cross-species eriophyid morphology and injury context, not a same-host diagnostic pair",
+      "progression": "not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "elongated microscopic eriophyid body morphology",
+        "documented crop injury from a different eriophyid species",
+        "absence of visible mites in the host-injury image"
+      ],
+      "plausibleAlternatives": [
+        "broad or cyclamen mites",
+        "thrips or spider-mite feeding",
+        "spray or herbicide injury",
+        "nutrient or root-zone stress",
+        "virus-like symptoms",
+        "normal corking, russeting, or physical injury"
+      ],
+      "confirmationMethod": "Require high-magnification body-scale evidence from the affected tissue and expert comparison when species matters; bronzing, curling, or russeting alone cannot establish an eriophyid species.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "pest",
+        "other_abiotic",
+        "disease"
+      ],
+      "expectedUrgency": "prompt magnified inspection when progressive bronzing, curling, or protected-site injury is present",
+      "expectedQuarantineGuidance": "Limit plant movement during confirmation of a microscopic pest, while avoiding destruction or broad treatment based only on nonspecific injury.",
+      "expectedScoutingSteps": [
+        "inspect protected new growth and symptom boundaries with sufficient magnification for individual mites",
+        "capture sharp body-scale images plus whole-plant and affected-versus-healthy context",
+        "record symptom progression, spray history, environment, and root-zone measurements",
+        "seek expert or laboratory identification when the crop, jurisdiction, or disposition makes species important"
+      ],
+      "expectedIpmResponse": "Use the reference to recognize eriophyid body form, not to label every russeted crop as russet mites or to transfer one host-specific species to another. On cannabis or hemp, require direct compatible mites from the plant before naming hemp russet mite and keep abiotic, viral, and other-pest alternatives visible."
+    },
+    {
+      "recordId": "ipm-root-aphid-phylloxera-evidence-boundary-open-001",
+      "caseId": "root_aphids",
+      "imageSet": [
+        {
+          "imageId": "public-domain-phylloxera-root-feeding-1911-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:EB1911_-_Phylloxera_-_Fig_1.png",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/EB1911_-_Phylloxera_-_Fig_1.png",
+          "creator": "Encyclopaedia Britannica",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Root-inhabiting grape phylloxera feeding on a vine root, Encyclopaedia Britannica (1911); public domain in the United States.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "public-domain-phylloxera-adult-illustration-1909-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Phylloxera_vastatrix_illustration.png",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Phylloxera_vastatrix_illustration.png",
+          "creator": "Richard Hertwig after Ludwig-Leunis",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Phylloxera vastatrix illustration from Richard Hertwig's A Manual of Zoology (1909), after Ludwig-Leunis; public domain in the United States.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "grapevine root and grape phylloxera morphology references",
+      "cultivar": "unknown",
+      "lifeStage": "root-inhabiting feeding form and adult morphology illustration",
+      "affectedLocation": "root tissue and direct insect reference",
+      "distribution": "single root-feeding interaction plus isolated morphology reference; no whole-plant infestation pattern",
+      "progression": "not recorded",
+      "mediumRootZone": "root contact is illustrated; substrate, moisture, oxygenation, and irrigation are not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "aphid-like phylloxera body morphology",
+        "proboscis inserted into root tissue in the root-inhabiting reference",
+        "direct root-zone organism evidence rather than foliage symptoms alone"
+      ],
+      "plausibleAlternatives": [
+        "fungus gnat larvae",
+        "springtails or other harmless soil organisms",
+        "above-ground aphids or shed skins",
+        "root mealybugs",
+        "root rot or low-oxygen root injury",
+        "irrigation or substrate failure"
+      ],
+      "confirmationMethod": "Require sharp direct views of colonies or insects on washed roots and confirm aphid morphology, waxy residue, and root association; foliage wilt or flying insects near media are insufficient.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "pest",
+        "disease",
+        "other_abiotic"
+      ],
+      "expectedUrgency": "prompt root-zone inspection when decline persists or root-associated colonies are suspected",
+      "expectedQuarantineGuidance": "Limit movement of rooted plants and shared substrate only when a root-associated pest is directly supported; do not quarantine solely for ordinary soil organisms or fungus-gnat adults.",
+      "expectedScoutingSteps": [
+        "inspect the pot edge, drainage openings, crown, and representative washed roots with magnification",
+        "capture sharp body-scale images of organisms plus colony distribution and root injury",
+        "compare adults, larvae, cast skins, wax, and movement with fungus gnats, springtails, and root mealybugs",
+        "record irrigation, drainage, substrate moisture, root color, odor, sloughing, and above-ground symptoms"
+      ],
+      "expectedIpmResponse": "Use these images as a morphology and evidence-boundary reference, not as a cannabis root-aphid species label. Do not diagnose root aphids from wilt, yellowing, or small flying insects alone; request root-level media, distinguish fungus gnats and harmless soil organisms, and preserve root-disease and abiotic alternatives until direct organisms are resolved."
+    },
+    {
+      "recordId": "ipm-fungus-gnat-adult-evidence-boundary-open-001",
+      "caseId": "fungus_gnats",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-mycetophilid-fungus-gnat-adult-30538336453",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fungus_Gnat_(30538336453).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fungus_Gnat_(30538336453).jpg",
+          "creator": "Katja Schulz",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Adult fungus gnat photographed by Katja Schulz, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-bradysia-fungicola-adult-23982637712",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bradysia_fungicola_,_Trawscoed,_North_Wales,_June_2014_-_Flickr_-_janetgraham84.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bradysia_fungicola_,_Trawscoed,_North_Wales,_June_2014_-_Flickr_-_janetgraham84.jpg",
+          "creator": "Janet Graham",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Adult Bradysia fungicola photographed by Janet Graham, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "adult fungus-gnat morphology references without a crop host",
+      "cultivar": "not applicable",
+      "lifeStage": "adult flies",
+      "affectedLocation": "adult insects away from a documented crop root zone",
+      "distribution": "two isolated adult references; trap density and crop distribution are not represented",
+      "progression": "not recorded",
+      "mediumRootZone": "not represented",
+      "environment": "outdoor observations; production moisture and sanitation context not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "small slender gnat-like adult morphology",
+        "long legs and antennae with narrow wings",
+        "one identified Bradysia adult reference"
+      ],
+      "plausibleAlternatives": [
+        "shore flies",
+        "other harmless small flies or midges",
+        "winged root aphids",
+        "winged above-ground aphids",
+        "drain flies",
+        "unrelated outdoor fungus gnats"
+      ],
+      "confirmationMethod": "Combine sharp adult morphology with repeated trap counts, direct larvae in the growing medium, and root-zone moisture and injury context; one adult near a plant is insufficient.",
+      "expectedCauseRanking": [
+        "insufficient_evidence",
+        "pest",
+        "other_abiotic",
+        "disease"
+      ],
+      "expectedUrgency": "monitor and inspect the root zone; escalate when counts rise, larvae are present, or vulnerable roots are declining",
+      "expectedQuarantineGuidance": "Do not quarantine from a single adult sighting. Limit movement of wet media or affected starts only when an active production infestation is supported.",
+      "expectedScoutingSteps": [
+        "use consistent yellow-card placement and record adult counts over time",
+        "inspect moist medium and drainage areas for translucent larvae with dark head capsules",
+        "record irrigation frequency, surface moisture, algae, organic debris, drainage, and root condition",
+        "photograph adults, larvae, the medium surface, and representative washed roots"
+      ],
+      "expectedIpmResponse": "Use the images to recognize compatible adult morphology only. Do not infer root feeding, crop damage, or a treatment need from one small fly; require trend counts, larval evidence, moisture context, and root assessment, and distinguish winged root aphids and harmless flies."
+    },
+    {
+      "recordId": "ipm-caterpillar-sawfly-chewing-boundary-open-001",
+      "caseId": "caterpillars",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-caterpillar-feeding-leaf-motunrayo-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Caterpillar_feeding_on_leaf.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Caterpillar_feeding_on_leaf.jpg",
+          "creator": "Motunrayo1234",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Caterpillar feeding on a leaf by Motunrayo1234, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-euura-ribesii-sawfly-larva-feeding-001",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Caterpillar_feeding_on_leaf_-_20140906_121127.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Caterpillar_feeding_on_leaf_-_20140906_121127.jpg",
+          "creator": "Daniel Mietchen",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Euura ribesii sawfly larva feeding on a leaf by Daniel Mietchen, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "unidentified leaf host and a leaf fed on by Euura ribesii",
+      "cultivar": "unknown",
+      "lifeStage": "feeding caterpillar and feeding sawfly larva lookalike",
+      "affectedLocation": "leaf margins and lamina adjacent to visible larvae",
+      "distribution": "localized feeding interactions; whole-plant damage distribution not recorded",
+      "progression": "active feeding shown at one time point",
+      "mediumRootZone": "not relevant to the visible feeding evidence and not recorded",
+      "environment": "outdoor observations; detailed conditions not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "visible larva directly associated with fresh leaf chewing",
+        "missing tissue beginning at or extending from a leaf edge",
+        "a sawfly larva that demonstrates caterpillar-like morphology is not taxonomically sufficient"
+      ],
+      "plausibleAlternatives": [
+        "sawfly larvae",
+        "beetles or beetle larvae",
+        "slugs or snails",
+        "grasshoppers or other chewing insects",
+        "leaf-cutter bees",
+        "wind, handling, or mechanical tears"
+      ],
+      "confirmationMethod": "Associate fresh chewing with a directly observed larva, egg, frass, webbing, shelter, or repeated nighttime observation; use body features or expert review before narrowing caterpillar versus sawfly or another larva.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence", "other_abiotic"],
+      "expectedUrgency": "assess active feeding, crop stage, larval density, and spread before intervention",
+      "expectedQuarantineGuidance": "Inspect nearby plants and avoid moving confirmed larvae or infested material, but do not quarantine for isolated old holes without an active organism.",
+      "expectedScoutingSteps": [
+        "inspect both leaf surfaces, margins, folded leaves, buds, and nearby substrate during day and night",
+        "capture sharp dorsal and side views of larvae plus fresh feeding boundaries",
+        "look for frass, eggs, silk, shelters, slime trails, and repeated damage",
+        "compare leg and proleg pattern or seek expert identification before assigning a larval family"
+      ],
+      "expectedIpmResponse": "Confirm chewing injury separately from the organism identity. Do not label every hole as caterpillar damage and do not call a sawfly larva a caterpillar from overall shape; retain beetle, slug, other chewing insect, and physical-damage alternatives until direct evidence resolves them."
+    },
+    {
+      "recordId": "ipm-beneficial-harmless-lookalikes-open-001",
+      "caseId": "beneficial_and_harmless_lookalikes",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-springtail-soil-decomposer-38498259930",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Springtail_(38498259930).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Springtail_(38498259930).jpg",
+          "creator": "Melissa McMasters",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Springtail photographed by Melissa McMasters, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ladybird-larva-eating-aphid-16475286350",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:14-spotted_Ladybird_larva_eating_an_aphid_(16475286350).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/14-spotted_Ladybird_larva_eating_an_aphid_(16475286350).jpg",
+          "creator": "Line Sabroe",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Fourteen-spotted ladybird larva eating an aphid, photographed by Line Sabroe, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "soil-organism and aphid-predation reference contexts",
+      "cultivar": "not applicable",
+      "lifeStage": "springtail and predatory ladybird larva",
+      "affectedLocation": "moist organic habitat and foliage with aphid prey",
+      "distribution": "isolated organism references; crop-wide distribution not recorded",
+      "progression": "not recorded",
+      "mediumRootZone": "springtail reference is associated with damp soil and decomposing organic material; crop root condition is not shown",
+      "environment": "outdoor observations; detailed production environment not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "springtail body form associated with moist organic habitat",
+        "ladybird larva directly observed consuming an aphid",
+        "predatory behavior and prey context that contradict automatic pest classification"
+      ],
+      "plausibleAlternatives": [
+        "root aphids",
+        "fungus gnat larvae",
+        "thrips or other slender plant pests",
+        "mealybugs or waxy root pests",
+        "caterpillars or beetle larvae",
+        "other beneficial predators or decomposers"
+      ],
+      "confirmationMethod": "Use sharp body morphology, movement, habitat, feeding behavior, and prey context; confirm plant injury separately and do not infer harmfulness from the mere presence of an arthropod.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic"],
+      "expectedUrgency": "observe and identify before intervening unless direct plant injury is also present",
+      "expectedQuarantineGuidance": "No quarantine or treatment for an identified beneficial or harmless organism alone; inspect for a separate pest population when predators are present.",
+      "expectedScoutingSteps": [
+        "capture sharp top and side views plus organism movement and habitat",
+        "record whether the organism is feeding on plant tissue, prey, fungi, or decaying material",
+        "inspect plants for independent injury, honeydew, colonies, eggs, larvae, or root decline",
+        "preserve the organism while seeking expert identification when its role is unresolved"
+      ],
+      "expectedIpmResponse": "Do not recommend treatment from organism appearance alone. Recognize springtails as usually harmless decomposer-associated organisms and ladybird larvae as aphid predators when morphology and behavior support those roles; investigate moisture or the prey population without killing beneficials."
+    },
+    {
+      "recordId": "diagnosis-rust-pustule-host-boundary-open-001",
+      "caseId": "rust",
+      "imageSet": [
+        {
+          "imageId": "usda-d517-1-stripe-rust-wheat-leaf",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Stripe_rust_on_wheat.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Stripe_rust_on_wheat.jpg",
+          "creator": "Yue Jin, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Stripe rust (Puccinia striiformis) on wheat by Yue Jin, USDA Agricultural Research Service. Image D517-1; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-k11192-1-stem-rust-wheat-close-up",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Stem_rust_close_up.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Stem_rust_close_up.jpg",
+          "creator": "Yue Jin, USDA Agricultural Research Service",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Stem rust (Puccinia graminis) on wheat by Yue Jin, USDA Agricultural Research Service. Image K11192-1; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "wheat",
+      "cultivar": "unknown",
+      "lifeStage": "crop foliage and stems with documented rust diseases",
+      "affectedLocation": "leaf blade and stem surfaces",
+      "distribution": "linear stripe-rust pustules on foliage and elongated stem-rust pustules on stems",
+      "progression": "established sporulating symptoms shown; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "field context; leaf wetness, temperature, humidity, and host susceptibility not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "raised colored pustules on host tissue",
+        "stripe-like leaf distribution in documented Puccinia striiformis",
+        "elongated rupturing stem pustules in documented Puccinia graminis"
+      ],
+      "plausibleAlternatives": [
+        "edema or corking",
+        "scale insects",
+        "mineral or spray residue",
+        "bacterial or fungal leaf spots",
+        "normal pigmentation or senescence",
+        "other rust fungi with host-specific biology"
+      ],
+      "confirmationMethod": "Confirm raised pustules, spore transfer, affected surface, host identity, and distribution; microscopy, extension review, or laboratory confirmation is required when the rust species affects management or reporting.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "pest",
+        "other_abiotic"
+      ],
+      "expectedUrgency": "promptly assess active sporulation, susceptible nearby hosts, and spread",
+      "expectedQuarantineGuidance": "Limit movement of actively sporulating material and inspect compatible hosts while the pathogen is identified; do not transfer wheat-specific quarantine claims to unrelated crops.",
+      "expectedScoutingSteps": [
+        "photograph pustules sharply from top and side views plus whole-plant distribution",
+        "check whether pigment or spores transfer with a clean diagnostic swab",
+        "record host, affected surface, symptom progression, recent moisture, humidity, and temperature",
+        "compare scale insects, corking, residue, and leaf spots and obtain confirmation when species matters"
+      ],
+      "expectedIpmResponse": "Recognize rust-compatible raised pustules and distribution, but do not name a rust species or copy wheat management to another crop from orange or brown spots alone. Preserve edema, scale, residue, and other disease alternatives until pustule and host evidence support rust."
+    },
+    {
+      "recordId": "diagnosis-septoria-leaf-spot-boundary-open-001",
+      "caseId": "septoria_and_leaf_spots",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-tomato-septoria-leaf-spot-3006",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3006.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3006.jpg",
+          "creator": "Wolan268",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Tomato leaves with Septoria leaf spot by Wolan268, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-tomato-septoria-leaf-spot-3047",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3047.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3047.jpg",
+          "creator": "Wolan268",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Tomato leaves with Septoria leaf spot by Wolan268, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "tomato",
+      "cultivar": "unknown",
+      "lifeStage": "vegetative foliage",
+      "affectedLocation": "leaf surfaces",
+      "distribution": "multiple discrete leaf spots on documented affected tomato foliage; whole-plant vertical distribution not recorded",
+      "progression": "two same-session observations; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "multiple discrete necrotic leaf lesions",
+        "defined lesion centers and margins across affected foliage",
+        "two documented Septoria leaf-spot views from the same host and session"
+      ],
+      "plausibleAlternatives": [
+        "bacterial leaf spot",
+        "Alternaria or other fungal leaf spots",
+        "spray injury or droplet burn",
+        "edema",
+        "insect feeding injury",
+        "nutrient or senescence-associated necrosis"
+      ],
+      "confirmationMethod": "Compare lesion margins, centers, fruiting structures, affected leaf age, whole-plant distribution, and progression; microscopy, culture, extension review, or laboratory testing is required when the pathogen identity changes management.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "pest"
+      ],
+      "expectedUrgency": "promptly assess active lesion expansion, defoliation risk, and spread",
+      "expectedQuarantineGuidance": "Limit movement and wet handling of actively spreading suspect foliage while distinguishing fungal and bacterial causes; do not declare the crop contagious from isolated old spots alone.",
+      "expectedScoutingSteps": [
+        "capture sharp close-ups of lesion centers and margins plus both leaf surfaces",
+        "record lower-versus-upper canopy distribution, affected leaf age, progression, and recent leaf wetness",
+        "inspect for insects, spray patterns, edema, fruiting bodies, and lesions on stems or fruit",
+        "compare healthy and affected plants and obtain pathogen confirmation when treatment or disposal depends on species"
+      ],
+      "expectedIpmResponse": "Recognize a leaf-spot syndrome without treating every circular lesion as Septoria. Keep bacterial, other fungal, spray, edema, insect, and senescence alternatives visible, and avoid pathogen-specific treatment until host, distribution, progression, and confirmatory evidence support it."
+    },
+    {
+      "recordId": "diagnosis-bacterial-leaf-spot-boundary-open-001",
+      "caseId": "bacterial_leaf_spot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-bacterial-leaf-spot-pepper-43614805831",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bacterial_leaf_spot_of_pepper_(Capsicum_sp.)_(43614805831).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bacterial_leaf_spot_of_pepper_(Capsicum_sp.)_(43614805831).jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Bacterial leaf spot of pepper (Capsicum sp.), Xanthomonas sp., by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-bacterial-leaf-spot-pepper-14954536360",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bacterial_leaf_spot_of_pepper_(14954536360).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bacterial_leaf_spot_of_pepper_(14954536360).jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Bacterial leaf spot of pepper, Xanthomonas sp., by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "pepper (Capsicum sp.)",
+      "cultivar": "unknown",
+      "lifeStage": "vegetative foliage",
+      "affectedLocation": "leaf surfaces",
+      "distribution": "multiple lesions across documented affected pepper leaves; whole-plant and canopy distribution not recorded",
+      "progression": "two documented bacterial leaf-spot examples; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "multiple discrete necrotic lesions on pepper foliage",
+        "documented Xanthomonas bacterial leaf spot with variation between examples",
+        "lesion evidence that requires separation from fungal spots and noninfectious injury"
+      ],
+      "plausibleAlternatives": [
+        "Septoria, Alternaria, or another fungal leaf spot",
+        "spray injury or droplet burn",
+        "edema",
+        "insect feeding injury",
+        "nutrient or senescence-associated necrosis",
+        "other bacterial pathogens"
+      ],
+      "confirmationMethod": "Compare lesion margins, water-soaked or angular features when present, affected leaf age, whole-plant distribution, progression, and recent leaf wetness; extension review, microscopy, culture, molecular testing, or a qualified laboratory is required when bacterial identity changes treatment, disposal, or reporting.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "pest"
+      ],
+      "expectedUrgency": "promptly assess active lesion expansion, defoliation, splash spread, and nearby susceptible plants",
+      "expectedQuarantineGuidance": "Reduce splash and wet handling and limit movement of actively spreading suspect material while bacterial and fungal causes are distinguished; do not declare bacterial disease from spots alone.",
+      "expectedScoutingSteps": [
+        "capture sharp close-ups of lesion centers and margins plus both leaf surfaces",
+        "record lower-versus-upper canopy distribution, affected leaf age, progression, irrigation splash, and recent leaf wetness",
+        "inspect for insects, spray patterns, edema, fungal structures, and lesions on stems or fruit",
+        "compare healthy and affected plants and obtain pathogen confirmation when intervention depends on bacterial identity"
+      ],
+      "expectedIpmResponse": "Recognize bacterial-leaf-spot-compatible evidence without labeling every necrotic lesion as Xanthomonas. Keep fungal leaf spots, spray injury, edema, insects, senescence, and other bacteria visible, reduce spread-promoting handling while unresolved, and avoid pathogen-specific treatment until the evidence or confirmation supports it."
+    },
+    {
+      "recordId": "diagnosis-fusarium-wilt-vascular-boundary-open-001",
+      "caseId": "fusarium",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-banana-fusarium-wilt-40318106271",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Banana_(Variety-_Koa_e_Kea)-_Fusarium_wilt_(Panama_disease)_-_40318106271.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Banana_(Variety-_Koa_e_Kea)-_Fusarium_wilt_(Panama_disease)_-_40318106271.jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Koa e Kea banana with Fusarium wilt (Panama disease) by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-banana-fusarium-wilt-40318105651",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Banana_(Variety-_Koa_e_Kea)-_Fusarium_wilt_(Panama_disease).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Banana_(Variety-_Koa_e_Kea)-_Fusarium_wilt_(Panama_disease).jpg",
+          "creator": "Scot Nelson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Koa e Kea banana with Fusarium wilt (Panama disease) by Scot Nelson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "banana (Koa e Kea variety)",
+      "cultivar": "Koa e Kea",
+      "lifeStage": "established banana with incipient wilt symptoms",
+      "affectedLocation": "foliage, pseudostem, peduncle, petioles, and fruit as documented by the source",
+      "distribution": "documented foliar yellowing and wilt with vascular necrosis; full planting distribution not recorded",
+      "progression": "two observations approximately five minutes apart from the same documented session; longer progression not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "Hawaii, Big Island; production conditions and recent irrigation not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "wilt and foliar yellowing documented with Fusarium oxysporum f. sp. cubense race 1",
+        "documented vascular necrosis in internal and connected plant tissues",
+        "multiple views from the same host variety and session"
+      ],
+      "plausibleAlternatives": [
+        "overwatering, underwatering, or root hypoxia",
+        "Pythium or another root and crown disease",
+        "bacterial wilt",
+        "vascular injury or stem damage",
+        "nutrient or salinity root dysfunction",
+        "heat or transplant stress"
+      ],
+      "confirmationMethod": "Evaluate root-zone moisture and oxygen, irrigation history, vascular discoloration pattern, affected-plant distribution, progression, and host susceptibility; obtain qualified extension or laboratory confirmation when Fusarium identity changes sanitation, movement, disposal, or reporting.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "deficiency"
+      ],
+      "expectedUrgency": "promptly assess vascular symptoms, root-zone failure, affected-plant distribution, and spread",
+      "expectedQuarantineGuidance": "Limit movement of suspect plants, soil, water, and tools while vascular wilt is investigated, but do not declare Fusarium from yellowing or wilt alone.",
+      "expectedScoutingSteps": [
+        "photograph the whole plant, symptom distribution, roots and crown, and clean cross-sections of affected vascular tissue",
+        "record substrate moisture, oxygenation, irrigation timing, EC, pH, temperature, and recent physical stress",
+        "compare symptomatic and healthy plants and map whether decline follows water, soil, or tool movement",
+        "seek extension or laboratory confirmation before destructive sanitation or pathogen-specific claims"
+      ],
+      "expectedIpmResponse": "Treat wilt and yellowing as a syndrome that requires root-zone and vascular evidence. Fusarium becomes more plausible with compatible vascular necrosis, host, distribution, and progression, but water stress, hypoxia, other root diseases, bacterial wilt, injury, and chemical root dysfunction must remain visible until confirmed."
+    },
+    {
+      "recordId": "diagnosis-downy-mildew-surface-boundary-open-001",
+      "caseId": "downy_mildew",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-plasmopara-viticola-305150831",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Plasmopara_viticola_305150831.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Plasmopara_viticola_305150831.jpg",
+          "creator": "Bruce Cook",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Grape downy mildew (Plasmopara viticola) by Bruce Cook, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-plasmopara-viticola-305150939",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Plasmopara_viticola_305150939.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Plasmopara_viticola_305150939.jpg",
+          "creator": "Bruce Cook",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Grape downy mildew (Plasmopara viticola) by Bruce Cook, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "grapevine",
+      "cultivar": "unknown",
+      "lifeStage": "established foliage",
+      "affectedLocation": "leaf surfaces",
+      "distribution": "localized symptoms on documented grape foliage; whole-vine and vineyard distribution not recorded",
+      "progression": "two same-session views from one verified observation; onset and rate not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor Vermont observation; recent leaf wetness, humidity, and temperature not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "multiple complementary views documented as Plasmopara viticola on grape",
+        "surface symptoms requiring comparison between upper and lower leaf faces",
+        "host and observation context consistent with a downy-mildew reference case"
+      ],
+      "plausibleAlternatives": [
+        "powdery mildew",
+        "spray or mineral residue",
+        "bacterial or fungal leaf spot",
+        "edema",
+        "insect feeding injury",
+        "nutrient or senescence-associated discoloration"
+      ],
+      "confirmationMethod": "Compare matched upper- and lower-surface symptoms, sporulation, lesion boundaries, host identity, progression, and recent leaf wetness; microscopy, extension review, or laboratory confirmation is required when the pathogen identity changes management.",
+      "expectedCauseRanking": [
+        "disease",
+        "insufficient_evidence",
+        "other_abiotic",
+        "pest"
+      ],
+      "expectedUrgency": "promptly inspect active sporulation, leaf wetness, susceptible nearby foliage, and spread",
+      "expectedQuarantineGuidance": "Reduce wet handling and movement of actively sporulating suspect foliage while the cause is resolved; do not declare downy mildew from pale or white surface material alone.",
+      "expectedScoutingSteps": [
+        "capture matched sharp views of the same lesion from both leaf surfaces and a whole-plant distribution view",
+        "record host, affected leaf age, symptom progression, recent rain or irrigation, humidity, and temperature",
+        "test whether visible material is structured growth, removable residue, insects, or surface glare without damaging the sample",
+        "compare powdery mildew, residue, edema, leaf spots, and insect injury and obtain confirmation when species matters"
+      ],
+      "expectedIpmResponse": "Recognize downy-mildew-compatible host, lesion, and lower-surface sporulation evidence without equating every pale patch or white material with Plasmopara. Keep powdery mildew, residue, leaf spots, edema, insects, and aging visible until matched surfaces, environment, progression, or confirmation support the diagnosis."
+    },
+    {
+      "recordId": "diagnosis-physical-hail-damage-boundary-open-001",
+      "caseId": "physical_damage",
+      "imageSet": [
+        {
+          "imageId": "usda-nrcs-corn-hail-damage-38851124922",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Plants_NR_85_(38851124922).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Plants_NR_85_(38851124922).jpg",
+          "creator": "USDA NRCS Montana",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Corn leaf with hail damage, Ekalaka, Montana, by USDA NRCS Montana; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "usda-nrcs-corn-hail-damage-38846985982",
+          "sourceId": "usda_ars_image_gallery",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Misc_NR_14_(38846985982).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Misc_NR_14_(38846985982).jpg",
+          "creator": "Nikki Romero, USDA NRCS",
+          "licenseId": "US-PUBLIC-DOMAIN",
+          "attributionText": "Hail damage on a corn leaf, Plevna, Montana, by Nikki Romero, USDA NRCS; public domain.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "corn",
+      "cultivar": "unknown",
+      "lifeStage": "established vegetative foliage",
+      "affectedLocation": "leaf blades",
+      "distribution": "localized tears, holes, and damaged tissue on documented hail-affected corn leaves; field-wide distribution not recorded",
+      "progression": "two separate July 2013 observations in Montana; post-event healing and secondary progression not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "outdoor field observations following hail; storm timing and intensity not recorded in the image metadata",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "irregular torn and missing leaf tissue documented after hail",
+        "physical injury patterns without an identified feeding organism or pathogen sign",
+        "two independent corn examples showing variation in hail injury"
+      ],
+      "plausibleAlternatives": [
+        "caterpillar, beetle, slug, or other chewing injury",
+        "wind abrasion or mechanical handling",
+        "bacterial or fungal lesions followed by tissue loss",
+        "spray burn",
+        "cold or heat injury",
+        "animal damage"
+      ],
+      "confirmationMethod": "Correlate fresh injury with weather and handling history, inspect edge character and field-facing distribution, and scout for insects, frass, eggs, lesions, or continuing damage; physical damage is supported when injury appears synchronously after an event and does not progress without secondary complications.",
+      "expectedCauseRanking": [
+        "other_abiotic",
+        "insufficient_evidence",
+        "pest",
+        "disease"
+      ],
+      "expectedUrgency": "assess structural loss, growing-point injury, and secondary infection risk; emergency pest or disease treatment is not justified by torn tissue alone",
+      "expectedQuarantineGuidance": "Do not quarantine for physical damage alone; separate damaged material only when sanitation, structural safety, or suspected secondary disease requires it.",
+      "expectedScoutingSteps": [
+        "capture close views of injury edges plus whole-plant and field-facing distribution",
+        "record hail, wind, handling, animal, equipment, temperature, and spray events with timestamps",
+        "inspect both leaf surfaces for insects, frass, eggs, mines, pathogen structures, and lesion margins",
+        "mark fresh injuries and recheck for continued expansion or secondary infection"
+      ],
+      "expectedIpmResponse": "Recognize event-compatible physical injury without turning tears and holes into an automatic pest or disease diagnosis. Use timing, distribution, edge character, pest evidence, and progression to separate hail from chewing, abrasion, spray injury, temperature injury, and lesions with tissue loss."
+    },
+    {
+      "recordId": "diagnosis-herbicide-injury-pattern-boundary-open-001",
+      "caseId": "spray_burn",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-herbicide-injury-soybeans-9620828435",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Herbicide_Injury_to_Soybeans_(9620828435).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Herbicide_Injury_to_Soybeans_(9620828435).jpg",
+          "creator": "United Soybean Board",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Herbicide injury to soybeans by United Soybean Board, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-herbicide-injury-soybeans-9620826895",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Herbicide_Injury_to_Soybeans_(9620826895).jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Herbicide_Injury_to_Soybeans_(9620826895).jpg",
+          "creator": "United Soybean Board",
+          "licenseId": "CC-BY-2.0",
+          "attributionText": "Herbicide injury to soybeans by United Soybean Board, CC BY 2.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "soybean",
+      "cultivar": "unknown",
+      "lifeStage": "established crop foliage",
+      "affectedLocation": "foliage and growing points visible in documented herbicide-injury observations",
+      "distribution": "multiple affected soybean plants and leaves; field pattern and spray-direction gradient not recorded",
+      "progression": "two same-date herbicide-injury observations; application timing, onset, and later recovery not recorded",
+      "mediumRootZone": "not recorded",
+      "environment": "field context; temperature, humidity, wind, and spray conditions not recorded",
+      "measuredValues": "none",
+      "diagnosticSigns": [
+        "documented herbicide injury with symptom variation across soybean foliage",
+        "growth and tissue distortion compatible with chemical exposure but not sufficient to identify an active ingredient",
+        "multiple views requiring separation from disease, pests, nutrition, and environmental stress"
+      ],
+      "plausibleAlternatives": [
+        "mosaic virus or other systemic disease",
+        "broad mites or other growing-point pests",
+        "nutrient deficiency, excess, lockout, or antagonism",
+        "heat, cold, drought, or root-zone stress",
+        "wind or mechanical injury",
+        "genetic or normal developmental variation"
+      ],
+      "confirmationMethod": "Correlate symptoms with a complete application and drift history, affected-versus-unaffected field pattern, wind direction, dose and overlap zones, onset, new growth, and measured root-zone conditions; identify the product only from verified records or qualified investigation, never from leaf shape alone.",
+      "expectedCauseRanking": [
+        "other_abiotic",
+        "insufficient_evidence",
+        "disease",
+        "pest",
+        "deficiency"
+      ],
+      "expectedUrgency": "promptly stop repeat exposure, preserve application records, assess drift or overlap, and monitor new growth",
+      "expectedQuarantineGuidance": "Do not quarantine for chemical injury alone; isolate suspect inputs or equipment and prevent repeated exposure while disease and pest alternatives are checked.",
+      "expectedScoutingSteps": [
+        "photograph affected and unaffected plants across field position, row, height, and growing points",
+        "record every recent foliar, irrigation, cleaning, and neighboring application with product, concentration, time, weather, and equipment",
+        "map symptom boundaries against spray direction, overlap, drift, runoff, and protected areas",
+        "inspect for pests and pathogen signs, measure root-zone conditions, and track whether healthy new growth resumes"
+      ],
+      "expectedIpmResponse": "Recognize a chemical-injury pattern without naming an herbicide from appearance. Require application and spatial evidence, keep virus, pests, nutrition, environment, and development in the differential, prevent repeat exposure, and avoid invented remediation or pesticide instructions."
+    },
+    {
+      "recordId": "diagnosis-acid-soil-nutrient-deficiency-boundary-open-001",
+      "caseId": "nutrient_deficiency",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-acid-induced-phosphorus-deficiency-hlokozi-2005",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:2005_1214_0928_Hlokozi_-_Acid-induced_P_deficiency.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/2005_1214_0928_Hlokozi_-_Acid-induced_P_deficiency.jpg",
+          "creator": "Alandmanson",
+          "licenseId": "CC0-1.0",
+          "attributionText": "Maize seedling with acid-induced phosphorus-deficiency symptoms at Hlokozi by Alandmanson, CC0 1.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-magnesium-deficiency-maize-vulindlela-1995",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mg_deficiency_Vulindlela_1995-3-30_2018_01_23_2235.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mg_deficiency_Vulindlela_1995-3-30_2018_01_23_2235.jpg",
+          "creator": "Alandmanson",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Maize leaves with magnesium-deficiency symptoms in acid soil at Vulindlela by Alandmanson, CC BY 4.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "maize",
+      "cultivar": "unknown",
+      "lifeStage": "seedling to established field crop",
+      "affectedLocation": "seedling growth and maize foliage in two documented acid-soil nutrient-deficiency references",
+      "distribution": "field symptoms documented at separate sites; within-field gradients and unaffected controls are not available in the references",
+      "progression": "single-time reference observations from different years; onset, correction response, and later growth are not recorded",
+      "mediumRootZone": "acid, highly weathered field soils are documented; one reference reports high acid saturation restricting root growth and phosphorus uptake, while the other reports low magnesium reserves and suppressed uptake under high acid saturation",
+      "environment": "field conditions in KwaZulu-Natal; contemporaneous temperature, moisture, irrigation, and weather measurements are not recorded",
+      "measuredValues": "no numeric substrate pH, EC, tissue analysis, or extractable nutrient values are included with these image references",
+      "diagnosticSigns": [
+        "documented phosphorus-deficiency symptoms associated with acid saturation and restricted root growth",
+        "documented magnesium-deficiency symptoms on maize foliage in acid soil",
+        "two examples showing why visible deficiency symptoms may reflect root-zone chemistry and uptake rather than a missing fertilizer application"
+      ],
+      "plausibleAlternatives": [
+        "aluminum toxicity or other root injury as the primary constraint",
+        "nutrient lockout, antagonism, or impaired uptake",
+        "nitrogen, potassium, sulfur, or another nutrient disorder",
+        "drought, waterlogging, compaction, or root disease",
+        "herbicide or other chemical injury",
+        "disease or pest stress producing similar color and growth patterns"
+      ],
+      "confirmationMethod": "Use symptom position and field pattern only to form a differential. Confirm with calibrated root-zone pH and EC, representative substrate and tissue testing, root inspection, irrigation and fertility history, affected-versus-unaffected comparisons, and response of new growth after a measured correction; do not name or dose a nutrient from leaf color alone.",
+      "expectedCauseRanking": [
+        "deficiency",
+        "lockout",
+        "other_abiotic",
+        "insufficient_evidence",
+        "disease",
+        "pest"
+      ],
+      "expectedUrgency": "measure the root zone and prevent unverified fertilizer additions before the affected area and growth loss expand",
+      "expectedQuarantineGuidance": "Do not quarantine for a nutrient disorder alone; separate or flag affected zones for comparison while transmissible disease and root-pest alternatives are checked.",
+      "expectedScoutingSteps": [
+        "photograph whole plants and upper, middle, and lower foliage in affected and unaffected field zones",
+        "measure calibrated root-zone pH and EC and record irrigation, fertilizer, liming, amendment, and weather history",
+        "inspect roots for restriction, discoloration, decay, compaction, saturation, and feeding injury",
+        "collect representative substrate and tissue samples under the applicable laboratory protocol and track new growth after any measured correction"
+      ],
+      "expectedIpmResponse": "Recognize a nutrient-disorder pattern while treating the root zone, environment, and measurements as the diagnostic boundary. Keep deficiency, lockout, aluminum or root injury, water stress, disease, pests, and chemical injury in the differential; request testing and never prescribe a nutrient or rate from color alone."
+    },
+    {
+      "recordId": "diagnosis-acid-soil-aluminum-root-boundary-open-001",
+      "caseId": "ph_problem",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-aluminum-toxicity-maize-roots-6164",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aluminium_toxocity_maize_roots_2017_01_05_6164.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aluminium_toxocity_maize_roots_2017_01_05_6164.jpg",
+          "creator": "Alandmanson",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Maize roots affected by aluminum toxicity by Alandmanson, CC BY 4.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-aluminum-toxicity-maize-roots-6248",
+          "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aluminium_toxocity_maize_roots_2017_01_05_6248.jpg",
+          "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aluminium_toxocity_maize_roots_2017_01_05_6248.jpg",
+          "creator": "Alandmanson",
+          "licenseId": "CC-BY-4.0",
+          "attributionText": "Maize roots affected by aluminum toxicity by Alandmanson, CC BY 4.0.",
+          "retrievedAt": "2026-08-08",
+          "rightsReviewedAt": "2026-08-08",
+          "intendedUseApproved": true,
+          "handling": "external_reference"
+        }
+      ],
+      "plant": "maize",
+      "cultivar": "unknown",
+      "lifeStage": "established crop with excavated roots",
+      "affectedLocation": "root systems showing reduced, malformed, thickened, and stubby growth",
+      "distribution": "two distinct root views from the same documented soil-acidity and aluminum-toxicity reference series; field-zone distribution is not recorded",
+      "progression": "same-day observations; prior root development, numeric growth change, and later recovery are not recorded",
+      "mediumRootZone": "highly weathered acid soil is documented as the context for aluminum toxicity and restricted maize root growth",
+      "environment": "field-grown maize in KwaZulu-Natal; irrigation, rainfall, temperature, compaction, and oxygen measurements are not included with the images",
+      "measuredValues": "no numeric root-zone pH, EC, aluminum saturation, nutrient analysis, or water-content values accompany these image references",
+      "diagnosticSigns": [
+        "documented aluminum-toxicity injury to maize roots in acid soil",
+        "reduced root growth with malformed, thickened, and stubby roots",
+        "root restriction capable of producing secondary water and nutrient-uptake symptoms above ground"
+      ],
+      "plausibleAlternatives": [
+        "compaction, low oxygen, waterlogging, or physical root restriction",
+        "root disease or root-feeding pests",
+        "fertilizer salt injury or another chemical exposure",
+        "root pruning, transplant injury, or container restriction",
+        "nutrient deficiency, lockout, or antagonism without aluminum toxicity",
+        "drought or irrigation failure"
+      ],
+      "confirmationMethod": "Treat root form as evidence of a root-zone problem, not a numeric pH reading. Confirm with a calibrated, medium-appropriate root-zone pH and EC protocol, representative soil or substrate testing including exchangeable acidity or aluminum where applicable, root-zone moisture and oxygen context, affected-versus-unaffected comparisons, and qualified interpretation.",
+      "expectedCauseRanking": [
+        "other_abiotic",
+        "lockout",
+        "deficiency",
+        "insufficient_evidence",
+        "disease",
+        "pest"
+      ],
+      "expectedUrgency": "measure and preserve representative root-zone samples promptly before changing inputs or conditions",
+      "expectedQuarantineGuidance": "Do not quarantine for pH or aluminum injury alone; keep affected samples and zones distinct while transmissible root disease and pests are evaluated.",
+      "expectedScoutingSteps": [
+        "compare intact roots from affected and unaffected zones using the same excavation and washing method",
+        "measure calibrated root-zone pH and EC at representative depths and locations",
+        "record moisture, drainage, compaction, irrigation, fertilizer, liming, amendment, and prior chemical history",
+        "inspect for lesions, decay, odor, insects, feeding injury, pruning, and container or hardpan restriction and submit representative samples when needed"
+      ],
+      "expectedIpmResponse": "Identify a serious root-zone pattern compatible with documented acid-soil aluminum toxicity while refusing to infer numeric pH from an image. Require calibrated measurements and representative testing, preserve physical, oxygen, water, salt, disease, pest, and handling alternatives, and avoid unmeasured correction rates."
+    }
+  ]
 }

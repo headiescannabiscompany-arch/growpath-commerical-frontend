@@ -122,6 +122,20 @@ that every pixel originated in the video, so the UI must use that narrower wordi
 
 Community and social posts may supply the language people use for questions, candidate QA cases, and poor-photo negative controls only. Facebook content must not be automatically collected without Meta authorization. Private-group access also requires the relevant group access and creator permission before a post or image can be retained. Do not use likes, comments, captions, or group consensus as the expected diagnosis. A strong evaluation case needs image-level rights, de-identification, contextual evidence, a separately confirmed outcome, and Tier A cross-checking. Poor but rights-reviewed cases may test pre-upload rejection and retake guidance. Neither set is model-training data.
 
+The IPM evaluation library may use public-domain USDA ARS or individually rights-verified
+IPM Images assets and individual iNaturalist photos licensed CC0 or CC BY. Collection,
+observation, or dataset membership never substitutes for image-level rights and label
+review. Each admitted case must retain the untouched original; source URL and identifier;
+creator/agency and required attribution; exact license; pest, disease, or healthy-control
+candidate; visible sign such as body, egg, webbing, frass, stippling, silvering, mines,
+chewing, or powdery growth; host and plant region when known; lookalikes; reviewer; and
+review date. A caption or community identification is a candidate label, not automatic
+ground truth. Confirm organism identity and visible damage against Tier A material, and
+keep organism identity separate from the causal claim that it produced the photographed
+plant symptom. Exclude noncommercial, no-derivatives, all-rights-reserved, missing-license,
+ambiguous-provenance, AI-generated, and unverified scraped media. This is an evaluation
+and reference library, not model-training authorization.
+
 `Crime Pays But Botany Doesn't` may be used as Tier C educational and QA context for observation vocabulary, field habit, plant-family pattern recognition, flower and leaf morphology, ecological context, and candidate discriminating questions. Do not copy or retain its video, audio, frames, transcripts, or thumbnails without creator permission, and do not use a host identification as GrowPath ground truth. Cross-check identification rules and candidate taxa against Tier A botanical keys, government plant records, herbarium evidence, or university extension sources. Never use the channel as sole support for diagnosis, IPM treatment, toxicity, edibility, legal status, or a species confirmation.
 
 Every result must provide a discriminating follow-up question. A follow-up must carry the prior draft crop-identity provenance forward: merely supplying a crop name in grow or form context is not an explicit confirmation, and a visual suggestion remains a visual suggestion until the user uses the confirmation action. Saved diagnoses, journal entries, tasks, attached evidence, and user-confirmed outcome feedback remain linked to the selected grow and plant.

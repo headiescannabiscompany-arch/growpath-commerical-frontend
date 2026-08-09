@@ -105,7 +105,15 @@ function main() {
     (rights.blockedCopiedMediaLicenses || []).map(normalizeLicense)
   );
   requireCondition(
-    ["CC0-1.0", "CC-BY-4.0", "OWNER_PERMISSION", "GROWPATH_OWNED"].every((license) =>
+    [
+      "CC0-1.0",
+      "CC-BY-2.0",
+      "CC-BY-4.0",
+      "US-PUBLIC-DOMAIN",
+      "PUBLIC-DOMAIN-DEDICATION",
+      "OWNER_PERMISSION",
+      "GROWPATH_OWNED"
+    ].every((license) =>
       allowedLicenses.has(license)
     ),
     "Allowed diagnosis/IPM media licenses are incomplete.",
@@ -314,7 +322,9 @@ function main() {
       "plantvillage",
       "extension_ipm_media",
       "commissioned_mimic_cases",
-      "facebook_grower_groups"
+      "facebook_grower_groups",
+      "usda_ars_image_gallery",
+      "wikimedia_individual_public_domain"
     ].every((sourceId) => sourceIds.has(sourceId)),
     "Diagnosis/IPM source plan is incomplete.",
     errors

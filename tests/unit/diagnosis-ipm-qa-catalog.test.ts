@@ -126,11 +126,152 @@ describe("diagnosis/IPM QA catalog", () => {
     );
   });
 
-  it("keeps sources and media in planning until explicitly reviewed", () => {
+  it("admits only explicitly reviewed media while the complete catalog remains in planning", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toEqual([]);
+    expect(catalog.mediaRecords).toHaveLength(28);
+    expect(catalog.mediaRecords).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          recordId: "ipm-powdery-mildew-open-001",
+          caseId: "powdery_mildew",
+          imageSet: expect.arrayContaining([
+            expect.objectContaining({
+              sourceId: "usda_ars_image_gallery",
+              licenseId: "US-PUBLIC-DOMAIN",
+              intendedUseApproved: true
+            }),
+            expect.objectContaining({
+              sourceId: "wikimedia_individual_public_domain",
+              licenseId: "PUBLIC-DOMAIN-DEDICATION",
+              intendedUseApproved: true
+            })
+          ])
+        }),
+        expect.objectContaining({
+          recordId: "ipm-thrips-open-001",
+          caseId: "thrips",
+          imageSet: expect.arrayContaining([
+            expect.objectContaining({
+              sourceId: "usda_ars_image_gallery",
+              licenseId: "US-PUBLIC-DOMAIN",
+              intendedUseApproved: true
+            })
+          ])
+        }),
+        expect.objectContaining({
+          recordId: "ipm-two-spotted-spider-mites-open-001",
+          caseId: "two_spotted_spider_mites"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-aphids-beneficial-context-open-001",
+          caseId: "aphids"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-chemical-spray-injury-open-001",
+          caseId: "spray_burn",
+          imageSet: expect.arrayContaining([
+            expect.objectContaining({
+              licenseId: "CC-BY-2.0",
+              intendedUseApproved: true
+            })
+          ])
+        }),
+        expect.objectContaining({
+          recordId: "ipm-normal-senescence-open-001",
+          caseId: "normal_senescence"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-mealybugs-wax-lookalike-open-001",
+          caseId: "mealybugs"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-whiteflies-beneficial-context-open-001",
+          caseId: "whiteflies"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-leafminers-damage-larva-open-001",
+          caseId: "leafminers"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-scale-insects-necrosis-open-001",
+          caseId: "scale_insects"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-botrytis-gray-mold-open-001",
+          caseId: "botrytis_gray_mold_bud_rot"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-pythium-wilt-insufficient-root-evidence-open-001",
+          caseId: "pythium_root_rot"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-mosaic-virus-symptom-class-open-001",
+          caseId: "mosaic_virus_symptoms"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-broad-mite-tarsonemid-lookalike-open-001",
+          caseId: "broad_mites"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-russet-mite-eriophyid-boundary-open-001",
+          caseId: "russet_mites"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-root-aphid-phylloxera-evidence-boundary-open-001",
+          caseId: "root_aphids"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-fungus-gnat-adult-evidence-boundary-open-001",
+          caseId: "fungus_gnats"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-caterpillar-sawfly-chewing-boundary-open-001",
+          caseId: "caterpillars"
+        }),
+        expect.objectContaining({
+          recordId: "ipm-beneficial-harmless-lookalikes-open-001",
+          caseId: "beneficial_and_harmless_lookalikes"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-rust-pustule-host-boundary-open-001",
+          caseId: "rust"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-septoria-leaf-spot-boundary-open-001",
+          caseId: "septoria_and_leaf_spots"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-bacterial-leaf-spot-boundary-open-001",
+          caseId: "bacterial_leaf_spot"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-fusarium-wilt-vascular-boundary-open-001",
+          caseId: "fusarium"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-downy-mildew-surface-boundary-open-001",
+          caseId: "downy_mildew"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-physical-hail-damage-boundary-open-001",
+          caseId: "physical_damage"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-herbicide-injury-pattern-boundary-open-001",
+          caseId: "spray_burn"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-acid-soil-nutrient-deficiency-boundary-open-001",
+          caseId: "nutrient_deficiency"
+        }),
+        expect.objectContaining({
+          recordId: "diagnosis-acid-soil-aluminum-root-boundary-open-001",
+          caseId: "ph_problem"
+        })
+      ])
+    );
     expect(catalog.sourcePlan).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -148,6 +289,14 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           sourceId: "facebook_grower_groups",
           status: "external_lead_only_pending_platform_and_creator_permission"
+        }),
+        expect.objectContaining({
+          sourceId: "usda_ars_image_gallery",
+          status: "approved"
+        }),
+        expect.objectContaining({
+          sourceId: "wikimedia_individual_public_domain",
+          status: "approved"
         })
       ])
     );
