@@ -64,4 +64,21 @@ describe("ForgotPasswordScreen", () => {
     );
     expect(JSON.stringify(mockForgotPassword.mock.calls)).not.toContain("gift-token-1");
   });
+
+  it("preserves one validated purchaser checkout through password reset", async () => {
+    const next = "/account/gift-checkout/success?session_id=cs_test_valid_session";
+    mockParams = { email: "Buyer@Example.com", next };
+    mockForgotPassword.mockResolvedValueOnce({ ok: true, emailSent: true });
+    const screen = render(<ForgotPasswordScreen />);
+
+    fireEvent.press(screen.getByLabelText("Send password reset email"));
+
+    await waitFor(() =>
+      expect(mockForgotPassword).toHaveBeenCalledWith("buyer@example.com", next)
+    );
+    fireEvent.press(screen.getByLabelText("Back to sign in"));
+    expect(mockReplace).toHaveBeenCalledWith(
+      "/login?email=buyer%40example.com&next=%2Faccount%2Fgift-checkout%2Fsuccess%3Fsession_id%3Dcs_test_valid_session"
+    );
+  });
 });

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,7 +11,9 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
+import { ApiError } from "@/api/apiRequest";
 import {
+  getGiftCheckoutRecovery,
   isSafeStripeCheckoutUrl,
   reconcileGiftCheckout,
   type GiftCheckoutReconcileResult,
@@ -21,13 +24,28 @@ import {
   getStoredGiftCheckoutAttempt
 } from "@/features/billing/giftCheckoutAttempt";
 import { formatGiftCheckoutAmount } from "@/features/billing/giftCheckoutReview";
+import { useAuth } from "@/auth/AuthContext";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import {
+  GIFT_CHECKOUT_CANCEL_PATH,
+  GIFT_CHECKOUT_RECOVERY_PATH,
+  GIFT_CHECKOUT_SUCCESS_PATH,
+  isCanonicalLegacyCancelReturn,
+  normalizeGiftCheckoutAttemptId,
+  normalizeGiftCheckoutSessionId,
+  resolveAuthReturnPath
+} from "@/utils/authReturnPath";
 import { openExternalUrl } from "@/utils/openExternalUrl";
 
-type Props = { expectedReturn: "success" | "cancel" };
+type Props = { expectedReturn: "success" | "cancel" | "recovery" };
 
-const SESSION_ID_PATTERN = /^cs_[A-Za-z0-9_]{3,252}$/;
+type ResolvedReturnProps = Props & {
+  validatedReturnPath: string;
+  legacyCancel: boolean;
+  sessionId: string;
+  urlAttemptId: string;
+};
 
 const STATE_COPY: Record<GiftCheckoutReconcileState, { title: string; body: string }> = {
   verifying: {
@@ -54,6 +72,10 @@ const STATE_COPY: Record<GiftCheckoutReconcileState, { title: string; body: stri
     title: "Checkout expired without a verified payment",
     body: "GrowPath verified that the saved checkout expired unpaid. The server allows a new attempt after the local saved attempt is safely cleared."
   },
+  not_created: {
+    title: "Stripe checkout was not created",
+    body: "GrowPath verified that Stripe checkout was not created and no payment was submitted. The server allows a new attempt after the local saved attempt is safely cleared."
+  },
   support: {
     title: "Support review required",
     body: "GrowPath cannot safely classify this checkout as paid, unpaid, or resumable. Do not start another gift checkout unless this screen confirms that a new attempt is allowed."
@@ -63,9 +85,11 @@ const STATE_COPY: Record<GiftCheckoutReconcileState, { title: string; body: stri
 export function normalizeGiftCheckoutSessionParam(
   value: string | string[] | undefined
 ): string | null {
-  if (Array.isArray(value)) return null;
-  const normalized = String(value || "").trim();
-  return SESSION_ID_PATTERN.test(normalized) ? normalized : null;
+  return normalizeGiftCheckoutSessionId(value) || null;
+}
+
+function errorCode(error: unknown): string {
+  return String((error as any)?.code || "");
 }
 
 function errorMessage(error: unknown): string {
@@ -76,11 +100,81 @@ function errorMessage(error: unknown): string {
 }
 
 export default function GiftCheckoutReturn({ expectedReturn }: Props) {
-  const router = useRouter();
-  const params = useLocalSearchParams<{
+  const params = useLocalSearchParams() as {
     session_id?: string | string[];
-  }>();
-  const sessionId = normalizeGiftCheckoutSessionParam(params.session_id);
+    checkout_attempt_id?: string | string[];
+    [key: string]: string | string[] | undefined;
+  };
+  const fragment = String((globalThis as any)?.window?.location?.hash || "");
+  const expectedPath =
+    expectedReturn === "success"
+      ? GIFT_CHECKOUT_SUCCESS_PATH
+      : expectedReturn === "cancel"
+        ? GIFT_CHECKOUT_CANCEL_PATH
+        : GIFT_CHECKOUT_RECOVERY_PATH;
+  const browserLocation = (globalThis as any)?.window?.location;
+  const rawBrowserPath =
+    Platform.OS === "web"
+      ? browserLocation
+        ? `${String(browserLocation.pathname || "")}${String(
+            browserLocation.search || ""
+          )}${String(browserLocation.hash || "")}`
+        : null
+      : undefined;
+  const validatedReturnPath = resolveAuthReturnPath(
+    expectedPath,
+    params,
+    fragment,
+    rawBrowserPath
+  );
+  const paramKeys = Object.entries(params)
+    .filter(([, value]) => value !== undefined)
+    .map(([key]) => key);
+  const legacyCancel =
+    expectedReturn === "cancel" &&
+    paramKeys.length === 0 &&
+    fragment === "" &&
+    isCanonicalLegacyCancelReturn(rawBrowserPath);
+  const sessionId =
+    expectedReturn === "success" && validatedReturnPath
+      ? normalizeGiftCheckoutSessionId(params.session_id)
+      : "";
+  const urlAttemptId =
+    expectedReturn === "cancel" && validatedReturnPath
+      ? normalizeGiftCheckoutAttemptId(params.checkout_attempt_id)
+      : "";
+  const decodedRouteIdentity = JSON.stringify(
+    Object.entries(params)
+      .filter(([, value]) => value !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right))
+  );
+  const returnIdentity = `${expectedReturn}:${
+    rawBrowserPath === undefined
+      ? `native:${decodedRouteIdentity}:${fragment}`
+      : `web:${String(rawBrowserPath)}`
+  }`;
+
+  return (
+    <GiftCheckoutReturnForIdentity
+      key={returnIdentity}
+      expectedReturn={expectedReturn}
+      validatedReturnPath={validatedReturnPath}
+      legacyCancel={legacyCancel}
+      sessionId={sessionId}
+      urlAttemptId={urlAttemptId}
+    />
+  );
+}
+
+function GiftCheckoutReturnForIdentity({
+  expectedReturn,
+  validatedReturnPath,
+  legacyCancel,
+  sessionId,
+  urlAttemptId
+}: ResolvedReturnProps) {
+  const router = useRouter();
+  const auth = useAuth();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGiftCheckoutReturnStyles(palette), [palette]);
   const { width } = useWindowDimensions();
@@ -88,44 +182,94 @@ export default function GiftCheckoutReturn({ expectedReturn }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [cleanupWarning, setCleanupWarning] = useState("");
+  const [supportRequired, setSupportRequired] = useState(false);
+  const [wrongAccountRecovery, setWrongAccountRecovery] = useState(false);
+  const [switchingAccount, setSwitchingAccount] = useState(false);
+  const activeRef = useRef(true);
   const checkingRef = useRef(false);
   const resumeRef = useRef(false);
 
+  useEffect(() => {
+    activeRef.current = true;
+    return () => {
+      activeRef.current = false;
+    };
+  }, []);
+
   const checkStatus = useCallback(async () => {
-    if (checkingRef.current) return;
+    if (!activeRef.current || checkingRef.current) return;
     checkingRef.current = true;
     setLoading(true);
     setError("");
     setCleanupWarning("");
+    setSupportRequired(false);
+    setWrongAccountRecovery(false);
     try {
-      if (expectedReturn === "success" && !sessionId) {
+      let recoveryAttemptId = "";
+      if (expectedReturn === "success" && !validatedReturnPath) {
         throw new Error(
           "This success return is missing a valid Stripe Checkout session. GrowPath will not infer payment from this address. Open Gifts you sent for authoritative history."
         );
       }
-      const attempt =
-        expectedReturn === "cancel" ? await getStoredGiftCheckoutAttempt() : null;
-      if (expectedReturn === "cancel" && !attempt?.checkoutAttemptId) {
+      if (expectedReturn === "cancel" && !validatedReturnPath && !legacyCancel) {
         throw new Error(
-          "No valid Stripe session or saved gift attempt is available to verify. Open Gifts you sent for authoritative history."
+          "This cancel return has invalid or extra checkout information. GrowPath will not use browser storage as a substitute."
+        );
+      }
+      if (expectedReturn === "recovery") {
+        if (!validatedReturnPath) {
+          throw new Error("This account recovery address is invalid.");
+        }
+        const recovery = await getGiftCheckoutRecovery();
+        if (!activeRef.current) return;
+        if (recovery.state === "support") {
+          setResult(null);
+          setSupportRequired(true);
+          return;
+        }
+        if (recovery.state === "none") {
+          throw new ApiError("GIFT_RECONCILIATION_NOT_FOUND", 404, {
+            message: "Gift checkout was not found."
+          });
+        }
+        recoveryAttemptId = recovery.attempt.checkoutAttemptId;
+      }
+
+      const localAttempt = legacyCancel ? await getStoredGiftCheckoutAttempt() : null;
+      if (!activeRef.current) return;
+      const legacyAttemptId =
+        localAttempt?.phase === "checkout_requested"
+          ? localAttempt.checkoutAttemptId
+          : "";
+      const reconciledAttemptId = recoveryAttemptId || urlAttemptId || legacyAttemptId;
+      if (expectedReturn === "cancel" && !reconciledAttemptId) {
+        throw new Error(
+          "No valid saved gift attempt is available to verify. Open Gifts you sent for authoritative history."
         );
       }
       const verified = await reconcileGiftCheckout(
         expectedReturn === "success"
-          ? { sessionId: sessionId! }
-          : { checkoutAttemptId: attempt!.checkoutAttemptId }
+          ? { sessionId }
+          : { checkoutAttemptId: reconciledAttemptId }
       );
+      if (!activeRef.current) return;
       setResult(verified);
-      if (verified.canStartNewAttempt && expectedReturn === "cancel") {
+      if (verified.canStartNewAttempt) {
         try {
           const currentAttempt = await getStoredGiftCheckoutAttempt();
-          if (
-            !attempt?.checkoutAttemptId ||
-            currentAttempt?.checkoutAttemptId !== attempt.checkoutAttemptId
-          ) {
-            throw new Error("The saved checkout changed during verification.");
+          if (!activeRef.current) return;
+          if (!currentAttempt) return;
+          if (currentAttempt.checkoutAttemptId !== verified.checkoutAttemptId) {
+            setCleanupWarning(
+              "The server finished checking the authenticated attempt, but this browser saved a different attempt. The browser record was not cleared."
+            );
+            return;
           }
-          const cleared = await clearGiftCheckoutAttemptWhenAllowed(true);
+          const cleared = await clearGiftCheckoutAttemptWhenAllowed(
+            true,
+            verified.checkoutAttemptId
+          );
+          if (!activeRef.current) return;
           if (!cleared) {
             throw new Error("Saved checkout cleanup was not verified.");
           }
@@ -136,13 +280,24 @@ export default function GiftCheckoutReturn({ expectedReturn }: Props) {
         }
       }
     } catch (nextError) {
+      if (!activeRef.current) return;
       setResult(null);
-      setError(errorMessage(nextError));
+      const code = errorCode(nextError);
+      if (code === "GIFT_RECONCILIATION_NOT_FOUND") {
+        setWrongAccountRecovery(true);
+        setError(
+          "GrowPath did not find this gift checkout for this signed-in account. No gift or recipient details were exposed."
+        );
+      } else if (code === "GIFT_RECONCILIATION_SUPPORT_REQUIRED") {
+        setSupportRequired(true);
+      } else {
+        setError(errorMessage(nextError));
+      }
     } finally {
       checkingRef.current = false;
-      setLoading(false);
+      if (activeRef.current) setLoading(false);
     }
-  }, [expectedReturn, sessionId]);
+  }, [expectedReturn, legacyCancel, sessionId, urlAttemptId, validatedReturnPath]);
 
   useEffect(() => {
     void checkStatus();
@@ -167,6 +322,20 @@ export default function GiftCheckoutReturn({ expectedReturn }: Props) {
     }
   }, [result]);
 
+  const switchToPurchasingAccount = useCallback(async () => {
+    if (switchingAccount) return;
+    setSwitchingAccount(true);
+    setError("");
+    const next = validatedReturnPath || GIFT_CHECKOUT_RECOVERY_PATH;
+    try {
+      await auth.logout();
+      router.replace({ pathname: "/login", params: { next } } as any);
+    } catch (nextError) {
+      setError(errorMessage(nextError));
+      setSwitchingAccount(false);
+    }
+  }, [auth, router, switchingAccount, validatedReturnPath]);
+
   const stateCopy = result ? STATE_COPY[result.state] : null;
   const amount =
     result?.amountCents && result.currency
@@ -184,7 +353,9 @@ export default function GiftCheckoutReturn({ expectedReturn }: Props) {
         <Text style={styles.intro}>
           {expectedReturn === "success"
             ? "Stripe returned to GrowPath after checkout. This address alone does not prove that a payment succeeded."
-            : "GrowPath is checking the exact saved gift attempt. A cancel return or recovery link alone does not prove whether a payment was submitted."}
+            : expectedReturn === "cancel"
+              ? "GrowPath is checking the exact returned or legacy-saved gift attempt. A cancel address alone does not prove whether a payment was submitted."
+              : "GrowPath may finish or resume the same saved checkout operation for this purchasing account. It will not start a different attempt, and this page does not submit payment."}
         </Text>
 
         {loading ? (
@@ -235,6 +406,19 @@ export default function GiftCheckoutReturn({ expectedReturn }: Props) {
           </View>
         ) : null}
 
+        {!loading && supportRequired ? (
+          <View
+            style={styles.warningCard}
+            accessibilityLabel="Gift checkout support review"
+          >
+            <Text style={styles.statusTitle}>Checkout support review is required</Text>
+            <Text style={styles.statusBody}>
+              GrowPath found account checkout state that cannot be safely resumed or
+              classified here. No new payment should be started until support reviews it.
+            </Text>
+          </View>
+        ) : null}
+
         {error ? (
           <View accessibilityRole="alert" style={styles.errorCard}>
             <Text style={styles.errorText}>{error}</Text>
@@ -244,6 +428,20 @@ export default function GiftCheckoutReturn({ expectedReturn }: Props) {
           <View accessibilityRole="alert" style={styles.warningCard}>
             <Text style={styles.warningText}>{cleanupWarning}</Text>
           </View>
+        ) : null}
+        {wrongAccountRecovery ? (
+          <Pressable
+            accessibilityLabel="Use the purchasing account"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: switchingAccount }}
+            disabled={switchingAccount}
+            onPress={() => void switchToPurchasingAccount()}
+            style={[styles.primaryButton, switchingAccount && styles.buttonDisabled]}
+          >
+            <Text style={styles.primaryButtonText}>
+              {switchingAccount ? "Switching account..." : "Use the purchasing account"}
+            </Text>
+          </Pressable>
         ) : null}
 
         <View style={styles.actions}>

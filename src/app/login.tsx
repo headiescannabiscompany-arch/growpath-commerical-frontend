@@ -19,6 +19,7 @@ import LegalLinks from "@/components/LegalLinks";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { parseSafeLoginReturnPath } from "@/utils/authReturnPath";
 import { parseClaimReturnPath } from "@/utils/claimReturnPath";
 
 export default function LoginScreen() {
@@ -32,6 +33,7 @@ export default function LoginScreen() {
   const { palette } = useAppTheme();
   const styles = createLoginStyles(palette);
   const claimNext = parseClaimReturnPath(params.next);
+  const safeNext = parseSafeLoginReturnPath(params.next);
   const initialEmail = String(
     Array.isArray(params.email) ? params.email[0] || "" : params.email || ""
   );
@@ -57,7 +59,7 @@ export default function LoginScreen() {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       await auth.login(normalizedEmail, password);
-      router.replace((claimNext || "/account/workspace") as any);
+      router.replace((safeNext || "/account/workspace") as any);
     } catch (e: any) {
       if (e instanceof ApiError) {
         setErrMsg(loginErrorMessage(e));
@@ -228,7 +230,7 @@ export default function LoginScreen() {
                 pathname: "/forgot-password",
                 params: {
                   ...(email.trim() ? { email: email.trim().toLowerCase() } : {}),
-                  ...(claimNext ? { next: claimNext } : {})
+                  ...(safeNext ? { next: safeNext } : {})
                 }
               } as any)
             }

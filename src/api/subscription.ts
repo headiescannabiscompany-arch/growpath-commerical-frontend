@@ -309,10 +309,12 @@ export type GiftCheckoutReconcileState =
   | "payment_processing"
   | "settled"
   | "expired"
+  | "not_created"
   | "support";
 
 export type GiftCheckoutReconcileResult = {
   state: GiftCheckoutReconcileState;
+  checkoutAttemptId: string;
   paymentConfirmed: boolean;
   canResume: boolean;
   canStartNewAttempt: boolean;
@@ -327,6 +329,94 @@ export type GiftCheckoutReconcileRequest = {
   sessionId?: string;
   checkoutAttemptId?: string;
 };
+
+export type GiftCheckoutRecoveryAttempt = {
+  checkoutAttemptId: string;
+  checkoutState: "reserved" | "creating" | "creation_unknown" | "open";
+  plan: "pro";
+  interval: GiftCheckoutInterval;
+  amountCents: number;
+  currency: string;
+  expiresAt: string;
+  canReconcile: true;
+};
+
+export type GiftCheckoutRecoveryStatus =
+  | { state: "none"; attempt: null }
+  | { state: "support"; attempt: null }
+  | { state: "recoverable"; attempt: GiftCheckoutRecoveryAttempt };
+
+const GIFT_CHECKOUT_SESSION_ID_PATTERN = /^cs_[A-Za-z0-9_]{3,252}$/;
+const GIFT_CHECKOUT_ATTEMPT_ID_PATTERN = /^[A-Za-z0-9_-]{20,128}$/;
+
+function hasExactKeys(value: Record<string, unknown>, expected: string[]): boolean {
+  const actual = Object.keys(value);
+  return (
+    actual.length === expected.length && actual.every((key) => expected.includes(key))
+  );
+}
+
+function isGiftCheckoutRecoveryStatus(
+  value: unknown
+): value is GiftCheckoutRecoveryStatus {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const status = value as Record<string, any>;
+  if (!hasExactKeys(status, ["state", "attempt"]) || typeof status.state !== "string") {
+    return false;
+  }
+  if (status.state === "none" || status.state === "support") {
+    return status.attempt === null;
+  }
+  const attempt = status.attempt;
+  return Boolean(
+    status.state === "recoverable" &&
+    attempt &&
+    typeof attempt === "object" &&
+    !Array.isArray(attempt) &&
+    hasExactKeys(attempt, [
+      "checkoutAttemptId",
+      "checkoutState",
+      "plan",
+      "interval",
+      "amountCents",
+      "currency",
+      "expiresAt",
+      "canReconcile"
+    ]) &&
+    typeof attempt.checkoutAttemptId === "string" &&
+    GIFT_CHECKOUT_ATTEMPT_ID_PATTERN.test(attempt.checkoutAttemptId) &&
+    typeof attempt.checkoutState === "string" &&
+    ["reserved", "creating", "creation_unknown", "open"].includes(
+      attempt.checkoutState
+    ) &&
+    typeof attempt.plan === "string" &&
+    attempt.plan === "pro" &&
+    typeof attempt.interval === "string" &&
+    ["monthly", "yearly"].includes(attempt.interval) &&
+    Number.isSafeInteger(attempt.amountCents) &&
+    attempt.amountCents > 0 &&
+    typeof attempt.currency === "string" &&
+    /^[a-z]{3}$/.test(attempt.currency) &&
+    isIsoDate(attempt.expiresAt) &&
+    attempt.canReconcile === true
+  );
+}
+
+function invalidGiftCheckoutRecoveryStatus(): never {
+  throw new Error("The gift checkout recovery response was invalid.");
+}
+
+export async function getGiftCheckoutRecovery(): Promise<GiftCheckoutRecoveryStatus> {
+  const res = await apiRequest("/api/subscription/gifts/checkout/recovery", {
+    method: "GET",
+    auth: true,
+    cache: "no-store"
+  });
+  const status = res?.data ?? res;
+  return isGiftCheckoutRecoveryStatus(status)
+    ? status
+    : invalidGiftCheckoutRecoveryStatus();
+}
 
 export function isSafeStripeCheckoutUrl(value: unknown): value is string {
   if (typeof value !== "string" || !value) return false;
@@ -348,13 +438,30 @@ export function isSafeStripeCheckoutUrl(value: unknown): value is string {
 function isGiftCheckoutReconcileResult(
   value: unknown
 ): value is GiftCheckoutReconcileResult {
-  if (!value || typeof value !== "object") return false;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const result = value as Record<string, any>;
+  if (
+    !hasExactKeys(result, [
+      "state",
+      "checkoutAttemptId",
+      "paymentConfirmed",
+      "canResume",
+      "canStartNewAttempt",
+      "checkoutUrl",
+      "amountCents",
+      "currency",
+      "expiresAt",
+      "gift"
+    ])
+  ) {
+    return false;
+  }
   const amountValid =
     result.amountCents === null ||
     (Number.isSafeInteger(result.amountCents) && result.amountCents > 0);
   const currencyValid =
-    result.currency === null || /^[a-z]{3}$/.test(String(result.currency || ""));
+    result.currency === null ||
+    (typeof result.currency === "string" && /^[a-z]{3}$/.test(result.currency));
   const expiryValid = result.expiresAt === null || isIsoDate(result.expiresAt);
   const giftValid = isSentGift(result.gift);
   const giftContractValid =
@@ -370,9 +477,11 @@ function isGiftCheckoutReconcileResult(
     "payment_processing",
     "settled",
     "expired",
+    "not_created",
     "support"
   ];
-  const stateValid = states.includes(result.state);
+  const stateValid =
+    typeof result.state === "string" && states.includes(result.state as any);
   const paymentValid =
     result.state === "settled"
       ? result.paymentConfirmed === true &&
@@ -395,19 +504,22 @@ function isGiftCheckoutReconcileResult(
       typeof result.expiresAt === "string" &&
       isIsoDate(result.expiresAt) &&
       Date.parse(result.expiresAt) > Date.now());
-  const mayStartFromSupport =
-    result.state === "support" &&
-    result.gift?.state === "canceled" &&
-    result.gift?.paidAt === null;
-  const startValid = result.canStartNewAttempt
-    ? result.state === "expired" || mayStartFromSupport
-    : result.state !== "expired";
+  const notCreatedValid =
+    result.state !== "not_created" ||
+    (result.gift?.state === "canceled" && result.gift?.paidAt === null);
+  const shouldAllowNewAttempt =
+    result.state === "settled" ||
+    result.state === "expired" ||
+    result.state === "not_created";
+  const startValid = result.canStartNewAttempt === shouldAllowNewAttempt;
   const expiredValid =
     result.state !== "expired" ||
     (result.gift?.state === "canceled" && result.gift?.paidAt === null);
 
   return Boolean(
     stateValid &&
+    typeof result.checkoutAttemptId === "string" &&
+    GIFT_CHECKOUT_ATTEMPT_ID_PATTERN.test(result.checkoutAttemptId) &&
     typeof result.paymentConfirmed === "boolean" &&
     typeof result.canResume === "boolean" &&
     typeof result.canStartNewAttempt === "boolean" &&
@@ -420,7 +532,8 @@ function isGiftCheckoutReconcileResult(
     currencyValid &&
     expiryValid &&
     giftContractValid &&
-    expiredValid
+    expiredValid &&
+    notCreatedValid
   );
 }
 
@@ -431,10 +544,18 @@ function invalidGiftCheckoutReconcileResult(): never {
 export async function reconcileGiftCheckout(
   request: GiftCheckoutReconcileRequest
 ): Promise<GiftCheckoutReconcileResult> {
+  const selectorKeys = Object.keys(request);
   const sessionId = request.sessionId?.trim() || "";
   const checkoutAttemptId = request.checkoutAttemptId?.trim() || "";
-  if (!sessionId && !checkoutAttemptId) {
-    throw new Error("A checkout session or saved attempt is required to check status.");
+  const selectorCount = Number(Boolean(sessionId)) + Number(Boolean(checkoutAttemptId));
+  if (
+    selectorKeys.length !== 1 ||
+    !selectorKeys.every((key) => key === "sessionId" || key === "checkoutAttemptId") ||
+    selectorCount !== 1 ||
+    (sessionId && !GIFT_CHECKOUT_SESSION_ID_PATTERN.test(sessionId)) ||
+    (checkoutAttemptId && !GIFT_CHECKOUT_ATTEMPT_ID_PATTERN.test(checkoutAttemptId))
+  ) {
+    throw new Error("Exactly one valid gift checkout identity is required.");
   }
 
   const res = await apiRequest("/api/subscription/gifts/checkout/reconcile", {
@@ -448,9 +569,13 @@ export async function reconcileGiftCheckout(
   });
   const payload = res?.data ?? res;
   const result = payload?.result ?? payload?.reconciliation ?? payload;
-  return isGiftCheckoutReconcileResult(result)
-    ? result
-    : invalidGiftCheckoutReconcileResult();
+  if (
+    !isGiftCheckoutReconcileResult(result) ||
+    (checkoutAttemptId && result.checkoutAttemptId !== checkoutAttemptId)
+  ) {
+    return invalidGiftCheckoutReconcileResult();
+  }
+  return result;
 }
 
 function currentOrigin() {

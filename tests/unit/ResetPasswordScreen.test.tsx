@@ -147,6 +147,34 @@ describe("ResetPasswordScreen", () => {
     expect(JSON.stringify(mockReplace.mock.calls)).not.toContain("private-gift-token");
   });
 
+  it("preserves a validated purchaser checkout after password reset", () => {
+    mockParams = {
+      token: "reset-token",
+      next: "/account/gift-checkout/cancel?checkout_attempt_id=123e4567-e89b-42d3-a456-426614174000"
+    };
+    const screen = render(<ResetPasswordScreen />);
+
+    fireEvent.press(screen.getByLabelText("Go to sign in"));
+
+    expect(mockReplace).toHaveBeenCalledWith(
+      "/login?next=%2Faccount%2Fgift-checkout%2Fcancel%3Fcheckout_attempt_id%3D123e4567-e89b-42d3-a456-426614174000&reset=success"
+    );
+  });
+
+  it("preserves only the exact gift offers continuation after password reset", () => {
+    mockParams = {
+      token: "reset-token",
+      next: "/offers?gift=1"
+    };
+    const screen = render(<ResetPasswordScreen />);
+
+    fireEvent.press(screen.getByLabelText("Go to sign in"));
+
+    expect(mockReplace).toHaveBeenCalledWith(
+      "/login?next=%2Foffers%3Fgift%3D1&reset=success"
+    );
+  });
+
   it("prefills the account email when continuing after a successful reset", async () => {
     mockResetPassword.mockResolvedValueOnce({
       ok: true,

@@ -15,7 +15,7 @@ import BackButton from "@/components/nav/BackButton";
 import { SUPPORT_CONTACTS } from "@/config/supportContacts";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { claimLoginPath, parseClaimReturnPath } from "@/utils/claimReturnPath";
+import { parseSafeLoginReturnPath, safeLoginPath } from "@/utils/authReturnPath";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function ForgotPasswordScreen() {
   }>();
   const { palette } = useAppTheme();
   const styles = createForgotPasswordStyles(palette);
-  const claimNext = parseClaimReturnPath(params.next);
+  const safeNext = parseSafeLoginReturnPath(params.next);
   const initialEmail = String(
     Array.isArray(params.email) ? params.email[0] || "" : params.email || ""
   );
@@ -46,8 +46,8 @@ export default function ForgotPasswordScreen() {
     setError(null);
     setSubmitting(true);
     try {
-      const response = claimNext
-        ? await forgotPassword(normalizedEmail, claimNext)
+      const response = safeNext
+        ? await forgotPassword(normalizedEmail, safeNext)
         : await forgotPassword(normalizedEmail);
       if (response.emailSent === false) {
         setError(
@@ -74,7 +74,7 @@ export default function ForgotPasswordScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.panel}>
-        <BackButton fallbackHref={claimLoginPath(email, claimNext)} />
+        <BackButton fallbackHref={safeLoginPath(email, safeNext)} />
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>
           Reset password
         </Text>
@@ -117,7 +117,7 @@ export default function ForgotPasswordScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Back to sign in"
-          onPress={() => router.replace(claimLoginPath(email, claimNext) as any)}
+          onPress={() => router.replace(safeLoginPath(email, safeNext) as any)}
           style={styles.linkButton}
         >
           <Text style={styles.linkText}>Back to sign in</Text>

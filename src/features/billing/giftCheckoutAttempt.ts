@@ -36,6 +36,16 @@ type MemoryGiftCheckoutAttempt = StoredGiftCheckoutAttempt & {
 };
 
 let memoryAttempt: MemoryGiftCheckoutAttempt | null = null;
+let attemptOperationTail: Promise<void> = Promise.resolve();
+
+function withAttemptOperationLock<T>(operation: () => Promise<T> | T): Promise<T> {
+  const result = attemptOperationTail.then(operation, operation);
+  attemptOperationTail = result.then(
+    () => undefined,
+    () => undefined
+  );
+  return result;
+}
 
 function browserSessionStorage(): Storage | null {
   if (typeof window === "undefined") return null;
@@ -175,6 +185,19 @@ function parseStoredAttempt(value: string | null): StoredGiftCheckoutAttempt | n
   }
 }
 
+function requireValidStoredAttempt(
+  value: string | null
+): StoredGiftCheckoutAttempt | null {
+  const parsed = parseStoredAttempt(value);
+  if (value && !parsed) {
+    throw checkoutAttemptStorageError(
+      "Secure checkout retry storage is invalid. Review Sent Gifts before trying again.",
+      "GIFT_CHECKOUT_ATTEMPT_STORAGE_INVALID"
+    );
+  }
+  return parsed;
+}
+
 function checkoutAttemptStorageError(
   message: string,
   code = "GIFT_CHECKOUT_ATTEMPT_STORAGE_UNAVAILABLE"
@@ -212,14 +235,7 @@ async function readStoredAttempt(): Promise<StoredGiftCheckoutAttempt | null> {
     );
   }
 
-  const parsed = parseStoredAttempt(value);
-  if (value && !parsed) {
-    throw checkoutAttemptStorageError(
-      "Secure checkout retry storage is invalid. Review Sent Gifts before trying again.",
-      "GIFT_CHECKOUT_ATTEMPT_STORAGE_INVALID"
-    );
-  }
-  return parsed;
+  return requireValidStoredAttempt(value);
 }
 
 async function writeStoredAttempt(attempt: StoredGiftCheckoutAttemptV2): Promise<void> {
@@ -272,7 +288,7 @@ function memoryValue(
   return { ...attempt, canonicalFingerprint };
 }
 
-export async function prepareGiftCheckoutQuoteAttempt(
+async function prepareGiftCheckoutQuoteAttemptUnlocked(
   input: GiftCheckoutFingerprintInput
 ): Promise<GiftCheckoutAttemptSummary> {
   const canonicalFingerprint = canonicalizeGiftCheckoutFingerprint(input);
@@ -316,7 +332,7 @@ export async function prepareGiftCheckoutQuoteAttempt(
   return { checkoutAttemptId, phase: "quote_only", legacyVersion: false };
 }
 
-export async function markGiftCheckoutRequested(
+async function markGiftCheckoutRequestedUnlocked(
   input: GiftCheckoutFingerprintInput,
   checkoutAttemptId: string
 ): Promise<GiftCheckoutAttemptSummary> {
@@ -348,7 +364,7 @@ export async function markGiftCheckoutRequested(
   };
 }
 
-export async function downgradeGiftCheckoutToQuoteOnly(
+async function downgradeGiftCheckoutToQuoteOnlyUnlocked(
   input: GiftCheckoutFingerprintInput,
   checkoutAttemptId: string
 ): Promise<GiftCheckoutAttemptSummary> {
@@ -379,7 +395,7 @@ export async function downgradeGiftCheckoutToQuoteOnly(
   };
 }
 
-export async function getStoredGiftCheckoutAttempt(): Promise<GiftCheckoutAttemptSummary | null> {
+async function getStoredGiftCheckoutAttemptUnlocked(): Promise<GiftCheckoutAttemptSummary | null> {
   const stored = await readStoredAttempt();
   if (!stored) return null;
   memoryAttempt = memoryValue(stored, null);
@@ -390,8 +406,9 @@ export async function getStoredGiftCheckoutAttempt(): Promise<GiftCheckoutAttemp
   };
 }
 
-export async function clearGiftCheckoutAttemptWhenAllowed(
-  canStartNewAttempt: boolean
+async function clearGiftCheckoutAttemptWhenAllowedUnlocked(
+  canStartNewAttempt: boolean,
+  expectedCheckoutAttemptId?: string
 ): Promise<boolean> {
   if (canStartNewAttempt !== true) return false;
   try {
@@ -402,6 +419,12 @@ export async function clearGiftCheckoutAttemptWhenAllowed(
           "Secure checkout retry storage is unavailable. The verified attempt was not cleared."
         );
       }
+      if (expectedCheckoutAttemptId) {
+        const stored = requireValidStoredAttempt(
+          sessionStorage.getItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY)
+        );
+        if (stored?.checkoutAttemptId !== expectedCheckoutAttemptId) return false;
+      }
       sessionStorage.removeItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY);
       if (sessionStorage.getItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY) !== null) {
         throw checkoutAttemptStorageError(
@@ -409,6 +432,10 @@ export async function clearGiftCheckoutAttemptWhenAllowed(
         );
       }
     } else {
+      if (expectedCheckoutAttemptId) {
+        const stored = await readStoredAttempt();
+        if (stored?.checkoutAttemptId !== expectedCheckoutAttemptId) return false;
+      }
       await AsyncStorage.removeItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY);
       if ((await AsyncStorage.getItem(GIFT_CHECKOUT_ATTEMPT_STORAGE_KEY)) !== null) {
         throw checkoutAttemptStorageError(
@@ -426,4 +453,45 @@ export async function clearGiftCheckoutAttemptWhenAllowed(
   }
   memoryAttempt = null;
   return true;
+}
+
+export function prepareGiftCheckoutQuoteAttempt(
+  input: GiftCheckoutFingerprintInput
+): Promise<GiftCheckoutAttemptSummary> {
+  return withAttemptOperationLock(() => prepareGiftCheckoutQuoteAttemptUnlocked(input));
+}
+
+export function markGiftCheckoutRequested(
+  input: GiftCheckoutFingerprintInput,
+  checkoutAttemptId: string
+): Promise<GiftCheckoutAttemptSummary> {
+  return withAttemptOperationLock(() =>
+    markGiftCheckoutRequestedUnlocked(input, checkoutAttemptId)
+  );
+}
+
+export function downgradeGiftCheckoutToQuoteOnly(
+  input: GiftCheckoutFingerprintInput,
+  checkoutAttemptId: string
+): Promise<GiftCheckoutAttemptSummary> {
+  return withAttemptOperationLock(() =>
+    downgradeGiftCheckoutToQuoteOnlyUnlocked(input, checkoutAttemptId)
+  );
+}
+
+export function getStoredGiftCheckoutAttempt(): Promise<GiftCheckoutAttemptSummary | null> {
+  return withAttemptOperationLock(getStoredGiftCheckoutAttemptUnlocked);
+}
+
+export function clearGiftCheckoutAttemptWhenAllowed(
+  canStartNewAttempt: boolean,
+  expectedCheckoutAttemptId?: string
+): Promise<boolean> {
+  if (canStartNewAttempt !== true) return Promise.resolve(false);
+  return withAttemptOperationLock(() =>
+    clearGiftCheckoutAttemptWhenAllowedUnlocked(
+      canStartNewAttempt,
+      expectedCheckoutAttemptId
+    )
+  );
 }

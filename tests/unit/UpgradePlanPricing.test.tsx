@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import {
   createCheckoutSession,
   createGiftCheckoutQuote,
+  getGiftCheckoutRecovery,
   getSubscriptionSetupStatus
 } from "../../src/api/subscription";
 import {
@@ -61,9 +62,18 @@ jest.mock("expo-router", () => ({
 jest.mock("../../src/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
   createGiftCheckoutQuote: jest.fn(),
+  getGiftCheckoutRecovery: jest.fn(),
   getSubscriptionSetupStatus: jest.fn(),
   isSafeStripeCheckoutUrl: (value: unknown) =>
     typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
+}));
+
+jest.mock("../../src/auth/AuthContext", () => ({
+  useAuth: () => ({
+    token: "buyer-token",
+    user: { id: "buyer" },
+    isHydrating: false
+  })
 }));
 
 jest.mock("../../src/utils/openExternalUrl", () => ({
@@ -91,6 +101,10 @@ describe("UpgradePlan pricing", () => {
         : { url: "https://checkout.stripe.com/c/pay/cs_test_session" }
     );
     (createGiftCheckoutQuote as jest.Mock).mockResolvedValue(quote());
+    (getGiftCheckoutRecovery as jest.Mock).mockResolvedValue({
+      state: "none",
+      attempt: null
+    });
     (getSubscriptionSetupStatus as jest.Mock).mockResolvedValue({
       mode: "test",
       giftCheckoutConfigured: false
@@ -166,7 +180,11 @@ describe("UpgradePlan pricing", () => {
     expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
     expect(createCheckoutSession).not.toHaveBeenCalled();
     fireEvent.press(screen.getByLabelText("Check saved checkout from this browser"));
-    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/cancel");
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^\/account\/gift-checkout\/cancel\?checkout_attempt_id=[0-9a-f-]{36}$/i
+      )
+    );
   });
 
   it("uses the same server-authoritative review and explicit confirmation flow", async () => {
@@ -242,6 +260,6 @@ describe("UpgradePlan pricing", () => {
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
     fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
-    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/cancel");
+    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover");
   });
 });

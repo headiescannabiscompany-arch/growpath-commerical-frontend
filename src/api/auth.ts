@@ -1,7 +1,7 @@
 // src/api/auth.ts
 // Contract-locked: every function returns canonical response type or throws ApiError with code/status.
 import { apiRequest } from "./apiRequest";
-import { parseClaimReturnPath } from "../utils/claimReturnPath";
+import { parseSafeLoginReturnPath } from "../utils/authReturnPath";
 // import type { ApiError } from "./errors"; // Removed as unused
 
 export type NotificationPreferences = {
@@ -187,11 +187,9 @@ export async function forgotPassword(
   next?: unknown
 ): Promise<ForgotPasswordResponse> {
   const origin = currentOrigin();
-  const claimNext = parseClaimReturnPath(next);
+  const safeNext = parseSafeLoginReturnPath(next);
   const resetUrl = origin
-    ? `${origin}/reset-password${
-        claimNext ? `?next=${encodeURIComponent(claimNext)}` : ""
-      }`
+    ? `${origin}/reset-password${safeNext ? `?next=${encodeURIComponent(safeNext)}` : ""}`
     : "";
   return apiRequest("/api/auth/forgot-password", {
     method: "POST",

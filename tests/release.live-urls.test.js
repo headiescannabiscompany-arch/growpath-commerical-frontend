@@ -204,6 +204,7 @@ describe("live URL verifier", () => {
     expect(fallbackBlock).toContain('"account/sent-gifts"');
     expect(fallbackBlock).toContain('"account/gift-checkout/success"');
     expect(fallbackBlock).toContain('"account/gift-checkout/cancel"');
+    expect(fallbackBlock).toContain('"account/gift-checkout/recover"');
     expect(exportScript).toContain('"Disallow: /account/gift-checkout/"');
   });
 
