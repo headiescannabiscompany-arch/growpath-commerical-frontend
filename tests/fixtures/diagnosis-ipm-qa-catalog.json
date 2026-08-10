@@ -6400,6 +6400,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for presumed physical damage; separate or sanitize affected material only when wound contamination, pests or transmissible disease evidence warrants it.",
       "expectedScoutingSteps": ["map damage direction, canopy height, rows, edges, contact points and protected or unaffected controls", "record storm, wind, handling, equipment, animal, pruning and transport events with timestamps", "photograph wound faces, margins, stems and roots with scale and inspect for organisms, decay and anchorage failure", "track new damage and regrowth while distinguishing pest, disease, environmental and root causes"],
       "expectedIpmResponse": "Do not diagnose physical damage from a tear, spot, broken stem or hazard image alone. Require a time-linked mechanism, matching geometry, mapped distribution, fresh wound inspection, controls and progression; preserve pest, disease, environmental and root alternatives and avoid unsupported treatment advice."
+    },
+    {
+      "recordId": "diagnosis-organic-release-timing-process-measurement-boundary-open-003",
+      "caseId": "organic_release_timing",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby2-compost-temperature-oxygen-measurement", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Showing_us_the_compost_and_measuring_temperature_and_oxygen._(6879870707).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Showing_us_the_compost_and_measuring_temperature_and_oxygen._(6879870707).jpg",
+          "creator": "SuSanA Secretariat", "licenseId": "CC-BY-2.0", "attributionText": "Compost temperature and oxygen measurement photographed by SuSanA Secretariat; CC BY 2.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ccby4-yard-waste-compost-pile", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Compost_pile_of_yard_waste.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Compost_pile_of_yard_waste.jpg",
+          "creator": "Joe Hoover", "licenseId": "CC-BY-4.0", "attributionText": "Rotating yard-waste compost pile photographed by Joe Hoover; CC BY 4.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "measured composting process and a separate rotating yard-waste compost pile without a crop response case",
+      "cultivar": "not applicable", "lifeStage": "organic-material processing rather than plant tissue",
+      "affectedLocation": "no plant, root zone, amendment placement, untreated control or symptom distribution is shown",
+      "distribution": "separate compost references without pile zones, feedstock batches, beds, containers, amendment rates or affected-unaffected plants mapped",
+      "progression": "process snapshots without decomposition timeline, maturity test, application date, nutrient trend, crop uptake or response",
+      "mediumRootZone": "finished-material maturity, carbon-to-nitrogen ratio, moisture, oxygen, temperature history, pH, EC, mineral nitrogen and roots are not linked to a crop",
+      "environment": "temperature and oxygen are being measured in one source, but values, pile moisture, turning, feedstock, weather, curing and application environment are not paired",
+      "measuredValues": "no case-linked temperature curve, oxygen result, moisture, carbon-to-nitrogen ratio, ammonium, nitrate, pH, EC, maturity assay, amendment analysis, application amount or tissue response accompanies the pair",
+      "diagnosticSigns": ["organic nutrients become available through biological decomposition and mineralization over time", "a compost pile or process measurement does not establish nutrient release in a particular root zone", "release-timing attribution requires characterized material, processing and maturity history, application timing, measured root-zone context and crop response"],
+      "plausibleAlternatives": ["true nutrient deficiency, excess, antagonism, salinity or pH lockout", "immature compost, nitrogen immobilization, root injury or low oxygen", "water, temperature, light or crop-demand mismatch", "pests, disease, physical injury or mixed causes"],
+      "confirmationMethod": "Identify every organic input and batch; document feedstock, processing, maturity, storage, application date and amount; measure representative root-zone pH, EC, moisture and available nutrients; inspect roots; compare amended and untreated controls; and track new growth and tissue or substrate trends before attributing symptoms to release timing.",
+      "expectedCauseRanking": ["insufficient_evidence", "organic_release_timing", "deficiency", "lockout", "antagonism", "excess", "other_abiotic", "disease", "pest"],
+      "expectedUrgency": "verify material maturity, roots and measured nutrient availability promptly when growth loss is progressing, without assuming an immediate-release correction",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed organic-release timing; separately evaluate transmissible causes when organism, lesion or spread evidence supports them.",
+      "expectedScoutingSteps": ["record organic input identity, batch, feedstock, processing, maturity, storage, application date and amount", "map amended and untreated plants, beds, containers and symptom progression", "measure root-zone moisture, pH, EC and available nutrients and inspect roots and drainage", "distinguish immobilization, deficiency, excess, lockout, environmental, pest and disease causes and track new growth"],
+      "expectedIpmResponse": "Do not diagnose organic-release timing from an organic label, compost photo or leaf color alone. Require characterized material, maturity and application history, representative root-zone measurements, roots, controls and response; preserve deficiency, excess, lockout, immobilization, environmental, pest and disease alternatives and avoid invented amendment rates."
+    },
+    {
+      "recordId": "diagnosis-powdery-mildew-condensation-boundary-open-004",
+      "caseId": "powdery_mildew",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby4-tropical-powdery-mildew-lamina", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Powdery_mildew_and_Fungal_Disease.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Powdery_mildew_and_Fungal_Disease.jpg",
+          "creator": "AmayoErvin", "licenseId": "CC-BY-4.0", "attributionText": "Powdery mildew on a tropical plant leaf photographed by AmayoErvin; CC BY 4.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-white-oak-condensation-droplets", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:White_Oak_Tree_Leaf.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/White_Oak_Tree_Leaf.jpg",
+          "creator": "LIS448S26GP", "licenseId": "CC0-1.0", "attributionText": "Condensation droplets on a white-oak leaf photographed by LIS448S26GP; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "a tropical leaf documented with powdery mildew and a separate white-oak leaf bearing condensation droplets",
+      "cultivar": "unknown", "lifeStage": "established foliage from separate hosts",
+      "affectedLocation": "limited leaf surfaces without paired upper and lower views, whole-plant distribution, stems, roots or controls",
+      "distribution": "cross-host references without colony, canopy, leaf-age, airflow, wetness or affected-unaffected mapping",
+      "progression": "single-time images without wipe test, colony expansion, sporulation, lesion development, weather sequence or treatment response",
+      "mediumRootZone": "roots, moisture, drainage, pH, EC and nutrition are not documented",
+      "environment": "surface moisture is documented in one source, but humidity, temperature, airflow, leaf-wetness duration, crowding, light and irrigation are not paired",
+      "measuredValues": "no magnified colony view, wipe result, microscopy, culture or molecular confirmation, humidity and temperature trend, leaf-wetness duration or marked-leaf progression accompanies the pair",
+      "diagnosticSigns": ["documented powdery mildew demonstrates superficial fungal growth on that source host", "condensation can create bright white highlights but is not mycelium", "powdery-mildew attribution requires persistent colony texture, magnified fungal structures, compatible distribution and progression rather than whiteness alone"],
+      "plausibleAlternatives": ["condensation, guttation, spray residue, mineral deposit, dust or glare", "trichomes, wax, normal variegation or senescent tissue", "downy mildew, botrytis, leaf spot or another disease", "mites, insects, edema, spray injury or nutrient disorder"],
+      "confirmationMethod": "Capture dry leaf surfaces in neutral light with upper, lower, macro and whole-plant views; test whether material wipes away; inspect colony margins and both surfaces under magnification; map leaf age and canopy distribution; record humidity, temperature, airflow and wetness; and obtain microscopy or qualified laboratory confirmation when action depends on the distinction.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest", "deficiency", "excess"],
+      "expectedUrgency": "inspect and contain suspected active colonies promptly when compatible white growth is expanding across plants",
+      "expectedQuarantineGuidance": "Limit movement and cross-contact only when persistent colony growth, compatible spread or confirmatory evidence supports an infectious disease; do not quarantine for droplets or glare alone.",
+      "expectedScoutingSteps": ["capture dry upper and lower surfaces, macro colony margins, whole plants and unaffected controls in neutral light", "perform a documented wipe test and inspect residue, droplets, trichomes and fungal structures under magnification", "map leaf age, canopy, airflow, humidity, temperature, wetness and plant-to-plant progression", "distinguish downy mildew, botrytis, mites, residue, edema and nutrient causes and seek laboratory confirmation when warranted"],
+      "expectedIpmResponse": "Do not diagnose powdery mildew from white pixels, droplets, glare or residue alone. Require dry multi-angle views, persistent colony texture, magnified fungal evidence, compatible distribution and progression; preserve moisture, residue, anatomy, pest and other disease alternatives and never invent pesticide directions."
     }
   ]
 }
