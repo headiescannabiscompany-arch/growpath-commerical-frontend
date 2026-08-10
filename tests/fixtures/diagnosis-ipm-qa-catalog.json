@@ -5484,6 +5484,74 @@
       "expectedIpmResponse": "Do not diagnose russet mites from bronzing, curling, brittle growth, a gall, or a cross-species eriophyid reference. Require case-linked mites at adequate magnification, host-aware identification, counts, mapped distribution and progression plus abiotic exclusions; avoid invented miticide directions."
     },
     {
+      "recordId": "diagnosis-broad-mite-sex-stage-morphology-boundary-open-004",
+      "caseId": "broad_mites",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby4-broad-mite-illustration-two", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:ACAR_Tarsonemidae_Polyphagotarsonemus_latus2.png", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/ACAR_Tarsonemidae_Polyphagotarsonemus_latus2.png",
+          "creator": "Des Helmore / Manaaki Whenua–Landcare Research", "licenseId": "CC-BY-4.0", "attributionText": "Polyphagotarsonemus latus scientific illustration by Des Helmore, Manaaki Whenua–Landcare Research; CC BY 4.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-tarsonemus-floricolus-lookalike", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Naturalis_Biodiversity_Center_-_RMNH.ART.1323_-_Tarsonemus_floricolus_(Can._and_Fan._)_-_Mites_-_Collection_Anthonie_Cornelis_Oudemans.jpeg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Naturalis_Biodiversity_Center_-_RMNH.ART.1323_-_Tarsonemus_floricolus_(Can._and_Fan._)_-_Mites_-_Collection_Anthonie_Cornelis_Oudemans.jpeg",
+          "creator": "Anthonie Cornelis Oudemans / Naturalis Biodiversity Center", "licenseId": "CC0-1.0", "attributionText": "Tarsonemus floricolus mite illustration from the Anthonie Cornelis Oudemans collection, Naturalis Biodiversity Center; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "two broad-mite morphology references without a linked symptomatic crop or causal field sequence",
+      "cultivar": "not applicable", "lifeStage": "illustrated and microscopic mite morphology without case-linked eggs, host tissue or population counts",
+      "affectedLocation": "isolated organism views without growing points, folded leaf undersides, stems, fruit or healthy controls",
+      "distribution": "no shoot-tip, plant, propagation, bench, edge or affected-unaffected map",
+      "progression": "no sequence connecting a reproducing mite population to hardened, curled or bronzed new growth",
+      "mediumRootZone": "roots, pH, EC, moisture, temperature and nutrient availability are not measured",
+      "environment": "heat, light, humidity, irrigation, sprays, growth regulators, propagation and nearby hosts are absent",
+      "measuredValues": "no characteristic egg count, mites per field, magnification and scale record, shoot-tip damage score, pH, EC or marked-growth follow-up accompanies the pair",
+      "diagnosticSigns": ["illustration or micrograph morphology can teach recognition but cannot establish that a photographed crop symptom was caused by broad mites", "broad mites are minute and stage- or sex-dependent views can be confused with cyclamen, tydeid, predatory or incidental mites without scale and trained examination", "causal attribution requires characteristic eggs or qualified mites on the affected growing point plus compatible new-growth distribution and progression"],
+      "plausibleAlternatives": ["cyclamen mites, russet mites, spider mites, predatory or incidental mites, thrips or aphids", "herbicide, plant-growth-regulator or spray injury, heat, high light, cold, wind or mechanical damage", "boron, calcium, zinc or other nutrient availability problems, pH or EC lockout and root stress", "virus, genetics, edema or mixed causes"],
+      "confirmationMethod": "Capture whole plants and sharp growing-point, folded-leaf underside, stem and fruit views with scale; inspect characteristic eggs and multiple mites at adequate magnification; record stage, counts, distribution and progression; and obtain qualified specimen identification when the pest label changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "deficiency", "lockout", "disease"],
+      "expectedUrgency": "preserve and inspect actively deforming new growth promptly before tiny mites or eggs are removed or the tissue ages",
+      "expectedQuarantineGuidance": "Limit movement of affected propagules or touching plants only when reproducing broad mites are credible; do not quarantine from curled or bronzed new growth alone.",
+      "expectedScoutingSteps": ["map affected growing points and propagation links; capture whole plants, new growth, folded undersides, stems, fruit and controls", "use adequate magnification and a scale to inspect characteristic eggs and count multiple mites on marked tissue", "record heat, humidity, light, sprays, growth regulators, irrigation, pH, EC and progression", "distinguish cyclamen, russet and spider mites, beneficials, thrips, nutrients, roots, chemicals, genetics and virus before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose broad mites from curling, bronzing, an isolated mite image or resemblance to a reference. Require case-linked characteristic eggs or qualified mite morphology at adequate magnification, multiple-organism counts, growing-point distribution and progression plus abiotic exclusions; avoid invented miticide directions."
+    },
+    {
+      "recordId": "diagnosis-russet-mite-gall-blister-transfer-boundary-open-004",
+      "caseId": "russet_mites",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-red-nail-gall-mite-context", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Eriophyes_tiliae_275190778.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Eriophyes_tiliae_275190778.jpg",
+          "creator": "Guerric Haché", "licenseId": "CC0-1.0", "attributionText": "Red nail gall mite context photographed by Guerric Haché; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-pear-leaf-blister-mite-context", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Eriophyes_pyri_(Huron_County,_MI,_USA).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Eriophyes_pyri_(Huron_County,_MI,_USA).jpg",
+          "creator": "Adam Kranz", "licenseId": "CC0-1.0", "attributionText": "Pear leaf blister mite context photographed by Adam Kranz; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "linden nail-gall and pear leaf-blister examples caused by host-specific eriophyid mites, without a linked cannabis, hemp or crop case",
+      "cultivar": "not applicable", "lifeStage": "host responses without visible case-linked russet-mite morphology or counts",
+      "affectedLocation": "cross-host leaf galls and blisters without shoot tips, petioles, stems, flowers, leaf undersides or healthy controls from the target crop",
+      "distribution": "no target-crop plant, propagation, bench, edge, airflow or affected-unaffected map",
+      "progression": "no target-crop sequence of bronzing, russeting, curling, brittle growth, mite increase or recovery",
+      "mediumRootZone": "roots, pH, EC, moisture, temperature and nutrient availability are not measured",
+      "environment": "heat, humidity, light, sprays, propagation, sanitation, irrigation and nearby hosts are absent",
+      "measuredValues": "no elongated eriophyid mites per field, magnification and scale record, target-crop tissue-damage score, pH, EC or marked-growth follow-up accompanies the pair",
+      "diagnosticSigns": ["nail galls and pear blisters demonstrate host-specific eriophyid responses but cannot be transferred to cannabis russet mite or another crop", "bronzing, curling and brittle growth are nonspecific and overlap with broad mites, thrips, sprays, light, heat, nutrition and root stress", "case attribution requires elongated eriophyid morphology on affected tissue at sufficient magnification, host-aware identification, counts, distribution and progression"],
+      "plausibleAlternatives": ["broad mites, cyclamen mites, spider mites, other eriophyids, predatory mites or incidental mites", "thrips, aphids, leafhoppers, disease, galls or mixed pests", "spray, herbicide or growth-regulator injury, heat, high light, drought, wind or abrasion", "nutrient deficiency, pH or EC lockout, root stress, genetics or senescence"],
+      "confirmationMethod": "Capture whole plants and sharp shoot-tip, petiole, stem, flower and underside views with scale; inspect for elongated eriophyid mites and count them in stated fields at adequate magnification; map propagation and symptom progression; record environment and sprays; and obtain qualified host-aware specimen identification when the label changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "deficiency", "lockout", "disease"],
+      "expectedUrgency": "preserve and inspect actively bronzing or deforming tissue promptly because eriophyid mites are minute and easily missed",
+      "expectedQuarantineGuidance": "Limit movement of affected propagules and touching plants only when reproducing pest mites are credible; do not quarantine from bronzing, distortion, galls or blisters alone.",
+      "expectedScoutingSteps": ["map affected plants, growing points and propagation links; capture whole plants, shoot tips, petioles, stems, flowers, undersides and controls", "use adequate magnification and scale to find elongated eriophyid morphology, count mites on marked tissue and repeat over time", "record heat, humidity, light, sprays, growth regulators, irrigation, pH, EC and progression", "distinguish broad and spider mites, thrips, nutrients, roots, chemicals and genetics before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose russet mites from bronzing, curling, a gall, a blister or cross-host eriophyid damage. Require case-linked elongated mites at adequate magnification, host-aware identification, counts, mapped distribution and progression plus abiotic exclusions; avoid invented miticide directions."
+    },
+    {
       "recordId": "diagnosis-thrips-organism-damage-boundary-open-003",
       "caseId": "thrips",
       "imageSet": [
