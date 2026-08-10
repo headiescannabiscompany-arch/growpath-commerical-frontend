@@ -3,7 +3,7 @@
 Date: 2026-07-20
 
 Status: Catalog, evidence contract, and rights gate implemented. As of 2026-08-09,
-118 of 252 reviewed case records and 236 of at least 504 rights-reviewed images are
+120 of 252 reviewed case records and 240 of at least 504 rights-reviewed images are
 present. Remaining case media and expected-outcome review are active.
 
 Machine-readable catalog: `tests/fixtures/diagnosis-ipm-qa-catalog.json`
@@ -14,7 +14,7 @@ Machine-readable catalog: `tests/fixtures/diagnosis-ipm-qa-catalog.json`
 | ---------------------------------------- | ---------------: | ------: |
 | Diseases                                 |               10 |      60 |
 | Pests and beneficial/harmless lookalikes |               13 |      84 |
-| Abiotic and nutrient/root-zone mimics    |               28 |     118 |
+| Abiotic and nutrient/root-zone mimics    |               30 |     120 |
 | **Total**                                |           **41** | **252** |
 
 Each record represents one reviewed diagnostic situation and must contain at least two reviewed images. The repeated cases are meant to vary plant, stage, location, progression, medium, environment, measurements, and ambiguity instead of replaying one idealized symptom photo.
@@ -63,7 +63,7 @@ These observations informed interface guidance and QA assertions only. They are 
 ## What remains
 
 - collect the remaining rights-reviewed images for 252 multi-image case records
-  (236 of at least 504 are present as of 2026-08-10);
+  (240 of at least 504 are present as of 2026-08-10);
 - document plant, cultivar when known, stage, distribution, progression, medium/root-zone, environment, and measured values;
 - have a qualified reviewer approve diagnostic signs, alternatives, confirmation method, urgency, quarantine, scouting, and response expectations;
 - run the reviewed envelope through both diagnostic paths and persist disagreements and linked records;
