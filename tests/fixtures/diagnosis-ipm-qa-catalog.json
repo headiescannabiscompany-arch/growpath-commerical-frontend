@@ -6128,6 +6128,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for frost or presumed cold damage; separately evaluate transmissible causes when organism, lesion or spread evidence supports them.",
       "expectedScoutingSteps": ["map exposed-versus-sheltered tissue, canopy height, airflow, elevation and unaffected controls", "record minimum temperature, duration, frost, wind, irrigation, shelter and thaw timing", "reassess tissue firmness, color, cambium or bud viability after thaw and over subsequent days", "distinguish dormancy, desiccation, roots, spray, physical injury, pests and disease before assigning cold damage"],
       "expectedIpmResponse": "Do not diagnose cold damage or its severity from visible frost, dark tissue or one post-event image alone. Require measured or well-documented exposure, tissue distribution, post-thaw viability, progression and recovery; preserve dormancy, desiccation, root, chemical, physical, pest and disease alternatives and avoid invented universal temperature thresholds."
+    },
+    {
+      "recordId": "diagnosis-wind-burn-shredding-windbreak-context-boundary-open-003",
+      "caseId": "wind_burn",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-banana-leaves-shredded-high-wind", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Shredded_banana_leaves_due_to_high_wind_speed_(14851777249).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Shredded_banana_leaves_due_to_high_wind_speed_(14851777249).jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Banana leaves shredded after high wind photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-small-field-windbreak", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Windbreaks15_(38367784294).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Windbreaks15_(38367784294).jpg",
+          "creator": "USDA NRCS Montana", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Small field windbreak documented by USDA NRCS Montana; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "banana foliage documented as shredded by high wind and a separate field windbreak context",
+      "cultivar": "unknown", "lifeStage": "established broadleaf foliage and a landscape windbreak",
+      "affectedLocation": "torn leaf blades and a field overview without case-linked leaf margins, stems, roots or protected controls",
+      "distribution": "separate references without windward-versus-leeward, edge-versus-interior, height, shelter or affected-unaffected mapping",
+      "progression": "single-time observations without wind-event timing, repeated abrasion, desiccation progression, sheltered comparison or recovery",
+      "mediumRootZone": "soil moisture, irrigation, roots, drainage, pH and EC are not documented for the damaged foliage",
+      "environment": "high wind is described for one reference and a windbreak is visible in the other, but speed, gusts, duration, humidity, temperature, light and water delivery are not measured for a shared case",
+      "measuredValues": "no time-aligned wind speed and direction, gust duration, humidity, temperature, vapor-pressure deficit, leaf temperature, root-zone moisture or marked-plant response accompanies the pair",
+      "diagnosticSigns": ["parallel shredding on banana foliage is compatible with wind but does not define all wind-burn presentations", "a windbreak establishes mitigation context rather than proving injury in a particular crop", "wind-burn attribution requires exposure geometry, event history, tissue distribution, water status and progression"],
+      "plausibleAlternatives": ["mechanical handling, abrasion, hail, animals or pruning", "underwatering, low humidity, heat, excess light or salinity", "spray injury, disease, pests or nutrient disorder", "normal tearing in broad leaves or mixed causes"],
+      "confirmationMethod": "Map symptoms by windward and sheltered position, canopy height and field or room edge; document wind or fan settings, gusts and duration; inspect for rubbing and tears; measure humidity, temperature and root-zone moisture; compare protected tissue; and track progression after a documented exposure change.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "pest", "disease", "deficiency", "excess"],
+      "expectedUrgency": "verify active airflow and water status promptly when tearing, desiccation or stem damage is progressing",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed wind burn; separately evaluate transmissible causes when organism, lesion or spread evidence supports them.",
+      "expectedScoutingSteps": ["map windward, leeward, edge, interior, high, low and sheltered tissue with unaffected controls", "record outdoor wind events or fan placement, settings, distance, direction and duration", "inspect tears, rubbing points, stems and roots and measure humidity, temperature and root-zone moisture", "distinguish handling, hail, animals, water, heat, light, chemical, pest and disease causes before assigning wind burn"],
+      "expectedIpmResponse": "Do not diagnose wind burn from torn, curled or dry margins alone. Require exposure geometry and history, mapped tissue distribution, water and environmental context, protected controls and progression; preserve mechanical, water, heat, light, chemical, pest and disease alternatives and avoid invented airflow settings."
+    },
+    {
+      "recordId": "diagnosis-edema-droplet-gall-mimic-boundary-open-003",
+      "caseId": "edema",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-water-droplets-on-leaf", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Water_droplets_on_leaf.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Water_droplets_on_leaf.jpg",
+          "creator": "Siddharth Patil", "licenseId": "CC0-1.0", "attributionText": "Water droplets on a leaf photographed by Siddharth Patil; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-blaesodiplosis-leaf-galls", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Blaesodiplosis_crataegifolia_leaf_galls.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Blaesodiplosis_crataegifolia_leaf_galls.jpg",
+          "creator": "Christian Grenier", "licenseId": "CC0-1.0", "attributionText": "Leaf galls caused by Blaesodiplosis crataegifolia photographed by Christian Grenier; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "a leaf bearing surface water droplets and separate hawthorn-family foliage with documented insect galls",
+      "cultivar": "unknown", "lifeStage": "established foliage from separate hosts",
+      "affectedLocation": "limited leaf surfaces without underside views, stems, whole-plant distribution, roots or controls",
+      "distribution": "cross-host references without old-versus-new leaf, upper-versus-lower surface, canopy, irrigation-zone or affected-unaffected mapping",
+      "progression": "single-time images without blister development, corking, irrigation or humidity change, organism emergence or recovery",
+      "mediumRootZone": "moisture, irrigation timing, drainage, root condition, pH and EC are not documented",
+      "environment": "surface water is visible in one reference, but temperature, humidity, vapor-pressure deficit, airflow, leaf wetness duration, light and irrigation are not paired",
+      "measuredValues": "no root-zone moisture trend, irrigation volume and timing, humidity, temperature, vapor-pressure deficit, airflow, leaf wetness, microscopy or marked-leaf progression accompanies the pair",
+      "diagnosticSigns": ["surface droplets can resemble translucent raised areas but are not edema", "insect galls show that raised leaf structures have biotic alternatives", "edema attribution requires tissue-integrated blister or corky changes linked to water uptake exceeding transpiration, distribution, environment and progression"],
+      "plausibleAlternatives": ["surface water, guttation, residue or camera glare", "insect or mite galls, eggs, scale or other pests", "bacterial, fungal or viral lesions", "spray injury, nutrient disorder, physical damage or normal anatomy"],
+      "confirmationMethod": "Capture dry upper and lower leaf surfaces with side lighting and scale; determine whether marks wipe away or are tissue-integrated; map tissue age and canopy distribution; inspect with magnification for organisms or corking; record irrigation, root-zone moisture, humidity, temperature, airflow and progression; and track response after a documented environmental correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "pest", "disease", "excess", "deficiency"],
+      "expectedUrgency": "inspect raised lesions and water-environment conditions promptly when blistering, corking or spread is progressing",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed edema alone; limit movement only when organism or transmissible disease evidence supports a biotic cause.",
+      "expectedScoutingSteps": ["photograph dry upper and lower leaf surfaces, side views, whole plants and unaffected controls with scale", "test whether marks wipe away and inspect with magnification for pests, galls, eggs, residue and tissue-integrated corking", "map tissue age and canopy distribution and record irrigation, moisture, humidity, temperature, airflow and leaf wetness", "track lesion progression and response while preserving pest, disease, spray, nutrient and physical alternatives"],
+      "expectedIpmResponse": "Do not diagnose edema from droplets, bumps, spots or one leaf image. Require dry multi-angle views, tissue integration, magnified inspection, water and transpiration context, distribution and progression; preserve galls, pests, disease, residue, spray, nutrient and physical alternatives and avoid invented irrigation corrections."
     }
   ]
 }
