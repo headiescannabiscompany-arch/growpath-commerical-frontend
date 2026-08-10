@@ -6196,6 +6196,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for presumed edema alone; limit movement only when organism or transmissible disease evidence supports a biotic cause.",
       "expectedScoutingSteps": ["photograph dry upper and lower leaf surfaces, side views, whole plants and unaffected controls with scale", "test whether marks wipe away and inspect with magnification for pests, galls, eggs, residue and tissue-integrated corking", "map tissue age and canopy distribution and record irrigation, moisture, humidity, temperature, airflow and leaf wetness", "track lesion progression and response while preserving pest, disease, spray, nutrient and physical alternatives"],
       "expectedIpmResponse": "Do not diagnose edema from droplets, bumps, spots or one leaf image. Require dry multi-angle views, tissue integration, magnified inspection, water and transpiration context, distribution and progression; preserve galls, pests, disease, residue, spray, nutrient and physical alternatives and avoid invented irrigation corrections."
+    },
+    {
+      "recordId": "diagnosis-spray-burn-herbicide-application-boundary-open-003",
+      "caseId": "spray_burn",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usfws-herbicide-damage-tree", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Herbicide_Damage_(51300268382).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Herbicide_Damage_(51300268382).jpg",
+          "creator": "USFWS Mountain Prairie", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Herbicide damage to a tree documented by USFWS Mountain Prairie; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-epa-spraying-pesticides-nara", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:SPRAYING_PESTICIDES_-_NARA_-_544246.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/SPRAYING_PESTICIDES_-_NARA_-_544246.jpg",
+          "creator": "U.S. Environmental Protection Agency", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Pesticide application documented by the U.S. Environmental Protection Agency and National Archives; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "a tree documented with herbicide damage and a separate pesticide-application scene",
+      "cultivar": "unknown", "lifeStage": "established woody plant and an application context without a shared crop case",
+      "affectedLocation": "tree injury and application overview without case-linked leaf surfaces, canopy gradients, roots or unsprayed controls",
+      "distribution": "separate references without spray-path, overlap, droplet, windward, edge, height or affected-unaffected mapping",
+      "progression": "single-time examples without application timestamp, symptom latency, spread pattern, new growth or recovery",
+      "mediumRootZone": "roots, irrigation, moisture, pH, EC and possible root-zone exposure are not documented for a shared case",
+      "environment": "application is visible in one reference, but product, formulation, concentration, water quality, weather, light, temperature, humidity, airflow and drift are not paired",
+      "measuredValues": "no product label and batch, measured mix, application volume, nozzle or droplet data, timestamp, weather, water pH or hardness, residue analysis, tissue test or marked-plant response accompanies the pair",
+      "diagnosticSigns": ["documented herbicide injury demonstrates a chemical cause in that source, not a transferable visual signature", "seeing a spray event does not establish phytotoxicity or identify the applied material", "spray-burn attribution requires a time-linked application record, exposure geometry, symptom latency, controls and progression"],
+      "plausibleAlternatives": ["heat, excess light, wind, drought, cold or salinity", "nutrient, pH, EC, root or irrigation stress", "disease, pests, abrasion or natural senescence", "drift, tank contamination, incompatible mixture, overdose or non-chemical injury"],
+      "confirmationMethod": "Map symptoms against spray path, overlap, drift, windward position and unsprayed controls; preserve product labels and batch records; document measured mixing, water, equipment, timing and weather; inspect both leaf surfaces and roots; track latency and new growth; and obtain qualified residue or tissue analysis when the distinction materially changes action.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "disease", "pest", "excess", "deficiency"],
+      "expectedUrgency": "preserve application records and inspect exposure promptly when injury follows a recent spray, while following the actual label and local requirements",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed spray burn; isolate application equipment or suspect material as appropriate and separately evaluate transmissible causes when supported.",
+      "expectedScoutingSteps": ["map spray paths, overlaps, drift edges, windward tissue and unsprayed controls", "record every product and label, batch, measured mix, water source, equipment, timing, weather and applicator step", "capture both leaf surfaces, whole plants, roots and progression from first symptom through new growth", "distinguish environmental, root, nutrient, pest and disease causes and seek residue or tissue confirmation when warranted"],
+      "expectedIpmResponse": "Do not diagnose spray burn from scorch, spotting, curl or a spray photo alone. Require a time-linked application record, exposure geometry, measured preparation and equipment context, symptom latency, controls and progression; preserve environmental, root, nutrient, pest and disease alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-ph-problem-representative-sampling-boundary-open-003",
+      "caseId": "ph_problem",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-usda-soil-testing-1989", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Soil_Survey39_(38191249565).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Soil_Survey39_(38191249565).jpg",
+          "creator": "USDA NRCS Montana", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Soil testing documented by USDA NRCS Montana; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-soil-acidity-sampling-grid-1929", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Soil_sampling_diagram_for_40-acre_field_-_Test_your_soil_for_acidity_1929_(page_7_crop).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Soil_sampling_diagram_for_40-acre_field_-_Test_your_soil_for_acidity_1929_(page_7_crop).jpg",
+          "creator": "Clyde Maurice Linsley and Frederick Charles Bauer", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Historical representative soil-sampling diagram by Clyde Maurice Linsley and Frederick Charles Bauer; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "soil-testing and representative field-sampling references without a symptomatic crop case",
+      "cultivar": "not applicable", "lifeStage": "soil-management context rather than a plant image",
+      "affectedLocation": "no plant tissue is shown; the references concern measurement and sampling design",
+      "distribution": "sampling context emphasizes spatial representation, but no case-linked beds, containers, emitters, roots or affected-unaffected plants are mapped",
+      "progression": "no pH trend, input change, symptom sequence, correction response or new growth is available",
+      "mediumRootZone": "soil testing is depicted, but medium type, sampling depth, preparation, extraction method, calibration, moisture, EC, alkalinity and root condition are not case-linked",
+      "environment": "irrigation, water chemistry, temperature, moisture, fertilizer, substrate and crop demand are absent",
+      "measuredValues": "no case-linked calibrated pH result, meter buffers and calibration record, sampling plan, extraction method, water alkalinity, EC, nutrient analysis or repeated trend accompanies the pair",
+      "diagnosticSigns": ["pH is a measured chemical property, not a visual symptom pattern", "one convenient sample may not represent a field, bed, container or irrigation zone", "pH attribution requires a medium-appropriate calibrated method, representative sampling, complete input and root-zone context and response"],
+      "plausibleAlternatives": ["nutrient deficiency, excess or antagonism with acceptable pH", "EC, salinity, water alkalinity or unsuitable ion balance", "root disease, low oxygen, overwatering, underwatering or compaction", "light, heat, cold, spray, pests, disease or senescence"],
+      "confirmationMethod": "Define representative zones and depths; collect and label samples under a documented medium-appropriate protocol; calibrate the meter with valid buffers; record extraction method and temperature; measure pH with EC and water alkalinity context; inspect roots and inputs; repeat questionable values; and track plant response after a measured correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "lockout", "deficiency", "excess", "antagonism", "other_abiotic", "disease", "pest"],
+      "expectedUrgency": "measure representative root-zone pH and related chemistry promptly when symptoms or growth loss are progressing, without blind adjustment",
+      "expectedQuarantineGuidance": "Do not quarantine for a pH problem; separately evaluate transmissible causes when organism, lesion or spread evidence supports them.",
+      "expectedScoutingSteps": ["map affected and unaffected plants, media zones, sampling depths, emitters and containers", "record substrate, fertilizer, amendments, irrigation, water source, runoff and symptom progression", "calibrate the meter and measure representative samples with a medium-appropriate method plus EC and alkalinity context", "inspect roots, repeat questionable readings and distinguish nutrient, salinity, water, root, environmental, pest and disease causes"],
+      "expectedIpmResponse": "Do not diagnose a pH problem from leaf color, burn or pattern. Require representative medium-specific sampling, calibrated measurement, method and temperature, EC and water context, complete inputs, roots, distribution and response; preserve nutrient, salinity, root, environmental, pest and disease alternatives and avoid invented correction rates."
     }
   ]
 }
