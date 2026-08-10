@@ -3874,3 +3874,85 @@ signed-out verification continuation with one active purchaser attempt,
 production-index migration and legacy pending-record review, live Stripe
 webhook/key rotation evidence, safe single-worker enablement, real Stripe
 sandbox acceptance, and mutation-capable production acceptance.
+
+## Dormant cross-device recovery and shutdown-gate checkpoint
+
+Backend feature commit `52667dfc49e6c1a23a8a97c8ab0ddf8acde43c80`
+and frontend feature commit `525ffd1ed142a396ba0e9a5d53ea27f471a08cc5`
+add purchaser-scoped cross-device recovery without enabling gift checkout or
+the automatic refund worker. Backend recovery exposes only the authenticated
+purchaser's one active attempt, binds runtime recovery to the same exact
+checkout-state/Stripe-Session contract as migration readiness, and requires a
+real positive safe-integer amount plus already-lowercase three-letter currency.
+It may create a new Stripe Session only when a fresh full gift-readiness check
+passes. Disabling the feature, worker, or index readiness therefore blocks new
+Session creation while still allowing a previously bound Session to be read and
+settled safely. Manual-review records remain non-recoverable.
+
+The frontend adds the physical `/account/gift-checkout/recover` route and a
+strict authenticated recovery action. Results are bound to the exact account,
+fail closed during sign-out or account changes, and cannot expose account A's
+state after switching to account B. The exact raw `/offers?gift=1` continuation
+is accepted; encoded values or keys, duplicate/extra parameters, and fragments
+fail closed. Late async work after sign-out or unmount cannot open Stripe or
+update stale UI. Return reconciliation is versioned by the exact return
+identity, and the exact bare legacy cancel path can survive sign-in without
+accepting encoded, parameterized, or fragmented variants.
+
+Hostile review closed runtime state/Session parity, cross-account stale-state,
+late-navigation, stale-return-identity, and raw/canonical continuation gaps
+before release. Final post-rebase verification included:
+
+- backend gift/index regression: 12 suites / 276 tests, including real MongoDB;
+- backend drift stopper: 3 suites / 21 tests;
+- backend core contracts: 21 suites / 145 tests;
+- frontend current-main auth/billing regression: 14 suites / 255 tests;
+- frontend full TypeScript and `lint:ci`;
+- production export with physical success, cancel, and recover fallbacks;
+- full production preflight with 283 files, 271 frontend routes, 225 backend
+  declarations, zero errors/warnings, and 8 Chromium desktop/mobile flows; and
+- targeted formatting and `git diff --check` in both repositories.
+
+Backend PR `#125` passed Backend CI `31358621070` and CI `31358621061`,
+then merged as `8ef2e0ef26ed76d1c6d51e25653729668df83d69`. Main-branch
+Backend CI `31359330517` passed. GitHub deployment `5826865531` reached
+Render deployment `dep-d9sm8geq1p3s73fs7po0` on the exact merge. Frontend PR
+`#379` passed Frontend CI `31359293401`, then merged as
+`672ea654e7f5d457e4df5ccf6d602554835d2dd1`. Render deployment
+`dep-d9smcl6q1p3s73fsa7c0` was live for that exact merge at 2026-08-10
+05:51 UTC. Main-branch Frontend CI `31359802663` and Production Build
+Preflight `31359802696` both passed on that exact merge.
+
+Read-only production requests at 2026-08-10 05:57 UTC returned HTTP 200 from
+`/health`, `/ready`, and `/api/subscription/status`. Readiness reported the
+database connected; the gift worker was not required, enabled, or running;
+`manualReviewCount` was zero. Subscription status reported live Stripe mode,
+normal checkout and webhook configuration, `giftCheckoutConfigured: false`,
+and blockers `feature_disabled`, `refund_worker_disabled`,
+`refund_worker_not_ready`, and `gift_fingerprint_secret_not_configured`. An
+unsigned recovery request returned HTTP 401 with only the generic
+`UNAUTHENTICATED` response.
+
+The live frontend served bundle `index-723231ce0045a9a117d3040a61ebe1fe.js`.
+Direct HTTP checks returned 200 for Offers and all three gift success, cancel,
+and recovery routes. In the preserved signed-in Facility browser session,
+exact `/offers?gift=1` truthfully said no gift payment could be started and
+disabled `Gift someone else`; the ordinary buy-for-me path remained available.
+Encoded `/offers?gift=%31` and extra-parameter `/offers?gift=1&extra=1` stayed
+in the same disabled fail-closed state. The deployed recovery route rendered
+one `Check gift checkout` heading, stated that the page does not submit
+payment, and reported that no matching checkout existed for this purchasing
+account without exposing recipient or gift details. It emitted no browser
+warning or error. No recovery/retry button was pressed.
+
+No quote, checkout, Stripe Session creation/retrieval, reconciliation,
+payment, migration, index write, refund, email, claim, account, workspace,
+preference, or record mutation was invoked in production. This checkpoint
+closes the dormant implementation and deployment of cross-device recovery; it
+does not constitute real two-device, signed-out-resume, Stripe, migration, or
+mutation acceptance. Gift launch remains blocked on the purchaser
+cancellation/refund policy decision, real-account cross-device and one-active-
+attempt acceptance, production-index migration and legacy pending-record
+review, live Stripe key/webhook rotation evidence, safe single-worker
+enablement, real Stripe sandbox acceptance, and a mutation-capable production
+canary.
