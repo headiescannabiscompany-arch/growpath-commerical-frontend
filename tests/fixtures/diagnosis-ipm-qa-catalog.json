@@ -5652,6 +5652,74 @@
       "expectedQuarantineGuidance": "Limit movement of confirmed infested plants or propagules while mapping hidden colonies; do not quarantine from cottony material alone.",
       "expectedScoutingSteps": ["map plants, nodes, crevices and roots; capture direct insects, crawlers, wax, honeydew, ants, damage and controls", "count insects by marked site and life stage and repeat over time", "record temperature, humidity, airflow, incoming plants, propagation, sprays and sanitation", "distinguish scale, aphids, fungi, residue, fibers, trichomes and beneficials before species-specific action"],
       "expectedIpmResponse": "Recognize direct mealybug colonies while distinguishing cottony lookalikes. Require case-linked segmented insects or crawlers, attachment, counts, mapped node or root distribution and progression; preserve scale, aphid, fungal, residue and structural alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-scale-life-stage-honeydew-boundary-open-003",
+      "caseId": "scale_insects",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-male-scale-insect-41746657491", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Male_Scale_Insect_(Hemiptera,_Sternorrhyncha,_Coccoidea)_(41746657491).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Male_Scale_Insect_(Hemiptera,_Sternorrhyncha,_Coccoidea)_(41746657491).jpg",
+          "creator": "Insects Unlocked", "licenseId": "CC0-1.0", "attributionText": "Male scale insect photographed by Insects Unlocked; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-scale-insect-ant-honeydew", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Scale_insect_and_ant.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scale_insect_and_ant.jpg",
+          "creator": "Uzay", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Scale insect on lemon with an ant consuming honeydew, photographed by Uzay and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "isolated male scale-insect morphology and lemon-host scale with ant attendance and honeydew context",
+      "cultivar": "unknown", "lifeStage": "winged adult male reference and attached feeding-stage host context; crawlers are not resolved",
+      "affectedLocation": "isolated specimen and one host surface without a complete leaf, stem, canopy or control survey",
+      "distribution": "separate references without a shared host, colony count, protected-site survey or affected-unaffected map",
+      "progression": "single-time images without crawler emergence, colony increase, honeydew trend, plant decline or recovery",
+      "mediumRootZone": "not documented and not inferable from either reference",
+      "environment": "temperature, humidity, airflow, irrigation, ants, incoming plants, sprays and sanitation are not case-linked",
+      "measuredValues": "no crawler or attached-body count, honeydew measurement, marked-site follow-up, magnification series or crop response accompanies the pair",
+      "diagnosticSigns": ["scale insects can differ strongly across sex and life stage, so one adult reference cannot identify attached plant structures", "an attached insect plus honeydew-feeding ant is compatible supporting context but ant presence alone is not diagnostic", "case attribution requires attached bodies or covers, crawler evidence, counts, distribution and progression"],
+      "plausibleAlternatives": ["edema, corking, lenticels, galls, scars or normal stem and fruit texture", "mealybugs, aphids, whitefly nymphs, mites or other attached organisms", "wax, mineral or spray residue, dust, fibers, glare or plant exudate", "disease, chemical injury, environmental stress or mixed causes"],
+      "confirmationMethod": "Capture whole-plant distribution and sharp top-and-side macros with scale; verify that suspected structures are attached bodies or covers; inspect protected sites for crawlers, honeydew, ants, predators and parasitoids; count marked sites over time; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect protected sites and quantify attached stages promptly when colonies or honeydew are increasing",
+      "expectedQuarantineGuidance": "Limit movement only when an active attached-stage infestation is supported; do not quarantine from an ant, one flying insect or scale-like texture alone.",
+      "expectedScoutingSteps": ["map plants and capture whole-plant, stem, petiole, leaf and fruit views plus sharp top-and-side macros", "count attached bodies, covers and crawlers on marked sites and repeat over time", "record honeydew, ants, predators, parasitoids, environment, incoming plants and recent applications", "distinguish edema, corking, normal texture, residue, other sap feeders and disease before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose scale from an ant, honeydew, one flying adult or scale-like plant texture. Require case-linked attached bodies or covers and preferably crawlers, counts, mapped distribution and progression; preserve structural, residue, disease and other sap-feeder alternatives, protect beneficial organisms and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-root-aphid-morphology-association-boundary-open-003",
+      "caseId": "root_aphids",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-pemphigus-smithsonian-12209766", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pemphigus_sp._nmnhentomology_12209766_NMNH-01084336.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pemphigus_sp._nmnhentomology_12209766_NMNH-01084336.jpg",
+          "creator": "Smithsonian National Museum of Natural History", "licenseId": "CC0-1.0", "attributionText": "Pemphigus specimen from the Smithsonian National Museum of Natural History Open Access collection; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-rhopalosiphum-padi-morphology", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rhopalosiphum_padi_usda.png", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Rhopalosiphum_padi_usda.png",
+          "creator": "George C. Steyskal, William L. Murphy Jr. and Edna M. Hoover for USDA", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "USDA public-domain Rhopalosiphum padi morphology reference by George C. Steyskal, William L. Murphy Jr. and Edna M. Hoover.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "museum Pemphigus specimen and USDA aphid morphology reference without a case-linked root-zone colony",
+      "cultivar": "not applicable", "lifeStage": "preserved specimen and illustrated aphid morphology without living root association",
+      "affectedLocation": "organism references without roots, crown, media, drainage openings, whole plants or controls",
+      "distribution": "no container, bench, irrigation-zone, root-system, ant or affected-unaffected map",
+      "progression": "no colony increase, winged dispersal, root decline, trap trend, crop symptoms or recovery sequence",
+      "mediumRootZone": "roots, moisture, oxygen, temperature, drainage, pH, EC and substrate condition are absent",
+      "environment": "irrigation, humidity, airflow, sanitation, ants, incoming plants and nearby hosts are not documented",
+      "measuredValues": "no root-associated organism count, body-scale case image, trap count, root-health score, moisture, pH, EC or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["aphid morphology references can guide organism comparison but do not establish that a crop has root aphids", "generic aphid features do not prove root association or identify a root-aphid species", "case causality requires compatible living organisms directly associated with roots plus colony counts, distribution, root condition and progression"],
+      "plausibleAlternatives": ["above-ground aphids, winged aphids, fungus gnats, shore flies or other small insects", "root mealybugs, springtails, predatory mites or harmless soil organisms", "Pythium, Fusarium, Rhizoctonia, Phytophthora or another root disease", "waterlogging, low oxygen, drought, salinity, pH, EC, heat, cold or irrigation failure"],
+      "confirmationMethod": "Capture body-scale images of living organisms on representative washed roots, crown, pot edge, media surface and drainage openings; distinguish aphids from flies, fungus-gnat larvae, root mealybugs and harmless soil organisms; count marked plants over time; document root condition and root-zone measurements; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect representative roots promptly when colonies or progressive decline are present, while preserving samples for identification",
+      "expectedQuarantineGuidance": "Limit movement of rooted plants or shared media only when compatible organisms are directly associated with roots; do not quarantine from generic aphid morphology, one flying insect, ants or wilt alone.",
+      "expectedScoutingSteps": ["map plants and capture whole-plant symptoms, washed roots, crowns, pot edges, drainage areas and body-scale organism views", "count organisms by marked root system and repeat while tracking winged insects and ants separately", "record root color, odor and integrity plus irrigation, moisture, drainage, oxygen, pH and EC", "distinguish root mealybugs, fungus-gnat larvae, harmless soil organisms, disease and abiotic root stress before pest-specific action"],
+      "expectedIpmResponse": "Do not diagnose root aphids from a museum specimen, generic aphid morphology, ants, one winged insect, wilt or root decline. Require living compatible organisms directly associated with case roots plus counts, mapped distribution, root evidence and progression; preserve other insects, disease and abiotic alternatives and avoid invented pesticide directions."
     }
   ]
 }

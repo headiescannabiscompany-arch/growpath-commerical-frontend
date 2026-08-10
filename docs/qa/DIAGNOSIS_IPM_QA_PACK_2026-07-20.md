@@ -3,7 +3,7 @@
 Date: 2026-07-20
 
 Status: Catalog, evidence contract, and rights gate implemented. As of 2026-08-09,
-100 of 252 reviewed case records and 200 of at least 504 rights-reviewed images are
+102 of 252 reviewed case records and 204 of at least 504 rights-reviewed images are
 present. Remaining case media and expected-outcome review are active.
 
 Machine-readable catalog: `tests/fixtures/diagnosis-ipm-qa-catalog.json`
@@ -63,7 +63,7 @@ These observations informed interface guidance and QA assertions only. They are 
 ## What remains
 
 - collect the remaining rights-reviewed images for 252 multi-image case records
-  (200 of at least 504 are present as of 2026-08-09);
+  (204 of at least 504 are present as of 2026-08-09);
 - document plant, cultivar when known, stage, distribution, progression, medium/root-zone, environment, and measured values;
 - have a qualified reviewer approve diagnostic signs, alternatives, confirmation method, urgency, quarantine, scouting, and response expectations;
 - run the reviewed envelope through both diagnostic paths and persist disagreements and linked records;
