@@ -7130,6 +7130,56 @@
       "expectedQuarantineGuidance": "Limit contact and movement of actively sporulating tissue when spread is credible, but do not quarantine for gray color, fuzz-like anatomy or aging fruit alone.",
       "expectedScoutingSteps": ["capture whole plants, fruit or flower clusters, contact points, internal tissue, stems and healthy controls","document texture, odor without unsafe exposure, sporulation, softening and progression with scale","record humidity, wetness, condensation, airflow, injury, sanitation and harvest stage","distinguish normal hairs and bloom, bruising, other decay, residue and pests before qualified confirmation"],
       "expectedIpmResponse": "Do not diagnose botrytis from gray pixels, fruit hairs, aging or one diseased reference alone. Require compatible internal browning or collapse and gray sporulation linked to distribution, progression and moisture context; preserve other disease, residue, injury and abiotic alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-downy-mildew-basil-scale-boundary-open-006",
+      "caseId": "downy_mildew",
+      "imageSet": [
+        {"imageId":"wikimedia-ccby2-basil-downy-mildew-habit-25077054526","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Starr-110822-8246-Ocimum_basilicum-habit_with_basil_downy_mildew_Peronospora_belbahrii-Hawea_Pl_Olinda-Maui_(25077054526).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Starr-110822-8246-Ocimum_basilicum-habit_with_basil_downy_mildew_Peronospora_belbahrii-Hawea_Pl_Olinda-Maui_(25077054526).jpg","creator":"Forest and Kim Starr","licenseId":"CC-BY-2.0","attributionText":"Basil habit with Peronospora belbahrii photographed by Forest and Kim Starr; CC BY 2.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-ccby2-basil-downy-mildew-leaves-spores-24735723619","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Starr-110822-8251-Ocimum_basilicum-leaves_and_spores_with_basil_downy_mildew_Peronospora_belbahrii-Hawea_Pl_Olinda-Maui_(24735723619).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Starr-110822-8251-Ocimum_basilicum-leaves_and_spores_with_basil_downy_mildew_Peronospora_belbahrii-Hawea_Pl_Olinda-Maui_(24735723619).jpg","creator":"Forest and Kim Starr","licenseId":"CC-BY-2.0","attributionText":"Basil leaves and spores with Peronospora belbahrii photographed by Forest and Kim Starr; CC BY 2.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "basil with documented Peronospora belbahrii in whole-plant and leaf/spore views",
+      "cultivar": "unknown",
+      "lifeStage": "established vegetative basil",
+      "affectedLocation": "plant habit and local leaf/spore views without roots or matched unaffected controls",
+      "distribution": "same documented setting without full bed, plant-to-plant, leaf-age or wet-zone mapping",
+      "progression": "single-session views without lesion expansion, underside sporulation change, defoliation or recovery",
+      "mediumRootZone": "roots, moisture, oxygen, drainage, pH, EC and nutrition are not documented",
+      "environment": "wetness duration, humidity, temperature, airflow, irrigation, crowding and application history are absent",
+      "measuredValues": "no lesion count, paired-surface scale, wetness trend, microscopy series, culture, molecular result or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["the two scales link compatible whole-plant decline with leaf and spore context on basil","same-session labeled views are stronger than a single angle but are not independent laboratory confirmation","case attribution requires host-compatible paired-surface signs, underside structures, wetness, distribution and progression"],
+      "plausibleAlternatives": ["powdery mildew, botrytis, bacterial or fungal leaf spot or mixed disease","edema, spray injury, cold, heat, nutrient or root stress","thrips, mites, leaf miners or chewing injury","dust, pollen, wax, trichomes, condensation, residue or glare"],
+      "confirmationMethod": "Capture whole plants, canopy distribution and dry paired leaf surfaces with scale; document underside structures under magnification; record wetness, humidity, irrigation and progression; inspect lookalikes; and obtain qualified microscopy or testing when identity changes management.",
+      "expectedCauseRanking": ["disease","insufficient_evidence","other_abiotic","pest","deficiency"],
+      "expectedUrgency": "document expanding compatible lesions and underside growth promptly during wet or humid conditions",
+      "expectedQuarantineGuidance": "Reduce splash, wet handling and plant contact when active compatible sporulation and spread are credible, but do not quarantine from yellowing or white-gray pixels alone.",
+      "expectedScoutingSteps": ["capture whole plants, bed distribution, dry paired surfaces, lesion margins, stems and controls","record host, tissue age, onset, progression, wetness, humidity, temperature, airflow and irrigation","inspect underside structures under stated magnification and distinguish residue, anatomy and pests","preserve representative margins and controls for qualified confirmation"],
+      "expectedIpmResponse": "Do not diagnose downy mildew from yellowing, decline or a labeled field image alone. Require host-compatible paired-surface signs, underside structures, mapped distribution, progression and wetness context; retain other disease, pest, residue and abiotic alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-septoria-lesion-progression-boundary-open-005",
+      "caseId": "septoria_and_leaf_spots",
+      "imageSet": [
+        {"imageId":"wikimedia-cc0-tomato-septoria-3027","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3027.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3027.jpg","creator":"Wolan268","licenseId":"CC0-1.0","attributionText":"Tomato Septoria leaf spot photographed by Wolan268; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-cc0-tomato-septoria-3028","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3028.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3028.jpg","creator":"Wolan268","licenseId":"CC0-1.0","attributionText":"Tomato Septoria leaf spot photographed by Wolan268; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "tomato leaves documented with Septoria leaf spot in two same-session views",
+      "cultivar": "unknown",
+      "lifeStage": "established foliage",
+      "affectedLocation": "local leaf views without complete paired surfaces, stems, fruit, roots, whole plants or matched controls",
+      "distribution": "same-session views without lower-to-upper canopy, splash, plant-to-plant or affected-unaffected mapping",
+      "progression": "no marked lesion sequence, new lesion count, center development, coalescence, defoliation or recovery",
+      "mediumRootZone": "roots, moisture, drainage, pH, EC and nutrition are not documented",
+      "environment": "rainfall, leaf wetness, splash, irrigation, humidity, temperature, airflow and handling are absent",
+      "measuredValues": "no lesion diameter or count, pycnidia assessment, microscopy, culture, molecular result, wetness trend or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["the sources document Septoria-compatible lesions on tomato","two views improve lesion morphology but do not establish progression or transferable identity","case attribution requires lesion centers and margins, pycnidia or qualified confirmation, distribution, wetness and progression"],
+      "plausibleAlternatives": ["early blight, bacterial spot, Cercospora, anthracnose or other fungal leaf spots","downy mildew, rust, mixed disease or secondary colonization","leaf-miner, thrips, mite or chewing injury","spray burn, edema, sunscald, cold, abrasion, nutrient or root stress"],
+      "confirmationMethod": "Capture whole plants, canopy and splash distribution, dry paired surfaces, lesion centers and margins with scale, stems and controls; count and mark lesions; record wetness and progression; inspect for pycnidia and pests; and obtain qualified microscopy or testing when identity changes management.",
+      "expectedCauseRanking": ["disease","insufficient_evidence","pest","other_abiotic","deficiency"],
+      "expectedUrgency": "document new lesions and fresh margins promptly when spotting is expanding or defoliation is beginning",
+      "expectedQuarantineGuidance": "Reduce splash and cross-contact when progressive compatible leaf spot is credible, but do not quarantine for generic brown spots or one labeled image alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy layers, paired surfaces, lesion centers, margins, stems and controls","mark and count lesions and record lower-to-upper and plant-to-plant progression","record rainfall, irrigation, wetness, humidity, temperature, airflow and handling","inspect for pycnidia, pests, residue and patterned injury before qualified confirmation"],
+      "expectedIpmResponse": "Do not diagnose Septoria from round brown spots or same-session resemblance alone. Require lesion-center and margin evidence, mapped canopy and splash distribution, progression, wetness history and qualified confirmation; retain competing leaf spots, pests, spray, edema, root, nutrient and environmental alternatives and never invent pesticide directions."
     }
   ]
 }
