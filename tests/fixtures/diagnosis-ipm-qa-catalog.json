@@ -5788,6 +5788,74 @@
       "expectedQuarantineGuidance": "Limit movement only when active linked larvae or eggs and fresh damage are supported; do not quarantine from an isolated caterpillar reference, egg or old hole alone.",
       "expectedScoutingSteps": ["map plants and capture whole-plant damage, fresh margins, undersides, buds, stems, flowers, frass and body-scale organisms", "count larvae, eggs and new injury on marked plants and repeat over time", "record nearby hosts, adults, temperature, lighting, incoming plants, sprays and sanitation", "distinguish sawflies, beetle larvae, slugs, snails, physical tearing and old damage before pest-specific action"],
       "expectedIpmResponse": "Do not attribute chewing to caterpillars from an isolated larva, egg or old hole. Require a case-linked compatible larva or egg plus fresh feeding or frass, counts, mapped distribution and progression; distinguish sawflies and other chewers, preserve non-pest injury alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-beneficial-aphid-parasitoid-boundary-open-003",
+      "caseId": "beneficial_and_harmless_lookalikes",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-aphid-mummy-alex-wild", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:AphidMummy.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/AphidMummy.jpg",
+          "creator": "Alex Wild", "licenseId": "CC0-1.0", "attributionText": "Pea-aphid mummy photographed by Alex Wild; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-parasitized-aphids-chard", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Parasitized_aphids_on_chard_leaf.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Parasitized_aphids_on_chard_leaf.jpg",
+          "creator": "Downtowngal", "licenseId": "CC0-1.0", "attributionText": "Parasitized aphids on chard photographed by Downtowngal; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "pea-aphid mummy close-up and parasitized aphids on chard, documenting parasitoid outcomes rather than healthy active pests",
+      "cultivar": "unknown", "lifeStage": "parasitized aphid mummies without a complete live-aphid or parasitoid emergence series",
+      "affectedLocation": "close-up organism and leaf views without whole-plant pest, mummy, predator or damage distribution",
+      "distribution": "separate references without counts of live aphids, mummies, predators, parasitoids or affected-unaffected plants",
+      "progression": "single-time images without parasitism trend, emergence, live-pest change, new damage or crop response",
+      "mediumRootZone": "not documented and not relevant to the direct parasitoid evidence",
+      "environment": "temperature, humidity, airflow, ants, nearby hosts, incoming plants and recent applications are absent",
+      "measuredValues": "no live-aphid-to-mummy ratio, emergence-hole count, predator count, marked-leaf follow-up or crop-damage measure accompanies the pair",
+      "diagnosticSigns": ["a swollen or discolored aphid shell can be a parasitoid mummy rather than a healthy reproducing pest", "multiple mummies can indicate beneficial parasitoid activity but do not prove all aphids are controlled", "management significance requires separate counts of live pests, mummies, predators, damage and progression"],
+      "plausibleAlternatives": ["healthy aphids, shed skins, dead insects or fungal cadavers", "scale, whitefly nymphs, eggs, galls, edema or plant structures", "residue, wax, dust, fibers or glare", "concurrent live pest pressure despite beneficial activity"],
+      "confirmationMethod": "Capture sharp body-scale images, identify round parasitoid emergence holes when present, count live aphids and mummies separately on marked leaves, record predators and parasitoids, map damage and repeat over time; obtain qualified identification when organism identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "disease"],
+      "expectedUrgency": "quantify live pests and beneficial activity before disrupting an active parasitoid population",
+      "expectedQuarantineGuidance": "Do not quarantine or treat solely for aphid mummies; limit movement only when live reproducing pests and spread are independently supported.",
+      "expectedScoutingSteps": ["capture whole-plant distribution and body-scale images of live aphids, mummies, emergence holes, predators, parasitoids and controls", "count live pests and mummies separately on marked leaves and repeat over time", "record damage, honeydew, ants, environment, incoming plants and recent applications", "distinguish dead or parasitized aphids, scale-like structures, eggs, residue and fungi before action"],
+      "expectedIpmResponse": "Recognize parasitoid mummies as beneficial evidence, not healthy pest counts. Require separate case-linked counts of live aphids, mummies, emergence signs, damage and progression; preserve beneficial organisms, retain lookalikes and concurrent pest pressure as alternatives, and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-nutrient-deficiency-root-context-boundary-open-003",
+      "caseId": "nutrient_deficiency",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby4-aluminum-toxicity-maize-roots-6274", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aluminium_toxocity_maize_roots_2017_01_05_6274.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aluminium_toxocity_maize_roots_2017_01_05_6274.jpg",
+          "creator": "Alan Manson", "licenseId": "CC-BY-4.0", "attributionText": "Maize roots affected by aluminum toxicity photographed by Alan Manson; CC BY 4.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-apple-potassium-deficiency-19745587855", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Apple_nutrition_(1941)_(19745587855).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Apple_nutrition_(1941)_(19745587855).jpg",
+          "creator": "Internet Archive Book Images", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Historical apple potassium-deficiency reference from Apple nutrition (1941), public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "maize root limitation associated with aluminum toxicity and a historical apple potassium-deficiency symptom reference",
+      "cultivar": "unknown", "lifeStage": "established maize roots and mature apple foliage from separate contexts",
+      "affectedLocation": "root system and foliar symptom reference without a shared whole-plant, tissue, solution or control comparison",
+      "distribution": "cross-host references without mobile-versus-immobile tissue mapping, canopy position or affected-unaffected crop distribution",
+      "progression": "single-time examples without input history, root-zone trend, tissue change, corrected supply or plant response",
+      "mediumRootZone": "the maize reference supports root limitation in acid-soil context, but the case lacks measured pH, EC, moisture, oxygen, ions and root distribution",
+      "environment": "temperature, humidity, irrigation, drainage, light, substrate, crop load and recent applications are not paired",
+      "measuredValues": "no calibrated pH or EC, water analysis, solution or substrate test, tissue analysis, amendment record, growth rate or marked-plant response accompanies the pair",
+      "diagnosticSigns": ["nutrient-looking foliage can be secondary to root limitation rather than low fertilizer input", "a documented deficiency reference does not transfer across species, tissues or environments", "case attribution requires symptom distribution plus measured root-zone, input, tissue or solution evidence and response"],
+      "plausibleAlternatives": ["pH or EC lockout, ion antagonism, aluminum or salinity injury", "root disease, low oxygen, overwatering, underwatering, compaction or root damage", "light, heat, cold, spray, senescence or physical injury", "pest, disease or mixed causes"],
+      "confirmationMethod": "Map symptoms by tissue age and plant distribution; document complete inputs and irrigation; inspect roots; measure calibrated medium-specific pH and EC plus water and solution context; obtain tissue, substrate or solution testing when warranted; and track response without treating a photo as proof.",
+      "expectedCauseRanking": ["insufficient_evidence", "deficiency", "lockout", "antagonism", "disease", "other_abiotic"],
+      "expectedUrgency": "measure the root environment promptly when symptoms or growth loss are progressing, but avoid blind supplementation",
+      "expectedQuarantineGuidance": "Do not quarantine for a photo-only nutrient pattern; use separate pest or disease evidence if transmissible causes remain plausible.",
+      "expectedScoutingSteps": ["map old-versus-new tissue and whole-plant distribution with comparable unaffected plants", "record inputs, irrigation, substrate, crop stage, environment and symptom progression", "inspect roots and measure calibrated pH, EC, water and solution or substrate conditions", "use tissue or solution testing and tracked response when the specific deficiency changes management"],
+      "expectedIpmResponse": "Do not diagnose a specific nutrient deficiency from color or pattern alone. Require tissue-age distribution, roots, calibrated pH and EC, complete input and irrigation context, appropriate testing and response; preserve lockout, antagonism, root, environmental, pest and disease alternatives and avoid invented amendment rates."
     }
   ]
 }
