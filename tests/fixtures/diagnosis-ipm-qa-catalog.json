@@ -7030,6 +7030,56 @@
       "expectedQuarantineGuidance": "Limit movement when compatible adults or larvae and spreading damage are confirmed, but do not quarantine for silvering or a morphology reference alone.",
       "expectedScoutingSteps": ["capture whole plants, growing points, flowers, paired surfaces, feeding scars, frass and controls","tap tissue over a contrasting surface and magnify adults, larvae and fringed wings with scale","count insects, trap captures and damaged sites across plants and revisit progression","distinguish mites, other small insects, mildew, residue and abiotic silvering before action"],
       "expectedIpmResponse": "Do not diagnose thrips from silver pixels, distortion or an insect illustration alone. Require compatible adults or larvae, feeding scars, dark frass and plant-linked distribution; distinguish mites, other insects, mildew, residue and abiotic injury and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-whitefly-multistage-underside-boundary-open-004",
+      "caseId": "whiteflies",
+      "imageSet": [
+        {"imageId":"wikimedia-ccby4-cabbage-whitefly-adult-pupal-stages","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Blumenkohl_Wei%C3%9Fe_Fliegen_an_einem_Blatt.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Blumenkohl_Wei%C3%9Fe_Fliegen_an_einem_Blatt.jpg","creator":"Schlaghecken Josef","licenseId":"CC-BY-4.0","attributionText":"Adult cabbage whiteflies and pupal stages on cauliflower photographed by Schlaghecken Josef; CC BY 4.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-ccby2-big-eyed-bug-whitefly-predation","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:K4813-20_(8456951960).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/K4813-20_(8456951960).jpg","creator":"Jack Dykinga, USDA Agricultural Research Service","licenseId":"CC-BY-2.0","attributionText":"Big-eyed bug with whitefly prey photographed by Jack Dykinga, USDA Agricultural Research Service; CC BY 2.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "cauliflower leaf with documented cabbage-whitefly adults and pupal stages plus a separate predator-prey reference",
+      "cultivar": "unknown",
+      "lifeStage": "adult and pupal whitefly stages with a separate beneficial big-eyed bug context",
+      "affectedLocation": "local leaf close-ups without whole-plant, canopy, roots or matched unaffected controls",
+      "distribution": "separate references without plant-to-plant, leaf-age, hotspot, trap or affected-unaffected mapping",
+      "progression": "single-time views without egg hatch, nymph increase, adult flight, honeydew, sooty growth or crop response over time",
+      "mediumRootZone": "roots, moisture, drainage, pH, EC and nutrition are not documented",
+      "environment": "temperature, humidity, airflow, incoming plants, nearby hosts, ant activity and application history are absent",
+      "measuredValues": "no adults-per-tap, immature-stage count, sticky-card trend, honeydew extent, predator-prey ratio or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["one source documents adults together with attached pupal stages on a leaf","the second source shows that a beneficial predator and prey can share the same close-up","case attribution requires compatible adults or attached immatures, counts, distribution and progression while beneficials are classified separately"],
+      "plausibleAlternatives": ["aphids, mealybugs, scale, psyllids, leafhoppers, moths or other pale insects","cast skins, trichomes, wax, residue, dust, pollen or glare","powdery or downy mildew, sooty growth or another disease","lacewings, big-eyed bugs, parasitoids and other beneficial organisms"],
+      "confirmationMethod": "Capture whole plants, tap-flight response and sharp upper and lower leaf views with scale; count adults, eggs, nymphs and pupal stages on marked leaves and traps; document honeydew and progression; classify predators and parasitoids separately; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["pest","insufficient_evidence","disease","other_abiotic"],
+      "expectedUrgency": "promptly quantify multiple life stages and spread when underside colonies or repeated adult flights are present",
+      "expectedQuarantineGuidance": "Limit plant movement when reproducing whiteflies are credible, but do not quarantine for one white insect, pale dots or an identified beneficial alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy distribution, tap response, paired leaf surfaces and controls","count adults, eggs, nymphs, pupal stages, exuviae and sticky-card captures over time","record honeydew, sooty growth, environment, incoming plants, ants and recent applications","identify predators, parasitoids and lookalike sap feeders before intervention"],
+      "expectedIpmResponse": "Do not diagnose whiteflies from white specks, flight or honeydew alone. Require compatible adults or attached immature stages, counts, mapped distribution and progression; separate beneficial predators and parasitoids from pest counts, preserve fungal, residue and sap-feeder alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-two-spotted-mite-host-morphology-boundary-open-005",
+      "caseId": "two_spotted_spider_mites",
+      "imageSet": [
+        {"imageId":"wikimedia-ccby4-tetranychus-urticae-bean-leaf","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Tetranychus_urticae_on_beans_leaf.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Tetranychus_urticae_on_beans_leaf.jpg","creator":"Claudio Labita","licenseId":"CC-BY-4.0","attributionText":"Tetranychus urticae on a bean leaf photographed by Claudio Labita; CC BY 4.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-ccby2-tetranychus-urticae-gnilenkov","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Tetranychus_urticae_(Koch,_1836).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Tetranychus_urticae_(Koch,_1836).jpg","creator":"Aleksey Gnilenkov","licenseId":"CC-BY-2.0","attributionText":"Tetranychus urticae photographed by Aleksey Gnilenkov; CC BY 2.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "bean-leaf organism context and a separate direct two-spotted-spider-mite morphology reference",
+      "cultivar": "unknown",
+      "lifeStage": "adult mite references without a complete egg, nymph and adult case sequence",
+      "affectedLocation": "local macro views without paired leaf surfaces, whole plants, growing points, roots or matched controls",
+      "distribution": "separate observations without canopy, plant-to-plant, hotspot, web-density or affected-unaffected mapping",
+      "progression": "single-time views without egg or mite counts, stippling expansion, bronzing, web progression or recovery",
+      "mediumRootZone": "roots, moisture, drainage, pH, EC and nutrition are not documented",
+      "environment": "temperature, humidity, airflow, drought, dust, nearby hosts and application history are absent",
+      "measuredValues": "no mites-per-leaf, eggs-per-leaf, magnification record, web extent, damage score or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["the sources provide compatible host-linked and direct Tetranychus urticae morphology","an isolated mite reference does not establish population, injury or cause in another crop","case attribution requires compatible mobile mites or eggs plus plant-linked feeding or fine webbing, counts, distribution and progression"],
+      "plausibleAlternatives": ["thrips, broad mites, russet mites, predatory mites or other small arthropods","true spider webs, fibers, dust, residue, trichomes or fungal strands","light, heat, drought, wind, spray, abrasion or nutrient injury","disease, root stress, senescence or mixed causes"],
+      "confirmationMethod": "Capture whole plants, canopy distribution and paired leaf surfaces; photograph mobile mites, eggs, cast skins, stippling and fine webbing under stated magnification with scale; count marked leaves over time; record environment; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["pest","insufficient_evidence","other_abiotic","deficiency"],
+      "expectedUrgency": "inspect expanding stippling, bronzing or fine webbing promptly and quantify reproductive stages",
+      "expectedQuarantineGuidance": "Limit plant contact and movement when reproducing pest mites and spreading injury are credible, but do not quarantine for one mite, stippling or generic webbing alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy map, paired surfaces, growing points, webbing and controls","inspect under stated magnification for mobile mites, eggs, cast skins and feeding injury","count mites and eggs on marked leaves and repeat while recording temperature, humidity, airflow and drought","distinguish thrips, other mites, true spiders, debris and abiotic stippling before action"],
+      "expectedIpmResponse": "Do not diagnose two-spotted spider mites from a mite-like body, stippling or webbing alone. Require case-linked compatible mobile mites or eggs plus feeding or fine webbing, counts, mapped distribution and progression; preserve other-pest, debris and abiotic alternatives and never invent pesticide directions."
     }
   ]
 }
