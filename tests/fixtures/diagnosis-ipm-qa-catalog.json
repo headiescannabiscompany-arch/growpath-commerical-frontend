@@ -5856,6 +5856,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for a photo-only nutrient pattern; use separate pest or disease evidence if transmissible causes remain plausible.",
       "expectedScoutingSteps": ["map old-versus-new tissue and whole-plant distribution with comparable unaffected plants", "record inputs, irrigation, substrate, crop stage, environment and symptom progression", "inspect roots and measure calibrated pH, EC, water and solution or substrate conditions", "use tissue or solution testing and tracked response when the specific deficiency changes management"],
       "expectedIpmResponse": "Do not diagnose a specific nutrient deficiency from color or pattern alone. Require tissue-age distribution, roots, calibrated pH and EC, complete input and irrigation context, appropriate testing and response; preserve lockout, antagonism, root, environmental, pest and disease alternatives and avoid invented amendment rates."
+    },
+    {
+      "recordId": "diagnosis-nutrient-excess-salinity-mimic-boundary-open-003",
+      "caseId": "nutrient_excess",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-soil-salinization-diagram", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Soil_Salinization_Grayscale.png", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Soil_Salinization_Grayscale.png",
+          "creator": "Dreamcabbage", "licenseId": "CC0-1.0", "attributionText": "Soil salinization diagram by Dreamcabbage; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-maranta-heat-humidity-necrosis", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Damaged_Lemon-Lime_Maranta_Leuconeura_or_Prayer_Plant_01.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Damaged_Lemon-Lime_Maranta_Leuconeura_or_Prayer_Plant_01.jpg",
+          "creator": "Lexilovescaffeine", "licenseId": "CC0-1.0", "attributionText": "Maranta margin necrosis associated with heat and low humidity photographed by Lexilovescaffeine; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "salinization-process diagram and Maranta margin necrosis documented under heat and low humidity",
+      "cultivar": "Lemon-Lime Maranta in one reference", "lifeStage": "established foliage and a process diagram without a shared crop case",
+      "affectedLocation": "leaf margins in one host without a whole-plant distribution or case-linked root-zone sample",
+      "distribution": "separate references without affected-unaffected plants, canopy position, irrigation-zone map or salt accumulation measurement",
+      "progression": "no input sequence, EC trend, symptom spread, leaching response or environmental recovery series",
+      "mediumRootZone": "no case-linked substrate, water, drainage, moisture, pH, EC or ion analysis",
+      "environment": "heat and low humidity are documented only for the mimic image; irrigation, light, airflow and inputs are not paired",
+      "measuredValues": "no calibrated input or root-zone EC, pH, water analysis, ion test, tissue test, environmental trend or marked-plant response accompanies the pair",
+      "diagnosticSigns": ["salinization is a root-zone process that cannot be confirmed from leaf tips alone", "margin necrosis also occurs under heat and low humidity", "nutrient excess requires measured input and root-zone evidence, distribution, history and response"],
+      "plausibleAlternatives": ["heat, low humidity, light, wind or drought", "spray injury, physical damage or disease", "pH lockout, nutrient antagonism or root disease", "normal senescence or mixed causes"],
+      "confirmationMethod": "Map symptoms and irrigation zones; record complete inputs; inspect roots; measure calibrated input and medium-specific root-zone EC and pH plus water context; document environment; compare controls and track response before assigning excess.",
+      "expectedCauseRanking": ["insufficient_evidence", "excess", "other_abiotic", "lockout", "antagonism", "disease"],
+      "expectedUrgency": "measure root-zone and environmental conditions promptly when necrosis or growth loss is progressing",
+      "expectedQuarantineGuidance": "Do not quarantine for a photo-only excess pattern; separately evaluate transmissible causes when evidence supports them.",
+      "expectedScoutingSteps": ["map tissue age, margins, canopy and irrigation zones with unaffected controls", "record complete inputs, irrigation, substrate, environment and progression", "inspect roots and measure calibrated input and root-zone EC and pH", "use water, solution, substrate or tissue testing and tracked response when management depends on the cause"],
+      "expectedIpmResponse": "Do not diagnose nutrient excess from tip or margin burn alone. Require input history, calibrated root-zone EC and pH, water and substrate context, roots, distribution and response; retain heat, humidity, spray, disease, lockout and antagonism alternatives and avoid invented correction rates."
+    },
+    {
+      "recordId": "diagnosis-nutrient-lockout-chlorosis-disease-boundary-open-003",
+      "caseId": "nutrient_lockout",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-ctv-leaf-chlorosis", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:CTV_Leaf_Chlorosis.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/CTV_Leaf_Chlorosis.jpg",
+          "creator": "Arizona Department of Agriculture", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Citrus tristeza virus leaf chlorosis from the Arizona Department of Agriculture; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-aphis-nematode-leaf-damage", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chrysanthemum_leaf_damage_caused_by_Aphelechoides_ritzemabosi.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Chrysanthemum_leaf_damage_caused_by_Aphelechoides_ritzemabosi.jpg",
+          "creator": "H. R. Wallace", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Historical Chrysanthemum leaf damage associated with Aphelenchoides ritzemabosi by H. R. Wallace; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "citrus viral chlorosis and Chrysanthemum foliar-nematode damage as non-lockout symptom references",
+      "cultivar": "unknown", "lifeStage": "established symptomatic foliage from separate hosts",
+      "affectedLocation": "limited leaf views without whole-plant distribution, roots, medium, inputs or controls",
+      "distribution": "cross-host references without tissue-age mapping, irrigation zones or affected-unaffected crop comparison",
+      "progression": "single-time images without pH or EC trend, pathogen sequence, input correction or plant response",
+      "mediumRootZone": "not documented; no calibrated pH, EC, moisture, oxygen, root condition or nutrient availability data",
+      "environment": "irrigation, temperature, humidity, airflow, leaf wetness, light and applications are absent",
+      "measuredValues": "no root-zone pH or EC, water or ion analysis, tissue test, pathogen or nematode confirmation for a new case, or marked-plant response accompanies the pair",
+      "diagnosticSigns": ["chlorosis and necrosis overlap with disease and pest injury", "lockout is an availability process, not a visual pattern", "case attribution requires measured medium-specific pH or EC plus adequate inputs, roots, distribution and response"],
+      "plausibleAlternatives": ["true nutrient deficiency or antagonism", "viral, fungal, bacterial or oomycete disease", "nematodes, mites, thrips or other pests", "water, roots, light, heat, cold, spray, senescence or mixed stress"],
+      "confirmationMethod": "Map symptoms by tissue age and plant; document complete inputs and irrigation; inspect roots; measure calibrated medium-specific pH and EC; assess water and ion context; test tissue, solution or pathogens when warranted; and track response without using a photo as proof.",
+      "expectedCauseRanking": ["insufficient_evidence", "lockout", "deficiency", "antagonism", "disease", "pest", "other_abiotic"],
+      "expectedUrgency": "measure root-zone conditions and inspect spread promptly when symptoms are progressing",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed lockout, but limit movement when independent pest or disease evidence supports a transmissible cause.",
+      "expectedScoutingSteps": ["map tissue age, whole-plant and crop distribution with unaffected controls", "record inputs, irrigation, substrate, environment and progression", "inspect roots and measure calibrated medium-specific pH and EC plus water context", "use tissue, solution, pathogen or organism confirmation when the distinction changes management"],
+      "expectedIpmResponse": "Do not diagnose lockout from chlorosis or necrosis alone. Require adequate-input history plus calibrated medium-specific pH or EC, roots, water and ion context, distribution and response; retain true deficiency, antagonism, disease, pests and environmental alternatives and avoid invented correction rates."
     }
   ]
 }
