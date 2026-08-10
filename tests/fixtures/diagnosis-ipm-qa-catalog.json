@@ -5756,6 +5756,74 @@
       "expectedIpmResponse": "Do not diagnose scale from an ant, honeydew, one flying adult or scale-like plant texture. Require case-linked attached bodies or covers and preferably crawlers, counts, mapped distribution and progression; preserve structural, residue, disease and other sap-feeder alternatives, protect beneficial organisms and avoid invented pesticide directions."
     },
     {
+      "recordId": "diagnosis-mealybug-foliar-colony-import-boundary-open-004",
+      "caseId": "mealybugs",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby2-foliar-mealybug-drosera", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mealybug_(16055811956).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mealybug_(16055811956).jpg",
+          "creator": "incidencematrix", "licenseId": "CC-BY-2.0", "attributionText": "Foliar mealybug on Drosera capensis photographed by incidencematrix; CC BY 2.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ccby2-imported-orchid-mealybug", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mealy_bug_(26873809095).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mealy_bug_(26873809095).jpg",
+          "creator": "David Short", "licenseId": "CC-BY-2.0", "attributionText": "Mealybug imported with an orchid photographed by David Short; CC BY 2.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "foliar mealybug references on Drosera and an imported orchid without one crop's linked colony and damage sequence",
+      "cultivar": "unknown", "lifeStage": "visible wax-covered insects without case-linked crawlers, ovisacs or root inspection",
+      "affectedLocation": "isolated close-ups without whole plants, nodes, petioles, leaf axils, roots, pots, honeydew, sooty mold or controls",
+      "distribution": "cross-host observations without an incoming-plant, canopy, container or affected-unaffected map",
+      "progression": "no crawler emergence, colony increase, honeydew, sooty mold, decline or recovery sequence",
+      "mediumRootZone": "roots, media, moisture, drainage, pH and EC are absent, leaving root-mealybug involvement untested",
+      "environment": "incoming plants, sanitation, ants, predators, parasitoids, temperature, humidity and sprays are not documented",
+      "measuredValues": "no attached insects or crawlers per site, ovisac count, honeydew extent, trap trend, root inspection or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["wax-covered insects are compatible with mealybugs but wax, residue, molds and scale covers can resemble them", "a mealybug on an imported plant establishes an introduction route only for that observation", "case attribution requires attached mobile or wax-producing insects, preferably crawlers or ovisacs, counts, distribution and progression"],
+      "plausibleAlternatives": ["cottony scale, armored or soft scale, whiteflies, aphids or root mealybugs", "powdery mildew, sooty mold, mineral or spray residue, fibers or plant hairs", "edema, corking, callus, lenticels or normal plant texture", "root disease, nutrient or abiotic stress causing unrelated decline"],
+      "confirmationMethod": "Capture whole plants and sharp top-and-side views of nodes, axils, undersides, stems, roots and pots; verify that waxy structures contain attached or mobile insects; inspect for crawlers, ovisacs, honeydew, ants and beneficials; count marked sites over time; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect protected sites, roots and nearby plants promptly when crawlers, ovisacs or colonies are increasing",
+      "expectedQuarantineGuidance": "Limit movement of affected or incoming plants only when an active case-linked colony is supported; do not quarantine from wax, residue or a separate reference image alone.",
+      "expectedScoutingSteps": ["map plants and capture whole-plant, node, axil, underside, stem, root and pot views plus sharp organism macros", "count attached insects, crawlers and ovisacs on marked sites and repeat over time", "record honeydew, sooty mold, ants, beneficials, incoming plants, environment and recent applications", "distinguish scale, aphids, whiteflies, residue, disease and structural textures before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose mealybugs from white wax, residue, mold or a cross-host insect reference alone. Require case-linked attached or mobile insects and preferably crawlers or ovisacs, counts, mapped distribution and progression; inspect roots and beneficials, preserve lookalikes and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-scale-mixed-species-attached-stage-boundary-open-004",
+      "caseId": "scale_insects",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby4-cottony-cushion-scale-france", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Icerya_purchasi_410533660.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Icerya_purchasi_410533660.jpg",
+          "creator": "Julien Lepage", "licenseId": "CC-BY-4.0", "attributionText": "Cottony cushion scale Icerya purchasi photographed by Julien Lepage; CC BY 4.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ccby2-monophlebidae-scale-mozambique", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Scale_Insect_-_Monophlebidae_family,_Gorongosa_National_Park,_Mozambique_(45101180035).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Scale_Insect_-_Monophlebidae_family,_Gorongosa_National_Park,_Mozambique_(45101180035).jpg",
+          "creator": "Judy Gallagher", "licenseId": "CC-BY-2.0", "attributionText": "Monophlebidae scale insect photographed by Judy Gallagher; CC BY 2.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "cottony cushion scale and another monophlebid scale reference without one crop's linked attached-stage population",
+      "cultivar": "unknown", "lifeStage": "visible scale insects from separate species and host contexts without case-linked crawlers",
+      "affectedLocation": "organism close-ups without whole plants, stems, petioles, leaf surfaces, fruit, honeydew, sooty mold or controls",
+      "distribution": "cross-species observations without a plant, canopy, incoming-stock or affected-unaffected map",
+      "progression": "no crawler emergence, attached-stage increase, honeydew, sooty mold, decline or recovery sequence",
+      "mediumRootZone": "roots and root-zone measurements are absent and cannot explain unrelated decline",
+      "environment": "incoming plants, sanitation, ants, predators, parasitoids, temperature, humidity and sprays are not documented",
+      "measuredValues": "no attached bodies or covers per site, crawler count, honeydew extent, trap trend or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["cottony and giant scale morphology varies widely and cannot be transferred to every scale-like plant structure", "wax, corking, edema, lenticels, residue and mealybugs can resemble attached scale stages", "case attribution requires attached bodies or covers and preferably crawlers, compatible feeding signs, counts, distribution and progression"],
+      "plausibleAlternatives": ["mealybugs, aphids, whiteflies, root mealybugs or other sap feeders", "edema, corking, callus, lenticels, scars or normal bark and fruit texture", "powdery or sooty mold, mineral or spray residue, fibers or debris", "disease, nutrient, root-zone or other abiotic decline"],
+      "confirmationMethod": "Capture whole-plant distribution and sharp top-and-side macros of stems, petioles, leaf surfaces and fruit; verify attached bodies or covers; inspect protected sites for crawlers, honeydew, ants, predators and parasitoids; count marked sites over time; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect protected sites and quantify attached stages promptly when colonies, crawlers or honeydew are increasing",
+      "expectedQuarantineGuidance": "Limit movement only when an active attached-stage population is supported; do not quarantine from cottony wax, a cross-species reference or scale-like texture alone.",
+      "expectedScoutingSteps": ["map plants and capture whole-plant, stem, petiole, leaf and fruit views plus sharp top-and-side macros", "count attached bodies, covers and crawlers on marked sites and repeat over time", "record honeydew, ants, predators, parasitoids, incoming plants, environment and recent applications", "distinguish mealybugs, edema, corking, normal texture, residue and disease before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose scale from cottony wax, a cross-species image, honeydew or scale-like plant texture alone. Require case-linked attached bodies or covers and preferably crawlers, counts, mapped distribution and progression; preserve structural, residue, disease and other sap-feeder alternatives, protect beneficials and avoid invented pesticide directions."
+    },
+    {
       "recordId": "diagnosis-root-aphid-morphology-association-boundary-open-003",
       "caseId": "root_aphids",
       "imageSet": [
