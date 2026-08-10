@@ -5720,6 +5720,74 @@
       "expectedQuarantineGuidance": "Limit movement of rooted plants or shared media only when compatible organisms are directly associated with roots; do not quarantine from generic aphid morphology, one flying insect, ants or wilt alone.",
       "expectedScoutingSteps": ["map plants and capture whole-plant symptoms, washed roots, crowns, pot edges, drainage areas and body-scale organism views", "count organisms by marked root system and repeat while tracking winged insects and ants separately", "record root color, odor and integrity plus irrigation, moisture, drainage, oxygen, pH and EC", "distinguish root mealybugs, fungus-gnat larvae, harmless soil organisms, disease and abiotic root stress before pest-specific action"],
       "expectedIpmResponse": "Do not diagnose root aphids from a museum specimen, generic aphid morphology, ants, one winged insect, wilt or root decline. Require living compatible organisms directly associated with case roots plus counts, mapped distribution, root evidence and progression; preserve other insects, disease and abiotic alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-leafminer-mine-larva-boundary-open-003",
+      "caseId": "leafminers",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-leaf-miners-ferns", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Leaf_miners_on_ferns.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Leaf_miners_on_ferns.jpg",
+          "creator": "Shyamal", "licenseId": "CC0-1.0", "attributionText": "Leaf mines on fern foliage photographed by Shyamal; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ccby4-agromyzidae-larva-mine-560725496", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Agromyzidae_560725496.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Agromyzidae_560725496.jpg",
+          "creator": "Alex Abair", "licenseId": "CC-BY-4.0", "attributionText": "Agromyzidae larva mining a leaf photographed by Alex Abair; CC BY 4.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "fern leaf-mine reference and an Agromyzidae larva visible within a separate leaf mine",
+      "cultivar": "unknown", "lifeStage": "internal mine damage and a larval mining stage on separate hosts",
+      "affectedLocation": "limited leaf views without whole plants, canopy distribution, petioles, roots or unaffected controls",
+      "distribution": "cross-host references without a mapped mine count, canopy position, affected-unaffected comparison or adult context",
+      "progression": "single-time images without mine expansion, larval development, adult emergence, new-leaf incidence or recovery",
+      "mediumRootZone": "not documented and not relevant to the direct mine references",
+      "environment": "temperature, humidity, irrigation, airflow, incoming plants, weeds, sprays and sanitation are absent",
+      "measuredValues": "no mines per leaf, larvae per mine, frass distribution, adult trap trend, marked-leaf follow-up or crop-loss measure accompanies the pair",
+      "diagnosticSigns": ["a translucent or blistered path within leaf tissue is compatible with a mine but is not species-specific", "a larva physically within the mine strengthens leaf-miner attribution", "case causality and importance require internal larva or frass, repeatable mine structure, counts, distribution and progression"],
+      "plausibleAlternatives": ["edema, sunscald, spray injury, abrasion or other blistering", "fungal, bacterial or oomycete lesions", "thrips, mites, caterpillars or surface-feeding insects", "normal variegation, senescence, nutrient, root-zone or mixed stress"],
+      "confirmationMethod": "Capture whole-plant distribution and transmitted-light views of intact mines; inspect the mine for a larva, frass trail and entry or exit point; count mines and active larvae on marked leaves; track new damage and adults; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect active mines and quantify new-leaf incidence promptly when damage is spreading",
+      "expectedQuarantineGuidance": "Limit movement only when active mines or associated adults are supported; do not quarantine from one pale or blistered patch alone.",
+      "expectedScoutingSteps": ["map plants and canopy zones and capture whole leaves, transmitted-light mine paths, larvae, frass and controls", "count active and empty mines on marked leaves and repeat over time", "record adults, nearby hosts, incoming plants, weeds, environment, sprays and sanitation", "distinguish edema, lesions, thrips, mites and surface chewing before pest-specific action"],
+      "expectedIpmResponse": "Do not diagnose leaf miners from one pale blotch or blister. Require an internal path plus larva, frass or compatible entry and exit evidence, counts, mapped distribution and progression; preserve edema, disease, feeding and abiotic alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-caterpillar-organism-egg-causality-boundary-open-003",
+      "caseId": "caterpillars",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-pyrrharctia-isabella-caterpillar", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Caterpillar.PNG", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Caterpillar.PNG",
+          "creator": "Koalacuddles", "licenseId": "CC0-1.0", "attributionText": "Fuzzy Pyrrharctia isabella caterpillar photographed by Koalacuddles; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-monarch-egg-leaf", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Monarch_butterfly_egg_on_a_leaf.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Monarch_butterfly_egg_on_a_leaf.jpg",
+          "creator": "Shocksingularity", "licenseId": "CC0-1.0", "attributionText": "Monarch butterfly egg on milkweed photographed by Shocksingularity; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "isolated caterpillar morphology and a monarch egg on milkweed without a shared crop-damage case",
+      "cultivar": "unknown", "lifeStage": "larva and egg references from different observations",
+      "affectedLocation": "organism close-ups without whole-plant distribution, feeding edge, frass, interior bud, stem or controls",
+      "distribution": "separate observations without a crop map, larval or egg density, affected-unaffected comparison or damage linkage",
+      "progression": "no hatch, feeding sequence, frass accumulation, tissue loss, larval growth, adult emergence or crop response",
+      "mediumRootZone": "not documented and not relevant to the organism references",
+      "environment": "temperature, humidity, airflow, nearby hosts, incoming plants, lighting, sprays and sanitation are absent",
+      "measuredValues": "no larvae or eggs per plant, frass count, tissue-loss estimate, trap or adult trend, marked-plant follow-up or crop-loss measure accompanies the pair",
+      "diagnosticSigns": ["direct larval morphology can establish that an organism is caterpillar-like but does not prove it caused unrelated chewing", "a single egg can be compatible with a known butterfly yet does not establish crop injury", "case attribution requires a linked larva or egg plus compatible fresh feeding, frass, counts, distribution and progression"],
+      "plausibleAlternatives": ["sawfly, beetle or other chewing larvae", "slugs, snails, earwigs, grasshoppers, mammals or physical tearing", "old healed damage without an active organism", "disease, spray, wind, handling or mixed injury"],
+      "confirmationMethod": "Capture whole-plant distribution, fresh feeding margins, leaf undersides, buds, stems, flowers, frass and body-scale organisms; distinguish caterpillar prolegs from sawfly larvae and other chewers; count larvae, eggs and new damage on marked plants; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "disease"],
+      "expectedUrgency": "inspect fresh feeding sites promptly when larvae, frass or new tissue loss are increasing",
+      "expectedQuarantineGuidance": "Limit movement only when active linked larvae or eggs and fresh damage are supported; do not quarantine from an isolated caterpillar reference, egg or old hole alone.",
+      "expectedScoutingSteps": ["map plants and capture whole-plant damage, fresh margins, undersides, buds, stems, flowers, frass and body-scale organisms", "count larvae, eggs and new injury on marked plants and repeat over time", "record nearby hosts, adults, temperature, lighting, incoming plants, sprays and sanitation", "distinguish sawflies, beetle larvae, slugs, snails, physical tearing and old damage before pest-specific action"],
+      "expectedIpmResponse": "Do not attribute chewing to caterpillars from an isolated larva, egg or old hole. Require a case-linked compatible larva or egg plus fresh feeding or frass, counts, mapped distribution and progression; distinguish sawflies and other chewers, preserve non-pest injury alternatives and avoid invented pesticide directions."
     }
   ]
 }
