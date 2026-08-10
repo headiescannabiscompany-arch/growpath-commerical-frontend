@@ -6468,6 +6468,74 @@
       "expectedQuarantineGuidance": "Limit movement and cross-contact only when persistent colony growth, compatible spread or confirmatory evidence supports an infectious disease; do not quarantine for droplets or glare alone.",
       "expectedScoutingSteps": ["capture dry upper and lower surfaces, macro colony margins, whole plants and unaffected controls in neutral light", "perform a documented wipe test and inspect residue, droplets, trichomes and fungal structures under magnification", "map leaf age, canopy, airflow, humidity, temperature, wetness and plant-to-plant progression", "distinguish downy mildew, botrytis, mites, residue, edema and nutrient causes and seek laboratory confirmation when warranted"],
       "expectedIpmResponse": "Do not diagnose powdery mildew from white pixels, droplets, glare or residue alone. Require dry multi-angle views, persistent colony texture, magnified fungal evidence, compatible distribution and progression; preserve moisture, residue, anatomy, pest and other disease alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-botrytis-host-location-boundary-open-004",
+      "caseId": "botrytis_gray_mold_bud_rot",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby4-botrytis-peanut-base", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Botrytis-cinerea-affecting-peanut-at-the-base-of-the-host-plant.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Botrytis-cinerea-affecting-peanut-at-the-base-of-the-host-plant.jpg",
+          "creator": "Lindsey D. Thiessen and Jason E. Woodward", "licenseId": "CC-BY-4.0", "attributionText": "Botrytis cinerea at the base of a peanut plant by Lindsey D. Thiessen and Jason E. Woodward; CC BY 4.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ccby4-botrytis-carrots", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:M%C3%B6hren_Botrytis_cinerea_-_A.Frank,_A.K%C3%A4gi,_W.Heller,_Agroscope.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/M%C3%B6hren_Botrytis_cinerea_-_A.Frank,_A.K%C3%A4gi,_W.Heller,_Agroscope.jpg",
+          "creator": "Aline Frank, Andreas Kägi, Werner Heller, Agroscope", "licenseId": "CC-BY-4.0", "attributionText": "Botrytis cinerea on carrots by Aline Frank, Andreas Kägi, Werner Heller, Agroscope; CC BY 4.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "peanut stem base and harvested carrots documented with Botrytis cinerea",
+      "cultivar": "unknown", "lifeStage": "vegetative field plant and harvested storage roots from separate cases",
+      "affectedLocation": "different host organs without a shared crop, flower interior, stem cross-section, root zone or unaffected controls",
+      "distribution": "cross-host references without canopy, flower, wound, storage-lot, airflow, condensation or plant-to-plant mapping",
+      "progression": "single-time images without first lesion, internal browning, sporulation sequence, humidity event, spread or recovery",
+      "mediumRootZone": "roots, substrate moisture, drainage, oxygen, pH and EC are not case-linked",
+      "environment": "host location differs, while humidity, condensation, temperature, airflow, crowding, wounds, sanitation and storage history are absent",
+      "measuredValues": "no humidity and temperature trend, leaf or flower wetness, internal-tissue inspection, microscopy, culture or molecular result, storage record or marked-tissue progression accompanies the pair",
+      "diagnosticSigns": ["Botrytis can affect different susceptible organs and hosts", "host location and gray material alone do not distinguish active Botrytis from other decay or debris", "attribution requires internal tissue condition, characteristic sporulation or qualified confirmation, compatible moisture context, distribution and progression"],
+      "plausibleAlternatives": ["other fungal or bacterial decay", "senescence, bruising, frost, heat or mechanical wounds", "powdery mildew, residue, dust or harmless saprophytes", "insects, mites, nutrient stress or root-zone failure"],
+      "confirmationMethod": "Open symptomatic flowers or tissues and compare healthy controls; document internal browning, lesion margins and sporulation with scale and magnification; map wounds and distribution; record humidity, condensation, temperature, airflow and storage; inspect for pests; and obtain microscopy, culture or molecular confirmation when action depends on the distinction.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest", "deficiency", "excess"],
+      "expectedUrgency": "inspect and contain rapidly expanding soft rot, internal browning or compatible gray sporulation promptly",
+      "expectedQuarantineGuidance": "Limit movement and cross-contact when active compatible decay or sporulation is present; do not quarantine for gray color, bruising or debris alone.",
+      "expectedScoutingSteps": ["capture outer and opened internal tissue, lesion margins, sporulation, whole plants or lots and unaffected controls", "map affected organs, wounds, canopy or storage distribution and progression", "record humidity, condensation, wetness, temperature, airflow, sanitation and handling history", "distinguish other decay, injury, senescence, residue and pests and seek qualified confirmation when warranted"],
+      "expectedIpmResponse": "Do not diagnose Botrytis or bud rot from gray color, surface fuzz or one host image alone. Require internal tissue inspection, characteristic sporulation or confirmation, moisture and wound context, mapped distribution and progression; preserve other decay, injury, senescence, residue and pest alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-downy-mildew-host-microscopy-boundary-open-004",
+      "caseId": "downy_mildew",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-eb1911-peronospora-erysiphe-illustration", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:EB1911_Fungi_-_Peronospora_parasitica_and_Erysiphe.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/EB1911_Fungi_-_Peronospora_parasitica_and_Erysiphe.jpg",
+          "creator": "Encyclopaedia Britannica, 11th edition", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Historical Peronospora and Erysiphe illustration from Encyclopaedia Britannica, 11th edition; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-ars-healthy-cucumber-vines", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:ARS_cucumber.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/ARS_cucumber.jpg",
+          "creator": "Stephen Ausmus, USDA ARS", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Healthy cucumber vines photographed by Stephen Ausmus, USDA ARS; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "historical Peronospora microscopy illustration and a separate healthy cucumber crop reference",
+      "cultivar": "unknown cucumber in one reference", "lifeStage": "fruiting cucumber and a non-case-specific fungal illustration",
+      "affectedLocation": "no symptomatic upper and lower leaf pair, angular lesion, underside sporulation, roots or unaffected control from one case",
+      "distribution": "separate references without vein-limited lesion, leaf-age, canopy, wetness, airflow or plant-to-plant mapping",
+      "progression": "no lesion onset, underside sporulation sequence, weather event, spread, laboratory result or recovery",
+      "mediumRootZone": "roots, moisture, drainage, oxygen, pH, EC and nutrition are not documented for a symptomatic case",
+      "environment": "healthy vines are visible, but humidity, temperature, leaf-wetness duration, irrigation, airflow, crowding and recent weather are absent",
+      "measuredValues": "no paired leaf surfaces, magnified sporangiophores, microscopy, molecular test, humidity and temperature trend, wetness duration or marked-leaf progression accompanies the pair",
+      "diagnosticSigns": ["Peronospora morphology is diagnostically relevant when observed in the submitted case", "a healthy susceptible host does not establish disease absence or presence", "downy-mildew attribution requires host-compatible angular lesions, underside sporulation, moisture context, distribution, progression and confirmatory evidence"],
+      "plausibleAlternatives": ["powdery mildew, bacterial or fungal leaf spot", "nutrient deficiency, spray injury, edema or senescence", "residue, dust, guttation, trichomes or glare", "mites, thrips, physical damage or mixed causes"],
+      "confirmationMethod": "Capture the same lesions from upper and lower surfaces in neutral light with macro and whole-plant context; determine whether lesions are vein-limited; inspect underside growth under magnification; map leaf age and spread; record humidity, temperature and wetness; and obtain microscopy or molecular confirmation when the distinction changes action.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest", "deficiency", "lockout"],
+      "expectedUrgency": "inspect underside growth and contain compatible rapidly spreading lesions promptly under wet, humid conditions",
+      "expectedQuarantineGuidance": "Limit movement only when compatible lesions, underside sporulation or confirmatory evidence supports infectious downy mildew; do not quarantine a healthy host or illustration.",
+      "expectedScoutingSteps": ["capture paired upper and lower leaf views, lesion margins, macro underside signs, whole plants and unaffected controls", "map vein-limited lesions by leaf age, canopy and plant and track spread", "record humidity, temperature, wetness, irrigation, airflow and recent weather", "distinguish powdery mildew, leaf spots, nutrients, spray, edema and pests and seek laboratory confirmation when warranted"],
+      "expectedIpmResponse": "Do not diagnose downy mildew from host identity, yellow patches, white pixels or a reference illustration alone. Require paired leaf surfaces, compatible angular lesions, underside sporulation or confirmation, moisture context, mapped distribution and progression; preserve leaf spot, nutrient, spray, edema and pest alternatives and never invent pesticide directions."
     }
   ]
 }
