@@ -5858,6 +5858,74 @@
       "expectedIpmResponse": "Do not attribute chewing to caterpillars from an isolated larva, egg or old hole. Require a case-linked compatible larva or egg plus fresh feeding or frass, counts, mapped distribution and progression; distinguish sawflies and other chewers, preserve non-pest injury alternatives and avoid invented pesticide directions."
     },
     {
+      "recordId": "diagnosis-leafminer-underside-egg-active-mine-boundary-open-004",
+      "caseId": "leafminers",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-tagetes-leafminer-underside", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tagetes_sp._eaten_by_leaf_miners,_leaf_bottom_01.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tagetes_sp._eaten_by_leaf_miners,_leaf_bottom_01.jpg",
+          "creator": "Retired electrician", "licenseId": "CC0-1.0", "attributionText": "Leaf-miner damage on the underside of Tagetes foliage photographed by Retired electrician; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-spinach-leafminer-eggs", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pegomya_hyoscyami_leaf_miner_eggs_on_chard_leaf.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pegomya_hyoscyami_leaf_miner_eggs_on_chard_leaf.jpg",
+          "creator": "Babahu", "licenseId": "CC0-1.0", "attributionText": "Spinach leaf-miner eggs on a chard leaf photographed by Babahu; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "Tagetes with underside mine damage and a separate chard leaf carrying identified spinach leaf-miner eggs",
+      "cultivar": "unknown", "lifeStage": "mine damage and externally laid eggs from separate host observations",
+      "affectedLocation": "leaf underside and egg close-up without one case's whole plant, transmitted-light mine, larva, exit hole or healthy control",
+      "distribution": "cross-host references without a target-crop map, mine count, canopy position, affected-unaffected comparison or adult context",
+      "progression": "no linked sequence from eggs through active internal feeding, frass, mine expansion, emergence or new-leaf incidence",
+      "mediumRootZone": "not documented and not sufficient to attribute the direct leaf pattern",
+      "environment": "temperature, humidity, airflow, incoming plants, nearby hosts, weeds, sprays and sanitation are absent",
+      "measuredValues": "no eggs per leaf, active mines per leaf, larvae per mine, frass trail, adult trap trend or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["underside mine damage is compatible with leaf miners but cannot identify species or prove that a separate egg caused it", "eggs on a leaf strengthen an oviposition hypothesis only when their identity and relationship to active mines are established", "case attribution requires an internal mine path with larva, frass, entry or exit evidence plus counts, distribution and progression"],
+      "plausibleAlternatives": ["edema, sunscald, spray injury, abrasion or other blistering", "fungal, bacterial or oomycete lesions", "thrips, mites, caterpillars or surface-feeding insects", "unrelated insect eggs, normal variegation, senescence, nutrient or root-zone stress"],
+      "confirmationMethod": "Capture whole-plant distribution, both leaf surfaces and transmitted-light views of intact mines; inspect mines for larvae, frass and entry or exit points; identify eggs separately; count active and empty mines on marked leaves; track new damage and adults; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect intact active mines and quantify new-leaf incidence promptly when damage is expanding",
+      "expectedQuarantineGuidance": "Limit movement only when active mines, associated larvae or a credible egg-to-mine sequence are supported; do not quarantine from eggs or one pale patch alone.",
+      "expectedScoutingSteps": ["map plants and canopy zones and capture whole leaves, both surfaces, transmitted-light mine paths, larvae, frass, eggs and controls", "count active and empty mines and eggs on marked leaves and repeat over time", "record adults, nearby hosts, incoming plants, weeds, environment, sprays and sanitation", "distinguish edema, lesions, thrips, mites, caterpillars, surface feeding and unrelated eggs before pest-specific action"],
+      "expectedIpmResponse": "Do not diagnose leaf miners or assign species from eggs, an underside patch or a cross-host reference alone. Require a case-linked internal path plus larva, frass, entry or exit evidence, counts, mapped distribution and progression; preserve disease, edema, feeding and abiotic alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-caterpillar-species-damage-link-boundary-open-004",
+      "caseId": "caterpillars",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-azalea-caterpillar-group", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Azalea_Caterpillar_5.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Azalea_Caterpillar_5.jpg",
+          "creator": "Alabama Extension / Shane Harris", "licenseId": "CC0-1.0", "attributionText": "Azalea caterpillars photographed by Shane Harris for Alabama Extension; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-nps-pd-western-tent-caterpillar", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Western_Tent_Caterpillar_(Malacosoma_californicum)_(25671228690).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Western_Tent_Caterpillar_(Malacosoma_californicum)_(25671228690).jpg",
+          "creator": "Joshua Tree National Park", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Western tent caterpillar photographed by Joshua Tree National Park; U.S. public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "two caterpillar species references without one crop's linked fresh feeding, frass or damage sequence",
+      "cultivar": "unknown", "lifeStage": "visible larvae from separate host and habitat observations",
+      "affectedLocation": "organism views without one case's whole-plant distribution, fresh feeding edge, interior bud, stem, flower, frass or controls",
+      "distribution": "separate observations without a crop map, larval density, affected-unaffected comparison or damage linkage",
+      "progression": "no feeding sequence, frass accumulation, tissue loss, larval growth, adult emergence or crop response",
+      "mediumRootZone": "not documented and not sufficient to attribute chewing",
+      "environment": "temperature, humidity, airflow, nearby hosts, incoming plants, lighting, sprays and sanitation are absent",
+      "measuredValues": "no larvae per plant, fresh feeding-site count, frass count, tissue-loss estimate, trap trend or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["a visible caterpillar establishes organism type but not that it caused unrelated crop damage", "species appearance and host association vary, while sawfly and beetle larvae can resemble caterpillars", "case causality requires a larva physically linked to compatible fresh feeding or frass plus counts, distribution and progression"],
+      "plausibleAlternatives": ["sawfly, beetle or other chewing larvae", "slugs, snails, earwigs, grasshoppers, mammals or physical tearing", "old healed damage without an active organism", "disease, spray, wind, handling or mixed injury"],
+      "confirmationMethod": "Capture whole-plant distribution, fresh feeding margins, leaf undersides, buds, stems, flowers, frass and body-scale organisms; verify proleg pattern and other diagnostic morphology; count larvae and new damage on marked plants; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "other_abiotic", "disease"],
+      "expectedUrgency": "inspect fresh feeding sites promptly when larvae, frass or new tissue loss are increasing",
+      "expectedQuarantineGuidance": "Limit movement only when active linked larvae and fresh damage are supported; do not quarantine from an isolated caterpillar, web or old hole alone.",
+      "expectedScoutingSteps": ["map plants and capture whole-plant damage, fresh margins, undersides, buds, stems, flowers, frass and body-scale organisms", "count larvae and new injury on marked plants and repeat over time", "record nearby hosts, adults, temperature, lighting, incoming plants, sprays and sanitation", "distinguish sawflies, beetle larvae, slugs, snails, physical tearing and old damage before pest-specific action"],
+      "expectedIpmResponse": "Do not attribute chewing or name a caterpillar species from an isolated larva or old hole. Require a case-linked larva plus compatible fresh feeding or frass, morphology, counts, mapped distribution and progression; distinguish sawflies and other chewers, preserve non-pest injury alternatives and avoid invented pesticide directions."
+    },
+    {
       "recordId": "diagnosis-beneficial-aphid-parasitoid-boundary-open-003",
       "caseId": "beneficial_and_harmless_lookalikes",
       "imageSet": [
