@@ -7230,6 +7230,56 @@
       "expectedQuarantineGuidance": "Limit movement of plants, tools, soil and water when a transmissible vascular or root disease is credible, but do not quarantine for wilt, yellowing or a reference culture alone.",
       "expectedScoutingSteps": ["capture whole plants, bed pattern, roots, crowns, lower stems, sanitized vascular cuts and unaffected controls","record onset, daytime recovery, asymmetry, plant-to-plant progression, irrigation and root-zone measurements","compare bacterial streaming, root rot, vascular discoloration and abiotic wilt patterns using qualified methods","preserve representative tissue for case-linked culture or molecular confirmation when identity changes management"],
       "expectedIpmResponse": "Do not diagnose Fusarium from wilt, yellowing or a labeled culture image alone. Require case-linked root, crown and internal vascular evidence, mapped distribution, progression, root-zone context and qualified confirmation; preserve bacterial wilt, Verticillium, oomycetes, injury, water, salinity, pH, EC, temperature and nutrition alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-fusarium-microscopy-transfer-boundary-open-006",
+      "caseId": "fusarium",
+      "imageSet": [
+        {"imageId":"wikimedia-cc0-fusarium-sp-culture","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Fusarium_sp..jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Fusarium_sp..jpg","creator":"Gabenitez","licenseId":"CC0-1.0","attributionText":"Fusarium species culture photographed by Gabenitez; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-cc0-fusarium-spores-400x","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Microscopic_view_of_Fusarium_spores_%E2%80%93_400x.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Microscopic_view_of_Fusarium_spores_%E2%80%93_400x.jpg","creator":"Arpitoon","licenseId":"CC0-1.0","attributionText":"Fusarium spores at 400x photographed by Arpitoon; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "no symptomatic plant is linked to the separate Fusarium culture and microscopy references",
+      "cultivar": "not applicable",
+      "lifeStage": "laboratory culture and microscopic spores",
+      "affectedLocation": "no case-linked roots, crown, stem, vascular tissue, foliage, whole plant or control is shown",
+      "distribution": "no bed, irrigation-zone, plant-to-plant, asymmetric, root-zone or affected-unaffected pattern is represented",
+      "progression": "no plant symptom, vascular discoloration, root decline, wilt, collapse, spread or recovery sequence is represented",
+      "mediumRootZone": "root integrity, moisture, oxygen, drainage, temperature, pH, EC and irrigation history are absent",
+      "environment": "air and root-zone temperature, humidity, wetness, water source, sanitation and application history are absent",
+      "measuredValues": "400x is reported for one reference, but no case-linked sampling, culture chain, root-zone reading, vascular observation, molecular test or progression accompanies the pair",
+      "diagnosticSigns": ["the references document Fusarium-compatible culture and spore morphology","reference morphology does not prove that Fusarium caused symptoms in an unrelated plant","organism attribution requires case-linked sampling, roots and vascular evidence, spatial and temporal pattern and qualified interpretation"],
+      "plausibleAlternatives": ["Verticillium, bacterial wilt, Pythium, Phytophthora or another root or vascular disease","drought, waterlogging, low root-zone oxygen, salinity, pH or EC stress","root injury, transplant shock, heat, cold, vascular damage or nutrition","environmental or laboratory contamination unrelated to the plant syndrome"],
+      "confirmationMethod": "Trace representative root, crown or vascular tissue from the affected plant through documented sampling, culture or molecular testing; capture whole plants and internal tissue with scale; map distribution and progression; record root-zone measurements; and use qualified interpretation when identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","disease","other_abiotic","deficiency"],
+      "expectedUrgency": "preserve representative case-linked root, crown and vascular tissue promptly when wilt is progressing",
+      "expectedQuarantineGuidance": "Limit movement only when a transmissible root or vascular disease is credible from the actual case; do not quarantine from stock culture or microscopy images alone.",
+      "expectedScoutingSteps": ["capture whole plants, bed pattern, roots, crowns, lower stems, vascular cuts and controls","record onset, asymmetry, plant-to-plant progression, irrigation and root-zone measurements","maintain sample identity from plant tissue through qualified culture or molecular testing","distinguish other pathogens, water stress, salinity, pH, EC, temperature, injury and nutrition"],
+      "expectedIpmResponse": "Do not transfer a Fusarium culture or spore reference into a plant diagnosis. Require case-linked sampling, compatible root and vascular evidence, mapped distribution, progression, root-zone measurements and qualified confirmation; retain other disease and abiotic alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-two-spotted-mite-predatory-lookalike-boundary-open-006",
+      "caseId": "two_spotted_spider_mites",
+      "imageSet": [
+        {"imageId":"wikimedia-ccby4-tetranychus-urticae-dbcls-201612","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:201612_tetranychus_urticae.png","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/201612_tetranychus_urticae.png","creator":"DataBase Center for Life Science (DBCLS)","licenseId":"CC-BY-4.0","attributionText":"Tetranychus urticae reference by DataBase Center for Life Science (DBCLS); CC BY 4.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-cc0-proprioseiopsis-mexicanus-predatory-mite-3","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Proprioseiopsis_mexicanus_3.png","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Proprioseiopsis_mexicanus_3.png","creator":"Dr. Monica Farfan","licenseId":"CC0-1.0","attributionText":"Predatory mite Proprioseiopsis mexicanus imaged by Dr. Monica Farfan; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "separate two-spotted-spider-mite and predatory-mite morphology references without a linked symptomatic crop",
+      "cultivar": "not applicable",
+      "lifeStage": "mite morphology references without a complete egg, nymph and adult plant-linked sequence",
+      "affectedLocation": "organism views without paired leaf surfaces, growing points, whole plants, roots or matched controls",
+      "distribution": "no canopy, plant-to-plant, web-density, predator-prey or affected-unaffected mapping is represented",
+      "progression": "no mite or egg counts, stippling expansion, bronzing, web progression, predator activity or recovery is represented",
+      "mediumRootZone": "not relevant to organism morphology and not documented",
+      "environment": "temperature, humidity, airflow, drought, dust, nearby hosts and application history are absent",
+      "measuredValues": "no stated case magnification, mites-per-leaf, eggs-per-leaf, predator-prey ratio, web extent, damage score or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["the references show that pest and predatory mites can overlap at ordinary photo scale","mite-shaped pixels alone cannot establish two-spotted-spider-mite identity or crop injury","case attribution requires compatible pest mites or eggs plus plant-linked feeding or fine webbing, counts, distribution and progression while beneficials are classified separately"],
+      "plausibleAlternatives": ["predatory mites, broad mites, russet mites or other small arthropods","thrips, leafhoppers, lace bugs or other stippling pests","true spider webs, fibers, dust, residue, trichomes or fungal strands","light, heat, drought, wind, spray, abrasion, root or nutrient injury"],
+      "confirmationMethod": "Capture whole plants, canopy distribution and paired leaf surfaces; photograph mites, eggs, cast skins, stippling and fine webbing under stated magnification with scale; compare pest and predatory morphology and behavior; count each group separately over time; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","pest","other_abiotic","deficiency"],
+      "expectedUrgency": "promptly distinguish reproducing pest mites from beneficial mites when stippling or fine webbing is expanding",
+      "expectedQuarantineGuidance": "Limit plant contact and movement when reproducing pest mites and spreading injury are credible, but do not quarantine for a mite-shaped organism or identified predator alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy map, paired surfaces, growing points, webbing and controls","inspect under stated magnification for pest mites, eggs, cast skins, predatory mites and feeding injury","count pest and predatory mites separately on marked leaves and repeat with environmental records","distinguish other pests, true spiders, debris and abiotic stippling before action"],
+      "expectedIpmResponse": "Do not diagnose or treat two-spotted spider mites from mite-shaped pixels, stippling or generic webbing alone. Require compatible pest mites or eggs plus plant-linked injury, counts, mapped distribution and progression; distinguish and preserve predatory mites, retain other-pest and abiotic alternatives and never invent pesticide directions."
     }
   ]
 }
