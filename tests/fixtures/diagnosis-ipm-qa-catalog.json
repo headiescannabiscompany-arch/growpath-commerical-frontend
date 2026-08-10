@@ -6332,6 +6332,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for presumed calcium-delivery disorder; separately evaluate transmissible fruit decay when compatible spread or pathogen evidence exists.",
       "expectedScoutingSteps": ["map affected fruit by plant, cluster and set date with unaffected fruit and new cohorts", "record irrigation volume and timing, moisture trend, weather, crop load and complete nutrient inputs", "inspect roots, drainage and compaction and measure representative pH, EC, water and ion context", "distinguish decay, injury, salinity, pH, antagonism and water-driven delivery failure and track later fruit response"],
       "expectedIpmResponse": "Do not equate blossom-end rot or distorted new growth with a simple calcium shortage. Require fruit or tissue distribution, roots, water dynamics, calibrated pH and EC, water and ion context, complete inputs and response; preserve physical, root, salinity, antagonism and disease alternatives and avoid invented calcium rates."
+    },
+    {
+      "recordId": "diagnosis-normal-senescence-seasonal-leaf-boundary-open-003",
+      "caseId": "normal_senescence",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-an-autumn-leaf", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:An_autumn_leaf.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/An_autumn_leaf.jpg",
+          "creator": "Iurie Nistor", "licenseId": "CC0-1.0", "attributionText": "Autumn leaf photographed by Iurie Nistor; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-autumn-leaf-08nov17", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Autumn_Leaf_08Nov17.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Autumn_Leaf_08Nov17.jpg",
+          "creator": "Masaki Ikeda", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Autumn leaf photographed by Masaki Ikeda; public-domain dedication.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "two detached autumn leaves without a shared crop, plant or site case",
+      "cultivar": "unknown", "lifeStage": "seasonally colored detached foliage",
+      "affectedLocation": "detached leaves without whole-plant, canopy-position, stem, root or unaffected-tissue views",
+      "distribution": "separate references without old-versus-new growth, lower-versus-upper canopy, plant, row, cultivar or affected-unaffected mapping",
+      "progression": "single-time images without leaf-age history, seasonal trajectory, onset sequence, abscission, new growth or recovery",
+      "mediumRootZone": "roots, moisture, drainage, oxygen, pH, EC and nutrition are not documented",
+      "environment": "autumn context is suggested, but photoperiod, temperature, weather, irrigation, light, humidity and crop stage are not case-linked",
+      "measuredValues": "no crop age, expected harvest or dormancy date, leaf position, weather trend, root-zone measurements, tissue analysis, pathogen test or marked-leaf progression accompanies the pair",
+      "diagnosticSigns": ["seasonal leaf color and abscission can be normal in an appropriate species and life cycle", "a detached yellow, red or brown leaf does not establish normal senescence in a crop", "senescence attribution requires species and crop stage, tissue-age distribution, season or photoperiod context, progression and exclusion of active stress"],
+      "plausibleAlternatives": ["nitrogen, magnesium, potassium or other nutrient disorder", "underwatering, overwatering, root disease, low oxygen, salinity or pH problem", "heat, cold, light, spray or physical injury", "pests, infectious disease or premature stress-induced senescence"],
+      "confirmationMethod": "Identify species and expected life cycle; map symptoms by leaf age, canopy position and plant; record crop stage, season, photoperiod and weather; inspect roots and measure water, pH and EC context; compare unaffected controls; rule out pests and disease; and track whether progression follows the expected orderly pattern.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "deficiency", "lockout", "disease", "pest", "excess"],
+      "expectedUrgency": "verify crop stage and active stress promptly when yellowing, necrosis or leaf loss is premature, rapid or affecting young growth",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed normal senescence; separately evaluate transmissible causes when lesions, organisms or plant-to-plant spread support them.",
+      "expectedScoutingSteps": ["map old and new leaves, canopy positions, plants, cultivars and unaffected controls", "record species, crop stage, expected dormancy or harvest timing, season, photoperiod and recent weather", "inspect roots and measure moisture, drainage, pH, EC and complete nutrition context", "track progression and distinguish nutrient, water, root, environmental, pest and disease causes before calling it normal"],
+      "expectedIpmResponse": "Do not diagnose normal senescence from leaf color or a detached autumn leaf alone. Require species and stage, orderly age-based distribution, seasonal context, roots and measured environment, progression and exclusion of active stress; preserve nutrient, water, root, environmental, pest and disease alternatives."
+    },
+    {
+      "recordId": "diagnosis-physical-damage-hail-exposure-boundary-open-003",
+      "caseId": "physical_damage",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-noaa-large-hailstone", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hail_-NOAA.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hail_-NOAA.jpg",
+          "creator": "NOAA National Severe Storms Laboratory", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Large hailstone documented by NOAA National Severe Storms Laboratory; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-plant-stems-soil-surface", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Plant_Stems.JPG", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Plant_Stems.JPG",
+          "creator": "Gunther Cox", "licenseId": "CC0-1.0", "attributionText": "Plant stems along the soil surface photographed by Gunther Cox; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "a documented hail hazard and a separate view of intact plant stems at the soil surface",
+      "cultivar": "unknown", "lifeStage": "weather-event context and vegetative stems without a shared crop case",
+      "affectedLocation": "no case-linked torn leaves, bruises, snapped stems, impact surfaces, roots or unaffected controls are shown together",
+      "distribution": "separate references without windward, upper-canopy, field-edge, contact-point, traffic-path or affected-unaffected mapping",
+      "progression": "single-time references without event timestamp, immediate injury record, wound evolution, secondary infection, regrowth or recovery",
+      "mediumRootZone": "root anchorage, compaction, moisture, drainage and uprooting are not documented for a shared case",
+      "environment": "hail is documented in one reference, but case-linked storm, wind, handling, equipment, animal, pruning, transport and environmental history are absent",
+      "measuredValues": "no event timestamp, hail or wind measurement, handling log, wound dimensions, mapped impact direction, root assessment, organism inspection or marked-tissue progression accompanies the pair",
+      "diagnosticSigns": ["a physical hazard can cause tears, bruises, breaks and abrasion but does not prove it caused a separate plant symptom", "intact stems provide no transferable injury signature", "physical-damage attribution requires a time-linked event or contact mechanism, matching geometry, fresh wound characteristics, distribution and progression"],
+      "plausibleAlternatives": ["chewing pests, boring pests, animals or human handling", "wind, hail, equipment, pruning, transport or rubbing", "disease lesions, cankers, damping-off or secondary infection", "water, root, heat, cold, spray, nutrient or structural growth problems"],
+      "confirmationMethod": "Document the event and time; map injury direction, canopy height, edges, contact points and protected controls; capture wounds with scale from multiple angles; inspect margins, stems and roots for organisms, decay and anchorage; preserve handling and weather records; and track whether new damage stops when exposure stops.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "pest", "disease", "deficiency", "excess"],
+      "expectedUrgency": "inspect severe breaks, girdling, uprooting and fresh wounds promptly and monitor for continuing injury or secondary infection",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed physical damage; separate or sanitize affected material only when wound contamination, pests or transmissible disease evidence warrants it.",
+      "expectedScoutingSteps": ["map damage direction, canopy height, rows, edges, contact points and protected or unaffected controls", "record storm, wind, handling, equipment, animal, pruning and transport events with timestamps", "photograph wound faces, margins, stems and roots with scale and inspect for organisms, decay and anchorage failure", "track new damage and regrowth while distinguishing pest, disease, environmental and root causes"],
+      "expectedIpmResponse": "Do not diagnose physical damage from a tear, spot, broken stem or hazard image alone. Require a time-linked mechanism, matching geometry, mapped distribution, fresh wound inspection, controls and progression; preserve pest, disease, environmental and root alternatives and avoid unsupported treatment advice."
     }
   ]
 }
