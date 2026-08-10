@@ -6060,6 +6060,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for presumed light stress; separately evaluate transmissible causes when lesion, organism or spread evidence supports them.",
       "expectedScoutingSteps": ["map canopy height, fixture distance, beam center, edges, shaded tissue and unaffected controls", "record fixture settings, spectrum and photoperiod and measure a calibrated PPFD grid and DLI", "measure leaf temperature, air temperature, humidity and airflow and document recent changes", "distinguish heat, water, root, nutrient, chemical, pest and disease causes before assigning light stress"],
       "expectedIpmResponse": "Do not diagnose light stress from a lamp, bright photo, yellowing, bleaching or scorch alone. Require fixture geometry, calibrated PPFD and DLI, photoperiod, leaf temperature, environment, tissue distribution and response; preserve heat, root, nutrient, chemical, pest and disease alternatives and avoid invented light settings."
+    },
+    {
+      "recordId": "diagnosis-heat-stress-dry-leaf-drought-context-boundary-open-003",
+      "caseId": "heat_stress",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-dried-pressed-monstera-leaf", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dried_Monstera_Deliciosa_Leaf.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Dried_Monstera_Deliciosa_Leaf.jpg",
+          "creator": "Bored Botanist", "licenseId": "CC0-1.0", "attributionText": "Dried and pressed Monstera deliciosa leaf photographed by Bored Botanist; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-processing-tomatoes-drought-irrigation", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:20150415-USDA-OC-PSD-0068_Agriculture_in_the_United_States.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/20150415-USDA-OC-PSD-0068_Agriculture_in_the_United_States.jpg",
+          "creator": "Lance Cheung for USDA", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Processing tomatoes under precision drip irrigation during California drought photographed by Lance Cheung for USDA; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "a deliberately dried and pressed Monstera leaf and a separate thriving processing-tomato crop documented under drought with precision irrigation",
+      "cultivar": "unknown", "lifeStage": "detached preserved leaf and established field crop without a shared plant case",
+      "affectedLocation": "one detached leaf and a crop overview without case-linked canopy gradients, roots, leaf surfaces or controls",
+      "distribution": "separate references without sun-versus-shade, upper-versus-lower canopy, fixture, row, irrigation-zone or affected-unaffected mapping",
+      "progression": "single-time examples without exposure onset, daily timing, tissue-temperature trend, recovery period or new growth",
+      "mediumRootZone": "precision subsurface irrigation and drought context are documented only for the tomato reference; no case-linked moisture, roots, drainage, pH or EC is available",
+      "environment": "no case-linked leaf and air temperature, humidity, vapor-pressure deficit, radiation, wind, airflow, irrigation delivery or exposure duration is measured",
+      "measuredValues": "no time-aligned leaf temperature, air temperature, humidity, vapor-pressure deficit, light or radiation, wind, root-zone moisture, irrigation output, pH, EC or marked-plant response accompanies the pair",
+      "diagnosticSigns": ["a dry or scorched-looking leaf does not establish that heat caused the appearance", "drought conditions do not establish heat injury when irrigation can maintain a thriving crop", "heat-stress attribution requires measured tissue and environmental exposure linked to symptom geometry, timing, progression and recovery"],
+      "plausibleAlternatives": ["underwatering, irrigation failure, root damage, salinity or low humidity", "excess light or radiation, wind burn, spray injury or physical drying", "disease, pests, nutrient disorder, senescence or deliberate post-harvest drying", "cold injury or mixed environmental stress"],
+      "confirmationMethod": "Map symptoms by canopy position, exposure and irrigation zone; record onset and recent changes; measure time-aligned leaf and air temperature, humidity, vapor-pressure deficit, light or radiation, wind and root-zone moisture; inspect roots; compare protected and unaffected tissue; and track recovery after a documented environmental correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "disease", "pest", "deficiency", "excess"],
+      "expectedUrgency": "measure tissue temperature, environment and water delivery promptly when wilt, scorch or growth loss is progressing",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed heat stress; separately evaluate transmissible causes when organism, lesion or spread evidence supports them.",
+      "expectedScoutingSteps": ["map whole plants, canopy height, sun or fixture exposure, wind and irrigation zones with unaffected controls", "record onset, duration, daily timing, recent weather or equipment changes and recovery", "measure leaf and air temperature, humidity, vapor-pressure deficit, light or radiation, airflow and root-zone moisture", "inspect roots and distinguish water, light, wind, chemical, nutrient, pest and disease causes before assigning heat stress"],
+      "expectedIpmResponse": "Do not diagnose heat stress from dryness, curl, scorch, a hot setting or drought context alone. Require time-aligned tissue and environmental measurements, exposure geometry, water delivery, distribution, progression and recovery; preserve water, root, light, wind, chemical, pest and disease alternatives and avoid invented temperature thresholds."
+    },
+    {
+      "recordId": "diagnosis-cold-damage-surface-frost-injury-boundary-open-003",
+      "caseId": "cold_damage",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-frost-on-tree-twig", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Frost_on_tree_twig.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Frost_on_tree_twig.jpg",
+          "creator": "Rosendahl", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Frost on a tree twig photographed by Rosendahl; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-frostbitten-twig", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Frostbitten_twig.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Frostbitten_twig.jpg",
+          "creator": "Rosendahl", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Frostbitten twig photographed by Rosendahl; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "frost-covered and described frostbitten woody twigs without a documented controlled comparison",
+      "cultivar": "unknown", "lifeStage": "dormant or cold-exposed woody tissue",
+      "affectedLocation": "limited twig views without buds, cambium, roots, whole-plant distribution or protected controls",
+      "distribution": "separate views without exposed-versus-sheltered canopy, elevation, airflow, plant-row or affected-unaffected mapping",
+      "progression": "single-time images without minimum-temperature history, exposure duration, thaw sequence, delayed necrosis, bud break or recovery",
+      "mediumRootZone": "soil or substrate temperature, moisture, drainage, root condition, pH and EC are not documented",
+      "environment": "surface frost is visible, but canopy minimum temperature, duration, rate of cooling and thawing, wind, humidity, shelter and recent irrigation are not measured",
+      "measuredValues": "no time-aligned canopy and air minimum temperature, exposure duration, tissue temperature, wind, humidity, root-zone condition, post-thaw integrity or marked-tissue recovery accompanies the pair",
+      "diagnosticSigns": ["visible surface frost establishes ice deposition or a cold setting, not the severity or permanence of tissue injury", "a frostbitten description does not replace post-thaw tissue assessment and progression", "cold-damage attribution requires exposure measurements linked to tissue distribution, delayed symptoms, viability and recovery"],
+      "plausibleAlternatives": ["normal dormancy, senescence or pre-existing dead tissue", "wind or desiccation injury, drought, salinity or root damage", "disease, pests, pruning, abrasion or spray injury", "heat or light scorch and mixed environmental stress"],
+      "confirmationMethod": "Map exposed and protected tissue; recover time-aligned minimum canopy and air temperature plus exposure duration when available; document frost, wind, shelter and thaw conditions; reassess color, firmness, cambium or bud viability after thaw; compare controls; and track delayed necrosis, bud break and recovery before assigning severity.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "disease", "pest", "deficiency", "excess"],
+      "expectedUrgency": "document exposure and reassess tissue after thaw promptly, while avoiding irreversible conclusions from frost presence alone",
+      "expectedQuarantineGuidance": "Do not quarantine for frost or presumed cold damage; separately evaluate transmissible causes when organism, lesion or spread evidence supports them.",
+      "expectedScoutingSteps": ["map exposed-versus-sheltered tissue, canopy height, airflow, elevation and unaffected controls", "record minimum temperature, duration, frost, wind, irrigation, shelter and thaw timing", "reassess tissue firmness, color, cambium or bud viability after thaw and over subsequent days", "distinguish dormancy, desiccation, roots, spray, physical injury, pests and disease before assigning cold damage"],
+      "expectedIpmResponse": "Do not diagnose cold damage or its severity from visible frost, dark tissue or one post-event image alone. Require measured or well-documented exposure, tissue distribution, post-thaw viability, progression and recovery; preserve dormancy, desiccation, root, chemical, physical, pest and disease alternatives and avoid invented universal temperature thresholds."
     }
   ]
 }
