@@ -3620,7 +3620,8 @@ Gift launch remains blocked. The owner-side Stripe work is exact and limited:
    `https://api.growpathai.com/api/payments/webhook` subscribes to
    `checkout.session.completed|expired`,
    `customer.subscription.created|updated|deleted`,
-   `invoice.paid|payment_succeeded|payment_failed`, `charge.refunded`, and
+   `invoice.paid|payment_succeeded|payment_failed`, `charge.refunded`,
+   `refund.created|updated|failed`, and
    `charge.dispute.created|updated|closed|funds_withdrawn|funds_reinstated`.
 2. Rotate the exposed live Stripe secret, replace `STRIPE_SECRET_KEY` on the
    Render backend, redeploy, and expire the old key only after health checks.
@@ -3956,3 +3957,25 @@ attempt acceptance, production-index migration and legacy pending-record
 review, live Stripe key/webhook rotation evidence, safe single-worker
 enablement, real Stripe sandbox acceptance, and a mutation-capable production
 canary.
+
+A post-deployment audit of the next worker gate found additional blockers that
+must be fixed before enabling refunds. Stripe can report a created full refund
+while its Refund object is still `pending` or `requires_action`, and a later
+`refund.failed` event can make that refund terminally unsuccessful. The current
+dormant revocation path still treats a full `charge.refunded` snapshot as
+completed too early. It must instead reconcile `refund.created`,
+`refund.updated`, and `refund.failed` by exact Refund status before marking the
+gift or automatic-refund operation successful. Stripe's official refund guide
+recommends listening to `refund.created`, identifies `refund.updated` for state
+changes, and identifies `refund.failed` for failures; the owner webhook list
+above now includes all three.
+
+The same audit found that the guarded GiftSubscription migration/readiness
+tooling covers the five checkout-safety indexes but not the worker-critical
+delivery/refund indexes declared by the model while production `autoIndex` and
+`autoCreate` are disabled. It also cannot yet bootstrap an absent production
+collection because NamespaceNotFound is treated as a generic preflight failure.
+The refund lifecycle, complete worker-index migration/readiness, and guarded
+absent-collection apply path therefore remain explicit code gates. Both gift
+flags remain false, so these findings did not expose a running production
+worker or change the read-only release evidence above.
