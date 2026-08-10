@@ -7180,6 +7180,56 @@
       "expectedQuarantineGuidance": "Reduce splash and cross-contact when progressive compatible leaf spot is credible, but do not quarantine for generic brown spots or one labeled image alone.",
       "expectedScoutingSteps": ["capture whole plants, canopy layers, paired surfaces, lesion centers, margins, stems and controls","mark and count lesions and record lower-to-upper and plant-to-plant progression","record rainfall, irrigation, wetness, humidity, temperature, airflow and handling","inspect for pycnidia, pests, residue and patterned injury before qualified confirmation"],
       "expectedIpmResponse": "Do not diagnose Septoria from round brown spots or same-session resemblance alone. Require lesion-center and margin evidence, mapped canopy and splash distribution, progression, wetness history and qualified confirmation; retain competing leaf spots, pests, spray, edema, root, nutrient and environmental alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-septoria-early-blight-lookalike-boundary-open-006",
+      "caseId": "septoria_and_leaf_spots",
+      "imageSet": [
+        {"imageId":"wikimedia-cc0-tomato-septoria-3029","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3029.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3029.jpg","creator":"Wolan268","licenseId":"CC0-1.0","attributionText":"Tomato Septoria leaf spot photographed by Wolan268; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-ccby2-tomato-early-blight-7871930010","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Early_blight_on_tomato_leaves_(7871930010).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Early_blight_on_tomato_leaves_(7871930010).jpg","creator":"Dwight Sipler","licenseId":"CC-BY-2.0","attributionText":"Early blight on tomato leaves photographed by Dwight Sipler; CC BY 2.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "tomato foliage in separate documented Septoria and early-blight references",
+      "cultivar": "unknown",
+      "lifeStage": "established foliage",
+      "affectedLocation": "local leaf views without paired surfaces, stems, fruit, roots, whole plants or matched same-plant controls",
+      "distribution": "separate observations without lower-to-upper canopy, splash, plant-to-plant or affected-unaffected mapping",
+      "progression": "single-time views without new-lesion counts, center development, concentric-zone development, coalescence, defoliation or recovery",
+      "mediumRootZone": "roots, moisture, drainage, pH, EC and nutrition are not documented",
+      "environment": "rainfall, leaf wetness, splash, irrigation, humidity, temperature, airflow and handling are absent",
+      "measuredValues": "no lesion diameter or count, pycnidia assessment, concentric-zone assessment, microscopy, culture, molecular result, wetness trend or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["both sources show brown necrotic tomato-leaf lesions that can overlap at ordinary photo scale","Septoria-compatible centers and possible pycnidia must be distinguished from early-blight concentric zoning and broader target-like lesions","cross-source resemblance cannot establish which organism caused an unrelated case"],
+      "plausibleAlternatives": ["early blight, bacterial spot, Cercospora, anthracnose or other fungal leaf spots","downy mildew, rust, mixed disease or secondary colonization","leaf-miner, thrips, mite or chewing injury","spray burn, edema, sunscald, cold, abrasion, nutrient or root stress"],
+      "confirmationMethod": "Capture whole plants, lower-to-upper canopy and splash distribution, dry paired surfaces and lesion centers and margins with scale; mark and count lesions; compare pycnidia with concentric zoning; record wetness and progression; and obtain qualified microscopy or testing when identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","disease","pest","other_abiotic","deficiency"],
+      "expectedUrgency": "document fresh lesion margins and progression promptly when spotting or defoliation is expanding",
+      "expectedQuarantineGuidance": "Reduce splash and cross-contact when progressive compatible leaf spot is credible, but do not quarantine for generic brown lesions or image resemblance alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy layers, paired surfaces, lesion centers, margins, stems and controls","mark and count lesions and compare dark pycnidia-like points with concentric target-like zoning","record rainfall, irrigation, wetness, humidity, temperature, airflow and progression","inspect for pests, residue and patterned abiotic injury before qualified confirmation"],
+      "expectedIpmResponse": "Do not choose Septoria or early blight from brown tomato-leaf spots alone. Require lesion-center and margin morphology, pycnidia-versus-concentric-zone evidence, mapped canopy and splash distribution, progression, wetness history and qualified confirmation; retain other leaf spots, pests and abiotic alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-fusarium-bacterial-wilt-lookalike-boundary-open-005",
+      "caseId": "fusarium",
+      "imageSet": [
+        {"imageId":"wikimedia-ccby2-fusarium-species-15063900498","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Fusarium_Species_(15063900498).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Fusarium_Species_(15063900498).jpg","creator":"Iqbal Osman1","licenseId":"CC-BY-2.0","attributionText":"Fusarium species culture photographed by Iqbal Osman1; CC BY 2.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-cc0-tomato-bacterial-wilt-12091835495","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Tomato_Bacterial_wilt_(Pathogen_Ralstonia_solanacearum)_(12091835495).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_Bacterial_wilt_(Pathogen_Ralstonia_solanacearum)_(12091835495).jpg","creator":"Scot Nelson","licenseId":"CC0-1.0","attributionText":"Tomato bacterial wilt caused by Ralstonia solanacearum photographed by Scot Nelson; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "laboratory Fusarium culture reference and a separate tomato bacterial-wilt symptom reference",
+      "cultivar": "unknown",
+      "lifeStage": "culture morphology and an established tomato plant in separate contexts",
+      "affectedLocation": "culture and whole-plant symptom views without case-linked roots, crown, lower stem, vascular cuts or matched controls",
+      "distribution": "separate references without bed, irrigation-zone, plant-to-plant, asymmetric, root-zone or affected-unaffected mapping",
+      "progression": "single-time views without daytime recovery, unilateral yellowing, vascular discoloration, root decline, collapse or spread sequence",
+      "mediumRootZone": "root integrity, crown tissue, moisture, oxygen, drainage, temperature, pH, EC and irrigation history are absent",
+      "environment": "air and root-zone temperature, humidity, wetness, water source, sanitation, transplant injury and application history are absent",
+      "measuredValues": "no root-zone readings, vascular-cut observations, bacterial-streaming result, culture linkage, molecular test or marked-plant progression accompanies the pair",
+      "diagnosticSigns": ["a labeled Fusarium culture cannot identify the cause of wilt in an unrelated plant","bacterial wilt can produce rapid whole-plant symptoms that overlap externally with vascular fungal disease and root stress","Fusarium attribution requires case-linked root, crown and internal vascular evidence plus distribution, progression and qualified confirmation"],
+      "plausibleAlternatives": ["bacterial wilt including Ralstonia","Verticillium wilt, Pythium, Phytophthora or another root or crown disease","drought, waterlogging, low root-zone oxygen, salinity, pH or EC stress","root injury, transplant shock, heat, cold, vascular damage, nutrition or mixed causes"],
+      "confirmationMethod": "Capture whole plants, bed distribution, roots, crown and sanitized lower-stem cross-sections with scale; record irrigation, moisture, oxygen, temperature, pH, EC and progression; evaluate bacterial streaming and other lookalikes using qualified protocols; and obtain case-linked culture or molecular confirmation when organism identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","disease","other_abiotic","deficiency"],
+      "expectedUrgency": "promptly preserve representative root, crown and vascular evidence when wilt or collapse is progressing",
+      "expectedQuarantineGuidance": "Limit movement of plants, tools, soil and water when a transmissible vascular or root disease is credible, but do not quarantine for wilt, yellowing or a reference culture alone.",
+      "expectedScoutingSteps": ["capture whole plants, bed pattern, roots, crowns, lower stems, sanitized vascular cuts and unaffected controls","record onset, daytime recovery, asymmetry, plant-to-plant progression, irrigation and root-zone measurements","compare bacterial streaming, root rot, vascular discoloration and abiotic wilt patterns using qualified methods","preserve representative tissue for case-linked culture or molecular confirmation when identity changes management"],
+      "expectedIpmResponse": "Do not diagnose Fusarium from wilt, yellowing or a labeled culture image alone. Require case-linked root, crown and internal vascular evidence, mapped distribution, progression, root-zone context and qualified confirmation; preserve bacterial wilt, Verticillium, oomycetes, injury, water, salinity, pH, EC, temperature and nutrition alternatives and never invent pesticide directions."
     }
   ]
 }
