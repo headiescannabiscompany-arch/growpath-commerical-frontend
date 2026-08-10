@@ -23,8 +23,8 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 
 ## A. AI image, video, and diagnostic quality
 
-- [~] Complete the governed Diagnosis/IPM evaluation catalog: 168 of 252 reviewed
-  case records and 336 of at least 504 rights-reviewed images are present. Continue
+- [~] Complete the governed Diagnosis/IPM evaluation catalog: 170 of 252 reviewed
+  case records and 340 of at least 504 rights-reviewed images are present. Continue
   disease, pest/beneficial-lookalike, root-zone, nutrient, chemical, physical, and
   normal-aging variants; keep strict validation blocked until all records pass.
 - [~] Run every completed Diagnosis/IPM case through the GrowPath primary path and
