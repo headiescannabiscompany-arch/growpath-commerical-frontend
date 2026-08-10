@@ -6708,6 +6708,56 @@
       "expectedQuarantineGuidance": "Do not quarantine for a likely predator; separately assess any confirmed pest colony and avoid moving organisms until identity and local rules are clear.",
       "expectedScoutingSteps": ["capture dorsal, lateral and head views with scale plus the full plant context","document nearby prey, eggs, cast skins, mummies and actual feeding behavior","count predators and pests separately across plants and revisit the same area","compare life stages with trusted references or obtain qualified identification before intervention"],
       "expectedIpmResponse": "Do not classify an unfamiliar spiny larva or beetle as a pest from appearance alone. Require morphology, life-stage and behavior evidence, distinguish predators and parasitoids from prey, quantify both populations, preserve beneficial organisms and avoid unsupported pesticide or release directions."
+    },
+    {
+      "recordId": "diagnosis-spider-mite-true-web-boundary-open-004",
+      "caseId": "two_spotted_spider_mites",
+      "imageSet": [
+        {"imageId":"wikimedia-usgov-pd-spruce-spider-mite","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Spruce_spider_mite.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Spruce_spider_mite.jpg","creator":"USDA Forest Service - Northeastern Area","licenseId":"US-PUBLIC-DOMAIN","attributionText":"Spruce spider mite photographed by USDA Forest Service - Northeastern Area; U.S. public domain.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-cc0-true-spider-web-on-plant-unsplash","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Spider_web_on_plant_(Unsplash).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Spider_web_on_plant_(Unsplash).jpg","creator":"freestocks.org","licenseId":"CC0-1.0","attributionText":"True spider web on plants photographed by freestocks.org; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "spruce-host mite reference and a separate plant bearing a true spider web",
+      "cultivar": "unknown",
+      "lifeStage": "established foliage",
+      "affectedLocation": "local close-ups without paired leaf surfaces, whole plants, shoot tips, roots or matched controls",
+      "distribution": "separate references without canopy, fan-facing, plant-to-plant, web-density or affected-unaffected mapping",
+      "progression": "single-time views without stippling, bronzing, mite-count, egg-count, web expansion or recovery sequence",
+      "mediumRootZone": "roots, moisture, drainage, pH, EC and nutrition are not documented",
+      "environment": "temperature, humidity, airflow, drought, outdoor exposure and pesticide history are absent",
+      "measuredValues": "no leaf-damage scale, mites-per-leaf count, egg count, web-strand comparison, microscopy or marked progression accompanies the pair",
+      "diagnosticSigns": ["one source documents a spider mite on a conifer host","the other documents a true spider web whose larger architecture must not be treated as mite webbing","two-spotted spider-mite attribution requires compatible mites or eggs plus plant-linked stippling and fine webbing"],
+      "plausibleAlternatives": ["true spiders or other arthropod silk","thrips, leafhoppers, lace bugs or other stippling pests","dust, lint, seed floss, trichomes, residue or fungal strands","drought, heat, light, wind, nutrient or spray injury"],
+      "confirmationMethod": "Capture whole plants, canopy distribution, paired leaf surfaces and shoot tips; photograph web architecture, mobile mites and eggs under magnification with scale; count mites by leaf; record progression and environment; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","pest","other_abiotic","deficiency"],
+      "expectedUrgency": "inspect expanding stippling and fine webbing promptly under warm dry conditions while preserving representative leaves",
+      "expectedQuarantineGuidance": "Limit plant contact and movement when compatible mobile mites or eggs and spreading damage are confirmed, but do not quarantine for a true spider web alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy distribution, paired surfaces, shoot tips, web architecture and controls","inspect with magnification for mobile mites, two-spot morphology when visible, eggs, cast skins and fine webbing","count mites and damaged leaves across plants and record temperature, humidity, airflow and progression","distinguish true spiders, other pests, debris and abiotic stippling before action"],
+      "expectedIpmResponse": "Do not diagnose two-spotted spider mites from webbing or stippling alone. Require compatible mobile mites or eggs under magnification plus plant-linked fine webbing and damage; distinguish true spider webs, other pests, debris and abiotic injury and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-thrips-life-stage-morphology-boundary-open-004",
+      "caseId": "thrips",
+      "imageSet": [
+        {"imageId":"wikimedia-cc0-thrips-hawaiiensis-262529470","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Thrips_hawaiiensis_002.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Thrips_hawaiiensis_002.jpg","creator":"aerobird","licenseId":"CC0-1.0","attributionText":"Thrips hawaiiensis photographed by iNaturalist user aerobird; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-pd-mature-thrips-and-larva-1917","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Fig_11_-_(a)_Mature_Thrip,_(b)_Larva.png","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Fig_11_-_(a)_Mature_Thrip,_(b)_Larva.png","creator":"Everybody's Flower Garden (1917)","licenseId":"PUBLIC-DOMAIN-DEDICATION","attributionText":"Historical mature-thrips and larva illustration from Everybody's Flower Garden (1917); public domain.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "no linked symptomatic crop is shown; one field specimen and one historical adult-larva illustration document thrips morphology",
+      "cultivar": "not applicable",
+      "lifeStage": "adult and larval insect references without crop progression",
+      "affectedLocation": "organism views without paired leaf surfaces, flowers, growing points, whole plants or matched controls",
+      "distribution": "no canopy, flower, plant-to-plant, trap, affected-unaffected or damage map is represented",
+      "progression": "single-time morphology references without feeding-scar expansion, frass accumulation, population trend or recovery",
+      "mediumRootZone": "not relevant to organism morphology and not documented",
+      "environment": "temperature, humidity, airflow, outdoor exposure, sanitation and pesticide history are absent",
+      "measuredValues": "no specimen scale linked to a crop, adults-per-trap count, larvae-per-flower count, frass count, damage score or marked progression accompanies the pair",
+      "diagnosticSigns": ["the references document elongated thrips morphology across life stages","organism morphology alone does not prove that thrips caused damage in another crop image","thrips attribution requires compatible adults or larvae plus feeding scars, frass and plant-linked distribution"],
+      "plausibleAlternatives": ["springtails, fungus gnats, booklice, leafhoppers or other small insects","mites, aphids, whiteflies, scale or mealybugs","powdery or downy mildew, residue, edema or leaf-miner injury","abrasion, spray, wind, heat, light or nutrient-related silvering"],
+      "confirmationMethod": "Capture whole plants, growing points, flowers and paired leaf surfaces; photograph adults, larvae, narrow fringed wings and frass with scale and neutral light; tap tissue over a contrasting surface; count insects and damage; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","pest","other_abiotic","disease","deficiency"],
+      "expectedUrgency": "inspect active feeding, flowers and new growth promptly when silvering, distortion and dark frass are expanding",
+      "expectedQuarantineGuidance": "Limit movement when compatible adults or larvae and spreading damage are confirmed, but do not quarantine for silvering or a morphology reference alone.",
+      "expectedScoutingSteps": ["capture whole plants, growing points, flowers, paired surfaces, feeding scars, frass and controls","tap tissue over a contrasting surface and magnify adults, larvae and fringed wings with scale","count insects, trap captures and damaged sites across plants and revisit progression","distinguish mites, other small insects, mildew, residue and abiotic silvering before action"],
+      "expectedIpmResponse": "Do not diagnose thrips from silver pixels, distortion or an insect illustration alone. Require compatible adults or larvae, feeding scars, dark frass and plant-linked distribution; distinguish mites, other insects, mildew, residue and abiotic injury and never invent pesticide directions."
     }
   ]
 }
