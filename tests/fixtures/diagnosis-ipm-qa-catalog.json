@@ -5924,6 +5924,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for presumed lockout, but limit movement when independent pest or disease evidence supports a transmissible cause.",
       "expectedScoutingSteps": ["map tissue age, whole-plant and crop distribution with unaffected controls", "record inputs, irrigation, substrate, environment and progression", "inspect roots and measure calibrated medium-specific pH and EC plus water context", "use tissue, solution, pathogen or organism confirmation when the distinction changes management"],
       "expectedIpmResponse": "Do not diagnose lockout from chlorosis or necrosis alone. Require adequate-input history plus calibrated medium-specific pH or EC, roots, water and ion context, distribution and response; retain true deficiency, antagonism, disease, pests and environmental alternatives and avoid invented correction rates."
+    },
+    {
+      "recordId": "diagnosis-nutrient-antagonism-measured-ion-boundary-open-003",
+      "caseId": "nutrient_antagonism",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby2-boron-toxicity-rose-2313046082", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Boron_toxicity_(2313046082).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Boron_toxicity_(2313046082).jpg",
+          "creator": "Malcolm Manners", "licenseId": "CC-BY-2.0", "attributionText": "Boron-toxicity symptoms on rose foliage photographed by Malcolm Manners; CC BY 2.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-ccby4-manganese-toxicity-cabbage", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mn_toxicity_cabbage_2004-04-15.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mn_toxicity_cabbage_2004-04-15.jpg",
+          "creator": "Alan Manson", "licenseId": "CC-BY-4.0", "attributionText": "Manganese-toxicity symptoms on cabbage wrapper leaves photographed by Alan Manson; CC BY 4.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "rose foliage with documented boron toxicity and cabbage foliage with measured manganese toxicity",
+      "cultivar": "unknown", "lifeStage": "established mature foliage on separate hosts",
+      "affectedLocation": "older rose leaves and cabbage wrapper leaves without a shared plant, root system, input program or control",
+      "distribution": "cross-host references without tissue-age mapping, irrigation-zone gradients or affected-unaffected case plants",
+      "progression": "single-time observations without changing ion supply, uptake measurements, correction response or new-growth follow-up",
+      "mediumRootZone": "the rose reference reports low pH and the cabbage reference reports measured acid soil, but neither is the root zone of a new case",
+      "environment": "irrigation, water quality, substrate, drainage, temperature, humidity, light and recent applications are not paired across the references",
+      "measuredValues": "the cabbage reference reports leaf manganese of 2643 mg/kg dry matter, soil pH 3.88 in 1 M KCl, 30% acid saturation and a soil manganese test of 84; a new case has no measurements",
+      "diagnosticSigns": ["boron toxicity can visually resemble magnesium deficiency", "manganese toxicity is supported in the reference by tissue and soil measurements rather than appearance alone", "nutrient antagonism requires evidence that one ion or root-zone condition is limiting another nutrient's availability or uptake; a photo cannot establish that relationship"],
+      "plausibleAlternatives": ["true nutrient deficiency, nutrient excess or pH or EC lockout", "acid-soil metal toxicity, salinity or unsuitable water chemistry", "root disease, low oxygen, overwatering, underwatering or compaction", "disease, pests, spray injury, heat, cold, light or normal senescence"],
+      "confirmationMethod": "Map symptoms by tissue age and irrigation zone; document every nutrient and water input; inspect roots; measure calibrated medium-specific pH and EC; obtain water, solution, substrate and tissue ion analyses when warranted; compare competing-ion ratios under a qualified protocol; and track new growth after a measured correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "antagonism", "excess", "lockout", "deficiency", "other_abiotic", "disease", "pest"],
+      "expectedUrgency": "collect root-zone, input and tissue evidence promptly when symptoms or growth loss are progressing, while avoiding blind supplementation",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed antagonism; separately evaluate transmissible causes when organism, lesion or spread evidence supports them.",
+      "expectedScoutingSteps": ["map old-versus-new tissue, whole-plant and irrigation-zone distribution with unaffected controls", "record complete fertilizer, amendment, water, spray, substrate and irrigation history", "inspect roots and measure calibrated root-zone pH and EC plus water and solution context", "use representative substrate, solution and tissue ion testing and tracked response before assigning a competing-ion relationship"],
+      "expectedIpmResponse": "Do not diagnose nutrient antagonism from color, burn or pattern alone. Require complete inputs, calibrated root-zone evidence, representative ion or tissue measurements, a plausible competing-ion mechanism, distribution and response; preserve deficiency, excess, lockout, root, environmental, pest and disease alternatives and avoid invented correction rates."
+    },
+    {
+      "recordId": "diagnosis-overwatering-irrigation-flooding-boundary-open-003",
+      "caseId": "overwatering",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-watering-ornamental-plants", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Watering_ornamental_plants.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Watering_ornamental_plants.jpg",
+          "creator": "Raizkgh", "licenseId": "CC0-1.0", "attributionText": "Watering ornamental plants photographed by Raizkgh; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usfws-heavy-rain-field-flooding", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Heavy_rains_flooding_in_fields.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Heavy_rains_flooding_in_fields.jpg",
+          "creator": "U.S. Fish and Wildlife Service", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Heavy-rain flooding in fields photographed by the U.S. Fish and Wildlife Service; public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "ornamental plants receiving water and a separate flooded field after heavy rain",
+      "cultivar": "unknown", "lifeStage": "established container ornamentals and an unspecified field without a shared crop case",
+      "affectedLocation": "watering action and standing surface water without case-linked roots, crowns, drainage openings, foliage or unaffected controls",
+      "distribution": "separate references without container weights, moisture profiles, irrigation zones, elevation gradients or affected-unaffected plants",
+      "progression": "single-time observations without dry-down, root oxygen, wilt timing, root decline, recovery or repeated irrigation history",
+      "mediumRootZone": "surface watering and field flooding are visible, but root-zone water content, oxygen, drainage, pore space, temperature, pH, EC and root condition are unknown",
+      "environment": "rain or watering is visible; crop demand, humidity, airflow, temperature, light, wind and evapotranspiration are not paired",
+      "measuredValues": "no container weight, calibrated moisture-depth readings, irrigation volume and interval, runoff, drainage time, dissolved oxygen, root assessment, pH, EC or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["watering is an event, not proof of chronic overwatering", "standing water establishes flooding at the surface but does not by itself establish root hypoxia or crop injury", "overwatering attribution requires a wet root-zone trend relative to crop demand plus drainage, root condition, distribution, timing and progression"],
+      "plausibleAlternatives": ["Pythium, Phytophthora, Fusarium, Rhizoctonia or another root disease", "underwatering, uneven wetting, hydrophobic media or irrigation failure", "salinity, pH or EC stress, nutrient disorder or chemical injury", "heat, cold, low light, transplant shock, root restriction or normal wetland adaptation"],
+      "confirmationMethod": "Record irrigation volume and timing; measure moisture at representative depths through a dry-down cycle using a medium-appropriate method; compare container weights or field zones; document drainage and runoff; inspect roots and crowns for color, integrity and odor; measure pH and EC; and test disease when compatible signs or progression remain.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "disease", "lockout", "deficiency", "pest"],
+      "expectedUrgency": "measure the root zone and inspect roots promptly when persistent saturation, progressive wilt or root decline is present",
+      "expectedQuarantineGuidance": "Do not quarantine for watering or standing water alone; limit movement or shared water only when a transmissible root disease is independently supported.",
+      "expectedScoutingSteps": ["map plants, elevations and irrigation zones and capture whole plants, crowns, roots, drainage and unaffected controls", "record irrigation volume, timing, runoff and drainage and repeat moisture or weight measurements through dry-down", "inspect root color, integrity and odor and measure temperature, pH, EC and oxygen context where appropriate", "distinguish root disease, uneven wetting, drought, salinity, root restriction and wetland adaptation before assigning overwatering"],
+      "expectedIpmResponse": "Do not diagnose overwatering from one watering event, wet surface, wilt or yellowing. Require a persistent root-zone moisture trend relative to demand plus drainage, roots, irrigation history, mapped distribution and progression; preserve root disease, underwatering, salinity, nutrition and environmental alternatives and avoid invented watering schedules."
     }
   ]
 }
