@@ -7280,6 +7280,56 @@
       "expectedQuarantineGuidance": "Limit plant contact and movement when reproducing pest mites and spreading injury are credible, but do not quarantine for a mite-shaped organism or identified predator alone.",
       "expectedScoutingSteps": ["capture whole plants, canopy map, paired surfaces, growing points, webbing and controls","inspect under stated magnification for pest mites, eggs, cast skins, predatory mites and feeding injury","count pest and predatory mites separately on marked leaves and repeat with environmental records","distinguish other pests, true spiders, debris and abiotic stippling before action"],
       "expectedIpmResponse": "Do not diagnose or treat two-spotted spider mites from mite-shaped pixels, stippling or generic webbing alone. Require compatible pest mites or eggs plus plant-linked injury, counts, mapped distribution and progression; distinguish and preserve predatory mites, retain other-pest and abiotic alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-pythium-oomycete-reference-transfer-boundary-open-005",
+      "caseId": "pythium_root_rot",
+      "imageSet": [
+        {"imageId":"wikimedia-pd-handbuch-pythium-1908-14595003629","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Handbuch_der_Pflanzenkrankheiten_(1908)_(14595003629).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Handbuch_der_Pflanzenkrankheiten_(1908)_(14595003629).jpg","creator":"Internet Archive Book Images","licenseId":"PUBLIC-DOMAIN-DEDICATION","attributionText":"Historical Pythium reference from Handbuch der Pflanzenkrankheiten (1908), digitized by Internet Archive Book Images; public domain.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-cc0-phytophthora-infestans-5625","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Phytophthora_infestans5625.JPG","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Phytophthora_infestans5625.JPG","creator":"I.Sáček, senior","licenseId":"CC0-1.0","attributionText":"Phytophthora infestans photographed by I.Sáček, senior; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "historical Pythium reference and separate Phytophthora organism reference without a linked symptomatic crop",
+      "cultivar": "not applicable",
+      "lifeStage": "reference organism material without case-linked roots or plant progression",
+      "affectedLocation": "no case-linked roots, crown, stem base, foliage, whole plant or matched control is shown",
+      "distribution": "no container, irrigation-zone, bench, plant-to-plant, root-zone or affected-unaffected mapping is represented",
+      "progression": "no root discoloration, cortex loss, wilt, collapse, spread or recovery sequence is represented",
+      "mediumRootZone": "root integrity, moisture, oxygen, drainage, temperature, pH, EC, irrigation and sanitation are absent",
+      "environment": "air and root-zone temperature, humidity, wetness, water source, recirculation and application history are absent",
+      "measuredValues": "no root-zone readings, root-strength test, cortex assessment, case-linked microscopy, culture, molecular result or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["Pythium and Phytophthora are oomycete references whose morphology or labels cannot be transferred to an unrelated root syndrome","external wilt and brown roots overlap with multiple organisms and abiotic root failure","Pythium attribution requires case-linked roots, cortex integrity, root-zone conditions, distribution, progression and qualified confirmation"],
+      "plausibleAlternatives": ["Phytophthora, Fusarium, Rhizoctonia, bacterial soft rot or another root or crown disease","healthy stained or aged roots, transplant damage or physical breakage","waterlogging, low oxygen, drought, heat, cold, salinity, pH or EC stress","root pests, chemical injury, nutrient stress or mixed causes"],
+      "confirmationMethod": "Capture whole plants and washed representative roots with scale, including tips, cortex and crown; map irrigation-zone and plant-to-plant distribution; record moisture, oxygen, temperature, pH, EC and progression; preserve samples; and obtain case-linked qualified microscopy, culture or molecular confirmation when organism identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","disease","other_abiotic","deficiency","pest"],
+      "expectedUrgency": "preserve representative roots and root-zone measurements promptly when cortex loss or wilt is progressing",
+      "expectedQuarantineGuidance": "Limit movement of plants, roots, media, water and tools when a transmissible root disease is credible, but do not quarantine from organism references or generic brown roots alone.",
+      "expectedScoutingSteps": ["capture whole plants, washed roots, tips, cortex, crowns, containers and unaffected controls","record irrigation-zone distribution, onset, progression, moisture, oxygen, temperature, pH and EC","compare Pythium with Phytophthora, other root diseases, pests and abiotic root failure","preserve representative tissue for case-linked qualified confirmation"],
+      "expectedIpmResponse": "Do not diagnose Pythium from wilt, brown roots, a historical plate or another oomycete image alone. Require case-linked root and cortex evidence, root-zone measurements, mapped distribution, progression and qualified confirmation; retain Phytophthora, other diseases, pests and abiotic alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-damping-off-root-hair-lookalike-boundary-open-005",
+      "caseId": "damping_off",
+      "imageSet": [
+        {"imageId":"wikimedia-usgov-pd-treatment-damping-off-conifer-seedlings-1908","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:The_treatment_of_damping-off_in_coniferous_seedlings_(IA_treatmentofdampi04spau).pdf","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/The_treatment_of_damping-off_in_coniferous_seedlings_(IA_treatmentofdampi04spau).pdf","creator":"Perley Spaulding and United States Bureau of Plant Industry","licenseId":"US-PUBLIC-DOMAIN","attributionText":"The treatment of damping-off in coniferous seedlings (1908), United States Bureau of Plant Industry; U.S. public domain.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-cc0-hemp-seedling-stem-root-hairs","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Hanfs%C3%A4mling_mit_Wurzelhaaren_am_Stamm_-_Hemp_seedling_with_root_hairs_on_the_stem.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Hanfs%C3%A4mling_mit_Wurzelhaaren_am_Stamm_-_Hemp_seedling_with_root_hairs_on_the_stem.jpg","creator":"Vschlothauer","licenseId":"CC0-1.0","attributionText":"Normal root hairs on a two-day-old hemp seedling photographed by Vschlothauer; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "historical damping-off reference and a separate healthy two-day-old hemp seedling with normal stem root hairs",
+      "cultivar": "unknown",
+      "lifeStage": "germination and very early seedling stage",
+      "affectedLocation": "reference document and local stem-root-hair macro without full trays, root systems, medium profiles or matched symptomatic controls",
+      "distribution": "separate sources without seed-lot, tray, moisture-zone, depth, plant-to-plant or affected-unaffected mapping",
+      "progression": "single-time references without emergence counts, constriction development, lodging, tissue softening, root decline or recovery",
+      "mediumRootZone": "medium moisture, oxygen, drainage, temperature, sowing depth, compaction, pH, EC and sanitation are absent",
+      "environment": "humidity, temperature, airflow, light, condensation, irrigation, seed storage and handling are absent",
+      "measuredValues": "no emergence percentage, stem diameter, lesion scale, root-hair persistence, moisture or temperature trend, microscopy, culture, molecular result or marked-seedling follow-up accompanies the pair",
+      "diagnosticSigns": ["normal fine root hairs on a young seedling can resemble white fungal growth in a close photo","root hairs without stem constriction, water-soaking, softening or collapse are not evidence of damping-off","case attribution requires seedling-linked stem or root lesions, distribution, propagation conditions, progression and qualified confirmation when needed"],
+      "plausibleAlternatives": ["normal root hairs, hypocotyl anatomy, seed coat, fibers or medium particles","Rhizoctonia, Pythium, Phytophthora, Fusarium, Botrytis or another seedling disease","excess or deficient water, low oxygen, heat, cold, salinity, pH or EC stress","deep sowing, weak light, mechanical injury, transplant damage, insects or seed-quality failure"],
+      "confirmationMethod": "Capture full trays, emergence pattern, intact seedlings, stem bases and washed roots with scale; compare normal and affected tissue; mark seedlings and follow progression; record sowing, medium moisture, oxygen and temperature; and obtain case-linked qualified microscopy, culture or testing when organism identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","disease","other_abiotic","pest"],
+      "expectedUrgency": "document fresh stem constriction, water-soaking or collapse promptly before secondary decay obscures the primary lesion",
+      "expectedQuarantineGuidance": "Limit movement of affected trays, medium, water and tools when progressive contagious seedling disease is credible, but do not quarantine for normal root hairs or isolated poor emergence alone.",
+      "expectedScoutingSteps": ["capture full trays, emergence distribution, intact stem bases, washed roots and healthy controls","compare root hairs with persistent fungal growth, constriction, water-soaking, softening and lodging","record sowing depth, seed lot, moisture, oxygen, temperature, humidity, light and progression","preserve fresh lesion margins for case-linked qualified confirmation when needed"],
+      "expectedIpmResponse": "Do not diagnose damping-off from white hairs, one fallen seedling or a historical reference alone. Require case-linked stem or root lesions, tray distribution, propagation conditions and progression; distinguish normal root hairs, seed quality, environment, injury and multiple pathogens and never invent pesticide directions."
     }
   ]
 }
