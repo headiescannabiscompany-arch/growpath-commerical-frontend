@@ -156,6 +156,58 @@ describe("LoginScreen email verification", () => {
     expect(JSON.stringify(mockReplace.mock.calls)).not.toContain("gift-token-1");
   });
 
+  it("returns a purchaser login to one validated checkout identity", async () => {
+    const next =
+      "/account/gift-checkout/cancel?checkout_attempt_id=123e4567-e89b-42d3-a456-426614174000";
+    mockParams = { next };
+    mockLogin.mockResolvedValueOnce({ ok: true });
+    const screen = render(<LoginScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), "buyer@example.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Password"), "password123");
+    fireEvent.press(screen.getByLabelText("Sign in"));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(next));
+  });
+
+  it("returns a signed-in purchaser only to the exact gift offers continuation", async () => {
+    const next = "/offers?gift=1";
+    mockParams = { next };
+    mockLogin.mockResolvedValueOnce({ ok: true });
+    const screen = render(<LoginScreen />);
+
+    fireEvent.changeText(screen.getByPlaceholderText("Email"), "buyer@example.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Password"), "password123");
+    fireEvent.press(screen.getByLabelText("Sign in"));
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith(next));
+  });
+
+  it("never passes a purchaser checkout continuation into registration", () => {
+    mockParams = {
+      next: "/account/gift-checkout/success?session_id=cs_test_valid_session"
+    };
+    const screen = render(<LoginScreen />);
+
+    fireEvent.press(screen.getByLabelText("Create account"));
+
+    expect(mockPush).toHaveBeenCalledWith({ pathname: "/register", params: undefined });
+  });
+
+  it("preserves a validated purchaser return through forgot-password", () => {
+    const next =
+      "/account/gift-checkout/cancel?checkout_attempt_id=123e4567-e89b-42d3-a456-426614174000";
+    mockParams = { next };
+    const screen = render(<LoginScreen />);
+
+    fireEvent.press(screen.getByLabelText("Forgot password"));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/forgot-password",
+      params: { next }
+    });
+  });
+
   it("drops an untrusted next route from account creation", () => {
     mockParams = { next: "https://evil.example/steal" };
     const screen = render(<LoginScreen />);

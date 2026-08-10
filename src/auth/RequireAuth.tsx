@@ -1,15 +1,40 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { useRouter, useSegments } from "expo-router";
+import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
+import { useLocalSearchParams, usePathname, useRouter, useSegments } from "expo-router";
 import { useAuth } from "./AuthContext";
 import { useAppTheme } from "@/theme/appTheme";
+import { resolveAuthReturnPath } from "@/utils/authReturnPath";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { token, user, isHydrating, meStatus, meError, retryMe, logout } = useAuth();
   const router = useRouter();
   const segments = useSegments();
+  const pathname = usePathname();
+  const searchParams = useLocalSearchParams() as Record<
+    string,
+    string | string[] | undefined
+  >;
   const { palette } = useAppTheme();
+  const fragment = String((globalThis as any)?.window?.location?.hash || "");
+  const browserLocation = (globalThis as any)?.window?.location;
+  const rawBrowserPath =
+    Platform.OS === "web"
+      ? browserLocation
+        ? `${String(browserLocation.pathname || "")}${String(
+            browserLocation.search || ""
+          )}${String(browserLocation.hash || "")}`
+        : null
+      : undefined;
+  const authReturnPath = resolveAuthReturnPath(
+    pathname,
+    searchParams,
+    fragment,
+    rawBrowserPath
+  );
+  const loginTarget = authReturnPath
+    ? ({ pathname: "/login", params: { next: authReturnPath } } as const)
+    : "/login";
 
   React.useEffect(() => {
     if (!isHydrating) {
@@ -21,12 +46,12 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         return;
       }
       if (!token || !user) {
-        if (!inAuthGroup) router.replace("/login");
+        if (!inAuthGroup) router.replace(loginTarget as any);
         return;
       }
       if (inAuthGroup) router.replace("/home");
     }
-  }, [isHydrating, meStatus, token, user, segments]);
+  }, [authReturnPath, isHydrating, meStatus, token, user, segments]);
 
   if (isHydrating || (token && (meStatus === "loading" || meStatus === "idle"))) {
     return (
@@ -102,7 +127,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
             accessibilityLabel="Clear session and sign in"
             onPress={async () => {
               await logout();
-              router.replace("/login");
+              router.replace(loginTarget as any);
             }}
             style={{
               backgroundColor: palette.surface,
@@ -118,6 +143,22 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
             </Text>
           </Pressable>
         </View>
+      </View>
+    );
+  }
+
+  if (!token || !user) {
+    return (
+      <View
+        accessibilityLabel="Redirecting to sign in"
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: palette.page
+        }}
+      >
+        <ActivityIndicator color={palette.accent} />
       </View>
     );
   }

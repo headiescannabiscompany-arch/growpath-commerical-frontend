@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createCheckoutSession,
   createGiftCheckoutQuote,
+  getGiftCheckoutRecovery,
   type GiftCheckoutInterval,
   type GiftCheckoutQuote
 } from "@/api/subscription";
@@ -43,6 +44,7 @@ const DEFINITELY_UNCREATED_QUOTE_CODES = new Set([
   "UNAUTHENTICATED",
   "ACCOUNT_BANNED",
   "ACCOUNT_SUSPENDED",
+  "GIFT_CHECKOUT_RECOVERY_REQUIRED",
   "GIFT_QUOTE_EXPIRED",
   "GIFT_QUOTE_CHANGED",
   "GIFT_QUOTE_INVALID",
@@ -95,10 +97,14 @@ export function useGiftCheckoutReview({
   feedbackRef.current = onFeedback;
   const openCheckoutUrlRef = useRef(openCheckoutUrl);
   openCheckoutUrlRef.current = openCheckoutUrl;
+  const activeRef = useRef(true);
   const inFlightRef = useRef(false);
   const reviewRef = useRef<GiftCheckoutReview | null>(null);
   const [review, setReview] = useState<GiftCheckoutReview | null>(null);
   const [busy, setBusy] = useState(false);
+  const recoveryCheckedRef = useRef(false);
+  const recoveryCheckPromiseRef = useRef<Promise<boolean> | null>(null);
+  const needsReconciliationRef = useRef(false);
   const [needsReconciliation, setNeedsReconciliation] = useState(false);
 
   const replaceReview = useCallback((next: GiftCheckoutReview | null) => {
@@ -106,23 +112,44 @@ export function useGiftCheckoutReview({
     setReview(next);
   }, []);
 
+  const replaceNeedsReconciliation = useCallback((next: boolean) => {
+    needsReconciliationRef.current = next;
+    setNeedsReconciliation(next);
+  }, []);
+
+  useEffect(() => {
+    activeRef.current = true;
+    return () => {
+      activeRef.current = false;
+    };
+  }, []);
+
   useEffect(() => {
     let mounted = true;
-    getStoredGiftCheckoutAttempt()
-      .then((attempt) => {
-        if (mounted && attempt?.phase === "checkout_requested") {
-          setNeedsReconciliation(true);
-        }
-      })
-      .catch(() => {
-        if (mounted) {
-          setNeedsReconciliation(true);
+    const checkPromise = Promise.allSettled([
+      getStoredGiftCheckoutAttempt(),
+      getGiftCheckoutRecovery()
+    ]).then(([localResult, serverResult]) => {
+      const localRequiresRecovery =
+        localResult.status === "rejected" ||
+        localResult.value?.phase === "checkout_requested";
+      const serverRequiresRecovery =
+        serverResult.status === "rejected" || serverResult.value.state !== "none";
+      const requiresRecovery = localRequiresRecovery || serverRequiresRecovery;
+      recoveryCheckedRef.current = true;
+      needsReconciliationRef.current = requiresRecovery;
+      if (mounted) {
+        setNeedsReconciliation(requiresRecovery);
+        if (localResult.status === "rejected" || serverResult.status === "rejected") {
           feedbackRef.current(
             "error",
-            "Secure checkout retry storage could not be verified. Check Gifts you sent before another checkout."
+            "Gift checkout recovery could not be safely verified. Check account recovery before another checkout."
           );
         }
-      });
+      }
+      return !requiresRecovery;
+    });
+    recoveryCheckPromiseRef.current = checkPromise;
     return () => {
       mounted = false;
     };
@@ -136,8 +163,17 @@ export function useGiftCheckoutReview({
   }, [fingerprint, replaceReview]);
 
   const requestQuote = useCallback(async (): Promise<boolean> => {
-    if (inFlightRef.current) return false;
-    if (needsReconciliation) {
+    if (!activeRef.current || inFlightRef.current) return false;
+    if (!recoveryCheckedRef.current) {
+      feedbackRef.current(
+        "info",
+        "GrowPath is checking this account for an earlier gift checkout."
+      );
+      const safeToContinue = await recoveryCheckPromiseRef.current;
+      if (!activeRef.current || !safeToContinue) return false;
+    }
+    if (!activeRef.current || inFlightRef.current) return false;
+    if (needsReconciliationRef.current) {
       feedbackRef.current(
         "error",
         "Check the saved gift checkout before requesting another price."
@@ -149,6 +185,7 @@ export function useGiftCheckoutReview({
     const requestedFingerprint = canonicalizeGiftCheckoutFingerprint(material);
     try {
       const attempt = await prepareGiftCheckoutQuoteAttempt(material);
+      if (!activeRef.current) return false;
       const quote = await createGiftCheckoutQuote({
         plan: "pro",
         interval: material.interval,
@@ -159,6 +196,7 @@ export function useGiftCheckoutReview({
           : {}),
         ...(material.message?.trim() ? { giftMessage: material.message } : {})
       });
+      if (!activeRef.current) return false;
       if (latestFingerprintRef.current !== requestedFingerprint) {
         feedbackRef.current(
           "info",
@@ -171,7 +209,7 @@ export function useGiftCheckoutReview({
         checkoutAttemptId: attempt.checkoutAttemptId,
         fingerprint: requestedFingerprint
       });
-      setNeedsReconciliation(false);
+      replaceNeedsReconciliation(false);
       feedbackRef.current(
         "info",
         `Review the server-confirmed ${formatGiftCheckoutAmount(
@@ -181,26 +219,31 @@ export function useGiftCheckoutReview({
       );
       return true;
     } catch (error) {
+      if (!activeRef.current) return false;
       replaceReview(null);
+      const code = String((error as any)?.code || "");
       if (
-        String((error as any)?.code || "") === "GIFT_CHECKOUT_ATTEMPT_RECONCILE_REQUIRED"
+        code === "GIFT_CHECKOUT_ATTEMPT_RECONCILE_REQUIRED" ||
+        code === "GIFT_CHECKOUT_RECOVERY_REQUIRED"
       ) {
-        setNeedsReconciliation(true);
+        replaceNeedsReconciliation(true);
       }
       feedbackRef.current(
         "error",
-        errorMessage(error, "Unable to load the authoritative gift price.")
+        code === "GIFT_CHECKOUT_RECOVERY_REQUIRED"
+          ? "An earlier gift checkout must be checked from this purchasing account before another price or payment attempt."
+          : errorMessage(error, "Unable to load the authoritative gift price.")
       );
       return false;
     } finally {
       inFlightRef.current = false;
-      setBusy(false);
+      if (activeRef.current) setBusy(false);
     }
-  }, [material, needsReconciliation, replaceReview]);
+  }, [material, replaceNeedsReconciliation, replaceReview]);
 
   const confirmAndContinue = useCallback(async (): Promise<boolean> => {
-    if (inFlightRef.current) return false;
-    if (needsReconciliation) {
+    if (!activeRef.current || inFlightRef.current) return false;
+    if (needsReconciliationRef.current) {
       feedbackRef.current(
         "error",
         "Check the saved gift checkout before trying to continue."
@@ -231,8 +274,16 @@ export function useGiftCheckoutReview({
     let definitelyUncreated = false;
     try {
       await markGiftCheckoutRequested(material, current.checkoutAttemptId);
+      if (!activeRef.current) {
+        try {
+          await downgradeGiftCheckoutToQuoteOnly(material, current.checkoutAttemptId);
+        } catch {
+          // Keep checkout_requested when the exact downgrade cannot be verified.
+        }
+        return false;
+      }
       replaceReview(null);
-      setNeedsReconciliation(true);
+      replaceNeedsReconciliation(true);
       let response: Awaited<ReturnType<typeof createCheckoutSession>>;
       try {
         response = await createCheckoutSession({
@@ -251,7 +302,7 @@ export function useGiftCheckoutReview({
         if (isDefinitelyUncreatedGiftCheckoutError(error)) {
           try {
             await downgradeGiftCheckoutToQuoteOnly(material, current.checkoutAttemptId);
-            replaceReview(null);
+            if (activeRef.current) replaceReview(null);
             definitelyUncreated = true;
           } catch {
             // Keep checkout_requested when the exact downgrade cannot be verified.
@@ -259,32 +310,40 @@ export function useGiftCheckoutReview({
         }
         throw error;
       }
+      if (!activeRef.current) return false;
       const createdCheckout = requireMatchingGiftCheckoutCreateResult(response, {
         checkoutAttemptId: current.checkoutAttemptId,
         amountCents: current.quote.amountCents,
         currency: current.quote.currency
       });
+      if (!activeRef.current) return false;
       await openCheckoutUrlRef.current(createdCheckout.url);
+      if (!activeRef.current) return false;
       feedbackRef.current(
         "info",
         "Stripe gift checkout opened. Returning to GrowPath will verify the payment with the server."
       );
       return true;
     } catch (error) {
-      setNeedsReconciliation(!definitelyUncreated);
+      if (!activeRef.current) return false;
+      const activeRecoveryRequired =
+        String((error as any)?.code || "") === "GIFT_CHECKOUT_RECOVERY_REQUIRED";
+      replaceNeedsReconciliation(activeRecoveryRequired || !definitelyUncreated);
       feedbackRef.current(
         "error",
-        errorMessage(
-          error,
-          "Unable to open gift checkout. Its saved attempt must be reconciled before another one starts."
-        )
+        activeRecoveryRequired
+          ? "An earlier gift checkout must be checked from this purchasing account before another price or payment attempt."
+          : errorMessage(
+              error,
+              "Unable to open gift checkout. Its saved attempt must be reconciled before another one starts."
+            )
       );
       return false;
     } finally {
       inFlightRef.current = false;
-      setBusy(false);
+      if (activeRef.current) setBusy(false);
     }
-  }, [material, needsReconciliation, replaceReview]);
+  }, [material, replaceNeedsReconciliation, replaceReview]);
 
   return {
     quote: review?.fingerprint === fingerprint ? review.quote : null,

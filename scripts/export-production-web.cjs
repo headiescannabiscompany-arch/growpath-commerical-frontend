@@ -132,6 +132,7 @@ const fallbackRoutes = [
   "account/delete",
   "account/billing",
   "account/gift-checkout/cancel",
+  "account/gift-checkout/recover",
   "account/gift-checkout/success",
   "account/mode",
   "account/sent-gifts",

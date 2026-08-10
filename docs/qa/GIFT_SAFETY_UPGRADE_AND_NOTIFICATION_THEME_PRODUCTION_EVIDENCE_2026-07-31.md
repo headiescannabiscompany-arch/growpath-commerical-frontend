@@ -3618,13 +3618,15 @@ Gift launch remains blocked. The owner-side Stripe work is exact and limited:
 
 1. Confirm the live webhook endpoint
    `https://api.growpathai.com/api/payments/webhook` subscribes to
-   `checkout.session.completed`,
+   `checkout.session.completed|expired`,
    `customer.subscription.created|updated|deleted`,
    `invoice.paid|payment_succeeded|payment_failed`, `charge.refunded`, and
    `charge.dispute.created|updated|closed|funds_withdrawn|funds_reinstated`.
 2. Rotate the exposed live Stripe secret, replace `STRIPE_SECRET_KEY` on the
-   Render backend, redeploy, and expire the old key. Change
-   `STRIPE_WEBHOOK_SECRET` only if the endpoint signing secret changes.
+   Render backend, redeploy, and expire the old key only after health checks.
+   Roll the endpoint signing secret with a grace period, replace
+   `STRIPE_WEBHOOK_SECRET`, redeploy, and verify successful signed deliveries
+   before expiring the old signing secret.
 3. Do not create a separate gift product/price and do not enable
    `GIFT_SUBSCRIPTION_ENABLED` or `GIFT_REFUND_WORKER_ENABLED` yet. The existing
    Pro monthly/yearly prices remain the intended gift prices.

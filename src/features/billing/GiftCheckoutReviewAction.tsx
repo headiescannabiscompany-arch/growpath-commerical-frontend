@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
+import { useAuth } from "@/auth/AuthContext";
 import {
   formatGiftCheckoutAmount,
   useGiftCheckoutReview,
@@ -10,6 +11,7 @@ import {
 } from "@/features/billing/giftCheckoutReview";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { OFFERS_GIFT_RETURN_PATH, safeLoginPath } from "@/utils/authReturnPath";
 
 type Props = {
   material: GiftCheckoutReviewMaterial;
@@ -19,7 +21,66 @@ type Props = {
   openCheckoutUrl: (url: string) => Promise<void>;
 };
 
-export default function GiftCheckoutReviewAction({
+function authenticatedAccountKey(token: unknown, user: unknown): string {
+  const record =
+    user && typeof user === "object" ? (user as Record<string, unknown>) : {};
+  const identity = record.id || record._id || record.email || token;
+  return identity ? `account:${String(identity)}` : "";
+}
+
+export default function GiftCheckoutReviewAction({ ...props }: Props) {
+  const { token, user, isHydrating } = useAuth();
+  const router = useRouter();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createGiftCheckoutReviewStyles(palette), [palette]);
+
+  if (isHydrating) return null;
+
+  if (!token || !user) {
+    return (
+      <View
+        style={styles.container}
+        accessibilityLabel={
+          props.configured
+            ? "Gift checkout sign in required"
+            : "Gift checkout unavailable"
+        }
+      >
+        <View style={styles.review}>
+          <Text style={styles.pendingTitle}>
+            {props.configured ? "Sign in to buy a gift" : "Gift checkout is unavailable"}
+          </Text>
+          <Text style={styles.copy}>
+            {props.configured
+              ? "Sign in with the purchasing account before GrowPath requests a gift price or opens Stripe. No payment attempt has started."
+              : "GrowPath cannot request a gift price or create a Stripe checkout while the server reports this feature unavailable. No payment was created."}
+          </Text>
+          {props.configured ? (
+            <Pressable
+              accessibilityLabel="Sign in to buy a gift"
+              accessibilityRole="button"
+              onPress={() =>
+                router.push(safeLoginPath("", OFFERS_GIFT_RETURN_PATH) as any)
+              }
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Sign in to buy a gift</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <SignedInGiftCheckoutReviewAction
+      key={authenticatedAccountKey(token, user)}
+      {...props}
+    />
+  );
+}
+
+function SignedInGiftCheckoutReviewAction({
   material,
   recipientValid,
   configured,
@@ -129,7 +190,7 @@ export default function GiftCheckoutReviewAction({
         <Pressable
           accessibilityLabel="Check saved gift checkout"
           accessibilityRole="button"
-          onPress={() => router.push("/account/gift-checkout/cancel" as any)}
+          onPress={() => router.push("/account/gift-checkout/recover" as any)}
           style={styles.reconcileButton}
         >
           <Text style={styles.reconcileButtonText}>Check saved checkout</Text>

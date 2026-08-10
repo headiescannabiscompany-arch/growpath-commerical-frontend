@@ -237,9 +237,10 @@ describe("purchaser gift subscription API", () => {
   it("accepts the canonical direct reconciliation payload", async () => {
     const result = {
       state: "settled",
+      checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
       paymentConfirmed: true,
       canResume: false,
-      canStartNewAttempt: false,
+      canStartNewAttempt: true,
       checkoutUrl: null,
       amountCents: 9900,
       currency: "usd",
@@ -266,6 +267,7 @@ describe("purchaser gift subscription API", () => {
   it("accepts only an exact resumable Stripe checkout shape", async () => {
     const result = {
       state: "open_unpaid",
+      checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
       paymentConfirmed: false,
       canResume: true,
       canStartNewAttempt: false,
@@ -282,7 +284,9 @@ describe("purchaser gift subscription API", () => {
     } = require("@/api/subscription");
 
     await expect(
-      reconcileGiftCheckout({ checkoutAttemptId: "attempt-1" })
+      reconcileGiftCheckout({
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000"
+      })
     ).resolves.toEqual(result);
     expect(isSafeStripeCheckoutUrl(result.checkoutUrl)).toBe(true);
     expect(isSafeStripeCheckoutUrl("https://checkout.stripe.com/c/pay/not-session")).toBe(
@@ -303,6 +307,51 @@ describe("purchaser gift subscription API", () => {
     expect(
       isSafeStripeCheckoutUrl("https://checkout.stripe.com.evil.example/c/pay/session")
     ).toBe(false);
+  });
+
+  it("rejects an attempt reconciliation response correlated to a different id", async () => {
+    mockApiRequest.mockResolvedValue({
+      state: "pending",
+      checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174001",
+      paymentConfirmed: false,
+      canResume: false,
+      canStartNewAttempt: false,
+      checkoutUrl: null,
+      amountCents: 1000,
+      currency: "usd",
+      expiresAt: "2099-01-01T13:00:00.000Z",
+      gift: sentGift({ state: "checkout_pending", paidAt: null, amountCents: 1000 })
+    });
+    const { reconcileGiftCheckout } = require("@/api/subscription");
+
+    await expect(
+      reconcileGiftCheckout({
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000"
+      })
+    ).rejects.toThrow("The gift checkout status response was invalid");
+  });
+
+  it("accepts a distinct not-created terminal result that permits a new attempt", async () => {
+    const result = {
+      state: "not_created",
+      checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+      paymentConfirmed: false,
+      canResume: false,
+      canStartNewAttempt: true,
+      checkoutUrl: null,
+      amountCents: 1000,
+      currency: "usd",
+      expiresAt: "2099-01-01T13:00:00.000Z",
+      gift: sentGift({ state: "canceled", paidAt: null, amountCents: 1000 })
+    };
+    mockApiRequest.mockResolvedValue(result);
+    const { reconcileGiftCheckout } = require("@/api/subscription");
+
+    await expect(
+      reconcileGiftCheckout({
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000"
+      })
+    ).resolves.toEqual(result);
   });
 
   it.each([
@@ -372,8 +421,30 @@ describe("purchaser gift subscription API", () => {
     {
       state: "support",
       canStartNewAttempt: true,
-      gift: sentGift({ state: "canceled", amountCents: 1000 })
+      gift: sentGift({ state: "canceled", paidAt: null, amountCents: 1000 })
     },
+    {
+      state: "not_created",
+      canStartNewAttempt: false,
+      gift: sentGift({ state: "canceled", paidAt: null, amountCents: 1000 })
+    },
+    {
+      state: "not_created",
+      canStartNewAttempt: true,
+      gift: sentGift({ state: "checkout_pending", paidAt: null, amountCents: 1000 })
+    },
+    { checkoutAttemptId: undefined },
+    { checkoutAttemptId: "short" },
+    { checkoutAttemptId: ["123e4567-e89b-42d3-a456-426614174000"] },
+    {
+      checkoutAttemptId: {
+        toString: (): string => "123e4567-e89b-42d3-a456-426614174000"
+      }
+    },
+    { state: ["pending"] },
+    { currency: ["usd"] },
+    { currency: { toString: (): string => "usd" } },
+    { unexpected: true },
     { gift: sentGift({ plan: "commercial", amountCents: 1000, paidAt: null }) },
     { gift: sentGift({ interval: "weekly", amountCents: 1000, paidAt: null }) }
   ])("rejects contradictory reconciliation data %p", async (override) => {
@@ -381,6 +452,7 @@ describe("purchaser gift subscription API", () => {
       Object.assign(
         {
           state: "pending",
+          checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
           paymentConfirmed: false,
           canResume: false,
           canStartNewAttempt: false,
@@ -396,16 +468,147 @@ describe("purchaser gift subscription API", () => {
     const { reconcileGiftCheckout } = require("@/api/subscription");
 
     await expect(
-      reconcileGiftCheckout({ checkoutAttemptId: "attempt-1" })
+      reconcileGiftCheckout({
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000"
+      })
     ).rejects.toThrow("The gift checkout status response was invalid");
   });
 
-  it("requires at least one reconciliation identity before transport", async () => {
+  it("loads and validates purchaser-scoped active checkout recovery", async () => {
+    const recovery = {
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        checkoutState: "creation_unknown",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1234,
+        currency: "usd",
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true
+      }
+    };
+    mockApiRequest.mockResolvedValue({ data: recovery });
+    const { getGiftCheckoutRecovery } = require("@/api/subscription");
+
+    await expect(getGiftCheckoutRecovery()).resolves.toEqual(recovery);
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/subscription/gifts/checkout/recovery",
+      { method: "GET", auth: true, cache: "no-store" }
+    );
+  });
+
+  it.each([
+    { state: "none", attempt: null },
+    { state: "support", attempt: null }
+  ])("accepts recovery status %p without inventing an attempt", async (status) => {
+    mockApiRequest.mockResolvedValue(status);
+    const { getGiftCheckoutRecovery } = require("@/api/subscription");
+
+    await expect(getGiftCheckoutRecovery()).resolves.toEqual(status);
+  });
+
+  it.each([
+    { state: "recoverable", attempt: null },
+    { state: "none", attempt: { checkoutAttemptId: "hidden" } },
+    { state: ["none"], attempt: null },
+    { state: "none", attempt: null, unexpected: true },
+    {
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: "short",
+        checkoutState: "open",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1000,
+        currency: "usd",
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true
+      }
+    },
+    {
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        checkoutState: "settled",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1000,
+        currency: "usd",
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true
+      }
+    },
+    {
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: ["123e4567-e89b-42d3-a456-426614174000"],
+        checkoutState: "open",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1000,
+        currency: "usd",
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true
+      }
+    },
+    {
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        checkoutState: "open",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1000,
+        currency: { toString: (): string => "usd" },
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true
+      }
+    },
+    {
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        checkoutState: "open",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1000,
+        currency: "usd",
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true,
+        unexpected: true
+      }
+    }
+  ])("rejects malformed recovery status %p", async (status) => {
+    mockApiRequest.mockResolvedValue(status);
+    const { getGiftCheckoutRecovery } = require("@/api/subscription");
+
+    await expect(getGiftCheckoutRecovery()).rejects.toThrow(
+      "The gift checkout recovery response was invalid"
+    );
+  });
+
+  it("requires exactly one valid reconciliation identity before transport", async () => {
     const { reconcileGiftCheckout } = require("@/api/subscription");
 
     await expect(reconcileGiftCheckout({})).rejects.toThrow(
-      "A checkout session or saved attempt is required"
+      "Exactly one valid gift checkout identity is required"
     );
+    await expect(
+      reconcileGiftCheckout({
+        sessionId: "cs_test_valid_session",
+        recoverActiveAttempt: true
+      } as any)
+    ).rejects.toThrow("Exactly one valid gift checkout identity is required");
+    await expect(
+      reconcileGiftCheckout({ recoverActiveAttempt: false } as any)
+    ).rejects.toThrow("Exactly one valid gift checkout identity is required");
+    await expect(
+      reconcileGiftCheckout({
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        unexpected: true
+      } as any)
+    ).rejects.toThrow("Exactly one valid gift checkout identity is required");
     expect(mockApiRequest).not.toHaveBeenCalled();
   });
 });

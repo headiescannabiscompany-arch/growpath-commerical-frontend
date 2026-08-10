@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { RequireAuth } from "@/auth/RequireAuth";
 import { RouteAccessGuard } from "@/navigation/RouteAccessGuard";
@@ -10,10 +10,12 @@ const mockRetryMe = jest.fn();
 const mockLogout = jest.fn();
 let mockPathname = "/home/facility";
 let mockSegments: string[] = ["home", "facility"];
+let mockSearchParams: Record<string, string | string[]> = {};
 let mockAuth: any;
 let mockEntitlements: any;
 
 jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockSearchParams,
   usePathname: () => mockPathname,
   useRouter: () => ({ push: mockPush, replace: mockReplace }),
   useSegments: () => mockSegments
@@ -35,6 +37,7 @@ describe("auth bootstrap route guards", () => {
     mockLogout.mockReset();
     mockPathname = "/home/facility";
     mockSegments = ["home", "facility"];
+    mockSearchParams = {};
     mockAuth = {
       token: "session-token",
       user: null,
@@ -72,6 +75,96 @@ describe("auth bootstrap route guards", () => {
 
     fireEvent.press(screen.getByLabelText("Retry /api/me"));
     expect(mockRetryMe).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves one validated gift return without mounting protected children", async () => {
+    const mounted = jest.fn();
+    function ProtectedChild() {
+      React.useEffect(() => mounted(), []);
+      return <></>;
+    }
+    mockPathname = "/account/gift-checkout/cancel";
+    mockSegments = ["account", "gift-checkout", "cancel"];
+    mockSearchParams = {
+      checkout_attempt_id: "123e4567-e89b-42d3-a456-426614174000"
+    };
+    mockAuth = {
+      ...mockAuth,
+      token: null,
+      user: null,
+      meStatus: "idle",
+      meError: ""
+    };
+
+    const screen = render(
+      <RequireAuth>
+        <ProtectedChild />
+      </RequireAuth>
+    );
+
+    expect(screen.getByLabelText("Redirecting to sign in")).toBeTruthy();
+    expect(mounted).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: "/login",
+        params: {
+          next: "/account/gift-checkout/cancel?checkout_attempt_id=123e4567-e89b-42d3-a456-426614174000"
+        }
+      })
+    );
+  });
+
+  it("preserves the exact bare legacy cancel through sign-in without mounting children", async () => {
+    const mounted = jest.fn();
+    function ProtectedChild() {
+      React.useEffect(() => mounted(), []);
+      return <></>;
+    }
+    mockPathname = "/account/gift-checkout/cancel";
+    mockSegments = ["account", "gift-checkout", "cancel"];
+    mockSearchParams = {};
+    mockAuth = {
+      ...mockAuth,
+      token: null,
+      user: null,
+      meStatus: "idle",
+      meError: ""
+    };
+
+    render(
+      <RequireAuth>
+        <ProtectedChild />
+      </RequireAuth>
+    );
+
+    expect(mounted).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: "/login",
+        params: { next: "/account/gift-checkout/cancel" }
+      })
+    );
+  });
+
+  it("drops an invalid protected return instead of forwarding extra parameters", async () => {
+    mockPathname = "/account/gift-checkout/success";
+    mockSegments = ["account", "gift-checkout", "success"];
+    mockSearchParams = { session_id: "cs_test_valid_session", paid: "true" };
+    mockAuth = {
+      ...mockAuth,
+      token: null,
+      user: null,
+      meStatus: "idle",
+      meError: ""
+    };
+
+    render(
+      <RequireAuth>
+        <></>
+      </RequireAuth>
+    );
+
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/login"));
   });
 
   it("presents wrong-workspace denial as an H1 with safe navigation actions", () => {

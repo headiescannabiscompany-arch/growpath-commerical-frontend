@@ -1,9 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import { isSafeStripeCheckoutUrl, reconcileGiftCheckout } from "@/api/subscription";
+import {
+  getGiftCheckoutRecovery,
+  isSafeStripeCheckoutUrl,
+  reconcileGiftCheckout
+} from "@/api/subscription";
 import {
   clearGiftCheckoutAttemptWhenAllowed,
   getStoredGiftCheckoutAttempt
@@ -18,7 +22,8 @@ import { getThemePalette } from "@/theme/appTheme";
 import { openExternalUrl } from "@/utils/openExternalUrl";
 
 const mockReplace = jest.fn();
-let mockSearchParams: { session_id?: string | string[] } = {};
+const mockLogout = jest.fn();
+let mockSearchParams: Record<string, string | string[]> = {};
 
 function gift(overrides: Record<string, any> = {}) {
   return {
@@ -51,6 +56,7 @@ function gift(overrides: Record<string, any> = {}) {
 function reconciliation(overrides: Record<string, any> = {}) {
   return {
     state: "pending",
+    checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
     paymentConfirmed: false,
     canResume: false,
     canStartNewAttempt: false,
@@ -69,9 +75,14 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("@/api/subscription", () => ({
+  getGiftCheckoutRecovery: jest.fn(),
   reconcileGiftCheckout: jest.fn(),
   isSafeStripeCheckoutUrl: (value: unknown) =>
     typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
+}));
+
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ logout: mockLogout })
 }));
 
 jest.mock("@/features/billing/giftCheckoutAttempt", () => ({
@@ -93,8 +104,13 @@ describe("authoritative gift checkout return", () => {
       legacyVersion: false
     });
     (reconcileGiftCheckout as jest.Mock).mockResolvedValue(reconciliation());
+    (getGiftCheckoutRecovery as jest.Mock).mockResolvedValue({
+      state: "none",
+      attempt: null
+    });
     (clearGiftCheckoutAttemptWhenAllowed as jest.Mock).mockResolvedValue(true);
     (openExternalUrl as jest.Mock).mockResolvedValue(undefined);
+    mockLogout.mockResolvedValue(undefined);
   });
 
   it("reconciles a success return by its valid session only, ignoring stale storage", async () => {
@@ -132,21 +148,60 @@ describe("authoritative gift checkout return", () => {
     expect(screen.queryByText("Payment verified by GrowPath")).toBeNull();
   });
 
-  it("never clears a saved attempt from a stale success-session reconciliation", async () => {
+  it("rejects extra success parameters without reconciling any session", async () => {
+    mockSearchParams = {
+      session_id: "cs_test_valid_session",
+      paid: "true"
+    };
+    const screen = render(<GiftCheckoutReturn expectedReturn="success" />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/missing a valid Stripe Checkout session/i)).toBeTruthy()
+    );
+    expect(getStoredGiftCheckoutAttempt).not.toHaveBeenCalled();
+    expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+  });
+
+  it("clears a same-id local attempt after settled success", async () => {
     mockSearchParams = { session_id: "cs_test_valid_session" };
     (reconcileGiftCheckout as jest.Mock).mockResolvedValueOnce(
       reconciliation({
-        state: "expired",
+        state: "settled",
+        paymentConfirmed: true,
         canStartNewAttempt: true,
-        gift: gift({ state: "canceled" })
+        gift: gift({ state: "awaiting_claim", paidAt: "2030-01-01T12:01:00.000Z" })
+      })
+    );
+    render(<GiftCheckoutReturn expectedReturn="success" />);
+
+    await waitFor(() =>
+      expect(clearGiftCheckoutAttemptWhenAllowed).toHaveBeenCalledWith(
+        true,
+        "123e4567-e89b-42d3-a456-426614174000"
+      )
+    );
+  });
+
+  it("preserves a different local attempt after settled success", async () => {
+    mockSearchParams = { session_id: "cs_test_valid_session" };
+    (getStoredGiftCheckoutAttempt as jest.Mock).mockResolvedValueOnce({
+      checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174001",
+      phase: "checkout_requested",
+      legacyVersion: false
+    });
+    (reconcileGiftCheckout as jest.Mock).mockResolvedValueOnce(
+      reconciliation({
+        state: "settled",
+        paymentConfirmed: true,
+        canStartNewAttempt: true,
+        gift: gift({ state: "awaiting_claim", paidAt: "2030-01-01T12:01:00.000Z" })
       })
     );
     const screen = render(<GiftCheckoutReturn expectedReturn="success" />);
 
     await waitFor(() =>
-      expect(screen.getByText("Checkout expired without a verified payment")).toBeTruthy()
+      expect(screen.getByText(/this browser saved a different attempt/i)).toBeTruthy()
     );
-    expect(getStoredGiftCheckoutAttempt).not.toHaveBeenCalled();
     expect(clearGiftCheckoutAttemptWhenAllowed).not.toHaveBeenCalled();
   });
 
@@ -155,6 +210,7 @@ describe("authoritative gift checkout return", () => {
       reconciliation({
         state: "settled",
         paymentConfirmed: true,
+        canStartNewAttempt: true,
         gift: gift({ state: "awaiting_claim", paidAt: "2030-01-01T12:01:00.000Z" })
       })
     );
@@ -165,10 +221,13 @@ describe("authoritative gift checkout return", () => {
     );
     expect(
       screen.getByText(
-        "GrowPath is checking the exact saved gift attempt. A cancel return or recovery link alone does not prove whether a payment was submitted."
+        "GrowPath is checking the exact returned or legacy-saved gift attempt. A cancel address alone does not prove whether a payment was submitted."
       )
     ).toBeTruthy();
-    expect(clearGiftCheckoutAttemptWhenAllowed).not.toHaveBeenCalled();
+    expect(clearGiftCheckoutAttemptWhenAllowed).toHaveBeenCalledWith(
+      true,
+      "123e4567-e89b-42d3-a456-426614174000"
+    );
   });
 
   it("resumes only the same validated open and unpaid Stripe checkout", async () => {
@@ -202,7 +261,10 @@ describe("authoritative gift checkout return", () => {
     const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
 
     await waitFor(() =>
-      expect(clearGiftCheckoutAttemptWhenAllowed).toHaveBeenCalledWith(true)
+      expect(clearGiftCheckoutAttemptWhenAllowed).toHaveBeenCalledWith(
+        true,
+        "123e4567-e89b-42d3-a456-426614174000"
+      )
     );
     expect(screen.getByText("Checkout expired without a verified payment")).toBeTruthy();
     expect(
@@ -210,32 +272,108 @@ describe("authoritative gift checkout return", () => {
     ).toBeTruthy();
   });
 
-  it("ignores a success-looking session parameter on the cancel recovery route", async () => {
+  it("reports a definite not-created result without implying payment or support", async () => {
+    (reconcileGiftCheckout as jest.Mock).mockResolvedValueOnce(
+      reconciliation({
+        state: "not_created",
+        canStartNewAttempt: true,
+        gift: gift({ state: "canceled", paidAt: null })
+      })
+    );
+    const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Stripe checkout was not created")).toBeTruthy()
+    );
+    expect(screen.getByText(/no payment was submitted/i)).toBeTruthy();
+    expect(screen.queryByText("Checkout support review is required")).toBeNull();
+    expect(clearGiftCheckoutAttemptWhenAllowed).toHaveBeenCalledWith(
+      true,
+      "123e4567-e89b-42d3-a456-426614174000"
+    );
+  });
+
+  it("rejects extra cancel parameters without falling back to browser storage", async () => {
     mockSearchParams = { session_id: "cs_test_spoofed_session" };
-    render(<GiftCheckoutReturn expectedReturn="cancel" />);
+    const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/invalid or extra checkout information/i)).toBeTruthy()
+    );
+    expect(getStoredGiftCheckoutAttempt).not.toHaveBeenCalled();
+    expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+  });
+
+  it("reconciles a valid cancel URL on another tab or device without local storage", async () => {
+    mockSearchParams = {
+      checkout_attempt_id: "123e4567-e89b-42d3-a456-426614174000"
+    };
+    (getStoredGiftCheckoutAttempt as jest.Mock).mockResolvedValueOnce(null);
+    const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
 
     await waitFor(() =>
       expect(reconcileGiftCheckout).toHaveBeenCalledWith({
         checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000"
       })
     );
-    expect(reconcileGiftCheckout).not.toHaveBeenCalledWith({
-      sessionId: "cs_test_spoofed_session"
-    });
+    expect(screen.getByText("Checkout request is pending")).toBeTruthy();
+    expect(getStoredGiftCheckoutAttempt).not.toHaveBeenCalled();
   });
 
-  it("does not clear when the saved attempt changes during cancel verification", async () => {
-    (getStoredGiftCheckoutAttempt as jest.Mock)
-      .mockResolvedValueOnce({
-        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
-        phase: "checkout_requested",
-        legacyVersion: false
-      })
-      .mockResolvedValueOnce({
-        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174001",
-        phase: "checkout_requested",
-        legacyVersion: false
-      });
+  it("runs the latest return identity and discards a stale earlier response", async () => {
+    const attemptA = "123e4567-e89b-42d3-a456-426614174000";
+    const attemptB = "123e4567-e89b-42d3-a456-426614174001";
+    let resolveAttemptA!: (value: Record<string, unknown>) => void;
+    (reconcileGiftCheckout as jest.Mock)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveAttemptA = resolve;
+          })
+      )
+      .mockResolvedValueOnce(
+        reconciliation({
+          checkoutAttemptId: attemptB,
+          gift: gift({ recipientName: "Second recipient" })
+        })
+      );
+    mockSearchParams = { checkout_attempt_id: attemptA };
+    const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+    await waitFor(() =>
+      expect(reconcileGiftCheckout).toHaveBeenCalledWith({ checkoutAttemptId: attemptA })
+    );
+
+    mockSearchParams = { checkout_attempt_id: attemptB };
+    screen.rerender(<GiftCheckoutReturn expectedReturn="cancel" />);
+    await waitFor(() =>
+      expect(reconcileGiftCheckout).toHaveBeenCalledWith({ checkoutAttemptId: attemptB })
+    );
+    await waitFor(() => expect(screen.getByText("Name: Second recipient")).toBeTruthy());
+
+    await act(async () => {
+      resolveAttemptA(
+        reconciliation({
+          checkoutAttemptId: attemptA,
+          gift: gift({ recipientName: "First recipient" })
+        })
+      );
+      await Promise.resolve();
+    });
+
+    expect(screen.queryByText("Name: First recipient")).toBeNull();
+    expect(screen.getByText("Name: Second recipient")).toBeTruthy();
+    expect(reconcileGiftCheckout).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not clear mismatched local storage after URL-attempt verification", async () => {
+    mockSearchParams = {
+      checkout_attempt_id: "123e4567-e89b-42d3-a456-426614174000"
+    };
+    (getStoredGiftCheckoutAttempt as jest.Mock).mockResolvedValueOnce({
+      checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174001",
+      phase: "checkout_requested",
+      legacyVersion: false
+    });
     (reconcileGiftCheckout as jest.Mock).mockResolvedValueOnce(
       reconciliation({
         state: "expired",
@@ -246,9 +384,7 @@ describe("authoritative gift checkout return", () => {
     const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
 
     await waitFor(() =>
-      expect(
-        screen.getByText(/browser could not verify removal of its saved attempt/i)
-      ).toBeTruthy()
+      expect(screen.getByText(/this browser saved a different attempt/i)).toBeTruthy()
     );
     expect(clearGiftCheckoutAttemptWhenAllowed).not.toHaveBeenCalled();
   });
@@ -258,14 +394,165 @@ describe("authoritative gift checkout return", () => {
     const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
 
     await waitFor(() =>
-      expect(
-        screen.getByText(/No valid Stripe session or saved gift attempt/i)
-      ).toBeTruthy()
+      expect(screen.getByText(/No valid saved gift attempt/i)).toBeTruthy()
     );
     expect(reconcileGiftCheckout).not.toHaveBeenCalled();
     expect(screen.queryByText("Payment verified by GrowPath")).toBeNull();
     fireEvent.press(screen.getByLabelText("View gifts you sent"));
     expect(mockReplace).toHaveBeenCalledWith("/account/sent-gifts");
+  });
+
+  it("does not reconcile a never-submitted quote from a legacy bare cancel route", async () => {
+    (getStoredGiftCheckoutAttempt as jest.Mock).mockResolvedValueOnce({
+      checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+      phase: "quote_only",
+      legacyVersion: false
+    });
+    const screen = render(<GiftCheckoutReturn expectedReturn="cancel" />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/No valid saved gift attempt/i)).toBeTruthy()
+    );
+    expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Use the purchasing account")).toBeNull();
+  });
+
+  it("checks authenticated server recovery without browser storage", async () => {
+    (getStoredGiftCheckoutAttempt as jest.Mock).mockResolvedValueOnce(null);
+    (getGiftCheckoutRecovery as jest.Mock).mockResolvedValueOnce({
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        checkoutState: "creation_unknown",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1234,
+        currency: "usd",
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true
+      }
+    });
+    const screen = render(<GiftCheckoutReturn expectedReturn="recovery" />);
+
+    await waitFor(() =>
+      expect(reconcileGiftCheckout).toHaveBeenCalledWith({
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000"
+      })
+    );
+    expect(getStoredGiftCheckoutAttempt).not.toHaveBeenCalled();
+    expect(screen.getByText("Checkout request is pending")).toBeTruthy();
+    expect(
+      screen.getByText(/may finish or resume the same saved checkout operation/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/does not submit payment/i)).toBeTruthy();
+  });
+
+  it("clears a same-id local attempt after account recovery permits a new one", async () => {
+    (getGiftCheckoutRecovery as jest.Mock).mockResolvedValueOnce({
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        checkoutState: "creation_unknown",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1234,
+        currency: "usd",
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true
+      }
+    });
+    (reconcileGiftCheckout as jest.Mock).mockResolvedValueOnce(
+      reconciliation({
+        state: "expired",
+        canStartNewAttempt: true,
+        gift: gift({ state: "canceled" })
+      })
+    );
+    render(<GiftCheckoutReturn expectedReturn="recovery" />);
+
+    await waitFor(() =>
+      expect(clearGiftCheckoutAttemptWhenAllowed).toHaveBeenCalledWith(
+        true,
+        "123e4567-e89b-42d3-a456-426614174000"
+      )
+    );
+  });
+
+  it("preserves a different local attempt after account recovery", async () => {
+    (getGiftCheckoutRecovery as jest.Mock).mockResolvedValueOnce({
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        checkoutState: "creation_unknown",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1234,
+        currency: "usd",
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true
+      }
+    });
+    (getStoredGiftCheckoutAttempt as jest.Mock).mockResolvedValueOnce({
+      checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174001",
+      phase: "checkout_requested",
+      legacyVersion: false
+    });
+    (reconcileGiftCheckout as jest.Mock).mockResolvedValueOnce(
+      reconciliation({
+        state: "expired",
+        canStartNewAttempt: true,
+        gift: gift({ state: "canceled" })
+      })
+    );
+    const screen = render(<GiftCheckoutReturn expectedReturn="recovery" />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/this browser saved a different attempt/i)).toBeTruthy()
+    );
+    expect(clearGiftCheckoutAttemptWhenAllowed).not.toHaveBeenCalled();
+  });
+
+  it("shows server support recovery without inventing gift details", async () => {
+    (getGiftCheckoutRecovery as jest.Mock).mockResolvedValueOnce({
+      state: "support",
+      attempt: null
+    });
+    const screen = render(<GiftCheckoutReturn expectedReturn="recovery" />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift checkout support review")).toBeTruthy()
+    );
+    expect(reconcileGiftCheckout).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Recipient:/i)).toBeNull();
+    expect(screen.queryByText("Payment verified by GrowPath")).toBeNull();
+  });
+
+  it("offers a generic purchasing-account switch after owner-scoped not-found", async () => {
+    mockSearchParams = { session_id: "cs_test_valid_session" };
+    (reconcileGiftCheckout as jest.Mock).mockRejectedValueOnce(
+      Object.assign(new Error("Gift checkout not found for user 123."), {
+        code: "GIFT_RECONCILIATION_NOT_FOUND"
+      })
+    );
+    const screen = render(<GiftCheckoutReturn expectedReturn="success" />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Use the purchasing account")).toBeTruthy()
+    );
+    expect(
+      screen.getByText(/did not find this gift checkout for this signed-in account/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/No gift or recipient details were exposed/i)).toBeTruthy();
+    expect(screen.queryByText(/user 123/i)).toBeNull();
+    fireEvent.press(screen.getByLabelText("Use the purchasing account"));
+
+    await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/login",
+      params: {
+        next: "/account/gift-checkout/success?session_id=cs_test_valid_session"
+      }
+    });
   });
 
   it("normalizes only a single Stripe Checkout session identifier", () => {
@@ -300,8 +587,8 @@ describe("authoritative gift checkout return", () => {
     }
   });
 
-  it("keeps both return routes authenticated and mapped to the shared screen", () => {
-    for (const route of ["success", "cancel"]) {
+  it("keeps all checkout return routes authenticated and mapped to the shared screen", () => {
+    for (const route of ["success", "cancel", "recover"]) {
       const source = fs.readFileSync(
         path.join(
           process.cwd(),
@@ -314,7 +601,11 @@ describe("authoritative gift checkout return", () => {
         "utf8"
       );
       expect(source).toContain("<RequireAuthGate>");
-      expect(source).toContain(`<GiftCheckoutReturn expectedReturn="${route}" />`);
+      expect(source).toContain(
+        `<GiftCheckoutReturn expectedReturn="${
+          route === "recover" ? "recovery" : route
+        }" />`
+      );
       expect(source).not.toContain("paymentConfirmed: true");
     }
   });

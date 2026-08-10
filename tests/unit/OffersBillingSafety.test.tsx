@@ -2,21 +2,27 @@ import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { View as MockView } from "react-native";
 
-import Offers from "@/app/offers";
+import Offers, { isExactOffersGiftContinuation } from "@/app/offers";
 import {
   createCheckoutSession,
   createGiftCheckoutQuote,
+  getGiftCheckoutRecovery,
   getSubscriptionSetupStatus
 } from "@/api/subscription";
 import { clearGiftCheckoutAttemptWhenAllowed } from "@/features/billing/giftCheckoutAttempt";
 
 const mockRetryMe = jest.fn();
 const mockPush = jest.fn();
-const mockSearchParams: { subscription?: string; gift?: string } = {};
+const mockSearchParams: {
+  subscription?: string;
+  gift?: string | string[];
+} = {};
 let mockTrialUsed = true;
 let mockTrialPlansUsed = ["pro", "commercial", "facility"];
 let mockSubscriptionStatus = "inactive";
 let mockActivePlan = "free";
+let mockToken: string | null = "buyer-token";
+let mockUserAvailable = true;
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const originalWindow = (globalThis as any).window;
 const originalSessionStorageDescriptor = originalWindow
@@ -62,11 +68,16 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
-    user: {
-      subscriptionStatus: mockSubscriptionStatus,
-      trialUsed: mockTrialUsed,
-      trialPlansUsed: mockTrialPlansUsed
-    },
+    token: mockToken,
+    user:
+      mockToken && mockUserAvailable
+        ? {
+            subscriptionStatus: mockSubscriptionStatus,
+            trialUsed: mockTrialUsed,
+            trialPlansUsed: mockTrialPlansUsed
+          }
+        : null,
+    isHydrating: false,
     retryMe: mockRetryMe
   })
 }));
@@ -78,6 +89,7 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
   createGiftCheckoutQuote: jest.fn(),
+  getGiftCheckoutRecovery: jest.fn(),
   getSubscriptionSetupStatus: jest.fn(),
   isSafeStripeCheckoutUrl: (value: unknown) =>
     typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
@@ -106,6 +118,8 @@ describe("Offers billing safety", () => {
     mockTrialPlansUsed = ["pro", "commercial", "facility"];
     mockSubscriptionStatus = "inactive";
     mockActivePlan = "free";
+    mockToken = "buyer-token";
+    mockUserAvailable = true;
     delete mockSearchParams.subscription;
     delete mockSearchParams.gift;
     jest.clearAllMocks();
@@ -116,6 +130,10 @@ describe("Offers billing safety", () => {
     });
     (createCheckoutSession as jest.Mock).mockResolvedValue({});
     (createGiftCheckoutQuote as jest.Mock).mockResolvedValue(giftQuote());
+    (getGiftCheckoutRecovery as jest.Mock).mockResolvedValue({
+      state: "none",
+      attempt: null
+    });
   });
 
   afterAll(() => {
@@ -129,6 +147,26 @@ describe("Offers billing safety", () => {
       delete originalWindow.sessionStorage;
     }
     (globalThis as any).window = originalWindow;
+  });
+
+  it("accepts only the exact raw web gift continuation", () => {
+    expect(isExactOffersGiftContinuation({ gift: "1" }, "", "/offers?gift=1")).toBe(true);
+    expect(isExactOffersGiftContinuation({ gift: "1" }, "", "/offers?gift=%31")).toBe(
+      false
+    );
+    expect(isExactOffersGiftContinuation({ gift: "1" }, "", "/offers?%67ift=1")).toBe(
+      false
+    );
+    expect(
+      isExactOffersGiftContinuation(
+        { gift: "1", extra: "1" },
+        "",
+        "/offers?gift=1&extra=1"
+      )
+    ).toBe(false);
+    expect(
+      isExactOffersGiftContinuation({ gift: ["1", "1"] }, "", "/offers?gift=1&gift=1")
+    ).toBe(false);
   });
 
   it("preserves the second explicit action before immediate self checkout", async () => {
@@ -178,6 +216,7 @@ describe("Offers billing safety", () => {
   });
 
   it("blocks every gift control while production setup reports disabled", async () => {
+    mockSearchParams.gift = "1";
     const screen = render(<Offers />);
     await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
 
@@ -185,6 +224,144 @@ describe("Offers billing safety", () => {
     expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
     expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
     expect(createCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("enters gift mode from the exact continuation only after auth and setup", async () => {
+    mockSearchParams.gift = "1";
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "live",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 }
+    });
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift recipient email")).toBeTruthy()
+    );
+    expect(screen.getByLabelText("Gift subscription mode")).toHaveAccessibilityState({
+      selected: true
+    });
+  });
+
+  it("does not enter gift mode from duplicate continuation values", async () => {
+    mockSearchParams.gift = ["1", "1"];
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "live",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 }
+    });
+    const screen = render(<Offers />);
+
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalledTimes(1));
+    expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(screen.getByLabelText("Gift subscription mode")).toHaveAccessibilityState({
+      selected: false
+    });
+  });
+
+  it("keeps an anonymous continuation non-gift until explicit safe sign-in", async () => {
+    mockToken = null;
+    mockSearchParams.gift = "1";
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "live",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 }
+    });
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Sign in with the purchasing account before gift checkout/i)
+      ).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(getGiftCheckoutRecovery).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Gift checkout sign in required")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Sign in for gift subscription"));
+    expect(mockPush).toHaveBeenCalledWith("/login?next=%2Foffers%3Fgift%3D1");
+    fireEvent.press(screen.getByLabelText("Sign in to buy a gift"));
+    expect(mockPush).toHaveBeenCalledWith("/login?next=%2Foffers%3Fgift%3D1");
+    expect(getGiftCheckoutRecovery).not.toHaveBeenCalled();
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("does not enter gift mode or call protected recovery with token but no user", async () => {
+    mockUserAvailable = false;
+    mockSearchParams.gift = "1";
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "live",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 }
+    });
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift checkout sign in required")).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(getGiftCheckoutRecovery).not.toHaveBeenCalled();
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("clears manually selected gift mode when authentication is lost", async () => {
+    (getSubscriptionSetupStatus as jest.Mock).mockResolvedValueOnce({
+      mode: "live",
+      giftCheckoutConfigured: true,
+      trial: { enabled: true, days: 30 }
+    });
+    const screen = render(<Offers />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift subscription mode")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Gift subscription mode"));
+    expect(screen.getByLabelText("Gift recipient email")).toBeTruthy();
+
+    mockToken = null;
+    screen.rerender(<Offers />);
+
+    await waitFor(() =>
+      expect(screen.queryByLabelText("Gift recipient email")).toBeNull()
+    );
+    expect(screen.getByLabelText("Gift checkout sign in required")).toBeTruthy();
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("shows cross-device server recovery even when gift checkout is disabled", async () => {
+    (getGiftCheckoutRecovery as jest.Mock).mockResolvedValueOnce({
+      state: "recoverable",
+      attempt: {
+        checkoutAttemptId: "123e4567-e89b-42d3-a456-426614174000",
+        checkoutState: "open",
+        plan: "pro",
+        interval: "monthly",
+        amountCents: 1234,
+        currency: "usd",
+        expiresAt: "2099-01-01T13:00:00.000Z",
+        canReconcile: true
+      }
+    });
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Gift subscriptions unavailable")).toBeDisabled()
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Check active gift checkout for this account")
+      ).toBeTruthy()
+    );
+    expect(
+      screen.getByText(/active monthly Pro gift checkout for \$12\.34/i)
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Gift recipient email")).toBeNull();
+    expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
+    fireEvent.press(screen.getByLabelText("Check active gift checkout for this account"));
+    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover");
   });
 
   it("hides hardcoded gift pricing until a recipient-bound server quote is reviewed", async () => {
@@ -333,7 +510,7 @@ describe("Offers billing safety", () => {
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
     fireEvent.press(screen.getByLabelText("Check saved gift checkout"));
-    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/cancel");
+    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/recover");
     fireEvent.press(screen.getByLabelText("Buy for me mode"));
     await waitFor(() =>
       expect(screen.getByLabelText("Check saved checkout from this browser")).toBeTruthy()
@@ -385,6 +562,10 @@ describe("Offers billing safety", () => {
     expect(createGiftCheckoutQuote).toHaveBeenCalledTimes(1);
     expect(createCheckoutSession).toHaveBeenCalledTimes(1);
     fireEvent.press(reloaded.getByLabelText("Check saved checkout from this browser"));
-    expect(mockPush).toHaveBeenCalledWith("/account/gift-checkout/cancel");
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^\/account\/gift-checkout\/cancel\?checkout_attempt_id=[0-9a-f-]{36}$/i
+      )
+    );
   });
 });

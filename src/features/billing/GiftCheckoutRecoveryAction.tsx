@@ -2,11 +2,35 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
+import {
+  getGiftCheckoutRecovery,
+  type GiftCheckoutRecoveryAttempt
+} from "@/api/subscription";
+import { useAuth } from "@/auth/AuthContext";
 import { getStoredGiftCheckoutAttempt } from "@/features/billing/giftCheckoutAttempt";
+import { formatGiftCheckoutAmount } from "@/features/billing/giftCheckoutReview";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { buildAuthReturnPath, GIFT_CHECKOUT_CANCEL_PATH } from "@/utils/authReturnPath";
 
-type RecoveryState = "none" | "requested" | "storage_error";
+type RecoveryState =
+  | { kind: "none" }
+  | { kind: "local"; checkoutAttemptId: string }
+  | { kind: "recoverable"; attempt: GiftCheckoutRecoveryAttempt }
+  | { kind: "support" }
+  | { kind: "unavailable" };
+
+type ScopedRecoveryState = {
+  scopeKey: string;
+  value: RecoveryState;
+};
+
+function authenticatedAccountKey(token: unknown, user: unknown): string {
+  const record =
+    user && typeof user === "object" ? (user as Record<string, unknown>) : {};
+  const identity = record.id || record._id || record.email || token;
+  return identity ? `account:${String(identity)}` : "";
+}
 
 export default function GiftCheckoutRecoveryAction({
   visible = true
@@ -14,63 +38,147 @@ export default function GiftCheckoutRecoveryAction({
   visible?: boolean;
 }) {
   const router = useRouter();
+  const { token, user, isHydrating } = useAuth();
+  const authenticated = Boolean(!isHydrating && token && user);
+  const scopeKey = isHydrating
+    ? "hydrating"
+    : authenticated
+      ? authenticatedAccountKey(token, user)
+      : "anonymous";
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGiftCheckoutRecoveryStyles(palette), [palette]);
-  const [state, setState] = useState<RecoveryState>("none");
+  const [scopedState, setScopedState] = useState<ScopedRecoveryState>({
+    scopeKey,
+    value: { kind: "none" }
+  });
+  const state =
+    scopedState.scopeKey === scopeKey ? scopedState.value : ({ kind: "none" } as const);
 
   useEffect(() => {
-    if (!visible) {
-      setState("none");
+    if (!visible || isHydrating) {
+      setScopedState({ scopeKey, value: { kind: "none" } });
       return;
     }
     let mounted = true;
-    getStoredGiftCheckoutAttempt()
-      .then((attempt) => {
-        if (mounted) {
-          setState(attempt?.phase === "checkout_requested" ? "requested" : "none");
+    const commit = (value: RecoveryState) => {
+      if (mounted) setScopedState({ scopeKey, value });
+    };
+    commit({ kind: "none" });
+    if (!authenticated) {
+      getStoredGiftCheckoutAttempt()
+        .then((attempt) => {
+          if (!mounted) return;
+          const returnPath =
+            attempt?.phase === "checkout_requested"
+              ? buildAuthReturnPath(GIFT_CHECKOUT_CANCEL_PATH, {
+                  checkout_attempt_id: attempt.checkoutAttemptId
+                })
+              : "";
+          commit(
+            returnPath
+              ? { kind: "local", checkoutAttemptId: attempt!.checkoutAttemptId }
+              : { kind: "none" }
+          );
+        })
+        .catch(() => {
+          commit({ kind: "none" });
+        });
+      return () => {
+        mounted = false;
+      };
+    }
+    Promise.allSettled([getStoredGiftCheckoutAttempt(), getGiftCheckoutRecovery()]).then(
+      ([localResult, serverResult]) => {
+        if (!mounted) return;
+        const localAttempt =
+          localResult.status === "fulfilled" &&
+          localResult.value?.phase === "checkout_requested" &&
+          buildAuthReturnPath(GIFT_CHECKOUT_CANCEL_PATH, {
+            checkout_attempt_id: localResult.value.checkoutAttemptId
+          })
+            ? localResult.value
+            : null;
+        if (serverResult.status === "fulfilled") {
+          if (serverResult.value.state === "recoverable") {
+            commit({ kind: "recoverable", attempt: serverResult.value.attempt });
+            return;
+          }
+          if (serverResult.value.state === "support") {
+            commit({ kind: "support" });
+            return;
+          }
+          if (localResult.status === "rejected") {
+            commit({ kind: "unavailable" });
+            return;
+          }
+          commit(
+            localAttempt
+              ? { kind: "local", checkoutAttemptId: localAttempt.checkoutAttemptId }
+              : { kind: "none" }
+          );
+          return;
         }
-      })
-      .catch(() => {
-        if (mounted) setState("storage_error");
-      });
+        commit(
+          localAttempt
+            ? { kind: "local", checkoutAttemptId: localAttempt.checkoutAttemptId }
+            : { kind: "unavailable" }
+        );
+      }
+    );
     return () => {
       mounted = false;
     };
-  }, [visible]);
+  }, [authenticated, isHydrating, scopeKey, visible]);
 
-  if (!visible || state === "none") return null;
+  if (!visible || isHydrating || state.kind === "none") return null;
 
-  const storageError = state === "storage_error";
+  const serverRecoverable = state.kind === "recoverable";
+  const localOnly = state.kind === "local";
+  const unavailable = state.kind === "unavailable";
+  const amount = serverRecoverable
+    ? formatGiftCheckoutAmount(state.attempt.amountCents, state.attempt.currency)
+    : "";
+  const accessibilityLabel = serverRecoverable
+    ? "Check active gift checkout for this account"
+    : localOnly
+      ? "Check saved checkout from this browser"
+      : "Review gift checkout support status";
+  const destination = localOnly
+    ? buildAuthReturnPath(GIFT_CHECKOUT_CANCEL_PATH, {
+        checkout_attempt_id: state.checkoutAttemptId
+      })
+    : "/account/gift-checkout/recover";
+
   return (
     <View style={styles.card} accessibilityLabel="Saved gift checkout recovery">
       <Text style={styles.title}>
-        {storageError
-          ? "Saved checkout status needs review"
-          : "A saved checkout may exist"}
+        {serverRecoverable
+          ? "An account checkout needs review"
+          : localOnly
+            ? "A saved checkout may exist"
+            : unavailable
+              ? "Checkout recovery is temporarily unavailable"
+              : "Checkout support review is required"}
       </Text>
       <Text style={styles.copy}>
-        {storageError
-          ? "This browser could not safely read its gift checkout retry record. Review purchaser history before starting another payment."
-          : "This browser has a gift attempt that reached checkout creation. Check its authoritative state before requesting another price or payment."}
+        {serverRecoverable
+          ? `GrowPath found one active ${
+              state.attempt.interval === "yearly" ? "yearly" : "monthly"
+            } Pro gift checkout for ${amount}. Check its authoritative state before another payment attempt.`
+          : localOnly
+            ? "This browser saved a checkout attempt. Sign in with the purchasing account to check its authoritative state before requesting another price or payment."
+            : unavailable
+              ? "GrowPath could not safely verify whether this account has an active gift checkout. Do not start another payment until recovery can be checked."
+              : "GrowPath found checkout state that requires support review. No new gift checkout should be started from this account."}
       </Text>
       <Pressable
-        accessibilityLabel={
-          storageError
-            ? "View gifts sent for checkout recovery"
-            : "Check saved checkout from this browser"
-        }
+        accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
-        onPress={() =>
-          router.push(
-            (storageError
-              ? "/account/sent-gifts"
-              : "/account/gift-checkout/cancel") as any
-          )
-        }
+        onPress={() => router.push(destination as any)}
         style={styles.button}
       >
         <Text style={styles.buttonText}>
-          {storageError ? "View gifts you sent" : "Check saved checkout"}
+          {serverRecoverable || localOnly ? "Check checkout" : "Review recovery"}
         </Text>
       </Pressable>
     </View>

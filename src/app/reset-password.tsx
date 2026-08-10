@@ -14,7 +14,7 @@ import { resetPassword } from "@/api/auth";
 import BackButton from "@/components/nav/BackButton";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { claimLoginPath, parseClaimReturnPath } from "@/utils/claimReturnPath";
+import { parseSafeLoginReturnPath, safeLoginPath } from "@/utils/authReturnPath";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function ResetPasswordScreen() {
     access_token?: string | string[];
     next?: string | string[];
   }>();
-  const claimNext = parseClaimReturnPath(params.next);
+  const safeNext = parseSafeLoginReturnPath(params.next);
   const token = useMemo(() => {
     return firstTokenValue(
       params.token,
@@ -53,7 +53,7 @@ export default function ResetPasswordScreen() {
   const [error, setError] = useState<string | null>(null);
   const [accountEmail, setAccountEmail] = useState("");
   const resetComplete = Boolean(message);
-  const loginPath = claimLoginPath(accountEmail, claimNext);
+  const loginPath = safeLoginPath(accountEmail, safeNext);
   const loginAfterReset = `${loginPath}${loginPath.includes("?") ? "&" : "?"}reset=success`;
 
   const canSubmit = useMemo(() => {
@@ -140,8 +140,8 @@ export default function ResetPasswordScreen() {
             accessibilityLabel="Request another reset link"
             onPress={() =>
               router.replace(
-                (claimNext
-                  ? { pathname: "/forgot-password", params: { next: claimNext } }
+                (safeNext
+                  ? { pathname: "/forgot-password", params: { next: safeNext } }
                   : "/forgot-password") as any
               )
             }

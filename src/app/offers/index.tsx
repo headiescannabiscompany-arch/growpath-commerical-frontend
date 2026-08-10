@@ -24,6 +24,11 @@ import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { FREE_POLICY } from "@/config/freePolicy";
+import {
+  OFFERS_GIFT_RETURN_PATH,
+  resolveAuthReturnPath,
+  safeLoginPath
+} from "@/utils/authReturnPath";
 
 type BillingInterval = "monthly" | "yearly";
 type CheckoutMode = "live" | "test" | "unknown";
@@ -44,6 +49,17 @@ function checkoutUrlFromResponse(response: any) {
   );
 }
 
+export function isExactOffersGiftContinuation(
+  params: Record<string, string | string[] | undefined>,
+  fragment: unknown = "",
+  rawBrowserPath?: unknown
+): boolean {
+  return (
+    resolveAuthReturnPath("/offers", params, fragment, rawBrowserPath) ===
+    OFFERS_GIFT_RETURN_PATH
+  );
+}
+
 async function openCheckoutUrl(url: string) {
   if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
     window.location.href = url;
@@ -54,6 +70,7 @@ async function openCheckoutUrl(url: string) {
 
 export default function Offers() {
   const auth = useAuth();
+  const authenticated = Boolean(!auth.isHydrating && auth.token && auth.user);
   const router = useRouter();
   const ent = useEntitlements();
   const { palette } = useAppTheme();
@@ -61,6 +78,7 @@ export default function Offers() {
   const { width } = useWindowDimensions();
   const searchParams = useLocalSearchParams<{
     subscription?: string | string[];
+    gift?: string | string[];
   }>();
   const isWide = width >= 980;
 
@@ -72,11 +90,14 @@ export default function Offers() {
   const [trialEnabled, setTrialEnabled] = useState(true);
   const [trialDays, setTrialDays] = useState(30);
   const [giftCheckoutConfigured, setGiftCheckoutConfigured] = useState(false);
+  const [giftSetupLoaded, setGiftSetupLoaded] = useState(false);
   const [pendingImmediatePlan, setPendingImmediatePlan] = useState<BillingPlanKey | null>(
     null
   );
   const handledCheckoutResultRef = useRef("");
   const [giftMode, setGiftMode] = useState(false);
+  const giftModeRef = useRef(giftMode);
+  giftModeRef.current = giftMode;
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
@@ -105,6 +126,21 @@ export default function Offers() {
     const value = searchParams.subscription;
     return String(Array.isArray(value) ? value[0] : value || "").toLowerCase();
   }, [searchParams.subscription]);
+  const browserLocation = (globalThis as any)?.window?.location;
+  const fragment = String(browserLocation?.hash || "");
+  const rawBrowserPath =
+    Platform.OS === "web"
+      ? browserLocation
+        ? `${String(browserLocation.pathname || "")}${String(
+            browserLocation.search || ""
+          )}${fragment}`
+        : null
+      : undefined;
+  const giftContinuationRequested = isExactOffersGiftContinuation(
+    searchParams as Record<string, string | string[] | undefined>,
+    fragment,
+    rawBrowserPath
+  );
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
   const purchasablePlans = giftMode
@@ -139,16 +175,30 @@ export default function Offers() {
         }
         if (mounted) {
           setGiftCheckoutConfigured(status?.giftCheckoutConfigured === true);
+          setGiftSetupLoaded(true);
         }
       })
       .catch(() => {
-        if (mounted) setCheckoutMode("unknown");
+        if (mounted) {
+          setCheckoutMode("unknown");
+          setGiftCheckoutConfigured(false);
+          setGiftSetupLoaded(true);
+        }
       });
 
     return () => {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!authenticated || (giftSetupLoaded && !giftCheckoutConfigured)) {
+      if (giftModeRef.current) setGiftMode(false);
+      return;
+    }
+    if (!giftContinuationRequested || !giftSetupLoaded) return;
+    if (!giftModeRef.current) setGiftMode(true);
+  }, [authenticated, giftCheckoutConfigured, giftContinuationRequested, giftSetupLoaded]);
 
   useEffect(() => {
     if (!["success", "canceled"].includes(subscriptionResult)) return;
@@ -305,9 +355,11 @@ export default function Offers() {
         <Text style={styles.eyebrow}>Prepaid Pro gift</Text>
         <Text style={styles.cardTitle}>Buy for someone else</Text>
         <Text style={styles.cardDesc}>
-          {giftCheckoutConfigured
-            ? "Give one prepaid month or year of Pro. Access starts when the recipient claims it and does not renew."
-            : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
+          {giftContinuationRequested && giftSetupLoaded && !authenticated
+            ? "Sign in with the purchasing account before gift checkout can continue. No price or payment request has started."
+            : giftCheckoutConfigured
+              ? "Give one prepaid month or year of Pro. Access starts when the recipient claims it and does not renew."
+              : "Gift checkout is not available yet because recipient fulfillment and claim delivery are not configured. No gift payment can be started."}
         </Text>
         <View style={styles.segment}>
           {(
@@ -322,6 +374,10 @@ export default function Offers() {
                 key={item.key}
                 disabled={item.key === "gift" && !giftCheckoutConfigured}
                 onPress={() => {
+                  if (item.key === "gift" && !authenticated) {
+                    router.push(safeLoginPath("", OFFERS_GIFT_RETURN_PATH) as any);
+                    return;
+                  }
                   setGiftMode(item.key === "gift");
                   setFeedback("");
                 }}
@@ -333,7 +389,9 @@ export default function Offers() {
                 accessibilityLabel={
                   item.key === "gift"
                     ? giftCheckoutConfigured
-                      ? "Gift subscription mode"
+                      ? authenticated
+                        ? "Gift subscription mode"
+                        : "Sign in for gift subscription"
                       : "Gift subscriptions unavailable"
                     : "Buy for me mode"
                 }
@@ -404,10 +462,21 @@ export default function Offers() {
         ) : (
           <Text style={styles.helper}>
             {giftCheckoutConfigured
-              ? "Switch to gift mode when you want the checkout tied to another email address."
+              ? authenticated
+                ? "Switch to gift mode when you want the checkout tied to another email address."
+                : "Sign in with the purchasing account before requesting a gift price or opening Stripe."
               : "Buy for me remains available. Gift controls will open only after the recipient handoff is ready."}
           </Text>
         )}
+        {!giftMode && giftCheckoutConfigured && !authenticated ? (
+          <GiftCheckoutReviewAction
+            material={giftCheckoutMaterial}
+            recipientValid={giftRecipientValid}
+            configured
+            onFeedback={handleGiftFeedback}
+            openCheckoutUrl={openCheckoutUrl}
+          />
+        ) : null}
       </AppCard>
 
       <GiftCheckoutRecoveryAction visible={!giftMode} />

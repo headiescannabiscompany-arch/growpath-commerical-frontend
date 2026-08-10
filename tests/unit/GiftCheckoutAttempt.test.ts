@@ -178,6 +178,7 @@ describe("gift checkout attempt phases", () => {
     "UNAUTHENTICATED",
     "ACCOUNT_BANNED",
     "ACCOUNT_SUSPENDED",
+    "GIFT_CHECKOUT_RECOVERY_REQUIRED",
     "GIFT_QUOTE_EXPIRED",
     "GIFT_QUOTE_CHANGED",
     "GIFT_QUOTE_INVALID",
@@ -221,6 +222,80 @@ describe("gift checkout attempt phases", () => {
     expect(await getStoredGiftCheckoutAttempt()).not.toBeNull();
     await expect(clearGiftCheckoutAttemptWhenAllowed(true)).resolves.toBe(true);
     expect(await getStoredGiftCheckoutAttempt()).toBeNull();
+  });
+
+  it("does not clear when storage no longer matches the reconciled attempt", async () => {
+    const attempt = await prepareGiftCheckoutQuoteAttempt(baseFingerprint);
+    await markGiftCheckoutRequested(baseFingerprint, attempt.checkoutAttemptId);
+
+    await expect(
+      clearGiftCheckoutAttemptWhenAllowed(true, "123e4567-e89b-42d3-a456-426614174001")
+    ).resolves.toBe(false);
+    expect(await getStoredGiftCheckoutAttempt()).toMatchObject({
+      checkoutAttemptId: attempt.checkoutAttemptId,
+      phase: "checkout_requested"
+    });
+  });
+
+  it("serializes native cleanup so an overlapping replacement attempt survives", async () => {
+    const attemptA = await prepareGiftCheckoutQuoteAttempt(baseFingerprint);
+    await markGiftCheckoutRequested(baseFingerprint, attemptA.checkoutAttemptId);
+    let releaseRemoval!: () => void;
+    let signalRemovalStarted!: () => void;
+    const removalGate = new Promise<void>((resolve) => {
+      releaseRemoval = resolve;
+    });
+    const removalStarted = new Promise<void>((resolve) => {
+      signalRemovalStarted = resolve;
+    });
+    (AsyncStorage.removeItem as jest.Mock).mockImplementationOnce(async (key: string) => {
+      signalRemovalStarted();
+      await removalGate;
+      nativeValues.delete(key);
+    });
+
+    const clearA = clearGiftCheckoutAttemptWhenAllowed(true, attemptA.checkoutAttemptId);
+    await removalStarted;
+    const prepareB = prepareGiftCheckoutQuoteAttempt({
+      ...baseFingerprint,
+      message: "Replacement attempt B"
+    });
+    releaseRemoval();
+
+    await expect(clearA).resolves.toBe(true);
+    const attemptB = await prepareB;
+    expect(attemptB.checkoutAttemptId).not.toBe(attemptA.checkoutAttemptId);
+    await expect(getStoredGiftCheckoutAttempt()).resolves.toMatchObject({
+      checkoutAttemptId: attemptB.checkoutAttemptId,
+      phase: "quote_only"
+    });
+  });
+
+  it("keeps web compare-and-remove synchronous so queued attempt B survives", async () => {
+    const browserValues = new Map<string, string>();
+    (globalThis as any).window = {
+      sessionStorage: {
+        getItem: (key: string) => browserValues.get(key) ?? null,
+        removeItem: (key: string) => browserValues.delete(key),
+        setItem: (key: string, value: string) => browserValues.set(key, value)
+      }
+    };
+    const attemptA = await prepareGiftCheckoutQuoteAttempt(baseFingerprint);
+    await markGiftCheckoutRequested(baseFingerprint, attemptA.checkoutAttemptId);
+
+    const clearA = clearGiftCheckoutAttemptWhenAllowed(true, attemptA.checkoutAttemptId);
+    const prepareB = prepareGiftCheckoutQuoteAttempt({
+      ...baseFingerprint,
+      message: "Replacement attempt B"
+    });
+
+    await expect(clearA).resolves.toBe(true);
+    const attemptB = await prepareB;
+    expect(attemptB.checkoutAttemptId).not.toBe(attemptA.checkoutAttemptId);
+    await expect(getStoredGiftCheckoutAttempt()).resolves.toMatchObject({
+      checkoutAttemptId: attemptB.checkoutAttemptId,
+      phase: "quote_only"
+    });
   });
 
   it("fails closed when allowed cleanup cannot be verified", async () => {
