@@ -7080,6 +7080,56 @@
       "expectedQuarantineGuidance": "Limit plant contact and movement when reproducing pest mites and spreading injury are credible, but do not quarantine for one mite, stippling or generic webbing alone.",
       "expectedScoutingSteps": ["capture whole plants, canopy map, paired surfaces, growing points, webbing and controls","inspect under stated magnification for mobile mites, eggs, cast skins and feeding injury","count mites and eggs on marked leaves and repeat while recording temperature, humidity, airflow and drought","distinguish thrips, other mites, true spiders, debris and abiotic stippling before action"],
       "expectedIpmResponse": "Do not diagnose two-spotted spider mites from a mite-like body, stippling or webbing alone. Require case-linked compatible mobile mites or eggs plus feeding or fine webbing, counts, mapped distribution and progression; preserve other-pest, debris and abiotic alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-powdery-microscopy-transfer-boundary-open-006",
+      "caseId": "powdery_mildew",
+      "imageSet": [
+        {"imageId":"wikimedia-cc0-erysiphe-conidia-conidiophores-400x","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Conidia_and_conidiophores_of_Erysiphe_(powdery_mildew)_%E2%80%93_400x.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Conidia_and_conidiophores_of_Erysiphe_(powdery_mildew)_%E2%80%93_400x.jpg","creator":"Arpitoon","licenseId":"CC0-1.0","attributionText":"Erysiphe conidia and conidiophores at 400x photographed by Arpitoon; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-pd-mango-powdery-mildew-leaf-curling","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Mango_powdery_mildew_leaf_blight_curling_1.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Mango_powdery_mildew_leaf_blight_curling_1.jpg","creator":"Scot Nelson and Wayne Nishijima","licenseId":"PUBLIC-DOMAIN-DEDICATION","attributionText":"Mango leaf curling associated with Oidium mangiferae photographed by Scot Nelson and Wayne Nishijima; public domain.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "laboratory-culture Erysiphe microscopy reference plus a separate mango powdery-mildew symptom reference",
+      "cultivar": "unknown",
+      "lifeStage": "fungal conidia and conidiophores plus established mango foliage",
+      "affectedLocation": "local leaf views without complete paired surfaces, whole plants, roots or matched controls",
+      "distribution": "cross-host references without canopy, leaf-age, wetness, airflow, plant-to-plant or affected-unaffected mapping",
+      "progression": "single-time views without colony expansion, underside sporulation, curling sequence, wipe response or recovery",
+      "mediumRootZone": "roots, moisture, drainage, pH, EC and nutrition are not documented",
+      "environment": "humidity, wetness, temperature, airflow, crowding, light and application history are absent",
+      "measuredValues": "no colony scale, wipe result, underside spore assessment, microscopy, climate trend or marked-leaf follow-up accompanies the pair",
+      "diagnosticSigns": ["one source documents Erysiphe conidia and conidiophores from laboratory culture","the mango view shows compatible curling but curling is not specific to powdery mildew","reference microscopy cannot confirm an unrelated plant unless case-linked colony material shows compatible structures"],
+      "plausibleAlternatives": ["downy mildew, botrytis, rust, leaf spot or mixed disease","trichomes, wax, pollen, dust, spray residue, mineral deposits or glare","mites, thrips, edema, spray injury, heat, light or physical damage","nutrition, pH or EC lockout, root stress or senescence"],
+      "confirmationMethod": "Capture whole plants and dry paired leaf surfaces with neutral-light macro views and scale; document colony texture and wipe behavior; inspect both surfaces under magnification; map each symptom separately; record climate and progression; and obtain qualified confirmation when identity changes management.",
+      "expectedCauseRanking": ["disease","insufficient_evidence","other_abiotic","pest","deficiency"],
+      "expectedUrgency": "promptly document expanding compatible colonies and any separate underside sporulation while representative tissue remains intact",
+      "expectedQuarantineGuidance": "Limit movement and cross-contact when active compatible colonies are spreading, but do not quarantine for whiteness, curling or one labeled reference alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy map, dry paired surfaces, colony margins, curled tissue and controls","perform and photograph a wipe test and inspect both surfaces under stated magnification","map powdery growth separately from angular lesions, underside growth, curling and other patterns","record humidity, wetness, temperature, airflow, treatments and progression before qualified confirmation"],
+      "expectedIpmResponse": "Do not transfer a laboratory image or curled-leaf label into a powdery-mildew diagnosis. Require persistent compatible surface colonies, paired-surface evidence, case-linked magnified structures, mapped distribution, climate and progression; separately evaluate downy mildew, pests, residue and abiotic injury and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-botrytis-raspberry-healthy-control-boundary-open-006",
+      "caseId": "botrytis_gray_mold_bud_rot",
+      "imageSet": [
+        {"imageId":"wikimedia-ccby4-botrytis-raspberry-fruit","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Himbeere_(Rubus_idaeus)_mit_Grauschimmel_(Botrytis_cinerea)-Josef_Schlaghecken.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Himbeere_(Rubus_idaeus)_mit_Grauschimmel_(Botrytis_cinerea)-Josef_Schlaghecken.jpg","creator":"Schlaghecken Josef","licenseId":"CC-BY-4.0","attributionText":"Botrytis cinerea gray mold on raspberry fruit photographed by Schlaghecken Josef; CC BY 4.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-cc0-healthy-raspberries-closeup","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Raspberries_closeup.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Raspberries_closeup.jpg","creator":"Ypsilon from Finland","licenseId":"CC0-1.0","attributionText":"Healthy raspberries growing, photographed by Ypsilon from Finland; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "raspberry fruit with documented Botrytis cinerea and a separate healthy raspberry-fruit control reference",
+      "cultivar": "unknown",
+      "lifeStage": "developing to ripe fruit on separate plants",
+      "affectedLocation": "fruit close-ups without flower interiors, stems, leaves, whole plants, roots or matched same-plant controls",
+      "distribution": "separate references without cluster, canopy, plant-to-plant, contact-point or affected-unaffected mapping",
+      "progression": "single-time views without water-soaking, browning, collapse, sporulation expansion or healthy-control follow-up",
+      "mediumRootZone": "roots, moisture, drainage, pH, EC and nutrition are not documented",
+      "environment": "humidity, condensation, wetness, temperature, airflow, crowding, injury and sanitation history are absent",
+      "measuredValues": "no lesion or sporulation scale, tissue-moisture record, climate trend, microscopy, culture, molecular result or marked-fruit progression accompanies the pair",
+      "diagnosticSigns": ["one source documents gray fungal turf on botrytis-infected raspberry fruit","the healthy control shows normal raspberry drupelet texture and color variation","transfer to flowers, buds or another host requires internal tissue, sporulation, distribution, progression and moisture evidence"],
+      "plausibleAlternatives": ["normal drupelet hairs, bloom, senescence, bruising, desiccation or overripeness","powdery mildew, other molds, bacterial soft rot or mixed disease","condensation, dust, fibers, residue, pollen or glare","insect feeding, physical injury, heat, cold or nutrient-related decline"],
+      "confirmationMethod": "Capture whole plants, clusters and matched healthy controls; photograph external and internal tissue, contact points and sporulation with scale in neutral light; record wetness, condensation, injury and progression; and obtain qualified microscopy or testing when organism identity changes management.",
+      "expectedCauseRanking": ["disease","insufficient_evidence","other_abiotic","pest"],
+      "expectedUrgency": "promptly document softening, internal browning or expanding gray sporulation before secondary decay obscures evidence",
+      "expectedQuarantineGuidance": "Limit contact and movement of actively sporulating tissue when spread is credible, but do not quarantine for gray color, fuzz-like anatomy or aging fruit alone.",
+      "expectedScoutingSteps": ["capture whole plants, fruit or flower clusters, contact points, internal tissue, stems and healthy controls","document texture, odor without unsafe exposure, sporulation, softening and progression with scale","record humidity, wetness, condensation, airflow, injury, sanitation and harvest stage","distinguish normal hairs and bloom, bruising, other decay, residue and pests before qualified confirmation"],
+      "expectedIpmResponse": "Do not diagnose botrytis from gray pixels, fruit hairs, aging or one diseased reference alone. Require compatible internal browning or collapse and gray sporulation linked to distribution, progression and moisture context; preserve other disease, residue, injury and abiotic alternatives and never invent pesticide directions."
     }
   ]
 }
