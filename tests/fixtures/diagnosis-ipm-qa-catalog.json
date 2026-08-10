@@ -7330,6 +7330,56 @@
       "expectedQuarantineGuidance": "Limit movement of affected trays, medium, water and tools when progressive contagious seedling disease is credible, but do not quarantine for normal root hairs or isolated poor emergence alone.",
       "expectedScoutingSteps": ["capture full trays, emergence distribution, intact stem bases, washed roots and healthy controls","compare root hairs with persistent fungal growth, constriction, water-soaking, softening and lodging","record sowing depth, seed lot, moisture, oxygen, temperature, humidity, light and progression","preserve fresh lesion margins for case-linked qualified confirmation when needed"],
       "expectedIpmResponse": "Do not diagnose damping-off from white hairs, one fallen seedling or a historical reference alone. Require case-linked stem or root lesions, tray distribution, propagation conditions and progression; distinguish normal root hairs, seed quality, environment, injury and multiple pathogens and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-pythium-phytophthora-crown-lookalike-boundary-open-006",
+      "caseId": "pythium_root_rot",
+      "imageSet": [
+        {"imageId":"wikimedia-cc0-phytophthora-infestans-5613","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Phytophthora_infestans_5613.JPG","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Phytophthora_infestans_5613.JPG","creator":"I.Sáček, senior","licenseId":"CC0-1.0","attributionText":"Phytophthora infestans photographed by I.Sáček, senior; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-cc0-cacao-phytophthora-stem-canker-41526627082","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cacao_stem_canker_and_lesion_due_to_Phytophthora_palmivora_41526627082.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Cacao_stem_canker_and_lesion_due_to_Phytophthora_palmivora_41526627082.jpg","creator":"Scot Nelson","licenseId":"CC0-1.0","attributionText":"Cacao stem canker and lesion caused by Phytophthora palmivora photographed by Scot Nelson; CC0 1.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "separate Phytophthora organism and cacao stem-canker references used as Pythium root-rot lookalikes",
+      "cultivar": "unknown",
+      "lifeStage": "organism reference and established woody stem lesion",
+      "affectedLocation": "separate references without case-linked roots, crown, stem base, foliage, whole plant or matched controls",
+      "distribution": "no container, irrigation-zone, bench, plant-to-plant, root-zone or affected-unaffected mapping is represented",
+      "progression": "single-time references without root discoloration, cortex loss, crown spread, wilt, collapse or recovery sequence",
+      "mediumRootZone": "root integrity, moisture, oxygen, drainage, temperature, pH, EC, irrigation and sanitation are absent",
+      "environment": "air and root-zone temperature, humidity, wetness, water source, recirculation and application history are absent",
+      "measuredValues": "no root-zone readings, lesion depth, cortex assessment, case-linked microscopy, culture, molecular result or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["Phytophthora can produce root, crown or stem syndromes that overlap externally with Pythium-associated decline","an organism or stem-canker reference cannot identify the cause of unrelated brown roots or wilt","Pythium attribution requires case-linked root and cortex evidence, root-zone conditions, distribution, progression and qualified confirmation"],
+      "plausibleAlternatives": ["Phytophthora, Fusarium, Rhizoctonia, bacterial soft rot or another root or crown disease","healthy stained or aged roots, transplant damage or physical breakage","waterlogging, low oxygen, drought, heat, cold, salinity, pH or EC stress","root pests, chemical injury, nutrient stress or mixed causes"],
+      "confirmationMethod": "Capture whole plants, crown and washed representative roots with scale, including tips and cortex; map irrigation-zone and plant-to-plant distribution; record moisture, oxygen, temperature, pH, EC and progression; preserve samples; and obtain case-linked qualified microscopy, culture or molecular confirmation when organism identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","disease","other_abiotic","deficiency","pest"],
+      "expectedUrgency": "preserve fresh root, cortex and crown margins promptly when softening, discoloration or wilt is progressing",
+      "expectedQuarantineGuidance": "Limit movement of plants, roots, media, water and tools when a transmissible root or crown disease is credible, but do not quarantine from a lookalike reference or generic wilt alone.",
+      "expectedScoutingSteps": ["capture whole plants, washed roots, tips, cortex, crowns, stem bases, containers and controls","record irrigation-zone distribution, onset, progression, moisture, oxygen, temperature, pH and EC","compare Pythium with Phytophthora, other root diseases, pests and abiotic root failure","preserve fresh representative margins for case-linked qualified confirmation"],
+      "expectedIpmResponse": "Do not distinguish Pythium from Phytophthora by wilt, brown tissue or reference-image resemblance. Require case-linked root, cortex and crown evidence, root-zone measurements, mapped distribution, progression and qualified confirmation; retain other diseases, pests and abiotic alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-damping-off-seedling-blight-boundary-open-006",
+      "caseId": "damping_off",
+      "imageSet": [
+        {"imageId":"wikimedia-pd-rice-seedling-blight-14597385099","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Seedling_blight_and_stack-burn_of_rice_and_the_hot-water_seed_treatment_(1116)_(14597385099).jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Seedling_blight_and_stack-burn_of_rice_and_the_hot-water_seed_treatment_(1116)_(14597385099).jpg","creator":"Internet Archive Book Images","licenseId":"PUBLIC-DOMAIN-DEDICATION","attributionText":"Historical rice seedling-blight comparison digitized by Internet Archive Book Images; public domain.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"},
+        {"imageId":"wikimedia-ccby4-close-look-healthy-seedlings","sourceId":"wikimedia_individual_public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Close_Look_Of_Seedlings.jpg","mediaUrl":"https://commons.wikimedia.org/wiki/Special:Redirect/file/Close_Look_Of_Seedlings.jpg","creator":"Konstantine Gagua","licenseId":"CC-BY-4.0","attributionText":"Pepper and other vegetable seedlings photographed by Konstantine Gagua; CC BY 4.0.","retrievedAt":"2026-08-10","rightsReviewedAt":"2026-08-10","intendedUseApproved":true,"handling":"external_reference"}
+      ],
+      "plant": "historical rice seedling-blight comparison and a separate healthy mixed-vegetable seedling reference",
+      "cultivar": "unknown",
+      "lifeStage": "emergence through early true-leaf seedling stage",
+      "affectedLocation": "group views without case-linked intact stem bases, washed roots, medium profiles or matched controls",
+      "distribution": "separate sources without seed-lot, tray, moisture-zone, sowing-depth, plant-to-plant or affected-unaffected mapping",
+      "progression": "single-time references without emergence counts, constriction development, lodging, tissue softening, root decline or recovery",
+      "mediumRootZone": "medium moisture, oxygen, drainage, temperature, sowing depth, compaction, pH, EC and sanitation are absent",
+      "environment": "humidity, temperature, airflow, light, condensation, irrigation, seed storage and handling are absent",
+      "measuredValues": "no emergence percentage, stem diameter, lesion scale, moisture or temperature trend, microscopy, culture, molecular result or marked-seedling follow-up accompanies the pair",
+      "diagnosticSigns": ["poor emergence, weak seedlings and group-level loss can result from seed blight, damping-off or noninfectious propagation failure","healthy seedling variation and reference labels do not establish the cause of an unrelated tray pattern","damping-off attribution requires case-linked stem or root lesions, tray distribution, propagation conditions, progression and qualified confirmation when needed"],
+      "plausibleAlternatives": ["seed-borne blight, low viability, dormancy, uneven germination or genetic variation","Rhizoctonia, Pythium, Phytophthora, Fusarium, Botrytis or another seedling disease","excess or deficient water, low oxygen, heat, cold, salinity, pH or EC stress","deep sowing, weak light, mechanical injury, transplant damage, insects or chemical injury"],
+      "confirmationMethod": "Capture full trays, seed-lot and emergence pattern, intact seedlings, stem bases and washed roots with scale; compare normal and affected tissue; mark seedlings and follow progression; record sowing, moisture, oxygen and temperature; and obtain case-linked qualified microscopy, culture or testing when organism identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence","disease","other_abiotic","pest"],
+      "expectedUrgency": "document fresh stem or root lesions and emergence failure promptly before secondary decay obscures the primary cause",
+      "expectedQuarantineGuidance": "Limit movement of affected trays, medium, water and tools when progressive contagious seedling disease is credible, but do not quarantine for uneven emergence or a historical seedling-blight label alone.",
+      "expectedScoutingSteps": ["capture full trays, seed-lot pattern, emergence distribution, intact stem bases, washed roots and controls","mark seedlings and distinguish pre-emergence loss, post-emergence constriction, softening, lodging and seed-quality failure","record sowing depth, medium, moisture, oxygen, temperature, humidity, light and progression","preserve fresh lesion margins and representative seeds for case-linked qualified confirmation"],
+      "expectedIpmResponse": "Do not label every weak or missing seedling as damping-off. Require case-linked stem or root lesions, tray and seed-lot distribution, propagation conditions and progression; distinguish seed blight, viability, environment, injury and multiple pathogens and never invent pesticide directions."
     }
   ]
 }
