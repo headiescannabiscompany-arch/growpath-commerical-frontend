@@ -5584,6 +5584,74 @@
       "expectedQuarantineGuidance": "Limit movement of infested plants only when reproducing whiteflies are credible; do not quarantine from white specks, residue or one flying insect alone.",
       "expectedScoutingSteps": ["map plants and canopy zones; capture tap-flight response, leaf undersides, adults, eggs, nymphs, exuviae, honeydew and controls", "count life stages on marked leaves and sticky cards and repeat over time", "record temperature, humidity, airflow, incoming plants, nearby hosts, sprays and sanitation", "distinguish aphids, scale, mealybugs, moths, fungi, residue and trichomes before species-specific action"],
       "expectedIpmResponse": "Do not diagnose whiteflies from white specks, a flying insect, honeydew, a historical document or an adult reference alone. Require case-linked adults plus eggs or nymphs or qualified identification, counts, mapped distribution and progression; preserve sap-feeder, fungal, residue and abiotic alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-fungus-gnat-adult-morphology-boundary-open-003",
+      "caseId": "fungus_gnats",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby2-dark-winged-fungus-gnat", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dark-winged_Fungus_Gnat_(28526113210).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Dark-winged_Fungus_Gnat_(28526113210).jpg",
+          "creator": "Katja Schulz", "licenseId": "CC-BY-2.0", "attributionText": "Dark-winged fungus gnat photographed by Katja Schulz; CC BY 2.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-bradysia-antenna-illustration", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bradysia_pallipes_adult-antenna_Meunier_1904.png", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Bradysia_pallipes_adult-antenna_Meunier_1904.png",
+          "creator": "F. Meunier", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Public-domain 1904 Bradysia pallipes adult-antenna illustration by F. Meunier.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "adult dark-winged fungus-gnat and historical Bradysia morphology references without a linked crop or root case",
+      "cultivar": "not applicable", "lifeStage": "adult and antenna morphology without larvae, medium or symptomatic roots",
+      "affectedLocation": "organism views without pot surface, sticky cards, larvae, roots, crown, whole plants or controls",
+      "distribution": "no container, irrigation, bench, drain, propagation or affected-unaffected map",
+      "progression": "no sequence of adult emergence, larval counts, root feeding, wilt, collapse or recovery",
+      "mediumRootZone": "moisture, oxygen, temperature, organic matter, algae, drainage, pH and EC are not measured",
+      "environment": "irrigation, humidity, airflow, sanitation, incoming media, decaying material and nearby hosts are absent",
+      "measuredValues": "no sticky-card adults, potato-slice larvae, root-damage score, moisture, temperature, pH, EC or marked-pot follow-up accompanies the pair",
+      "diagnosticSigns": ["adult morphology can support a fungus-gnat identification but does not prove larvae are injuring roots", "small dark flies overlap with shore flies, fruit flies and other gnats", "case causality requires adults plus larvae in the root zone, compatible root damage, counts, distribution and progression"],
+      "plausibleAlternatives": ["shore flies, fruit flies, drain flies, mosquitoes or other small Diptera", "Pythium, Fusarium, Rhizoctonia, Phytophthora or bacterial root disease", "waterlogging, low oxygen, drought, salinity, heat, cold, compaction or irrigation failure", "root aphids, nematodes, transplant injury, algae or decaying organic matter without crop injury"],
+      "confirmationMethod": "Map containers and irrigation zones; capture adults, sticky cards, medium surface, baited larvae, intact washed roots, crown and controls; count adults and larvae over time; measure root-zone conditions; and obtain qualified larval or adult identification when the pest label changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect and count adults and root-zone larvae promptly when seedling or root decline is progressing",
+      "expectedQuarantineGuidance": "Limit movement of suspect wet media or propagules only when reproducing fungus gnats and root-zone risk are credible; do not quarantine for one small fly.",
+      "expectedScoutingSteps": ["map pots, benches, irrigation and drains; capture adults, sticky cards, medium surfaces, baited larvae, roots, crowns and controls", "count adults and larvae by marked pot and repeat over time", "record moisture, drainage, temperature, organic matter, algae, irrigation, sanitation, pH and EC", "distinguish shore and fruit flies, root disease, root aphids and abiotic root stress before pest-specific action"],
+      "expectedIpmResponse": "Do not diagnose fungus-gnat root injury from one small fly, an adult reference, wet media or wilt alone. Require case-linked adults and root-zone larvae plus compatible root evidence, counts, mapped distribution and progression; preserve other flies, disease, pests and abiotic root alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-mealybug-wax-colony-boundary-open-003",
+      "caseId": "mealybugs",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-mealybug-colony-2026", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mealybugs_doing_their_thing.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mealybugs_doing_their_thing.jpg",
+          "creator": "Hantskan", "licenseId": "CC0-1.0", "attributionText": "Mealybug colony photographed by Hantskan; CC0 1.0.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-hibiscus-mealybugs", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:MealyBug1.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/MealyBug1.jpg",
+          "creator": "Nayana Sondi", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Mealybugs on yellow hibiscus photographed by Nayana Sondi and released to the public domain.",
+          "retrievedAt": "2026-08-09", "rightsReviewedAt": "2026-08-09", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "visible mealybug colonies including a documented hibiscus host",
+      "cultivar": "unknown", "lifeStage": "mixed colony stages with waxy coverings on separate hosts",
+      "affectedLocation": "limited colony views without whole plants, nodes, roots, pot rims, honeydew effects, ants, predators or controls from one case",
+      "distribution": "cross-host examples without node, canopy, root, propagation, ant or affected-unaffected map",
+      "progression": "single-time images without crawler spread, colony increase, honeydew, sooty mold, decline or recovery",
+      "mediumRootZone": "root-zone colonies, roots, pH, EC, moisture and drainage are not assessed",
+      "environment": "temperature, humidity, airflow, ants, incoming plants, propagation, sprays and sanitation are absent",
+      "measuredValues": "no crawler or adult counts, node or root distribution, ant activity, honeydew extent, magnification record or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["direct segmented insects and waxy filaments support mealybugs, but species and host attribution cannot transfer across plants", "white cottony material overlaps with scale egg sacs, fungi, wax, residue, fibers and trichomes", "case attribution requires direct insects or crawlers, attachment, counts, distribution and progression"],
+      "plausibleAlternatives": ["cottony scale, woolly aphids, whiteflies, root aphids or other sap feeders", "powdery mildew, Botrytis, wax, mineral or spray residue, fibers, dust or trichomes", "galls, edema, scars, plant exudate or ordinary node structures", "nutrient, root, water, heat, light, spray or mixed stress"],
+      "confirmationMethod": "Capture whole plants plus sharp nodes, crevices, undersides, roots and pot rims with scale; count adults and crawlers on marked sites; document attachment, wax, honeydew, ants and progression; inspect lookalikes and beneficials; obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["pest", "insufficient_evidence", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect hidden nodes, roots and crawlers promptly when colonies or honeydew are increasing",
+      "expectedQuarantineGuidance": "Limit movement of confirmed infested plants or propagules while mapping hidden colonies; do not quarantine from cottony material alone.",
+      "expectedScoutingSteps": ["map plants, nodes, crevices and roots; capture direct insects, crawlers, wax, honeydew, ants, damage and controls", "count insects by marked site and life stage and repeat over time", "record temperature, humidity, airflow, incoming plants, propagation, sprays and sanitation", "distinguish scale, aphids, fungi, residue, fibers, trichomes and beneficials before species-specific action"],
+      "expectedIpmResponse": "Recognize direct mealybug colonies while distinguishing cottony lookalikes. Require case-linked segmented insects or crawlers, attachment, counts, mapped node or root distribution and progression; preserve scale, aphid, fungal, residue and structural alternatives and avoid invented pesticide directions."
     }
   ]
 }
