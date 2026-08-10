@@ -6264,6 +6264,74 @@
       "expectedQuarantineGuidance": "Do not quarantine for a pH problem; separately evaluate transmissible causes when organism, lesion or spread evidence supports them.",
       "expectedScoutingSteps": ["map affected and unaffected plants, media zones, sampling depths, emitters and containers", "record substrate, fertilizer, amendments, irrigation, water source, runoff and symptom progression", "calibrate the meter and measure representative samples with a medium-appropriate method plus EC and alkalinity context", "inspect roots, repeat questionable readings and distinguish nutrient, salinity, water, root, environmental, pest and disease causes"],
       "expectedIpmResponse": "Do not diagnose a pH problem from leaf color, burn or pattern. Require representative medium-specific sampling, calibrated measurement, method and temperature, EC and water context, complete inputs, roots, distribution and response; preserve nutrient, salinity, root, environmental, pest and disease alternatives and avoid invented correction rates."
+    },
+    {
+      "recordId": "diagnosis-ec-problem-measurement-sampling-boundary-open-003",
+      "caseId": "ec_problem",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-nara-soil-testing-d70", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Soil_Testing_-_D70_-_26-HK-204-8_-_DPLA_-_944412471c471c4153b99f8d12eb1a76.JPG", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Soil_Testing_-_D70_-_26-HK-204-8_-_DPLA_-_944412471c471c4153b99f8d12eb1a76.JPG",
+          "creator": "U.S. Coast Guard and National Archives", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Soil testing documented by the U.S. Coast Guard and National Archives; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-usda-soil-probe-depth-compaction", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Soil_probe_that_tests_how_compacted_or_loose_soils_are_up_to_two_feet_below_the_surface._(24749886039).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Soil_probe_that_tests_how_compacted_or_loose_soils_are_up_to_two_feet_below_the_surface._(24749886039).jpg",
+          "creator": "USDA NRCS Texas", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Soil-depth and compaction probe documented by USDA NRCS Texas; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "soil-testing and depth-probe contexts without a symptomatic crop case or an electrical-conductivity result",
+      "cultivar": "not applicable", "lifeStage": "root-zone assessment context rather than plant tissue",
+      "affectedLocation": "no plant symptoms are shown; the references concern sampling and physical root-zone assessment",
+      "distribution": "no case-linked containers, beds, depths, emitters, runoff zones or affected-unaffected plants are mapped",
+      "progression": "no EC trend, input sequence, irrigation event, leaching response, root change or new growth is available",
+      "mediumRootZone": "testing and depth probing are depicted, but medium type, extraction method, sampling depth, moisture, compaction, drainage, pH, roots and ion composition are not linked to one case",
+      "environment": "temperature, irrigation, water chemistry, fertilizer, runoff, humidity, light and crop demand are absent",
+      "measuredValues": "no calibrated input, solution, substrate, pore-water or runoff EC; temperature compensation; meter standard; sampling ratio; water analysis; ion profile; or repeat trend accompanies the pair",
+      "diagnosticSigns": ["EC is a method-dependent measurement of bulk ionic conductivity, not a visible diagnosis", "a soil test or probe does not establish high or low EC without representative calibrated measurements", "EC attribution requires named sample type and method, temperature, water and input context, spatial distribution, roots and response"],
+      "plausibleAlternatives": ["pH problem, specific-ion toxicity, deficiency, excess or antagonism", "compaction, low oxygen, root disease, overwatering or underwatering", "heat, light, wind, cold or spray injury", "pest, disease, senescence or mixed causes"],
+      "confirmationMethod": "Define sample type, zones and depths; calibrate the EC meter with a valid standard; document temperature compensation and extraction or runoff method; measure representative input and root-zone samples with pH and water context; inspect roots and drainage; repeat trends; and track plant response after a measured correction.",
+      "expectedCauseRanking": ["insufficient_evidence", "excess", "deficiency", "lockout", "antagonism", "other_abiotic", "disease", "pest"],
+      "expectedUrgency": "measure representative input and root-zone EC promptly when burn, wilt or growth loss is progressing, without blind flushing or feeding",
+      "expectedQuarantineGuidance": "Do not quarantine for an EC problem; separately evaluate transmissible causes when organism, lesion or spread evidence supports them.",
+      "expectedScoutingSteps": ["map affected and unaffected plants, irrigation zones, containers or beds, sample depths and drainage", "record every fertilizer, amendment, water source, irrigation, runoff and symptom change", "calibrate the meter and measure named representative samples with method, ratio, temperature, pH and water context", "inspect roots, drainage and compaction and distinguish specific ions, pH, water, root, environmental, pest and disease causes"],
+      "expectedIpmResponse": "Do not diagnose an EC problem from tip burn, color, wilt or one unlabeled meter reading. Require representative named samples, calibrated method, temperature, input and water context, roots, drainage, spatial distribution and trend; preserve specific-ion, pH, root, environmental, pest and disease alternatives and avoid invented correction rates."
+    },
+    {
+      "recordId": "diagnosis-calcium-root-environment-blossom-end-rot-boundary-open-003",
+      "caseId": "calcium_root_environment",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-pd-potted-grape-tomato-blossom-end-rot", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Blossomendrot.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Blossomendrot.jpg",
+          "creator": "Siltloam", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Blossom-end rot on a potted grape tomato photographed by Siltloam; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-calcium-hydroxide-sample", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Calcium_hydroxide.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Calcium_hydroxide.jpg",
+          "creator": "Walkerma", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Calcium hydroxide sample photographed by Walkerma; public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "potted grape tomato fruit with blossom-end rot and a separate calcium-hydroxide material reference",
+      "cultivar": "grape tomato in one reference", "lifeStage": "fruiting tomato and a material sample without a shared crop case",
+      "affectedLocation": "fruit blossom end without case-linked roots, young leaves, irrigation pattern, medium profile or unaffected fruit",
+      "distribution": "separate references without fruit-set cohort, plant, container, emitter, depth or affected-unaffected mapping",
+      "progression": "single-time examples without fruit development sequence, water fluctuations, root decline, tissue analysis, correction response or later fruit cohorts",
+      "mediumRootZone": "no case-linked moisture, oxygen, roots, restriction, pH, EC, calcium availability or competing ions are measured; the calcium material is not evidence of crop need or suitability",
+      "environment": "temperature, humidity, transpiration demand, irrigation timing, water chemistry, substrate, crop load and growth rate are not paired",
+      "measuredValues": "no representative root-zone moisture trend, irrigation volume, root assessment, pH, EC, water alkalinity, calcium or competing-ion analysis, tissue test or fruit-cohort response accompanies the pair",
+      "diagnosticSigns": ["blossom-end rot is compatible with localized calcium-delivery failure but does not prove low calcium supply", "root restriction, water fluctuation and rapid fruit demand can alter calcium delivery", "case attribution requires roots, water dynamics, measured chemistry, fruit-cohort distribution and response rather than automatic supplementation"],
+      "plausibleAlternatives": ["irregular irrigation, drought, saturation, low oxygen, compaction or root disease", "salinity, pH problem, nutrient antagonism or excessive ammonium", "heat, high vapor-pressure deficit, rapid growth or heavy crop load", "fruit injury, pathogen decay or mixed causes"],
+      "confirmationMethod": "Map affected fruit by plant and set date; document irrigation and moisture trends; inspect roots and physical restriction; measure representative pH, EC, water and ion context; review complete nutrition and crop load; rule out decay and injury; and compare subsequent fruit cohorts after a measured root-environment correction before adding calcium by assumption.",
+      "expectedCauseRanking": ["insufficient_evidence", "other_abiotic", "antagonism", "lockout", "deficiency", "excess", "disease"],
+      "expectedUrgency": "inspect roots and stabilize documented water delivery promptly when new fruit continue developing lesions, while avoiding blind calcium application",
+      "expectedQuarantineGuidance": "Do not quarantine for presumed calcium-delivery disorder; separately evaluate transmissible fruit decay when compatible spread or pathogen evidence exists.",
+      "expectedScoutingSteps": ["map affected fruit by plant, cluster and set date with unaffected fruit and new cohorts", "record irrigation volume and timing, moisture trend, weather, crop load and complete nutrient inputs", "inspect roots, drainage and compaction and measure representative pH, EC, water and ion context", "distinguish decay, injury, salinity, pH, antagonism and water-driven delivery failure and track later fruit response"],
+      "expectedIpmResponse": "Do not equate blossom-end rot or distorted new growth with a simple calcium shortage. Require fruit or tissue distribution, roots, water dynamics, calibrated pH and EC, water and ion context, complete inputs and response; preserve physical, root, salinity, antagonism and disease alternatives and avoid invented calcium rates."
     }
   ]
 }
