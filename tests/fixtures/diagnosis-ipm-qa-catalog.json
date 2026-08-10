@@ -5790,6 +5790,74 @@
       "expectedIpmResponse": "Do not diagnose root aphids from a museum specimen, generic aphid morphology, ants, one winged insect, wilt or root decline. Require living compatible organisms directly associated with case roots plus counts, mapped distribution, root evidence and progression; preserve other insects, disease and abiotic alternatives and avoid invented pesticide directions."
     },
     {
+      "recordId": "diagnosis-fungus-gnat-adult-root-causality-boundary-open-004",
+      "caseId": "fungus_gnats",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-ccby2-fungus-gnat-rock-creek-two", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fungus_Gnat_(30538339613).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fungus_Gnat_(30538339613).jpg",
+          "creator": "Katja Schulz", "licenseId": "CC-BY-2.0", "attributionText": "Fungus gnat photographed by Katja Schulz; CC BY 2.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-pd-unidentified-clinging-gnats", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Clingon_gnats.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Clingon_gnats.jpg",
+          "creator": "Luke", "licenseId": "PUBLIC-DOMAIN-DEDICATION", "attributionText": "Unidentified clinging gnats photographed by Luke and released to the public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "adult fungus-gnat reference and unidentified gnat-like flies without a linked crop root-zone case",
+      "cultivar": "not applicable", "lifeStage": "adult flying insects without case-linked eggs or larvae",
+      "affectedLocation": "adult close-ups without media surface, crown, roots, drainage openings, sticky traps, whole plants or controls",
+      "distribution": "no container, bench, irrigation-zone, trap or affected-unaffected map",
+      "progression": "no adult trend, larval increase, root feeding, seedling loss, disease association or recovery sequence",
+      "mediumRootZone": "moisture, oxygen, temperature, drainage, organic matter, algae, root condition, pH and EC are absent",
+      "environment": "irrigation, humidity, airflow, sanitation, incoming media and nearby hosts are not documented",
+      "measuredValues": "no adult trap count, larvae per media sample, root-health score, moisture, pH, EC or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["adult fungus-gnat morphology can support identity but does not prove damaging larvae are present in a crop root zone", "small dark flies overlap with shore flies, phorids, fruit flies and other gnats", "case causality requires compatible larvae in media or roots plus adult trends, root evidence, distribution and progression"],
+      "plausibleAlternatives": ["shore flies, phorid flies, fruit flies, mosquitoes or other harmless gnats", "springtails, predatory mites or other harmless media organisms", "Pythium, Fusarium, Rhizoctonia, Phytophthora or another root disease", "waterlogging, low oxygen, drought, salinity, pH, EC, heat, cold or irrigation failure"],
+      "confirmationMethod": "Capture adults at body scale and representative media surfaces, crowns, washed roots and drainage areas; inspect moist media for translucent dark-headed larvae; count adults on traps and larvae in standardized samples; record root condition and root-zone measurements; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect moist media and vulnerable roots promptly when adult counts, larvae or seedling decline are increasing",
+      "expectedQuarantineGuidance": "Limit movement of rooted plants or shared media only when a reproducing case-linked population is supported; do not quarantine from one adult fly or wet media alone.",
+      "expectedScoutingSteps": ["map containers and capture adults, traps, media surfaces, crowns, washed roots, drainage areas and controls", "count adults and larvae with standardized traps or media samples and repeat over time", "record moisture, drainage, oxygen, root condition, algae, irrigation, humidity, pH and EC", "distinguish shore flies, other gnats, harmless media organisms, root disease and abiotic root stress before pest-specific action"],
+      "expectedIpmResponse": "Do not diagnose damaging fungus gnats from one adult, generic gnat morphology, wet media or plant decline. Require case-linked compatible larvae or a reproducing adult-to-larva pattern plus counts, mapped distribution, root evidence and progression; preserve fly, disease and abiotic alternatives and avoid invented pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-root-aphid-root-association-versus-foliar-aphid-boundary-open-004",
+      "caseId": "root_aphids",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-pemphigus-smithsonian-12209957", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pemphigus_sp._nmnhentomology_12209957_NMNH-01084538.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pemphigus_sp._nmnhentomology_12209957_NMNH-01084538.jpg",
+          "creator": "Smithsonian National Museum of Natural History", "licenseId": "CC0-1.0", "attributionText": "Pemphigus specimen from the Smithsonian National Museum of Natural History Open Access collection; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-nsf-pd-generic-aphids", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aphids_(4575792195).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aphids_(4575792195).jpg",
+          "creator": "Zina Deretsky / National Science Foundation", "licenseId": "US-PUBLIC-DOMAIN", "attributionText": "Aphid reference image by Zina Deretsky for the National Science Foundation; U.S. public domain.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "museum Pemphigus specimen and generic above-ground aphids without a living case-linked root colony",
+      "cultivar": "not applicable", "lifeStage": "preserved specimen and visible aphids without verified root association",
+      "affectedLocation": "organism references without roots, crown, media, drainage openings, whole plants or controls",
+      "distribution": "no container, bench, irrigation-zone, root-system, ant, winged-dispersal or affected-unaffected map",
+      "progression": "no root colony increase, winged dispersal, root decline, trap trend, crop symptoms or recovery sequence",
+      "mediumRootZone": "roots, moisture, oxygen, temperature, drainage, pH, EC and substrate condition are absent",
+      "environment": "irrigation, humidity, airflow, sanitation, ants, incoming plants and nearby hosts are not documented",
+      "measuredValues": "no living root-associated organism count, body-scale case image, trap count, root-health score, moisture, pH, EC or marked-plant follow-up accompanies the pair",
+      "diagnosticSigns": ["Pemphigus or generic aphid morphology does not establish that living organisms are associated with case roots", "foliar aphids, winged dispersers and root aphids overlap visually unless host, location and diagnostic morphology are documented", "case causality requires compatible living aphids directly on roots plus colony counts, distribution, root condition and progression"],
+      "plausibleAlternatives": ["above-ground aphids, winged aphids, fungus gnats, shore flies or other small insects", "root mealybugs, springtails, predatory mites or harmless soil organisms", "Pythium, Fusarium, Rhizoctonia, Phytophthora or another root disease", "waterlogging, low oxygen, drought, salinity, pH, EC, heat, cold or irrigation failure"],
+      "confirmationMethod": "Capture body-scale images of living organisms on representative washed roots, crowns, pot edges, media surfaces and drainage openings; compare foliar and winged aphids separately; count marked root systems over time; document root condition and root-zone measurements; and obtain qualified identification when species changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "pest", "disease", "other_abiotic"],
+      "expectedUrgency": "inspect representative roots promptly when colonies, winged dispersal or progressive decline are present while preserving samples",
+      "expectedQuarantineGuidance": "Limit movement of rooted plants or shared media only when compatible living aphids are directly associated with roots; do not quarantine from a specimen, foliar aphids, one winged insect, ants or wilt alone.",
+      "expectedScoutingSteps": ["map plants and capture whole-plant symptoms, washed roots, crowns, pot edges, drainage areas and body-scale organism views", "count organisms by marked root system and track foliar and winged aphids separately", "record root color, odor and integrity plus irrigation, moisture, drainage, oxygen, pH and EC", "distinguish root mealybugs, fungus-gnat larvae, harmless soil organisms, disease and abiotic root stress before pest-specific action"],
+      "expectedIpmResponse": "Do not diagnose root aphids from a museum specimen, generic or foliar aphids, one winged insect, ants, wilt or root decline. Require living compatible aphids directly associated with case roots plus counts, mapped distribution, root evidence and progression; preserve other insects, disease and abiotic alternatives and avoid invented pesticide directions."
+    },
+    {
       "recordId": "diagnosis-leafminer-mine-larva-boundary-open-003",
       "caseId": "leafminers",
       "imageSet": [
