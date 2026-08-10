@@ -6536,6 +6536,74 @@
       "expectedQuarantineGuidance": "Limit movement only when compatible lesions, underside sporulation or confirmatory evidence supports infectious downy mildew; do not quarantine a healthy host or illustration.",
       "expectedScoutingSteps": ["capture paired upper and lower leaf views, lesion margins, macro underside signs, whole plants and unaffected controls", "map vein-limited lesions by leaf age, canopy and plant and track spread", "record humidity, temperature, wetness, irrigation, airflow and recent weather", "distinguish powdery mildew, leaf spots, nutrients, spray, edema and pests and seek laboratory confirmation when warranted"],
       "expectedIpmResponse": "Do not diagnose downy mildew from host identity, yellow patches, white pixels or a reference illustration alone. Require paired leaf surfaces, compatible angular lesions, underside sporulation or confirmation, moisture context, mapped distribution and progression; preserve leaf spot, nutrient, spray, edema and pest alternatives and never invent pesticide directions."
+    },
+    {
+      "recordId": "diagnosis-septoria-same-host-view-boundary-open-004",
+      "caseId": "septoria_and_leaf_spots",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-tomato-septoria-3025", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3025.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3025.jpg",
+          "creator": "Wolan268", "licenseId": "CC0-1.0", "attributionText": "Tomato foliage documented with Septoria leaf spot by Wolan268; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-tomato-septoria-3026", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tomato_septoria_leaf_spot_3026.jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tomato_septoria_leaf_spot_3026.jpg",
+          "creator": "Wolan268", "licenseId": "CC0-1.0", "attributionText": "Tomato foliage documented with Septoria leaf spot by Wolan268; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "tomato foliage documented with Septoria leaf spot in two views from one source session",
+      "cultivar": "unknown", "lifeStage": "established vegetative foliage",
+      "affectedLocation": "visible leaf surfaces without paired undersides, stems, fruit, roots or unaffected controls",
+      "distribution": "multiple lesions on photographed foliage without lower-to-upper canopy, splash, row or affected-unaffected mapping",
+      "progression": "same-session views without onset, lesion expansion, coalescence, defoliation or follow-up",
+      "mediumRootZone": "roots, moisture, oxygen, drainage, pH and EC are not documented",
+      "environment": "leaf wetness, rainfall, irrigation splash, humidity, temperature, airflow and recent applications are absent",
+      "measuredValues": "no lesion count or scale, wetness duration, pycnidia inspection, microscopy, culture, molecular result or marked-leaf progression accompanies the views",
+      "diagnosticSigns": ["the source identifies Septoria leaf spot on tomato", "multiple views improve lesion coverage but do not supply underside, canopy, temporal or laboratory evidence", "species attribution requires compatible host, lesion structures, distribution, progression and confirmation"],
+      "plausibleAlternatives": ["Cercospora, Alternaria, anthracnose, bacterial spot or another leaf-spot disease", "thrips, mites, leaf miners or feeding injury", "spray burn, edema, sunscald, abrasion, hail or residue", "nutrition, pH, EC, root, water or senescence-related necrosis"],
+      "confirmationMethod": "Capture whole plants, canopy distribution, paired leaf surfaces, lesion centers and margins with scale, stems, fruit and controls; record progression and wetness; inspect for pycnidia, residue and pests; and use qualified microscopy, culture or molecular testing when identity changes management.",
+      "expectedCauseRanking": ["disease", "insufficient_evidence", "pest", "other_abiotic", "deficiency"],
+      "expectedUrgency": "document expanding lesions and defoliation promptly while preserving untreated representative tissue",
+      "expectedQuarantineGuidance": "Reduce splash and wet handling when an infectious pattern is credible, but do not declare spread or quarantine from close leaf views alone.",
+      "expectedScoutingSteps": ["capture whole plants, canopy distribution, paired leaf surfaces, lesion centers and margins, stems, fruit and controls", "record host, tissue age, onset, progression, rainfall, splash, wetness, humidity, temperature, airflow and sprays", "inspect for pycnidia, residue, insects, mines, edema and patterned injury", "preserve lesion margins and controls for qualified testing when species identity affects intervention"],
+      "expectedIpmResponse": "Do not turn a source label or multiple close views into certainty for a new case. Require host, both surfaces, canopy and splash distribution, progression, wetness history, diagnostic structures and qualified confirmation; retain disease, pest, spray, edema, root, nutrient and senescence alternatives and avoid invented fungicide directions."
+    },
+    {
+      "recordId": "diagnosis-fusarium-culture-provenance-boundary-open-004",
+      "caseId": "fusarium",
+      "imageSet": [
+        {
+          "imageId": "wikimedia-cc0-foc1-brown-rice-38100977215", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fusarium_oxysporum_f._sp._cubense_race_1_(Foc-1)_(38100977215).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fusarium_oxysporum_f._sp._cubense_race_1_(Foc-1)_(38100977215).jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Fusarium oxysporum f. sp. cubense race 1 culture on grain photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        },
+        {
+          "imageId": "wikimedia-cc0-foc1-rye-24607024387", "sourceId": "wikimedia_individual_public_domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fusarium_oxysporum_f._sp._cubense_race_1_(24607024387).jpg", "mediaUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fusarium_oxysporum_f._sp._cubense_race_1_(24607024387).jpg",
+          "creator": "Scot Nelson", "licenseId": "CC0-1.0", "attributionText": "Fusarium oxysporum f. sp. cubense race 1 culture on sterilized rye photographed by Scot Nelson; CC0 1.0.",
+          "retrievedAt": "2026-08-10", "rightsReviewedAt": "2026-08-10", "intendedUseApproved": true, "handling": "external_reference"
+        }
+      ],
+      "plant": "no symptomatic crop is shown; both references document Fusarium oxysporum f. sp. cubense race 1 growing on sterilized grain",
+      "cultivar": "not applicable", "lifeStage": "laboratory culture without a linked plant case",
+      "affectedLocation": "culture substrates without roots, crown, vascular tissue, canopy, soil or unaffected plant controls",
+      "distribution": "no crop, row, irrigation, propagation, affected-unaffected or spread map is represented",
+      "progression": "culture-age snapshots without plant symptom onset, wilt sequence, vascular progression, spread or recovery",
+      "mediumRootZone": "plant root-zone moisture, oxygen, drainage, temperature, pH, EC and root integrity are absent",
+      "environment": "culture conditions are partly described, but crop irrigation, temperature, humidity, airflow, sanitation, injury and propagation history are absent",
+      "measuredValues": "no plant-linked isolation, vascular discoloration, root assessment, molecular assay, pathogenicity test or matched control accompanies the cultures",
+      "diagnosticSigns": ["the references document a named Fusarium pathogen under controlled culture conditions", "culture appearance cannot prove that Fusarium caused wilt in an unrelated plant", "plant diagnosis requires case-linked compatible roots or vascular tissue, spatial and temporal evidence and qualified confirmation"],
+      "plausibleAlternatives": ["Verticillium, Pythium, Phytophthora, Rhizoctonia, bacterial wilt or another root or vascular disease", "drought, waterlogging, low oxygen, heat, cold, salinity, pH, EC or irrigation failure", "stem injury, transplant damage, root pests, herbicide or spray injury", "nonpathogenic Fusarium, secondary colonization, contamination or mixed causes"],
+      "confirmationMethod": "Capture whole plants, mapped symptoms, intact roots, crown, lower stem and vascular cross-sections with controls; record progression and root-zone conditions; preserve symptomatic margins; and obtain qualified case-linked culture or molecular testing with host-aware interpretation when identity changes management.",
+      "expectedCauseRanking": ["insufficient_evidence", "disease", "other_abiotic", "pest", "lockout"],
+      "expectedUrgency": "preserve fresh roots, crown and vascular margins promptly during progressive wilt before decay or treatment obscures evidence",
+      "expectedQuarantineGuidance": "Limit transfer of suspect plants, media, runoff and tools only when progressive transmissible root or vascular disease is credible; do not quarantine from culture resemblance alone.",
+      "expectedScoutingSteps": ["capture whole plants, mapped distribution, intact washed roots, crown, lower stem, vascular cross-sections and controls", "record onset, spread, irrigation, drainage, moisture, oxygen, temperature, pH, EC, sanitation, propagation and injury", "inspect for vascular browning, root lesions, sloughing, odor, stem damage, pests and emitter nonuniformity", "preserve representative margins and obtain qualified case-linked testing before species-specific action"],
+      "expectedIpmResponse": "Do not diagnose Fusarium from wilt, yellowing, a culture image or a named laboratory strain alone. Require host-compatible case-linked roots and vascular evidence, mapped progression, root-zone measurements, exclusion of competing disease and abiotic causes, and qualified confirmation; avoid invented treatment, quarantine or disposal directions."
     }
   ]
 }
