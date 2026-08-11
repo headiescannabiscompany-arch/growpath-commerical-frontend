@@ -1,7 +1,7 @@
 import React from "react";
 import fs from "fs";
 import path from "path";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 
 import CommercialHome, {
@@ -2852,7 +2852,7 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByLabelText("Public share status: Evidence building").props
         .accessibilityState
-    ).toEqual({ checked: true });
+    ).toEqual(expect.objectContaining({ checked: true }));
     expect(screen.queryByLabelText("Product trial evidence run product id")).toBeNull();
     fireEvent.press(screen.getByLabelText("Show advanced evidence run record ID fields"));
     expect(screen.getByLabelText("Product trial evidence run product id")).toBeTruthy();
@@ -2966,13 +2966,33 @@ describe("commercial workflow pages", () => {
     ).toBe("Bloom formula trial finished with strong aroma and no major burn.");
     expect(screen.getByText("Create Feed Campaign")).toBeTruthy();
 
-    fireEvent.changeText(
-      screen.getByLabelText("Product trial evidence run detail status"),
-      "completed"
+    act(() => {
+      const event = {
+        currentTarget: 1,
+        nativeEvent: { pageX: 0, pageY: 0 },
+        persist: jest.fn(),
+        target: 1
+      };
+      const statusNode = screen.getByLabelText("Evidence run status: Completed");
+      statusNode.props.onResponderGrant(event);
+      statusNode.props.onResponderRelease(event);
+      const shareNode = screen.getByLabelText(
+        "Evidence run public share status: Public ready"
+      );
+      shareNode.props.onResponderGrant(event);
+      shareNode.props.onResponderRelease(event);
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Evidence run status: Completed").props.accessibilityState
+          .checked
+      ).toBe(true)
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Product trial evidence run detail public share status"),
-      "public_ready"
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Evidence run public share status: Public ready").props
+          .accessibilityState.checked
+      ).toBe(true)
     );
     fireEvent.changeText(
       screen.getByLabelText("Product trial evidence run detail notes"),

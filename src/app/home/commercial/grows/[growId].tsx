@@ -1,6 +1,7 @@
 import { Link, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -66,6 +67,38 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
+const RUN_STATUS_CHOICES: Array<{
+  id: NonNullable<CommercialGrow["status"]>;
+  label: string;
+}> = [
+  { id: "planned", label: "Planned" },
+  { id: "active", label: "Active" },
+  { id: "completed", label: "Completed" },
+  { id: "archived", label: "Archived" }
+];
+
+const PUBLIC_SHARE_CHOICES: Array<{
+  id: NonNullable<CommercialGrow["publicShareStatus"]>;
+  label: string;
+  help: string;
+}> = [
+  {
+    id: "private",
+    label: "Private",
+    help: "Keep this run inside the Commercial workspace."
+  },
+  {
+    id: "evidence_building",
+    label: "Evidence building",
+    help: "Continue collecting and reviewing evidence before public use."
+  },
+  {
+    id: "public_ready",
+    label: "Public ready",
+    help: "Mark the reviewed run ready to support public material; this does not publish it."
+  }
+];
+
 export default function CommercialGrowDetailRoute({
   route,
   routeKey = "commercial-grow-detail"
@@ -82,15 +115,20 @@ export default function CommercialGrowDetailRoute({
     [params.growId, params.id, route?.params?.growId, route?.params?.id]
   );
   const [grow, setGrow] = useState<CommercialGrow | null>(null);
-  const [status, setStatus] = useState("");
-  const [publicShareStatus, setPublicShareStatus] = useState("");
+  const [status, setStatus] = useState<NonNullable<CommercialGrow["status"]>>("active");
+  const [publicShareStatus, setPublicShareStatus] =
+    useState<NonNullable<CommercialGrow["publicShareStatus"]>>("evidence_building");
   const [harvestQualityNotes, setHarvestQualityNotes] = useState("");
   const [commercialCropSummary, setCommercialCropSummary] = useState("");
   const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [saveError, setSaveError] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const loadInFlightRef = useRef(false);
+  const saveInFlightRef = useRef(false);
+  const canSave = !!growId && !!grow && !loading && !saving;
 
   const hydrate = useCallback((next: CommercialGrow | null) => {
     setGrow(next);
@@ -102,14 +140,21 @@ export default function CommercialGrowDetailRoute({
   }, []);
 
   const load = useCallback(async () => {
-    if (!growId) return;
+    if (loadInFlightRef.current) return;
+    if (!growId) {
+      setLoading(false);
+      setLoadError(new Error("This evidence run link is missing its record ID."));
+      return;
+    }
+    loadInFlightRef.current = true;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       hydrate(await fetchCommercialGrow(growId));
     } catch (err) {
-      setError(err);
+      setLoadError(err);
     } finally {
+      loadInFlightRef.current = false;
       setLoading(false);
     }
   }, [growId, hydrate]);
@@ -119,16 +164,15 @@ export default function CommercialGrowDetailRoute({
   }, [load]);
 
   async function saveChanges() {
-    if (!growId) return;
+    if (!canSave || saveInFlightRef.current) return;
+    saveInFlightRef.current = true;
     setSaving(true);
     setMessage("");
-    setError(null);
+    setSaveError(null);
     try {
       const updated = await updateCommercialGrow(growId, {
-        status: (status.trim() || "active") as CommercialGrow["status"],
-        publicShareStatus:
-          (publicShareStatus.trim() as CommercialGrow["publicShareStatus"]) ||
-          "evidence_building",
+        status,
+        publicShareStatus,
         harvestQualityNotes: harvestQualityNotes.trim(),
         commercialCropSummary: commercialCropSummary.trim(),
         notes: notes.trim()
@@ -136,8 +180,9 @@ export default function CommercialGrowDetailRoute({
       hydrate(updated);
       setMessage("Product trial evidence run updated.");
     } catch (err) {
-      setError(err);
+      setSaveError(err);
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
   }
@@ -150,7 +195,9 @@ export default function CommercialGrowDetailRoute({
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Product trial evidence run</Text>
-          <Text style={styles.title}>{titleFor(grow)}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            {titleFor(grow)}
+          </Text>
           <Text style={styles.subtitle}>
             Keep this private run as the evidence source, then connect product, batch,
             formula, trial, public-share, feed campaign, and report workflows around it.
@@ -164,30 +211,57 @@ export default function CommercialGrowDetailRoute({
       }
     >
       {loading ? (
-        <Text style={styles.muted}>Loading product trial evidence run...</Text>
+        <View
+          accessibilityLabel="Loading product trial evidence run"
+          accessibilityLiveRegion="polite"
+          accessibilityRole="progressbar"
+          style={styles.progressRow}
+        >
+          <ActivityIndicator color={palette.accent} />
+          <Text style={styles.muted}>Loading product trial evidence run...</Text>
+        </View>
       ) : null}
-      {error ? <InlineError error={error} /> : null}
+      {loadError ? (
+        <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
+          <InlineError error={loadError} />
+          {growId ? (
+            <Pressable
+              accessibilityLabel="Retry product trial evidence run"
+              accessibilityRole="button"
+              disabled={loading}
+              onPress={load}
+              style={[styles.action, loading && styles.disabled]}
+            >
+              <Text style={styles.actionText}>Retry</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
 
-      <CommercialContextualTools
-        title="Analyze this evidence run"
-        source="commercial_evidence_run_detail"
-        growId={growId}
-        productId={String(grow?.productId || "")}
-        productLineId={String(grow?.productLineId || "")}
-        batchId={String(grow?.batchId || "")}
-        prompt={`Review the evidence run ${titleFor(grow)} using its crop, measurements, observations, and commercial claim context.`}
-        tools={[
-          "ask-ai",
-          "diagnose",
-          "environment",
-          "recipe-builder",
-          "harvest-readiness",
-          "report"
-        ]}
-      />
+      {grow ? (
+        <CommercialContextualTools
+          title="Analyze this evidence run"
+          source="commercial_evidence_run_detail"
+          growId={growId}
+          productId={String(grow.productId || "")}
+          productLineId={String(grow.productLineId || "")}
+          batchId={String(grow.batchId || "")}
+          prompt={`Review the evidence run ${titleFor(grow)} using its crop, measurements, observations, and commercial claim context.`}
+          tools={[
+            "ask-ai",
+            "diagnose",
+            "environment",
+            "recipe-builder",
+            "harvest-readiness",
+            "report"
+          ]}
+        />
+      ) : null}
 
       <AppCard>
-        <Text style={styles.cardTitle}>Commercial Context</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Commercial Context
+        </Text>
         <Text style={styles.body}>
           This layer tracks why the run exists commercially: product trial, soil trial,
           demo trial, genetics test, plant inventory evidence, or private brand proof.
@@ -204,7 +278,9 @@ export default function CommercialGrowDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Linked Evidence</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Linked Evidence
+        </Text>
         <Text style={styles.body}>
           Product claims should be tied back to saved evidence-run records, formula
           versions, batches, measurements, and final outcomes.
@@ -240,7 +316,9 @@ export default function CommercialGrowDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Measurement Plan</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Measurement Plan
+        </Text>
         <Text style={styles.body}>
           {grow?.measurementPlan ||
             "No measurement plan saved yet. Add pH/EC checks, vigor scoring, diagnosis, steering, harvest, dry/cure, and final quality notes before using this evidence run as public proof."}
@@ -248,7 +326,9 @@ export default function CommercialGrowDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Harvest Quality Notes</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Harvest Quality Notes
+        </Text>
         <Text style={styles.body}>
           Capture the final quality evidence that matters commercially: yield, flower
           structure, aroma, flavor, resin, dry/cure result, defects, and what can be used
@@ -256,6 +336,7 @@ export default function CommercialGrowDetailRoute({
         </Text>
         <TextInput
           accessibilityLabel="Product trial evidence run harvest quality notes"
+          editable={!!grow && !saving}
           multiline
           onChangeText={setHarvestQualityNotes}
           placeholder="Aroma, flavor, resin, yield, trim quality, dry/cure notes, defects, customer-facing quality notes..."
@@ -265,13 +346,16 @@ export default function CommercialGrowDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Product Trial Crop Summary</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Product Trial Crop Summary
+        </Text>
         <Text style={styles.body}>
           Use this as the report-ready summary for the product trial evidence run. Keep it
           evidence-backed and cautious enough for storefront, feed, trial, or course use.
         </Text>
         <TextInput
           accessibilityLabel="Product trial evidence run crop summary"
+          editable={!!grow && !saving}
           multiline
           onChangeText={setCommercialCropSummary}
           placeholder="Product trial summary: product/batch used, crop outcome, quality result, limitations, next run changes..."
@@ -281,38 +365,109 @@ export default function CommercialGrowDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Update Evidence Run Status</Text>
-        <View style={styles.formGrid}>
-          <TextInput
-            accessibilityLabel="Product trial evidence run detail status"
-            onChangeText={setStatus}
-            placeholder="active, completed, archived"
-            style={styles.input}
-            value={status}
-          />
-          <TextInput
-            accessibilityLabel="Product trial evidence run detail public share status"
-            onChangeText={setPublicShareStatus}
-            placeholder="private, evidence_building, public_ready"
-            style={styles.input}
-            value={publicShareStatus}
-          />
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Update Evidence Run Status
+        </Text>
+        <View
+          accessibilityLabel="Product trial evidence run detail status"
+          accessibilityRole="radiogroup"
+          style={styles.choiceGroup}
+        >
+          <Text style={styles.detailLabel}>Run status</Text>
+          <View style={styles.choiceRow}>
+            {RUN_STATUS_CHOICES.map((choice) => (
+              <Pressable
+                key={choice.id}
+                accessibilityLabel={`Evidence run status: ${choice.label}`}
+                accessibilityRole="radio"
+                accessibilityState={{
+                  checked: status === choice.id,
+                  disabled: !grow || saving
+                }}
+                disabled={!grow || saving}
+                onPress={() => setStatus(choice.id)}
+                style={[
+                  styles.choice,
+                  status === choice.id && styles.selectedChoice,
+                  (!grow || saving) && styles.disabled
+                ]}
+              >
+                <Text style={styles.actionText}>{choice.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+        <View
+          accessibilityLabel="Product trial evidence run detail public share status"
+          accessibilityRole="radiogroup"
+          style={styles.choiceGroup}
+        >
+          <Text style={styles.detailLabel}>Public-share readiness</Text>
+          <View style={styles.choiceRow}>
+            {PUBLIC_SHARE_CHOICES.map((choice) => (
+              <Pressable
+                key={choice.id}
+                accessibilityLabel={`Evidence run public share status: ${choice.label}`}
+                accessibilityRole="radio"
+                accessibilityState={{
+                  checked: publicShareStatus === choice.id,
+                  disabled: !grow || saving
+                }}
+                disabled={!grow || saving}
+                onPress={() => setPublicShareStatus(choice.id)}
+                style={[
+                  styles.shareChoice,
+                  publicShareStatus === choice.id && styles.selectedChoice,
+                  (!grow || saving) && styles.disabled
+                ]}
+              >
+                <Text style={styles.actionText}>{choice.label}</Text>
+                <Text style={styles.choiceHelp}>{choice.help}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
         <TextInput
           accessibilityLabel="Product trial evidence run detail notes"
+          editable={!!grow && !saving}
           multiline
           onChangeText={setNotes}
           placeholder="Evidence notes, publishability, gaps, or next checks"
           style={[styles.input, styles.textArea]}
           value={notes}
         />
-        {message ? <Text style={styles.success}>{message}</Text> : null}
+        {saving ? (
+          <View
+            accessibilityLabel="Saving product trial evidence run detail in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Saving evidence run detail...</Text>
+          </View>
+        ) : null}
+        {saveError ? (
+          <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
+            <InlineError error={saveError} />
+          </View>
+        ) : null}
+        {message ? (
+          <Text
+            accessibilityLiveRegion="polite"
+            accessibilityRole="alert"
+            style={styles.success}
+          >
+            {message}
+          </Text>
+        ) : null}
         <Pressable
           accessibilityLabel="Save product trial evidence run detail"
           accessibilityRole="button"
-          disabled={saving || !growId}
+          accessibilityState={{ disabled: !canSave, busy: saving }}
+          disabled={!canSave}
           onPress={saveChanges}
-          style={[styles.primaryAction, saving || !growId ? styles.disabled : null]}
+          style={[styles.primaryAction, !canSave && styles.disabled]}
         >
           <Text style={styles.primaryActionText}>
             {saving ? "Saving..." : "Save Evidence Run Detail"}
@@ -321,7 +476,9 @@ export default function CommercialGrowDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Next Commercial Actions</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Next Commercial Actions
+        </Text>
         <Text style={styles.bullet}>
           Log evidence-run observations and photos in the connected run workspace.
         </Text>
@@ -394,11 +551,46 @@ export function createCommercialGrowDetailStyles(palette: ThemePalette) {
       paddingVertical: 8
     },
     actionText: { color: palette.link, fontSize: 13, fontWeight: "900" },
-    formGrid: {
+    choiceGroup: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      marginTop: 12,
+      padding: 10
+    },
+    choiceRow: {
       flexDirection: "row",
       flexWrap: "wrap",
-      gap: 8,
-      marginTop: 12
+      gap: 8
+    },
+    choice: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    shareChoice: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: 220,
+      flexGrow: 1,
+      padding: 10
+    },
+    selectedChoice: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    choiceHelp: {
+      color: palette.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+      marginTop: 4
     },
     input: {
       backgroundColor: palette.surface,
@@ -432,6 +624,16 @@ export function createCommercialGrowDetailStyles(palette: ThemePalette) {
       fontSize: 13,
       fontWeight: "800",
       marginTop: 8
+    },
+    progressRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 10
+    },
+    errorPanel: {
+      alignItems: "flex-start",
+      gap: 8
     },
     bullet: {
       color: palette.textSoft,

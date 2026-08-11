@@ -1,6 +1,7 @@
 import { Link } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -75,9 +76,14 @@ function growId(grow: CommercialGrow) {
   return grow.id || grow._id || grow.name || grow.growName || "grow";
 }
 
-function parseCount(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+function parseCount(value: string): { value?: number; error?: string } {
+  const normalized = value.trim();
+  if (!normalized) return { value: undefined };
+  const parsed = Number(normalized);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    return { error: "Plant count must be a whole number greater than zero." };
+  }
+  return { value: parsed };
 }
 
 function ActionLink({ href, label }: { href: string; label: string }) {
@@ -116,6 +122,7 @@ function RecordPicker({
   choices,
   createHref,
   createLabel,
+  disabled,
   emptyLabel,
   label,
   onChange,
@@ -124,6 +131,7 @@ function RecordPicker({
   choices: RecordChoice[];
   createHref: string;
   createLabel: string;
+  disabled: boolean;
   emptyLabel: string;
   label: string;
   onChange: (id: string) => void;
@@ -144,9 +152,14 @@ function RecordPicker({
           <Pressable
             accessibilityRole="radio"
             accessibilityLabel={`${label}: Not linked yet`}
-            accessibilityState={{ checked: !selectedId }}
+            accessibilityState={{ checked: !selectedId, disabled }}
+            disabled={disabled}
             onPress={() => onChange("")}
-            style={[styles.action, !selectedId && styles.selectedAction]}
+            style={[
+              styles.action,
+              !selectedId && styles.selectedAction,
+              disabled && styles.disabled
+            ]}
           >
             <Text style={styles.actionText}>Not linked yet</Text>
           </Pressable>
@@ -155,9 +168,14 @@ function RecordPicker({
               key={`${label}-${item.id}`}
               accessibilityRole="radio"
               accessibilityLabel={`${label}: ${item.label}`}
-              accessibilityState={{ checked: selectedId === item.id }}
+              accessibilityState={{ checked: selectedId === item.id, disabled }}
+              disabled={disabled}
               onPress={() => onChange(item.id)}
-              style={[styles.action, selectedId === item.id && styles.selectedAction]}
+              style={[
+                styles.action,
+                selectedId === item.id && styles.selectedAction,
+                disabled && styles.disabled
+              ]}
             >
               <Text style={styles.actionText}>{item.label}</Text>
             </Pressable>
@@ -166,7 +184,17 @@ function RecordPicker({
       ) : (
         <View style={styles.emptyPicker}>
           <Text style={styles.muted}>No saved {emptyLabel} yet.</Text>
-          <ActionLink href={createHref} label={createLabel} />
+          <Link href={createHref as any} asChild>
+            <Pressable
+              accessibilityLabel={createLabel}
+              accessibilityRole="link"
+              accessibilityState={{ disabled }}
+              disabled={disabled}
+              style={[styles.action, disabled && styles.disabled]}
+            >
+              <Text style={styles.actionText}>{createLabel}</Text>
+            </Pressable>
+          </Link>
         </View>
       )}
     </View>
@@ -209,10 +237,15 @@ export default function CommercialGrowsRoute({
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [batches, setBatches] = useState<SoilNutrientBatch[]>([]);
   const [form, setForm] = useState<GrowForm>(EMPTY_FORM);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [createError, setCreateError] = useState<any>(null);
+  const [feedback, setFeedback] = useState("");
   const [showAdvancedRecordIds, setShowAdvancedRecordIds] = useState(false);
+  const loadInFlightRef = useRef(false);
+  const createInFlightRef = useRef(false);
+  const canCreate = !!form.name.trim() && !loading && !loadError && !saving;
 
   const activeCount = useMemo(
     () => grows.filter((grow) => (grow.status || "active") === "active").length,
@@ -246,9 +279,11 @@ export default function CommercialGrowsRoute({
     [batches]
   );
 
-  async function loadGrows() {
+  const loadGrows = useCallback(async () => {
+    if (loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       const [nextGrows, nextProducts, nextLines, nextBatches] = await Promise.all([
         fetchCommercialGrows(),
@@ -261,29 +296,38 @@ export default function CommercialGrowsRoute({
       setProductLines(nextLines);
       setBatches(nextBatches);
     } catch (err) {
-      setError(err);
+      setLoadError(err);
     } finally {
+      loadInFlightRef.current = false;
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    loadGrows();
   }, []);
 
+  useEffect(() => {
+    void loadGrows();
+  }, [loadGrows]);
+
   async function submitGrow() {
-    if (!form.name.trim()) return;
+    if (!canCreate || createInFlightRef.current) return;
+    const parsedPlantCount = parseCount(form.plantCount);
+    if (parsedPlantCount.error) {
+      setCreateError(new Error(parsedPlantCount.error));
+      setFeedback("");
+      return;
+    }
+    createInFlightRef.current = true;
     setSaving(true);
-    setError(null);
+    setCreateError(null);
+    setFeedback("");
     try {
-      await createCommercialGrow({
+      const created = await createCommercialGrow({
         name: form.name.trim(),
         growName: form.name.trim(),
         purpose: form.purpose.trim() || "product_trial",
         cropType: form.cropType.trim() || "cannabis",
         cultivar: form.cultivar.trim(),
         medium: form.medium.trim(),
-        plantCount: parseCount(form.plantCount),
+        plantCount: parsedPlantCount.value,
         productId: form.productId.trim(),
         productLineId: form.productLineId.trim(),
         batchId: form.batchId.trim(),
@@ -293,11 +337,13 @@ export default function CommercialGrowsRoute({
         notes: form.notes.trim(),
         status: "active"
       });
+      if (created) setGrows((current) => [created, ...current]);
       setForm(EMPTY_FORM);
-      await loadGrows();
+      setFeedback("Product trial evidence run created.");
     } catch (err) {
-      setError(err);
+      setCreateError(err);
     } finally {
+      createInFlightRef.current = false;
       setSaving(false);
     }
   }
@@ -364,9 +410,30 @@ export default function CommercialGrowsRoute({
           </View>
         </View>
         {loading ? (
-          <Text style={styles.muted}>Loading product trial evidence runs...</Text>
+          <View
+            accessibilityLabel="Loading product trial evidence runs"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Loading product trial evidence runs...</Text>
+          </View>
         ) : null}
-        {error ? <InlineError error={error} /> : null}
+        {loadError ? (
+          <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
+            <InlineError error={loadError} />
+            <Pressable
+              accessibilityLabel="Retry product trial evidence runs"
+              accessibilityRole="button"
+              disabled={loading}
+              onPress={loadGrows}
+              style={[styles.action, loading && styles.disabled]}
+            >
+              <Text style={styles.actionText}>Retry</Text>
+            </Pressable>
+          </View>
+        ) : null}
       </AppCard>
 
       <AppCard>
@@ -382,6 +449,7 @@ export default function CommercialGrowsRoute({
             value={form.name}
             onChangeText={(name) => setForm((prev) => ({ ...prev, name }))}
             accessibilityLabel="Product trial evidence run name"
+            editable={!saving}
             placeholder="Evidence run name"
             style={styles.input}
           />
@@ -389,6 +457,7 @@ export default function CommercialGrowsRoute({
             value={form.purpose}
             onChangeText={(purpose) => setForm((prev) => ({ ...prev, purpose }))}
             accessibilityLabel="Product trial evidence run purpose"
+            editable={!saving}
             placeholder="Purpose: product_trial, soil_trial, demo_trial..."
             style={styles.input}
           />
@@ -396,6 +465,7 @@ export default function CommercialGrowsRoute({
             value={form.cropType}
             onChangeText={(cropType) => setForm((prev) => ({ ...prev, cropType }))}
             accessibilityLabel="Product trial evidence run crop type"
+            editable={!saving}
             placeholder="Crop type"
             style={styles.input}
           />
@@ -403,6 +473,7 @@ export default function CommercialGrowsRoute({
             value={form.cultivar}
             onChangeText={(cultivar) => setForm((prev) => ({ ...prev, cultivar }))}
             accessibilityLabel="Product trial evidence run cultivar"
+            editable={!saving}
             placeholder="Cultivar / plant line"
             style={styles.input}
           />
@@ -410,6 +481,7 @@ export default function CommercialGrowsRoute({
             value={form.medium}
             onChangeText={(medium) => setForm((prev) => ({ ...prev, medium }))}
             accessibilityLabel="Product trial evidence run medium"
+            editable={!saving}
             placeholder="Medium"
             style={styles.input}
           />
@@ -417,6 +489,7 @@ export default function CommercialGrowsRoute({
             value={form.plantCount}
             onChangeText={(plantCount) => setForm((prev) => ({ ...prev, plantCount }))}
             accessibilityLabel="Product trial evidence run plant count"
+            editable={!saving}
             keyboardType="numeric"
             placeholder="Plant count"
             style={styles.input}
@@ -427,12 +500,14 @@ export default function CommercialGrowsRoute({
               setForm((prev) => ({ ...prev, formulaVersion }))
             }
             accessibilityLabel="Product trial evidence run formula version"
+            editable={!saving}
             placeholder="Formula version"
             style={styles.input}
           />
         </View>
         <View style={styles.pickerGrid}>
           <RecordPicker
+            disabled={saving || loading}
             label="Evidence run product"
             choices={productChoices}
             selectedId={form.productId}
@@ -442,6 +517,7 @@ export default function CommercialGrowsRoute({
             createLabel="Create Product"
           />
           <RecordPicker
+            disabled={saving || loading}
             label="Evidence run product line"
             choices={productLineChoices}
             selectedId={form.productLineId}
@@ -451,6 +527,7 @@ export default function CommercialGrowsRoute({
             createLabel="Create Product Line"
           />
           <RecordPicker
+            disabled={saving || loading}
             label="Evidence run product batch"
             choices={batchChoices}
             selectedId={form.batchId}
@@ -467,9 +544,10 @@ export default function CommercialGrowsRoute({
               ? "Hide advanced evidence run record ID fields"
               : "Show advanced evidence run record ID fields"
           }
-          accessibilityState={{ expanded: showAdvancedRecordIds }}
+          accessibilityState={{ expanded: showAdvancedRecordIds, disabled: saving }}
+          disabled={saving}
           onPress={() => setShowAdvancedRecordIds((current) => !current)}
-          style={styles.advancedToggle}
+          style={[styles.advancedToggle, saving && styles.disabled]}
         >
           <Text style={styles.advancedToggleText}>
             {showAdvancedRecordIds
@@ -483,6 +561,7 @@ export default function CommercialGrowsRoute({
               value={form.productId}
               onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
               accessibilityLabel="Product trial evidence run product id"
+              editable={!saving}
               placeholder="Product ID"
               autoCapitalize="none"
               style={styles.input}
@@ -493,6 +572,7 @@ export default function CommercialGrowsRoute({
                 setForm((prev) => ({ ...prev, productLineId }))
               }
               accessibilityLabel="Product trial evidence run product line id"
+              editable={!saving}
               placeholder="Product line ID"
               autoCapitalize="none"
               style={styles.input}
@@ -501,6 +581,7 @@ export default function CommercialGrowsRoute({
               value={form.batchId}
               onChangeText={(batchId) => setForm((prev) => ({ ...prev, batchId }))}
               accessibilityLabel="Product trial evidence run batch id"
+              editable={!saving}
               placeholder="Product batch ID"
               autoCapitalize="none"
               style={styles.input}
@@ -513,6 +594,7 @@ export default function CommercialGrowsRoute({
             setForm((prev) => ({ ...prev, measurementPlan }))
           }
           accessibilityLabel="Product trial evidence run measurement plan"
+          editable={!saving}
           multiline
           placeholder="Measurement plan: pH/EC, vigor, diagnosis, steering, harvest, dry/cure, final quality"
           style={[styles.input, styles.textArea]}
@@ -521,6 +603,7 @@ export default function CommercialGrowsRoute({
           value={form.notes}
           onChangeText={(notes) => setForm((prev) => ({ ...prev, notes }))}
           accessibilityLabel="Product trial evidence run notes"
+          editable={!saving}
           multiline
           placeholder="Notes and public-share context"
           style={[styles.input, styles.textArea]}
@@ -537,13 +620,18 @@ export default function CommercialGrowsRoute({
                 key={choice.id}
                 accessibilityRole="radio"
                 accessibilityLabel={`Public share status: ${choice.label}`}
-                accessibilityState={{ checked: form.publicShareStatus === choice.id }}
+                accessibilityState={{
+                  checked: form.publicShareStatus === choice.id,
+                  disabled: saving
+                }}
+                disabled={saving}
                 onPress={() =>
                   setForm((prev) => ({ ...prev, publicShareStatus: choice.id }))
                 }
                 style={[
                   styles.shareChoice,
-                  form.publicShareStatus === choice.id && styles.selectedAction
+                  form.publicShareStatus === choice.id && styles.selectedAction,
+                  saving && styles.disabled
                 ]}
               >
                 <Text style={styles.actionText}>{choice.label}</Text>
@@ -552,16 +640,39 @@ export default function CommercialGrowsRoute({
             ))}
           </View>
         </View>
+        {saving ? (
+          <View
+            accessibilityLabel="Creating product trial evidence run in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Creating product trial evidence run...</Text>
+          </View>
+        ) : null}
+        {createError ? (
+          <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
+            <InlineError error={createError} />
+          </View>
+        ) : null}
+        {feedback ? (
+          <Text
+            accessibilityLiveRegion="polite"
+            accessibilityRole="alert"
+            style={styles.success}
+          >
+            {feedback}
+          </Text>
+        ) : null}
         <View style={styles.actions}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Create product trial evidence run"
-            disabled={saving || !form.name.trim()}
+            accessibilityState={{ disabled: !canCreate, busy: saving }}
+            disabled={!canCreate}
             onPress={submitGrow}
-            style={[
-              styles.primaryAction,
-              saving || !form.name.trim() ? styles.disabled : null
-            ]}
+            style={[styles.primaryAction, !canCreate && styles.disabled]}
           >
             <Text style={styles.primaryActionText}>
               {saving ? "Creating..." : "Create Evidence Run"}
@@ -574,7 +685,9 @@ export default function CommercialGrowsRoute({
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           Current product trial evidence runs
         </Text>
-        {grows.length ? (
+        {loading ? (
+          <Text style={styles.muted}>Waiting for the evidence-run list...</Text>
+        ) : grows.length ? (
           <View style={styles.list}>
             {grows.map((grow) => (
               <View key={growId(grow)} style={styles.growRow}>
@@ -930,6 +1043,23 @@ export function createCommercialGrowsStyles(palette: ThemePalette) {
     muted: {
       color: palette.textMuted,
       fontSize: 13,
+      marginTop: 10
+    },
+    progressRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 10
+    },
+    errorPanel: {
+      alignItems: "flex-start",
+      gap: 8,
+      marginTop: 10
+    },
+    success: {
+      color: palette.success,
+      fontSize: 13,
+      fontWeight: "800",
       marginTop: 10
     }
   });

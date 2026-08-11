@@ -311,6 +311,9 @@ describe("GrowPath knowledge registries", () => {
       "readable owner-scoped Product Trial Evidence Run record pickers and named share status choices with an explicit advanced ID fallback"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight Product Trial Evidence Run loading, creation, and detail editing with positive whole-number plant counts and retained drafts"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "named Inventory Support item types and readable Product or Evidence Run pickers with an explicit advanced fallback"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -366,6 +369,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never require copied database IDs or raw public-share status codes as the primary Product Trial Evidence Run creation workflow."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never silently omit an invalid Product Trial Evidence Run plant count, submit a create or detail write twice, discard its failed draft, treat public-ready as automatic publication, or expose contextual AI before the exact record loads."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never require a page transition merely to read or write an ordinary Forum text reply from a canonical post preview."
