@@ -4512,11 +4512,11 @@ describe("SpeciesCropIdToolRoute", () => {
 
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
-    fireEvent.press(
-      screen.getByLabelText(
-        "Include or update current location privately with this Plant ID"
-      )
+    const locationButton = screen.getByLabelText(
+      "Include or update current location privately with this Plant ID"
     );
+    await waitFor(() => expect(locationButton).not.toBeDisabled());
+    fireEvent.press(locationButton);
     await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(1));
     fireEvent.press(screen.getByLabelText("Replace test evidence"));
     await waitFor(() =>
@@ -4615,11 +4615,11 @@ describe("SpeciesCropIdToolRoute", () => {
 
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
-    fireEvent.press(
-      screen.getByLabelText(
-        "Include or update current location privately with this Plant ID"
-      )
+    const locationButton = screen.getByLabelText(
+      "Include or update current location privately with this Plant ID"
     );
+    await waitFor(() => expect(locationButton).not.toBeDisabled());
+    fireEvent.press(locationButton);
     await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(1));
 
     mockRequestCurrentCoordinates.mockResolvedValueOnce(updatedCoordinates);
