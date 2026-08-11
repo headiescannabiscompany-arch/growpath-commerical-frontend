@@ -7,13 +7,17 @@ import FacilityPulseConnectionRoute, {
 } from "@/app/home/facility/(tabs)/tools/pulse";
 import { getThemePalette } from "@/theme/appTheme";
 
-const mockPush = jest.fn();
 const mockCreate = jest.fn();
 const mockTest = jest.fn();
 const mockDevices = jest.fn();
 let mockFacilityRole = "OWNER";
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock("expo-router", () => {
+  const React = require("react");
+  return {
+    Link: ({ children, href }: any) => React.cloneElement(children, { href })
+  };
+});
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
 }));
@@ -62,8 +66,9 @@ describe("FacilityPulseConnectionRoute", () => {
     expect(screen.getByText("Pulse connection setup is read-only")).toBeTruthy();
     expect(screen.queryByLabelText("Pulse API key")).toBeNull();
     expect(screen.queryByText("Verify and discover devices")).toBeNull();
-    fireEvent.press(screen.getByLabelText("Return to Facility integrations"));
-    expect(mockPush).toHaveBeenCalledWith("/home/facility/integrations");
+    expect(screen.getByLabelText("Return to Facility integrations").props.href).toBe(
+      "/home/facility/integrations"
+    );
   });
 
   it("verifies a grow-scoped key, discovers devices, and prefills room mapping", async () => {
@@ -88,13 +93,59 @@ describe("FacilityPulseConnectionRoute", () => {
     expect(
       screen.getByRole("header", { name: "Discovered devices" }).props["aria-level"]
     ).toBe(2);
-    fireEvent.press(screen.getByRole("button", { name: "Review Pulse room mappings" }));
-    expect(mockPush).toHaveBeenCalledWith({
+    expect(
+      screen.getByRole("link", { name: "Review Pulse room mappings" }).props.href
+    ).toEqual({
       pathname: "/home/facility/rooms",
       params: {
         importProvider: "Pulse",
         importDevices: "Flower Room Temp/RH"
       }
     });
+  });
+
+  it("requires a key and ignores duplicate submissions while verification is running", async () => {
+    let resolveCreate: ((value: any) => void) | undefined;
+    mockCreate.mockImplementation(
+      () => new Promise((resolve) => (resolveCreate = resolve))
+    );
+    const screen = render(<FacilityPulseConnectionRoute />);
+    const submit = screen.getByRole("button", {
+      name: "Verify Pulse connection and discover devices"
+    });
+
+    fireEvent.press(submit);
+    expect(
+      screen.getByText("Enter the API key created in the Pulse grow account.")
+    ).toBeTruthy();
+    expect(mockCreate).not.toHaveBeenCalled();
+
+    fireEvent.changeText(screen.getByLabelText("Pulse API key"), "pulse-secret");
+    fireEvent.press(submit);
+    fireEvent.press(submit);
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByText("Verifying the Pulse key and discovering devices...")
+    ).toBeTruthy();
+
+    resolveCreate?.({ id: "connection-1" });
+    await waitFor(() => expect(screen.getByText("Flower Room Temp/RH")).toBeTruthy());
+  });
+
+  it("keeps the key available for correction when verification fails", async () => {
+    mockTest.mockRejectedValue(new Error("Pulse rejected this key."));
+    const screen = render(<FacilityPulseConnectionRoute />);
+
+    fireEvent.changeText(screen.getByLabelText("Pulse API key"), "wrong-key");
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Verify Pulse connection and discover devices"
+      })
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Pulse rejected this key.")).toBeTruthy()
+    );
+    expect(screen.getByLabelText("Pulse API key").props.value).toBe("wrong-key");
   });
 });
