@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -61,6 +61,8 @@ function openDeviation(row: Deviation) {
   return status !== "resolved" && status !== "closed";
 }
 
+const DEVIATION_SEVERITIES = ["minor", "major", "critical"] as const;
+
 export default function FacilityComplianceTab() {
   const router = useRouter();
   const { palette } = useAppTheme();
@@ -94,6 +96,8 @@ export default function FacilityComplianceTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const loadInFlightRef = useRef(false);
+  const mutationInFlightRef = useRef(false);
 
   const [deviationTitle, setDeviationTitle] = useState("");
   const [deviationSeverity, setDeviationSeverity] = useState("minor");
@@ -109,7 +113,8 @@ export default function FacilityComplianceTab() {
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
+      if (!facilityId || loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
 
@@ -135,6 +140,7 @@ export default function FacilityComplianceTab() {
       } catch (e) {
         handleApiError(e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -163,7 +169,14 @@ export default function FacilityComplianceTab() {
   }
 
   async function addDeviation() {
-    if (!facilityId || !canWriteCompliance || !deviationTitle.trim()) return;
+    if (
+      !facilityId ||
+      !canWriteCompliance ||
+      !deviationTitle.trim() ||
+      mutationInFlightRef.current
+    )
+      return;
+    mutationInFlightRef.current = true;
     setSaving(true);
     setFeedback("");
     try {
@@ -185,12 +198,15 @@ export default function FacilityComplianceTab() {
     } catch (e) {
       handleApiError(e);
     } finally {
+      mutationInFlightRef.current = false;
       setSaving(false);
     }
   }
 
   async function resolve(id: string) {
-    if (!facilityId || !id || !canResolveCompliance) return;
+    if (!facilityId || !id || !canResolveCompliance || mutationInFlightRef.current)
+      return;
+    mutationInFlightRef.current = true;
     setSaving(true);
     setFeedback("");
     try {
@@ -206,12 +222,15 @@ export default function FacilityComplianceTab() {
     } catch (e) {
       handleApiError(e);
     } finally {
+      mutationInFlightRef.current = false;
       setSaving(false);
     }
   }
 
   async function verify(recordId: string) {
-    if (!facilityId || !recordId || !canWriteCompliance) return;
+    if (!facilityId || !recordId || !canWriteCompliance || mutationInFlightRef.current)
+      return;
+    mutationInFlightRef.current = true;
     setSaving(true);
     setFeedback("");
     try {
@@ -225,12 +244,15 @@ export default function FacilityComplianceTab() {
     } catch (e) {
       handleApiError(e);
     } finally {
+      mutationInFlightRef.current = false;
       setSaving(false);
     }
   }
 
   async function reject(recordId: string) {
-    if (!facilityId || !recordId || !canWriteCompliance) return;
+    if (!facilityId || !recordId || !canWriteCompliance || mutationInFlightRef.current)
+      return;
+    mutationInFlightRef.current = true;
     setSaving(true);
     setFeedback("");
     try {
@@ -245,6 +267,7 @@ export default function FacilityComplianceTab() {
     } catch (e) {
       handleApiError(e);
     } finally {
+      mutationInFlightRef.current = false;
       setSaving(false);
     }
   }
@@ -270,7 +293,11 @@ export default function FacilityComplianceTab() {
         }
       >
         {error ? <InlineError error={error} /> : null}
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        {feedback ? (
+          <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+            {feedback}
+          </Text>
+        ) : null}
 
         <View style={styles.headerRow}>
           <View style={styles.headerText}>
@@ -283,7 +310,17 @@ export default function FacilityComplianceTab() {
             </Text>
             <Text style={styles.ownerLine}>Facility: {facilityName}</Text>
           </View>
-          {loading ? <ActivityIndicator color={palette.accent} /> : null}
+          {loading ? (
+            <View
+              accessibilityLabel="Loading facility compliance"
+              accessibilityLiveRegion="polite"
+              accessibilityRole="progressbar"
+              style={styles.loading}
+            >
+              <ActivityIndicator color={palette.accent} />
+              <Text style={styles.loadingText}>Loading...</Text>
+            </View>
+          ) : null}
         </View>
 
         {!canReadCompliance ? (
@@ -329,7 +366,7 @@ export default function FacilityComplianceTab() {
               </Text>
               <View style={styles.actionGrid}>
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel="Open compliance export reports"
                   onPress={() => router.push("/home/facility/reports" as any)}
                   style={styles.actionBtn}
@@ -337,7 +374,7 @@ export default function FacilityComplianceTab() {
                   <Text style={styles.actionText}>Export packet</Text>
                 </Pressable>
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel="Open AI inspection readiness"
                   onPress={() =>
                     router.push("/home/facility/ai-ask?preset=compliance" as any)
@@ -347,7 +384,7 @@ export default function FacilityComplianceTab() {
                   <Text style={styles.actionText}>AI readiness</Text>
                 </Pressable>
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel="Open SOP runs"
                   onPress={() => router.push("/home/facility/sop-runs" as any)}
                   style={styles.actionBtn}
@@ -356,7 +393,7 @@ export default function FacilityComplianceTab() {
                 </Pressable>
                 {canWriteCompliance ? (
                   <Pressable
-                    accessibilityRole="button"
+                    accessibilityRole="link"
                     accessibilityLabel="Start new SOP run"
                     onPress={() => router.push("/home/facility/sop-runs/start" as any)}
                     style={styles.actionBtn}
@@ -385,14 +422,34 @@ export default function FacilityComplianceTab() {
                     placeholder="Deviation title"
                     placeholderTextColor={palette.textMuted}
                   />
-                  <TextInput
+                  <View
                     accessibilityLabel="Deviation severity"
-                    value={deviationSeverity}
-                    onChangeText={setDeviationSeverity}
-                    style={styles.input}
-                    placeholder="Severity"
-                    placeholderTextColor={palette.textMuted}
-                  />
+                    accessibilityRole="radiogroup"
+                    style={styles.buttonRow}
+                  >
+                    {DEVIATION_SEVERITIES.map((severity) => (
+                      <Pressable
+                        key={severity}
+                        accessibilityLabel={`Set deviation severity ${severity}`}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: deviationSeverity === severity }}
+                        onPress={() => setDeviationSeverity(severity)}
+                        style={[
+                          styles.severityOption,
+                          deviationSeverity === severity && styles.severityOptionSelected
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.severityText,
+                            deviationSeverity === severity && styles.severityTextSelected
+                          ]}
+                        >
+                          {severity[0].toUpperCase() + severity.slice(1)}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
                   <TextInput
                     accessibilityLabel="Deviation description"
                     value={deviationDescription}
@@ -405,6 +462,10 @@ export default function FacilityComplianceTab() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Create compliance deviation"
+                    accessibilityState={{
+                      busy: saving,
+                      disabled: saving || !deviationTitle.trim()
+                    }}
                     onPress={addDeviation}
                     disabled={saving || !deviationTitle.trim()}
                     style={[
@@ -437,6 +498,7 @@ export default function FacilityComplianceTab() {
                         <Pressable
                           accessibilityRole="button"
                           accessibilityLabel={`Resolve deviation ${item.title || id}`}
+                          accessibilityState={{ busy: saving, disabled: saving }}
                           onPress={() => resolve(id)}
                           disabled={saving}
                           style={styles.secondaryBtn}
@@ -479,6 +541,7 @@ export default function FacilityComplianceTab() {
                             <Pressable
                               accessibilityRole="button"
                               accessibilityLabel={`Approve verification ${record.name || id}`}
+                              accessibilityState={{ busy: saving, disabled: saving }}
                               onPress={() => verify(id)}
                               disabled={saving}
                               style={styles.primaryBtn}
@@ -488,6 +551,7 @@ export default function FacilityComplianceTab() {
                             <Pressable
                               accessibilityRole="button"
                               accessibilityLabel={`Reject verification ${record.name || id}`}
+                              accessibilityState={{ busy: saving, disabled: saving }}
                               onPress={() => reject(id)}
                               disabled={saving}
                               style={styles.dangerBtn}
@@ -517,7 +581,7 @@ export default function FacilityComplianceTab() {
                     documents.
                   </Text>
                   <Pressable
-                    accessibilityRole="button"
+                    accessibilityRole="link"
                     accessibilityLabel="Open SOP Library"
                     onPress={() => router.push("/home/facility/sop-runs/presets" as any)}
                     style={styles.primaryBtn}
@@ -536,7 +600,7 @@ export default function FacilityComplianceTab() {
                       <Text style={styles.rowMeta}>Version {sop.version || 1}</Text>
                       {canWriteCompliance && id ? (
                         <Pressable
-                          accessibilityRole="button"
+                          accessibilityRole="link"
                           accessibilityLabel={`Start SOP run from ${title}`}
                           onPress={() =>
                             router.push({
@@ -563,7 +627,7 @@ export default function FacilityComplianceTab() {
                   Audit Events
                 </Text>
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel="Open audit logs"
                   onPress={() => router.push("/home/facility/audit-logs" as any)}
                 >
@@ -602,6 +666,8 @@ const createStyles = (palette: ThemePalette) =>
     container: { padding: 16, paddingBottom: 120, gap: 12 },
     headerRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
     headerText: { flex: 1, minWidth: 0 },
+    loading: { alignItems: "center", gap: 4 },
+    loadingText: { color: palette.textMuted, fontSize: 11, fontWeight: "700" },
     h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
     muted: { color: palette.textMuted, flexShrink: 1, lineHeight: 19 },
     ownerLine: { color: palette.link, fontWeight: "800", marginTop: 4 },
@@ -654,6 +720,16 @@ const createStyles = (palette: ThemePalette) =>
     rowTitle: { color: palette.text, fontWeight: "900" },
     rowMeta: { color: palette.textMuted },
     buttonRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
+    severityOption: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    severityOptionSelected: { backgroundColor: palette.accent },
+    severityText: { color: palette.text, fontWeight: "800" },
+    severityTextSelected: { color: palette.accentText },
     primaryBtn: {
       alignSelf: "flex-start",
       backgroundColor: palette.accent,
