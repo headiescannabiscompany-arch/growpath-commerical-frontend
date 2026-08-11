@@ -82,7 +82,7 @@ describe("Commercial batch planner active palette", () => {
     expect(styles.primaryActionText.color).toBe(nightPalette.accentText);
   });
 
-  it("keeps Day mode palette-driven and themes all twenty-one inputs", () => {
+  it("keeps Day mode palette-driven and themes all twenty-two inputs", () => {
     expect(createCommercialBatchPlannerStyles(dayPalette).input).toEqual(
       expect.objectContaining({
         backgroundColor: dayPalette.surface,
@@ -97,7 +97,7 @@ describe("Commercial batch planner active palette", () => {
     const sources = SOURCE_FILES.map((file) =>
       fs.readFileSync(path.join(process.cwd(), file), "utf8")
     );
-    expect(sources[0].match(/<TextInput\b/g) || []).toHaveLength(14);
+    expect(sources[0].match(/<TextInput\b/g) || []).toHaveLength(15);
     expect(sources[1].match(/<TextInput\b/g) || []).toHaveLength(7);
     for (const source of sources) {
       expect(source).toContain("placeholderTextColor={palette.textMuted}");

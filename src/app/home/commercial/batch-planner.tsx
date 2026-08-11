@@ -1,6 +1,7 @@
 import { Link } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -78,11 +79,6 @@ function batchId(batch: SoilNutrientBatch) {
   return batch.id || batch._id || batch.batchCode || batch.batchName || "batch";
 }
 
-function numberOrUndefined(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
-}
-
 function ActionLink({ href, label }: { href: string; label: string }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createCommercialBatchPlannerStyles(palette), [palette]);
@@ -119,6 +115,7 @@ function RecordPicker({
   choices,
   createHref,
   createLabel,
+  disabled,
   label,
   onChange,
   selectedId
@@ -126,6 +123,7 @@ function RecordPicker({
   choices: RecordChoice[];
   createHref: string;
   createLabel: string;
+  disabled: boolean;
   label: string;
   onChange: (id: string) => void;
   selectedId: string;
@@ -145,9 +143,14 @@ function RecordPicker({
           <Pressable
             accessibilityRole="radio"
             accessibilityLabel={`${label}: Not linked yet`}
-            accessibilityState={{ checked: !selectedId }}
+            accessibilityState={{ checked: !selectedId, disabled }}
+            disabled={disabled}
             onPress={() => onChange("")}
-            style={[styles.action, !selectedId && styles.selectedAction]}
+            style={[
+              styles.action,
+              !selectedId && styles.selectedAction,
+              disabled && styles.disabled
+            ]}
           >
             <Text style={styles.actionText}>Not linked yet</Text>
           </Pressable>
@@ -156,9 +159,14 @@ function RecordPicker({
               key={`${label}-${item.id}`}
               accessibilityRole="radio"
               accessibilityLabel={`${label}: ${item.label}`}
-              accessibilityState={{ checked: selectedId === item.id }}
+              accessibilityState={{ checked: selectedId === item.id, disabled }}
+              disabled={disabled}
               onPress={() => onChange(item.id)}
-              style={[styles.action, selectedId === item.id && styles.selectedAction]}
+              style={[
+                styles.action,
+                selectedId === item.id && styles.selectedAction,
+                disabled && styles.disabled
+              ]}
             >
               <Text style={styles.actionText}>{item.label}</Text>
             </Pressable>
@@ -167,7 +175,17 @@ function RecordPicker({
       ) : (
         <View style={styles.emptyPicker}>
           <Text style={styles.muted}>No saved {label.toLowerCase()} records yet.</Text>
-          <ActionLink href={createHref} label={createLabel} />
+          <Link href={createHref as any} asChild>
+            <Pressable
+              accessibilityLabel={createLabel}
+              accessibilityRole="link"
+              accessibilityState={{ disabled }}
+              disabled={disabled}
+              style={[styles.action, disabled && styles.disabled]}
+            >
+              <Text style={styles.actionText}>{createLabel}</Text>
+            </Pressable>
+          </Link>
         </View>
       )}
     </View>
@@ -185,8 +203,15 @@ export default function CommercialBatchPlannerRoute() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [prefilling, setPrefilling] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [actionError, setActionError] = useState<any>(null);
+  const [feedback, setFeedback] = useState("");
   const [showAdvancedRecordIds, setShowAdvancedRecordIds] = useState(false);
+  const loadInFlightRef = useRef(false);
+  const saveInFlightRef = useRef(false);
+  const prefillInFlightRef = useRef(false);
+  const formBusy = saving || prefilling;
+  const canCreate = form.batchName.trim().length > 1 && !formBusy;
 
   const readyCount = useMemo(
     () =>
@@ -199,8 +224,10 @@ export default function CommercialBatchPlannerRoute() {
   );
 
   async function loadBatches() {
+    if (loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       const [nextBatches, nextProducts, nextLines, nextEvidenceRuns] = await Promise.all([
         fetchSoilNutrientBatches(),
@@ -213,8 +240,9 @@ export default function CommercialBatchPlannerRoute() {
       setProductLines(nextLines);
       setEvidenceRuns(nextEvidenceRuns);
     } catch (err) {
-      setError(err);
+      setLoadError(err);
     } finally {
+      loadInFlightRef.current = false;
       setLoading(false);
     }
   }
@@ -236,11 +264,30 @@ export default function CommercialBatchPlannerRoute() {
     .filter((item): item is RecordChoice => !!item);
 
   async function submitBatch() {
-    if (!form.batchName.trim()) return;
+    if (form.batchName.trim().length < 2 || saveInFlightRef.current) return;
+    const batchVolume = form.batchVolume.trim() ? Number(form.batchVolume) : undefined;
+    const estimatedCost = form.estimatedCost.trim()
+      ? Number(form.estimatedCost)
+      : undefined;
+    if (batchVolume !== undefined && (!Number.isFinite(batchVolume) || batchVolume < 0)) {
+      setActionError(new Error("Batch volume must be a number that is zero or greater."));
+      return;
+    }
+    if (
+      estimatedCost !== undefined &&
+      (!Number.isFinite(estimatedCost) || estimatedCost < 0)
+    ) {
+      setActionError(
+        new Error("Estimated cost must be a number that is zero or greater.")
+      );
+      return;
+    }
+    saveInFlightRef.current = true;
     setSaving(true);
-    setError(null);
+    setActionError(null);
+    setFeedback("");
     try {
-      await createSoilNutrientBatch({
+      const created = await createSoilNutrientBatch({
         batchName: form.batchName.trim(),
         name: form.batchName.trim(),
         batchCode: form.batchCode.trim(),
@@ -250,9 +297,9 @@ export default function CommercialBatchPlannerRoute() {
         productLineId: form.productLineId.trim(),
         linkedTrialId: form.trialGrowId.trim(),
         trialGrowId: form.trialGrowId.trim(),
-        batchVolume: numberOrUndefined(form.batchVolume),
+        batchVolume,
         batchVolumeUnit: form.batchVolumeUnit.trim() || "cu_ft",
-        estimatedCost: numberOrUndefined(form.estimatedCost),
+        estimatedCost,
         releaseTimelineNotes: form.releaseTimelineNotes.trim(),
         guaranteedAnalysisNotes: form.guaranteedAnalysisNotes.trim(),
         ingredientSummary: form.ingredientSummary.trim(),
@@ -260,19 +307,23 @@ export default function CommercialBatchPlannerRoute() {
         notes: form.notes.trim(),
         status: "planned"
       });
+      if (created) setBatches((current) => [created, ...current]);
       setForm(EMPTY_FORM);
-      await loadBatches();
+      setFeedback("Commercial batch created.");
     } catch (err) {
-      setError(err);
+      setActionError(err);
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
   }
 
   async function prefillCommercialBatch() {
-    if (prefilling) return;
+    if (prefillInFlightRef.current || saving) return;
+    prefillInFlightRef.current = true;
     setPrefilling(true);
-    setError(null);
+    setActionError(null);
+    setFeedback("");
     try {
       const response = await askPersonalAssistant({
         workspaceType: "commercial",
@@ -289,13 +340,24 @@ export default function CommercialBatchPlannerRoute() {
       const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
       const parsed = JSON.parse(fenced?.[1] || raw.slice(raw.indexOf("{")));
       setForm(
-        Object.fromEntries(
-          Object.keys(EMPTY_FORM).map((key) => [key, String(parsed[key] ?? "")])
-        ) as BatchForm
+        (current) =>
+          Object.fromEntries(
+            Object.keys(EMPTY_FORM).map((key) => {
+              const nextValue = parsed[key];
+              return [
+                key,
+                nextValue == null || nextValue === ""
+                  ? current[key as keyof BatchForm]
+                  : String(nextValue)
+              ];
+            })
+          ) as BatchForm
       );
+      setFeedback("Draft filled from saved records. Review every field before creating.");
     } catch (err) {
-      setError(err);
+      setActionError(err);
     } finally {
+      prefillInFlightRef.current = false;
       setPrefilling(false);
     }
   }
@@ -303,6 +365,7 @@ export default function CommercialBatchPlannerRoute() {
   return (
     <AppPage
       routeKey="commercial-batch-planner"
+      backFallbackHref="/home/commercial/more"
       longContent
       header={
         <View style={styles.header}>
@@ -350,8 +413,40 @@ export default function CommercialBatchPlannerRoute() {
             <Text style={styles.metricLabel}>Linked products</Text>
           </View>
         </View>
-        {loading ? <Text style={styles.muted}>Loading batches...</Text> : null}
-        {error ? <InlineError error={error} /> : null}
+        {loading ? (
+          <View
+            accessibilityLabel="Loading commercial batches"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Loading batches...</Text>
+          </View>
+        ) : null}
+        {loadError ? (
+          <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
+            <InlineError error={loadError} />
+            <Pressable
+              accessibilityLabel="Retry commercial batches"
+              accessibilityRole="button"
+              disabled={loading}
+              onPress={loadBatches}
+              style={[styles.action, loading && styles.disabled]}
+            >
+              <Text style={styles.actionText}>Retry</Text>
+            </Pressable>
+          </View>
+        ) : null}
+        {feedback ? (
+          <Text
+            accessibilityLiveRegion="polite"
+            accessibilityRole="alert"
+            style={styles.feedback}
+          >
+            {feedback}
+          </Text>
+        ) : null}
       </AppCard>
 
       <AppCard>
@@ -361,9 +456,10 @@ export default function CommercialBatchPlannerRoute() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Fill commercial batch from saved records"
-          disabled={prefilling}
+          accessibilityState={{ disabled: formBusy, busy: prefilling }}
+          disabled={formBusy}
           onPress={prefillCommercialBatch}
-          style={[styles.action, prefilling && styles.disabled]}
+          style={[styles.action, formBusy && styles.disabled]}
         >
           <Text style={styles.actionText}>
             {prefilling ? "Reviewing records..." : "Fill from saved records with AI"}
@@ -374,6 +470,7 @@ export default function CommercialBatchPlannerRoute() {
             value={form.batchName}
             onChangeText={(batchName) => setForm((prev) => ({ ...prev, batchName }))}
             accessibilityLabel="Commercial batch name"
+            editable={!formBusy}
             placeholder="Batch name"
             style={styles.input}
           />
@@ -381,6 +478,7 @@ export default function CommercialBatchPlannerRoute() {
             value={form.batchCode}
             onChangeText={(batchCode) => setForm((prev) => ({ ...prev, batchCode }))}
             accessibilityLabel="Commercial batch code"
+            editable={!formBusy}
             placeholder="Batch code / SKU"
             style={styles.input}
           />
@@ -388,6 +486,7 @@ export default function CommercialBatchPlannerRoute() {
             value={form.purpose}
             onChangeText={(purpose) => setForm((prev) => ({ ...prev, purpose }))}
             accessibilityLabel="Commercial batch purpose"
+            editable={!formBusy}
             placeholder="Purpose"
             style={styles.input}
           />
@@ -397,10 +496,12 @@ export default function CommercialBatchPlannerRoute() {
               setForm((prev) => ({ ...prev, formulaVersion }))
             }
             accessibilityLabel="Commercial batch formula version"
+            editable={!formBusy}
             placeholder="Formula version"
             style={styles.input}
           />
           <RecordPicker
+            disabled={formBusy}
             label="Batch product"
             choices={productChoices}
             selectedId={form.productId}
@@ -409,6 +510,7 @@ export default function CommercialBatchPlannerRoute() {
             createLabel="Create Product"
           />
           <RecordPicker
+            disabled={formBusy}
             label="Batch product line"
             choices={productLineChoices}
             selectedId={form.productLineId}
@@ -417,6 +519,7 @@ export default function CommercialBatchPlannerRoute() {
             createLabel="Create Product Line"
           />
           <RecordPicker
+            disabled={formBusy}
             label="Batch evidence run"
             choices={evidenceRunChoices}
             selectedId={form.trialGrowId}
@@ -432,8 +535,9 @@ export default function CommercialBatchPlannerRoute() {
                 : "Show advanced batch record ID fields"
             }
             accessibilityState={{ expanded: showAdvancedRecordIds }}
+            disabled={formBusy}
             onPress={() => setShowAdvancedRecordIds((current) => !current)}
-            style={styles.advancedToggle}
+            style={[styles.advancedToggle, formBusy && styles.disabled]}
           >
             <Text style={styles.advancedToggleText}>
               {showAdvancedRecordIds
@@ -447,6 +551,7 @@ export default function CommercialBatchPlannerRoute() {
                 value={form.productId}
                 onChangeText={(productId) => setForm((prev) => ({ ...prev, productId }))}
                 accessibilityLabel="Commercial batch product id"
+                editable={!formBusy}
                 placeholder="Linked product ID"
                 style={styles.input}
               />
@@ -456,6 +561,7 @@ export default function CommercialBatchPlannerRoute() {
                   setForm((prev) => ({ ...prev, productLineId }))
                 }
                 accessibilityLabel="Commercial batch product line id"
+                editable={!formBusy}
                 placeholder="Linked product line ID"
                 style={styles.input}
               />
@@ -465,6 +571,7 @@ export default function CommercialBatchPlannerRoute() {
                   setForm((prev) => ({ ...prev, trialGrowId }))
                 }
                 accessibilityLabel="Commercial batch evidence run id"
+                editable={!formBusy}
                 placeholder="Linked evidence run ID"
                 style={styles.input}
               />
@@ -474,6 +581,7 @@ export default function CommercialBatchPlannerRoute() {
             value={form.batchVolume}
             onChangeText={(batchVolume) => setForm((prev) => ({ ...prev, batchVolume }))}
             accessibilityLabel="Commercial batch volume"
+            editable={!formBusy}
             keyboardType="decimal-pad"
             placeholder="Batch volume"
             style={styles.input}
@@ -484,6 +592,7 @@ export default function CommercialBatchPlannerRoute() {
               setForm((prev) => ({ ...prev, batchVolumeUnit }))
             }
             accessibilityLabel="Commercial batch volume unit"
+            editable={!formBusy}
             placeholder="Volume unit"
             style={styles.input}
           />
@@ -493,6 +602,7 @@ export default function CommercialBatchPlannerRoute() {
               setForm((prev) => ({ ...prev, estimatedCost }))
             }
             accessibilityLabel="Commercial batch estimated cost"
+            editable={!formBusy}
             keyboardType="decimal-pad"
             placeholder="Estimated cost"
             style={styles.input}
@@ -504,6 +614,7 @@ export default function CommercialBatchPlannerRoute() {
             setForm((prev) => ({ ...prev, guaranteedAnalysisNotes }))
           }
           accessibilityLabel="Commercial batch guaranteed analysis notes"
+          editable={!formBusy}
           multiline
           placeholder="Guaranteed analysis / elemental estimate notes"
           style={[styles.input, styles.textArea]}
@@ -514,6 +625,7 @@ export default function CommercialBatchPlannerRoute() {
             setForm((prev) => ({ ...prev, releaseTimelineNotes }))
           }
           accessibilityLabel="Commercial batch release timeline notes"
+          editable={!formBusy}
           multiline
           placeholder="Release timing: fast, medium, slow inputs and uncertainty"
           style={[styles.input, styles.textArea]}
@@ -524,6 +636,7 @@ export default function CommercialBatchPlannerRoute() {
             setForm((prev) => ({ ...prev, ingredientSummary }))
           }
           accessibilityLabel="Commercial batch ingredient summary"
+          editable={!formBusy}
           multiline
           placeholder="Ingredient pull sheet / ingredient summary"
           style={[styles.input, styles.textArea]}
@@ -534,19 +647,54 @@ export default function CommercialBatchPlannerRoute() {
             setForm((prev) => ({ ...prev, mixingInstructions }))
           }
           accessibilityLabel="Commercial batch mixing instructions"
+          editable={!formBusy}
           multiline
           placeholder="Mixing instructions, rest/cook timing, QC notes"
           style={[styles.input, styles.textArea]}
         />
+        <TextInput
+          value={form.notes}
+          onChangeText={(notes) => setForm((prev) => ({ ...prev, notes }))}
+          accessibilityLabel="Commercial batch notes"
+          editable={!formBusy}
+          multiline
+          placeholder="Open questions, substitutions, QA holds, and production limitations"
+          style={[styles.input, styles.textArea]}
+        />
+        {prefilling ? (
+          <View
+            accessibilityLabel="Filling commercial batch from saved records in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Reviewing saved records...</Text>
+          </View>
+        ) : null}
+        {saving ? (
+          <View
+            accessibilityLabel="Creating commercial batch in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Creating commercial batch...</Text>
+          </View>
+        ) : null}
+        {actionError ? (
+          <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
+            <InlineError error={actionError} />
+          </View>
+        ) : null}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Create commercial batch"
-          disabled={saving || !form.batchName.trim()}
+          accessibilityState={{ disabled: !canCreate, busy: saving }}
+          disabled={!canCreate}
           onPress={submitBatch}
-          style={[
-            styles.primaryAction,
-            saving || !form.batchName.trim() ? styles.disabled : null
-          ]}
+          style={[styles.primaryAction, !canCreate ? styles.disabled : null]}
         >
           <Text style={styles.primaryActionText}>
             {saving ? "Creating..." : "Create Batch"}
@@ -890,6 +1038,21 @@ export function createCommercialBatchPlannerStyles(palette: ThemePalette) {
       color: palette.textMuted,
       fontSize: 13,
       marginTop: 10
+    },
+    progressRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 10
+    },
+    errorPanel: { alignItems: "flex-start", gap: 8 },
+    feedback: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      color: palette.success,
+      fontWeight: "900",
+      marginTop: 10,
+      padding: 10
     }
   });
 }

@@ -293,7 +293,13 @@ describe("GrowPath knowledge registries", () => {
       "readable owner-scoped Product Trial record pickers with an explicit advanced ID fallback"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight Product Trial creation with positive whole-number plant counts and retained failed drafts"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "readable owner-scoped Product Batch record pickers with an explicit advanced ID fallback"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight Product Batch creation and AI prefill with non-negative numeric validation and owner-value preservation"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "readable owner-scoped Product Trial Evidence Run record pickers and named share status choices with an explicit advanced ID fallback"
@@ -336,6 +342,12 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or a flat generic-text outline on Product Trials."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never submit a Product Trial twice, accept a non-positive or fractional plant count, discard its failed draft, or depend on a native-only failure alert."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never silently omit an invalid Product Batch volume or cost, submit a create or AI-prefill request twice, erase owner-entered values when AI leaves fields blank, or discard the failed draft."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or reuse one generic section label for different Product Trial Evidence Run jobs."

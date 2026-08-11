@@ -155,12 +155,7 @@ export default function CommercialProductLinesRoute() {
       }
     >
       {loadError ? (
-        <View
-          accessible
-          accessibilityLiveRegion="assertive"
-          accessibilityRole="alert"
-          style={styles.errorPanel}
-        >
+        <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
           <InlineError error={loadError} />
           <Pressable
             accessibilityLabel="Retry product lines"
