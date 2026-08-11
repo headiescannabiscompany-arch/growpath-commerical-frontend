@@ -1,6 +1,7 @@
 import { Link, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -118,8 +119,16 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
   const [saving, setSaving] = useState(false);
   const [reviewing, setReviewing] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [actionError, setActionError] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const loadInFlightRef = useRef(false);
+  const saveInFlightRef = useRef(false);
+  const reviewInFlightRef = useRef(false);
+  const taskInFlightRef = useRef(false);
+  const operationBusy = saving || reviewing || creatingTask;
+  const canSave = !!trialId && !loading && !operationBusy;
+  const canReview = !!trialId && !loading && !operationBusy;
 
   const hydrate = useCallback((next: ProductTrial | null) => {
     setTrial(next);
@@ -137,14 +146,16 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
   }, []);
 
   const load = useCallback(async () => {
-    if (!trialId) return;
+    if (!trialId || loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       hydrate(await fetchProductTrial(trialId));
     } catch (err) {
-      setError(err);
+      setLoadError(err);
     } finally {
+      loadInFlightRef.current = false;
       setLoading(false);
     }
   }, [hydrate, trialId]);
@@ -154,10 +165,11 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
   }, [load]);
 
   async function saveChanges() {
-    if (!trialId) return;
+    if (!trialId || saveInFlightRef.current || reviewing || creatingTask) return;
+    saveInFlightRef.current = true;
     setSaving(true);
     setMessage("");
-    setError(null);
+    setActionError(null);
     try {
       const updated = await updateProductTrial(trialId, {
         status: (status.trim() || "planned") as ProductTrial["status"],
@@ -169,17 +181,19 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       hydrate(updated);
       setMessage("Product trial updated.");
     } catch (err) {
-      setError(err);
+      setActionError(err);
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
   }
 
   async function saveReview() {
-    if (!trialId) return;
+    if (!trialId || reviewInFlightRef.current || saving || creatingTask) return;
+    reviewInFlightRef.current = true;
     setReviewing(true);
     setMessage("");
-    setError(null);
+    setActionError(null);
     try {
       const updated = await saveProductTrialAIReview(trialId, {
         summary: reviewSummary.trim(),
@@ -189,19 +203,21 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       hydrate(updated);
       setMessage("Claim-safe AI review saved.");
     } catch (err) {
-      setError(err);
+      setActionError(err);
     } finally {
+      reviewInFlightRef.current = false;
       setReviewing(false);
     }
   }
 
   async function createClaimReadinessTask() {
-    if (!trialId || !trial || creatingTask) return;
+    if (!trialId || !trial || taskInFlightRef.current || saving || reviewing) return;
     const warnings = trialClaimWarnings(trial);
     if (!warnings.length) return;
+    taskInFlightRef.current = true;
     setCreatingTask(true);
     setMessage("");
-    setError(null);
+    setActionError(null);
     try {
       await apiRequest("/api/tasks", {
         method: "POST",
@@ -233,8 +249,9 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       });
       setMessage(`Created evidence task for ${trialTitle(trial)}.`);
     } catch (err) {
-      setError(err);
+      setActionError(err);
     } finally {
+      taskInFlightRef.current = false;
       setCreatingTask(false);
     }
   }
@@ -261,7 +278,9 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial evidence workspace</Text>
-          <Text style={styles.title}>{trialTitle(trial)}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            {trialTitle(trial)}
+          </Text>
           <Text style={styles.subtitle}>
             Keep product trials tied to evidence runs, batches, measurements, limitations,
             and claim-safe public summaries.
@@ -274,9 +293,45 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         </View>
       }
     >
-      {loading ? <Text style={styles.muted}>Loading product trial...</Text> : null}
-      {error ? <InlineError error={error} /> : null}
-      {message ? <Text style={styles.success}>{message}</Text> : null}
+      {loading ? (
+        <View
+          accessibilityLabel="Loading commercial product trial detail"
+          accessibilityLiveRegion="polite"
+          accessibilityRole="progressbar"
+          style={styles.progressRow}
+        >
+          <ActivityIndicator color={palette.accent} />
+          <Text style={styles.muted}>Loading product trial...</Text>
+        </View>
+      ) : null}
+      {loadError ? (
+        <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
+          <InlineError error={loadError} />
+          <Pressable
+            accessibilityLabel="Retry commercial product trial detail"
+            accessibilityRole="button"
+            disabled={loading}
+            onPress={load}
+            style={[styles.action, loading && styles.disabled]}
+          >
+            <Text style={styles.actionText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {message ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+          style={styles.success}
+        >
+          {message}
+        </Text>
+      ) : null}
+      {actionError ? (
+        <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
+          <InlineError error={actionError} />
+        </View>
+      ) : null}
 
       <CommercialContextualTools
         title="Analyze this product trial"
@@ -291,7 +346,9 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       />
 
       <AppCard>
-        <Text style={styles.cardTitle}>Trial Record</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Trial Record
+        </Text>
         <Text style={styles.body}>
           This is the private evidence record behind product claims, storefront proof,
           feed campaigns, courses, and Forum/Q&A support answers.
@@ -307,7 +364,9 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Linked Commercial Evidence</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Linked Commercial Evidence
+        </Text>
         <Text style={styles.body}>
           A trial is stronger when it links the product, formula/batch, grow, and
           measurements instead of relying on marketing copy.
@@ -344,7 +403,9 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
 
       <AppCard>
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Claim Readiness</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Claim Readiness
+          </Text>
           <Text style={[styles.statusPill, !claimWarnings.length && styles.readyPill]}>
             {claimWarnings.length ? "Evidence building" : "Claim-ready"}
           </Text>
@@ -364,14 +425,26 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
             <Pressable
               accessibilityLabel="Create trial evidence task"
               accessibilityRole="button"
-              disabled={creatingTask}
+              accessibilityState={{ disabled: operationBusy, busy: creatingTask }}
+              disabled={operationBusy}
               onPress={createClaimReadinessTask}
-              style={[styles.action, creatingTask ? styles.disabled : null]}
+              style={[styles.action, operationBusy ? styles.disabled : null]}
             >
               <Text style={styles.actionText}>
                 {creatingTask ? "Creating..." : "Create Task"}
               </Text>
             </Pressable>
+            {creatingTask ? (
+              <View
+                accessibilityLabel="Creating trial evidence task in progress"
+                accessibilityLiveRegion="polite"
+                accessibilityRole="progressbar"
+                style={styles.progressRow}
+              >
+                <ActivityIndicator color={palette.accent} />
+                <Text style={styles.muted}>Creating evidence task...</Text>
+              </View>
+            ) : null}
           </View>
         ) : (
           <Text style={styles.success}>
@@ -382,13 +455,16 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Effectiveness Summary</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Effectiveness Summary
+        </Text>
         <Text style={styles.body}>
           Save the private working summary here. Publish only claims supported by saved
           evidence runs, measurements, photos, harvest, dry/cure, or comparison records.
         </Text>
         <TextInput
           accessibilityLabel="Commercial trial status"
+          editable={!operationBusy}
           onChangeText={setStatus}
           placeholder="planned, active, complete, archived"
           style={styles.input}
@@ -396,6 +472,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial trial effectiveness summary"
+          editable={!operationBusy}
           multiline
           onChangeText={setEffectivenessSummary}
           placeholder="Observed results, plant response, quality notes, missing data..."
@@ -404,6 +481,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial trial harvest quality notes"
+          editable={!operationBusy}
           multiline
           onChangeText={setHarvestQualityNotes}
           placeholder="Harvest quality notes: yield, aroma, flavor, resin, dry/cure result, defects, final product quality..."
@@ -412,6 +490,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial trial crop summary"
+          editable={!operationBusy}
           multiline
           onChangeText={setCommercialCropSummary}
           placeholder="Product trial crop summary: product used, outcome, final quality, limitations, next-run changes..."
@@ -420,18 +499,31 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial trial notes"
+          editable={!operationBusy}
           multiline
           onChangeText={setNotes}
           placeholder="Trial notes, measurement gaps, control group notes, next checks..."
           style={[styles.input, styles.textArea]}
           value={notes}
         />
+        {saving ? (
+          <View
+            accessibilityLabel="Saving commercial trial detail in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Saving trial detail...</Text>
+          </View>
+        ) : null}
         <Pressable
           accessibilityLabel="Save commercial trial detail"
           accessibilityRole="button"
-          disabled={saving || !trialId}
+          accessibilityState={{ disabled: !canSave, busy: saving }}
+          disabled={!canSave}
           onPress={saveChanges}
-          style={[styles.primaryAction, saving || !trialId ? styles.disabled : null]}
+          style={[styles.primaryAction, !canSave ? styles.disabled : null]}
         >
           <Text style={styles.primaryActionText}>
             {saving ? "Saving..." : "Save Trial Detail"}
@@ -440,13 +532,16 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Claim-Safe AI Review</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Claim-Safe AI Review
+        </Text>
         <Text style={styles.body}>
           Store a cautious review that separates observations, evidence, and limitations.
           This should guide public copy without overclaiming causation.
         </Text>
         <TextInput
           accessibilityLabel="Commercial trial AI review summary"
+          editable={!operationBusy}
           multiline
           onChangeText={setReviewSummary}
           placeholder="Trial review summary"
@@ -455,6 +550,7 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial trial AI review evidence"
+          editable={!operationBusy}
           multiline
           onChangeText={setReviewEvidence}
           placeholder="Evidence, one item per line"
@@ -463,18 +559,31 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial trial AI review limitations"
+          editable={!operationBusy}
           multiline
           onChangeText={setReviewLimitations}
           placeholder="Limitations, one item per line"
           style={[styles.input, styles.textArea]}
           value={reviewLimitations}
         />
+        {reviewing ? (
+          <View
+            accessibilityLabel="Saving commercial trial AI review in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Saving claim-safe review...</Text>
+          </View>
+        ) : null}
         <Pressable
           accessibilityLabel="Save commercial trial AI review"
           accessibilityRole="button"
-          disabled={reviewing || !trialId}
+          accessibilityState={{ disabled: !canReview, busy: reviewing }}
+          disabled={!canReview}
           onPress={saveReview}
-          style={[styles.primaryAction, reviewing || !trialId ? styles.disabled : null]}
+          style={[styles.primaryAction, !canReview ? styles.disabled : null]}
         >
           <Text style={styles.primaryActionText}>
             {reviewing ? "Saving review..." : "Save AI Review"}
@@ -483,7 +592,9 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Publish Path</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Publish Path
+        </Text>
         <Text style={styles.bullet}>
           Complete the trial before using it as strong product proof.
         </Text>
@@ -586,6 +697,13 @@ export function createCommercialTrialDetailStyles(palette: ThemePalette) {
       fontWeight: "900"
     },
     disabled: { opacity: 0.55 },
+    progressRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 10
+    },
+    errorPanel: { alignItems: "flex-start", gap: 8 },
     success: { color: palette.success, fontSize: 13, fontWeight: "800", marginTop: 8 },
     statusPill: {
       backgroundColor: palette.surfaceMuted,
