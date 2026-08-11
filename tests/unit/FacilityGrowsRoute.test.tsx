@@ -1,5 +1,6 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { RefreshControl } from "react-native";
 
 import FacilityGrowsTab from "@/app/home/facility/(tabs)/grows";
 
@@ -61,6 +62,11 @@ describe("FacilityGrowsTab", () => {
   it("opens supported grow setup for the exact room from the empty state", async () => {
     const screen = render(<FacilityGrowsTab />);
 
+    expect(screen.getByLabelText("Loading facility grows").props).toMatchObject({
+      accessibilityLiveRegion: "polite",
+      accessibilityRole: "progressbar"
+    });
+
     await waitFor(() =>
       expect(screen.getByText("No grows in this room yet")).toBeTruthy()
     );
@@ -104,7 +110,7 @@ describe("FacilityGrowsTab", () => {
     });
     const screen = render(<FacilityGrowsTab />);
 
-    const growLink = await screen.findByRole("button", {
+    const growLink = await screen.findByRole("link", {
       name: "Open facility grow Summer crop"
     });
     fireEvent.press(growLink);
@@ -113,5 +119,22 @@ describe("FacilityGrowsTab", () => {
       pathname: "/home/facility/grows/[id]",
       params: { id: "grow-1" }
     });
+  });
+
+  it("does not issue duplicate refresh requests while a grow load is pending", async () => {
+    mockParams = {};
+    const screen = render(<FacilityGrowsTab />);
+    await waitFor(() => expect(screen.getByText("No facility grows yet")).toBeTruthy());
+    const callsBeforeRefresh = mockApiRequest.mock.calls.length;
+    mockApiRequest.mockImplementation(() => new Promise(() => {}));
+    const refreshControl = screen.UNSAFE_getByType(RefreshControl);
+
+    act(() => {
+      refreshControl.props.onRefresh();
+      refreshControl.props.onRefresh();
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledTimes(callsBeforeRefresh + 1);
+    screen.unmount();
   });
 });
