@@ -169,6 +169,7 @@ export default function FacilityIntegrationsRoute() {
               key={provider}
               accessibilityRole="button"
               accessibilityLabel={`Select ${provider} integration`}
+              accessibilityState={{ selected: selected === provider }}
               onPress={() => setSelected(provider)}
               style={[
                 styles.providerChoice,
@@ -222,12 +223,16 @@ export default function FacilityIntegrationsRoute() {
               verified.
             </Text>
             <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Open the TrolMaster developer portal"
               style={styles.primaryAction}
               onPress={() => Linking.openURL("https://developer.trolmaster.com/")}
             >
               <Text style={styles.primaryActionText}>Open developer portal</Text>
             </Pressable>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Request the TrolMaster Facility integration"
               style={styles.secondaryAction}
               onPress={() => requestProvider("TrolMaster")}
             >
@@ -259,6 +264,9 @@ export default function FacilityIntegrationsRoute() {
                 ) : null}
                 {canConfigure ? (
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Test and fetch structure for ${connection.label}`}
+                    accessibilityState={{ disabled: wizardBusy }}
                     disabled={wizardBusy}
                     style={[styles.secondaryAction, wizardBusy && styles.disabled]}
                     onPress={() => void testAndFetch(connection)}
@@ -284,21 +292,28 @@ export default function FacilityIntegrationsRoute() {
                       {mapping.metrics.join(", ") || "Metrics require manual mapping"}
                     </Text>
                     <TextInput
+                      accessibilityLabel={`Room mapping for ${mapping.deviceName}`}
                       value={mapping.roomName}
                       onChangeText={(value) => updateMapping(index, "roomName", value)}
                       placeholder="Room"
+                      placeholderTextColor={palette.textMuted}
                       style={styles.input}
                     />
                     <TextInput
+                      accessibilityLabel={`Optional zone mapping for ${mapping.deviceName}`}
                       value={mapping.zoneName}
                       onChangeText={(value) => updateMapping(index, "zoneName", value)}
                       placeholder="Zone (optional)"
+                      placeholderTextColor={palette.textMuted}
                       style={styles.input}
                     />
                   </View>
                 ))}
                 {wizardMappings.length ? (
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Confirm reviewed Facility integration mappings"
+                    accessibilityState={{ disabled: wizardBusy }}
                     disabled={wizardBusy}
                     style={[styles.primaryAction, wizardBusy && styles.disabled]}
                     onPress={() => void confirmMappings()}
@@ -310,6 +325,8 @@ export default function FacilityIntegrationsRoute() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Build confirmed Facility integration spaces"
+                    accessibilityState={{ disabled: wizardBusy }}
+                    disabled={wizardBusy}
                     style={[styles.primaryAction, wizardBusy && styles.disabled]}
                     onPress={() => void buildFacilitySpaces()}
                   >
@@ -319,6 +336,8 @@ export default function FacilityIntegrationsRoute() {
               </View>
             ) : null}
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Review Facility room mappings"
               style={styles.secondaryAction}
               onPress={() => router.push("/home/facility/rooms" as any)}
             >
@@ -383,6 +402,8 @@ export default function FacilityIntegrationsRoute() {
             {PLANNED.map((provider) => (
               <Pressable
                 key={provider}
+                accessibilityRole="button"
+                accessibilityLabel={`Request the ${provider} Facility integration`}
                 onPress={() => requestProvider(provider)}
                 style={styles.disabledProvider}
               >
@@ -441,6 +462,7 @@ export function createFacilityIntegrationsStyles(palette: ThemePalette) {
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
+      color: palette.text,
       paddingHorizontal: 12,
       paddingVertical: 11
     },

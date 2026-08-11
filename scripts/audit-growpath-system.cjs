@@ -391,7 +391,9 @@ function routeIsWorkspacePostRedirect(routes, route) {
     /\bRedirect\b/.test(source) &&
     source.includes('href="/home/personal/forum/new-post"') &&
     source.includes('href="/home/commercial/feed"') &&
-    source.includes('href="/feed"') &&
+    source.includes('href="/home/facility/feed"') &&
+    /entitlements\.mode === "commercial"/.test(source) &&
+    /entitlements\.mode === "facility"/.test(source) &&
     !/\bCreatePostScreen\b|\bcreateFeedPost\b|\buseCreatePost\b/.test(source)
   );
 }
@@ -426,11 +428,12 @@ function personalCommunityUsesForumAndCampaignPlacements(routes) {
   if (!source) return false;
   return (
     /Forum \/ Q&A/.test(source) &&
+    source.includes('from "@/api/communitySocial"') &&
     /\blistForumPosts\b/.test(source) &&
     /\blistGuilds\b/.test(source) &&
-    source.includes("href={`/forum/post/${encodeURIComponent(id)}`}") &&
+    /\bInlineForumDiscussion\b/.test(source) &&
     /\bPersonalFeedPlacement\b/.test(source) &&
-    /commercial\/facility outreach, not discussion/.test(source) &&
+    /stay separate from grower discussions/.test(source) &&
     !/createCommercialFeedPost|listCommercialFeedCampaigns|from "@\/api\/commercialFeed"/.test(
       source
     )
@@ -492,8 +495,8 @@ function legacyPostsApiUsesForumEndpoints() {
   if (!fs.existsSync(file)) return false;
   const source = read(file);
   return (
-    /apiRoutes\.FORUM\.FEED_LATEST/.test(source) &&
-    /apiRoutes\.FORUM\.FEED_TRENDING/.test(source) &&
+    /apiRoutes\.FORUM\.LATEST/.test(source) &&
+    /apiRoutes\.FORUM\.TRENDING/.test(source) &&
     /apiRoutes\.FORUM\.CREATE/.test(source) &&
     /apiRoutes\.FORUM\.LIKE/.test(source) &&
     /apiRoutes\.FORUM\.COMMENT/.test(source) &&
@@ -532,14 +535,15 @@ function facilityIntegrationsUsesRoomImport(routes) {
   const source = routeSource(routes, "/home/facility/integrations");
   if (!source) return false;
   return (
-    /Sensor Integrations/.test(source) &&
-    /Build rooms from controller data/.test(source) &&
-    source.includes('href="/home/facility/rooms"') &&
-    /Read-only sync comes first/.test(source) &&
-    /Write\/control endpoints stay disabled/.test(source) &&
-    /Imported data should power rooms, alerts, VPD\/dew point review, AI summaries,\s+and tasks/.test(
-      source
-    )
+    /Connect rooms and sensor data/.test(source) &&
+    /\blistIntegrationConnections\b/.test(source) &&
+    /\bfetchIntegrationStructure\b/.test(source) &&
+    /\bpreviewIntegrationMapping\b/.test(source) &&
+    /\bconfirmIntegrationMapping\b/.test(source) &&
+    /\bautoBuildIntegrationSpaces\b/.test(source) &&
+    /read-only/i.test(source) &&
+    source.includes('router.push("/home/facility/rooms"') &&
+    /role === "OWNER" \|\| role === "MANAGER"/.test(source)
   );
 }
 
@@ -699,7 +703,7 @@ function main() {
   const legacyGlobalCampaignsRedirectOnly = routeIsRedirectOnly(
     files.routes,
     "/campaigns",
-    "/home/commercial/marketing"
+    "/home/commercial/feed"
   );
   const legacyGlobalStorefrontRedirectOnly = routeIsRedirectOnly(
     files.routes,
@@ -791,10 +795,7 @@ function main() {
     facilityInsightsRouteExists:
       [...routeSet].some((route) => /facility.*insights/i.test(route)) ||
       files.searchable.some((file) => file.rel === "backend/routes/facility.insights.js"),
-    commercialAiCopyHits: keywordHits(files.searchable, [
-      "commercial AI",
-      "business helper"
-    ])
+    deprecatedBusinessHelperCopyHits: keywordHits(files.searchable, ["business helper"])
       .filter((hit) => !hit.file.startsWith("docs/build/"))
       .map((hit) => hit.file)
   };
@@ -869,7 +870,7 @@ function main() {
     `- Top-level Tasks visible module: ${decisionChecks.topLevelTasksVisibleModule}`,
     `- Top-level Tasks uses shared Task Center/Schedule: ${decisionChecks.topLevelTasksTaskCenter}`,
     `- Facility Insights route exists: ${decisionChecks.facilityInsightsRouteExists}`,
-    `- Commercial AI/business-helper copy hits outside build docs: ${decisionChecks.commercialAiCopyHits.length}`,
+    `- Deprecated business-helper copy hits outside build docs: ${decisionChecks.deprecatedBusinessHelperCopyHits.length}`,
     "",
     "## Module Status",
     "",

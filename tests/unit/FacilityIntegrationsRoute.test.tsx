@@ -47,6 +47,7 @@ describe("FacilityIntegrationsRoute", () => {
     expect(styles.card.backgroundColor).toBe(palette.card);
     expect(styles.providerChoice.backgroundColor).toBe(palette.surface);
     expect(styles.title.color).toBe(palette.text);
+    expect(styles.input.color).toBe(palette.text);
     expect(styles.primaryAction.backgroundColor).toBe(palette.accent);
   });
 
@@ -91,16 +92,31 @@ describe("FacilityIntegrationsRoute", () => {
       screen.getByRole("header", { name: "More providers" }).props["aria-level"]
     ).toBe(2);
     fireEvent.press(screen.getByLabelText("Select pulse integration"));
+    expect(
+      screen.getByLabelText("Select pulse integration").props.accessibilityState
+    ).toEqual({ selected: true });
     expect(screen.getByText("Pulse read-only telemetry")).toBeTruthy();
     fireEvent.press(screen.getByText("Connect Pulse"));
     expect(mockPush).toHaveBeenCalledWith("/home/facility/tools/pulse");
 
     fireEvent.press(screen.getByLabelText("Select trolmaster integration"));
+    expect(
+      screen.getByLabelText("Select trolmaster integration").props.accessibilityState
+    ).toEqual({ selected: true });
     expect(screen.getByText("TrolMaster developer access")).toBeTruthy();
     expect(screen.getByText("Developer access required")).toBeTruthy();
-    expect(screen.getByText("Open developer portal")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "Open the TrolMaster developer portal" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: "Request the TrolMaster Facility integration"
+      })
+    ).toBeTruthy();
     expect(screen.queryByLabelText("TrolMaster API key")).toBeNull();
-    expect(screen.getAllByText("Email to request").length).toBeGreaterThan(1);
+    expect(
+      screen.getByRole("button", { name: "Request the Growlink Facility integration" })
+    ).toBeTruthy();
     await waitFor(() => expect(screen.queryByText("Connected sources")).toBeNull());
   });
 
@@ -137,11 +153,23 @@ describe("FacilityIntegrationsRoute", () => {
     const screen = render(<FacilityIntegrationsRoute />);
 
     await waitFor(() => expect(screen.getByText("Flower sensors")).toBeTruthy());
-    fireEvent.press(screen.getByText("Test + fetch structure"));
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Test and fetch structure for Flower sensors"
+      })
+    );
     await waitFor(() => expect(screen.getByText("Canopy sensor")).toBeTruthy());
-    fireEvent.changeText(screen.getByPlaceholderText("Room"), "Flower 1");
-    fireEvent.changeText(screen.getByPlaceholderText("Zone (optional)"), "Canopy");
-    fireEvent.press(screen.getByText("Confirm mapping"));
+    const roomInput = screen.getByLabelText("Room mapping for Canopy sensor");
+    const zoneInput = screen.getByLabelText("Optional zone mapping for Canopy sensor");
+    expect(roomInput.props.placeholderTextColor).toBeTruthy();
+    expect(zoneInput.props.placeholderTextColor).toBeTruthy();
+    fireEvent.changeText(roomInput, "Flower 1");
+    fireEvent.changeText(zoneInput, "Canopy");
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Confirm reviewed Facility integration mappings"
+      })
+    );
 
     await waitFor(() =>
       expect(mockConfirm).toHaveBeenCalledWith(
@@ -164,5 +192,8 @@ describe("FacilityIntegrationsRoute", () => {
       })
     );
     expect(screen.getByText(/Built 1 read-only Facility spaces/)).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Review Facility room mappings" })
+    ).toBeTruthy();
   });
 });
