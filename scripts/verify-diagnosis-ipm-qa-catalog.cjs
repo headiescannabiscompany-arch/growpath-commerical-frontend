@@ -113,9 +113,7 @@ function main() {
       "PUBLIC-DOMAIN-DEDICATION",
       "OWNER_PERMISSION",
       "GROWPATH_OWNED"
-    ].every((license) =>
-      allowedLicenses.has(license)
-    ),
+    ].every((license) => allowedLicenses.has(license)),
     "Allowed diagnosis/IPM media licenses are incomplete.",
     errors
   );
@@ -316,6 +314,11 @@ function main() {
 
   const sourcePlan = fixture.sourcePlan || [];
   const sourceIds = new Set(sourcePlan.map((source) => source.sourceId));
+  const usedMediaSourceIds = new Set(
+    (fixture.mediaRecords || []).flatMap((record) =>
+      (record.imageSet || []).map((media) => media.sourceId)
+    )
+  );
   requireCondition(
     [
       "growpath_owner_media",
@@ -335,7 +338,7 @@ function main() {
       `Source ${source.sourceId || "<missing>"} needs requirements.`,
       errors
     );
-    if (source.status !== "approved") {
+    if (usedMediaSourceIds.has(source.sourceId) && source.status !== "approved") {
       blockers.push(`Source ${source.sourceId} is not approved (${source.status}).`);
     }
   }

@@ -23,10 +23,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 
 ## A. AI image, video, and diagnostic quality
 
-- [~] Complete the governed Diagnosis/IPM evaluation catalog: 241 of 252 reviewed
-  case records and 482 of at least 504 rights-reviewed images are present. Continue
-  disease, pest/beneficial-lookalike, root-zone, nutrient, chemical, physical, and
-  normal-aging variants; keep strict validation blocked until all records pass.
+- [x] Complete the governed Diagnosis/IPM evaluation catalog: all 252 reviewed
+  case records and 504 rights-reviewed images are present. Disease,
+  pest/beneficial-lookalike, root-zone, nutrient, chemical, physical, and
+  normal-aging variants pass the strict seed-ready validator. Unused future source
+  pools remain visibly pending and cannot enter a case without source approval and
+  image-level rights review.
 - [~] Run every completed Diagnosis/IPM case through the GrowPath primary path and
       GPT second opinion with the identical evidence envelope; persist evidence,
       counter-evidence, disagreements, confidence, requested follow-ups, billing, and

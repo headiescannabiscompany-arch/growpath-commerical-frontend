@@ -126,11 +126,11 @@ describe("diagnosis/IPM QA catalog", () => {
     );
   });
 
-  it("admits only explicitly reviewed media while the complete catalog remains in planning", () => {
+  it("admits only explicitly reviewed media in the seed-ready catalog", () => {
     const catalog = loadCatalog();
 
-    expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(241);
+    expect(catalog.status).toBe("seed_ready");
+    expect(catalog.mediaRecords).toHaveLength(252);
     expect(catalog.mediaRecords).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -163,7 +163,12 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "ipm-thrips-mildew-lookalike-boundary-open-002",
           caseId: "thrips",
-          expectedCauseRanking: ["insufficient_evidence", "pest", "disease", "other_abiotic"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "pest",
+            "disease",
+            "other_abiotic"
+          ]
         }),
         expect.objectContaining({
           recordId: "ipm-two-spotted-spider-mites-open-001",
@@ -172,37 +177,72 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "ipm-two-spotted-mite-mosaic-cooccurrence-open-002",
           caseId: "two_spotted_spider_mites",
-          expectedCauseRanking: ["pest", "disease", "insufficient_evidence", "other_abiotic"]
+          expectedCauseRanking: [
+            "pest",
+            "disease",
+            "insufficient_evidence",
+            "other_abiotic"
+          ]
         }),
         expect.objectContaining({
           recordId: "ipm-russet-mite-cross-host-gall-boundary-open-002",
           caseId: "russet_mites",
-          expectedCauseRanking: ["insufficient_evidence", "pest", "other_abiotic", "disease"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "pest",
+            "other_abiotic",
+            "disease"
+          ]
         }),
         expect.objectContaining({
           recordId: "ipm-broad-mite-virus-curl-boundary-open-002",
           caseId: "broad_mites",
-          expectedCauseRanking: ["insufficient_evidence", "pest", "disease", "other_abiotic"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "pest",
+            "disease",
+            "other_abiotic"
+          ]
         }),
         expect.objectContaining({
           recordId: "ipm-root-aphid-fungus-gnat-boundary-open-002",
           caseId: "root_aphids",
-          expectedCauseRanking: ["insufficient_evidence", "pest", "disease", "other_abiotic"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "pest",
+            "disease",
+            "other_abiotic"
+          ]
         }),
         expect.objectContaining({
           recordId: "ipm-scale-insect-disease-cooccurrence-open-002",
           caseId: "scale_insects",
-          expectedCauseRanking: ["pest", "disease", "insufficient_evidence", "other_abiotic"]
+          expectedCauseRanking: [
+            "pest",
+            "disease",
+            "insufficient_evidence",
+            "other_abiotic"
+          ]
         }),
         expect.objectContaining({
           recordId: "ipm-whitefly-adult-egg-evidence-boundary-open-002",
           caseId: "whiteflies",
-          expectedCauseRanking: ["insufficient_evidence", "pest", "disease", "other_abiotic"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "pest",
+            "disease",
+            "other_abiotic"
+          ]
         }),
         expect.objectContaining({
           recordId: "ipm-fungus-gnat-root-disease-boundary-open-002",
           caseId: "fungus_gnats",
-          expectedCauseRanking: ["insufficient_evidence", "disease", "pest", "other_abiotic"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "disease",
+            "pest",
+            "other_abiotic"
+          ]
         }),
         expect.objectContaining({
           recordId: "diagnosis-botrytis-cross-host-flower-boundary-open-002",
@@ -212,27 +252,54 @@ describe("diagnosis/IPM QA catalog", () => {
         expect.objectContaining({
           recordId: "diagnosis-bacterial-leaf-spot-abiotic-boundary-open-002",
           caseId: "bacterial_leaf_spot",
-          expectedCauseRanking: ["insufficient_evidence", "disease", "other_abiotic", "pest"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "disease",
+            "other_abiotic",
+            "pest"
+          ]
         }),
         expect.objectContaining({
           recordId: "diagnosis-heat-drought-pest-sunscald-boundary-open-002",
           caseId: "heat_stress",
-          expectedCauseRanking: ["insufficient_evidence", "other_abiotic", "pest", "disease"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "other_abiotic",
+            "pest",
+            "disease"
+          ]
         }),
         expect.objectContaining({
           recordId: "diagnosis-frost-exposure-injury-boundary-open-002",
           caseId: "cold_damage",
-          expectedCauseRanking: ["insufficient_evidence", "other_abiotic", "disease", "pest"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "other_abiotic",
+            "disease",
+            "pest"
+          ]
         }),
         expect.objectContaining({
           recordId: "diagnosis-water-presence-root-function-boundary-open-002",
           caseId: "overwatering",
-          expectedCauseRanking: ["insufficient_evidence", "other_abiotic", "disease", "lockout", "excess"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "other_abiotic",
+            "disease",
+            "lockout",
+            "excess"
+          ]
         }),
         expect.objectContaining({
           recordId: "diagnosis-arid-context-water-deficit-boundary-open-002",
           caseId: "underwatering",
-          expectedCauseRanking: ["insufficient_evidence", "other_abiotic", "disease", "excess", "pest"]
+          expectedCauseRanking: [
+            "insufficient_evidence",
+            "other_abiotic",
+            "disease",
+            "excess",
+            "pest"
+          ]
         }),
         expect.objectContaining({
           recordId: "ipm-aphids-beneficial-context-open-001",
@@ -370,6 +437,19 @@ describe("diagnosis/IPM QA catalog", () => {
         })
       ])
     );
+  });
+
+  it("uses only approved source pools in seed-ready media records", () => {
+    const catalog = loadCatalog();
+    const sourceStatusById = new Map(
+      catalog.sourcePlan.map((source: any) => [source.sourceId, source.status])
+    );
+
+    for (const record of catalog.mediaRecords) {
+      for (const media of record.imageSet) {
+        expect(sourceStatusById.get(media.sourceId)).toBe("approved");
+      }
+    }
   });
 
   it("uses social posts only as authorized QA leads and negative controls", () => {

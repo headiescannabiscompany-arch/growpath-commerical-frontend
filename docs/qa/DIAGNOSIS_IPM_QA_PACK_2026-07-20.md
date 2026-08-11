@@ -2,9 +2,10 @@
 
 Date: 2026-07-20
 
-Status: Catalog, evidence contract, and rights gate implemented. As of 2026-08-11,
-241 of 252 reviewed case records and 482 of at least 504 rights-reviewed images are
-present. Remaining case media and expected-outcome review are active.
+Status: Seed-ready catalog, evidence contract, and rights gate implemented. As of
+2026-08-11, all 252 reviewed case records and 504 rights-reviewed images are
+present and pass strict validation. Runtime execution and independent accuracy
+review remain separate acceptance work.
 
 Machine-readable catalog: `tests/fixtures/diagnosis-ipm-qa-catalog.json`
 
@@ -14,7 +15,7 @@ Machine-readable catalog: `tests/fixtures/diagnosis-ipm-qa-catalog.json`
 | ---------------------------------------- | ---------------: | ------: |
 | Diseases                                 |               13 |      60 |
 | Pests and beneficial/harmless lookalikes |               13 |      84 |
-| Abiotic and nutrient/root-zone mimics    |               33 |     126 |
+| Abiotic and nutrient/root-zone mimics    |               15 |     108 |
 | **Total**                                |           **41** | **252** |
 
 Each record represents one reviewed diagnostic situation and must contain at least two reviewed images. The repeated cases are meant to vary plant, stage, location, progression, medium, environment, measurements, and ambiguity instead of replaying one idealized symptom photo.
@@ -62,12 +63,12 @@ These observations informed interface guidance and QA assertions only. They are 
 
 ## What remains
 
-- collect the remaining rights-reviewed images for 252 multi-image case records
-  (470 of at least 504 are present as of 2026-08-11);
-- document plant, cultivar when known, stage, distribution, progression, medium/root-zone, environment, and measured values;
-- have a qualified reviewer approve diagnostic signs, alternatives, confirmation method, urgency, quarantine, scouting, and response expectations;
-- run the reviewed envelope through both diagnostic paths and persist disagreements and linked records;
-- execute the strict validator only after every case and image passes rights and evidence review.
+- have a qualified independent reviewer audit diagnostic signs, alternatives,
+  confirmation method, urgency, quarantine, scouting, and response expectations;
+- run every reviewed envelope through both diagnostic paths and persist evidence,
+  counter-evidence, disagreements, confidence, requested follow-ups, billing, and
+  linked records;
+- retain the source and image-level rights gates for every future catalog change.
 
 ## Verification
 
@@ -77,5 +78,7 @@ npm.cmd run verify:diagnosis-ipm-qa-catalog
 ```
 
 Planning mode validates allocations, ETGU order, evidence/write-back behavior, and
-rights rules. Strict mode must continue to fail until all 252 reviewed case records
-and their required image sets are present; partial reviewed coverage is not completion.
+rights rules while a catalog is incomplete. Strict mode now passes only because all
+252 reviewed case records and their 504-image rights-reviewed sets are present and
+every source actually used by those records is approved. Optional unused future
+source pools may remain pending, but cannot enter a reviewed record until approved.
