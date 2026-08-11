@@ -80,6 +80,7 @@ export default function FacilityInventoryTab() {
 
   const [items, setItems] = useState<InventoryItem[]>([]);
   const itemCountRef = useRef(0);
+  const loadedFacilityRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -122,20 +123,24 @@ export default function FacilityInventoryTab() {
   useEffect(() => {
     if (!facilityId) {
       router.replace("/home/facility/select");
-      return;
     }
-    load();
-  }, [facilityId, load, router]);
+  }, [facilityId, router]);
 
   useFocusEffect(
     useCallback(() => {
-      if (facilityId) {
-        void fetchItems().catch((e) => {
-          if (!itemCountRef.current) setError(handleApiError(e));
-          else handleApiError(e);
-        });
+      if (!facilityId) return;
+
+      if (loadedFacilityRef.current !== facilityId) {
+        loadedFacilityRef.current = facilityId;
+        void load();
+        return;
       }
-    }, [facilityId, fetchItems, handleApiError])
+
+      void fetchItems().catch((e) => {
+        if (!itemCountRef.current) setError(handleApiError(e));
+        else handleApiError(e);
+      });
+    }, [facilityId, fetchItems, handleApiError, load])
   );
 
   const sorted = useMemo(() => {
@@ -160,8 +165,12 @@ export default function FacilityInventoryTab() {
   if (loading) {
     return (
       <ScreenBoundary title="Inventory">
-        <View style={styles.center}>
-          <ActivityIndicator color={palette.accent} />
+        <View accessibilityLiveRegion="polite" style={styles.center}>
+          <ActivityIndicator
+            accessibilityRole="progressbar"
+            accessibilityLabel="Loading facility inventory"
+            color={palette.accent}
+          />
         </View>
       </ScreenBoundary>
     );
@@ -287,7 +296,7 @@ export default function FacilityInventoryTab() {
 
               return (
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel={`Open inventory item ${item.name || item.sku || id}`}
                   onPress={() => {
                     if (!id) return;

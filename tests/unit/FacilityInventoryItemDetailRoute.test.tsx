@@ -108,9 +108,35 @@ describe("InventoryItemDetailScreen", () => {
   it("uses the shared back control for the nested facility inventory detail page", async () => {
     const screen = render(<InventoryItemDetailScreen />);
 
+    expect(
+      screen.getByLabelText("Loading facility inventory item").props.accessibilityRole
+    ).toBe("progressbar");
+
     await waitFor(() => expect(screen.getByText("Kelp Meal")).toBeTruthy());
 
     expect(screen.getByText("Shared Back /home/facility/inventory")).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Kelp Meal" }).props["aria-level"]).toBe(1);
+    expect(screen.getByRole("header", { name: "Item details" }).props["aria-level"]).toBe(
+      2
+    );
+    expect(
+      screen.getByRole("header", { name: "Adjust quantity" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "Record information" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByRole("header", { name: "Remove inventory item" }).props["aria-level"]
+    ).toBe(2);
+    expect(
+      screen.getByLabelText("Save inventory details").props.accessibilityState
+    ).toEqual({ disabled: false });
+    expect(
+      screen.getByLabelText("Save inventory adjustment").props.accessibilityState
+    ).toEqual({ disabled: false });
+    expect(
+      screen.getByLabelText("Remove inventory item").props.accessibilityState
+    ).toEqual({ disabled: false });
     expect(mockApiRequest).toHaveBeenCalledWith(
       "/api/facilities/facility-1/inventory/input-1"
     );
