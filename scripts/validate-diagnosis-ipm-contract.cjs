@@ -39,6 +39,7 @@ const videoFrameExtraction = read(
 );
 const diagnosisMethod = read("docs/knowledge/methods/plant-diagnosis-etgu-method.md");
 const sourceRegistry = read("src/knowledge/sourceRegistry.ts");
+const evaluationRunner = read("scripts/run-diagnosis-ipm-evaluation.cjs");
 
 const diagnoseTest = read("backend/routes/diagnose.test.js");
 const toolsTest = read("backend/routes/tools.test.js");
@@ -54,6 +55,7 @@ const speciesTest = read("tests/unit/SpeciesCropIdToolScreen.test.tsx");
 const evidenceApiTest = read("tests/unit/evidence-api.test.ts");
 const mediaPickerTest = read("tests/unit/MediaEvidencePicker.test.tsx");
 const videoFrameTest = read("tests/unit/videoFrameExtraction.test.ts");
+const evaluationRunnerTest = read("tests/unit/diagnosis-ipm-evaluation-runner.test.js");
 
 [
   ["provider status", /router\.get\("\/provider-status"/],
@@ -460,6 +462,40 @@ requireText(
   ]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 3 tests", contents, pattern, description);
+});
+
+[
+  ["dry-run default", /const execute = process\.argv\.includes\("--execute"\)/],
+  ["explicit staging confirmation", /RUN_GROWPATH_DIAGNOSIS_IPM_STAGING/],
+  ["production-host refusal", /PRODUCTION_HOSTS[\s\S]*Refusing non-QA evaluation host/],
+  ["redirect refusal", /redirect: "error"/],
+  ["QA namespace gate", /\^growpath-qa-diagnosis-ipm-/],
+  ["exact Git SHA gate", /must be an exact 40-character SHA/],
+  ["seed-ready 252-case gate", /requires exactly 252 governed records/],
+  ["no false pixel claim", /must not claim that image pixels were inspected/],
+  ["identical envelope digest", /failed the identical-envelope digest check/],
+  ["exclusive initial evidence", /flag: "wx"/],
+  ["resumable checkpoint", /--resume[\s\S]*loadEvidenceForResume/],
+  ["persisted evidence boundary", /completeEvidencePersistenceRecords/],
+  ["billing acceptance boundary", /completeBillingEvidenceRecords/],
+  ["linked-record acceptance boundary", /completeLinkedRecordRecords/],
+  ["expected-result accounting", /primaryWithinExpectedRecords/]
+].forEach(([description, pattern]) => {
+  requireText("Diagnosis/IPM evaluation runner", evaluationRunner, pattern, description);
+});
+
+[
+  ["production refusal test", /refuses production hosts/],
+  ["pixel-disclosure test", /without claiming pixel inspection/],
+  ["shared-envelope test", /all shared-envelope digests match/],
+  ["complete acceptance boundary test", /all records, provider, ledger, and links/]
+].forEach(([description, pattern]) => {
+  requireText(
+    "Diagnosis/IPM evaluation runner tests",
+    evaluationRunnerTest,
+    pattern,
+    description
+  );
 });
 
 if (!process.exitCode) {
