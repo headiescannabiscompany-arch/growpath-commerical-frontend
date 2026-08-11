@@ -3,7 +3,7 @@
 Date: 2026-07-20
 
 Status: Catalog, evidence contract, and rights gate implemented. As of 2026-08-11,
-235 of 252 reviewed case records and 470 of at least 504 rights-reviewed images are
+241 of 252 reviewed case records and 482 of at least 504 rights-reviewed images are
 present. Remaining case media and expected-outcome review are active.
 
 Machine-readable catalog: `tests/fixtures/diagnosis-ipm-qa-catalog.json`
