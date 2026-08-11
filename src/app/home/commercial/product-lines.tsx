@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -52,8 +52,11 @@ export default function CommercialProductLinesRoute() {
   const [lines, setLines] = useState<ProductLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [createError, setCreateError] = useState<any>(null);
   const [feedback, setFeedback] = useState("");
+  const loadInFlightRef = useRef(false);
+  const createInFlightRef = useRef(false);
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
@@ -61,16 +64,20 @@ export default function CommercialProductLinesRoute() {
   const [description, setDescription] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [growInterests, setGrowInterests] = useState("");
+  const canCreate = name.trim().length > 1 && !saving;
 
   const load = useCallback(async () => {
+    if (loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       setLines(await fetchProductLines());
     } catch (err) {
-      setError(err);
+      setLoadError(err);
       setLines([]);
     } finally {
+      loadInFlightRef.current = false;
       setLoading(false);
     }
   }, []);
@@ -81,9 +88,10 @@ export default function CommercialProductLinesRoute() {
 
   async function createLine() {
     const trimmed = name.trim();
-    if (!trimmed || saving) return;
+    if (trimmed.length < 2 || createInFlightRef.current) return;
+    createInFlightRef.current = true;
     setSaving(true);
-    setError(null);
+    setCreateError(null);
     setFeedback("");
     try {
       const created = await createProductLine({
@@ -104,8 +112,9 @@ export default function CommercialProductLinesRoute() {
       setGrowInterests("");
       setFeedback("Product line created.");
     } catch (err) {
-      setError(err);
+      setCreateError(err);
     } finally {
+      createInFlightRef.current = false;
       setSaving(false);
     }
   }
@@ -113,6 +122,7 @@ export default function CommercialProductLinesRoute() {
   return (
     <AppPage
       routeKey="commercial-product-lines"
+      backFallbackHref="/home/commercial/storefront"
       longContent
       header={
         <View style={styles.header}>
@@ -144,8 +154,34 @@ export default function CommercialProductLinesRoute() {
         </View>
       }
     >
-      {error ? <InlineError error={error} /> : null}
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {loadError ? (
+        <View
+          accessible
+          accessibilityLiveRegion="assertive"
+          accessibilityRole="alert"
+          style={styles.errorPanel}
+        >
+          <InlineError error={loadError} />
+          <Pressable
+            accessibilityLabel="Retry product lines"
+            accessibilityRole="button"
+            disabled={loading}
+            onPress={load}
+            style={[styles.outlineButton, loading && styles.disabled]}
+          >
+            <Text style={styles.outlineText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {feedback ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+          style={styles.feedback}
+        >
+          {feedback}
+        </Text>
+      ) : null}
 
       <AppCard>
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
@@ -159,6 +195,7 @@ export default function CommercialProductLinesRoute() {
           value={name}
           onChangeText={setName}
           accessibilityLabel="Product line name"
+          editable={!saving}
           placeholder="Living soil line"
           style={styles.input}
         />
@@ -166,6 +203,7 @@ export default function CommercialProductLinesRoute() {
           value={category}
           onChangeText={setCategory}
           accessibilityLabel="Product line category"
+          editable={!saving}
           placeholder="soil, nutrient, genetics, plants, course, equipment..."
           style={styles.input}
         />
@@ -173,6 +211,7 @@ export default function CommercialProductLinesRoute() {
           value={publicSummary}
           onChangeText={setPublicSummary}
           accessibilityLabel="Product line public summary"
+          editable={!saving}
           placeholder="Public summary"
           style={styles.input}
         />
@@ -180,6 +219,7 @@ export default function CommercialProductLinesRoute() {
           value={description}
           onChangeText={setDescription}
           accessibilityLabel="Product line description"
+          editable={!saving}
           placeholder="Full line description"
           multiline
           style={[styles.input, styles.textArea]}
@@ -188,6 +228,7 @@ export default function CommercialProductLinesRoute() {
           value={coverImageUrl}
           onChangeText={setCoverImageUrl}
           accessibilityLabel="Product line cover image URL"
+          editable={!saving}
           placeholder="Cover image URL"
           autoCapitalize="none"
           style={styles.input}
@@ -196,15 +237,33 @@ export default function CommercialProductLinesRoute() {
           value={growInterests}
           onChangeText={setGrowInterests}
           accessibilityLabel="Product line grow interests"
+          editable={!saving}
           placeholder="Grow interests, comma separated"
           style={styles.input}
         />
+        {saving ? (
+          <View
+            accessibilityLabel="Creating product line in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Creating product line...</Text>
+          </View>
+        ) : null}
+        {createError ? (
+          <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
+            <InlineError error={createError} />
+          </View>
+        ) : null}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Create product line"
           onPress={createLine}
-          disabled={!name.trim() || saving}
-          style={[styles.primaryButton, (!name.trim() || saving) && styles.disabled]}
+          disabled={!canCreate}
+          accessibilityState={{ disabled: !canCreate, busy: saving }}
+          style={[styles.primaryButton, !canCreate && styles.disabled]}
         >
           <Text style={styles.primaryText}>
             {saving ? "Creating..." : "Create Product Line"}
@@ -217,7 +276,12 @@ export default function CommercialProductLinesRoute() {
           Product Lines
         </Text>
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading product lines"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading product lines...</Text>
           </View>
@@ -381,6 +445,7 @@ export function createCommercialProductLinesStyles(palette: ThemePalette) {
       color: palette.success,
       fontWeight: "900",
       padding: 10
-    }
+    },
+    errorPanel: { alignItems: "flex-start", gap: 8 }
   });
 }

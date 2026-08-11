@@ -308,6 +308,9 @@ describe("GrowPath knowledge registries", () => {
       "one level-one Product Lines heading with level-two workflow sections and level-three saved-line headings"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight Product Line creation and detail editing with retained failed drafts and in-page status"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "one level-one Soil & Nutrient Batch Planner heading with level-two workflow sections and level-three saved-batch headings"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -324,6 +327,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or a flat generic-text outline on Product Lines."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never clear a failed Product Line draft, submit a Product Line create or update twice, or depend on a native-only failure alert."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never expose a duplicate navigator title or a flat generic-text outline on the Soil & Nutrient Batch Planner."
