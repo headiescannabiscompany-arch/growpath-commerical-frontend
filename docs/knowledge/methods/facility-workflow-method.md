@@ -50,6 +50,8 @@ The Facility AI hub must keep crop-neutral Plant/Crop Identification, Plant Diag
 
 Facility AI prompts and parental-control PIN fields must opt out of account-credential autofill. The AI composer is ordinary user-authored text, and the parental PIN is a separate one-time-style control value; neither field may invite a browser or device password manager to insert a saved GrowPath email or password.
 
+The Facility AI Validation Lab is a platform-operations surface for a capable Facility owner, not a general member tool. It must retain the selected Facility boundary, explain which operations can create validation or feedback records, prevent duplicate concurrent submissions, keep every payload field locked while a request is active, and provide readable progress, error, success, and response feedback. Managers, staff, and viewers must not receive payload fields, endpoint actions, or training-feedback exports even if stale capability state says otherwise.
+
 Facility training lesson video follows the shared `course-media-workflow` method while course visibility remains Facility scoped. External provider rights, availability, privacy, and accessibility review do not make a lesson public or authorize cross-Facility disclosure.
 
 Local preview identities require an explicit preview query. A bare Facility route must preserve a real authenticated session and must never substitute a demo user or the `local-dev-facility` placeholder. API requests require the selected, authorized Facility identifier; compatibility routes must validate that identifier and fail without terminating the service.
