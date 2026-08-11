@@ -192,7 +192,11 @@ export default function FacilityTransfersScreen() {
         showBack
         backFallbackHref="/home/facility/dashboard"
       >
-        <ActivityIndicator color={palette.accent} style={{ marginTop: 40 }} />
+        <ActivityIndicator
+          accessibilityLabel="Loading Facility transfer records"
+          color={palette.accent}
+          style={{ marginTop: 40 }}
+        />
       </ScreenBoundary>
     );
   }
@@ -242,6 +246,10 @@ export default function FacilityTransfersScreen() {
 
         {canManage ? (
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              showForm ? "Close new transfer form" : "Create a new licensed transfer"
+            }
             style={styles.primary}
             onPress={() => setShowForm((value) => !value)}
           >
@@ -268,6 +276,9 @@ export default function FacilityTransfersScreen() {
                 return (
                   <Pressable
                     key={id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select inventory lot ${item.name || item.sku || "Inventory item"}`}
+                    accessibilityState={{ selected: active }}
                     onPress={() => setForm({ ...form, inventoryItemId: id })}
                     style={[styles.choice, active && styles.choiceActive]}
                   >
@@ -382,6 +393,9 @@ export default function FacilityTransfersScreen() {
               style={[styles.input, styles.notes]}
             />
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Save licensed transfer as draft"
+              accessibilityState={{ disabled: saving }}
               disabled={saving}
               onPress={create}
               style={[styles.primary, saving && styles.disabled]}
@@ -418,6 +432,9 @@ export default function FacilityTransfersScreen() {
               </Text>
               {canManage && transfer.status === "draft" ? (
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Approve transfer for ${transfer.itemName}`}
+                  accessibilityState={{ disabled: saving }}
                   disabled={saving}
                   style={styles.secondary}
                   onPress={() => setStatus(transfer, "approved")}
@@ -427,6 +444,9 @@ export default function FacilityTransfersScreen() {
               ) : null}
               {canShip && transfer.status === "approved" ? (
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Mark transfer for ${transfer.itemName} shipped and deduct inventory`}
+                  accessibilityState={{ disabled: saving }}
                   disabled={saving}
                   style={styles.primary}
                   onPress={() => setStatus(transfer, "shipped")}
@@ -438,6 +458,9 @@ export default function FacilityTransfersScreen() {
               transfer.status === "shipped" &&
               transfer.inventoryMovementStatus === "applied" ? (
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Mark transfer for ${transfer.itemName} delivered`}
+                  accessibilityState={{ disabled: saving }}
                   disabled={saving}
                   style={styles.secondary}
                   onPress={() => setStatus(transfer, "delivered")}
