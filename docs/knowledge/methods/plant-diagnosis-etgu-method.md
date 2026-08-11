@@ -390,6 +390,18 @@ Keep common, nursery, and trade names separate from scientific names. When the e
 
 The calculator itself does not query a botanical database. When no lookup occurred, return `required_not_performed`, an empty source-record list, and recommended source IDs rather than invented citations or range matches. Verification may use USDA PLANTS and regional floras for jurisdictional distribution, Kew POWO/WCVP for accepted vascular-plant names and synonymy, GBIF for taxonomy and occurrence leads, and iNaturalist only as a Tier C observation/community-identification lead. A future live lookup must record the exact record URL or identifier, access time, scope, match result, conflicts, and source-specific limitations.
 
+Plant ID evaluation media follows an additional candidate-to-fixture boundary. An
+iNaturalist Research Grade observation, a Wikimedia Commons file, a USDA ARS image, a
+caption, a category, or a computer-vision-assisted identification may provide a review
+lead, but none automatically establishes the image's taxon, life stage, visible
+diagnostic characters, exact reuse rights, or intended-use approval. Candidate
+collection must retain per-image provenance and attribution, exclude private coordinates,
+copy no media by default, and leave identity, stage, rights, and QA-use decisions pending.
+Promotion into the governed evaluation catalog requires image-level inspection,
+commercially compatible rights, Tier A taxonomy or morphology cross-checking, and an
+explicit reviewer decision. Evaluation references remain inference QA only and are never
+model-training data under the current policy.
+
 ## Crop identity confirmation
 
 Species/crop identification suggestions remain drafts until the user presses an explicit confirmation action. Confirmation must write the common name, scientific name when known, cultivar separately, aliases, confirmation provenance, timestamp, and source tool run to the selected grow or plant. A user correction must preserve the rejected AI draft as provenance, present the corrected common identity first, keep exact scientific species unverified when unknown, and request a new whole-plant view, full leaf and underside with node, open flower, and fruit or seed structure for another AI review. A grow-level confirmation also updates crop tags and interests so downstream diagnosis and crop-specific tool visibility can use the same identity. Never infer or persist a cultivar from appearance alone.

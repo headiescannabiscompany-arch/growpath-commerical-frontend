@@ -170,6 +170,20 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-07-27"
   },
   {
+    id: "wikimedia-commons-licensed-plant-media",
+    name: "Wikimedia Commons licensed plant media",
+    domain: "commons.wikimedia.org",
+    sourceType: "consumer_database",
+    reliabilityTier: "C",
+    trustedFor: ["qa_evaluation", "photo_quality_guidance", "education"],
+    notTrustedFor: ["plant_identification", "diagnosis", "ipm", "legal_regulatory"],
+    notes:
+      "Plant ID QA candidate media only. Verify every file page and admit only an individually reviewed CC0 1.0 or CC BY 4.0 file with creator, attribution, license link, source page, and original URL retained. Exclude incompatible or unclear rights. A filename, category, caption, or Commons placement is not botanical ground truth; independently review morphology and cross-check the taxon with Tier A sources.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["usda-plants-database", "kew-powo", "gbif-species-api"],
+    lastReviewedAt: "2026-08-11"
+  },
+  {
     id: "vimeo-video-privacy-documentation",
     name: "Vimeo video privacy and oEmbed documentation",
     domain: "help.vimeo.com",

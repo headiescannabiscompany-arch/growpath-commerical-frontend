@@ -54,11 +54,12 @@
       "status": "conditional_review_required",
       "sourceUrl": "https://www.inaturalist.org/",
       "termsUrl": "https://www.inaturalist.org/pages/terms",
-      "apiUrl": "https://api.inaturalist.org/v2/docs/",
+      "apiUrl": "https://api.inaturalist.org/v1/observations",
+      "candidateCollector": "scripts/collect-plant-id-qa-candidates.cjs",
       "licenseReviewRequired": true,
       "reliabilityTier": "B_context_limited_official_source",
       "crossCheckRequired": true,
-      "lastReviewedAt": "2026-07-20",
+      "lastReviewedAt": "2026-08-11",
       "trustedFor": [
         "candidate crop and lookalike observations",
         "taxon metadata leads",
@@ -74,7 +75,9 @@
         "review terms at execution time",
         "record the license for each photo separately from observation metadata",
         "copy only media whose license permits the intended use",
-        "retain creator attribution"
+        "retain creator attribution",
+        "do not retain coordinates in the candidate-review manifest",
+        "do not auto-approve identity, life stage, exact license version, or intended use"
       ]
     },
     {
@@ -134,6 +137,8 @@
       "id": "plant-identification",
       "masterItem": 50,
       "status": "planned",
+      "catalogFixture": "tests/fixtures/plant-identification-qa-catalog.json",
+      "candidateCollector": "scripts/collect-plant-id-qa-candidates.cjs",
       "targetRecordCount": {
         "minimum": 300,
         "maximum": 500

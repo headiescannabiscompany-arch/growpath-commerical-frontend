@@ -143,6 +143,7 @@ describe("plant-identification QA catalog", () => {
     expect(catalog.rightsPolicy.allowedCopiedMediaLicenses).toEqual([
       "CC0-1.0",
       "CC-BY-4.0",
+      "US-PUBLIC-DOMAIN",
       "OWNER_PERMISSION",
       "GROWPATH_OWNED"
     ]);
@@ -193,8 +194,21 @@ describe("plant-identification QA catalog", () => {
       expect.arrayContaining([
         expect.objectContaining({
           sourceId: "inaturalist",
-          status: "candidate_metadata_only",
+          status: "approved_conditional_candidate_source",
+          qaReferenceApproved: true,
           allowedLicenseFilter: ["CC0", "CC-BY"]
+        }),
+        expect.objectContaining({
+          sourceId: "usda_ars_image_gallery",
+          status: "approved_conditional_candidate_source",
+          qaReferenceApproved: true,
+          allowedLicenseFilter: ["US-PUBLIC-DOMAIN"]
+        }),
+        expect.objectContaining({
+          sourceId: "wikimedia_commons",
+          status: "approved_conditional_candidate_source",
+          qaReferenceApproved: true,
+          allowedLicenseFilter: ["CC0-1.0", "CC-BY-4.0"]
         }),
         expect.objectContaining({
           sourceId: "growpath_owner_media",
@@ -207,6 +221,7 @@ describe("plant-identification QA catalog", () => {
         expect.objectContaining({
           sourceId: "crime_pays_botany_youtube",
           status: "external_lead_only_pending_creator_permission",
+          qaReferenceApproved: false,
           allowedLicenseFilter: ["OWNER_PERMISSION"],
           runtimeSourceRegistryId: "crime-pays-but-botany-doesnt"
         })

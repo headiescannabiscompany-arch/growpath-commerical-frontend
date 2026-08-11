@@ -13,6 +13,12 @@ const diagnosisCatalogPath = path.join(
   "fixtures",
   "diagnosis-ipm-qa-catalog.json"
 );
+const plantCatalogPath = path.join(
+  ROOT,
+  "tests",
+  "fixtures",
+  "plant-identification-qa-catalog.json"
+);
 const allowPlanning = process.argv.includes("--allow-planning");
 
 function isUrl(value) {
@@ -51,6 +57,7 @@ function requireCondition(condition, message, errors) {
 function main() {
   const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
   const diagnosisCatalog = JSON.parse(fs.readFileSync(diagnosisCatalogPath, "utf8"));
+  const plantCatalog = JSON.parse(fs.readFileSync(plantCatalogPath, "utf8"));
   const errors = [];
   const blockers = [];
 
@@ -161,13 +168,14 @@ function main() {
     );
     if (!isUrl(source.sourceUrl)) {
       if (isPlaceholder(source.sourceUrl)) {
-        blockers.push(`Source ${source.id} still has a placeholder sourceUrl.`);
+        requireCondition(
+          source.status !== "approved",
+          `Approved source ${source.id} cannot retain a placeholder sourceUrl.`,
+          errors
+        );
       } else {
         errors.push(`Source ${source.id} has an invalid sourceUrl.`);
       }
-    }
-    if (source.status !== "approved") {
-      blockers.push(`Source ${source.id} is not approved (${source.status}).`);
     }
   }
 
@@ -219,6 +227,27 @@ function main() {
     "Plant identification must stay grow-optional and forbid cultivar inference.",
     errors
   );
+  requireCondition(
+    plantPack?.catalogFixture === "tests/fixtures/plant-identification-qa-catalog.json" &&
+      plantPack?.candidateCollector === "scripts/collect-plant-id-qa-candidates.cjs",
+    "Plant-identification master pack must reference its governed catalog and candidate collector.",
+    errors
+  );
+  requireCondition(
+    fs.existsSync(path.join(ROOT, plantPack?.candidateCollector || "")),
+    "Plant-identification candidate collector is missing.",
+    errors
+  );
+  if (plantPack?.status === "seed_ready") {
+    requireCondition(
+      plantCatalog.status === "seed_ready" &&
+        plantCatalog.targetRecordCount >= plantPack.targetRecordCount.minimum &&
+        plantCatalog.targetRecordCount <= plantPack.targetRecordCount.maximum &&
+        plantCatalog.mediaRecords?.length === plantCatalog.targetRecordCount,
+      "A seed-ready Plant ID master pack must match its seed-ready governed catalog.",
+      errors
+    );
+  }
 
   const diagnosisPack = packs.find((pack) => pack.id === "diagnosis-ipm");
   requireCondition(
