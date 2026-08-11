@@ -47,7 +47,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       now fingerprints the identical structured envelope, computes and persists
       field-level GrowPath/GPT disagreements and combined follow-ups, and refuses to
       claim a charge or refund without a ledger receipt. Full 252-case execution and
-      linked-record verification remain.
+      linked-record verification remain. A dry-run-by-default, resumable evaluator now
+      plans all 252 cases, refuses production, requires an exact staging/test
+      confirmation, QA namespace, auth token, and deployed SHA, checkpoints each
+      persisted ToolRun, validates the shared envelope digest, and reports provider,
+      ledger, and linked-record gaps without converting them into acceptance. A real
+      authorized staging execution and its cleanup evidence remain.
 - [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
       licenses, and exact follow-up-photo expectations. Never use the pack as training

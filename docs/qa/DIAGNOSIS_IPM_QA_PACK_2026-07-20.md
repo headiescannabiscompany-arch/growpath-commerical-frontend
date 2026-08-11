@@ -78,11 +78,43 @@ These observations informed interface guidance and QA assertions only. They are 
   linked records;
 - retain the source and image-level rights gates for every future catalog change.
 
+## Staging evaluation runner
+
+The catalog now has a dry-run-by-default, resumable execution runner:
+
+```txt
+npm.cmd run evaluate:diagnosis-ipm
+npm.cmd run evaluate:diagnosis-ipm:execute
+npm.cmd run evaluate:diagnosis-ipm:resume
+```
+
+The dry run performs no network requests or writes. Execution refuses production
+hosts, requires an explicit `test` or `staging` environment, a
+`growpath-qa-diagnosis-ipm-*` namespace, an exact 40-character deployed Git SHA,
+an authentication token supplied outside source control, and the exact confirmation
+`RUN_GROWPATH_DIAGNOSIS_IPM_STAGING`. It checkpoints after every record so an
+interrupted run can resume without intentionally replaying already persisted cases.
+
+External media URLs remain governed references. The runner sends their rights
+metadata but explicitly records zero pixel analysis unless a separate verified
+image-analysis receipt exists; a caption or URL is never converted into a claim that
+the model inspected pixels. Each response must persist both answers and the same
+evidence-envelope digest. The resulting evidence stays incomplete unless all 252
+provider reviews, credit-ledger receipts, and Plant/Grow/Log/ToolRun/Task/Facility
+links are actually present. The runner exposes those gaps instead of treating a 201
+response as full acceptance.
+
+The evidence summary separately counts whether the GrowPath and GPT broad cause
+classes fall inside each case's governed expected ranking. A mismatch remains visible
+for qualified review; it does not rewrite the expected result or silently disappear
+inside a combined score.
+
 ## Verification
 
 ```txt
 npm.cmd run verify:diagnosis-ipm-qa-catalog:planning
 npm.cmd run verify:diagnosis-ipm-qa-catalog
+npm.cmd run evaluate:diagnosis-ipm
 ```
 
 Planning mode validates allocations, ETGU order, evidence/write-back behavior, and
