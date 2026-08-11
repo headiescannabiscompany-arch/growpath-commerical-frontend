@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -59,10 +59,12 @@ export default function FacilityGrowDetail() {
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const loadInFlightRef = useRef(false);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || !id) return;
+      if (!facilityId || !id || loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -74,6 +76,7 @@ export default function FacilityGrowDetail() {
       } catch (e) {
         handleApiError(e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -112,7 +115,12 @@ export default function FacilityGrowDetail() {
         {error ? <InlineError error={error} /> : null}
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility grow details"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading grow...</Text>
           </View>
@@ -190,7 +198,7 @@ export default function FacilityGrowDetail() {
                       })
                     }
                     style={styles.workspaceAction}
-                    accessibilityRole="button"
+                    accessibilityRole="link"
                     accessibilityLabel={`Open ${label} for ${pickTitle(item)}`}
                   >
                     <Text style={styles.workspaceLabel}>{label}</Text>
