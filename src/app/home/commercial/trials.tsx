@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -78,6 +78,7 @@ function RecordPicker({
   choices,
   createHref,
   createLabel,
+  disabled,
   label,
   onChange,
   selectedId
@@ -85,6 +86,7 @@ function RecordPicker({
   choices: RecordChoice[];
   createHref: string;
   createLabel: string;
+  disabled: boolean;
   label: string;
   onChange: (id: string) => void;
   selectedId: string;
@@ -104,9 +106,14 @@ function RecordPicker({
           <Pressable
             accessibilityRole="radio"
             accessibilityLabel={`${label}: Not linked yet`}
-            accessibilityState={{ checked: !selectedId }}
+            accessibilityState={{ checked: !selectedId, disabled }}
+            disabled={disabled}
             onPress={() => onChange("")}
-            style={[styles.outlineButton, !selectedId && styles.selectedButton]}
+            style={[
+              styles.outlineButton,
+              !selectedId && styles.selectedButton,
+              disabled && styles.disabled
+            ]}
           >
             <Text style={styles.outlineText}>Not linked yet</Text>
           </Pressable>
@@ -115,11 +122,13 @@ function RecordPicker({
               key={`${label}-${item.id}`}
               accessibilityRole="radio"
               accessibilityLabel={`${label}: ${item.label}`}
-              accessibilityState={{ checked: selectedId === item.id }}
+              accessibilityState={{ checked: selectedId === item.id, disabled }}
+              disabled={disabled}
               onPress={() => onChange(item.id)}
               style={[
                 styles.outlineButton,
-                selectedId === item.id && styles.selectedButton
+                selectedId === item.id && styles.selectedButton,
+                disabled && styles.disabled
               ]}
             >
               <Text style={styles.outlineText}>{item.label}</Text>
@@ -133,7 +142,9 @@ function RecordPicker({
             <Pressable
               accessibilityRole="link"
               accessibilityLabel={createLabel}
-              style={styles.outlineButton}
+              accessibilityState={{ disabled }}
+              disabled={disabled}
+              style={[styles.outlineButton, disabled && styles.disabled]}
             >
               <Text style={styles.outlineText}>{createLabel}</Text>
             </Pressable>
@@ -154,9 +165,12 @@ export default function CommercialTrialsRoute() {
   const [evidenceRuns, setEvidenceRuns] = useState<ProductTrialEvidenceRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [saveError, setSaveError] = useState<any>(null);
   const [feedback, setFeedback] = useState("");
   const [showAdvancedRecordIds, setShowAdvancedRecordIds] = useState(false);
+  const loadInFlightRef = useRef(false);
+  const createInFlightRef = useRef(false);
 
   const [trialName, setTrialName] = useState("");
   const [purpose, setPurpose] = useState("");
@@ -168,10 +182,13 @@ export default function CommercialTrialsRoute() {
   const [cultivar, setCultivar] = useState("");
   const [plantCount, setPlantCount] = useState("");
   const [notes, setNotes] = useState("");
+  const canCreate = trialName.trim().length > 1 && !saving;
 
   const load = useCallback(async () => {
+    if (loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       const [nextTrials, nextProducts, nextLines, nextBatches, nextEvidenceRuns] =
         await Promise.all([
@@ -187,9 +204,10 @@ export default function CommercialTrialsRoute() {
       setBatches(nextBatches);
       setEvidenceRuns(nextEvidenceRuns);
     } catch (err) {
-      setError(err);
+      setLoadError(err);
       setTrials([]);
     } finally {
+      loadInFlightRef.current = false;
       setLoading(false);
     }
   }, []);
@@ -217,9 +235,18 @@ export default function CommercialTrialsRoute() {
 
   async function createTrial() {
     const name = trialName.trim();
-    if (!name || saving) return;
+    if (name.length < 2 || createInFlightRef.current) return;
+    const parsedPlantCount = plantCount.trim() ? Number(plantCount) : undefined;
+    if (
+      parsedPlantCount !== undefined &&
+      (!Number.isInteger(parsedPlantCount) || parsedPlantCount < 1)
+    ) {
+      setSaveError(new Error("Plant count must be a whole number greater than zero."));
+      return;
+    }
+    createInFlightRef.current = true;
     setSaving(true);
-    setError(null);
+    setSaveError(null);
     setFeedback("");
     try {
       const created = await createProductTrial({
@@ -231,7 +258,7 @@ export default function CommercialTrialsRoute() {
         growId: growId.trim() || undefined,
         cropType: cropType.trim() || undefined,
         cultivar: cultivar.trim() || undefined,
-        plantCount: plantCount ? Number(plantCount) : undefined,
+        plantCount: parsedPlantCount,
         notes: notes.trim() || undefined,
         status: "planned"
       });
@@ -248,8 +275,9 @@ export default function CommercialTrialsRoute() {
       setNotes("");
       setFeedback("Product trial created.");
     } catch (err) {
-      setError(err);
+      setSaveError(err);
     } finally {
+      createInFlightRef.current = false;
       setSaving(false);
     }
   }
@@ -257,6 +285,7 @@ export default function CommercialTrialsRoute() {
   return (
     <AppPage
       routeKey="commercial-trials"
+      backFallbackHref="/home/commercial/more"
       longContent
       header={
         <View style={styles.header}>
@@ -288,8 +317,29 @@ export default function CommercialTrialsRoute() {
         </View>
       }
     >
-      {error ? <InlineError error={error} /> : null}
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {loadError ? (
+        <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
+          <InlineError error={loadError} />
+          <Pressable
+            accessibilityLabel="Retry product trials"
+            accessibilityRole="button"
+            disabled={loading}
+            onPress={load}
+            style={[styles.outlineButton, loading && styles.disabled]}
+          >
+            <Text style={styles.outlineText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {feedback ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+          style={styles.feedback}
+        >
+          {feedback}
+        </Text>
+      ) : null}
 
       <AppCard>
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
@@ -303,6 +353,7 @@ export default function CommercialTrialsRoute() {
           value={trialName}
           onChangeText={setTrialName}
           accessibilityLabel="Product trial name"
+          editable={!saving}
           placeholder="Seedling safety trial"
           style={styles.input}
         />
@@ -310,11 +361,13 @@ export default function CommercialTrialsRoute() {
           value={purpose}
           onChangeText={setPurpose}
           accessibilityLabel="Product trial purpose"
+          editable={!saving}
           placeholder="seedling_safety, veg_performance, flower_performance..."
           style={styles.input}
         />
         <View style={styles.pickerGrid}>
           <RecordPicker
+            disabled={saving}
             label="Trial product"
             choices={productChoices}
             selectedId={productId}
@@ -323,6 +376,7 @@ export default function CommercialTrialsRoute() {
             createLabel="Create Product"
           />
           <RecordPicker
+            disabled={saving}
             label="Trial product line"
             choices={productLineChoices}
             selectedId={productLineId}
@@ -331,6 +385,7 @@ export default function CommercialTrialsRoute() {
             createLabel="Create Product Line"
           />
           <RecordPicker
+            disabled={saving}
             label="Trial batch"
             choices={batchChoices}
             selectedId={batchId}
@@ -339,6 +394,7 @@ export default function CommercialTrialsRoute() {
             createLabel="Create Product Batch"
           />
           <RecordPicker
+            disabled={saving}
             label="Trial evidence run"
             choices={evidenceRunChoices}
             selectedId={growId}
@@ -355,8 +411,9 @@ export default function CommercialTrialsRoute() {
               : "Show advanced trial record ID fields"
           }
           accessibilityState={{ expanded: showAdvancedRecordIds }}
+          disabled={saving}
           onPress={() => setShowAdvancedRecordIds((current) => !current)}
-          style={styles.advancedToggle}
+          style={[styles.advancedToggle, saving && styles.disabled]}
         >
           <Text style={styles.advancedToggleText}>
             {showAdvancedRecordIds
@@ -370,6 +427,7 @@ export default function CommercialTrialsRoute() {
               value={productId}
               onChangeText={setProductId}
               accessibilityLabel="Trial product id"
+              editable={!saving}
               placeholder="Product id"
               autoCapitalize="none"
               style={[styles.input, styles.gridInput]}
@@ -378,6 +436,7 @@ export default function CommercialTrialsRoute() {
               value={productLineId}
               onChangeText={setProductLineId}
               accessibilityLabel="Trial product line id"
+              editable={!saving}
               placeholder="Product line id, or choose below"
               autoCapitalize="none"
               style={[styles.input, styles.gridInput]}
@@ -386,6 +445,7 @@ export default function CommercialTrialsRoute() {
               value={batchId}
               onChangeText={setBatchId}
               accessibilityLabel="Trial batch id"
+              editable={!saving}
               placeholder="Batch id"
               autoCapitalize="none"
               style={[styles.input, styles.gridInput]}
@@ -394,6 +454,7 @@ export default function CommercialTrialsRoute() {
               value={growId}
               onChangeText={setGrowId}
               accessibilityLabel="Trial evidence run id"
+              editable={!saving}
               placeholder="Evidence run id"
               autoCapitalize="none"
               style={[styles.input, styles.gridInput]}
@@ -405,6 +466,7 @@ export default function CommercialTrialsRoute() {
             value={cropType}
             onChangeText={setCropType}
             accessibilityLabel="Trial crop type"
+            editable={!saving}
             placeholder="Crop type"
             style={[styles.input, styles.gridInput]}
           />
@@ -412,6 +474,7 @@ export default function CommercialTrialsRoute() {
             value={cultivar}
             onChangeText={setCultivar}
             accessibilityLabel="Trial cultivar"
+            editable={!saving}
             placeholder="Cultivar"
             style={[styles.input, styles.gridInput]}
           />
@@ -419,6 +482,7 @@ export default function CommercialTrialsRoute() {
             value={plantCount}
             onChangeText={setPlantCount}
             accessibilityLabel="Trial plant count"
+            editable={!saving}
             placeholder="Plant count"
             keyboardType="numeric"
             style={[styles.input, styles.gridInput]}
@@ -428,16 +492,34 @@ export default function CommercialTrialsRoute() {
           value={notes}
           onChangeText={setNotes}
           accessibilityLabel="Trial notes"
+          editable={!saving}
           placeholder="Measurement plan, controls, photos, pH/EC checks, harvest, dry/cure..."
           multiline
           style={[styles.input, styles.textArea]}
         />
+        {saving ? (
+          <View
+            accessibilityLabel="Creating product trial in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Creating product trial...</Text>
+          </View>
+        ) : null}
+        {saveError ? (
+          <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
+            <InlineError error={saveError} />
+          </View>
+        ) : null}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Create product trial"
           onPress={createTrial}
-          disabled={!trialName.trim() || saving}
-          style={[styles.primaryButton, (!trialName.trim() || saving) && styles.disabled]}
+          accessibilityState={{ disabled: !canCreate, busy: saving }}
+          disabled={!canCreate}
+          style={[styles.primaryButton, !canCreate && styles.disabled]}
         >
           <Text style={styles.primaryText}>
             {saving ? "Creating..." : "Create Product Trial"}
@@ -450,7 +532,12 @@ export default function CommercialTrialsRoute() {
           Product Trials
         </Text>
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading product trials"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading product trials...</Text>
           </View>
@@ -697,6 +784,7 @@ export function createCommercialTrialsStyles(palette: ThemePalette) {
       color: palette.success,
       fontWeight: "900",
       padding: 10
-    }
+    },
+    errorPanel: { alignItems: "flex-start", gap: 8 }
   });
 }
