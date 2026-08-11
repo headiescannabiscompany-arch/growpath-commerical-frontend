@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -89,9 +89,12 @@ export default function CommercialInventoryRoute() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<any>(null);
+  const loadInFlightRef = useRef(false);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
+      if (loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
 
@@ -107,8 +110,9 @@ export default function CommercialInventoryRoute() {
         const res = await apiRequest(path, { method: "GET" });
         setItems(asArray(res));
       } catch (e) {
-        setError(mapApiError(e));
+        setError(mapApiError(e) ?? e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -117,11 +121,12 @@ export default function CommercialInventoryRoute() {
   );
 
   useEffect(() => {
-    if (ent?.ready && ent.mode !== "commercial") {
+    if (!ent?.ready) return;
+    if (ent.mode !== "commercial") {
       router.replace("/home" as any);
       return;
     }
-    load();
+    void load();
   }, [ent?.ready, ent?.mode, load, router]);
 
   useFocusEffect(
@@ -146,7 +151,20 @@ export default function CommercialInventoryRoute() {
   return (
     <ScreenBoundary title="Inventory Support">
       <View style={styles.container}>
-        {error ? <InlineError error={error} /> : null}
+        {error ? (
+          <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
+            <InlineError error={error} />
+            <TouchableOpacity
+              accessibilityLabel="Retry commercial inventory support"
+              accessibilityRole="button"
+              disabled={loading || refreshing}
+              onPress={() => load()}
+              style={[styles.createBtn, (loading || refreshing) && styles.disabled]}
+            >
+              <Text style={styles.createBtnText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
 
         <View style={styles.headerRow}>
           <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
@@ -169,7 +187,12 @@ export default function CommercialInventoryRoute() {
         </View>
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading commercial inventory support"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading inventory support...</Text>
           </View>
@@ -217,6 +240,7 @@ export default function CommercialInventoryRoute() {
           refreshControl={
             <RefreshControl
               colors={[palette.accent]}
+              enabled={!loading}
               refreshing={refreshing}
               onRefresh={() => load({ refresh: true })}
               tintColor={palette.accent}
@@ -224,7 +248,7 @@ export default function CommercialInventoryRoute() {
           }
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            !loading ? (
+            !loading && !error ? (
               <View style={styles.empty}>
                 <Text style={styles.emptyTitle}>No inventory support records yet</Text>
                 <Text style={styles.muted}>
@@ -244,6 +268,8 @@ export default function CommercialInventoryRoute() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Open commercial inventory record ${title}`}
+                accessibilityState={{ disabled: !id }}
+                disabled={!id}
                 onPress={() => {
                   if (!id) return;
                   router.push({
@@ -251,7 +277,11 @@ export default function CommercialInventoryRoute() {
                     params: { id }
                   });
                 }}
-                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+                style={({ pressed }) => [
+                  styles.row,
+                  pressed && styles.rowPressed,
+                  !id && styles.disabled
+                ]}
               >
                 <View style={{ flex: 1, gap: 4 }}>
                   <Text
@@ -319,6 +349,8 @@ export function createCommercialInventoryStyles(palette: ThemePalette) {
     createBtnText: { color: palette.link, fontWeight: "800" },
 
     loading: { alignItems: "center", gap: 10, paddingVertical: 18 },
+    errorPanel: { alignItems: "flex-start", gap: 8 },
+    disabled: { opacity: 0.55 },
 
     summaryCard: {
       backgroundColor: palette.accentSoft,
