@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityHistoryImportRoute, {
   canImportFacilityHistory,
@@ -9,8 +9,11 @@ import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
+const mockRouter = { push: mockPush, replace: mockReplace };
 let mockParams: Record<string, string> = {};
 let mockFacilityRole = "OWNER";
+let mockFacilityId: string | null = "facility-1";
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -19,13 +22,13 @@ jest.mock("@/api/endpoints", () => ({
   endpoints: { grows: (facilityId: string) => `/api/facilities/${facilityId}/grows` }
 }));
 jest.mock("@/state/useFacility", () => ({
-  useFacility: () => ({ selectedId: "facility-1" })
+  useFacility: () => ({ selectedId: mockFacilityId })
 }));
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({ facilityRole: mockFacilityRole })
 }));
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => mockRouter,
   useLocalSearchParams: () => mockParams
 }));
 jest.mock("@/components/ScreenBoundary", () => ({
@@ -43,6 +46,7 @@ describe("Facility history import route", () => {
     jest.clearAllMocks();
     mockParams = {};
     mockFacilityRole = "OWNER";
+    mockFacilityId = "facility-1";
     mockApiRequest.mockResolvedValue({
       grows: [
         { id: "grow-1", name: "Flower Cycle 12", roomName: "Flower A" },
@@ -85,6 +89,57 @@ describe("Facility history import route", () => {
       pathname: "/home/facility/tools/history-import",
       params: { growId: "grow-1", growName: "Flower Cycle 12" }
     });
+    expect(
+      screen.getByLabelText("Import history into Flower Cycle 12").props
+    ).toMatchObject({ accessibilityRole: "link" });
+  });
+
+  it("announces the grow load before presenting valid destinations", async () => {
+    let finishLoad: ((value: unknown) => void) | undefined;
+    mockApiRequest.mockImplementationOnce(
+      () => new Promise((resolve) => (finishLoad = resolve))
+    );
+    const screen = render(<FacilityHistoryImportRoute />);
+
+    expect(
+      screen.getByLabelText("Loading facility grows for history import").props
+    ).toMatchObject({ accessibilityRole: "progressbar" });
+    await waitFor(() => expect(finishLoad).toBeDefined());
+    await act(async () => {
+      finishLoad?.({
+        grows: [
+          { id: "grow-1", name: "Flower Cycle 12" },
+          { name: "Invalid destination" }
+        ]
+      });
+    });
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Flower Cycle 12")).toBeTruthy();
+    expect(screen.queryByText("Invalid destination")).toBeNull();
+  });
+
+  it("redirects to facility selection when no facility is active", async () => {
+    mockFacilityId = null;
+    render(<FacilityHistoryImportRoute />);
+
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/home/facility/select")
+    );
+    expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
+  it("offers a working retry after grow loading fails", async () => {
+    mockApiRequest
+      .mockRejectedValueOnce(new Error("Network unavailable"))
+      .mockResolvedValueOnce({ grows: [{ id: "grow-2", name: "Veg Cycle" }] });
+    const screen = render(<FacilityHistoryImportRoute />);
+
+    await waitFor(() => expect(screen.getByText("Network unavailable")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Retry loading facility grows"));
+
+    await waitFor(() => expect(screen.getByText("Veg Cycle")).toBeTruthy());
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText("Network unavailable")).toBeNull();
   });
 
   it("opens the shared importer in history mode for the selected grow", () => {
