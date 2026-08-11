@@ -9,6 +9,12 @@ describe("cannabis grow context", () => {
         cropTypes: ["Cannabis"]
       } as any)
     ).toBe(true);
+    expect(
+      isCannabisGrow({
+        id: "grow-hemp",
+        cropTypes: ["Hemp"]
+      } as any)
+    ).toBe(true);
   });
 
   it("preserves untagged legacy cannabis grows without guessing from the name", () => {

@@ -388,6 +388,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "Facility-scoped audited Forum moderation with feed-projection removal, reversible soft removal, and locked-reply blocking"
     );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "selected-Facility Plant/Crop Identification, Plant Diagnosis, IPM Scout, and Saved AI Runs with Facility-safe back navigation"
+    );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never allow a Facility deviation reference collision or persistence error to terminate the shared API service."
     );
@@ -408,6 +411,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("facility-workflow")?.warnings).toContain(
       "Never count repeated Facility Forum reports from the same account toward an automatic hold threshold."
+    );
+    expect(getMethod("facility-workflow")?.warnings).toContain(
+      "Never expose cannabis-specific Facility AI shortcuts from a facility name, free-text note, or unconfirmed image candidate; require structured eligible Facility grow evidence."
     );
     expect(methodsForTool("facility-inventory").map((entry) => entry.id)).toContain(
       "facility-workflow"

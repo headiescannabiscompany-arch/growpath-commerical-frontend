@@ -378,7 +378,11 @@ export function verifiedIpmPrefillMetadata({
   };
 }
 
-export default function IpmScoutToolRoute() {
+export default function IpmScoutToolRoute({
+  backFallbackHref = "/home/personal/tools"
+}: {
+  backFallbackHref?: string;
+} = {}) {
   const params = useLocalSearchParams<{ retryToolRunId?: string | string[] }>();
   const retryToolRunId = routeParam(params.retryToolRunId);
   const { palette } = useAppTheme();
@@ -469,6 +473,7 @@ export default function IpmScoutToolRoute() {
 
   return (
     <BackendCalculatorToolScreen
+      backFallbackHref={backFallbackHref}
       externalInputKey={`ipm-evidence:${[...evidencePayload.evidenceAssetIds]
         .map(String)
         .sort()

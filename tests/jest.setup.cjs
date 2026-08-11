@@ -54,6 +54,20 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn(async () => undefined)
 }));
 
+// Keep native push-registration side effects out of unrelated route tests.
+// Notification-specific test files replace these defaults with explicit mocks.
+jest.mock("expo-notifications", () => ({
+  AndroidImportance: { DEFAULT: 3 },
+  cancelScheduledNotificationAsync: jest.fn(async () => undefined),
+  getExpoPushTokenAsync: jest.fn(async () => ({ data: "" })),
+  getPermissionsAsync: jest.fn(async () => ({ status: "undetermined" })),
+  requestPermissionsAsync: jest.fn(async () => ({ status: "denied" })),
+  scheduleNotificationAsync: jest.fn(async () => "notification-test-id"),
+  setNotificationChannelAsync: jest.fn(async () => undefined)
+}));
+
+jest.mock("expo-device", () => ({ isDevice: false }));
+
 jest.mock("react-native-webview", () => {
   const React = require("react");
   const { View } = require("react-native");

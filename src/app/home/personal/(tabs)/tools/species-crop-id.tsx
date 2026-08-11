@@ -1092,7 +1092,11 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
   ];
 }
 
-export default function SpeciesCropIdToolRoute() {
+export default function SpeciesCropIdToolRoute({
+  backFallbackHref = "/home/personal/tools"
+}: {
+  backFallbackHref?: string;
+} = {}) {
   const { palette } = useAppTheme();
   const entitlements = useEntitlements();
   const styles = useMemo(() => createSpeciesCropIdStyles(palette), [palette]);
@@ -2423,6 +2427,7 @@ export default function SpeciesCropIdToolRoute() {
 
   return (
     <BackendCalculatorToolScreen
+      backFallbackHref={backFallbackHref}
       tool="species-crop-id"
       toolKey="species-crop-id"
       externalInputKey={evidenceInputKey}
