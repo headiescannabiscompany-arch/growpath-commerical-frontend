@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -33,6 +33,10 @@ function growRows(response: any) {
   return Array.isArray(rows) ? rows : [];
 }
 
+function rowId(row: any) {
+  return String(row?.id || row?._id || row?.growId || "").trim();
+}
+
 export default function FacilityHistoryImportRoute() {
   const router = useRouter();
   const entitlements = useEntitlements();
@@ -44,18 +48,33 @@ export default function FacilityHistoryImportRoute() {
   const [grows, setGrows] = useState<any[]>([]);
   const [loading, setLoading] = useState(!growId);
   const [error, setError] = useState("");
+  const loadInFlightRef = useRef(false);
   const canImport = canImportFacilityHistory(entitlements.facilityRole);
 
-  useEffect(() => {
-    if (!canImport || growId || !facilityId) return;
+  const loadGrows = useCallback(async () => {
+    if (!facilityId || loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLoading(true);
-    apiRequest(endpoints.grows(facilityId))
-      .then((response) => setGrows(growRows(response)))
-      .catch((reason: any) =>
-        setError(reason?.message || "Unable to load facility grows.")
-      )
-      .finally(() => setLoading(false));
-  }, [canImport, facilityId, growId]);
+    setError("");
+    try {
+      const response = await apiRequest(endpoints.grows(facilityId));
+      setGrows(growRows(response));
+    } catch (reason: any) {
+      setError(reason?.message || "Unable to load facility grows.");
+    } finally {
+      loadInFlightRef.current = false;
+      setLoading(false);
+    }
+  }, [facilityId]);
+
+  useEffect(() => {
+    if (!facilityId) {
+      router.replace("/home/facility/select");
+      return;
+    }
+    if (!canImport || growId) return;
+    void loadGrows();
+  }, [canImport, facilityId, growId, loadGrows, router]);
 
   if (!canImport) {
     return (
@@ -74,7 +93,7 @@ export default function FacilityHistoryImportRoute() {
               can select a grow or upload controller records.
             </Text>
             <Pressable
-              accessibilityRole="button"
+              accessibilityRole="link"
               accessibilityLabel="Return to Facility integrations"
               style={styles.returnAction}
               onPress={() => router.push("/home/facility/integrations" as any)}
@@ -111,37 +130,62 @@ export default function FacilityHistoryImportRoute() {
           analysis, tasks, and timeline remain connected. Choose the destination before
           selecting the CSV.
         </Text>
-        {loading ? <ActivityIndicator color={palette.accent} /> : null}
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {loading ? (
+          <View
+            accessibilityLabel="Loading facility grows for history import"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.copy}>Loading grows...</Text>
+          </View>
+        ) : null}
+        {error ? (
+          <View accessibilityLiveRegion="polite" style={styles.errorCard}>
+            <Text style={styles.error}>{error}</Text>
+            <Pressable
+              accessibilityLabel="Retry loading facility grows"
+              accessibilityRole="button"
+              disabled={loading}
+              onPress={() => void loadGrows()}
+              style={styles.retryAction}
+            >
+              <Text style={styles.retryActionText}>Retry</Text>
+            </Pressable>
+          </View>
+        ) : null}
         {!loading && !grows.length ? (
           <Text style={styles.copy}>No grows are available in this facility yet.</Text>
         ) : null}
-        {grows.map((grow) => {
-          const id = String(grow.id || grow._id || grow.growId || "");
-          const name = String(grow.name || grow.title || grow.strain || "Grow");
-          return (
-            <Pressable
-              key={id}
-              accessibilityRole="button"
-              accessibilityLabel={`Import history into ${name}`}
-              style={styles.growCard}
-              onPress={() =>
-                router.push({
-                  pathname: "/home/facility/tools/history-import" as any,
-                  params: { growId: id, growName: name }
-                })
-              }
-            >
-              <View>
-                <Text style={styles.growName}>{name}</Text>
-                <Text style={styles.meta}>
-                  {grow.roomName || grow.stage || grow.status || "Facility grow"}
-                </Text>
-              </View>
-              <Text style={styles.action}>Choose</Text>
-            </Pressable>
-          );
-        })}
+        {grows
+          .filter((grow) => rowId(grow))
+          .map((grow) => {
+            const id = String(grow.id || grow._id || grow.growId || "");
+            const name = String(grow.name || grow.title || grow.strain || "Grow");
+            return (
+              <Pressable
+                key={id}
+                accessibilityRole="link"
+                accessibilityLabel={`Import history into ${name}`}
+                style={styles.growCard}
+                onPress={() =>
+                  router.push({
+                    pathname: "/home/facility/tools/history-import" as any,
+                    params: { growId: id, growName: name }
+                  })
+                }
+              >
+                <View>
+                  <Text style={styles.growName}>{name}</Text>
+                  <Text style={styles.meta}>
+                    {grow.roomName || grow.stage || grow.status || "Facility grow"}
+                  </Text>
+                </View>
+                <Text style={styles.action}>Choose</Text>
+              </Pressable>
+            );
+          })}
       </ScrollView>
     </ScreenBoundary>
   );
@@ -152,6 +196,16 @@ export function createFacilityHistoryImportStyles(palette: ThemePalette) {
     container: { backgroundColor: palette.page, gap: 12, padding: 16, paddingBottom: 32 },
     copy: { color: palette.textMuted, lineHeight: 21 },
     error: { color: palette.danger, fontWeight: "700" },
+    errorCard: { alignItems: "flex-start", gap: 8 },
+    loading: { alignItems: "center", gap: 8, paddingVertical: 12 },
+    retryAction: {
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 9
+    },
+    retryActionText: { color: palette.danger, fontWeight: "900" },
     readOnlyCard: {
       backgroundColor: palette.card,
       borderColor: palette.border,
