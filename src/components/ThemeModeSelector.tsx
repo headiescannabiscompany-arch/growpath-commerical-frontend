@@ -29,6 +29,7 @@ const OPTIONS: Array<{
 
 export default function ThemeModeSelector() {
   const [locationStatus, setLocationStatus] = useState("");
+  const [locationPending, setLocationPending] = useState(false);
   const {
     mode,
     resolvedMode,
@@ -41,7 +42,9 @@ export default function ThemeModeSelector() {
   } = useAppTheme();
 
   const handleUseLocation = async () => {
-    setLocationStatus("Requesting your location…");
+    if (locationPending) return;
+    setLocationPending(true);
+    setLocationStatus("Requesting your location...");
     try {
       await enableLocationAuto();
       setLocationStatus("Location saved. Auto now follows sunrise and sunset.");
@@ -51,12 +54,20 @@ export default function ThemeModeSelector() {
           ? error.message
           : "Location access failed. Use device theme instead."
       );
+    } finally {
+      setLocationPending(false);
     }
   };
 
   const handleUseDeviceTheme = async () => {
-    await disableLocationAuto();
-    setLocationStatus("Auto now follows device appearance.");
+    if (locationPending) return;
+    setLocationPending(true);
+    try {
+      await disableLocationAuto();
+      setLocationStatus("Auto now follows device appearance.");
+    } finally {
+      setLocationPending(false);
+    }
   };
 
   return (
@@ -80,14 +91,19 @@ export default function ThemeModeSelector() {
         blue clickable links.
       </Text>
 
-      <View style={styles.segmentRow}>
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel="Appearance mode"
+        style={styles.segmentRow}
+      >
         {OPTIONS.map((option) => {
           const selected = mode === option.key;
           return (
             <Pressable
               key={option.key}
-              accessibilityRole="button"
+              accessibilityRole="radio"
               accessibilityLabel={`Set appearance to ${option.label}`}
+              accessibilityState={{ checked: selected }}
               onPress={() => setThemeMode(option.key)}
               style={({ pressed }) => [
                 styles.segment,
@@ -147,6 +163,8 @@ export default function ThemeModeSelector() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Use my location for auto theme"
+              accessibilityState={{ disabled: locationPending }}
+              disabled={locationPending}
               onPress={() => void handleUseLocation()}
               style={({ pressed }) => [
                 styles.actionButton,
@@ -164,6 +182,8 @@ export default function ThemeModeSelector() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Use device appearance for auto theme"
+              accessibilityState={{ disabled: locationPending }}
+              disabled={locationPending}
               onPress={() => void handleUseDeviceTheme()}
               style={({ pressed }) => [
                 styles.actionButton,
@@ -180,14 +200,20 @@ export default function ThemeModeSelector() {
             </Pressable>
           </View>
           {locationStatus ? (
-            <Text style={[styles.autoMeta, { color: palette.textSoft }]}>
+            <Text
+              accessibilityLiveRegion="polite"
+              style={[styles.autoMeta, { color: palette.textSoft }]}
+            >
               {locationStatus}
             </Text>
           ) : null}
         </View>
       ) : null}
 
-      <Text style={[styles.footer, { color: palette.textMuted }]}>
+      <Text
+        accessibilityLiveRegion="polite"
+        style={[styles.footer, { color: palette.textMuted }]}
+      >
         Current: {mode.toUpperCase()} / Resolved: {resolvedMode.toUpperCase()}
       </Text>
     </View>
