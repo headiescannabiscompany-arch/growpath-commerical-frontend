@@ -1,5 +1,12 @@
 import React from "react";
-import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+  within
+} from "@testing-library/react-native";
 
 import AiScreen, {
   assistantQuickQuestions,
@@ -212,6 +219,75 @@ describe("personal AI screen", () => {
     expect(
       screen.getByText(/Partial context: logs unavailable\. AI can still use/)
     ).toBeTruthy();
+  });
+
+  it("exposes workspace, grow context, quick-question, and send state", async () => {
+    let finishAssistant: ((value: any) => void) | undefined;
+    mockAskPersonalAssistant.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishAssistant = resolve;
+        })
+    );
+    const screen = render(<AiScreen />);
+
+    await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
+
+    expect(screen.getByLabelText("Open Single user AI").props).toMatchObject({
+      accessibilityRole: "link",
+      accessibilityState: { selected: true }
+    });
+    expect(screen.getByLabelText("Open Commercial AI").props).toMatchObject({
+      accessibilityRole: "link",
+      accessibilityState: { selected: false }
+    });
+    expect(screen.getByLabelText("AI grow context").props.accessibilityRole).toBe(
+      "radiogroup"
+    );
+    expect(screen.getByLabelText("Select AI grow Flower Room").props).toMatchObject({
+      accessibilityRole: "radio",
+      accessibilityState: { checked: true }
+    });
+
+    expect(screen.getByLabelText("Send").props.accessibilityState).toEqual({
+      disabled: true,
+      busy: false
+    });
+    const quickQuestion = screen.getAllByLabelText(/^Use quick question:/)[0];
+    expect(quickQuestion.props.accessibilityState).toEqual({ disabled: false });
+
+    fireEvent.changeText(screen.getByPlaceholderText("Type here..."), "Review my grow");
+    expect(screen.getByLabelText("Send").props.accessibilityState).toEqual({
+      disabled: false,
+      busy: false
+    });
+    fireEvent.press(screen.getByLabelText("Send"));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Send").props.accessibilityState).toEqual({
+        disabled: true,
+        busy: true
+      })
+    );
+    expect(
+      screen.getAllByLabelText(/^Use quick question:/)[0].props.accessibilityState
+    ).toEqual({ disabled: true });
+
+    await act(async () =>
+      finishAssistant?.({
+        success: true,
+        reply: "Review complete.",
+        actions: [],
+        referencedData: [],
+        proposedWrites: []
+      })
+    );
+    await waitFor(() => expect(screen.getByText("Review complete.")).toBeTruthy());
+    expect(
+      screen
+        .UNSAFE_getAllByProps({ accessibilityLiveRegion: "polite" })
+        .some((region) => Boolean(within(region).queryByText("Review complete.")))
+    ).toBe(true);
   });
 
   it("sends the saved evidence id instead of the temporary picker id", async () => {

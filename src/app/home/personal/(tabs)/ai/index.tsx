@@ -1097,8 +1097,9 @@ export default function AiScreen({
             ].map((item) => (
               <Pressable
                 key={item.label}
-                accessibilityRole="button"
+                accessibilityRole="link"
                 accessibilityLabel={`Open ${item.label} AI`}
+                accessibilityState={{ selected: item.active }}
                 onPress={() => router.push(item.href as any)}
                 style={[styles.workspaceChip, item.active && styles.workspaceChipOn]}
               >
@@ -1204,15 +1205,20 @@ export default function AiScreen({
               </>
             )}
             {facilityPreset?.key !== "compliance" && context.grows.length ? (
-              <View style={styles.growPicker}>
+              <View
+                accessibilityRole="radiogroup"
+                accessibilityLabel="AI grow context"
+                style={styles.growPicker}
+              >
                 {context.grows.map((grow) => {
                   const id = String(grow.id || grow._id || "");
                   const active = id === selectedGrowId;
                   return (
                     <Pressable
                       key={id || grow.name}
-                      accessibilityRole="button"
+                      accessibilityRole="radio"
                       accessibilityLabel={`Select AI grow ${grow.name || id}`}
+                      accessibilityState={{ checked: active }}
                       onPress={() => setSelectedGrowId(id)}
                       style={[styles.growChip, active && styles.growChipOn]}
                     >
@@ -1281,12 +1287,20 @@ export default function AiScreen({
           </View>
         ) : null}
         {messages.map((m, idx) => (
-          <View key={idx} style={styles.msg}>
+          <View
+            key={idx}
+            accessibilityLiveRegion={m.role === "assistant" ? "polite" : undefined}
+            style={styles.msg}
+          >
             <Text style={styles.msgRole}>{m.role.toUpperCase()}</Text>
             <Text style={styles.msgText}>{m.text}</Text>
           </View>
         ))}
-        {providerLabel ? <Text style={styles.hint}>{providerLabel}</Text> : null}
+        {providerLabel ? (
+          <Text accessibilityLiveRegion="polite" style={styles.hint}>
+            {providerLabel}
+          </Text>
+        ) : null}
         {sopRecommendations.length ? (
           <View style={styles.sopCard}>
             <Text style={[styles.contextText, styles.contextTitle]}>
@@ -1353,7 +1367,7 @@ export default function AiScreen({
             {actions.map((action) => (
               <Pressable
                 key={`${action.label}-${action.href}`}
-                accessibilityRole="button"
+                accessibilityRole="link"
                 accessibilityLabel={action.label}
                 onPress={() => router.push(action.href as any)}
                 style={styles.actionButton}
@@ -1399,7 +1413,11 @@ export default function AiScreen({
             ))}
           </View>
         ) : null}
-        {writeFeedback ? <Text style={styles.hint}>{writeFeedback}</Text> : null}
+        {writeFeedback ? (
+          <Text accessibilityLiveRegion="polite" style={styles.hint}>
+            {writeFeedback}
+          </Text>
+        ) : null}
 
         <PersonalFeedPlacement placement="bottom" routeKey="personal_ai" longContent />
       </ScrollView>
@@ -1449,6 +1467,7 @@ export default function AiScreen({
                 key={question}
                 accessibilityRole="button"
                 accessibilityLabel={`Use quick question: ${question}`}
+                accessibilityState={{ disabled: sending }}
                 disabled={sending}
                 onPress={() => setDraft(question)}
                 style={styles.quickQuestion}
@@ -1481,6 +1500,7 @@ export default function AiScreen({
           onPress={send}
           accessibilityRole="button"
           accessibilityLabel="Send"
+          accessibilityState={{ disabled: !canSend, busy: sending }}
         >
           <Text style={styles.sendText}>{sending ? "Thinking..." : "Send"}</Text>
         </Pressable>
