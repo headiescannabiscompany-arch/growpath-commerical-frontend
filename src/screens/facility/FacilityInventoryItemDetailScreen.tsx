@@ -269,15 +269,19 @@ export default function InventoryItemDetailScreen() {
         ) : null}
 
         {loading ? (
-          <View style={styles.loading}>
-            <ActivityIndicator color={palette.accent} />
+          <View accessibilityLiveRegion="polite" style={styles.loading}>
+            <ActivityIndicator
+              accessibilityRole="progressbar"
+              accessibilityLabel="Loading facility inventory item"
+              color={palette.accent}
+            />
             <Text style={styles.muted}>Loading item...</Text>
           </View>
         ) : null}
 
         {!loading && !item ? (
           <View style={styles.notFoundCard}>
-            <Text accessibilityRole="header" style={styles.h1}>
+            <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
               Inventory item not found
             </Text>
             <Text style={styles.muted}>
@@ -289,7 +293,7 @@ export default function InventoryItemDetailScreen() {
 
         {item ? (
           <>
-            <Text accessibilityRole="header" style={styles.h1}>
+            <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
               {item.name || "Inventory Item"}
             </Text>
 
@@ -312,7 +316,7 @@ export default function InventoryItemDetailScreen() {
             </View>
 
             <View style={styles.card}>
-              <Text accessibilityRole="header" style={styles.cardTitle}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
                 Item details
               </Text>
               <Text style={styles.muted}>
@@ -354,6 +358,9 @@ export default function InventoryItemDetailScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Save inventory details"
+                accessibilityState={{
+                  disabled: savingDetails || !canWriteInventory
+                }}
                 onPress={saveDetails}
                 disabled={savingDetails || !canWriteInventory}
                 style={({ pressed }) => [
@@ -369,7 +376,7 @@ export default function InventoryItemDetailScreen() {
             </View>
 
             <View style={styles.card}>
-              <Text accessibilityRole="header" style={styles.cardTitle}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
                 Adjust quantity
               </Text>
               <Text style={styles.muted}>
@@ -405,6 +412,7 @@ export default function InventoryItemDetailScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Save inventory adjustment"
+                accessibilityState={{ disabled: saving || !canWriteInventory }}
                 onPress={adjust}
                 disabled={saving || !canWriteInventory}
                 style={({ pressed }) => [
@@ -420,7 +428,7 @@ export default function InventoryItemDetailScreen() {
             </View>
 
             <View style={styles.card}>
-              <Text accessibilityRole="header" style={styles.cardTitle}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
                 Record information
               </Text>
               <View style={styles.recordList}>
@@ -445,7 +453,9 @@ export default function InventoryItemDetailScreen() {
 
             {canWriteInventory ? (
               <View style={[styles.card, styles.dangerCard]}>
-                <Text style={styles.cardTitle}>Remove inventory item</Text>
+                <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                  Remove inventory item
+                </Text>
                 <Text style={styles.muted}>
                   Use this only for a duplicate, test, or mistakenly created item.
                   Quantity changes belong in Adjust quantity above.
@@ -453,6 +463,7 @@ export default function InventoryItemDetailScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Remove inventory item"
+                  accessibilityState={{ disabled: deleting }}
                   onPress={confirmRemoveItem}
                   disabled={deleting}
                   style={({ pressed }) => [

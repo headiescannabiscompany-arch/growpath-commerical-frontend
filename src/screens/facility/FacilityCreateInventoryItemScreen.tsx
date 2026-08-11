@@ -184,6 +184,7 @@ export default function FacilityCreateInventoryItemScreen() {
           disabled={!canSave}
           accessibilityRole="button"
           accessibilityLabel="Create inventory item"
+          accessibilityState={{ disabled: !canSave }}
           style={[
             styles.button,
             { backgroundColor: palette.accent },

@@ -59,6 +59,10 @@ describe("FacilityInventoryTab", () => {
 
     const screen = render(<FacilityInventoryTab />);
 
+    expect(
+      screen.getByLabelText("Loading facility inventory").props.accessibilityRole
+    ).toBe("progressbar");
+
     await waitFor(() => {
       expect(
         screen.getByRole("header", { name: "Facility Inventory" }).props["aria-level"]
@@ -79,6 +83,7 @@ describe("FacilityInventoryTab", () => {
     expect(screen.queryByText("out of stock")).toBeNull();
     expect(screen.queryByText("low stock")).toBeNull();
     expect(screen.queryByText("missing SKU")).toBeNull();
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
   });
 
   it("uses canonical facility inventory routes for create and detail", async () => {
@@ -108,9 +113,13 @@ describe("FacilityInventoryTab", () => {
     expect(mockPush).toHaveBeenCalledWith("/home/facility/inventory/new");
 
     fireEvent.press(screen.getByLabelText("Open inventory item Kelp Meal"));
+    expect(
+      screen.getByLabelText("Open inventory item Kelp Meal").props.accessibilityRole
+    ).toBe("link");
     expect(mockPush).toHaveBeenCalledWith({
       pathname: "/home/facility/inventory/[id]",
       params: { id: "item-1" }
     });
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
   });
 });

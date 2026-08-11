@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { fireEvent, render } from "@testing-library/react-native";
 
 import FacilityCreateInventoryItemRoute from "@/app/home/facility/inventory/new";
 
@@ -55,6 +55,13 @@ describe("FacilityCreateInventoryItemRoute", () => {
     ).toBe(1);
     expect(screen.getByText("Shared Back /home/facility/inventory")).toBeTruthy();
     expect(screen.getByLabelText("Inventory item name")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Create inventory item").props.accessibilityState
+    ).toEqual({ disabled: true });
+    fireEvent.changeText(screen.getByLabelText("Inventory item name"), "Kelp meal");
+    expect(
+      screen.getByLabelText("Create inventory item").props.accessibilityState
+    ).toEqual({ disabled: false });
   });
 
   it("renders a true read-only handoff without form fields for viewers", () => {
