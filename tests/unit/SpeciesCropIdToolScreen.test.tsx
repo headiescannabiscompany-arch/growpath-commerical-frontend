@@ -4010,6 +4010,70 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(await screen.findByText(/Neighborhood plants/)).toBeTruthy();
   });
 
+  it("publishes one Plant ID to Nature without requiring Field Study setup", async () => {
+    mockSearchParams = {};
+    mockCreateFieldStudy.mockResolvedValueOnce({
+      id: "nature-collection-1",
+      _id: "nature-collection-1",
+      title: "My Nature Finds",
+      description:
+        "Plant IDs deliberately shared from the direct Discovery Nature workflow.",
+      purpose: "biodiversity_survey",
+      slug: "my-nature-finds",
+      visibility: "public",
+      defaultLocationPrivacy: "public_approximate",
+      obscureSensitiveSpecies: true,
+      accessRole: "owner"
+    });
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    openLocationAndSharing(screen);
+    await screen.findByText(/You do not have an editable Field Study yet/);
+    fireEvent.press(
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
+    );
+    await screen.findByText(/Exact location is ready to save privately/);
+    fireEvent.press(screen.getByText(/Nature map.*approximate pin/));
+    fireEvent.press(
+      screen.getByText(/This is Cannabis\/hemp.*review public-context sharing/)
+    );
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    fireEvent.press(await screen.findByText("Publish Approximate Pin to Nature"));
+
+    await waitFor(() =>
+      expect(mockCreateFieldStudy).toHaveBeenCalledWith({
+        title: "My Nature Finds",
+        description:
+          "Plant IDs deliberately shared from the direct Discovery Nature workflow.",
+        purpose: "biodiversity_survey",
+        visibility: "public",
+        defaultLocationPrivacy: "public_approximate",
+        obscureSensitiveSpecies: true
+      })
+    );
+    expect(mockCreateFieldObservation).toHaveBeenCalledWith(
+      "nature-collection-1",
+      expect.objectContaining({
+        evidenceAssets: expect.arrayContaining([
+          expect.objectContaining({ assetId: "evidence-1", kind: "photo" })
+        ]),
+        location: expect.objectContaining({
+          latitude: 39.301234,
+          longitude: -76.721234,
+          privacy: "public_approximate",
+          exactLocationPublicConfirmed: false
+        }),
+        publication: expect.objectContaining({
+          status: "published",
+          cannabisContextConfirmed: true
+        })
+      })
+    );
+    expect(screen.getByText(/No Field Study setup is required/)).toBeTruthy();
+  });
+
   it("requires study-wide confirmation before making a Field Study public", async () => {
     mockSearchParams = { fieldStudyId: "study-1" };
     mockListFieldStudies.mockResolvedValueOnce([
