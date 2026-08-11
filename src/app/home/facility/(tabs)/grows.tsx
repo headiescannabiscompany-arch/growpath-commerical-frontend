@@ -7,7 +7,7 @@ import { useFacility } from "@/state/useFacility";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -79,10 +79,12 @@ export default function FacilityGrowsTab() {
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const loadInFlightRef = useRef(false);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
+      if (!facilityId || loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -103,6 +105,7 @@ export default function FacilityGrowsTab() {
       } catch (e) {
         handleApiError(e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -153,13 +156,19 @@ export default function FacilityGrowsTab() {
         </View>
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility grows"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading grows...</Text>
           </View>
         ) : null}
 
         <FlatList
+          accessibilityLabel="Facility grows"
           data={items}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
           refreshControl={
@@ -213,7 +222,7 @@ export default function FacilityGrowsTab() {
 
             return (
               <Pressable
-                accessibilityRole="button"
+                accessibilityRole="link"
                 accessibilityLabel={`Open facility grow ${title}`}
                 accessibilityState={{ disabled: !id }}
                 disabled={!id}
