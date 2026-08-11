@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -47,6 +47,7 @@ export default function FacilitySopRunsStartRoute() {
   const [oneOffSteps, setOneOffSteps] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const submitInFlight = useRef(false);
 
   const selectedTemplate = templates.find(
     (template, idx) => pickTemplateId(template, idx) === templateId
@@ -73,6 +74,7 @@ export default function FacilitySopRunsStartRoute() {
   );
 
   const submit = async () => {
+    if (submitInFlight.current) return;
     if (!canWriteSopRuns) return;
     if (!facilityId) {
       setMsg("Select a facility first.");
@@ -86,9 +88,9 @@ export default function FacilitySopRunsStartRoute() {
       setMsg("Choose an SOP template or add at least one one-off checklist step.");
       return;
     }
-    if (saving) return;
+    submitInFlight.current = true;
     setSaving(true);
-    setMsg(null);
+    setMsg("Starting this SOP run...");
     try {
       const body = {
         title: title.trim(),
@@ -109,6 +111,7 @@ export default function FacilitySopRunsStartRoute() {
     } catch (e: unknown) {
       setMsg(getErrorMessage(e, "Failed to start run"));
     } finally {
+      submitInFlight.current = false;
       setSaving(false);
     }
   };
@@ -160,6 +163,7 @@ export default function FacilitySopRunsStartRoute() {
           placeholder="Run title"
           value={title}
           onChangeText={setTitle}
+          editable={!saving}
         />
         <View style={styles.templatePanel}>
           <View style={styles.panelHeader}>
@@ -230,6 +234,7 @@ export default function FacilitySopRunsStartRoute() {
             placeholder={"One step per line\nInspect room\nRecord measurements"}
             value={oneOffSteps}
             onChangeText={setOneOffSteps}
+            editable={!saving}
             multiline
           />
         ) : null}
@@ -239,6 +244,7 @@ export default function FacilitySopRunsStartRoute() {
           placeholder="Notes"
           value={notes}
           onChangeText={setNotes}
+          editable={!saving}
           multiline
         />
         <Pressable
@@ -251,7 +257,11 @@ export default function FacilitySopRunsStartRoute() {
         >
           <Text style={styles.btnText}>{saving ? "Starting..." : "Start Run"}</Text>
         </Pressable>
-        {msg ? <Text style={styles.msg}>{msg}</Text> : null}
+        {msg ? (
+          <Text accessibilityRole="alert" style={styles.msg}>
+            {msg}
+          </Text>
+        ) : null}
       </ScrollView>
     </ScreenBoundary>
   );

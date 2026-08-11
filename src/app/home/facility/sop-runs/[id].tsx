@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -84,6 +84,7 @@ export default function FacilitySopRunDetailRoute() {
   const [stepTitle, setStepTitle] = useState("");
   const [stepNote, setStepNote] = useState("");
   const [savingStep, setSavingStep] = useState<string | null>(null);
+  const mutationInFlight = useRef(false);
 
   const steps = Array.isArray(run?.steps) ? run.steps : [];
   const completedSteps = steps.filter((step) => stepStatus(step) === "done").length;
@@ -138,16 +139,28 @@ export default function FacilitySopRunDetailRoute() {
   }, [load]);
 
   const completeRun = async () => {
-    if (!canWriteSopRuns || !facilityId || !id || !canComplete) return;
-    setMessage(null);
+    if (
+      mutationInFlight.current ||
+      !canWriteSopRuns ||
+      !facilityId ||
+      !id ||
+      !canComplete
+    )
+      return;
+    mutationInFlight.current = true;
+    setSavingStep("__complete__");
+    setMessage("Completing this SOP run...");
     try {
       await apiRequest(endpoints.sopRunComplete(facilityId, String(id)), {
         method: "POST"
       });
-      setMessage("Run marked complete.");
       await load();
+      setMessage("Run marked complete.");
     } catch (e: unknown) {
       setMessage(getErrorMessage(e, "Failed to complete run"));
+    } finally {
+      mutationInFlight.current = false;
+      setSavingStep(null);
     }
   };
 
@@ -155,10 +168,19 @@ export default function FacilitySopRunDetailRoute() {
     stepId: string,
     status: "pending" | "done" | "skipped",
     opts?: { title?: string; note?: string }
-  ) => {
-    if (!canWriteSopRuns || !facilityId || !id || !stepId || runComplete) return;
+  ): Promise<boolean> => {
+    if (
+      mutationInFlight.current ||
+      !canWriteSopRuns ||
+      !facilityId ||
+      !id ||
+      !stepId ||
+      runComplete
+    )
+      return false;
+    mutationInFlight.current = true;
     setSavingStep(stepId);
-    setMessage(null);
+    setMessage("Saving checklist evidence...");
     try {
       const res = await apiRequest<SopRunDetailResponse>(
         endpoints.sopRunStep(facilityId, String(id), stepId),
@@ -173,9 +195,12 @@ export default function FacilitySopRunDetailRoute() {
       );
       setRun(res?.run ?? res?.data ?? res);
       setMessage("Step evidence updated.");
+      return true;
     } catch (e: unknown) {
       setMessage(getErrorMessage(e, "Failed to update SOP step"));
+      return false;
     } finally {
+      mutationInFlight.current = false;
       setSavingStep(null);
     }
   };
@@ -199,12 +224,14 @@ export default function FacilitySopRunDetailRoute() {
       return;
     }
     const stepId = stepIdFromTitle(title);
-    await updateStep(stepId, "pending", {
+    const saved = await updateStep(stepId, "pending", {
       title,
       note: stepNote.trim() || undefined
     });
-    setStepTitle("");
-    setStepNote("");
+    if (saved) {
+      setStepTitle("");
+      setStepNote("");
+    }
   };
 
   if (!id)
@@ -216,7 +243,9 @@ export default function FacilitySopRunDetailRoute() {
   if (loading)
     return renderBoundary(
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.sub}>Loading...</Text>
+        <Text accessibilityRole="progressbar" style={styles.sub}>
+          Loading SOP run evidence...
+        </Text>
       </ScrollView>
     );
 
@@ -342,6 +371,7 @@ export default function FacilitySopRunDetailRoute() {
             placeholderTextColor={palette.textMuted}
             value={stepTitle}
             onChangeText={setStepTitle}
+            editable={!savingStep}
             style={styles.input}
           />
           <TextInput
@@ -350,6 +380,7 @@ export default function FacilitySopRunDetailRoute() {
             placeholderTextColor={palette.textMuted}
             value={stepNote}
             onChangeText={setStepNote}
+            editable={!savingStep}
             style={[styles.input, styles.noteInput]}
             multiline
           />
@@ -395,7 +426,11 @@ export default function FacilitySopRunDetailRoute() {
           Review every checklist step as Done or Skipped before completing this run.
         </Text>
       ) : null}
-      {message ? <Text style={styles.msg}>{message}</Text> : null}
+      {message ? (
+        <Text accessibilityRole="alert" style={styles.msg}>
+          {message}
+        </Text>
+      ) : null}
     </ScrollView>
   );
 }

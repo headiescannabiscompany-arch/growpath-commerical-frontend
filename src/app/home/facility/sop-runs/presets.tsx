@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import * as DocumentPicker from "expo-document-picker";
 import { Link } from "expo-router";
 import {
@@ -112,6 +112,7 @@ export default function FacilitySopRunsPresetsRoute() {
     title: string;
   } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const operationInFlight = useRef(false);
 
   const saving = creating || updating || uploading;
   const parsedSteps = useMemo(
@@ -224,6 +225,7 @@ export default function FacilitySopRunsPresetsRoute() {
   }
 
   async function save() {
+    if (operationInFlight.current) return;
     if (!facilityId) {
       setMessage("Select a facility first.");
       return;
@@ -232,7 +234,8 @@ export default function FacilitySopRunsPresetsRoute() {
       setMessage("Add a title and checklist, then confirm your facility review.");
       return;
     }
-    setMessage(null);
+    operationInFlight.current = true;
+    setMessage("Saving this reviewed SOP...");
     setUploading(true);
     try {
       const uploaded: SOPAttachment[] = [];
@@ -270,13 +273,15 @@ export default function FacilitySopRunsPresetsRoute() {
     } catch (error: unknown) {
       setMessage(getErrorMessage(error, "Failed to save SOP"));
     } finally {
+      operationInFlight.current = false;
       setUploading(false);
     }
   }
 
   async function retireTemplate() {
-    if (!facilityId || !retireTarget || deleting) return;
-    setMessage(null);
+    if (operationInFlight.current || !facilityId || !retireTarget || deleting) return;
+    operationInFlight.current = true;
+    setMessage(`Retiring "${retireTarget.title}"...`);
     try {
       await deleteTemplate(retireTarget.id);
       await refetch();
@@ -287,6 +292,8 @@ export default function FacilitySopRunsPresetsRoute() {
       setRetireTarget(null);
     } catch (error: unknown) {
       setMessage(getErrorMessage(error, "Failed to retire SOP"));
+    } finally {
+      operationInFlight.current = false;
     }
   }
 
@@ -362,8 +369,10 @@ export default function FacilitySopRunsPresetsRoute() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel="Clear SOP editor"
+                      accessibilityState={{ disabled: saving }}
+                      disabled={saving}
                       onPress={resetForm}
-                      style={styles.textButton}
+                      style={[styles.textButton, saving && styles.disabled]}
                     >
                       <Text style={styles.textButtonText}>Clear</Text>
                     </Pressable>
@@ -377,6 +386,7 @@ export default function FacilitySopRunsPresetsRoute() {
                   placeholder="Room opening, sanitation, scouting..."
                   value={title}
                   onChangeText={setTitle}
+                  editable={!saving}
                 />
 
                 <Text style={styles.label}>Category</Text>
@@ -392,7 +402,8 @@ export default function FacilitySopRunsPresetsRoute() {
                         key={option.value}
                         accessibilityRole="radio"
                         accessibilityLabel={`SOP category ${option.label}`}
-                        accessibilityState={{ checked: selected }}
+                        accessibilityState={{ checked: selected, disabled: saving }}
+                        disabled={saving}
                         onPress={() => setCategory(option.value)}
                         style={[styles.choice, selected && styles.choiceSelected]}
                       >
@@ -419,6 +430,7 @@ export default function FacilitySopRunsPresetsRoute() {
                   }
                   value={content}
                   onChangeText={setContent}
+                  editable={!saving}
                   multiline
                 />
                 <Text style={styles.count}>{parsedSteps.length} checklist steps</Text>
@@ -430,6 +442,7 @@ export default function FacilitySopRunsPresetsRoute() {
                   placeholder="Stop conditions, required approvals, label or PPE reminders..."
                   value={safetyNotes}
                   onChangeText={setSafetyNotes}
+                  editable={!saving}
                   multiline
                 />
 
@@ -440,6 +453,7 @@ export default function FacilitySopRunsPresetsRoute() {
                   placeholder="Optional"
                   value={duration}
                   onChangeText={setDuration}
+                  editable={!saving}
                   keyboardType="number-pad"
                 />
 
@@ -498,8 +512,10 @@ export default function FacilitySopRunsPresetsRoute() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Choose SOP document"
+                  accessibilityState={{ disabled: saving }}
+                  disabled={saving}
                   onPress={chooseDocument}
-                  style={styles.secondaryButton}
+                  style={[styles.secondaryButton, saving && styles.disabled]}
                 >
                   <Text style={styles.secondaryButtonText}>Choose document</Text>
                 </Pressable>
@@ -507,9 +523,10 @@ export default function FacilitySopRunsPresetsRoute() {
                 <Pressable
                   accessibilityRole="checkbox"
                   accessibilityLabel="Confirm SOP facility review"
-                  accessibilityState={{ checked: reviewConfirmed }}
+                  accessibilityState={{ checked: reviewConfirmed, disabled: saving }}
+                  disabled={saving}
                   onPress={() => setReviewConfirmed((current) => !current)}
-                  style={styles.reviewRow}
+                  style={[styles.reviewRow, saving && styles.disabled]}
                 >
                   <View
                     style={[styles.checkbox, reviewConfirmed && styles.checkboxSelected]}
@@ -553,7 +570,11 @@ export default function FacilitySopRunsPresetsRoute() {
               </View>
             )}
 
-            {message ? <Text style={styles.message}>{message}</Text> : null}
+            {message ? (
+              <Text accessibilityRole="alert" style={styles.message}>
+                {message}
+              </Text>
+            ) : null}
             <Text accessibilityRole="header" aria-level={2} style={styles.h2}>
               Active facility SOPs
             </Text>

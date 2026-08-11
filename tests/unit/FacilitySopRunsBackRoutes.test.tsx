@@ -488,7 +488,7 @@ describe("facility SOP run nested back behavior", () => {
     );
     expect(
       screen.getByLabelText("Confirm SOP facility review").props.accessibilityState
-    ).toEqual({ checked: false });
+    ).toMatchObject({ checked: false, disabled: false });
     expect(
       screen.getByText(/Starter loaded. Review every step, adjust it for this facility/i)
     ).toBeTruthy();
@@ -594,5 +594,83 @@ describe("facility SOP run nested back behavior", () => {
         })
       )
     );
+  });
+
+  it("starts a one-off SOP run only once when the action is pressed twice", async () => {
+    let resolveCreate: ((value: unknown) => void) | undefined;
+    mockApiRequest.mockImplementation(
+      () => new Promise((resolve) => (resolveCreate = resolve))
+    );
+    const screen = render(<FacilitySopRunsStartRoute />);
+
+    fireEvent.changeText(screen.getByLabelText("SOP run title"), "Opening check");
+    fireEvent.changeText(
+      screen.getByLabelText("One-off SOP checklist steps"),
+      "Inspect room"
+    );
+    const start = screen.getByLabelText("Start SOP run");
+    fireEvent.press(start);
+    fireEvent.press(start);
+
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Starting this SOP run...")).toBeTruthy();
+    resolveCreate?.({ created: { id: "run-created" } });
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: "/home/facility/sop-runs/[id]",
+        params: { id: "run-created" }
+      })
+    );
+  });
+
+  it("saves one reviewed SOP version when the action is pressed twice", async () => {
+    let resolveCreate: ((value: unknown) => void) | undefined;
+    mockCreateTemplate.mockImplementation(
+      () => new Promise((resolve) => (resolveCreate = resolve))
+    );
+    const screen = render(<FacilitySopRunsPresetsRoute />);
+
+    fireEvent.changeText(screen.getByLabelText("SOP title"), "Room opening");
+    fireEvent.changeText(screen.getByLabelText("SOP checklist steps"), "Inspect room");
+    fireEvent.press(screen.getByLabelText("Confirm SOP facility review"));
+    const save = screen.getByLabelText("Save facility SOP");
+    fireEvent.press(save);
+    fireEvent.press(save);
+
+    expect(mockCreateTemplate).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Saving this reviewed SOP...")).toBeTruthy();
+    resolveCreate?.({ id: "template-created" });
+    await waitFor(() => expect(mockRefetchTemplates).toHaveBeenCalledTimes(1));
+  });
+
+  it("keeps a new checklist step available for correction when saving fails", async () => {
+    mockParams = { id: "run-1" };
+    mockApiRequest.mockImplementation((path: string, options?: { method?: string }) => {
+      if (options?.method === "PATCH") {
+        return Promise.reject(new Error("Step evidence could not be saved."));
+      }
+      if (path.endsWith("/sop-runs/run-1")) {
+        return Promise.resolve({
+          run: {
+            title: "Daily room check",
+            status: "active",
+            steps: [{ stepId: "step-1", title: "Inspect room", status: "done" }]
+          }
+        });
+      }
+      return Promise.resolve({ runs: [] });
+    });
+    const screen = render(<FacilitySopRunDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Daily room check")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("SOP step title"), "Record humidity");
+    fireEvent.changeText(screen.getByLabelText("SOP step note"), "Meter unavailable");
+    fireEvent.press(screen.getByLabelText("Add SOP evidence step"));
+
+    await waitFor(() =>
+      expect(screen.getByText("Step evidence could not be saved.")).toBeTruthy()
+    );
+    expect(screen.getByLabelText("SOP step title").props.value).toBe("Record humidity");
+    expect(screen.getByLabelText("SOP step note").props.value).toBe("Meter unavailable");
   });
 });
