@@ -73,6 +73,8 @@
     "collect:plant-id-qa-candidates": "node scripts/collect-plant-id-qa-candidates.cjs",
     "collect:plant-id-qa-candidates:execute": "node scripts/collect-plant-id-qa-candidates.cjs --execute",
     "collect:plant-id-qa-candidates:resume": "node scripts/collect-plant-id-qa-candidates.cjs --execute --resume",
+    "prepare:plant-id-qa-review": "node scripts/prepare-plant-id-qa-review.cjs",
+    "prepare:plant-id-qa-review:execute": "node scripts/prepare-plant-id-qa-review.cjs --execute",
     "verify:diagnosis-ipm-qa-catalog": "node scripts/verify-diagnosis-ipm-qa-catalog.cjs",
     "verify:diagnosis-ipm-qa-catalog:planning": "node scripts/verify-diagnosis-ipm-qa-catalog.cjs --allow-planning",
     "evaluate:diagnosis-ipm": "node scripts/run-diagnosis-ipm-evaluation.cjs",

@@ -63,7 +63,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       stores no copied media, and leaves identity, stage, exact license version, and
       intended use unapproved. USDA ARS and Wikimedia Commons conditional source rules
       are documented. The 320 image-level reviews and catalog promotions remain;
-      candidate metadata is not counted as completion.
+      candidate metadata is not counted as completion. A dry-run-by-default review-queue
+      preparer now selects the governed per-case quotas, balances wild/cultivated
+      candidates where applicable, preserves the remaining owned failure-case blockers,
+      and refuses to treat an item as promotable without explicit morphology, identity,
+      stage, Tier A cross-check, exact-license, rights, expected-result, and intended-use
+      decisions.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
       Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
       extraction, prompt length, saved-run reload, and correction/confirmation flows.
