@@ -73,6 +73,10 @@ describe("GrowPath QA seed-system fixture", () => {
     );
 
     expect(pack.targetRecordCount).toEqual({ minimum: 300, maximum: 500 });
+    expect(pack).toMatchObject({
+      catalogFixture: "tests/fixtures/plant-identification-qa-catalog.json",
+      candidateCollector: "scripts/collect-plant-id-qa-candidates.cjs"
+    });
     expect(pack.caseGroups.cannabisHemp).toEqual(
       expect.arrayContaining([
         "seedling",

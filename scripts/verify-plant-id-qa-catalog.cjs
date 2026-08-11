@@ -79,6 +79,7 @@ function main() {
   requireCondition(
     allowedLicenses.has("CC0-1.0") &&
       allowedLicenses.has("CC-BY-4.0") &&
+      allowedLicenses.has("US-PUBLIC-DOMAIN") &&
       allowedLicenses.has("OWNER_PERMISSION") &&
       allowedLicenses.has("GROWPATH_OWNED"),
     "Allowed copied-media licenses are incomplete.",
@@ -176,10 +177,12 @@ function main() {
   const sourceIds = new Set(sourcePlan.map((source) => source.sourceId));
   requireCondition(
     sourceIds.has("inaturalist") &&
+      sourceIds.has("usda_ars_image_gallery") &&
+      sourceIds.has("wikimedia_commons") &&
       sourceIds.has("growpath_owner_media") &&
       sourceIds.has("commissioned_failure_cases") &&
       sourceIds.has("crime_pays_botany_youtube"),
-    "Source plan must retain iNaturalist, owner media, commissioned failure cases, and the governed Crime Pays educational lead.",
+    "Source plan must retain iNaturalist, USDA ARS, Wikimedia Commons, owner media, commissioned failure cases, and the governed Crime Pays educational lead.",
     errors
   );
   const crimePaysSource = sourcePlan.find(
@@ -187,6 +190,7 @@ function main() {
   );
   requireCondition(
     crimePaysSource?.status === "external_lead_only_pending_creator_permission" &&
+      crimePaysSource?.qaReferenceApproved === false &&
       crimePaysSource?.allowedLicenseFilter?.length === 1 &&
       crimePaysSource.allowedLicenseFilter[0] === "OWNER_PERMISSION" &&
       crimePaysSource?.runtimeSourceRegistryId === "crime-pays-but-botany-doesnt",
@@ -212,9 +216,11 @@ function main() {
       `Source ${source.sourceId || "<missing>"} needs requirements.`,
       errors
     );
-    if (source.status !== "approved") {
-      blockers.push(`Source ${source.sourceId} is not approved (${source.status}).`);
-    }
+    requireCondition(
+      typeof source.qaReferenceApproved === "boolean",
+      `Source ${source.sourceId || "<missing>"} needs qaReferenceApproved.`,
+      errors
+    );
   }
 
   const requiredFields = fixture.requiredMediaRecordFields || [];
@@ -249,6 +255,12 @@ function main() {
     requireCondition(
       sourceIds.has(record.sourceId),
       `Media record ${label} references unknown source ${record.sourceId}.`,
+      errors
+    );
+    const source = sourcePlan.find((candidate) => candidate.sourceId === record.sourceId);
+    requireCondition(
+      source?.qaReferenceApproved === true,
+      `Media record ${label} uses source ${record.sourceId} before that source is approved for QA references.`,
       errors
     );
     requireCondition(

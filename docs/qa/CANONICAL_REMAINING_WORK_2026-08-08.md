@@ -56,7 +56,14 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 - [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
       licenses, and exact follow-up-photo expectations. Never use the pack as training
-      data without a separately approved policy.
+      data without a separately approved policy. A governed iNaturalist candidate
+      collector now dry-runs by default, filters and rechecks individual photo-license
+      codes, separates research-wild candidates from cultivated/captive candidates for
+      crop, ornamental, cannabis/hemp, and lookalike coverage, excludes coordinates,
+      stores no copied media, and leaves identity, stage, exact license version, and
+      intended use unapproved. USDA ARS and Wikimedia Commons conditional source rules
+      are documented. The 320 image-level reviews and catalog promotions remain;
+      candidate metadata is not counted as completion.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
       Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
       extraction, prompt length, saved-run reload, and correction/confirmation flows.

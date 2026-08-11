@@ -43,6 +43,15 @@ describe("GrowPath knowledge registries", () => {
     expect(
       evaluateSourceForDecision("inaturalist-observations", "plant_identification")
     ).toBe("lead_only");
+    expect(
+      evaluateSourceForDecision("wikimedia-commons-licensed-plant-media", "qa_evaluation")
+    ).toBe("lead_only");
+    expect(
+      evaluateSourceForDecision(
+        "wikimedia-commons-licensed-plant-media",
+        "plant_identification"
+      )
+    ).toBe("reject");
     expect(evaluateSourceForDecision("seo-affiliate-blog", "soil_science")).toBe(
       "reject"
     );

@@ -9,6 +9,7 @@
     "allowedCopiedMediaLicenses": [
       "CC0-1.0",
       "CC-BY-4.0",
+      "US-PUBLIC-DOMAIN",
       "OWNER_PERMISSION",
       "GROWPATH_OWNED"
     ],
@@ -49,18 +50,52 @@
   "sourcePlan": [
     {
       "sourceId": "inaturalist",
-      "status": "candidate_metadata_only",
+      "sourceUrl": "https://www.inaturalist.org/pages/developers",
+      "status": "approved_conditional_candidate_source",
+      "qaReferenceApproved": true,
       "allowedLicenseFilter": ["CC0", "CC-BY"],
       "requirements": [
         "use the image license, not only the observation license",
         "retain observation and photo URLs plus creator attribution",
+        "collect research-grade wild observations separately from captive/cultivated casual observations so crop and ornamental coverage is representative",
+        "treat Research Grade, captive/cultivated status, casual status, and community agreement only as candidate metadata, never automatic GrowPath ground truth",
+        "independently review image identity, life stage, diagnostic characters, and exact license version before promotion",
         "do not use for model training",
         "do not copy CC-BY-NC or all-rights-reserved images"
       ]
     },
     {
+      "sourceId": "usda_ars_image_gallery",
+      "sourceUrl": "https://www.ars.usda.gov/oc/images/copyright/",
+      "status": "approved_conditional_candidate_source",
+      "qaReferenceApproved": true,
+      "allowedLicenseFilter": ["US-PUBLIC-DOMAIN"],
+      "requirements": [
+        "confirm the individual image is not marked as an exception to the ARS public-domain gallery policy",
+        "retain the individual asset page, image URL, photographer when present, ARS identifier, and requested ARS credit",
+        "independently review taxon, life stage, visible morphology, and intended QA use before promotion",
+        "do not imply USDA or ARS endorsement",
+        "do not use for model training"
+      ]
+    },
+    {
+      "sourceId": "wikimedia_commons",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia/en",
+      "status": "approved_conditional_candidate_source",
+      "qaReferenceApproved": true,
+      "allowedLicenseFilter": ["CC0-1.0", "CC-BY-4.0"],
+      "requirements": [
+        "verify the license and copyright status on every file description page",
+        "exclude share-alike, noncommercial, no-derivatives, all-rights-reserved, unclear, and incompatible files from this fixture",
+        "retain the file page, original media URL, creator, attribution, and license link",
+        "independently review taxon, life stage, diagnostic characters, and intended QA use before promotion",
+        "do not use for model training"
+      ]
+    },
+    {
       "sourceId": "growpath_owner_media",
       "status": "preferred_pending_assets",
+      "qaReferenceApproved": true,
       "allowedLicenseFilter": ["OWNER_PERMISSION", "GROWPATH_OWNED"],
       "requirements": [
         "record ownership or written permission",
@@ -71,6 +106,7 @@
     {
       "sourceId": "commissioned_failure_cases",
       "status": "preferred_pending_capture",
+      "qaReferenceApproved": true,
       "allowedLicenseFilter": ["GROWPATH_OWNED"],
       "requirements": [
         "capture blur, partial, mixed, artificial, dead-leaf, no-plant, low-light, direct-flash, glare, and mixed-color-light cases",
@@ -81,6 +117,7 @@
       "sourceId": "crime_pays_botany_youtube",
       "sourceUrl": "https://www.youtube.com/@CrimePaysButBotanyDoesnt",
       "status": "external_lead_only_pending_creator_permission",
+      "qaReferenceApproved": false,
       "allowedLicenseFilter": ["OWNER_PERMISSION"],
       "runtimeSourceRegistryId": "crime-pays-but-botany-doesnt",
       "requirements": [

@@ -2,7 +2,9 @@
 
 Date: 2026-07-20
 
-Status: Catalog and rights gate implemented. Media collection and review remain pending.
+Status: Catalog, rights gate, and candidate collector implemented. Image-level identity,
+life-stage, rights, and intended-use review remain pending; no candidate is automatically
+promoted into the 320-record evaluation catalog.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
@@ -22,7 +24,25 @@ The target intentionally fits inside the broader 300-500 range while reserving e
 
 ## Source decision
 
-iNaturalist is useful for taxon metadata leads, lookalikes, and candidate field observations because its API exposes observation and photo-license information. It is not a blanket permission source. The terms prohibit commercial AI training, photo rights vary independently from observation metadata, and noncommercial/all-rights-reserved media cannot be copied into this commercial-product QA fixture. GrowPathAI will use this pack only for inference QA, never training, and only after image-level license and intended-use review.
+iNaturalist is useful for taxon metadata leads, lookalikes, and candidate field observations because its API exposes observation and photo-license information. It is not a blanket permission source: iNaturalist does not own user media, photo rights vary independently from observation metadata, and noncommercial/all-rights-reserved media cannot be copied into this commercial-product QA fixture. GrowPathAI will use this pack only for inference QA, never training, and only after image-level license and intended-use review.
+
+The candidate collector is intentionally narrower than the final catalog. It requests a
+research-grade wild stream and, for cannabis/hemp, food crops, ornamentals, and
+lookalikes, a separate `captive=true` cultivated stream. Cultivated observations are
+normally casual rather than Research Grade, so the streams are labeled and balanced
+instead of allowing a research-only filter to silently replace crop and ornamental
+coverage with wild or escaped examples. Both streams filter source photo codes to `cc0`
+or `cc-by` and recheck the individual photo license. The collector stores external
+references and attribution, downloads no media, retains no coordinates, and leaves
+identity, life stage, exact license version, and intended use unapproved. Research Grade,
+casual or captive status, community agreement, computer-vision involvement, captions,
+and taxon names remain review leads rather than GrowPath ground truth.
+
+USDA ARS Image Gallery assets may be considered only after the individual asset is
+confirmed public domain and not an exception to the gallery policy. Wikimedia Commons
+files may be considered only after the individual file page is confirmed as CC0 1.0 or
+CC BY 4.0 and its attribution requirements are retained. Collection membership, file
+names, categories, and captions do not prove identity or life stage.
 
 PlantVillage remains a diagnosis-pack candidate rather than the primary crop-identification source. Its controlled-background leaf images can test some crop/disease labels, but they do not represent whole-plant or field performance, and repository “open access” wording is not treated as a substitute for an explicit governing media license.
 
@@ -46,3 +66,24 @@ npm.cmd run verify:plant-id-qa-catalog
 ```
 
 Planning mode validates the 320-case allocation and rights contract while media is still empty. Strict mode must fail until all 320 reviewed records exist and satisfy the license/attribution rules.
+
+Candidate collection is dry-run by default:
+
+```txt
+npm.cmd run collect:plant-id-qa-candidates
+npm.cmd run collect:plant-id-qa-candidates:execute
+npm.cmd run collect:plant-id-qa-candidates:resume
+```
+
+Execution writes only `tmp/spec/plant-identification-qa-candidates.json`. It never edits
+the governed catalog. An existing candidate manifest requires explicit `--resume` or
+`--replace`, and collection failures are preserved instead of being presented as a
+complete pack. Resume also refuses a candidate manifest created from a different catalog
+hash and checkpoints successful query pages even when they produce no eligible photo, so
+an empty page cannot trap repeated resumes. Permission-pending or lead-only sources may remain documented without
+making strict validation impossible; however, no media record may use a source unless
+that source is explicitly approved for QA references and the record passes every
+per-image gate. The master seed-system validator now references this catalog and
+collector directly. Unused candidate or permission-pending sources remain documented
+leads rather than false release blockers; a seed-ready Plant ID master pack must match a
+seed-ready 300-500-record governed catalog.
