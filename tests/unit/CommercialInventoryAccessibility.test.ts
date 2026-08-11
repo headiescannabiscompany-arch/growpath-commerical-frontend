@@ -11,6 +11,6 @@ describe("Commercial Inventory accessibility", () => {
     expect(source).toMatch(
       /canCreate[\s\S]*?<TouchableOpacity[\s\S]*?accessibilityRole="button"[\s\S]*?accessibilityLabel="Create inventory support record"[\s\S]*?router\.push\("\/home\/commercial\/inventory\/new"\)/
     );
-    expect(source).toContain("setError(mapApiError(e))");
+    expect(source).toContain("setError(mapApiError(e) ?? e)");
   });
 });

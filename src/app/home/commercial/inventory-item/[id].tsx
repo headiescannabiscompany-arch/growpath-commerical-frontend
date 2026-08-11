@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -84,35 +84,34 @@ export default function CommercialInventoryItemDetailRoute() {
   const params = useLocalSearchParams();
   const id = safeId(params as any);
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useCallback(
-    (err: any) => {
-      const handler = apiErr?.handleApiError ?? apiErr?.[1];
-      if (handler) handler(err);
-    },
-    [apiErr]
-  );
-  const clearError = useCallback(() => {
-    const handler = apiErr?.clearError ?? apiErr?.[2];
-    if (handler) handler();
-  }, [apiErr]);
+  const mapApiError = useApiErrorHandler();
 
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [saveError, setSaveError] = useState<any>(null);
+  const [feedback, setFeedback] = useState("");
   const [draft, setDraft] = useState(() => draftFromItem(null));
+  const loadInFlightRef = useRef(false);
+  const saveInFlightRef = useRef(false);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!id) return;
+      if (loadInFlightRef.current || saveInFlightRef.current) return;
+      if (!id) {
+        setLoading(false);
+        setLoadError(new Error("This inventory link is missing its record ID."));
+        return;
+      }
+      loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
 
       try {
-        clearError();
+        setLoadError(null);
 
         const path =
           (endpoints as any)?.commercial?.inventoryItem?.(id) ??
@@ -124,32 +123,53 @@ export default function CommercialInventoryItemDetailRoute() {
         setItem(nextItem);
         setDraft(draftFromItem(nextItem));
       } catch (e) {
-        handleApiError(e);
+        setLoadError(mapApiError(e) ?? e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [clearError, handleApiError, id]
+    [id, mapApiError]
   );
 
   useEffect(() => {
-    if (ent?.ready && ent.mode !== "commercial") {
+    if (!ent?.ready) return;
+    if (ent.mode !== "commercial") {
       router.replace("/home" as any);
       return;
     }
-    load();
+    void load();
   }, [ent?.ready, ent?.mode, load, router]);
 
   const keys = useMemo(() => (item ? Object.keys(item).sort() : []), [item]);
   const canEdit = !!ent?.can?.(CAPABILITY_KEYS.COMMERCIAL_INVENTORY_WRITE);
+  const canSave = canEdit && !!item && !!id && !saving;
 
   const save = useCallback(async () => {
-    if (!id) return;
-    if (!canEdit) return;
+    if (!id || !item || !canEdit || saveInFlightRef.current) return;
+    const quantityText = draft.quantity.trim();
+    const quantity = quantityText === "" ? undefined : Number(quantityText);
+    if (quantity !== undefined && (!Number.isFinite(quantity) || quantity < 0)) {
+      setSaveError(new Error("Quantity must be a number that is zero or greater."));
+      setFeedback("");
+      return;
+    }
+    const reorderText = draft.reorderPoint.trim();
+    const reorderPoint = reorderText === "" ? undefined : Number(reorderText);
+    if (
+      reorderPoint !== undefined &&
+      (!Number.isFinite(reorderPoint) || reorderPoint < 0)
+    ) {
+      setSaveError(new Error("Reorder point must be a number that is zero or greater."));
+      setFeedback("");
+      return;
+    }
+    saveInFlightRef.current = true;
     setSaving(true);
+    setSaveError(null);
+    setFeedback("");
     try {
-      clearError();
       const path =
         (endpoints as any)?.commercial?.inventoryItem?.(id) ??
         (endpoints as any)?.inventoryItemGlobal?.(id) ??
@@ -172,17 +192,8 @@ export default function CommercialInventoryItemDetailRoute() {
         notes: draft.notes.trim() || undefined
       };
 
-      const q = draft.quantity.trim();
-      if (q !== "") {
-        const n = Number(q);
-        if (!Number.isNaN(n)) payload.quantity = n;
-      }
-
-      const reorderPoint = draft.reorderPoint.trim();
-      if (reorderPoint !== "") {
-        const n = Number(reorderPoint);
-        if (!Number.isNaN(n)) payload.reorderPoint = n;
-      }
+      if (quantity !== undefined) payload.quantity = quantity;
+      if (reorderPoint !== undefined) payload.reorderPoint = reorderPoint;
 
       const res = await apiRequest(path, {
         method: "PATCH",
@@ -192,12 +203,14 @@ export default function CommercialInventoryItemDetailRoute() {
       const nextItem = res?.item ?? res ?? item;
       setItem(nextItem);
       setDraft(draftFromItem(nextItem));
+      setFeedback("Inventory support record updated.");
     } catch (e) {
-      handleApiError(e);
+      setSaveError(mapApiError(e) ?? e);
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
-  }, [canEdit, clearError, draft, handleApiError, id, item]);
+  }, [canEdit, draft, id, item, mapApiError]);
 
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") return null;
@@ -226,21 +239,47 @@ export default function CommercialInventoryItemDetailRoute() {
         refreshControl={
           <RefreshControl
             colors={[palette.accent]}
+            enabled={!saving}
             refreshing={refreshing}
             onRefresh={() => load({ refresh: true })}
             tintColor={palette.accent}
           />
         }
       >
-        {error ? <InlineError error={error} /> : null}
+        {loadError ? (
+          <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
+            <InlineError error={loadError} />
+            {id ? (
+              <TouchableOpacity
+                accessibilityLabel="Retry commercial inventory record"
+                accessibilityRole="button"
+                disabled={loading || saving}
+                onPress={() => load()}
+                style={[
+                  styles.actionBtn,
+                  (loading || saving) && styles.primaryBtnDisabled
+                ]}
+              >
+                <Text style={styles.actionText}>Retry</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        ) : null}
 
         <View style={styles.headerRow}>
-          <Text style={styles.h1}>Inventory Support Record</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
+            Inventory Support Record
+          </Text>
           <Text style={styles.muted}>id: {id || "(missing)"}</Text>
         </View>
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading commercial inventory record"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading item...</Text>
           </View>
@@ -280,7 +319,9 @@ export default function CommercialInventoryItemDetailRoute() {
 
         {item ? (
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Connected Workflows</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              Connected Workflows
+            </Text>
             <Text style={styles.workflowText}>
               Use inventory support as the stock record behind products, product trial
               evidence runs, batches/lots, packaging, plant material, and garden-center
@@ -353,195 +394,255 @@ export default function CommercialInventoryItemDetailRoute() {
           </View>
         ) : null}
 
-        <View style={styles.card}>
-          {item ? (
-            <>
-              <Text style={styles.sectionTitle}>Update Item</Text>
-              {!canEdit ? (
-                <Text style={styles.muted}>
-                  You do not have permission to update inventory items.
+        {item || (!loading && !loadError) ? (
+          <View style={styles.card}>
+            {item ? (
+              <>
+                <Text
+                  accessibilityRole="header"
+                  aria-level={2}
+                  style={styles.sectionTitle}
+                >
+                  Update Item
                 </Text>
-              ) : (
-                <View style={styles.form}>
-                  <Text style={styles.label}>Name</Text>
-                  <TextInput
-                    value={draft.name}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, name: v }))}
-                    style={styles.input}
-                    placeholder="Item name"
-                    placeholderTextColor={palette.textMuted}
-                    accessibilityLabel="Commercial detail item name"
-                  />
+                {!canEdit ? (
+                  <Text style={styles.muted}>
+                    You do not have permission to update inventory items.
+                  </Text>
+                ) : (
+                  <View style={styles.form}>
+                    <Text style={styles.label}>Name</Text>
+                    <TextInput
+                      value={draft.name}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, name: v }))}
+                      style={styles.input}
+                      placeholder="Item name"
+                      placeholderTextColor={palette.textMuted}
+                      accessibilityLabel="Commercial detail item name"
+                    />
 
-                  <Text style={styles.label}>SKU</Text>
-                  <TextInput
-                    value={draft.sku}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, sku: v }))}
-                    style={styles.input}
-                    placeholder="SKU"
-                    placeholderTextColor={palette.textMuted}
-                    accessibilityLabel="Commercial detail item SKU"
-                  />
+                    <Text style={styles.label}>SKU</Text>
+                    <TextInput
+                      value={draft.sku}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, sku: v }))}
+                      style={styles.input}
+                      placeholder="SKU"
+                      placeholderTextColor={palette.textMuted}
+                      accessibilityLabel="Commercial detail item SKU"
+                    />
 
-                  <Text style={styles.label}>Quantity</Text>
-                  <TextInput
-                    value={draft.quantity}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, quantity: v }))}
-                    style={styles.input}
-                    placeholder="0"
-                    placeholderTextColor={palette.textMuted}
-                    keyboardType="numeric"
-                    accessibilityLabel="Commercial detail item quantity"
-                  />
+                    <Text style={styles.label}>Quantity</Text>
+                    <TextInput
+                      value={draft.quantity}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, quantity: v }))}
+                      style={styles.input}
+                      placeholder="0"
+                      placeholderTextColor={palette.textMuted}
+                      keyboardType="numeric"
+                      accessibilityLabel="Commercial detail item quantity"
+                    />
 
-                  <Text style={styles.label}>Unit</Text>
-                  <TextInput
-                    value={draft.unit}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, unit: v }))}
-                    style={styles.input}
-                    placeholder="e.g., lbs"
-                    placeholderTextColor={palette.textMuted}
-                    accessibilityLabel="Commercial detail item unit"
-                  />
+                    <Text style={styles.label}>Unit</Text>
+                    <TextInput
+                      value={draft.unit}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, unit: v }))}
+                      style={styles.input}
+                      placeholder="e.g., lbs"
+                      placeholderTextColor={palette.textMuted}
+                      accessibilityLabel="Commercial detail item unit"
+                    />
 
-                  <Text style={styles.label}>Reorder point</Text>
-                  <TextInput
-                    value={draft.reorderPoint}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, reorderPoint: v }))}
-                    style={styles.input}
-                    placeholder="0"
-                    placeholderTextColor={palette.textMuted}
-                    keyboardType="numeric"
-                    accessibilityLabel="Commercial detail reorder point"
-                  />
+                    <Text style={styles.label}>Reorder point</Text>
+                    <TextInput
+                      value={draft.reorderPoint}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, reorderPoint: v }))}
+                      style={styles.input}
+                      placeholder="0"
+                      placeholderTextColor={palette.textMuted}
+                      keyboardType="numeric"
+                      accessibilityLabel="Commercial detail reorder point"
+                    />
 
-                  <Text style={styles.label}>Vendor</Text>
-                  <TextInput
-                    value={draft.vendor}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, vendor: v }))}
-                    style={styles.input}
-                    placeholder="Vendor"
-                    placeholderTextColor={palette.textMuted}
-                    accessibilityLabel="Commercial detail vendor"
-                  />
+                    <Text style={styles.label}>Vendor</Text>
+                    <TextInput
+                      value={draft.vendor}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, vendor: v }))}
+                      style={styles.input}
+                      placeholder="Vendor"
+                      placeholderTextColor={palette.textMuted}
+                      accessibilityLabel="Commercial detail vendor"
+                    />
 
-                  <Text style={styles.label}>Category</Text>
-                  <TextInput
-                    value={draft.category}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, category: v }))}
-                    style={styles.input}
-                    placeholder="Category"
-                    placeholderTextColor={palette.textMuted}
-                    accessibilityLabel="Commercial detail category"
-                  />
+                    <Text style={styles.label}>Category</Text>
+                    <TextInput
+                      value={draft.category}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, category: v }))}
+                      style={styles.input}
+                      placeholder="Category"
+                      placeholderTextColor={palette.textMuted}
+                      accessibilityLabel="Commercial detail category"
+                    />
 
-                  <Text style={styles.label}>Item type</Text>
-                  <TextInput
-                    value={draft.itemType}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, itemType: v }))}
-                    style={styles.input}
-                    placeholder="product, ingredient, packaging, plant, genetics..."
-                    placeholderTextColor={palette.textMuted}
-                    accessibilityLabel="Commercial detail item type"
-                  />
+                    <Text style={styles.label}>Item type</Text>
+                    <TextInput
+                      value={draft.itemType}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, itemType: v }))}
+                      style={styles.input}
+                      placeholder="product, ingredient, packaging, plant, genetics..."
+                      placeholderTextColor={palette.textMuted}
+                      accessibilityLabel="Commercial detail item type"
+                    />
 
-                  <Text style={styles.label}>Storage location</Text>
-                  <TextInput
-                    value={draft.location}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, location: v }))}
-                    style={styles.input}
-                    placeholder="Storage location"
-                    placeholderTextColor={palette.textMuted}
-                    accessibilityLabel="Commercial detail location"
-                  />
+                    <Text style={styles.label}>Storage location</Text>
+                    <TextInput
+                      value={draft.location}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, location: v }))}
+                      style={styles.input}
+                      placeholder="Storage location"
+                      placeholderTextColor={palette.textMuted}
+                      accessibilityLabel="Commercial detail location"
+                    />
 
-                  <Text style={styles.sectionLabel}>Optional links</Text>
-                  <TextInput
-                    value={draft.linkedProductId}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, linkedProductId: v }))}
-                    style={styles.input}
-                    placeholder="Linked product ID"
-                    placeholderTextColor={palette.textMuted}
-                    autoCapitalize="none"
-                    accessibilityLabel="Commercial detail linked product"
-                  />
-                  <TextInput
-                    value={draft.linkedIngredientId}
-                    onChangeText={(v) =>
-                      setDraft((d) => ({ ...d, linkedIngredientId: v }))
-                    }
-                    style={styles.input}
-                    placeholder="Linked ingredient ID"
-                    placeholderTextColor={palette.textMuted}
-                    autoCapitalize="none"
-                    accessibilityLabel="Commercial detail linked ingredient"
-                  />
-                  <TextInput
-                    value={draft.linkedGeneticsId}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, linkedGeneticsId: v }))}
-                    style={styles.input}
-                    placeholder="Linked genetics ID"
-                    placeholderTextColor={palette.textMuted}
-                    autoCapitalize="none"
-                    accessibilityLabel="Commercial detail linked genetics"
-                  />
-                  <TextInput
-                    value={draft.linkedGrowId}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, linkedGrowId: v }))}
-                    style={styles.input}
-                    placeholder="Linked product trial evidence run ID"
-                    placeholderTextColor={palette.textMuted}
-                    autoCapitalize="none"
-                    accessibilityLabel="Commercial detail linked product trial evidence run"
-                  />
+                    <Text style={styles.sectionLabel}>Optional links</Text>
+                    <TextInput
+                      value={draft.linkedProductId}
+                      editable={!saving}
+                      onChangeText={(v) =>
+                        setDraft((d) => ({ ...d, linkedProductId: v }))
+                      }
+                      style={styles.input}
+                      placeholder="Linked product ID"
+                      placeholderTextColor={palette.textMuted}
+                      autoCapitalize="none"
+                      accessibilityLabel="Commercial detail linked product"
+                    />
+                    <TextInput
+                      value={draft.linkedIngredientId}
+                      editable={!saving}
+                      onChangeText={(v) =>
+                        setDraft((d) => ({ ...d, linkedIngredientId: v }))
+                      }
+                      style={styles.input}
+                      placeholder="Linked ingredient ID"
+                      placeholderTextColor={palette.textMuted}
+                      autoCapitalize="none"
+                      accessibilityLabel="Commercial detail linked ingredient"
+                    />
+                    <TextInput
+                      value={draft.linkedGeneticsId}
+                      editable={!saving}
+                      onChangeText={(v) =>
+                        setDraft((d) => ({ ...d, linkedGeneticsId: v }))
+                      }
+                      style={styles.input}
+                      placeholder="Linked genetics ID"
+                      placeholderTextColor={palette.textMuted}
+                      autoCapitalize="none"
+                      accessibilityLabel="Commercial detail linked genetics"
+                    />
+                    <TextInput
+                      value={draft.linkedGrowId}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, linkedGrowId: v }))}
+                      style={styles.input}
+                      placeholder="Linked product trial evidence run ID"
+                      placeholderTextColor={palette.textMuted}
+                      autoCapitalize="none"
+                      accessibilityLabel="Commercial detail linked product trial evidence run"
+                    />
 
-                  <Text style={styles.label}>Status</Text>
-                  <TextInput
-                    value={draft.status}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, status: v }))}
-                    style={styles.input}
-                    placeholder="active, low_stock, out_of_stock, archived"
-                    placeholderTextColor={palette.textMuted}
-                    accessibilityLabel="Commercial detail status"
-                  />
+                    <Text style={styles.label}>Status</Text>
+                    <TextInput
+                      value={draft.status}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, status: v }))}
+                      style={styles.input}
+                      placeholder="active, low_stock, out_of_stock, archived"
+                      placeholderTextColor={palette.textMuted}
+                      accessibilityLabel="Commercial detail status"
+                    />
 
-                  <Text style={styles.label}>Notes</Text>
-                  <TextInput
-                    value={draft.notes}
-                    onChangeText={(v) => setDraft((d) => ({ ...d, notes: v }))}
-                    style={[styles.input, styles.notesInput]}
-                    placeholder="Notes"
-                    placeholderTextColor={palette.textMuted}
-                    multiline
-                    accessibilityLabel="Commercial detail notes"
-                  />
+                    <Text style={styles.label}>Notes</Text>
+                    <TextInput
+                      value={draft.notes}
+                      editable={!saving}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, notes: v }))}
+                      style={[styles.input, styles.notesInput]}
+                      placeholder="Notes"
+                      placeholderTextColor={palette.textMuted}
+                      multiline
+                      accessibilityLabel="Commercial detail notes"
+                    />
 
-                  <TouchableOpacity
-                    onPress={save}
-                    disabled={saving}
-                    accessibilityRole="button"
-                    accessibilityLabel="Save commercial inventory changes"
-                    style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
-                  >
-                    <Text style={styles.primaryBtnText}>
-                      {saving ? "Saving..." : "Save Changes"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </>
-          ) : (
-            <Text style={styles.muted}>
-              {id
-                ? "No inventory record returned."
-                : "Missing inventory record id in route params."}
-            </Text>
-          )}
-        </View>
+                    {saving ? (
+                      <View
+                        accessibilityLabel="Saving commercial inventory record in progress"
+                        accessibilityLiveRegion="polite"
+                        accessibilityRole="progressbar"
+                        style={styles.progressRow}
+                      >
+                        <ActivityIndicator color={palette.accent} />
+                        <Text style={styles.muted}>Saving inventory record...</Text>
+                      </View>
+                    ) : null}
+                    {saveError ? (
+                      <View
+                        accessible
+                        accessibilityLiveRegion="assertive"
+                        accessibilityRole="alert"
+                      >
+                        <InlineError error={saveError} />
+                      </View>
+                    ) : null}
+                    {feedback ? (
+                      <Text
+                        accessibilityLiveRegion="polite"
+                        accessibilityRole="alert"
+                        style={styles.success}
+                      >
+                        {feedback}
+                      </Text>
+                    ) : null}
+
+                    <TouchableOpacity
+                      onPress={save}
+                      disabled={!canSave}
+                      accessibilityRole="button"
+                      accessibilityLabel="Save commercial inventory changes"
+                      accessibilityState={{ disabled: !canSave, busy: saving }}
+                      style={[styles.primaryBtn, !canSave && styles.primaryBtnDisabled]}
+                    >
+                      <Text style={styles.primaryBtnText}>
+                        {saving ? "Saving..." : "Save Changes"}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </>
+            ) : (
+              <Text style={styles.muted}>
+                {id
+                  ? "No inventory record returned."
+                  : "Missing inventory record id in route params."}
+              </Text>
+            )}
+          </View>
+        ) : null}
 
         {item ? (
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Details</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              Details
+            </Text>
             <View style={styles.kvWrap}>
               {keys.map((k) => renderKV(item, k, styles))}
             </View>
@@ -566,6 +667,13 @@ export function createCommercialInventoryItemDetailStyles(palette: ThemePalette)
     },
 
     loading: { paddingVertical: 18, alignItems: "center", gap: 10 },
+    progressRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 8
+    },
+    errorPanel: { alignItems: "flex-start", gap: 8 },
 
     card: {
       borderWidth: 1,
@@ -647,6 +755,11 @@ export function createCommercialInventoryItemDetailStyles(palette: ThemePalette)
     },
     primaryBtnDisabled: { opacity: 0.6 },
     primaryBtnText: { color: palette.accentText, fontWeight: "800" },
+    success: {
+      color: palette.success,
+      fontSize: 13,
+      fontWeight: "800"
+    },
     actionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
     actionBtn: {
       borderWidth: 1,

@@ -409,8 +409,14 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "single-flight Commercial Inventory Support creation with non-negative stock validation and retained failed drafts"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight Commercial Inventory Support loading and detail editing with non-negative stock validation and retained drafts"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never silently coerce invalid Commercial inventory quantity or reorder values to zero, submit the same creation twice, discard the owner's failed draft, or depend on a native-only create-failure alert."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never silently omit an invalid Commercial Inventory Support detail quantity or reorder point, submit a detail write twice, overwrite its failed draft, or hide a load/save failure."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never open an immediately billed Stripe checkout on the first action after the selected plan's trial has been used."
