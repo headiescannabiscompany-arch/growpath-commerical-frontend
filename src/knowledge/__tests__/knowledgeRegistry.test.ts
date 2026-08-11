@@ -391,6 +391,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never include dispensaries in default horticulture discovery or offer GrowPath checkout, payment, delivery, shipping, or reservation for a dispensary item."
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight Commercial storefront loading and mutually exclusive storefront, product, media, and setup-task actions with retained drafts"
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never silently omit invalid storefront coordinates, support email, HTTPS handoff, or product price, publish an incomplete quick product, submit a storefront/product write twice, or hide a load/action failure."
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never invent dispensary availability or imply pickup completion; use published linked inventory and a dispensary-provided website or pickup instructions."
     );
