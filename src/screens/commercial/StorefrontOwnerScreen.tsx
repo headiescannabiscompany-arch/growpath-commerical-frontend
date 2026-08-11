@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   RefreshControl,
@@ -70,6 +69,27 @@ function productId(product: AnyRec) {
 
 function hasText(value: any) {
   return String(value ?? "").trim().length > 0;
+}
+
+function isHttpsUrl(value: string) {
+  if (!value.trim()) return true;
+  try {
+    return new URL(value.trim()).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isEmail(value: string) {
+  return !value.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function coordinateValue(value: string, minimum: number, maximum: number) {
+  if (!value.trim()) return null;
+  const number = Number(value);
+  return Number.isFinite(number) && number >= minimum && number <= maximum
+    ? number
+    : undefined;
 }
 
 function splitTextList(value: string) {
@@ -305,16 +325,7 @@ export default function Storefront({
   const styles = useMemo(() => createStorefrontOwnerStyles(palette), [palette]);
   const ent = useEntitlements();
   const canEdit = Boolean(ent?.can?.(CAPABILITY_KEYS.STORE_FRONT_VIEW));
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const mapApiError = useApiErrorHandler();
 
   const [storefront, setStorefront] = useState<AnyRec | null>(null);
   const [products, setProducts] = useState<AnyRec[]>([]);
@@ -329,8 +340,14 @@ export default function Storefront({
   const [savingProduct, setSavingProduct] = useState(false);
   const [creatingSetupTasks, setCreatingSetupTasks] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [loadError, setLoadError] = useState<any>(null);
+  const [actionError, setActionError] = useState<any>(null);
   const [uploadingImageField, setUploadingImageField] = useState("");
   const [locatingStorefront, setLocatingStorefront] = useState(false);
+  const loadInFlightRef = useRef(false);
+  const writeInFlightRef = useRef(false);
+  const uploadInFlightRef = useRef(false);
+  const locationInFlightRef = useRef(false);
 
   const [storeDraft, setStoreDraft] = useState({
     name: "",
@@ -385,11 +402,20 @@ export default function Storefront({
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
+      if (
+        loadInFlightRef.current ||
+        writeInFlightRef.current ||
+        uploadInFlightRef.current ||
+        locationInFlightRef.current
+      ) {
+        return;
+      }
+      loadInFlightRef.current = true;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
       setFeedback("");
       try {
-        clearError();
+        setLoadError(null);
         const [
           storeRes,
           productRes,
@@ -416,13 +442,14 @@ export default function Storefront({
         setCampaigns(asArray(feedRes, "items").filter(campaignIsActive));
         setInventory(asArray(inventoryRes, "inventory"));
       } catch (e) {
-        handleApiError(e);
+        setLoadError(mapApiError(e) ?? e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [clearError, handleApiError]
+    [mapApiError]
   );
 
   useEffect(() => {
@@ -613,41 +640,111 @@ export default function Storefront({
     campaigns: storefrontCampaigns
   });
   const publishDisabled = !storeDraft.isPublished && publishBlockers.length > 0;
+  const writeBusy = savingStorefront || savingProduct || creatingSetupTasks;
+  const interactionBusy =
+    loading ||
+    writeBusy ||
+    Boolean(uploadingImageField) ||
+    locatingStorefront ||
+    refreshing;
+  const actionProgressLabel = savingStorefront
+    ? "Saving storefront settings"
+    : savingProduct
+      ? "Creating storefront product"
+      : creatingSetupTasks
+        ? "Creating storefront setup tasks"
+        : uploadingImageField
+          ? "Uploading storefront media"
+          : locatingStorefront
+            ? "Locating storefront"
+            : "";
 
   async function saveStorefront() {
-    if (!canEdit) return;
+    if (
+      !canEdit ||
+      loadInFlightRef.current ||
+      writeInFlightRef.current ||
+      uploadInFlightRef.current ||
+      locationInFlightRef.current
+    ) {
+      return;
+    }
+    const latitude = coordinateValue(storeDraft.latitude, -90, 90);
+    const longitude = coordinateValue(storeDraft.longitude, -180, 180);
+    if (latitude === undefined) {
+      setActionError(new Error("Latitude must be a number from -90 to 90."));
+      setFeedback("");
+      return;
+    }
+    if (longitude === undefined) {
+      setActionError(new Error("Longitude must be a number from -180 to 180."));
+      setFeedback("");
+      return;
+    }
+    if (storeDraft.storefrontType === "dispensary") {
+      if (!/^[A-Za-z]{2}$/.test(storeDraft.stateCode.trim())) {
+        setActionError(new Error("Dispensary state must be a two-letter code."));
+        setFeedback("");
+        return;
+      }
+      if (latitude === null || longitude === null) {
+        setActionError(
+          new Error("Dispensary latitude and longitude are required for distance search.")
+        );
+        setFeedback("");
+        return;
+      }
+    }
+    if (!isHttpsUrl(storeDraft.websiteUrl)) {
+      setActionError(new Error("Storefront website must use a valid https URL."));
+      setFeedback("");
+      return;
+    }
+    if (!isEmail(storeDraft.supportEmail)) {
+      setActionError(new Error("Storefront support email must be valid."));
+      setFeedback("");
+      return;
+    }
+    writeInFlightRef.current = true;
     setSavingStorefront(true);
     setFeedback("");
+    setActionError(null);
     try {
-      clearError();
       const { growInterestsText, ...storefrontPayload } = storeDraft;
       const res = await apiRequest(commercialEndpoints.storefront, {
         method: storefront ? "PATCH" : "POST",
         body: {
           ...storefrontPayload,
           stateCode: storefrontPayload.stateCode.trim().toUpperCase(),
-          latitude: storefrontPayload.latitude.trim()
-            ? Number(storefrontPayload.latitude)
-            : null,
-          longitude: storefrontPayload.longitude.trim()
-            ? Number(storefrontPayload.longitude)
-            : null,
+          latitude,
+          longitude,
           growInterests: splitTextList(growInterestsText)
         }
       });
       setStorefront(res?.storefront ?? res ?? null);
       setFeedback("Storefront saved.");
     } catch (e) {
-      handleApiError(e);
+      setActionError(mapApiError(e) ?? e);
     } finally {
+      writeInFlightRef.current = false;
       setSavingStorefront(false);
     }
   }
 
   async function locateStorefront() {
-    if (!canEdit || locatingStorefront) return;
+    if (
+      !canEdit ||
+      loadInFlightRef.current ||
+      writeInFlightRef.current ||
+      uploadInFlightRef.current ||
+      locationInFlightRef.current
+    ) {
+      return;
+    }
+    locationInFlightRef.current = true;
     setLocatingStorefront(true);
     setFeedback("");
+    setActionError(null);
     try {
       const coordinates = await requestCurrentCoordinates();
       setStoreDraft((draft) => ({
@@ -657,21 +754,34 @@ export default function Storefront({
       }));
       setFeedback("Location added. Confirm the city and state before publishing.");
     } catch (error: any) {
-      setFeedback(
-        error?.message ||
-          "Current location is unavailable. Enter the dispensary coordinates manually."
+      setActionError(
+        new Error(
+          error?.message ||
+            "Current location is unavailable. Enter the dispensary coordinates manually."
+        )
       );
     } finally {
+      locationInFlightRef.current = false;
       setLocatingStorefront(false);
     }
   }
 
   async function createSetupTasks() {
-    if (!canEdit || !incompleteSetup.length || creatingSetupTasks) return;
+    if (
+      !canEdit ||
+      !incompleteSetup.length ||
+      loadInFlightRef.current ||
+      writeInFlightRef.current ||
+      uploadInFlightRef.current ||
+      locationInFlightRef.current
+    ) {
+      return;
+    }
+    writeInFlightRef.current = true;
     setCreatingSetupTasks(true);
     setFeedback("");
+    setActionError(null);
     try {
-      clearError();
       const sourceId = String(storefront?.id ?? storefront?._id ?? storeDraft.slug ?? "");
       const today = new Date().toISOString().slice(0, 10);
       const linkedProductIds = products.map(productId).filter(Boolean);
@@ -723,8 +833,9 @@ export default function Storefront({
       );
       setFeedback(`Created ${incompleteSetup.length} storefront setup tasks.`);
     } catch (e) {
-      handleApiError(e);
+      setActionError(mapApiError(e) ?? e);
     } finally {
+      writeInFlightRef.current = false;
       setCreatingSetupTasks(false);
     }
   }
@@ -734,13 +845,25 @@ export default function Storefront({
     target: "storefront" | "product",
     label: string
   ) {
-    if (!canEdit || uploadingImageField) return;
+    if (
+      !canEdit ||
+      loadInFlightRef.current ||
+      writeInFlightRef.current ||
+      uploadInFlightRef.current ||
+      locationInFlightRef.current
+    ) {
+      return;
+    }
+    uploadInFlightRef.current = true;
     setUploadingImageField(`${target}:${field}`);
     setFeedback("");
+    setActionError(null);
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (permission?.granted === false) {
-        Alert.alert(label, "Photo library access is required to upload an image.");
+        setActionError(
+          new Error(`${label}: Photo library access is required to upload an image.`)
+        );
         return;
       }
 
@@ -764,25 +887,63 @@ export default function Storefront({
       }
       setFeedback(`${label} uploaded.`);
     } catch (e: any) {
-      Alert.alert(label, e?.message || "Unable to upload image.");
+      setActionError(new Error(`${label}: ${e?.message || "Unable to upload image."}`));
     } finally {
+      uploadInFlightRef.current = false;
       setUploadingImageField("");
     }
   }
 
   async function createProduct() {
-    if (!canEdit || !productDraft.name.trim()) return;
+    if (
+      !canEdit ||
+      !productDraft.name.trim() ||
+      loadInFlightRef.current ||
+      writeInFlightRef.current ||
+      uploadInFlightRef.current ||
+      locationInFlightRef.current
+    ) {
+      return;
+    }
     const priceNumber = productDraft.price.trim()
       ? Number(productDraft.price)
       : undefined;
-    const price =
-      typeof priceNumber === "number" && Number.isFinite(priceNumber) && priceNumber >= 0
-        ? priceNumber
-        : undefined;
+    if (priceNumber !== undefined && (!Number.isFinite(priceNumber) || priceNumber < 0)) {
+      setActionError(
+        new Error("Product price must be a number that is zero or greater.")
+      );
+      setFeedback("");
+      return;
+    }
+    if (!isHttpsUrl(productDraft.externalPurchaseUrl)) {
+      setActionError(new Error("Product purchase link must use a valid https URL."));
+      setFeedback("");
+      return;
+    }
+    const price = priceNumber;
+    const proposedProduct = {
+      ...productDraft,
+      growInterests: splitTextList(productDraft.growInterestsText),
+      price,
+      imageUrl: productDraft.imageUrl.trim(),
+      externalPurchaseUrl: productDraft.externalPurchaseUrl.trim(),
+      pickupAvailable: isDispensary && productDraft.pickupAvailable
+    };
+    if (productDraft.status === "published") {
+      const missing = productMissingSetup(proposedProduct, isDispensary);
+      if (missing.length) {
+        setActionError(
+          new Error(`Published product still needs: ${missing.join(", ")}.`)
+        );
+        setFeedback("");
+        return;
+      }
+    }
+    writeInFlightRef.current = true;
     setSavingProduct(true);
     setFeedback("");
+    setActionError(null);
     try {
-      clearError();
       const res = await apiRequest(commercialEndpoints.products, {
         method: "POST",
         body: {
@@ -873,8 +1034,9 @@ export default function Storefront({
       });
       setFeedback("Product created.");
     } catch (e) {
-      handleApiError(e);
+      setActionError(mapApiError(e) ?? e);
     } finally {
+      writeInFlightRef.current = false;
       setSavingProduct(false);
     }
   }
@@ -888,17 +1050,60 @@ export default function Storefront({
       backFallbackHref={backFallbackHref}
       header={
         <View>
-          <Text style={styles.headerTitle}>{title}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.headerTitle}>
+            {title}
+          </Text>
           <Text style={styles.headerSubtitle}>{subtitle}</Text>
         </View>
       }
     >
-      {error ? <InlineError error={error} /> : null}
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {loadError ? (
+        <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
+          <InlineError error={loadError} />
+          <Pressable
+            accessibilityLabel="Retry commercial storefront workspace"
+            accessibilityRole="button"
+            disabled={loading || interactionBusy}
+            onPress={() => void load()}
+            style={[
+              styles.secondaryButton,
+              (loading || interactionBusy) && styles.disabled
+            ]}
+          >
+            <Text style={styles.secondaryText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {actionError ? (
+        <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
+          <InlineError error={actionError} />
+        </View>
+      ) : null}
+      {feedback ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+          style={styles.feedback}
+        >
+          {feedback}
+        </Text>
+      ) : null}
+      {actionProgressLabel ? (
+        <View
+          accessibilityLabel={`${actionProgressLabel} in progress`}
+          accessibilityLiveRegion="polite"
+          accessibilityRole="progressbar"
+          style={styles.progressRow}
+        >
+          <ActivityIndicator color={palette.accent} />
+          <Text style={styles.muted}>{actionProgressLabel}...</Text>
+        </View>
+      ) : null}
 
       <ScrollView
         refreshControl={
           <RefreshControl
+            enabled={!interactionBusy}
             refreshing={refreshing}
             onRefresh={() => void load({ refresh: true })}
             colors={[palette.accent]}
@@ -909,7 +1114,12 @@ export default function Storefront({
         contentContainerStyle={styles.inner}
       >
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading commercial storefront workspace"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading storefront...</Text>
           </View>
@@ -918,7 +1128,9 @@ export default function Storefront({
         <AppCard>
           <View style={styles.cardHeader}>
             <View>
-              <Text style={styles.cardTitle}>Storefront Setup Checklist</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Storefront Setup Checklist
+              </Text>
               <Text style={styles.helperText}>
                 {completedSetupCount} of {setupChecklist.length} ready. Fix warnings
                 before treating the storefront as launch-ready.
@@ -984,11 +1196,12 @@ export default function Storefront({
               accessibilityRole="button"
               accessibilityLabel="Create storefront setup tasks"
               onPress={createSetupTasks}
-              disabled={creatingSetupTasks || !canEdit}
+              disabled={interactionBusy || !canEdit}
               style={[
                 styles.secondaryButton,
-                (creatingSetupTasks || !canEdit) && styles.disabled
+                (interactionBusy || !canEdit) && styles.disabled
               ]}
+              accessibilityState={{ disabled: interactionBusy || !canEdit }}
             >
               <Text style={styles.secondaryText}>
                 {creatingSetupTasks ? "Creating..." : "Create Setup Tasks"}
@@ -1000,7 +1213,9 @@ export default function Storefront({
         <AppCard>
           <View style={styles.cardHeader}>
             <View>
-              <Text style={styles.cardTitle}>Storefront Launch Actions</Text>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Storefront Launch Actions
+              </Text>
               <Text style={styles.helperText}>
                 Build, publish, promote, fulfill, and measure the storefront from one
                 place.
@@ -1024,7 +1239,9 @@ export default function Storefront({
 
         <AppCard>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Product Lines</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Product Lines
+            </Text>
             <Text style={styles.statusPill}>Storefront section</Text>
           </View>
           <Text style={styles.helperText}>
@@ -1086,7 +1303,9 @@ export default function Storefront({
 
         <AppCard>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Featured Courses</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Featured Courses
+            </Text>
             <Text style={styles.statusPill}>Storefront section</Text>
           </View>
           <Text style={styles.helperText}>
@@ -1159,13 +1378,16 @@ export default function Storefront({
 
         <AppCard>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Storefront Settings</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Storefront Settings
+            </Text>
             <Text style={[styles.statusPill, storeDraft.isPublished && styles.livePill]}>
               {storeDraft.isPublished ? "Published" : "Draft"}
             </Text>
           </View>
           <TextInput
             value={storeDraft.name}
+            editable={!interactionBusy}
             onChangeText={(name) => setStoreDraft((draft) => ({ ...draft, name }))}
             accessibilityLabel="Storefront name"
             placeholder="Storefront name"
@@ -1173,6 +1395,7 @@ export default function Storefront({
           />
           <TextInput
             value={storeDraft.slug}
+            editable={!interactionBusy}
             onChangeText={(slug) => setStoreDraft((draft) => ({ ...draft, slug }))}
             accessibilityLabel="Storefront slug"
             placeholder="storefront-slug"
@@ -1190,8 +1413,10 @@ export default function Storefront({
                 accessibilityRole="button"
                 accessibilityLabel={`Storefront type ${option.label}`}
                 accessibilityState={{
+                  disabled: interactionBusy,
                   selected: storeDraft.storefrontType === option.value
                 }}
+                disabled={interactionBusy}
                 onPress={() =>
                   setStoreDraft((draft) => ({
                     ...draft,
@@ -1217,6 +1442,7 @@ export default function Storefront({
               <View style={styles.linkGrid}>
                 <TextInput
                   value={storeDraft.city}
+                  editable={!interactionBusy}
                   onChangeText={(city) => setStoreDraft((draft) => ({ ...draft, city }))}
                   accessibilityLabel="Dispensary city"
                   placeholder="City"
@@ -1224,6 +1450,7 @@ export default function Storefront({
                 />
                 <TextInput
                   value={storeDraft.stateCode}
+                  editable={!interactionBusy}
                   onChangeText={(stateCode) =>
                     setStoreDraft((draft) => ({
                       ...draft,
@@ -1238,6 +1465,7 @@ export default function Storefront({
                 />
                 <TextInput
                   value={storeDraft.latitude}
+                  editable={!interactionBusy}
                   onChangeText={(latitude) =>
                     setStoreDraft((draft) => ({ ...draft, latitude }))
                   }
@@ -1248,6 +1476,7 @@ export default function Storefront({
                 />
                 <TextInput
                   value={storeDraft.longitude}
+                  editable={!interactionBusy}
                   onChangeText={(longitude) =>
                     setStoreDraft((draft) => ({ ...draft, longitude }))
                   }
@@ -1260,11 +1489,12 @@ export default function Storefront({
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Use current location for dispensary"
-                disabled={locatingStorefront || !canEdit}
+                accessibilityState={{ disabled: interactionBusy || !canEdit }}
+                disabled={interactionBusy || !canEdit}
                 onPress={() => void locateStorefront()}
                 style={[
                   styles.secondaryButton,
-                  (locatingStorefront || !canEdit) && styles.disabled
+                  (interactionBusy || !canEdit) && styles.disabled
                 ]}
               >
                 <Text style={styles.secondaryText}>
@@ -1274,7 +1504,11 @@ export default function Storefront({
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Dispensary offers in-store pickup"
-                accessibilityState={{ checked: storeDraft.pickupAvailable }}
+                accessibilityState={{
+                  checked: storeDraft.pickupAvailable,
+                  disabled: interactionBusy
+                }}
+                disabled={interactionBusy}
                 onPress={() =>
                   setStoreDraft((draft) => ({
                     ...draft,
@@ -1295,6 +1529,7 @@ export default function Storefront({
               {storeDraft.pickupAvailable ? (
                 <TextInput
                   value={storeDraft.pickupInstructions}
+                  editable={!interactionBusy}
                   onChangeText={(pickupInstructions) =>
                     setStoreDraft((draft) => ({ ...draft, pickupInstructions }))
                   }
@@ -1308,6 +1543,7 @@ export default function Storefront({
           ) : null}
           <TextInput
             value={storeDraft.description}
+            editable={!interactionBusy}
             onChangeText={(description) =>
               setStoreDraft((draft) => ({ ...draft, description }))
             }
@@ -1318,6 +1554,7 @@ export default function Storefront({
           />
           <TextInput
             value={storeDraft.growInterestsText}
+            editable={!interactionBusy}
             onChangeText={(growInterestsText) =>
               setStoreDraft((draft) => ({ ...draft, growInterestsText }))
             }
@@ -1328,6 +1565,7 @@ export default function Storefront({
           />
           <TextInput
             value={storeDraft.websiteUrl}
+            editable={!interactionBusy}
             onChangeText={(websiteUrl) =>
               setStoreDraft((draft) => ({ ...draft, websiteUrl }))
             }
@@ -1338,6 +1576,7 @@ export default function Storefront({
           />
           <TextInput
             value={storeDraft.supportEmail}
+            editable={!interactionBusy}
             onChangeText={(supportEmail) =>
               setStoreDraft((draft) => ({ ...draft, supportEmail }))
             }
@@ -1349,6 +1588,7 @@ export default function Storefront({
           />
           <TextInput
             value={storeDraft.socialLinksText}
+            editable={!interactionBusy}
             onChangeText={(socialLinksText) =>
               setStoreDraft((draft) => ({ ...draft, socialLinksText }))
             }
@@ -1359,6 +1599,7 @@ export default function Storefront({
           />
           <TextInput
             value={storeDraft.logoUrl}
+            editable={!interactionBusy}
             onChangeText={(logoUrl) => setStoreDraft((draft) => ({ ...draft, logoUrl }))}
             accessibilityLabel="Storefront logo URL"
             placeholder="Logo URL"
@@ -1370,7 +1611,7 @@ export default function Storefront({
               accessibilityRole="button"
               accessibilityLabel="Upload storefront logo"
               onPress={() => uploadImageField("logoUrl", "storefront", "Storefront logo")}
-              disabled={Boolean(uploadingImageField) || !canEdit}
+              disabled={interactionBusy || !canEdit}
               style={styles.secondaryButton}
             >
               <Text style={styles.secondaryText}>
@@ -1384,7 +1625,7 @@ export default function Storefront({
                 accessibilityRole="button"
                 accessibilityLabel="Clear storefront logo"
                 onPress={() => setStoreDraft((draft) => ({ ...draft, logoUrl: "" }))}
-                disabled={Boolean(uploadingImageField) || !canEdit}
+                disabled={interactionBusy || !canEdit}
                 style={styles.secondaryButton}
               >
                 <Text style={styles.secondaryText}>Clear Logo</Text>
@@ -1396,6 +1637,7 @@ export default function Storefront({
           ) : null}
           <TextInput
             value={storeDraft.bannerUrl}
+            editable={!interactionBusy}
             onChangeText={(bannerUrl) =>
               setStoreDraft((draft) => ({ ...draft, bannerUrl }))
             }
@@ -1411,7 +1653,7 @@ export default function Storefront({
               onPress={() =>
                 uploadImageField("bannerUrl", "storefront", "Storefront banner")
               }
-              disabled={Boolean(uploadingImageField) || !canEdit}
+              disabled={interactionBusy || !canEdit}
               style={styles.secondaryButton}
             >
               <Text style={styles.secondaryText}>
@@ -1425,7 +1667,7 @@ export default function Storefront({
                 accessibilityRole="button"
                 accessibilityLabel="Clear storefront banner"
                 onPress={() => setStoreDraft((draft) => ({ ...draft, bannerUrl: "" }))}
-                disabled={Boolean(uploadingImageField) || !canEdit}
+                disabled={interactionBusy || !canEdit}
                 style={styles.secondaryButton}
               >
                 <Text style={styles.secondaryText}>Clear Banner</Text>
@@ -1443,8 +1685,12 @@ export default function Storefront({
             onPress={() =>
               setStoreDraft((draft) => ({ ...draft, isPublished: !draft.isPublished }))
             }
-            disabled={publishDisabled}
-            style={[styles.secondaryButton, publishDisabled && styles.disabled]}
+            accessibilityState={{ disabled: publishDisabled || interactionBusy }}
+            disabled={publishDisabled || interactionBusy}
+            style={[
+              styles.secondaryButton,
+              (publishDisabled || interactionBusy) && styles.disabled
+            ]}
           >
             <Text style={styles.secondaryText}>
               {storeDraft.isPublished ? "Set Draft" : "Publish"}
@@ -1460,10 +1706,11 @@ export default function Storefront({
             accessibilityRole="button"
             accessibilityLabel="Save storefront settings"
             onPress={saveStorefront}
-            disabled={savingStorefront || !canEdit}
+            accessibilityState={{ disabled: interactionBusy || !canEdit }}
+            disabled={interactionBusy || !canEdit}
             style={[
               styles.primaryButton,
-              (savingStorefront || !canEdit) && styles.disabled
+              (interactionBusy || !canEdit) && styles.disabled
             ]}
           >
             <Text style={styles.primaryText}>
@@ -1473,7 +1720,9 @@ export default function Storefront({
         </AppCard>
 
         <AppCard>
-          <Text style={styles.cardTitle}>Public Discovery</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Public Discovery
+          </Text>
           <Text style={styles.helperText}>
             Free, Pro, commercial, and facility users can reach this brand from feed
             campaigns, forum replies, course pages, product cards, and public search
@@ -1495,7 +1744,9 @@ export default function Storefront({
 
         <AppCard>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Upcoming Lives</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Upcoming Lives
+            </Text>
             <Text style={styles.statusPill}>Storefront section</Text>
           </View>
           <Text style={styles.helperText}>
@@ -1555,7 +1806,9 @@ export default function Storefront({
 
         <AppCard>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Active Feed Campaigns</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Active Feed Campaigns
+            </Text>
             <Text style={styles.statusPill}>Advertising / outreach</Text>
           </View>
           <Text style={styles.helperText}>
@@ -1635,9 +1888,12 @@ export default function Storefront({
         </AppCard>
 
         <AppCard>
-          <Text style={styles.cardTitle}>Create Product</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Create Product
+          </Text>
           <TextInput
             value={productDraft.name}
+            editable={!interactionBusy}
             onChangeText={(name) => setProductDraft((draft) => ({ ...draft, name }))}
             accessibilityLabel="Product name"
             placeholder="Product name"
@@ -1645,6 +1901,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.sku}
+            editable={!interactionBusy}
             onChangeText={(sku) => setProductDraft((draft) => ({ ...draft, sku }))}
             accessibilityLabel="Product SKU"
             placeholder="SKU"
@@ -1652,6 +1909,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.category}
+            editable={!interactionBusy}
             onChangeText={(category) =>
               setProductDraft((draft) => ({ ...draft, category }))
             }
@@ -1661,6 +1919,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.growInterestsText}
+            editable={!interactionBusy}
             onChangeText={(growInterestsText) =>
               setProductDraft((draft) => ({ ...draft, growInterestsText }))
             }
@@ -1670,6 +1929,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.unitSize}
+            editable={!interactionBusy}
             onChangeText={(unitSize) =>
               setProductDraft((draft) => ({ ...draft, unitSize }))
             }
@@ -1679,6 +1939,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.npk}
+            editable={!interactionBusy}
             onChangeText={(npk) => setProductDraft((draft) => ({ ...draft, npk }))}
             accessibilityLabel="Product label N-P2O5-K2O"
             placeholder="Label N-P2O5-K2O, e.g. 3-1-1"
@@ -1686,6 +1947,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.shortDescription}
+            editable={!interactionBusy}
             onChangeText={(shortDescription) =>
               setProductDraft((draft) => ({ ...draft, shortDescription }))
             }
@@ -1695,6 +1957,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.description}
+            editable={!interactionBusy}
             onChangeText={(description) =>
               setProductDraft((draft) => ({ ...draft, description }))
             }
@@ -1705,6 +1968,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.guaranteedAnalysis}
+            editable={!interactionBusy}
             onChangeText={(guaranteedAnalysis) =>
               setProductDraft((draft) => ({ ...draft, guaranteedAnalysis }))
             }
@@ -1715,6 +1979,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.ingredients}
+            editable={!interactionBusy}
             onChangeText={(ingredients) =>
               setProductDraft((draft) => ({ ...draft, ingredients }))
             }
@@ -1725,6 +1990,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.applicationRate}
+            editable={!interactionBusy}
             onChangeText={(applicationRate) =>
               setProductDraft((draft) => ({ ...draft, applicationRate }))
             }
@@ -1734,6 +2000,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.usageInstructions}
+            editable={!interactionBusy}
             onChangeText={(usageInstructions) =>
               setProductDraft((draft) => ({ ...draft, usageInstructions }))
             }
@@ -1744,6 +2011,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.warnings}
+            editable={!interactionBusy}
             onChangeText={(warnings) =>
               setProductDraft((draft) => ({ ...draft, warnings }))
             }
@@ -1754,6 +2022,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.price}
+            editable={!interactionBusy}
             onChangeText={(price) => setProductDraft((draft) => ({ ...draft, price }))}
             accessibilityLabel="Product price dollars"
             placeholder="Price (optional; blank means TBD)"
@@ -1762,6 +2031,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.currency}
+            editable={!interactionBusy}
             onChangeText={(currency) =>
               setProductDraft((draft) => ({ ...draft, currency }))
             }
@@ -1772,6 +2042,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.externalPurchaseUrl}
+            editable={!interactionBusy}
             onChangeText={(externalPurchaseUrl) =>
               setProductDraft((draft) => ({ ...draft, externalPurchaseUrl }))
             }
@@ -1793,8 +2064,10 @@ export default function Storefront({
                   accessibilityRole="button"
                   accessibilityLabel="Product is regulated cannabis"
                   accessibilityState={{
-                    checked: productDraft.regulatedCannabis
+                    checked: productDraft.regulatedCannabis,
+                    disabled: interactionBusy
                   }}
+                  disabled={interactionBusy}
                   onPress={() =>
                     setProductDraft((draft) => ({
                       ...draft,
@@ -1815,7 +2088,11 @@ export default function Storefront({
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Product available for in-store pickup"
-                  accessibilityState={{ checked: productDraft.pickupAvailable }}
+                  accessibilityState={{
+                    checked: productDraft.pickupAvailable,
+                    disabled: interactionBusy
+                  }}
+                  disabled={interactionBusy}
                   onPress={() =>
                     setProductDraft((draft) => ({
                       ...draft,
@@ -1837,6 +2114,7 @@ export default function Storefront({
               {productDraft.pickupAvailable ? (
                 <TextInput
                   value={productDraft.pickupInstructions}
+                  editable={!interactionBusy}
                   onChangeText={(pickupInstructions) =>
                     setProductDraft((draft) => ({
                       ...draft,
@@ -1854,6 +2132,7 @@ export default function Storefront({
             <>
               <TextInput
                 value={productDraft.stripeProductId}
+                editable={!interactionBusy}
                 onChangeText={(stripeProductId) =>
                   setProductDraft((draft) => ({ ...draft, stripeProductId }))
                 }
@@ -1864,6 +2143,7 @@ export default function Storefront({
               />
               <TextInput
                 value={productDraft.stripePriceId}
+                editable={!interactionBusy}
                 onChangeText={(stripePriceId) =>
                   setProductDraft((draft) => ({ ...draft, stripePriceId }))
                 }
@@ -1876,6 +2156,7 @@ export default function Storefront({
           )}
           <TextInput
             value={productDraft.inventoryItemId}
+            editable={!interactionBusy}
             onChangeText={(inventoryItemId) =>
               setProductDraft((draft) => ({ ...draft, inventoryItemId }))
             }
@@ -1886,6 +2167,7 @@ export default function Storefront({
           />
           <TextInput
             value={productDraft.productLineId}
+            editable={!interactionBusy}
             onChangeText={(productLineId) =>
               setProductDraft((draft) => ({ ...draft, productLineId }))
             }
@@ -1904,6 +2186,8 @@ export default function Storefront({
                     key={`choose-line-${id || name}`}
                     accessibilityRole="button"
                     accessibilityLabel={`Use product line ${name}`}
+                    accessibilityState={{ disabled: interactionBusy }}
+                    disabled={interactionBusy}
                     style={[
                       styles.secondaryButton,
                       productDraft.productLineId === id && styles.selectedButton
@@ -1921,6 +2205,7 @@ export default function Storefront({
           <View style={styles.linkGrid}>
             <TextInput
               value={productDraft.linkedRecipeId}
+              editable={!interactionBusy}
               onChangeText={(linkedRecipeId) =>
                 setProductDraft((draft) => ({ ...draft, linkedRecipeId }))
               }
@@ -1931,6 +2216,7 @@ export default function Storefront({
             />
             <TextInput
               value={productDraft.linkedBatchId}
+              editable={!interactionBusy}
               onChangeText={(linkedBatchId) =>
                 setProductDraft((draft) => ({ ...draft, linkedBatchId }))
               }
@@ -1941,6 +2227,7 @@ export default function Storefront({
             />
             <TextInput
               value={productDraft.linkedTrialId}
+              editable={!interactionBusy}
               onChangeText={(linkedTrialId) =>
                 setProductDraft((draft) => ({ ...draft, linkedTrialId }))
               }
@@ -1951,6 +2238,7 @@ export default function Storefront({
             />
             <TextInput
               value={productDraft.linkedCourseId}
+              editable={!interactionBusy}
               onChangeText={(linkedCourseId) =>
                 setProductDraft((draft) => ({ ...draft, linkedCourseId }))
               }
@@ -1969,6 +2257,8 @@ export default function Storefront({
                     key={id}
                     accessibilityRole="button"
                     accessibilityLabel={`Link product inventory ${item.name || id}`}
+                    accessibilityState={{ disabled: interactionBusy }}
+                    disabled={interactionBusy}
                     onPress={() =>
                       setProductDraft((draft) => ({ ...draft, inventoryItemId: id }))
                     }
@@ -1992,6 +2282,7 @@ export default function Storefront({
           ) : null}
           <TextInput
             value={productDraft.imageUrl}
+            editable={!interactionBusy}
             onChangeText={(imageUrl) =>
               setProductDraft((draft) => ({ ...draft, imageUrl }))
             }
@@ -2005,7 +2296,7 @@ export default function Storefront({
               accessibilityRole="button"
               accessibilityLabel="Upload product listing image"
               onPress={() => uploadImageField("imageUrl", "product", "Product image")}
-              disabled={Boolean(uploadingImageField) || !canEdit}
+              disabled={interactionBusy || !canEdit}
               style={styles.secondaryButton}
             >
               <Text style={styles.secondaryText}>
@@ -2019,7 +2310,7 @@ export default function Storefront({
                 accessibilityRole="button"
                 accessibilityLabel="Clear product listing image"
                 onPress={() => setProductDraft((draft) => ({ ...draft, imageUrl: "" }))}
-                disabled={Boolean(uploadingImageField) || !canEdit}
+                disabled={interactionBusy || !canEdit}
                 style={styles.secondaryButton}
               >
                 <Text style={styles.secondaryText}>Clear Product Image</Text>
@@ -2036,6 +2327,8 @@ export default function Storefront({
                 ? "Set product draft"
                 : "Publish product listing"
             }
+            accessibilityState={{ disabled: interactionBusy }}
+            disabled={interactionBusy}
             onPress={() =>
               setProductDraft((draft) => ({
                 ...draft,
@@ -2052,10 +2345,15 @@ export default function Storefront({
             accessibilityRole="button"
             accessibilityLabel="Create storefront product"
             onPress={createProduct}
-            disabled={savingProduct || !productDraft.name.trim() || !canEdit}
+            accessibilityState={{
+              disabled: interactionBusy || !productDraft.name.trim() || !canEdit,
+              busy: savingProduct
+            }}
+            disabled={interactionBusy || !productDraft.name.trim() || !canEdit}
             style={[
               styles.primaryButton,
-              (savingProduct || !productDraft.name.trim() || !canEdit) && styles.disabled
+              (interactionBusy || !productDraft.name.trim() || !canEdit) &&
+                styles.disabled
             ]}
           >
             <Text style={styles.primaryText}>
@@ -2065,7 +2363,9 @@ export default function Storefront({
         </AppCard>
 
         <AppCard>
-          <Text style={styles.cardTitle}>Products</Text>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Products
+          </Text>
           {products.length === 0 ? (
             <Text style={styles.muted}>
               {isDispensary
@@ -2198,6 +2498,13 @@ export function createStorefrontOwnerStyles(palette: ThemePalette) {
     },
     inner: { gap: 14 },
     loading: { alignItems: "center", gap: 10, paddingVertical: 18 },
+    progressRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      paddingVertical: 8
+    },
+    errorPanel: { alignItems: "flex-start", gap: 8 },
     muted: { color: palette.textMuted, fontWeight: "700" },
     feedback: {
       backgroundColor: palette.surfaceMuted,

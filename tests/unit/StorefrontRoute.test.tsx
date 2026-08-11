@@ -11,19 +11,15 @@ const mockPersistImageUri = jest.fn();
 const mockAttachPhotos = jest.fn();
 const mockRequestPermissions = jest.fn();
 const mockLaunchLibrary = jest.fn();
-const mockHandleApiError = jest.fn();
-const mockClearError = jest.fn();
-const mockApiErrorState = {
-  error: null,
-  handleApiError: (...args: any[]) => mockHandleApiError(...args),
-  clearError: (...args: any[]) => mockClearError(...args)
-};
+const mockMapApiError = jest.fn((error: any) => ({
+  message: error?.message || String(error)
+}));
 
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
-  return ({ children, header, showBack, backFallbackHref }: any) =>
-    React.createElement(
+  return function MockAppPage({ children, header, showBack, backFallbackHref }: any) {
+    return React.createElement(
       View,
       null,
       showBack
@@ -32,16 +28,23 @@ jest.mock("@/components/layout/AppPage", () => {
       header,
       children
     );
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children }: any) => React.createElement(View, null, children);
+  return function MockAppCard({ children }: any) {
+    return React.createElement(View, null, children);
+  };
 });
 
 jest.mock("@/components/InlineError", () => ({
-  InlineError: () => null
+  InlineError: ({ error }: any) => {
+    const React = require("react");
+    const { Text } = require("react-native");
+    return React.createElement(Text, null, error?.message || String(error || ""));
+  }
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -53,7 +56,7 @@ jest.mock("@/entitlements", () => ({
 }));
 
 jest.mock("@/hooks/useApiErrorHandler", () => ({
-  useApiErrorHandler: () => mockApiErrorState
+  useApiErrorHandler: () => mockMapApiError
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -387,6 +390,11 @@ describe("Storefront route", () => {
     );
     expect(screen.getByText("Created 6 storefront setup tasks.")).toBeTruthy();
 
+    await waitFor(() =>
+      expect(screen.getByLabelText("Upload storefront logo").props.disabled).not.toBe(
+        true
+      )
+    );
     fireEvent.press(screen.getByLabelText("Upload storefront logo"));
     await waitFor(() =>
       expect(mockPersistImageUri).toHaveBeenCalledWith("file:///tmp/logo.jpg")
@@ -429,6 +437,11 @@ describe("Storefront route", () => {
       )
     );
 
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Upload product listing image").props.disabled
+      ).not.toBe(true)
+    );
     fireEvent.press(screen.getByLabelText("Upload product listing image"));
     await waitFor(() =>
       expect(mockPersistImageUri).toHaveBeenCalledWith("file:///tmp/product.jpg")
@@ -698,5 +711,160 @@ describe("Storefront route", () => {
     expect(
       previewScreen.getByText("Shared Back /home/commercial/storefront")
     ).toBeTruthy();
+  });
+
+  it("offers an in-page retry after the storefront workspace fails to load", async () => {
+    let storefrontAttempts = 0;
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/storefront" && !options) {
+        storefrontAttempts += 1;
+        if (storefrontAttempts === 1) {
+          return Promise.reject(new Error("Storefront workspace unavailable"));
+        }
+      }
+      return apiResponseFor(path, options);
+    });
+    const screen = render(<Storefront />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Storefront workspace unavailable")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByLabelText("Retry commercial storefront workspace"));
+
+    await waitFor(() => expect(storefrontAttempts).toBe(2));
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+  });
+
+  it("rejects invalid storefront coordinates and product prices without writes", async () => {
+    const screen = render(<Storefront />);
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Storefront type Dispensary"));
+    fireEvent.changeText(screen.getByLabelText("Dispensary city"), "Boston");
+    fireEvent.changeText(screen.getByLabelText("Dispensary state"), "MA");
+    fireEvent.changeText(screen.getByLabelText("Dispensary latitude"), "100");
+    fireEvent.changeText(screen.getByLabelText("Dispensary longitude"), "-71.0589");
+    fireEvent.press(screen.getByLabelText("Save storefront settings"));
+
+    expect(screen.getByText("Latitude must be a number from -90 to 90.")).toBeTruthy();
+    expect(screen.getByLabelText("Dispensary latitude").props.value).toBe("100");
+    expect(
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) =>
+          path === "/api/commercial/storefront" && options?.method === "PATCH"
+      )
+    ).toHaveLength(0);
+
+    fireEvent.changeText(screen.getByLabelText("Product name"), "Invalid price draft");
+    fireEvent.changeText(screen.getByLabelText("Product price dollars"), "-5");
+    fireEvent.press(screen.getByLabelText("Create storefront product"));
+
+    expect(
+      screen.getByText("Product price must be a number that is zero or greater.")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Product price dollars").props.value).toBe("-5");
+    expect(
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) =>
+          path === "/api/commercial/products" && options?.method === "POST"
+      )
+    ).toHaveLength(0);
+
+    fireEvent.changeText(screen.getByLabelText("Product price dollars"), "10");
+    fireEvent.press(screen.getByLabelText("Publish product listing"));
+    fireEvent.press(screen.getByLabelText("Create storefront product"));
+
+    expect(screen.getByText(/Published product still needs:/)).toBeTruthy();
+    expect(
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) =>
+          path === "/api/commercial/products" && options?.method === "POST"
+      )
+    ).toHaveLength(0);
+  });
+
+  it("saves storefront settings once and locks conflicting controls", async () => {
+    let resolveSave: ((value: any) => void) | undefined;
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/storefront" && options?.method === "PATCH") {
+        return new Promise((resolve) => {
+          resolveSave = resolve;
+        });
+      }
+      return apiResponseFor(path, options);
+    });
+    const screen = render(<Storefront />);
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Storefront name"), "Retained Store");
+    const save = screen.getByLabelText("Save storefront settings");
+
+    fireEvent.press(save);
+    fireEvent.press(save);
+
+    expect(
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) =>
+          path === "/api/commercial/storefront" && options?.method === "PATCH"
+      )
+    ).toHaveLength(1);
+    expect(screen.getByLabelText("Saving storefront settings in progress")).toBeTruthy();
+    expect(screen.getByLabelText("Storefront name").props.editable).toBe(false);
+    expect(
+      screen.getByLabelText("Create storefront product").props.accessibilityState.disabled
+    ).toBe(true);
+
+    act(() =>
+      resolveSave?.({
+        storefront: {
+          id: "store-1",
+          name: "Retained Store",
+          slug: "grow-shop",
+          isPublished: false
+        }
+      })
+    );
+    await waitFor(() => expect(screen.getByText("Storefront saved.")).toBeTruthy());
+  });
+
+  it("retains a failed product draft and reports the error in page", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/products" && options?.method === "POST") {
+        return Promise.reject(new Error("Product creation unavailable"));
+      }
+      return apiResponseFor(path, options);
+    });
+    const screen = render(<Storefront />);
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Product name"), "Keep failed product");
+    fireEvent.press(screen.getByLabelText("Create storefront product"));
+
+    await waitFor(() =>
+      expect(screen.getByText("Product creation unavailable")).toBeTruthy()
+    );
+    expect(screen.getByRole("alert")).toBeTruthy();
+    expect(screen.getByLabelText("Product name").props.value).toBe("Keep failed product");
+  });
+
+  it("uses one H1 and explicit H2 sections for the storefront workspace", async () => {
+    const screen = render(<Storefront />);
+    await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
+
+    expect(screen.getByRole("header", { name: "Storefront" }).props["aria-level"]).toBe(
+      1
+    );
+    [
+      "Storefront Setup Checklist",
+      "Storefront Launch Actions",
+      "Product Lines",
+      "Featured Courses",
+      "Storefront Settings",
+      "Public Discovery",
+      "Upcoming Lives",
+      "Active Feed Campaigns",
+      "Create Product",
+      "Products"
+    ].forEach((heading) => {
+      expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
+    });
   });
 });
