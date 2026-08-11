@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityAnalyticsRoute, {
   createFacilityAnalyticsStyles
@@ -7,8 +7,31 @@ import FacilityAnalyticsRoute, {
 import { fetchFacilityAnalyticsOverview } from "@/api/facilityAnalytics";
 import { getThemePalette } from "@/theme/appTheme";
 
+const mockReplace = jest.fn();
+const mockRouter = { replace: mockReplace };
+let mockFacilityId: string | null = "facility-1";
+
+jest.mock("expo-router", () => ({
+  useRouter: () => mockRouter
+}));
+
+jest.mock("@/components/layout/AppPage", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return ({ children, header }: any) =>
+    React.createElement(View, null, header, children);
+});
+
+jest.mock("@/components/layout/AppCard", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return ({ children }: any) => React.createElement(View, null, children);
+});
+
+jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
+
 jest.mock("@/state/useFacility", () => ({
-  useFacility: () => ({ selectedId: "facility-1" })
+  useFacility: () => ({ selectedId: mockFacilityId })
 }));
 
 jest.mock("@/api/facilityAnalytics", () => ({
@@ -16,6 +39,11 @@ jest.mock("@/api/facilityAnalytics", () => ({
 }));
 
 describe("FacilityAnalyticsRoute", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFacilityId = "facility-1";
+  });
+
   it("uses the active Night palette for headings and metric text", () => {
     const palette = getThemePalette("night", "dark");
     const styles = createFacilityAnalyticsStyles(palette);
@@ -39,6 +67,10 @@ describe("FacilityAnalyticsRoute", () => {
     });
 
     const screen = render(<FacilityAnalyticsRoute />);
+    expect(screen.getByLabelText("Loading facility analytics").props).toMatchObject({
+      accessibilityLiveRegion: "polite",
+      accessibilityRole: "progressbar"
+    });
     await waitFor(() => expect(screen.getByText("2/3")).toBeTruthy());
     expect(fetchFacilityAnalyticsOverview).toHaveBeenCalledWith("facility-1");
     expect(
@@ -51,5 +83,42 @@ describe("FacilityAnalyticsRoute", () => {
     expect(screen.getByRole("header", { name: "Sensor alerts" })).toBeTruthy();
     expect(screen.getByRole("header", { name: "Active batches" })).toBeTruthy();
     expect(screen.getByRole("header", { name: "Training completion" })).toBeTruthy();
+    expect(
+      screen.getByLabelText("Refresh facility analytics").props.accessibilityState
+    ).toMatchObject({ busy: false, disabled: false });
+  });
+
+  it("redirects to Facility selection instead of loading forever without context", () => {
+    mockFacilityId = null;
+
+    render(<FacilityAnalyticsRoute />);
+
+    expect(mockReplace).toHaveBeenCalledWith("/home/facility/select");
+    expect(fetchFacilityAnalyticsOverview).not.toHaveBeenCalled();
+  });
+
+  it("prevents duplicate analytics refresh requests while one is pending", async () => {
+    jest.mocked(fetchFacilityAnalyticsOverview).mockResolvedValue({} as any);
+    const screen = render(<FacilityAnalyticsRoute />);
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Refresh facility analytics").props.accessibilityState
+      ).toMatchObject({ busy: false, disabled: false })
+    );
+    const callsBeforeRefresh = jest.mocked(fetchFacilityAnalyticsOverview).mock.calls
+      .length;
+    jest
+      .mocked(fetchFacilityAnalyticsOverview)
+      .mockImplementation(() => new Promise(() => {}));
+    const refresh = screen.getByLabelText("Refresh facility analytics");
+
+    fireEvent.press(refresh);
+    fireEvent.press(refresh);
+
+    expect(fetchFacilityAnalyticsOverview).toHaveBeenCalledTimes(callsBeforeRefresh + 1);
+    expect(
+      screen.getByLabelText("Refresh facility analytics").props.accessibilityState
+    ).toMatchObject({ busy: true, disabled: true });
+    screen.unmount();
   });
 });

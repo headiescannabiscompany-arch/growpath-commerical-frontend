@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 
 import { fetchFacilityAnalyticsOverview } from "@/api/facilityAnalytics";
 import AppCard from "@/components/layout/AppCard";
@@ -24,21 +25,37 @@ function Metric({ label, value, detail }: { label: string; value: any; detail: s
 }
 
 export default function FacilityAnalyticsRoute() {
+  const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilityAnalyticsStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const [data, setData] = useState<any>({});
   const [error, setError] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const loadInFlightRef = useRef(false);
+
+  const load = useCallback(async () => {
+    if (!facilityId || loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
+    setLoading(true);
+    setError(null);
+    try {
+      setData(await fetchFacilityAnalyticsOverview(facilityId));
+    } catch (loadError) {
+      setError(loadError);
+    } finally {
+      loadInFlightRef.current = false;
+      setLoading(false);
+    }
+  }, [facilityId]);
 
   useEffect(() => {
-    if (!facilityId) return;
-    setLoading(true);
-    fetchFacilityAnalyticsOverview(facilityId)
-      .then(setData)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, [facilityId]);
+    if (!facilityId) {
+      router.replace("/home/facility/select");
+      return;
+    }
+    void load();
+  }, [facilityId, load, router]);
 
   return (
     <AppPage
@@ -58,7 +75,30 @@ export default function FacilityAnalyticsRoute() {
         </View>
       }
     >
-      {loading ? <ActivityIndicator color={palette.accent} /> : null}
+      <View style={styles.actionRow}>
+        <Pressable
+          accessibilityLabel="Refresh facility analytics"
+          accessibilityRole="button"
+          accessibilityState={{ busy: loading, disabled: loading }}
+          disabled={loading}
+          onPress={() => void load()}
+          style={[styles.refreshButton, loading && styles.disabledButton]}
+        >
+          <Text style={styles.refreshButtonText}>
+            {loading ? "Refreshing..." : "Refresh analytics"}
+          </Text>
+        </Pressable>
+      </View>
+      {loading ? (
+        <View
+          accessibilityLabel="Loading facility analytics"
+          accessibilityLiveRegion="polite"
+          accessibilityRole="progressbar"
+          style={styles.loading}
+        >
+          <ActivityIndicator color={palette.accent} />
+        </View>
+      ) : null}
       {error ? <InlineError error={error} /> : null}
       <AppCard>
         <View style={styles.grid}>
@@ -114,6 +154,16 @@ export function createFacilityAnalyticsStyles(palette: ThemePalette) {
     },
     value: { color: palette.text, fontSize: 24, fontWeight: "800" },
     label: { color: palette.text, fontWeight: "800", marginTop: 5 },
-    detail: { color: palette.textMuted, lineHeight: 18, marginTop: 4 }
+    detail: { color: palette.textMuted, lineHeight: 18, marginTop: 4 },
+    actionRow: { alignItems: "flex-start" },
+    refreshButton: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    refreshButtonText: { color: palette.accentText, fontWeight: "800" },
+    disabledButton: { opacity: 0.55 },
+    loading: { alignItems: "center", paddingVertical: 18 }
   });
 }
