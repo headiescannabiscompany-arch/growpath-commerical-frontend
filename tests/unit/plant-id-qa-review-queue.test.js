@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const {
   buildReviewQueue,
   candidateSafetyBlockers,
+  deriveSourceQueries,
   parseArgs,
   reviewDecisionBlockers,
   selectCaseCandidates
@@ -9,7 +10,12 @@ const {
 
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
-function candidate(candidateId, caseId, collectionMode) {
+function candidate(
+  candidateId,
+  caseId,
+  collectionMode,
+  sourceQuery = "Solanum lycopersicum"
+) {
   return {
     candidateId,
     caseId,
@@ -21,6 +27,7 @@ function candidate(candidateId, caseId, collectionMode) {
     creator: "Observer",
     attributionText: "Observer, CC BY",
     sourceLicenseCode: "cc-by",
+    sourceQuery,
     collectionMode,
     qualityGrade: collectionMode === "cultivated" ? "casual" : "research",
     captiveOrCultivated: collectionMode === "cultivated",
@@ -80,6 +87,42 @@ describe("Plant ID QA review queue", () => {
       selected.filter((item) => item.collectionMode === "research_wild")
     ).toHaveLength(2);
     expect(new Set(selected.map((item) => item.photoId)).size).toBe(4);
+    expect(deriveSourceQueries("Cannabis sativa or Acer palmatum")).toEqual([
+      "Cannabis sativa",
+      "Acer palmatum"
+    ]);
+  });
+
+  it("balances both sides of a lookalike comparison when mode availability is uneven", () => {
+    const lookalikeCase = {
+      ...caseDefinition,
+      caseId: "grass_vs_nutsedge",
+      scientificName: "Poaceae or Cyperus species",
+      groupName: "lookalikes",
+      quota: 6
+    };
+    const candidates = [
+      ...[1, 2, 3, 4, 5, 6].map((id) =>
+        candidate(`candidate-z-${id}`, lookalikeCase.caseId, "cultivated", "Poaceae")
+      ),
+      ...[1, 2, 3, 4, 5, 6].map((id) =>
+        candidate(`candidate-a-${id}`, lookalikeCase.caseId, "cultivated", "Cyperus")
+      ),
+      ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((id) =>
+        candidate(`candidate-b-${id}`, lookalikeCase.caseId, "research_wild", "Cyperus")
+      )
+    ];
+    const selected = selectCaseCandidates(lookalikeCase, candidates, new Set());
+
+    expect(selected).toHaveLength(6);
+    expect(selected.filter((item) => item.sourceQuery === "Poaceae")).toHaveLength(3);
+    expect(selected.filter((item) => item.sourceQuery === "Cyperus")).toHaveLength(3);
+    expect(selected.filter((item) => item.collectionMode === "cultivated")).toHaveLength(
+      3
+    );
+    expect(
+      selected.filter((item) => item.collectionMode === "research_wild")
+    ).toHaveLength(3);
   });
 
   it("builds only pending reviews and records missing owned failure media", () => {

@@ -82,39 +82,102 @@ function takeUnique(candidates, count, selectedIds) {
   return chosen;
 }
 
+function deriveSourceQueries(scientificName) {
+  return String(scientificName || "")
+    .split(/\s+or\s+/i)
+    .map((value) =>
+      value
+        .trim()
+        .replace(/\s+species$/i, "")
+        .replace(/\s+/g, " ")
+    )
+    .filter(Boolean);
+}
+
+function balancedTargets(values, quota) {
+  const uniqueValues = [...new Set(values)].sort();
+  return new Map(
+    uniqueValues.map((value, index) => [
+      value,
+      Math.floor(quota / uniqueValues.length) +
+        (index < quota % uniqueValues.length ? 1 : 0)
+    ])
+  );
+}
+
 function selectCaseCandidates(caseDefinition, candidates, selectedIds) {
-  const eligible = candidates.filter(
-    (candidate) => candidate.caseId === caseDefinition.caseId
+  const eligible = stableCandidates(
+    candidates.filter((candidate) => candidate.caseId === caseDefinition.caseId)
   );
   const quota = Number(caseDefinition.quota || 0);
   if (!CULTIVATED_REVIEW_GROUPS.has(caseDefinition.groupName)) {
     return takeUnique(eligible, quota, selectedIds);
   }
 
-  const cultivatedTarget = Math.floor(quota / 2);
-  const wildTarget = quota - cultivatedTarget;
-  const selected = [
-    ...takeUnique(
-      eligible.filter((candidate) => candidate.collectionMode === "cultivated"),
-      cultivatedTarget,
-      selectedIds
-    ),
-    ...takeUnique(
-      eligible.filter((candidate) => candidate.collectionMode === "research_wild"),
-      wildTarget,
-      selectedIds
-    )
-  ];
-  if (selected.length < quota) {
-    selected.push(
-      ...takeUnique(
-        eligible.filter(
-          (candidate) =>
-            !selected.some((current) => current.candidateId === candidate.candidateId)
-        ),
-        quota - selected.length,
-        selectedIds
-      )
+  const expectedQueries = deriveSourceQueries(caseDefinition.scientificName);
+  const queryValues = expectedQueries.length
+    ? expectedQueries
+    : [...new Set(eligible.map((candidate) => candidate.sourceQuery))];
+  const modeTargets = balancedTargets(["cultivated", "research_wild"], quota);
+  const queryTargets = balancedTargets(queryValues, quota);
+  const modeCounts = new Map([...modeTargets.keys()].map((mode) => [mode, 0]));
+  const queryCounts = new Map([...queryTargets.keys()].map((query) => [query, 0]));
+  const selected = [];
+
+  while (selected.length < quota) {
+    const available = eligible.filter(
+      (candidate) =>
+        !selectedIds.has(candidate.photoId) &&
+        !selected.some((current) => current.candidateId === candidate.candidateId)
+    );
+    if (!available.length) break;
+    const remainingModeAvailability = new Map(
+      [...modeTargets.keys()].map((mode) => [
+        mode,
+        available.filter((candidate) => candidate.collectionMode === mode).length
+      ])
+    );
+    const remainingQueryAvailability = new Map(
+      [...queryTargets.keys()].map((query) => [
+        query,
+        available.filter((candidate) => candidate.sourceQuery === query).length
+      ])
+    );
+    available.sort((left, right) => {
+      const score = (candidate) => {
+        const modeNeed = Math.max(
+          0,
+          (modeTargets.get(candidate.collectionMode) || 0) -
+            (modeCounts.get(candidate.collectionMode) || 0)
+        );
+        const queryNeed = Math.max(
+          0,
+          (queryTargets.get(candidate.sourceQuery) || 0) -
+            (queryCounts.get(candidate.sourceQuery) || 0)
+        );
+        const remainingMode =
+          remainingModeAvailability.get(candidate.collectionMode) || 0;
+        const remainingQuery = remainingQueryAvailability.get(candidate.sourceQuery) || 0;
+        return (
+          (remainingMode ? modeNeed / remainingMode : 0) +
+          (remainingQuery ? queryNeed / remainingQuery : 0)
+        );
+      };
+      return (
+        score(right) - score(left) ||
+        String(left.candidateId).localeCompare(String(right.candidateId))
+      );
+    });
+    const candidate = available[0];
+    selected.push(candidate);
+    selectedIds.add(candidate.photoId);
+    modeCounts.set(
+      candidate.collectionMode,
+      (modeCounts.get(candidate.collectionMode) || 0) + 1
+    );
+    queryCounts.set(
+      candidate.sourceQuery,
+      (queryCounts.get(candidate.sourceQuery) || 0) + 1
     );
   }
   return selected;
@@ -140,6 +203,7 @@ function pendingReviewItem(caseDefinition, candidate, sequence) {
       creator: candidate.creator,
       attributionText: candidate.attributionText,
       sourceLicenseCode: candidate.sourceLicenseCode,
+      sourceQuery: candidate.sourceQuery,
       collectionMode: candidate.collectionMode,
       qualityGrade: candidate.qualityGrade,
       captiveOrCultivated: candidate.captiveOrCultivated,
@@ -200,6 +264,9 @@ function candidateSafetyBlockers(candidate) {
   }
   if (candidate?.sourceId !== "inaturalist") {
     blockers.push("candidate source is unsupported");
+  }
+  if (!String(candidate?.sourceQuery || "").trim()) {
+    blockers.push("candidate source taxon query is missing");
   }
   if (!/^https:\/\//.test(String(candidate?.sourceUrl || ""))) {
     blockers.push("candidate source URL is missing or invalid");
@@ -438,6 +505,7 @@ module.exports = {
   TIER_A_CROSS_CHECK_IDS,
   buildReviewQueue,
   candidateSafetyBlockers,
+  deriveSourceQueries,
   parseArgs,
   reviewDecisionBlockers,
   selectCaseCandidates
