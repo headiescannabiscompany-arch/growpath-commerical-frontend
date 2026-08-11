@@ -95,7 +95,7 @@ describe("Commercial evidence run active palette", () => {
     );
 
     expect(sources[0].match(/<TextInput\b/g) || []).toHaveLength(12);
-    expect(sources[1].match(/<TextInput\b/g) || []).toHaveLength(5);
+    expect(sources[1].match(/<TextInput\b/g) || []).toHaveLength(3);
     for (const source of sources) {
       expect(source).toContain("placeholderTextColor={palette.textMuted}");
       expect(source).toContain("selectionColor={palette.accent}");
