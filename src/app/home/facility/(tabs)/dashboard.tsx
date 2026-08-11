@@ -500,7 +500,7 @@ export default function FacilityDashboardTab() {
             {learningRows.map((row) => (
               <Pressable
                 key={row.label}
-                accessibilityRole="button"
+                accessibilityRole="link"
                 accessibilityLabel={row.action}
                 onPress={() => router.push(row.to as any)}
                 style={({ pressed }) => [
@@ -532,7 +532,12 @@ export default function FacilityDashboardTab() {
         </View>
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility dashboard"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={[styles.muted, { color: palette.textMuted }]}>Loading...</Text>
           </View>
@@ -551,8 +556,17 @@ export default function FacilityDashboardTab() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Refresh facility dashboard"
+                accessibilityState={{
+                  busy: loading || refreshing,
+                  disabled: loading || refreshing
+                }}
+                disabled={loading || refreshing}
                 onPress={() => load({ refresh: true })}
-                style={[styles.refreshButton, { backgroundColor: palette.accent }]}
+                style={[
+                  styles.refreshButton,
+                  { backgroundColor: palette.accent },
+                  (loading || refreshing) && styles.disabledAction
+                ]}
               >
                 <Text style={[styles.refreshText, { color: palette.accentText }]}>
                   Refresh
@@ -563,7 +577,7 @@ export default function FacilityDashboardTab() {
               {visibleQuick.map((q) => (
                 <Pressable
                   key={q.label}
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel={`Open ${q.label}`}
                   onPress={() => router.push(q.to as any)}
                   style={({ pressed }) => [
@@ -617,7 +631,7 @@ export default function FacilityDashboardTab() {
               {statusRows.map((row) => (
                 <Pressable
                   key={row.label}
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel={`Open ${row.label}`}
                   onPress={() => router.push(row.to as any)}
                   style={({ pressed }) => [
@@ -660,7 +674,7 @@ export default function FacilityDashboardTab() {
               {actionRows.map((row) => (
                 <Pressable
                   key={row.label}
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel={`Open ${row.label}`}
                   onPress={() => router.push(row.to as any)}
                   style={({ pressed }) => [
@@ -827,6 +841,7 @@ const styles = StyleSheet.create({
   tileLabel: { color: "#1f2937", fontWeight: "900" },
   tileHint: { color: "#5b6472", fontSize: 12, fontWeight: "800" },
   pressed: { opacity: 0.85 },
+  disabledAction: { opacity: 0.55 },
 
   statusRow: {
     flexDirection: "row",
