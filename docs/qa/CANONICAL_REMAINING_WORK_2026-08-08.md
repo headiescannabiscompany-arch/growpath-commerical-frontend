@@ -221,9 +221,17 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 
 ## D. Commercial, commerce data, and owner-supplied sources
 
-- [ ] Complete populated commercial brand/storefront acceptance: profile, slug,
+- [~] Complete populated commercial brand/storefront acceptance: profile, slug,
       products, zero-stock/TBD launch state, shipping, images, labels, external links,
-      course placement, and storefront discovery.
+      course placement, and storefront discovery. Frontend merge `6381cd50` now
+      makes Storefront loading and writes single-flight, retains drafts after
+      failures, validates coordinates/email/HTTPS handoffs/product prices, blocks
+      incomplete product publication, and exposes explicit progress, retry, errors,
+      and semantic headings. All 94 regression batches, the full delivery guard,
+      GitHub CI, Production Build Preflight, and exact served-bundle verification
+      passed. Populated signed-in Commercial create/edit/reload, public discovery,
+      and screenshot/video acceptance remain open. See
+      `docs/qa/COMMERCIAL_STOREFRONT_STATE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-08-11.md`.
 - [ ] Complete commercial course create/edit/publish acceptance for cover,
       category/grow interests, modules, lessons, uploads/external video sources, tasks,
       products, lives, Forum links, storefront display, and learner access.
@@ -232,7 +240,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       navigation hierarchy, and persistence checks.
 - [ ] Seed Penny Saver Soil, Living Soil, and No-Till drafts only from owner-approved
       facts. Keep inventory zero and claims unpublished until labels, guaranteed analyses,
-      sizes, prices, directions, shipping, and images are supplied and verified.
+      sizes, prices, directions, shipping, and images are supplied and verified. The
+      owner also identified GrowPathAI and Triple Bag Genetics hat designs on the
+      owner's Facebook page for later authorized asset collection. Preserve the two
+      brand assignments, but keep both hat listings at zero inventory, unpriced, and
+      unpublished until the exact image files are captured and reviewed.
 - [ ] Collect owner-approved knowledge sources: domains, authors/channels,
       reliability tiers, allowed uses, exclusions, cross-check requirements, and review
       dates; update both documentation and runtime registries.
