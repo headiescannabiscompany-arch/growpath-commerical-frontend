@@ -164,10 +164,10 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     trustedFor: ["plant_identification", "education", "qa_evaluation"],
     notTrustedFor: ["diagnosis", "ipm", "legal_regulatory"],
     notes:
-      "Candidate occurrence, season, lookalike, and community-identification lead. Needs ID, Research Grade, or community agreement is not automatic GrowPath ground truth. Review the specific observation, evidence quality, location precision, taxon agreement, and photo license before use; never treat it as model-training permission.",
+      "Candidate occurrence, season, lookalike, cultivated-crop coverage, and community-identification lead. Collect and label research-grade wild and captive/cultivated casual observations separately. Needs ID, Research Grade, casual status, captive/cultivated status, or community agreement is not automatic GrowPath ground truth. Review the specific observation, evidence quality, location precision, taxon agreement, and photo license before use; never treat it as model-training permission.",
     requiresCrossCheck: true,
     preferredCrossCheckSources: ["usda-plants-database", "kew-powo", "gbif-species-api"],
-    lastReviewedAt: "2026-07-27"
+    lastReviewedAt: "2026-08-11"
   },
   {
     id: "wikimedia-commons-licensed-plant-media",

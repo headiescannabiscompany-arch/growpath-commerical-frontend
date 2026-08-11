@@ -2,6 +2,7 @@ const {
   buildObservationUrl,
   candidateFromObservation,
   chooseAllowedPhoto,
+  collectionModesForCase,
   createManifest,
   deriveTaxonQueries,
   parseArgs,
@@ -74,7 +75,7 @@ describe("Plant ID QA candidate collector", () => {
     expect(deriveTaxonQueries("")).toEqual([]);
   });
 
-  it("requests only research observations with CC0 or CC BY photos", () => {
+  it("requests research-wild observations with CC0 or CC BY photos", () => {
     const url = buildObservationUrl("Solanum lycopersicum", {
       page: 2,
       perPage: 500
@@ -82,11 +83,37 @@ describe("Plant ID QA candidate collector", () => {
 
     expect(url.origin).toBe("https://api.inaturalist.org");
     expect(url.searchParams.get("quality_grade")).toBe("research");
+    expect(url.searchParams.get("captive")).toBe("false");
     expect(url.searchParams.get("photos")).toBe("true");
     expect(url.searchParams.get("photo_license")).toBe("cc0,cc-by");
     expect(url.searchParams.get("per_page")).toBe("200");
     expect(url.searchParams.has("lat")).toBe(false);
     expect(url.searchParams.has("lng")).toBe(false);
+  });
+
+  it("requests a separate cultivated candidate stream without treating it as research grade", () => {
+    const url = buildObservationUrl("Solanum lycopersicum", {
+      page: 1,
+      perPage: 25,
+      collectionMode: "cultivated"
+    });
+
+    expect(url.searchParams.get("quality_grade")).toBe("casual");
+    expect(url.searchParams.get("captive")).toBe("true");
+    expect(collectionModesForCase(caseDefinition)).toEqual([
+      "research_wild",
+      "cultivated"
+    ]);
+    expect(
+      collectionModesForCase({ ...caseDefinition, groupName: "weeds" })
+    ).toEqual(["research_wild"]);
+    expect(() =>
+      buildObservationUrl("Tomato", {
+        page: 1,
+        perPage: 1,
+        collectionMode: "unknown"
+      })
+    ).toThrow(/unsupported collection mode/i);
   });
 
   it("checks the individual photo license instead of trusting observation metadata", () => {
@@ -115,13 +142,14 @@ describe("Plant ID QA candidate collector", () => {
   });
 
   it("creates a pending external reference and strips observation coordinates", () => {
-    const source = observation();
+    const source = observation({ quality_grade: "casual", captive: true });
     const candidate = candidateFromObservation({
       caseDefinition,
       observation: source,
       photo: source.observation_photos[0].photo,
       taxonQuery: "Solanum lycopersicum",
-      page: 1
+      page: 1,
+      collectionMode: "cultivated"
     });
 
     expect(candidate).toMatchObject({
@@ -129,6 +157,7 @@ describe("Plant ID QA candidate collector", () => {
       caseId: "tomato",
       sourceId: "inaturalist",
       sourceLicenseCode: "cc-by",
+      collectionMode: "cultivated",
       licenseVersionStatus: "pending_per-image_confirmation",
       reviewStatus: "pending_image_taxonomy_stage_and_rights_review",
       identityApproved: false,
@@ -141,17 +170,39 @@ describe("Plant ID QA candidate collector", () => {
     expect(candidate).not.toHaveProperty("geojson");
     expect(candidate).not.toHaveProperty("location");
     expect(JSON.stringify(candidate)).not.toContain("35.8");
+    const wildSource = observation();
+    expect(() =>
+      candidateFromObservation({
+        caseDefinition,
+        observation: wildSource,
+        photo: wildSource.observation_photos[0].photo,
+        taxonQuery: "Solanum lycopersicum",
+        page: 1,
+        collectionMode: "cultivated"
+      })
+    ).toThrow(/does not match cultivated/i);
   });
 
   it("refuses to resume candidates against a different catalog snapshot", () => {
+    expect(
+      createManifest({
+        catalog: {
+          schemaVersion: "growpath-plant-identification-qa-v1",
+          targetRecordCount: 320
+        },
+        catalogSha256: "catalog",
+        existingManifest: null
+      }).collectionProgress
+    ).toEqual({});
     expect(() =>
       createManifest({
         catalog: { schemaVersion: "growpath-plant-identification-qa-v1" },
         catalogSha256: "new-catalog",
         existingManifest: {
-          schemaVersion: "growpath-plant-identification-qa-candidates-v1",
+          schemaVersion: "growpath-plant-identification-qa-candidates-v2",
           sourceId: "inaturalist",
           catalogSnapshot: { sha256: "old-catalog" },
+          collectionProgress: {},
           candidates: [],
           collectionErrors: []
         }

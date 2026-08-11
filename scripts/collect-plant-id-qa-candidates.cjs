@@ -21,6 +21,22 @@ const OUTPUT_PATH = path.join(
 );
 const INATURALIST_API = "https://api.inaturalist.org/v1/observations";
 const ALLOWED_PHOTO_LICENSES = new Set(["cc0", "cc-by"]);
+const CULTIVATED_CANDIDATE_GROUPS = new Set([
+  "cannabisHemp",
+  "foodCrops",
+  "ornamentals",
+  "lookalikes"
+]);
+const COLLECTION_MODES = {
+  research_wild: {
+    qualityGrade: "research",
+    captive: "false"
+  },
+  cultivated: {
+    qualityGrade: "casual",
+    captive: "true"
+  }
+};
 const REQUEST_DELAY_MS = 250;
 
 function parseArgs(argv) {
@@ -85,10 +101,22 @@ function deriveTaxonQueries(scientificName) {
     .filter(Boolean);
 }
 
-function buildObservationUrl(taxonName, { page, perPage }) {
+function collectionModesForCase(caseDefinition) {
+  return CULTIVATED_CANDIDATE_GROUPS.has(caseDefinition.groupName)
+    ? ["research_wild", "cultivated"]
+    : ["research_wild"];
+}
+
+function buildObservationUrl(
+  taxonName,
+  { page, perPage, collectionMode = "research_wild" }
+) {
+  const mode = COLLECTION_MODES[collectionMode];
+  if (!mode) throw new Error(`Unsupported collection mode: ${collectionMode}`);
   const url = new URL(INATURALIST_API);
   url.searchParams.set("taxon_name", taxonName);
-  url.searchParams.set("quality_grade", "research");
+  url.searchParams.set("quality_grade", mode.qualityGrade);
+  url.searchParams.set("captive", mode.captive);
   url.searchParams.set("photos", "true");
   url.searchParams.set("photo_license", "cc0,cc-by");
   url.searchParams.set("page", String(page));
@@ -121,8 +149,23 @@ function candidateFromObservation({
   observation,
   photo,
   taxonQuery,
-  page
+  page,
+  collectionMode = "research_wild"
 }) {
+  const mode = COLLECTION_MODES[collectionMode];
+  if (!mode) {
+    throw new Error(`Unsupported collection mode: ${collectionMode}`);
+  }
+  const isCultivated = observation.captive === true;
+  const qualityGrade = String(observation.quality_grade || "").trim();
+  if (
+    isCultivated !== (collectionMode === "cultivated") ||
+    qualityGrade !== mode.qualityGrade
+  ) {
+    throw new Error(
+      `Observation ${observation.id || "<unknown>"} does not match ${collectionMode} collection rules.`
+    );
+  }
   const photoLicenseCode = String(photo.license_code || "").toLowerCase();
   if (!ALLOWED_PHOTO_LICENSES.has(photoLicenseCode)) {
     throw new Error(`Photo ${photo.id || "<unknown>"} has a blocked license.`);
@@ -150,6 +193,7 @@ function candidateFromObservation({
     catalogDistinguishingFocus: caseDefinition.distinguishingFocus,
     sourceId: "inaturalist",
     sourceQuery: taxonQuery,
+    collectionMode,
     sourcePage: page,
     sourceUrl,
     observationId: observation.id,
@@ -164,7 +208,7 @@ function candidateFromObservation({
     observedTaxonId: observation.taxon?.id || null,
     observedTaxonName: String(observation.taxon?.name || "").trim(),
     observedTaxonRank: String(observation.taxon?.rank || "").trim(),
-    qualityGrade: String(observation.quality_grade || "").trim(),
+    qualityGrade,
     identificationAgreementCount: Number(observation.num_identification_agreements || 0),
     identificationDisagreementCount: Number(
       observation.num_identification_disagreements || 0
@@ -213,7 +257,7 @@ async function fetchJson(url, fetchImpl = fetch) {
 function createManifest({ catalog, catalogSha256, existingManifest }) {
   if (existingManifest) {
     if (
-      existingManifest.schemaVersion !== "growpath-plant-identification-qa-candidates-v1"
+      existingManifest.schemaVersion !== "growpath-plant-identification-qa-candidates-v2"
     ) {
       throw new Error("Existing candidate manifest has an unsupported schema version.");
     }
@@ -225,14 +269,16 @@ function createManifest({ catalog, catalogSha256, existingManifest }) {
     if (
       existingManifest.sourceId !== "inaturalist" ||
       !Array.isArray(existingManifest.candidates) ||
-      !Array.isArray(existingManifest.collectionErrors)
+      !Array.isArray(existingManifest.collectionErrors) ||
+      !existingManifest.collectionProgress ||
+      typeof existingManifest.collectionProgress !== "object"
     ) {
       throw new Error("Existing candidate manifest is malformed or from another source.");
     }
     return existingManifest;
   }
   return {
-    schemaVersion: "growpath-plant-identification-qa-candidates-v1",
+    schemaVersion: "growpath-plant-identification-qa-candidates-v2",
     status: "candidate_collection_pending_review",
     purpose: "QA inference and acceptance candidate review only; never model training.",
     sourceId: "inaturalist",
@@ -248,8 +294,10 @@ function createManifest({ catalog, catalogSha256, existingManifest }) {
       automaticallyApprovesIdentity: false,
       automaticallyApprovesLifeStage: false,
       automaticallyApprovesRights: false,
+      cultivatedObservationsRemainUnverified: true,
       allowedSourcePhotoLicenses: ["cc0", "cc-by"]
     },
+    collectionProgress: {},
     collectionErrors: [],
     candidates: []
   };
@@ -285,6 +333,16 @@ function summarize(catalog, caseDefinitions, manifest) {
         : 0
     ])
   );
+  const collectionModeCounts = Object.fromEntries(
+    Object.keys(COLLECTION_MODES).map((collectionMode) => [
+      collectionMode,
+      manifest
+        ? manifest.candidates.filter(
+            (candidate) => candidate.collectionMode === collectionMode
+          ).length
+        : 0
+    ])
+  );
   return {
     mode: manifest ? "collected_candidates" : "dry_run",
     catalogStatus: catalog.status,
@@ -296,6 +354,7 @@ function summarize(catalog, caseDefinitions, manifest) {
     ),
     candidateCount: manifest?.candidates.length || 0,
     collectionErrorCount: manifest?.collectionErrors.length || 0,
+    collectionModeCounts,
     candidateCounts,
     guarantees: {
       networkUsed: Boolean(manifest),
@@ -313,60 +372,86 @@ async function collectCandidates({ catalog, catalogSha256, caseDefinitions, opti
   const existingPhotoIds = new Set(
     manifest.candidates.map((candidate) => candidate.photoId)
   );
-  const pageByQuery = new Map();
+  const pageByQueryAndMode = new Map(
+    Object.entries(manifest.collectionProgress || {}).map(([key, page]) => [
+      key,
+      Number(page || 0)
+    ])
+  );
   for (const candidate of manifest.candidates) {
-    pageByQuery.set(
-      candidate.sourceQuery,
-      Math.max(pageByQuery.get(candidate.sourceQuery) || 0, candidate.sourcePage || 0)
+    const key = `${candidate.collectionMode}:${candidate.sourceQuery}`;
+    pageByQueryAndMode.set(
+      key,
+      Math.max(pageByQueryAndMode.get(key) || 0, candidate.sourcePage || 0)
     );
   }
 
   for (const definition of caseDefinitions) {
-    const currentCount = manifest.candidates.filter(
-      (candidate) => candidate.caseId === definition.caseId
-    ).length;
     const targetCandidateCount = Math.max(definition.quota * 2, 12);
-    let remaining = Math.max(0, targetCandidateCount - currentCount);
     const taxonQueries = deriveTaxonQueries(definition.scientificName);
     if (!taxonQueries.length) continue;
 
-    for (const taxonQuery of taxonQueries) {
-      if (remaining === 0) break;
-      const queryTarget = Math.ceil(remaining / taxonQueries.length);
-      const perPage = Math.min(200, Math.max(queryTarget * 3, 25));
-      const page = (pageByQuery.get(taxonQuery) || 0) + 1;
-      pageByQuery.set(taxonQuery, page);
-      const url = buildObservationUrl(taxonQuery, { page, perPage });
+    const collectionModes = collectionModesForCase(definition);
+    for (let modeIndex = 0; modeIndex < collectionModes.length; modeIndex += 1) {
+      const collectionMode = collectionModes[modeIndex];
+      const modeTarget =
+        Math.floor(targetCandidateCount / collectionModes.length) +
+        (modeIndex < targetCandidateCount % collectionModes.length ? 1 : 0);
+      const currentModeCount = manifest.candidates.filter(
+        (candidate) =>
+          candidate.caseId === definition.caseId &&
+          candidate.collectionMode === collectionMode
+      ).length;
+      let remainingForMode = Math.max(0, modeTarget - currentModeCount);
 
-      try {
-        const payload = await fetchJson(url);
-        let addedForQuery = 0;
-        for (const observation of payload.results || []) {
-          if (addedForQuery >= queryTarget || remaining === 0) break;
-          const photo = chooseAllowedPhoto(observation);
-          if (!photo || existingPhotoIds.has(photo.id)) continue;
-          const candidate = candidateFromObservation({
-            caseDefinition: definition,
-            observation,
-            photo,
-            taxonQuery,
-            page
-          });
-          manifest.candidates.push(candidate);
-          existingPhotoIds.add(photo.id);
-          addedForQuery += 1;
-          remaining -= 1;
-        }
-      } catch (error) {
-        manifest.collectionErrors.push({
-          caseId: definition.caseId,
-          taxonQuery,
+      for (let queryIndex = 0; queryIndex < taxonQueries.length; queryIndex += 1) {
+        if (remainingForMode === 0) break;
+        const taxonQuery = taxonQueries[queryIndex];
+        const queriesRemaining = taxonQueries.length - queryIndex;
+        const queryTarget = Math.ceil(remainingForMode / queriesRemaining);
+        const perPage = Math.min(200, Math.max(queryTarget * 3, 25));
+        const pageKey = `${collectionMode}:${taxonQuery}`;
+        const page = (pageByQueryAndMode.get(pageKey) || 0) + 1;
+        const url = buildObservationUrl(taxonQuery, {
           page,
-          message: error instanceof Error ? error.message : String(error)
+          perPage,
+          collectionMode
         });
+
+        try {
+          const payload = await fetchJson(url);
+          let addedForQuery = 0;
+          for (const observation of payload.results || []) {
+            if (addedForQuery >= queryTarget || remainingForMode === 0) break;
+            const photo = chooseAllowedPhoto(observation);
+            if (!photo || existingPhotoIds.has(photo.id)) continue;
+            const candidate = candidateFromObservation({
+              caseDefinition: definition,
+              observation,
+              photo,
+              taxonQuery,
+              page,
+              collectionMode
+            });
+            manifest.candidates.push(candidate);
+            existingPhotoIds.add(photo.id);
+            addedForQuery += 1;
+            remainingForMode -= 1;
+          }
+          pageByQueryAndMode.set(pageKey, page);
+          manifest.collectionProgress[pageKey] = page;
+        } catch (error) {
+          manifest.collectionErrors.push({
+            caseId: definition.caseId,
+            taxonQuery,
+            collectionMode,
+            page,
+            message: error instanceof Error ? error.message : String(error)
+          });
+        }
+        writeManifestAtomically(manifest);
+        await sleep(REQUEST_DELAY_MS);
       }
-      writeManifestAtomically(manifest);
-      await sleep(REQUEST_DELAY_MS);
     }
   }
 
@@ -412,6 +497,7 @@ module.exports = {
   buildObservationUrl,
   candidateFromObservation,
   chooseAllowedPhoto,
+  collectionModesForCase,
   createManifest,
   deriveTaxonQueries,
   flattenCaseDefinitions,

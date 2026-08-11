@@ -57,7 +57,8 @@
       "requirements": [
         "use the image license, not only the observation license",
         "retain observation and photo URLs plus creator attribution",
-        "treat Research Grade and community agreement only as candidate metadata, never automatic GrowPath ground truth",
+        "collect research-grade wild observations separately from captive/cultivated casual observations so crop and ornamental coverage is representative",
+        "treat Research Grade, captive/cultivated status, casual status, and community agreement only as candidate metadata, never automatic GrowPath ground truth",
         "independently review image identity, life stage, diagnostic characters, and exact license version before promotion",
         "do not use for model training",
         "do not copy CC-BY-NC or all-rights-reserved images"

@@ -391,12 +391,15 @@ Keep common, nursery, and trade names separate from scientific names. When the e
 The calculator itself does not query a botanical database. When no lookup occurred, return `required_not_performed`, an empty source-record list, and recommended source IDs rather than invented citations or range matches. Verification may use USDA PLANTS and regional floras for jurisdictional distribution, Kew POWO/WCVP for accepted vascular-plant names and synonymy, GBIF for taxonomy and occurrence leads, and iNaturalist only as a Tier C observation/community-identification lead. A future live lookup must record the exact record URL or identifier, access time, scope, match result, conflicts, and source-specific limitations.
 
 Plant ID evaluation media follows an additional candidate-to-fixture boundary. An
-iNaturalist Research Grade observation, a Wikimedia Commons file, a USDA ARS image, a
+iNaturalist Research Grade wild observation, an iNaturalist captive/cultivated casual
+observation, a Wikimedia Commons file, a USDA ARS image, a
 caption, a category, or a computer-vision-assisted identification may provide a review
 lead, but none automatically establishes the image's taxon, life stage, visible
 diagnostic characters, exact reuse rights, or intended-use approval. Candidate
 collection must retain per-image provenance and attribution, exclude private coordinates,
 copy no media by default, and leave identity, stage, rights, and QA-use decisions pending.
+Research-wild and cultivated candidates must be labeled and reviewed separately; neither
+quality grade nor captive/cultivated status establishes identity or representative stage.
 Promotion into the governed evaluation catalog requires image-level inspection,
 commercially compatible rights, Tier A taxonomy or morphology cross-checking, and an
 explicit reviewer decision. Evaluation references remain inference QA only and are never

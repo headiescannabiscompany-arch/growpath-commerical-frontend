@@ -26,13 +26,17 @@ The target intentionally fits inside the broader 300-500 range while reserving e
 
 iNaturalist is useful for taxon metadata leads, lookalikes, and candidate field observations because its API exposes observation and photo-license information. It is not a blanket permission source: iNaturalist does not own user media, photo rights vary independently from observation metadata, and noncommercial/all-rights-reserved media cannot be copied into this commercial-product QA fixture. GrowPathAI will use this pack only for inference QA, never training, and only after image-level license and intended-use review.
 
-The candidate collector is intentionally narrower than the final catalog. It requests
-Research Grade observations with photos filtered to source codes `cc0` or `cc-by`, then
-checks the individual photo license again. It stores external references and attribution,
-does not download media, does not retain coordinates, and leaves identity, life stage,
-exact license version, and intended use unapproved. Research Grade, community agreement,
-computer-vision involvement, captions, and taxon names remain review leads rather than
-GrowPath ground truth.
+The candidate collector is intentionally narrower than the final catalog. It requests a
+research-grade wild stream and, for cannabis/hemp, food crops, ornamentals, and
+lookalikes, a separate `captive=true` cultivated stream. Cultivated observations are
+normally casual rather than Research Grade, so the streams are labeled and balanced
+instead of allowing a research-only filter to silently replace crop and ornamental
+coverage with wild or escaped examples. Both streams filter source photo codes to `cc0`
+or `cc-by` and recheck the individual photo license. The collector stores external
+references and attribution, downloads no media, retains no coordinates, and leaves
+identity, life stage, exact license version, and intended use unapproved. Research Grade,
+casual or captive status, community agreement, computer-vision involvement, captions,
+and taxon names remain review leads rather than GrowPath ground truth.
 
 USDA ARS Image Gallery assets may be considered only after the individual asset is
 confirmed public domain and not an exception to the gallery policy. Wikimedia Commons
@@ -75,7 +79,8 @@ Execution writes only `tmp/spec/plant-identification-qa-candidates.json`. It nev
 the governed catalog. An existing candidate manifest requires explicit `--resume` or
 `--replace`, and collection failures are preserved instead of being presented as a
 complete pack. Resume also refuses a candidate manifest created from a different catalog
-hash. Permission-pending or lead-only sources may remain documented without
+hash and checkpoints successful query pages even when they produce no eligible photo, so
+an empty page cannot trap repeated resumes. Permission-pending or lead-only sources may remain documented without
 making strict validation impossible; however, no media record may use a source unless
 that source is explicitly approved for QA references and the record passes every
 per-image gate. The master seed-system validator now references this catalog and
