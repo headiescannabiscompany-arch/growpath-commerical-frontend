@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -91,13 +91,16 @@ export default function FacilityLogsTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const loadInFlightRef = useRef(false);
+  const savingRef = useRef(false);
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [type, setType] = useState<(typeof LOG_TYPES)[number]>("OBSERVATION");
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
+      if (!facilityId || loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -113,6 +116,7 @@ export default function FacilityLogsTab() {
       } catch (e) {
         handleApiError(e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -121,7 +125,8 @@ export default function FacilityLogsTab() {
   );
 
   const addLog = useCallback(async () => {
-    if (!facilityId || !title.trim() || !canWriteLogs) return;
+    if (!facilityId || !title.trim() || !canWriteLogs || savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setFeedback("");
     try {
@@ -144,6 +149,7 @@ export default function FacilityLogsTab() {
     } catch (e) {
       handleApiError(e);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }, [
@@ -174,14 +180,20 @@ export default function FacilityLogsTab() {
   return (
     <ScreenBoundary
       title={contextName ? `${contextName} journal` : "Facility Grow Journal"}
-      showBack={Boolean(contextGrowId)}
+      showBack
       backFallbackHref={
-        contextGrowId ? `/home/facility/grows/${contextGrowId}` : undefined
+        contextGrowId
+          ? `/home/facility/grows/${contextGrowId}`
+          : "/home/facility/dashboard"
       }
     >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        {feedback ? (
+          <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+            {feedback}
+          </Text>
+        ) : null}
 
         <View style={styles.headerRow}>
           <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
@@ -203,12 +215,17 @@ export default function FacilityLogsTab() {
               Record work, observations, and measurements where the team will find them
               later.
             </Text>
-            <View style={styles.chipRow}>
+            <View
+              accessibilityLabel="Facility journal type"
+              accessibilityRole="radiogroup"
+              style={styles.chipRow}
+            >
               {LOG_TYPES.map((option) => (
                 <Pressable
                   key={option}
-                  accessibilityRole="button"
+                  accessibilityRole="radio"
                   accessibilityLabel={`Set facility journal type ${option}`}
+                  accessibilityState={{ checked: type === option }}
                   onPress={() => setType(option)}
                   style={[styles.chip, type === option && styles.chipSelected]}
                 >
@@ -240,6 +257,7 @@ export default function FacilityLogsTab() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Save facility journal entry"
+              accessibilityState={{ busy: saving, disabled: saving || !title.trim() }}
               disabled={saving || !title.trim()}
               onPress={() => void addLog()}
               style={[styles.primaryBtn, (saving || !title.trim()) && styles.disabled]}
@@ -252,13 +270,19 @@ export default function FacilityLogsTab() {
         ) : null}
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility journal"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading logs…</Text>
           </View>
         ) : null}
 
         <FlatList
+          accessibilityLabel="Facility journal entries"
           data={items}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
           refreshControl={
@@ -291,7 +315,7 @@ export default function FacilityLogsTab() {
 
             return (
               <Pressable
-                accessibilityRole="button"
+                accessibilityRole="link"
                 accessibilityLabel={`Open facility journal entry ${title}`}
                 accessibilityState={{ disabled: !id }}
                 disabled={!id}

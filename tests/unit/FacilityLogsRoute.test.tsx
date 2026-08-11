@@ -13,6 +13,7 @@ let mockSearchParams: Record<string, string> = {
   growId: "grow-1",
   contextName: "Summer crop"
 };
+let mockScreenBoundaryProps: any = null;
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
@@ -40,7 +41,10 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { View } = require("react-native");
   return {
-    ScreenBoundary: ({ children }: any) => React.createElement(View, null, children)
+    ScreenBoundary: (props: any) => {
+      mockScreenBoundaryProps = props;
+      return React.createElement(View, null, props.children);
+    }
   };
 });
 jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
@@ -50,6 +54,7 @@ describe("FacilityLogsRoute", () => {
     jest.clearAllMocks();
     mockFacilityRole = "STAFF";
     mockCanWriteLogs = true;
+    mockScreenBoundaryProps = null;
     mockSearchParams = { growId: "grow-1", contextName: "Summer crop" };
     mockApiRequest.mockImplementation((_path: string, options?: any) =>
       Promise.resolve(
@@ -65,6 +70,11 @@ describe("FacilityLogsRoute", () => {
   it("lets staff save a real grow-scoped journal entry", async () => {
     const screen = render(<FacilityLogsRoute />);
 
+    expect(screen.getByLabelText("Loading facility journal").props).toMatchObject({
+      accessibilityLiveRegion: "polite",
+      accessibilityRole: "progressbar"
+    });
+
     await waitFor(() => expect(screen.getByText("Morning observation")).toBeTruthy());
     expect(
       screen.getByRole("header", { name: "Summer crop → Journal" }).props["aria-level"]
@@ -77,7 +87,7 @@ describe("FacilityLogsRoute", () => {
     );
 
     fireEvent.press(
-      screen.getByRole("button", {
+      screen.getByRole("link", {
         name: "Open facility journal entry Morning observation"
       })
     );
@@ -87,6 +97,10 @@ describe("FacilityLogsRoute", () => {
     });
 
     fireEvent.press(screen.getByLabelText("Set facility journal type WATER"));
+    expect(screen.getByLabelText("Set facility journal type WATER").props).toMatchObject({
+      accessibilityRole: "radio",
+      accessibilityState: { checked: true }
+    });
     fireEvent.changeText(
       screen.getByLabelText("Facility journal title"),
       "Watered row A"
@@ -149,5 +163,45 @@ describe("FacilityLogsRoute", () => {
     expect(
       screen.getByRole("header", { name: "No log entries yet" }).props["aria-level"]
     ).toBe(2);
+    expect(mockScreenBoundaryProps).toMatchObject({
+      showBack: true,
+      backFallbackHref: "/home/facility/dashboard"
+    });
+  });
+
+  it("prevents duplicate journal saves while a request is pending", async () => {
+    let finishSave: (() => void) | undefined;
+    mockApiRequest.mockImplementation((_path: string, options?: any) => {
+      if (options?.method === "POST") {
+        return new Promise<void>((resolve) => {
+          finishSave = resolve;
+        });
+      }
+      return Promise.resolve({
+        growlogs: [{ id: "log-1", title: "Morning observation" }]
+      });
+    });
+    const screen = render(<FacilityLogsRoute />);
+    await waitFor(() => expect(screen.getByText("Morning observation")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Facility journal title"), "Watered");
+    const save = screen.getByLabelText("Save facility journal entry");
+
+    fireEvent.press(save);
+    fireEvent.press(save);
+
+    expect(
+      mockApiRequest.mock.calls.filter(([, options]) => options?.method === "POST")
+    ).toHaveLength(1);
+    expect(
+      screen.getByLabelText("Save facility journal entry").props.accessibilityState
+    ).toMatchObject({ busy: true, disabled: true });
+    finishSave?.();
+    await waitFor(() =>
+      expect(screen.getByText("Journal entry saved to the grow timeline.")).toBeTruthy()
+    );
+    expect(
+      screen.getByText("Journal entry saved to the grow timeline.").props
+        .accessibilityLiveRegion
+    ).toBe("polite");
   });
 });
