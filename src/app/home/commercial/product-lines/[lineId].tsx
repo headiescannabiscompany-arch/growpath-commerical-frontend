@@ -1,6 +1,7 @@
 import { Link, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -117,8 +118,12 @@ export default function CommercialProductLineDetailRoute({
   const [growInterests, setGrowInterests] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [saveError, setSaveError] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const loadInFlightRef = useRef(false);
+  const saveInFlightRef = useRef(false);
+  const canSave = !!lineId && !loading && !saving;
 
   const hydrate = useCallback((next: ProductLine | null) => {
     setLine(next);
@@ -130,9 +135,10 @@ export default function CommercialProductLineDetailRoute({
   }, []);
 
   const load = useCallback(async () => {
-    if (!lineId) return;
+    if (!lineId || loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       const [nextLine, nextProducts] = await Promise.all([
         fetchProductLine(lineId),
@@ -141,8 +147,9 @@ export default function CommercialProductLineDetailRoute({
       hydrate(nextLine);
       setProducts(nextProducts.filter((product) => productMatchesLine(product, lineId)));
     } catch (err) {
-      setError(err);
+      setLoadError(err);
     } finally {
+      loadInFlightRef.current = false;
       setLoading(false);
     }
   }, [hydrate, lineId]);
@@ -152,10 +159,11 @@ export default function CommercialProductLineDetailRoute({
   }, [load]);
 
   async function saveChanges() {
-    if (!lineId) return;
+    if (!lineId || saveInFlightRef.current) return;
+    saveInFlightRef.current = true;
     setSaving(true);
     setMessage("");
-    setError(null);
+    setSaveError(null);
     try {
       const updated = await updateProductLine(lineId, {
         status: (status.trim() || "draft") as ProductLine["status"],
@@ -167,8 +175,9 @@ export default function CommercialProductLineDetailRoute({
       hydrate(updated);
       setMessage("Product line updated.");
     } catch (err) {
-      setError(err);
+      setSaveError(err);
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
   }
@@ -181,7 +190,9 @@ export default function CommercialProductLineDetailRoute({
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial product family</Text>
-          <Text style={styles.title}>{lineTitle(line)}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            {lineTitle(line)}
+          </Text>
           <Text style={styles.subtitle}>
             Manage the private product-family record that feeds storefront sections,
             products, batches, trials, courses, feed campaigns, and support conversations.
@@ -194,12 +205,50 @@ export default function CommercialProductLineDetailRoute({
         </View>
       }
     >
-      {loading ? <Text style={styles.muted}>Loading product line...</Text> : null}
-      {error ? <InlineError error={error} /> : null}
-      {message ? <Text style={styles.success}>{message}</Text> : null}
+      {loading ? (
+        <View
+          accessibilityLabel="Loading commercial product line"
+          accessibilityLiveRegion="polite"
+          accessibilityRole="progressbar"
+          style={styles.progressRow}
+        >
+          <ActivityIndicator color={palette.accent} />
+          <Text style={styles.muted}>Loading product line...</Text>
+        </View>
+      ) : null}
+      {loadError ? (
+        <View
+          accessible
+          accessibilityLiveRegion="assertive"
+          accessibilityRole="alert"
+          style={styles.errorPanel}
+        >
+          <InlineError error={loadError} />
+          <Pressable
+            accessibilityLabel="Retry commercial product line"
+            accessibilityRole="button"
+            disabled={loading}
+            onPress={load}
+            style={[styles.action, loading && styles.disabled]}
+          >
+            <Text style={styles.actionText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {message ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+          style={styles.success}
+        >
+          {message}
+        </Text>
+      ) : null}
 
       <AppCard>
-        <Text style={styles.cardTitle}>Line Record</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Line Record
+        </Text>
         <Text style={styles.body}>
           Product lines organize commercial products by purpose and brand family, not
           inventory shelf location. They should make product pages easier to find and
@@ -215,7 +264,9 @@ export default function CommercialProductLineDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Commercial Links</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Commercial Links
+        </Text>
         <Text style={styles.body}>
           A line should connect products, product formulas, batches, evidence runs,
           courses, feed campaigns, storefront blocks, and forum support.
@@ -231,7 +282,9 @@ export default function CommercialProductLineDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Products In This Line</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Products In This Line
+        </Text>
         <Text style={styles.body}>
           These products are attached to this storefront family and should appear together
           in public line browsing, feed campaigns, batches, and product education.
@@ -279,9 +332,12 @@ export default function CommercialProductLineDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Update Product Line</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Update Product Line
+        </Text>
         <TextInput
           accessibilityLabel="Commercial product line detail status"
+          editable={!saving}
           onChangeText={setStatus}
           placeholder="draft, testing, active, archived"
           style={styles.input}
@@ -289,6 +345,7 @@ export default function CommercialProductLineDetailRoute({
         />
         <TextInput
           accessibilityLabel="Commercial product line detail public summary"
+          editable={!saving}
           onChangeText={setPublicSummary}
           placeholder="Public summary"
           style={styles.input}
@@ -296,6 +353,7 @@ export default function CommercialProductLineDetailRoute({
         />
         <TextInput
           accessibilityLabel="Commercial product line detail cover image URL"
+          editable={!saving}
           onChangeText={setCoverImageUrl}
           placeholder="Cover image URL"
           style={styles.input}
@@ -303,6 +361,7 @@ export default function CommercialProductLineDetailRoute({
         />
         <TextInput
           accessibilityLabel="Commercial product line detail grow interests"
+          editable={!saving}
           onChangeText={setGrowInterests}
           placeholder="Grow interests, comma separated"
           style={styles.input}
@@ -310,18 +369,36 @@ export default function CommercialProductLineDetailRoute({
         />
         <TextInput
           accessibilityLabel="Commercial product line detail description"
+          editable={!saving}
           multiline
           onChangeText={setDescription}
           placeholder="Line description, use cases, products included, and evidence plan"
           style={[styles.input, styles.textArea]}
           value={description}
         />
+        {saving ? (
+          <View
+            accessibilityLabel="Saving commercial product line in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Saving product line...</Text>
+          </View>
+        ) : null}
+        {saveError ? (
+          <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
+            <InlineError error={saveError} />
+          </View>
+        ) : null}
         <Pressable
           accessibilityLabel="Save commercial product line detail"
           accessibilityRole="button"
-          disabled={saving || !lineId}
+          accessibilityState={{ disabled: !canSave, busy: saving }}
+          disabled={!canSave}
           onPress={saveChanges}
-          style={[styles.primaryAction, saving || !lineId ? styles.disabled : null]}
+          style={[styles.primaryAction, !canSave ? styles.disabled : null]}
         >
           <Text style={styles.primaryActionText}>
             {saving ? "Saving..." : "Save Product Line"}
@@ -330,7 +407,9 @@ export default function CommercialProductLineDetailRoute({
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Public Use</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Public Use
+        </Text>
         <Text style={styles.bullet}>
           Feature this line on the storefront; legacy brand profile remains secondary.
         </Text>
@@ -434,6 +513,13 @@ export function createCommercialProductLineDetailStyles(palette: ThemePalette) {
       fontWeight: "900"
     },
     disabled: { opacity: 0.55 },
+    progressRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 10
+    },
+    errorPanel: { alignItems: "flex-start", gap: 8 },
     success: { color: palette.success, fontSize: 13, fontWeight: "800", marginTop: 8 },
     bullet: {
       color: palette.textSoft,

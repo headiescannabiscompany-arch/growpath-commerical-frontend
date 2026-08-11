@@ -152,4 +152,101 @@ describe("CommercialInventoryCreateRoute", () => {
       expect(mockReplace).toHaveBeenCalledWith("/home/commercial/inventory");
     });
   });
+
+  it("rejects invalid negative stock values without silently changing them to zero", async () => {
+    const screen = render(<CommercialInventoryCreateRoute />);
+    await waitFor(() =>
+      expect(screen.queryByText("Loading saved record choices...")).toBeNull()
+    );
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial inventory item name"),
+      "Invalid Stock"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial inventory item quantity"),
+      "-2"
+    );
+    fireEvent.press(screen.getByLabelText("Create commercial inventory item"));
+
+    expect(
+      screen.getByText("Quantity must be a number that is zero or greater.")
+    ).toBeTruthy();
+    expect(screen.getByRole("alert")).toBeTruthy();
+    expect(mockApiRequest).not.toHaveBeenCalledWith(
+      "/api/commercial/inventory",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("shows create failures in page and preserves the owner's draft", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/inventory" && options?.method === "POST") {
+        return Promise.reject(new Error("Inventory service unavailable"));
+      }
+      return Promise.resolve({});
+    });
+    const screen = render(<CommercialInventoryCreateRoute />);
+    await waitFor(() =>
+      expect(screen.queryByText("Loading saved record choices...")).toBeNull()
+    );
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial inventory item name"),
+      "Retained Draft"
+    );
+    fireEvent.press(screen.getByLabelText("Create commercial inventory item"));
+
+    await waitFor(() =>
+      expect(screen.getByText("Inventory service unavailable")).toBeTruthy()
+    );
+    expect(screen.getByRole("alert")).toBeTruthy();
+    expect(screen.getByLabelText("Commercial inventory item name").props.value).toBe(
+      "Retained Draft"
+    );
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it("submits once, locks fields, and announces progress while creating", async () => {
+    let resolveCreate: ((value: { id: string }) => void) | undefined;
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/inventory" && options?.method === "POST") {
+        return new Promise((resolve) => {
+          resolveCreate = resolve;
+        });
+      }
+      return Promise.resolve({});
+    });
+    const screen = render(<CommercialInventoryCreateRoute />);
+    await waitFor(() =>
+      expect(screen.queryByText("Loading saved record choices...")).toBeNull()
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial inventory item name"),
+      "Single Flight"
+    );
+    const createAction = screen.getByLabelText("Create commercial inventory item");
+
+    fireEvent.press(createAction);
+    fireEvent.press(createAction);
+
+    expect(
+      mockApiRequest.mock.calls.filter(
+        ([path, options]) =>
+          path === "/api/commercial/inventory" && options?.method === "POST"
+      )
+    ).toHaveLength(1);
+    expect(
+      screen.getByLabelText("Creating Commercial inventory record in progress")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Commercial inventory item name").props.editable).toBe(
+      false
+    );
+
+    resolveCreate?.({ id: "inventory-2" });
+
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/home/commercial/inventory")
+    );
+  });
 });
