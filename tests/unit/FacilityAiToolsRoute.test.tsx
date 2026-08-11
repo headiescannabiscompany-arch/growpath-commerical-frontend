@@ -1,14 +1,20 @@
 import React from "react";
-import { fireEvent, render } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityAiToolsRoute, {
   FACILITY_CORE_TOOLS,
+  FACILITY_CANNABIS_TOOLS,
   FACILITY_RECORD_TOOLS,
   facilityToolHref
 } from "@/app/home/facility/(tabs)/ai-tools";
 
 const mockTokenBalanceWidget = jest.fn((_props: any) => null);
 const mockPush = jest.fn();
+const mockListGrows = jest.fn();
+
+jest.mock("@/api/grows", () => ({
+  listGrows: (...args: any[]) => mockListGrows(...args)
+}));
 
 jest.mock(
   "@/components/TokenBalanceWidget",
@@ -36,6 +42,24 @@ describe("FacilityAiToolsRoute", () => {
   beforeEach(() => {
     mockPush.mockReset();
     mockTokenBalanceWidget.mockClear();
+    mockListGrows.mockReset();
+    mockListGrows.mockResolvedValue([]);
+  });
+
+  it("shows cannabis-specific tools only when a structured Facility grow is eligible", async () => {
+    mockListGrows.mockResolvedValue([
+      { id: "grow-1", cropTypes: ["Cannabis"], growInterests: { crops: ["Cannabis"] } }
+    ]);
+    const screen = render(<FacilityAiToolsRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Cannabis grow intelligence")).toBeTruthy()
+    );
+    for (const item of FACILITY_CANNABIS_TOOLS) {
+      expect(screen.getByText(item.title)).toBeTruthy();
+      expect(screen.getByRole("button", { name: item.actionLabel })).toBeTruthy();
+    }
+    expect(mockListGrows).toHaveBeenCalledWith("facility-headies");
   });
 
   it("consolidates the legacy second AI page into the command center", () => {

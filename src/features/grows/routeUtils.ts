@@ -51,7 +51,7 @@ export function isCannabisGrow(
     ...(Array.isArray(grow.cropTypes) ? grow.cropTypes : []),
     ...interests
   ];
-  if (labels.some((label) => String(label).toLowerCase().includes("cannabis"))) {
+  if (labels.some((label) => /\b(cannabis|hemp)\b/i.test(String(label || "")))) {
     return true;
   }
 

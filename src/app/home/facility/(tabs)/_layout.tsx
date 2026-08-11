@@ -311,6 +311,15 @@ export default function FacilityTabsLayout() {
         name="tools/harvest-readiness"
         options={{ title: "Harvest Readiness", href: null }}
       />
+      <Tabs.Screen
+        name="tools/species-crop-id"
+        options={{ title: "Plant & Crop Identification", href: null }}
+      />
+      <Tabs.Screen name="tools/ipm-scout" options={{ title: "IPM Scout", href: null }} />
+      <Tabs.Screen
+        name="tools/saved-runs"
+        options={{ title: "Saved AI Runs", href: null }}
+      />
     </Tabs>
   );
 }

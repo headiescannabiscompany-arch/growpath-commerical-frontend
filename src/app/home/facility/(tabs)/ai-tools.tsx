@@ -1,10 +1,12 @@
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import { listGrows } from "@/api/grows";
+import { isCannabisGrow } from "@/features/grows/routeUtils";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -38,6 +40,27 @@ export const FACILITY_CORE_TOOLS: readonly FacilityToolHubItem[] = [
     actionLabel: "Open Plant Diagnose"
   },
   {
+    title: "Plant & Crop Identification",
+    description:
+      "Identify an unknown plant from morphology, habitat, geography, photos, and optional video frames.",
+    href: "/home/facility/tools/species-crop-id",
+    credit:
+      "Provider-backed image identification uses the selected Facility's AI credits.",
+    output:
+      "Ranked candidates, evidence, counter-evidence, uncertainty, and exact next photos.",
+    actionLabel: "Open Plant & Crop Identification"
+  },
+  {
+    title: "IPM Scout",
+    description:
+      "Separate observed organisms, damage, disease signs, and ranked hypotheses in a repeatable scout.",
+    href: "/home/facility/tools/ipm-scout",
+    credit: "Photo prefill and GPT review are separate selected-Facility AI actions.",
+    output:
+      "Direct observations, candidates, counter-evidence, missing checks, and follow-up evidence.",
+    actionLabel: "Open IPM Scout"
+  },
+  {
     title: "Environment Review",
     description: "Review measured environmental readings, risk, and next checks.",
     href: "/home/facility/tools/environment",
@@ -60,6 +83,15 @@ export const FACILITY_CORE_TOOLS: readonly FacilityToolHubItem[] = [
 ] as const;
 
 export const FACILITY_RECORD_TOOLS: readonly FacilityToolHubItem[] = [
+  {
+    title: "Saved AI Runs",
+    description:
+      "Review prior Facility AI evidence, corrections, confidence, linked records, and outcomes.",
+    href: "/home/facility/tools/saved-runs",
+    credit: "Reviewing saved results does not use AI credits.",
+    output: "Facility-scoped run history, evidence, feedback, and follow-up actions.",
+    actionLabel: "Open Saved AI Runs"
+  },
   {
     title: "Facility Grows",
     description:
@@ -86,6 +118,19 @@ export const FACILITY_RECORD_TOOLS: readonly FacilityToolHubItem[] = [
     credit: "Opening reports and exports does not use AI credits.",
     output: "Facility-scoped summaries, readiness gaps, and export evidence.",
     actionLabel: "Open Facility Reports"
+  }
+] as const;
+
+export const FACILITY_CANNABIS_TOOLS: readonly FacilityToolHubItem[] = [
+  {
+    title: "Harvest Readiness",
+    description:
+      "Estimate a review window from visible flower development, sampled trichomes, timing, aroma, and user observations.",
+    href: "/home/facility/tools/harvest-readiness",
+    credit: "Image analysis uses the selected Facility's AI credits.",
+    output:
+      "A planning range, reasons to wait or harvest, sampled percentages, uncertainty, and next evidence.",
+    actionLabel: "Open Harvest Readiness"
   }
 ] as const;
 
@@ -158,6 +203,24 @@ export default function FacilityAiToolsRoute() {
   const { selectedId: facilityId, selected: facility } = useFacility();
   const { palette } = useAppTheme();
   const activeFacilityId = String(facilityId || "");
+  const [showCannabisTools, setShowCannabisTools] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setShowCannabisTools(false);
+    if (!activeFacilityId) return () => void (active = false);
+    void listGrows(activeFacilityId)
+      .then((grows) => {
+        if (active)
+          setShowCannabisTools(grows.some((grow) => isCannabisGrow(grow as any)));
+      })
+      .catch(() => {
+        if (active) setShowCannabisTools(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeFacilityId]);
   return (
     <AppPage
       routeKey="facility-ai-tools"
@@ -206,6 +269,18 @@ export default function FacilityAiToolsRoute() {
         Shared grow intelligence
       </Text>
       <ToolGrid facilityId={activeFacilityId} items={FACILITY_CORE_TOOLS} />
+      {showCannabisTools ? (
+        <>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={[styles.sectionHeading, { color: palette.text }]}
+          >
+            Cannabis grow intelligence
+          </Text>
+          <ToolGrid facilityId={activeFacilityId} items={FACILITY_CANNABIS_TOOLS} />
+        </>
+      ) : null}
       <Text
         accessibilityRole="header"
         aria-level={2}

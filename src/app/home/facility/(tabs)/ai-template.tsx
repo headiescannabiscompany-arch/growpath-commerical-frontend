@@ -24,10 +24,10 @@ const TEMPLATES = [
     href: "/home/facility/ai-ask?preset=inventory"
   },
   {
-    key: "harvest",
-    title: "Harvest Window",
-    desc: "Estimate harvest timing from trichome distribution and flower age.",
-    href: "/home/facility/ai-ask?preset=harvest"
+    key: "deviation",
+    title: "Deviation Review",
+    desc: "Summarize a recorded deviation, missing evidence, owners, and reviewable follow-up actions.",
+    href: "/home/facility/ai-ask?preset=deviation"
   }
 ];
 
