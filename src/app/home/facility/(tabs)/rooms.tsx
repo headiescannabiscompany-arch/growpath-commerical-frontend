@@ -437,13 +437,14 @@ export default function FacilityRoomsTab() {
         setRooms(roomRows);
         setEquipment(equipmentRows);
         setCycles(cycleRows);
-        const nextActive =
-          activeRoomId && roomRows.some((room) => rowId(room) === activeRoomId)
-            ? activeRoomId
+        setActiveRoomId((currentActiveRoomId) =>
+          currentActiveRoomId &&
+          roomRows.some((room) => rowId(room) === currentActiveRoomId)
+            ? currentActiveRoomId
             : routeRoomId && roomRows.some((room) => rowId(room) === routeRoomId)
               ? routeRoomId
-              : rowId(roomRows[0]);
-        setActiveRoomId(nextActive);
+              : rowId(roomRows[0])
+        );
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -451,7 +452,7 @@ export default function FacilityRoomsTab() {
         setRefreshing(false);
       }
     },
-    [activeRoomId, facilityId, routeRoomId, clearError, handleApiError]
+    [facilityId, routeRoomId, clearError, handleApiError]
   );
 
   useEffect(() => {
@@ -461,13 +462,6 @@ export default function FacilityRoomsTab() {
     }
     load();
   }, [facilityId, load, router]);
-
-  useEffect(() => {
-    if (!activeRoom) return;
-    setRoomTrackingMode(
-      activeRoom.trackingMode === "individual" ? "individual" : "batch"
-    );
-  }, [activeRoom]);
 
   useEffect(() => {
     if (!routeRoomId || activeRoomId === routeRoomId) return;
@@ -702,7 +696,6 @@ export default function FacilityRoomsTab() {
     clearError();
     try {
       await updateRoom(facilityId, activeRoomId, { trackingMode: mode });
-      setRoomTrackingMode(mode);
       setFeedback("Tracking mode updated.");
       await load({ refresh: true });
     } catch (e) {
@@ -820,7 +813,11 @@ export default function FacilityRoomsTab() {
         }
       >
         {error ? <InlineError error={error} /> : null}
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        {feedback ? (
+          <Text accessibilityRole="alert" style={styles.feedback}>
+            {feedback}
+          </Text>
+        ) : null}
 
         <View style={styles.headerRow}>
           <View>
@@ -831,7 +828,12 @@ export default function FacilityRoomsTab() {
               {rooms.length} rooms | {equipment.length} equipment | {cycles.length} cycles
             </Text>
           </View>
-          {loading ? <ActivityIndicator color={palette.accent} /> : null}
+          {loading ? (
+            <ActivityIndicator
+              accessibilityLabel="Loading facility rooms and equipment"
+              color={palette.accent}
+            />
+          ) : null}
         </View>
 
         <FacilityContextualTools
@@ -898,6 +900,9 @@ export default function FacilityRoomsTab() {
                         disabled={saving || roomIndex === 0}
                         accessibilityRole="button"
                         accessibilityLabel={`Move ${room.name || "room"} up`}
+                        accessibilityState={{
+                          disabled: saving || roomIndex === 0
+                        }}
                         style={[
                           styles.orderButton,
                           (saving || roomIndex === 0) && styles.disabled
@@ -910,6 +915,9 @@ export default function FacilityRoomsTab() {
                         disabled={saving || roomIndex === rooms.length - 1}
                         accessibilityRole="button"
                         accessibilityLabel={`Move ${room.name || "room"} down`}
+                        accessibilityState={{
+                          disabled: saving || roomIndex === rooms.length - 1
+                        }}
                         style={[
                           styles.orderButton,
                           (saving || roomIndex === rooms.length - 1) && styles.disabled
@@ -1002,6 +1010,9 @@ export default function FacilityRoomsTab() {
               disabled={saving || !canEditRooms || !roomImportPreview.length}
               accessibilityRole="button"
               accessibilityLabel="Create imported facility rooms"
+              accessibilityState={{
+                disabled: saving || !canEditRooms || !roomImportPreview.length
+              }}
               style={[
                 styles.primaryBtn,
                 (saving || !canEditRooms || !roomImportPreview.length) && styles.disabled
@@ -1052,6 +1063,9 @@ export default function FacilityRoomsTab() {
                 disabled={assistantBusy || !roomDescription.trim()}
                 accessibilityRole="button"
                 accessibilityLabel="Ask AI to help fill out new room"
+                accessibilityState={{
+                  disabled: assistantBusy || !roomDescription.trim()
+                }}
                 style={[
                   styles.primaryBtn,
                   (assistantBusy || !roomDescription.trim()) && styles.disabled
@@ -1138,8 +1152,9 @@ export default function FacilityRoomsTab() {
                   <Pressable
                     key={type.value}
                     onPress={() => setRoomType(type.value)}
-                    accessibilityRole="button"
+                    accessibilityRole="radio"
                     accessibilityLabel={`Set new room type to ${type.label}`}
+                    accessibilityState={{ checked: roomType === type.value }}
                     style={[styles.pill, roomType === type.value && styles.pillSelected]}
                   >
                     <Text
@@ -1173,8 +1188,9 @@ export default function FacilityRoomsTab() {
                     ].map(([value, label]) => (
                       <Pressable
                         key={value}
-                        accessibilityRole="button"
+                        accessibilityRole="radio"
                         accessibilityLabel={`Set seedling placement to ${label}`}
+                        accessibilityState={{ checked: seedlingPlacement === value }}
                         onPress={() =>
                           setSeedlingPlacement(value as typeof seedlingPlacement)
                         }
@@ -1203,8 +1219,11 @@ export default function FacilityRoomsTab() {
                         .map((room) => (
                           <Pressable
                             key={rowId(room)}
-                            accessibilityRole="button"
+                            accessibilityRole="radio"
                             accessibilityLabel={`Use ${room.name} as seedling host room`}
+                            accessibilityState={{
+                              checked: seedlingHostRoomId === rowId(room)
+                            }}
                             onPress={() => setSeedlingHostRoomId(rowId(room))}
                             style={[
                               styles.pill,
@@ -1231,8 +1250,9 @@ export default function FacilityRoomsTab() {
                   <Pressable
                     key={stage}
                     onPress={() => setRoomStage(roomStage === stage ? "" : stage)}
-                    accessibilityRole="button"
+                    accessibilityRole="checkbox"
                     accessibilityLabel={`Set new room stage to ${stage}`}
+                    accessibilityState={{ checked: roomStage === stage }}
                     style={[styles.pill, roomStage === stage && styles.pillSelected]}
                   >
                     <Text
@@ -1251,8 +1271,9 @@ export default function FacilityRoomsTab() {
                   <Pressable
                     key={mode}
                     onPress={() => setRoomTrackingMode(mode)}
-                    accessibilityRole="button"
+                    accessibilityRole="radio"
                     accessibilityLabel={`Set new room tracking mode to ${mode}`}
+                    accessibilityState={{ checked: roomTrackingMode === mode }}
                     style={[
                       styles.pill,
                       roomTrackingMode === mode && styles.pillSelected
@@ -1274,6 +1295,7 @@ export default function FacilityRoomsTab() {
                 disabled={saving || !roomName.trim()}
                 accessibilityRole="button"
                 accessibilityLabel="Create Room"
+                accessibilityState={{ disabled: saving || !roomName.trim() }}
                 style={[
                   styles.primaryBtn,
                   (saving || !roomName.trim()) && styles.disabled
@@ -1302,6 +1324,7 @@ export default function FacilityRoomsTab() {
                     onPress={() => setActiveRoomId(id)}
                     accessibilityRole="button"
                     accessibilityLabel={`Select room ${room.name || "Room"}`}
+                    accessibilityState={{ selected }}
                     style={[styles.pill, selected && styles.pillSelected]}
                   >
                     <Text style={[styles.pillText, selected && styles.pillTextSelected]}>
@@ -1332,8 +1355,12 @@ export default function FacilityRoomsTab() {
                     key={mode}
                     onPress={() => saveTrackingMode(mode)}
                     disabled={!canEditRooms || saving}
-                    accessibilityRole="button"
+                    accessibilityRole="radio"
                     accessibilityLabel={`Set room tracking mode to ${mode}`}
+                    accessibilityState={{
+                      checked: (activeRoom.trackingMode || "batch") === mode,
+                      disabled: !canEditRooms || saving
+                    }}
                     style={[
                       styles.pill,
                       (activeRoom.trackingMode || "batch") === mode && styles.pillSelected
@@ -1357,6 +1384,7 @@ export default function FacilityRoomsTab() {
                   disabled={saving}
                   accessibilityRole="button"
                   accessibilityLabel="Delete Room"
+                  accessibilityState={{ disabled: saving }}
                   style={[styles.dangerBtn, saving && styles.disabled]}
                 >
                   <Text style={styles.dangerText}>Delete Room</Text>
@@ -1395,6 +1423,9 @@ export default function FacilityRoomsTab() {
                     disabled={saving || !equipmentName.trim()}
                     accessibilityRole="button"
                     accessibilityLabel="Add Equipment"
+                    accessibilityState={{
+                      disabled: saving || !equipmentName.trim()
+                    }}
                     style={[
                       styles.primaryBtn,
                       (saving || !equipmentName.trim()) && styles.disabled
@@ -1468,8 +1499,9 @@ export default function FacilityRoomsTab() {
                       <Pressable
                         key={stage}
                         onPress={() => setCycleStage(stage)}
-                        accessibilityRole="button"
+                        accessibilityRole="radio"
                         accessibilityLabel={`Set batch cycle stage to ${stage}`}
+                        accessibilityState={{ checked: cycleStage === stage }}
                         style={[styles.pill, cycleStage === stage && styles.pillSelected]}
                       >
                         <Text
@@ -1488,8 +1520,9 @@ export default function FacilityRoomsTab() {
                       <Pressable
                         key={status}
                         onPress={() => setCycleStatus(status)}
-                        accessibilityRole="button"
+                        accessibilityRole="radio"
                         accessibilityLabel={`Set batch cycle status to ${status}`}
+                        accessibilityState={{ checked: cycleStatus === status }}
                         style={[
                           styles.pill,
                           cycleStatus === status && styles.pillSelected
@@ -1520,6 +1553,7 @@ export default function FacilityRoomsTab() {
                     disabled={saving || !cycleName.trim()}
                     accessibilityRole="button"
                     accessibilityLabel="Create Batch Cycle"
+                    accessibilityState={{ disabled: saving || !cycleName.trim() }}
                     style={[
                       styles.primaryBtn,
                       (saving || !cycleName.trim()) && styles.disabled
@@ -1564,6 +1598,7 @@ export default function FacilityRoomsTab() {
                           disabled={saving}
                           accessibilityRole="button"
                           accessibilityLabel={`Delete batch cycle ${cycle.name || id}`}
+                          accessibilityState={{ disabled: saving }}
                           style={styles.inlineDanger}
                         >
                           <Text style={styles.dangerText}>Delete</Text>

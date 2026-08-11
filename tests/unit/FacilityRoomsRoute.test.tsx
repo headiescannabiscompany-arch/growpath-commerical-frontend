@@ -15,13 +15,14 @@ const mockCreateEquipment = jest.fn();
 const mockDeleteBatchCycle = jest.fn();
 const mockListBatchCycles = jest.fn();
 const mockListEquipment = jest.fn();
+const mockRouter = { replace: mockReplace, push: mockPush };
 let mockRoomParams: Record<string, string> = {};
 let mockFacilityRole = "OWNER";
 let mockScreenBoundaryProps: any = null;
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockRoomParams,
-  useRouter: () => ({ replace: mockReplace, push: mockPush })
+  useRouter: () => mockRouter
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -118,6 +119,9 @@ describe("FacilityRoomsTab", () => {
       showBack: true,
       backFallbackHref: "/home/facility/dashboard"
     });
+    expect(mockFetchRooms).toHaveBeenCalledTimes(1);
+    expect(mockListEquipment).toHaveBeenCalledTimes(1);
+    expect(mockListBatchCycles).toHaveBeenCalledTimes(1);
   });
 
   it("clearly labels room workspaces and saves a reordered list", async () => {
@@ -133,6 +137,10 @@ describe("FacilityRoomsTab", () => {
     expect(screen.getByText("Arrange room workspaces")).toBeTruthy();
     expect(screen.getAllByText("Open grows >")).toHaveLength(2);
     expect(screen.getByLabelText("Open grows for Veg Room")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Move Existing Dry Room up" }).props
+        .accessibilityState
+    ).toEqual({ disabled: true });
     fireEvent.press(screen.getByLabelText("Move Veg Room up"));
 
     await waitFor(() =>
@@ -391,6 +399,7 @@ describe("FacilityRoomsTab", () => {
         id: "room-veg",
         name: "Veg Room",
         roomType: "veg",
+        trackingMode: "individual",
         zoneName: "North bench",
         stage: "veg",
         createdAt: "2026-07-07T00:00:00Z"
@@ -403,6 +412,14 @@ describe("FacilityRoomsTab", () => {
     expect(screen.getByText(/Type: veg/)).toBeTruthy();
     expect(screen.getByText(/Zone: North bench/)).toBeTruthy();
     expect(screen.getByText(/Stage: veg/)).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Select room Veg Room" }).props
+        .accessibilityState
+    ).toEqual({ selected: true });
+    expect(
+      screen.getByRole("radio", { name: "Set new room tracking mode to batch" }).props
+        .accessibilityState
+    ).toEqual({ checked: true });
   });
 
   it("creates manual facility rooms with zone and stage context", async () => {
@@ -412,9 +429,28 @@ describe("FacilityRoomsTab", () => {
 
     fireEvent.changeText(screen.getByLabelText("New room name"), "Clone Room A");
     fireEvent.changeText(screen.getByLabelText("New room zone or area"), "North bench");
-    fireEvent.press(screen.getByLabelText("Set new room type to Clone"));
-    fireEvent.press(screen.getByLabelText("Set new room stage to clone"));
-    fireEvent.press(screen.getByLabelText("Set new room tracking mode to individual"));
+    fireEvent.press(screen.getByRole("radio", { name: "Set new room type to Clone" }));
+    fireEvent.press(
+      screen.getByRole("checkbox", { name: "Set new room stage to clone" })
+    );
+    fireEvent.press(
+      screen.getByRole("radio", {
+        name: "Set new room tracking mode to individual"
+      })
+    );
+    expect(
+      screen.getByRole("radio", { name: "Set new room type to Clone" }).props
+        .accessibilityState
+    ).toEqual({ checked: true });
+    expect(
+      screen.getByRole("checkbox", { name: "Set new room stage to clone" }).props
+        .accessibilityState
+    ).toEqual({ checked: true });
+    expect(
+      screen.getByRole("radio", {
+        name: "Set new room tracking mode to individual"
+      }).props.accessibilityState
+    ).toEqual({ checked: true });
     fireEvent.press(screen.getByLabelText("Create Room"));
 
     await waitFor(() =>
