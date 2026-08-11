@@ -73,6 +73,8 @@ Candidate collection is dry-run by default:
 npm.cmd run collect:plant-id-qa-candidates
 npm.cmd run collect:plant-id-qa-candidates:execute
 npm.cmd run collect:plant-id-qa-candidates:resume
+npm.cmd run prepare:plant-id-qa-review
+npm.cmd run prepare:plant-id-qa-review:execute
 ```
 
 Execution writes only `tmp/spec/plant-identification-qa-candidates.json`. It never edits
@@ -87,3 +89,15 @@ per-image gate. The master seed-system validator now references this catalog and
 collector directly. Unused candidate or permission-pending sources remain documented
 leads rather than false release blockers; a seed-ready Plant ID master pack must match a
 seed-ready 300-500-record governed catalog.
+
+The review-queue preparer is also dry-run by default. It verifies that the candidate
+manifest is bound to the current catalog hash, selects each available case up to its
+governed quota, balances research-wild and cultivated evidence where applicable, and
+writes lookalike queues with balanced source-taxon coverage when the candidate pool can
+support it. It writes only `tmp/spec/plant-identification-qa-review.json` after explicit
+execution. It does not copy media or promote catalog records. Every queued item begins
+pending and is non-promotable until a named reviewer records image-visible morphology,
+identity and life-stage decisions, a Tier A taxonomy or morphology cross-check, the exact image
+license and license URL, rights-review date, expected confidence/behavior, and intended
+commercial QA-use approval. Missing failure cases remain explicit owned-or-commissioned
+media blockers rather than placeholders.
