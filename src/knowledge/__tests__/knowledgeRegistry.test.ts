@@ -364,6 +364,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never repeat a trial for the same paid plan or consume another paid plan's trial when one plan's trial is used."
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight review-first CSV and PDF catalog import with cross-platform status feedback"
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never depend on a native-only alert for Commercial catalog import fallback, permit duplicate concurrent extraction or draft-creation requests, accept a PDF extraction without a protected source URL, or imply an imported draft is published."
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never open an immediately billed Stripe checkout on the first action after the selected plan's trial has been used."
     );

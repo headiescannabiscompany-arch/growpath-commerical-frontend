@@ -707,7 +707,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "review-only SOP/checklist recommendations with starter version, rationale, missing information, and separately confirmed grow-task conversion",
       "clear not-configured guidance for unavailable third-party integrations",
       "connection-derived read-only EventSub status and checked Commercial Live visibility controls",
-      "readable calendar selection with direct year, month, day, and optional time controls"
+      "readable calendar selection with direct year, month, day, and optional time controls",
+      "single-flight review-first CSV and PDF catalog import with cross-platform status feedback"
     ],
     [
       "Never cross workspace scope or invent product claims.",
@@ -750,7 +751,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never pass reserved public route words or malformed record IDs into database ID queries.",
       "Never allow an author to type an integration into a connected state or expose Commercial Live visibility as unselected raw values.",
       "Never expose raw integration transport codes as workflow content or claim an integration is connected without verified configuration state.",
-      "Never require an ordinary Commercial user to type an ISO date or date-time string."
+      "Never require an ordinary Commercial user to type an ISO date or date-time string.",
+      "Never depend on a native-only alert for Commercial catalog import fallback, permit duplicate concurrent extraction or draft-creation requests, accept a PDF extraction without a protected source URL, or imply an imported draft is published."
     ],
     ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
   ),
