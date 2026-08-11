@@ -291,8 +291,11 @@ export default function FacilityLogsTab() {
 
             return (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Open facility journal entry ${title}`}
+                accessibilityState={{ disabled: !id }}
+                disabled={!id}
                 onPress={() => {
-                  if (!id) return;
                   router.push({ pathname: "/home/facility/logs/[id]", params: { id } });
                 }}
                 style={({ pressed }) => [styles.row, pressed && styles.pressed]}

@@ -213,8 +213,11 @@ export default function FacilityGrowsTab() {
 
             return (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Open facility grow ${title}`}
+                accessibilityState={{ disabled: !id }}
+                disabled={!id}
                 onPress={() => {
-                  if (!id) return;
                   router.push({ pathname: "/home/facility/grows/[id]", params: { id } });
                 }}
                 style={({ pressed }) => [styles.row, pressed && styles.pressed]}

@@ -191,6 +191,7 @@ export default function FacilityGrowDetail() {
                     }
                     style={styles.workspaceAction}
                     accessibilityRole="button"
+                    accessibilityLabel={`Open ${label} for ${pickTitle(item)}`}
                   >
                     <Text style={styles.workspaceLabel}>{label}</Text>
                     <Text style={styles.workspaceArrow}>{">"}</Text>

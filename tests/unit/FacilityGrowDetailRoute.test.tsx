@@ -75,7 +75,11 @@ describe("FacilityGrowDetailRoute", () => {
     expect(screen.getByText("Contextual grow tools")).toBeTruthy();
     expect(screen.queryByText(/\{\s*"/)).toBeNull();
 
-    fireEvent.press(screen.getByText("Tasks & calendar"));
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Open Tasks & calendar for Summer crop"
+      })
+    );
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: "/home/facility/tasks",

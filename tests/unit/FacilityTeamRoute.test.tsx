@@ -10,10 +10,12 @@ const mockListTeamMembers = jest.fn();
 const mockRemoveTeamMember = jest.fn();
 const mockUpdateTeamMemberRole = jest.fn();
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
+const mockRouter = { push: mockPush, replace: mockReplace };
 let mockFacilityRole = "OWNER";
 
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, replace: jest.fn() })
+  useRouter: () => mockRouter
 }));
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
@@ -53,24 +55,33 @@ describe("FacilityTeamTab", () => {
     mockRemoveTeamMember.mockResolvedValue({ ok: true });
     mockUpdateTeamMemberRole.mockReset();
     mockPush.mockReset();
+    mockReplace.mockReset();
   });
 
   it("lets an owner enter an invite email and provides a dashboard back route", async () => {
     mockInvite.mockResolvedValue({});
     const screen = render(<FacilityTeamTab />);
 
+    await screen.findByText("No members yet");
     expect(screen.getByText("Back /home/facility/dashboard")).toBeTruthy();
     fireEvent.changeText(
       screen.getByLabelText("Invite team member email"),
       "staff@example.com"
     );
     expect(screen.getByDisplayValue("staff@example.com")).toBeTruthy();
+    expect(
+      screen.getByRole("radio", { name: "Invite as staff" }).props.accessibilityState
+    ).toEqual({ checked: true });
+    fireEvent.press(screen.getByRole("radio", { name: "Invite as manager" }));
+    expect(
+      screen.getByRole("radio", { name: "Invite as manager" }).props.accessibilityState
+    ).toEqual({ checked: true });
     fireEvent.press(screen.getByLabelText("Send team invite"));
 
     await waitFor(() =>
       expect(mockInvite).toHaveBeenCalledWith("facility-1", {
         email: "staff@example.com",
-        role: "STAFF"
+        role: "MANAGER"
       })
     );
   });
