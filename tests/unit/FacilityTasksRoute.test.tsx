@@ -215,6 +215,83 @@ describe("FacilityTasksRoute", () => {
     expect(screen.queryByText(/Create a task above/)).toBeNull();
   });
 
+  it("exposes task choices, filters, toggles, loading, and submit state", async () => {
+    mockGetFacilityTasks.mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve([]), 10))
+    );
+    const screen = render(<FacilityTasksRoute />);
+
+    expect(screen.getByLabelText("Loading facility tasks").props.accessibilityRole).toBe(
+      "progressbar"
+    );
+    await waitFor(() => expect(screen.getByText("No tasks yet")).toBeTruthy());
+
+    const creatorToggle = screen.getByLabelText("Toggle facility task creator");
+    expect(creatorToggle.props.accessibilityState).toEqual({ expanded: false });
+    fireEvent.press(creatorToggle);
+    expect(
+      screen.getByLabelText("Toggle facility task creator").props.accessibilityState
+    ).toEqual({ expanded: true });
+
+    const roomChoice = screen.getByLabelText("Set facility task room Clone room");
+    expect(roomChoice.props.accessibilityRole).toBe("radio");
+    expect(roomChoice.props.accessibilityState).toEqual({ checked: false });
+    fireEvent.press(roomChoice);
+    expect(
+      screen.getByLabelText("Set facility task room Clone room").props.accessibilityState
+    ).toEqual({ checked: true });
+
+    const assigneeChoice = screen.getByLabelText("Assign facility task to Alex Grower");
+    expect(assigneeChoice.props.accessibilityRole).toBe("radio");
+    fireEvent.press(assigneeChoice);
+    expect(
+      screen.getByLabelText("Assign facility task to Alex Grower").props
+        .accessibilityState
+    ).toEqual({ checked: true });
+
+    const advancedToggle = screen.getByLabelText("Toggle advanced facility task linkage");
+    expect(advancedToggle.props.accessibilityState).toEqual({ expanded: false });
+    fireEvent.press(advancedToggle);
+    expect(
+      screen.getByLabelText("Toggle advanced facility task linkage").props
+        .accessibilityState
+    ).toEqual({ expanded: true });
+
+    const sourceChoice = screen.getByLabelText("Set facility task source sop");
+    expect(sourceChoice.props.accessibilityRole).toBe("radio");
+    fireEvent.press(sourceChoice);
+    expect(
+      screen.getByLabelText("Set facility task source sop").props.accessibilityState
+    ).toEqual({ checked: true });
+
+    const proofToggle = screen.getByLabelText("Toggle proof required");
+    expect(proofToggle.props.accessibilityRole).toBe("checkbox");
+    expect(proofToggle.props.accessibilityState).toEqual({ checked: false });
+    fireEvent.press(proofToggle);
+    expect(
+      screen.getByLabelText("Toggle proof required").props.accessibilityState
+    ).toEqual({ checked: true });
+
+    const createButton = screen.getByLabelText("Create facility task");
+    expect(createButton.props.accessibilityState).toEqual({ disabled: true });
+    fireEvent.changeText(screen.getByLabelText("Facility task title"), "Check room");
+    expect(
+      screen.getByLabelText("Create facility task").props.accessibilityState
+    ).toEqual({ disabled: false });
+
+    expect(
+      screen.getByLabelText("Facility task queue filter all").props.accessibilityState
+    ).toEqual({ checked: true });
+    fireEvent.press(screen.getByLabelText("Facility task queue filter assigned"));
+    expect(
+      screen.getByLabelText("Facility task queue filter assigned").props
+        .accessibilityState
+    ).toEqual({ checked: true });
+    expect(
+      screen.getByLabelText("Facility task source filter all").props.accessibilityState
+    ).toEqual({ checked: true });
+  });
+
   it("opens the selected task detail with a concrete web-safe route", async () => {
     const screen = render(<FacilityTasksRoute />);
 
