@@ -62,6 +62,11 @@ describe("FacilityTeamTab", () => {
     mockInvite.mockResolvedValue({});
     const screen = render(<FacilityTeamTab />);
 
+    expect(screen.getByLabelText("Loading facility team").props).toMatchObject({
+      accessibilityLiveRegion: "polite",
+      accessibilityRole: "progressbar"
+    });
+
     await screen.findByText("No members yet");
     expect(screen.getByText("Back /home/facility/dashboard")).toBeTruthy();
     fireEvent.changeText(
@@ -190,5 +195,56 @@ describe("FacilityTeamTab", () => {
       if (originalWindow === undefined) delete (globalThis as any).window;
       else (globalThis as any).window = originalWindow;
     }
+  });
+
+  it("prevents duplicate invites while email delivery is pending", async () => {
+    let finishInvite: ((value: any) => void) | undefined;
+    mockInvite.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishInvite = resolve;
+        })
+    );
+    const screen = render(<FacilityTeamTab />);
+    await screen.findByText("No members yet");
+    fireEvent.changeText(
+      screen.getByLabelText("Invite team member email"),
+      "viewer@example.com"
+    );
+    const send = screen.getByLabelText("Send team invite");
+
+    fireEvent.press(send);
+    fireEvent.press(send);
+
+    expect(mockInvite).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByLabelText("Send team invite").props.accessibilityState
+    ).toMatchObject({ busy: true, disabled: true });
+    finishInvite?.({ emailDelivery: { sent: true } });
+    const feedback = await screen.findByText(
+      "Invite emailed to viewer@example.com as staff."
+    );
+    expect(feedback.props.accessibilityLiveRegion).toBe("polite");
+  });
+
+  it("exposes member access roles as a selected radio group", async () => {
+    mockListTeamMembers.mockResolvedValue([
+      { userId: "staff-1", name: "Alex Grower", role: "STAFF" }
+    ]);
+    const screen = render(<FacilityTeamTab />);
+
+    await waitFor(() => expect(screen.getByText("Alex Grower")).toBeTruthy());
+    expect(
+      screen.getByLabelText("Access role for Alex Grower").props.accessibilityRole
+    ).toBe("radiogroup");
+    expect(screen.getByLabelText("Change Alex Grower role to staff").props).toMatchObject(
+      {
+        accessibilityRole: "radio",
+        accessibilityState: { checked: true, disabled: true }
+      }
+    );
+    expect(
+      screen.getByLabelText("Assign task to Alex Grower").props.accessibilityRole
+    ).toBe("link");
   });
 });

@@ -88,10 +88,14 @@ export default function FacilityTeamTab() {
   const [inviteFeedback, setInviteFeedback] = useState("");
   const [busyMemberId, setBusyMemberId] = useState("");
   const [memberFeedback, setMemberFeedback] = useState("");
+  const loadInFlightRef = useRef(false);
+  const inviteInFlightRef = useRef(false);
+  const busyMembersRef = useRef(new Set<string>());
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
+      if (!facilityId || loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -103,6 +107,7 @@ export default function FacilityTeamTab() {
       } catch (e) {
         setError(mapApiErrorRef.current.toInlineError(e));
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -111,12 +116,13 @@ export default function FacilityTeamTab() {
   );
 
   const sendInvite = useCallback(async () => {
-    if (!canInvite) return;
+    if (!canInvite || inviteInFlightRef.current) return;
     if (!facilityId) return;
 
     const inviteEmailValue = inviteEmail.trim();
     if (!inviteEmailValue) return;
 
+    inviteInFlightRef.current = true;
     setInviting(true);
     try {
       setError(null);
@@ -134,13 +140,17 @@ export default function FacilityTeamTab() {
     } catch (e) {
       setError(mapApiErrorRef.current.toInlineError(e));
     } finally {
+      inviteInFlightRef.current = false;
       setInviting(false);
     }
   }, [canInvite, facilityId, inviteEmail, inviteRole, load]);
 
   const changeRole = useCallback(
     async (userId: string, role: "MANAGER" | "STAFF" | "VIEWER") => {
-      if (!facilityId || !isOwner || !userId) return;
+      if (!facilityId || !isOwner || !userId || busyMembersRef.current.has(userId)) {
+        return;
+      }
+      busyMembersRef.current.add(userId);
       setBusyMemberId(userId);
       try {
         setError(null);
@@ -149,6 +159,7 @@ export default function FacilityTeamTab() {
       } catch (e) {
         setError(mapApiErrorRef.current.toInlineError(e));
       } finally {
+        busyMembersRef.current.delete(userId);
         setBusyMemberId("");
       }
     },
@@ -157,7 +168,10 @@ export default function FacilityTeamTab() {
 
   const removeMember = useCallback(
     async (userId: string, label: string) => {
-      if (!facilityId || !isOwner || !userId) return;
+      if (!facilityId || !isOwner || !userId || busyMembersRef.current.has(userId)) {
+        return;
+      }
+      busyMembersRef.current.add(userId);
       setBusyMemberId(userId);
       try {
         setError(null);
@@ -168,6 +182,7 @@ export default function FacilityTeamTab() {
       } catch (e) {
         setError(mapApiErrorRef.current.toInlineError(e));
       } finally {
+        busyMembersRef.current.delete(userId);
         setBusyMemberId("");
       }
     },
@@ -248,7 +263,11 @@ export default function FacilityTeamTab() {
               style={styles.input}
             />
 
-            <View style={styles.roleRow}>
+            <View
+              accessibilityLabel="Invite member role"
+              accessibilityRole="radiogroup"
+              style={styles.roleRow}
+            >
               {(["MANAGER", "STAFF", "VIEWER"] as FacilityRole[]).map((role) => (
                 <Pressable
                   key={role}
@@ -273,6 +292,10 @@ export default function FacilityTeamTab() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Send team invite"
+              accessibilityState={{
+                busy: inviting,
+                disabled: inviting || !inviteEmail.trim()
+              }}
               onPress={sendInvite}
               disabled={inviting || !inviteEmail.trim()}
               style={({ pressed }) => [
@@ -286,7 +309,9 @@ export default function FacilityTeamTab() {
               </Text>
             </Pressable>
             {inviteFeedback ? (
-              <Text style={styles.feedback}>{inviteFeedback}</Text>
+              <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+                {inviteFeedback}
+              </Text>
             ) : null}
           </View>
         ) : (
@@ -303,13 +328,19 @@ export default function FacilityTeamTab() {
         )}
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility team"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading team...</Text>
           </View>
         ) : null}
 
         <FlatList
+          accessibilityLabel="Facility team members"
           data={items}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
           refreshControl={
@@ -376,7 +407,7 @@ export default function FacilityTeamTab() {
                   <View style={styles.memberActions}>
                     {canAssignTasks && memberId ? (
                       <Pressable
-                        accessibilityRole="button"
+                        accessibilityRole="link"
                         accessibilityLabel={`Assign task to ${title}`}
                         onPress={() =>
                           router.push(
@@ -388,12 +419,22 @@ export default function FacilityTeamTab() {
                         <Text style={styles.smallButtonText}>Assign task</Text>
                       </Pressable>
                     ) : null}
-                    {canManageMember
-                      ? (["MANAGER", "STAFF", "VIEWER"] as const).map((role) => (
+                    {canManageMember ? (
+                      <View
+                        accessibilityLabel={`Access role for ${title}`}
+                        accessibilityRole="radiogroup"
+                        style={styles.roleControls}
+                      >
+                        {(["MANAGER", "STAFF", "VIEWER"] as const).map((role) => (
                           <Pressable
                             key={role}
-                            accessibilityRole="button"
+                            accessibilityRole="radio"
                             accessibilityLabel={`Change ${title} role to ${role.toLowerCase()}`}
+                            accessibilityState={{
+                              busy: busyMemberId === memberId,
+                              checked: memberRole === role,
+                              disabled: busyMemberId === memberId || memberRole === role
+                            }}
                             disabled={busyMemberId === memberId || memberRole === role}
                             onPress={() => changeRole(memberId, role)}
                             style={[
@@ -405,12 +446,17 @@ export default function FacilityTeamTab() {
                               {role.charAt(0) + role.slice(1).toLowerCase()}
                             </Text>
                           </Pressable>
-                        ))
-                      : null}
+                        ))}
+                      </View>
+                    ) : null}
                     {canManageMember ? (
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel={`Remove ${removalLabel} from facility`}
+                        accessibilityState={{
+                          busy: busyMemberId === memberId,
+                          disabled: busyMemberId === memberId
+                        }}
                         disabled={busyMemberId === memberId}
                         onPress={() =>
                           confirmRemoveMember(memberId, removalLabel || "This member")
@@ -498,6 +544,7 @@ const createStyles = (palette: ThemePalette) =>
     rowTitle: { color: palette.text, fontSize: 16, fontWeight: "900", marginBottom: 4 },
     rowSub: { color: palette.textMuted },
     memberActions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    roleControls: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     smallButton: {
       borderWidth: 1,
       borderColor: palette.border,
