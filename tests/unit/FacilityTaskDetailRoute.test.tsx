@@ -1,5 +1,6 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { RefreshControl } from "react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityTaskDetail, {
   createFacilityTaskDetailStyles
@@ -163,6 +164,24 @@ describe("FacilityTaskDetail", () => {
     expect(screen.queryByText("Task Details")).toBeNull();
     expect(screen.getAllByText(/Proof required/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Approval required/).length).toBeGreaterThan(0);
+    expect(
+      screen.getByLabelText("Set task detail source sensor_alert").props
+    ).toMatchObject({
+      accessibilityRole: "radio",
+      accessibilityState: { checked: true }
+    });
+    expect(screen.getByLabelText("Set task detail room Flower Room").props).toMatchObject(
+      {
+        accessibilityRole: "radio",
+        accessibilityState: { checked: true }
+      }
+    );
+    expect(
+      screen.getByLabelText("Toggle task detail proof required").props
+    ).toMatchObject({
+      accessibilityRole: "checkbox",
+      accessibilityState: { checked: true }
+    });
 
     fireEvent.press(screen.getByLabelText("Set task detail source sop"));
     fireEvent.press(screen.getByLabelText("Toggle advanced task linkage"));
@@ -202,6 +221,52 @@ describe("FacilityTaskDetail", () => {
         assignedToUserId: "user-2"
       })
     );
+  });
+
+  it("names loading progress and serializes pull-to-refresh requests", async () => {
+    const screen = render(<FacilityTaskDetail />);
+
+    expect(screen.getByLabelText("Loading facility task details").props).toMatchObject({
+      accessibilityRole: "progressbar"
+    });
+    await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+
+    let finishRefresh: ((value: unknown) => void) | undefined;
+    mockGetTask.mockImplementationOnce(
+      () => new Promise((resolve) => (finishRefresh = resolve))
+    );
+    const refreshControl = screen.UNSAFE_getByType(RefreshControl);
+    act(() => {
+      refreshControl.props.onRefresh();
+      refreshControl.props.onRefresh();
+    });
+
+    expect(mockGetTask).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      finishRefresh?.(null);
+    });
+  });
+
+  it("prevents duplicate task updates while a save is in progress", async () => {
+    const screen = render(<FacilityTaskDetail />);
+    await waitFor(() => expect(screen.getByText("IPM scout")).toBeTruthy());
+
+    let finishSave: ((value: unknown) => void) | undefined;
+    mockUpdateTask.mockImplementationOnce(
+      () => new Promise((resolve) => (finishSave = resolve))
+    );
+    const saveButton = screen.getByLabelText("Save task details");
+    fireEvent.press(saveButton);
+    fireEvent.press(saveButton);
+
+    expect(mockUpdateTask).toHaveBeenCalledTimes(1);
+    expect(saveButton.props.accessibilityState).toMatchObject({
+      busy: true,
+      disabled: true
+    });
+    await act(async () => {
+      finishSave?.(undefined);
+    });
   });
 
   it("opens alert-backed facility task sources in the shared alert center", async () => {

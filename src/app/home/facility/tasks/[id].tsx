@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -305,6 +305,20 @@ function linkedFieldsForSource(
   }
 }
 
+function taskFormFromItem(item?: AnyRec | null) {
+  return {
+    title: String(item?.title ?? item?.name ?? ""),
+    notes: String(item?.notes ?? item?.description ?? ""),
+    dueDate: dateOnly(item?.dueDate ?? item?.dueAt ?? item?.due),
+    assignedTo: pickId(item?.assignedToUserId ?? item?.assignedTo ?? item?.assignee),
+    sourceType: String(item?.sourceType ?? "manual"),
+    sourceObjectId: String(item?.sourceObjectId ?? item?.sourceId ?? ""),
+    roomId: String(item?.roomId ?? item?.linkedRoomId ?? ""),
+    requiresProof: Boolean(item?.requiresProof),
+    requiresApproval: Boolean(item?.requiresApproval)
+  };
+}
+
 export default function FacilityTaskDetail() {
   const router = useRouter();
   const ent = useEntitlements();
@@ -333,17 +347,10 @@ export default function FacilityTaskDetail() {
   const [feedback, setFeedback] = useState("");
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [showAdvancedLinkage, setShowAdvancedLinkage] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    notes: "",
-    dueDate: "",
-    assignedTo: "",
-    sourceType: "manual",
-    sourceObjectId: "",
-    roomId: "",
-    requiresProof: false,
-    requiresApproval: false
-  });
+  const loadInFlightRef = useRef(false);
+  const savingRef = useRef(false);
+  const deletingRef = useRef(false);
+  const [form, setForm] = useState(() => taskFormFromItem());
 
   const canWrite = !!ent?.can?.(CAPABILITY_KEYS.TASKS_WRITE);
   const canAssign = canWrite && canManageRole(ent?.facilityRole);
@@ -351,7 +358,8 @@ export default function FacilityTaskDetail() {
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || !id) return;
+      if (!facilityId || !id || loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -365,11 +373,14 @@ export default function FacilityTaskDetail() {
             ? listTeamMembers(facilityId).catch(() => [] as TeamMember[])
             : Promise.resolve([] as TeamMember[])
         ]);
-        setItem((res as AnyRec) ?? null);
+        const nextItem = (res as AnyRec) ?? null;
+        setItem(nextItem);
+        setForm(taskFormFromItem(nextItem));
         setMembers(team);
       } catch (e) {
         handleApiError(e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -377,34 +388,27 @@ export default function FacilityTaskDetail() {
     [facilityId, id, canAssign, clearError, handleApiError]
   );
 
-  useEffect(() => {
-    if (!item) return;
-    setForm({
-      title: String(item.title ?? item.name ?? ""),
-      notes: String(item.notes ?? item.description ?? ""),
-      dueDate: dateOnly(item.dueDate ?? item.dueAt ?? item.due),
-      assignedTo: pickId(item.assignedToUserId ?? item.assignedTo ?? item.assignee),
-      sourceType: String(item.sourceType ?? "manual"),
-      sourceObjectId: String(item.sourceObjectId ?? item.sourceId ?? ""),
-      roomId: String(item.roomId ?? item.linkedRoomId ?? ""),
-      requiresProof: Boolean(item.requiresProof),
-      requiresApproval: Boolean(item.requiresApproval)
-    });
-  }, [item]);
-
   const update = useCallback(
     async (patch: AnyRec, message = "Task updated.") => {
-      if (!facilityId || !id || !canWrite) return;
+      if (!facilityId || !id || !canWrite || savingRef.current) return;
+      savingRef.current = true;
       setSaving(true);
       setFeedback("");
       try {
         clearError();
         const res = await updateTask(facilityId, String(id), patch);
-        setItem((res as AnyRec) ?? item);
+        const nextItem = {
+          ...(item ?? {}),
+          ...patch,
+          ...(res ? (res as AnyRec) : {})
+        };
+        setItem(nextItem);
+        setForm(taskFormFromItem(nextItem));
         setFeedback(message);
       } catch (e) {
         handleApiError(e);
       } finally {
+        savingRef.current = false;
         setSaving(false);
       }
     },
@@ -451,24 +455,29 @@ export default function FacilityTaskDetail() {
   }
 
   async function toggleComplete() {
-    if (!facilityId || !id || !canWrite) return;
+    if (!facilityId || !id || !canWrite || savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setFeedback("");
     try {
       clearError();
       const nextCompleted = !isComplete(item);
       const res = await completeFacilityTask(facilityId, String(id), nextCompleted);
-      setItem((res as AnyRec) ?? item);
+      const nextItem = res ? { ...item, ...(res as AnyRec) } : item;
+      setItem(nextItem);
+      setForm(taskFormFromItem(nextItem));
       setFeedback(nextCompleted ? "Task completed." : "Task reopened.");
     } catch (e) {
       handleApiError(e);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
 
   async function remove() {
-    if (!facilityId || !id || !canDelete) return;
+    if (!facilityId || !id || !canDelete || deletingRef.current) return;
+    deletingRef.current = true;
     setDeleting(true);
     setFeedback("");
     try {
@@ -478,6 +487,7 @@ export default function FacilityTaskDetail() {
     } catch (e) {
       handleApiError(e);
     } finally {
+      deletingRef.current = false;
       setDeleting(false);
     }
   }
@@ -532,9 +542,18 @@ export default function FacilityTaskDetail() {
         }
       >
         {error ? <InlineError error={error} /> : null}
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        {feedback ? (
+          <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+            {feedback}
+          </Text>
+        ) : null}
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility task details"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading task...</Text>
           </View>
@@ -630,6 +649,10 @@ export default function FacilityTaskDetail() {
                   <TouchableOpacity
                     accessibilityRole="button"
                     accessibilityLabel="Save task details"
+                    accessibilityState={{
+                      busy: saving,
+                      disabled: saving || !form.title.trim()
+                    }}
                     onPress={saveDetails}
                     disabled={saving || !form.title.trim()}
                     style={[
@@ -645,10 +668,15 @@ export default function FacilityTaskDetail() {
                   {canAssign ? (
                     <View style={styles.formGroup}>
                       <Text style={styles.label}>Assign to team member</Text>
-                      <View style={styles.chipRow}>
+                      <View
+                        accessibilityLabel="Facility task assignee"
+                        accessibilityRole="radiogroup"
+                        style={styles.chipRow}
+                      >
                         <TouchableOpacity
-                          accessibilityRole="button"
+                          accessibilityRole="radio"
                           accessibilityLabel="Clear facility task assignment"
+                          accessibilityState={{ checked: !form.assignedTo }}
                           onPress={() =>
                             setForm((current) => ({ ...current, assignedTo: "" }))
                           }
@@ -670,8 +698,11 @@ export default function FacilityTaskDetail() {
                           return (
                             <TouchableOpacity
                               key={memberUserId}
-                              accessibilityRole="button"
+                              accessibilityRole="radio"
                               accessibilityLabel={`Assign facility task to ${label}`}
+                              accessibilityState={{
+                                checked: form.assignedTo === memberUserId
+                              }}
                               onPress={() =>
                                 setForm((current) => ({
                                   ...current,
@@ -699,6 +730,7 @@ export default function FacilityTaskDetail() {
                       <TouchableOpacity
                         accessibilityRole="button"
                         accessibilityLabel="Save task assignment"
+                        accessibilityState={{ busy: saving, disabled: saving }}
                         onPress={saveAssignment}
                         disabled={saving}
                         style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
@@ -716,12 +748,19 @@ export default function FacilityTaskDetail() {
 
                   <View style={styles.formGroup}>
                     <Text style={styles.label}>Source</Text>
-                    <View style={styles.chipRow}>
+                    <View
+                      accessibilityLabel="Facility task source"
+                      accessibilityRole="radiogroup"
+                      style={styles.chipRow}
+                    >
                       {sourceTypes.map((sourceType) => (
                         <TouchableOpacity
                           key={sourceType}
-                          accessibilityRole="button"
+                          accessibilityRole="radio"
                           accessibilityLabel={`Set task detail source ${sourceType}`}
+                          accessibilityState={{
+                            checked: form.sourceType === sourceType
+                          }}
                           onPress={() =>
                             setForm((current) => ({ ...current, sourceType }))
                           }
@@ -745,10 +784,15 @@ export default function FacilityTaskDetail() {
 
                   <View style={styles.formGroup}>
                     <Text style={styles.label}>Room</Text>
-                    <View style={styles.chipRow}>
+                    <View
+                      accessibilityLabel="Facility task room"
+                      accessibilityRole="radiogroup"
+                      style={styles.chipRow}
+                    >
                       <TouchableOpacity
-                        accessibilityRole="button"
+                        accessibilityRole="radio"
                         accessibilityLabel="Clear task detail room"
+                        accessibilityState={{ checked: !form.roomId }}
                         onPress={() => setForm((current) => ({ ...current, roomId: "" }))}
                         style={[styles.chip, !form.roomId && styles.chipSelected]}
                       >
@@ -768,8 +812,9 @@ export default function FacilityTaskDetail() {
                         return (
                           <TouchableOpacity
                             key={roomId}
-                            accessibilityRole="button"
+                            accessibilityRole="radio"
                             accessibilityLabel={`Set task detail room ${label}`}
+                            accessibilityState={{ checked: form.roomId === roomId }}
                             onPress={() => setForm((current) => ({ ...current, roomId }))}
                             style={[
                               styles.chip,
@@ -826,8 +871,9 @@ export default function FacilityTaskDetail() {
 
                   <View style={styles.chipRow}>
                     <TouchableOpacity
-                      accessibilityRole="button"
+                      accessibilityRole="checkbox"
                       accessibilityLabel="Toggle task detail proof required"
+                      accessibilityState={{ checked: form.requiresProof }}
                       onPress={() =>
                         setForm((current) => ({
                           ...current,
@@ -846,8 +892,9 @@ export default function FacilityTaskDetail() {
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      accessibilityRole="button"
+                      accessibilityRole="checkbox"
                       accessibilityLabel="Toggle task detail approval required"
+                      accessibilityState={{ checked: form.requiresApproval }}
                       onPress={() =>
                         setForm((current) => ({
                           ...current,
@@ -870,6 +917,7 @@ export default function FacilityTaskDetail() {
                   <TouchableOpacity
                     accessibilityRole="button"
                     accessibilityLabel="Save task workflow context"
+                    accessibilityState={{ busy: saving, disabled: saving }}
                     onPress={saveWorkflowContext}
                     disabled={saving}
                     style={[styles.secondaryBtn, saving && styles.primaryBtnDisabled]}
@@ -883,6 +931,7 @@ export default function FacilityTaskDetail() {
                     <TouchableOpacity
                       accessibilityRole="button"
                       accessibilityLabel={complete ? "Reopen task" : "Complete task"}
+                      accessibilityState={{ busy: saving, disabled: saving }}
                       onPress={toggleComplete}
                       disabled={saving}
                       style={[styles.primaryBtn, saving && styles.primaryBtnDisabled]}
@@ -895,6 +944,7 @@ export default function FacilityTaskDetail() {
                       <TouchableOpacity
                         accessibilityRole="button"
                         accessibilityLabel="Delete task"
+                        accessibilityState={{ busy: deleting, disabled: deleting }}
                         onPress={remove}
                         disabled={deleting}
                         style={[styles.dangerBtn, deleting && styles.primaryBtnDisabled]}
