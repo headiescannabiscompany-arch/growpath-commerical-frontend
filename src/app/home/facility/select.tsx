@@ -63,6 +63,8 @@ export default function FacilitySelectRoute() {
   const [items, setItems] = useState<AnyRec[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [selectingId, setSelectingId] = useState("");
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -118,9 +120,16 @@ export default function FacilitySelectRoute() {
     ((_: AnyRec | string) => {});
 
   const logout = useCallback(async () => {
-    await auth.logout();
-    router.replace("/login");
-  }, [auth, router]);
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await auth.logout();
+      router.replace("/login");
+    } catch (error) {
+      resolved.handleApiError(error);
+      setLoggingOut(false);
+    }
+  }, [auth, loggingOut, resolved, router]);
 
   return (
     <ScreenBoundary title="Select Facility">
@@ -138,22 +147,32 @@ export default function FacilitySelectRoute() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Log out"
+              accessibilityState={{ disabled: loggingOut, busy: loggingOut }}
+              disabled={loggingOut}
               onPress={logout}
-              style={styles.logoutButton}
+              style={[styles.logoutButton, loggingOut && styles.disabledButton]}
             >
-              <Text style={styles.logoutText}>Log out</Text>
+              <Text style={styles.logoutText}>
+                {loggingOut ? "Logging out..." : "Log out"}
+              </Text>
             </Pressable>
           </View>
         </View>
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facilities"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading facilities...</Text>
           </View>
         ) : null}
 
         <FlatList
+          accessibilityLabel="Available facilities"
           data={items}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
           refreshControl={
@@ -217,12 +236,28 @@ export default function FacilitySelectRoute() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Select facility ${name}`}
-                onPress={() => {
-                  if (!id) return;
-                  selectFacility({ ...item, id, name });
-                  router.replace("/home/facility/dashboard");
+                accessibilityState={{
+                  busy: selectingId === id,
+                  disabled: Boolean(selectingId),
+                  selected: String(store?.selectedId ?? "") === id
                 }}
-                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+                disabled={Boolean(selectingId)}
+                onPress={() => {
+                  if (!id || selectingId) return;
+                  setSelectingId(id);
+                  try {
+                    selectFacility({ ...item, id, name });
+                    router.replace("/home/facility/dashboard");
+                  } catch (error) {
+                    resolved.handleApiError(error);
+                    setSelectingId("");
+                  }
+                }}
+                style={({ pressed }) => [
+                  styles.row,
+                  pressed && styles.rowPressed,
+                  Boolean(selectingId) && styles.disabledButton
+                ]}
               >
                 <View style={{ flex: 1, gap: 4 }}>
                   <Text style={styles.rowTitle} numberOfLines={1}>
@@ -262,6 +297,7 @@ export function createFacilitySelectStyles(palette: ThemePalette) {
       backgroundColor: palette.card
     },
     rowPressed: { opacity: 0.85 },
+    disabledButton: { opacity: 0.55 },
     rowTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
     chev: { color: palette.textMuted, fontSize: 22, paddingLeft: 8 },
     empty: { paddingVertical: 26, alignItems: "center", gap: 8 },
