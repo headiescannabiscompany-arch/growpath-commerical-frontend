@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -185,10 +185,13 @@ export default function FacilityReportsTab() {
   const [exporting, setExporting] = useState(false);
   const [exportFeedback, setExportFeedback] = useState("");
   const [exportSummary, setExportSummary] = useState<ExportSummary | null>(null);
+  const loadInFlightRef = useRef(false);
+  const exportInFlightRef = useRef(false);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
+      if (!facilityId || loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
       try {
@@ -198,6 +201,7 @@ export default function FacilityReportsTab() {
         handleApiError(e);
         setReport(null);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -214,7 +218,8 @@ export default function FacilityReportsTab() {
   }, [facilityId, load, router]);
 
   async function exportCompliancePacket() {
-    if (!facilityId || exporting || !canExportCompliance) return;
+    if (!facilityId || exportInFlightRef.current || !canExportCompliance) return;
+    exportInFlightRef.current = true;
     setExporting(true);
     setExportFeedback("");
     try {
@@ -263,12 +268,13 @@ export default function FacilityReportsTab() {
     } catch (e) {
       handleApiError(e);
     } finally {
+      exportInFlightRef.current = false;
       setExporting(false);
     }
   }
 
   return (
-    <ScreenBoundary title="Reports">
+    <ScreenBoundary title="Reports" showBack backFallbackHref="/home/facility/dashboard">
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
@@ -294,7 +300,12 @@ export default function FacilityReportsTab() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Refresh facility reports"
-              style={styles.button}
+              accessibilityState={{
+                busy: loading || refreshing,
+                disabled: loading || refreshing
+              }}
+              disabled={loading || refreshing}
+              style={[styles.button, (loading || refreshing) && styles.buttonDisabled]}
               onPress={() => load({ refresh: true })}
             >
               <Text style={styles.buttonText}>Refresh</Text>
@@ -303,6 +314,7 @@ export default function FacilityReportsTab() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Export compliance packet"
+                accessibilityState={{ busy: exporting, disabled: exporting }}
                 style={[styles.button, exporting ? styles.buttonDisabled : null]}
                 disabled={exporting}
                 onPress={exportCompliancePacket}
@@ -314,13 +326,19 @@ export default function FacilityReportsTab() {
             ) : null}
           </View>
         </View>
-        {exportFeedback ? <Text style={styles.success}>{exportFeedback}</Text> : null}
+        {exportFeedback ? (
+          <Text accessibilityLiveRegion="polite" style={styles.success}>
+            {exportFeedback}
+          </Text>
+        ) : null}
 
         {exportSummary ? (
           <View style={styles.card}>
             <View style={styles.exportHeader}>
               <View>
-                <Text style={styles.cardTitle}>Export packet coverage</Text>
+                <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                  Export packet coverage
+                </Text>
                 <Text style={styles.muted}>
                   {exportSummary.totalRecords} records | generated{" "}
                   {new Date(exportSummary.generatedAt).toLocaleString()}
@@ -346,7 +364,7 @@ export default function FacilityReportsTab() {
               ))}
               <View style={styles.nextActions}>
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel="Open AI readiness from export"
                   style={styles.secondaryButton}
                   onPress={() =>
@@ -356,7 +374,7 @@ export default function FacilityReportsTab() {
                   <Text style={styles.secondaryButtonText}>AI readiness</Text>
                 </Pressable>
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel="Open compliance cleanup from export"
                   style={styles.secondaryButton}
                   onPress={() => router.push("/home/facility/compliance" as any)}
@@ -364,7 +382,7 @@ export default function FacilityReportsTab() {
                   <Text style={styles.secondaryButtonText}>Compliance</Text>
                 </Pressable>
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="link"
                   accessibilityLabel="Open SOP runs from export"
                   style={styles.secondaryButton}
                   onPress={() => router.push("/home/facility/sop-runs" as any)}
@@ -384,7 +402,13 @@ export default function FacilityReportsTab() {
             </View>
             {exportSummary.sopEvidence ? (
               <View style={styles.evidencePanel}>
-                <Text style={styles.evidenceTitle}>SOP evidence readiness</Text>
+                <Text
+                  accessibilityRole="header"
+                  aria-level={3}
+                  style={styles.evidenceTitle}
+                >
+                  SOP evidence readiness
+                </Text>
                 <View style={styles.grid}>
                   <StatTile
                     label="Completed runs"
@@ -414,7 +438,13 @@ export default function FacilityReportsTab() {
             ) : null}
             {exportSummary.deviationEvidence ? (
               <View style={styles.evidencePanel}>
-                <Text style={styles.evidenceTitle}>Deviation evidence status</Text>
+                <Text
+                  accessibilityRole="header"
+                  aria-level={3}
+                  style={styles.evidenceTitle}
+                >
+                  Deviation evidence status
+                </Text>
                 <View style={styles.grid}>
                   <StatTile
                     label="Total deviations"
@@ -439,7 +469,12 @@ export default function FacilityReportsTab() {
         ) : null}
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility reports"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading report...</Text>
           </View>
@@ -447,7 +482,9 @@ export default function FacilityReportsTab() {
 
         {!loading && !report ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>No report available</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              No report available
+            </Text>
             <Text style={styles.muted}>The backend did not return a report summary.</Text>
           </View>
         ) : null}
