@@ -20,6 +20,9 @@ describe("ai validation lab helpers", () => {
     expect(styles.input.backgroundColor).toBe(palette.surface);
     expect(styles.input.color).toBe(palette.text);
     expect(styles.card.backgroundColor).toBe(palette.card);
+    expect(styles.notice.backgroundColor).toBe(palette.surface);
+    expect(styles.statusText.color).toBe(palette.textMuted);
+    expect(styles.success.color).toBe(palette.success);
     expect(styles.error.color).toBe(palette.danger);
   });
 
