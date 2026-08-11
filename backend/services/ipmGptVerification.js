@@ -1,5 +1,6 @@
 "use strict";
 
+const crypto = require("crypto");
 const { getProviderConfig } = require("../llm/provider");
 
 function parseJsonObject(text) {
@@ -23,6 +24,174 @@ function firstText(...values) {
     if (text) return text;
   }
   return "";
+}
+
+function uniqueStrings(values) {
+  return Array.from(
+    new Set(
+      (Array.isArray(values) ? values : [])
+        .flatMap((value) => (Array.isArray(value) ? value : [value]))
+        .map((value) => String(value || "").trim())
+        .filter(Boolean)
+    )
+  );
+}
+
+function evidenceEnvelopeDigest(inputSnapshot = {}) {
+  return `sha256:${crypto
+    .createHash("sha256")
+    .update(JSON.stringify(inputSnapshot || {}))
+    .digest("hex")}`;
+}
+
+function normalizedComparisonText(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]+/g, "_")
+    .replaceAll(/^_+|_+$/g, "");
+}
+
+function buildIpmComparison({
+  inputSnapshot = {},
+  primaryAnswer = {},
+  secondaryAnswer = null,
+  reportedAgreementStatus = "not_run"
+} = {}) {
+  const digest = evidenceEnvelopeDigest(inputSnapshot);
+  if (!secondaryAnswer || typeof secondaryAnswer !== "object") {
+    return {
+      evidenceEnvelopeDigest: digest,
+      sameEvidenceEnvelope: true,
+      reportedAgreementStatus,
+      computedAgreementStatus: "not_run",
+      agreementStatus: "not_run",
+      disagreements: [],
+      requestedFollowUps: uniqueStrings(primaryAnswer.nextInspectionSteps)
+    };
+  }
+
+  const fields = ["suspectedIssue", "suspectedOrganism", "confidence", "severity"];
+  const disagreements = fields.flatMap((field) => {
+    const growPathValue = firstText(primaryAnswer[field]);
+    const gptValue = firstText(secondaryAnswer[field]);
+    if (
+      !growPathValue ||
+      !gptValue ||
+      normalizedComparisonText(growPathValue) === normalizedComparisonText(gptValue)
+    ) {
+      return [];
+    }
+    return [
+      {
+        field,
+        growPathValue,
+        gptValue,
+        significance:
+          field === "suspectedIssue" || field === "suspectedOrganism"
+            ? "candidate_conflict"
+            : "assessment_difference"
+      }
+    ];
+  });
+  const candidateConflict = disagreements.some(
+    (item) => item.field === "suspectedIssue" || item.field === "suspectedOrganism"
+  );
+  const computedAgreementStatus = candidateConflict
+    ? "conflicts"
+    : disagreements.length
+      ? "partially_agrees"
+      : "agrees";
+  const agreementStatus =
+    computedAgreementStatus === "conflicts"
+      ? "conflicts"
+      : reportedAgreementStatus === "insufficient_data"
+        ? "insufficient_data"
+        : reportedAgreementStatus === "conflicts"
+          ? "conflicts"
+          : computedAgreementStatus === "partially_agrees" ||
+              reportedAgreementStatus === "partially_agrees"
+            ? "partially_agrees"
+            : "agrees";
+
+  return {
+    evidenceEnvelopeDigest: digest,
+    sameEvidenceEnvelope: true,
+    reportedAgreementStatus,
+    computedAgreementStatus,
+    agreementStatus,
+    disagreements,
+    requestedFollowUps: uniqueStrings([
+      primaryAnswer.nextInspectionSteps,
+      secondaryAnswer.nextInspectionSteps
+    ])
+  };
+}
+
+function billingEvidence({ providerAttempted, providerCompleted, failed } = {}) {
+  if (!providerAttempted) {
+    return {
+      aiCreditsUsed: 0,
+      creditStatus: "not_charged",
+      providerAttempted: false,
+      providerCompleted: false,
+      ledgerReceiptPresent: false
+    };
+  }
+  return {
+    aiCreditsUsed: null,
+    creditStatus: failed ? "refund_unverified" : "charge_unverified",
+    providerAttempted: true,
+    providerCompleted: Boolean(providerCompleted),
+    ledgerReceiptPresent: false,
+    limitation: failed
+      ? "The provider attempt failed, but this response does not contain the credit-ledger receipt needed to prove a refund."
+      : "The provider completed, but this response does not contain the credit-ledger receipt needed to prove the exact charge."
+  };
+}
+
+function withComparison(outputs, gptVerification, billing) {
+  const primaryAnswer = outputs.primaryAnswer || outputs.growPathAi || outputs;
+  const comparison = buildIpmComparison({
+    inputSnapshot: gptVerification.inputSnapshot || {},
+    primaryAnswer,
+    secondaryAnswer: gptVerification.status === "completed" ? gptVerification : null,
+    reportedAgreementStatus: gptVerification.agreementStatus || "not_run"
+  });
+  const verification = {
+    ...gptVerification,
+    agreementStatus: comparison.agreementStatus,
+    evidenceEnvelopeDigest: comparison.evidenceEnvelopeDigest,
+    sameEvidenceEnvelope: true,
+    billingEvidence: billing
+  };
+  const existingDisplay = Array.isArray(outputs.verificationDisplay)
+    ? outputs.verificationDisplay
+    : [];
+  return {
+    ...outputs,
+    gptVerification: verification,
+    aiVerification: verification,
+    agreementStatus: comparison.agreementStatus,
+    disagreements: comparison.disagreements,
+    requestedFollowUps: comparison.requestedFollowUps,
+    evidenceEnvelopeDigest: comparison.evidenceEnvelopeDigest,
+    verificationComparison: comparison,
+    billingEvidence: billing,
+    verificationDisplay: [
+      existingDisplay[0] || {
+        label: "GrowPathAI scout answer",
+        status: "complete",
+        answer: primaryAnswer
+      },
+      {
+        ...(existingDisplay[1] || {}),
+        label: "GPT verification answer",
+        status: verification.status,
+        answer: verification
+      }
+    ]
+  };
 }
 
 function buildIpmVerificationMessages({ inputSnapshot, primaryAnswer }) {
@@ -158,23 +327,25 @@ async function applyIpmGptVerification(outputs = {}, deps = {}) {
       mediaAnalysisPerformed: false,
       limitations: ["A configured OpenAI provider is required for the second opinion."]
     };
-    return {
-      ...outputs,
+    return withComparison(
+      {
+        ...outputs,
+        verificationDisplay: [
+          outputs.verificationDisplay?.[0] || {
+            label: "GrowPathAI scout answer",
+            status: "complete",
+            answer: primaryAnswer
+          },
+          {
+            label: "GPT verification answer",
+            status: "not_configured",
+            answer: gptVerification
+          }
+        ]
+      },
       gptVerification,
-      aiVerification: gptVerification,
-      verificationDisplay: [
-        outputs.verificationDisplay?.[0] || {
-          label: "GrowPathAI scout answer",
-          status: "complete",
-          answer: primaryAnswer
-        },
-        {
-          label: "GPT verification answer",
-          status: "not_configured",
-          answer: gptVerification
-        }
-      ]
-    };
+      billingEvidence({ providerAttempted: false })
+    );
   }
 
   try {
@@ -194,44 +365,54 @@ async function applyIpmGptVerification(outputs = {}, deps = {}) {
       prompt: existing.prompt,
       inputSnapshot
     };
-    return {
-      ...outputs,
+    return withComparison(
+      {
+        ...outputs,
+        verificationDisplay: [
+          outputs.verificationDisplay?.[0] || {
+            label: "GrowPathAI scout answer",
+            status: "complete",
+            answer: primaryAnswer
+          },
+          {
+            label: "GPT verification answer",
+            status: "completed",
+            answer: gptVerification
+          }
+        ]
+      },
       gptVerification,
-      aiVerification: gptVerification,
-      verificationDisplay: [
-        outputs.verificationDisplay?.[0] || {
-          label: "GrowPathAI scout answer",
-          status: "complete",
-          answer: primaryAnswer
-        },
-        {
-          label: "GPT verification answer",
-          status: "completed",
-          answer: gptVerification
-        }
-      ]
-    };
+      billingEvidence({ providerAttempted: true, providerCompleted: true })
+    );
   } catch (error) {
-    return {
-      ...outputs,
-      gptVerification: {
-        ...existing,
-        providerLabel: "GPT structured IPM second opinion",
-        status: "failed",
-        answer:
-          "The GPT second opinion failed. Continue with the GrowPath working hypothesis and missing-evidence checks.",
-        agreementStatus: "not_run",
-        structuredInputOnly: true,
-        mediaAnalysisPerformed: false,
-        error: error?.message || "GPT IPM verification request failed"
-      }
+    const gptVerification = {
+      ...existing,
+      provider: "gpt",
+      providerLabel: "GPT structured IPM second opinion",
+      status: "failed",
+      answer:
+        "The GPT second opinion failed. Continue with the GrowPath working hypothesis and missing-evidence checks.",
+      agreementStatus: "not_run",
+      structuredInputOnly: true,
+      mediaAnalysisPerformed: false,
+      error: error?.message || "GPT IPM verification request failed",
+      inputSnapshot
     };
+    return withComparison(
+      {
+        ...outputs
+      },
+      gptVerification,
+      billingEvidence({ providerAttempted: true, providerCompleted: false, failed: true })
+    );
   }
 }
 
 module.exports = {
   applyIpmGptVerification,
+  buildIpmComparison,
   buildIpmVerificationMessages,
+  evidenceEnvelopeDigest,
   normalizeGptVerification,
   requestGptVerification
 };
