@@ -1,6 +1,7 @@
 import { Link, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -91,8 +92,14 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [loadError, setLoadError] = useState<any>(null);
+  const [actionError, setActionError] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const loadInFlightRef = useRef(false);
+  const saveInFlightRef = useRef(false);
+  const taskInFlightRef = useRef(false);
+  const operationBusy = saving || creatingTask;
+  const canSave = !!batchId && !loading && !operationBusy;
 
   const hydrate = useCallback((next: SoilNutrientBatch | null) => {
     setBatch(next);
@@ -106,14 +113,16 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
   }, []);
 
   const load = useCallback(async () => {
-    if (!batchId) return;
+    if (!batchId || loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       hydrate(await fetchSoilNutrientBatch(batchId));
     } catch (err) {
-      setError(err);
+      setLoadError(err);
     } finally {
+      loadInFlightRef.current = false;
       setLoading(false);
     }
   }, [batchId, hydrate]);
@@ -123,15 +132,23 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
   }, [load]);
 
   async function saveChanges() {
-    if (!batchId) return;
+    if (!batchId || saveInFlightRef.current || creatingTask) return;
+    const normalizedCost = estimatedCost.trim();
+    const parsedCost = normalizedCost ? Number(normalizedCost) : undefined;
+    if (parsedCost !== undefined && (!Number.isFinite(parsedCost) || parsedCost < 0)) {
+      setActionError(
+        new Error("Estimated cost must be a number that is zero or greater.")
+      );
+      return;
+    }
+    saveInFlightRef.current = true;
     setSaving(true);
     setMessage("");
-    setError(null);
+    setActionError(null);
     try {
-      const parsedCost = Number(estimatedCost);
       const updated = await updateSoilNutrientBatch(batchId, {
         status: (status.trim() || "planned") as SoilNutrientBatch["status"],
-        estimatedCost: Number.isFinite(parsedCost) ? parsedCost : undefined,
+        estimatedCost: parsedCost,
         releaseTimelineNotes: releaseTimelineNotes.trim(),
         guaranteedAnalysisNotes: guaranteedAnalysisNotes.trim(),
         ingredientSummary: ingredientSummary.trim(),
@@ -141,17 +158,19 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       hydrate(updated);
       setMessage("Commercial batch updated.");
     } catch (err) {
-      setError(err);
+      setActionError(err);
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
   }
 
   async function createProductionTask() {
-    if (!batchId || !batch || creatingTask) return;
+    if (!batchId || !batch || taskInFlightRef.current || saving) return;
+    taskInFlightRef.current = true;
     setCreatingTask(true);
     setMessage("");
-    setError(null);
+    setActionError(null);
     const name = batchTitle(batch);
     const evidenceRunId = batch.linkedTrialId || batch.trialGrowId || "";
     try {
@@ -189,8 +208,9 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       });
       setMessage(`Created production task for ${name}.`);
     } catch (err) {
-      setError(err);
+      setActionError(err);
     } finally {
+      taskInFlightRef.current = false;
       setCreatingTask(false);
     }
   }
@@ -203,7 +223,9 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Commercial formula batch</Text>
-          <Text style={styles.title}>{batchTitle(batch)}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            {batchTitle(batch)}
+          </Text>
           <Text style={styles.subtitle}>
             Manage the private production batch record that links formula version,
             guaranteed analysis, release timing, inventory/cost, products, and trials.
@@ -216,9 +238,45 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
         </View>
       }
     >
-      {loading ? <Text style={styles.muted}>Loading commercial batch...</Text> : null}
-      {error ? <InlineError error={error} /> : null}
-      {message ? <Text style={styles.success}>{message}</Text> : null}
+      {loading ? (
+        <View
+          accessibilityLabel="Loading commercial batch detail"
+          accessibilityLiveRegion="polite"
+          accessibilityRole="progressbar"
+          style={styles.progressRow}
+        >
+          <ActivityIndicator color={palette.accent} />
+          <Text style={styles.muted}>Loading commercial batch...</Text>
+        </View>
+      ) : null}
+      {loadError ? (
+        <View accessibilityLiveRegion="assertive" style={styles.errorPanel}>
+          <InlineError error={loadError} />
+          <Pressable
+            accessibilityLabel="Retry commercial batch detail"
+            accessibilityRole="button"
+            disabled={loading}
+            onPress={load}
+            style={[styles.action, loading && styles.disabled]}
+          >
+            <Text style={styles.actionText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {message ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+          style={styles.success}
+        >
+          {message}
+        </Text>
+      ) : null}
+      {actionError ? (
+        <View accessible accessibilityLiveRegion="assertive" accessibilityRole="alert">
+          <InlineError error={actionError} />
+        </View>
+      ) : null}
 
       <CommercialContextualTools
         source="commercial_batch_detail"
@@ -231,7 +289,9 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       />
 
       <AppCard>
-        <Text style={styles.cardTitle}>Batch Record</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Batch Record
+        </Text>
         <Text style={styles.body}>
           This record should connect formula math to the real mixed batch and future
           product effectiveness claims.
@@ -261,7 +321,9 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Calculation Evidence & Inventory Review</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Calculation Evidence & Inventory Review
+        </Text>
         <Text style={styles.body}>
           Missing evidence stays unknown. Inventory shown here is a review snapshot; the
           batch calculation did not decrement stock or assign lots.
@@ -294,7 +356,9 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Connected records</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Connected records
+        </Text>
         <Text style={styles.body}>
           Batches should link to products, product lines, evidence runs, feed campaigns,
           and storefront proof only when the evidence is strong enough.
@@ -332,11 +396,15 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
           <Pressable
             accessibilityLabel="Create batch production task"
             accessibilityRole="button"
-            disabled={!batchId || !batch || creatingTask}
+            accessibilityState={{
+              disabled: !batchId || !batch || operationBusy,
+              busy: creatingTask
+            }}
+            disabled={!batchId || !batch || operationBusy}
             onPress={createProductionTask}
             style={[
               styles.action,
-              !batchId || !batch || creatingTask ? styles.disabled : null
+              !batchId || !batch || operationBusy ? styles.disabled : null
             ]}
           >
             <Text style={styles.actionText}>
@@ -344,16 +412,30 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
             </Text>
           </Pressable>
         </View>
+        {creatingTask ? (
+          <View
+            accessibilityLabel="Creating batch production task in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Creating production task...</Text>
+          </View>
+        ) : null}
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Formula Evidence</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Formula Evidence
+        </Text>
         <Text style={styles.body}>
           Keep guaranteed analysis and release timing visible so public product details
           accurately describe the formula and its expected behavior.
         </Text>
         <TextInput
           accessibilityLabel="Commercial batch detail status"
+          editable={!operationBusy}
           onChangeText={setStatus}
           placeholder="planned, mixed, resting, ready, used, archived"
           style={styles.input}
@@ -361,6 +443,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial batch detail estimated cost"
+          editable={!operationBusy}
           keyboardType="decimal-pad"
           onChangeText={setEstimatedCost}
           placeholder="Estimated cost"
@@ -369,6 +452,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial batch detail guaranteed analysis notes"
+          editable={!operationBusy}
           multiline
           onChangeText={setGuaranteedAnalysisNotes}
           placeholder="Guaranteed analysis, elemental estimate, source confidence"
@@ -377,6 +461,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial batch detail release timeline notes"
+          editable={!operationBusy}
           multiline
           onChangeText={setReleaseTimelineNotes}
           placeholder="Fast, medium, slow release timing and uncertainty"
@@ -385,6 +470,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial batch detail ingredient summary"
+          editable={!operationBusy}
           multiline
           onChangeText={setIngredientSummary}
           placeholder="Ingredient pull sheet / ingredient summary"
@@ -393,6 +479,7 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial batch detail mixing instructions"
+          editable={!operationBusy}
           multiline
           onChangeText={setMixingInstructions}
           placeholder="Mixing instructions, rest/cook timing, QC checks"
@@ -401,18 +488,31 @@ export default function CommercialBatchDetailRoute({ route }: { route?: any } = 
         />
         <TextInput
           accessibilityLabel="Commercial batch detail notes"
+          editable={!operationBusy}
           multiline
           onChangeText={setNotes}
           placeholder="Batch notes, cost gaps, inventory shortages, trial plan"
           style={[styles.input, styles.textArea]}
           value={notes}
         />
+        {saving ? (
+          <View
+            accessibilityLabel="Saving commercial batch detail in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Saving batch detail...</Text>
+          </View>
+        ) : null}
         <Pressable
           accessibilityLabel="Save commercial batch detail"
           accessibilityRole="button"
-          disabled={saving || !batchId}
+          accessibilityState={{ disabled: !canSave, busy: saving }}
+          disabled={!canSave}
           onPress={saveChanges}
-          style={[styles.primaryAction, saving || !batchId ? styles.disabled : null]}
+          style={[styles.primaryAction, !canSave ? styles.disabled : null]}
         >
           <Text style={styles.primaryActionText}>
             {saving ? "Saving..." : "Save Batch Detail"}
@@ -504,6 +604,13 @@ export function createCommercialBatchDetailStyles(palette: ThemePalette) {
       fontWeight: "900"
     },
     disabled: { opacity: 0.55 },
+    progressRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 10
+    },
+    errorPanel: { alignItems: "flex-start", gap: 8 },
     success: {
       color: palette.success,
       fontSize: 13,
