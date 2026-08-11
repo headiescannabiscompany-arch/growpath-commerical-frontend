@@ -96,4 +96,22 @@ describe("FacilityGrowsTab", () => {
     ).toBeTruthy();
     expect(screen.queryByLabelText("Start facility grow")).toBeNull();
   });
+
+  it("names the exact grow that will open", async () => {
+    mockParams = {};
+    mockApiRequest.mockResolvedValue({
+      grows: [{ id: "grow-1", name: "Summer crop", stage: "Flower" }]
+    });
+    const screen = render(<FacilityGrowsTab />);
+
+    const growLink = await screen.findByRole("button", {
+      name: "Open facility grow Summer crop"
+    });
+    fireEvent.press(growLink);
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/home/facility/grows/[id]",
+      params: { id: "grow-1" }
+    });
+  });
 });

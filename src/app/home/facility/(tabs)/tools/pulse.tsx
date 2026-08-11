@@ -140,6 +140,7 @@ export default function FacilityPulseConnectionRoute() {
             value={label}
             onChangeText={setLabel}
             placeholder="Connection name"
+            placeholderTextColor={palette.textMuted}
             style={styles.input}
           />
           <TextInput
@@ -147,17 +148,24 @@ export default function FacilityPulseConnectionRoute() {
             value={apiKey}
             onChangeText={setApiKey}
             placeholder="Pulse API key"
+            placeholderTextColor={palette.textMuted}
             autoCapitalize="none"
             secureTextEntry
             style={styles.input}
           />
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Verify Pulse connection and discover devices"
+            accessibilityState={{ disabled: busy }}
             disabled={busy}
             onPress={connect}
             style={[styles.primary, busy && styles.disabled]}
           >
             {busy ? (
-              <ActivityIndicator color={palette.accentText} />
+              <ActivityIndicator
+                accessibilityLabel="Verifying Pulse connection and discovering devices"
+                color={palette.accentText}
+              />
             ) : (
               <Text style={styles.primaryText}>Verify and discover devices</Text>
             )}
@@ -171,7 +179,9 @@ export default function FacilityPulseConnectionRoute() {
 
         {devices.length ? (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Discovered devices</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Discovered devices
+            </Text>
             {devices.map((device, index) => (
               <Text
                 key={String(device?.id ?? device?.guid ?? index)}
@@ -180,7 +190,12 @@ export default function FacilityPulseConnectionRoute() {
                 {deviceName(device, index)}
               </Text>
             ))}
-            <Pressable onPress={mapRooms} style={styles.primary}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Review Pulse room mappings"
+              onPress={mapRooms}
+              style={styles.primary}
+            >
               <Text style={styles.primaryText}>Review room mappings</Text>
             </Pressable>
           </View>
@@ -206,6 +221,7 @@ export function createFacilityPulseStyles(palette: ThemePalette) {
     input: {
       backgroundColor: palette.surface,
       borderColor: palette.border,
+      color: palette.text,
       borderRadius: 10,
       borderWidth: 1,
       marginBottom: 10,

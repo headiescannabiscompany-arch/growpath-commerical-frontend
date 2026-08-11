@@ -253,8 +253,9 @@ export default function FacilityTeamTab() {
                 <Pressable
                   key={role}
                   onPress={() => setInviteRole(role)}
-                  accessibilityRole="button"
+                  accessibilityRole="radio"
                   accessibilityLabel={`Invite as ${role.toLowerCase()}`}
+                  accessibilityState={{ checked: inviteRole === role }}
                   style={[styles.roleButton, inviteRole === role && styles.roleSelected]}
                 >
                   <Text

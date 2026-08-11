@@ -76,6 +76,16 @@ describe("FacilityLogsRoute", () => {
       "/api/facility/facility-1/growlogs?growId=grow-1"
     );
 
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Open facility journal entry Morning observation"
+      })
+    );
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/home/facility/logs/[id]",
+      params: { id: "log-1" }
+    });
+
     fireEvent.press(screen.getByLabelText("Set facility journal type WATER"));
     fireEvent.changeText(
       screen.getByLabelText("Facility journal title"),

@@ -49,6 +49,7 @@ describe("FacilityPulseConnectionRoute", () => {
     expect(styles.container.backgroundColor).toBe(palette.page);
     expect(styles.card.backgroundColor).toBe(palette.card);
     expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.color).toBe(palette.text);
     expect(canConfigureFacilityIntegration("OWNER")).toBe(true);
     expect(canConfigureFacilityIntegration("MANAGER")).toBe(true);
     expect(canConfigureFacilityIntegration("VIEWER")).toBe(false);
@@ -69,7 +70,11 @@ describe("FacilityPulseConnectionRoute", () => {
     const screen = render(<FacilityPulseConnectionRoute />);
 
     fireEvent.changeText(screen.getByLabelText("Pulse API key"), "pulse-secret");
-    fireEvent.press(screen.getByText("Verify and discover devices"));
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Verify Pulse connection and discover devices"
+      })
+    );
 
     await waitFor(() => expect(screen.getByText("Flower Room Temp/RH")).toBeTruthy());
     expect(mockCreate).toHaveBeenCalledWith(
@@ -80,7 +85,10 @@ describe("FacilityPulseConnectionRoute", () => {
       })
     );
 
-    fireEvent.press(screen.getByText("Review room mappings"));
+    expect(
+      screen.getByRole("header", { name: "Discovered devices" }).props["aria-level"]
+    ).toBe(2);
+    fireEvent.press(screen.getByRole("button", { name: "Review Pulse room mappings" }));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: "/home/facility/rooms",
       params: {
