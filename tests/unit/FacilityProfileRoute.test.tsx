@@ -12,6 +12,7 @@ const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockClearError = jest.fn();
 const mockHandleApiError = jest.fn();
+const mockUpdateNotificationPreferences = jest.fn();
 const mockRouter = {
   push: (...args: any[]) => mockPush(...args),
   replace: (...args: any[]) => mockReplace(...args)
@@ -55,6 +56,11 @@ jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 
+jest.mock("@/api/users", () => ({
+  updateNotificationPreferences: (...args: any[]) =>
+    mockUpdateNotificationPreferences(...args)
+}));
+
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => mockAuth
 }));
@@ -85,6 +91,8 @@ describe("FacilityProfileRoute", () => {
     mockReplace.mockReset();
     mockClearError.mockReset();
     mockHandleApiError.mockReset();
+    mockUpdateNotificationPreferences.mockReset();
+    mockUpdateNotificationPreferences.mockResolvedValue({});
     mockFacilitySelection = { selectedId: null };
     mockApiRequest.mockImplementation((path: string) =>
       Promise.resolve(
@@ -142,5 +150,43 @@ describe("FacilityProfileRoute", () => {
     await waitFor(() => expect(screen.getByText("Selected facility")).toBeTruthy());
     expect(screen.getByText("facility-1")).toBeTruthy();
     expect(screen.queryByText(/Facility details are unavailable/)).toBeNull();
+  });
+
+  it("announces profile loading and notification save state", async () => {
+    mockFacilitySelection = {
+      selectedId: "facility-1",
+      selected: { id: "facility-1", name: "Test Facility" }
+    };
+    let finishSave: (() => void) | undefined;
+    mockUpdateNotificationPreferences.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishSave = resolve;
+        })
+    );
+
+    const screen = render(<FacilityProfileRoute />);
+
+    expect(screen.getByLabelText("Loading facility profile").props).toMatchObject({
+      accessibilityRole: "progressbar",
+      accessibilityLiveRegion: "polite"
+    });
+
+    const save = await screen.findByLabelText("Save notification settings");
+    fireEvent.press(save);
+
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Save notification settings").props.accessibilityState
+      ).toMatchObject({ disabled: true, busy: true })
+    );
+    finishSave?.();
+
+    const feedback = await screen.findByText("Notification settings saved.");
+    expect(feedback.props.accessibilityLiveRegion).toBe("polite");
+    expect(mockRetryMe).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByLabelText("Save notification settings").props.accessibilityState
+    ).toMatchObject({ disabled: false, busy: false });
   });
 });

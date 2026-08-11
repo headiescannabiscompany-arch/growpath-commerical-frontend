@@ -88,12 +88,14 @@ function ProfileAction({
   label,
   onPress,
   accessibilityLabel,
-  danger = false
+  danger = false,
+  disabled = false
 }: {
   label: string;
   onPress: () => void;
   accessibilityLabel: string;
   danger?: boolean;
+  disabled?: boolean;
 }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -101,8 +103,14 @@ function ProfileAction({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled, busy: disabled }}
+      disabled={disabled}
       onPress={onPress}
-      style={[styles.actionButton, danger && styles.dangerActionButton]}
+      style={[
+        styles.actionButton,
+        danger && styles.dangerActionButton,
+        disabled && styles.disabledActionButton
+      ]}
     >
       <Text style={[styles.actionText, danger && styles.dangerActionText]}>{label}</Text>
     </Pressable>
@@ -259,7 +267,12 @@ export default function FacilityProfileRoute() {
         {error ? <InlineError error={error} /> : null}
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility profile"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading profile...</Text>
           </View>
@@ -364,14 +377,23 @@ export default function FacilityProfileRoute() {
             <ProfileAction
               label={notificationSaving ? "Saving..." : "Save settings"}
               accessibilityLabel="Save notification settings"
+              disabled={notificationSaving}
               onPress={() => void saveNotificationPreferences()}
             />
           </View>
           {notificationFeedback ? (
-            <Text style={styles.feedback}>{notificationFeedback}</Text>
+            <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+              {notificationFeedback}
+            </Text>
           ) : null}
           {notificationError ? (
-            <Text style={styles.error}>{notificationError}</Text>
+            <Text
+              accessibilityLiveRegion="assertive"
+              accessibilityRole="alert"
+              style={styles.error}
+            >
+              {notificationError}
+            </Text>
           ) : null}
         </View>
 
@@ -502,6 +524,7 @@ const createStyles = (palette: ThemePalette) =>
       paddingVertical: 10
     },
     actionText: { color: palette.text, fontWeight: "900" },
+    disabledActionButton: { opacity: 0.55 },
     dangerActionButton: {
       backgroundColor: palette.surfaceStrong,
       borderColor: palette.danger
