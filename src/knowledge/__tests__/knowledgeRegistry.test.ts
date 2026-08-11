@@ -370,6 +370,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never depend on a native-only alert for Commercial catalog import fallback, permit duplicate concurrent extraction or draft-creation requests, accept a PDF extraction without a protected source URL, or imply an imported draft is published."
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight Commercial Inventory Support creation with non-negative stock validation and retained failed drafts"
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never silently coerce invalid Commercial inventory quantity or reorder values to zero, submit the same creation twice, discard the owner's failed draft, or depend on a native-only create-failure alert."
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never open an immediately billed Stripe checkout on the first action after the selected plan's trial has been used."
     );

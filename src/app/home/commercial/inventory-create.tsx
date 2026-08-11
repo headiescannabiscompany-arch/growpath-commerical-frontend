@@ -1,5 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 import { Link, useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
@@ -50,6 +57,7 @@ function RecordPicker({
   choices,
   createHref,
   createLabel,
+  disabled = false,
   label,
   onChange,
   selectedId
@@ -57,6 +65,7 @@ function RecordPicker({
   choices: RecordChoice[];
   createHref: string;
   createLabel: string;
+  disabled?: boolean;
   label: string;
   onChange: (id: string) => void;
   selectedId: string;
@@ -76,9 +85,14 @@ function RecordPicker({
           <Pressable
             accessibilityRole="radio"
             accessibilityLabel={`${label}: Not linked yet`}
-            accessibilityState={{ checked: !selectedId }}
+            accessibilityState={{ checked: !selectedId, disabled }}
+            disabled={disabled}
             onPress={() => onChange("")}
-            style={[styles.choice, !selectedId && styles.choiceSelected]}
+            style={[
+              styles.choice,
+              !selectedId && styles.choiceSelected,
+              disabled && styles.disabled
+            ]}
           >
             <Text style={styles.choiceText}>Not linked yet</Text>
           </Pressable>
@@ -87,9 +101,14 @@ function RecordPicker({
               key={`${label}-${item.id}`}
               accessibilityRole="radio"
               accessibilityLabel={`${label}: ${item.label}`}
-              accessibilityState={{ checked: selectedId === item.id }}
+              accessibilityState={{ checked: selectedId === item.id, disabled }}
+              disabled={disabled}
               onPress={() => onChange(item.id)}
-              style={[styles.choice, selectedId === item.id && styles.choiceSelected]}
+              style={[
+                styles.choice,
+                selectedId === item.id && styles.choiceSelected,
+                disabled && styles.disabled
+              ]}
             >
               <Text style={styles.choiceText}>{item.label}</Text>
             </Pressable>
@@ -102,7 +121,9 @@ function RecordPicker({
             <Pressable
               accessibilityRole="link"
               accessibilityLabel={createLabel}
-              style={styles.choice}
+              accessibilityState={{ disabled }}
+              disabled={disabled}
+              style={[styles.choice, disabled && styles.disabled]}
             >
               <Text style={styles.choiceText}>{createLabel}</Text>
             </Pressable>
@@ -137,6 +158,9 @@ export default function CommercialInventoryCreateRoute() {
   const [linkOptionsLoading, setLinkOptionsLoading] = useState(true);
   const [linkOptionsError, setLinkOptionsError] = useState("");
   const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const loadInFlightRef = useRef(false);
+  const saveInFlightRef = useRef(false);
 
   const path = useMemo(
     () =>
@@ -146,9 +170,11 @@ export default function CommercialInventoryCreateRoute() {
     []
   );
 
-  const canSave = name.trim().length > 1 && !saving;
+  const canSave = name.trim().length > 1 && unit.trim().length > 0 && !saving;
 
   const loadLinkOptions = useCallback(async () => {
+    if (loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLinkOptionsLoading(true);
     setLinkOptionsError("");
     try {
@@ -165,6 +191,7 @@ export default function CommercialInventoryCreateRoute() {
         String(error?.message || "Saved record choices could not be loaded.")
       );
     } finally {
+      loadInFlightRef.current = false;
       setLinkOptionsLoading(false);
     }
   }, []);
@@ -183,23 +210,34 @@ export default function CommercialInventoryCreateRoute() {
     .filter((item): item is RecordChoice => !!item);
 
   const create = async () => {
-    if (!canSave) return;
+    if (!canSave || saveInFlightRef.current) return;
     const quantityNumber = Number(qty);
     const reorderPointNumber = Number(reorderPoint);
 
+    if (!qty.trim() || !Number.isFinite(quantityNumber) || quantityNumber < 0) {
+      setSaveError("Quantity must be a number that is zero or greater.");
+      return;
+    }
+    if (
+      reorderPoint.trim() &&
+      (!Number.isFinite(reorderPointNumber) || reorderPointNumber < 0)
+    ) {
+      setSaveError("Reorder point must be a number that is zero or greater.");
+      return;
+    }
+
+    saveInFlightRef.current = true;
     setSaving(true);
+    setSaveError("");
     try {
       await apiRequest(path, {
         method: "POST",
         body: {
           name: name.trim(),
           sku: sku.trim() || undefined,
-          quantity: Number.isFinite(quantityNumber) ? quantityNumber : 0,
+          quantity: quantityNumber,
           unit: unit.trim() || "ea",
-          reorderPoint:
-            reorderPoint.trim() && Number.isFinite(reorderPointNumber)
-              ? reorderPointNumber
-              : 0,
+          reorderPoint: reorderPoint.trim() ? reorderPointNumber : 0,
           vendor: vendor.trim() || undefined,
           category: category.trim() || undefined,
           itemType: itemType.trim() || undefined,
@@ -214,8 +252,9 @@ export default function CommercialInventoryCreateRoute() {
       });
       router.replace("/home/commercial/inventory");
     } catch (e: any) {
-      Alert.alert("Create failed", String(e?.message || e || "Unknown error"));
+      setSaveError(String(e?.message || e || "Unable to create inventory record."));
     } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
     }
   };
@@ -243,6 +282,7 @@ export default function CommercialInventoryCreateRoute() {
           value={name}
           onChangeText={setName}
           accessibilityLabel="Commercial inventory item name"
+          editable={!saving}
           placeholder="Name"
           placeholderTextColor={palette.textMuted}
           style={styles.input}
@@ -251,6 +291,7 @@ export default function CommercialInventoryCreateRoute() {
           value={sku}
           onChangeText={setSku}
           accessibilityLabel="Commercial inventory item SKU"
+          editable={!saving}
           placeholder="SKU (optional)"
           placeholderTextColor={palette.textMuted}
           style={styles.input}
@@ -259,6 +300,7 @@ export default function CommercialInventoryCreateRoute() {
           value={qty}
           onChangeText={setQty}
           accessibilityLabel="Commercial inventory item quantity"
+          editable={!saving}
           placeholder="Quantity"
           placeholderTextColor={palette.textMuted}
           keyboardType="numeric"
@@ -268,6 +310,7 @@ export default function CommercialInventoryCreateRoute() {
           value={unit}
           onChangeText={setUnit}
           accessibilityLabel="Commercial inventory item unit"
+          editable={!saving}
           placeholder="Unit"
           placeholderTextColor={palette.textMuted}
           style={styles.input}
@@ -276,6 +319,7 @@ export default function CommercialInventoryCreateRoute() {
           value={reorderPoint}
           onChangeText={setReorderPoint}
           accessibilityLabel="Commercial inventory item reorder point"
+          editable={!saving}
           placeholder="Reorder point"
           placeholderTextColor={palette.textMuted}
           keyboardType="numeric"
@@ -285,6 +329,7 @@ export default function CommercialInventoryCreateRoute() {
           value={vendor}
           onChangeText={setVendor}
           accessibilityLabel="Commercial inventory item vendor"
+          editable={!saving}
           placeholder="Vendor"
           placeholderTextColor={palette.textMuted}
           style={styles.input}
@@ -293,6 +338,7 @@ export default function CommercialInventoryCreateRoute() {
           value={category}
           onChangeText={setCategory}
           accessibilityLabel="Commercial inventory item category"
+          editable={!saving}
           placeholder="Category"
           placeholderTextColor={palette.textMuted}
           style={styles.input}
@@ -306,9 +352,14 @@ export default function CommercialInventoryCreateRoute() {
           <Pressable
             accessibilityRole="radio"
             accessibilityLabel="Commercial inventory item type: Not selected"
-            accessibilityState={{ checked: !itemType }}
+            accessibilityState={{ checked: !itemType, disabled: saving }}
+            disabled={saving}
             onPress={() => setItemType("")}
-            style={[styles.choice, !itemType && styles.choiceSelected]}
+            style={[
+              styles.choice,
+              !itemType && styles.choiceSelected,
+              saving && styles.disabled
+            ]}
           >
             <Text style={styles.choiceText}>Not selected</Text>
           </Pressable>
@@ -317,9 +368,14 @@ export default function CommercialInventoryCreateRoute() {
               key={value}
               accessibilityRole="radio"
               accessibilityLabel={`Commercial inventory item type: ${label}`}
-              accessibilityState={{ checked: itemType === value }}
+              accessibilityState={{ checked: itemType === value, disabled: saving }}
+              disabled={saving}
               onPress={() => setItemType(value)}
-              style={[styles.choice, itemType === value && styles.choiceSelected]}
+              style={[
+                styles.choice,
+                itemType === value && styles.choiceSelected,
+                saving && styles.disabled
+              ]}
             >
               <Text style={styles.choiceText}>{label}</Text>
             </Pressable>
@@ -329,16 +385,25 @@ export default function CommercialInventoryCreateRoute() {
           value={location}
           onChangeText={setLocation}
           accessibilityLabel="Commercial inventory item location"
+          editable={!saving}
           placeholder="Storage location"
           placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
         <Text style={styles.sectionLabel}>Optional links</Text>
         {linkOptionsLoading ? (
-          <Text style={styles.helpText}>Loading saved record choices...</Text>
+          <View
+            accessibilityLabel="Loading Commercial inventory saved record choices"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.helpText}>Loading saved record choices...</Text>
+          </View>
         ) : null}
         {linkOptionsError ? (
-          <View style={styles.loadError}>
+          <View accessibilityLiveRegion="assertive" style={styles.loadError}>
             <Text style={styles.errorText}>{linkOptionsError}</Text>
             <Pressable
               accessibilityRole="button"
@@ -354,6 +419,7 @@ export default function CommercialInventoryCreateRoute() {
           <>
             <RecordPicker
               label="Linked product"
+              disabled={saving}
               choices={productChoices}
               selectedId={linkedProductId}
               onChange={setLinkedProductId}
@@ -362,6 +428,7 @@ export default function CommercialInventoryCreateRoute() {
             />
             <RecordPicker
               label="Linked product trial evidence run"
+              disabled={saving}
               choices={evidenceRunChoices}
               selectedId={linkedGrowId}
               onChange={setLinkedGrowId}
@@ -378,8 +445,9 @@ export default function CommercialInventoryCreateRoute() {
               : "Show advanced inventory record fields"
           }
           accessibilityState={{ expanded: showAdvancedFields }}
+          disabled={saving}
           onPress={() => setShowAdvancedFields((current) => !current)}
-          style={styles.advancedToggle}
+          style={[styles.advancedToggle, saving && styles.disabled]}
         >
           <Text style={styles.advancedToggleText}>
             {showAdvancedFields
@@ -393,6 +461,7 @@ export default function CommercialInventoryCreateRoute() {
               value={itemType}
               onChangeText={setItemType}
               accessibilityLabel="Commercial inventory custom item type"
+              editable={!saving}
               placeholder="Custom item type"
               placeholderTextColor={palette.textMuted}
               style={styles.input}
@@ -401,6 +470,7 @@ export default function CommercialInventoryCreateRoute() {
               value={linkedProductId}
               onChangeText={setLinkedProductId}
               accessibilityLabel="Commercial inventory linked product"
+              editable={!saving}
               placeholder="Linked product ID"
               placeholderTextColor={palette.textMuted}
               autoCapitalize="none"
@@ -410,6 +480,7 @@ export default function CommercialInventoryCreateRoute() {
               value={linkedIngredientId}
               onChangeText={setLinkedIngredientId}
               accessibilityLabel="Commercial inventory linked ingredient"
+              editable={!saving}
               placeholder="Linked ingredient ID"
               placeholderTextColor={palette.textMuted}
               autoCapitalize="none"
@@ -419,6 +490,7 @@ export default function CommercialInventoryCreateRoute() {
               value={linkedGeneticsId}
               onChangeText={setLinkedGeneticsId}
               accessibilityLabel="Commercial inventory linked genetics"
+              editable={!saving}
               placeholder="Linked genetics ID"
               placeholderTextColor={palette.textMuted}
               autoCapitalize="none"
@@ -428,6 +500,7 @@ export default function CommercialInventoryCreateRoute() {
               value={linkedGrowId}
               onChangeText={setLinkedGrowId}
               accessibilityLabel="Commercial inventory linked product trial evidence run"
+              editable={!saving}
               placeholder="Linked product trial evidence run ID"
               placeholderTextColor={palette.textMuted}
               autoCapitalize="none"
@@ -439,16 +512,38 @@ export default function CommercialInventoryCreateRoute() {
           value={notes}
           onChangeText={setNotes}
           accessibilityLabel="Commercial inventory item notes"
+          editable={!saving}
           placeholder="Notes"
           placeholderTextColor={palette.textMuted}
           multiline
           style={[styles.input, styles.notesInput]}
         />
+        {saving ? (
+          <View
+            accessibilityLabel="Creating Commercial inventory record in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.progressRow}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.helpText}>Creating inventory record...</Text>
+          </View>
+        ) : null}
+        {saveError ? (
+          <Text
+            accessibilityLiveRegion="assertive"
+            accessibilityRole="alert"
+            style={styles.errorText}
+          >
+            {saveError}
+          </Text>
+        ) : null}
         <Pressable
           onPress={create}
           disabled={!canSave}
           accessibilityRole="button"
           accessibilityLabel="Create commercial inventory item"
+          accessibilityState={{ disabled: !canSave, busy: saving }}
           style={[styles.button, !canSave && styles.disabled]}
         >
           <Text style={styles.buttonText}>
@@ -532,6 +627,11 @@ export function createCommercialInventoryCreateStyles(palette: ThemePalette) {
       color: palette.danger,
       fontSize: 13,
       fontWeight: "700"
+    },
+    progressRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8
     },
     advancedToggle: {
       alignSelf: "flex-start",
