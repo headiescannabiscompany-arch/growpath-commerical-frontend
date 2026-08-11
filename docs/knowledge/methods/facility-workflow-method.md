@@ -20,6 +20,8 @@ Facility means rooms/zones, facility grows, staff/roles, assignments, SOPs, task
 
 A Facility room with no grow remains a valid operational record. Its grow view must offer the supported grow-start workflow instead of referring vaguely to backend records. When the operator enters grow setup from one room, preselect only that exact room; never silently attach a new grow to every Facility room. Keep room-card actions precise: a grow-list action must say it opens grows, while equipment and batch-cycle setup remains in the room workspace.
 
+The selected Room Workspace and the New Room draft are separate state. Selecting or editing an existing room must not overwrite the draft room type, tracking mode, stage, placement, or location that the operator is preparing for a new room.
+
 Confirmed Facility writes must be read-after-write coherent in the active workspace. After a task is created, reconcile the returned record into the selected Facility queue immediately and refetch the canonical list without browser or intermediary caching. A stale follow-up read must not erase the confirmed record from the visible queue; later canonical reads may replace it once the stored record is present.
 
 Facility invitation acceptance is also a read-after-write boundary. After creating an active membership, expose that membership in the canonical session without changing the human's primary Personal or Commercial account, force a fresh session read, select the invited Facility, and wait for Facility mode before routing. Facility role capabilities use the selected Facility's active or trialing subscription, not the invited human's separate personal plan.

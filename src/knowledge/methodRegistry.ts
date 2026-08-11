@@ -827,6 +827,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never show a raw account identifier as the assignee on a Facility alert card.",
       "Never route a notification-backed task alert to a detail record that may have been deleted; open the current task collection instead.",
       "Never leave a zero-grow Facility room at a backend-facing dead end or silently attach a room-scoped grow setup to every Facility room.",
+      "Never let selecting or editing an existing Facility room overwrite the separate New Room draft.",
       "Never convert unavailable Facility compliance evidence to a zero or expose raw JSON, entity IDs, or identifier arrays in primary audit lists and summaries.",
       "Never make a Facility operator interpret raw audit JSON before showing the readable action, summary, time, and available actor context.",
       "Never treat a resolved or cancelled Facility deviation as an open cleanup blocker.",
