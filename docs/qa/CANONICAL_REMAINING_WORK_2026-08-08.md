@@ -28,7 +28,9 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   pest/beneficial-lookalike, root-zone, nutrient, chemical, physical, and
   normal-aging variants pass the strict seed-ready validator. Unused future source
   pools remain visibly pending and cannot enter a case without source approval and
-  image-level rights review.
+  image-level rights review. On 2026-08-11, the dry-run evaluator completed with
+  `seed_ready` status, 252 records, 504 image references, zero network requests, and
+  zero database writes. This closes catalog assembly, not staging execution.
 - [~] Run every completed Diagnosis/IPM case through the GrowPath primary path and
       GPT second opinion with the identical evidence envelope; persist evidence,
       counter-evidence, disagreements, confidence, requested follow-ups, billing, and
@@ -52,7 +54,9 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       confirmation, QA namespace, auth token, and deployed SHA, checkpoints each
       persisted ToolRun, validates the shared envelope digest, and reports provider,
       ledger, and linked-record gaps without converting them into acceptance. A real
-      authorized staging execution and its cleanup evidence remain.
+      authorized staging execution and its cleanup evidence remain. It stays gated
+      behind `RUN_GROWPATH_DIAGNOSIS_IPM_STAGING` because execution spends provider
+      credits and writes staging ToolRuns.
 - [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
       licenses, and exact follow-up-photo expectations. Never use the pack as training
