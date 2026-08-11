@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -8,7 +8,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 
 import {
   createIntegrationConnection,
@@ -39,7 +39,6 @@ function deviceName(device: any, index: number) {
 }
 
 export default function FacilityPulseConnectionRoute() {
-  const router = useRouter();
   const entitlements = useEntitlements();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilityPulseStyles(palette), [palette]);
@@ -50,14 +49,17 @@ export default function FacilityPulseConnectionRoute() {
   const [devices, setDevices] = useState<any[]>([]);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const connectInFlight = useRef(false);
 
   async function connect() {
+    if (connectInFlight.current) return;
     if (!apiKey.trim()) {
       setStatus("Enter the API key created in the Pulse grow account.");
       return;
     }
+    connectInFlight.current = true;
     setBusy(true);
-    setStatus("");
+    setStatus("Verifying the Pulse key and discovering devices...");
     try {
       const connection = await createIntegrationConnection({
         provider: "pulse",
@@ -65,28 +67,25 @@ export default function FacilityPulseConnectionRoute() {
         credentials: { apiKey: apiKey.trim() },
         config: { facilityId: String(facilityId || "") }
       });
+      if (!connection?.id) {
+        throw new Error("Pulse did not return a connection record. Try again.");
+      }
       await testIntegrationConnection(connection.id);
       const discovered = await listIntegrationDevices(connection.id);
-      setDevices(discovered);
+      const discoveredDevices = Array.isArray(discovered) ? discovered : [];
+      setDevices(discoveredDevices);
       setApiKey("");
       setStatus(
-        discovered.length
-          ? `${discovered.length} Pulse device${discovered.length === 1 ? "" : "s"} discovered. Review the room mapping next.`
+        discoveredDevices.length
+          ? `${discoveredDevices.length} Pulse device${discoveredDevices.length === 1 ? "" : "s"} discovered. Review the room mapping next.`
           : "Pulse connected, but this grow-scoped key returned no devices. Check the key's Pulse grow and device access."
       );
     } catch (error: any) {
       setStatus(String(error?.message || "Pulse connection failed."));
     } finally {
+      connectInFlight.current = false;
       setBusy(false);
     }
-  }
-
-  function mapRooms() {
-    const names = devices.map(deviceName).join("\n");
-    router.push({
-      pathname: "/home/facility/rooms",
-      params: { importProvider: "Pulse", importDevices: names }
-    } as any);
   }
 
   if (!canConfigure) {
@@ -105,14 +104,15 @@ export default function FacilityPulseConnectionRoute() {
               Your Facility role can view connected telemetry, but only owners and
               managers can add or verify provider credentials.
             </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Return to Facility integrations"
-              onPress={() => router.push("/home/facility/integrations" as any)}
-              style={styles.primary}
-            >
-              <Text style={styles.primaryText}>Return to Integrations</Text>
-            </Pressable>
+            <Link href="/home/facility/integrations" asChild>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="Return to Facility integrations"
+                style={styles.primary}
+              >
+                <Text style={styles.primaryText}>Return to Integrations</Text>
+              </Pressable>
+            </Link>
           </View>
         </ScrollView>
       </ScreenBoundary>
@@ -141,6 +141,7 @@ export default function FacilityPulseConnectionRoute() {
             onChangeText={setLabel}
             placeholder="Connection name"
             placeholderTextColor={palette.textMuted}
+            editable={!busy}
             style={styles.input}
           />
           <TextInput
@@ -151,6 +152,7 @@ export default function FacilityPulseConnectionRoute() {
             placeholderTextColor={palette.textMuted}
             autoCapitalize="none"
             secureTextEntry
+            editable={!busy}
             style={styles.input}
           />
           <Pressable
@@ -190,14 +192,24 @@ export default function FacilityPulseConnectionRoute() {
                 {deviceName(device, index)}
               </Text>
             ))}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Review Pulse room mappings"
-              onPress={mapRooms}
-              style={styles.primary}
+            <Link
+              href={{
+                pathname: "/home/facility/rooms",
+                params: {
+                  importProvider: "Pulse",
+                  importDevices: devices.map(deviceName).join("\n")
+                }
+              }}
+              asChild
             >
-              <Text style={styles.primaryText}>Review room mappings</Text>
-            </Pressable>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="Review Pulse room mappings"
+                style={styles.primary}
+              >
+                <Text style={styles.primaryText}>Review room mappings</Text>
+              </Pressable>
+            </Link>
           </View>
         ) : null}
       </ScrollView>
