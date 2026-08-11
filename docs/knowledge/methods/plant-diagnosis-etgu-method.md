@@ -489,13 +489,20 @@ observation-level confirmation and must be reduced to a wider regional location 
 the observation is marked sensitive. A private or collaborator-only coordinate must
 never be present in a public response.
 
-Map readiness must be visible as a requirement-by-requirement status. An observation is
-map-ready only when the contributor has selected a Field Study they may edit, the study
-has public visibility, qualifying evidence is attached, the observation is explicitly
-published, location privacy is public approximate or explicitly confirmed public exact,
-and device coordinates have been captured separately from AI. Show every unmet
-requirement instead of treating a partial draft as ready. New studies, observations,
-evidence, publication state, and coordinates remain private by default.
+Map readiness must be visible as a requirement-by-requirement status. A named Field
+Study observation is map-ready only when the contributor has selected a study they may
+edit and that study has public visibility. A direct single-find workflow may instead
+prepare the account's dedicated Nature collection behind the scenes after the user
+deliberately selects approximate-pin sharing; the user must not be forced to name or
+manage a Field Study merely to share one Plant ID. In both paths, qualifying evidence
+must be attached, the observation must be explicitly published, location privacy must be
+public approximate or explicitly confirmed public exact, and device coordinates must
+have been captured separately from AI. Show every unmet requirement instead of treating
+a partial draft as ready. Studies, observations, evidence, publication state, and
+coordinates remain private by default. The dedicated Nature collection may become
+public only as part of the same explicit direct-publish intent, contains no public
+observation until the final publish action succeeds, and does not change the protected
+exact ToolRun location.
 
 An existing saved Crop Identification ToolRun may be explicitly linked to an editable
 Field Study without rerunning AI or re-uploading its owned evidence. That link creates

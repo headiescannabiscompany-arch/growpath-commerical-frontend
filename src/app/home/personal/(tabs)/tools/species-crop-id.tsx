@@ -67,6 +67,20 @@ import {
 const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-night-light-detail-v2";
 const FRAME_EXTRACTION_POLL_DELAYS_MS = [1500, 3000, 5000, 8000, 12000, 20000, 30000];
 const FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS = 20;
+const DIRECT_NATURE_COLLECTION_TITLE = "My Nature Finds";
+const DIRECT_NATURE_COLLECTION_DESCRIPTION =
+  "Plant IDs deliberately shared from the direct Discovery Nature workflow.";
+
+function directNatureCollection(studies: FieldStudy[]) {
+  return (
+    studies.find(
+      (study) =>
+        study.title === DIRECT_NATURE_COLLECTION_TITLE &&
+        study.description === DIRECT_NATURE_COLLECTION_DESCRIPTION &&
+        study.purpose === "biodiversity_survey"
+    ) || null
+  );
+}
 
 function routeParam(value?: string | string[]) {
   return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
@@ -1157,6 +1171,7 @@ export default function SpeciesCropIdToolRoute() {
     workspaceType === "personal" && Boolean(params.fieldStudyId)
   );
   const [savedFieldObservationId, setSavedFieldObservationId] = useState("");
+  const [savedFieldObservationStudyId, setSavedFieldObservationStudyId] = useState("");
   const [savedFieldObservationPublished, setSavedFieldObservationPublished] =
     useState(false);
   const [activeToolRun, setActiveToolRun] = useState<ToolRun | null>(null);
@@ -1364,6 +1379,7 @@ export default function SpeciesCropIdToolRoute() {
     setConfirmPublicStudy(false);
     setCannabisMapConsent(false);
     setSavedFieldObservationId("");
+    setSavedFieldObservationStudyId("");
     setSavedFieldObservationPublished(false);
     setFieldStudyNotice("");
     setFieldStudyError("");
@@ -2151,11 +2167,21 @@ export default function SpeciesCropIdToolRoute() {
     [fieldStudies, selectedFieldStudyId]
   );
   const wantsNatureMap = publishObservation && locationPrivacy === "public_approximate";
+  const automaticNatureCollection = directNatureCollection(fieldStudies);
   const natureMapChecks = [
-    { ready: Boolean(selectedFieldStudy), label: "Field Study selected" },
     {
-      ready: selectedFieldStudy?.visibility === "public",
-      label: "Field Study is public"
+      ready: Boolean(selectedFieldStudy) || wantsNatureMap,
+      label: selectedFieldStudy
+        ? "Field Study selected"
+        : "Personal Nature collection will be prepared automatically"
+    },
+    {
+      ready: selectedFieldStudy
+        ? selectedFieldStudy.visibility === "public"
+        : wantsNatureMap,
+      label: selectedFieldStudy
+        ? "Field Study is public"
+        : "Deliberate approximate-pin sharing selected"
     },
     { ready: Boolean(observationLocation), label: "Device location captured" },
     {
@@ -2167,12 +2193,14 @@ export default function SpeciesCropIdToolRoute() {
 
   useEffect(() => {
     setSavedFieldObservationId("");
+    setSavedFieldObservationStudyId("");
     setSavedFieldObservationPublished(false);
     setFieldStudyNotice("");
   }, [selectedFieldStudyId]);
 
   useEffect(() => {
     setSavedFieldObservationId("");
+    setSavedFieldObservationStudyId("");
     setSavedFieldObservationPublished(false);
     setFieldStudyNotice("");
   }, [evidenceInputKey]);
@@ -2654,9 +2682,41 @@ export default function SpeciesCropIdToolRoute() {
                     default.
                   </Text>
 
-                  <Text style={styles.fieldLabel}>
-                    Field Study (required only for map pins)
+                  <Text style={styles.fieldLabel}>Share this individual find</Text>
+                  <Pressable
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: wantsNatureMap }}
+                    onPress={() => {
+                      if (wantsNatureMap) {
+                        setPublishObservation(false);
+                        setLocationPrivacy("private");
+                        setCannabisMapConsent(false);
+                      } else {
+                        setPublishObservation(true);
+                        setLocationPrivacy("public_approximate");
+                      }
+                    }}
+                    style={[
+                      styles.choiceButton,
+                      wantsNatureMap && styles.choiceButtonSelected
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.choiceText,
+                        wantsNatureMap && styles.choiceTextSelected
+                      ]}
+                    >
+                      Nature map — approximate pin
+                    </Text>
+                  </Pressable>
+                  <Text style={styles.evidenceGuidance}>
+                    No Field Study setup is required. After AI review, one deliberate
+                    publish action shares a privacy-safe approximate pin and the selected
+                    photos. Exact coordinates and Personal account details stay private.
                   </Text>
+
+                  <Text style={styles.fieldLabel}>Optional named Field Study</Text>
                   {fieldStudies.length ? (
                     <View style={styles.choiceRow}>
                       {fieldStudies.map((study) => {
@@ -2782,146 +2842,121 @@ export default function SpeciesCropIdToolRoute() {
                             Study-team draft
                           </Text>
                         </Pressable>
-                        <Pressable
-                          accessibilityRole="radio"
-                          accessibilityState={{ checked: wantsNatureMap }}
-                          onPress={() => {
-                            setPublishObservation(true);
-                            setLocationPrivacy("public_approximate");
-                          }}
-                          style={[
-                            styles.choiceButton,
-                            wantsNatureMap && styles.choiceButtonSelected
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.choiceText,
-                              wantsNatureMap && styles.choiceTextSelected
-                            ]}
-                          >
-                            Nature map — approximate pin
-                          </Text>
-                        </Pressable>
                       </View>
-                      {wantsNatureMap ? (
-                        <View style={styles.readinessPanel}>
-                          <Text style={styles.fieldLabel}>Nature map readiness</Text>
-                          {natureMapChecks.map((check) => (
-                            <Text
-                              key={check.label}
-                              style={
-                                check.ready ? styles.statusGood : styles.statusWarning
-                              }
-                            >
-                              {check.ready ? "Ready" : "Needed"}: {check.label}
-                            </Text>
-                          ))}
-                          {selectedFieldStudy.visibility !== "public" ? (
-                            selectedFieldStudy.accessRole === "owner" ? (
-                              <Pressable
-                                accessibilityRole="button"
-                                disabled={publishingStudy}
-                                onPress={() => setConfirmPublicStudy(true)}
-                                style={styles.secondaryButton}
-                              >
-                                <Text style={styles.secondaryButtonText}>
-                                  Review public Field Study sharing
-                                </Text>
-                              </Pressable>
-                            ) : (
-                              <Text style={styles.statusWarning}>
-                                The Field Study owner must make this study public before
-                                its published observations can appear on the Nature map.
-                              </Text>
-                            )
-                          ) : null}
-                          {confirmPublicStudy &&
-                          selectedFieldStudy.visibility !== "public" ? (
-                            <View style={styles.confirmationPanel}>
-                              <Text style={styles.statusWarning}>
-                                Making this Field Study public affects the whole study.
-                                Any published observations already in it may become
-                                discoverable; drafts remain private. Confirm only if that
-                                matches the study&apos;s intended audience.
-                              </Text>
-                              <View style={styles.choiceRow}>
-                                <Pressable
-                                  accessibilityRole="button"
-                                  onPress={() => setConfirmPublicStudy(false)}
-                                  style={styles.secondaryButton}
-                                >
-                                  <Text style={styles.secondaryButtonText}>Cancel</Text>
-                                </Pressable>
-                                <Pressable
-                                  accessibilityRole="button"
-                                  disabled={publishingStudy}
-                                  onPress={makeSelectedStudyPublic}
-                                  style={styles.secondaryButton}
-                                >
-                                  <Text style={styles.secondaryButtonText}>
-                                    {publishingStudy
-                                      ? "Making study public..."
-                                      : "Confirm public Field Study"}
-                                  </Text>
-                                </Pressable>
-                              </View>
-                            </View>
-                          ) : null}
+                      {wantsNatureMap && selectedFieldStudy.visibility !== "public" ? (
+                        selectedFieldStudy.accessRole === "owner" ? (
                           <Pressable
-                            accessibilityRole="checkbox"
-                            accessibilityState={{ checked: sensitiveSpecies }}
-                            onPress={() => setSensitiveSpecies((value) => !value)}
-                            style={[
-                              styles.choiceButton,
-                              sensitiveSpecies && styles.sensitiveButtonSelected
-                            ]}
+                            accessibilityRole="button"
+                            disabled={publishingStudy}
+                            onPress={() => setConfirmPublicStudy(true)}
+                            style={styles.secondaryButton}
                           >
-                            <Text style={styles.choiceText}>
-                              {sensitiveSpecies
-                                ? "Sensitive species protection: on"
-                                : "Sensitive species protection: off"}
+                            <Text style={styles.secondaryButtonText}>
+                              Review public Field Study sharing
                             </Text>
                           </Pressable>
-                          <Pressable
-                            accessibilityRole="checkbox"
-                            accessibilityState={{ checked: cannabisMapConsent }}
-                            onPress={() => setCannabisMapConsent((value) => !value)}
-                            style={[
-                              styles.choiceButton,
-                              cannabisMapConsent && styles.choiceButtonSelected
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.choiceText,
-                                cannabisMapConsent && styles.choiceTextSelected
-                              ]}
-                            >
-                              {cannabisMapConsent
-                                ? "Cannabis/hemp public-context confirmation: on"
-                                : "This is Cannabis/hemp — review public-context sharing"}
-                            </Text>
-                          </Pressable>
-                          {cannabisMapConsent ? (
-                            <Text style={styles.evidenceGuidance}>
-                              You confirm this is a Cannabis-genus observation and want an
-                              eligible public pin shown only to viewers whose grow
-                              interests and content controls allow Cannabis/hemp findings.
-                            </Text>
-                          ) : null}
-                          <Text
-                            style={
-                              natureMapReady ? styles.statusGood : styles.statusWarning
-                            }
-                          >
-                            {natureMapReady
-                              ? "Ready to create an approximate map pin after AI review."
-                              : "Complete the needed items above, then identify the plant and publish the pin from the result."}
+                        ) : (
+                          <Text style={styles.statusWarning}>
+                            The Field Study owner must make this study public before its
+                            published observations can appear on the Nature map.
                           </Text>
+                        )
+                      ) : null}
+                      {confirmPublicStudy &&
+                      selectedFieldStudy.visibility !== "public" ? (
+                        <View style={styles.confirmationPanel}>
+                          <Text style={styles.statusWarning}>
+                            Making this Field Study public affects the whole study. Any
+                            published observations already in it may become discoverable;
+                            drafts remain private. Confirm only if that matches the
+                            study&apos;s intended audience.
+                          </Text>
+                          <View style={styles.choiceRow}>
+                            <Pressable
+                              accessibilityRole="button"
+                              onPress={() => setConfirmPublicStudy(false)}
+                              style={styles.secondaryButton}
+                            >
+                              <Text style={styles.secondaryButtonText}>Cancel</Text>
+                            </Pressable>
+                            <Pressable
+                              accessibilityRole="button"
+                              disabled={publishingStudy}
+                              onPress={makeSelectedStudyPublic}
+                              style={styles.secondaryButton}
+                            >
+                              <Text style={styles.secondaryButtonText}>
+                                {publishingStudy
+                                  ? "Making study public..."
+                                  : "Confirm public Field Study"}
+                              </Text>
+                            </Pressable>
+                          </View>
                         </View>
                       ) : null}
                     </>
+                  ) : null}
+                  {wantsNatureMap ? (
+                    <View style={styles.readinessPanel}>
+                      <Text style={styles.fieldLabel}>Nature map readiness</Text>
+                      {natureMapChecks.map((check) => (
+                        <Text
+                          key={check.label}
+                          style={check.ready ? styles.statusGood : styles.statusWarning}
+                        >
+                          {check.ready ? "Ready" : "Needed"}: {check.label}
+                        </Text>
+                      ))}
+                      <Pressable
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: sensitiveSpecies }}
+                        onPress={() => setSensitiveSpecies((value) => !value)}
+                        style={[
+                          styles.choiceButton,
+                          sensitiveSpecies && styles.sensitiveButtonSelected
+                        ]}
+                      >
+                        <Text style={styles.choiceText}>
+                          {sensitiveSpecies
+                            ? "Sensitive species protection: on"
+                            : "Sensitive species protection: off"}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: cannabisMapConsent }}
+                        onPress={() => setCannabisMapConsent((value) => !value)}
+                        style={[
+                          styles.choiceButton,
+                          cannabisMapConsent && styles.choiceButtonSelected
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.choiceText,
+                            cannabisMapConsent && styles.choiceTextSelected
+                          ]}
+                        >
+                          {cannabisMapConsent
+                            ? "Cannabis/hemp public-context confirmation: on"
+                            : "This is Cannabis/hemp — review public-context sharing"}
+                        </Text>
+                      </Pressable>
+                      {cannabisMapConsent ? (
+                        <Text style={styles.evidenceGuidance}>
+                          You confirm this is a Cannabis-genus observation and want an
+                          eligible public pin shown only to viewers whose grow interests
+                          and content controls allow Cannabis/hemp findings.
+                        </Text>
+                      ) : null}
+                      <Text
+                        style={natureMapReady ? styles.statusGood : styles.statusWarning}
+                      >
+                        {natureMapReady
+                          ? "Ready to create an approximate map pin after AI review."
+                          : "Complete the needed items above, then identify the plant and publish the pin from the result."}
+                      </Text>
+                    </View>
                   ) : null}
                   <View style={styles.fieldMapLink}>
                     <Text style={styles.evidenceGuidance}>
@@ -3656,7 +3691,10 @@ export default function SpeciesCropIdToolRoute() {
             }
           });
         }
-        if (activeWorkspaceType === "personal" && selectedFieldStudyId) {
+        if (
+          activeWorkspaceType === "personal" &&
+          (selectedFieldStudyId || savedFieldObservationId || wantsNatureMap)
+        ) {
           actions.push({
             key: "save-field-observation",
             label: savedFieldObservationId
@@ -3690,7 +3728,11 @@ export default function SpeciesCropIdToolRoute() {
                   "Use Current Location before publishing an approximate Nature map pin."
                 );
               }
-              if (wantsNatureMap && selectedFieldStudy?.visibility !== "public") {
+              if (
+                wantsNatureMap &&
+                selectedFieldStudy &&
+                selectedFieldStudy.visibility !== "public"
+              ) {
                 throw new Error(
                   "Make the selected Field Study public before publishing its Nature map pin."
                 );
@@ -3733,6 +3775,69 @@ export default function SpeciesCropIdToolRoute() {
               }
               const cannabisContextConfirmed =
                 wantsNatureMap && cannabisObservation && cannabisMapConsent;
+              let targetStudy =
+                selectedFieldStudy ||
+                fieldStudies.find(
+                  (study) =>
+                    String(study.id || study._id || "") === savedFieldObservationStudyId
+                ) ||
+                automaticNatureCollection;
+              let targetStudyId = String(
+                selectedFieldStudyId ||
+                  savedFieldObservationStudyId ||
+                  targetStudy?.id ||
+                  targetStudy?._id ||
+                  ""
+              );
+              if (wantsNatureMap && !targetStudyId) {
+                const latestStudies = await listFieldStudies();
+                const latestNatureCollection = directNatureCollection(latestStudies);
+                if (latestNatureCollection) {
+                  targetStudy = latestNatureCollection;
+                  targetStudyId = String(
+                    latestNatureCollection.id || latestNatureCollection._id || ""
+                  );
+                  setFieldStudies(latestStudies);
+                }
+              }
+              if (wantsNatureMap && !targetStudyId) {
+                targetStudy = await createFieldStudy({
+                  title: DIRECT_NATURE_COLLECTION_TITLE,
+                  description: DIRECT_NATURE_COLLECTION_DESCRIPTION,
+                  purpose: "biodiversity_survey",
+                  visibility: "public",
+                  defaultLocationPrivacy: "public_approximate",
+                  obscureSensitiveSpecies: true
+                });
+                targetStudyId = String(targetStudy.id || targetStudy._id || "");
+                if (!targetStudyId) {
+                  throw new Error(
+                    "The Personal Nature collection could not be prepared. Nothing was published."
+                  );
+                }
+                setFieldStudies((current) => [targetStudy as FieldStudy, ...current]);
+              } else if (
+                wantsNatureMap &&
+                !selectedFieldStudy &&
+                targetStudy &&
+                targetStudy.visibility !== "public"
+              ) {
+                targetStudy = await updateFieldStudy(targetStudyId, {
+                  visibility: "public"
+                });
+                setFieldStudies((current) =>
+                  current.map((study) =>
+                    String(study.id || study._id || "") === targetStudyId
+                      ? (targetStudy as FieldStudy)
+                      : study
+                  )
+                );
+              }
+              if (!targetStudyId) {
+                throw new Error(
+                  "Choose a Field Study for a private draft, or select the Nature map option for a direct public pin."
+                );
+              }
               const observationInput = {
                 sourceToolRunId: String(toolRun?.id || toolRun?._id || "") || null,
                 growId: growId || null,
@@ -3793,14 +3898,14 @@ export default function SpeciesCropIdToolRoute() {
               let locationNotice = "";
               if (observationId) {
                 const updated = await updateFieldObservation(
-                  selectedFieldStudyId,
+                  targetStudyId,
                   observationId,
                   observationInput
                 );
                 observationId = String(updated.id || updated._id || observationId);
               } else {
                 const created = await createFieldObservation(
-                  selectedFieldStudyId,
+                  targetStudyId,
                   observationInput
                 );
                 observationId = String(
@@ -3809,6 +3914,7 @@ export default function SpeciesCropIdToolRoute() {
                 locationNotice = created.locationNotice || "";
               }
               setSavedFieldObservationId(observationId);
+              setSavedFieldObservationStudyId(targetStudyId);
               setSavedFieldObservationPublished(publishObservation);
               setFieldStudyNotice(
                 locationNotice ||

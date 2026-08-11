@@ -84,7 +84,15 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       and reloaded the exact evidence receipt from Saved Runs. Production also verified
       automatic credit refunds for failed provider reviews while fixing the nested JSON
       response and stale vision-receipt contract. Direct private geolocation, opt-in
-      Discovery Nature photo-pin publication/privacy remain. The correction flow is
+      Discovery Nature photo-pin publication/privacy remain. The direct publication
+      implementation now lets a Personal user deliberately select an approximate Nature
+      photo pin without naming or configuring a Field Study; it prepares the backend's
+      dedicated collection only after that choice and still requires location, uploaded
+      photo evidence, a final publish action, sensitive-species obscuring, and separate
+      Cannabis/hemp public-context consent. Source, 94 focused tests, all 89 regression
+      batches, TypeScript, lint, and the full contract/delivery guard pass; deployment
+      and signed-in data-bearing production acceptance remain before this item can close.
+      The correction flow is
       live-verified on the same retained run: saving the common identity `cannabis`
       marks it user-corrected, preserves/rejects the original AI draft, keeps exact
       scientific species unverified, and clears the confirmation requirement.
