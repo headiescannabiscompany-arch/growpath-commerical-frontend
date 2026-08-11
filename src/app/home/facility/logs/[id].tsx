@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -56,10 +56,12 @@ export default function FacilityLogDetail() {
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const loadInFlightRef = useRef(false);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId || !id) return;
+      if (!facilityId || !id || loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -71,6 +73,7 @@ export default function FacilityLogDetail() {
       } catch (e) {
         handleApiError(e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -128,7 +131,12 @@ export default function FacilityLogDetail() {
         {error ? <InlineError error={error} /> : null}
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility journal entry"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading log…</Text>
           </View>

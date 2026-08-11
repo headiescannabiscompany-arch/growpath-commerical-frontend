@@ -1,5 +1,6 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { RefreshControl } from "react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import FacilityGrowDetailRoute from "@/app/home/facility/grows/[id]";
 
@@ -76,7 +77,7 @@ describe("FacilityGrowDetailRoute", () => {
     expect(screen.queryByText(/\{\s*"/)).toBeNull();
 
     fireEvent.press(
-      screen.getByRole("button", {
+      screen.getByRole("link", {
         name: "Open Tasks & calendar for Summer crop"
       })
     );
@@ -84,6 +85,30 @@ describe("FacilityGrowDetailRoute", () => {
     expect(mockPush).toHaveBeenCalledWith({
       pathname: "/home/facility/tasks",
       params: { growId: "grow-1", roomId: "room-1", contextName: "Summer crop" }
+    });
+  });
+
+  it("names loading progress and serializes pull-to-refresh requests", async () => {
+    const screen = render(<FacilityGrowDetailRoute />);
+
+    expect(screen.getByLabelText("Loading facility grow details").props).toMatchObject({
+      accessibilityRole: "progressbar"
+    });
+    await waitFor(() => expect(screen.getByText("Grow workspace")).toBeTruthy());
+
+    let finishRefresh: ((value: unknown) => void) | undefined;
+    mockApiRequest.mockImplementationOnce(
+      () => new Promise((resolve) => (finishRefresh = resolve))
+    );
+    const refreshControl = screen.UNSAFE_getByType(RefreshControl);
+    act(() => {
+      refreshControl.props.onRefresh();
+      refreshControl.props.onRefresh();
+    });
+
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      finishRefresh?.({ grow: { id: "grow-1", name: "Summer crop" } });
     });
   });
 });
