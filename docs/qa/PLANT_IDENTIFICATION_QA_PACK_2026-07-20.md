@@ -2,9 +2,9 @@
 
 Date: 2026-07-20
 
-Status: Catalog, rights gate, and candidate collector implemented. Image-level identity,
-life-stage, rights, and intended-use review remain pending; no candidate is automatically
-promoted into the 320-record evaluation catalog.
+Status: Catalog, rights gate, candidate collector, review queue, and promotion gate
+implemented. Image-level identity, life-stage, rights, and intended-use review remain
+pending; no candidate is automatically promoted into the 320-record evaluation catalog.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
@@ -75,6 +75,8 @@ npm.cmd run collect:plant-id-qa-candidates:execute
 npm.cmd run collect:plant-id-qa-candidates:resume
 npm.cmd run prepare:plant-id-qa-review
 npm.cmd run prepare:plant-id-qa-review:execute
+npm.cmd run promote:plant-id-qa-reviews
+npm.cmd run promote:plant-id-qa-reviews:execute -- --expected-catalog-sha256=<sha> --expected-candidate-sha256=<sha> --expected-review-sha256=<sha>
 ```
 
 Execution writes only `tmp/spec/plant-identification-qa-candidates.json`. It never edits
@@ -97,7 +99,18 @@ writes lookalike queues with balanced source-taxon coverage when the candidate p
 support it. It writes only `tmp/spec/plant-identification-qa-review.json` after explicit
 execution. It does not copy media or promote catalog records. Every queued item begins
 pending and is non-promotable until a named reviewer records image-visible morphology,
-identity and life-stage decisions, a Tier A taxonomy or morphology cross-check, the exact image
-license and license URL, rights-review date, expected confidence/behavior, and intended
-commercial QA-use approval. Missing failure cases remain explicit owned-or-commissioned
-media blockers rather than placeholders.
+identity and life-stage decisions, a Tier A taxonomy or morphology cross-check, the
+exact image license and license URL, rights-review date, expected confidence/behavior,
+and intended commercial QA-use approval. Missing failure cases remain explicit
+owned-or-commissioned media blockers rather than placeholders.
+
+The reviewed-record promoter is a separate fail-closed gate. Its default run reports
+input hashes and eligible/blocking counts without writing. Explicit execution requires
+the exact current catalog, candidate-manifest, and review-manifest SHA-256 values. It
+re-derives every candidate from the bound candidate manifest, re-derives every target
+from the governed case definition, rejects changed definitions, duplicate media,
+over-quota cases, incomplete review decisions, or mismatched licenses, and writes the
+catalog atomically. Catalog status remains `planning` until all 320 case quotas are
+filled; only an exact complete reviewed catalog becomes `seed_ready`. Because the
+definition snapshot excludes only catalog status and reviewed media records, approved
+records can accumulate safely without weakening the original candidate/review binding.

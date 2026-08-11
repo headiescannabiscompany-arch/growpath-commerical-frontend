@@ -46,6 +46,11 @@ function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 
+function catalogDefinitionProjection(catalog) {
+  const { status: _status, mediaRecords: _mediaRecords, ...definition } = catalog;
+  return definition;
+}
+
 function parseArgs(argv) {
   const options = { execute: false, replace: false };
   for (const argument of argv) {
@@ -432,6 +437,9 @@ function buildReviewQueue({ catalog, catalogRaw, candidateManifest, candidateRaw
       sha256: catalogSha,
       targetRecordCount: catalog.targetRecordCount
     },
+    catalogDefinitionSnapshot: {
+      sha256: sha256(JSON.stringify(catalogDefinitionProjection(catalog)))
+    },
     candidateSnapshot: {
       sha256: sha256(candidateRaw),
       candidateCount: candidateManifest.candidates?.length || 0
@@ -504,6 +512,7 @@ module.exports = {
   ALLOWED_EXACT_LICENSES,
   TIER_A_CROSS_CHECK_IDS,
   buildReviewQueue,
+  catalogDefinitionProjection,
   candidateSafetyBlockers,
   deriveSourceQueries,
   parseArgs,

@@ -68,7 +68,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       candidates where applicable, preserves the remaining owned failure-case blockers,
       and refuses to treat an item as promotable without explicit morphology, identity,
       stage, Tier A cross-check, exact-license, rights, expected-result, and intended-use
-      decisions.
+      decisions. A separate dry-run-by-default promotion gate now binds the catalog,
+      candidate manifest, and review manifest by exact hashes; revalidates immutable
+      candidates, governed case definitions, quotas, duplicates, review decisions, and
+      rights; and can only atomically import fully approved records. The real 284-item
+      pending queue produces 0 promotions and leaves the catalog unchanged.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
       Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
       extraction, prompt length, saved-run reload, and correction/confirmation flows.
