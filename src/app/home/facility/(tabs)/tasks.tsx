@@ -525,6 +525,7 @@ export default function FacilityTasksRoute() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Toggle facility task creator"
+              accessibilityState={{ expanded: showTaskCreator }}
               onPress={() => setShowTaskCreator((current) => !current)}
               style={styles.secondaryBtn}
             >
@@ -592,8 +593,9 @@ export default function FacilityTasksRoute() {
                   return (
                     <Pressable
                       key={id}
-                      accessibilityRole="button"
+                      accessibilityRole="radio"
                       accessibilityLabel={`Set facility task room ${label}`}
+                      accessibilityState={{ checked: newRoomId === id }}
                       onPress={() => {
                         setNewRoomId(id);
                         if (
@@ -633,8 +635,9 @@ export default function FacilityTasksRoute() {
                   return (
                     <Pressable
                       key={id}
-                      accessibilityRole="button"
+                      accessibilityRole="radio"
                       accessibilityLabel={`Set facility task grow ${label}`}
+                      accessibilityState={{ checked: newGrowId === id }}
                       onPress={() => setNewGrowId(id)}
                       style={[styles.chip, newGrowId === id && styles.chipSelected]}
                     >
@@ -674,8 +677,9 @@ export default function FacilityTasksRoute() {
                       return (
                         <Pressable
                           key={memberId}
-                          accessibilityRole="button"
+                          accessibilityRole="radio"
                           accessibilityLabel={`Assign facility task to ${label}`}
+                          accessibilityState={{ checked: newAssignedTo === memberId }}
                           onPress={() => setNewAssignedTo(memberId)}
                           style={[
                             styles.chip,
@@ -704,6 +708,7 @@ export default function FacilityTasksRoute() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Toggle advanced facility task linkage"
+                accessibilityState={{ expanded: showAdvancedLinkage }}
                 onPress={() => setShowAdvancedLinkage((current) => !current)}
                 style={styles.secondaryBtn}
               >
@@ -721,8 +726,9 @@ export default function FacilityTasksRoute() {
                     {sourceTypes.map((sourceType) => (
                       <Pressable
                         key={sourceType}
-                        accessibilityRole="button"
+                        accessibilityRole="radio"
                         accessibilityLabel={`Set facility task source ${sourceType}`}
+                        accessibilityState={{ checked: newSourceType === sourceType }}
                         onPress={() => setNewSourceType(sourceType)}
                         style={[
                           styles.chip,
@@ -759,8 +765,9 @@ export default function FacilityTasksRoute() {
 
               <View style={styles.chipRow}>
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="checkbox"
                   accessibilityLabel="Toggle proof required"
+                  accessibilityState={{ checked: newRequiresProof }}
                   onPress={() => setNewRequiresProof((current) => !current)}
                   style={[styles.chip, newRequiresProof && styles.chipSelected]}
                 >
@@ -771,8 +778,9 @@ export default function FacilityTasksRoute() {
                   </Text>
                 </Pressable>
                 <Pressable
-                  accessibilityRole="button"
+                  accessibilityRole="checkbox"
                   accessibilityLabel="Toggle approval required"
+                  accessibilityState={{ checked: newRequiresApproval }}
                   onPress={() => setNewRequiresApproval((current) => !current)}
                   style={[styles.chip, newRequiresApproval && styles.chipSelected]}
                 >
@@ -790,6 +798,7 @@ export default function FacilityTasksRoute() {
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="Create facility task"
+                accessibilityState={{ disabled: creating || !newTitle.trim() }}
                 onPress={createTask}
                 disabled={creating || !newTitle.trim()}
                 style={[
@@ -809,8 +818,12 @@ export default function FacilityTasksRoute() {
           )}
         </View>
         {loading ? (
-          <View style={styles.loading}>
-            <ActivityIndicator color={palette.accent} />
+          <View accessibilityLiveRegion="polite" style={styles.loading}>
+            <ActivityIndicator
+              accessibilityRole="progressbar"
+              accessibilityLabel="Loading facility tasks"
+              color={palette.accent}
+            />
             <Text style={styles.muted}>Loading tasks...</Text>
           </View>
         ) : null}
@@ -835,8 +848,9 @@ export default function FacilityTasksRoute() {
             ).map((option) => (
               <Pressable
                 key={option}
-                accessibilityRole="button"
+                accessibilityRole="radio"
                 accessibilityLabel={`Facility task queue filter ${option}`}
+                accessibilityState={{ checked: queueFilter === option }}
                 onPress={() => setQueueFilter(option)}
                 style={[styles.chip, queueFilter === option && styles.chipSelected]}
               >
@@ -858,8 +872,9 @@ export default function FacilityTasksRoute() {
             {availableSourceFilters.map((option) => (
               <Pressable
                 key={option}
-                accessibilityRole="button"
+                accessibilityRole="radio"
                 accessibilityLabel={`Facility task source filter ${option}`}
+                accessibilityState={{ checked: sourceFilter === option }}
                 onPress={() => setSourceFilter(option)}
                 style={[styles.chip, sourceFilter === option && styles.chipSelected]}
               >
