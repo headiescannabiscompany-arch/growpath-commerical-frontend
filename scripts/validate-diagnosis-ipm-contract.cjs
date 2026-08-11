@@ -25,6 +25,7 @@ function forbidText(label, contents, pattern, description) {
 const diagnoseRoute = read("backend/routes/diagnose.js");
 const toolsRoute = read("backend/routes/tools.js");
 const calculators = read("backend/services/toolCalculators.js");
+const ipmGptVerification = read("backend/services/ipmGptVerification.js");
 const cropRoute = read("backend/routes/cropKnowledge.js");
 const diagnoseApi = read("src/api/diagnose.js");
 const diagnosisScreen = read("src/app/home/personal/(tabs)/diagnose.tsx");
@@ -41,6 +42,7 @@ const sourceRegistry = read("src/knowledge/sourceRegistry.ts");
 
 const diagnoseTest = read("backend/routes/diagnose.test.js");
 const toolsTest = read("backend/routes/tools.test.js");
+const ipmGptVerificationTest = read("backend/services/ipmGptVerification.test.js");
 const cropTest = read("backend/routes/cropKnowledge.test.js");
 const diagnoseApiTest = read("tests/unit/diagnose-api.test.ts");
 const diagnosisContextTest = read("tests/unit/diagnosis-crop-context.test.ts");
@@ -120,6 +122,17 @@ const videoFrameTest = read("tests/unit/videoFrameExtraction.test.ts");
 });
 
 [
+  ["evidence-envelope digest", /evidenceEnvelopeDigest/],
+  ["deterministic field comparison", /buildIpmComparison/],
+  ["persisted field disagreements", /disagreements/],
+  ["combined requested follow-ups", /requestedFollowUps/],
+  ["unverified charge boundary", /charge_unverified/],
+  ["unverified refund boundary", /refund_unverified/]
+].forEach(([description, pattern]) => {
+  requireText("IPM GPT verification", ipmGptVerification, pattern, description);
+});
+
+[
   ["IPM calculator", /function calculateIpmScout/],
   ["IPM organism output", /suspectedOrganism/],
   ["IPM task suggestions", /taskSuggestions/],
@@ -193,15 +206,36 @@ const videoFrameTest = read("tests/unit/videoFrameExtraction.test.ts");
   ["server-only private video mode", /serverFrameExtractionOnly/],
   ["durable extraction start", /extractEvidenceVideoFrames/],
   ["persisted extraction status", /getEvidenceVideoFrameExtraction/],
-  ["abortable exact evidence reload", /getEvidenceAssetsByIds\([\s\S]*signal: guard\.signal/],
-  ["persisted processing poll", /FRAME_EXTRACTION_POLL_DELAYS_MS[\s\S]*FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS/],
-  ["completed source ordered IDs", /sameOrderedIds[\s\S]*sourceExtraction\?\.status !== "completed"/],
+  [
+    "abortable exact evidence reload",
+    /getEvidenceAssetsByIds\([\s\S]*signal: guard\.signal/
+  ],
+  [
+    "persisted processing poll",
+    /FRAME_EXTRACTION_POLL_DELAYS_MS[\s\S]*FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS/
+  ],
+  [
+    "completed source ordered IDs",
+    /sameOrderedIds[\s\S]*sourceExtraction\?\.status !== "completed"/
+  ],
   ["exact frame source lineage", /sourceVideoEvidenceAssetId[\s\S]*guard\.sourceId/],
   ["exact frame extraction version", /frameExtractionVersion[\s\S]*extractionVersion/],
-  ["mandatory frame extraction attempt", /Number\.isInteger\(frame\.frameExtractionAttempt\)[\s\S]*frame\.frameExtractionAttempt === extractionAttempt/],
-  ["mandatory ordered frame index", /Number\.isInteger\(frame\.frameIndex\)[\s\S]*frame\.frameIndex === index/],
-  ["canonical provider frame order", /for \(const \[expectedIndex, frameId\] of verifiedExtraction\.frameIds\.entries\(\)\)/],
-  ["provider frames require completed verification", /plantIdProviderReadyEvidenceAssets\(\s*currentEvidenceAssets,\s*verifiedFrameExtraction,\s*currentSourceVideoFramesVerified\s*\)/],
+  [
+    "mandatory frame extraction attempt",
+    /Number\.isInteger\(frame\.frameExtractionAttempt\)[\s\S]*frame\.frameExtractionAttempt === extractionAttempt/
+  ],
+  [
+    "mandatory ordered frame index",
+    /Number\.isInteger\(frame\.frameIndex\)[\s\S]*frame\.frameIndex === index/
+  ],
+  [
+    "canonical provider frame order",
+    /for \(const \[expectedIndex, frameId\] of verifiedExtraction\.frameIds\.entries\(\)\)/
+  ],
+  [
+    "provider frames require completed verification",
+    /plantIdProviderReadyEvidenceAssets\(\s*currentEvidenceAssets,\s*verifiedFrameExtraction,\s*currentSourceVideoFramesVerified\s*\)/
+  ],
   ["under-ten-minute video limit", /maxVideoSeconds=\{599\}/]
 ].forEach(([description, pattern]) => {
   requireText("species screen", speciesScreen, pattern, description);
@@ -368,6 +402,11 @@ requireText(
     "IPM backend tests",
     toolsTest,
     /runs IPM scout and species crop identification tools/
+  ],
+  [
+    "IPM comparison tests",
+    ipmGptVerificationTest,
+    /computes field-level disagreements from one fingerprinted evidence envelope[\s\S]*records an unverified refund boundary/
   ],
   [
     "IPM screen tests",

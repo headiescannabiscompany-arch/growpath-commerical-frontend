@@ -108,6 +108,13 @@ describe("GrowPath QA seed-system fixture", () => {
       agreementStateRequired: true,
       pesticideProductOrRateOutputAllowed: false
     });
+    expect(pack).toMatchObject({
+      status: "seed_ready",
+      catalogFixture: "tests/fixtures/diagnosis-ipm-qa-catalog.json",
+      targetRecordCount: { minimum: 252, maximum: 252 },
+      reviewedRecordCount: 252,
+      reviewedImageCount: 504
+    });
     expect(pack.caseGroups).toEqual(
       expect.objectContaining({
         diseases: expect.any(Array),

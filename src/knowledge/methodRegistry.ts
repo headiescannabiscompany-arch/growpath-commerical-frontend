@@ -127,6 +127,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "cannabis-gated male, female, intersex, or unclear follow-up based on visible reproductive structures rather than stems or stipules",
       "safe treatment categories without pesticide products or dosing",
       "normalized GrowPath/GPT agreement state",
+      "one fingerprinted IPM evidence envelope with both answers, deterministic field-level disagreements, combined requested follow-ups, and an explicit unverified billing state until a ledger receipt exists",
       "explicit IPM AI-credit cost and charged/refunded result",
       "user likely/uncertain/rejected decision with timestamp",
       "grow-optional draft crop identity from uploaded media",

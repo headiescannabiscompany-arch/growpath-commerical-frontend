@@ -414,6 +414,62 @@ describe("IpmScoutToolRoute", () => {
     ).toBeTruthy();
   });
 
+  it("shows field-level verification conflicts and unverified billing evidence", async () => {
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        suspectedIssue: "pest_pressure",
+        suspectedOrganism: "thrips possible",
+        severity: "low",
+        confidence: "low",
+        readiness: { status: "partial_evidence" },
+        pressureSummary: {},
+        growPathAi: { answer: "Thrips remain one working hypothesis." },
+        gptVerification: {
+          status: "completed",
+          agreementStatus: "conflicts",
+          providerLabel: "GPT structured IPM second opinion",
+          answer: "Powdery mildew is a competing hypothesis."
+        },
+        disagreements: [
+          {
+            field: "suspectedOrganism",
+            growPathValue: "thrips possible",
+            gptValue: "powdery mildew-like growth"
+          }
+        ],
+        billingEvidence: {
+          aiCreditsUsed: null,
+          creditStatus: "charge_unverified",
+          providerAttempted: true,
+          providerCompleted: true,
+          ledgerReceiptPresent: false,
+          limitation:
+            "The provider completed, but this response does not contain the credit-ledger receipt needed to prove the exact charge."
+        },
+        mediaAnalysis: { performed: false, requested: false },
+        documentation: { savedAs: "ToolRun" }
+      },
+      toolRun: { id: "toolrun-conflict", _id: "toolrun-conflict" }
+    });
+    const screen = render(<IpmScoutToolRoute />);
+    fireEvent.changeText(
+      screen.getByLabelText("IPM Scout Damage or symptom pattern"),
+      "silvering and white marks"
+    );
+    fireEvent.press(
+      screen.getByLabelText("Run IPM Scout and GPT review for 1 AI credit")
+    );
+
+    await waitFor(() => expect(screen.getByText("IPM Scout result")).toBeTruthy());
+    expect(screen.getByText("Not reported")).toBeTruthy();
+    expect(
+      screen.getByText(/GrowPath\/GPT differences: suspectedOrganism/i)
+    ).toBeTruthy();
+    expect(
+      screen.getAllByText(/does not contain the credit-ledger receipt/i).length
+    ).toBeGreaterThan(0);
+  });
+
   it("asks an editable evidence-bound IPM follow-up without replacing the result", async () => {
     const screen = render(<IpmScoutToolRoute />);
 

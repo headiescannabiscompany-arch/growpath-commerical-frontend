@@ -722,11 +722,21 @@ ${JSON.stringify(values, null, 2)}`,
         {
           key: "ai-credit-cost",
           label: "AI credits used",
-          value: String(outputs.aiCreditsUsed ?? 0),
+          value:
+            typeof outputs.billingEvidence?.aiCreditsUsed === "number"
+              ? String(outputs.billingEvidence.aiCreditsUsed)
+              : typeof outputs.aiCreditsUsed === "number"
+                ? String(outputs.aiCreditsUsed)
+                : "Not reported",
           detail:
-            outputs.gptVerification?.status === "completed"
-              ? "Charged for the completed GPT structured second opinion."
-              : "No completed provider-backed second opinion was charged."
+            outputs.billingEvidence?.ledgerReceiptPresent === false &&
+            outputs.billingEvidence?.creditStatus === "charge_unverified"
+              ? "GPT completed, but this saved result does not include the credit-ledger receipt needed to prove the exact charge."
+              : outputs.billingEvidence?.creditStatus === "refund_unverified"
+                ? "The provider attempt failed, but this saved result does not include the credit-ledger receipt needed to prove the refund."
+                : outputs.gptVerification?.status === "completed"
+                  ? "Charged for the completed GPT structured second opinion."
+                  : "No provider-backed second opinion was completed."
         },
         {
           key: "readiness",
@@ -782,10 +792,11 @@ ${JSON.stringify(values, null, 2)}`,
           key: "agreement",
           label: "Agreement status",
           value: outputs.gptVerification?.agreementStatus || "not_run",
-          detail:
-            outputs.gptVerification?.agreementStatus === "conflict"
-              ? "GrowPath and GPT candidates differ; inspect the evidence and next checks before acting."
-              : "Comparison of the structured GrowPath result and GPT media review."
+          detail: String(outputs.gptVerification?.agreementStatus || "").startsWith(
+            "conflict"
+          )
+            ? "GrowPath and GPT candidates differ; inspect the evidence and next checks before acting."
+            : "Comparison of the structured GrowPath result and GPT media review."
         },
         {
           key: "media",
@@ -871,6 +882,31 @@ ${JSON.stringify(values, null, 2)}`,
                 ]
                   .filter(Boolean)
                   .join(" ")
+              }
+            ]
+          : []),
+        ...(Array.isArray(outputs.disagreements) && outputs.disagreements.length
+          ? [
+              {
+                key: "verification-disagreements",
+                severity: "high" as const,
+                message: `GrowPath/GPT differences: ${outputs.disagreements
+                  .map(
+                    (item: any) =>
+                      `${String(item.field || "result").replaceAll("_", " ")}: GrowPath “${item.growPathValue || "not provided"}”; GPT “${item.gptValue || "not provided"}”`
+                  )
+                  .join(
+                    "; "
+                  )}. Treat the result as unresolved until the requested follow-up evidence separates the candidates.`
+              }
+            ]
+          : []),
+        ...(outputs.billingEvidence?.limitation
+          ? [
+              {
+                key: "billing-evidence-limitation",
+                severity: "medium" as const,
+                message: outputs.billingEvidence.limitation
               }
             ]
           : []),

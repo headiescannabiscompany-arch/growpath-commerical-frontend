@@ -7,6 +7,12 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const fixturePath = path.join(ROOT, "tests", "fixtures", "growpath-qa-seed-system.json");
+const diagnosisCatalogPath = path.join(
+  ROOT,
+  "tests",
+  "fixtures",
+  "diagnosis-ipm-qa-catalog.json"
+);
 const allowPlanning = process.argv.includes("--allow-planning");
 
 function isUrl(value) {
@@ -44,6 +50,7 @@ function requireCondition(condition, message, errors) {
 
 function main() {
   const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+  const diagnosisCatalog = JSON.parse(fs.readFileSync(diagnosisCatalogPath, "utf8"));
   const errors = [];
   const blockers = [];
 
@@ -230,6 +237,21 @@ function main() {
     diagnosisPack?.evidenceContract?.sameReviewedEnvelopeForGrowPathAndGpt === true &&
       diagnosisPack?.evidenceContract?.pesticideProductOrRateOutputAllowed === false,
     "Diagnosis/IPM must share reviewed evidence and block pesticide products/rates.",
+    errors
+  );
+  requireCondition(
+    diagnosisPack?.status === "seed_ready" &&
+      diagnosisPack?.catalogFixture === "tests/fixtures/diagnosis-ipm-qa-catalog.json" &&
+      diagnosisPack?.targetRecordCount?.minimum === diagnosisCatalog.targetRecordCount &&
+      diagnosisPack?.targetRecordCount?.maximum === diagnosisCatalog.targetRecordCount &&
+      diagnosisPack?.reviewedRecordCount === diagnosisCatalog.mediaRecords?.length &&
+      diagnosisPack?.reviewedImageCount ===
+        (diagnosisCatalog.mediaRecords || []).reduce(
+          (total, record) => total + (record.imageSet || []).length,
+          0
+        ) &&
+      diagnosisCatalog.status === "seed_ready",
+    "Diagnosis/IPM master pack must match the seed-ready governed catalog counts.",
     errors
   );
 

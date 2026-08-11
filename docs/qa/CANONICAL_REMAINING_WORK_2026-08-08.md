@@ -43,7 +43,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       `718eada4`, `382796bb`; live module records
       `6a7814edd7c346d88c36c95e`, `6a78180b84a6023fdec3fbcc`, and
       `6a781e01cb31b57928cb0a1c`). This is one retained IPM case, not completion of
-      the governed catalog or cross-record write-back matrix.
+      the governed catalog or cross-record write-back matrix. The delivery candidate
+      now fingerprints the identical structured envelope, computes and persists
+      field-level GrowPath/GPT disagreements and combined follow-ups, and refuses to
+      claim a charge or refund without a ledger receipt. Full 252-case execution and
+      linked-record verification remain.
 - [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
       licenses, and exact follow-up-photo expectations. Never use the pack as training

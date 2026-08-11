@@ -66,6 +66,15 @@ only an explicitly labeled evidence-collection action may be offered.
 
 Diagnosis, IPM Scout, and Harvest Readiness share an evidence-review surface after analysis. It must show whether pixels were actually inspected, the media quality and confidence, provider label, evidence used, counter-evidence, limitations, and exact next photos or checks. A follow-up action reuses the prior structured result and asks the user to add the requested evidence before rerunning; it must never silently upgrade confidence. When a follow-up task is created from a Facility route, it is written to the selected Facility task scope rather than the member's Personal queue.
 
+An IPM GPT second opinion must be fingerprinted to the exact structured evidence
+envelope used by the GrowPath primary result. Persist the envelope digest, both answers,
+the provider-reported agreement, a deterministic field-by-field comparison, every
+candidate/confidence/severity disagreement, and the combined requested follow-up checks.
+The deterministic comparison may downgrade a provider's claimed agreement when the
+saved candidate fields differ; it must never hide that conflict. Provider completion is
+not billing proof. Store zero only when no provider attempt occurred; otherwise show the
+charge or refund as unverified until a credit-ledger receipt is attached.
+
 Diagnosis and IPM may accept up to 12 photos so a user can include zoomed-out context, distribution across plants, affected and unaffected tissue, leaf tops and undersides, macro signs, root-zone evidence, and a trap or follow-up view without deleting useful evidence. The count is a ceiling, not a requirement. Reject obviously invalid or tiny files before upload and billing. Metadata alone cannot prove focus, lighting, glare, color accuracy, subject relevance, or complete view coverage; those failures require explicit image-review findings and precise retake instructions.
 
 Oversized mobile photos may be resized and JPEG-compressed on the user's device before

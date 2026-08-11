@@ -34,6 +34,14 @@ The final ranking may include disease, pest, deficiency, excess, lockout, antago
 
 IPM Scout must send the same reviewed evidence envelope to the GrowPath primary diagnostic system and the GPT second opinion. If a second-opinion path cannot inspect the pixels, it must say so. Both answers, supporting and counter-evidence, alternatives, and disagreements must be saved. When context exists, write-backs link the Plant, Grow, Log, ToolRun, Task, and Facility rather than creating an isolated result.
 
+The runtime comparison fingerprints that structured envelope, stores the
+provider-reported agreement separately from a deterministic field comparison, and
+persists candidate, confidence, and severity differences plus the combined requested
+follow-ups. A completed or failed provider request is not itself billing evidence: the
+saved result reports the exact charge or refund only when a credit-ledger receipt is
+present. The master QA seed manifest points to this catalog and mirrors its seed-ready
+252-record/504-image counts.
+
 ## Source and treatment boundaries
 
 - GrowPath/owner or commissioned media is preferred because conditions, outcomes, and rights can be recorded together.
