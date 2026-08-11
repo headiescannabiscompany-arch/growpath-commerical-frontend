@@ -91,6 +91,11 @@ describe("FacilityPlantsRoute", () => {
   it("loads and creates plants inside the selected room and grow context", async () => {
     const screen = render(<FacilityPlantsRoute />);
 
+    expect(screen.getByLabelText("Loading facility plants").props).toMatchObject({
+      accessibilityLiveRegion: "polite",
+      accessibilityRole: "progressbar"
+    });
+
     await waitFor(() => expect(screen.getByText("Plant A")).toBeTruthy());
     expect(
       screen.getByRole("header", { name: "Summer crop → Plants" }).props["aria-level"]
@@ -101,6 +106,14 @@ describe("FacilityPlantsRoute", () => {
     expect(mockApiRequest).toHaveBeenCalledWith(
       "/api/facility/facility-1/plants?growId=grow-1&roomId=room-1"
     );
+    expect(screen.getByLabelText("Set plant stage to Veg").props).toMatchObject({
+      accessibilityRole: "radio",
+      accessibilityState: { checked: true }
+    });
+    expect(screen.getByLabelText("Set plant room to Flower room").props).toMatchObject({
+      accessibilityRole: "radio",
+      accessibilityState: { checked: true }
+    });
 
     fireEvent.changeText(screen.getByLabelText("Plant name"), "Plant B");
     fireEvent.press(screen.getByLabelText("Set plant stage to Flower"));
@@ -151,5 +164,45 @@ describe("FacilityPlantsRoute", () => {
     await waitFor(() => expect(screen.getByText("Plant A")).toBeTruthy());
     expect(screen.queryByLabelText("Plant name")).toBeNull();
     expect(screen.queryByLabelText("Create facility plant")).toBeNull();
+  });
+
+  it("prevents duplicate plant creation while a save is pending", async () => {
+    let finishCreate: (() => void) | undefined;
+    mockCreatePlant.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishCreate = resolve;
+        })
+    );
+    const screen = render(<FacilityPlantsRoute />);
+    await waitFor(() => expect(screen.getByText("Plant A")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Plant name"), "Plant B");
+    const create = screen.getByLabelText("Create facility plant");
+
+    fireEvent.press(create);
+    fireEvent.press(create);
+
+    expect(mockCreatePlant).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByLabelText("Create facility plant").props.accessibilityState
+    ).toMatchObject({ busy: true, disabled: true });
+    finishCreate?.();
+    await waitFor(() => expect(screen.getByText("Plant created.")).toBeTruthy());
+    expect(screen.getByText("Plant created.").props.accessibilityLiveRegion).toBe(
+      "polite"
+    );
+  });
+
+  it("exposes plant records as named links", async () => {
+    mockPlantParams = {};
+    const screen = render(<FacilityPlantsRoute />);
+
+    const plantLink = await screen.findByRole("link", { name: "Open plant Plant A" });
+    fireEvent.press(plantLink);
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/home/facility/plants/[id]",
+      params: { id: "plant-1" }
+    });
   });
 });

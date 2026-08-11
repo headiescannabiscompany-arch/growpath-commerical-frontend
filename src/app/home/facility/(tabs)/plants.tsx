@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -117,6 +117,8 @@ export default function FacilityPlantsTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const loadInFlightRef = useRef(false);
+  const savingRef = useRef(false);
 
   const [plantName, setPlantName] = useState("");
   const [plantTag, setPlantTag] = useState("");
@@ -127,7 +129,8 @@ export default function FacilityPlantsTab() {
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
-      if (!facilityId) return;
+      if (!facilityId || loadInFlightRef.current) return;
+      loadInFlightRef.current = true;
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -147,6 +150,7 @@ export default function FacilityPlantsTab() {
       } catch (e) {
         handleApiError(e);
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -155,7 +159,8 @@ export default function FacilityPlantsTab() {
   );
 
   async function addPlant() {
-    if (!facilityId || !canWritePlants || !plantName.trim()) return;
+    if (!facilityId || !canWritePlants || !plantName.trim() || savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setFeedback("");
     try {
@@ -178,6 +183,7 @@ export default function FacilityPlantsTab() {
     } catch (e) {
       handleApiError(e);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
@@ -226,7 +232,11 @@ export default function FacilityPlantsTab() {
     >
       <View style={styles.container}>
         {error ? <InlineError error={error} /> : null}
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+        {feedback ? (
+          <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+            {feedback}
+          </Text>
+        ) : null}
 
         <View style={styles.headerRow}>
           <Text accessibilityRole="header" aria-level={1} style={styles.h1}>
@@ -295,12 +305,17 @@ export default function FacilityPlantsTab() {
                 placeholder="Strain"
                 placeholderTextColor={palette.textMuted}
               />
-              <View style={styles.pillRow}>
+              <View
+                accessibilityLabel="Plant stage"
+                accessibilityRole="radiogroup"
+                style={styles.pillRow}
+              >
                 {STAGES.map((stage) => (
                   <Pressable
                     key={stage}
-                    accessibilityRole="button"
+                    accessibilityRole="radio"
                     accessibilityLabel={`Set plant stage to ${stage}`}
+                    accessibilityState={{ checked: plantStage === stage }}
                     onPress={() => setPlantStage(stage)}
                     style={[styles.pill, plantStage === stage && styles.pillSelected]}
                   >
@@ -316,7 +331,11 @@ export default function FacilityPlantsTab() {
                 ))}
               </View>
               <Text style={styles.label}>Room</Text>
-              <View style={styles.pillRow}>
+              <View
+                accessibilityLabel="Plant room"
+                accessibilityRole="radiogroup"
+                style={styles.pillRow}
+              >
                 {rooms.map((room) => {
                   const id = contextRowId(room);
                   const label = String(room?.name ?? room?.label ?? "Room");
@@ -324,8 +343,9 @@ export default function FacilityPlantsTab() {
                   return (
                     <Pressable
                       key={id}
-                      accessibilityRole="button"
+                      accessibilityRole="radio"
                       accessibilityLabel={`Set plant room to ${label}`}
+                      accessibilityState={{ checked: roomId === id }}
                       onPress={() => {
                         setRoomId(id);
                         if (
@@ -356,7 +376,11 @@ export default function FacilityPlantsTab() {
                 })}
               </View>
               <Text style={styles.label}>Grow</Text>
-              <View style={styles.pillRow}>
+              <View
+                accessibilityLabel="Plant grow"
+                accessibilityRole="radiogroup"
+                style={styles.pillRow}
+              >
                 {availableGrows.map((grow) => {
                   const id = contextRowId(grow);
                   const label = String(grow?.name ?? grow?.title ?? "Grow");
@@ -364,8 +388,9 @@ export default function FacilityPlantsTab() {
                   return (
                     <Pressable
                       key={id}
-                      accessibilityRole="button"
+                      accessibilityRole="radio"
                       accessibilityLabel={`Set plant grow to ${label}`}
+                      accessibilityState={{ checked: growId === id }}
                       onPress={() => setGrowId(id)}
                       style={[styles.pill, growId === id && styles.pillSelected]}
                     >
@@ -384,6 +409,10 @@ export default function FacilityPlantsTab() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Create facility plant"
+                accessibilityState={{
+                  busy: saving,
+                  disabled: saving || !plantName.trim()
+                }}
                 onPress={addPlant}
                 disabled={saving || !plantName.trim()}
                 style={[
@@ -404,13 +433,19 @@ export default function FacilityPlantsTab() {
         </View>
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading facility plants"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading plants...</Text>
           </View>
         ) : null}
 
         <FlatList
+          accessibilityLabel="Facility plants"
           data={items}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
           refreshControl={
@@ -445,8 +480,10 @@ export default function FacilityPlantsTab() {
 
             return (
               <Pressable
-                accessibilityRole="button"
+                accessibilityRole="link"
                 accessibilityLabel={`Open plant ${title}`}
+                accessibilityState={{ disabled: !id }}
+                disabled={!id}
                 onPress={() => {
                   if (!id) return;
                   router.push({ pathname: "/home/facility/plants/[id]", params: { id } });
