@@ -63,6 +63,9 @@ describe("Commercial inventory and product import active palettes", () => {
     expect(styles.button.backgroundColor).toBe(nightPalette.accent);
     expect(styles.buttonText.color).toBe(nightPalette.accentText);
     expect(styles.feedback.color).toBe(nightPalette.success);
+    expect(styles.infoFeedback.color).toBe(nightPalette.textMuted);
+    expect(styles.errorFeedback.color).toBe(nightPalette.danger);
+    expect(styles.progressText.color).toBe(nightPalette.textMuted);
   });
 
   it("keeps Day mode palette-driven and removes fixed light literals", () => {
