@@ -63,6 +63,7 @@ describe("ThemeModeProvider integration", () => {
     mockRequestCurrentCoordinates.mockReset();
     mockReadCurrentCoordinates.mockReset();
     removeAppearanceListener.mockReset();
+    jest.spyOn(Date, "now").mockReturnValue(new Date(2026, 7, 12, 12, 0, 0).getTime());
 
     (AsyncStorage.getItem as jest.Mock)
       .mockReset()
@@ -115,7 +116,7 @@ describe("ThemeModeProvider integration", () => {
     });
   });
 
-  it("uses device appearance without touching geolocation during startup", async () => {
+  it("uses local daytime without touching geolocation during startup", async () => {
     (Appearance.getColorScheme as jest.Mock).mockReturnValue("dark");
 
     renderProvider();
@@ -126,7 +127,7 @@ describe("ThemeModeProvider integration", () => {
     expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
     expect(theme().hydrated).toBe(true);
     expect(theme().mode).toBe("auto");
-    expect(theme().resolvedMode).toBe("night");
+    expect(theme().resolvedMode).toBe("day");
     expect(theme().autoUsesLocation).toBe(false);
     expect(theme().themeLocation).toBeNull();
     expect(storedValues.get(STRATEGY_KEY)).toBe("device");
@@ -157,7 +158,7 @@ describe("ThemeModeProvider integration", () => {
     expect(mockRequestCurrentCoordinates).toHaveBeenCalledTimes(1);
   });
 
-  it("updates auto mode when the device appearance changes", async () => {
+  it("does not let a browser appearance change override local-time auto mode", async () => {
     storedValues.set(STORAGE_KEY, "auto");
     storedValues.set(STRATEGY_KEY, "device");
     storedValues.set(PROMPTED_KEY, "1");
@@ -172,7 +173,7 @@ describe("ThemeModeProvider integration", () => {
     act(() => {
       appearanceListener?.({ colorScheme: "dark" });
     });
-    await waitFor(() => expect(theme().resolvedMode).toBe("night"));
+    await waitFor(() => expect(theme().resolvedMode).toBe("day"));
 
     screen.unmount();
     expect(removeAppearanceListener).toHaveBeenCalledTimes(1);

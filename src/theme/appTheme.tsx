@@ -263,7 +263,12 @@ export function resolveThemeMode(
   if (autoStrategy === "location" && location) {
     return resolveLocationThemeMode(location, nowMs);
   }
-  return normalizeSystemScheme(systemScheme);
+  // Browsers can report different color-scheme preferences on the same device
+  // (the Codex in-app browser reports dark while Chrome may report light). Auto
+  // must still mean day versus night, so use local clock time until a user saves
+  // a location for exact sunrise/sunset timing.
+  const localHour = new Date(nowMs).getHours();
+  return localHour >= 7 && localHour < 19 ? "day" : "night";
 }
 
 export function getThemePalette(
@@ -368,17 +373,17 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
   }, [mode, autoStrategy, autoLocationPrompted, themeLocation, hydrated]);
 
   useEffect(() => {
-    if (mode !== "auto" || autoStrategy !== "location" || !themeLocation) return;
+    if (mode !== "auto") return;
     const interval = setInterval(() => {
       setNowMs(Date.now());
     }, 60000);
     return () => clearInterval(interval);
-  }, [mode, autoStrategy, themeLocation]);
+  }, [mode]);
 
   // Never inspect or request browser location during app startup. Theme hydration used
   // to perform a silent geolocation check here, which meant opening GrowPath could
   // touch the same browser permission that Plant ID and Nature need. Auto mode follows
-  // device appearance until the user explicitly enables location-based sunrise/sunset.
+  // local clock time until the user explicitly enables location-based sunrise/sunset.
 
   const setThemeMode = useCallback((next: ThemeMode) => {
     setMode(next);
