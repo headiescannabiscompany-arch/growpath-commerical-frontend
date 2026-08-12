@@ -115,44 +115,14 @@ describe("ThemeModeProvider integration", () => {
     });
   });
 
-  it("silently reads an already permitted location once and reuses the saved preference", async () => {
-    mockReadCurrentCoordinates.mockResolvedValue({
-      latitude: 39.2904,
-      longitude: -76.6122
-    });
-
-    const firstRender = renderProvider();
-
-    await waitFor(() => expect(theme().autoUsesLocation).toBe(true));
-    await waitFor(() => {
-      expect(storedValues.get(STRATEGY_KEY)).toBe("location");
-      expect(storedValues.get(PROMPTED_KEY)).toBe("0");
-      expect(storedValues.has(LOCATION_KEY)).toBe(true);
-    });
-    expect(mockReadCurrentCoordinates).toHaveBeenCalledWith({
-      promptForPermission: false
-    });
-    expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
-
-    firstRender.unmount();
-    latestTheme = null;
-    const secondRender = renderProvider();
-
-    await waitFor(() => expect(theme().hydrated).toBe(true));
-    expect(theme().autoUsesLocation).toBe(true);
-    expect(mockReadCurrentCoordinates).toHaveBeenCalledTimes(1);
-
-    secondRender.unmount();
-  });
-
-  it("falls back to device appearance without prompting when location is not permitted", async () => {
+  it("uses device appearance without touching geolocation during startup", async () => {
     (Appearance.getColorScheme as jest.Mock).mockReturnValue("dark");
-    mockReadCurrentCoordinates.mockResolvedValue(null);
 
     renderProvider();
 
-    await waitFor(() => expect(mockReadCurrentCoordinates).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(theme().hydrated).toBe(true));
     await waitFor(() => expect(storedValues.get(PROMPTED_KEY)).toBe("0"));
+    expect(mockReadCurrentCoordinates).not.toHaveBeenCalled();
     expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
     expect(theme().hydrated).toBe(true);
     expect(theme().mode).toBe("auto");
@@ -163,12 +133,11 @@ describe("ThemeModeProvider integration", () => {
   });
 
   it("allows an explicit permission request after silent startup found no permission", async () => {
-    mockReadCurrentCoordinates.mockResolvedValue(null);
-
     renderProvider();
 
-    await waitFor(() => expect(mockReadCurrentCoordinates).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(theme().hydrated).toBe(true));
     await waitFor(() => expect(storedValues.get(PROMPTED_KEY)).toBe("0"));
+    expect(mockReadCurrentCoordinates).not.toHaveBeenCalled();
     expect(theme().autoUsesLocation).toBe(false);
 
     mockRequestCurrentCoordinates.mockResolvedValue({
