@@ -25,7 +25,12 @@ jest.mock("expo-router", () => {
   return {
     Link: ({ children, href }: any) =>
       React.createElement(View, { accessibilityLabel: `link-${String(href)}` }, children),
-    useLocalSearchParams: () => mockSearchParams
+    useLocalSearchParams: () => mockSearchParams,
+    useRouter: () => ({
+      back: jest.fn(),
+      canGoBack: jest.fn(() => false),
+      replace: jest.fn()
+    })
   };
 });
 
