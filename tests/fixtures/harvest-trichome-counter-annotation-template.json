@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "growpath-harvest-trichome-annotations-v1",
+  "status": "annotation_template",
+  "evaluationReady": false,
+  "purpose": "Blinded, rights-reviewed staging evaluation of trichome detection and maturity classification. This template contains no accuracy evidence.",
+  "eligibilityPolicy": {
+    "minimumQualifiedImages": 50,
+    "minimumLabeledHeads": 1000,
+    "minimumCaptureSessions": 10,
+    "minimumDeviceModels": 3,
+    "minimumPerResolvedClass": 100,
+    "requiredLightingConditions": ["neutral", "warm", "glare", "low_light"],
+    "independentReviewersPerImage": 2,
+    "adjudicationRequired": true,
+    "note": "These are initial staging-eligibility floors, not a claim of accuracy or scientific validation. The same blinded set must score the deployed baseline and candidate."
+  },
+  "annotationRules": {
+    "boxCoordinates": "Normalized x, y, width, and height in the untouched source image.",
+    "countOnly": "Resolved intact gland heads in identified calyx regions.",
+    "exclude": [
+      "stalks without resolved heads",
+      "pistils and plant hairs",
+      "sugar-leaf edge heads",
+      "detached or collapsed heads",
+      "glare-only pixels and clipped highlights",
+      "blurred circles and compression artifacts",
+      "duplicate appearances from overlapping crops"
+    ],
+    "classes": ["clear", "cloudy", "amber", "amber_or_warm_light", "cloudy_or_glare"],
+    "review": "Two independent labels followed by adjudication. Preserve disagreements; do not tune labels to a model result or an expected harvest date."
+  },
+  "images": []
+}

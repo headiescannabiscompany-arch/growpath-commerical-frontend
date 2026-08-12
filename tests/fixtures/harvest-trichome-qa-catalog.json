@@ -50,6 +50,17 @@
       "Independent domain review and a staging-only evaluator run remain required before a model or prompt change is accepted."
     ]
   },
+  "counterEvaluationGate": {
+    "annotationTemplate": "tests/fixtures/harvest-trichome-counter-annotation-template.json",
+    "metricsCommand": "node scripts/evaluate-harvest-trichome-counter.cjs --annotations <reviewed-labels.json> --baseline <deployed-predictions.json> --candidate <candidate-predictions.json>",
+    "separateMetrics": [
+      "head detection precision, recall, and F1 at normalized-box IoU 0.5",
+      "resolved clear, cloudy, and amber class precision, recall, and F1",
+      "amber false-positive rate",
+      "possible-amber interval coverage"
+    ],
+    "acceptance": "Candidate amber F1 and recall must improve while detection F1, resolved-class macro F1, false-amber rate, and possible-amber coverage do not regress on the same blinded set."
+  },
   "methodEvidence": [
     {
       "sourceId": "agriculture-2026-460-trichome-vision",
