@@ -582,6 +582,15 @@ describe("GrowPath knowledge registries", () => {
     expect(
       getSourceEntry("pmc10648736-cannabis-phenotype-trichome-exemplars")?.notes
     ).toContain("no per-head percentage ground truth");
+    expect(getSourceEntry("agriculture-2026-460-trichome-vision")).toMatchObject({
+      reliabilityTier: "A",
+      trustedFor: expect.arrayContaining(["post_harvest", "qa_evaluation"]),
+      requiresCrossCheck: true,
+      lastReviewedAt: "2026-08-12"
+    });
+    expect(getSourceEntry("agriculture-2026-460-trichome-vision")?.notes).toContain(
+      "does not publish a downloadable image dataset or trained weights"
+    );
   });
 
   it("requires evidence and provider transparency in AI results", () => {

@@ -87,6 +87,20 @@ function main() {
     errors
   );
 
+  const methodEvidence = fixture.methodEvidence || [];
+  requireCondition(
+    methodEvidence.length >= 1 &&
+      methodEvidence.every(
+        (item) =>
+          item.datasetAccess === "author_inquiry_required" &&
+          item.useAsMediaSource === false &&
+          Array.isArray(item.doesNotSupply) &&
+          item.doesNotSupply.includes("GrowPath accuracy evidence")
+      ),
+    "Architecture evidence must preserve dataset, weights, and transfer limits.",
+    errors
+  );
+
   const sources = fixture.sources || [];
   requireCondition(
     sources.length >= 3,

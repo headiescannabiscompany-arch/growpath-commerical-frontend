@@ -364,6 +364,23 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-08-12"
   },
   {
+    id: "agriculture-2026-460-trichome-vision",
+    name: "Estimating Cannabis Flower Maturity in Greenhouse Conditions Using Computer Vision",
+    domain: "mdpi.com",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["post_harvest", "qa_evaluation", "photo_quality_guidance", "education"],
+    notTrustedFor: ["legal_regulatory", "lab_result", "diagnosis"],
+    notes:
+      "Primary CC BY 4.0 computer-vision research supporting an architecture that sharpness-filters 512x512 phone-macro patches, detects trichomes, classifies padded single-head crops, and evaluates detection separately from maturity classification. The paper does not publish a downloadable image dataset or trained weights; its study-specific metrics are not GrowPath accuracy evidence and cannot be transferred without independent evaluation.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: [
+      "pmc10071647-trichome-maturation",
+      "pmc10648736-cannabis-phenotype-trichome-exemplars"
+    ],
+    lastReviewedAt: "2026-08-12"
+  },
+  {
     id: "pmid-6643-cannabis-storage-light",
     name: "The stability of cannabis and its preparations on storage",
     domain: "pubmed.ncbi.nlm.nih.gov",

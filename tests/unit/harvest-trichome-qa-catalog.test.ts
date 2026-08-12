@@ -82,4 +82,25 @@ describe("Harvest trichome QA catalog", () => {
       ])
     );
   });
+
+  it("uses the published detector-classifier pipeline as method evidence only", () => {
+    const catalog = loadCatalog();
+
+    expect(catalog.methodEvidence).toEqual([
+      expect.objectContaining({
+        sourceId: "agriculture-2026-460-trichome-vision",
+        datasetAccess: "author_inquiry_required",
+        useAsMediaSource: false,
+        supports: expect.arrayContaining([
+          "split high-resolution phone-macro images into 512 by 512 patches",
+          "detect trichomes before classifying individual padded head crops"
+        ]),
+        doesNotSupply: expect.arrayContaining([
+          "a public downloadable image dataset",
+          "public trained detector or classifier weights",
+          "GrowPath accuracy evidence"
+        ])
+      })
+    ]);
+  });
 });

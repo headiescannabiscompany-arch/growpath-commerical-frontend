@@ -50,6 +50,31 @@
       "Independent domain review and a staging-only evaluator run remain required before a model or prompt change is accepted."
     ]
   },
+  "methodEvidence": [
+    {
+      "sourceId": "agriculture-2026-460-trichome-vision",
+      "title": "Estimating Cannabis Flower Maturity in Greenhouse Conditions Using Computer Vision",
+      "doi": "10.3390/agriculture16040460",
+      "sourceUrl": "https://www.mdpi.com/2077-0472/16/4/460",
+      "licenseId": "CC-BY-4.0",
+      "rightsReviewedAt": "2026-08-12",
+      "supports": [
+        "split high-resolution phone-macro images into 512 by 512 patches",
+        "filter low-detail patches with a sharpness metric",
+        "detect trichomes before classifying individual padded head crops",
+        "evaluate detection and class accuracy separately",
+        "aggregate class counts at the sampled-flower level"
+      ],
+      "doesNotSupply": [
+        "a public downloadable image dataset",
+        "public trained detector or classifier weights",
+        "GrowPath accuracy evidence",
+        "permission to claim the paper's study-specific metrics for GrowPath"
+      ],
+      "datasetAccess": "author_inquiry_required",
+      "useAsMediaSource": false
+    }
+  ],
   "sources": [
     {
       "sourceId": "pmc10648736-lapierre-phenotype",
