@@ -20,6 +20,13 @@ import { getToolRun, type ToolRun } from "@/api/toolRuns";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
+import {
+  inspectedPhotoEstimateCounts,
+  inspectedPhotoEstimateHeader,
+  inspectedPhotoEstimatePercentages,
+  inspectedPhotoEstimates,
+  strongestInspectedAmberSignal
+} from "@/features/personal/tools/harvestVisibleSample";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
@@ -164,6 +171,14 @@ function HarvestPhotoAnalyzer({
   const [restoreFeedback, setRestoreFeedback] = useState("");
   const [restoringEvidence, setRestoringEvidence] = useState(false);
   const [analysis, setAnalysis] = useState<TrichomeVisionResult | null>(initialAnalysis);
+  const inspectedBreakdown = useMemo(
+    () => inspectedPhotoEstimates(analysis?.imageFindings),
+    [analysis?.imageFindings]
+  );
+  const strongestAmberSignal = useMemo(
+    () => strongestInspectedAmberSignal(inspectedBreakdown),
+    [inspectedBreakdown]
+  );
   const previousGrowIdRef = useRef(growId);
   const mountedAnalysisRef = useRef(initialAnalysis);
   const evidence = providerEvidencePayload(evidenceAssets);
@@ -659,6 +674,29 @@ function HarvestPhotoAnalyzer({
                   {trichomeHeadTallyLabel(finding)}
                 </Text>
               ))}
+              {inspectedBreakdown.length ? (
+                <View>
+                  <Text style={photoStyles.checklistTitle}>
+                    Counts and ranges by inspected photo area
+                  </Text>
+                  {inspectedBreakdown.map((estimate) => (
+                    <View key={`sampled-area-${estimate.imageIndex}`}>
+                      <Text style={photoStyles.feedback}>
+                        {inspectedPhotoEstimateHeader(estimate)}
+                      </Text>
+                      <Text style={photoStyles.feedback}>
+                        {inspectedPhotoEstimatePercentages(estimate)}
+                      </Text>
+                      <Text style={photoStyles.feedback}>
+                        {inspectedPhotoEstimateCounts(estimate)}
+                      </Text>
+                    </View>
+                  ))}
+                  {strongestAmberSignal ? (
+                    <Text style={photoStyles.warning}>{strongestAmberSignal}</Text>
+                  ) : null}
+                </View>
+              ) : null}
             </View>
           ) : null}
           {analysis.recommendation ? (

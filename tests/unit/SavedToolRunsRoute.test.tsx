@@ -369,7 +369,29 @@ describe("SavedToolRunsRoute", () => {
           sampleEstimateBasis: "Glare-free calyx regions in images 1 and 3.",
           amberVisibility: "substantial_visible",
           amberEvidenceBasis: "Multiple intact amber heads were visible in image 3.",
-          limitations: ["Top, middle, and lower role coverage was not confirmed."]
+          limitations: ["Top, middle, and lower role coverage was not confirmed."],
+          imageFindings: [
+            {
+              imageIndex: 3,
+              role: "additional_macro",
+              usableForDistribution: false,
+              usableForVisibleSample: true,
+              trichomeRichRegion: "lower-left calyx",
+              excludedReason: "Representative site coverage was not confirmed.",
+              focus: "sharp",
+              glare: "localized",
+              visibleHeadDetail: "sufficient",
+              resolvedHeadCounts: {
+                clear: 3,
+                cloudy: 8,
+                amber: 6,
+                amberOrWarmLight: 2,
+                cloudyOrGlare: 1
+              },
+              resolvedHeadTotal: 20,
+              countingConfidence: "medium"
+            }
+          ]
         }
       },
       createdAt: "2026-08-08T22:00:00.000Z"
@@ -399,6 +421,16 @@ describe("SavedToolRunsRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(/Multiple intact amber heads were visible in image 3/i)
+    ).toBeTruthy();
+    expect(
+      screen.getAllByText(
+        /Photo 3 has the strongest inspected amber signal: 30% confirmed amber to 40% possible amber/i
+      ).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        /Photo 3 \| additional macro \| lower-left calyx \| 20 heads \| medium confidence\. 15% clear \| 40% cloudy \| 30% confirmed amber to 40% possible amber \| 5% cloudy or glare\./i
+      )
     ).toBeTruthy();
     expect(
       screen.getByText(/Top, middle, and lower role coverage was not confirmed/i)
