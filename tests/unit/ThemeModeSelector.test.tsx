@@ -80,7 +80,7 @@ describe("ThemeModeSelector", () => {
       screen.getByLabelText("Use my location for auto theme").props.accessibilityState
     ).toEqual({ disabled: true });
     expect(
-      screen.getByLabelText("Use device appearance for auto theme").props
+      screen.getByLabelText("Use local clock time for auto theme").props
         .accessibilityState
     ).toEqual({ disabled: true });
 
