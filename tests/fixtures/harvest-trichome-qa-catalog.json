@@ -50,6 +50,14 @@
       "Independent domain review and a staging-only evaluator run remain required before a model or prompt change is accepted."
     ]
   },
+  "qualitativeSeedPreparation": {
+    "sourceId": "pmc10610221-spitzer-life-cycle",
+    "sourceAssetDimensions": { "width": 724, "height": 793 },
+    "derivedCropScale": 4,
+    "preparationCommand": "node scripts/prepareTrichomeQualitativeSeed.js --out <temporary-seed-directory> --confirmation PREPARE_GROWPATH_TRICHOME_REFERENCE_SEED",
+    "evaluationCommand": "node scripts/runTrichomeClassifierQualitativeCheck.js --input <temporary-seed-directory>/manifest.json --out <qualitative-results.json> --confirmation RUN_GROWPATH_HARVEST_TRICHOME_STAGING",
+    "boundary": "Generated crops and results remain outside the repository. Expected labels are scored locally after the provider returns and are never included in provider input. This seed is qualitative sanity evidence only."
+  },
   "counterEvaluationGate": {
     "annotationTemplate": "tests/fixtures/harvest-trichome-counter-annotation-template.json",
     "baselinePredictionTemplate": "tests/fixtures/harvest-trichome-baseline-prediction-template.json",
@@ -232,6 +240,7 @@
       "exactCounts": null,
       "quantitativeGroundTruth": false,
       "blindRecognitionEligible": true,
+      "reviewedPixelCrop": { "left": 245, "top": 28, "width": 95, "height": 125 },
       "notes": "Two-week panel in the paper's transparent-to-opaque-to-amber progression."
     },
     {
@@ -243,6 +252,7 @@
       "exactCounts": null,
       "quantitativeGroundTruth": false,
       "blindRecognitionEligible": true,
+      "reviewedPixelCrop": { "left": 400, "top": 24, "width": 125, "height": 150 },
       "notes": "Four-week panel in the paper's transparent-to-opaque-to-amber progression."
     },
     {
@@ -254,6 +264,7 @@
       "exactCounts": null,
       "quantitativeGroundTruth": false,
       "blindRecognitionEligible": true,
+      "reviewedPixelCrop": { "left": 130, "top": 320, "width": 125, "height": 150 },
       "notes": "Six-week panel in the paper's transparent-to-opaque-to-amber progression."
     },
     {
@@ -265,6 +276,7 @@
       "exactCounts": null,
       "quantitativeGroundTruth": false,
       "blindRecognitionEligible": true,
+      "reviewedPixelCrop": { "left": 395, "top": 320, "width": 125, "height": 150 },
       "notes": "Eight-week panel in the paper's transparent-to-opaque-to-amber progression; it is not a universal eight-week harvest rule."
     },
     {
