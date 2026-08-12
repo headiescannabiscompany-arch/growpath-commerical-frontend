@@ -18,7 +18,6 @@ import {
   type PersonalTask
 } from "@/api/tasks";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
-import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -589,241 +588,237 @@ export default function PersonalTaskCenterRoute() {
   }
 
   return (
-    <ScreenBoundary title="Task Center / Schedule" backFallbackHref="/home/personal/more">
-      <ScrollView
-        style={[styles.screen, { backgroundColor: palette.page }]}
-        contentContainerStyle={styles.content}
-      >
-        <Text accessibilityRole="header" style={[styles.title, { color: palette.text }]}>
-          Task Center / Schedule
-        </Text>
-        <Text style={[styles.subtitle, { color: palette.textMuted }]}>
-          One action layer for grow work, ToolRuns, recipes, course assignments, lives,
-          product-linked notes, alerts, and sensor follow-ups.
-        </Text>
-        <View style={styles.metricGrid}>
-          {taskStats.map((item) => (
-            <View
-              key={item.label}
-              style={[
-                styles.metricCard,
-                item.tone === "red" && styles.redMetric,
-                item.tone === "green" && styles.greenMetric,
-                item.tone === "blue" && styles.blueMetric,
-                item.tone === "slate" && styles.slateMetric
-              ]}
+    <ScrollView
+      style={[styles.screen, { backgroundColor: palette.page }]}
+      contentContainerStyle={styles.content}
+    >
+      <Text accessibilityRole="header" style={[styles.title, { color: palette.text }]}>
+        Task Center / Schedule
+      </Text>
+      <Text style={[styles.subtitle, { color: palette.textMuted }]}>
+        One action layer for grow work, ToolRuns, recipes, course assignments, lives,
+        product-linked notes, alerts, and sensor follow-ups.
+      </Text>
+      <View style={styles.metricGrid}>
+        {taskStats.map((item) => (
+          <View
+            key={item.label}
+            style={[
+              styles.metricCard,
+              item.tone === "red" && styles.redMetric,
+              item.tone === "green" && styles.greenMetric,
+              item.tone === "blue" && styles.blueMetric,
+              item.tone === "slate" && styles.slateMetric
+            ]}
+          >
+            <Text style={styles.metricValue}>{item.value}</Text>
+            <Text style={styles.metricLabel}>{item.label}</Text>
+          </View>
+        ))}
+      </View>
+      <View style={styles.form}>
+        <Text style={styles.formTitle}>Queue filters</Text>
+        <View style={styles.chipRow}>
+          {(
+            [
+              "all",
+              "assigned",
+              "overdue",
+              "today",
+              "upcoming",
+              "completed"
+            ] as QueueFilter[]
+          ).map((option) => (
+            <Pressable
+              key={option}
+              accessibilityRole="button"
+              accessibilityLabel={`Personal task queue filter ${option}`}
+              onPress={() => setQueueFilter(option)}
+              style={[styles.chip, queueFilter === option && styles.chipSelected]}
             >
-              <Text style={styles.metricValue}>{item.value}</Text>
-              <Text style={styles.metricLabel}>{item.label}</Text>
-            </View>
+              <Text
+                style={[styles.chipText, queueFilter === option && styles.chipTextOn]}
+              >
+                {option}
+              </Text>
+            </Pressable>
           ))}
         </View>
+        <Text style={styles.label}>Source filter</Text>
+        <View style={styles.chipRow}>
+          {availableSourceFilters.map((option) => (
+            <Pressable
+              key={option}
+              accessibilityRole="button"
+              accessibilityLabel={`Personal task source filter ${option}`}
+              onPress={() => setSourceFilter(option)}
+              style={[styles.chip, sourceFilter === option && styles.chipSelected]}
+            >
+              <Text
+                style={[styles.chipText, sourceFilter === option && styles.chipTextOn]}
+              >
+                {option.replace(/_/g, " ")}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+      <ContextualWorkflowLinks
+        title="Task planning tools"
+        helper="These planners belong here because their main output is a real grow task or calendar entry. Select the grow inside the planner when one is not already in context."
+        source="personal_tasks_calendar"
+        workflows={[
+          "auto-grow-calendar",
+          "watering",
+          "feeding-schedule",
+          "topdress",
+          "timeline-planner"
+        ]}
+      />
+      <PersonalFeedPlacement
+        placement="top"
+        routeKey="personal_task_center"
+        longContent
+      />
+
+      {canWriteTasks ? (
         <View style={styles.form}>
-          <Text style={styles.formTitle}>Queue filters</Text>
+          <Text style={styles.formTitle}>Create Linked Task</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Grow ID"
+            value={growId}
+            onChangeText={setGrowId}
+            accessibilityLabel="Task center grow ID"
+            autoCapitalize="none"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Task title"
+            value={title}
+            onChangeText={setTitle}
+            accessibilityLabel="Task center title"
+          />
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder="Description"
+            value={description}
+            onChangeText={setDescription}
+            accessibilityLabel="Task center description"
+            multiline
+          />
+          <SchedulePicker
+            dueDate={dueDate}
+            reminder={reminderNote}
+            recurrence={recurrenceRule}
+            onDueDateChange={setDueDate}
+            onReminderChange={setReminderNote}
+            onRecurrenceChange={setRecurrenceRule}
+            accessibilityPrefix="Task center"
+          />
+          <Text style={styles.label}>Priority</Text>
           <View style={styles.chipRow}>
-            {(
-              [
-                "all",
-                "assigned",
-                "overdue",
-                "today",
-                "upcoming",
-                "completed"
-              ] as QueueFilter[]
-            ).map((option) => (
+            {priorities.map((option) => (
               <Pressable
                 key={option}
+                style={[styles.chip, priority === option && styles.chipSelected]}
                 accessibilityRole="button"
-                accessibilityLabel={`Personal task queue filter ${option}`}
-                onPress={() => setQueueFilter(option)}
-                style={[styles.chip, queueFilter === option && styles.chipSelected]}
+                accessibilityLabel={`Task center priority ${option}`}
+                onPress={() => setPriority(option)}
               >
-                <Text
-                  style={[styles.chipText, queueFilter === option && styles.chipTextOn]}
-                >
+                <Text style={[styles.chipText, priority === option && styles.chipTextOn]}>
                   {option}
                 </Text>
               </Pressable>
             ))}
           </View>
-          <Text style={styles.label}>Source filter</Text>
+          <Text style={styles.label}>Source</Text>
           <View style={styles.chipRow}>
-            {availableSourceFilters.map((option) => (
+            {sourceTypes.map((option) => (
               <Pressable
                 key={option}
+                style={[styles.chip, sourceType === option && styles.chipSelected]}
                 accessibilityRole="button"
-                accessibilityLabel={`Personal task source filter ${option}`}
-                onPress={() => setSourceFilter(option)}
-                style={[styles.chip, sourceFilter === option && styles.chipSelected]}
+                accessibilityLabel={`Task center source ${option}`}
+                onPress={() => setSourceType(option)}
               >
                 <Text
-                  style={[styles.chipText, sourceFilter === option && styles.chipTextOn]}
+                  style={[styles.chipText, sourceType === option && styles.chipTextOn]}
                 >
                   {option.replace(/_/g, " ")}
                 </Text>
               </Pressable>
             ))}
           </View>
-        </View>
-        <ContextualWorkflowLinks
-          title="Task planning tools"
-          helper="These planners belong here because their main output is a real grow task or calendar entry. Select the grow inside the planner when one is not already in context."
-          source="personal_tasks_calendar"
-          workflows={[
-            "auto-grow-calendar",
-            "watering",
-            "feeding-schedule",
-            "topdress",
-            "timeline-planner"
-          ]}
-        />
-        <PersonalFeedPlacement
-          placement="top"
-          routeKey="personal_task_center"
-          longContent
-        />
-
-        {canWriteTasks ? (
-          <View style={styles.form}>
-            <Text style={styles.formTitle}>Create Linked Task</Text>
+          <View style={styles.row}>
             <TextInput
-              style={styles.input}
-              placeholder="Grow ID"
-              value={growId}
-              onChangeText={setGrowId}
-              accessibilityLabel="Task center grow ID"
+              style={styles.flexInput}
+              placeholder="Source object ID"
+              value={sourceObjectId}
+              onChangeText={setSourceObjectId}
+              accessibilityLabel="Task center source object"
               autoCapitalize="none"
             />
             <TextInput
-              style={styles.input}
-              placeholder="Task title"
-              value={title}
-              onChangeText={setTitle}
-              accessibilityLabel="Task center title"
+              style={styles.flexInput}
+              placeholder="ToolRun ID"
+              value={toolRunId}
+              onChangeText={setToolRunId}
+              accessibilityLabel="Task center ToolRun"
+              autoCapitalize="none"
             />
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Description"
-              value={description}
-              onChangeText={setDescription}
-              accessibilityLabel="Task center description"
-              multiline
-            />
-            <SchedulePicker
-              dueDate={dueDate}
-              reminder={reminderNote}
-              recurrence={recurrenceRule}
-              onDueDateChange={setDueDate}
-              onReminderChange={setReminderNote}
-              onRecurrenceChange={setRecurrenceRule}
-              accessibilityPrefix="Task center"
-            />
-            <Text style={styles.label}>Priority</Text>
-            <View style={styles.chipRow}>
-              {priorities.map((option) => (
-                <Pressable
-                  key={option}
-                  style={[styles.chip, priority === option && styles.chipSelected]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Task center priority ${option}`}
-                  onPress={() => setPriority(option)}
-                >
-                  <Text
-                    style={[styles.chipText, priority === option && styles.chipTextOn]}
-                  >
-                    {option}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-            <Text style={styles.label}>Source</Text>
-            <View style={styles.chipRow}>
-              {sourceTypes.map((option) => (
-                <Pressable
-                  key={option}
-                  style={[styles.chip, sourceType === option && styles.chipSelected]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Task center source ${option}`}
-                  onPress={() => setSourceType(option)}
-                >
-                  <Text
-                    style={[styles.chipText, sourceType === option && styles.chipTextOn]}
-                  >
-                    {option.replace(/_/g, " ")}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-            <View style={styles.row}>
-              <TextInput
-                style={styles.flexInput}
-                placeholder="Source object ID"
-                value={sourceObjectId}
-                onChangeText={setSourceObjectId}
-                accessibilityLabel="Task center source object"
-                autoCapitalize="none"
-              />
-              <TextInput
-                style={styles.flexInput}
-                placeholder="ToolRun ID"
-                value={toolRunId}
-                onChangeText={setToolRunId}
-                accessibilityLabel="Task center ToolRun"
-                autoCapitalize="none"
-              />
-            </View>
-            <Pressable
-              style={[
-                styles.primaryButton,
-                (!growId.trim() || !title.trim()) && styles.disabled
-              ]}
-              disabled={!growId.trim() || !title.trim() || creating}
-              accessibilityRole="button"
-              accessibilityLabel="Create task center task"
-              onPress={() => void createTask()}
-            >
-              <Text style={styles.primaryButtonText}>
-                {creating ? "Creating..." : "Create Task"}
-              </Text>
-            </Pressable>
           </View>
-        ) : (
-          <View style={styles.form}>
-            <Text style={styles.formTitle}>Task reminders are Pro</Text>
-            <Text style={styles.meta}>
-              Free accounts can review tasks. Pro accounts can create linked tasks,
-              reminders, recurrence, and source records.
+          <Pressable
+            style={[
+              styles.primaryButton,
+              (!growId.trim() || !title.trim()) && styles.disabled
+            ]}
+            disabled={!growId.trim() || !title.trim() || creating}
+            accessibilityRole="button"
+            accessibilityLabel="Create task center task"
+            onPress={() => void createTask()}
+          >
+            <Text style={styles.primaryButtonText}>
+              {creating ? "Creating..." : "Create Task"}
             </Text>
-          </View>
-        )}
+          </Pressable>
+        </View>
+      ) : (
+        <View style={styles.form}>
+          <Text style={styles.formTitle}>Task reminders are Pro</Text>
+          <Text style={styles.meta}>
+            Free accounts can review tasks. Pro accounts can create linked tasks,
+            reminders, recurrence, and source records.
+          </Text>
+        </View>
+      )}
 
-        {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
-        <PersonalFeedPlacement
-          placement="middle"
-          routeKey="personal_task_center"
-          longContent
-        />
+      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      <PersonalFeedPlacement
+        placement="middle"
+        routeKey="personal_task_center"
+        longContent
+      />
 
-        {loading ? (
-          <View style={styles.card}>
-            <ActivityIndicator color={palette.accent} />
-          </View>
-        ) : (
-          <>
-            {renderSection("overdue", "Overdue")}
-            {renderSection("today", "Today")}
-            {renderSection("upcoming", "Upcoming")}
-            {renderSection("completed", "Completed")}
-          </>
-        )}
+      {loading ? (
+        <View style={styles.card}>
+          <ActivityIndicator color={palette.accent} />
+        </View>
+      ) : (
+        <>
+          {renderSection("overdue", "Overdue")}
+          {renderSection("today", "Today")}
+          {renderSection("upcoming", "Upcoming")}
+          {renderSection("completed", "Completed")}
+        </>
+      )}
 
-        <PersonalFeedPlacement
-          placement="bottom"
-          routeKey="personal_task_center"
-          longContent
-        />
-      </ScrollView>
-    </ScreenBoundary>
+      <PersonalFeedPlacement
+        placement="bottom"
+        routeKey="personal_task_center"
+        longContent
+      />
+    </ScrollView>
   );
 }
 

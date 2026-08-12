@@ -12,7 +12,6 @@ import {
 } from "react-native";
 
 import { createFieldStudy, FieldStudy, listFieldStudies } from "@/api/fieldStudies";
-import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -69,117 +68,115 @@ export default function FieldStudiesScreen() {
   }, [creating, regionLabel, title]);
 
   return (
-    <ScreenBoundary title="Field Studies" backFallbackHref="/home/personal/more">
-      <ScrollView
-        testID="screen-field-studies"
-        style={styles.screen}
-        contentContainerStyle={styles.content}
-      >
-        <Text accessibilityRole="header" style={styles.title}>
-          Field Studies
-        </Text>
-        <Text style={styles.subtitle}>
-          Coordinate a botanical survey, record plant identity and health, and invite
-          editors, verifiers, or viewers. A study starts private.
-        </Text>
+    <ScrollView
+      testID="screen-field-studies"
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+    >
+      <Text accessibilityRole="header" style={styles.title}>
+        Field Studies
+      </Text>
+      <Text style={styles.subtitle}>
+        Coordinate a botanical survey, record plant identity and health, and invite
+        editors, verifiers, or viewers. A study starts private.
+      </Text>
 
-        <View style={styles.notice}>
-          <Text style={styles.noticeTitle}>Public viewing is not public editing</Text>
-          <Text style={styles.noticeText}>
-            Only the owner and invited editors can change observations. Exact locations
-            remain private unless you explicitly publish them. Sensitive species are
-            automatically reduced to an approximate area.
+      <View style={styles.notice}>
+        <Text style={styles.noticeTitle}>Public viewing is not public editing</Text>
+        <Text style={styles.noticeText}>
+          Only the owner and invited editors can change observations. Exact locations
+          remain private unless you explicitly publish them. Sensitive species are
+          automatically reduced to an approximate area.
+        </Text>
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>Start a Field Study</Text>
+        <TextInput
+          accessibilityLabel="Field Study title"
+          onChangeText={setTitle}
+          placeholder="Example: Patapsco roadside plant survey"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
+          style={styles.input}
+          value={title}
+        />
+        <TextInput
+          accessibilityLabel="Field Study region"
+          onChangeText={setRegionLabel}
+          placeholder="General region (optional)"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
+          style={styles.input}
+          value={regionLabel}
+        />
+        <Pressable
+          accessibilityRole="button"
+          disabled={!title.trim() || creating}
+          onPress={() => void create()}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            (!title.trim() || creating) && styles.disabled,
+            pressed && styles.pressed
+          ]}
+        >
+          <Text style={styles.primaryButtonText}>
+            {creating ? "Creating..." : "Create Private Study"}
           </Text>
-        </View>
+        </Pressable>
+      </View>
 
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Start a Field Study</Text>
-          <TextInput
-            accessibilityLabel="Field Study title"
-            onChangeText={setTitle}
-            placeholder="Example: Patapsco roadside plant survey"
-            placeholderTextColor={palette.textMuted}
-            selectionColor={palette.accent}
-            style={styles.input}
-            value={title}
-          />
-          <TextInput
-            accessibilityLabel="Field Study region"
-            onChangeText={setRegionLabel}
-            placeholder="General region (optional)"
-            placeholderTextColor={palette.textMuted}
-            selectionColor={palette.accent}
-            style={styles.input}
-            value={regionLabel}
-          />
-          <Pressable
-            accessibilityRole="button"
-            disabled={!title.trim() || creating}
-            onPress={() => void create()}
-            style={({ pressed }) => [
-              styles.primaryButton,
-              (!title.trim() || creating) && styles.disabled,
-              pressed && styles.pressed
-            ]}
-          >
-            <Text style={styles.primaryButtonText}>
-              {creating ? "Creating..." : "Create Private Study"}
-            </Text>
+      <View style={styles.sectionHeader}>
+        <Text accessibilityRole="header" style={styles.sectionTitle}>
+          Your studies
+        </Text>
+        <Link href="/field-observations" asChild>
+          <Pressable accessibilityRole="link">
+            <Text style={styles.textLink}>Open public map</Text>
+          </Pressable>
+        </Link>
+      </View>
+
+      {loading ? (
+        <View style={styles.status}>
+          <ActivityIndicator color={palette.accent} />
+          <Text style={styles.statusText}>Loading Field Studies...</Text>
+        </View>
+      ) : error && !studies.length ? (
+        <View style={styles.status}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Pressable onPress={() => void load()} style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Try again</Text>
           </Pressable>
         </View>
-
-        <View style={styles.sectionHeader}>
-          <Text accessibilityRole="header" style={styles.sectionTitle}>
-            Your studies
+      ) : !studies.length ? (
+        <View style={styles.status}>
+          <Text style={styles.statusTitle}>No Field Studies yet</Text>
+          <Text style={styles.statusText}>
+            Create one above, then add a Plant ID result as the first observation.
           </Text>
-          <Link href="/field-observations" asChild>
-            <Pressable accessibilityRole="link">
-              <Text style={styles.textLink}>Open public map</Text>
-            </Pressable>
-          </Link>
         </View>
-
-        {loading ? (
-          <View style={styles.status}>
-            <ActivityIndicator color={palette.accent} />
-            <Text style={styles.statusText}>Loading Field Studies...</Text>
-          </View>
-        ) : error && !studies.length ? (
-          <View style={styles.status}>
-            <Text style={styles.errorText}>{error}</Text>
-            <Pressable onPress={() => void load()} style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Try again</Text>
-            </Pressable>
-          </View>
-        ) : !studies.length ? (
-          <View style={styles.status}>
-            <Text style={styles.statusTitle}>No Field Studies yet</Text>
-            <Text style={styles.statusText}>
-              Create one above, then add a Plant ID result as the first observation.
-            </Text>
-          </View>
-        ) : (
-          studies.map((study) => {
-            const id = String(study.id || study._id || "");
-            return (
-              <Link key={id} href={`/home/personal/field-studies/${id}`} asChild>
-                <Pressable style={styles.studyCard}>
-                  <View style={styles.cardTop}>
-                    <Text style={styles.studyTitle}>{study.title}</Text>
-                    <Text style={styles.badge}>{study.visibility}</Text>
-                  </View>
-                  <Text style={styles.studyMeta}>
-                    {study.regionLabel || "Region not set"} · {study.accessRole}
-                  </Text>
-                  <Text style={styles.cardLink}>Open study →</Text>
-                </Pressable>
-              </Link>
-            );
-          })
-        )}
-        {error && studies.length ? <Text style={styles.errorText}>{error}</Text> : null}
-      </ScrollView>
-    </ScreenBoundary>
+      ) : (
+        studies.map((study) => {
+          const id = String(study.id || study._id || "");
+          return (
+            <Link key={id} href={`/home/personal/field-studies/${id}`} asChild>
+              <Pressable style={styles.studyCard}>
+                <View style={styles.cardTop}>
+                  <Text style={styles.studyTitle}>{study.title}</Text>
+                  <Text style={styles.badge}>{study.visibility}</Text>
+                </View>
+                <Text style={styles.studyMeta}>
+                  {study.regionLabel || "Region not set"} · {study.accessRole}
+                </Text>
+                <Text style={styles.cardLink}>Open study →</Text>
+              </Pressable>
+            </Link>
+          );
+        })
+      )}
+      {error && studies.length ? <Text style={styles.errorText}>{error}</Text> : null}
+    </ScrollView>
   );
 }
 

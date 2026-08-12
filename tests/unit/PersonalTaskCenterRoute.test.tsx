@@ -48,20 +48,6 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   return () => React.createElement(View, { testID: "personal-feed-placement" });
 });
 
-jest.mock("@/components/ScreenBoundary", () => {
-  const React = require("react");
-  const { Text, View } = require("react-native");
-  return {
-    ScreenBoundary: ({ children, backFallbackHref }: any) =>
-      React.createElement(
-        View,
-        null,
-        React.createElement(Text, null, `Shared Back ${backFallbackHref}`),
-        children
-      )
-  };
-});
-
 describe("PersonalTaskCenterRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
