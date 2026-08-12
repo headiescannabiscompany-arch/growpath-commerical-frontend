@@ -131,6 +131,9 @@ describe("GrowPath knowledge registries", () => {
       "one-click Personal saved-run retry that restores the exact retained Harvest evidence with canonical grow context without spending a credit until the user starts analysis"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "explicit Personal owned-harvest-batch selection scoped to the current grow, cleared on grow changes, and used only for user-triggered review write-back"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "explicit user-date or breeder-timing planning range with separate reasons the window may be open, reasons to wait, missing evidence, confidence, and a non-trichome-date boundary"
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
@@ -153,6 +156,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never count bright pixels, sparkles, pistils, plant hairs, colored plant tissue, blurred circles, compression artifacts, sugar-leaf edge heads, or the same head repeated in overlapping crops as resolved trichome heads; ambiguous resolved white heads belong in cloudy-or-glare, while resolved yellow/orange/tan/brown heads that cannot be separated from warm light belong in amber-or-warm-light and define only the possible-amber upper bound. Under mixed or warm light, audit every clear head against adjacent highlights, transparent heads, and transmitted background so colored uncertainty cannot remain clear merely because the entire image is warm."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never accept a free-text harvest-batch database ID, let AI select a batch, or retain a batch selection after grow context changes; an estimate remains valid without batch write-back."
     );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not treat one photo copied into several fields as independent evidence, treat an AI hypothesis as a directly observed organism, or headline powdery mildew from generic white marks alone."

@@ -32,6 +32,7 @@ const mockGetToolRun = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockGetHarvestBatch = jest.fn();
+const mockListHarvestBatches = jest.fn();
 const mockUpdateHarvestBatch = jest.fn();
 const mockAnalyzeTrichomePhotos = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
@@ -217,6 +218,7 @@ jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
 
 jest.mock("@/api/harvestBatches", () => ({
   getHarvestBatch: (...args: any[]) => mockGetHarvestBatch(...args),
+  listHarvestBatches: (...args: any[]) => mockListHarvestBatches(...args),
   updateHarvestBatch: (...args: any[]) => mockUpdateHarvestBatch(...args)
 }));
 
@@ -249,6 +251,7 @@ describe("HarvestReadinessToolRoute", () => {
     mockFetchCommercialGrows.mockResolvedValue([]);
     mockListEvidenceAssets.mockResolvedValue([]);
     mockGetToolRun.mockResolvedValue(null);
+    mockListHarvestBatches.mockResolvedValue([]);
     mockAskPersonalAssistant.mockRejectedValue(new Error("assistant unavailable"));
     mockRunCalculator.mockResolvedValue({
       outputs: {
@@ -1345,7 +1348,25 @@ describe("HarvestReadinessToolRoute", () => {
   });
 
   it("saves harvest readiness review to a harvest batch record", async () => {
+    mockListHarvestBatches.mockResolvedValue([
+      {
+        id: "harvest-1",
+        growId: "grow-1",
+        name: "Harvest A",
+        batchCode: "HB-001",
+        status: "harvested"
+      }
+    ]);
     const screen = await renderHarvestReadinessTool();
+
+    await waitFor(() =>
+      expect(mockListHarvestBatches).toHaveBeenCalledWith({ growId: "grow-1" })
+    );
+    fireEvent.press(
+      screen.getByLabelText(
+        "Harvest Readiness Estimate Harvest batch write-back (optional): Harvest A (HB-001)"
+      )
+    );
 
     fireEvent.changeText(
       screen.getByLabelText("Harvest Readiness Estimate Flower day"),
@@ -1367,11 +1388,17 @@ describe("HarvestReadinessToolRoute", () => {
       screen.getByLabelText("Harvest Readiness Estimate Clear %"),
       "10"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Harvest Readiness Estimate Harvest batch ID (optional)"),
-      "harvest-1"
-    );
     fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
+
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "harvest-readiness",
+        expect.objectContaining({
+          growId: "grow-1",
+          harvestBatchId: "harvest-1"
+        })
+      )
+    );
 
     await waitFor(() =>
       expect(screen.getByText("Harvest Readiness Estimate result")).toBeTruthy()
@@ -1403,5 +1430,67 @@ describe("HarvestReadinessToolRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Saved harvest review to batch.")).toBeTruthy()
     );
+  });
+
+  it("clears a selected harvest batch when the grow context changes", async () => {
+    mockRouteParams = {};
+    mockListPersonalGrows.mockResolvedValue([
+      { id: "grow-1", name: "Flower Tent" },
+      { id: "grow-2", name: "Second Run" }
+    ]);
+    mockListHarvestBatches.mockImplementation(async ({ growId }: { growId: string }) =>
+      growId === "grow-1"
+        ? [
+            {
+              id: "harvest-1",
+              growId: "grow-1",
+              name: "Harvest A",
+              batchCode: "HB-001",
+              status: "harvested"
+            }
+          ]
+        : [
+            {
+              id: "harvest-2",
+              growId: "grow-2",
+              name: "Harvest B",
+              batchCode: "HB-002",
+              status: "harvested"
+            }
+          ]
+    );
+    const screen = await renderHarvestReadinessTool();
+
+    await waitFor(() => expect(screen.getByText("Flower Tent")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Select grow Flower Tent"));
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText(
+          "Harvest Readiness Estimate Harvest batch write-back (optional): Harvest A (HB-001)"
+        )
+      ).toBeTruthy()
+    );
+    fireEvent.press(
+      screen.getByLabelText(
+        "Harvest Readiness Estimate Harvest batch write-back (optional): Harvest A (HB-001)"
+      )
+    );
+
+    fireEvent.press(screen.getByLabelText("Select grow Second Run"));
+    await waitFor(() =>
+      expect(mockListHarvestBatches).toHaveBeenCalledWith({ growId: "grow-2" })
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText(
+          "Harvest Readiness Estimate Harvest batch write-back (optional): Do not link a harvest batch"
+        ).props.accessibilityState
+      ).toEqual({ checked: true })
+    );
+    expect(
+      screen.queryByLabelText(
+        "Harvest Readiness Estimate Harvest batch write-back (optional): Harvest A (HB-001)"
+      )
+    ).toBeNull();
   });
 });

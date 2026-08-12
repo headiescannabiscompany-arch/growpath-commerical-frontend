@@ -55,6 +55,13 @@ or grow identifier is never authority by itself. Resolve it against the authenti
 before evidence is loaded or a credit is reserved, and validate the same canonical workspace
 and grow again when the result is saved. Persist the canonical grow ID rather than a route alias.
 
+Personal Harvest Readiness may write a saved review back to an existing harvest batch only
+through an owned-batch selector populated for the currently selected grow. Do not ask users to
+paste database IDs, do not let AI choose the batch, and clear the selection whenever grow context
+changes so a review cannot cross grow boundaries. Running the estimate without a batch remains
+valid; batch write-back occurs only after the result is saved and the user explicitly chooses the
+Save Harvest Review action.
+
 When a qualified photo review fills clear, cloudy, or amber percentages in the readiness form,
 apply those values as reviewable visual drafts only to fields the user has not already filled.
 Do not remount the form or erase flower day, breeder timing, pistil, bud-swell, aroma, goal, or
