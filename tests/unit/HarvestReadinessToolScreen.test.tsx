@@ -415,6 +415,11 @@ describe("HarvestReadinessToolRoute", () => {
       "valueChange",
       true
     );
+    fireEvent(
+      screen.getByLabelText("Confirm rights for Harvest calibration photos"),
+      "valueChange",
+      true
+    );
     await fireEventAsync.press(screen.getByLabelText("Save Harvest estimate correction"));
 
     await waitFor(() =>
@@ -424,7 +429,13 @@ describe("HarvestReadinessToolRoute", () => {
           estimateAlignment: "amber_higher",
           ownerVisibleAmberPercent: 30,
           consentForModelTraining: true,
-          basis: "Resolved amber heads remain brown while the reflection changes."
+          basis: "Resolved amber heads remain brown while the reflection changes.",
+          calibrationAuthorization: {
+            version: "harvest-trichome-calibration-consent-v1",
+            rightsConfirmed: true,
+            scope: "internal_ai_evaluation_and_calibration",
+            publicUseAuthorized: false
+          }
         })
       )
     );
@@ -432,6 +443,28 @@ describe("HarvestReadinessToolRoute", () => {
     expect(
       screen.getByText(
         "Correction saved with permission to use it for model calibration. No AI credit was used."
+      )
+    ).toBeTruthy();
+  });
+
+  it("requires image rights confirmation before calibration use", async () => {
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await waitFor(() => expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledTimes(1));
+    fireEvent.press(screen.getByLabelText("Estimate looks close"));
+    fireEvent(
+      screen.getByLabelText("Allow correction to improve model calibration"),
+      "valueChange",
+      true
+    );
+    await fireEventAsync.press(screen.getByLabelText("Save Harvest estimate correction"));
+
+    expect(mockSubmitHarvestTrichomeFeedback).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        "Confirm that you own these photos or have permission before authorizing calibration use."
       )
     ).toBeTruthy();
   });

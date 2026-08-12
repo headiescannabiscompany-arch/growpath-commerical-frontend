@@ -109,6 +109,12 @@ export type HarvestTrichomeFeedbackInput = {
   ownerVisibleAmberPercent?: number;
   basis?: string;
   consentForModelTraining?: boolean;
+  calibrationAuthorization?: {
+    version: "harvest-trichome-calibration-consent-v1";
+    rightsConfirmed: true;
+    scope: "internal_ai_evaluation_and_calibration";
+    publicUseAuthorized: false;
+  };
 };
 
 export async function analyzeTrichomePhotos(input: {
@@ -176,7 +182,10 @@ export function submitHarvestTrichomeFeedback(input: HarvestTrichomeFeedbackInpu
       estimateAlignment: input.estimateAlignment,
       ownerVisibleAmberPercent: input.ownerVisibleAmberPercent,
       basis: input.basis,
-      consentForModelTraining: input.consentForModelTraining === true
+      consentForModelTraining: input.consentForModelTraining === true,
+      ...(input.consentForModelTraining === true && input.calibrationAuthorization
+        ? { calibrationAuthorization: input.calibrationAuthorization }
+        : {})
     }
   });
 }

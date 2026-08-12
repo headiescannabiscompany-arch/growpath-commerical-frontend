@@ -179,6 +179,37 @@ type MethodReviewProposal = {
   decisionCounts?: Record<string, number>;
 };
 
+type HarvestCalibrationCandidate = {
+  feedbackId: string;
+  reviewId: string;
+  submittedAt?: string;
+  provider?: string;
+  model?: string;
+  reviewPolicyVersion?: string;
+  evidenceAssetIds?: string[];
+  aiVisibleSample?: {
+    confirmedAmber?: number | null;
+    possibleAmber?: number | null;
+    resolvedHeadCount?: number;
+    countingConfidence?: string;
+  };
+  ownerReview?: {
+    estimateAlignment?: string;
+    visibleAmberPercent?: number | null;
+  };
+  eligibility?: {
+    status?: string;
+    groundTruth?: boolean;
+    requiredNextSteps?: string[];
+  };
+};
+
+function percentLabel(value: number | null | undefined) {
+  if (!Number.isFinite(Number(value))) return "not available";
+  const numeric = Number(value);
+  return `${Math.round(numeric <= 1 ? numeric * 100 : numeric)}%`;
+}
+
 const RELIABILITY_TIERS = ["A", "B", "C", "D"] as const;
 
 function splitAdminList(value: string) {
@@ -261,6 +292,9 @@ export default function PlatformAdminRoute() {
   const [methodReviewProposals, setMethodReviewProposals] = useState<
     MethodReviewProposal[]
   >([]);
+  const [harvestCalibrationCandidates, setHarvestCalibrationCandidates] = useState<
+    HarvestCalibrationCandidate[]
+  >([]);
   const [reviewMethodId, setReviewMethodId] = useState("");
   const [knowledgeDraft, setKnowledgeDraft] = useState({
     entryId: "",
@@ -300,7 +334,8 @@ export default function PlatformAdminRoute() {
         "Evidence requests",
         "Support requests",
         "Knowledge registry",
-        "Method review"
+        "Method review",
+        "Harvest calibration queue"
       ];
       const settled = await Promise.allSettled([
         apiRequest("/api/admin/overview"),
@@ -310,7 +345,8 @@ export default function PlatformAdminRoute() {
         apiRequest("/api/admin/evidence-requests"),
         apiRequest("/api/admin/support-requests"),
         apiRequest("/api/admin/knowledge-registry"),
-        apiRequest("/api/admin/method-review-proposals")
+        apiRequest("/api/admin/method-review-proposals"),
+        apiRequest("/api/ai/training/harvest-trichome-calibration")
       ]);
       const failures: string[] = [];
       const responseAt = (index: number) => {
@@ -329,6 +365,7 @@ export default function PlatformAdminRoute() {
       const supportResponse = responseAt(5);
       const knowledgeResponse = responseAt(6);
       const methodReviewResponse = responseAt(7);
+      const harvestCalibrationResponse = responseAt(8);
 
       if (overviewResponse) setOverview(overviewResponse.overview || null);
       if (usageResponse) setUsage(usageResponse.usage || null);
@@ -354,6 +391,12 @@ export default function PlatformAdminRoute() {
         setMethodReviewProposals(
           Array.isArray(methodReviewResponse.proposals)
             ? methodReviewResponse.proposals
+            : []
+        );
+      if (harvestCalibrationResponse)
+        setHarvestCalibrationCandidates(
+          Array.isArray(harvestCalibrationResponse.items)
+            ? harvestCalibrationResponse.items
             : []
         );
       setError(
@@ -703,6 +746,49 @@ export default function PlatformAdminRoute() {
           <Text style={styles.meta}>{usage.note}</Text>
         </AppCard>
       ) : null}
+
+      <AppCard
+        title="Harvest trichome calibration queue"
+        subtitle="Only versioned, rights-confirmed, private-use calibration submissions appear here. Owner corrections remain hypotheses until two independent head-level reviews and adjudication are complete."
+      >
+        {harvestCalibrationCandidates.length ? (
+          harvestCalibrationCandidates.map((item) => (
+            <View key={item.feedbackId} style={styles.caseRow}>
+              <View style={styles.caseCopy}>
+                <Text style={styles.caseTitle}>
+                  Review {item.reviewId} - {item.eligibility?.status || "not ready"}
+                </Text>
+                <Text style={styles.meta}>
+                  AI amber {percentLabel(item.aiVisibleSample?.confirmedAmber)} to{" "}
+                  {percentLabel(item.aiVisibleSample?.possibleAmber)} - owner visible-area
+                  estimate {percentLabel(item.ownerReview?.visibleAmberPercent)}
+                </Text>
+                <Text style={styles.meta}>
+                  {item.aiVisibleSample?.resolvedHeadCount || 0} resolved heads -{" "}
+                  {item.aiVisibleSample?.countingConfidence || "unknown"} counting
+                  confidence - {item.evidenceAssetIds?.length || 0} protected evidence
+                  assets
+                </Text>
+                <Text style={styles.meta}>
+                  {item.provider || "provider unavailable"}
+                  {item.model ? ` / ${item.model}` : ""} -{" "}
+                  {item.reviewPolicyVersion || "policy unavailable"}
+                </Text>
+                <Text style={styles.evidencePreview}>
+                  Not ground truth. Next:{" "}
+                  {item.eligibility?.requiredNextSteps?.join("; ") ||
+                    "independent review and adjudication"}
+                </Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.meta}>
+            No current rights-authorized Harvest calibration cases. Older boolean-only
+            consent and private product feedback are excluded.
+          </Text>
+        )}
+      </AppCard>
 
       <AppCard
         title="Knowledge registry review"

@@ -74,7 +74,13 @@ describe("Harvest vision receipt policies", () => {
       estimateAlignment: "amber_higher",
       ownerVisibleAmberPercent: 30,
       basis: "Brown heads remain brown while reflections change.",
-      consentForModelTraining: true
+      consentForModelTraining: true,
+      calibrationAuthorization: {
+        version: "harvest-trichome-calibration-consent-v1",
+        rightsConfirmed: true,
+        scope: "internal_ai_evaluation_and_calibration",
+        publicUseAuthorized: false
+      }
     });
 
     expect(mockApiRequest).toHaveBeenCalledWith("/api/ai/feedback", {
@@ -86,7 +92,13 @@ describe("Harvest vision receipt policies", () => {
         estimateAlignment: "amber_higher",
         ownerVisibleAmberPercent: 30,
         basis: "Brown heads remain brown while reflections change.",
-        consentForModelTraining: true
+        consentForModelTraining: true,
+        calibrationAuthorization: {
+          version: "harvest-trichome-calibration-consent-v1",
+          rightsConfirmed: true,
+          scope: "internal_ai_evaluation_and_calibration",
+          publicUseAuthorized: false
+        }
       }
     });
   });

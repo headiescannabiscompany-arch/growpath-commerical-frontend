@@ -146,6 +146,9 @@ describe("GrowPath knowledge registries", () => {
       "immediate and saved per-photo inspected-area breakdown with five-bucket counts, percentages, amber range, exact region, resolved-head total, counting confidence, and a strongest-amber-area callout that retains the no-whole-plant boundary"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "versioned Harvest calibration authorization that separately confirms image rights, limits use to private internal AI evaluation and calibration, and does not authorize public display"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "calculator and saved-run retention of the attested visible-sample five buckets, counted-head total, count source, confidence, exact basis, confirmed-to-possible amber range, cloudy-versus-glare uncertainty, and inspected-area-only boundary even when representative autofill remains blank"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
