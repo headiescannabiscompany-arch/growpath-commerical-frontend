@@ -51,8 +51,24 @@
     ]
   },
   "qualitativeSeedPreparation": {
-    "sourceId": "pmc10610221-spitzer-life-cycle",
-    "sourceAssetDimensions": { "width": 724, "height": 793 },
+    "sourceIds": ["pmc10610221-spitzer-life-cycle", "pmc10648736-lapierre-phenotype"],
+    "preparedCaseCount": 7,
+    "sourceAssets": [
+      {
+        "sourceId": "pmc10610221-spitzer-life-cycle",
+        "width": 724,
+        "height": 793
+      },
+      {
+        "sourceId": "pmc10648736-lapierre-phenotype",
+        "archiveSha256": "9b69debc57794d9f62d87a4cdb46cff770e17eb6ae07ebaec5d9905843d92eed",
+        "supplementPdfSha256": "c2b3846718420d3a164915db2de7003093f7cd1582eb6b9d53ed7b647ce11334",
+        "figureTopJpegSha256": "dcfaf904b80f496e5a2b92e422c5a06a7cb0160f66d4c0277eda756140bbf44e",
+        "figureBottomJpegSha256": "10d53f1170c9e9d9a614b705f8a079b9c73bf843f242ef6925f1840bc6b7c918",
+        "width": 1725,
+        "height": 1380
+      }
+    ],
     "derivedCropScale": 4,
     "preparationCommand": "node scripts/prepareTrichomeQualitativeSeed.js --out <temporary-seed-directory> --confirmation PREPARE_GROWPATH_TRICHOME_REFERENCE_SEED",
     "evaluationCommand": "node scripts/runTrichomeClassifierQualitativeCheck.js --input <temporary-seed-directory>/manifest.json --out <qualitative-results.json> --confirmation RUN_GROWPATH_HARVEST_TRICHOME_STAGING",
@@ -207,6 +223,7 @@
       "exactCounts": null,
       "quantitativeGroundTruth": false,
       "blindRecognitionEligible": true,
+      "reviewedPixelCrop": { "left": 190, "top": 500, "width": 110, "height": 120 },
       "notes": "Caption identifies transparent clear trichomes; mixed focus means only resolved intact heads are eligible."
     },
     {
@@ -218,6 +235,7 @@
       "exactCounts": null,
       "quantitativeGroundTruth": false,
       "blindRecognitionEligible": true,
+      "reviewedPixelCrop": { "left": 800, "top": 650, "width": 110, "height": 120 },
       "notes": "Caption identifies cloudy opaque trichomes; glare-affected heads remain ambiguous."
     },
     {
@@ -225,11 +243,12 @@
       "sourceId": "pmc10648736-lapierre-phenotype",
       "assetLocator": "supplementary_figures_Lapierre_et_al.pdf#page=4&panel=C",
       "captureType": "phone_macro",
-      "expectedClasses": ["amber", "cloudy"],
+      "expectedClasses": ["amber"],
       "exactCounts": null,
       "quantitativeGroundTruth": false,
       "blindRecognitionEligible": true,
-      "notes": "Caption identifies a mixture of amber and milky heads; it does not provide percentages."
+      "reviewedPixelCrop": { "left": 1450, "top": 310, "width": 120, "height": 130 },
+      "notes": "Caption identifies a mixture of amber and milky heads; the reviewed tight crop isolates one resolved amber head and does not provide percentages."
     },
     {
       "caseId": "spitzer-figure12-panel-a-clear",
