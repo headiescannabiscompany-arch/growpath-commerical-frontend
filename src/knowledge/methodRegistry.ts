@@ -504,6 +504,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "systematic upper-middle-lower or left-middle-right diagnostic coverage crops for every original in the minimum four-photo Harvest set, with overlap deduplicated by position",
       "client preflight that accepts ordinary 1080p phone photos without claiming trichome heads are unresolved from dimensions alone, leaving subject scale, focus, compression, glare, lighting, calyx placement, and head detail to server review",
       "saved-evidence hydration that retires the replaced Harvest dimension-only warning while preserving current focus, glare, compression, lighting, and provenance findings",
+      "bounded staging-counter tile selection that preserves spatial coverage of each large source photo before filling remaining detector slots by sharpness without treating tiles as independent sites",
       "visible sampled-head estimate split into clear, cloudy, confirmed amber, amber-or-warm-light, and cloudy-or-glare with exact region basis, a confirmed-to-possible amber range, and an explicit no-whole-plant-percentage boundary",
       "server-calculated visible-sample percentage from non-overlapping per-original resolved-head tallies, including counted-head total and low, medium, or high counting confidence",
       "counting confidence capped by both resolved-head volume and weighted per-photo counting confidence, with not-counted, duplicate-image, blurred, blocking-glare, and unresolved-detail findings excluded from resolved-head tallies",
