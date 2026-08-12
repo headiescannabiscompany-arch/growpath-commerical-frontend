@@ -116,6 +116,9 @@ describe("GrowPath knowledge registries", () => {
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "staging-only same-pixel trichome luminance audit with the original mean, bounded uniform RGB multiplier, and method retained as non-independent evidence that cannot confirm amber by itself"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "exact dedicated Harvest vision model recorded in the signed review without inheriting a cost-optimized global mini model"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
@@ -126,6 +129,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "server-calculated visible-sample percentage from non-overlapping per-original resolved-head tallies, including counted-head total and low, medium, or high counting confidence"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "calculator and saved-run retention of the attested visible-sample five buckets, counted-head total, count source, confidence, exact basis, confirmed-to-possible amber range, cloudy-versus-glare uncertainty, and inspected-area-only boundary even when representative autofill remains blank"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "one-click Personal saved-run retry that restores the exact retained Harvest evidence with canonical grow context without spending a credit until the user starts analysis"
