@@ -27,6 +27,7 @@ import {
   NotificationPreferenceState
 } from "@/notifications/notificationPreferences";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import BackButton from "@/components/nav/BackButton";
 import ThemeModeSelector from "@/components/ThemeModeSelector";
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -457,6 +458,7 @@ export default function ProfileScreen() {
       style={[styles.container, pageStyle]}
       contentContainerStyle={styles.content}
     >
+      <BackButton fallbackHref="/home/personal" />
       <Text accessibilityRole="header" style={[styles.title, textStyle]}>
         Profile
       </Text>

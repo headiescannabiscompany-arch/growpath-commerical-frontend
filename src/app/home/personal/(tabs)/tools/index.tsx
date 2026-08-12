@@ -6,6 +6,7 @@ import TokenBalanceWidget from "@/components/TokenBalanceWidget";
 import { listPersonalGrows } from "@/api/grows";
 import { useAuth } from "@/auth/AuthContext";
 import FeedBanner from "@/components/feed/FeedBanner";
+import BackButton from "@/components/nav/BackButton";
 import {
   FeatureArea,
   FeatureDefinition,
@@ -347,6 +348,7 @@ export default function ToolsHubScreen() {
       style={[styles.container, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.content}
     >
+      <BackButton fallbackHref="/home/personal" />
       <View style={styles.header}>
         <Text
           accessibilityRole="header"

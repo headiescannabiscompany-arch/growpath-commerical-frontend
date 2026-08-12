@@ -14,6 +14,7 @@ import {
 import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
 import AppCard from "@/components/layout/AppCard";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -296,6 +297,7 @@ export default function PersonalGrowsRoute() {
       }
     >
       <View style={styles.stack}>
+        <BackButton fallbackHref="/home/personal" />
         <AppCard
           style={[
             styles.heroCard,

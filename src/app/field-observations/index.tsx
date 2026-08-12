@@ -15,6 +15,7 @@ import { FieldObservation, listPublicFieldObservations } from "@/api/fieldStudie
 import FieldObservationGlobe, {
   type FieldObservationViewport
 } from "@/components/fieldStudies/FieldObservationGlobe";
+import BackButton from "@/components/nav/BackButton";
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -187,6 +188,7 @@ export default function PublicFieldObservationsScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <BackButton fallbackHref="/account/workspace" />
       <Text accessibilityRole="header" aria-level={1} style={styles.title}>
         Explore the living world
       </Text>
