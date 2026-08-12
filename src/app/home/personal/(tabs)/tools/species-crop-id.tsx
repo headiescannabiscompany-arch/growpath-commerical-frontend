@@ -19,6 +19,7 @@ import type {
 } from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import PrivateLocationPicker from "@/components/fieldStudies/PrivateLocationPicker";
 import {
   extractEvidenceVideoFrames,
   getEvidenceAssetsByIds,
@@ -1164,6 +1165,7 @@ export default function SpeciesCropIdToolRoute({
   const [publishObservation, setPublishObservation] = useState(false);
   const [sensitiveSpecies, setSensitiveSpecies] = useState(false);
   const [locationBusy, setLocationBusy] = useState(false);
+  const [showManualLocation, setShowManualLocation] = useState(false);
   const [identificationBusy, setIdentificationBusy] = useState(false);
   const [evidenceBusy, setEvidenceBusy] = useState(false);
   const [newStudyTitle, setNewStudyTitle] = useState("");
@@ -1368,6 +1370,7 @@ export default function SpeciesCropIdToolRoute({
     setPublishObservation(false);
     setSensitiveSpecies(false);
     setLocationBusy(false);
+    setShowManualLocation(false);
     setIdentificationBusy(false);
     setEvidenceBusy(false);
     setFieldStudies([]);
@@ -2345,6 +2348,33 @@ export default function SpeciesCropIdToolRoute({
     }
   }
 
+  async function applyManualLocation(coordinates: PublicCoordinates) {
+    if (locationBusy || identificationBusy) return;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    setLocationBusy(true);
+    setFieldStudyError("");
+    setFieldStudyNotice("");
+    try {
+      await syncSavedRunLocation(coordinates, requestWorkspaceIdentity);
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setShowManualLocation(false);
+      setFieldStudyNotice(
+        activeToolRunRef.current
+          ? "The selected point was saved privately with this Plant ID."
+          : "The selected point is ready to save privately when identification completes."
+      );
+    } catch (locationError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setFieldStudyError(
+        locationError?.message || "The selected private location could not be saved."
+      );
+    } finally {
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setLocationBusy(false);
+      }
+    }
+  }
+
   function selectFieldStudy(study: FieldStudy) {
     if (workspaceType !== "personal") return;
     const id = String(study.id || study._id || "");
@@ -2627,7 +2657,29 @@ export default function SpeciesCropIdToolRoute({
                   <Text style={styles.secondaryButtonText}>Remove Private Location</Text>
                 </Pressable>
               ) : null}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: showManualLocation }}
+                disabled={locationBusy || identificationBusy}
+                onPress={() => setShowManualLocation((value) => !value)}
+                style={[
+                  styles.inlineLink,
+                  (locationBusy || identificationBusy) && styles.disabled
+                ]}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {showManualLocation ? "Close Map" : "Place Pin on Map"}
+                </Text>
+              </Pressable>
             </View>
+            {showManualLocation ? (
+              <PrivateLocationPicker
+                value={observationLocation}
+                onChange={(coordinates: PublicCoordinates) =>
+                  void applyManualLocation(coordinates)
+                }
+              />
+            ) : null}
             <Text
               accessibilityLiveRegion="polite"
               style={observationLocation ? styles.statusGood : styles.evidenceGuidance}

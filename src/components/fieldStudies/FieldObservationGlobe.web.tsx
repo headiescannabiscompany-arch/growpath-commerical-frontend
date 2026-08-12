@@ -16,7 +16,7 @@ const MAPLIBRE_READY_EVENT = "growpath-maplibre-ready";
 let mapLibrePromise: Promise<MapLibreModule> | null = null;
 const removedMapInstances = new WeakSet<object>();
 
-function safelyRemoveMapLibreMap(
+export function safelyRemoveMapLibreMap(
   map: MapLibreMap | null,
   container: HTMLDivElement | null
 ) {
@@ -40,7 +40,7 @@ function safelyRemoveMapLibreMap(
   }
 }
 
-function loadMapLibreModule() {
+export function loadMapLibreModule() {
   if (typeof window === "undefined") {
     return Promise.reject(
       new Error("The interactive globe is only available in a web browser.")
@@ -148,7 +148,7 @@ function observationsToGeoJson(observations: FieldObservation[]) {
   } as any;
 }
 
-function fallbackStyle() {
+export function fallbackStyle() {
   return {
     version: 8,
     sources: {
