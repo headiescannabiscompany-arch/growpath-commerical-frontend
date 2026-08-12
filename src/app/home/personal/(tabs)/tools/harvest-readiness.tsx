@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
@@ -8,8 +8,10 @@ import BackendCalculatorToolScreen, {
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
 import {
   getHarvestBatch,
+  listHarvestBatches,
   updateHarvestBatch,
-  type DryCureRecordInput
+  type DryCureRecordInput,
+  type HarvestBatch
 } from "@/api/harvestBatches";
 import { analyzeTrichomePhotos, type TrichomeVisionResult } from "@/api/harvestVision";
 import type { VideoWorkspaceType } from "@/api/videos";
@@ -23,6 +25,7 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
 
 const MIN_HARVEST_PHOTOS = 4;
+const HARVEST_CONTEXT_SCOPED_FIELDS = ["harvestBatchId"];
 
 const HARVEST_PHOTO_CHECKLIST = [
   "Use at least 3 sharp macro photos from top, middle, and lower bud sites.",
@@ -874,6 +877,64 @@ export default function HarvestReadinessToolRoute({
   const [visionDraft, setVisionDraft] = useState<HarvestAnalysisDraft | null>(null);
   const [activeAnalysisScopeKey, setActiveAnalysisScopeKey] = useState("");
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
+  const [activeGrowId, setActiveGrowId] = useState("");
+  const [harvestBatches, setHarvestBatches] = useState<HarvestBatch[]>([]);
+  const [harvestBatchesLoading, setHarvestBatchesLoading] = useState(false);
+  const observeGrowId = useCallback((growId: string) => {
+    setActiveGrowId((current) => (current === growId ? current : growId));
+  }, []);
+  useEffect(() => {
+    let active = true;
+    if (workspaceType !== "personal" || !activeGrowId) {
+      setHarvestBatches([]);
+      setHarvestBatchesLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+    setHarvestBatches([]);
+    setHarvestBatchesLoading(true);
+    void listHarvestBatches({ growId: activeGrowId }).then((batches) => {
+      if (!active) return;
+      setHarvestBatches(batches);
+      setHarvestBatchesLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [activeGrowId, workspaceType]);
+  const harvestBatchOptions = useMemo(
+    () => [
+      {
+        value: "",
+        label: !activeGrowId
+          ? "Select a grow first"
+          : harvestBatchesLoading
+            ? "Loading harvest batches..."
+            : harvestBatches.length
+              ? "Do not link a harvest batch"
+              : "No harvest batches found for this grow",
+        description: !activeGrowId
+          ? "Harvest batches are scoped to the selected grow."
+          : harvestBatches.length
+            ? "The result will still save to Saved Runs and can create follow-up tasks."
+            : "Run the readiness estimate without a batch, or create a harvest batch from the grow workflow when harvest begins."
+      },
+      ...harvestBatches.map((batch) => ({
+        value: batch.id,
+        label: [batch.name, batch.batchCode ? `(${batch.batchCode})` : ""]
+          .filter(Boolean)
+          .join(" "),
+        description: [
+          batch.status ? `Status: ${batch.status}` : "",
+          batch.harvestedAt ? `Harvested: ${String(batch.harvestedAt).slice(0, 10)}` : ""
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      }))
+    ],
+    [activeGrowId, harvestBatches, harvestBatchesLoading]
+  );
   const vision = visionDraft?.result || null;
   const harvestEvidence = providerEvidencePayload(evidenceAssets);
   const externalHarvestDraft = useMemo(
@@ -909,6 +970,8 @@ export default function HarvestReadinessToolRoute({
       backFallbackHref={backFallbackHref}
       externalAiDraftScopeKey={activeAnalysisScopeKey}
       externalAiDraft={externalHarvestDraft}
+      onGrowIdChange={observeGrowId}
+      resetFieldsOnContextChange={HARVEST_CONTEXT_SCOPED_FIELDS}
       tool="harvest-readiness"
       toolKey="harvest-readiness"
       title="Harvest Readiness Estimate"
@@ -923,7 +986,7 @@ export default function HarvestReadinessToolRoute({
             ? ""
             : undefined,
         buildMessage: () =>
-          `Prefill a Harvest Readiness review using the selected grow and plant's saved timeline, breeder/cultivar information, logs, photos and prior vision results, environment, tasks, diagnoses, and harvest records. Return JSON only with exactly these keys: {"flowerDay":"string","breederFlowerTime":"string","approximateHarvestDate":"string","cloudyPercent":"string","amberPercent":"string","clearPercent":"string","pistilStatus":"string","budSwellStatus":"string","sampleLocation":"string","harvestBatchId":"string","aromaIntensity":"string","userGoal":"string","additionalInformation":"string"}. Fill approximateHarvestDate only from an explicit saved user date, formatted YYYY-MM-DD; never invent one from breeder timing. Never infer trichome percentages from ordinary plant photos; fill them only from a saved usable macro-photo analysis. If current media is missing, blurry, lacks visible trichome heads, or covers too few bud sites, leave those percentages blank and explain exactly which better photos are needed in additionalInformation. Leave unknown observations blank rather than inventing them.`
+          `Prefill a Harvest Readiness review using the selected grow and plant's saved timeline, breeder/cultivar information, logs, photos and prior vision results, environment, tasks, diagnoses, and harvest records. Return JSON only with exactly these keys: {"flowerDay":"string","breederFlowerTime":"string","approximateHarvestDate":"string","cloudyPercent":"string","amberPercent":"string","clearPercent":"string","pistilStatus":"string","budSwellStatus":"string","sampleLocation":"string","aromaIntensity":"string","userGoal":"string","additionalInformation":"string"}. Fill approximateHarvestDate only from an explicit saved user date, formatted YYYY-MM-DD; never invent one from breeder timing. Never choose a harvest batch; the user selects an owned batch separately. Never infer trichome percentages from ordinary plant photos; fill them only from a saved usable macro-photo analysis. If current media is missing, blurry, lacks visible trichome heads, or covers too few bud sites, leave those percentages blank and explain exactly which better photos are needed in additionalInformation. Leave unknown observations blank rather than inventing them.`
       }}
       formHeader={({
         growId,
@@ -1013,11 +1076,18 @@ export default function HarvestReadinessToolRoute({
           defaultValue: "",
           placeholder: "Top, middle, and lower calyx samples"
         },
-        {
-          key: "harvestBatchId",
-          label: "Harvest batch ID (optional)",
-          defaultValue: ""
-        },
+        ...(workspaceType === "personal"
+          ? [
+              {
+                key: "harvestBatchId",
+                label: "Harvest batch write-back (optional)",
+                defaultValue: "",
+                helpText:
+                  "Select an owned batch from this grow. After the estimate is saved, the Save Harvest Review action appends its review and ToolRun link to that batch.",
+                options: harvestBatchOptions
+              }
+            ]
+          : []),
         {
           key: "aromaIntensity",
           label: "Aroma trend (building, peak, or dropping)",
@@ -1054,7 +1124,7 @@ export default function HarvestReadinessToolRoute({
               performed: true
             }
           : undefined,
-        harvestBatchId: values.harvestBatchId.trim() || undefined,
+        harvestBatchId: String(values.harvestBatchId || "").trim() || undefined,
         additionalInformation: values.additionalInformation.trim() || undefined
       })}
       buildMetrics={(outputs) => [

@@ -98,6 +98,8 @@ type BackendCalculatorToolScreenProps = {
   externalAiDraftScopeKey?: string;
   externalAiDraft?: ExternalAiDraft | null;
   onToolRunChange?: (toolRun: ToolRun | null) => void;
+  onGrowIdChange?: (growId: string) => void;
+  resetFieldsOnContextChange?: string[];
   executionBlocked?: boolean;
   executionBlockedMessage?: string;
   onExecutionBusyChange?: (busy: boolean) => void;
@@ -339,6 +341,8 @@ export default function BackendCalculatorToolScreen({
   externalAiDraftScopeKey = "",
   externalAiDraft = null,
   onToolRunChange,
+  onGrowIdChange,
+  resetFieldsOnContextChange = [],
   executionBlocked = false,
   executionBlockedMessage = "Finish the current action before running this tool.",
   onExecutionBusyChange,
@@ -404,6 +408,7 @@ export default function BackendCalculatorToolScreen({
   const routePlantId = workspaceType === "personal" ? coerceParam(params.plantId) : "";
   const [availableGrows, setAvailableGrows] = useState<SelectableGrow[]>([]);
   const [growId, setGrowId] = useState(workspaceType === "personal" ? routeGrowId : "");
+  const contextResetFieldKey = resetFieldsOnContextChange.join("|");
   const plantContext = useToolPlantContext(
     growId,
     routePlantId,
@@ -521,6 +526,9 @@ export default function BackendCalculatorToolScreen({
     lastReportedExecutionBusyRef.current = busy;
     onExecutionBusyChange?.(busy);
   }, [onExecutionBusyChange, prefilling, running]);
+  React.useEffect(() => {
+    onGrowIdChange?.(growId);
+  }, [growId, onGrowIdChange]);
   const latestExternalInputKeyRef = React.useRef(executionInputKey);
   const inputRevisionRef = React.useRef(0);
   const executionLockRef = React.useRef<"prefill" | "calculate" | null>(null);
@@ -551,7 +559,13 @@ export default function BackendCalculatorToolScreen({
       setRunning(false);
       setPrefilling(false);
     } else {
-      setValues(userValuesRef.current);
+      const nextValues = { ...userValuesRef.current };
+      for (const fieldKey of contextResetFieldKey.split("|").filter(Boolean)) {
+        nextValues[fieldKey] = initialValues[fieldKey] || "";
+        userEditedFieldKeysRef.current.delete(fieldKey);
+      }
+      userValuesRef.current = nextValues;
+      setValues(nextValues);
     }
     setToolRun(null);
     onToolRunChange?.(null);
@@ -565,6 +579,7 @@ export default function BackendCalculatorToolScreen({
     initialValues,
     onToolRunChange,
     routeGrowId,
+    contextResetFieldKey,
     workspaceIdentityKey,
     workspaceType
   ]);
