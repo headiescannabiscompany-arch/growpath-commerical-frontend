@@ -9,6 +9,7 @@ import { getThemePalette } from "@/theme/appTheme";
 const mockApiRequest = jest.fn();
 let mockWorkspaceMode = "personal";
 let mockWorkspaceParam: string | undefined;
+let mockNotificationPreferences: Record<string, boolean>;
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -33,16 +34,7 @@ jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
     ctx: { mode: mockWorkspaceMode },
     user: {
-      notificationPreferences: {
-        pushEnabled: true,
-        taskReminders: true,
-        forumReplies: true,
-        forumMentions: true,
-        videoActivity: true,
-        courseAndLiveUpdates: true,
-        commerceUpdates: true,
-        facilityAlerts: true
-      }
+      notificationPreferences: mockNotificationPreferences
     }
   })
 }));
@@ -83,6 +75,16 @@ describe("NotificationCenterRoute", () => {
     jest.resetAllMocks();
     mockWorkspaceMode = "personal";
     mockWorkspaceParam = undefined;
+    mockNotificationPreferences = {
+      pushEnabled: true,
+      taskReminders: true,
+      forumReplies: true,
+      forumMentions: true,
+      videoActivity: true,
+      courseAndLiveUpdates: true,
+      commerceUpdates: true,
+      facilityAlerts: true
+    };
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/notifications" && options?.method === "GET") {
         return Promise.resolve({
@@ -336,6 +338,45 @@ describe("NotificationCenterRoute", () => {
         expect.objectContaining({
           method: "POST",
           body: expect.objectContaining({ facilityAlerts: false })
+        })
+      )
+    );
+  });
+
+  it("rehydrates saved preferences when the authenticated user finishes loading", async () => {
+    const screen = render(<NotificationCenterRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Toggle Facility alerts").props.value).toBe(true)
+    );
+    mockNotificationPreferences = {
+      ...mockNotificationPreferences,
+      facilityAlerts: false
+    };
+    screen.rerender(<NotificationCenterRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Toggle Facility alerts").props.value).toBe(false)
+    );
+  });
+
+  it("lets users control forum replies and forum mentions independently", async () => {
+    const screen = render(<NotificationCenterRoute />);
+
+    await waitFor(() => expect(screen.getByText("Notification Center")).toBeTruthy());
+    fireEvent(screen.getByLabelText("Toggle Forum replies"), "valueChange", false);
+    fireEvent(screen.getByLabelText("Toggle Forum mentions"), "valueChange", false);
+    fireEvent.press(screen.getByLabelText("Save notification settings"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            forumReplies: false,
+            forumMentions: false
+          })
         })
       )
     );

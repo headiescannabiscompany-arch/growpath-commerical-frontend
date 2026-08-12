@@ -43,7 +43,12 @@ export const NOTIFICATION_PREFERENCE_OPTIONS: Array<{
   {
     key: "forumReplies",
     title: "Forum replies",
-    description: "Replies, @mentions, and discussion follow-ups in Forum/Q&A."
+    description: "Replies and discussion follow-ups in Forum/Q&A."
+  },
+  {
+    key: "forumMentions",
+    title: "Forum mentions",
+    description: "Direct @mentions and name references in Forum/Q&A."
   },
   {
     key: "videoActivity",

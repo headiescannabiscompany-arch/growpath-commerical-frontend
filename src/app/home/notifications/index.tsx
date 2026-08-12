@@ -280,10 +280,15 @@ export default function NotificationCenterRoute() {
   const [filter, setFilter] = useState<FilterKey>("unread");
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const savedNotificationPreferences = auth.user?.notificationPreferences;
   const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferenceState>(
-    () => preferenceState(auth.user?.notificationPreferences)
+    () => preferenceState(savedNotificationPreferences)
   );
   const [preferencesSaving, setPreferencesSaving] = useState(false);
+  useEffect(() => {
+    if (!savedNotificationPreferences) return;
+    setNotificationPrefs(preferenceState(savedNotificationPreferences));
+  }, [savedNotificationPreferences]);
   const enabledCategories = useMemo(
     () =>
       NOTIFICATION_INBOX_FILTERS.filter((option) => notificationPrefs[option.key]).map(
