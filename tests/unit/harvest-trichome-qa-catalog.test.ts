@@ -104,6 +104,33 @@ describe("Harvest trichome QA catalog", () => {
     ]);
   });
 
+  it("pins the four reviewed qualitative crops without sending labels to the provider", () => {
+    const catalog = loadCatalog();
+    const spitzerCases = catalog.referenceCases.filter(
+      (item: any) => item.sourceId === "pmc10610221-spitzer-life-cycle"
+    );
+
+    expect(catalog.qualitativeSeedPreparation).toMatchObject({
+      sourceId: "pmc10610221-spitzer-life-cycle",
+      sourceAssetDimensions: { width: 724, height: 793 },
+      derivedCropScale: 4,
+      preparationCommand: expect.stringMatching(/prepareTrichomeQualitativeSeed/),
+      evaluationCommand: expect.stringMatching(/runTrichomeClassifierQualitativeCheck/),
+      boundary: expect.stringMatching(/Expected labels are scored locally/i)
+    });
+    expect(spitzerCases).toHaveLength(4);
+    for (const referenceCase of spitzerCases) {
+      expect(referenceCase.reviewedPixelCrop).toEqual(
+        expect.objectContaining({
+          left: expect.any(Number),
+          top: expect.any(Number),
+          width: expect.any(Number),
+          height: expect.any(Number)
+        })
+      );
+    }
+  });
+
   it("requires complete aggregate comparison and absolute candidate floors", () => {
     const catalog = loadCatalog();
 
