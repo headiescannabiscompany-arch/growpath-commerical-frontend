@@ -28,3 +28,7 @@ Use status: Owner-approved Triple Bag Genetics design concepts retained for priv
 - Checkout: disabled.
 - Rights review: required before any public use or sale of a concept containing a third-party name, logo, trade dress, collaboration claim, league, or team reference.
 - The images are not evidence of manufactured inventory, final specifications, permissions, price, shipping, launch approval, or order fulfillment.
+
+## Production path
+
+Captuer Headwear identified BLVNK HEADWEAR as its exclusive distributor for unbranded Captuer blank goods. BLVNK is therefore recorded as the candidate blank-body supplier, not as the decorator or confirmed manufacturer-of-record. Local decoration, digitization, physical samples, exact blank selection, costs, owner approval, and third-party-mark permissions remain open. See `../../HAT_PRODUCTION_BRIEF_2026-08-12.md`.

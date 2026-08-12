@@ -19,6 +19,17 @@ type HatConceptManifest = {
     manufacturedInventoryConfirmed: boolean;
     rightsReviewRequired: boolean;
   };
+  sourcing: {
+    blankDistributor: string;
+    blankDistributorUrl: string;
+    wholesaleApplicationUrl: string;
+    status: string;
+    recommendedBy: string;
+    localDecorationRequired: boolean;
+    decoratorSelected: boolean;
+    approvedPhysicalSample: boolean;
+    productionOrderConfirmed: boolean;
+  };
   assets: Array<{
     id: string;
     file: string;
@@ -61,6 +72,18 @@ describe("owner-approved hat concept catalogs", () => {
       checkoutEnabled: false,
       manufacturedInventoryConfirmed: false
     });
+    expect(manifest.sourcing).toMatchObject({
+      blankDistributor: "BLVNK HEADWEAR",
+      status: "candidate_blank_supplier",
+      localDecorationRequired: true,
+      decoratorSelected: false,
+      approvedPhysicalSample: false,
+      productionOrderConfirmed: false
+    });
+    expect(manifest.sourcing.blankDistributorUrl).toBe("https://www.blvnkheadwear.com/");
+    expect(manifest.sourcing.wholesaleApplicationUrl).toBe(
+      "https://blvnkheadwear.com/pages/blank-hats-bulk-wholesale"
+    );
 
     expect(manifest.assets.length).toBeGreaterThan(0);
     for (const asset of manifest.assets) {

@@ -28,3 +28,7 @@ Use status: Owner-approved GrowPathAI design concepts. They may support an unpub
 - Price and shipping: unknown, represented as `null`/TBD rather than zero.
 - Checkout: disabled.
 - The images remain concept sheets until manufacturing, final materials/specifications, inventory, pricing, shipping, and launch approval are supplied.
+
+## Production path
+
+Captuer Headwear identified BLVNK HEADWEAR as its exclusive distributor for unbranded Captuer blank goods. BLVNK is therefore recorded as the candidate blank-body supplier, not as the decorator or confirmed manufacturer-of-record. Local decoration, digitization, physical samples, exact blank selection, costs, and owner approval remain open. See `../../HAT_PRODUCTION_BRIEF_2026-08-12.md`.

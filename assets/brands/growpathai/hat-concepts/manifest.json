@@ -22,6 +22,17 @@
     "manufacturedInventoryConfirmed": false,
     "rightsReviewRequired": false
   },
+  "sourcing": {
+    "blankDistributor": "BLVNK HEADWEAR",
+    "blankDistributorUrl": "https://www.blvnkheadwear.com/",
+    "wholesaleApplicationUrl": "https://blvnkheadwear.com/pages/blank-hats-bulk-wholesale",
+    "status": "candidate_blank_supplier",
+    "recommendedBy": "Captuer Headwear service team email dated 2026-08-10",
+    "localDecorationRequired": true,
+    "decoratorSelected": false,
+    "approvedPhysicalSample": false,
+    "productionOrderConfirmed": false
+  },
   "assets": [
     {
       "id": "growpathai-hat-circuit-leaf-midnight-owner-concept",

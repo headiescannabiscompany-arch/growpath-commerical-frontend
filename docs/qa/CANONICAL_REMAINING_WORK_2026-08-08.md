@@ -251,9 +251,13 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       exact owner-authorized assets with SHA-256 records and separate brand manifests.
       Both remain zero-stock, unpriced, non-checkout, and unpublished. Triple Bag
       concepts containing third-party marks remain private drafts pending rights review;
-      live Commercial product-draft creation and owner review remain open. See
+      Captuer's 2026-08-10 email identifies BLVNK HEADWEAR as its exclusive unbranded
+      blank distributor, so BLVNK is recorded as the candidate blank-body source while
+      local decoration, samples, exact models, costs, and production approval remain
+      open. Live Commercial product-draft creation and owner review also remain open. See
       `assets/brands/growpathai/hat-concepts/ASSET_RECORD.md` and
-      `assets/brands/triple-bag-genetics/hat-concepts/ASSET_RECORD.md`.
+      `assets/brands/triple-bag-genetics/hat-concepts/ASSET_RECORD.md`, plus
+      `assets/brands/HAT_PRODUCTION_BRIEF_2026-08-12.md`.
 - [ ] Collect owner-approved knowledge sources: domains, authors/channels,
       reliability tiers, allowed uses, exclusions, cross-check requirements, and review
       dates; update both documentation and runtime registries.
