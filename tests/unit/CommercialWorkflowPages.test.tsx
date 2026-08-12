@@ -539,10 +539,10 @@ describe("commercial workflow pages", () => {
             title: "Living Soil Product Use",
             thumbnailUrl: "https://example.com/course-thumb.jpg",
             bannerUrl: "https://example.com/course-updated-banner.jpg",
-            category: "product_training",
+            category: "Facility training",
             description: "Updated product course description.",
             access: "paid",
-            price: 49,
+            price: 59,
             growInterests: ["living soil"],
             stripeProductId: "prod_course_updated",
             stripePriceId: "price_course_updated",
@@ -559,7 +559,39 @@ describe("commercial workflow pages", () => {
           course: {
             id: "course-1",
             title: "Living Soil Product Use",
+            thumbnailUrl: "https://example.com/course-updated-thumb.jpg",
+            bannerUrl: "https://example.com/course-updated-banner.jpg",
+            category: "Facility training",
+            description: "Updated product course description.",
+            access: "paid",
+            price: 59,
+            growInterests: ["living soil", "dry amendments"],
+            stripeProductId: "prod_course_updated",
+            stripePriceId: "price_course_updated",
+            lessons: [{ id: "lesson-new", title: "Water-in schedule" }],
             status: "published"
+          }
+        });
+      }
+      if (
+        path === "/api/commercial/courses/course-1/unpublish" &&
+        options?.method === "POST"
+      ) {
+        return Promise.resolve({
+          course: {
+            id: "course-1",
+            title: "Living Soil Product Use",
+            thumbnailUrl: "https://example.com/course-updated-thumb.jpg",
+            bannerUrl: "https://example.com/course-updated-banner.jpg",
+            category: "Facility training",
+            description: "Updated product course description.",
+            access: "paid",
+            price: 59,
+            growInterests: ["living soil", "dry amendments"],
+            stripeProductId: "prod_course_updated",
+            stripePriceId: "price_course_updated",
+            lessons: [{ id: "lesson-new", title: "Water-in schedule" }],
+            status: "draft"
           }
         });
       }
@@ -1136,7 +1168,7 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByText(/Commercial courses should add storefront context/)
     ).toBeTruthy();
-    expect(screen.getByText("Product education")).toBeTruthy();
+    expect(screen.getAllByText("Product education").length).toBeGreaterThan(0);
     expect(screen.getByText("Free and paid courses")).toBeTruthy();
     expect(screen.getAllByText("Create Course").length).toBeGreaterThan(0);
     expect(screen.getByText("Open Full Course Builder")).toBeTruthy();
@@ -1220,9 +1252,8 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial course title"),
       "Bloom Topdress Training"
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course category"),
-      "product_training"
+    fireEvent.press(
+      screen.getByLabelText("Set commercial course category to Facility training")
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course thumbnail URL"),
@@ -1311,7 +1342,7 @@ describe("commercial workflow pages", () => {
           method: "POST",
           body: expect.objectContaining({
             title: "Bloom Topdress Training",
-            category: "product_training",
+            category: "Facility training",
             description: "How to use the bloom topdress blend",
             thumbnailUrl: "https://example.com/bloom-course.jpg",
             bannerUrl: "https://example.com/bloom-banner.jpg",
@@ -1368,8 +1399,7 @@ describe("commercial workflow pages", () => {
             access: "paid",
             price: 49,
             stripeProductId: "prod_course_123",
-            stripePriceId: "price_course_123",
-            status: "draft"
+            stripePriceId: "price_course_123"
           })
         })
       )
@@ -1408,17 +1438,9 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("https://example.com/course-banner.jpg")).toBeTruthy();
     expect(screen.queryByText(/add banner/)).toBeNull();
 
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course detail status"),
-      "draft"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course detail access"),
-      "paid"
-    );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course detail category"),
-      "product_training"
+    fireEvent.press(screen.getByLabelText("Set commercial course detail access to Paid"));
+    fireEvent.press(
+      screen.getByLabelText("Set commercial course detail category to Facility training")
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course detail grow interests"),
@@ -1478,10 +1500,9 @@ describe("commercial workflow pages", () => {
         expect.objectContaining({
           method: "PATCH",
           body: expect.objectContaining({
-            status: "draft",
             access: "paid",
             price: 59,
-            category: "product_training",
+            category: "Facility training",
             growInterests: ["living soil", "dry amendments"],
             thumbnailUrl: "https://example.com/course-updated-thumb.jpg",
             bannerUrl: "https://example.com/course-updated-banner.jpg",
@@ -1506,9 +1527,8 @@ describe("commercial workflow pages", () => {
       screen.getByLabelText("Commercial course lesson body"),
       "Water in the topdress and check response."
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Commercial course lesson type"),
-      "assignment"
+    fireEvent.press(
+      screen.getByLabelText("Set commercial course lesson type to Assignment")
     );
     fireEvent.changeText(
       screen.getByLabelText("Commercial course lesson related products"),
@@ -1597,6 +1617,7 @@ describe("commercial workflow pages", () => {
         })
       )
     );
+    await waitFor(() => expect(screen.getByText("Lesson added.")).toBeTruthy());
 
     fireEvent.press(screen.getByLabelText("Publish commercial course"));
 
@@ -1608,6 +1629,44 @@ describe("commercial workflow pages", () => {
         })
       )
     );
+    const lifecycleCalls = mockApiRequest.mock.calls.map(([path, options]) => ({
+      path,
+      method: options?.method
+    }));
+    const publishCallIndex = lifecycleCalls.findIndex(
+      (call) =>
+        call.path === "/api/commercial/courses/course-1/publish" && call.method === "POST"
+    );
+    const saveBeforePublishIndex = lifecycleCalls
+      .slice(0, publishCallIndex)
+      .map((call, index) => ({ ...call, index }))
+      .filter(
+        (call) =>
+          call.path === "/api/commercial/courses/course-1" && call.method === "PATCH"
+      )
+      .at(-1)?.index;
+    expect(saveBeforePublishIndex).toBeDefined();
+    expect(saveBeforePublishIndex ?? Number.POSITIVE_INFINITY).toBeLessThan(
+      publishCallIndex
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Unpublish commercial course")).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Save commercial course detail")).toBeNull();
+    expect(screen.queryByLabelText("Add commercial course lesson")).toBeNull();
+    expect(screen.queryByLabelText("Edit lesson Water-in schedule")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Unpublish commercial course"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/courses/course-1/unpublish",
+        expect.objectContaining({ method: "POST" })
+      )
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText("Save commercial course detail")).toBeTruthy()
+    );
+    expect(screen.getByLabelText("Add commercial course lesson")).toBeTruthy();
   });
 
   it("renders the commercial owner learner preview for draft courses", async () => {

@@ -719,7 +719,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "clear not-configured guidance for unavailable third-party integrations",
       "connection-derived read-only EventSub status and checked Commercial Live visibility controls",
       "readable calendar selection with direct year, month, day, and optional time controls",
-      "single-flight review-first CSV and PDF catalog import with cross-platform status feedback"
+      "single-flight review-first CSV and PDF catalog import with cross-platform status feedback",
+      "server-enforced Commercial course readiness with draft-only creation, save-before-publish, explicit unpublish, and published-content mutation lock"
     ],
     [
       "Never cross workspace scope or invent product claims.",
@@ -774,7 +775,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never allow an author to type an integration into a connected state or expose Commercial Live visibility as unselected raw values.",
       "Never expose raw integration transport codes as workflow content or claim an integration is connected without verified configuration state.",
       "Never require an ordinary Commercial user to type an ISO date or date-time string.",
-      "Never depend on a native-only alert for Commercial catalog import fallback, permit duplicate concurrent extraction or draft-creation requests, accept a PDF extraction without a protected source URL, or imply an imported draft is published."
+      "Never depend on a native-only alert for Commercial catalog import fallback, permit duplicate concurrent extraction or draft-creation requests, accept a PDF extraction without a protected source URL, or imply an imported draft is published.",
+      "Never publish an incomplete or unsaved Commercial course, accept typed lifecycle state, mutate published course content in place, or silently coerce an invalid paid price to zero."
     ],
     ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
   ),

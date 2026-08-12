@@ -11,6 +11,7 @@ import {
   fetchProductLines,
   publishCommercialCourse,
   ProductLine,
+  unpublishCommercialCourse,
   updateCommercialCourse,
   updateCommercialCourseLesson
 } from "@/api/commercialWorkflows";
@@ -52,6 +53,31 @@ function appendIdList(value: string, id: string) {
   return ids.includes(id) ? ids.join(", ") : [...ids, id].join(", ");
 }
 
+const COURSE_ACCESS_OPTIONS = [
+  { value: "free", label: "Free" },
+  { value: "paid", label: "Paid" },
+  { value: "followers", label: "Followers only" },
+  { value: "customers", label: "Customers only" },
+  { value: "private", label: "Private" }
+] as const;
+
+const COURSE_CATEGORY_OPTIONS = [
+  { value: "Product education", label: "Product education" },
+  { value: "Grow methods", label: "Grow methods" },
+  { value: "Plant care", label: "Plant care" },
+  { value: "Live workshop", label: "Live workshop" },
+  { value: "Facility training", label: "Facility training" }
+] as const;
+
+const LESSON_TYPE_OPTIONS = [
+  { value: "video", label: "Video" },
+  { value: "article", label: "Article" },
+  { value: "tool", label: "Tool" },
+  { value: "recipe", label: "Recipe" },
+  { value: "live_replay", label: "Live replay" },
+  { value: "assignment", label: "Assignment" }
+] as const;
+
 function courseTitle(course: CommercialCourse | null) {
   return course?.title || "Commercial Course";
 }
@@ -63,8 +89,17 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
   if (!course.category?.trim()) warnings.push("add category");
   if (!course.description?.trim()) warnings.push("add description");
   if (!course.growInterests?.length) warnings.push("add grow interests");
+  if (!COURSE_ACCESS_OPTIONS.some(({ value }) => value === course.access)) {
+    warnings.push("choose access");
+  }
   if (!course.lessons?.length) warnings.push("add lesson");
   course.lessons?.forEach((lesson, index) => {
+    if (!lesson.title?.trim()) warnings.push(`lesson ${index + 1}: add title`);
+    if (
+      !LESSON_TYPE_OPTIONS.some(({ value }) => value === (lesson.lessonType || "video"))
+    ) {
+      warnings.push(`lesson ${index + 1}: choose lesson type`);
+    }
     lessonMediaPublishIssues(lesson).forEach((issue) =>
       warnings.push(`lesson ${index + 1}: ${issue}`)
     );
@@ -80,8 +115,12 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
 function blocksCoursePublish(warning: string) {
   if (warning.startsWith("lesson ")) return true;
   return [
+    "add thumbnail",
+    "add banner",
+    "add category",
     "add description",
     "add grow interests",
+    "choose access",
     "add lesson",
     "add paid price",
     "connect Stripe product",
@@ -128,7 +167,6 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   );
   const [course, setCourse] = useState<CommercialCourse | null>(null);
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
-  const [status, setStatus] = useState("");
   const [access, setAccess] = useState("");
   const [price, setPrice] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
@@ -165,7 +203,6 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
 
   const hydrate = useCallback((next: CommercialCourse | null) => {
     setCourse(next);
-    setStatus(next?.status || "draft");
     setAccess(next?.access || "free");
     setPrice(next?.price ? String(next.price) : "");
     setThumbnailUrl(next?.thumbnailUrl || "");
@@ -203,34 +240,47 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     load();
   }, [load]);
 
+  function paidCoursePrice() {
+    if (access !== "paid") return 0;
+    const amount = Number(price);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Enter a positive paid-course price before saving.");
+    }
+    return Math.round(amount * 100) / 100;
+  }
+
+  async function persistCourseDraft() {
+    const [persistedThumbnailUrl, persistedBannerUrl] = await Promise.all([
+      persistImageUri(thumbnailUrl.trim()),
+      persistImageUri(bannerUrl.trim())
+    ]);
+    const updated = await updateCommercialCourse(courseId, {
+      access: (access.trim() || "free") as CommercialCourse["access"],
+      price: paidCoursePrice(),
+      thumbnailUrl: persistedThumbnailUrl || undefined,
+      bannerUrl: persistedBannerUrl || undefined,
+      category: category.trim() || undefined,
+      growInterests: splitIds(growInterests),
+      description: description.trim(),
+      stripeProductId: stripeProductId.trim() || undefined,
+      stripePriceId: stripePriceId.trim() || undefined,
+      linkedProductIds: splitIds(linkedProductIds),
+      linkedProductLineIds: splitIds(linkedProductLineIds),
+      linkedTrialIds: splitIds(linkedGrowIds),
+      linkedGrowIds: splitIds(linkedGrowIds),
+      linkedLiveIds: splitIds(linkedLiveIds)
+    });
+    hydrate(updated);
+    return updated;
+  }
+
   async function saveChanges() {
     if (!courseId) return;
     setSaving(true);
     setMessage("");
     setError(null);
     try {
-      const [persistedThumbnailUrl, persistedBannerUrl] = await Promise.all([
-        persistImageUri(thumbnailUrl.trim()),
-        persistImageUri(bannerUrl.trim())
-      ]);
-      const updated = await updateCommercialCourse(courseId, {
-        status: (status.trim() || "draft") as CommercialCourse["status"],
-        access: (access.trim() || "free") as CommercialCourse["access"],
-        price: Number(price) || 0,
-        thumbnailUrl: persistedThumbnailUrl || undefined,
-        bannerUrl: persistedBannerUrl || undefined,
-        category: category.trim() || undefined,
-        growInterests: splitIds(growInterests),
-        description: description.trim(),
-        stripeProductId: stripeProductId.trim() || undefined,
-        stripePriceId: stripePriceId.trim() || undefined,
-        linkedProductIds: splitIds(linkedProductIds),
-        linkedProductLineIds: splitIds(linkedProductLineIds),
-        linkedTrialIds: splitIds(linkedGrowIds),
-        linkedGrowIds: splitIds(linkedGrowIds),
-        linkedLiveIds: splitIds(linkedLiveIds)
-      });
-      hydrate(updated);
+      await persistCourseDraft();
       setMessage("Commercial course updated.");
     } catch (err) {
       setError(err);
@@ -284,6 +334,15 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             uploadedVideo.url
           )
         : previewMedia;
+      const taskDueOffsetDays = lessonTaskTitle.trim()
+        ? Number(lessonTaskDueOffsetDays || 0)
+        : 0;
+      if (
+        lessonTaskTitle.trim() &&
+        (!Number.isInteger(taskDueOffsetDays) || taskDueOffsetDays < 0)
+      ) {
+        throw new Error("Task due offset must be a whole number of zero days or more.");
+      }
       const lessonPayload = {
         title: lessonTitle.trim(),
         body: lessonBody.trim(),
@@ -313,7 +372,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
               linkedProductIds: splitIds(lessonRelatedProductIds),
               linkedLiveIds: splitIds(lessonRelatedLiveIds),
               linkedForumThreadId: lessonForumThreadId.trim() || undefined,
-              dueOffsetDays: Number(lessonTaskDueOffsetDays) || 0,
+              dueOffsetDays: taskDueOffsetDays,
               reminderPlan: { label: "24 hours before", channels: ["in_app"] },
               requiresProof: false,
               requiresApproval: false,
@@ -437,6 +496,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setMessage("");
     setError(null);
     try {
+      await persistCourseDraft();
       hydrate(await publishCommercialCourse(courseId));
       setMessage("Course published.");
     } catch (err) {
@@ -446,12 +506,28 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     }
   }
 
+  async function unpublishCourse() {
+    if (!courseId) return;
+    setPublishing(true);
+    setMessage("");
+    setError(null);
+    try {
+      hydrate(await unpublishCommercialCourse(courseId));
+      cancelLessonEdit();
+      setMessage("Course returned to draft. Editing is available again.");
+    } catch (err) {
+      setError(err);
+    } finally {
+      setPublishing(false);
+    }
+  }
+
   const lessons = Array.isArray(course?.lessons) ? course.lessons : [];
+  const parsedPrice = Number(price);
   const setupWarnings = courseSetupWarnings({
     ...course,
-    status: (status.trim() || course?.status || "draft") as CommercialCourse["status"],
     access: (access.trim() || course?.access || "free") as CommercialCourse["access"],
-    price: Number(price) || 0,
+    price: Number.isFinite(parsedPrice) && parsedPrice > 0 ? parsedPrice : 0,
     thumbnailUrl,
     bannerUrl,
     category,
@@ -467,6 +543,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     lessons
   });
   const publishBlocked = setupWarnings.some(blocksCoursePublish);
+  const coursePublished = course?.status === "published";
+  const courseBusy = saving || addingLesson || publishing;
 
   if (learnerPreview) {
     return (
@@ -629,256 +707,338 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
       </AppCard>
 
       <AppCard>
-        <Text style={styles.cardTitle}>Update Commercial Course</Text>
-        <View style={styles.formGrid}>
-          <TextInput
-            accessibilityLabel="Commercial course detail status"
-            onChangeText={setStatus}
-            placeholder="draft, published, archived"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={status}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course detail access"
-            onChangeText={setAccess}
-            placeholder="free, paid, followers, customers, private"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={access}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course detail category"
-            onChangeText={setCategory}
-            placeholder="product_education, live_workshop, facility_training"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={category}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course detail grow interests"
-            onChangeText={setGrowInterests}
-            placeholder="Grow interests for discovery and campaigns"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={growInterests}
-          />
-        </View>
-        <View style={styles.formGrid}>
-          <TextInput
-            accessibilityLabel="Commercial course detail thumbnail URL"
-            autoCapitalize="none"
-            onChangeText={setThumbnailUrl}
-            placeholder="Thumbnail URL for storefront cards"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={thumbnailUrl}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course detail banner URL"
-            autoCapitalize="none"
-            onChangeText={setBannerUrl}
-            placeholder="Banner URL for public course page"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={bannerUrl}
-          />
-        </View>
-        <View style={styles.mediaTools}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Upload commercial course detail thumbnail"
-            disabled={saving}
-            onPress={() => pickCourseImage("thumbnailUrl")}
-            style={[styles.mediaButton, saving && styles.disabled]}
-          >
-            <Text style={styles.mediaButtonText}>Upload thumbnail</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Upload commercial course detail banner"
-            disabled={saving}
-            onPress={() => pickCourseImage("bannerUrl")}
-            style={[styles.mediaButton, saving && styles.disabled]}
-          >
-            <Text style={styles.mediaButtonText}>Upload banner</Text>
-          </Pressable>
-          {thumbnailUrl ? (
+        <Text style={styles.cardTitle}>
+          {coursePublished ? "Published Commercial Course" : "Update Commercial Course"}
+        </Text>
+        {coursePublished ? (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningTitle}>Published content is locked</Text>
+            <Text style={styles.warningText}>
+              Learners keep a stable course while it is published. Return it to draft
+              before changing course details or lessons; purchases and lesson history are
+              preserved.
+            </Text>
             <Pressable
+              accessibilityLabel="Unpublish commercial course"
               accessibilityRole="button"
-              accessibilityLabel="Clear commercial course detail thumbnail"
-              disabled={saving}
-              onPress={() => setThumbnailUrl("")}
-              style={styles.clearButton}
+              disabled={courseBusy || !courseId}
+              onPress={unpublishCourse}
+              style={[
+                styles.secondaryAction,
+                courseBusy || !courseId ? styles.disabled : null
+              ]}
             >
-              <Text style={styles.clearButtonText}>Clear thumbnail</Text>
+              <Text style={styles.secondaryActionText}>
+                {publishing ? "Returning to draft..." : "Unpublish Course"}
+              </Text>
             </Pressable>
-          ) : null}
-          {bannerUrl ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Clear commercial course detail banner"
-              disabled={saving}
-              onPress={() => setBannerUrl("")}
-              style={styles.clearButton}
-            >
-              <Text style={styles.clearButtonText}>Clear banner</Text>
-            </Pressable>
-          ) : null}
-        </View>
-        {thumbnailUrl || bannerUrl ? (
-          <View style={styles.previewGrid}>
-            {thumbnailUrl ? (
-              <Image
-                accessibilityLabel="Commercial course detail thumbnail preview"
-                resizeMode="cover"
-                source={{ uri: resolveImageUri(thumbnailUrl) }}
-                style={styles.thumbnailPreview}
-              />
-            ) : null}
-            {bannerUrl ? (
-              <Image
-                accessibilityLabel="Commercial course detail banner preview"
-                resizeMode="cover"
-                source={{ uri: resolveImageUri(bannerUrl) }}
-                style={styles.bannerPreview}
-              />
-            ) : null}
           </View>
-        ) : null}
-        <TextInput
-          accessibilityLabel="Commercial course detail description"
-          multiline
-          onChangeText={setDescription}
-          placeholder="Course description and use case"
-          placeholderTextColor={palette.textMuted}
-          style={[styles.input, styles.textArea]}
-          value={description}
-        />
-        <View style={styles.formGrid}>
-          <TextInput
-            accessibilityLabel="Commercial course detail price"
-            keyboardType="decimal-pad"
-            onChangeText={setPrice}
-            placeholder="Paid course price"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={price}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course detail Stripe product ID"
-            autoCapitalize="none"
-            onChangeText={setStripeProductId}
-            placeholder="Stripe product ID for paid course"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={stripeProductId}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course detail Stripe price ID"
-            autoCapitalize="none"
-            onChangeText={setStripePriceId}
-            placeholder="Stripe price ID for paid course"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={stripePriceId}
-          />
-        </View>
-        <TextInput
-          accessibilityLabel="Commercial course detail linked products"
-          onChangeText={setLinkedProductIds}
-          placeholder="Linked product IDs"
-          placeholderTextColor={palette.textMuted}
-          style={styles.input}
-          value={linkedProductIds}
-        />
-        <TextInput
-          accessibilityLabel="Commercial course detail linked product lines"
-          onChangeText={setLinkedProductLineIds}
-          placeholder="Linked product line IDs, or choose below"
-          placeholderTextColor={palette.textMuted}
-          style={styles.input}
-          value={linkedProductLineIds}
-        />
-        {productLines.length ? (
-          <View style={styles.lineSelector}>
-            <Text style={styles.selectorLabel}>Choose Product Line</Text>
-            <View style={styles.selectorActions}>
-              {productLines.slice(0, 4).map((line) => {
-                const id = productLineId(line);
-                const name = line.name || "Product line";
-                const selected = splitIds(linkedProductLineIds).includes(id);
-                return (
-                  <Pressable
-                    key={`course-detail-line-${id || name}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Use course detail product line ${name}`}
-                    onPress={() =>
-                      setLinkedProductLineIds((current) => appendIdList(current, id))
-                    }
-                    style={[styles.action, selected && styles.actionSelected]}
+        ) : (
+          <>
+            <Text style={styles.selectorLabel}>Course access</Text>
+            <View
+              style={styles.actions}
+              accessibilityRole="radiogroup"
+              accessibilityLabel="Commercial course detail access"
+            >
+              {COURSE_ACCESS_OPTIONS.map(({ value, label }) => (
+                <Pressable
+                  key={value}
+                  accessibilityRole="radio"
+                  accessibilityLabel={`Set commercial course detail access to ${label}`}
+                  aria-checked={access === value}
+                  accessibilityState={{ checked: access === value, disabled: courseBusy }}
+                  disabled={courseBusy}
+                  onPress={() => setAccess(value)}
+                  style={[styles.action, access === value ? styles.actionSelected : null]}
+                >
+                  <Text
+                    style={[
+                      styles.actionText,
+                      access === value ? styles.actionTextSelected : null
+                    ]}
                   >
-                    <Text
-                      style={[
-                        styles.actionText,
-                        selected ? styles.actionTextSelected : null
-                      ]}
-                    >
-                      {name}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+                    {label}
+                  </Text>
+                </Pressable>
+              ))}
             </View>
-          </View>
-        ) : null}
-        <TextInput
-          accessibilityLabel="Commercial course detail linked evidence runs"
-          onChangeText={setLinkedGrowIds}
-          placeholder="Linked evidence run IDs"
-          placeholderTextColor={palette.textMuted}
-          style={styles.input}
-          value={linkedGrowIds}
-        />
-        <TextInput
-          accessibilityLabel="Commercial course detail linked lives"
-          onChangeText={setLinkedLiveIds}
-          placeholder="Linked live IDs"
-          placeholderTextColor={palette.textMuted}
-          style={styles.input}
-          value={linkedLiveIds}
-        />
-        <View style={styles.actions}>
-          <Pressable
-            accessibilityLabel="Save commercial course detail"
-            accessibilityRole="button"
-            disabled={saving || !courseId}
-            onPress={saveChanges}
-            style={[styles.primaryAction, saving || !courseId ? styles.disabled : null]}
-          >
-            <Text style={styles.primaryActionText}>
-              {saving ? "Saving..." : "Save Course"}
-            </Text>
-          </Pressable>
-          <Pressable
-            accessibilityLabel="Publish commercial course"
-            accessibilityRole="button"
-            disabled={publishing || !courseId || publishBlocked}
-            onPress={publishCourse}
-            style={[
-              styles.secondaryAction,
-              publishing || !courseId || publishBlocked ? styles.disabled : null
-            ]}
-          >
-            <Text style={styles.secondaryActionText}>
-              {publishing ? "Publishing..." : "Publish"}
-            </Text>
-          </Pressable>
-        </View>
+            <Text style={styles.selectorLabel}>Course category</Text>
+            <View
+              style={styles.actions}
+              accessibilityRole="radiogroup"
+              accessibilityLabel="Commercial course detail category"
+            >
+              {COURSE_CATEGORY_OPTIONS.map(({ value, label }) => (
+                <Pressable
+                  key={value}
+                  accessibilityRole="radio"
+                  accessibilityLabel={`Set commercial course detail category to ${label}`}
+                  aria-checked={category === value}
+                  accessibilityState={{
+                    checked: category === value,
+                    disabled: courseBusy
+                  }}
+                  disabled={courseBusy}
+                  onPress={() => setCategory(value)}
+                  style={[
+                    styles.action,
+                    category === value ? styles.actionSelected : null
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.actionText,
+                      category === value ? styles.actionTextSelected : null
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <View style={styles.formGrid}>
+              <TextInput
+                accessibilityLabel="Commercial course detail grow interests"
+                onChangeText={setGrowInterests}
+                placeholder="Grow interests for discovery and campaigns"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={growInterests}
+              />
+            </View>
+            <View style={styles.formGrid}>
+              <TextInput
+                accessibilityLabel="Commercial course detail thumbnail URL"
+                autoCapitalize="none"
+                onChangeText={setThumbnailUrl}
+                placeholder="Thumbnail URL for storefront cards"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={thumbnailUrl}
+              />
+              <TextInput
+                accessibilityLabel="Commercial course detail banner URL"
+                autoCapitalize="none"
+                onChangeText={setBannerUrl}
+                placeholder="Banner URL for public course page"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={bannerUrl}
+              />
+            </View>
+            <View style={styles.mediaTools}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Upload commercial course detail thumbnail"
+                disabled={courseBusy}
+                onPress={() => pickCourseImage("thumbnailUrl")}
+                style={[styles.mediaButton, courseBusy && styles.disabled]}
+              >
+                <Text style={styles.mediaButtonText}>Upload thumbnail</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Upload commercial course detail banner"
+                disabled={courseBusy}
+                onPress={() => pickCourseImage("bannerUrl")}
+                style={[styles.mediaButton, courseBusy && styles.disabled]}
+              >
+                <Text style={styles.mediaButtonText}>Upload banner</Text>
+              </Pressable>
+              {thumbnailUrl ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear commercial course detail thumbnail"
+                  disabled={courseBusy}
+                  onPress={() => setThumbnailUrl("")}
+                  style={styles.clearButton}
+                >
+                  <Text style={styles.clearButtonText}>Clear thumbnail</Text>
+                </Pressable>
+              ) : null}
+              {bannerUrl ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear commercial course detail banner"
+                  disabled={courseBusy}
+                  onPress={() => setBannerUrl("")}
+                  style={styles.clearButton}
+                >
+                  <Text style={styles.clearButtonText}>Clear banner</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {thumbnailUrl || bannerUrl ? (
+              <View style={styles.previewGrid}>
+                {thumbnailUrl ? (
+                  <Image
+                    accessibilityLabel="Commercial course detail thumbnail preview"
+                    resizeMode="cover"
+                    source={{ uri: resolveImageUri(thumbnailUrl) }}
+                    style={styles.thumbnailPreview}
+                  />
+                ) : null}
+                {bannerUrl ? (
+                  <Image
+                    accessibilityLabel="Commercial course detail banner preview"
+                    resizeMode="cover"
+                    source={{ uri: resolveImageUri(bannerUrl) }}
+                    style={styles.bannerPreview}
+                  />
+                ) : null}
+              </View>
+            ) : null}
+            <TextInput
+              accessibilityLabel="Commercial course detail description"
+              multiline
+              onChangeText={setDescription}
+              placeholder="Course description and use case"
+              placeholderTextColor={palette.textMuted}
+              style={[styles.input, styles.textArea]}
+              value={description}
+            />
+            <View style={styles.formGrid}>
+              <TextInput
+                accessibilityLabel="Commercial course detail price"
+                keyboardType="decimal-pad"
+                onChangeText={setPrice}
+                placeholder="Paid course price"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={price}
+              />
+              <TextInput
+                accessibilityLabel="Commercial course detail Stripe product ID"
+                autoCapitalize="none"
+                onChangeText={setStripeProductId}
+                placeholder="Stripe product ID for paid course"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={stripeProductId}
+              />
+              <TextInput
+                accessibilityLabel="Commercial course detail Stripe price ID"
+                autoCapitalize="none"
+                onChangeText={setStripePriceId}
+                placeholder="Stripe price ID for paid course"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={stripePriceId}
+              />
+            </View>
+            <TextInput
+              accessibilityLabel="Commercial course detail linked products"
+              onChangeText={setLinkedProductIds}
+              placeholder="Linked product IDs"
+              placeholderTextColor={palette.textMuted}
+              style={styles.input}
+              value={linkedProductIds}
+            />
+            <TextInput
+              accessibilityLabel="Commercial course detail linked product lines"
+              onChangeText={setLinkedProductLineIds}
+              placeholder="Linked product line IDs, or choose below"
+              placeholderTextColor={palette.textMuted}
+              style={styles.input}
+              value={linkedProductLineIds}
+            />
+            {productLines.length ? (
+              <View style={styles.lineSelector}>
+                <Text style={styles.selectorLabel}>Choose Product Line</Text>
+                <View style={styles.selectorActions}>
+                  {productLines.slice(0, 4).map((line) => {
+                    const id = productLineId(line);
+                    const name = line.name || "Product line";
+                    const selected = splitIds(linkedProductLineIds).includes(id);
+                    return (
+                      <Pressable
+                        key={`course-detail-line-${id || name}`}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Use course detail product line ${name}`}
+                        accessibilityState={{ disabled: courseBusy, selected }}
+                        disabled={courseBusy}
+                        onPress={() =>
+                          setLinkedProductLineIds((current) => appendIdList(current, id))
+                        }
+                        style={[
+                          styles.action,
+                          selected && styles.actionSelected,
+                          courseBusy && styles.disabled
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.actionText,
+                            selected ? styles.actionTextSelected : null
+                          ]}
+                        >
+                          {name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
+            <TextInput
+              accessibilityLabel="Commercial course detail linked evidence runs"
+              onChangeText={setLinkedGrowIds}
+              placeholder="Linked evidence run IDs"
+              placeholderTextColor={palette.textMuted}
+              style={styles.input}
+              value={linkedGrowIds}
+            />
+            <TextInput
+              accessibilityLabel="Commercial course detail linked lives"
+              onChangeText={setLinkedLiveIds}
+              placeholder="Linked live IDs"
+              placeholderTextColor={palette.textMuted}
+              style={styles.input}
+              value={linkedLiveIds}
+            />
+            <View style={styles.actions}>
+              <Pressable
+                accessibilityLabel="Save commercial course detail"
+                accessibilityRole="button"
+                disabled={courseBusy || !courseId}
+                onPress={saveChanges}
+                style={[
+                  styles.primaryAction,
+                  courseBusy || !courseId ? styles.disabled : null
+                ]}
+              >
+                <Text style={styles.primaryActionText}>
+                  {saving ? "Saving..." : "Save Course"}
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityLabel="Publish commercial course"
+                accessibilityRole="button"
+                disabled={courseBusy || !courseId || publishBlocked}
+                onPress={publishCourse}
+                style={[
+                  styles.secondaryAction,
+                  courseBusy || !courseId || publishBlocked ? styles.disabled : null
+                ]}
+              >
+                <Text style={styles.secondaryActionText}>
+                  {publishing ? "Saving & publishing..." : "Save & Publish Course"}
+                </Text>
+              </Pressable>
+            </View>
+          </>
+        )}
       </AppCard>
 
       <AppCard>
         <Text style={styles.cardTitle}>Lessons</Text>
+        {coursePublished ? (
+          <Text style={styles.muted}>
+            Lessons are read-only while this course is published. Unpublish the course to
+            add, edit, or remove lessons.
+          </Text>
+        ) : null}
         {lessons.length ? (
           <View style={styles.list}>
             {lessons.map((lesson, index) => (
@@ -917,55 +1077,61 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
                       .join(" | ")}
                   </Text>
                 ) : null}
-                <View style={styles.actions}>
-                  <Pressable
-                    accessibilityLabel={`Edit lesson ${lesson.title || index + 1}`}
-                    accessibilityRole="button"
-                    disabled={addingLesson}
-                    onPress={() => editLesson(lesson)}
-                    style={styles.secondaryAction}
-                  >
-                    <Text style={styles.secondaryActionText}>Edit</Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityLabel={`Remove lesson ${lesson.title || index + 1}`}
-                    accessibilityRole="button"
-                    disabled={addingLesson}
-                    onPress={() => setDeleteLessonId(cleanId(lesson.id || lesson._id))}
-                    style={styles.dangerAction}
-                  >
-                    <Text style={styles.dangerActionText}>Remove</Text>
-                  </Pressable>
-                </View>
-                {deleteLessonId === cleanId(lesson.id || lesson._id) ? (
-                  <View style={styles.warningBox}>
-                    <Text style={styles.warningTitle}>Remove this lesson?</Text>
-                    <Text style={styles.warningText}>
-                      The lesson will be removed from the course. A reusable Video Library
-                      item will remain available.
-                    </Text>
+                {!coursePublished ? (
+                  <>
                     <View style={styles.actions}>
                       <Pressable
-                        accessibilityLabel={`Confirm removal of lesson ${lesson.title || index + 1}`}
+                        accessibilityLabel={`Edit lesson ${lesson.title || index + 1}`}
                         accessibilityRole="button"
-                        disabled={addingLesson}
+                        disabled={courseBusy}
+                        onPress={() => editLesson(lesson)}
+                        style={styles.secondaryAction}
+                      >
+                        <Text style={styles.secondaryActionText}>Edit</Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityLabel={`Remove lesson ${lesson.title || index + 1}`}
+                        accessibilityRole="button"
+                        disabled={courseBusy}
                         onPress={() =>
-                          void removeLesson(cleanId(lesson.id || lesson._id))
+                          setDeleteLessonId(cleanId(lesson.id || lesson._id))
                         }
                         style={styles.dangerAction}
                       >
-                        <Text style={styles.dangerActionText}>Confirm Remove</Text>
-                      </Pressable>
-                      <Pressable
-                        accessibilityRole="button"
-                        disabled={addingLesson}
-                        onPress={() => setDeleteLessonId("")}
-                        style={styles.secondaryAction}
-                      >
-                        <Text style={styles.secondaryActionText}>Keep Lesson</Text>
+                        <Text style={styles.dangerActionText}>Remove</Text>
                       </Pressable>
                     </View>
-                  </View>
+                    {deleteLessonId === cleanId(lesson.id || lesson._id) ? (
+                      <View style={styles.warningBox}>
+                        <Text style={styles.warningTitle}>Remove this lesson?</Text>
+                        <Text style={styles.warningText}>
+                          The lesson will be removed from the course. A reusable Video
+                          Library item will remain available.
+                        </Text>
+                        <View style={styles.actions}>
+                          <Pressable
+                            accessibilityLabel={`Confirm removal of lesson ${lesson.title || index + 1}`}
+                            accessibilityRole="button"
+                            disabled={courseBusy}
+                            onPress={() =>
+                              void removeLesson(cleanId(lesson.id || lesson._id))
+                            }
+                            style={styles.dangerAction}
+                          >
+                            <Text style={styles.dangerActionText}>Confirm Remove</Text>
+                          </Pressable>
+                          <Pressable
+                            accessibilityRole="button"
+                            disabled={courseBusy}
+                            onPress={() => setDeleteLessonId("")}
+                            style={styles.secondaryAction}
+                          >
+                            <Text style={styles.secondaryActionText}>Keep Lesson</Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    ) : null}
+                  </>
                 ) : null}
               </View>
             ))}
@@ -973,134 +1139,164 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         ) : (
           <Text style={styles.muted}>No lessons yet.</Text>
         )}
-        <TextInput
-          accessibilityLabel="Commercial course lesson title"
-          onChangeText={setLessonTitle}
-          placeholder="Lesson title"
-          placeholderTextColor={palette.textMuted}
-          style={styles.input}
-          value={lessonTitle}
-        />
-        <TextInput
-          accessibilityLabel="Commercial course lesson body"
-          multiline
-          onChangeText={setLessonBody}
-          placeholder="Lesson body, product instructions, trial evidence, support notes"
-          placeholderTextColor={palette.textMuted}
-          style={[styles.input, styles.textArea]}
-          value={lessonBody}
-        />
-        <LessonMediaSourceEditor
-          value={lessonMediaDraft}
-          onChange={setLessonMediaDraft}
-          disabled={addingLesson}
-          onPickUpload={pickLessonVideo}
-          pendingUploadName={lessonVideoFile?.fileName || lessonVideoFile?.name || ""}
-          onRemove={() => {
-            setLessonVideoFile(null);
-            setLessonVideoAssetId("");
-            setLessonMediaDraft(emptyLessonMediaDraft());
-          }}
-        />
-        <VideoLibraryPicker
-          selectedId={lessonVideoAssetId}
-          disabled={addingLesson}
-          onSelect={(video) => {
-            setLessonVideoFile(null);
-            setLessonVideoAssetId(video?.id || "");
-            setLessonMediaDraft(
-              video ? lessonMediaDraftFromLesson(video) : emptyLessonMediaDraft()
-            );
-          }}
-        />
-        <View style={styles.formGrid}>
-          <TextInput
-            accessibilityLabel="Commercial course lesson type"
-            onChangeText={setLessonType}
-            placeholder="video, article, tool, recipe, live replay, assignment"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={lessonType}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course lesson related products"
-            onChangeText={setLessonRelatedProductIds}
-            placeholder="Related product IDs"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={lessonRelatedProductIds}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course lesson documents"
-            autoCapitalize="none"
-            onChangeText={setLessonDocumentUrls}
-            placeholder="Document URLs, comma separated"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={lessonDocumentUrls}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course lesson related lives"
-            onChangeText={setLessonRelatedLiveIds}
-            placeholder="Related live IDs"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={lessonRelatedLiveIds}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course lesson Forum Q&A thread"
-            onChangeText={setLessonForumThreadId}
-            placeholder="Forum/Q&A thread ID"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={lessonForumThreadId}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course lesson task title"
-            onChangeText={setLessonTaskTitle}
-            placeholder="Task created by this lesson"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={lessonTaskTitle}
-          />
-          <TextInput
-            accessibilityLabel="Commercial course lesson task due offset days"
-            keyboardType="numeric"
-            onChangeText={setLessonTaskDueOffsetDays}
-            placeholder="Task due offset days"
-            placeholderTextColor={palette.textMuted}
-            style={styles.input}
-            value={lessonTaskDueOffsetDays}
-          />
-        </View>
-        <Pressable
-          accessibilityLabel="Add commercial course lesson"
-          accessibilityRole="button"
-          disabled={addingLesson || !lessonTitle.trim()}
-          onPress={addLesson}
-          style={[
-            styles.primaryAction,
-            addingLesson || !lessonTitle.trim() ? styles.disabled : null
-          ]}
-        >
-          <Text style={styles.primaryActionText}>
-            {addingLesson
-              ? "Saving..."
-              : editingLessonId
-                ? "Save Lesson Changes"
-                : "Add Lesson"}
-          </Text>
-        </Pressable>
-        {editingLessonId ? (
-          <Pressable
-            accessibilityLabel="Cancel lesson edit"
-            accessibilityRole="button"
-            disabled={addingLesson}
-            onPress={cancelLessonEdit}
-            style={styles.secondaryAction}
-          >
-            <Text style={styles.secondaryActionText}>Cancel Edit</Text>
-          </Pressable>
+        {!coursePublished ? (
+          <>
+            <TextInput
+              accessibilityLabel="Commercial course lesson title"
+              onChangeText={setLessonTitle}
+              placeholder="Lesson title"
+              placeholderTextColor={palette.textMuted}
+              style={styles.input}
+              value={lessonTitle}
+            />
+            <TextInput
+              accessibilityLabel="Commercial course lesson body"
+              multiline
+              onChangeText={setLessonBody}
+              placeholder="Lesson body, product instructions, trial evidence, support notes"
+              placeholderTextColor={palette.textMuted}
+              style={[styles.input, styles.textArea]}
+              value={lessonBody}
+            />
+            <LessonMediaSourceEditor
+              value={lessonMediaDraft}
+              onChange={setLessonMediaDraft}
+              disabled={courseBusy}
+              onPickUpload={pickLessonVideo}
+              pendingUploadName={lessonVideoFile?.fileName || lessonVideoFile?.name || ""}
+              onRemove={() => {
+                setLessonVideoFile(null);
+                setLessonVideoAssetId("");
+                setLessonMediaDraft(emptyLessonMediaDraft());
+              }}
+            />
+            <VideoLibraryPicker
+              selectedId={lessonVideoAssetId}
+              disabled={courseBusy}
+              onSelect={(video) => {
+                setLessonVideoFile(null);
+                setLessonVideoAssetId(video?.id || "");
+                setLessonMediaDraft(
+                  video ? lessonMediaDraftFromLesson(video) : emptyLessonMediaDraft()
+                );
+              }}
+            />
+            <Text style={styles.selectorLabel}>Lesson type</Text>
+            <View
+              style={styles.actions}
+              accessibilityRole="radiogroup"
+              accessibilityLabel="Commercial course lesson type"
+            >
+              {LESSON_TYPE_OPTIONS.map(({ value, label }) => (
+                <Pressable
+                  key={value}
+                  accessibilityRole="radio"
+                  accessibilityLabel={`Set commercial course lesson type to ${label}`}
+                  aria-checked={lessonType === value}
+                  accessibilityState={{
+                    checked: lessonType === value,
+                    disabled: courseBusy
+                  }}
+                  disabled={courseBusy}
+                  onPress={() => setLessonType(value)}
+                  style={[
+                    styles.action,
+                    lessonType === value ? styles.actionSelected : null
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.actionText,
+                      lessonType === value ? styles.actionTextSelected : null
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <View style={styles.formGrid}>
+              <TextInput
+                accessibilityLabel="Commercial course lesson related products"
+                onChangeText={setLessonRelatedProductIds}
+                placeholder="Related product IDs"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={lessonRelatedProductIds}
+              />
+              <TextInput
+                accessibilityLabel="Commercial course lesson documents"
+                autoCapitalize="none"
+                onChangeText={setLessonDocumentUrls}
+                placeholder="Document URLs, comma separated"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={lessonDocumentUrls}
+              />
+              <TextInput
+                accessibilityLabel="Commercial course lesson related lives"
+                onChangeText={setLessonRelatedLiveIds}
+                placeholder="Related live IDs"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={lessonRelatedLiveIds}
+              />
+              <TextInput
+                accessibilityLabel="Commercial course lesson Forum Q&A thread"
+                onChangeText={setLessonForumThreadId}
+                placeholder="Forum/Q&A thread ID"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={lessonForumThreadId}
+              />
+              <TextInput
+                accessibilityLabel="Commercial course lesson task title"
+                onChangeText={setLessonTaskTitle}
+                placeholder="Task created by this lesson"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={lessonTaskTitle}
+              />
+              <TextInput
+                accessibilityLabel="Commercial course lesson task due offset days"
+                keyboardType="numeric"
+                onChangeText={setLessonTaskDueOffsetDays}
+                placeholder="Task due offset days"
+                placeholderTextColor={palette.textMuted}
+                style={styles.input}
+                value={lessonTaskDueOffsetDays}
+              />
+            </View>
+            <Pressable
+              accessibilityLabel="Add commercial course lesson"
+              accessibilityRole="button"
+              disabled={courseBusy || !lessonTitle.trim()}
+              onPress={addLesson}
+              style={[
+                styles.primaryAction,
+                courseBusy || !lessonTitle.trim() ? styles.disabled : null
+              ]}
+            >
+              <Text style={styles.primaryActionText}>
+                {addingLesson
+                  ? "Saving..."
+                  : editingLessonId
+                    ? "Save Lesson Changes"
+                    : "Add Lesson"}
+              </Text>
+            </Pressable>
+            {editingLessonId ? (
+              <Pressable
+                accessibilityLabel="Cancel lesson edit"
+                accessibilityRole="button"
+                disabled={courseBusy}
+                onPress={cancelLessonEdit}
+                style={styles.secondaryAction}
+              >
+                <Text style={styles.secondaryActionText}>Cancel Edit</Text>
+              </Pressable>
+            ) : null}
+          </>
         ) : null}
       </AppCard>
 
