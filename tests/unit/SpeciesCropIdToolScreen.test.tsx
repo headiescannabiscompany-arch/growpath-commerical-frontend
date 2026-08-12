@@ -196,9 +196,13 @@ jest.mock("@/api/fieldStudies", () => ({
   updateFieldStudy: (...args: any[]) => mockUpdateFieldStudy(...args)
 }));
 
-jest.mock("@/utils/locationSearch", () => ({
-  requestCurrentCoordinates: (...args: any[]) => mockRequestCurrentCoordinates(...args)
-}));
+jest.mock("@/utils/locationSearch", () => {
+  const actual = jest.requireActual("@/utils/locationSearch");
+  return {
+    ...actual,
+    requestCurrentCoordinates: (...args: any[]) => mockRequestCurrentCoordinates(...args)
+  };
+});
 
 jest.mock("@/api/growpathModules", () => ({
   createGrowpathModuleRecord: (...args: any[]) => mockCreateGrowpathModuleRecord(...args),
@@ -3898,6 +3902,22 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     expect(mockCreateFieldObservation).not.toHaveBeenCalled();
     expect(mockCreateFieldStudy).not.toHaveBeenCalled();
+  });
+
+  it("allows a private manual pin when device geolocation is unavailable", async () => {
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Place Pin on Map"));
+    fireEvent.changeText(screen.getByLabelText("Plant latitude"), "39.2904");
+    fireEvent.changeText(screen.getByLabelText("Plant longitude"), "-76.6122");
+    fireEvent.press(screen.getByText("Use These Coordinates Privately"));
+
+    expect(
+      await screen.findByText(/selected point is ready to save privately/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/Exact location is ready to save privately/)).toBeTruthy();
+    expect(mockRequestCurrentCoordinates).not.toHaveBeenCalled();
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
   });
 
   it("does not start identification while a private location request is active", async () => {

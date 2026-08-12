@@ -45,7 +45,7 @@ function normalizeQualityWarnings(value: any) {
   if (!Array.isArray(value?.qualityWarnings)) return [];
   return value.qualityWarnings
     .map(String)
-    .filter((warning) => !RETIRED_EVIDENCE_QUALITY_WARNINGS.has(warning));
+    .filter((warning: string) => !RETIRED_EVIDENCE_QUALITY_WARNINGS.has(warning));
 }
 
 function normalizeEvidenceAsset(value: any): EvidenceAsset {

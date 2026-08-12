@@ -2,7 +2,9 @@
 
 Date: 2026-08-08
 
-Status: Active execution list
+Status: Active execution list; reconciled against retained production evidence on
+2026-08-12. A checked sub-scope stays checked even when its larger end-to-end workflow
+has a separately named open remainder.
 
 This is the single authoritative list of unfinished release work. Historical TODOs,
 evidence records, matrices, and numbered implementation ledgers remain useful as
@@ -20,6 +22,34 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   failures, payment events, screenshots, or populated production records.
 - Commit and push each coherent tested section. Record deployment and live evidence
   separately.
+
+## Verified closures retained by this audit
+
+- [x] Auto theme no longer requests device location on startup. Production frontend
+      `d84b0c80` resolves Auto from saved sunrise/sunset coordinates when the user has
+      deliberately saved them, otherwise from local clock time; signed-in production
+      showed `AUTO / Resolved: DAY` during the daytime verification.
+- [x] Retained Plant ID photo/video analysis, server frame extraction, exact-evidence
+      Saved Run reload, correction provenance, one-credit billing/refund behavior, and
+      no-grow operation have production evidence. These are not reopened by the still-open
+      public Nature publication check.
+- [x] The current Personal and Facility Viewer route-level sweep is complete: 24 Personal
+      and 24 Facility destinations rendered their expected heading, Back control, and no
+      visible load/access/not-found failure under frontend `a198141e`. Mutation and mobile
+      acceptance remain separate open work.
+- [x] Facility credit ownership and the retained Owner/Manager/Staff/Viewer shared-task
+      chain are production-verified. The Facility showed its own 2000/2000 balance rather
+      than the member's Personal balance; role-specific mutation controls and the shared
+      task history persisted. Forced backend 403 capture remains separate open evidence.
+- [x] Commercial Feed/Campaigns and Tasks have the shared themed Back control in production
+      under frontend `79c6dba2`; the signed-in route sweep also found no visible route/load
+      failure. Populated Commercial mutations remain separate open work.
+- [x] The governed Diagnosis/IPM catalog assembly is complete at 252 reviewed cases and
+      504 rights-reviewed images. Executing all cases against authorized staging remains a
+      separate open action because it spends credits and writes records.
+- [x] GrowPathAI and Triple Bag Genetics hat concept assets, hashes, brand manifests, and
+      production brief are retained. They remain zero-stock, unpriced, non-checkout drafts;
+      public purchase-intent testing and Triple Bag rights review remain open.
 
 ## A. AI image, video, and diagnostic quality
 
