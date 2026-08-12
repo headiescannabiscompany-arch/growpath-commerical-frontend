@@ -125,6 +125,9 @@ describe("GrowPath knowledge registries", () => {
       "visible sampled-head estimate split into clear, cloudy, amber, and cloudy-or-glare with exact region basis and an explicit no-whole-plant-percentage boundary"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "server-calculated visible-sample percentage from non-overlapping per-original resolved-head tallies, including counted-head total and low, medium, or high counting confidence"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "explicit user-date or breeder-timing planning range with separate reasons the window may be open, reasons to wait, missing evidence, confidence, and a non-trichome-date boundary"
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
@@ -144,6 +147,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never overwrite a user-reviewed trichome percentage with the attested AI value or continue labeling an edited distribution AI-derived; preserve it as a manual override, reconstruct each unreviewed field from the attested snapshot, clear unusable unreviewed drafts, and retain the attested photo snapshot separately."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never count bright pixels, sparkles, pistils, plant hairs, colored plant tissue, blurred circles, compression artifacts, sugar-leaf edge heads, or the same head repeated in enlarged crops as resolved trichome heads; ambiguous resolved white heads belong in cloudy-or-glare."
     );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not treat one photo copied into several fields as independent evidence, treat an AI hypothesis as a directly observed organism, or headline powdery mildew from generic white marks alone."

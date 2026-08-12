@@ -79,6 +79,20 @@ function harvestPercentageDraft(value: number | null) {
     : "";
 }
 
+function trichomeHeadTallyLabel(
+  finding: NonNullable<TrichomeVisionResult["imageFindings"]>[number]
+) {
+  const counts = finding.resolvedHeadCounts;
+  if (!counts) return "";
+  const total =
+    Number(counts.clear || 0) +
+    Number(counts.cloudy || 0) +
+    Number(counts.amber || 0) +
+    Number(counts.cloudyOrGlare || 0);
+  if (!total) return "";
+  return ` · tally: ${counts.clear} clear / ${counts.cloudy} cloudy / ${counts.amber} amber / ${counts.cloudyOrGlare} cloudy or glare (${total} heads, ${finding.countingConfidence || "low"} confidence)`;
+}
+
 function harvestPhotoRecoveryMessage(detail?: string) {
   return [
     detail || "Photo analysis could not run.",
@@ -509,6 +523,13 @@ function HarvestPhotoAnalyzer({
                 {Math.round(Number(analysis.sampleAmber) * 100)}% amber ·{" "}
                 {Math.round(Number(analysis.sampleCloudyOrGlare) * 100)}% cloudy or glare
               </Text>
+              {Number(analysis.visibleSampleHeadCount) > 0 ? (
+                <Text style={photoStyles.feedback}>
+                  Counted heads: {analysis.visibleSampleHeadCount} · Counting confidence:{" "}
+                  {analysis.visibleSampleCountingConfidence || "low"} · Percentages
+                  calculated from the per-photo tallies
+                </Text>
+              ) : null}
               <Text style={photoStyles.warning}>
                 This estimates only the intact heads visible in the inspected photo areas.
                 It is never a whole-plant percentage and does not prove that other bud
@@ -567,6 +588,7 @@ function HarvestPhotoAnalyzer({
                     ? ` · best region: ${finding.trichomeRichRegion}`
                     : ""}
                   {finding.excludedReason ? ` · excluded: ${finding.excludedReason}` : ""}
+                  {trichomeHeadTallyLabel(finding)}
                 </Text>
               ))}
             </View>
