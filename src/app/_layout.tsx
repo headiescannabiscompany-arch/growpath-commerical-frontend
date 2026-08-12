@@ -15,6 +15,7 @@ import { GlobalApiStatusBanner } from "../components/GlobalApiStatusBanner";
 import GlobalReportBugButton from "../components/GlobalReportBugButton";
 import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
 import { initMonitoring, wrapWithMonitoring } from "@/utils/monitoring";
+import { useNotificationDeepLinks } from "@/notifications/useNotificationDeepLinks";
 
 enableScreens(true);
 initUnauthorizedHandler();
@@ -30,6 +31,7 @@ const queryClient = new QueryClient({
 
 function RootShell() {
   const { palette } = useAppTheme();
+  useNotificationDeepLinks();
   const navigationTheme = useMemo(
     () => ({
       ...DefaultTheme,
