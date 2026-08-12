@@ -89,7 +89,11 @@ const checks = [
       "tests/unit/GrowTasksScreen.test.tsx"
     ]
   },
-  { label: "production web export", command: npmCmd, args: ["run", "build"] }
+  {
+    label: "production web export",
+    command: npmCmd,
+    args: ["run", "export:web:production"]
+  }
 ];
 
 for (const check of checks) {
