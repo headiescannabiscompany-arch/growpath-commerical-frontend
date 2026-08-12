@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
 import BackendCalculatorToolScreen, {
@@ -13,7 +13,12 @@ import {
   type DryCureRecordInput,
   type HarvestBatch
 } from "@/api/harvestBatches";
-import { analyzeTrichomePhotos, type TrichomeVisionResult } from "@/api/harvestVision";
+import {
+  analyzeTrichomePhotos,
+  isSupportedHarvestReviewPolicy,
+  submitHarvestTrichomeFeedback,
+  type TrichomeVisionResult
+} from "@/api/harvestVision";
 import type { VideoWorkspaceType } from "@/api/videos";
 import { listEvidenceAssets, providerEvidencePayload } from "@/api/evidence";
 import { getToolRun, type ToolRun } from "@/api/toolRuns";
@@ -33,6 +38,13 @@ import type { EvidenceAsset } from "@/types/evidence";
 
 const MIN_HARVEST_PHOTOS = 4;
 const HARVEST_CONTEXT_SCOPED_FIELDS = ["harvestBatchId"];
+
+const HARVEST_CALIBRATION_CHOICES = [
+  { key: "close", label: "Estimate looks close" },
+  { key: "amber_higher", label: "Amber looks higher" },
+  { key: "amber_lower", label: "Amber looks lower" },
+  { key: "cannot_tell", label: "I cannot tell" }
+] as const;
 
 const HARVEST_PHOTO_CHECKLIST = [
   "Use at least 3 sharp macro photos from top, middle, and lower bud sites.",
@@ -171,6 +183,12 @@ function HarvestPhotoAnalyzer({
   const [restoreFeedback, setRestoreFeedback] = useState("");
   const [restoringEvidence, setRestoringEvidence] = useState(false);
   const [analysis, setAnalysis] = useState<TrichomeVisionResult | null>(initialAnalysis);
+  const [calibrationChoice, setCalibrationChoice] = useState("");
+  const [observedAmberPercent, setObservedAmberPercent] = useState("");
+  const [calibrationNotes, setCalibrationNotes] = useState("");
+  const [calibrationConsent, setCalibrationConsent] = useState(false);
+  const [calibrationBusy, setCalibrationBusy] = useState(false);
+  const [calibrationStatus, setCalibrationStatus] = useState("");
   const inspectedBreakdown = useMemo(
     () => inspectedPhotoEstimates(analysis?.imageFindings),
     [analysis?.imageFindings]
@@ -208,6 +226,14 @@ function HarvestPhotoAnalyzer({
     setAnalysis(null);
     onAnalysisDraft(null);
   }, [analysisScopeKey, onAnalysisDraft]);
+
+  useEffect(() => {
+    setCalibrationChoice("");
+    setObservedAmberPercent("");
+    setCalibrationNotes("");
+    setCalibrationConsent(false);
+    setCalibrationStatus("");
+  }, [analysis?.analysisId]);
 
   useEffect(() => {
     let active = true;
@@ -379,7 +405,7 @@ function HarvestPhotoAnalyzer({
         expectedAnalyzedIds.every((id, index) => id === actualAnalyzedIds[index]) &&
         receipt?.evidenceFingerprint === expectedAnalyzedIds.join("|") &&
         result.imagesAnalyzed === expectedAnalyzedIds.length &&
-        receipt?.reviewPolicyVersion === "harvest-trichome-server-attestation-v1" &&
+        isSupportedHarvestReviewPolicy(receipt?.reviewPolicyVersion) &&
         receipt?.aiUsageEventId === result.analysisId;
       if (!receiptMatchesEvidence) {
         throw new Error(
@@ -429,6 +455,62 @@ function HarvestPhotoAnalyzer({
       );
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function submitCalibrationFeedback() {
+    if (!analysis?.analysisId || calibrationBusy) return;
+    const choice = HARVEST_CALIBRATION_CHOICES.find(
+      (candidate) => candidate.key === calibrationChoice
+    );
+    if (!choice) {
+      setCalibrationStatus("Choose how the estimate compares with what you can see.");
+      return;
+    }
+    const amberText = observedAmberPercent.trim();
+    const amberPercent = amberText === "" ? null : Number(amberText);
+    if (
+      amberPercent !== null &&
+      (!Number.isFinite(amberPercent) || amberPercent < 0 || amberPercent > 100)
+    ) {
+      setCalibrationStatus("Enter an amber estimate from 0 to 100, or leave it blank.");
+      return;
+    }
+    if (
+      (choice.key === "amber_higher" || choice.key === "amber_lower") &&
+      amberPercent === null
+    ) {
+      setCalibrationStatus(
+        "Add your approximate visible-area amber percentage so the correction is useful."
+      );
+      return;
+    }
+
+    setCalibrationBusy(true);
+    setCalibrationStatus("");
+    try {
+      await submitHarvestTrichomeFeedback({
+        analysisId: analysis.analysisId,
+        estimateAlignment: choice.key,
+        ...(amberPercent === null
+          ? {}
+          : { ownerVisibleAmberPercent: Math.round(amberPercent) }),
+        basis: calibrationNotes.trim() || undefined,
+        consentForModelTraining: calibrationConsent
+      });
+      setCalibrationStatus(
+        calibrationConsent
+          ? "Correction saved with permission to use it for model calibration. No AI credit was used."
+          : "Correction saved for product review only. It will not be used for model training. No AI credit was used."
+      );
+    } catch (error: any) {
+      setCalibrationStatus(
+        error?.message
+          ? `Correction could not be saved: ${error.message}`
+          : "Correction could not be saved. Try again without rerunning the photo review."
+      );
+    } finally {
+      setCalibrationBusy(false);
     }
   }
 
@@ -699,6 +781,93 @@ function HarvestPhotoAnalyzer({
               ) : null}
             </View>
           ) : null}
+          <View
+            accessibilityLabel="Correct Harvest trichome estimate"
+            style={photoStyles.qualityChecks}
+          >
+            <Text style={photoStyles.checklistTitle}>Help correct this estimate</Text>
+            <Text style={photoStyles.feedback}>
+              Compare only the intact heads visible in these photographed areas. Your
+              correction stays separate from the AI result and does not change the saved
+              readiness calculation.
+            </Text>
+            <View style={photoStyles.choiceRow}>
+              {HARVEST_CALIBRATION_CHOICES.map((choice) => {
+                const selected = calibrationChoice === choice.key;
+                return (
+                  <Pressable
+                    key={choice.key}
+                    accessibilityLabel={choice.label}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => {
+                      setCalibrationChoice(choice.key);
+                      setCalibrationStatus("");
+                    }}
+                    style={[
+                      photoStyles.choiceButton,
+                      selected && photoStyles.choiceSelected
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        photoStyles.choiceText,
+                        selected && photoStyles.choiceTextSelected
+                      ]}
+                    >
+                      {choice.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <TextInput
+              accessibilityLabel="Your visible-area amber estimate percent"
+              value={observedAmberPercent}
+              onChangeText={setObservedAmberPercent}
+              keyboardType="numeric"
+              placeholder="Your approximate visible-area amber %, for example 30"
+              placeholderTextColor={palette.textMuted}
+              style={photoStyles.input}
+            />
+            <TextInput
+              accessibilityLabel="Why the Harvest estimate needs correction"
+              value={calibrationNotes}
+              onChangeText={setCalibrationNotes}
+              multiline
+              placeholder="Optional: what you can resolve, lighting, glare, or sample area"
+              placeholderTextColor={palette.textMuted}
+              style={photoStyles.input}
+            />
+            <View style={photoStyles.consentRow}>
+              <Switch
+                accessibilityLabel="Allow correction to improve model calibration"
+                value={calibrationConsent}
+                onValueChange={setCalibrationConsent}
+                trackColor={{ false: palette.border, true: palette.accentSoft }}
+                thumbColor={calibrationConsent ? palette.accent : palette.textMuted}
+              />
+              <Text style={photoStyles.consentText}>
+                Allow this correction and its linked review evidence to be used to improve
+                GrowPath model calibration. Off by default.
+              </Text>
+            </View>
+            <Pressable
+              accessibilityLabel="Save Harvest estimate correction"
+              onPress={submitCalibrationFeedback}
+              disabled={calibrationBusy}
+              style={[photoStyles.button, calibrationBusy && photoStyles.disabled]}
+            >
+              <Text style={photoStyles.buttonText}>
+                {calibrationBusy
+                  ? "Saving Correction..."
+                  : "Save Correction (No AI Credit)"}
+              </Text>
+            </Pressable>
+            {calibrationStatus ? (
+              <Text style={photoStyles.feedback}>{calibrationStatus}</Text>
+            ) : null}
+          </View>
           {analysis.recommendation ? (
             <Text style={photoStyles.recommendation}>{analysis.recommendation}</Text>
           ) : null}
@@ -1478,5 +1647,22 @@ export const createHarvestPhotoStyles = (palette: ThemePalette) =>
       gap: 4,
       padding: 10
     },
+    choiceRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    choiceButton: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    choiceSelected: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    choiceText: { color: palette.text, fontWeight: "700" },
+    choiceTextSelected: { color: palette.accentText },
+    consentRow: { alignItems: "center", flexDirection: "row", gap: 10 },
+    consentText: { color: palette.textMuted, flex: 1, lineHeight: 18 },
     recommendation: { color: palette.text, fontWeight: "700", lineHeight: 19 }
   });

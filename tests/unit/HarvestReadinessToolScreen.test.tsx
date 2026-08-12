@@ -35,6 +35,7 @@ const mockGetHarvestBatch = jest.fn();
 const mockListHarvestBatches = jest.fn();
 const mockUpdateHarvestBatch = jest.fn();
 const mockAnalyzeTrichomePhotos = jest.fn();
+const mockSubmitHarvestTrichomeFeedback = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockListFacilityGrows = jest.fn();
@@ -222,9 +223,15 @@ jest.mock("@/api/harvestBatches", () => ({
   updateHarvestBatch: (...args: any[]) => mockUpdateHarvestBatch(...args)
 }));
 
-jest.mock("@/api/harvestVision", () => ({
-  analyzeTrichomePhotos: (...args: any[]) => mockAnalyzeTrichomePhotos(...args)
-}));
+jest.mock("@/api/harvestVision", () => {
+  const actual = jest.requireActual("@/api/harvestVision");
+  return {
+    ...actual,
+    analyzeTrichomePhotos: (...args: any[]) => mockAnalyzeTrichomePhotos(...args),
+    submitHarvestTrichomeFeedback: (...args: any[]) =>
+      mockSubmitHarvestTrichomeFeedback(...args)
+  };
+});
 
 jest.mock("@/api/personalAssistant", () => ({
   askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
@@ -317,6 +324,12 @@ describe("HarvestReadinessToolRoute", () => {
       linkedToolRunIds: ["toolrun-old"]
     });
     mockUpdateHarvestBatch.mockResolvedValue({ id: "harvest-1" });
+    mockSubmitHarvestTrichomeFeedback.mockResolvedValue({
+      success: true,
+      feedbackId: "feedback-1",
+      queueStatus: "queued",
+      received: {}
+    });
     mockAnalyzeTrichomePhotos.mockResolvedValue({
       photoUsable: true,
       imageQuality: "usable",
@@ -373,12 +386,54 @@ describe("HarvestReadinessToolRoute", () => {
           "64b000000000000000000003",
           "64b000000000000000000004"
         ].join("|"),
-        reviewPolicyVersion: "harvest-trichome-server-attestation-v1"
+        reviewPolicyVersion: "harvest-trichome-server-attestation-v2-full-grid"
       },
       aiCreditsUsed: 1,
       aiTokensRemaining: 58,
       creditStatus: "charged"
     });
+  });
+
+  it("saves a structured owner correction without rerunning or spending an AI credit", async () => {
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await waitFor(() => expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledTimes(1));
+
+    fireEvent.press(screen.getByLabelText("Amber looks higher"));
+    fireEvent.changeText(
+      screen.getByLabelText("Your visible-area amber estimate percent"),
+      "30"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Why the Harvest estimate needs correction"),
+      "Resolved amber heads remain brown while the reflection changes."
+    );
+    fireEvent(
+      screen.getByLabelText("Allow correction to improve model calibration"),
+      "valueChange",
+      true
+    );
+    await fireEventAsync.press(screen.getByLabelText("Save Harvest estimate correction"));
+
+    await waitFor(() =>
+      expect(mockSubmitHarvestTrichomeFeedback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          analysisId: "usage-harvest-1",
+          estimateAlignment: "amber_higher",
+          ownerVisibleAmberPercent: 30,
+          consentForModelTraining: true,
+          basis: "Resolved amber heads remain brown while the reflection changes."
+        })
+      )
+    );
+    expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByText(
+        "Correction saved with permission to use it for model calibration. No AI credit was used."
+      )
+    ).toBeTruthy();
   });
 
   it("shows an optional calendar date and explains both sides of the harvest range", async () => {
@@ -823,7 +878,7 @@ describe("HarvestReadinessToolRoute", () => {
                 "64b000000000000000000003",
                 "64b000000000000000000004"
               ].join("|"),
-              reviewPolicyVersion: "harvest-trichome-server-attestation-v1"
+              reviewPolicyVersion: "harvest-trichome-server-attestation-v2-full-grid"
             }
           })
         })

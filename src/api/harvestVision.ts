@@ -1,6 +1,17 @@
 import { apiRequest } from "./apiRequest";
 import type { EvidenceWorkspaceType } from "@/types/evidence";
 
+export const SUPPORTED_HARVEST_REVIEW_POLICIES = [
+  "harvest-trichome-server-attestation-v1",
+  "harvest-trichome-server-attestation-v2-full-grid"
+] as const;
+
+export function isSupportedHarvestReviewPolicy(value: unknown) {
+  return SUPPORTED_HARVEST_REVIEW_POLICIES.includes(
+    String(value || "") as (typeof SUPPORTED_HARVEST_REVIEW_POLICIES)[number]
+  );
+}
+
 export type TrichomeVisionResult = {
   photoUsable: boolean;
   imageQuality: "usable" | "limited" | "unusable";
@@ -92,6 +103,14 @@ export type TrichomeVisionResult = {
   creditStatus: "charged" | "refunded" | "not_charged";
 };
 
+export type HarvestTrichomeFeedbackInput = {
+  analysisId: string;
+  estimateAlignment: "close" | "amber_higher" | "amber_lower" | "cannot_tell";
+  ownerVisibleAmberPercent?: number;
+  basis?: string;
+  consentForModelTraining?: boolean;
+};
+
 export async function analyzeTrichomePhotos(input: {
   growId: string;
   evidenceAssetIds: string[];
@@ -123,8 +142,7 @@ export async function analyzeTrichomePhotos(input: {
       String(analysisReceipt?.normalizedHarvestResultDigest || "").trim()
     ) &&
     String(analysisReceipt?.evidenceFingerprint || "").trim() &&
-    String(analysisReceipt?.reviewPolicyVersion || "").trim() ===
-      "harvest-trichome-server-attestation-v1"
+    isSupportedHarvestReviewPolicy(analysisReceipt?.reviewPolicyVersion)
   );
   if (!receiptIsComplete) {
     throw new Error(
@@ -135,4 +153,30 @@ export async function analyzeTrichomePhotos(input: {
     ...result,
     analysisReceipt
   } as TrichomeVisionResult;
+}
+
+export function submitHarvestTrichomeFeedback(input: HarvestTrichomeFeedbackInput) {
+  const rating =
+    input.estimateAlignment === "close"
+      ? 5
+      : input.estimateAlignment === "cannot_tell"
+        ? 3
+        : 2;
+  return apiRequest<{
+    success: boolean;
+    feedbackId: string;
+    queueStatus: string;
+    received: Record<string, unknown>;
+  }>("/api/ai/feedback", {
+    method: "POST",
+    body: {
+      targetType: "harvest_trichome_review",
+      targetId: input.analysisId,
+      rating,
+      estimateAlignment: input.estimateAlignment,
+      ownerVisibleAmberPercent: input.ownerVisibleAmberPercent,
+      basis: input.basis,
+      consentForModelTraining: input.consentForModelTraining === true
+    }
+  });
 }
