@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "growpath-owner-hat-concepts-v1",
+  "brand": {
+    "name": "Triple Bag Genetics",
+    "slug": "triple-bag-genetics"
+  },
+  "source": {
+    "platform": "Facebook",
+    "profileUrl": "https://www.facebook.com/jaycollins79",
+    "postUrl": null,
+    "photoCollectionUrl": "https://www.facebook.com/photo/?fbid=10162502431226059&set=pcb.10162502432876059",
+    "ownerAuthorizedAt": "2026-08-11",
+    "capturedAt": "2026-08-12T00:29:20Z",
+    "authorization": "The account owner explicitly approved these Triple Bag Genetics hat designs for GrowPathAI use in the current Codex task."
+  },
+  "catalogState": {
+    "listingState": "unpublished",
+    "inventoryAvailable": 0,
+    "price": null,
+    "shippingPrice": null,
+    "checkoutEnabled": false,
+    "manufacturedInventoryConfirmed": false,
+    "rightsReviewRequired": true
+  },
+  "assets": [
+    {
+      "id": "triple-bag-hat-collection-raw-wizards-owner-concept",
+      "file": "collection-sheet-raw-wizards-owner-concept.jpg",
+      "sourceFileName": "771711910_10162502433771059_1549941592937944769_n.jpg",
+      "sha256": "9a7e2864941871cee7c6f521844037fb59a1dd1aacecd74460e61809987259ad",
+      "description": "Owner-designed Triple Bag Genetics collection sheet containing collaboration and team-referential concepts.",
+      "thirdPartyMarksVisible": true
+    },
+    {
+      "id": "triple-bag-hat-smell-the-loud-owner-concept",
+      "file": "smell-the-loud-owner-concept.jpg",
+      "sourceFileName": "767567243_10162502433781059_2407319669916756953_n.jpg",
+      "sha256": "d295ddb460faa0f263bb2cf44e0255282c1a1462001a9613fa1a19b9f1ba458d",
+      "description": "Owner-designed Triple Bag Genetics Smell the Loud blue, black, and white hat concept sheet.",
+      "thirdPartyMarksVisible": true
+    }
+  ]
+}

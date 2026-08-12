@@ -235,16 +235,25 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 - [ ] Complete commercial course create/edit/publish acceptance for cover,
       category/grow interests, modules, lessons, uploads/external video sources, tasks,
       products, lives, Forum links, storefront display, and learner access.
-- [ ] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
+- [~] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
       Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
-      navigation hierarchy, and persistence checks.
-- [ ] Seed Penny Saver Soil, Living Soil, and No-Till drafts only from owner-approved
+      navigation hierarchy, and persistence checks. Orders and Analytics state,
+      single-flight, retained-error, confirmation, and accessibility hardening shipped
+      in production merge `74737bba`; all 94 regression batches, local delivery guard,
+      PR CI, main CI, Production Build Preflight, served-bundle checks, and the signed-in
+      non-Commercial access boundary passed. Populated Commercial owner mutations,
+      refresh, persistence, and visual acceptance remain open. See
+      `docs/qa/COMMERCIAL_ORDERS_ANALYTICS_STATE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-08-12.md`.
+- [~] Seed Penny Saver Soil, Living Soil, and No-Till drafts only from owner-approved
       facts. Keep inventory zero and claims unpublished until labels, guaranteed analyses,
       sizes, prices, directions, shipping, and images are supplied and verified. The
-      owner also identified GrowPathAI and Triple Bag Genetics hat designs on the
-      owner's Facebook page for later authorized asset collection. Preserve the two
-      brand assignments, but keep both hat listings at zero inventory, unpriced, and
-      unpublished until the exact image files are captured and reviewed.
+      owner's GrowPathAI and Triple Bag Genetics Facebook hat designs were captured as
+      exact owner-authorized assets with SHA-256 records and separate brand manifests.
+      Both remain zero-stock, unpriced, non-checkout, and unpublished. Triple Bag
+      concepts containing third-party marks remain private drafts pending rights review;
+      live Commercial product-draft creation and owner review remain open. See
+      `assets/brands/growpathai/hat-concepts/ASSET_RECORD.md` and
+      `assets/brands/triple-bag-genetics/hat-concepts/ASSET_RECORD.md`.
 - [ ] Collect owner-approved knowledge sources: domains, authors/channels,
       reliability tiers, allowed uses, exclusions, cross-check requirements, and review
       dates; update both documentation and runtime registries.
