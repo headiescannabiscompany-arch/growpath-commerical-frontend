@@ -113,6 +113,29 @@ const moderationCase = {
     }
   }
 };
+const harvestCalibrationCandidate = {
+  feedbackId: "harvest-feedback-1",
+  reviewId: "harvest-review-1",
+  provider: "openai",
+  model: "gpt-5.4",
+  reviewPolicyVersion: "harvest-trichome-server-attestation-v2-full-grid",
+  evidenceAssetIds: ["evidence-1", "evidence-2"],
+  aiVisibleSample: {
+    confirmedAmber: 0.01,
+    possibleAmber: 0.23,
+    resolvedHeadCount: 323,
+    countingConfidence: "high"
+  },
+  ownerReview: {
+    estimateAlignment: "amber_higher",
+    visibleAmberPercent: 30
+  },
+  eligibility: {
+    status: "awaiting_independent_review",
+    groundTruth: false,
+    requiredNextSteps: ["two independent head-level reviews", "adjudication"]
+  }
+};
 
 function defaultAdminApi(path: string) {
   if (path === "/api/admin/overview") return Promise.resolve({ overview });
@@ -126,6 +149,8 @@ function defaultAdminApi(path: string) {
   if (path === "/api/admin/knowledge-registry") return Promise.resolve({ entries: [] });
   if (path === "/api/admin/method-review-proposals")
     return Promise.resolve({ proposals: [] });
+  if (path === "/api/ai/training/harvest-trichome-calibration")
+    return Promise.resolve({ items: [harvestCalibrationCandidate] });
   return Promise.resolve({ ok: true });
 }
 
@@ -147,6 +172,10 @@ describe("PlatformAdminRoute", () => {
     expect(screen.getByText("member@example.com · personal · pro")).toBeTruthy();
     expect(screen.getByText("Active users · 7 days")).toBeTruthy();
     expect(screen.getByText(/Bug report - personal - tasks/)).toBeTruthy();
+    expect(screen.getByText("Harvest trichome calibration queue")).toBeTruthy();
+    expect(screen.getByText(/AI amber 1% to 23%/)).toBeTruthy();
+    expect(screen.getByText(/owner visible-area estimate 30%/)).toBeTruthy();
+    expect(screen.getByText(/Not ground truth/)).toBeTruthy();
 
     fireEvent.press(screen.getByText("Refresh tokens"));
     await waitFor(() =>

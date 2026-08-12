@@ -214,6 +214,7 @@ function HarvestPhotoAnalyzer({
   const [observedAmberPercent, setObservedAmberPercent] = useState("");
   const [calibrationNotes, setCalibrationNotes] = useState("");
   const [calibrationConsent, setCalibrationConsent] = useState(false);
+  const [calibrationRightsConfirmed, setCalibrationRightsConfirmed] = useState(false);
   const [calibrationBusy, setCalibrationBusy] = useState(false);
   const [calibrationStatus, setCalibrationStatus] = useState("");
   const inspectedBreakdown = useMemo(
@@ -259,6 +260,7 @@ function HarvestPhotoAnalyzer({
     setObservedAmberPercent("");
     setCalibrationNotes("");
     setCalibrationConsent(false);
+    setCalibrationRightsConfirmed(false);
     setCalibrationStatus("");
   }, [analysis?.analysisId]);
 
@@ -584,6 +586,12 @@ function HarvestPhotoAnalyzer({
       );
       return;
     }
+    if (calibrationConsent && !calibrationRightsConfirmed) {
+      setCalibrationStatus(
+        "Confirm that you own these photos or have permission before authorizing calibration use."
+      );
+      return;
+    }
 
     setCalibrationBusy(true);
     setCalibrationStatus("");
@@ -595,7 +603,17 @@ function HarvestPhotoAnalyzer({
           ? {}
           : { ownerVisibleAmberPercent: Math.round(amberPercent) }),
         basis: calibrationNotes.trim() || undefined,
-        consentForModelTraining: calibrationConsent
+        consentForModelTraining: calibrationConsent,
+        ...(calibrationConsent && calibrationRightsConfirmed
+          ? {
+              calibrationAuthorization: {
+                version: "harvest-trichome-calibration-consent-v1" as const,
+                rightsConfirmed: true as const,
+                scope: "internal_ai_evaluation_and_calibration" as const,
+                publicUseAuthorized: false as const
+              }
+            }
+          : {})
       });
       setCalibrationStatus(
         calibrationConsent
@@ -942,7 +960,11 @@ function HarvestPhotoAnalyzer({
               <Switch
                 accessibilityLabel="Allow correction to improve model calibration"
                 value={calibrationConsent}
-                onValueChange={setCalibrationConsent}
+                onValueChange={(enabled) => {
+                  setCalibrationConsent(enabled);
+                  if (!enabled) setCalibrationRightsConfirmed(false);
+                  setCalibrationStatus("");
+                }}
                 trackColor={{ false: palette.border, true: palette.accentSoft }}
                 thumbColor={calibrationConsent ? palette.accent : palette.textMuted}
               />
@@ -951,6 +973,27 @@ function HarvestPhotoAnalyzer({
                 GrowPath model calibration. Off by default.
               </Text>
             </View>
+            {calibrationConsent ? (
+              <View style={photoStyles.consentRow}>
+                <Switch
+                  accessibilityLabel="Confirm rights for Harvest calibration photos"
+                  value={calibrationRightsConfirmed}
+                  onValueChange={(confirmed) => {
+                    setCalibrationRightsConfirmed(confirmed);
+                    setCalibrationStatus("");
+                  }}
+                  trackColor={{ false: palette.border, true: palette.accentSoft }}
+                  thumbColor={
+                    calibrationRightsConfirmed ? palette.accent : palette.textMuted
+                  }
+                />
+                <Text style={photoStyles.consentText}>
+                  I own these photos or have permission to let GrowPath use the exact
+                  photos and this correction for private internal AI evaluation and
+                  calibration. This does not authorize public display.
+                </Text>
+              </View>
+            ) : null}
             <Pressable
               accessibilityLabel="Save Harvest estimate correction"
               onPress={submitCalibrationFeedback}
