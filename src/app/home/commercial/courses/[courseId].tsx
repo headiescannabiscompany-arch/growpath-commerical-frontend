@@ -1,10 +1,11 @@
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   addCommercialCourseLesson,
+  archiveCommercialCourse,
   CommercialCourse,
   deleteCommercialCourseLesson,
   fetchCommercialCourse,
@@ -157,6 +158,7 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 }
 
 export default function CommercialCourseDetailRoute({ route }: { route?: any } = {}) {
+  const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createCommercialCourseDetailStyles(palette), [palette]);
   const params = useLocalSearchParams<{ courseId?: string; preview?: string }>();
@@ -198,6 +200,8 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   const [saving, setSaving] = useState(false);
   const [addingLesson, setAddingLesson] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const [archiveConfirming, setArchiveConfirming] = useState(false);
   const [error, setError] = useState<any>(null);
   const [message, setMessage] = useState("");
 
@@ -522,6 +526,25 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     }
   }
 
+  async function archiveCourse() {
+    if (!courseId) return;
+    setArchiving(true);
+    setMessage("");
+    setError(null);
+    try {
+      await archiveCommercialCourse(courseId);
+      setArchiveConfirming(false);
+      setCourse(null);
+      setMessage("Course archived. Returning to active courses.");
+      router.replace?.("/home/commercial/courses");
+    } catch (err) {
+      setError(err);
+      setMessage(err instanceof Error ? err.message : "Unable to archive course.");
+    } finally {
+      setArchiving(false);
+    }
+  }
+
   const lessons = Array.isArray(course?.lessons) ? course.lessons : [];
   const parsedPrice = Number(price);
   const setupWarnings = courseSetupWarnings({
@@ -544,7 +567,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
   });
   const publishBlocked = setupWarnings.some(blocksCoursePublish);
   const coursePublished = course?.status === "published";
-  const courseBusy = saving || addingLesson || publishing;
+  const courseBusy = saving || addingLesson || publishing || archiving;
 
   if (learnerPreview) {
     return (
@@ -1321,6 +1344,58 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
           <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
         </View>
       </AppCard>
+
+      {!coursePublished && course ? (
+        <AppCard>
+          <Text style={styles.cardTitle}>Archive draft course</Text>
+          <Text style={styles.body}>
+            Archive a course you no longer need. It disappears from active course lists,
+            but GrowPath retains the record for audit and does not delete reusable Video
+            Library files. Published courses must be returned to draft first.
+          </Text>
+          {!archiveConfirming ? (
+            <Pressable
+              accessibilityLabel="Archive commercial course"
+              accessibilityRole="button"
+              disabled={courseBusy || !courseId}
+              onPress={() => setArchiveConfirming(true)}
+              style={[styles.dangerAction, courseBusy && styles.disabled]}
+            >
+              <Text style={styles.dangerActionText}>Archive Course</Text>
+            </Pressable>
+          ) : (
+            <View style={styles.warningBox}>
+              <Text style={styles.warningTitle}>Archive this draft course?</Text>
+              <Text style={styles.warningText}>
+                This removes the course from active lists. Its retained audit record is
+                not a learner-visible course and cannot be edited from this screen.
+              </Text>
+              <View style={styles.actions}>
+                <Pressable
+                  accessibilityLabel="Confirm archive commercial course"
+                  accessibilityRole="button"
+                  disabled={courseBusy}
+                  onPress={() => void archiveCourse()}
+                  style={[styles.dangerAction, courseBusy && styles.disabled]}
+                >
+                  <Text style={styles.dangerActionText}>
+                    {archiving ? "Archiving..." : "Confirm Archive"}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  accessibilityLabel="Keep commercial course"
+                  accessibilityRole="button"
+                  disabled={courseBusy}
+                  onPress={() => setArchiveConfirming(false)}
+                  style={styles.secondaryAction}
+                >
+                  <Text style={styles.secondaryActionText}>Keep Course</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+        </AppCard>
+      ) : null}
     </AppPage>
   );
 }
