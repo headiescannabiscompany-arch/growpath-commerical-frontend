@@ -134,6 +134,21 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   qualified review, and ordinary-phone-photo calibration remain open; do not inflate
   the result by counting sugar-leaf edges, warm pixels, or unresolved heads.
 
+  A narrower phone-photo macro-coverage pass shipped under backend
+  `b503c89295975c21fe9c692d434efdf1ff9ef177`. Production review
+  `6a7c2ad4c6e70abe72a498a5` reran the same exact four retained originals at
+  `original` provider detail with 12 narrower coverage crops, counted 310 resolved
+  heads, and charged exactly one credit, leaving 93. It reported 9% clear, 64%
+  cloudy, 2% confirmed amber, 15% amber-or-warm-light, 11% cloudy-or-glare, and a
+  2-17% possible-amber range. The extra magnification increased the countable sample
+  but did not close the amber disagreement; do not keep tuning the prompt toward the
+  owner's estimate. Frontend catalog `growpath-harvest-trichome-qa-v1` now seeds a
+  rights-reviewed offline evaluation boundary from three CC BY 4.0 primary sources
+  and eight clear/cloudy/amber reference cases. It explicitly remains qualitative:
+  the only exact-count panel contains answer-leaking annotation overlays, and diverse
+  ordinary-phone images with independently reviewed head labels are still required
+  before calling a quantitative counter production-ready.
+
 - [~] Run one rightful production Harvest set through provider output, provenance,
   exact one-credit billing, saved-run reopen, and downstream task/batch write-back.
   Provider execution, original-detail provenance, exact retained-evidence retry,
