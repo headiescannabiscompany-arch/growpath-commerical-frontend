@@ -131,7 +131,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       no-plant, low-light, direct-flash, glare, and mixed-light) that require owned or
       commissioned media. All 284 queued candidates still require explicit morphology,
       identity, life-stage, Tier A taxonomy, exact-license, rights, expected-result,
-      and intended-use review; candidate metadata is not accepted evidence.
+      and intended-use review; candidate metadata is not accepted evidence. A fresh
+      2026-08-12 dry run revalidated all three boundaries against the current catalog:
+      planning validation reported zero contract errors, review preparation retained
+      exactly 284 queued / 36 missing / 0 promotable, and promotion retained all 284
+      items as blocked with zero catalog writes. This verifies the preparation and
+      non-bypass gates; it does not complete any image-level review.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.
@@ -309,7 +314,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   path with the explicit invalid-or-expired message and Request another reset link
   action. Retained delivered-email evidence already covers initial verification,
   resend, both verified logins, password-reset delivery, replacement-password
-  acceptance, and subsequent login; do not reopen those completed cases.
+  acceptance, and subsequent login; do not reopen those completed cases. On
+  2026-08-12, the current API authentication and workspace bottom-tab regression
+  slice also passed 20/20 tests. This reinforces token attachment and canonical
+  workspace navigation but does not substitute for the remaining genuine expired
+  invitation, logout, server-down, or outside-user production cases.
 - [~] Finish the all-route/button checklist: correct destination, back behavior,
   role gate, readable empty/loading/error state, persistence, and no dead or duplicate
   controls. Personal Pro top-level and More destinations plus Facility Staff
@@ -440,7 +449,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   retest at `/home/facility/dashboard?release=9c14dafa&verify=report-bug-dock`
   showed the settled 15-room/68-audit-event dashboard with both Priority Status and
   the support action unobstructed. This is one desktop/night/Staff viewport, not the
-  remaining theme, role, route, or mobile matrix.
+  remaining theme, role, route, or mobile matrix. On 2026-08-12, the shared visual
+  contract and 16 focused suites (71 tests) passed for narrow tab spacing, canonical
+  bottom-tab order, Day/Night/Auto controls and tokens, headings/profile hierarchy,
+  shared Back behavior, Notification Center routing, privacy controls, and Commercial
+  Inventory accessibility. These are automated contract checks, not final device
+  screenshots or completion of the theme/route/role matrix.
 - [ ] Verify keyboard and focus order, visible focus, actionable labels, screen-reader
       names, heading hierarchy, font scaling, touch targets, loading/error/empty states,
       and back navigation.
