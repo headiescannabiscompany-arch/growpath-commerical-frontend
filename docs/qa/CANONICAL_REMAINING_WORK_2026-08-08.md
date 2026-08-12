@@ -171,6 +171,21 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   reports approximately 25% current detection and missing real labels, while its
   tree includes web-search files without image-level provenance.
 
+  The full-area grid policy is live under backend `93833a23` / Render
+  `dep-d9u7bpgae00c73bu4cu0`. Retained review `6a7c6ad198761905d4988cc2`
+  inspected the same four originals plus 24 overlapping enlargement views without
+  treating them as extra samples, counted 323 heads, and preserved a 1% confirmed
+  to 23% possible amber range. The owner separately recorded approximately 30%
+  visible-area amber through the signed, review-bound correction path. Production
+  accepted that disagreement as product-review feedback with training consent off
+  and no additional AI credit; it did not rewrite the signed AI result or readiness
+  calculation. Frontend `2b5956fb` / Render `dep-d9u7l21srm7s73b570fg` also
+  reopened the exact saved photos and flattened v1 receipt, displayed the signed
+  323-head analysis, and exposed the zero-credit correction controls. This closes
+  saved-review replay and calibration capture, not counter accuracy: the unresolved
+  owner/AI disagreement still requires a rights-cleared blinded corpus and qualified
+  independent adjudication.
+
 - [~] Run one rightful production Harvest set through provider output, provenance,
   exact one-credit billing, saved-run reopen, and downstream task/batch write-back.
   Provider execution, original-detail provenance, exact retained-evidence retry,
