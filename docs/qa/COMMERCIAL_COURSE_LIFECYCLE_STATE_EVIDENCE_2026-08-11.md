@@ -50,3 +50,31 @@ production deployment or populated Commercial-owner browser acceptance is claime
 this pre-merge record. Exact pull-request checks, merge commits, deployments, served
 release provenance, and signed-in lifecycle acceptance must be recorded separately
 after they occur.
+
+## Merge and production release evidence
+
+- Backend pull request `#128` merged as
+  `373d04ecdd0f87415f052bf869de8f5f261ec17f`; its exact-main GitHub checks passed.
+- Frontend pull request `#474` merged as
+  `daf0d2adff164c558cf20acd00eab655e6b11ff2`; Frontend CI run `31559369349` and
+  Production Build Preflight run `31559369346` passed.
+- Render clean-cache frontend deployment `dep-d9tukrbm8hqs73e3orr0` checked out the
+  exact frontend merge commit and reached `Live` on 2026-08-11.
+- The production Course Builder was opened at the cache-busted `/courses/create`
+  route after that deployment. It rendered the seven governed workflow sections,
+  named Free/Paid radio controls, explicit quota/status context, and the draft-only
+  `Create course draft` action. The copy correctly directs the owner to save the
+  draft and publish from course detail.
+- Backend pull request `#129` repaired deployment provenance by preferring Render's
+  native `RENDER_GIT_COMMIT`. Render deployment `dep-d9tul4rncjis73fv2dng` reached
+  `Live` for the exact backend merge
+  `9f385c6fe775333eb14e829d9785ed491a1a7019` on 2026-08-11.
+
+## Remaining acceptance boundary
+
+The production create screen and exact frontend/backend releases are verified. A
+populated Commercial-owner session must still create a disposable draft, exercise
+edit and readiness blockers, publish it, confirm the published read-only state and
+learner/storefront visibility, unpublish it, verify editability is restored without
+losing lessons or payment history, and remove the disposable record. That mutation
+test is deliberately not inferred from source, CI, or an empty-account screen.
