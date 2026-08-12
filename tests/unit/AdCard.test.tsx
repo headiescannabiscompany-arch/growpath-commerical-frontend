@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import AdCard from "@/components/feed/AdCard";
 import { recordCommercialAnalyticsEvent } from "@/api/commercialAnalytics";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockFetchPublicStorefront = jest.fn();
 
@@ -48,11 +49,14 @@ describe("AdCard", () => {
     expect(screen.getByLabelText("Selected Campaign ad image").props.source).toEqual({
       uri: "https://example.com/campaign-banner.jpg"
     });
+    const palette = getThemePalette("auto", "light");
+    const campaignAccent =
+      palette.resolvedMode === "night" ? palette.link : "#C2410C";
     expect(
       StyleSheet.flatten(screen.getByText("Promoted campaign").props.style).color
-    ).toBe("#C2410C");
+    ).toBe(campaignAccent);
     expect(StyleSheet.flatten(screen.getByText("Open →").props.style).color).toBe(
-      "#C2410C"
+      campaignAccent
     );
   });
 
