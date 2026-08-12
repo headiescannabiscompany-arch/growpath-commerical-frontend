@@ -1179,7 +1179,13 @@ export default function HarvestReadinessToolRoute({
               ? `AI photo estimate (${Math.round(
                   Number(outputs.photoAnalysis?.confidence || 0) * 100
                 )}% confidence)`
-              : "Manual or missing; photos were not used for percentages"
+              : outputs.photoAnalysis?.visibleSampleEstimateUsable
+                ? `AI counted-area estimate (${
+                    Number(outputs.photoAnalysis.visibleSampleHeadCount) > 0
+                      ? `${outputs.photoAnalysis.visibleSampleHeadCount} visible heads`
+                      : "provider-estimated visible sample"
+                  }; ${outputs.photoAnalysis.visibleSampleCountingConfidence || "low"} counting confidence). Representative top, middle, and lower percentages remain manual or missing.`
+                : "Manual or missing; photos were not used for percentages"
         },
         {
           key: "photo-review",

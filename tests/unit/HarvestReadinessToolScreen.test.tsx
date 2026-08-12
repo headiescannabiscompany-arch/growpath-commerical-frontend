@@ -1113,6 +1113,23 @@ describe("HarvestReadinessToolRoute", () => {
       aiTokensRemaining: 57,
       creditStatus: "charged"
     });
+    mockRunCalculator.mockResolvedValueOnce({
+      outputs: {
+        readinessStatus: "insufficient_evidence",
+        trichomeSource: "manual_or_missing",
+        photoAnalysis: {
+          performed: true,
+          visibleSampleEstimateUsable: true,
+          visibleSampleHeadCount: 40,
+          visibleSampleCountingConfidence: "medium",
+          imagesAnalyzed: 4,
+          providerLabel: "OpenAI trichome image review",
+          providerModel: "gpt-5.4",
+          imageDetail: "original"
+        }
+      },
+      toolRun: { id: "toolrun-visible-sample", _id: "toolrun-visible-sample" }
+    });
     const screen = await renderHarvestReadinessTool();
 
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
@@ -1152,6 +1169,15 @@ describe("HarvestReadinessToolRoute", () => {
     );
     expect(screen.getByLabelText("Harvest Readiness Estimate Clear %").props.value).toBe(
       ""
+    );
+
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "AI counted-area estimate (40 visible heads; medium counting confidence). Representative top, middle, and lower percentages remain manual or missing."
+        )
+      ).toBeTruthy()
     );
   });
 
