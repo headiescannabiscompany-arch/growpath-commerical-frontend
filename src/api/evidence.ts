@@ -37,14 +37,26 @@ export type ExtractEvidenceVideoFramesInput = EvidenceWorkspaceScope & {
   plantId?: string;
 };
 
+const RETIRED_EVIDENCE_QUALITY_WARNINGS = new Set([
+  "Harvest macro review may not resolve intact trichome heads at this resolution."
+]);
+
+function normalizeQualityWarnings(value: any) {
+  if (!Array.isArray(value?.qualityWarnings)) return [];
+  return value.qualityWarnings
+    .map(String)
+    .filter((warning) => !RETIRED_EVIDENCE_QUALITY_WARNINGS.has(warning));
+}
+
 function normalizeEvidenceAsset(value: any): EvidenceAsset {
   return {
     ...value,
     id: String(value?.id || value?._id || ""),
     _id: value?._id ? String(value._id) : undefined,
-    qualityWarnings: Array.isArray(value?.qualityWarnings)
-      ? value.qualityWarnings.map(String)
-      : []
+    // Persisted warnings describe the policy in effect when an asset was uploaded.
+    // Retire only warnings that the current evidence policy has explicitly replaced;
+    // preserve focus, glare, compression, lighting, and provenance findings.
+    qualityWarnings: normalizeQualityWarnings(value)
   };
 }
 
