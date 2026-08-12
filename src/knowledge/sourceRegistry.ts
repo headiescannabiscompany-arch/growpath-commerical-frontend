@@ -313,6 +313,74 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-07-21"
   },
   {
+    id: "pmc10071647-trichome-maturation",
+    name: "Glandular trichome development, morphology, and maturation in high-THC cannabis inflorescences",
+    domain: "pmc.ncbi.nlm.nih.gov",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["post_harvest", "qa_evaluation", "photo_quality_guidance", "education"],
+    notTrustedFor: ["legal_regulatory", "lab_result", "diagnosis"],
+    notes:
+      "Primary CC BY 4.0 research supporting resolved gland-head morphology, clear/cloudy/brown class semantics, CIELAB translucency and red-score method context, and one annotated count example (83 clear, 96 milky, 52 brown). The annotated panel leaks class labels and is not a blind recognition input. Genotype, plant age, environment, asynchronous development, and stress limit transfer to a universal harvest threshold or whole-plant percentage.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: [
+      "pmc10610221-cannabis-life-cycle-trichomes",
+      "pmc10648736-cannabis-phenotype-trichome-exemplars"
+    ],
+    lastReviewedAt: "2026-08-12"
+  },
+  {
+    id: "pmc10610221-cannabis-life-cycle-trichomes",
+    name: "Morphological Characterization of Cannabis sativa Throughout Its Complete Life Cycle",
+    domain: "pmc.ncbi.nlm.nih.gov",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["post_harvest", "qa_evaluation", "photo_quality_guidance", "education"],
+    notTrustedFor: ["legal_regulatory", "lab_result", "diagnosis"],
+    notes:
+      "Primary CC BY 4.0 morphology research with resolved transparent, opaque/milky, and amber gland-head panels across the studied life cycle. It supports qualitative class and head-shape QA, not exact per-head percentages, a universal week-based harvest rule, or whole-plant inference.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: [
+      "pmc10071647-trichome-maturation",
+      "pmc10648736-cannabis-phenotype-trichome-exemplars"
+    ],
+    lastReviewedAt: "2026-08-12"
+  },
+  {
+    id: "pmc10648736-cannabis-phenotype-trichome-exemplars",
+    name: "Comprehensive Phenotypic Characterization of Diverse Drug-Type Cannabis Varieties",
+    domain: "pmc.ncbi.nlm.nih.gov",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["post_harvest", "qa_evaluation", "photo_quality_guidance", "education"],
+    notTrustedFor: ["legal_regulatory", "lab_result", "diagnosis"],
+    notes:
+      "Primary CC BY 4.0 phenotype research whose Supplementary Figure S3 supplies phone-macro clear, milky, and amber-plus-milky exemplars. The panels support qualitative class evaluation only; they contain no per-head percentage ground truth and do not establish universal harvest timing or whole-plant maturity.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: [
+      "pmc10071647-trichome-maturation",
+      "pmc10610221-cannabis-life-cycle-trichomes"
+    ],
+    lastReviewedAt: "2026-08-12"
+  },
+  {
+    id: "agriculture-2026-460-trichome-vision",
+    name: "Estimating Cannabis Flower Maturity in Greenhouse Conditions Using Computer Vision",
+    domain: "mdpi.com",
+    sourceType: "peer_reviewed",
+    reliabilityTier: "A",
+    trustedFor: ["post_harvest", "qa_evaluation", "photo_quality_guidance", "education"],
+    notTrustedFor: ["legal_regulatory", "lab_result", "diagnosis"],
+    notes:
+      "Primary CC BY 4.0 computer-vision research supporting an architecture that sharpness-filters 512x512 phone-macro patches, detects trichomes, classifies padded single-head crops, and evaluates detection separately from maturity classification. The paper does not publish a downloadable image dataset or trained weights; its study-specific metrics are not GrowPath accuracy evidence and cannot be transferred without independent evaluation.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: [
+      "pmc10071647-trichome-maturation",
+      "pmc10648736-cannabis-phenotype-trichome-exemplars"
+    ],
+    lastReviewedAt: "2026-08-12"
+  },
+  {
     id: "pmid-6643-cannabis-storage-light",
     name: "The stability of cannabis and its preparations on storage",
     domain: "pubmed.ncbi.nlm.nih.gov",

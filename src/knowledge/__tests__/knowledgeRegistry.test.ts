@@ -573,6 +573,24 @@ describe("GrowPath knowledge registries", () => {
       trustedFor: ["platform_data_access"],
       lastReviewedAt: "2026-07-25"
     });
+    expect(getSourceEntry("pmc10071647-trichome-maturation")).toMatchObject({
+      reliabilityTier: "A",
+      trustedFor: expect.arrayContaining(["post_harvest", "qa_evaluation"]),
+      requiresCrossCheck: true,
+      lastReviewedAt: "2026-08-12"
+    });
+    expect(
+      getSourceEntry("pmc10648736-cannabis-phenotype-trichome-exemplars")?.notes
+    ).toContain("no per-head percentage ground truth");
+    expect(getSourceEntry("agriculture-2026-460-trichome-vision")).toMatchObject({
+      reliabilityTier: "A",
+      trustedFor: expect.arrayContaining(["post_harvest", "qa_evaluation"]),
+      requiresCrossCheck: true,
+      lastReviewedAt: "2026-08-12"
+    });
+    expect(getSourceEntry("agriculture-2026-460-trichome-vision")?.notes).toContain(
+      "does not publish a downloadable image dataset or trained weights"
+    );
   });
 
   it("requires evidence and provider transparency in AI results", () => {

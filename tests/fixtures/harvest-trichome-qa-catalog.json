@@ -1,0 +1,247 @@
+{
+  "schemaVersion": "growpath-harvest-trichome-qa-v1",
+  "status": "rights_reviewed_seed",
+  "purpose": "Qualitative trichome-class and counter-method evaluation only; never model training or automatic harvest decisions.",
+  "rightsPolicy": {
+    "useForModelTraining": false,
+    "commercialQaUseApprovalRequired": true,
+    "imageLevelReviewRequired": true,
+    "creatorAndAttributionRequired": true,
+    "licenseRecheckBeforeExecution": true,
+    "allowedCopiedMediaLicenses": [
+      "CC-BY-4.0",
+      "CC0-1.0",
+      "US-PUBLIC-DOMAIN",
+      "OWNER_PERMISSION",
+      "GROWPATH_OWNED"
+    ],
+    "blockedCopiedMediaLicenses": [
+      "ALL-RIGHTS-RESERVED",
+      "CC-BY-NC",
+      "CC-BY-NC-SA",
+      "CC-BY-NC-ND",
+      "UNKNOWN"
+    ]
+  },
+  "executionPolicy": {
+    "dryRunDefault": true,
+    "stagingOnly": true,
+    "networkInUnitTests": false,
+    "providerCallsInUnitTests": false,
+    "productionWrites": false,
+    "requiresExactConfirmation": "RUN_GROWPATH_HARVEST_TRICHOME_STAGING"
+  },
+  "classDefinitions": {
+    "clear": "A resolved intact gland head is transparent enough that internal or transmitted background detail remains visible without a clipped highlight.",
+    "cloudy": "A resolved intact gland head has diffuse milky or opaque interior appearance across the head rather than one small glowing reflection.",
+    "amber": "A resolved intact gland head contains yellow, orange, or brown color that can be separated from pistils, plant tissue, background, and lighting cast.",
+    "amber_or_warm_light": "A resolved intact head is yellow, orange, tan, or brown but the image cannot separate internal color from warm light or adjacent colored tissue.",
+    "cloudy_or_glare": "A resolved white-looking head cannot be separated from reflection, clipping, or focus loss.",
+    "not_a_countable_head": "Bright pixels, sparkles, pistils, plant hairs, colored tissue, blurred circles, compression artifacts, sugar-leaf edge heads, detached heads, and duplicate appearances in overlapping crops are excluded."
+  },
+  "calibrationReadiness": {
+    "qualitativeClassSeedReady": true,
+    "quantitativeCounterReady": false,
+    "representativeHarvestDecisionReady": false,
+    "blockers": [
+      "The rights-reviewed seed is small and contains collages rather than a diverse ordinary-phone corpus.",
+      "Most panels provide a qualitative class label, not per-head bounding boxes or independent counts.",
+      "The one exact-count reference contains colored annotation overlays and is not eligible as a blind recognition input.",
+      "Independent domain review and a staging-only evaluator run remain required before a model or prompt change is accepted."
+    ]
+  },
+  "methodEvidence": [
+    {
+      "sourceId": "agriculture-2026-460-trichome-vision",
+      "title": "Estimating Cannabis Flower Maturity in Greenhouse Conditions Using Computer Vision",
+      "doi": "10.3390/agriculture16040460",
+      "sourceUrl": "https://www.mdpi.com/2077-0472/16/4/460",
+      "licenseId": "CC-BY-4.0",
+      "rightsReviewedAt": "2026-08-12",
+      "supports": [
+        "split high-resolution phone-macro images into 512 by 512 patches",
+        "filter low-detail patches with a sharpness metric",
+        "detect trichomes before classifying individual padded head crops",
+        "evaluate detection and class accuracy separately",
+        "aggregate class counts at the sampled-flower level"
+      ],
+      "doesNotSupply": [
+        "a public downloadable image dataset",
+        "public trained detector or classifier weights",
+        "GrowPath accuracy evidence",
+        "permission to claim the paper's study-specific metrics for GrowPath"
+      ],
+      "datasetAccess": "author_inquiry_required",
+      "useAsMediaSource": false
+    }
+  ],
+  "sources": [
+    {
+      "sourceId": "pmc10648736-lapierre-phenotype",
+      "title": "Comprehensive Phenotypic Characterization of Diverse Drug-Type Cannabis Varieties from the Canadian Legal Market",
+      "pmcId": "PMC10648736",
+      "doi": "10.3390/plants12213756",
+      "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10648736/",
+      "openAccessPackageUrl": "https://pmc-oa-opendata.s3.amazonaws.com/PMC10648736.1/plants-12-03756-s001.zip",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "creator": "Lapierre et al.",
+      "attributionText": "Lapierre et al., Plants 2023, 12, 3756, CC BY 4.0.",
+      "rightsReviewedAt": "2026-08-12",
+      "intendedUseApproved": true,
+      "retracted": false,
+      "trustedFor": [
+        "qualitative clear, milky, and amber-plus-milky phone-macro exemplars"
+      ],
+      "notTrustedFor": [
+        "per-head percentage ground truth",
+        "universal harvest timing",
+        "whole-plant inference"
+      ]
+    },
+    {
+      "sourceId": "pmc10610221-spitzer-life-cycle",
+      "title": "Morphological Characterization of Cannabis sativa L. Throughout Its Complete Life Cycle",
+      "pmcId": "PMC10610221",
+      "doi": "10.3390/plants12203646",
+      "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10610221/",
+      "openAccessPackageUrl": "https://pmc-oa-opendata.s3.amazonaws.com/PMC10610221.1/plants-12-03646-g012.jpg",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "creator": "Spitzer-Rimon et al.",
+      "attributionText": "Spitzer-Rimon et al., Plants 2023, 12, 3646, CC BY 4.0.",
+      "rightsReviewedAt": "2026-08-12",
+      "intendedUseApproved": true,
+      "retracted": false,
+      "trustedFor": [
+        "qualitative transparent-to-milky-to-amber gland-head progression",
+        "resolved gland-head morphology"
+      ],
+      "notTrustedFor": [
+        "per-head percentage ground truth",
+        "universal harvest timing",
+        "whole-plant inference"
+      ]
+    },
+    {
+      "sourceId": "pmc10071647-punja-maturation",
+      "title": "Glandular trichome development, morphology, and maturation are influenced by plant age and genotype in high THC-containing cannabis inflorescences",
+      "pmcId": "PMC10071647",
+      "doi": "10.1186/s42238-023-00178-9",
+      "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10071647/",
+      "openAccessPackageUrl": "https://pmc-oa-opendata.s3.amazonaws.com/PMC10071647.1/42238_2023_178_Fig13_HTML.jpg",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "creator": "Punja et al.",
+      "attributionText": "Punja et al., Journal of Cannabis Research 2023, 5:12, CC BY 4.0.",
+      "rightsReviewedAt": "2026-08-12",
+      "intendedUseApproved": true,
+      "retracted": false,
+      "trustedFor": [
+        "annotated count-method validation",
+        "CIELAB translucency and red-score method context",
+        "maturation and senescence morphology"
+      ],
+      "notTrustedFor": [
+        "blind image recognition because the count panel contains class overlays",
+        "universal harvest timing",
+        "whole-plant inference"
+      ]
+    }
+  ],
+  "referenceCases": [
+    {
+      "caseId": "lapierre-s3-panel-a-clear",
+      "sourceId": "pmc10648736-lapierre-phenotype",
+      "assetLocator": "supplementary_figures_Lapierre_et_al.pdf#page=4&panel=A",
+      "captureType": "phone_macro",
+      "expectedClasses": ["clear"],
+      "exactCounts": null,
+      "quantitativeGroundTruth": false,
+      "blindRecognitionEligible": true,
+      "notes": "Caption identifies transparent clear trichomes; mixed focus means only resolved intact heads are eligible."
+    },
+    {
+      "caseId": "lapierre-s3-panel-b-cloudy",
+      "sourceId": "pmc10648736-lapierre-phenotype",
+      "assetLocator": "supplementary_figures_Lapierre_et_al.pdf#page=4&panel=B",
+      "captureType": "phone_macro",
+      "expectedClasses": ["cloudy"],
+      "exactCounts": null,
+      "quantitativeGroundTruth": false,
+      "blindRecognitionEligible": true,
+      "notes": "Caption identifies cloudy opaque trichomes; glare-affected heads remain ambiguous."
+    },
+    {
+      "caseId": "lapierre-s3-panel-c-amber-cloudy-mix",
+      "sourceId": "pmc10648736-lapierre-phenotype",
+      "assetLocator": "supplementary_figures_Lapierre_et_al.pdf#page=4&panel=C",
+      "captureType": "phone_macro",
+      "expectedClasses": ["amber", "cloudy"],
+      "exactCounts": null,
+      "quantitativeGroundTruth": false,
+      "blindRecognitionEligible": true,
+      "notes": "Caption identifies a mixture of amber and milky heads; it does not provide percentages."
+    },
+    {
+      "caseId": "spitzer-figure12-panel-a-clear",
+      "sourceId": "pmc10610221-spitzer-life-cycle",
+      "assetLocator": "plants-12-03646-g012.jpg#panel=A",
+      "captureType": "light_microscopy",
+      "expectedClasses": ["clear"],
+      "exactCounts": null,
+      "quantitativeGroundTruth": false,
+      "blindRecognitionEligible": true,
+      "notes": "Two-week panel in the paper's transparent-to-opaque-to-amber progression."
+    },
+    {
+      "caseId": "spitzer-figure12-panel-b-cloudy",
+      "sourceId": "pmc10610221-spitzer-life-cycle",
+      "assetLocator": "plants-12-03646-g012.jpg#panel=B",
+      "captureType": "light_microscopy",
+      "expectedClasses": ["cloudy"],
+      "exactCounts": null,
+      "quantitativeGroundTruth": false,
+      "blindRecognitionEligible": true,
+      "notes": "Four-week panel in the paper's transparent-to-opaque-to-amber progression."
+    },
+    {
+      "caseId": "spitzer-figure12-panel-c-cloudy",
+      "sourceId": "pmc10610221-spitzer-life-cycle",
+      "assetLocator": "plants-12-03646-g012.jpg#panel=C",
+      "captureType": "light_microscopy",
+      "expectedClasses": ["cloudy"],
+      "exactCounts": null,
+      "quantitativeGroundTruth": false,
+      "blindRecognitionEligible": true,
+      "notes": "Six-week panel in the paper's transparent-to-opaque-to-amber progression."
+    },
+    {
+      "caseId": "spitzer-figure12-panel-d-amber",
+      "sourceId": "pmc10610221-spitzer-life-cycle",
+      "assetLocator": "plants-12-03646-g012.jpg#panel=D",
+      "captureType": "light_microscopy",
+      "expectedClasses": ["amber"],
+      "exactCounts": null,
+      "quantitativeGroundTruth": false,
+      "blindRecognitionEligible": true,
+      "notes": "Eight-week panel in the paper's transparent-to-opaque-to-amber progression; it is not a universal eight-week harvest rule."
+    },
+    {
+      "caseId": "punja-figure13d-annotated-count",
+      "sourceId": "pmc10071647-punja-maturation",
+      "assetLocator": "42238_2023_178_Fig13_HTML.jpg#panel=D",
+      "captureType": "macro_annotated",
+      "expectedClasses": ["clear", "cloudy", "amber"],
+      "exactCounts": {
+        "clear": 83,
+        "cloudy": 96,
+        "amber": 52,
+        "total": 231
+      },
+      "quantitativeGroundTruth": true,
+      "blindRecognitionEligible": false,
+      "notes": "Use only to validate count aggregation and class semantics; colored circles leak the authors' labels."
+    }
+  ]
+}
