@@ -193,7 +193,16 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   Outreach, Courses, Videos, Forum/Q&A, and Notifications. Compliance explicitly
   denied deviation creation, while Pulse and controller imports were disabled with
   the owner/manager rule. Button mutations, mobile/visual evidence, and the remaining
-  shared-record behavior are not accepted by this sweep.
+  shared-record behavior are not accepted by this sweep. On 2026-08-12, exact
+  frontend merge `a198141e` and Render deploy `dep-d9tv9l49v7es73cdpdsg` passed a
+  consolidated production sweep of 24 Personal destinations and 24 Facility Viewer
+  destinations: every route rendered its expected level-one heading, a shared Back
+  control, and no visible load/access/not-found failure. The real Personal-to-Facility
+  workspace action also succeeded, and Facility Profile resolved the Facility-owned
+  2000/2000 credit balance for Triple Bag Genetics, llc. This completes the current
+  route-level Personal and Facility Viewer slice, not page mutations, mobile visuals,
+  remaining roles, or independent-user acceptance. See
+  `docs/qa/PERSONAL_FACILITY_ROUTE_ACCEPTANCE_2026-08-12.md`.
 - [ ] Retest content-report admin email deep links as an authorized platform owner
       for Forum, Feed, product, course, video, and live-session reports.
 - [ ] Create only approved temporary production/staging records needed to verify
@@ -242,8 +251,15 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   Course Builder visibly rendered the governed seven-step workflow, named Free/Paid
   choices, and draft-only create action. Backend deployment
   `dep-d9tul4rncjis73fv2dng` reached Live for exact fingerprinted merge `9f385c6f`.
+  Backend merge `c5bab83e` and frontend merge `a19c0fa0` now add owner-scoped,
+  draft-only soft archive: published courses must be unpublished first, archived
+  records remain available for audit, active list/detail endpoints stop returning
+  them, and reusable Video Library assets are not deleted. Exact frontend Render
+  deploy `dep-d9tutf8ae00c73bftcm0` reached Live; focused backend workflow tests,
+  TypeScript, targeted lint, and 38 frontend workflow/knowledge tests passed.
   Populated Commercial-owner create/edit/publish/read-only/unpublish/reload,
-  learner/storefront visibility, and disposable-record cleanup remain open.
+  learner/storefront visibility, and one real disposable-draft archive cleanup remain
+  open.
 - [~] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
   Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
   navigation hierarchy, and persistence checks. Orders and Analytics state,
