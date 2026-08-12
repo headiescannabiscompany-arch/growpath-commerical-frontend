@@ -14,6 +14,31 @@ type MapLibreModule = {
 const MAPLIBRE_SCRIPT_ID = "growpath-maplibre-loader";
 const MAPLIBRE_READY_EVENT = "growpath-maplibre-ready";
 let mapLibrePromise: Promise<MapLibreModule> | null = null;
+const removedMapInstances = new WeakSet<object>();
+
+function safelyRemoveMapLibreMap(
+  map: MapLibreMap | null,
+  container: HTMLDivElement | null
+) {
+  if (!map || typeof map.remove !== "function") return;
+
+  if (typeof map === "object") {
+    if (removedMapInstances.has(map)) return;
+    removedMapInstances.add(map);
+  }
+
+  try {
+    map.remove();
+  } catch (error) {
+    // MapLibre teardown is not fully idempotent on every WebKit lifecycle path.
+    // A page transition or lost WebGL context can clear its painter before
+    // remove() reaches painter.destroy(). Cleanup must never crash navigation.
+    if (__DEV__) {
+      console.warn("[FieldObservationGlobe] map teardown was already incomplete:", error);
+    }
+    container?.replaceChildren();
+  }
+}
 
 function loadMapLibreModule() {
   if (typeof window === "undefined") {
@@ -230,16 +255,17 @@ export default function FieldObservationGlobe({
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    const container = containerRef.current;
+    if (!container || mapRef.current) return;
 
     let map: MapLibreMap | null = null;
     let disposed = false;
     void loadMapLibreModule()
       .then((maplibregl) => {
-        if (disposed || !containerRef.current || mapRef.current) return;
+        if (disposed || containerRef.current !== container || mapRef.current) return;
         const configuredStyle = process.env.EXPO_PUBLIC_FIELD_MAP_STYLE_URL;
         const activeMap = new maplibregl.Map({
-          container: containerRef.current,
+          container,
           style: configuredStyle || fallbackStyle(),
           center: UNITED_STATES_CENTER,
           zoom: 2.55,
@@ -412,8 +438,9 @@ export default function FieldObservationGlobe({
 
     return () => {
       disposed = true;
-      map?.remove();
       if (mapRef.current === map) mapRef.current = null;
+      safelyRemoveMapLibreMap(map, container);
+      map = null;
     };
   }, [centerOnUser]);
 
