@@ -11,6 +11,9 @@ export type TrichomeVisionResult = {
   sampleClear?: number | null;
   sampleCloudy?: number | null;
   sampleAmber?: number | null;
+  sampleAmberOrWarmLight?: number | null;
+  sampleAmberMin?: number | null;
+  sampleAmberMax?: number | null;
   sampleCloudyOrGlare?: number | null;
   sampleEstimateBasis?: string;
   visibleSampleHeadCount?: number;
@@ -63,6 +66,7 @@ export type TrichomeVisionResult = {
       clear: number;
       cloudy: number;
       amber: number;
+      amberOrWarmLight?: number;
       cloudyOrGlare: number;
     };
     resolvedHeadTotal?: number;
