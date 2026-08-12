@@ -38,7 +38,12 @@ jest.mock("expo-router", () => {
         null,
         children,
         React.createElement(Text, { accessibilityLabel: `Personal task link ${href}` })
-      )
+      ),
+    useRouter: () => ({
+      back: jest.fn(),
+      canGoBack: jest.fn(() => false),
+      replace: jest.fn()
+    })
   };
 });
 
