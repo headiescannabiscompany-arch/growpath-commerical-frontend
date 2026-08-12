@@ -83,6 +83,23 @@ function savedHarvestEvidenceIds(run: ToolRun | null) {
     .filter(Boolean);
 }
 
+function savedHarvestAnalysis(run: ToolRun | null): TrichomeVisionResult | null {
+  const outputs = (run?.outputs || run?.result || {}) as Record<string, any>;
+  const photoAnalysis = outputs.photoAnalysis;
+  if (!photoAnalysis || typeof photoAnalysis !== "object") return null;
+
+  const receipt = photoAnalysis.analysisReceipt;
+  const securelyAttested = Boolean(
+    typeof photoAnalysis.photoUsable === "boolean" &&
+    String(photoAnalysis.analysisId || "").trim() &&
+    String(receipt?.aiUsageEventId || "").trim() &&
+    /^[a-f0-9]{64}$/i.test(String(receipt?.normalizedHarvestResultDigest || "").trim()) &&
+    String(receipt?.evidenceFingerprint || "").trim() &&
+    isSupportedHarvestReviewPolicy(receipt?.reviewPolicyVersion)
+  );
+  return securelyAttested ? (photoAnalysis as TrichomeVisionResult) : null;
+}
+
 function harvestAnalysisScopeKey(input: {
   workspaceType: VideoWorkspaceType;
   workspaceId?: string;
@@ -346,6 +363,78 @@ function HarvestPhotoAnalyzer({
     growId,
     onAnalysisDraft,
     onEvidenceAssetsChange,
+    retryToolRunId,
+    workspaceId,
+    workspaceType
+  ]);
+
+  useEffect(() => {
+    let active = true;
+    const currentEvidenceAssetIds = evidenceAssetKey
+      ? evidenceAssetKey.split("|").filter(Boolean)
+      : [];
+    if (
+      !retryToolRunId ||
+      workspaceType !== "personal" ||
+      !growId ||
+      !currentEvidenceAssetIds.length
+    ) {
+      return () => {
+        active = false;
+      };
+    }
+
+    void getToolRun(retryToolRunId)
+      .then((retryRun) => {
+        if (!active) return;
+        const restoredAnalysis = savedHarvestAnalysis(retryRun);
+        if (!restoredAnalysis) return;
+
+        const retainedIds = new Set(savedHarvestEvidenceIds(retryRun));
+        const currentIds = new Set(currentEvidenceAssetIds);
+        if (
+          !retainedIds.size ||
+          !Array.from(retainedIds).every((id) => currentIds.has(id))
+        ) {
+          return;
+        }
+        if (analysis?.analysisId === restoredAnalysis.analysisId) return;
+
+        const restoredScopeKey = harvestAnalysisScopeKey({
+          workspaceType,
+          workspaceId,
+          facilityId,
+          growId,
+          plantId,
+          evidenceAssetIds: currentEvidenceAssetIds
+        });
+        mountedAnalysisRef.current = restoredAnalysis;
+        setAnalysis(restoredAnalysis);
+        onAnalysisDraft({
+          result: restoredAnalysis,
+          scopeKey: restoredScopeKey,
+          revisionKey: harvestAnalysisRevisionKey(restoredAnalysis, restoredScopeKey),
+          growId
+        });
+        setRestoreFeedback(
+          (current) =>
+            `${current ? `${current} ` : ""}Restored the signed photo analysis for zero-credit review.`
+        );
+      })
+      .catch(() => {
+        // The exact evidence remains available even when the signed result cannot be replayed.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [
+    analysis?.analysisId,
+    evidenceAssetKey,
+    facilityId,
+    growId,
+    onAnalysisDraft,
+    plantId,
     retryToolRunId,
     workspaceId,
     workspaceType

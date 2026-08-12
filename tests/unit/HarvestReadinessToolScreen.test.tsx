@@ -765,7 +765,40 @@ describe("HarvestReadinessToolRoute", () => {
       id: "harvest-run-1",
       toolType: "harvest_readiness",
       growId: "grow-1",
-      inputs: { evidenceAssetIds: retainedIds }
+      inputs: { evidenceAssetIds: retainedIds },
+      outputs: {
+        photoAnalysis: {
+          performed: true,
+          photoUsable: true,
+          imageQuality: "usable",
+          clear: 0.17,
+          cloudy: 0.52,
+          amber: 0.01,
+          sampleAmberMin: 0.01,
+          sampleAmberMax: 0.23,
+          confidence: 0.62,
+          dominant: "cloudy",
+          visibleTraits: ["Resolved trichome heads"],
+          evidence: ["Full-area grid review"],
+          recommendation: "Review the sampled-area range.",
+          limitations: ["Warm light overlaps possible amber."],
+          provider: "openai",
+          providerLabel: "OpenAI trichome image review",
+          providerModel: "gpt-4o-mini",
+          imagesAnalyzed: 4,
+          evidenceUsed: retainedIds,
+          analysisId: "64d000000000000000000001",
+          analysisReceipt: {
+            aiUsageEventId: "64d000000000000000000001",
+            normalizedHarvestResultDigest: "b".repeat(64),
+            evidenceFingerprint: retainedIds.join("|"),
+            reviewPolicyVersion: "harvest-trichome-server-attestation-v1"
+          },
+          aiCreditsUsed: 1,
+          aiTokensRemaining: 90,
+          creditStatus: "charged"
+        }
+      }
     });
     mockListEvidenceAssets.mockResolvedValue([
       ...retainedIds.map((id, index) => ({
@@ -802,16 +835,29 @@ describe("HarvestReadinessToolRoute", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText("Restored 4 exact harvest photos for this grow.")
+        screen.getByText(
+          "Restored 4 exact harvest photos for this grow. Restored the signed photo analysis for zero-credit review."
+        )
       ).toBeTruthy()
     );
     expect(mockGetToolRun).toHaveBeenCalledWith("harvest-run-1");
-    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    expect(screen.getByText("Help correct this estimate")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Amber looks higher"));
+    fireEvent.changeText(
+      screen.getByLabelText("Your visible-area amber estimate percent"),
+      "30"
+    );
+    await fireEventAsync.press(screen.getByLabelText("Save Harvest estimate correction"));
     await waitFor(() =>
-      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
-        expect.objectContaining({ evidenceAssetIds: retainedIds })
+      expect(mockSubmitHarvestTrichomeFeedback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          analysisId: "64d000000000000000000001",
+          estimateAlignment: "amber_higher",
+          ownerVisibleAmberPercent: 30
+        })
       )
     );
+    expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
   });
 
   it("blocks an incomplete photo set without spending a credit", async () => {
