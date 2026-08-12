@@ -129,6 +129,21 @@ function main() {
     errors
   );
   requireCondition(
+    Array.isArray(fixture.qualitativeSeedPreparation?.sourceIds) &&
+      fixture.qualitativeSeedPreparation.sourceIds.length >= 2 &&
+      fixture.qualitativeSeedPreparation.preparedCaseCount >= 7 &&
+      Array.isArray(fixture.qualitativeSeedPreparation.sourceAssets) &&
+      fixture.qualitativeSeedPreparation.sourceAssets.length >= 2 &&
+      fixture.qualitativeSeedPreparation.sourceAssets.every(
+        (item) =>
+          typeof item.sourceId === "string" &&
+          Number(item.width) > 0 &&
+          Number(item.height) > 0
+      ),
+    "Qualitative seed preparation must retain both reviewed sources and all prepared cases.",
+    errors
+  );
+  requireCondition(
     Array.isArray(fixture.calibrationReadiness?.blockers) &&
       fixture.calibrationReadiness.blockers.length >= 4,
     "Calibration blockers are incomplete.",
@@ -295,6 +310,21 @@ function main() {
       cases.some((item) => item.expectedClasses.includes("cloudy")) &&
       cases.some((item) => item.expectedClasses.includes("amber")),
     "Reference seed must cover clear, cloudy, and amber.",
+    errors
+  );
+  const preparedCases = cases.filter((item) =>
+    fixture.qualitativeSeedPreparation.sourceIds.includes(item.sourceId)
+  );
+  requireCondition(
+    preparedCases.length === fixture.qualitativeSeedPreparation.preparedCaseCount &&
+      preparedCases.every(
+        (item) =>
+          item.blindRecognitionEligible === true &&
+          item.reviewedPixelCrop &&
+          Number(item.reviewedPixelCrop.width) > 0 &&
+          Number(item.reviewedPixelCrop.height) > 0
+      ),
+    "Every prepared qualitative case must retain a reviewed tight crop and blind eligibility.",
     errors
   );
 

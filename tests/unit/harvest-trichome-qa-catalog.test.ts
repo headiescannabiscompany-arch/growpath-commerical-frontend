@@ -104,22 +104,36 @@ describe("Harvest trichome QA catalog", () => {
     ]);
   });
 
-  it("pins the four reviewed qualitative crops without sending labels to the provider", () => {
+  it("pins seven crops across two primary sources without sending labels to the provider", () => {
     const catalog = loadCatalog();
-    const spitzerCases = catalog.referenceCases.filter(
-      (item: any) => item.sourceId === "pmc10610221-spitzer-life-cycle"
+    const preparedCases = catalog.referenceCases.filter((item: any) =>
+      catalog.qualitativeSeedPreparation.sourceIds.includes(item.sourceId)
     );
 
     expect(catalog.qualitativeSeedPreparation).toMatchObject({
-      sourceId: "pmc10610221-spitzer-life-cycle",
-      sourceAssetDimensions: { width: 724, height: 793 },
+      sourceIds: ["pmc10610221-spitzer-life-cycle", "pmc10648736-lapierre-phenotype"],
+      preparedCaseCount: 7,
+      sourceAssets: expect.arrayContaining([
+        expect.objectContaining({
+          sourceId: "pmc10610221-spitzer-life-cycle",
+          width: 724,
+          height: 793
+        }),
+        expect.objectContaining({
+          sourceId: "pmc10648736-lapierre-phenotype",
+          archiveSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+          supplementPdfSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+          width: 1725,
+          height: 1380
+        })
+      ]),
       derivedCropScale: 4,
       preparationCommand: expect.stringMatching(/prepareTrichomeQualitativeSeed/),
       evaluationCommand: expect.stringMatching(/runTrichomeClassifierQualitativeCheck/),
       boundary: expect.stringMatching(/Expected labels are scored locally/i)
     });
-    expect(spitzerCases).toHaveLength(4);
-    for (const referenceCase of spitzerCases) {
+    expect(preparedCases).toHaveLength(7);
+    for (const referenceCase of preparedCases) {
       expect(referenceCase.reviewedPixelCrop).toEqual(
         expect.objectContaining({
           left: expect.any(Number),
