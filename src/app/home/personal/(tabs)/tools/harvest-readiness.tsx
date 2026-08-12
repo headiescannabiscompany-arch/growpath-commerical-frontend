@@ -88,7 +88,15 @@ function savedHarvestAnalysis(run: ToolRun | null): TrichomeVisionResult | null 
   const photoAnalysis = outputs.photoAnalysis;
   if (!photoAnalysis || typeof photoAnalysis !== "object") return null;
 
-  const receipt = photoAnalysis.analysisReceipt;
+  const receipt =
+    photoAnalysis.analysisReceipt && typeof photoAnalysis.analysisReceipt === "object"
+      ? photoAnalysis.analysisReceipt
+      : {
+          aiUsageEventId: photoAnalysis.aiUsageEventId,
+          normalizedHarvestResultDigest: photoAnalysis.normalizedHarvestResultDigest,
+          evidenceFingerprint: photoAnalysis.evidenceFingerprint,
+          reviewPolicyVersion: photoAnalysis.reviewPolicyVersion
+        };
   const securelyAttested = Boolean(
     typeof photoAnalysis.photoUsable === "boolean" &&
     String(photoAnalysis.analysisId || "").trim() &&
@@ -97,7 +105,9 @@ function savedHarvestAnalysis(run: ToolRun | null): TrichomeVisionResult | null 
     String(receipt?.evidenceFingerprint || "").trim() &&
     isSupportedHarvestReviewPolicy(receipt?.reviewPolicyVersion)
   );
-  return securelyAttested ? (photoAnalysis as TrichomeVisionResult) : null;
+  return securelyAttested
+    ? ({ ...photoAnalysis, analysisReceipt: receipt } as TrichomeVisionResult)
+    : null;
 }
 
 function harvestAnalysisScopeKey(input: {

@@ -788,12 +788,10 @@ describe("HarvestReadinessToolRoute", () => {
           imagesAnalyzed: 4,
           evidenceUsed: retainedIds,
           analysisId: "64d000000000000000000001",
-          analysisReceipt: {
-            aiUsageEventId: "64d000000000000000000001",
-            normalizedHarvestResultDigest: "b".repeat(64),
-            evidenceFingerprint: retainedIds.join("|"),
-            reviewPolicyVersion: "harvest-trichome-server-attestation-v1"
-          },
+          aiUsageEventId: "64d000000000000000000001",
+          normalizedHarvestResultDigest: "b".repeat(64),
+          evidenceFingerprint: retainedIds.join("|"),
+          reviewPolicyVersion: "harvest-trichome-server-attestation-v1",
           aiCreditsUsed: 1,
           aiTokensRemaining: 90,
           creditStatus: "charged"
