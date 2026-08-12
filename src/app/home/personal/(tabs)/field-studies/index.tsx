@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { createFieldStudy, FieldStudy, listFieldStudies } from "@/api/fieldStudies";
+import BackButton from "@/components/nav/BackButton";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -73,6 +74,7 @@ export default function FieldStudiesScreen() {
       style={styles.screen}
       contentContainerStyle={styles.content}
     >
+      <BackButton fallbackHref="/home/personal/more" />
       <Text accessibilityRole="header" style={styles.title}>
         Field Studies
       </Text>

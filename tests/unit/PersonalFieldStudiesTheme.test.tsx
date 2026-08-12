@@ -31,7 +31,12 @@ jest.mock("expo-router", () => {
   const React = require("react");
   return {
     Link: ({ children }: any) => React.createElement(React.Fragment, null, children),
-    useLocalSearchParams: () => ({ studyId: "study-1" })
+    useLocalSearchParams: () => ({ studyId: "study-1" }),
+    useRouter: () => ({
+      back: jest.fn(),
+      canGoBack: jest.fn(() => false),
+      replace: jest.fn()
+    })
   };
 });
 

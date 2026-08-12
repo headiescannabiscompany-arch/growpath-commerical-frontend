@@ -25,6 +25,16 @@ describe("Personal top-level back controls", () => {
     expect(source).toContain('backFallbackHref="/home/personal"');
   });
 
+  test.each([
+    ["Field Studies", "src/app/home/personal/(tabs)/field-studies/index.tsx"],
+    ["Task Center", "src/app/home/personal/(tabs)/tasks.tsx"]
+  ])("keeps a shared Back control on %s", (_name, relativePath) => {
+    const source = read(relativePath);
+
+    expect(source).toContain('import BackButton from "@/components/nav/BackButton"');
+    expect(source).toContain('<BackButton fallbackHref="/home/personal/more" />');
+  });
+
   test("keeps a universal Back control on the public Nature map", () => {
     const source = read("src/app/field-observations/index.tsx");
 

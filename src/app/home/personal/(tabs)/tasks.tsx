@@ -18,6 +18,7 @@ import {
   type PersonalTask
 } from "@/api/tasks";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import BackButton from "@/components/nav/BackButton";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -592,6 +593,7 @@ export default function PersonalTaskCenterRoute() {
       style={[styles.screen, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.content}
     >
+      <BackButton fallbackHref="/home/personal/more" />
       <Text accessibilityRole="header" style={[styles.title, { color: palette.text }]}>
         Task Center / Schedule
       </Text>
