@@ -1,7 +1,7 @@
 # App Store / Deployment Prep TODO
 
 > Status: BLOCKED FOR SUBMISSION
-> Last reviewed: 2026-08-02
+> Last reviewed: 2026-08-12
 
 Store submission must wait until production-mode validation evidence exists.
 Current known blockers:
@@ -29,6 +29,16 @@ Current known blockers:
   real required inputs: production Sentry DSN, disposable data-rights account
   email/password/confirmation, production build confirmation, and release-machine
   confirmation.
+- The 2026-08-12 non-mutating release rehearsal reconfirmed the exact iOS and
+  Android production-build commands, the four-step trusted-machine order, and the
+  refusal gates. `release:go-no-go` found every required tracked source artifact and
+  correctly remained `NO-GO`. Missing real inputs are the production Sentry DSN,
+  disposable data-rights credentials/confirmation, and production-build confirmation.
+  Missing acceptance artifacts are strict preflight, live URLs, Sentry event,
+  data-rights deletion/export, iOS/Android builds, physical-device smoke, store
+  screenshots, store-console forms, legal sign-off, named release/support/QA/crash
+  owners, and hotfix/rollback sign-off. No production build or destructive account
+  action was started during this rehearsal.
 
 ## 1. Release Gate
 
