@@ -501,7 +501,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "bounded amber visibility and exact image-region basis even when a complete trichome distribution remains unavailable",
       "bounded cloudiness observation with confidence and matched-frame basis, distinguishing directly resolved cloudiness, persistent likely cloudiness, glare-obscured whiteness, and uncertainty",
       "exact dedicated Harvest vision model recorded in the signed review without inheriting a cost-optimized global mini model",
-      "systematic upper-middle-lower or left-middle-right diagnostic coverage crops for every original in the minimum four-photo Harvest set, with overlap deduplicated by position",
+      "overlapping full-area macro coverage for every original in the minimum four-photo Harvest set, reaching the left, right, top, and bottom image bounds while deduplicating overlap by position",
       "client preflight that accepts ordinary 1080p phone photos without claiming trichome heads are unresolved from dimensions alone, leaving subject scale, focus, compression, glare, lighting, calyx placement, and head detail to server review",
       "saved-evidence hydration that retires the replaced Harvest dimension-only warning while preserving current focus, glare, compression, lighting, and provenance findings",
       "bounded staging-counter tile selection that preserves spatial coverage of each large source photo before filling remaining detector slots by sharpness without treating tiles as independent sites",
