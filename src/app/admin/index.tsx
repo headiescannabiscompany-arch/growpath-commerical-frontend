@@ -756,23 +756,22 @@ export default function PlatformAdminRoute() {
             <View key={item.feedbackId} style={styles.caseRow}>
               <View style={styles.caseCopy}>
                 <Text style={styles.caseTitle}>
-                  Review {item.reviewId} Â· {item.eligibility?.status || "not ready"}
+                  Review {item.reviewId} - {item.eligibility?.status || "not ready"}
                 </Text>
                 <Text style={styles.meta}>
                   AI amber {percentLabel(item.aiVisibleSample?.confirmedAmber)} to{" "}
-                  {percentLabel(item.aiVisibleSample?.possibleAmber)} Â· owner
-                  visible-area estimate{" "}
-                  {percentLabel(item.ownerReview?.visibleAmberPercent)}
+                  {percentLabel(item.aiVisibleSample?.possibleAmber)} - owner visible-area
+                  estimate {percentLabel(item.ownerReview?.visibleAmberPercent)}
                 </Text>
                 <Text style={styles.meta}>
-                  {item.aiVisibleSample?.resolvedHeadCount || 0} resolved heads Â·{" "}
+                  {item.aiVisibleSample?.resolvedHeadCount || 0} resolved heads -{" "}
                   {item.aiVisibleSample?.countingConfidence || "unknown"} counting
-                  confidence Â· {item.evidenceAssetIds?.length || 0} protected evidence
+                  confidence - {item.evidenceAssetIds?.length || 0} protected evidence
                   assets
                 </Text>
                 <Text style={styles.meta}>
                   {item.provider || "provider unavailable"}
-                  {item.model ? ` / ${item.model}` : ""} Â·{" "}
+                  {item.model ? ` / ${item.model}` : ""} -{" "}
                   {item.reviewPolicyVersion || "policy unavailable"}
                 </Text>
                 <Text style={styles.evidencePreview}>
