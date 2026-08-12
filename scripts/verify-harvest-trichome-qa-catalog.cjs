@@ -12,6 +12,12 @@ const fixturePath = path.join(
   "fixtures",
   "harvest-trichome-qa-catalog.json"
 );
+const annotationTemplatePath = path.join(
+  ROOT,
+  "tests",
+  "fixtures",
+  "harvest-trichome-counter-annotation-template.json"
+);
 
 function requireCondition(condition, message, errors) {
   if (!condition) errors.push(message);
@@ -28,11 +34,33 @@ function isUrl(value) {
 
 function main() {
   const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+  const annotationTemplate = JSON.parse(fs.readFileSync(annotationTemplatePath, "utf8"));
   const errors = [];
 
   requireCondition(
     fixture.schemaVersion === "growpath-harvest-trichome-qa-v1",
     "Unexpected Harvest trichome QA schema version.",
+    errors
+  );
+
+  requireCondition(
+    annotationTemplate.schemaVersion === "growpath-harvest-trichome-annotations-v1" &&
+      annotationTemplate.status === "annotation_template" &&
+      annotationTemplate.evaluationReady === false &&
+      Array.isArray(annotationTemplate.images) &&
+      annotationTemplate.images.length === 0,
+    "Annotation template must remain empty and ineligible until reviewed labels are supplied.",
+    errors
+  );
+  requireCondition(
+    annotationTemplate.eligibilityPolicy?.minimumQualifiedImages >= 50 &&
+      annotationTemplate.eligibilityPolicy?.minimumLabeledHeads >= 1000 &&
+      annotationTemplate.eligibilityPolicy?.minimumCaptureSessions >= 10 &&
+      annotationTemplate.eligibilityPolicy?.minimumDeviceModels >= 3 &&
+      annotationTemplate.eligibilityPolicy?.minimumPerResolvedClass >= 100 &&
+      annotationTemplate.eligibilityPolicy?.independentReviewersPerImage >= 2 &&
+      annotationTemplate.eligibilityPolicy?.adjudicationRequired === true,
+    "Counter eligibility floors or independent-review requirements were weakened.",
     errors
   );
   requireCondition(
@@ -84,6 +112,18 @@ function main() {
     Array.isArray(fixture.calibrationReadiness?.blockers) &&
       fixture.calibrationReadiness.blockers.length >= 4,
     "Calibration blockers are incomplete.",
+    errors
+  );
+
+  requireCondition(
+    fixture.counterEvaluationGate?.annotationTemplate ===
+      "tests/fixtures/harvest-trichome-counter-annotation-template.json" &&
+      String(fixture.counterEvaluationGate?.acceptance || "").includes(
+        "Candidate amber F1 and recall must improve"
+      ) &&
+      Array.isArray(fixture.counterEvaluationGate?.separateMetrics) &&
+      fixture.counterEvaluationGate.separateMetrics.length >= 4,
+    "Counter evaluation must keep detection, class, false-amber, and interval gates separate.",
     errors
   );
 
