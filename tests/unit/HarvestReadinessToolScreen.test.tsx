@@ -28,6 +28,7 @@ describe("Harvest Readiness Night theme", () => {
 });
 
 const mockRunCalculator = jest.fn();
+const mockGetToolRun = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockGetHarvestBatch = jest.fn();
@@ -200,6 +201,7 @@ jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
 });
 
 jest.mock("@/api/toolRuns", () => ({
+  getToolRun: (...args: any[]) => mockGetToolRun(...args),
   runCalculator: (...args: any[]) => mockRunCalculator(...args)
 }));
 
@@ -246,6 +248,7 @@ describe("HarvestReadinessToolRoute", () => {
     mockListFacilityGrows.mockResolvedValue([]);
     mockFetchCommercialGrows.mockResolvedValue([]);
     mockListEvidenceAssets.mockResolvedValue([]);
+    mockGetToolRun.mockResolvedValue(null);
     mockAskPersonalAssistant.mockRejectedValue(new Error("assistant unavailable"));
     mockRunCalculator.mockResolvedValue({
       outputs: {
@@ -697,6 +700,62 @@ describe("HarvestReadinessToolRoute", () => {
     );
   });
 
+  it("restores only the exact evidence retained by a saved Harvest run", async () => {
+    mockRouteParams = { growId: "grow-1", retryToolRunId: "harvest-run-1" };
+    const retainedIds = [1, 2, 3, 4].map((index) => `64c00000000000000000000${index}`);
+    mockGetToolRun.mockResolvedValue({
+      id: "harvest-run-1",
+      toolType: "harvest_readiness",
+      growId: "grow-1",
+      inputs: { evidenceAssetIds: retainedIds }
+    });
+    mockListEvidenceAssets.mockResolvedValue([
+      ...retainedIds.map((id, index) => ({
+        id,
+        _id: id,
+        growId: "grow-1",
+        assetType: "photo",
+        originalUri: `/uploads/retained-${index + 1}.jpg`,
+        durableUrl: `/uploads/retained-${index + 1}.jpg`,
+        mimeType: "image/jpeg",
+        source: "library",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        aiUsable: true,
+        qualityWarnings: []
+      })),
+      {
+        id: "unrelated-harvest-photo",
+        _id: "unrelated-harvest-photo",
+        growId: "grow-1",
+        assetType: "photo",
+        originalUri: "/uploads/unrelated.jpg",
+        durableUrl: "/uploads/unrelated.jpg",
+        mimeType: "image/jpeg",
+        source: "library",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        aiUsable: true,
+        qualityWarnings: []
+      }
+    ]);
+
+    const screen = await renderHarvestReadinessTool();
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Restored 4 exact harvest photos for this grow.")
+      ).toBeTruthy()
+    );
+    expect(mockGetToolRun).toHaveBeenCalledWith("harvest-run-1");
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
+        expect.objectContaining({ evidenceAssetIds: retainedIds })
+      )
+    );
+  });
+
   it("blocks an incomplete photo set without spending a credit", async () => {
     const screen = await renderHarvestReadinessTool();
 
@@ -988,7 +1047,10 @@ describe("HarvestReadinessToolRoute", () => {
       visibleSampleEstimateUsable: true,
       sampleClear: 0.1,
       sampleCloudy: 0.35,
-      sampleAmber: 0.3,
+      sampleAmber: 0.1,
+      sampleAmberOrWarmLight: 0.2,
+      sampleAmberMin: 0.1,
+      sampleAmberMax: 0.3,
       sampleCloudyOrGlare: 0.25,
       sampleEstimateBasis: "Visible intact heads in the center calyx regions.",
       visibleSampleHeadCount: 40,
@@ -1014,7 +1076,8 @@ describe("HarvestReadinessToolRoute", () => {
           resolvedHeadCounts: {
             clear: 4,
             cloudy: 14,
-            amber: 12,
+            amber: 4,
+            amberOrWarmLight: 8,
             cloudyOrGlare: 10
           },
           resolvedHeadTotal: 40,
@@ -1056,7 +1119,14 @@ describe("HarvestReadinessToolRoute", () => {
       expect(screen.getByText("Visible-area estimate — review before using")).toBeTruthy()
     );
     expect(
-      screen.getByText("10% clear · 35% cloudy · 30% amber · 25% cloudy or glare")
+      screen.getByText(
+        "10% clear · 35% cloudy · 10% confirmed amber to 30% possible amber · 25% cloudy or glare"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        /possible-amber upper bound includes 20% of resolved yellow, orange, or brown heads/i
+      )
     ).toBeTruthy();
     expect(
       screen.getByText(
@@ -1065,7 +1135,7 @@ describe("HarvestReadinessToolRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        /tally: 4 clear \/ 14 cloudy \/ 12 amber \/ 10 cloudy or glare \(40 heads, medium confidence\)/i
+        /tally: 4 clear \/ 14 cloudy \/ 4 confirmed amber \/ 8 amber or warm light \/ 10 cloudy or glare \(40 heads, medium confidence\)/i
       )
     ).toBeTruthy();
     expect(screen.getByText(/never a whole-plant percentage/i)).toBeTruthy();

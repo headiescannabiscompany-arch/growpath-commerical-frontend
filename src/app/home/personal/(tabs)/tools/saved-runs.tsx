@@ -142,6 +142,26 @@ export function personalIpmRetryHref({
   return `/home/personal/tools/ipm-scout?${query}`;
 }
 
+export function personalHarvestRetryHref({
+  toolRunId,
+  growId,
+  plantId
+}: {
+  toolRunId: string;
+  growId?: string;
+  plantId?: string;
+}) {
+  const query = [
+    ["retryToolRunId", toolRunId],
+    ["growId", growId || ""],
+    ["plantId", plantId || ""]
+  ]
+    .filter(([, value]) => value)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join("&");
+  return `/home/personal/tools/harvest-readiness?${query}`;
+}
+
 function formatDate(value?: string) {
   return value ? String(value).slice(0, 10) : "unsaved";
 }
@@ -225,7 +245,18 @@ function savedHarvestSampleEstimate(photo: Record<string, any> | null) {
     Number.isFinite(countedHeads) && countedHeads > 0
       ? ` · ${Math.trunc(countedHeads)} counted heads · ${photo.visibleSampleCountingConfidence || "low"} counting confidence`
       : "";
-  return `Clear ${value("sampleClear")} · Cloudy ${value("sampleCloudy")} · Amber ${value("sampleAmber")} · Cloudy or glare ${value("sampleCloudyOrGlare")}${tally}`;
+  const hasAmberRange =
+    Number.isFinite(Number(photo.sampleAmberMin)) &&
+    Number.isFinite(Number(photo.sampleAmberMax));
+  const amber = hasAmberRange
+    ? `Amber ${value("sampleAmberMin")} confirmed to ${value("sampleAmberMax")} possible`
+    : `Amber ${value("sampleAmber")}`;
+  const warmLight = Number(photo.sampleAmberOrWarmLight);
+  const warmLightNote =
+    Number.isFinite(warmLight) && warmLight > 0
+      ? ` · ${Math.round(warmLight * 100)}% amber or warm light`
+      : "";
+  return `Clear ${value("sampleClear")} · Cloudy ${value("sampleCloudy")} · ${amber}${warmLightNote} · Cloudy or glare ${value("sampleCloudyOrGlare")}${tally}`;
 }
 
 function isCloneRootingRun(run: ToolRun | null) {
@@ -1823,6 +1854,14 @@ export default function SavedToolRunsScreen() {
           plantId: String(selectedRun?.plantId || "").trim() || undefined
         })
       : "";
+  const harvestRetryHref =
+    workspaceType === "personal" && selectedRunId && isHarvestRun(selectedRun)
+      ? personalHarvestRetryHref({
+          toolRunId: selectedRunId,
+          growId: String(selectedRun?.growId || growId || "").trim() || undefined,
+          plantId: String(selectedRun?.plantId || "").trim() || undefined
+        })
+      : "";
 
   return (
     <ScreenBoundary
@@ -1958,6 +1997,27 @@ export default function SavedToolRunsScreen() {
                     <Pressable
                       accessibilityRole="link"
                       accessibilityLabel="Re-run IPM Scout with saved evidence"
+                      style={styles.primary}
+                    >
+                      <Text style={styles.primaryText}>Re-run with Saved Evidence</Text>
+                    </Pressable>
+                  </Link>
+                </View>
+              </View>
+            ) : null}
+            {harvestRetryHref ? (
+              <View style={styles.editor}>
+                <View style={styles.studyPanel}>
+                  <Text style={styles.cardTitle}>Recheck the saved harvest photos</Text>
+                  <Text style={styles.cardText}>
+                    Reopen the exact private Harvest evidence for this grow without
+                    uploading it again. The historical result stays unchanged, and no new
+                    analysis or credit use starts until you press Analyze Photos.
+                  </Text>
+                  <Link href={harvestRetryHref} asChild>
+                    <Pressable
+                      accessibilityRole="link"
+                      accessibilityLabel="Re-run Harvest with saved evidence"
                       style={styles.primary}
                     >
                       <Text style={styles.primaryText}>Re-run with Saved Evidence</Text>

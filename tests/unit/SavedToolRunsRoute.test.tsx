@@ -3,6 +3,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import SavedToolRunsRoute, {
   personalDiagnosisRetryHref,
+  personalHarvestRetryHref,
   personalPlantIdRetryHref
 } from "@/app/home/personal/(tabs)/tools/saved-runs";
 
@@ -132,6 +133,19 @@ describe("SavedToolRunsRoute", () => {
 
     expect(href).toBe(
       "/home/personal/diagnose?retryToolRunId=diagnosis-run-1&growId=grow-1&plantId=plant-1"
+    );
+    expect(href).not.toMatch(/sourceContext|workspace|facility|commercial/i);
+  });
+
+  it("builds a Harvest saved-evidence retry with the grow needed to restore media", () => {
+    const href = personalHarvestRetryHref({
+      toolRunId: "harvest-run-1",
+      growId: "grow-1",
+      plantId: "plant-1"
+    });
+
+    expect(href).toBe(
+      "/home/personal/tools/harvest-readiness?retryToolRunId=harvest-run-1&growId=grow-1&plantId=plant-1"
     );
     expect(href).not.toMatch(/sourceContext|workspace|facility|commercial/i);
   });
@@ -344,7 +358,10 @@ describe("SavedToolRunsRoute", () => {
           visibleSampleEstimateUsable: true,
           sampleClear: 0.1,
           sampleCloudy: 0.45,
-          sampleAmber: 0.3,
+          sampleAmber: 0.1,
+          sampleAmberOrWarmLight: 0.2,
+          sampleAmberMin: 0.1,
+          sampleAmberMax: 0.3,
           sampleCloudyOrGlare: 0.15,
           visibleSampleHeadCount: 60,
           visibleSampleCountSource: "resolved_head_tally",
@@ -365,9 +382,15 @@ describe("SavedToolRunsRoute", () => {
 
     expect(
       await screen.findByText(
-        "Visible sampled heads: Clear 10% · Cloudy 45% · Amber 30% · Cloudy or glare 15% · 60 counted heads · high counting confidence"
+        "Visible sampled heads: Clear 10% · Cloudy 45% · Amber 10% confirmed to 30% possible · 20% amber or warm light · Cloudy or glare 15% · 60 counted heads · high counting confidence"
       )
     ).toBeTruthy();
+    const retryHref = personalHarvestRetryHref({
+      toolRunId: "harvest-run-1",
+      growId: "grow-1"
+    });
+    expect(screen.getByLabelText(`Link to ${retryHref}`)).toBeTruthy();
+    expect(screen.getByLabelText("Re-run Harvest with saved evidence")).toBeTruthy();
     expect(screen.getByText("Amber visibility: substantial visible")).toBeTruthy();
     expect(
       screen.getByText(

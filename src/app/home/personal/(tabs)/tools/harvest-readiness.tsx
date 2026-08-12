@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import BackendCalculatorToolScreen, {
   tomorrow
@@ -13,6 +14,7 @@ import {
 import { analyzeTrichomePhotos, type TrichomeVisionResult } from "@/api/harvestVision";
 import type { VideoWorkspaceType } from "@/api/videos";
 import { listEvidenceAssets, providerEvidencePayload } from "@/api/evidence";
+import { getToolRun, type ToolRun } from "@/api/toolRuns";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
@@ -37,6 +39,27 @@ type HarvestAnalysisDraft = {
   revisionKey: string;
   growId: string;
 };
+
+function savedHarvestEvidenceIds(run: ToolRun | null) {
+  const inputs = (run?.inputs || run?.input || run?.params || {}) as Record<string, any>;
+  const outputs = (run?.outputs || run?.result || {}) as Record<string, any>;
+  const photoAnalysis =
+    outputs.photoAnalysis && typeof outputs.photoAnalysis === "object"
+      ? outputs.photoAnalysis
+      : {};
+  return [
+    ...(Array.isArray(inputs.evidenceAssetIds) ? inputs.evidenceAssetIds : []),
+    ...(Array.isArray(inputs.selectedEvidenceAssetIds)
+      ? inputs.selectedEvidenceAssetIds
+      : []),
+    ...(Array.isArray(photoAnalysis.evidenceUsed) ? photoAnalysis.evidenceUsed : []),
+    ...(Array.isArray(photoAnalysis.selectedEvidenceAssetIds)
+      ? photoAnalysis.selectedEvidenceAssetIds
+      : [])
+  ]
+    .map(String)
+    .filter(Boolean);
+}
 
 function harvestAnalysisScopeKey(input: {
   workspaceType: VideoWorkspaceType;
@@ -88,9 +111,10 @@ function trichomeHeadTallyLabel(
     Number(counts.clear || 0) +
     Number(counts.cloudy || 0) +
     Number(counts.amber || 0) +
+    Number(counts.amberOrWarmLight || 0) +
     Number(counts.cloudyOrGlare || 0);
   if (!total) return "";
-  return ` · tally: ${counts.clear} clear / ${counts.cloudy} cloudy / ${counts.amber} amber / ${counts.cloudyOrGlare} cloudy or glare (${total} heads, ${finding.countingConfidence || "low"} confidence)`;
+  return ` · tally: ${counts.clear} clear / ${counts.cloudy} cloudy / ${counts.amber} confirmed amber / ${counts.amberOrWarmLight || 0} amber or warm light / ${counts.cloudyOrGlare} cloudy or glare (${total} heads, ${finding.countingConfidence || "low"} confidence)`;
 }
 
 function harvestPhotoRecoveryMessage(detail?: string) {
@@ -114,7 +138,8 @@ function HarvestPhotoAnalyzer({
   onScopeKeyChange,
   workspaceType,
   workspaceId,
-  facilityId
+  facilityId,
+  retryToolRunId
 }: {
   growId: string;
   plantId: string;
@@ -126,6 +151,7 @@ function HarvestPhotoAnalyzer({
   workspaceType: VideoWorkspaceType;
   workspaceId?: string;
   facilityId?: string;
+  retryToolRunId?: string;
 }) {
   const { palette } = useAppTheme();
   const photoStyles = useMemo(() => createHarvestPhotoStyles(palette), [palette]);
@@ -187,7 +213,7 @@ function HarvestPhotoAnalyzer({
     }
 
     setRestoringEvidence(true);
-    listEvidenceAssets({
+    const assetsPromise = listEvidenceAssets({
       growId,
       ...(workspaceType !== "personal"
         ? {
@@ -196,10 +222,22 @@ function HarvestPhotoAnalyzer({
             ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
           }
         : {})
-    })
-      .then((assets: EvidenceAsset[]) => {
+    });
+    const retryRunPromise =
+      retryToolRunId && workspaceType === "personal"
+        ? getToolRun(retryToolRunId).catch(() => null)
+        : Promise.resolve(null);
+
+    Promise.all([assetsPromise, retryRunPromise])
+      .then(([assets, retryRun]: [EvidenceAsset[], ToolRun | null]) => {
         if (!active) return;
-        const savedPhotos = assets
+        const exactRetryIds = new Set(savedHarvestEvidenceIds(retryRun));
+        const eligibleAssets = retryToolRunId
+          ? assets.filter((asset) =>
+              exactRetryIds.has(String(asset._id || asset.id || ""))
+            )
+          : assets;
+        const savedPhotos = eligibleAssets
           .filter(
             (asset: EvidenceAsset) =>
               asset.purpose === "harvest" &&
@@ -208,7 +246,7 @@ function HarvestPhotoAnalyzer({
               Boolean(asset.durableUrl)
           )
           .slice(0, PLANT_REVIEW_PHOTO_LIMIT);
-        const savedVideo = assets.find(
+        const savedVideo = eligibleAssets.find(
           (asset: EvidenceAsset) =>
             asset.purpose === "harvest" &&
             asset.assetType === "video" &&
@@ -216,6 +254,14 @@ function HarvestPhotoAnalyzer({
             Boolean(asset.durableUrl)
         );
         const restored = savedVideo ? [...savedPhotos, savedVideo] : savedPhotos;
+
+        if (retryToolRunId && !exactRetryIds.size) {
+          onEvidenceAssetsChange([]);
+          setRestoreFeedback(
+            "The saved run did not retain an exact Harvest evidence set. Choose the original grow photos before running a new analysis."
+          );
+          return;
+        }
 
         onEvidenceAssetsChange((current) => {
           const currentForGrow = current.filter(
@@ -229,7 +275,9 @@ function HarvestPhotoAnalyzer({
         });
         if (restored.length) {
           setRestoreFeedback(
-            `Restored ${savedPhotos.length} saved harvest photo${
+            `Restored ${savedPhotos.length} ${
+              retryToolRunId ? "exact " : "saved "
+            }harvest photo${
               savedPhotos.length === 1 ? "" : "s"
             }${savedVideo ? " and 1 source video" : ""} for this grow.`
           );
@@ -254,6 +302,7 @@ function HarvestPhotoAnalyzer({
     growId,
     onAnalysisDraft,
     onEvidenceAssetsChange,
+    retryToolRunId,
     workspaceId,
     workspaceType
   ]);
@@ -520,9 +569,25 @@ function HarvestPhotoAnalyzer({
               <Text style={photoStyles.feedback}>
                 {Math.round(Number(analysis.sampleClear) * 100)}% clear ·{" "}
                 {Math.round(Number(analysis.sampleCloudy) * 100)}% cloudy ·{" "}
-                {Math.round(Number(analysis.sampleAmber) * 100)}% amber ·{" "}
+                {Math.round(
+                  Number(analysis.sampleAmberMin ?? analysis.sampleAmber) * 100
+                )}
+                % confirmed amber to{" "}
+                {Math.round(
+                  Number(analysis.sampleAmberMax ?? analysis.sampleAmber) * 100
+                )}
+                % possible amber ·{" "}
                 {Math.round(Number(analysis.sampleCloudyOrGlare) * 100)}% cloudy or glare
               </Text>
+              {Number(analysis.sampleAmberOrWarmLight) > 0 ? (
+                <Text style={photoStyles.warning}>
+                  The possible-amber upper bound includes{" "}
+                  {Math.round(Number(analysis.sampleAmberOrWarmLight) * 100)}% of resolved
+                  yellow, orange, or brown heads that the current lighting could not
+                  separate from a warm cast. Those heads are not counted as confirmed
+                  amber.
+                </Text>
+              ) : null}
               {Number(analysis.visibleSampleHeadCount) > 0 ? (
                 <Text style={photoStyles.feedback}>
                   Counted heads: {analysis.visibleSampleHeadCount} · Counting confidence:{" "}
@@ -800,6 +865,12 @@ export default function HarvestReadinessToolRoute({
   workspaceType?: VideoWorkspaceType;
   workspaceId?: string;
 } = {}) {
+  const routeParams = useLocalSearchParams<{
+    retryToolRunId?: string | string[];
+  }>();
+  const retryToolRunId = Array.isArray(routeParams.retryToolRunId)
+    ? routeParams.retryToolRunId[0] || ""
+    : routeParams.retryToolRunId || "";
   const [visionDraft, setVisionDraft] = useState<HarvestAnalysisDraft | null>(null);
   const [activeAnalysisScopeKey, setActiveAnalysisScopeKey] = useState("");
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
@@ -876,6 +947,7 @@ export default function HarvestReadinessToolRoute({
             facilityId={
               activeWorkspaceType === "facility" ? facilityId || workspaceId : undefined
             }
+            retryToolRunId={retryToolRunId}
           />
         );
       }}
