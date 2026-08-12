@@ -18,6 +18,12 @@ const annotationTemplatePath = path.join(
   "fixtures",
   "harvest-trichome-counter-annotation-template.json"
 );
+const baselinePredictionTemplatePath = path.join(
+  ROOT,
+  "tests",
+  "fixtures",
+  "harvest-trichome-baseline-prediction-template.json"
+);
 
 function requireCondition(condition, message, errors) {
   if (!condition) errors.push(message);
@@ -35,11 +41,25 @@ function isUrl(value) {
 function main() {
   const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
   const annotationTemplate = JSON.parse(fs.readFileSync(annotationTemplatePath, "utf8"));
+  const baselinePredictionTemplate = JSON.parse(
+    fs.readFileSync(baselinePredictionTemplatePath, "utf8")
+  );
   const errors = [];
 
   requireCondition(
     fixture.schemaVersion === "growpath-harvest-trichome-qa-v1",
     "Unexpected Harvest trichome QA schema version.",
+    errors
+  );
+  requireCondition(
+    baselinePredictionTemplate.schemaVersion ===
+      "growpath-harvest-trichome-predictions-v1" &&
+      baselinePredictionTemplate.status === "deployed_baseline_aggregate_template" &&
+      Array.isArray(baselinePredictionTemplate.images) &&
+      baselinePredictionTemplate.images.length === 1 &&
+      Array.isArray(baselinePredictionTemplate.images[0].heads) &&
+      baselinePredictionTemplate.images[0].heads.length === 0,
+    "The deployed baseline template must preserve aggregate tallies without invented head boxes.",
     errors
   );
 
@@ -118,12 +138,29 @@ function main() {
   requireCondition(
     fixture.counterEvaluationGate?.annotationTemplate ===
       "tests/fixtures/harvest-trichome-counter-annotation-template.json" &&
+      fixture.counterEvaluationGate?.baselinePredictionTemplate ===
+        "tests/fixtures/harvest-trichome-baseline-prediction-template.json" &&
       String(fixture.counterEvaluationGate?.acceptance || "").includes(
-        "Candidate amber F1 and recall must improve"
+        "must meet every absolute detector"
       ) &&
       Array.isArray(fixture.counterEvaluationGate?.separateMetrics) &&
-      fixture.counterEvaluationGate.separateMetrics.length >= 4,
-    "Counter evaluation must keep detection, class, false-amber, and interval gates separate.",
+      fixture.counterEvaluationGate.separateMetrics.length >= 5 &&
+      fixture.counterEvaluationGate?.absoluteCandidateFloors?.minimumDetectionPrecision >=
+        0.8 &&
+      fixture.counterEvaluationGate?.absoluteCandidateFloors?.minimumDetectionRecall >=
+        0.8 &&
+      fixture.counterEvaluationGate?.absoluteCandidateFloors?.minimumDetectionF1 >= 0.8 &&
+      fixture.counterEvaluationGate?.absoluteCandidateFloors
+        ?.minimumResolvedClassMacroF1 >= 0.75 &&
+      fixture.counterEvaluationGate?.absoluteCandidateFloors?.minimumAmberF1 >= 0.75 &&
+      fixture.counterEvaluationGate?.absoluteCandidateFloors?.minimumAmberRecall >= 0.8 &&
+      fixture.counterEvaluationGate?.absoluteCandidateFloors?.maximumFalseAmberRate <=
+        0.15 &&
+      fixture.counterEvaluationGate?.absoluteCandidateFloors
+        ?.minimumPossibleAmberCoverage >= 0.8 &&
+      fixture.counterEvaluationGate?.absoluteCandidateFloors
+        ?.maximumMeanAmberIntervalError <= 0.08,
+    "Counter evaluation must preserve aggregate-baseline truth and absolute detector, class, false-amber, and interval floors.",
     errors
   );
 

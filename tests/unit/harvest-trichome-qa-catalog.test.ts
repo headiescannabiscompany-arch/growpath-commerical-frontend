@@ -104,18 +104,26 @@ describe("Harvest trichome QA catalog", () => {
     ]);
   });
 
-  it("requires measured amber improvement without hiding detector regressions", () => {
+  it("requires complete aggregate comparison and absolute candidate floors", () => {
     const catalog = loadCatalog();
 
     expect(catalog.counterEvaluationGate).toMatchObject({
       annotationTemplate:
         "tests/fixtures/harvest-trichome-counter-annotation-template.json",
+      baselinePredictionTemplate:
+        "tests/fixtures/harvest-trichome-baseline-prediction-template.json",
       separateMetrics: expect.arrayContaining([
         expect.stringMatching(/head detection precision/i),
         expect.stringMatching(/amber false-positive rate/i),
         expect.stringMatching(/possible-amber interval coverage/i)
       ]),
-      acceptance: expect.stringMatching(/amber F1 and recall must improve/i)
+      absoluteCandidateFloors: expect.objectContaining({
+        minimumDetectionF1: 0.8,
+        minimumAmberF1: 0.75,
+        minimumAmberRecall: 0.8,
+        maximumFalseAmberRate: 0.15
+      }),
+      acceptance: expect.stringMatching(/must meet every absolute detector/i)
     });
   });
 

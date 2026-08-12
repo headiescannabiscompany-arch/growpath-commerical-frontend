@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "growpath-harvest-trichome-predictions-v1",
+  "status": "deployed_baseline_aggregate_template",
+  "purpose": "Map each blinded evaluation image to the deployed review's per-image resolvedHeadCounts. Do not invent per-head boxes that production did not return.",
+  "images": [
+    {
+      "imageId": "must-match-reviewed-annotation-imageId",
+      "aggregateCounts": {
+        "clear": 0,
+        "cloudy": 0,
+        "amber": 0,
+        "amber_or_warm_light": 0,
+        "cloudy_or_glare": 0
+      },
+      "heads": []
+    }
+  ]
+}
