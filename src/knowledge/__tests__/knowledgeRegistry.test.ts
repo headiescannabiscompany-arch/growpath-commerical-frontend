@@ -302,6 +302,9 @@ describe("GrowPath knowledge registries", () => {
       "server-enforced Commercial course readiness with draft-only creation, save-before-publish, explicit unpublish, and published-content mutation lock"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "confirmed owner-scoped soft archive for private Commercial course drafts with retained audit history"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "mutually exclusive single-flight Product Trial detail, claim-review, and evidence-task writes"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -366,6 +369,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never publish an incomplete or unsaved Commercial course, accept typed lifecycle state, mutate published course content in place, or silently coerce an invalid paid price to zero."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never hard-delete a Commercial course through routine cleanup or archive a published course without returning it to draft first."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never allow duplicate or concurrent Product Trial detail, claim-review, or evidence-task writes, discard their failed drafts, or detach a task from the exact trial context."

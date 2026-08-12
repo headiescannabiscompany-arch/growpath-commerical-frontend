@@ -595,6 +595,9 @@ describe("commercial workflow pages", () => {
           }
         });
       }
+      if (path === "/api/commercial/courses/course-1" && options?.method === "DELETE") {
+        return Promise.resolve({ archived: true });
+      }
       if (path === "/api/forum/feed/latest" && !options?.method) {
         return Promise.resolve({
           posts: [
@@ -1667,6 +1670,25 @@ describe("commercial workflow pages", () => {
       expect(screen.getByLabelText("Save commercial course detail")).toBeTruthy()
     );
     expect(screen.getByLabelText("Add commercial course lesson")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Archive commercial course"));
+    expect(mockApiRequest).not.toHaveBeenCalledWith(
+      "/api/commercial/courses/course-1",
+      expect.objectContaining({ method: "DELETE" })
+    );
+    expect(screen.getByText("Archive this draft course?")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Confirm archive commercial course"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/courses/course-1",
+        expect.objectContaining({ method: "DELETE" })
+      )
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByText("Course archived. Returning to active courses.")
+      ).toBeTruthy()
+    );
   });
 
   it("renders the commercial owner learner preview for draft courses", async () => {

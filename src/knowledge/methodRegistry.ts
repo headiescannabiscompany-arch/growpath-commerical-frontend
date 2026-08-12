@@ -720,7 +720,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "connection-derived read-only EventSub status and checked Commercial Live visibility controls",
       "readable calendar selection with direct year, month, day, and optional time controls",
       "single-flight review-first CSV and PDF catalog import with cross-platform status feedback",
-      "server-enforced Commercial course readiness with draft-only creation, save-before-publish, explicit unpublish, and published-content mutation lock"
+      "server-enforced Commercial course readiness with draft-only creation, save-before-publish, explicit unpublish, and published-content mutation lock",
+      "confirmed owner-scoped soft archive for private Commercial course drafts with retained audit history"
     ],
     [
       "Never cross workspace scope or invent product claims.",
@@ -776,7 +777,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never expose raw integration transport codes as workflow content or claim an integration is connected without verified configuration state.",
       "Never require an ordinary Commercial user to type an ISO date or date-time string.",
       "Never depend on a native-only alert for Commercial catalog import fallback, permit duplicate concurrent extraction or draft-creation requests, accept a PDF extraction without a protected source URL, or imply an imported draft is published.",
-      "Never publish an incomplete or unsaved Commercial course, accept typed lifecycle state, mutate published course content in place, or silently coerce an invalid paid price to zero."
+      "Never publish an incomplete or unsaved Commercial course, accept typed lifecycle state, mutate published course content in place, or silently coerce an invalid paid price to zero.",
+      "Never hard-delete a Commercial course through routine cleanup or archive a published course without returning it to draft first."
     ],
     ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
   ),

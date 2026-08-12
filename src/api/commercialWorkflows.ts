@@ -481,6 +481,12 @@ export async function unpublishCommercialCourse(id: string) {
   return res?.course ?? res?.commercialCourse ?? res?.updated ?? res;
 }
 
+export async function archiveCommercialCourse(id: string) {
+  await apiRequest(`/api/commercial/courses/${encodeURIComponent(id)}`, {
+    method: "DELETE"
+  });
+}
+
 export async function fetchCommercialLives(): Promise<CommercialLiveEvent[]> {
   const res = await apiRequest("/api/commercial/lives");
   return listFromEnvelope(res, ["lives", "liveEvents", "commercialLives"]);
