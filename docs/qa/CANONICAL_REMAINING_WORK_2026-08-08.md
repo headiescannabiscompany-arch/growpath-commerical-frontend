@@ -56,7 +56,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   ledger, and linked-record gaps without converting them into acceptance. A real
   authorized staging execution and its cleanup evidence remain. It stays gated
   behind `RUN_GROWPATH_DIAGNOSIS_IPM_STAGING` because execution spends provider
-  credits and writes staging ToolRuns.
+  credits and writes staging ToolRuns. The Harvest v8 image-coverage change was
+  regression-checked without changing Diagnosis/IPM behavior: 188 focused calculator,
+  image-review, integrity, second-opinion, follow-up, billing, and shared-crop tests
+  passed on 2026-08-12, including the thrips-compatible-damage and generic-white-mark
+  uncertainty guards. Further rule changes require a failing governed or retained real
+  case; the next substantive step remains authorized 252-case staging execution.
 - [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
       licenses, and exact follow-up-photo expectations. Never use the pack as training
