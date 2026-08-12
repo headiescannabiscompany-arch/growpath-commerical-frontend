@@ -115,6 +115,14 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   Cannabis/hemp public-context consent. Source, 94 focused tests, all 89 regression
   batches, TypeScript, lint, and the full contract/delivery guard pass; deployment
   and signed-in data-bearing production acceptance remain before this item can close.
+  On 2026-08-12, signed-in production verified that Plant ID visibly supports `No
+  grow`, private current location without a Field Study, and an optional approximate
+  Nature photo pin with explicit exact-coordinate and Personal-account privacy text.
+  The public globe loaded, linked back to Identify a Plant, exposed location fallback,
+  search, review/invasive filters, and photo-observation results, but reported zero
+  published pins in that session. Therefore deployment and the empty public viewer
+  are verified; one deliberate location-enabled photo publication, reload, viewer
+  card/photo open, privacy check, and withdrawal still remain data-bearing acceptance.
   The correction flow is
   live-verified on the same retained run: saving the common identity `cannabis`
   marks it user-corrected, preserves/rejects the original AI draft, keeps exact
