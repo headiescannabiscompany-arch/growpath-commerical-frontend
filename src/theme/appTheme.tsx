@@ -375,33 +375,10 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [mode, autoStrategy, themeLocation]);
 
-  useEffect(() => {
-    if (!hydrated || mode !== "auto" || autoLocationPrompted || themeLocation) return;
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const coordinates = await requestCurrentCoordinates({
-          promptForPermission: false
-        });
-        if (cancelled || !coordinates) return;
-        const nextLocation: ThemeLocationPreference = {
-          ...coordinates,
-          updatedAt: new Date().toISOString()
-        };
-        setAutoStrategy("location");
-        setThemeLocation(nextLocation);
-      } catch {
-        if (!cancelled) {
-          // Leave auto mode on device theme when location is unavailable.
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [autoLocationPrompted, hydrated, mode, themeLocation]);
+  // Never inspect or request browser location during app startup. Theme hydration used
+  // to perform a silent geolocation check here, which meant opening GrowPath could
+  // touch the same browser permission that Plant ID and Nature need. Auto mode follows
+  // device appearance until the user explicitly enables location-based sunrise/sunset.
 
   const setThemeMode = useCallback((next: ThemeMode) => {
     setMode(next);
