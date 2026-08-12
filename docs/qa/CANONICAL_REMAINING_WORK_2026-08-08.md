@@ -157,7 +157,7 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   batches, TypeScript, lint, and the full contract/delivery guard pass; deployment
   and signed-in data-bearing production acceptance remain before this item can close.
   On 2026-08-12, signed-in production verified that Plant ID visibly supports `No
-  grow`, private current location without a Field Study, and an optional approximate
+grow`, private current location without a Field Study, and an optional approximate
   Nature photo pin with explicit exact-coordinate and Personal-account privacy text.
   The public globe loaded, linked back to Identify a Plant, exposed location fallback,
   search, review/invasive filters, and photo-observation results, but reported zero
