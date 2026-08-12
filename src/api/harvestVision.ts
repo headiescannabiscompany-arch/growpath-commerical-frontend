@@ -13,6 +13,9 @@ export type TrichomeVisionResult = {
   sampleAmber?: number | null;
   sampleCloudyOrGlare?: number | null;
   sampleEstimateBasis?: string;
+  visibleSampleHeadCount?: number;
+  visibleSampleCountSource?: "resolved_head_tally" | "provider_proportion" | "none";
+  visibleSampleCountingConfidence?: "high" | "medium" | "low" | "not_counted";
   confidence: number;
   dominant: "clear" | "cloudy" | "amber" | "uncertain";
   cloudinessObservation?:
@@ -50,11 +53,20 @@ export type TrichomeVisionResult = {
       | "additional_macro"
       | "uncertain";
     usableForDistribution: boolean;
+    usableForVisibleSample?: boolean;
     trichomeRichRegion: string;
     excludedReason: string;
     focus: "sharp" | "partial" | "blurred";
     glare: "none" | "localized" | "blocking";
     visibleHeadDetail: "sufficient" | "limited" | "unresolved";
+    resolvedHeadCounts?: {
+      clear: number;
+      cloudy: number;
+      amber: number;
+      cloudyOrGlare: number;
+    };
+    resolvedHeadTotal?: number;
+    countingConfidence?: "high" | "medium" | "low" | "not_counted";
   }>;
   provider: string;
   providerLabel: string;

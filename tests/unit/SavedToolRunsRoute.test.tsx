@@ -346,6 +346,9 @@ describe("SavedToolRunsRoute", () => {
           sampleCloudy: 0.45,
           sampleAmber: 0.3,
           sampleCloudyOrGlare: 0.15,
+          visibleSampleHeadCount: 60,
+          visibleSampleCountSource: "resolved_head_tally",
+          visibleSampleCountingConfidence: "high",
           sampleEstimateBasis: "Glare-free calyx regions in images 1 and 3.",
           amberVisibility: "substantial_visible",
           amberEvidenceBasis: "Multiple intact amber heads were visible in image 3.",
@@ -362,7 +365,7 @@ describe("SavedToolRunsRoute", () => {
 
     expect(
       await screen.findByText(
-        "Visible sampled heads: Clear 10% · Cloudy 45% · Amber 30% · Cloudy or glare 15%"
+        "Visible sampled heads: Clear 10% · Cloudy 45% · Amber 30% · Cloudy or glare 15% · 60 counted heads · high counting confidence"
       )
     ).toBeTruthy();
     expect(screen.getByText("Amber visibility: substantial visible")).toBeTruthy();

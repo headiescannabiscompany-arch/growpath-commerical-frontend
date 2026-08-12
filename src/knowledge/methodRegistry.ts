@@ -502,6 +502,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "exact dedicated Harvest vision model recorded in the signed review without inheriting a cost-optimized global mini model",
       "center and attention-selected diagnostic views for every original in the minimum four-photo Harvest set",
       "visible sampled-head estimate split into clear, cloudy, amber, and cloudy-or-glare with exact region basis and an explicit no-whole-plant-percentage boundary",
+      "server-calculated visible-sample percentage from non-overlapping per-original resolved-head tallies, including counted-head total and low, medium, or high counting confidence",
       "explicit user-date or breeder-timing planning range with separate reasons the window may be open, reasons to wait, missing evidence, confidence, and a non-trichome-date boundary"
     ],
     [
@@ -527,6 +528,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never overwrite a user-reviewed trichome percentage with the attested AI value or continue labeling an edited distribution AI-derived; preserve it as a manual override, reconstruct each unreviewed field from the attested snapshot, clear unusable unreviewed drafts, and retain the attested photo snapshot separately.",
       "Never silently coerce missing trichome observations to zero or score a distribution that does not total about 100%.",
       "Never replace or downscale the original image for AI inspection; diagnostic crops supplement the original and remain bound to it rather than counting as another photo, sample, site, or observation.",
+      "Never count bright pixels, sparkles, pistils, plant hairs, colored plant tissue, blurred circles, compression artifacts, sugar-leaf edge heads, or the same head repeated in enlarged crops as resolved trichome heads; ambiguous resolved white heads belong in cloudy-or-glare.",
       "Never convert missing qualified trichome evidence into a generic three-to-seven-day harvest recommendation or imply trichome maturity was assessed. A low-confidence planning range is allowed only from an explicit user approximate date or explicit flower-day plus breeder timing, with separate reasons to harvest, reasons to wait, missing evidence, and range provenance; it cannot create an automatic harvest decision or dry/cure deadline.",
       "Never let fresh pistils alone overrule a qualified representative advanced-amber distribution; surface the open harvest window and explain uneven or newly developing tissue as a possible conflict to review.",
       "Keep the shared harvest-readiness route discoverable in cannabis-aware Personal Tools and contextual cannabis grow surfaces, including untagged legacy cannabis grows and grows with attached cannabis-only workflow evidence."

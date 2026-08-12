@@ -220,7 +220,12 @@ function savedHarvestSampleEstimate(photo: Record<string, any> | null) {
     const percent = Number(photo[key]);
     return Number.isFinite(percent) ? `${Math.round(percent * 100)}%` : "-";
   };
-  return `Clear ${value("sampleClear")} · Cloudy ${value("sampleCloudy")} · Amber ${value("sampleAmber")} · Cloudy or glare ${value("sampleCloudyOrGlare")}`;
+  const countedHeads = Number(photo.visibleSampleHeadCount);
+  const tally =
+    Number.isFinite(countedHeads) && countedHeads > 0
+      ? ` · ${Math.trunc(countedHeads)} counted heads · ${photo.visibleSampleCountingConfidence || "low"} counting confidence`
+      : "";
+  return `Clear ${value("sampleClear")} · Cloudy ${value("sampleCloudy")} · Amber ${value("sampleAmber")} · Cloudy or glare ${value("sampleCloudyOrGlare")}${tally}`;
 }
 
 function isCloneRootingRun(run: ToolRun | null) {

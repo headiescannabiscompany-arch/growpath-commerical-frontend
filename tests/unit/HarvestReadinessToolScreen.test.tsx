@@ -991,12 +991,36 @@ describe("HarvestReadinessToolRoute", () => {
       sampleAmber: 0.3,
       sampleCloudyOrGlare: 0.25,
       sampleEstimateBasis: "Visible intact heads in the center calyx regions.",
+      visibleSampleHeadCount: 40,
+      visibleSampleCountSource: "resolved_head_tally",
+      visibleSampleCountingConfidence: "medium",
       confidence: 0.24,
       dominant: "uncertain",
       visibleTraits: ["Pistils visible; gland heads blurred"],
       evidence: [],
       recommendation: "Move closer and stabilize the camera.",
       limitations: ["Trichome heads are out of focus."],
+      imageFindings: [
+        {
+          imageIndex: 1,
+          role: "additional_macro",
+          usableForDistribution: false,
+          usableForVisibleSample: true,
+          trichomeRichRegion: "center calyx",
+          excludedReason: "Representative site coverage is incomplete.",
+          focus: "partial",
+          glare: "localized",
+          visibleHeadDetail: "limited",
+          resolvedHeadCounts: {
+            clear: 4,
+            cloudy: 14,
+            amber: 12,
+            cloudyOrGlare: 10
+          },
+          resolvedHeadTotal: 40,
+          countingConfidence: "medium"
+        }
+      ],
       provider: "openai",
       providerLabel: "OpenAI trichome image review",
       providerModel: "gpt-4o-mini",
@@ -1033,6 +1057,16 @@ describe("HarvestReadinessToolRoute", () => {
     );
     expect(
       screen.getByText("10% clear · 35% cloudy · 30% amber · 25% cloudy or glare")
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Counted heads: 40 · Counting confidence: medium · Percentages calculated from the per-photo tallies"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        /tally: 4 clear \/ 14 cloudy \/ 12 amber \/ 10 cloudy or glare \(40 heads, medium confidence\)/i
+      )
     ).toBeTruthy();
     expect(screen.getByText(/never a whole-plant percentage/i)).toBeTruthy();
     expect(screen.getByText("Move closer and stabilize the camera.")).toBeTruthy();
