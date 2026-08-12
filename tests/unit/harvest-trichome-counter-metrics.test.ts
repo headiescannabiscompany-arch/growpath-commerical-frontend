@@ -1,6 +1,7 @@
 const {
   compareCandidate,
   evaluateCounter,
+  finalizeEvaluationDataset,
   intersectionOverUnion,
   validateEvaluationDataset
 } = require("../../scripts/lib/harvest-trichome-counter-metrics.cjs");
@@ -113,5 +114,90 @@ describe("Harvest trichome counter metrics", () => {
       "glare",
       "low_light"
     ]);
+  });
+
+  it("prevents metadata from weakening the canonical evaluation floor", () => {
+    const template = require("../fixtures/harvest-trichome-counter-annotation-template.json");
+    const weakened = {
+      ...template,
+      eligibilityPolicy: {
+        ...template.eligibilityPolicy,
+        minimumQualifiedImages: 1,
+        minimumLabeledHeads: 1
+      }
+    };
+
+    expect(
+      validateEvaluationDataset(weakened, { requireReadyFlag: false }).reasons
+    ).toEqual(
+      expect.arrayContaining([
+        "eligibility floor weakened: minimumQualifiedImages",
+        "eligibility floor weakened: minimumLabeledHeads"
+      ])
+    );
+  });
+
+  it("finalizes only an eligible dataset with exact staging confirmation", () => {
+    const classes = [
+      "clear",
+      "cloudy",
+      "amber",
+      "amber_or_warm_light",
+      "cloudy_or_glare"
+    ];
+    const images = Array.from({ length: 50 }, (_, imageIndex) => ({
+      imageId: `image-${imageIndex + 1}`,
+      captureSessionId: `session-${(imageIndex % 10) + 1}`,
+      deviceModel: `phone-${(imageIndex % 3) + 1}`,
+      lightingConditions: [["neutral", "warm", "glare", "low_light"][imageIndex % 4]],
+      rights: { sourceId: "owned", licenseId: "GROWPATH_OWNED" },
+      reviewerAgreement: { independentReviewers: 2, adjudicated: true },
+      heads: Array.from({ length: 20 }, (_, headIndex) => ({
+        id: `image-${imageIndex + 1}-head-${headIndex + 1}`,
+        class: classes[(imageIndex * 20 + headIndex) % classes.length],
+        box: {
+          x: (headIndex % 10) / 10,
+          y: Math.floor(headIndex / 10) / 2,
+          width: 0.05,
+          height: 0.05
+        }
+      }))
+    }));
+    const document = {
+      evaluationReady: false,
+      eligibilityPolicy: {
+        minimumQualifiedImages: 50,
+        minimumLabeledHeads: 1000,
+        minimumCaptureSessions: 10,
+        minimumDeviceModels: 3,
+        minimumPerResolvedClass: 100,
+        requiredLightingConditions: ["neutral", "warm", "glare", "low_light"],
+        independentReviewersPerImage: 2,
+        adjudicationRequired: true
+      },
+      images
+    };
+
+    expect(() =>
+      finalizeEvaluationDataset(document, {
+        confirmation: "wrong",
+        reviewedBy: "qa-reviewer",
+        reviewedAt: "2026-08-12"
+      })
+    ).toThrow(/exact confirmation/i);
+    const finalized = finalizeEvaluationDataset(document, {
+      confirmation: "RUN_GROWPATH_HARVEST_TRICHOME_STAGING",
+      reviewedBy: "qa-reviewer",
+      reviewedAt: "2026-08-12"
+    });
+    expect(finalized).toMatchObject({
+      status: "reviewed_staging_evaluation_ready",
+      evaluationReady: true,
+      finalReview: {
+        reviewedBy: "qa-reviewer",
+        reviewedAt: "2026-08-12"
+      }
+    });
+    expect(validateEvaluationDataset(finalized)).toEqual({ ready: true, reasons: [] });
   });
 });

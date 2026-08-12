@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "growpath-harvest-trichome-label-metadata-v1",
+  "eligibilityPolicy": {
+    "minimumQualifiedImages": 50,
+    "minimumLabeledHeads": 1000,
+    "minimumCaptureSessions": 10,
+    "minimumDeviceModels": 3,
+    "minimumPerResolvedClass": 100,
+    "requiredLightingConditions": ["neutral", "warm", "glare", "low_light"],
+    "independentReviewersPerImage": 2,
+    "adjudicationRequired": true
+  },
+  "taskFieldRequirements": {
+    "taskId": "Label Studio task ID",
+    "imageId": "Unique stable private calibration image ID",
+    "assetLocator": "Private non-expiring calibration asset locator; never a signed production URL",
+    "captureSessionId": "Stable capture session ID",
+    "deviceModel": "Phone or camera model",
+    "captureType": "ordinary_phone_macro or reviewed alternative",
+    "lightingConditions": ["neutral"],
+    "sampleRegion": "calyx",
+    "adjudicatedAnnotationId": "Optional when Label Studio ground_truth is set",
+    "rights": {
+      "sourceId": "Reviewed source ID",
+      "licenseId": "GROWPATH_OWNED, OWNER_PERMISSION, CC-BY-4.0, CC0-1.0, or US-PUBLIC-DOMAIN",
+      "reviewedAt": "YYYY-MM-DD",
+      "approvedForCommercialQa": true,
+      "attribution": "Required creator/source attribution"
+    }
+  },
+  "tasks": []
+}

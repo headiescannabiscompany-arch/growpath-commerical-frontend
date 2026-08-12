@@ -8,6 +8,16 @@ const COUNTABLE_CLASSES = [
   "cloudy_or_glare"
 ];
 const RESOLVED_CLASSES = ["clear", "cloudy", "amber"];
+const CANONICAL_ELIGIBILITY_FLOORS = {
+  minimumQualifiedImages: 50,
+  minimumLabeledHeads: 1000,
+  minimumCaptureSessions: 10,
+  minimumDeviceModels: 3,
+  minimumPerResolvedClass: 100,
+  independentReviewersPerImage: 2,
+  requiredLightingConditions: ["neutral", "warm", "glare", "low_light"]
+};
+const STAGING_CONFIRMATION = "RUN_GROWPATH_HARVEST_TRICHOME_STAGING";
 
 function safeDivide(numerator, denominator) {
   return denominator > 0 ? numerator / denominator : 0;
@@ -236,7 +246,7 @@ function compareCandidate(baseline, candidate) {
   return { accepted: Object.values(checks).every(Boolean), checks };
 }
 
-function validateEvaluationDataset(document = {}) {
+function validateEvaluationDataset(document = {}, options = {}) {
   const policy = document.eligibilityPolicy || {};
   const images = Array.isArray(document.images) ? document.images : [];
   const heads = flattenedHeads(document);
@@ -244,7 +254,22 @@ function validateEvaluationDataset(document = {}) {
   const devices = new Set(images.map((image) => image.deviceModel).filter(Boolean));
   const conditions = new Set(images.flatMap((image) => image.lightingConditions || []));
   const reasons = [];
-  if (document.evaluationReady !== true) reasons.push("evaluationReady is not true");
+  if (options.requireReadyFlag !== false && document.evaluationReady !== true) {
+    reasons.push("evaluationReady is not true");
+  }
+  for (const [field, floor] of Object.entries(CANONICAL_ELIGIBILITY_FLOORS)) {
+    if (field === "requiredLightingConditions") continue;
+    if (Number(policy[field]) < floor)
+      reasons.push(`eligibility floor weakened: ${field}`);
+  }
+  if (policy.adjudicationRequired !== true) {
+    reasons.push("eligibility floor weakened: adjudicationRequired");
+  }
+  for (const condition of CANONICAL_ELIGIBILITY_FLOORS.requiredLightingConditions) {
+    if (!(policy.requiredLightingConditions || []).includes(condition)) {
+      reasons.push(`eligibility floor weakened: lighting ${condition}`);
+    }
+  }
   if (images.length < Number(policy.minimumQualifiedImages || Infinity)) {
     reasons.push("not enough qualified images");
   }
@@ -281,11 +306,45 @@ function validateEvaluationDataset(document = {}) {
   return { ready: reasons.length === 0, reasons };
 }
 
+function finalizeEvaluationDataset(document, review = {}) {
+  if (cleanReviewValue(review.confirmation) !== STAGING_CONFIRMATION) {
+    throw new Error(`Final review requires exact confirmation: ${STAGING_CONFIRMATION}`);
+  }
+  const reviewedBy = cleanReviewValue(review.reviewedBy);
+  const reviewedAt = cleanReviewValue(review.reviewedAt);
+  if (!reviewedBy || !/^\d{4}-\d{2}-\d{2}$/.test(reviewedAt)) {
+    throw new Error(
+      "Final review requires reviewedBy and reviewedAt in YYYY-MM-DD form."
+    );
+  }
+  const readiness = validateEvaluationDataset(document, { requireReadyFlag: false });
+  if (!readiness.ready) {
+    throw new Error(`Dataset is not eligible: ${readiness.reasons.join("; ")}`);
+  }
+  return {
+    ...document,
+    status: "reviewed_staging_evaluation_ready",
+    evaluationReady: true,
+    finalReview: {
+      reviewedBy,
+      reviewedAt,
+      confirmation: STAGING_CONFIRMATION
+    }
+  };
+}
+
+function cleanReviewValue(value) {
+  return String(value ?? "").trim();
+}
+
 module.exports = {
+  CANONICAL_ELIGIBILITY_FLOORS,
   COUNTABLE_CLASSES,
   RESOLVED_CLASSES,
   compareCandidate,
   evaluateCounter,
+  finalizeEvaluationDataset,
   intersectionOverUnion,
+  STAGING_CONFIRMATION,
   validateEvaluationDataset
 };

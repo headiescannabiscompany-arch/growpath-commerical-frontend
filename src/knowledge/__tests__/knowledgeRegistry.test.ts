@@ -591,6 +591,15 @@ describe("GrowPath knowledge registries", () => {
     expect(getSourceEntry("agriculture-2026-460-trichome-vision")?.notes).toContain(
       "does not publish a downloadable image dataset or trained weights"
     );
+    expect(getSourceEntry("hf-siccan-trichome-seed-unverified")).toMatchObject({
+      reliabilityTier: "D",
+      trustedFor: [],
+      notTrustedFor: expect.arrayContaining(["qa_evaluation", "post_harvest"]),
+      lastReviewedAt: "2026-08-12"
+    });
+    expect(getSourceEntry("hf-siccan-trichome-seed-unverified")?.notes).toContain(
+      "Do not copy, label, train on, or score these files as GrowPath ground truth"
+    );
   });
 
   it("requires evidence and provider transparency in AI results", () => {

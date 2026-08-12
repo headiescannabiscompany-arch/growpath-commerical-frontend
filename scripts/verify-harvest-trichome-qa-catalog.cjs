@@ -141,6 +141,20 @@ function main() {
     errors
   );
 
+  requireCondition(
+    Array.isArray(fixture.quarantinedCandidates) &&
+      fixture.quarantinedCandidates.length >= 1 &&
+      fixture.quarantinedCandidates.every(
+        (item) =>
+          item.useAsMediaSource === false &&
+          item.useAsGroundTruth === false &&
+          Array.isArray(item.reasons) &&
+          item.reasons.length >= 4
+      ),
+    "Unverified candidate datasets must remain quarantined from media and ground-truth use.",
+    errors
+  );
+
   const sources = fixture.sources || [];
   requireCondition(
     sources.length >= 3,

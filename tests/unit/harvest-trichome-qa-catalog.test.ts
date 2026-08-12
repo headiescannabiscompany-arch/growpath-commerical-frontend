@@ -118,4 +118,21 @@ describe("Harvest trichome QA catalog", () => {
       acceptance: expect.stringMatching(/amber F1 and recall must improve/i)
     });
   });
+
+  it("quarantines a declared-open dataset when image provenance and labels are missing", () => {
+    const catalog = loadCatalog();
+
+    expect(catalog.quarantinedCandidates).toEqual([
+      expect.objectContaining({
+        sourceId: "hf-siccan-trichome-seed-unverified",
+        declaredLicenseId: "CC-BY-4.0",
+        useAsMediaSource: false,
+        useAsGroundTruth: false,
+        reasons: expect.arrayContaining([
+          expect.stringMatching(/labeled real-trichome dataset is still missing/i),
+          expect.stringMatching(/without image-level creator provenance/i)
+        ])
+      })
+    ]);
+  });
 });
