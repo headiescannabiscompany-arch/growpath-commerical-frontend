@@ -131,6 +131,9 @@ describe("GrowPath knowledge registries", () => {
       "saved-evidence hydration that retires the replaced Harvest dimension-only warning while preserving current focus, glare, compression, lighting, and provenance findings"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "bounded staging-counter tile selection that preserves spatial coverage of each large source photo before filling remaining detector slots by sharpness without treating tiles as independent sites"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "visible sampled-head estimate split into clear, cloudy, confirmed amber, amber-or-warm-light, and cloudy-or-glare with exact region basis, a confirmed-to-possible amber range, and an explicit no-whole-plant-percentage boundary"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
