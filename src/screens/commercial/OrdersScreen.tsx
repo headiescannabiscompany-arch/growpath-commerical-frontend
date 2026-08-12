@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -111,6 +111,22 @@ export function createCommercialOrdersStyles(palette: ThemePalette) {
     muted: {
       color: palette.textMuted,
       fontSize: 13
+    },
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "900"
+    },
+    progressRow: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10
     },
     feedback: {
       backgroundColor: palette.surfaceMuted,
@@ -266,22 +282,33 @@ export default function Orders() {
   const [orders, setOrders] = useState<CommercialOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [savingId, setSavingId] = useState("");
-  const [error, setError] = useState<UiErrorState | null>(null);
+  const [loadError, setLoadError] = useState<UiErrorState | null>(null);
+  const [actionError, setActionError] = useState<UiErrorState | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [pendingCancelId, setPendingCancelId] = useState("");
+  const loadInFlightRef = useRef(false);
+  const writeInFlightRef = useRef(false);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
+      if (loadInFlightRef.current || writeInFlightRef.current) return;
+      loadInFlightRef.current = true;
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
       setFeedback("");
+      setActionError(null);
+      setPendingCancelId("");
       try {
-        setError(null);
+        setLoadError(null);
         const res = await apiRequest(endpoints.commercial.orders, { method: "GET" });
         setOrders(asOrders(res));
+        setHasLoaded(true);
       } catch (e) {
-        setError(mapApiError.toInlineError(e));
+        setLoadError(mapApiError.toInlineError(e));
       } finally {
+        loadInFlightRef.current = false;
         setLoading(false);
         setRefreshing(false);
       }
@@ -310,31 +337,50 @@ export default function Orders() {
       revenue
     };
   }, [orders]);
+  const interactionBusy = loading || refreshing || Boolean(savingId);
 
   async function updateFulfillment(
     order: CommercialOrder,
     fulfillmentStatus: FulfillmentStatus
   ) {
     const id = orderKey(order);
-    if (!id) return;
+    if (!id || loadInFlightRef.current || writeInFlightRef.current) return;
+    writeInFlightRef.current = true;
     setSavingId(id);
     setFeedback("");
     try {
-      setError(null);
+      setLoadError(null);
+      setActionError(null);
       const res = await apiRequest(endpoints.commercial.order(id), {
         method: "PATCH",
         body: { fulfillmentStatus }
       });
       const updated = res?.order ?? res;
+      if (!updated || !orderKey(updated)) {
+        throw new Error(
+          "The order update response was incomplete. Reload and try again."
+        );
+      }
       setOrders((current) =>
         current.map((candidate) => (orderKey(candidate) === id ? updated : candidate))
       );
+      setPendingCancelId("");
       setFeedback(`${order.productName || "Order"} marked ${fulfillmentStatus}.`);
     } catch (e) {
-      setError(mapApiError.toInlineError(e));
+      setActionError(mapApiError.toInlineError(e));
     } finally {
+      writeInFlightRef.current = false;
       setSavingId("");
     }
+  }
+
+  function requestCancel(order: CommercialOrder) {
+    const id = orderKey(order);
+    if (!id || interactionBusy) return;
+    setLoadError(null);
+    setActionError(null);
+    setFeedback("");
+    setPendingCancelId(id);
   }
 
   if (!ent.ready) return null;
@@ -345,7 +391,7 @@ export default function Orders() {
       routeKey="commercial-orders"
       header={
         <View>
-          <Text accessibilityRole="header" style={styles.headerTitle}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.headerTitle}>
             Orders
           </Text>
           <Text style={styles.headerSubtitle}>
@@ -356,13 +402,30 @@ export default function Orders() {
         </View>
       }
     >
-      {error ? <InlineError error={error} onRetry={() => void load()} /> : null}
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {loadError ? <InlineError error={loadError} onRetry={() => void load()} /> : null}
+      {actionError ? <InlineError error={actionError} /> : null}
+      {feedback ? (
+        <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+          {feedback}
+        </Text>
+      ) : null}
+      {savingId ? (
+        <View
+          accessibilityLabel="Updating commercial order in progress"
+          accessibilityRole="progressbar"
+          accessibilityValue={{ text: "Updating commercial order" }}
+          style={styles.progressRow}
+        >
+          <ActivityIndicator color={palette.accent} />
+          <Text style={styles.muted}>Updating commercial order...</Text>
+        </View>
+      ) : null}
 
       <ScrollView
         refreshControl={
           <RefreshControl
             colors={[palette.accent]}
+            enabled={!interactionBusy}
             refreshing={refreshing}
             onRefresh={() => void load({ refresh: true })}
             tintColor={palette.accent}
@@ -370,33 +433,48 @@ export default function Orders() {
         }
         contentContainerStyle={styles.inner}
       >
-        <View style={styles.summaryGrid}>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>{summary.count}</Text>
-            <Text style={styles.summaryLabel}>Orders</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>{summary.paid}</Text>
-            <Text style={styles.summaryLabel}>Paid</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>{summary.unfulfilled}</Text>
-            <Text style={styles.summaryLabel}>Needs Fulfillment</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>${summary.revenue.toFixed(2)}</Text>
-            <Text style={styles.summaryLabel}>Revenue</Text>
-          </View>
-        </View>
+        {hasLoaded ? (
+          <>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              Order Summary
+            </Text>
+            <View style={styles.summaryGrid}>
+              <View style={styles.summaryCard}>
+                <Text style={styles.summaryValue}>{summary.count}</Text>
+                <Text style={styles.summaryLabel}>Orders</Text>
+              </View>
+              <View style={styles.summaryCard}>
+                <Text style={styles.summaryValue}>{summary.paid}</Text>
+                <Text style={styles.summaryLabel}>Paid</Text>
+              </View>
+              <View style={styles.summaryCard}>
+                <Text style={styles.summaryValue}>{summary.unfulfilled}</Text>
+                <Text style={styles.summaryLabel}>Needs Fulfillment</Text>
+              </View>
+              <View style={styles.summaryCard}>
+                <Text style={styles.summaryValue}>${summary.revenue.toFixed(2)}</Text>
+                <Text style={styles.summaryLabel}>Revenue</Text>
+              </View>
+            </View>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              Current Orders
+            </Text>
+          </>
+        ) : null}
 
         {loading ? (
-          <View style={styles.loading}>
+          <View
+            accessibilityLabel="Loading commercial orders"
+            accessibilityRole="progressbar"
+            accessibilityValue={{ text: "Loading commercial orders" }}
+            style={styles.loading}
+          >
             <ActivityIndicator color={palette.accent} />
             <Text style={styles.muted}>Loading orders...</Text>
           </View>
         ) : null}
 
-        {!loading && orders.length === 0 ? (
+        {hasLoaded && !loading && !loadError && orders.length === 0 ? (
           <AppCard style={styles.emptyCard}>
             <Text style={styles.cardTitle}>No Orders Yet</Text>
             <Text style={styles.cardDesc}>
@@ -450,11 +528,15 @@ export default function Orders() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Mark order ${order.productName || id} fulfilled`}
-                  disabled={saving || fulfillmentStatus === "fulfilled"}
+                  accessibilityState={{
+                    disabled: interactionBusy || fulfillmentStatus === "fulfilled"
+                  }}
+                  disabled={interactionBusy || fulfillmentStatus === "fulfilled"}
                   onPress={() => void updateFulfillment(order, "fulfilled")}
                   style={[
                     styles.actionButton,
-                    (saving || fulfillmentStatus === "fulfilled") && styles.disabledButton
+                    (interactionBusy || fulfillmentStatus === "fulfilled") &&
+                      styles.disabledButton
                   ]}
                 >
                   <Text style={styles.actionText}>
@@ -464,12 +546,15 @@ export default function Orders() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Reopen order ${order.productName || id}`}
-                  disabled={saving || fulfillmentStatus === "unfulfilled"}
+                  accessibilityState={{
+                    disabled: interactionBusy || fulfillmentStatus === "unfulfilled"
+                  }}
+                  disabled={interactionBusy || fulfillmentStatus === "unfulfilled"}
                   onPress={() => void updateFulfillment(order, "unfulfilled")}
                   style={[
                     styles.actionButton,
                     styles.secondaryButton,
-                    (saving || fulfillmentStatus === "unfulfilled") &&
+                    (interactionBusy || fulfillmentStatus === "unfulfilled") &&
                       styles.disabledButton
                   ]}
                 >
@@ -477,19 +562,62 @@ export default function Orders() {
                     Reopen
                   </Text>
                 </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Cancel order ${order.productName || id}`}
-                  disabled={saving || fulfillmentStatus === "canceled"}
-                  onPress={() => void updateFulfillment(order, "canceled")}
-                  style={[
-                    styles.actionButton,
-                    styles.dangerButton,
-                    (saving || fulfillmentStatus === "canceled") && styles.disabledButton
-                  ]}
-                >
-                  <Text style={[styles.actionText, styles.dangerActionText]}>Cancel</Text>
-                </Pressable>
+                {pendingCancelId === id ? (
+                  <>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Confirm cancel order ${order.productName || id}`}
+                      accessibilityState={{ disabled: interactionBusy }}
+                      disabled={interactionBusy}
+                      onPress={() => void updateFulfillment(order, "canceled")}
+                      style={[
+                        styles.actionButton,
+                        styles.dangerButton,
+                        interactionBusy && styles.disabledButton
+                      ]}
+                    >
+                      <Text style={[styles.actionText, styles.dangerActionText]}>
+                        Confirm Cancel
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Keep order ${order.productName || id}`}
+                      accessibilityState={{ disabled: interactionBusy }}
+                      disabled={interactionBusy}
+                      onPress={() => setPendingCancelId("")}
+                      style={[
+                        styles.actionButton,
+                        styles.secondaryButton,
+                        interactionBusy && styles.disabledButton
+                      ]}
+                    >
+                      <Text style={[styles.actionText, styles.secondaryActionText]}>
+                        Keep Order
+                      </Text>
+                    </Pressable>
+                  </>
+                ) : (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Cancel order ${order.productName || id}`}
+                    accessibilityState={{
+                      disabled: interactionBusy || fulfillmentStatus === "canceled"
+                    }}
+                    disabled={interactionBusy || fulfillmentStatus === "canceled"}
+                    onPress={() => requestCancel(order)}
+                    style={[
+                      styles.actionButton,
+                      styles.dangerButton,
+                      (interactionBusy || fulfillmentStatus === "canceled") &&
+                        styles.disabledButton
+                    ]}
+                  >
+                    <Text style={[styles.actionText, styles.dangerActionText]}>
+                      Cancel
+                    </Text>
+                  </Pressable>
+                )}
               </View>
             </AppCard>
           );

@@ -81,13 +81,17 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children, header }: any) => React.createElement(View, null, header, children);
+  return function MockAppPage({ children, header }: any) {
+    return React.createElement(View, null, header, children);
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children, ...props }: any) => React.createElement(View, props, children);
+  return function MockAppCard({ children, ...props }: any) {
+    return React.createElement(View, props, children);
+  };
 });
 
 describe("commercial workflow pages", () => {
@@ -3067,6 +3071,10 @@ describe("commercial workflow pages", () => {
 
   it("describes analytics as event-backed external clicks and trial outcomes", async () => {
     const screen = render(<CommercialAnalyticsRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByRole("header", { name: "Overview Metrics" })).toBeTruthy()
+    );
 
     expect(
       screen.getByRole("header", { name: "Commercial Analytics" }).props["aria-level"]

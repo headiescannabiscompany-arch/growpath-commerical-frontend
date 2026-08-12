@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { Link } from "expo-router";
 
@@ -10,6 +10,7 @@ import {
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { InlineError } from "@/components/InlineError";
+import { useApiErrorHandler, type UiErrorState } from "@/hooks/useApiErrorHandler";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -102,7 +103,11 @@ function ActionLink({ href, label }: { href: string; label: string }) {
 
   return (
     <Link href={href as any} asChild>
-      <Pressable accessibilityRole="link" style={styles.outlineButton}>
+      <Pressable
+        accessibilityLabel={`Open ${label}`}
+        accessibilityRole="link"
+        style={styles.outlineButton}
+      >
         <Text style={styles.outlineText}>{label}</Text>
       </Pressable>
     </Link>
@@ -125,23 +130,29 @@ function formatCurrency(cents: number, currency: string) {
 export default function CommercialAnalyticsRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createCommercialAnalyticsStyles(palette), [palette]);
+  const mapApiError = useApiErrorHandler();
   const [metrics, setMetrics] = useState<CommercialAnalyticsOverview>({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [error, setError] = useState<UiErrorState | null>(null);
+  const loadInFlightRef = useRef(false);
 
   const load = useCallback(async () => {
+    if (loadInFlightRef.current) return;
+    loadInFlightRef.current = true;
     setLoading(true);
     setError(null);
     try {
       const overview = await fetchCommercialAnalyticsOverview();
       setMetrics(overview || {});
+      setHasLoaded(true);
     } catch (err) {
-      setError(err);
-      setMetrics({});
+      setError(mapApiError.toInlineError(err));
     } finally {
+      loadInFlightRef.current = false;
       setLoading(false);
     }
-  }, []);
+  }, [mapApiError]);
 
   useEffect(() => {
     void load();
@@ -202,152 +213,171 @@ export default function CommercialAnalyticsRoute() {
     >
       {error ? <InlineError error={error} onRetry={() => void load()} /> : null}
 
-      <AppCard>
-        <View style={styles.cardHeader}>
-          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-            Overview Metrics
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Refresh commercial analytics"
-            disabled={loading}
-            onPress={() => void load()}
-            style={[styles.refreshButton, loading && styles.disabledButton]}
-          >
-            {loading ? <ActivityIndicator color={palette.accent} /> : null}
-            <Text style={styles.refreshText}>{loading ? "Loading" : "Refresh"}</Text>
-          </Pressable>
+      {loading && !hasLoaded ? (
+        <View
+          accessibilityLabel="Loading commercial analytics"
+          accessibilityRole="progressbar"
+          accessibilityValue={{ text: "Loading commercial analytics" }}
+          style={styles.loadingNotice}
+        >
+          <ActivityIndicator color={palette.accent} />
+          <Text style={styles.loadingText}>Loading recorded commercial activity...</Text>
         </View>
-        {!loading && !error && !hasRecordedActivity ? (
-          <View accessibilityRole="summary" style={styles.emptyNotice}>
-            <Text style={styles.emptyNoticeTitle}>No recorded activity yet</Text>
-            <Text style={styles.emptyNoticeBody}>
-              Analytics begins when a published storefront receives visits or explicit
-              campaign, course, live, trial, or paid-order activity is recorded. Draft
-              setup and owner workspace previews are not counted.
-            </Text>
-          </View>
-        ) : null}
-        <View style={styles.metricGrid}>
-          <MetricCard
-            label="Ad clicks"
-            value={normalized.adClicks}
-            helper="Clicks attributed to ads or campaign-style plans"
-          />
-          <MetricCard
-            label="Marketing link clicks"
-            value={normalized.marketingClicks}
-            helper="Outbound or tracked promotional link clicks"
-          />
-          <MetricCard
-            label="Storefront views"
-            value={normalized.storefrontViews}
-            helper="Public storefront visits"
-          />
-          <MetricCard
-            label="Brand profile views"
-            value={normalized.brandProfileViews}
-            helper="Public /brands profile visits"
-          />
-          <MetricCard
-            label="Product views"
-            value={normalized.productViews}
-            helper="Product page visits"
-          />
-          <MetricCard
-            label="Feed clicks"
-            value={normalized.feedClicks}
-            helper="Clicks from commercial feed campaigns"
-          />
-          <MetricCard
-            label="Course starts"
-            value={normalized.courseStarts}
-            helper="Commercial course starts"
-          />
-          <MetricCard
-            label="Forum replies"
-            value={normalized.forumReplies}
-            helper="Brand Forum/Q&A support replies"
-          />
-          <MetricCard
-            label="Active trials"
-            value={normalized.activeTrials}
-            helper={`${normalized.completedTrials.toLocaleString()} completed trials`}
-          />
-          <MetricCard
-            label="Feed impressions"
-            value={normalized.feedImpressions}
-            helper={`${normalized.feedConversions.toLocaleString()} recorded conversions`}
-          />
-          <MetricCard
-            label="Live views"
-            value={normalized.liveViews}
-            helper={`${normalized.liveRsvps.toLocaleString()} recorded RSVP actions`}
-          />
-          <MetricCard
-            label="Paid orders"
-            value={normalized.orderCount}
-            helper={`${Object.entries(
-              metrics.orderRevenueByCurrency || { USD: normalized.orderRevenueCents }
-            )
-              .map(([currency, cents]) => formatCurrency(Number(cents || 0), currency))
-              .join(" + ")} recorded revenue`}
-          />
-        </View>
-      </AppCard>
+      ) : null}
 
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Click and View Breakdown
-        </Text>
-        <Text style={styles.body}>
-          See which ads, products, storefronts, and outbound links are driving activity.
-          Public profile, store, and product page visits are attributed back to the
-          commercial account when the storefront or product can be resolved.
-        </Text>
-        <View style={styles.breakdownGrid}>
-          <BreakdownList
-            title="Top ads / campaigns"
-            rows={rowsFor(metrics, "ads")}
-            emptyText="No ad clicks yet."
-          />
-          <BreakdownList
-            title="Top products"
-            rows={rowsFor(metrics, "products")}
-            emptyText="No product views or clicks yet."
-          />
-          <BreakdownList
-            title="Top storefronts"
-            rows={rowsFor(metrics, "storefronts")}
-            emptyText="No storefront views yet."
-          />
-          <BreakdownList
-            title="Top links"
-            rows={rowsFor(metrics, "links")}
-            emptyText="No outbound link clicks yet."
-          />
-          <BreakdownList
-            title="Courses"
-            rows={rowsFor(metrics, "courses")}
-            emptyText="No recorded course engagement yet."
-          />
-          <BreakdownList
-            title="Lives"
-            rows={rowsFor(metrics, "lives")}
-            emptyText="No recorded live engagement yet."
-          />
-          <BreakdownList
-            title="Paid orders"
-            rows={rowsFor(metrics, "orders")}
-            emptyText="No paid internal orders yet."
-          />
-          <BreakdownList
-            title="Grow interests"
-            rows={rowsFor(metrics, "growInterests")}
-            emptyText="No event-backed grow-interest matches yet."
-          />
-        </View>
-      </AppCard>
+      {hasLoaded ? (
+        <>
+          <AppCard>
+            <View style={styles.cardHeader}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Overview Metrics
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Refresh commercial analytics"
+                accessibilityState={{ disabled: loading }}
+                disabled={loading}
+                onPress={() => void load()}
+                style={[styles.refreshButton, loading && styles.disabledButton]}
+              >
+                {loading ? <ActivityIndicator color={palette.accent} /> : null}
+                <Text style={styles.refreshText}>{loading ? "Loading" : "Refresh"}</Text>
+              </Pressable>
+            </View>
+            {!loading && !error && !hasRecordedActivity ? (
+              <View accessibilityRole="summary" style={styles.emptyNotice}>
+                <Text style={styles.emptyNoticeTitle}>No recorded activity yet</Text>
+                <Text style={styles.emptyNoticeBody}>
+                  Analytics begins when a published storefront receives visits or explicit
+                  campaign, course, live, trial, or paid-order activity is recorded. Draft
+                  setup and owner workspace previews are not counted.
+                </Text>
+              </View>
+            ) : null}
+            <View style={styles.metricGrid}>
+              <MetricCard
+                label="Ad clicks"
+                value={normalized.adClicks}
+                helper="Clicks attributed to ads or campaign-style plans"
+              />
+              <MetricCard
+                label="Marketing link clicks"
+                value={normalized.marketingClicks}
+                helper="Outbound or tracked promotional link clicks"
+              />
+              <MetricCard
+                label="Storefront views"
+                value={normalized.storefrontViews}
+                helper="Public storefront visits"
+              />
+              <MetricCard
+                label="Brand profile views"
+                value={normalized.brandProfileViews}
+                helper="Public /brands profile visits"
+              />
+              <MetricCard
+                label="Product views"
+                value={normalized.productViews}
+                helper="Product page visits"
+              />
+              <MetricCard
+                label="Feed clicks"
+                value={normalized.feedClicks}
+                helper="Clicks from commercial feed campaigns"
+              />
+              <MetricCard
+                label="Course starts"
+                value={normalized.courseStarts}
+                helper="Commercial course starts"
+              />
+              <MetricCard
+                label="Forum replies"
+                value={normalized.forumReplies}
+                helper="Brand Forum/Q&A support replies"
+              />
+              <MetricCard
+                label="Active trials"
+                value={normalized.activeTrials}
+                helper={`${normalized.completedTrials.toLocaleString()} completed trials`}
+              />
+              <MetricCard
+                label="Feed impressions"
+                value={normalized.feedImpressions}
+                helper={`${normalized.feedConversions.toLocaleString()} recorded conversions`}
+              />
+              <MetricCard
+                label="Live views"
+                value={normalized.liveViews}
+                helper={`${normalized.liveRsvps.toLocaleString()} recorded RSVP actions`}
+              />
+              <MetricCard
+                label="Paid orders"
+                value={normalized.orderCount}
+                helper={`${Object.entries(
+                  metrics.orderRevenueByCurrency || { USD: normalized.orderRevenueCents }
+                )
+                  .map(([currency, cents]) =>
+                    formatCurrency(Number(cents || 0), currency)
+                  )
+                  .join(" + ")} recorded revenue`}
+              />
+            </View>
+          </AppCard>
+
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Click and View Breakdown
+            </Text>
+            <Text style={styles.body}>
+              See which ads, products, storefronts, and outbound links are driving
+              activity. Public profile, store, and product page visits are attributed back
+              to the commercial account when the storefront or product can be resolved.
+            </Text>
+            <View style={styles.breakdownGrid}>
+              <BreakdownList
+                title="Top ads / campaigns"
+                rows={rowsFor(metrics, "ads")}
+                emptyText="No ad clicks yet."
+              />
+              <BreakdownList
+                title="Top products"
+                rows={rowsFor(metrics, "products")}
+                emptyText="No product views or clicks yet."
+              />
+              <BreakdownList
+                title="Top storefronts"
+                rows={rowsFor(metrics, "storefronts")}
+                emptyText="No storefront views yet."
+              />
+              <BreakdownList
+                title="Top links"
+                rows={rowsFor(metrics, "links")}
+                emptyText="No outbound link clicks yet."
+              />
+              <BreakdownList
+                title="Courses"
+                rows={rowsFor(metrics, "courses")}
+                emptyText="No recorded course engagement yet."
+              />
+              <BreakdownList
+                title="Lives"
+                rows={rowsFor(metrics, "lives")}
+                emptyText="No recorded live engagement yet."
+              />
+              <BreakdownList
+                title="Paid orders"
+                rows={rowsFor(metrics, "orders")}
+                emptyText="No paid internal orders yet."
+              />
+              <BreakdownList
+                title="Grow interests"
+                rows={rowsFor(metrics, "growInterests")}
+                emptyText="No event-backed grow-interest matches yet."
+              />
+            </View>
+          </AppCard>
+        </>
+      ) : null}
 
       <AppCard>
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
@@ -494,6 +524,17 @@ export function createCommercialAnalyticsStyles(palette: ThemePalette) {
     },
     refreshText: { color: palette.link, fontSize: 12, fontWeight: "900" },
     disabledButton: { opacity: 0.65 },
+    loadingNotice: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      padding: 14
+    },
+    loadingText: { color: palette.textSoft, fontSize: 13, fontWeight: "800" },
     emptyNotice: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.success,

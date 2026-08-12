@@ -397,6 +397,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never silently omit invalid storefront coordinates, support email, HTTPS handoff, or product price, publish an incomplete quick product, submit a storefront/product write twice, or hide a load/action failure."
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "single-flight Commercial order and analytics requests with retained last-good data, explicit cancellation confirmation, and truthful failure-versus-zero states"
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never present a failed Commercial Orders or Analytics request as real zero activity, discard the last good snapshot after refresh failure, submit overlapping fulfillment writes, or cancel an order without explicit confirmation."
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never invent dispensary availability or imply pickup completion; use published linked inventory and a dispensary-provided website or pickup instructions."
     );
