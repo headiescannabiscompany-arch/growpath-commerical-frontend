@@ -29,6 +29,7 @@ export type AiFeedbackRequest = {
   rating: number;
   comment?: string;
   labels?: string[];
+  consentForModelTraining?: boolean;
 };
 
 export type AiFeedbackResponse = {
