@@ -18,9 +18,13 @@ function contrastRatio(first: string, second: string) {
 }
 
 describe("app theme modes", () => {
-  it("resolves auto mode from the device color scheme", () => {
-    expect(resolveThemeMode("auto", "light")).toBe("day");
-    expect(resolveThemeMode("auto", "dark")).toBe("night");
+  it("resolves auto mode from local time instead of browser color scheme", () => {
+    const noon = new Date(2026, 7, 12, 12, 0, 0).getTime();
+    const evening = new Date(2026, 7, 12, 20, 0, 0).getTime();
+    expect(resolveThemeMode("auto", "dark", "device", null, noon)).toBe("day");
+    expect(resolveThemeMode("auto", "light", "device", null, evening)).toBe(
+      "night"
+    );
   });
 
   it("resolves location auto mode from sunrise and sunset instead of device theme", () => {

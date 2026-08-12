@@ -13,7 +13,7 @@ const OPTIONS: Array<{
   {
     key: "auto",
     label: "Auto",
-    description: "Uses saved location sunrise/sunset, otherwise device appearance."
+    description: "Uses saved location sunrise/sunset, otherwise local clock time."
   },
   {
     key: "day",
@@ -52,7 +52,7 @@ export default function ThemeModeSelector() {
       setLocationStatus(
         error instanceof Error
           ? error.message
-          : "Location access failed. Use device theme instead."
+          : "Location access failed. Auto will keep using local clock time."
       );
     } finally {
       setLocationPending(false);
@@ -64,7 +64,7 @@ export default function ThemeModeSelector() {
     setLocationPending(true);
     try {
       await disableLocationAuto();
-      setLocationStatus("Auto now follows device appearance.");
+      setLocationStatus("Auto now follows local clock time.");
     } finally {
       setLocationPending(false);
     }
@@ -152,7 +152,7 @@ export default function ThemeModeSelector() {
           <Text style={[styles.autoBody, { color: palette.textMuted }]}>
             {autoUsesLocation
               ? "Using your saved location to switch at sunrise and sunset."
-              : "Using your device appearance right now. Save a location once if you want sunrise/sunset behavior instead."}
+              : "Using local clock time right now. Save a location once if you want exact sunrise/sunset behavior instead."}
           </Text>
           {themeLocation ? (
             <Text style={[styles.autoMeta, { color: palette.textSoft }]}>
@@ -181,7 +181,7 @@ export default function ThemeModeSelector() {
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Use device appearance for auto theme"
+              accessibilityLabel="Use local clock time for auto theme"
               accessibilityState={{ disabled: locationPending }}
               disabled={locationPending}
               onPress={() => void handleUseDeviceTheme()}
@@ -195,7 +195,7 @@ export default function ThemeModeSelector() {
               ]}
             >
               <Text style={[styles.actionButtonText, { color: palette.text }]}>
-                Use device theme
+                Use local time
               </Text>
             </Pressable>
           </View>

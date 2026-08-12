@@ -2,6 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 
 import PersonalTabsLayout from "@/app/home/personal/(tabs)/_layout";
+import { getThemePalette } from "@/theme/appTheme";
 
 const mockTabs = jest.fn();
 
@@ -26,17 +27,18 @@ jest.mock("@/entitlements", () => ({
 describe("PersonalTabsLayout", () => {
   it("uses readable active and inactive tab labels and hides field study routes", () => {
     render(<PersonalTabsLayout />);
+    const palette = getThemePalette("auto", "light");
 
     expect(mockTabs).toHaveBeenCalledWith(
       expect.objectContaining({
         screenOptions: expect.objectContaining({
-          tabBarActiveTintColor: "#166534",
-          tabBarInactiveTintColor: "#5F6F5F",
+          tabBarActiveTintColor: palette.tabActive,
+          tabBarInactiveTintColor: palette.tabInactive,
           tabBarIconStyle: { display: "none" },
           tabBarLabelPosition: "beside-icon",
           tabBarStyle: expect.objectContaining({
-            backgroundColor: "#FFFFFF",
-            borderTopColor: "#D7DDD2"
+            backgroundColor: palette.tabBar,
+            borderTopColor: palette.tabBarBorder
           }),
           tabBarLabelStyle: expect.objectContaining({
             fontWeight: "700",
