@@ -6,7 +6,12 @@ import PublicFieldObservationsScreen from "@/app/field-observations";
 const mockListPublicFieldObservations = jest.fn();
 
 jest.mock("expo-router", () => ({
-  Link: ({ children }: any) => children
+  Link: ({ children }: any) => children,
+  useRouter: () => ({
+    back: jest.fn(),
+    canGoBack: jest.fn(() => false),
+    replace: jest.fn()
+  })
 }));
 
 jest.mock("@/api/fieldStudies", () => ({
