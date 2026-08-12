@@ -150,10 +150,13 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   before calling a quantitative counter production-ready.
 
   Counter evaluation now scores normalized head-box detection separately from
-  clear/cloudy/amber classification on the same blinded set. Candidate acceptance
-  requires improved amber F1 and recall without regressing detector F1,
-  resolved-class macro F1, false-amber rate, or possible-amber interval coverage.
-  The staging label path imports only an adjudicated Label Studio result after two
+  clear/cloudy/amber classification on the same blinded set. The deployed counter
+  does not return head boxes, so its exact per-image tallies are evaluated as an
+  aggregate amber interval without inventing detector evidence. A replacement must
+  provide complete predictions, meet explicit absolute detector, resolved-class,
+  amber, false-amber, possible-amber coverage, and interval-error floors, and avoid
+  regressing the deployed aggregate amber range. The staging label path imports only
+  an adjudicated Label Studio result after two
   independent reviewers and complete image-level rights/capture metadata, then
   enforces non-weakenable floors of 50 qualified images, 1,000 labeled heads, 10
   capture sessions, 3 device models, difficult-light coverage, and at least 100

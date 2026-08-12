@@ -18,6 +18,17 @@ const CANONICAL_ELIGIBILITY_FLOORS = {
   requiredLightingConditions: ["neutral", "warm", "glare", "low_light"]
 };
 const STAGING_CONFIRMATION = "RUN_GROWPATH_HARVEST_TRICHOME_STAGING";
+const CANDIDATE_ACCEPTANCE_FLOORS = {
+  minimumDetectionPrecision: 0.8,
+  minimumDetectionRecall: 0.8,
+  minimumDetectionF1: 0.8,
+  minimumResolvedClassMacroF1: 0.75,
+  minimumAmberF1: 0.75,
+  minimumAmberRecall: 0.8,
+  maximumFalseAmberRate: 0.15,
+  minimumPossibleAmberCoverage: 0.8,
+  maximumMeanAmberIntervalError: 0.08
+};
 
 function safeDivide(numerator, denominator) {
   return denominator > 0 ? numerator / denominator : 0;
@@ -144,31 +155,91 @@ function average(values) {
     : 0;
 }
 
-function possibleAmberCoverage(groundTruth, predictions) {
-  const imageIds = [...new Set(groundTruth.map((head) => head.imageId))];
+function emptyClassCounts() {
+  return Object.fromEntries(COUNTABLE_CLASSES.map((label) => [label, 0]));
+}
+
+function normalizedAggregateCounts(value) {
+  if (!value || typeof value !== "object") return null;
+  const counts = emptyClassCounts();
+  for (const label of COUNTABLE_CLASSES) {
+    const count = Number(value[label]);
+    if (!Number.isFinite(count) || count < 0) return null;
+    counts[label] = Math.trunc(count);
+  }
+  return counts;
+}
+
+function countsFromHeads(heads) {
+  const counts = emptyClassCounts();
+  for (const head of heads) counts[head.class] += 1;
+  return counts;
+}
+
+function aggregateCountsByImage(document = {}) {
+  return new Map(
+    (Array.isArray(document.images) ? document.images : []).map((image) => {
+      const imageId = String(image.imageId || "");
+      const provided = normalizedAggregateCounts(image.aggregateCounts);
+      const heads = flattenedHeads({ images: [image] });
+      return [imageId, provided || countsFromHeads(heads)];
+    })
+  );
+}
+
+function aggregateMaturityMetrics(annotationDocument, predictionDocument) {
+  const groundTruth = flattenedHeads(annotationDocument);
+  const truthCounts = new Map();
+  for (const head of groundTruth) {
+    if (!truthCounts.has(head.imageId)) truthCounts.set(head.imageId, emptyClassCounts());
+    truthCounts.get(head.imageId)[head.class] += 1;
+  }
+  const predictedCounts = aggregateCountsByImage(predictionDocument);
+  const imageIds = [...truthCounts.keys()];
   const cases = imageIds.map((imageId) => {
-    const truthAmber = groundTruth.filter(
-      (head) => head.imageId === imageId && head.class === "amber"
-    ).length;
-    const confirmedAmber = predictions.filter(
-      (head) => head.imageId === imageId && head.class === "amber"
-    ).length;
-    const ambiguousWarm = predictions.filter(
-      (head) => head.imageId === imageId && head.class === "amber_or_warm_light"
-    ).length;
+    const truth = truthCounts.get(imageId) || emptyClassCounts();
+    const predicted = predictedCounts.get(imageId) || emptyClassCounts();
+    const truthTotal = Object.values(truth).reduce((sum, value) => sum + value, 0);
+    const predictedTotal = Object.values(predicted).reduce(
+      (sum, value) => sum + value,
+      0
+    );
+    const truthAmberShare = safeDivide(truth.amber, truthTotal);
+    const predictedMinimum = safeDivide(predicted.amber, predictedTotal);
+    const predictedMaximum = safeDivide(
+      predicted.amber + predicted.amber_or_warm_light,
+      predictedTotal
+    );
+    const covered =
+      predictedTotal > 0 &&
+      predictedMinimum <= truthAmberShare &&
+      truthAmberShare <= predictedMaximum;
+    const intervalError =
+      predictedTotal <= 0
+        ? 1
+        : truthAmberShare < predictedMinimum
+          ? predictedMinimum - truthAmberShare
+          : truthAmberShare > predictedMaximum
+            ? truthAmberShare - predictedMaximum
+            : 0;
     return {
       imageId,
-      truthAmber,
-      predictedMinimum: confirmedAmber,
-      predictedMaximum: confirmedAmber + ambiguousWarm,
-      covered:
-        confirmedAmber <= truthAmber && truthAmber <= confirmedAmber + ambiguousWarm
+      truthAmberShare,
+      predictedMinimum,
+      predictedMaximum,
+      predictionAvailable: predictedTotal > 0,
+      covered,
+      intervalError
     };
   });
+  const availableImages = cases.filter((item) => item.predictionAvailable).length;
   return {
     coveredImages: cases.filter((item) => item.covered).length,
     evaluatedImages: cases.length,
+    availableImages,
+    complete: cases.length > 0 && availableImages === cases.length,
     rate: safeDivide(cases.filter((item) => item.covered).length, cases.length),
+    meanIntervalError: average(cases.map((item) => item.intervalError)),
     cases
   };
 }
@@ -222,28 +293,61 @@ function evaluateCounter(annotations, predictionDocument, options = {}) {
         predictedAmber > 0 ? perClass.amber.falsePositive / predictedAmber : null,
       perClass
     },
-    possibleAmberInterval: possibleAmberCoverage(groundTruth, predictions)
+    possibleAmberInterval: aggregateMaturityMetrics(annotations, predictionDocument)
   };
 }
 
-function compareCandidate(baseline, candidate) {
+function compareCandidate(baseline, candidate, floors = CANDIDATE_ACCEPTANCE_FLOORS) {
+  const baselineHasHeadLocalizations = baseline.predictedHeadCount > 0;
   const checks = {
-    detectionF1NotRegressed: candidate.detection.f1 >= baseline.detection.f1,
-    resolvedClassF1NotRegressed:
-      candidate.classification.macroResolvedClassF1 >=
-      baseline.classification.macroResolvedClassF1,
-    amberF1Improved: candidate.classification.amberF1 > baseline.classification.amberF1,
-    amberRecallImproved:
-      candidate.classification.amberRecall > baseline.classification.amberRecall,
-    falseAmberRateNotRegressed:
+    baselineAggregateComplete: baseline.possibleAmberInterval.complete,
+    candidateAggregateComplete: candidate.possibleAmberInterval.complete,
+    detectionPrecisionAtFloor:
+      candidate.detection.precision >= floors.minimumDetectionPrecision,
+    detectionRecallAtFloor: candidate.detection.recall >= floors.minimumDetectionRecall,
+    detectionF1AtFloor: candidate.detection.f1 >= floors.minimumDetectionF1,
+    resolvedClassF1AtFloor:
+      candidate.classification.macroResolvedClassF1 >= floors.minimumResolvedClassMacroF1,
+    amberF1AtFloor: candidate.classification.amberF1 >= floors.minimumAmberF1,
+    amberRecallAtFloor: candidate.classification.amberRecall >= floors.minimumAmberRecall,
+    falseAmberRateAtFloor:
       candidate.classification.falseAmberRate !== null &&
-      (baseline.classification.falseAmberRate === null ||
-        candidate.classification.falseAmberRate <=
-          baseline.classification.falseAmberRate),
+      candidate.classification.falseAmberRate <= floors.maximumFalseAmberRate,
+    possibleAmberCoverageAtFloor:
+      candidate.possibleAmberInterval.rate >= floors.minimumPossibleAmberCoverage,
+    amberIntervalErrorAtFloor:
+      candidate.possibleAmberInterval.meanIntervalError <=
+      floors.maximumMeanAmberIntervalError,
+    detectionF1NotRegressedWhenComparable:
+      !baselineHasHeadLocalizations || candidate.detection.f1 >= baseline.detection.f1,
+    resolvedClassF1NotRegressedWhenComparable:
+      !baselineHasHeadLocalizations ||
+      candidate.classification.macroResolvedClassF1 >=
+        baseline.classification.macroResolvedClassF1,
+    amberF1ImprovedWhenComparable:
+      !baselineHasHeadLocalizations ||
+      candidate.classification.amberF1 > baseline.classification.amberF1,
+    amberRecallImprovedWhenComparable:
+      !baselineHasHeadLocalizations ||
+      candidate.classification.amberRecall > baseline.classification.amberRecall,
+    falseAmberRateNotRegressedWhenComparable:
+      !baselineHasHeadLocalizations ||
+      (candidate.classification.falseAmberRate !== null &&
+        (baseline.classification.falseAmberRate === null ||
+          candidate.classification.falseAmberRate <=
+            baseline.classification.falseAmberRate)),
     possibleAmberCoverageNotRegressed:
-      candidate.possibleAmberInterval.rate >= baseline.possibleAmberInterval.rate
+      candidate.possibleAmberInterval.rate >= baseline.possibleAmberInterval.rate,
+    amberIntervalErrorNotRegressed:
+      candidate.possibleAmberInterval.meanIntervalError <=
+      baseline.possibleAmberInterval.meanIntervalError
   };
-  return { accepted: Object.values(checks).every(Boolean), checks };
+  return {
+    accepted: Object.values(checks).every(Boolean),
+    baselineHasHeadLocalizations,
+    floors,
+    checks
+  };
 }
 
 function validateEvaluationDataset(document = {}, options = {}) {
@@ -339,8 +443,10 @@ function cleanReviewValue(value) {
 
 module.exports = {
   CANONICAL_ELIGIBILITY_FLOORS,
+  CANDIDATE_ACCEPTANCE_FLOORS,
   COUNTABLE_CLASSES,
   RESOLVED_CLASSES,
+  aggregateMaturityMetrics,
   compareCandidate,
   evaluateCounter,
   finalizeEvaluationDataset,

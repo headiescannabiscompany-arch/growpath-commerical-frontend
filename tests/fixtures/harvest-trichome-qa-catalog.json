@@ -52,14 +52,27 @@
   },
   "counterEvaluationGate": {
     "annotationTemplate": "tests/fixtures/harvest-trichome-counter-annotation-template.json",
+    "baselinePredictionTemplate": "tests/fixtures/harvest-trichome-baseline-prediction-template.json",
     "metricsCommand": "node scripts/evaluate-harvest-trichome-counter.cjs --annotations <reviewed-labels.json> --baseline <deployed-predictions.json> --candidate <candidate-predictions.json>",
     "separateMetrics": [
       "head detection precision, recall, and F1 at normalized-box IoU 0.5",
       "resolved clear, cloudy, and amber class precision, recall, and F1",
       "amber false-positive rate",
-      "possible-amber interval coverage"
+      "possible-amber interval coverage and mean interval error",
+      "aggregate baseline completeness without invented head boxes"
     ],
-    "acceptance": "Candidate amber F1 and recall must improve while detection F1, resolved-class macro F1, false-amber rate, and possible-amber coverage do not regress on the same blinded set."
+    "absoluteCandidateFloors": {
+      "minimumDetectionPrecision": 0.8,
+      "minimumDetectionRecall": 0.8,
+      "minimumDetectionF1": 0.8,
+      "minimumResolvedClassMacroF1": 0.75,
+      "minimumAmberF1": 0.75,
+      "minimumAmberRecall": 0.8,
+      "maximumFalseAmberRate": 0.15,
+      "minimumPossibleAmberCoverage": 0.8,
+      "maximumMeanAmberIntervalError": 0.08
+    },
+    "acceptance": "The deployed baseline must provide complete per-image aggregate tallies without invented head boxes. The candidate must meet every absolute detector, resolved-class, amber, false-amber, completeness, possible-amber coverage, and interval-error floor and must not regress the deployed aggregate amber range on the same blinded set."
   },
   "methodEvidence": [
     {

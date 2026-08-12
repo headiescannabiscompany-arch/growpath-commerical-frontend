@@ -1,4 +1,6 @@
 const {
+  CANDIDATE_ACCEPTANCE_FLOORS,
+  aggregateMaturityMetrics,
   compareCandidate,
   evaluateCounter,
   finalizeEvaluationDataset,
@@ -69,16 +71,127 @@ describe("Harvest trichome counter metrics", () => {
       ])
     );
 
-    expect(compareCandidate(baseline, candidate)).toEqual({
-      accepted: true,
-      checks: {
-        detectionF1NotRegressed: true,
-        resolvedClassF1NotRegressed: true,
-        amberF1Improved: true,
-        amberRecallImproved: true,
-        falseAmberRateNotRegressed: true,
-        possibleAmberCoverageNotRegressed: true
-      }
+    const comparison = compareCandidate(baseline, candidate, {
+      minimumDetectionPrecision: 0.8,
+      minimumDetectionRecall: 0.8,
+      minimumDetectionF1: 0.8,
+      minimumResolvedClassMacroF1: 0.7,
+      minimumAmberF1: 0.7,
+      minimumAmberRecall: 0.7,
+      maximumFalseAmberRate: 0.15,
+      minimumPossibleAmberCoverage: 1,
+      maximumMeanAmberIntervalError: 0
+    });
+
+    expect(comparison.accepted).toBe(true);
+    expect(comparison.checks).toEqual(
+      expect.objectContaining({
+        detectionF1AtFloor: true,
+        amberF1AtFloor: true,
+        amberRecallAtFloor: true,
+        possibleAmberCoverageNotRegressed: true,
+        amberIntervalErrorNotRegressed: true
+      })
+    );
+  });
+
+  it("compares aggregate production tallies without inventing head boxes", () => {
+    const annotations = documentWithHeads([
+      { id: "amber-1", class: "amber", box: box(0.1, 0.1) },
+      { id: "cloudy-1", class: "cloudy", box: box(0.3, 0.1) },
+      { id: "clear-1", class: "clear", box: box(0.5, 0.1) },
+      { id: "warm-1", class: "amber_or_warm_light", box: box(0.7, 0.1) }
+    ]);
+    const deployed = {
+      images: [
+        {
+          imageId: "image-1",
+          aggregateCounts: {
+            clear: 1,
+            cloudy: 2,
+            amber: 0,
+            amber_or_warm_light: 1,
+            cloudy_or_glare: 0
+          },
+          heads: []
+        }
+      ]
+    };
+
+    const metrics = evaluateCounter(annotations, deployed);
+
+    expect(metrics.predictedHeadCount).toBe(0);
+    expect(metrics.possibleAmberInterval).toMatchObject({
+      complete: true,
+      availableImages: 1,
+      rate: 1,
+      meanIntervalError: 0
+    });
+  });
+
+  it("fails a well-localized candidate that does not meet absolute accuracy floors", () => {
+    const annotations = documentWithHeads([
+      { id: "amber-1", class: "amber", box: box(0.1, 0.1) },
+      { id: "cloudy-1", class: "cloudy", box: box(0.3, 0.1) },
+      { id: "clear-1", class: "clear", box: box(0.5, 0.1) }
+    ]);
+    const baseline = evaluateCounter(annotations, {
+      images: [
+        {
+          imageId: "image-1",
+          aggregateCounts: {
+            clear: 1,
+            cloudy: 1,
+            amber: 0,
+            amber_or_warm_light: 1,
+            cloudy_or_glare: 0
+          },
+          heads: []
+        }
+      ]
+    });
+    const candidate = evaluateCounter(
+      annotations,
+      documentWithHeads([
+        { id: "prediction-1", class: "cloudy", box: box(0.1, 0.1) },
+        { id: "prediction-2", class: "cloudy", box: box(0.3, 0.1) },
+        { id: "prediction-3", class: "clear", box: box(0.5, 0.1) }
+      ])
+    );
+    const comparison = compareCandidate(baseline, candidate);
+
+    expect(comparison.baselineHasHeadLocalizations).toBe(false);
+    expect(comparison.accepted).toBe(false);
+    expect(comparison.checks.amberF1AtFloor).toBe(false);
+    expect(comparison.checks.amberRecallAtFloor).toBe(false);
+  });
+
+  it("keeps the absolute staging promotion floors explicit and demanding", () => {
+    expect(CANDIDATE_ACCEPTANCE_FLOORS).toEqual({
+      minimumDetectionPrecision: 0.8,
+      minimumDetectionRecall: 0.8,
+      minimumDetectionF1: 0.8,
+      minimumResolvedClassMacroF1: 0.75,
+      minimumAmberF1: 0.75,
+      minimumAmberRecall: 0.8,
+      maximumFalseAmberRate: 0.15,
+      minimumPossibleAmberCoverage: 0.8,
+      maximumMeanAmberIntervalError: 0.08
+    });
+  });
+
+  it("penalizes missing aggregate predictions instead of dropping those images", () => {
+    const annotations = documentWithHeads([
+      { id: "amber-1", class: "amber", box: box(0.1, 0.1) }
+    ]);
+    const metrics = aggregateMaturityMetrics(annotations, { images: [] });
+
+    expect(metrics).toMatchObject({
+      complete: false,
+      availableImages: 0,
+      evaluatedImages: 1,
+      rate: 0,
+      meanIntervalError: 1
     });
   });
 
