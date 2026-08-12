@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -26,6 +27,10 @@ import {
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { InlineError } from "@/components/InlineError";
+import {
+  purchaseIntentConceptById,
+  purchaseIntentConcepts
+} from "@/config/commerceConceptTrials";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -165,12 +170,14 @@ export default function CommercialTrialsRoute() {
   const [evidenceRuns, setEvidenceRuns] = useState<ProductTrialEvidenceRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [conceptSaving, setConceptSaving] = useState(false);
   const [loadError, setLoadError] = useState<any>(null);
   const [saveError, setSaveError] = useState<any>(null);
   const [feedback, setFeedback] = useState("");
   const [showAdvancedRecordIds, setShowAdvancedRecordIds] = useState(false);
   const loadInFlightRef = useRef(false);
   const createInFlightRef = useRef(false);
+  const conceptCreateInFlightRef = useRef(false);
 
   const [trialName, setTrialName] = useState("");
   const [purpose, setPurpose] = useState("");
@@ -182,7 +189,18 @@ export default function CommercialTrialsRoute() {
   const [cultivar, setCultivar] = useState("");
   const [plantCount, setPlantCount] = useState("");
   const [notes, setNotes] = useState("");
-  const canCreate = trialName.trim().length > 1 && !saving;
+  const [selectedConceptId, setSelectedConceptId] = useState(
+    "growpathai-hat-circuit-leaf-midnight-purchase-intent-trial"
+  );
+  const [candidatePrice, setCandidatePrice] = useState("");
+  const canCreate = trialName.trim().length > 1 && !saving && !conceptSaving;
+  const selectedConcept = purchaseIntentConceptById(selectedConceptId);
+  const parsedCandidatePrice = Number(candidatePrice);
+  const canCreateConceptTrial =
+    selectedConcept?.artworkApprovalStatus === "owner_approved" &&
+    Number.isFinite(parsedCandidatePrice) &&
+    parsedCandidatePrice > 0 &&
+    !conceptSaving;
 
   const load = useCallback(async () => {
     if (loadInFlightRef.current) return;
@@ -235,7 +253,7 @@ export default function CommercialTrialsRoute() {
 
   async function createTrial() {
     const name = trialName.trim();
-    if (name.length < 2 || createInFlightRef.current) return;
+    if (name.length < 2 || createInFlightRef.current || conceptSaving) return;
     const parsedPlantCount = plantCount.trim() ? Number(plantCount) : undefined;
     if (
       parsedPlantCount !== undefined &&
@@ -279,6 +297,61 @@ export default function CommercialTrialsRoute() {
     } finally {
       createInFlightRef.current = false;
       setSaving(false);
+    }
+  }
+
+  async function createConceptTrial() {
+    if (!selectedConcept || conceptCreateInFlightRef.current || saving) return;
+    if (selectedConcept.artworkApprovalStatus !== "owner_approved") {
+      setSaveError(
+        new Error("Approve this exact artwork before starting a public concept trial.")
+      );
+      return;
+    }
+    if (!Number.isFinite(parsedCandidatePrice) || parsedCandidatePrice <= 0) {
+      setSaveError(new Error("Enter a positive hypothetical price for the trial."));
+      return;
+    }
+    conceptCreateInFlightRef.current = true;
+    setConceptSaving(true);
+    setSaveError(null);
+    setFeedback("");
+    try {
+      const displayedPrice = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD"
+      }).format(parsedCandidatePrice);
+      const created = await createProductTrial({
+        trialName: `${selectedConcept.title} purchase-intent trial`,
+        name: selectedConcept.title,
+        purpose: "purchase_intent",
+        trialType: "purchase_intent_concept",
+        conceptAssetId: selectedConcept.id,
+        conceptTitle: selectedConcept.title,
+        conceptImageAlt: selectedConcept.imageAlt,
+        question: `Would you buy this hat for ${displayedPrice}?`,
+        candidatePrice: parsedCandidatePrice,
+        priceCurrency: "USD",
+        publicTrial: true,
+        ownerApprovedArtwork: true,
+        rightsReviewStatus: selectedConcept.rightsReviewStatus,
+        itemForSale: false,
+        saleEnabled: false,
+        responseCreatesOrder: false,
+        status: "active",
+        notes:
+          "Concept trial only — not for sale. Responses record purchase interest and do not create orders. Available inventory: 0."
+      });
+      setTrials((current) => [created, ...current].filter(Boolean));
+      setCandidatePrice("");
+      setFeedback(
+        "Purchase-intent concept trial started. It is not a product listing and cannot accept orders or payment."
+      );
+    } catch (err) {
+      setSaveError(err);
+    } finally {
+      conceptCreateInFlightRef.current = false;
+      setConceptSaving(false);
     }
   }
 
@@ -340,6 +413,92 @@ export default function CommercialTrialsRoute() {
           {feedback}
         </Text>
       ) : null}
+
+      <AppCard>
+        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+          Test a hat concept
+        </Text>
+        <Text style={styles.body}>
+          Ask whether people would buy one exact concept at a hypothetical price. This is
+          research only: inventory stays at zero and no answer creates a reservation,
+          order, checkout, payment, production promise, or shipping promise.
+        </Text>
+        <View style={styles.conceptGrid}>
+          {purchaseIntentConcepts.map((concept) => {
+            const approved = concept.artworkApprovalStatus === "owner_approved";
+            const selected = selectedConceptId === concept.id;
+            return (
+              <Pressable
+                key={concept.id}
+                accessibilityRole="radio"
+                accessibilityLabel={`${concept.title}${
+                  approved ? "" : ", final artwork approval required"
+                }`}
+                accessibilityState={{
+                  checked: selected,
+                  disabled: !approved || conceptSaving
+                }}
+                disabled={!approved || conceptSaving}
+                onPress={() => setSelectedConceptId(concept.id)}
+                style={[
+                  styles.conceptCard,
+                  selected && styles.selectedButton,
+                  (!approved || conceptSaving) && styles.disabled
+                ]}
+              >
+                <Image
+                  source={concept.image}
+                  accessibilityLabel={concept.imageAlt}
+                  resizeMode="contain"
+                  style={styles.conceptImage}
+                />
+                <Text style={styles.rowTitle}>{concept.title}</Text>
+                <Text style={styles.muted}>
+                  {approved
+                    ? "Owner-approved trial artwork"
+                    : "Needs final owner approval"}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <TextInput
+          value={candidatePrice}
+          onChangeText={setCandidatePrice}
+          accessibilityLabel="Hypothetical hat trial price in US dollars"
+          editable={!conceptSaving}
+          placeholder="Hypothetical price, for example 34.00"
+          keyboardType="decimal-pad"
+          style={styles.input}
+        />
+        <Text style={styles.disclosure}>
+          Public wording: “Would you buy this hat for the shown price?” followed by
+          “Concept trial only — not for sale.”
+        </Text>
+        {conceptSaving ? (
+          <View
+            accessibilityLabel="Creating purchase-intent concept trial in progress"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="progressbar"
+            style={styles.loading}
+          >
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.muted}>Starting concept trial...</Text>
+          </View>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Start purchase-intent hat concept trial"
+          accessibilityState={{ disabled: !canCreateConceptTrial, busy: conceptSaving }}
+          disabled={!canCreateConceptTrial}
+          onPress={() => void createConceptTrial()}
+          style={[styles.primaryButton, !canCreateConceptTrial && styles.disabled]}
+        >
+          <Text style={styles.primaryText}>
+            {conceptSaving ? "Starting..." : "Start Not-for-Sale Concept Trial"}
+          </Text>
+        </Pressable>
+      </AppCard>
 
       <AppCard>
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
@@ -720,6 +879,35 @@ export function createCommercialTrialsStyles(palette: ThemePalette) {
       flexWrap: "wrap",
       gap: 10,
       marginTop: 10
+    },
+    conceptGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      marginTop: 12
+    },
+    conceptCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: "47%",
+      flexGrow: 1,
+      gap: 8,
+      minWidth: 260,
+      padding: 10
+    },
+    conceptImage: {
+      aspectRatio: 4 / 3,
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      width: "100%"
+    },
+    disclosure: {
+      color: palette.textMuted,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 8
     },
     recordPicker: {
       backgroundColor: palette.surfaceMuted,

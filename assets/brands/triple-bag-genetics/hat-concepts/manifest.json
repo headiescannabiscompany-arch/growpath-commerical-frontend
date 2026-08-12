@@ -22,6 +22,18 @@
     "manufacturedInventoryConfirmed": false,
     "rightsReviewRequired": true
   },
+  "conceptTrial": {
+    "trialType": "purchase_intent_concept",
+    "internalConceptTrialEligible": true,
+    "publicTrialEligible": false,
+    "publicTrialBlocker": "Third-party marks require documented rights review before public display.",
+    "candidatePrice": null,
+    "priceCurrency": "USD",
+    "itemForSale": false,
+    "saleEnabled": false,
+    "responseCreatesOrder": false,
+    "inventoryAvailable": 0
+  },
   "sourcing": {
     "blankDistributor": "BLVNK HEADWEAR",
     "blankDistributorUrl": "https://www.blvnkheadwear.com/",

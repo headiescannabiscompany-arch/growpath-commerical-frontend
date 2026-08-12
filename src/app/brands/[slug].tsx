@@ -17,6 +17,7 @@ import {
 } from "@/api/commercialAnalytics";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import PurchaseIntentTrialCard from "@/components/commercial/PurchaseIntentTrialCard";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
@@ -361,22 +362,29 @@ export default function PublicBrandProfileRoute() {
           {trials.length ? (
             <AppCard>
               <Text style={styles.cardTitle}>Product Trials</Text>
-              {trials.slice(0, 3).map((trial) => (
-                <View
-                  key={publicItemId(trial) || publicItemTitle(trial, "Trial")}
-                  style={styles.listRow}
-                >
-                  <View style={styles.productCopy}>
-                    <Text style={styles.productName}>
-                      {publicItemTitle(trial, "Trial")}
-                    </Text>
-                    {publicItemSummary(trial) ? (
-                      <Text style={styles.meta}>{publicItemSummary(trial)}</Text>
-                    ) : null}
+              {trials.slice(0, 3).map((trial) =>
+                trial?.trialType === "purchase_intent_concept" ? (
+                  <PurchaseIntentTrialCard
+                    key={publicItemId(trial) || publicItemTitle(trial, "Trial")}
+                    trial={trial}
+                  />
+                ) : (
+                  <View
+                    key={publicItemId(trial) || publicItemTitle(trial, "Trial")}
+                    style={styles.listRow}
+                  >
+                    <View style={styles.productCopy}>
+                      <Text style={styles.productName}>
+                        {publicItemTitle(trial, "Trial")}
+                      </Text>
+                      {publicItemSummary(trial) ? (
+                        <Text style={styles.meta}>{publicItemSummary(trial)}</Text>
+                      ) : null}
+                    </View>
+                    <Text style={styles.statusPill}>{trial?.status || "trial"}</Text>
                   </View>
-                  <Text style={styles.statusPill}>{trial?.status || "trial"}</Text>
-                </View>
-              ))}
+                )
+              )}
             </AppCard>
           ) : null}
 

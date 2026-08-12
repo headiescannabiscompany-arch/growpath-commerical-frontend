@@ -30,7 +30,7 @@ The owner's outbound sourcing brief requires:
 - consistent seams, visor alignment, colorfast fabric/thread, premium sweatbands and closures; and
 - protected packing that does not crush crowns or visors.
 
-GrowPathAI concepts emphasize clean two-tone day/night colorways, tonal blackout/sage options, small side marks, a back circuit-leaf mark, and the line `FOR GROWS, SOIL, TOOLS, COURSES, AND COMMUNITY` on an applicable rope/cord style.
+GrowPathAI concepts emphasize clean two-tone day/night colorways, tonal blackout/sage options, small side marks, and the line `FOR GROWS, SOIL, TOOLS, COURSES, AND COMMUNITY` on an applicable rope/cord style. The current sage trial presentation uses a small tonal `GROWPATHAI` rear wordmark and is visually color-referenced to BLVNK's `GRAMPS SNAPBACK` `SAGE/OLIVE - Grandpa Nylon` public product image; that is a visual reference, not a confirmed blank selection or physical sample. The approved black trial presentation retains its reviewed rear emblem.
 
 Triple Bag Genetics concepts use higher-fashion structured snapbacks, two-tone or tonal colorways, and raised/puff embroidery only where the reviewed artwork calls for it.
 
@@ -45,3 +45,11 @@ Until then:
 - price and shipping remain unknown/TBD rather than zero;
 - checkout remains disabled; and
 - no concept image may be represented as photographed manufactured inventory.
+
+## Purchase-intent concept trials
+
+GrowPathAI artwork may be shown in an explicitly labeled market-research trial after the owner supplies the candidate price and approves that exact artwork. The prompt is `Would you buy this hat for {candidatePrice}?` and the only response choices are `Yes`, `Maybe`, and `No`.
+
+A concept-trial response is research data only. It does not create a product listing, inventory hold, reservation, order, checkout, payment, manufacturing commitment, shipping promise, or launch claim. Every presentation must state `Concept trial only — not for sale`, keep available inventory at zero, and keep sale/checkout actions disabled.
+
+Triple Bag Genetics artwork containing third-party marks may remain an internal owner review draft but cannot enter a public purchase-intent trial until the rights review is documented.

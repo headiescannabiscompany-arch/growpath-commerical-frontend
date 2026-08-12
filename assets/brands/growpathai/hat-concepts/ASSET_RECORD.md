@@ -13,6 +13,23 @@ Use status: Owner-approved GrowPathAI design concepts. They may support an unpub
   - SHA-256: `4ab52995b3f944cc6db567b125aa9baf9d55c22914b4210aba8740200982d76e`
   - Description: monochrome sage Circuit Leaf concept with tonal side/back embroidery.
 
+## Purchase-intent trial artwork
+
+- `circuit-leaf-midnight-purchase-intent-trial.png`
+  - SHA-256: `8426ba7e57b01049137e3dffcaf5529e7d3955aa7408faad3de616391ed2a408`
+  - Owner approval: approved for the concept trial.
+  - Changes: corrected emblem placement and explicit `CONCEPT TRIAL — NOT FOR SALE` disclosure.
+- `circuit-leaf-sage-purchase-intent-trial.png`
+  - SHA-256: `a0029ee73dfdccfd5177c999b985e7725a5a8f55922923e26cbe5854bc90aabb`
+  - Owner approval: approved for the concept trial on 2026-08-12.
+  - Changes: corrected emblems, longer structured-cap visor, small tonal `GROWPATHAI` rear wordmark, and mint-sage fabric color visually calibrated to BLVNK's `SAGE/OLIVE - Grandpa Nylon` product imagery.
+
+The revised PNGs are trial presentations, not photographs of manufactured inventory. The original Facebook captures remain unchanged as provenance records.
+
+## Trial boundary
+
+The allowed question is `Would you buy this hat for {candidatePrice}?` after the owner supplies a positive candidate price. Every trial must say that the concept is not for sale. A `Yes`, `Maybe`, or `No` answer records research interest only: it cannot reserve inventory, create an order, enter checkout, capture payment, or promise production. Inventory remains zero and the catalog price remains unknown.
+
 ## Source and authorization
 
 - Owner profile: `https://www.facebook.com/jaycollins79`
@@ -32,3 +49,5 @@ Use status: Owner-approved GrowPathAI design concepts. They may support an unpub
 ## Production path
 
 Captuer Headwear identified BLVNK HEADWEAR as its exclusive distributor for unbranded Captuer blank goods. BLVNK is therefore recorded as the candidate blank-body supplier, not as the decorator or confirmed manufacturer-of-record. Local decoration, digitization, physical samples, exact blank selection, costs, and owner approval remain open. See `../../HAT_PRODUCTION_BRIEF_2026-08-12.md`.
+
+The sage trial presentation uses the public BLVNK `GRAMPS SNAPBACK` `SAGE/OLIVE - Grandpa Nylon` photograph as a visual fabric/color reference. That reference does not select a production blank, prove color accuracy on a physical sample, or authorize representing the generated trial presentation as manufactured inventory.

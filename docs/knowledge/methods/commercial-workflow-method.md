@@ -110,6 +110,10 @@ Integration auto-build is allowed only for an owned product trial or a Commercia
 
 Imported telemetry may support an explicitly linked product-trial evidence window. Course examples require review and de-identification before publication; sensor readings alone do not establish product performance, causation, or a publishable claim.
 
+A purchase-intent concept trial is market research, not a product sale or product-performance claim. Require an owner-approved exact concept asset, a positive hypothetical candidate price, currency, a plain-language question, and the disclosure `Concept trial only — not for sale`. Record only `yes`, `maybe`, or `no` intent from an authenticated account, allow that account to revise one response, and expose only aggregate counts to the Commercial owner. The response must never create inventory, a reservation, an order, checkout, payment, shipping promise, production commitment, or launch claim. Keep catalog inventory at zero and catalog price unknown until the separate merchandise launch workflow is completed.
+
+Do not publish a concept trial whose artwork still awaits owner approval or whose visible third-party marks still require rights review. Internal design review does not authorize public display.
+
 Commercial AI may recommend review-only operating procedure or checklist drafts from the
 shared approved starter library. A recommendation must identify its starter version,
 explain why it fits the selected records, preserve missing inputs as unknown, and require

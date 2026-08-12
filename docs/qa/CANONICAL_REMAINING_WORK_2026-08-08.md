@@ -24,39 +24,39 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 ## A. AI image, video, and diagnostic quality
 
 - [x] Complete the governed Diagnosis/IPM evaluation catalog: all 252 reviewed
-  case records and 504 rights-reviewed images are present. Disease,
-  pest/beneficial-lookalike, root-zone, nutrient, chemical, physical, and
-  normal-aging variants pass the strict seed-ready validator. Unused future source
-  pools remain visibly pending and cannot enter a case without source approval and
-  image-level rights review. On 2026-08-11, the dry-run evaluator completed with
-  `seed_ready` status, 252 records, 504 image references, zero network requests, and
-  zero database writes. This closes catalog assembly, not staging execution.
+      case records and 504 rights-reviewed images are present. Disease,
+      pest/beneficial-lookalike, root-zone, nutrient, chemical, physical, and
+      normal-aging variants pass the strict seed-ready validator. Unused future source
+      pools remain visibly pending and cannot enter a case without source approval and
+      image-level rights review. On 2026-08-11, the dry-run evaluator completed with
+      `seed_ready` status, 252 records, 504 image references, zero network requests, and
+      zero database writes. This closes catalog assembly, not staging execution.
 - [~] Run every completed Diagnosis/IPM case through the GrowPath primary path and
-      GPT second opinion with the identical evidence envelope; persist evidence,
-      counter-evidence, disagreements, confidence, requested follow-ups, billing, and
-      linked Plant/Grow/Log/ToolRun/Task/Facility records. Production now preserves
-      the governed Diagnosis visual-identity ceiling and an explicit unresolved
-      cannabis-sex result unless reproductive markers are visible (backend
-      `1279a0bd`, `b6af9f71`; retained live ToolRun `6a781133112d9897821bceb9`).
-      IPM production now accepts the current vision receipt, keeps ambiguous pale or
-      reflective marks as one neutral observation, and persists a one-photo result as
-      organism `not confirmed`, severity `not_assessed`, confidence `low`, with one
-      structured-review credit and no promoted treatment (backend `1ac4433f`,
-      `718eada4`, `382796bb`; live module records
-      `6a7814edd7c346d88c36c95e`, `6a78180b84a6023fdec3fbcc`, and
-      `6a781e01cb31b57928cb0a1c`). This is one retained IPM case, not completion of
-      the governed catalog or cross-record write-back matrix. The delivery candidate
-      now fingerprints the identical structured envelope, computes and persists
-      field-level GrowPath/GPT disagreements and combined follow-ups, and refuses to
-      claim a charge or refund without a ledger receipt. Full 252-case execution and
-      linked-record verification remain. A dry-run-by-default, resumable evaluator now
-      plans all 252 cases, refuses production, requires an exact staging/test
-      confirmation, QA namespace, auth token, and deployed SHA, checkpoints each
-      persisted ToolRun, validates the shared envelope digest, and reports provider,
-      ledger, and linked-record gaps without converting them into acceptance. A real
-      authorized staging execution and its cleanup evidence remain. It stays gated
-      behind `RUN_GROWPATH_DIAGNOSIS_IPM_STAGING` because execution spends provider
-      credits and writes staging ToolRuns.
+  GPT second opinion with the identical evidence envelope; persist evidence,
+  counter-evidence, disagreements, confidence, requested follow-ups, billing, and
+  linked Plant/Grow/Log/ToolRun/Task/Facility records. Production now preserves
+  the governed Diagnosis visual-identity ceiling and an explicit unresolved
+  cannabis-sex result unless reproductive markers are visible (backend
+  `1279a0bd`, `b6af9f71`; retained live ToolRun `6a781133112d9897821bceb9`).
+  IPM production now accepts the current vision receipt, keeps ambiguous pale or
+  reflective marks as one neutral observation, and persists a one-photo result as
+  organism `not confirmed`, severity `not_assessed`, confidence `low`, with one
+  structured-review credit and no promoted treatment (backend `1ac4433f`,
+  `718eada4`, `382796bb`; live module records
+  `6a7814edd7c346d88c36c95e`, `6a78180b84a6023fdec3fbcc`, and
+  `6a781e01cb31b57928cb0a1c`). This is one retained IPM case, not completion of
+  the governed catalog or cross-record write-back matrix. The delivery candidate
+  now fingerprints the identical structured envelope, computes and persists
+  field-level GrowPath/GPT disagreements and combined follow-ups, and refuses to
+  claim a charge or refund without a ledger receipt. Full 252-case execution and
+  linked-record verification remain. A dry-run-by-default, resumable evaluator now
+  plans all 252 cases, refuses production, requires an exact staging/test
+  confirmation, QA namespace, auth token, and deployed SHA, checkpoints each
+  persisted ToolRun, validates the shared envelope digest, and reports provider,
+  ledger, and linked-record gaps without converting them into acceptance. A real
+  authorized staging execution and its cleanup evidence remain. It stays gated
+  behind `RUN_GROWPATH_DIAGNOSIS_IPM_STAGING` because execution spends provider
+  credits and writes staging ToolRuns.
 - [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
       licenses, and exact follow-up-photo expectations. Never use the pack as training
@@ -78,39 +78,39 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       rights; and can only atomically import fully approved records. The real 284-item
       pending queue produces 0 promotions and leaves the catalog unchanged.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
-      Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
-      extraction, prompt length, saved-run reload, and correction/confirmation flows.
-      The retained-media analysis path is live-verified: frontend `4829d2ff`, backend
-      `1144dadc`, ToolRun `6a77f67895931a1ea2ab10d9`. The Headies Personal account
-      restored 12 still images plus one private source video, analyzed all 12 stills
-      including 10 server-extracted frames, persisted a usable/medium `Cannabis spp.`
-      candidate with Cannabaceae/Cannabis narrowing, withheld species/cultivar certainty,
-      and reloaded the exact evidence receipt from Saved Runs. Production also verified
-      automatic credit refunds for failed provider reviews while fixing the nested JSON
-      response and stale vision-receipt contract. Direct private geolocation, opt-in
-      Discovery Nature photo-pin publication/privacy remain. The direct publication
-      implementation now lets a Personal user deliberately select an approximate Nature
-      photo pin without naming or configuring a Field Study; it prepares the backend's
-      dedicated collection only after that choice and still requires location, uploaded
-      photo evidence, a final publish action, sensitive-species obscuring, and separate
-      Cannabis/hemp public-context consent. Source, 94 focused tests, all 89 regression
-      batches, TypeScript, lint, and the full contract/delivery guard pass; deployment
-      and signed-in data-bearing production acceptance remain before this item can close.
-      The correction flow is
-      live-verified on the same retained run: saving the common identity `cannabis`
-      marks it user-corrected, preserves/rejects the original AI draft, keeps exact
-      scientific species unverified, and clears the confirmation requirement.
+  Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
+  extraction, prompt length, saved-run reload, and correction/confirmation flows.
+  The retained-media analysis path is live-verified: frontend `4829d2ff`, backend
+  `1144dadc`, ToolRun `6a77f67895931a1ea2ab10d9`. The Headies Personal account
+  restored 12 still images plus one private source video, analyzed all 12 stills
+  including 10 server-extracted frames, persisted a usable/medium `Cannabis spp.`
+  candidate with Cannabaceae/Cannabis narrowing, withheld species/cultivar certainty,
+  and reloaded the exact evidence receipt from Saved Runs. Production also verified
+  automatic credit refunds for failed provider reviews while fixing the nested JSON
+  response and stale vision-receipt contract. Direct private geolocation, opt-in
+  Discovery Nature photo-pin publication/privacy remain. The direct publication
+  implementation now lets a Personal user deliberately select an approximate Nature
+  photo pin without naming or configuring a Field Study; it prepares the backend's
+  dedicated collection only after that choice and still requires location, uploaded
+  photo evidence, a final publish action, sensitive-species obscuring, and separate
+  Cannabis/hemp public-context consent. Source, 94 focused tests, all 89 regression
+  batches, TypeScript, lint, and the full contract/delivery guard pass; deployment
+  and signed-in data-bearing production acceptance remain before this item can close.
+  The correction flow is
+  live-verified on the same retained run: saving the common identity `cannabis`
+  marks it user-corrected, preserves/rejects the original AI draft, keeps exact
+  scientific species unverified, and clears the confirmation requirement.
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
-      visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
-      inference warnings, pistil/bud-development context, top/middle/lower/context
-      sampling, video frames, exact retake guidance, and saved-run comparisons.
-      Production retained run `6a77ea01b6f7eb6b90cd3595` returns an Aug 5-19
-      planning range centered Aug 12, explains the user's approximate date and
-      declining smell as reasons the window may be open, and preserves unfinished
-      swelling, fresh pistils, and unconfirmed trichomes as reasons to wait. Ordinary
-      phone-photo percentage accuracy remains. The same saved run was reopened in
-      production and successfully wrote both a grow-log entry and a follow-up task to
-      attached grow `6a603a8fda5c5bfdc030ac1b`.
+  visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
+  inference warnings, pistil/bud-development context, top/middle/lower/context
+  sampling, video frames, exact retake guidance, and saved-run comparisons.
+  Production retained run `6a77ea01b6f7eb6b90cd3595` returns an Aug 5-19
+  planning range centered Aug 12, explains the user's approximate date and
+  declining smell as reasons the window may be open, and preserves unfinished
+  swelling, fresh pistils, and unconfirmed trichomes as reasons to wait. Ordinary
+  phone-photo percentage accuracy remains. The same saved run was reopened in
+  production and successfully wrote both a grow-log entry and a follow-up task to
+  attached grow `6a603a8fda5c5bfdc030ac1b`.
 - [ ] Run one rightful production Harvest set through provider output, provenance,
       exact one-credit billing, saved-run reopen, and downstream task/batch write-back.
       The reopen plus grow-log/task write-back path is verified for the planning run
@@ -125,75 +125,75 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 ## B. Personal, Commercial, Facility, and public user loops
 
 - [~] Complete and record the independent outside-user session. Preserve the completed
-      Public, Personal Free/Pro, Commercial, Facility Owner/Manager/Staff/Viewer, and
-      cross-role shared-record evidence unless regression testing fails. On 2026-08-09
-      the signed-in Headies Personal Pro session loaded
-      Home, Grows, Forum/Q&A, Discover, Profile, AI Tools, Courses, Videos, Lives, and
-      Notifications at their intended production routes with their expected primary
-      headings and no visible failed, unauthorized, not-found, or unable-to-load state.
-      The compact six-word tab bar also exposed AI Tools, Courses, Videos, Logs, Tasks,
-      Discovery Nature, and workspace switching through More. This is a route and
-      session slice, not completion of the full Personal Pro behavioral loop. The same
-      login switched into Triple Bag Genetics as the actual Staff member, loaded the
-      Facility route set, showed the Facility-owned 2000/2000 credit balance instead of
-      the Personal balance, kept inventory read-only, and withheld assignment controls
-      with the explicit owner/manager rule. The live Team roster identified the current
-      production roles as Owner, Manager, Staff, and Viewer without inferring them from
-      account plan labels. The signed-in Triple Bag Genetics Owner session then verified
-      the production Facility roster and Owner-only invite, role-change, remove, task
-      assignment, and inventory-create controls without mutating records. The same login
-      switched to Commercial and loaded Dashboard, Storefront, Products, Product Lines,
-      Batch Planner, Inventory, Trials, Evidence Runs, Courses, Lives, Feed/Campaigns,
-      Forum/Q&A, Orders, Analytics, Grows, AI Tools, Discover, Tasks, and Profile without
-      a visible failed, unauthorized, not-found, or unable-to-load state. Commercial AI
-      credits resolved to 2000/2000 under the Facility trial. This remains a route and
-      permissions slice, not populated commercial workflow acceptance. The real John
-      Collins login then entered the same shared Facility as the Viewer roster member,
-      retained its Personal workspace choice, and loaded the Facility-owned 2000/2000
-      credit balance with Triple Bag Genetics, llc identified as balance owner. The
-      account entered Personal and returned to Facility through the workspace chooser
-      without reauthentication or a visible load/access error. Team,
-      Tasks, Plants, Compliance, Inventory, integrations, and Facility Outreach withheld
-      or disabled mutation controls and exposed the Viewer/owner-manager boundary without
-      changing production records. Viewer also reopened completed shared task
-      `6a6140ec67a6aeadb8f4a0c9` with persisted status/timestamps and no update controls.
-      Together with the retained Owner-create, Manager-reassign, Staff-complete, and
-      Owner-audit evidence, the cross-role shared-record chain remains complete. The
-      independent outside-user loop remains open.
+  Public, Personal Free/Pro, Commercial, Facility Owner/Manager/Staff/Viewer, and
+  cross-role shared-record evidence unless regression testing fails. On 2026-08-09
+  the signed-in Headies Personal Pro session loaded
+  Home, Grows, Forum/Q&A, Discover, Profile, AI Tools, Courses, Videos, Lives, and
+  Notifications at their intended production routes with their expected primary
+  headings and no visible failed, unauthorized, not-found, or unable-to-load state.
+  The compact six-word tab bar also exposed AI Tools, Courses, Videos, Logs, Tasks,
+  Discovery Nature, and workspace switching through More. This is a route and
+  session slice, not completion of the full Personal Pro behavioral loop. The same
+  login switched into Triple Bag Genetics as the actual Staff member, loaded the
+  Facility route set, showed the Facility-owned 2000/2000 credit balance instead of
+  the Personal balance, kept inventory read-only, and withheld assignment controls
+  with the explicit owner/manager rule. The live Team roster identified the current
+  production roles as Owner, Manager, Staff, and Viewer without inferring them from
+  account plan labels. The signed-in Triple Bag Genetics Owner session then verified
+  the production Facility roster and Owner-only invite, role-change, remove, task
+  assignment, and inventory-create controls without mutating records. The same login
+  switched to Commercial and loaded Dashboard, Storefront, Products, Product Lines,
+  Batch Planner, Inventory, Trials, Evidence Runs, Courses, Lives, Feed/Campaigns,
+  Forum/Q&A, Orders, Analytics, Grows, AI Tools, Discover, Tasks, and Profile without
+  a visible failed, unauthorized, not-found, or unable-to-load state. Commercial AI
+  credits resolved to 2000/2000 under the Facility trial. This remains a route and
+  permissions slice, not populated commercial workflow acceptance. The real John
+  Collins login then entered the same shared Facility as the Viewer roster member,
+  retained its Personal workspace choice, and loaded the Facility-owned 2000/2000
+  credit balance with Triple Bag Genetics, llc identified as balance owner. The
+  account entered Personal and returned to Facility through the workspace chooser
+  without reauthentication or a visible load/access error. Team,
+  Tasks, Plants, Compliance, Inventory, integrations, and Facility Outreach withheld
+  or disabled mutation controls and exposed the Viewer/owner-manager boundary without
+  changing production records. Viewer also reopened completed shared task
+  `6a6140ec67a6aeadb8f4a0c9` with persisted status/timestamps and no update controls.
+  Together with the retained Owner-create, Manager-reassign, Staff-complete, and
+  Owner-audit evidence, the cross-role shared-record chain remains complete. The
+  independent outside-user loop remains open.
 - [~] Verify login/session/workspace selection and recovery across Free, Pro,
-      Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
-      server-down, reload, logout, and multi-workspace states. The same Personal Pro
-      session remained signed in across a hard page reload, correctly identified the
-      Personal workspace as current, exposed the shared Facility workspace as
-      available, and entered `/home/personal` without reauthentication. Logout,
-      failure/recovery states, and the remaining plans/roles are still open. Frontend
-      merge `bfdff9be` and Render deployment `dep-d9s39sbl550s73dvs9vg` now reject a
-      malformed Facility invitation before rendering name, birth-date, or password
-      fields; the cache-busted production retest showed the request-new-invitation
-      message and Go to sign in recovery action. A genuine expired-token case remains
-      open and must use a real expired invitation rather than a fabricated substitute.
-      Production also rejected a malformed password-reset token through the real backend
-      path with the explicit invalid-or-expired message and Request another reset link
-      action. Retained delivered-email evidence already covers initial verification,
-      resend, both verified logins, password-reset delivery, replacement-password
-      acceptance, and subsequent login; do not reopen those completed cases.
+  Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
+  server-down, reload, logout, and multi-workspace states. The same Personal Pro
+  session remained signed in across a hard page reload, correctly identified the
+  Personal workspace as current, exposed the shared Facility workspace as
+  available, and entered `/home/personal` without reauthentication. Logout,
+  failure/recovery states, and the remaining plans/roles are still open. Frontend
+  merge `bfdff9be` and Render deployment `dep-d9s39sbl550s73dvs9vg` now reject a
+  malformed Facility invitation before rendering name, birth-date, or password
+  fields; the cache-busted production retest showed the request-new-invitation
+  message and Go to sign in recovery action. A genuine expired-token case remains
+  open and must use a real expired invitation rather than a fabricated substitute.
+  Production also rejected a malformed password-reset token through the real backend
+  path with the explicit invalid-or-expired message and Request another reset link
+  action. Retained delivered-email evidence already covers initial verification,
+  resend, both verified logins, password-reset delivery, replacement-password
+  acceptance, and subsequent login; do not reopen those completed cases.
 - [~] Finish the all-route/button checklist: correct destination, back behavior,
-      role gate, readable empty/loading/error state, persistence, and no dead or duplicate
-      controls. Personal Pro top-level and More destinations plus Facility Staff
-      Dashboard, Grows, Tasks, Compliance, More, Profile, Rooms, Inventory, Team, and
-      AI routes passed the 2026-08-09 production heading/error-state sweep. Facility
-      Inventory resolved from its loading state to a readable zero-item, read-only
-      result. The Commercial sweep found missing Back controls on Feed/Campaigns and
-      Tasks. Frontend merge `79c6dba2`, Render deployment
-      `dep-d9s2mvhsrm7s73aumnig`, and the cache-busted production retest added one
-      shared themed Back control to each exact route with no visible load or access
-      error. The real Facility Viewer then passed the production heading/error/back
-      sweep for Dashboard, Grows, Tasks, Compliance, More, Profile, Rooms, Plants, SOPs,
-      Inventory, Team, Transfers, Reports, Analytics, Integrations, AI Tools, Facility
-      Outreach, Courses, Videos, Forum/Q&A, and Notifications. Compliance explicitly
-      denied deviation creation, while Pulse and controller imports were disabled with
-      the owner/manager rule. Button mutations, mobile/visual evidence, and the remaining
-      shared-record behavior are not accepted by this sweep.
+  role gate, readable empty/loading/error state, persistence, and no dead or duplicate
+  controls. Personal Pro top-level and More destinations plus Facility Staff
+  Dashboard, Grows, Tasks, Compliance, More, Profile, Rooms, Inventory, Team, and
+  AI routes passed the 2026-08-09 production heading/error-state sweep. Facility
+  Inventory resolved from its loading state to a readable zero-item, read-only
+  result. The Commercial sweep found missing Back controls on Feed/Campaigns and
+  Tasks. Frontend merge `79c6dba2`, Render deployment
+  `dep-d9s2mvhsrm7s73aumnig`, and the cache-busted production retest added one
+  shared themed Back control to each exact route with no visible load or access
+  error. The real Facility Viewer then passed the production heading/error/back
+  sweep for Dashboard, Grows, Tasks, Compliance, More, Profile, Rooms, Plants, SOPs,
+  Inventory, Team, Transfers, Reports, Analytics, Integrations, AI Tools, Facility
+  Outreach, Courses, Videos, Forum/Q&A, and Notifications. Compliance explicitly
+  denied deviation creation, while Pulse and controller imports were disabled with
+  the owner/manager rule. Button mutations, mobile/visual evidence, and the remaining
+  shared-record behavior are not accepted by this sweep.
 - [ ] Retest content-report admin email deep links as an authorized platform owner
       for Forum, Feed, product, course, video, and live-session reports.
 - [ ] Create only approved temporary production/staging records needed to verify
@@ -222,42 +222,50 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 ## D. Commercial, commerce data, and owner-supplied sources
 
 - [~] Complete populated commercial brand/storefront acceptance: profile, slug,
-      products, zero-stock/TBD launch state, shipping, images, labels, external links,
-      course placement, and storefront discovery. Frontend merge `6381cd50` now
-      makes Storefront loading and writes single-flight, retains drafts after
-      failures, validates coordinates/email/HTTPS handoffs/product prices, blocks
-      incomplete product publication, and exposes explicit progress, retry, errors,
-      and semantic headings. All 94 regression batches, the full delivery guard,
-      GitHub CI, Production Build Preflight, and exact served-bundle verification
-      passed. Populated signed-in Commercial create/edit/reload, public discovery,
-      and screenshot/video acceptance remain open. See
-      `docs/qa/COMMERCIAL_STOREFRONT_STATE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-08-11.md`.
+  products, zero-stock/TBD launch state, shipping, images, labels, external links,
+  course placement, and storefront discovery. Frontend merge `6381cd50` now
+  makes Storefront loading and writes single-flight, retains drafts after
+  failures, validates coordinates/email/HTTPS handoffs/product prices, blocks
+  incomplete product publication, and exposes explicit progress, retry, errors,
+  and semantic headings. All 94 regression batches, the full delivery guard,
+  GitHub CI, Production Build Preflight, and exact served-bundle verification
+  passed. Populated signed-in Commercial create/edit/reload, public discovery,
+  and screenshot/video acceptance remain open. See
+  `docs/qa/COMMERCIAL_STOREFRONT_STATE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-08-11.md`.
 - [ ] Complete commercial course create/edit/publish acceptance for cover,
       category/grow interests, modules, lessons, uploads/external video sources, tasks,
       products, lives, Forum links, storefront display, and learner access.
 - [~] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
-      Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
-      navigation hierarchy, and persistence checks. Orders and Analytics state,
-      single-flight, retained-error, confirmation, and accessibility hardening shipped
-      in production merge `74737bba`; all 94 regression batches, local delivery guard,
-      PR CI, main CI, Production Build Preflight, served-bundle checks, and the signed-in
-      non-Commercial access boundary passed. Populated Commercial owner mutations,
-      refresh, persistence, and visual acceptance remain open. See
-      `docs/qa/COMMERCIAL_ORDERS_ANALYTICS_STATE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-08-12.md`.
+  Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
+  navigation hierarchy, and persistence checks. Orders and Analytics state,
+  single-flight, retained-error, confirmation, and accessibility hardening shipped
+  in production merge `74737bba`; all 94 regression batches, local delivery guard,
+  PR CI, main CI, Production Build Preflight, served-bundle checks, and the signed-in
+  non-Commercial access boundary passed. Populated Commercial owner mutations,
+  refresh, persistence, and visual acceptance remain open. See
+  `docs/qa/COMMERCIAL_ORDERS_ANALYTICS_STATE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-08-12.md`.
 - [~] Seed Penny Saver Soil, Living Soil, and No-Till drafts only from owner-approved
-      facts. Keep inventory zero and claims unpublished until labels, guaranteed analyses,
-      sizes, prices, directions, shipping, and images are supplied and verified. The
-      owner's GrowPathAI and Triple Bag Genetics Facebook hat designs were captured as
-      exact owner-authorized assets with SHA-256 records and separate brand manifests.
-      Both remain zero-stock, unpriced, non-checkout, and unpublished. Triple Bag
-      concepts containing third-party marks remain private drafts pending rights review;
-      Captuer's 2026-08-10 email identifies BLVNK HEADWEAR as its exclusive unbranded
-      blank distributor, so BLVNK is recorded as the candidate blank-body source while
-      local decoration, samples, exact models, costs, and production approval remain
-      open. Live Commercial product-draft creation and owner review also remain open. See
-      `assets/brands/growpathai/hat-concepts/ASSET_RECORD.md` and
-      `assets/brands/triple-bag-genetics/hat-concepts/ASSET_RECORD.md`, plus
-      `assets/brands/HAT_PRODUCTION_BRIEF_2026-08-12.md`.
+  facts. Keep inventory zero and claims unpublished until labels, guaranteed analyses,
+  sizes, prices, directions, shipping, and images are supplied and verified. The
+  owner's GrowPathAI and Triple Bag Genetics Facebook hat designs were captured as
+  exact owner-authorized assets with SHA-256 records and separate brand manifests.
+  Both remain zero-stock, unpriced, non-checkout, and unpublished. Triple Bag
+  concepts containing third-party marks remain private drafts pending rights review;
+  Captuer's 2026-08-10 email identifies BLVNK HEADWEAR as its exclusive unbranded
+  blank distributor, so BLVNK is recorded as the candidate blank-body source while
+  local decoration, samples, exact models, costs, and production approval remain
+  open. Live Commercial product-draft creation and owner review also remain open. See
+  `assets/brands/growpathai/hat-concepts/ASSET_RECORD.md` and
+  `assets/brands/triple-bag-genetics/hat-concepts/ASSET_RECORD.md`, plus
+  `assets/brands/HAT_PRODUCTION_BRIEF_2026-08-12.md`.
+  Two exact GrowPathAI purchase-intent presentations are now owner-approved: the
+  black Circuit Leaf concept and the revised tonal-sage concept with the longer
+  structured visor and small rear `GROWPATHAI` wordmark. Implementation is in
+  progress for an authenticated `Yes` / `Maybe` / `No` concept-research flow using
+  an owner-entered hypothetical price, explicit not-for-sale wording, one revisable
+  response per account, and aggregate-only owner results. It must remain incapable
+  of inventory reservation, orders, checkout, payment, production promises, or
+  shipping promises. Triple Bag public trials remain blocked by rights review.
 - [ ] Collect owner-approved knowledge sources: domains, authors/channels,
       reliability tiers, allowed uses, exclusions, cross-check requirements, and review
       dates; update both documentation and runtime registries.
@@ -265,16 +273,16 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 ## E. Visual, accessibility, device, and notification acceptance
 
 - [~] Review every major Personal, Commercial, Facility, and public route in Day,
-      Night, and Auto themes on desktop and mobile; fix contrast, hardcoded surfaces,
-      navigation spacing, overflow, hierarchy, consistent headers, and responsive layout.
-      A signed-in Facility Staff night-theme desktop screenshot found the global Report
-      Bug action covering lower-right Priority Status controls. Frontend merge
-      `9c14dafa`, Render deployment `dep-d9s2b8ou01pc73drr88g`, moved the shared action
-      into a separate dock at every real viewport width. The cache-busted production
-      retest at `/home/facility/dashboard?release=9c14dafa&verify=report-bug-dock`
-      showed the settled 15-room/68-audit-event dashboard with both Priority Status and
-      the support action unobstructed. This is one desktop/night/Staff viewport, not the
-      remaining theme, role, route, or mobile matrix.
+  Night, and Auto themes on desktop and mobile; fix contrast, hardcoded surfaces,
+  navigation spacing, overflow, hierarchy, consistent headers, and responsive layout.
+  A signed-in Facility Staff night-theme desktop screenshot found the global Report
+  Bug action covering lower-right Priority Status controls. Frontend merge
+  `9c14dafa`, Render deployment `dep-d9s2b8ou01pc73drr88g`, moved the shared action
+  into a separate dock at every real viewport width. The cache-busted production
+  retest at `/home/facility/dashboard?release=9c14dafa&verify=report-bug-dock`
+  showed the settled 15-room/68-audit-event dashboard with both Priority Status and
+  the support action unobstructed. This is one desktop/night/Staff viewport, not the
+  remaining theme, role, route, or mobile matrix.
 - [ ] Verify keyboard and focus order, visible focus, actionable labels, screen-reader
       names, heading hierarchy, font scaling, touch targets, loading/error/empty states,
       and back navigation.
