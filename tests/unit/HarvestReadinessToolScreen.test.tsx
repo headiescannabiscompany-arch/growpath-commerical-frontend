@@ -1158,6 +1158,21 @@ describe("HarvestReadinessToolRoute", () => {
         /tally: 4 clear \/ 14 cloudy \/ 4 confirmed amber \/ 8 amber or warm light \/ 10 cloudy or glare \(40 heads, medium confidence\)/i
       )
     ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Photo 1 | additional macro | center calyx | 40 heads | medium confidence"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "10% clear | 35% cloudy | 10% confirmed amber to 30% possible amber | 25% cloudy or glare"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        /Photo 1 has the strongest inspected amber signal: 10% confirmed amber to 30% possible amber/i
+      )
+    ).toBeTruthy();
     expect(screen.getByText(/never a whole-plant percentage/i)).toBeTruthy();
     expect(screen.getByText("Move closer and stabilize the camera.")).toBeTruthy();
     expect(screen.getByText("Limitation: Trichome heads are out of focus.")).toBeTruthy();

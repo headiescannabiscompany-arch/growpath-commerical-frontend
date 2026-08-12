@@ -52,6 +52,13 @@ import {
 } from "@/features/personal/tools/plantIdentificationCandidates";
 import PlantIdentificationResultDetails from "@/features/personal/tools/PlantIdentificationResultDetails";
 import {
+  inspectedPhotoEstimateCounts,
+  inspectedPhotoEstimateHeader,
+  inspectedPhotoEstimatePercentages,
+  inspectedPhotoEstimates,
+  strongestInspectedAmberSignal
+} from "@/features/personal/tools/harvestVisibleSample";
+import {
   requestCurrentCoordinates,
   type PublicCoordinates
 } from "@/utils/locationSearch";
@@ -441,6 +448,8 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
   }
   if (isHarvestRun(run)) {
     const photo = savedHarvestPhotoAnalysis(outputs);
+    const inspectedBreakdown = inspectedPhotoEstimates(photo?.imageFindings);
+    const strongestAmberSignal = strongestInspectedAmberSignal(inspectedBreakdown);
     const range = outputs.harvestWindowReview?.range || outputs.estimatedWindow;
     const rangeLabel =
       range?.startDate && range?.endDate
@@ -471,6 +480,15 @@ function metricsFor(run: ToolRun | null): ToolResultMetric[] {
         label: "Visible sampled heads",
         value: savedHarvestSampleEstimate(photo)
       },
+      ...(strongestAmberSignal
+        ? [
+            {
+              key: "strongest-sampled-amber",
+              label: "Strongest sampled amber area",
+              value: strongestAmberSignal
+            }
+          ]
+        : []),
       {
         key: "amber-visibility",
         label: "Amber visibility",
@@ -780,6 +798,8 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
 
   if (isHarvestRun(run)) {
     const photo = savedHarvestPhotoAnalysis(outputs);
+    const inspectedBreakdown = inspectedPhotoEstimates(photo?.imageFindings);
+    const strongestAmberSignal = strongestInspectedAmberSignal(inspectedBreakdown);
     const review =
       outputs.harvestWindowReview && typeof outputs.harvestWindowReview === "object"
         ? outputs.harvestWindowReview
@@ -821,6 +841,20 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
           key: "harvest-visible-sample",
           severity: "info",
           message: `${savedHarvestSampleEstimate(photo)}. ${photo.sampleEstimateBasis || "Review the saved image findings for the exact sampled regions."}`
+        });
+      }
+      inspectedBreakdown.forEach((estimate) => {
+        provenance.push({
+          key: `harvest-photo-area-${estimate.imageIndex}`,
+          severity: "info",
+          message: `${inspectedPhotoEstimateHeader(estimate)}. ${inspectedPhotoEstimatePercentages(estimate)}. ${inspectedPhotoEstimateCounts(estimate)}.`
+        });
+      });
+      if (strongestAmberSignal) {
+        provenance.push({
+          key: "harvest-strongest-sampled-amber",
+          severity: "medium",
+          message: strongestAmberSignal
         });
       }
       if (photo.amberEvidenceBasis) {
