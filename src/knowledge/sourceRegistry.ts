@@ -381,6 +381,23 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-08-12"
   },
   {
+    id: "hf-siccan-trichome-seed-unverified",
+    name: "Dataset Tricomas de Microscopia - Semillero de Canamo y Cannabis",
+    domain: "huggingface.co",
+    sourceType: "consumer_database",
+    reliabilityTier: "D",
+    trustedFor: [],
+    notTrustedFor: ["qa_evaluation", "post_harvest", "diagnosis", "education"],
+    notes:
+      "Discovery-only quarantine record. The repository declares CC BY 4.0 and contains 75 images, but its README reports approximately 25% current detection and identifies the lack of a labeled real-trichome dataset as the main limitation. Its file tree also contains OIP web-search assets without image-level creator provenance. Do not copy, label, train on, or score these files as GrowPath ground truth. A specific original image may be reconsidered only after image-level creator, license, capture, and label review.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: [
+      "pmc10071647-trichome-maturation",
+      "pmc10648736-cannabis-phenotype-trichome-exemplars"
+    ],
+    lastReviewedAt: "2026-08-12"
+  },
+  {
     id: "pmid-6643-cannabis-storage-light",
     name: "The stability of cannabis and its preparations on storage",
     domain: "pubmed.ncbi.nlm.nih.gov",

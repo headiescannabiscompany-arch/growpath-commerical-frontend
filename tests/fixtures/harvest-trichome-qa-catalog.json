@@ -86,6 +86,22 @@
       "useAsMediaSource": false
     }
   ],
+  "quarantinedCandidates": [
+    {
+      "sourceId": "hf-siccan-trichome-seed-unverified",
+      "sourceUrl": "https://huggingface.co/datasets/siccan/tricomas-semillero-cannabis",
+      "declaredLicenseId": "CC-BY-4.0",
+      "reviewedAt": "2026-08-12",
+      "useAsMediaSource": false,
+      "useAsGroundTruth": false,
+      "reasons": [
+        "repository README reports approximately 25 percent current detection",
+        "repository README says a labeled real-trichome dataset is still missing",
+        "file tree contains OIP web-search assets without image-level creator provenance",
+        "no reviewed per-head clear, cloudy, amber, glare, or warm-light labels"
+      ]
+    }
+  ],
   "sources": [
     {
       "sourceId": "pmc10648736-lapierre-phenotype",

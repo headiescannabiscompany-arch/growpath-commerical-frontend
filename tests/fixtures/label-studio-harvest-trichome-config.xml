@@ -1,0 +1,11 @@
+<View>
+  <Header value="Box only resolved intact gland heads in the identified calyx sample. Do not box pistils, hairs, glare pixels, leaf-edge heads, detached heads, blur, or artifacts." />
+  <Image name="image" value="$image" />
+  <RectangleLabels name="label" toName="image">
+    <Label value="Clear" background="#2F80ED" />
+    <Label value="Cloudy" background="#E5E7EB" />
+    <Label value="Amber" background="#D97706" />
+    <Label value="Amber or warm light" background="#F59E0B" />
+    <Label value="Cloudy or glare" background="#A78BFA" />
+  </RectangleLabels>
+</View>
