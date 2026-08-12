@@ -56,7 +56,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   ledger, and linked-record gaps without converting them into acceptance. A real
   authorized staging execution and its cleanup evidence remain. It stays gated
   behind `RUN_GROWPATH_DIAGNOSIS_IPM_STAGING` because execution spends provider
-  credits and writes staging ToolRuns.
+  credits and writes staging ToolRuns. The Harvest v8 image-coverage change was
+  regression-checked without changing Diagnosis/IPM behavior: 188 focused calculator,
+  image-review, integrity, second-opinion, follow-up, billing, and shared-crop tests
+  passed on 2026-08-12, including the thrips-compatible-damage and generic-white-mark
+  uncertainty guards. Further rule changes require a failing governed or retained real
+  case; the next substantive step remains authorized 252-case staging execution.
 - [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
       licenses, and exact follow-up-photo expectations. Never use the pack as training
@@ -107,16 +112,35 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   Production retained run `6a77ea01b6f7eb6b90cd3595` returns an Aug 5-19
   planning range centered Aug 12, explains the user's approximate date and
   declining smell as reasons the window may be open, and preserves unfinished
-  swelling, fresh pistils, and unconfirmed trichomes as reasons to wait. Ordinary
-  phone-photo percentage accuracy remains. The same saved run was reopened in
-  production and successfully wrote both a grow-log entry and a follow-up task to
-  attached grow `6a603a8fda5c5bfdc030ac1b`.
-- [ ] Run one rightful production Harvest set through provider output, provenance,
-      exact one-credit billing, saved-run reopen, and downstream task/batch write-back.
-      The reopen plus grow-log/task write-back path is verified for the planning run
-      above, but that run truthfully reports no verified photo-analysis receipt or
-      photo-review charge. Fresh rightful media is still required to accept the
-      provider/provenance/billing portion; a batch write-back is also still unverified.
+  swelling, fresh pistils, and unconfirmed trichomes as reasons to wait. The same
+  saved run was reopened in production and successfully wrote both a grow-log entry
+  and a follow-up task to attached grow `6a603a8fda5c5bfdc030ac1b`.
+
+  The exact four retained Headies photos from saved run
+  `6a7632764f34c5f3a9943cb6` now form a repeatable calibration case. Under backend
+  `ecc409c5bab0550c74e8d3c57bf2351c15e4d45a`, review
+  `6a7c1f319faf5f978d60d376` used 4 originals plus 8 generic crops at `high`
+  provider detail, counted 213 resolved calyx heads, and reported 1% confirmed amber,
+  15% amber-or-warm-light, and a 1-16% possible-amber range. Under backend
+  `0a89b91a662402daf1f9340a0fc2bc3622e736d6`, review
+  `6a7c23ff74c8d35e0937ef61` restored those same four exact photos without spending a
+  credit until analysis, used `original` provider detail plus all 12 systematic
+  coverage crops, counted 225 resolved calyx heads, and reported 3% confirmed amber,
+  18% amber-or-warm-light, a 3-21% possible-amber range, 51% cloudy, and 7%
+  cloudy-or-glare. The review charged exactly one credit and left 94. This closes the
+  lost-detail/generic-zoom defect and proves the bounded five-bucket counter, while
+  preserving a real calibration disagreement against the owner's approximately 30%
+  visual amber estimate. Broader rights-cleared accuracy evaluation, independent
+  qualified review, and ordinary-phone-photo calibration remain open; do not inflate
+  the result by counting sugar-leaf edges, warm pixels, or unresolved heads.
+
+- [~] Run one rightful production Harvest set through provider output, provenance,
+  exact one-credit billing, saved-run reopen, and downstream task/batch write-back.
+  Provider execution, original-detail provenance, exact retained-evidence retry,
+  and one-credit billing are verified by review
+  `6a7c23ff74c8d35e0937ef61`. The planning-run reopen plus grow-log/task write-back
+  path is also verified. A Harvest batch write-back remains unverified, so the
+  end-to-end item stays open.
 - [ ] Obtain independent qualified review of Plant ID, Diagnosis, IPM, and Harvest
       accuracy; record disagreements rather than silently changing expected labels.
 - [ ] Capture a naturally occurring provider failure for Diagnosis/IPM/Harvest and
