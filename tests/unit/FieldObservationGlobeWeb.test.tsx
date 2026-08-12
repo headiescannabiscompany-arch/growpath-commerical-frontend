@@ -171,4 +171,63 @@ describe("FieldObservationGlobe web lifecycle", () => {
     await act(async () => tree.unmount());
     expect(remove).toHaveBeenCalledTimes(1);
   });
+
+  it("does not crash navigation when WebKit has already cleared MapLibre's painter", async () => {
+    const remove = jest.fn(() => {
+      throw new TypeError(
+        "undefined is not an object (evaluating 'this.painter.destroy')"
+      );
+    });
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    class FakeMap {
+      constructor(_options: unknown) {}
+      addControl() {}
+      loaded() {
+        return true;
+      }
+      on() {
+        return this;
+      }
+      remove = remove;
+    }
+
+    Object.defineProperty(window, "__growpathMapLibre", {
+      configurable: true,
+      value: {
+        Map: FakeMap,
+        NavigationControl: class {},
+        GlobeControl: class {},
+        FullscreenControl: class {},
+        GeolocateControl: class {}
+      }
+    });
+
+    let tree: any;
+    await act(async () => {
+      tree = (renderer.create as any)(
+        <FieldObservationGlobe
+          observations={[]}
+          onSelectObservations={jest.fn()}
+          onViewportChange={jest.fn()}
+          selectedObservationId={undefined}
+        />,
+        { createNodeMock: () => document.createElement("div") }
+      );
+      await Promise.resolve();
+    });
+
+    await expect(
+      act(async () => {
+        tree.unmount();
+      })
+    ).resolves.toBeUndefined();
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(
+      "[FieldObservationGlobe] map teardown was already incomplete:",
+      expect.any(TypeError)
+    );
+
+    warn.mockRestore();
+  });
 });
