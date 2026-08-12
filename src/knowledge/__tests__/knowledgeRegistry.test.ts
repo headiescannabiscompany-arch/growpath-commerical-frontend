@@ -125,6 +125,12 @@ describe("GrowPath knowledge registries", () => {
       "systematic upper-middle-lower or left-middle-right diagnostic coverage crops for every original in the minimum four-photo Harvest set, with overlap deduplicated by position"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "client preflight that accepts ordinary 1080p phone photos without claiming trichome heads are unresolved from dimensions alone, leaving subject scale, focus, compression, glare, lighting, calyx placement, and head detail to server review"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "saved-evidence hydration that retires the replaced Harvest dimension-only warning while preserving current focus, glare, compression, lighting, and provenance findings"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "visible sampled-head estimate split into clear, cloudy, confirmed amber, amber-or-warm-light, and cloudy-or-glare with exact region basis, a confirmed-to-possible amber range, and an explicit no-whole-plant-percentage boundary"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(

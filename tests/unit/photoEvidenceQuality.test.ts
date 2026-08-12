@@ -122,4 +122,19 @@ describe("plant review photo quality", () => {
       error: expect.stringMatching(/too small/i)
     });
   });
+
+  it("does not call a normal 1080p phone photo unresolvable from dimensions alone", () => {
+    const result = assessEvidencePhoto(
+      {
+        width: 1080,
+        height: 1920,
+        fileSizeBytes: 600 * 1024,
+        fileName: "phone-macro.jpg",
+        mimeType: "image/jpeg"
+      },
+      "harvest"
+    );
+
+    expect(result).toEqual({ accepted: true, warnings: [] });
+  });
 });

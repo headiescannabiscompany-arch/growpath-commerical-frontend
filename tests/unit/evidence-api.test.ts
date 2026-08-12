@@ -10,6 +10,7 @@ import {
   getEvidenceAssetsByIds,
   getEvidenceVideoFrameExtraction,
   isTerminalEvidenceRegistrationError,
+  listEvidenceAssets,
   providerEvidencePayload
 } from "@/api/evidence";
 
@@ -165,6 +166,34 @@ describe("providerEvidencePayload", () => {
         facilityId: "facility-1"
       }
     });
+  });
+
+  it("retires the obsolete Harvest dimension warning without hiding real quality findings", async () => {
+    mockApiRequest.mockResolvedValue({
+      assets: [
+        {
+          _id: "harvest-photo-1",
+          assetType: "photo",
+          purpose: "harvest",
+          uploadStatus: "uploaded",
+          qualityWarnings: [
+            "Harvest macro review may not resolve intact trichome heads at this resolution.",
+            "This photo may be compressed; confirm fine detail before relying on it.",
+            "Extracted from the source video at 4.5 seconds."
+          ]
+        }
+      ]
+    });
+
+    await expect(listEvidenceAssets({ growId: "grow-1" })).resolves.toEqual([
+      expect.objectContaining({
+        id: "harvest-photo-1",
+        qualityWarnings: [
+          "This photo may be compressed; confirm fine detail before relying on it.",
+          "Extracted from the source video at 4.5 seconds."
+        ]
+      })
+    ]);
   });
 
   it("passes cancellation through an exact evidence reload", async () => {
