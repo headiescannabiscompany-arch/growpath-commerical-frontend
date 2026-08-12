@@ -1,31 +1,58 @@
 // src/notifications/useNotificationDeepLinks.ts
 import { useEffect } from "react";
 import { useRouter } from "expo-router";
+import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
+import { sourceObjectHref } from "@/utils/sourceLinks";
 
-// We expect push payload to include: data: { postId: "..." }
-function extractPostId(data: any): string | null {
-  if (!data) return null;
-  const postId = data.postId || data?.data?.postId; // defensive
-  return typeof postId === "string" && postId.length ? postId : null;
+function payloadData(data: any): Record<string, any> {
+  if (!data || typeof data !== "object") return {};
+  if (data.data && typeof data.data === "object") {
+    return { ...data, ...data.data };
+  }
+  return data;
+}
+
+function safeAppHref(value: unknown) {
+  const href = String(value || "").trim();
+  return href.startsWith("/") && !href.startsWith("//") ? href : "";
+}
+
+export function notificationHrefFromData(data: any): string | null {
+  const payload = payloadData(data);
+  const explicitHref = safeAppHref(payload.actionUrl || payload.href || payload.path);
+  if (explicitHref) return explicitHref;
+
+  const sourceHref = safeAppHref(sourceObjectHref(payload));
+  if (sourceHref) return sourceHref;
+
+  const postId = String(payload.postId || "").trim();
+  if (postId) return `/forum/post?id=${encodeURIComponent(postId)}`;
+
+  const notificationId = String(payload.notificationId || payload.id || "").trim();
+  return notificationId
+    ? `/home/notifications?notificationId=${encodeURIComponent(notificationId)}`
+    : null;
 }
 
 export function useNotificationDeepLinks() {
   const router = useRouter();
 
   useEffect(() => {
+    if (Platform.OS === "web") return;
+
     // 1) If app was opened from a notification (cold start)
     Notifications.getLastNotificationResponseAsync()
       .then((resp) => {
-        const postId = extractPostId(resp?.notification?.request?.content?.data);
-        if (postId) router.push(`/(app)/post/${postId}`);
+        const href = notificationHrefFromData(resp?.notification?.request?.content?.data);
+        if (href) router.push(href as any);
       })
       .catch(() => {});
 
     // 2) If user taps notification while app is running/backgrounded
     const sub = Notifications.addNotificationResponseReceivedListener((resp) => {
-      const postIdFromTap = extractPostId(resp?.notification?.request?.content?.data);
-      if (postIdFromTap) router.push(`/(app)/post/${postIdFromTap}`);
+      const href = notificationHrefFromData(resp?.notification?.request?.content?.data);
+      if (href) router.push(href as any);
     });
 
     return () => sub.remove();

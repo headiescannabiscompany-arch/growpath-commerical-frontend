@@ -79,6 +79,7 @@ function sourceReference(row: NotificationRow) {
     row.linkedTaskId,
     row.linkedCourseId,
     row.linkedLessonId,
+    row.linkedVideoId,
     row.linkedLiveId,
     row.linkedSensorAlertId,
     row.linkedProductBatchId,

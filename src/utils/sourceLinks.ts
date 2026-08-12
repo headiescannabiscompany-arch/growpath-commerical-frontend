@@ -37,6 +37,7 @@ function inferSourceType(source: SourceLike) {
   if (firstText(source?.linkedToolRunId, source?.toolRunId, source?.sourceToolRunId))
     return "tool_run";
   if (firstText(source?.linkedRecipeId, source?.recipeId)) return "recipe";
+  if (firstText(source?.linkedVideoId, source?.videoId)) return "video";
   if (firstText(source?.linkedLiveId, source?.liveId)) return "live";
   if (firstText(source?.linkedCourseAssignmentId, source?.courseAssignmentId))
     return "course_assignment";
@@ -151,6 +152,7 @@ export function sourceObjectHref(source: SourceLike) {
     source?.recipeId,
     sourceId
   );
+  const videoId = firstText(source?.linkedVideoId, source?.videoId, sourceId);
   const roomId = firstText(source?.linkedRoomId, source?.roomId, sourceId);
   const sopId = firstText(source?.linkedSopId, source?.sopId, sourceId);
   const storefrontSlug = firstText(
@@ -329,6 +331,10 @@ export function sourceObjectHref(source: SourceLike) {
     return workspace === "commercial"
       ? `/home/commercial/lives${liveId ? `?liveId=${encoded(liveId)}` : ""}`
       : `/live-session${liveId ? `?sessionId=${encoded(liveId)}` : ""}`;
+  }
+
+  if (sourceType === "video" || sourceType === "media" || sourceType === "upload") {
+    return videoId ? `/videos/${encoded(videoId)}` : "/videos?tab=library";
   }
 
   if (
