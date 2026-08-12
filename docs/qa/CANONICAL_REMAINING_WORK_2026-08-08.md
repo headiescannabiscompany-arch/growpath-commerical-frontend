@@ -85,7 +85,17 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       candidate manifest, and review manifest by exact hashes; revalidates immutable
       candidates, governed case definitions, quotas, duplicates, review decisions, and
       rights; and can only atomically import fully approved records. The real 284-item
-      pending queue produces 0 promotions and leaves the catalog unchanged.
+      pending queue produces 0 promotions and leaves the catalog unchanged. On
+      2026-08-12, the governed collector completed without collection errors and
+      produced 540 metadata-only candidates: 338 research-wild and 202 cultivated.
+      It copied no media, retained no coordinates, and granted no identity, stage,
+      rights, or intended-use approval. The hash-bound review preparer filled 284 of
+      the 320 governed slots. The remaining 36 slots are the ten deliberately adverse
+      acquisition cases (blurry, partial-leaf, mixed-plant, dead-leaf, artificial,
+      no-plant, low-light, direct-flash, glare, and mixed-light) that require owned or
+      commissioned media. All 284 queued candidates still require explicit morphology,
+      identity, life-stage, Tier A taxonomy, exact-license, rights, expected-result,
+      and intended-use review; candidate metadata is not accepted evidence.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.
