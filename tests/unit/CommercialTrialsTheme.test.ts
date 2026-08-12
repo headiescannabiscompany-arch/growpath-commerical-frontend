@@ -116,7 +116,7 @@ describe("Commercial product trials active palette", () => {
     const sources = SOURCE_FILES.map((file) =>
       fs.readFileSync(path.join(process.cwd(), file), "utf8")
     );
-    expect(sources[0].match(/<TextInput\b/g) || []).toHaveLength(10);
+    expect(sources[0].match(/<TextInput\b/g) || []).toHaveLength(11);
     expect(sources[1].match(/<TextInput\b/g) || []).toHaveLength(8);
     for (const source of sources) {
       expect(source).toContain("placeholderTextColor={palette.textMuted}");

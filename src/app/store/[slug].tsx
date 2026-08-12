@@ -18,6 +18,7 @@ import {
   type CommercialAnalyticsEvent
 } from "@/api/commercialAnalytics";
 import AppPage from "@/components/layout/AppPage";
+import PurchaseIntentTrialCard from "@/components/commercial/PurchaseIntentTrialCard";
 import {
   extractPublicCommercialPayload,
   publicGrowInterests,
@@ -589,22 +590,29 @@ export default function PublicStorefrontRoute() {
           {trials.length ? (
             <View style={styles.profilePanel}>
               <Text style={styles.profileTitle}>Product Trial Proof</Text>
-              {trials.slice(0, 3).map((trial) => (
-                <View
-                  key={publicItemId(trial) || publicItemTitle(trial, "Trial")}
-                  style={styles.linkRow}
-                >
-                  <View style={styles.productBody}>
-                    <Text style={styles.productName}>
-                      {publicItemTitle(trial, "Trial")}
-                    </Text>
-                    {publicItemSummary(trial) ? (
-                      <Text style={styles.meta}>{publicItemSummary(trial)}</Text>
-                    ) : null}
+              {trials.slice(0, 3).map((trial) =>
+                trial?.trialType === "purchase_intent_concept" ? (
+                  <PurchaseIntentTrialCard
+                    key={publicItemId(trial) || publicItemTitle(trial, "Trial")}
+                    trial={trial}
+                  />
+                ) : (
+                  <View
+                    key={publicItemId(trial) || publicItemTitle(trial, "Trial")}
+                    style={styles.linkRow}
+                  >
+                    <View style={styles.productBody}>
+                      <Text style={styles.productName}>
+                        {publicItemTitle(trial, "Trial")}
+                      </Text>
+                      {publicItemSummary(trial) ? (
+                        <Text style={styles.meta}>{publicItemSummary(trial)}</Text>
+                      ) : null}
+                    </View>
+                    <Text style={styles.statusPill}>{trial?.status || "trial"}</Text>
                   </View>
-                  <Text style={styles.statusPill}>{trial?.status || "trial"}</Text>
-                </View>
-              ))}
+                )
+              )}
             </View>
           ) : null}
 

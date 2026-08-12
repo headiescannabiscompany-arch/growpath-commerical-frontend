@@ -125,6 +125,48 @@ describe("Commercial Product Trial and Batch routes", () => {
     );
   });
 
+  it("starts an owner-approved not-for-sale hat concept trial with a hypothetical price", async () => {
+    mockCreateProductTrial.mockResolvedValue({
+      id: "concept-trial-1",
+      trialName: "GrowPathAI Circuit Leaf — Midnight purchase-intent trial",
+      status: "active"
+    });
+    const screen = render(<CommercialTrialsRoute />);
+    await waitFor(() =>
+      expect(screen.queryByText("Loading product trials...")).toBeNull()
+    );
+
+    fireEvent.changeText(
+      screen.getByLabelText("Hypothetical hat trial price in US dollars"),
+      "34"
+    );
+    const createAction = screen.getByLabelText("Start purchase-intent hat concept trial");
+    fireEvent.press(createAction);
+
+    await waitFor(() => expect(mockCreateProductTrial).toHaveBeenCalledTimes(1));
+    expect(mockCreateProductTrial).toHaveBeenCalledWith(
+      expect.objectContaining({
+        trialType: "purchase_intent_concept",
+        conceptAssetId: "growpathai-hat-circuit-leaf-midnight-purchase-intent-trial",
+        question: "Would you buy this hat for $34.00?",
+        candidatePrice: 34,
+        priceCurrency: "USD",
+        publicTrial: true,
+        ownerApprovedArtwork: true,
+        rightsReviewStatus: "not_required",
+        itemForSale: false,
+        saleEnabled: false,
+        responseCreatesOrder: false,
+        status: "active"
+      })
+    );
+    expect(
+      screen.getByText(
+        "Purchase-intent concept trial started. It is not a product listing and cannot accept orders or payment."
+      )
+    ).toBeTruthy();
+  });
+
   it("rejects invalid Batch volume without silently omitting it", async () => {
     const screen = render(<CommercialBatchPlannerRoute />);
     await waitFor(() => expect(screen.queryByText("Loading batches...")).toBeNull());

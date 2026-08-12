@@ -55,6 +55,26 @@ export type ProductTrial = {
   aiReview?: Record<string, any>;
   notes?: string;
   status?: "planned" | "active" | "complete" | "archived";
+  trialType?: "evidence" | "purchase_intent_concept";
+  conceptAssetId?: string;
+  conceptTitle?: string;
+  conceptImageAlt?: string;
+  question?: string;
+  candidatePrice?: number;
+  priceCurrency?: string;
+  publicTrial?: boolean;
+  ownerApprovedArtwork?: boolean;
+  rightsReviewStatus?: "not_required" | "pending" | "approved";
+  itemForSale?: false;
+  saleEnabled?: false;
+  responseCreatesOrder?: false;
+  purchaseIntentSummary?: {
+    yes: number;
+    maybe: number;
+    no: number;
+    total: number;
+  };
+  viewerResponse?: "yes" | "maybe" | "no" | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -251,6 +271,16 @@ export async function createProductTrial(data: Partial<ProductTrial>) {
     body: data
   });
   return res?.trial ?? res?.productTrial ?? res?.created ?? res;
+}
+
+export async function submitPurchaseIntentTrialResponse(
+  id: string,
+  response: "yes" | "maybe" | "no"
+) {
+  return apiRequest(`${endpoints.commercial.trial(id)}/purchase-intent`, {
+    method: "POST",
+    body: { response }
+  });
 }
 
 export async function fetchProductTrial(id: string): Promise<ProductTrial | null> {

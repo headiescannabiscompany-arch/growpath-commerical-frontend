@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "growpath-owner-hat-concepts-v1",
+  "brand": {
+    "name": "GrowPathAI",
+    "slug": "growpathai"
+  },
+  "source": {
+    "platform": "Facebook",
+    "profileUrl": "https://www.facebook.com/jaycollins79",
+    "postUrl": "https://www.facebook.com/jaycollins79/posts/pfbid0ZG3JtGBGgSNjTNSGsBRTQE7B2coNLTDSJVyowpWyiv416KYEj7surN1ur9DrFmZQl",
+    "photoCollectionUrl": "https://www.facebook.com/photo/?fbid=10162506485226059&set=pcb.10162506486306059",
+    "ownerAuthorizedAt": "2026-08-11",
+    "capturedAt": "2026-08-12T00:29:20Z",
+    "authorization": "The account owner explicitly approved these GrowPathAI hat designs for GrowPathAI use in the current Codex task."
+  },
+  "catalogState": {
+    "listingState": "unpublished",
+    "inventoryAvailable": 0,
+    "price": null,
+    "shippingPrice": null,
+    "checkoutEnabled": false,
+    "manufacturedInventoryConfirmed": false,
+    "rightsReviewRequired": false
+  },
+  "conceptTrial": {
+    "trialType": "purchase_intent_concept",
+    "eligible": true,
+    "questionTemplate": "Would you buy this hat for {candidatePrice}?",
+    "candidatePrice": null,
+    "priceCurrency": "USD",
+    "itemForSale": false,
+    "saleEnabled": false,
+    "responseCreatesOrder": false,
+    "inventoryAvailable": 0,
+    "activationRequiresCandidatePrice": true,
+    "activationRequiresOwnerArtworkApproval": true,
+    "disclosure": "Concept trial only — not for sale. Your response records purchase interest and does not create an order."
+  },
+  "sourcing": {
+    "blankDistributor": "BLVNK HEADWEAR",
+    "blankDistributorUrl": "https://www.blvnkheadwear.com/",
+    "wholesaleApplicationUrl": "https://blvnkheadwear.com/pages/blank-hats-bulk-wholesale",
+    "status": "candidate_blank_supplier",
+    "recommendedBy": "Captuer Headwear service team email dated 2026-08-10",
+    "localDecorationRequired": true,
+    "decoratorSelected": false,
+    "approvedPhysicalSample": false,
+    "productionOrderConfirmed": false,
+    "visualColorReference": {
+      "model": "GRAMPS SNAPBACK",
+      "colorFabric": "SAGE/OLIVE - Grandpa Nylon",
+      "productUrl": "https://blvnkheadwear.com/products/gramps-snapback",
+      "referenceOnly": true
+    }
+  },
+  "assets": [
+    {
+      "id": "growpathai-hat-circuit-leaf-midnight-owner-concept",
+      "file": "circuit-leaf-midnight-owner-concept.jpg",
+      "sourceFileName": "772871260_10162506487076059_823872283807231629_n.jpg",
+      "sha256": "2edb8eb6cf22d57c271bd6ef22a1a0e36558f157707805dd3a97adf4fdd6b88a",
+      "description": "Owner-designed black Circuit Leaf A-frame GrowPathAI hat concept sheet."
+    },
+    {
+      "id": "growpathai-hat-circuit-leaf-sage-owner-concept",
+      "file": "circuit-leaf-sage-owner-concept.jpg",
+      "sourceFileName": "772271059_10162506487136059_3492304339593059108_n.jpg",
+      "sha256": "4ab52995b3f944cc6db567b125aa9baf9d55c22914b4210aba8740200982d76e",
+      "description": "Owner-designed monochrome sage Circuit Leaf GrowPathAI hat concept sheet."
+    },
+    {
+      "id": "growpathai-hat-circuit-leaf-midnight-purchase-intent-trial",
+      "file": "circuit-leaf-midnight-purchase-intent-trial.png",
+      "sha256": "8426ba7e57b01049137e3dffcaf5529e7d3955aa7408faad3de616391ed2a408",
+      "description": "Owner-approved black Circuit Leaf purchase-intent trial artwork with corrected emblems and an explicit not-for-sale disclosure.",
+      "assetRole": "purchase_intent_trial",
+      "artworkApprovalStatus": "owner_approved"
+    },
+    {
+      "id": "growpathai-hat-circuit-leaf-sage-purchase-intent-trial",
+      "file": "circuit-leaf-sage-purchase-intent-trial.png",
+      "sha256": "a0029ee73dfdccfd5177c999b985e7725a5a8f55922923e26cbe5854bc90aabb",
+      "description": "Owner-approved tonal sage Circuit Leaf purchase-intent trial artwork with realistic visor proportions, a small rear GrowPathAI wordmark, and fabric color visually referenced to BLVNK SAGE/OLIVE Grandpa Nylon.",
+      "assetRole": "purchase_intent_trial",
+      "artworkApprovalStatus": "owner_approved"
+    }
+  ]
+}

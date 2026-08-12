@@ -2,6 +2,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -19,6 +20,7 @@ import {
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
 import CommercialContextualTools from "@/components/commercial/CommercialContextualTools";
+import { purchaseIntentConceptById } from "@/config/commerceConceptTrials";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
@@ -210,6 +212,37 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
     }
   }
 
+  async function closeConceptTrial() {
+    if (
+      !trialId ||
+      saveInFlightRef.current ||
+      trial?.trialType !== "purchase_intent_concept"
+    )
+      return;
+    saveInFlightRef.current = true;
+    setSaving(true);
+    setMessage("");
+    setActionError(null);
+    try {
+      const updated = await updateProductTrial(trialId, {
+        status: "archived",
+        publicTrial: false,
+        itemForSale: false,
+        saleEnabled: false,
+        responseCreatesOrder: false
+      });
+      hydrate(updated);
+      setMessage(
+        "Concept trial closed. Its aggregate results remain in this owner record."
+      );
+    } catch (err) {
+      setActionError(err);
+    } finally {
+      saveInFlightRef.current = false;
+      setSaving(false);
+    }
+  }
+
   async function createClaimReadinessTask() {
     if (!trialId || !trial || taskInFlightRef.current || saving || reviewing) return;
     const warnings = trialClaimWarnings(trial);
@@ -269,6 +302,14 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
     measurements?.harvestData,
     measurements?.dryCureData
   ].filter(Boolean).length;
+  const isPurchaseIntentTrial = trial?.trialType === "purchase_intent_concept";
+  const purchaseIntentConcept = purchaseIntentConceptById(trial?.conceptAssetId);
+  const purchaseIntentSummary = trial?.purchaseIntentSummary || {
+    yes: 0,
+    maybe: 0,
+    no: 0,
+    total: 0
+  };
 
   return (
     <AppPage
@@ -277,13 +318,18 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
       longContent
       header={
         <View style={styles.header}>
-          <Text style={styles.kicker}>Commercial evidence workspace</Text>
+          <Text style={styles.kicker}>
+            {isPurchaseIntentTrial
+              ? "Commercial market-research workspace"
+              : "Commercial evidence workspace"}
+          </Text>
           <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             {trialTitle(trial)}
           </Text>
           <Text style={styles.subtitle}>
-            Keep product trials tied to evidence runs, batches, measurements, limitations,
-            and claim-safe public summaries.
+            {isPurchaseIntentTrial
+              ? "Review purchase interest for one owner-approved concept without creating inventory, orders, checkout, payment, or a launch claim."
+              : "Keep product trials tied to evidence runs, batches, measurements, limitations, and claim-safe public summaries."}
           </Text>
           <View style={styles.actions}>
             <ActionLink href="/home/commercial/trials" label="All Trials" />
@@ -333,289 +379,343 @@ export default function CommercialTrialDetailRoute({ route }: { route?: any } = 
         </View>
       ) : null}
 
-      <CommercialContextualTools
-        title="Analyze this product trial"
-        source="commercial_trial_detail"
-        trialId={trialId}
-        growId={String(trial?.growId || (trial as any)?.linkedGrowId || "")}
-        productId={String(trial?.productId || "")}
-        productLineId={String(trial?.productLineId || "")}
-        batchId={String((trial as any)?.batchId || "")}
-        prompt={`Review the product trial ${trialTitle(trial)} for evidence quality, limitations, plant health, environment, and claim readiness.`}
-        tools={["ask-ai", "diagnose", "environment", "harvest-readiness", "report"]}
-      />
-
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Trial Record
-        </Text>
-        <Text style={styles.body}>
-          This is the private evidence record behind product claims, storefront proof,
-          feed campaigns, courses, and Forum/Q&A support answers.
-        </Text>
-        <View style={styles.detailGrid}>
-          <DetailRow label="Purpose" value={trial?.purpose} />
-          <DetailRow label="Status" value={trial?.status} />
-          <DetailRow label="Crop" value={trial?.cropType} />
-          <DetailRow label="Cultivar" value={trial?.cultivar} />
-          <DetailRow label="Plant count" value={trial?.plantCount} />
-          <DetailRow label="Evidence links" value={evidenceCount} />
-        </View>
-      </AppCard>
-
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Linked Commercial Evidence
-        </Text>
-        <Text style={styles.body}>
-          A trial is stronger when it links the product, formula/batch, grow, and
-          measurements instead of relying on marketing copy.
-        </Text>
-        <View style={styles.detailGrid}>
-          <DetailRow label="Product ID" value={trial?.productId} />
-          <DetailRow label="Product line ID" value={trial?.productLineId} />
-          <DetailRow label="Batch ID" value={trial?.batchId} />
-          <DetailRow label="Evidence run ID" value={trial?.growId} />
-        </View>
-        <View style={styles.actions}>
-          {trial?.productId ? (
-            <ActionLink
-              href={`/home/commercial/products/${encodeURIComponent(trial.productId)}`}
-              label="Open Product"
-            />
-          ) : null}
-          {trial?.productLineId ? (
-            <ActionLink
-              href={`/home/commercial/product-lines/${encodeURIComponent(trial.productLineId)}`}
-              label="Open Product Line"
-            />
-          ) : null}
-          {trial?.growId ? (
-            <ActionLink
-              href={`/home/commercial/evidence-runs/${encodeURIComponent(trial.growId)}`}
-              label="Open Evidence Run"
-            />
-          ) : null}
-          <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
-          <ActionLink href="/home/commercial/analytics" label="Analytics" />
-        </View>
-      </AppCard>
-
-      <AppCard>
-        <View style={styles.cardHeader}>
+      {isPurchaseIntentTrial ? (
+        <AppCard>
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-            Claim Readiness
+            Purchase-intent results
           </Text>
-          <Text style={[styles.statusPill, !claimWarnings.length && styles.readyPill]}>
-            {claimWarnings.length ? "Evidence building" : "Claim-ready"}
+          {purchaseIntentConcept ? (
+            <Image
+              source={purchaseIntentConcept.image}
+              accessibilityLabel={
+                trial?.conceptImageAlt || purchaseIntentConcept.imageAlt
+              }
+              resizeMode="contain"
+              style={styles.conceptImage}
+            />
+          ) : null}
+          <Text style={styles.body}>{trial?.question}</Text>
+          <Text style={styles.bullet}>
+            Concept trial only — not for sale. Answers cannot reserve inventory, create
+            orders, start checkout, capture payment, or promise production or shipping.
           </Text>
-        </View>
-        <Text style={styles.body}>
-          Trials stay private evidence until completion, linked product, batch, evidence
-          run records, measurement data, summaries, and AI review evidence support the
-          public claim.
-        </Text>
-        {claimWarnings.length ? (
-          <View style={styles.warningBox}>
-            {claimWarnings.map((warning) => (
-              <Text key={warning} style={styles.warningText}>
-                Missing {warning}
+          <View style={styles.detailGrid}>
+            <DetailRow label="Yes" value={purchaseIntentSummary.yes} />
+            <DetailRow label="Maybe" value={purchaseIntentSummary.maybe} />
+            <DetailRow label="No" value={purchaseIntentSummary.no} />
+            <DetailRow label="Total responses" value={purchaseIntentSummary.total} />
+            <DetailRow label="Available inventory" value="0" />
+            <DetailRow label="Status" value={trial?.status} />
+          </View>
+          <View style={styles.actions}>
+            <ActionLink href="/home/commercial/storefront" label="Open Storefront" />
+            {trial?.status === "active" ? (
+              <Pressable
+                accessibilityLabel="Close purchase-intent concept trial"
+                accessibilityRole="button"
+                accessibilityState={{ disabled: saving, busy: saving }}
+                disabled={saving}
+                onPress={() => void closeConceptTrial()}
+                style={[styles.action, saving && styles.disabled]}
+              >
+                <Text style={styles.actionText}>
+                  {saving ? "Closing..." : "Close Concept Trial"}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </AppCard>
+      ) : (
+        <>
+          <CommercialContextualTools
+            title="Analyze this product trial"
+            source="commercial_trial_detail"
+            trialId={trialId}
+            growId={String(trial?.growId || (trial as any)?.linkedGrowId || "")}
+            productId={String(trial?.productId || "")}
+            productLineId={String(trial?.productLineId || "")}
+            batchId={String((trial as any)?.batchId || "")}
+            prompt={`Review the product trial ${trialTitle(trial)} for evidence quality, limitations, plant health, environment, and claim readiness.`}
+            tools={["ask-ai", "diagnose", "environment", "harvest-readiness", "report"]}
+          />
+
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Trial Record
+            </Text>
+            <Text style={styles.body}>
+              This is the private evidence record behind product claims, storefront proof,
+              feed campaigns, courses, and Forum/Q&A support answers.
+            </Text>
+            <View style={styles.detailGrid}>
+              <DetailRow label="Purpose" value={trial?.purpose} />
+              <DetailRow label="Status" value={trial?.status} />
+              <DetailRow label="Crop" value={trial?.cropType} />
+              <DetailRow label="Cultivar" value={trial?.cultivar} />
+              <DetailRow label="Plant count" value={trial?.plantCount} />
+              <DetailRow label="Evidence links" value={evidenceCount} />
+            </View>
+          </AppCard>
+
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Linked Commercial Evidence
+            </Text>
+            <Text style={styles.body}>
+              A trial is stronger when it links the product, formula/batch, grow, and
+              measurements instead of relying on marketing copy.
+            </Text>
+            <View style={styles.detailGrid}>
+              <DetailRow label="Product ID" value={trial?.productId} />
+              <DetailRow label="Product line ID" value={trial?.productLineId} />
+              <DetailRow label="Batch ID" value={trial?.batchId} />
+              <DetailRow label="Evidence run ID" value={trial?.growId} />
+            </View>
+            <View style={styles.actions}>
+              {trial?.productId ? (
+                <ActionLink
+                  href={`/home/commercial/products/${encodeURIComponent(trial.productId)}`}
+                  label="Open Product"
+                />
+              ) : null}
+              {trial?.productLineId ? (
+                <ActionLink
+                  href={`/home/commercial/product-lines/${encodeURIComponent(trial.productLineId)}`}
+                  label="Open Product Line"
+                />
+              ) : null}
+              {trial?.growId ? (
+                <ActionLink
+                  href={`/home/commercial/evidence-runs/${encodeURIComponent(trial.growId)}`}
+                  label="Open Evidence Run"
+                />
+              ) : null}
+              <ActionLink href="/home/commercial/batch-planner" label="Batch Planner" />
+              <ActionLink href="/home/commercial/analytics" label="Analytics" />
+            </View>
+          </AppCard>
+
+          <AppCard>
+            <View style={styles.cardHeader}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+                Claim Readiness
               </Text>
-            ))}
-            <Pressable
-              accessibilityLabel="Create trial evidence task"
-              accessibilityRole="button"
-              accessibilityState={{ disabled: operationBusy, busy: creatingTask }}
-              disabled={operationBusy}
-              onPress={createClaimReadinessTask}
-              style={[styles.action, operationBusy ? styles.disabled : null]}
-            >
-              <Text style={styles.actionText}>
-                {creatingTask ? "Creating..." : "Create Task"}
+              <Text
+                style={[styles.statusPill, !claimWarnings.length && styles.readyPill]}
+              >
+                {claimWarnings.length ? "Evidence building" : "Claim-ready"}
               </Text>
-            </Pressable>
-            {creatingTask ? (
+            </View>
+            <Text style={styles.body}>
+              Trials stay private evidence until completion, linked product, batch,
+              evidence run records, measurement data, summaries, and AI review evidence
+              support the public claim.
+            </Text>
+            {claimWarnings.length ? (
+              <View style={styles.warningBox}>
+                {claimWarnings.map((warning) => (
+                  <Text key={warning} style={styles.warningText}>
+                    Missing {warning}
+                  </Text>
+                ))}
+                <Pressable
+                  accessibilityLabel="Create trial evidence task"
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: operationBusy, busy: creatingTask }}
+                  disabled={operationBusy}
+                  onPress={createClaimReadinessTask}
+                  style={[styles.action, operationBusy ? styles.disabled : null]}
+                >
+                  <Text style={styles.actionText}>
+                    {creatingTask ? "Creating..." : "Create Task"}
+                  </Text>
+                </Pressable>
+                {creatingTask ? (
+                  <View
+                    accessibilityLabel="Creating trial evidence task in progress"
+                    accessibilityLiveRegion="polite"
+                    accessibilityRole="progressbar"
+                    style={styles.progressRow}
+                  >
+                    <ActivityIndicator color={palette.accent} />
+                    <Text style={styles.muted}>Creating evidence task...</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : (
+              <Text style={styles.success}>
+                This trial has the minimum support for cautious storefront, course, feed,
+                or forum proof points.
+              </Text>
+            )}
+          </AppCard>
+
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Effectiveness Summary
+            </Text>
+            <Text style={styles.body}>
+              Save the private working summary here. Publish only claims supported by
+              saved evidence runs, measurements, photos, harvest, dry/cure, or comparison
+              records.
+            </Text>
+            <TextInput
+              accessibilityLabel="Commercial trial status"
+              editable={!operationBusy}
+              onChangeText={setStatus}
+              placeholder="planned, active, complete, archived"
+              style={styles.input}
+              value={status}
+            />
+            <TextInput
+              accessibilityLabel="Commercial trial effectiveness summary"
+              editable={!operationBusy}
+              multiline
+              onChangeText={setEffectivenessSummary}
+              placeholder="Observed results, plant response, quality notes, missing data..."
+              style={[styles.input, styles.textArea]}
+              value={effectivenessSummary}
+            />
+            <TextInput
+              accessibilityLabel="Commercial trial harvest quality notes"
+              editable={!operationBusy}
+              multiline
+              onChangeText={setHarvestQualityNotes}
+              placeholder="Harvest quality notes: yield, aroma, flavor, resin, dry/cure result, defects, final product quality..."
+              style={[styles.input, styles.textArea]}
+              value={harvestQualityNotes}
+            />
+            <TextInput
+              accessibilityLabel="Commercial trial crop summary"
+              editable={!operationBusy}
+              multiline
+              onChangeText={setCommercialCropSummary}
+              placeholder="Product trial crop summary: product used, outcome, final quality, limitations, next-run changes..."
+              style={[styles.input, styles.textArea]}
+              value={commercialCropSummary}
+            />
+            <TextInput
+              accessibilityLabel="Commercial trial notes"
+              editable={!operationBusy}
+              multiline
+              onChangeText={setNotes}
+              placeholder="Trial notes, measurement gaps, control group notes, next checks..."
+              style={[styles.input, styles.textArea]}
+              value={notes}
+            />
+            {saving ? (
               <View
-                accessibilityLabel="Creating trial evidence task in progress"
+                accessibilityLabel="Saving commercial trial detail in progress"
                 accessibilityLiveRegion="polite"
                 accessibilityRole="progressbar"
                 style={styles.progressRow}
               >
                 <ActivityIndicator color={palette.accent} />
-                <Text style={styles.muted}>Creating evidence task...</Text>
+                <Text style={styles.muted}>Saving trial detail...</Text>
               </View>
             ) : null}
-          </View>
-        ) : (
-          <Text style={styles.success}>
-            This trial has the minimum support for cautious storefront, course, feed, or
-            forum proof points.
-          </Text>
-        )}
-      </AppCard>
+            <Pressable
+              accessibilityLabel="Save commercial trial detail"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canSave, busy: saving }}
+              disabled={!canSave}
+              onPress={saveChanges}
+              style={[styles.primaryAction, !canSave ? styles.disabled : null]}
+            >
+              <Text style={styles.primaryActionText}>
+                {saving ? "Saving..." : "Save Trial Detail"}
+              </Text>
+            </Pressable>
+          </AppCard>
 
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Effectiveness Summary
-        </Text>
-        <Text style={styles.body}>
-          Save the private working summary here. Publish only claims supported by saved
-          evidence runs, measurements, photos, harvest, dry/cure, or comparison records.
-        </Text>
-        <TextInput
-          accessibilityLabel="Commercial trial status"
-          editable={!operationBusy}
-          onChangeText={setStatus}
-          placeholder="planned, active, complete, archived"
-          style={styles.input}
-          value={status}
-        />
-        <TextInput
-          accessibilityLabel="Commercial trial effectiveness summary"
-          editable={!operationBusy}
-          multiline
-          onChangeText={setEffectivenessSummary}
-          placeholder="Observed results, plant response, quality notes, missing data..."
-          style={[styles.input, styles.textArea]}
-          value={effectivenessSummary}
-        />
-        <TextInput
-          accessibilityLabel="Commercial trial harvest quality notes"
-          editable={!operationBusy}
-          multiline
-          onChangeText={setHarvestQualityNotes}
-          placeholder="Harvest quality notes: yield, aroma, flavor, resin, dry/cure result, defects, final product quality..."
-          style={[styles.input, styles.textArea]}
-          value={harvestQualityNotes}
-        />
-        <TextInput
-          accessibilityLabel="Commercial trial crop summary"
-          editable={!operationBusy}
-          multiline
-          onChangeText={setCommercialCropSummary}
-          placeholder="Product trial crop summary: product used, outcome, final quality, limitations, next-run changes..."
-          style={[styles.input, styles.textArea]}
-          value={commercialCropSummary}
-        />
-        <TextInput
-          accessibilityLabel="Commercial trial notes"
-          editable={!operationBusy}
-          multiline
-          onChangeText={setNotes}
-          placeholder="Trial notes, measurement gaps, control group notes, next checks..."
-          style={[styles.input, styles.textArea]}
-          value={notes}
-        />
-        {saving ? (
-          <View
-            accessibilityLabel="Saving commercial trial detail in progress"
-            accessibilityLiveRegion="polite"
-            accessibilityRole="progressbar"
-            style={styles.progressRow}
-          >
-            <ActivityIndicator color={palette.accent} />
-            <Text style={styles.muted}>Saving trial detail...</Text>
-          </View>
-        ) : null}
-        <Pressable
-          accessibilityLabel="Save commercial trial detail"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canSave, busy: saving }}
-          disabled={!canSave}
-          onPress={saveChanges}
-          style={[styles.primaryAction, !canSave ? styles.disabled : null]}
-        >
-          <Text style={styles.primaryActionText}>
-            {saving ? "Saving..." : "Save Trial Detail"}
-          </Text>
-        </Pressable>
-      </AppCard>
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Claim-Safe AI Review
+            </Text>
+            <Text style={styles.body}>
+              Store a cautious review that separates observations, evidence, and
+              limitations. This should guide public copy without overclaiming causation.
+            </Text>
+            <TextInput
+              accessibilityLabel="Commercial trial AI review summary"
+              editable={!operationBusy}
+              multiline
+              onChangeText={setReviewSummary}
+              placeholder="Trial review summary"
+              style={[styles.input, styles.textArea]}
+              value={reviewSummary}
+            />
+            <TextInput
+              accessibilityLabel="Commercial trial AI review evidence"
+              editable={!operationBusy}
+              multiline
+              onChangeText={setReviewEvidence}
+              placeholder="Evidence, one item per line"
+              style={[styles.input, styles.textArea]}
+              value={reviewEvidence}
+            />
+            <TextInput
+              accessibilityLabel="Commercial trial AI review limitations"
+              editable={!operationBusy}
+              multiline
+              onChangeText={setReviewLimitations}
+              placeholder="Limitations, one item per line"
+              style={[styles.input, styles.textArea]}
+              value={reviewLimitations}
+            />
+            {reviewing ? (
+              <View
+                accessibilityLabel="Saving commercial trial AI review in progress"
+                accessibilityLiveRegion="polite"
+                accessibilityRole="progressbar"
+                style={styles.progressRow}
+              >
+                <ActivityIndicator color={palette.accent} />
+                <Text style={styles.muted}>Saving claim-safe review...</Text>
+              </View>
+            ) : null}
+            <Pressable
+              accessibilityLabel="Save commercial trial AI review"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canReview, busy: reviewing }}
+              disabled={!canReview}
+              onPress={saveReview}
+              style={[styles.primaryAction, !canReview ? styles.disabled : null]}
+            >
+              <Text style={styles.primaryActionText}>
+                {reviewing ? "Saving review..." : "Save AI Review"}
+              </Text>
+            </Pressable>
+          </AppCard>
 
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Claim-Safe AI Review
-        </Text>
-        <Text style={styles.body}>
-          Store a cautious review that separates observations, evidence, and limitations.
-          This should guide public copy without overclaiming causation.
-        </Text>
-        <TextInput
-          accessibilityLabel="Commercial trial AI review summary"
-          editable={!operationBusy}
-          multiline
-          onChangeText={setReviewSummary}
-          placeholder="Trial review summary"
-          style={[styles.input, styles.textArea]}
-          value={reviewSummary}
-        />
-        <TextInput
-          accessibilityLabel="Commercial trial AI review evidence"
-          editable={!operationBusy}
-          multiline
-          onChangeText={setReviewEvidence}
-          placeholder="Evidence, one item per line"
-          style={[styles.input, styles.textArea]}
-          value={reviewEvidence}
-        />
-        <TextInput
-          accessibilityLabel="Commercial trial AI review limitations"
-          editable={!operationBusy}
-          multiline
-          onChangeText={setReviewLimitations}
-          placeholder="Limitations, one item per line"
-          style={[styles.input, styles.textArea]}
-          value={reviewLimitations}
-        />
-        {reviewing ? (
-          <View
-            accessibilityLabel="Saving commercial trial AI review in progress"
-            accessibilityLiveRegion="polite"
-            accessibilityRole="progressbar"
-            style={styles.progressRow}
-          >
-            <ActivityIndicator color={palette.accent} />
-            <Text style={styles.muted}>Saving claim-safe review...</Text>
-          </View>
-        ) : null}
-        <Pressable
-          accessibilityLabel="Save commercial trial AI review"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canReview, busy: reviewing }}
-          disabled={!canReview}
-          onPress={saveReview}
-          style={[styles.primaryAction, !canReview ? styles.disabled : null]}
-        >
-          <Text style={styles.primaryActionText}>
-            {reviewing ? "Saving review..." : "Save AI Review"}
-          </Text>
-        </Pressable>
-      </AppCard>
-
-      <AppCard>
-        <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-          Publish Path
-        </Text>
-        <Text style={styles.bullet}>
-          Complete the trial before using it as strong product proof.
-        </Text>
-        <Text style={styles.bullet}>
-          Attach product, batch, grow, pH/EC, diagnosis, harvest, and dry/cure evidence.
-        </Text>
-        <Text style={styles.bullet}>
-          Use cautious language: may have contributed, observed in this trial, limited
-          sample size.
-        </Text>
-        <Text style={styles.bullet}>
-          Turn the final summary into a feed campaign, storefront proof point, course
-          lesson, or forum answer.
-        </Text>
-        <View style={styles.actions}>
-          <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
-          <ActionLink href="/home/commercial/storefront" label="Storefront" />
-          <ActionLink href="/home/commercial/courses" label="Courses" />
-          <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
-        </View>
-      </AppCard>
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Publish Path
+            </Text>
+            <Text style={styles.bullet}>
+              Complete the trial before using it as strong product proof.
+            </Text>
+            <Text style={styles.bullet}>
+              Attach product, batch, grow, pH/EC, diagnosis, harvest, and dry/cure
+              evidence.
+            </Text>
+            <Text style={styles.bullet}>
+              Use cautious language: may have contributed, observed in this trial, limited
+              sample size.
+            </Text>
+            <Text style={styles.bullet}>
+              Turn the final summary into a feed campaign, storefront proof point, course
+              lesson, or forum answer.
+            </Text>
+            <View style={styles.actions}>
+              <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />
+              <ActionLink href="/home/commercial/storefront" label="Storefront" />
+              <ActionLink href="/home/commercial/courses" label="Courses" />
+              <ActionLink href="/home/commercial/community" label="Forum / Q&A" />
+            </View>
+          </AppCard>
+        </>
+      )}
     </AppPage>
   );
 }
@@ -640,6 +740,13 @@ export function createCommercialTrialDetailStyles(palette: ThemePalette) {
     cardTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
     body: { color: palette.textSoft, fontSize: 14, lineHeight: 21, marginTop: 8 },
     muted: { color: palette.textMuted, fontSize: 13 },
+    conceptImage: {
+      aspectRatio: 4 / 3,
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      marginTop: 12,
+      width: "100%"
+    },
     detailGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
     detailRow: {
       backgroundColor: palette.surfaceMuted,
