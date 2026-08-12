@@ -232,9 +232,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   passed. Populated signed-in Commercial create/edit/reload, public discovery,
   and screenshot/video acceptance remain open. See
   `docs/qa/COMMERCIAL_STOREFRONT_STATE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-08-11.md`.
-- [ ] Complete commercial course create/edit/publish acceptance for cover,
-      category/grow interests, modules, lessons, uploads/external video sources, tasks,
-      products, lives, Forum links, storefront display, and learner access.
+- [~] Complete commercial course create/edit/publish acceptance for cover,
+  category/grow interests, modules, lessons, uploads/external video sources, tasks,
+  products, lives, Forum links, storefront display, and learner access.
+  Draft-only creation, server-enforced readiness, save-before-publish, explicit
+  unpublish, paid-price validation, and published-content mutation locks are under
+  release verification. Populated Commercial-owner browser acceptance remains open.
 - [~] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
   Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
   navigation hierarchy, and persistence checks. Orders and Analytics state,

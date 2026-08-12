@@ -79,6 +79,14 @@ const COURSE_ACCESS_OPTIONS: Array<{
   { value: "private", label: "Private" }
 ];
 
+const COURSE_CATEGORY_OPTIONS = [
+  "Product education",
+  "Grow methods",
+  "Plant care",
+  "Live workshop",
+  "Facility training"
+];
+
 function formatCourseLabel(value: unknown) {
   const normalized = String(value || "")
     .trim()
@@ -156,6 +164,7 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
   const warnings: string[] = [];
   if (!course.thumbnailUrl?.trim()) warnings.push("add thumbnail");
   if (!course.bannerUrl?.trim()) warnings.push("add banner");
+  if (!course.category?.trim()) warnings.push("add category");
   if (!course.description?.trim()) warnings.push("add description");
   if (!course.growInterests?.length) warnings.push("add grow interests");
   if (!course.modules?.length) warnings.push("add module");
@@ -210,9 +219,13 @@ export default function CommercialCoursesRoute() {
     description: form.description,
     thumbnailUrl: form.thumbnailUrl,
     bannerUrl: form.bannerUrl,
+    category: form.category,
     growInterests: splitList(form.growInterests),
     access: form.access,
-    price: Number(form.price) || 0,
+    price:
+      Number.isFinite(Number(form.price)) && Number(form.price) > 0
+        ? Number(form.price)
+        : 0,
     stripeProductId: form.stripeProductId,
     stripePriceId: form.stripePriceId,
     modules: outlineItems(form.moduleOutline, "module"),
@@ -246,6 +259,10 @@ export default function CommercialCoursesRoute() {
     setSaving(true);
     setError(null);
     try {
+      const paidPrice = Number(form.price);
+      if (form.access === "paid" && (!Number.isFinite(paidPrice) || paidPrice <= 0)) {
+        throw new Error("Enter a positive paid-course price before creating the draft.");
+      }
       const [thumbnailUrl, bannerUrl] = await Promise.all([
         persistImageUri(form.thumbnailUrl.trim()),
         persistImageUri(form.bannerUrl.trim())
@@ -259,7 +276,7 @@ export default function CommercialCoursesRoute() {
         growInterests: splitList(form.growInterests),
         skillLevel: form.skillLevel.trim() || undefined,
         access: form.access,
-        price: form.access === "paid" ? Number(form.price) || 0 : 0,
+        price: form.access === "paid" ? Math.round(paidPrice * 100) / 100 : 0,
         stripeProductId: form.stripeProductId.trim() || undefined,
         stripePriceId: form.stripePriceId.trim() || undefined,
         linkedProductIds: splitIds(form.linkedProductIds),
@@ -273,8 +290,7 @@ export default function CommercialCoursesRoute() {
         modules: outlineItems(form.moduleOutline, "module"),
         lessons: outlineItems(form.lessonOutline, "lesson"),
         quizzes: quizItems(form.quizOutline),
-        tasks: outlineItems(form.taskChecklist, "task"),
-        status: "draft"
+        tasks: outlineItems(form.taskChecklist, "task")
       });
       setForm(EMPTY_FORM);
       await loadCourses();
@@ -424,14 +440,37 @@ export default function CommercialCoursesRoute() {
           placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
-        <TextInput
-          value={form.category}
-          onChangeText={(category) => setForm((prev) => ({ ...prev, category }))}
+        <Text style={styles.selectorLabel}>Course category</Text>
+        <View
+          style={styles.actions}
+          accessibilityRole="radiogroup"
           accessibilityLabel="Commercial course category"
-          placeholder="Category"
-          placeholderTextColor={palette.textMuted}
-          style={styles.input}
-        />
+        >
+          {COURSE_CATEGORY_OPTIONS.map((value) => (
+            <Pressable
+              key={value}
+              accessibilityRole="radio"
+              accessibilityLabel={`Set commercial course category to ${value}`}
+              aria-checked={form.category === value}
+              accessibilityState={{ checked: form.category === value, disabled: saving }}
+              disabled={saving}
+              onPress={() => setForm((prev) => ({ ...prev, category: value }))}
+              style={[
+                styles.action,
+                form.category === value ? styles.actionSelected : null
+              ]}
+            >
+              <Text
+                style={[
+                  styles.actionText,
+                  form.category === value ? styles.actionTextSelected : null
+                ]}
+              >
+                {value}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
         <View style={styles.formGrid}>
           <TextInput
             value={form.thumbnailUrl}
