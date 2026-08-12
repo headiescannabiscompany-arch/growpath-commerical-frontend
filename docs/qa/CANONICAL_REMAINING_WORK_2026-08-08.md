@@ -33,6 +33,12 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
       Saved Run reload, correction provenance, one-credit billing/refund behavior, and
       no-grow operation have production evidence. These are not reopened by the still-open
       public Nature publication check.
+- [x] Plant ID's browser-independent manual-location fallback is live under frontend
+      `4d946f09`. The signed-in production page exposed `Place Pin on Map`, opened the
+      interactive map, accepted a temporary point as `ready to save privately`, and stated
+      `Not shared`. The temporary unsaved point was immediately removed and the form
+      returned to its no-location state. No ToolRun, Field Study, Nature observation, or
+      public coordinate was created by this check.
 - [x] The current Personal and Facility Viewer route-level sweep is complete: 24 Personal
       and 24 Facility destinations rendered their expected heading, Back control, and no
       visible load/access/not-found failure under frontend `a198141e`. Mutation and mobile
