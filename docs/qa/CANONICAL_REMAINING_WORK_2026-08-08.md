@@ -60,7 +60,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   regression-checked without changing Diagnosis/IPM behavior: 188 focused calculator,
   image-review, integrity, second-opinion, follow-up, billing, and shared-crop tests
   passed on 2026-08-12, including the thrips-compatible-damage and generic-white-mark
-  uncertainty guards. Further rule changes require a failing governed or retained real
+  uncertainty guards. A non-mutating Headies production recheck on frontend
+  `9a88a498` also confirmed the current Diagnosis and IPM evidence checklists,
+  uncertainty boundaries, and second-opinion entry point remained readable with no
+  visible route/load error; it did not add an accuracy case or justify another
+  behavior change. Further rule changes require a failing governed or retained real
   case; the next substantive step remains authorized 252-case staging execution.
 - [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
       scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
@@ -172,8 +176,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   Provider execution, original-detail provenance, exact retained-evidence retry,
   and one-credit billing are verified by review
   `6a7c23ff74c8d35e0937ef61`. The planning-run reopen plus grow-log/task write-back
-  path is also verified. A Harvest batch write-back remains unverified, so the
-  end-to-end item stays open.
+  path is also verified. The grow-scoped owned-batch selector is live at frontend
+  `9a88a498` / Render `dep-d9u3som7bikc739jv3l0`; the retained Headies run showed
+  the truthful no-batches empty state and no free-text database-ID control. Actual
+  Harvest batch mutation remains unverified until an approved owned batch exists,
+  so the end-to-end item stays open.
 - [ ] Obtain independent qualified review of Plant ID, Diagnosis, IPM, and Harvest
       accuracy; record disagreements rather than silently changing expected labels.
 - [ ] Capture a naturally occurring provider failure for Diagnosis/IPM/Harvest and
