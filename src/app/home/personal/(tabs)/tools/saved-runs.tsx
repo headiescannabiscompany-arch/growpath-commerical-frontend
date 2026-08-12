@@ -256,14 +256,14 @@ function savedHarvestSampleEstimate(photo: Record<string, any> | null) {
     Number.isFinite(Number(photo.sampleAmberMin)) &&
     Number.isFinite(Number(photo.sampleAmberMax));
   const amber = hasAmberRange
-    ? `Amber ${value("sampleAmberMin")} confirmed to ${value("sampleAmberMax")} possible`
+    ? `Amber ${value("sampleAmberMin")} directly confirmed; up to ${value("sampleAmberMax")} possible total`
     : `Amber ${value("sampleAmber")}`;
   const warmLight = Number(photo.sampleAmberOrWarmLight);
   const warmLightNote =
     Number.isFinite(warmLight) && warmLight > 0
       ? ` · ${Math.round(warmLight * 100)}% amber or warm light`
       : "";
-  return `Clear ${value("sampleClear")} · Cloudy ${value("sampleCloudy")} · ${amber}${warmLightNote} · Cloudy or glare ${value("sampleCloudyOrGlare")}${tally}`;
+  return `Clear ${value("sampleClear")} · Cloudy ${value("sampleCloudy")} · ${amber}${warmLightNote} · Cloudy or glare ${value("sampleCloudyOrGlare")}${tally} · directly confirmed is a strict evidence floor, not a likely low estimate`;
 }
 
 function isCloneRootingRun(run: ToolRun | null) {

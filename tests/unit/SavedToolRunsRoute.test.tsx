@@ -404,7 +404,7 @@ describe("SavedToolRunsRoute", () => {
 
     expect(
       await screen.findByText(
-        "Visible sampled heads: Clear 10% · Cloudy 45% · Amber 10% confirmed to 30% possible · 20% amber or warm light · Cloudy or glare 15% · 60 counted heads · high counting confidence"
+        "Visible sampled heads: Clear 10% · Cloudy 45% · Amber 10% directly confirmed; up to 30% possible total · 20% amber or warm light · Cloudy or glare 15% · 60 counted heads · high counting confidence · directly confirmed is a strict evidence floor, not a likely low estimate"
       )
     ).toBeTruthy();
     const retryHref = personalHarvestRetryHref({

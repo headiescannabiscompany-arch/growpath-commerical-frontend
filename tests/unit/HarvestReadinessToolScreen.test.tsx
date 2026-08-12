@@ -1272,7 +1272,12 @@ describe("HarvestReadinessToolRoute", () => {
     );
     expect(
       screen.getByText(
-        "10% clear · 35% cloudy · 10% confirmed amber to 30% possible amber · 25% cloudy or glare"
+        "10% clear · 35% cloudy · 10% directly confirmed amber · up to 30% possible amber total · 25% cloudy or glare"
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        /strict evidence floor, not the tool's claim that the photographed sample is probably that low/i
       )
     ).toBeTruthy();
     expect(
