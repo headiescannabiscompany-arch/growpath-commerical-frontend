@@ -497,6 +497,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "additive reviewable trichome-percentage drafts that preserve manual maturity observations and retain visual provenance",
       "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible",
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence",
+      "staging-only same-pixel trichome luminance audit with the original mean, bounded uniform RGB multiplier, and method retained as non-independent evidence that cannot confirm amber by itself",
       "bounded amber visibility and exact image-region basis even when a complete trichome distribution remains unavailable",
       "bounded cloudiness observation with confidence and matched-frame basis, distinguishing directly resolved cloudiness, persistent likely cloudiness, glare-obscured whiteness, and uncertainty",
       "exact dedicated Harvest vision model recorded in the signed review without inheriting a cost-optimized global mini model",

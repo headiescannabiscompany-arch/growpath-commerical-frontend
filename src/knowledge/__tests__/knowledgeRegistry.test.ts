@@ -116,6 +116,9 @@ describe("GrowPath knowledge registries", () => {
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "staging-only same-pixel trichome luminance audit with the original mean, bounded uniform RGB multiplier, and method retained as non-independent evidence that cannot confirm amber by itself"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "exact dedicated Harvest vision model recorded in the signed review without inheriting a cost-optimized global mini model"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
