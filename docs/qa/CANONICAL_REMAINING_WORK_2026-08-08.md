@@ -236,8 +236,14 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   category/grow interests, modules, lessons, uploads/external video sources, tasks,
   products, lives, Forum links, storefront display, and learner access.
   Draft-only creation, server-enforced readiness, save-before-publish, explicit
-  unpublish, paid-price validation, and published-content mutation locks are under
-  release verification. Populated Commercial-owner browser acceptance remains open.
+  unpublish, paid-price validation, and published-content mutation locks are live in
+  frontend merge `daf0d2ad` and backend merge `373d04ec`. Frontend clean-cache Render
+  deployment `dep-d9tukrbm8hqs73e3orr0` reached Live, and the cache-busted production
+  Course Builder visibly rendered the governed seven-step workflow, named Free/Paid
+  choices, and draft-only create action. Backend deployment
+  `dep-d9tul4rncjis73fv2dng` reached Live for exact fingerprinted merge `9f385c6f`.
+  Populated Commercial-owner create/edit/publish/read-only/unpublish/reload,
+  learner/storefront visibility, and disposable-record cleanup remain open.
 - [~] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
   Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
   navigation hierarchy, and persistence checks. Orders and Analytics state,
