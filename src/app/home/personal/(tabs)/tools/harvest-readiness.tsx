@@ -781,7 +781,7 @@ function HarvestPhotoAnalyzer({
           {analysis.visibleSampleEstimateUsable ? (
             <View style={photoStyles.qualityChecks}>
               <Text style={photoStyles.checklistTitle}>
-                Visible sampled-head estimate
+                Visible sampled-head evidence
               </Text>
               <Text style={photoStyles.feedback}>
                 {Math.round(Number(analysis.sampleClear) * 100)}% clear ·{" "}
@@ -789,11 +789,11 @@ function HarvestPhotoAnalyzer({
                 {Math.round(
                   Number(analysis.sampleAmberMin ?? analysis.sampleAmber) * 100
                 )}
-                % confirmed amber to{" "}
+                % directly confirmed amber · up to{" "}
                 {Math.round(
                   Number(analysis.sampleAmberMax ?? analysis.sampleAmber) * 100
                 )}
-                % possible amber ·{" "}
+                % possible amber total ·{" "}
                 {Math.round(Number(analysis.sampleCloudyOrGlare) * 100)}% cloudy or glare
               </Text>
               {Number(analysis.sampleAmberOrWarmLight) > 0 ? (
@@ -805,6 +805,13 @@ function HarvestPhotoAnalyzer({
                   amber.
                 </Text>
               ) : null}
+              <Text style={photoStyles.warning}>
+                Directly confirmed amber is a strict evidence floor, not the tool&apos;s
+                claim that the photographed sample is probably that low. The possible
+                total includes every resolved colored head that current lighting leaves
+                ambiguous; review the two values with the lighting note and per-photo
+                breakdown.
+              </Text>
               {Number(analysis.visibleSampleHeadCount) > 0 ? (
                 <Text style={photoStyles.feedback}>
                   Counted heads: {analysis.visibleSampleHeadCount} · Counting confidence:{" "}
