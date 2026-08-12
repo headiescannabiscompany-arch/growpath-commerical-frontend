@@ -149,6 +149,21 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   ordinary-phone images with independently reviewed head labels are still required
   before calling a quantitative counter production-ready.
 
+  Counter evaluation now scores normalized head-box detection separately from
+  clear/cloudy/amber classification on the same blinded set. Candidate acceptance
+  requires improved amber F1 and recall without regressing detector F1,
+  resolved-class macro F1, false-amber rate, or possible-amber interval coverage.
+  The staging label path imports only an adjudicated Label Studio result after two
+  independent reviewers and complete image-level rights/capture metadata, then
+  enforces non-weakenable floors of 50 qualified images, 1,000 labeled heads, 10
+  capture sessions, 3 device models, difficult-light coverage, and at least 100
+  labels in each resolved class. These are initial staging-eligibility floors, not
+  an accuracy claim. The counter remains open until the corpus is actually labeled,
+  independently reviewed, and scored against the deployed baseline. The public
+  `siccan/tricomas-semillero-cannabis` repository remains quarantined: its README
+  reports approximately 25% current detection and missing real labels, while its
+  tree includes web-search files without image-level provenance.
+
 - [~] Run one rightful production Harvest set through provider output, provenance,
   exact one-credit billing, saved-run reopen, and downstream task/batch write-back.
   Provider execution, original-detail provenance, exact retained-evidence retry,
