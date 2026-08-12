@@ -127,11 +127,5 @@ export function assessEvidencePhoto(
     );
   }
 
-  if (purpose === "harvest" && width && height && Math.min(width, height) < 1200) {
-    warnings.push(
-      "Harvest macro review may not resolve intact trichome heads at this resolution."
-    );
-  }
-
   return { accepted: true, warnings };
 }
