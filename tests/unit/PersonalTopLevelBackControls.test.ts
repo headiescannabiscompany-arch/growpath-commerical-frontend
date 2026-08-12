@@ -1,0 +1,34 @@
+import fs from "node:fs";
+import path from "node:path";
+
+function read(relativePath: string) {
+  return fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
+}
+
+describe("Personal top-level back controls", () => {
+  test.each([
+    ["grows", "src/app/home/personal/(tabs)/grows/index.tsx"],
+    ["AI tools", "src/app/home/personal/(tabs)/tools/index.tsx"],
+    ["forum", "src/app/home/personal/(tabs)/community.tsx"],
+    ["profile", "src/app/home/personal/(tabs)/profile/index.tsx"]
+  ])("keeps a shared Back control on %s", (_name, relativePath) => {
+    const source = read(relativePath);
+
+    expect(source).toContain('import BackButton from "@/components/nav/BackButton"');
+    expect(source).toContain('<BackButton fallbackHref="/home/personal" />');
+  });
+
+  test("keeps a shared Back control on the personal course catalog", () => {
+    const source = read("src/app/home/personal/(tabs)/courses.tsx");
+
+    expect(source).toContain("<ScreenBoundary");
+    expect(source).toContain('backFallbackHref="/home/personal"');
+  });
+
+  test("keeps a universal Back control on the public Nature map", () => {
+    const source = read("src/app/field-observations/index.tsx");
+
+    expect(source).toContain('import BackButton from "@/components/nav/BackButton"');
+    expect(source).toContain('<BackButton fallbackHref="/account/workspace" />');
+  });
+});

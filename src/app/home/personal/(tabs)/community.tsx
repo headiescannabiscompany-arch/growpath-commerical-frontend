@@ -22,6 +22,7 @@ import {
 } from "@/api/communitySocial";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import InlineForumDiscussion from "@/components/forum/InlineForumDiscussion";
+import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -206,6 +207,7 @@ export default function CommunityTab() {
         />
       }
     >
+      <BackButton fallbackHref="/home/personal" />
       <View style={[styles.hero, heroSurface]}>
         <View style={styles.heroCopy}>
           <Text style={[styles.eyebrow, { color: palette.heroMuted }]}>
