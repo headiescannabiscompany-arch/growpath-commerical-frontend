@@ -396,10 +396,15 @@ grow`, private current location without a Field Study, and an optional approxima
   support mailbox rather than `admin@growpathai.com`, and production held no
   retained Feed, product, video, or live-session report cases. Delivered admin-email
   clicks, non-admin denial, and those four data-bearing report types therefore remain.
-- [ ] Create only approved temporary production/staging records needed to verify
-      populated Facility Grow/Plant/Journal/Inventory/Compliance/SOP comparison and
-      Owner-only AI Validation Lab states; verify create/edit/reload/audit/permissions,
-      then clean up and record the cleanup.
+- [~] Approved temporary production records verified populated Facility Grow, Plant,
+      Journal, Inventory, Compliance, SOP comparison, and Owner-only AI Validation Lab
+      states. Live reload/navigation and immutable create/update/delete/resolve/SOP
+      audit events were confirmed without a new mutation. Inventory was deleted and
+      the deviation resolved. Remaining cleanup is limited to the retained temporary
+      grow, plant, and journal after a durable Cannabis grow context replaces the grow's
+      current role in exposing Facility Harvest Readiness. Specific forced-403 and
+      cross-role recording evidence remains in the separate item below. See
+      `docs/qa/FACILITY_POPULATED_WORKFLOW_PRODUCTION_EVIDENCE_2026-08-13.md`.
 - [ ] Capture forced backend 403 evidence for prohibited Facility mutations and an
       exported cross-role recording; clean up temporary aliases only with owner approval.
 
