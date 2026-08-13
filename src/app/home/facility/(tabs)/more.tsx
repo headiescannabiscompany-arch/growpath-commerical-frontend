@@ -117,6 +117,12 @@ const workspaceGroups: Array<{
         description: "Manage the video library and workspace storage use."
       },
       {
+        label: "Discover",
+        href: "/discover",
+        description:
+          "Browse public videos, courses, storefronts, and shared field findings."
+      },
+      {
         label: "Forum / Q&A",
         href: "/forum",
         description: "Open discussion, help threads, and community questions."
@@ -154,6 +160,7 @@ const VIEWER_DESCRIPTIONS: Record<string, string> = {
   Integrations: "Review connected room data and sensor previews.",
   Feed: "Review facility updates and public-facing activity.",
   Videos: "Review the shared video library and workspace storage use.",
+  Discover: "Browse public videos, courses, storefronts, and shared field findings.",
   Profile: "Review the facility identity, plan, and AI usage."
 };
 
