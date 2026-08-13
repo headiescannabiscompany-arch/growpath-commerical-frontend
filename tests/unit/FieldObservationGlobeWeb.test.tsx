@@ -3,7 +3,9 @@
 import React from "react";
 import renderer, { act } from "react-test-renderer";
 
-import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe.web";
+import FieldObservationGlobe, {
+  maintainMapLibreControlAccessibleNames
+} from "@/components/fieldStudies/FieldObservationGlobe.web";
 
 jest.mock("@/theme/appTheme", () => ({
   useAppTheme: () => ({
@@ -23,6 +25,26 @@ jest.mock("@/theme/appTheme", () => ({
 }));
 
 describe("FieldObservationGlobe web lifecycle", () => {
+  it("gives MapLibre controls an accessible name and keeps changing titles synchronized", async () => {
+    const container = document.createElement("div");
+    container.innerHTML = `
+      <div class="maplibregl-ctrl">
+        <button class="maplibregl-ctrl-globe-enabled" title="Disable globe"></button>
+      </div>
+    `;
+    const button = container.querySelector("button") as HTMLButtonElement;
+
+    const stop = maintainMapLibreControlAccessibleNames(container);
+    expect(button.getAttribute("aria-label")).toBe("Disable globe");
+
+    button.removeAttribute("aria-label");
+    button.setAttribute("title", "Enable globe");
+    await Promise.resolve();
+    expect(button.getAttribute("aria-label")).toBe("Enable globe");
+
+    stop();
+  });
+
   it("retains the active map so geolocation and pin updates work", async () => {
     const easeTo = jest.fn();
     const setData = jest.fn();

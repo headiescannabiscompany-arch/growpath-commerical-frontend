@@ -142,6 +142,15 @@ link, textbox, switch, radio, or checkbox was found. This is useful accessible-n
 and heading evidence, but it is not a keyboard traversal, screen-reader-device,
 font-scaling, touch-target measurement, or mobile screenshot pass.
 
+A matching live accessibility-tree pass covered Personal Home, Grows, AI Tools,
+Forum/Q&A, Discover, Courses, Profile, Tasks, Videos, Lives, Notification Center, and
+Nature. All 12 exposed a named level-one heading and no visible failure. A deeper DOM
+focus-order inspection then found one unnamed third-party MapLibre globe-toggle
+button on Personal Home. The shared globe now copies a control's changing title into
+its accessible name, including `Enable globe` / `Disable globe`, and keeps the value
+synchronized. The focused globe lifecycle/accessibility suite passes 3/3 tests;
+production deployment and live retest remain required before that repair is accepted.
+
 ## Acceptance boundary
 
 This closes the current signed-in Personal and Facility Viewer **route, heading,
