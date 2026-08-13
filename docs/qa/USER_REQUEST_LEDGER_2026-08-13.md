@@ -313,8 +313,12 @@ Legend:
 - [ ] All applicable automated gates, governed catalogs, security/configuration checks,
       production builds, role loops, external integrations, devices, accessibility, and
       independent validation pass without weakening a gate.
-- [ ] Temporary test data and untracked production files are reconciled and approved
-      cleanup is recorded.
+- [~] The read-only production Admin inventory now identifies 38 exact synthetic
+      QA/Codex/smoke/demo candidates and a protected-account boundary in
+      `docs/qa/PRODUCTION_TEST_ACCOUNT_CLEANUP_PLAN_2026-08-13.md`. The live Admin API
+      still needs an allowlisted, audited anonymization operation; production mutation,
+      protected-record regression proof, remaining temporary data, and untracked-file
+      reconciliation remain open. Suspend or Ban is not counted as cleanup.
 - [ ] Final evidence records frontend/backend SHAs, production URLs, inspected deployment
       IDs, timestamps, accounts/roles, checks, failures/fixes, screenshots/video,
       external delivery, cleanup, and the final release decision.
