@@ -703,7 +703,9 @@ export default function PlatformAdminRoute() {
       header={
         <View>
           <Text style={styles.eyebrow}>GROWPATHAI PLATFORM OWNER</Text>
-          <Text style={styles.title}>Administration</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            Administration
+          </Text>
           <Text style={styles.body}>
             Users, presence, account safety, notices, access, and audited enforcement.
           </Text>
@@ -739,6 +741,7 @@ export default function PlatformAdminRoute() {
       {usage ? (
         <AppCard
           title="Actual product activity"
+          titleLevel={2}
           subtitle="Authenticated presence and records created or updated in GrowPathAI."
         >
           <View style={styles.metrics}>
@@ -770,6 +773,7 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Harvest trichome calibration queue"
+        titleLevel={2}
         subtitle="Only versioned, rights-confirmed, private-use calibration submissions appear here. Owner corrections remain hypotheses until two independent head-level reviews and adjudication are complete."
       >
         {harvestCalibrationCandidates.length ? (
@@ -813,6 +817,7 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Knowledge registry review"
+        titleLevel={2}
         subtitle="Create an audited review ledger for source reliability and GrowPath methods. Approval records editorial intent; runtime guidance changes only in a separate reviewed code release."
       >
         <Text style={styles.meta}>
@@ -1047,6 +1052,7 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Outcome-based method review"
+        titleLevel={2}
         subtitle="Generate a human review proposal from at least three recorded outcomes. Proposals never edit runtime methods."
       >
         <View style={styles.searchRow}>
@@ -1110,6 +1116,7 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Find users"
+        titleLevel={2}
         subtitle="Search every GrowPathAI account by email or name."
       >
         <View style={styles.searchRow}>
@@ -1190,6 +1197,7 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Bug and support inbox"
+        titleLevel={2}
         subtitle="Stored in GrowPathAI even if email delivery fails. Newest requests appear first."
       >
         {supportRequests.length ? (
@@ -1241,6 +1249,7 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Moderation cases"
+        titleLevel={2}
         subtitle="Review reports and evidence before acting. Hide and soft-remove clear shared feeds; restore is reversible. Every action remains in the case and platform audit trail."
       >
         <TextInput
@@ -1375,6 +1384,7 @@ export default function PlatformAdminRoute() {
 
       <AppCard
         title="Legal and evidence requests"
+        titleLevel={2}
         subtitle="Preservation is separate from disclosure. Legal review is still required."
       >
         {evidenceRequests.length ? (

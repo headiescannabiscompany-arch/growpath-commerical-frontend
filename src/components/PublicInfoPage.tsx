@@ -1,6 +1,7 @@
 import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
+import BackButton from "@/components/nav/BackButton";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type Section = {
@@ -26,6 +27,9 @@ export default function PublicInfoPage({
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
+      <View style={styles.backRow}>
+        <BackButton fallbackHref="/" />
+      </View>
       <View style={styles.header}>
         <Text style={styles.brand}>GrowPath</Text>
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>
@@ -64,6 +68,9 @@ export const createPublicInfoPageStyles = (palette: ThemePalette) =>
     },
     header: {
       marginBottom: 28
+    },
+    backRow: {
+      marginBottom: 18
     },
     brand: {
       color: palette.accent,

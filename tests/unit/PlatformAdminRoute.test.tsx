@@ -47,11 +47,17 @@ jest.mock("@/components/layout/AppPage", () => {
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
-  return function MockAppCard({ title, subtitle, children }: any) {
+  return function MockAppCard({ title, titleLevel, subtitle, children }: any) {
     return React.createElement(
       View,
       null,
-      React.createElement(Text, null, title),
+      React.createElement(
+        Text,
+        titleLevel
+          ? { accessibilityRole: "header", "aria-level": titleLevel }
+          : null,
+        title
+      ),
       React.createElement(Text, null, subtitle),
       children
     );
@@ -252,6 +258,17 @@ describe("PlatformAdminRoute", () => {
 
       expect(screen.UNSAFE_getByType(ActivityIndicator).props.color).toBe(palette.accent);
       await waitFor(() => expect(screen.getByText("Online now")).toBeTruthy());
+
+      expect(screen.getByRole("header", { name: "Administration" })).toHaveProp(
+        "aria-level",
+        1
+      );
+      expect(
+        screen.getByRole("header", { name: "Actual product activity" })
+      ).toHaveProp("aria-level", 2);
+      expect(
+        screen.getByRole("header", { name: "Harvest trichome calibration queue" })
+      ).toHaveProp("aria-level", 2);
 
       expect(
         StyleSheet.flatten(screen.getByText("Administration").props.style).color

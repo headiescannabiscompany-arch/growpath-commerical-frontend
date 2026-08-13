@@ -7,7 +7,8 @@ import { getThemePalette } from "@/theme/appTheme";
 let mockParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => mockParams
+  useLocalSearchParams: () => mockParams,
+  useRouter: () => ({ back: jest.fn(), canGoBack: () => true, replace: jest.fn() })
 }));
 
 describe("SupportPage", () => {
@@ -20,6 +21,7 @@ describe("SupportPage", () => {
 
     expect(screen.getByText("Support")).toBeTruthy();
     expect(screen.getByRole("header", { name: "Support" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Back" })).toBeTruthy();
     expect(screen.getByRole("header", { name: "Send a Support Email" })).toBeTruthy();
     expect(screen.getByRole("header", { name: "Direct Inboxes" })).toBeTruthy();
     expect(
@@ -49,6 +51,7 @@ describe("SupportPage", () => {
     const styles = createSupportStyles(palette);
 
     expect(styles.root.backgroundColor).toBe(palette.page);
+    expect(styles.backRow.marginBottom).toBe(18);
     expect(styles.title.color).toBe(palette.text);
     expect(styles.intro.color).toBe(palette.textSoft);
     expect(styles.form.backgroundColor).toBe(palette.surface);
