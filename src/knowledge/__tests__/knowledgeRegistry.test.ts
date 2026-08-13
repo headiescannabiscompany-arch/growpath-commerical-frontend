@@ -107,7 +107,7 @@ describe("GrowPath knowledge registries", () => {
       "exact selected Harvest media set separated from the analyzed still/frame set, with a private source video retained as non-AI provenance"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
-      "authenticated cannabis-enabled Personal account scope with an optional owned grow, plus authorized Commercial or Facility grow scope with Facility write-role and Facility-credit enforcement"
+      "authenticated cannabis-enabled Personal, Commercial, or Facility workspace scope with an optional authorized grow, plus Facility write-role and Facility-credit enforcement"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible"

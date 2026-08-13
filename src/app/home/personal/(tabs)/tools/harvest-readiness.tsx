@@ -241,7 +241,6 @@ function HarvestPhotoAnalyzer({
   const analysisScopeKeyRef = useRef(analysisScopeKey);
   const previousAnalysisScopeKeyRef = useRef(analysisScopeKey);
   const analysisRequestRevisionRef = useRef(0);
-  const growRequired = workspaceType !== "personal";
   analysisScopeKeyRef.current = analysisScopeKey;
 
   useEffect(() => {
@@ -479,13 +478,7 @@ function HarvestPhotoAnalyzer({
   };
 
   async function analyze() {
-    if (
-      (growRequired && !growId) ||
-      photoCount < MIN_HARVEST_PHOTOS ||
-      busy ||
-      restoringEvidence
-    )
-      return;
+    if (photoCount < MIN_HARVEST_PHOTOS || busy || restoringEvidence) return;
     const requestScopeKey = analysisScopeKey;
     const requestRevision = analysisRequestRevisionRef.current;
     setBusy(true);
@@ -709,18 +702,10 @@ function HarvestPhotoAnalyzer({
       <Pressable
         accessibilityLabel="Analyze harvest trichome photo"
         onPress={analyze}
-        disabled={
-          busy ||
-          restoringEvidence ||
-          (growRequired && !growId) ||
-          photoCount < MIN_HARVEST_PHOTOS
-        }
+        disabled={busy || restoringEvidence || photoCount < MIN_HARVEST_PHOTOS}
         style={[
           photoStyles.button,
-          (busy ||
-            restoringEvidence ||
-            (growRequired && !growId) ||
-            photoCount < MIN_HARVEST_PHOTOS) &&
+          (busy || restoringEvidence || photoCount < MIN_HARVEST_PHOTOS) &&
             photoStyles.disabled
         ]}
       >
@@ -728,11 +713,7 @@ function HarvestPhotoAnalyzer({
           {busy ? "Inspecting Photos..." : "Analyze Photos / Frames (1 AI Credit)"}
         </Text>
       </Pressable>
-      {!growId && growRequired ? (
-        <Text style={photoStyles.warning}>
-          Select an authorized shared grow before analyzing photos in this workspace.
-        </Text>
-      ) : !growId ? (
+      {!growId ? (
         <Text style={photoStyles.feedback}>
           Standalone review: upload the required photos now. Attaching a grow is optional
           and only adds saved history and linked actions.
@@ -1363,7 +1344,7 @@ export default function HarvestReadinessToolRoute({
       onGrowIdChange={observeGrowId}
       resetFieldsOnContextChange={HARVEST_CONTEXT_SCOPED_FIELDS}
       tool="harvest-readiness"
-      growOptional={workspaceType === "personal"}
+      growOptional
       toolKey="harvest-readiness"
       title="Harvest Readiness Estimate"
       subtitle="Review breeder timing, flower day, macro trichome evidence, pistils, bud swell, aroma trend, and whole-plant maturity together. Unknown values stay blank. A photo estimate is never a harvest order."

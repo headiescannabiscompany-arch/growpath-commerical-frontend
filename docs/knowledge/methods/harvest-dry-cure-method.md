@@ -60,17 +60,18 @@ frame set passes the shared frame validation. For a device-extracted Harvest set
 frame IDs must equal the complete active linked-frame set for that source video; reject a subset.
 Analysis and save must agree on both exact sets and on the optional plant scope.
 
-Personal Harvest Readiness may run without a grow when the authenticated account has cannabis
-visibility or cannabis grow interests enabled. In that standalone path, evidence and the signed
-receipt remain bound to the authenticated Personal workspace/account, and the canonical grow ID
-is null. A user may optionally select an owned grow to add saved history, plant context, logs,
-tasks, and harvest-batch write-back. Commercial and Facility Harvest runs remain attached to an
-authorized shared grow. Commercial analysis is scoped to the authenticated Commercial account,
-while a Facility run requires an authorized write role and reserves Facility credits. A route
-account or grow identifier is never authority by itself. Resolve any supplied identifier against
-the authenticated workspace before evidence is loaded or a credit is reserved, and validate the
-same canonical workspace and optional grow again when the result is saved. Persist a supplied
-canonical grow ID rather than a route alias.
+Harvest Readiness may run without a grow in Personal, Commercial, or Facility when the
+authenticated account or workspace has structured cannabis/hemp visibility or prior eligible
+workflow context. In that standalone path, evidence and the signed receipt remain bound to the
+authenticated workspace and the canonical grow ID is null. A user may optionally select an
+authorized grow to add saved history, plant context, logs, tasks, and harvest-batch write-back.
+Commercial analysis remains scoped to the authenticated Commercial account. A Facility run still
+requires an authorized write role and always reserves Facility credits; it must never fall back to
+the member's individual balance. Grow-dependent actions remain unavailable until an authorized
+grow is selected. A route account or grow identifier is never authority by itself. Resolve any
+supplied identifier against the authenticated workspace before evidence is loaded or a credit is
+reserved, and validate the same canonical workspace and optional grow again when the result is
+saved. Persist a supplied canonical grow ID rather than a route alias.
 
 Personal Harvest Readiness may write a saved review back to an existing harvest batch only
 through an owned-batch selector populated for the currently selected grow. Do not ask users to
