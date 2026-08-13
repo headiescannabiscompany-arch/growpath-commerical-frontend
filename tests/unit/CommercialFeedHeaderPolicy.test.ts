@@ -20,6 +20,15 @@ describe("Commercial page header policy", () => {
       /name="feed"\s+options=\{\{[\s\S]*?title: "Feed \/ Campaigns",[\s\S]*?tabBarLabel: compactTabs \? "Feed" : "Feed \/ Campaigns",[\s\S]*?headerShown: false/
     );
     expect(layout).toMatch(
+      /name="storefront\/index"\s+options=\{\{[\s\S]*?title: "Storefront",[\s\S]*?tabBarLabel: "Storefront",[\s\S]*?headerShown: false/
+    );
+    expect(layout).toMatch(
+      /name="grows\/index"\s+options=\{\{[\s\S]*?title: "Grows",[\s\S]*?tabBarLabel: "Grows",[\s\S]*?headerShown: false/
+    );
+    expect(layout).toMatch(
+      /name="discover"\s+options=\{\{[\s\S]*?title: "Discover",[\s\S]*?tabBarLabel: "Discover",[\s\S]*?headerShown: false/
+    );
+    expect(layout).toMatch(
       /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?headerShown: false/
     );
     expect(layout).toMatch(

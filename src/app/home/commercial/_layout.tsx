@@ -85,11 +85,20 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="storefront/index"
-        options={{ title: "Storefront", tabBarLabel: "Storefront" }}
+        options={{
+          title: "Storefront",
+          tabBarLabel: "Storefront",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="grows/index"
-        options={{ title: "Grows", tabBarLabel: "Grows", href: null }}
+        options={{
+          title: "Grows",
+          tabBarLabel: "Grows",
+          headerShown: false,
+          href: null
+        }}
       />
       <Tabs.Screen
         name="tools/index"
@@ -97,7 +106,12 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: "Discover", tabBarLabel: "Discover", href: null }}
+        options={{
+          title: "Discover",
+          tabBarLabel: "Discover",
+          headerShown: false,
+          href: null
+        }}
       />
       <Tabs.Screen
         name="courses"

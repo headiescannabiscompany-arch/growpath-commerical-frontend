@@ -31,8 +31,13 @@ jest.mock("@/api/personalAssistant", () => ({
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children, href }: any) =>
-      React.cloneElement(React.Children.only(children), { href })
+    Link: ({ children, href }: any) => {
+      const child = React.Children.only(children);
+      if (Array.isArray(child.props.style)) {
+        throw new Error("Link children must receive a flattened web style");
+      }
+      return React.cloneElement(child, { href });
+    }
   };
 });
 
