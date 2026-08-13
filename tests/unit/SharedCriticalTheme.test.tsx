@@ -212,6 +212,14 @@ describe("shared critical Night theme", () => {
     expect(StyleSheet.flatten(screen.getByText("Report Content").props.style).color).toBe(
       palette.text
     );
+    expect(screen.getByRole("header", { name: "Report Content" })).toBeTruthy();
+    expect(screen.getByLabelText("Report content dialog")).toBeTruthy();
+    expect(screen.getByLabelText("Submit").props.accessibilityState).toEqual({
+      disabled: true
+    });
+    expect(StyleSheet.flatten(screen.getByLabelText("Submit").props.style)).toEqual(
+      expect.objectContaining({ minHeight: 44 })
+    );
     const reasonInput = screen.getByLabelText("Report reason");
     expect(reasonInput.props.placeholderTextColor).toBe(palette.textMuted);
     expect(StyleSheet.flatten(reasonInput.props.style)).toEqual(
@@ -224,6 +232,9 @@ describe("shared critical Night theme", () => {
     expect(styles.error.color).toBe(palette.danger);
 
     fireEvent.changeText(reasonInput, "This video impersonates another grower.");
+    expect(screen.getByLabelText("Submit").props.accessibilityState).toEqual({
+      disabled: false
+    });
     fireEvent.press(screen.getByLabelText("Submit"));
 
     await waitFor(() =>
