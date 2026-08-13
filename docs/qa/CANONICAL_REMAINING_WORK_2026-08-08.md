@@ -427,12 +427,15 @@ grow`, private current location without a Field Study, and an optional approxima
   `assets/brands/HAT_PRODUCTION_BRIEF_2026-08-12.md`.
   Two exact GrowPathAI purchase-intent presentations are now owner-approved: the
   black Circuit Leaf concept and the revised tonal-sage concept with the longer
-  structured visor and small rear `GROWPATHAI` wordmark. Implementation is in
-  progress for an authenticated `Yes` / `Maybe` / `No` concept-research flow using
-  an owner-entered hypothetical price, explicit not-for-sale wording, one revisable
-  response per account, and aggregate-only owner results. It must remain incapable
-  of inventory reservation, orders, checkout, payment, production promises, or
-  shipping promises. Triple Bag public trials remain blocked by rights review.
+  structured visor and small rear `GROWPATHAI` wordmark. The authenticated
+  `Yes` / `Maybe` / `No` concept-research flow is implemented with an owner-entered
+  hypothetical price, explicit not-for-sale wording, one revisable response per
+  account, aggregate-only owner results, zero inventory, and no reservation, order,
+  checkout, payment, production, or shipping path. On 2026-08-12, 4 focused suites
+  covering the approved catalog, owner trial creation/detail, and respondent card
+  passed 20/20 tests. Live Commercial trial creation with an owner-entered price,
+  public response/revision, aggregate review, and close-state acceptance remain.
+  Triple Bag public trials remain blocked by rights review.
 - [ ] Collect owner-approved knowledge sources: domains, authors/channels,
       reliability tiers, allowed uses, exclusions, cross-check requirements, and review
       dates; update both documentation and runtime registries.
@@ -458,8 +461,17 @@ grow`, private current location without a Field Study, and an optional approxima
 - [ ] Verify keyboard and focus order, visible focus, actionable labels, screen-reader
       names, heading hierarchy, font scaling, touch targets, loading/error/empty states,
       and back navigation.
-- [ ] Verify notification preferences and delivery to supported devices for selected
-      categories, including opt-in/out persistence and links to the correct record.
+- [~] Verify notification preferences and delivery to supported devices for selected
+  categories, including opt-in/out persistence and links to the correct record.
+  Profile and Notification Center controls, push-token registration, category
+  mapping, and persisted preference APIs are implemented. Frontend merge
+  `417cf432` mounts native cold-start/background tap handling and routes safe
+  payloads through the same canonical source resolver as the in-app center,
+  including tasks, alerts, courses, lives, videos, products, storefronts,
+  ToolRuns, facility records, and Forum/Q&A. Focused notification/registration/
+  source-link tests passed 17/17 and the main Production Build Preflight passed.
+  Real iOS and Android receipt, opt-in/out suppression, and exact-record tap
+  acceptance remain; web intentionally does not register native push handling.
 - [ ] Capture genuine final-SHA screenshots and video tied to URL, timestamp,
       account/role, viewport/device, checks, and evidence type.
 
