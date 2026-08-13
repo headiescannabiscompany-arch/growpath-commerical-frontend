@@ -126,7 +126,8 @@ export const createReportBugButtonStyles = (palette: ThemePalette) =>
       borderColor: palette.warning,
       borderRadius: radius.card,
       borderWidth: 1,
-      minHeight: 40,
+      minHeight: 44,
+      minWidth: 44,
       justifyContent: "center",
       paddingHorizontal: 14,
       paddingVertical: 10
