@@ -553,6 +553,13 @@ public visibility, or screenshot/video acceptance still called out below.
         navigable headings, announce an unperformed pixel review as an alert, and
         preserve a 44px follow-up-guidance action. The Day/Night behavior suite passes
         4/4.
+      - Saved grow-photo evidence reuse now exposes a navigable heading, announces its
+        loading state, and preserves 44px explicit-selection targets without changing
+        IPM/harvest evidence linking. Its focused suite passes 3/3.
+      - The main photo/video evidence uploader now exposes image guidance as a
+        navigable heading, announces upload errors and disabled Add/Retry/Remove state,
+        and preserves 44px mutation targets. Its complete focused upload/retry/
+        protected-media/workspace suite passes 33/33.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected

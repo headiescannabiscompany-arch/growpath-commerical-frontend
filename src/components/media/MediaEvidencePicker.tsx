@@ -1164,7 +1164,9 @@ export default function MediaEvidencePicker({
       ) : null}
       {captureGuidance.length ? (
         <View style={styles.guidance} accessibilityLabel={`${purpose} photo checklist`}>
-          <Text style={styles.guidanceTitle}>Photos that make the review stronger</Text>
+          <Text accessibilityRole="header" aria-level={3} style={styles.guidanceTitle}>
+            Photos that make the review stronger
+          </Text>
           {captureGuidance.map((item, index) => (
             <Text key={item} style={styles.guidanceItem}>
               {index + 1}. {item}
@@ -1182,6 +1184,7 @@ export default function MediaEvidencePicker({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Add evidence photos"
+          accessibilityState={{ disabled: disabled || busy || photoCount >= maxPhotos }}
           disabled={disabled || busy || photoCount >= maxPhotos}
           onPress={choosePhotos}
           style={[
@@ -1195,6 +1198,7 @@ export default function MediaEvidencePicker({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Add evidence video"
+            accessibilityState={{ disabled: disabled || busy || videoCount >= 1 }}
             disabled={disabled || busy || videoCount >= 1}
             onPress={chooseVideo}
             style={[
@@ -1244,11 +1248,16 @@ export default function MediaEvidencePicker({
                 Photo check: {warning}
               </Text>
             ))}
-            {asset.error ? <Text style={styles.error}>{asset.error}</Text> : null}
+            {asset.error ? (
+              <Text accessibilityRole="alert" style={styles.error}>
+                {asset.error}
+              </Text>
+            ) : null}
             {retryableAssetIds.has(asset.id) ? (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Retry evidence ${asset.id}`}
+                accessibilityState={{ disabled: disabled || busy }}
                 disabled={disabled || busy}
                 onPress={() => void retryUpload(asset)}
                 style={[styles.retry, (disabled || busy) && styles.disabled]}
@@ -1259,6 +1268,7 @@ export default function MediaEvidencePicker({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Remove evidence ${asset.id}`}
+              accessibilityState={{ disabled }}
               disabled={disabled}
               onPress={() => removeAsset(asset)}
               style={[styles.remove, disabled && styles.disabled]}
@@ -1304,8 +1314,11 @@ const createStyles = (palette: ThemePalette) =>
     },
     actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     button: {
+      alignItems: "center",
       backgroundColor: palette.accent,
       borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 14,
       paddingVertical: 10
     },
@@ -1335,10 +1348,17 @@ const createStyles = (palette: ThemePalette) =>
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
       marginTop: 6,
+      minHeight: 44,
       paddingVertical: 7
     },
     retryText: { color: palette.text, fontWeight: "800" },
-    remove: { alignItems: "center", paddingVertical: 7 },
+    remove: {
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 44,
+      paddingVertical: 7
+    },
     removeText: { color: palette.danger, fontWeight: "700" }
   });

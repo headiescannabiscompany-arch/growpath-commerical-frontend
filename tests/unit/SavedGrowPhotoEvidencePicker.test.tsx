@@ -87,6 +87,15 @@ describe("SavedGrowPhotoEvidencePicker", () => {
     await waitFor(() =>
       expect(screen.getByText("Source log: Ready to chop")).toBeTruthy()
     );
+    expect(
+      screen.getByRole("header", { name: "Use photos already in this grow" })
+    ).toBeTruthy();
+    const usePhoto = screen.getByLabelText(
+      "Use saved photo Ready to chop, item 1 for IPM scout"
+    );
+    expect(usePhoto.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ minHeight: 44 })])
+    );
     expect(mockCreateEvidenceAsset).not.toHaveBeenCalled();
     expect(
       screen.getByText(
@@ -94,9 +103,7 @@ describe("SavedGrowPhotoEvidencePicker", () => {
       )
     ).toBeTruthy();
 
-    fireEvent.press(
-      screen.getByLabelText("Use saved photo Ready to chop, item 1 for IPM scout")
-    );
+    fireEvent.press(usePhoto);
 
     await waitFor(() =>
       expect(mockCreateEvidenceAsset).toHaveBeenCalledWith(
