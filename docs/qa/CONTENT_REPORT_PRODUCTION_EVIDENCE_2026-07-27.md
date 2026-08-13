@@ -47,5 +47,7 @@ These are valid role-gated route results, not evidence that the moderation revie
 
 - Completed 2026-08-13: the real platform Admin session reopened and focused the exact moderation case without changing it.
 - Completed 2026-08-13: the same authorized session opened the exact reported-course URL without an authorization error.
-- Remaining: the old QA course has since been removed and the route truthfully showed `No courses found`; use a future retained-content report to prove the loaded reported item end to end.
+- Completed 2026-08-13: the real platform Admin session opened an existing retained Forum-post moderation case using its focused `Open reported forumPost` control. The control navigated to the exact retained content URL `https://growpathai.com/forum/post/6a5ba5236459013643be5cf3`, where the production page rendered heading `tst 2`, author/time metadata, the retained body, grow-interest context, its photo, the report control, and the Comments section. No moderation action, content mutation, or synthetic record was used.
+- This closes loaded-content deep-link proof for a retained report. The earlier removed-course result remains a truthful deleted-content case, not a routing failure.
+- Remaining cross-type acceptance is limited to delivered-email/deep-link sampling for the other reportable content types and explicit non-Admin denial where separately required by the user-request ledger.
 - See `docs/qa/ADMIN_COMMERCIAL_WORKSPACE_PRODUCTION_EVIDENCE_2026-08-13.md` for the final deployment SHAs and live retest boundary.
