@@ -358,16 +358,12 @@ grow`, private current location without a Field Study, and an optional approxima
   temporary-record, production reload/audit, forced-403, or cleanup evidence still
   required by the two open items below.
 - [~] Retest content-report admin email deep links as an authorized platform owner
-      for Forum, Feed, product, course, video, and live-session reports.
-      - Automated contract coverage now verifies all six report types produce both the
-        exact reported-content link and a moderation-case-focused admin link.
-      - The admin route now accepts a submitted GrowPath URL only when its route matches
-        the stored target type; otherwise it uses the canonical safe fallback.
-      - Focused checks passed: frontend `PlatformAdminRoute.test.tsx` (18/18) and backend
-        `adminReportNotification.test.js` + `reports.test.js` (23/23).
-      - Still required before `[x]`: click representative delivered emails while signed
-        in as the authorized platform owner and confirm both links open the intended live
-        content/case without exposing the admin route to a non-admin account.
+  for Forum, Feed, product, course, video, and live-session reports. - Automated contract coverage now verifies all six report types produce both the
+  exact reported-content link and a moderation-case-focused admin link. - The admin route now accepts a submitted GrowPath URL only when its route matches
+  the stored target type; otherwise it uses the canonical safe fallback. - Focused checks passed: frontend `PlatformAdminRoute.test.tsx` (18/18) and backend
+  `adminReportNotification.test.js` + `reports.test.js` (23/23). - Still required before `[x]`: click representative delivered emails while signed
+  in as the authorized platform owner and confirm both links open the intended live
+  content/case without exposing the admin route to a non-admin account.
 - [ ] Create only approved temporary production/staging records needed to verify
       populated Facility Grow/Plant/Journal/Inventory/Compliance/SOP comparison and
       Owner-only AI Validation Lab states; verify create/edit/reload/audit/permissions,
@@ -505,29 +501,26 @@ public visibility, or screenshot/video acceptance still called out below.
   normal/large-text thresholds. No failing sample appeared in the rendered states;
   hidden/error/native states and physical-device human review remain open.
 - [~] Verify keyboard and focus order, visible focus, actionable labels, screen-reader
-      names, heading hierarchy, font scaling, touch targets, loading/error/empty states,
-      and back navigation.
-      - Shared Back, primary-action, and Report Bug controls now preserve at least a
-        44-by-44 CSS-pixel target. Back and primary actions expose a visible keyboard
-        focus outline; primary actions derive a stable accessible name from their title
-        and announce disabled state. Four focused suites pass 15/15 assertions.
-      - Context-bar actions, the global connection-message dismiss action, and inline
-        Forum discussion toggle/reply/retry/full-page actions now also preserve at least
-        a 44-by-44 target and stable roles/names. Tappable shared cards and both shared
-        error-retry surfaces now expose stable control roles/names, with retry targets
-        at least 44-by-44. Focused shared-control and theme suites pass.
-      - Shared Follow, Facility Room, Inventory edit, and Schedule task controls now
-        expose record-specific names and 44px targets. Follow suppresses duplicate
-        requests while busy; Room/Inventory/Task rows use active Day/Night palette
-        surfaces instead of hardcoded light colors. Three focused suites pass 42/42.
-      - The active Grow Interest picker now gives its expandable header and selectable
-        interest chips 44px targets while retaining checkbox names/state and readable
-        expand/collapse guidance. Four focused form/theme suites pass 13/13.
-      - Active Forum-filter and Grow/Plant-link selectors now expose checkbox/radio
-        state, record-specific names, and 44px targets. Their focused Forum/shared
-        contract suites pass 19/19.
-      - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
-        screen-reader, and physical-device review across the major route matrix.
+  names, heading hierarchy, font scaling, touch targets, loading/error/empty states,
+  and back navigation. - Shared Back, primary-action, and Report Bug controls now preserve at least a
+  44-by-44 CSS-pixel target. Back and primary actions expose a visible keyboard
+  focus outline; primary actions derive a stable accessible name from their title
+  and announce disabled state. Four focused suites pass 15/15 assertions. - Context-bar actions, the global connection-message dismiss action, and inline
+  Forum discussion toggle/reply/retry/full-page actions now also preserve at least
+  a 44-by-44 target and stable roles/names. Tappable shared cards and both shared
+  error-retry surfaces now expose stable control roles/names, with retry targets
+  at least 44-by-44. Focused shared-control and theme suites pass. - Shared Follow, Facility Room, Inventory edit, and Schedule task controls now
+  expose record-specific names and 44px targets. Follow suppresses duplicate
+  requests while busy; Room/Inventory/Task rows use active Day/Night palette
+  surfaces instead of hardcoded light colors. Three focused suites pass 42/42. - The active Grow Interest picker now gives its expandable header and selectable
+  interest chips 44px targets while retaining checkbox names/state and readable
+  expand/collapse guidance. Four focused form/theme suites pass 13/13. - Active Forum-filter and Grow/Plant-link selectors now expose checkbox/radio
+  state, record-specific names, and 44px targets. Their focused Forum/shared
+  contract suites pass 19/19. - Workspace mode selectors now expose selected radio state, selected workspace
+  cards announce their state and action, and both control layers preserve 44px
+  touch targets. Lesson/video provider-load and external-provider actions also
+  preserve 44px targets. Four focused mode/media/theme suites pass 25/25. - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
+  screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
   categories, including opt-in/out persistence and links to the correct record.
   Profile and Notification Center controls, push-token registration, category

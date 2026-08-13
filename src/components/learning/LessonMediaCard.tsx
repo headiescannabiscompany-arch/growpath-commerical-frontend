@@ -391,7 +391,9 @@ export const createStyles = (palette: ThemePalette) =>
       borderRadius: radius.card,
       paddingHorizontal: 13,
       paddingVertical: 10,
-      alignItems: "center"
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 44
     },
     primaryButtonText: { color: palette.accentText, fontWeight: "800" },
     secondaryButton: {
@@ -401,7 +403,9 @@ export const createStyles = (palette: ThemePalette) =>
       borderRadius: radius.card,
       paddingHorizontal: 13,
       paddingVertical: 10,
-      alignItems: "center"
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 44
     },
     secondaryButtonText: { color: palette.link, fontWeight: "800" },
     statusText: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },

@@ -55,6 +55,33 @@ describe("ModeSwitcher", () => {
       screen.getByText(/Feed\/Campaigns, orders, analytics, and Stripe/i)
     ).toBeTruthy();
     expect(screen.getByText(/Rooms, operational runs, tasks, staff/i)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Open Personal: Continue as Personal").props
+        .accessibilityState
+    ).toEqual({ checked: true });
+    expect(
+      screen.getByLabelText("Continue as Personal").props.accessibilityState
+    ).toEqual({
+      selected: true
+    });
+  });
+
+  it("keeps workspace selectors and cards large enough to operate by touch", () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      can: () => false,
+      facilityId: null,
+      facilityRole: null
+    });
+
+    const screen = render(<ModeSwitcher />);
+
+    expect(
+      screen.getByLabelText("Open Personal: Continue as Personal").props.style
+    ).toEqual(expect.arrayContaining([expect.objectContaining({ minHeight: 44 })]));
+    expect(screen.getByLabelText("Continue as Personal").props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ minHeight: 44 })])
+    );
   });
 
   it("opens setup instead of switching to unavailable commercial or facility modes", () => {

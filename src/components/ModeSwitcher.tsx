@@ -113,8 +113,9 @@ export function ModeSwitcher({
           return (
             <Pressable
               key={card.mode}
-              accessibilityRole="button"
+              accessibilityRole="radio"
               accessibilityLabel={`${card.actionLabel}: ${card.title}`}
+              accessibilityState={{ checked: selected }}
               onPress={() => handlePress(card)}
               style={[styles.segment, selected && styles.segmentActive]}
             >
@@ -134,6 +135,10 @@ export function ModeSwitcher({
               key={card.title}
               accessibilityRole="button"
               accessibilityLabel={card.title}
+              accessibilityHint={
+                card.access ? card.actionLabel : `${card.actionLabel} setup`
+              }
+              accessibilityState={{ selected }}
               onPress={() => handlePress(card)}
               style={[styles.card, selected && styles.cardActive]}
             >
@@ -192,6 +197,8 @@ export function createModeSwitcherStyles(palette: ThemePalette) {
       alignItems: "center",
       borderRadius: radius.card,
       flex: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingVertical: 10
     },
     segmentActive: {
@@ -211,6 +218,7 @@ export function createModeSwitcherStyles(palette: ThemePalette) {
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
+      minHeight: 44,
       padding: 14
     },
     cardActive: {
