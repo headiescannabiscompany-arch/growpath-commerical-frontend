@@ -123,6 +123,7 @@ const fallbackRoutes = [
   "forum/post",
   "communities",
   "profile",
+  "search",
   "verify-email",
   "forgot-password",
   "reset-password",
