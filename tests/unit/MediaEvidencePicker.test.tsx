@@ -1423,6 +1423,19 @@ describe("MediaEvidencePicker", () => {
     expect(addVideo).toBeDisabled();
     expect(retry).toBeDisabled();
     expect(remove).toBeDisabled();
+    expect(addPhotos.props.accessibilityState).toEqual({ disabled: true });
+    expect(addVideo.props.accessibilityState).toEqual({ disabled: true });
+    expect(retry.props.accessibilityState).toEqual({ disabled: true });
+    expect(remove.props.accessibilityState).toEqual({ disabled: true });
+    expect(addPhotos.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ minHeight: 44 })])
+    );
+    expect(retry.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ minHeight: 44 })])
+    );
+    expect(remove.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ minHeight: 44 })])
+    );
 
     onChange.mockClear();
     mockPicker.mockClear();
