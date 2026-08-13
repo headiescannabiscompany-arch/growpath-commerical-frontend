@@ -513,14 +513,22 @@ public visibility, or screenshot/video acceptance still called out below.
   expose record-specific names and 44px targets. Follow suppresses duplicate
   requests while busy; Room/Inventory/Task rows use active Day/Night palette
   surfaces instead of hardcoded light colors. Three focused suites pass 42/42. - The active Grow Interest picker now gives its expandable header and selectable
-  interest chips 44px targets while retaining checkbox names/state and readable
-  expand/collapse guidance. Four focused form/theme suites pass 13/13. - Active Forum-filter and Grow/Plant-link selectors now expose checkbox/radio
-  state, record-specific names, and 44px targets. Their focused Forum/shared
-  contract suites pass 19/19. - Workspace mode selectors now expose selected radio state, selected workspace
-  cards announce their state and action, and both control layers preserve 44px
-  touch targets. Lesson/video provider-load and external-provider actions also
-  preserve 44px targets. Four focused mode/media/theme suites pass 25/25. - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
-  screen-reader, and physical-device review across the major route matrix.
+        interest chips 44px targets while retaining checkbox names/state and readable
+        expand/collapse guidance. Four focused form/theme suites pass 13/13.
+      - Active Forum-filter and Grow/Plant-link selectors now expose checkbox/radio
+        state, record-specific names, and 44px targets. Their focused Forum/shared
+        contract suites pass 19/19.
+      - Workspace mode selectors now expose selected radio state, selected workspace
+        cards announce their state and action, and both control layers preserve 44px
+        touch targets. Lesson/video provider-load and external-provider actions also
+        preserve 44px targets. Four focused mode/media/theme suites pass 25/25;
+        frontend merge `00b13d24` passed the full 9m32s CI gate.
+      - Personal featured-feed discovery and content cards now expose link semantics,
+        stable content-specific names, and navigation hints. Shared education cards
+        use their CTA/title as a stable link name and preserve a 44px target. Two
+        focused suites pass 7/7.
+      - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
+        screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
   categories, including opt-in/out persistence and links to the correct record.
   Profile and Notification Center controls, push-token registration, category

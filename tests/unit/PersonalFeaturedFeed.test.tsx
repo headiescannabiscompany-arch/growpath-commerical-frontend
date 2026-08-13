@@ -122,6 +122,8 @@ describe("PersonalFeaturedFeed", () => {
 
     expect(screen.getByText("Summer soil workshop")).toBeTruthy();
     expect(screen.getByText("Improving seedling airflow")).toBeTruthy();
+    expect(screen.getByLabelText("Open Discover").props.accessibilityRole).toBe("link");
+    expect(screen.getByLabelText("Course: Living Soil Fundamentals")).toBeTruthy();
     expect(screen.queryByText(/QA ONLY/)).toBeNull();
     expect(screen.queryByText("Testing post creation")).toBeNull();
   });
