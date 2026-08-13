@@ -51,6 +51,25 @@ describe("SchedulePicker", () => {
     );
 
     expect(screen.getByText(/Timezone: America\/New_York/)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Grow task all day toggle").props.accessibilityRole
+    ).toBe("switch");
+    expect(
+      screen.getByLabelText("Grow task all day toggle").props.accessibilityState
+    ).toEqual({ checked: false });
+    expect(
+      screen.getByLabelText("Grow task reminder preset 24 hours before").props
+        .accessibilityState
+    ).toEqual({ checked: true });
+    expect(
+      screen.getByLabelText("Grow task recurrence preset weekly").props.accessibilityState
+    ).toEqual({ checked: true });
+    expect(screen.getByLabelText("Grow task clear schedule").props.style).toEqual(
+      expect.objectContaining({ minHeight: 44 })
+    );
+    expect(
+      screen.getByLabelText("Grow task quick date Next lights on").props.style
+    ).toEqual(expect.arrayContaining([expect.objectContaining({ minHeight: 44 })]));
 
     fireEvent.press(screen.getByLabelText("Grow task quick date Next lights on"));
     fireEvent.press(screen.getByLabelText("Grow task reminder preset no reminder"));

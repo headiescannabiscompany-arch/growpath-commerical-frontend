@@ -21,6 +21,16 @@ describe("CalendarDateField", () => {
     );
 
     fireEvent.press(screen.getByLabelText("Birth date"));
+    expect(screen.getByRole("header", { name: "Date of birth" })).toBeTruthy();
+    expect(screen.getByLabelText("Birth date previous month").props.style).toEqual(
+      expect.objectContaining({ minHeight: 44, minWidth: 44 })
+    );
+    expect(screen.getByLabelText("Birth date cancel").props.style).toEqual(
+      expect.objectContaining({ minHeight: 44 })
+    );
+    expect(screen.getByLabelText("Birth date use selected date").props.style).toEqual(
+      expect.objectContaining({ minHeight: 44 })
+    );
     fireEvent(screen.getByLabelText("Birth date year"), "valueChange", 1991, 91);
     fireEvent(screen.getByLabelText("Birth date month"), "valueChange", 2, 1);
     fireEvent.press(screen.getByLabelText("Birth date day 1991-02-14"));
