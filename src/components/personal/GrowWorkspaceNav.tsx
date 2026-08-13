@@ -17,9 +17,12 @@ export const createGrowWorkspaceNavStyles = (palette: ThemePalette) =>
       alignItems: "center"
     },
     pill: {
+      alignItems: "center",
       borderWidth: 1,
       borderColor: palette.border,
       borderRadius: 999,
+      justifyContent: "center",
+      minHeight: 44,
       paddingVertical: 7,
       paddingHorizontal: 11,
       backgroundColor: palette.surface
@@ -71,6 +74,8 @@ export default function GrowWorkspaceNav({
 
   return (
     <ScrollView
+      accessibilityRole="tablist"
+      accessibilityLabel="Grow workspace sections"
       horizontal
       showsHorizontalScrollIndicator={false}
       style={styles.row}
@@ -81,6 +86,9 @@ export default function GrowWorkspaceNav({
         return (
           <Link key={tab.key} href={hrefFor(growId, tab.key)} asChild>
             <Pressable
+              accessibilityRole="tab"
+              accessibilityLabel={`${tab.label} grow section`}
+              accessibilityState={{ selected: isActive }}
               style={StyleSheet.flatten([styles.pill, isActive && styles.pillActive])}
             >
               <Text

@@ -545,6 +545,10 @@ public visibility, or screenshot/video acceptance still called out below.
         announces disabled submit/cancel state and errors, handles safe device-back
         dismissal, and preserves 44px actions. Its focused critical-theme/submission
         suite passes 4/4.
+      - Personal Grow workspace section navigation now exposes a named tab list,
+        announces the selected section, and preserves 44px targets across Overview,
+        Plants, Journal, Tasks, AI Tools, Automation, Timeline, and Compare. Focused
+        navigation/theme suites pass 8/8.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
