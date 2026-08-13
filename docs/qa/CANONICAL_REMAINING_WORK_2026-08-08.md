@@ -527,6 +527,9 @@ public visibility, or screenshot/video acceptance still called out below.
         stable content-specific names, and navigation hints. Shared education cards
         use their CTA/title as a stable link name and preserve a 44px target. Two
         focused suites pass 7/7.
+      - Shared calendar/date dialogs now expose a named heading and preserve 44px
+        targets for month navigation and clear/cancel/confirm actions. Two focused
+        date/theme suites pass 9/9.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected

@@ -245,7 +245,9 @@ export default function CalendarDateField({
             keyboardShouldPersistTaps="handled"
             style={styles.panelScroll}
           >
-            <Text style={styles.title}>{label || "Choose date"}</Text>
+            <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+              {label || "Choose date"}
+            </Text>
             <Text style={styles.guidance}>
               Select the year, month, and day
               {mode === "datetime" ? `, then time. Timezone: ${timezone}.` : "."}
@@ -488,7 +490,14 @@ export const createCalendarDateFieldStyles = (palette: ThemePalette) =>
       marginBottom: 8,
       marginTop: 10
     },
-    monthButton: { paddingHorizontal: 14, paddingVertical: 8 },
+    monthButton: {
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 44,
+      minWidth: 44,
+      paddingHorizontal: 14,
+      paddingVertical: 8
+    },
     monthButtonText: { color: palette.text, fontSize: 20, fontWeight: "900" },
     monthTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
     weekRow: { flexDirection: "row" },
@@ -518,17 +527,23 @@ export const createCalendarDateFieldStyles = (palette: ThemePalette) =>
       marginTop: 14
     },
     secondaryButton: {
+      alignItems: "center",
       backgroundColor: palette.surface,
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 12,
       paddingVertical: 9
     },
     secondaryText: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
     primaryButton: {
+      alignItems: "center",
       backgroundColor: palette.accent,
       borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 14,
       paddingVertical: 10
     },
