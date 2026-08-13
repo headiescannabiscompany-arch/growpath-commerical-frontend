@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
 import { normalizeApiError } from "@/api/errors";
@@ -109,6 +109,7 @@ export default function FacilitySopRunsCompareResultRoute() {
   }>();
   const leftId = Array.isArray(params.leftId) ? params.leftId[0] : params.leftId;
   const rightId = Array.isArray(params.rightId) ? params.rightId[0] : params.rightId;
+  const router = useRouter();
   const { selectedId: facilityId } = useFacility();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilitySopCompareResultStyles(palette), [palette]);
@@ -198,18 +199,50 @@ export default function FacilitySopRunsCompareResultRoute() {
             <View style={styles.runRow}>
               <RunSummaryCard
                 label="Reference run"
+                id={String(leftId)}
                 run={left}
                 counts={comparison.leftCounts}
                 fallbackTitle="Reference SOP run"
+                onOpen={() =>
+                  router.push({
+                    pathname: "/home/facility/sop-runs/[id]",
+                    params: { id: String(leftId) }
+                  })
+                }
                 styles={styles}
               />
               <RunSummaryCard
                 label="Comparison run"
+                id={String(rightId)}
                 run={right}
                 counts={comparison.rightCounts}
                 fallbackTitle="Comparison SOP run"
+                onOpen={() =>
+                  router.push({
+                    pathname: "/home/facility/sop-runs/[id]",
+                    params: { id: String(rightId) }
+                  })
+                }
                 styles={styles}
               />
+            </View>
+
+            <View style={styles.nextActionsCard}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+                Follow up on this comparison
+              </Text>
+              <Text style={styles.sub}>
+                Open either run to review its recorded checklist evidence, or open
+                Facility Tasks to assign and track follow-up work.
+              </Text>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="Open Facility Tasks for SOP comparison follow-up"
+                onPress={() => router.push("/home/facility/tasks")}
+                style={styles.action}
+              >
+                <Text style={styles.actionText}>Open Facility Tasks</Text>
+              </Pressable>
             </View>
 
             <View style={styles.card}>
@@ -242,22 +275,27 @@ export default function FacilitySopRunsCompareResultRoute() {
 
 function RunSummaryCard({
   label,
+  id,
   run,
   counts,
   fallbackTitle,
+  onOpen,
   styles
 }: {
   label: string;
+  id: string;
   run: SopRunDetail | null;
   counts: ReturnType<typeof statusCounts>;
   fallbackTitle: string;
+  onOpen: () => void;
   styles: ReturnType<typeof createFacilitySopCompareResultStyles>;
 }) {
+  const title = runTitle(run, fallbackTitle);
   return (
     <View style={styles.runCard}>
       <Text style={styles.cardLabel}>{label}</Text>
       <Text accessibilityRole="header" aria-level={2} style={styles.runTitle}>
-        {runTitle(run, fallbackTitle)}
+        {title}
       </Text>
       <Text style={styles.statusText}>Status: {formatLabel(run?.status)}</Text>
       <Text style={styles.statusText}>
@@ -271,6 +309,15 @@ function RunSummaryCard({
         Started: {formatDate(run?.startedAt || run?.createdAt)}
       </Text>
       <Text style={styles.statusText}>Completed: {formatDate(run?.completedAt)}</Text>
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={`Open ${label.toLowerCase()} ${title}`}
+        onPress={onOpen}
+        style={styles.action}
+        testID={`open-sop-run-${id}`}
+      >
+        <Text style={styles.actionText}>Open {label}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -311,6 +358,26 @@ export const createFacilitySopCompareResultStyles = (palette: ThemePalette) =>
       backgroundColor: palette.card,
       gap: 8
     },
+    nextActionsCard: {
+      backgroundColor: palette.card,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    action: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      borderColor: palette.borderStrong,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    actionText: { color: palette.link, fontWeight: "900" },
     title: { color: palette.text, fontWeight: "900" },
     stepRow: {
       borderColor: palette.border,
