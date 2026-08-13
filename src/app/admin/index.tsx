@@ -350,8 +350,9 @@ export default function PlatformAdminRoute() {
   const [noticeUser, setNoticeUser] = useState<AdminUser | null>(null);
   const [noticeSubject, setNoticeSubject] = useState("GrowPathAI account warning");
   const [noticeMessage, setNoticeMessage] = useState("");
-  const [cleanupPreview, setCleanupPreview] =
-    useState<SyntheticCleanupPreview | null>(null);
+  const [cleanupPreview, setCleanupPreview] = useState<SyntheticCleanupPreview | null>(
+    null
+  );
   const [cleanupConfirmation, setCleanupConfirmation] = useState("");
 
   const load = useCallback(async () => {
