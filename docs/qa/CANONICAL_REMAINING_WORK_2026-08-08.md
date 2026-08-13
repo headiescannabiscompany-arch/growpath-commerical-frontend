@@ -1,6 +1,6 @@
 # GrowPathAI Canonical Remaining Work
 
-Date: 2026-08-08
+Date: 2026-08-13
 
 Status: Active execution list; reconciled against retained production evidence on
 2026-08-12. A checked sub-scope stays checked even when its larger end-to-end workflow
@@ -10,6 +10,9 @@ This is the single authoritative list of unfinished release work. Historical TOD
 evidence records, matrices, and numbered implementation ledgers remain useful as
 sources, but they do not define a second execution order. When an older item is
 broader than an item here, this list's narrower acceptance boundary replaces it.
+The complete checked/partial/open history of user-added requests is retained in
+`docs/qa/USER_REQUEST_LEDGER_2026-08-13.md`; this document contains only current
+execution boundaries and the evidence needed not to reopen completed work.
 
 ## Rules
 
@@ -56,6 +59,11 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 - [x] GrowPathAI and Triple Bag Genetics hat concept assets, hashes, brand manifests, and
       production brief are retained. They remain zero-stock, unpriced, non-checkout drafts;
       public purchase-intent testing and Triple Bag rights review remain open.
+- [x] Personal Harvest Readiness works without a Grow, while grow attachment remains
+      optional. Facility AI Tools now exposes the full Harvest Readiness workflow when
+      an existing Facility grow has cannabis crop context; production verified the
+      card and complete readiness description under frontend `d6f39cdb` and backend
+      `5e6cd014`.
 
 ## A. AI image, video, and diagnostic quality
 
@@ -147,8 +155,9 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
   candidate with Cannabaceae/Cannabis narrowing, withheld species/cultivar certainty,
   and reloaded the exact evidence receipt from Saved Runs. Production also verified
   automatic credit refunds for failed provider reviews while fixing the nested JSON
-  response and stale vision-receipt contract. Direct private geolocation, opt-in
-  Discovery Nature photo-pin publication/privacy remain. The direct publication
+  response and stale vision-receipt contract. Direct private geolocation and the
+  manual-pin fallback are verified; opt-in Discovery Nature photo-pin publication,
+  privacy, and withdrawal acceptance remain. The direct publication
   implementation now lets a Personal user deliberately select an approximate Nature
   photo pin without naming or configuring a Field Study; it prepares the backend's
   dedicated collection only after that choice and still requires location, uploaded
@@ -387,6 +396,9 @@ grow`, private current location without a Field Study, and an optional approxima
       then clean up and record the cleanup.
 - [ ] Capture forced backend 403 evidence for prohibited Facility mutations and an
       exported cross-role recording; clean up temporary aliases only with owner approval.
+- [ ] Add direct, named links from Facility SOP comparison results to each compared
+      run and the relevant checklist/follow-up work. The result currently compares
+      recorded completion and status changes but does not provide those next actions.
 
 ## C. Payments, email, delivery, and entitlements
 
@@ -613,6 +625,12 @@ correctly stopped because `EXPO_PUBLIC_SENTRY_DSN` is not supplied to the native
 production-build environment. The DSN must be configured as a protected EAS
 production secret and must never be committed to the repository.
 
+- [ ] Before the final App Store/app-wide tightening pass, run the two owner-approved
+      GrowPathAI hat concepts as zero-stock, non-sale purchase-intent trials; verify
+      response/revision/aggregate/close behavior, decide whether Admin or Living Soil
+      Labs presents them, and add only the approved research presentation to the site.
+      Keep Triple Bag concepts private until third-party-mark rights review and keep all
+      concepts out of inventory, checkout, payment, production, and shipping.
 - [ ] Obtain owner/legal decisions for final app name, cannabis language, age rating,
       privacy/support URLs, deep-link domain, store records, and listing copy.
 - [ ] Configure protected Apple and Google submit credentials and the production
