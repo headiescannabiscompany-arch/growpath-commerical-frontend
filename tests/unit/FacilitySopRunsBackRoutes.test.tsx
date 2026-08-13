@@ -268,6 +268,25 @@ describe("facility SOP run nested back behavior", () => {
     ).toBeTruthy();
   });
 
+  it("gives every active SOP step a direct Facility Journal evidence path", async () => {
+    mockParams = { id: "run-1" };
+    const screen = render(<FacilitySopRunDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Daily room check")).toBeTruthy());
+    fireEvent.press(
+      screen.getByLabelText("Record journal evidence for SOP step Inspect room")
+    );
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/home/facility/logs",
+      params: {
+        sopRunId: "run-1",
+        sopStepId: "step-1",
+        contextName: "Inspect room"
+      }
+    });
+  });
+
   it("locks completed SOP evidence against checklist changes", async () => {
     mockParams = { id: "run-2" };
     const screen = render(<FacilitySopRunDetailRoute />);
@@ -444,6 +463,25 @@ describe("facility SOP run nested back behavior", () => {
       pathname: "/home/facility/sop-runs/compare-result",
       params: { leftId: "run-1", rightId: "run-2" }
     });
+  });
+
+  it("accepts the production sopRuns response envelope in the comparison chooser", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      sopRuns: [
+        { id: "run-1", title: "Daily room check", status: "completed" },
+        { id: "run-2", title: "Night room check", status: "completed" }
+      ]
+    });
+
+    const screen = render(<FacilitySopRunsCompareRoute />);
+
+    await waitFor(() => expect(screen.getByText("Daily room check")).toBeTruthy());
+    expect(screen.getByText("Night room check")).toBeTruthy();
+    expect(
+      screen.queryByText(
+        "Complete at least two SOP runs before comparing recorded outcomes."
+      )
+    ).toBeNull();
   });
 
   it("requires procedure content and explicit review before creating an SOP", async () => {

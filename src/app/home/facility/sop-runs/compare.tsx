@@ -30,6 +30,7 @@ function asArray(res: unknown): SopRunListItem[] {
   if (Array.isArray(res)) return res.map(toRunListItem);
   if (Array.isArray(r.items)) return r.items.map(toRunListItem);
   if (Array.isArray(r.runs)) return r.runs.map(toRunListItem);
+  if (Array.isArray(r.sopRuns)) return r.sopRuns.map(toRunListItem);
   if (Array.isArray(r.data)) return r.data.map(toRunListItem);
   return [];
 }

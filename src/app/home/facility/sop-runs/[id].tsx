@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { apiRequest } from "@/api/apiRequest";
@@ -71,6 +71,7 @@ function stepStatus(step: SopRunStep) {
 }
 
 export default function FacilitySopRunDetailRoute() {
+  const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilitySopRunDetailStyles(palette), [palette]);
   const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -283,6 +284,10 @@ export default function FacilitySopRunDetailRoute() {
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           Checklist evidence
         </Text>
+        <Text style={styles.sub}>
+          Complete the named action, record what happened in the Facility Journal, then
+          mark the step Done or Skipped. A status alone is not the work record.
+        </Text>
         {steps.length ? (
           steps.map((step, index) => {
             const stepId = String(step.stepId || `step-${index + 1}`);
@@ -305,6 +310,27 @@ export default function FacilitySopRunDetailRoute() {
                 </View>
                 {step.note ? (
                   <Text style={styles.stepNote}>{String(step.note)}</Text>
+                ) : null}
+                {!runComplete ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Record journal evidence for SOP step ${title}`}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/home/facility/logs",
+                        params: {
+                          sopRunId: String(id),
+                          sopStepId: stepId,
+                          contextName: title
+                        }
+                      })
+                    }
+                    style={styles.evidenceLink}
+                  >
+                    <Text style={styles.evidenceLinkText}>
+                      Record evidence in Journal
+                    </Text>
+                  </Pressable>
                 ) : null}
                 {canWriteSopRuns ? (
                   <View style={styles.stepActions}>
@@ -503,6 +529,18 @@ export function createFacilitySopRunDetailStyles(palette: ThemePalette) {
     status_pending: { color: palette.warning, backgroundColor: palette.surfaceStrong },
     status_skipped: { color: palette.textMuted, backgroundColor: palette.surfaceStrong },
     stepNote: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
+    evidenceLink: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    evidenceLinkText: { color: palette.link, fontWeight: "800" },
     stepActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     stepBtn: { borderRadius: radius.card, paddingHorizontal: 10, paddingVertical: 8 },
     doneBtn: { backgroundColor: palette.success },
