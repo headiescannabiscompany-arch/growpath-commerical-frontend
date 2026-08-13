@@ -513,7 +513,9 @@ public visibility, or screenshot/video acceptance still called out below.
         and announce disabled state. Four focused suites pass 15/15 assertions.
       - Context-bar actions, the global connection-message dismiss action, and inline
         Forum discussion toggle/reply/retry/full-page actions now also preserve at least
-        a 44-by-44 target and stable roles/names. Four focused suites pass 19/19.
+        a 44-by-44 target and stable roles/names. Tappable shared cards and both shared
+        error-retry surfaces now expose stable control roles/names, with retry targets
+        at least 44-by-44. Focused shared-control and theme suites pass.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected

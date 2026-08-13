@@ -34,4 +34,21 @@ describe("shared action target contract", () => {
       );
     }
   });
+
+  it("keeps tappable cards and shared retry actions named", () => {
+    const card = source("src/components/layout/AppCard.tsx");
+    expect(card).toMatch(
+      /<TouchableOpacity[\s\S]*?accessibilityRole="button"[\s\S]*?accessibilityLabel={accessibilityLabel \|\| title \|\| "Open card"}/
+    );
+
+    const inlineError = source("src/components/InlineError.tsx");
+    expect(inlineError).toContain('Retry ${String(title || "request").toLowerCase()}');
+    expect(inlineError).toMatch(/retryBtn:[\s\S]*?minHeight: 44,[\s\S]*?minWidth: 44/);
+
+    const errorState = source("src/components/ErrorState.js");
+    expect(errorState).toMatch(
+      /accessibilityRole="button"[\s\S]*?accessibilityLabel={retryLabel}/
+    );
+    expect(errorState).toMatch(/retryBtn:[\s\S]*?minHeight: 44,[\s\S]*?minWidth: 44/);
+  });
 });

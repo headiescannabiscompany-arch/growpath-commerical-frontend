@@ -69,6 +69,7 @@ export function InlineError(props: InlineErrorProps) {
           onPress={props.onRetry}
           style={styles.retryBtn}
           accessibilityRole="button"
+          accessibilityLabel={`Retry ${String(title || "request").toLowerCase()}`}
         >
           <Text style={styles.retryText}>Retry</Text>
         </Pressable>
@@ -99,6 +100,9 @@ export const createInlineErrorStyles = (palette: ThemePalette) =>
     retryBtn: {
       marginTop: 10,
       alignSelf: "flex-start",
+      justifyContent: "center",
+      minHeight: 44,
+      minWidth: 44,
       paddingVertical: 6,
       paddingHorizontal: 10,
       borderRadius: radius.card,

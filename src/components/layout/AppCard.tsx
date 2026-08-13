@@ -24,7 +24,7 @@ export default function AppCard({
   const { palette } = useAppTheme();
   const Inner = (
     <View
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={onPress ? undefined : accessibilityLabel}
       style={[
         styles.card,
         {
@@ -49,7 +49,12 @@ export default function AppCard({
 
   if (onPress) {
     return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel || title || "Open card"}
+        onPress={onPress}
+        activeOpacity={0.85}
+      >
         {Inner}
       </TouchableOpacity>
     );
