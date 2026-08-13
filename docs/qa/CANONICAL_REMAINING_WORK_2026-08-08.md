@@ -390,6 +390,13 @@ refund/dispute, or mutation-capable acceptance items below.
 
 ## D. Commercial, commerce data, and owner-supplied sources
 
+Automated Commercial status on 2026-08-12: two consolidated batches passed **25
+suites and 171 assertions** across storefront/public discovery, products and import,
+inventory, orders, analytics, trials/batches, Feed, courses, videos, Lives, and the
+responsive Commercial workflow pages. This confirms the retained application
+contracts; it does not replace the populated Commercial-owner mutations, persistence,
+public visibility, or screenshot/video acceptance still called out below.
+
 - [~] Complete populated commercial brand/storefront acceptance: profile, slug,
   products, zero-stock/TBD launch state, shipping, images, labels, external links,
   course placement, and storefront discovery. Frontend merge `6381cd50` now
