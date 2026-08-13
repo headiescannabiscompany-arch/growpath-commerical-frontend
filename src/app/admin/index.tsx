@@ -52,6 +52,16 @@ type AdminUser = {
   lastActiveAt?: string;
 };
 
+type SyntheticCleanupPreview = {
+  ok: boolean;
+  dryRun: boolean;
+  target: { id: string; email: string };
+  allowlisted: boolean;
+  blockers: string[];
+  deletionMode: string;
+  nextConfirmation: string;
+};
+
 type ModerationCase = {
   _id: string;
   targetType: string;
@@ -340,6 +350,10 @@ export default function PlatformAdminRoute() {
   const [noticeUser, setNoticeUser] = useState<AdminUser | null>(null);
   const [noticeSubject, setNoticeSubject] = useState("GrowPathAI account warning");
   const [noticeMessage, setNoticeMessage] = useState("");
+  const [cleanupPreview, setCleanupPreview] = useState<SyntheticCleanupPreview | null>(
+    null
+  );
+  const [cleanupConfirmation, setCleanupConfirmation] = useState("");
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
@@ -617,6 +631,52 @@ export default function PlatformAdminRoute() {
       setNoticeMessage("");
     } catch (err: any) {
       setError(err?.message || "Notice delivery failed.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function reviewSyntheticCleanup(target: AdminUser) {
+    setBusyId(target._id);
+    setError("");
+    try {
+      const preview = await apiRequest<SyntheticCleanupPreview>(
+        `/api/admin/users/${target._id}/anonymize-synthetic-account`,
+        {
+          method: "POST",
+          body: { expectedEmail: target.email }
+        }
+      );
+      setCleanupPreview(preview);
+      setCleanupConfirmation("");
+    } catch (err: any) {
+      setError(err?.message || "This account is not approved for synthetic cleanup.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function executeSyntheticCleanup() {
+    if (!cleanupPreview) return;
+    setBusyId(cleanupPreview.target.id);
+    setError("");
+    try {
+      await apiRequest(
+        `/api/admin/users/${cleanupPreview.target.id}/anonymize-synthetic-account`,
+        {
+          method: "POST",
+          body: {
+            expectedEmail: cleanupPreview.target.email,
+            execute: true,
+            confirmation: cleanupConfirmation
+          }
+        }
+      );
+      setCleanupPreview(null);
+      setCleanupConfirmation("");
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Synthetic-account anonymization failed safely.");
     } finally {
       setBusyId("");
     }
@@ -1190,10 +1250,62 @@ export default function PlatformAdminRoute() {
               >
                 <Text style={styles.dangerText}>Ban</Text>
               </Pressable>
+              <Pressable
+                disabled={busyId === item._id}
+                style={styles.secondaryButton}
+                onPress={() => void reviewSyntheticCleanup(item)}
+              >
+                <Text style={styles.secondaryText}>Review test-account cleanup</Text>
+              </Pressable>
             </View>
           </AppCard>
         ))}
       </View>
+
+      {cleanupPreview ? (
+        <AppCard
+          title={`Anonymize ${cleanupPreview.target.email}`}
+          subtitle="This is permanent. GrowPath will reuse the complete privacy deletion process and retain only records required for security, compliance, billing, disputes, or audit."
+        >
+          <Text style={styles.meta}>
+            Exact production allowlist: approved · Safety blockers: none · Dry run: passed
+          </Text>
+          <Text style={styles.meta}>
+            Type this exact confirmation: {cleanupPreview.nextConfirmation}
+          </Text>
+          <TextInput
+            {...inputThemeProps}
+            accessibilityLabel="Exact synthetic account anonymization confirmation"
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="Paste the exact confirmation"
+            value={cleanupConfirmation}
+            onChangeText={setCleanupConfirmation}
+            style={styles.input}
+          />
+          <View style={styles.actions}>
+            <Pressable
+              disabled={
+                busyId === cleanupPreview.target.id ||
+                cleanupConfirmation !== cleanupPreview.nextConfirmation
+              }
+              style={styles.dangerButton}
+              onPress={() => void executeSyntheticCleanup()}
+            >
+              <Text style={styles.dangerText}>Anonymize approved test account</Text>
+            </Pressable>
+            <Pressable
+              style={styles.secondaryButton}
+              onPress={() => {
+                setCleanupPreview(null);
+                setCleanupConfirmation("");
+              }}
+            >
+              <Text style={styles.secondaryText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </AppCard>
+      ) : null}
 
       <AppCard
         title="Bug and support inbox"
