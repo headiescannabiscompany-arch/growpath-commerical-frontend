@@ -77,12 +77,10 @@ describe("shared catalog route Back controls", () => {
     expect(forum.getByText("Forum and Q&A:back:/account/workspace")).toBeTruthy();
   });
 
-  it("returns Facility outreach to the Facility More hub", () => {
+  it("delegates Facility outreach to the shared feed boundary", () => {
     const screen = render(<FacilityFeedRoute />);
 
-    expect(
-      screen.getByText("Facility outreach feed:back:/home/facility/more")
-    ).toBeTruthy();
     expect(screen.getByText("Facility feed content")).toBeTruthy();
+    expect(screen.queryByText(/Facility outreach feed:back:/)).toBeNull();
   });
 });

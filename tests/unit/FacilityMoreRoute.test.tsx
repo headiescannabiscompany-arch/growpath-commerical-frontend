@@ -60,5 +60,11 @@ describe("FacilityMoreRoute", () => {
     expect(
       screen.getByRole("header", { name: "Switch workspace" }).props["aria-level"]
     ).toBe(3);
+    expect(screen.getByLabelText("Open Discover")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Browse public videos, courses, storefronts, and shared field findings."
+      )
+    ).toBeTruthy();
   });
 });
