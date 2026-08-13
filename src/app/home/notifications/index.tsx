@@ -12,6 +12,7 @@ import {
 import { Link, useLocalSearchParams } from "expo-router";
 
 import { useAuth } from "@/auth/AuthContext";
+import { useEntitlements } from "@/entitlements";
 import { apiRequest } from "@/api/apiRequest";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { updateNotificationPreferences } from "@/api/users";
@@ -256,6 +257,7 @@ const NOTIFICATION_INBOX_FILTERS = NOTIFICATION_PREFERENCE_OPTIONS.filter(
 
 export default function NotificationCenterRoute() {
   const auth = useAuth();
+  const entitlements = useEntitlements();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createNotificationCenterStyles(palette), [palette]);
   const params = useLocalSearchParams<{
@@ -265,7 +267,7 @@ export default function NotificationCenterRoute() {
   const requestedWorkspace = Array.isArray(params.workspace)
     ? params.workspace[0]
     : params.workspace;
-  const workspaceMode = requestedWorkspace || auth.ctx?.mode;
+  const workspaceMode = requestedWorkspace || entitlements.mode || auth.ctx?.mode;
   const profileHref =
     workspaceMode === "facility"
       ? "/home/facility/profile"
