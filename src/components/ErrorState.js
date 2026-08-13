@@ -36,7 +36,12 @@ const ErrorState = ({
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>
       {onRetry && (
-        <TouchableOpacity style={styles.retryBtn} onPress={onRetry}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={retryLabel}
+          style={styles.retryBtn}
+          onPress={onRetry}
+        >
           <MaterialCommunityIcons
             name="refresh"
             size={18}
@@ -80,6 +85,9 @@ export const createErrorStateStyles = (palette) =>
       marginTop: Spacing.lg,
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "center",
+      minHeight: 44,
+      minWidth: 44,
       paddingHorizontal: Spacing.lg,
       paddingVertical: Spacing.md,
       backgroundColor: palette.accent,

@@ -23,6 +23,8 @@ export default function ContextBar({ name, role, onAction, actions = [] }) {
         {actions.map((action, idx) => (
           <TouchableOpacity
             key={idx}
+            accessibilityRole="button"
+            accessibilityLabel={action.accessibilityLabel || action.label}
             style={[styles.actionBtn, { backgroundColor: palette.accent }]}
             onPress={action.onPress}
           >
@@ -45,7 +47,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    minHeight: 40
+    minHeight: 44
   },
   name: {
     fontWeight: "bold",
@@ -61,6 +63,9 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
+    minWidth: 44,
     paddingVertical: 4,
     paddingHorizontal: 10,
     marginLeft: 8

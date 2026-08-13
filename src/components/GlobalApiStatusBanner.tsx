@@ -54,6 +54,7 @@ export function GlobalApiStatusBanner() {
         ) : null}
       </View>
       <Pressable
+        accessibilityRole="button"
         accessibilityLabel="Dismiss connection message"
         onPress={() => setError(null)}
         style={styles.dismiss}
@@ -96,7 +97,8 @@ export function createGlobalApiStatusBannerStyles(palette: ThemePalette) {
       marginTop: 2
     },
     dismiss: {
-      minHeight: 36,
+      minHeight: 44,
+      minWidth: 44,
       justifyContent: "center",
       paddingHorizontal: 8
     },

@@ -511,6 +511,11 @@ public visibility, or screenshot/video acceptance still called out below.
         44-by-44 CSS-pixel target. Back and primary actions expose a visible keyboard
         focus outline; primary actions derive a stable accessible name from their title
         and announce disabled state. Four focused suites pass 15/15 assertions.
+      - Context-bar actions, the global connection-message dismiss action, and inline
+        Forum discussion toggle/reply/retry/full-page actions now also preserve at least
+        a 44-by-44 target and stable roles/names. Tappable shared cards and both shared
+        error-retry surfaces now expose stable control roles/names, with retry targets
+        at least 44-by-44. Focused shared-control and theme suites pass.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected

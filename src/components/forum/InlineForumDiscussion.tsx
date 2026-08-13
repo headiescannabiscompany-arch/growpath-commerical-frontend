@@ -263,7 +263,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     flexDirection: "row",
     gap: 6,
-    minHeight: 36,
+    minHeight: 44,
+    minWidth: 44,
     paddingHorizontal: 4,
     paddingVertical: 6
   },
@@ -318,6 +319,9 @@ const styles = StyleSheet.create({
   primaryAction: {
     alignSelf: "flex-start",
     borderRadius: radius.card,
+    justifyContent: "center",
+    minHeight: 44,
+    minWidth: 44,
     paddingHorizontal: 12,
     paddingVertical: 9
   },
@@ -326,12 +330,18 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderRadius: radius.card,
     borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 44,
+    minWidth: 44,
     paddingHorizontal: 10,
     paddingVertical: 8
   },
   secondaryText: { fontSize: 13, fontWeight: "900" },
   fullPageLink: {
     alignSelf: "flex-start",
+    justifyContent: "center",
+    minHeight: 44,
+    minWidth: 44,
     paddingHorizontal: 2,
     paddingVertical: 4
   },
