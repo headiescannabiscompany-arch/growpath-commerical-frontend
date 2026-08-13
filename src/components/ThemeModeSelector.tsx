@@ -275,8 +275,11 @@ const styles = StyleSheet.create({
     marginTop: 12
   },
   actionButton: {
+    alignItems: "center",
     borderRadius: radius.card,
     borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 44,
     minWidth: 132,
     paddingHorizontal: 12,
     paddingVertical: 10
@@ -289,6 +292,8 @@ const styles = StyleSheet.create({
   segment: {
     borderRadius: radius.card,
     borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 44,
     padding: 12
   },
   segmentLabel: {
