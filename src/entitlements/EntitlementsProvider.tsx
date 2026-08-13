@@ -200,6 +200,7 @@ export function resolveCommercialWorkspaceAccess(ctx: any, accountPlan: string |
     .trim()
     .toLowerCase();
   return (
+    ctx?.commercialWorkspaceAccess === true ||
     pickMode(ctx?.mode) === "commercial" ||
     hasCommercialAccess(ctx) ||
     normalizedPlan === "commercial" ||
