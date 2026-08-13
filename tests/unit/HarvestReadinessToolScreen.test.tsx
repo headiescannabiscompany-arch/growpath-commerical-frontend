@@ -536,7 +536,7 @@ describe("HarvestReadinessToolRoute", () => {
     );
   });
 
-  it("lets a user select a grow before choosing trichome photos", async () => {
+  it("lets a personal user analyze standalone or optionally attach a grow", async () => {
     mockRouteParams = {};
     mockListPersonalGrows.mockResolvedValue([
       { id: "grow-1", name: "Flower Tent" },
@@ -545,11 +545,21 @@ describe("HarvestReadinessToolRoute", () => {
     const screen = await renderHarvestReadinessTool();
 
     await waitFor(() => expect(screen.getByText("Flower Tent")).toBeTruthy());
-    expect(screen.getByText("Select a grow before analyzing a photo.")).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText("Use Harvest Readiness Estimate without a grow")
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Standalone review: upload the required photos now/i)
+      ).toBeTruthy()
+    );
+    expect(screen.queryByText("Select a grow before analyzing a photo.")).toBeNull();
 
     fireEvent.press(screen.getByLabelText("Select grow Flower Tent"));
     await waitFor(() =>
-      expect(screen.queryByText("Select a grow before analyzing a photo.")).toBeNull()
+      expect(
+        screen.queryByText(/Standalone review: upload the required photos now/i)
+      ).toBeNull()
     );
   });
 

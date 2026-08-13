@@ -56,7 +56,7 @@ describe("ToolResultSurface", () => {
     expect(text.flat(Infinity).join(" ")).toContain("Outputs");
     expect(text.flat(Infinity).join(" ")).toContain("Formula / Why It Matters");
     expect(text.flat(Infinity).join(" ")).toContain("Uncertainty / Confidence");
-    expect(text.flat(Infinity).join(" ")).toContain("Copy Result");
+    expect(text.flat(Infinity).join(" ")).toContain("Copy Summary");
     expect(text.flat(Infinity).join(" ")).toContain("Reuse Inputs");
     expect(text.flat(Infinity).join(" ")).toContain("Ask AI About This");
   });
@@ -95,7 +95,7 @@ describe("ToolResultSurface", () => {
     expect(decodeURIComponent(href)).toContain('"risk": "high"');
   });
 
-  it("copies the structured result payload when the runtime supports clipboard", async () => {
+  it("copies a readable result summary without private technical payload fields", async () => {
     const writeText = jest.fn().mockResolvedValue(undefined);
     Object.defineProperty(globalThis, "navigator", {
       configurable: true,
@@ -115,7 +115,7 @@ describe("ToolResultSurface", () => {
     });
 
     const copyButton = tree!.root
-      .findAll((node: any) => node.props.accessibilityLabel === "Copy Result")
+      .findAll((node: any) => node.props.accessibilityLabel === "Copy Summary")
       .at(0);
     expect(copyButton).toBeTruthy();
 
@@ -123,7 +123,44 @@ describe("ToolResultSurface", () => {
       copyButton?.props.onPress();
     });
 
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('"ppmN": 100'));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("NPK result"));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining("N: 100"));
+    expect(writeText).not.toHaveBeenCalledWith(expect.stringContaining('"ppmN"'));
+  });
+
+  it("opens the native share sheet with the readable summary", async () => {
+    const share = jest.fn().mockResolvedValue(undefined);
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: { share }
+    });
+
+    let tree: any;
+    await act(async () => {
+      tree = renderer.create(
+        <ToolResultSurface
+          title="Harvest Readiness result"
+          status="Review window open"
+          summary="Signals conflict; review the sampled evidence."
+          metrics={[{ key: "amber", label: "Visible amber range", value: "20-30%" }]}
+          recommendations={["Compare another representative bud site."]}
+        />
+      );
+    });
+
+    const shareButton = tree!.root
+      .findAll((node: any) => node.props.accessibilityLabel === "Share Summary")
+      .at(0);
+    await act(async () => {
+      shareButton?.props.onPress();
+    });
+
+    expect(share).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Harvest Readiness result",
+        text: expect.stringContaining("Visible amber range: 20-30%")
+      })
+    );
   });
 
   it("shows pending and success feedback for result actions", async () => {

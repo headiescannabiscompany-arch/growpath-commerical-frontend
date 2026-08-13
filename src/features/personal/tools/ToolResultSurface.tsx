@@ -64,6 +64,10 @@ function canCopyText() {
   return typeof navigator !== "undefined" && Boolean(navigator.clipboard?.writeText);
 }
 
+function canShareText() {
+  return typeof navigator !== "undefined" && typeof navigator.share === "function";
+}
+
 function formatScalar(value: any): string {
   if (value == null || value === "") return "-";
   if (typeof value === "number") {
@@ -96,9 +100,46 @@ function compactEntries(data?: Record<string, any> | null) {
     }));
 }
 
-async function copyResult(payload: unknown) {
+function readableResultSummary({
+  title,
+  status,
+  summary,
+  metrics,
+  notices,
+  recommendations,
+  confidence
+}: {
+  title: string;
+  status?: string;
+  summary?: string;
+  metrics: ToolResultMetric[];
+  notices: ToolResultNotice[];
+  recommendations: string[];
+  confidence?: string | null;
+}) {
+  return [
+    title,
+    status ? `Status: ${status}` : "",
+    summary || "",
+    ...metrics.map(
+      (metric) =>
+        `${metric.label}: ${metric.value}${metric.detail ? ` (${metric.detail})` : ""}`
+    ),
+    confidence ? `Confidence: ${confidence}` : "",
+    ...notices.map(
+      (notice) =>
+        `Note: ${notice.message}${notice.remediation ? ` ${notice.remediation}` : ""}`
+    ),
+    ...recommendations.map((recommendation) => `Next step: ${recommendation}`),
+    "GrowPathAI estimate — review the evidence and use your own judgment before acting."
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+async function copyResult(summary: string) {
   if (!canCopyText()) throw new Error("Copy is unavailable in this runtime.");
-  await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+  await navigator.clipboard.writeText(summary);
 }
 
 function firstString(...values: unknown[]) {
@@ -243,31 +284,37 @@ export default function ToolResultSurface({
           }
         : undefined)
     : undefined;
+  const shareSummary = readableResultSummary({
+    title,
+    status,
+    summary,
+    metrics,
+    notices,
+    recommendations,
+    confidence
+  });
   const standardActions: ToolResultAction[] = [
+    ...(canShareText()
+      ? [
+          {
+            key: "share-result",
+            label: "Share Summary",
+            variant: "secondary" as const,
+            pendingLabel: "Opening...",
+            successMessage: "Share options opened.",
+            onPress: () => navigator.share({ title, text: shareSummary })
+          }
+        ]
+      : []),
     ...(canCopyText()
       ? [
           {
             key: "copy-result",
-            label: "Copy Result",
+            label: "Copy Summary",
             variant: "secondary" as const,
             pendingLabel: "Copying...",
-            successMessage: "Result copied.",
-            onPress: () =>
-              copyResult(
-                copyPayload ?? {
-                  title,
-                  status,
-                  summary,
-                  inputs,
-                  outputs,
-                  metrics,
-                  notices,
-                  recommendations,
-                  formulas,
-                  uncertainty,
-                  confidence
-                }
-              )
+            successMessage: "Readable summary copied.",
+            onPress: () => copyResult(shareSummary)
           }
         ]
       : []),
