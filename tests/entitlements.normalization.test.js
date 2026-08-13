@@ -37,6 +37,8 @@ describe("Entitlements normalization contract", () => {
     expect(normalizeCapabilityKey("diagnose_ai")).toBe("DIAGNOSE_AI");
     expect(normalizeCapabilityKey("courses_analytics")).toBe("COURSES_ANALYTICS");
     expect(normalizeCapabilityKey("growlogs_export")).toBe("GROWLOGS_EXPORT");
+    expect(normalizeCapabilityKey("search.global")).toBe("SEARCH");
+    expect(normalizeCapabilityKey("search_global")).toBe("SEARCH");
 
     // Facility action keys already canonical
     expect(normalizeCapabilityKey("TEAM_INVITE")).toBe("TEAM_INVITE");

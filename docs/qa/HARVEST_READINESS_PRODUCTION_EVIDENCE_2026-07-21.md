@@ -108,3 +108,21 @@ These timestamps are evidence-discovery anchors, not fixed extraction instructio
 - A deliberately failed provider request was not triggered in production. Refund behavior is covered by automated tests but still needs live failure evidence under a safe failure mechanism.
 - The supplied YouTube videos need explicit registry metadata before they can become governed knowledge sources; today they are QA/observation material only.
 - Independent harvest-timing review, mobile/desktop accessibility coverage, keyboard and screen-reader checks, and an exported final-SHA video remain open.
+
+## Facility standalone-entry production acceptance — 2026-08-13
+
+- The signed-in production identity was Triple Bag Genetics in Facility mode.
+- Facility AI Tools showed the Triple Bag Genetics, llc balance as `2000 / 2000`,
+  stated that the Facility owns the balance, and exposed Harvest Readiness without
+  requiring navigation through a grow.
+- The production Facility Harvest route offered both `No grow` and the authorized
+  temporary Facility acceptance grow. It explicitly stated that the workflow works
+  without a grow and that attaching one only adds scoped evidence, history, and
+  linked actions.
+- The standalone route exposed the same media checklist, optional video-frame path,
+  direct reviewed observations, planning-date input, and deterministic review action.
+- No media was uploaded, no provider request was made, no credit was spent, and no
+  record was created during this acceptance check.
+- This proves the role-correct Facility entry and truthful optional-grow boundary. It
+  does not replace a fresh provider-backed no-grow media run, an owned Harvest-batch
+  mutation, independent accuracy review, or naturally occurring refund-ledger proof.
