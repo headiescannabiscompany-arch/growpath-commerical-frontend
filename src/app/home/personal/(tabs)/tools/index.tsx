@@ -325,7 +325,9 @@ export default function ToolsHubScreen() {
     : profileInterests;
   const cannabisAccountContext =
     String(
-      (auth.user as any)?.contentControls?.cannabisVisibility || ""
+      auth.user?.cannabisVisibility ||
+        (auth.user as any)?.contentControls?.cannabisVisibility ||
+        ""
     ).toLowerCase() === "show" ||
     /\b(cannabis|hemp)\b/i.test(String((auth.user as any)?.accountPurpose || ""));
   const tools = getNavigablePersonalTools({ allowBetaSurfaces: true }).filter((tool) =>

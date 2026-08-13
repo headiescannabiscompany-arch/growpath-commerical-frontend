@@ -7,11 +7,22 @@ const mockCan = jest.fn();
 let mockPlan = "pro";
 let mockSearchParams: Record<string, string> = {};
 let mockGrowInterests: Record<string, string[]> = {};
+let mockCannabisVisibility: "show" | "hide" | undefined;
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "tools-user", growInterests: mockGrowInterests } }),
+  useAuth: () => ({
+    user: {
+      id: "tools-user",
+      growInterests: mockGrowInterests,
+      cannabisVisibility: mockCannabisVisibility
+    }
+  }),
   useOptionalAuth: () => ({
-    user: { id: "tools-user", growInterests: mockGrowInterests }
+    user: {
+      id: "tools-user",
+      growInterests: mockGrowInterests,
+      cannabisVisibility: mockCannabisVisibility
+    }
   })
 }));
 
@@ -60,6 +71,7 @@ describe("personal tools hub", () => {
     mockPlan = "pro";
     mockSearchParams = {};
     mockGrowInterests = {};
+    mockCannabisVisibility = undefined;
     Object.defineProperty(window, "location", {
       configurable: true,
       value: { hostname: "localhost", search: "" }
@@ -119,6 +131,17 @@ describe("personal tools hub", () => {
 
   it("keeps the harvest calculator in Tools for cannabis growers", () => {
     mockGrowInterests = { crops: ["Cannabis"] };
+
+    const screen = render(<ToolsHubScreen />);
+
+    expect(screen.getByText("Harvest Readiness Calculator")).toBeTruthy();
+    expect(
+      screen.getByLabelText("link-/home/personal/tools/harvest-readiness")
+    ).toBeTruthy();
+  });
+
+  it("shows cannabis workflows when the canonical account setting enables them", () => {
+    mockCannabisVisibility = "show";
 
     const screen = render(<ToolsHubScreen />);
 
