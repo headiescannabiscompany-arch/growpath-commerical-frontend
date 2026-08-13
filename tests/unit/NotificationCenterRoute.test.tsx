@@ -113,15 +113,6 @@ describe("NotificationCenterRoute", () => {
               readAt: "2026-07-07T12:00:00.000Z"
             },
             {
-              id: "notification-task-nested",
-              title: "Task assigned from Facility",
-              body: "Assigned: Inspect the north bench",
-              source: { model: "Task", id: "task-nested" },
-              data: { event: "assigned", taskId: "task-nested", facilityId: "fac-1" },
-              channel: "in_app",
-              readAt: "2026-07-07T12:00:00.000Z"
-            },
-            {
               id: "notification-3",
               title: "Course update",
               message: "A new lesson is ready.",
@@ -293,6 +284,15 @@ describe("NotificationCenterRoute", () => {
               sourceType: "storefront",
               linkedStorefrontSlug: "living-soil-labs",
               workspaceType: "personal",
+              readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-task-nested",
+              title: "Task assigned from Facility",
+              body: "Assigned: Inspect the north bench",
+              source: { model: "Task", id: "task-nested" },
+              data: { event: "assigned", taskId: "task-nested", facilityId: "fac-1" },
+              channel: "in_app",
               readAt: "2026-07-07T12:00:00.000Z"
             }
           ]
@@ -525,7 +525,7 @@ describe("NotificationCenterRoute", () => {
     expect(screen.getByText("Task created from notification.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from notification");
-    expect(createButtons).toHaveLength(21);
+    expect(createButtons).toHaveLength(22);
     await waitFor(() => expect(createButtons[7].props.disabled).toBeFalsy());
     fireEvent.press(createButtons[7]);
     await waitFor(() =>
