@@ -114,6 +114,34 @@ Viewer or read-only boundary where applicable. The Facility profile resolved:
   remaining Personal Tools router harness was updated.
 - Production Build Preflight passed for merges `4a17422`, `89b9846`, and `a198141`.
 
+## Populated Facility Viewer recheck - 2026-08-12 evening
+
+A second signed-in, read-only production pass used the existing Triple Bag Genetics,
+llc workspace and did not create, edit, delete, invite, assign, or spend anything.
+The dashboard resolved 15 rooms, four team members, one SOP, 69 audit events, and the
+Facility-owned 2000-credit trial allowance. Grows, Plants, Tasks, Compliance, Rooms,
+Inventory, SOPs, Team, Analytics, Integrations, AI Tools, and Profile each rendered
+their expected headings, a Back control, and no visible load/access/not-found failure.
+
+The Team page stated the active Viewer boundary: the account can view the roster;
+Owners and Managers can assign work; only the Owner can manage access roles. The
+correct Audit Events destination was exercised from the Dashboard and resolved to
+`/home/facility/audit-logs`, where real weekly credit-reset, team-invite, SOP, and task
+events were visible with detail links. `/home/facility/audit` is not a product route
+and was not counted as a failure.
+
+The corresponding navigation, workspace tab order, route access, shared Back,
+theme-token, notification-link, Facility reporting, role-policy, task-access, and
+room-access regression batch passed 16/16 suites and 58/58 tests. This adds populated
+read-only evidence only; the mutation and remaining-role boundaries below are
+unchanged.
+
+The same 12-route live pass also checked the rendered accessibility tree after each
+page settled. Every route exposed one named level-one heading, and no unnamed button,
+link, textbox, switch, radio, or checkbox was found. This is useful accessible-name
+and heading evidence, but it is not a keyboard traversal, screen-reader-device,
+font-scaling, touch-target measurement, or mobile screenshot pass.
+
 ## Acceptance boundary
 
 This closes the current signed-in Personal and Facility Viewer **route, heading,
