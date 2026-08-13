@@ -1,7 +1,8 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 
-import SearchScreen from "@/screens/SearchScreen";
+import SearchScreen, { createSearchStyles } from "@/screens/SearchScreen";
+import { getThemePalette } from "@/theme/appTheme";
 
 let mockSearchEnabled = true;
 
@@ -25,6 +26,14 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
     React.createElement(Text, null, `Feed placement ${placement} ${routeKey}`);
 });
 
+jest.mock("@/theme/appTheme", () => {
+  const actual = jest.requireActual("@/theme/appTheme");
+  return {
+    ...actual,
+    useAppTheme: () => ({ palette: actual.getThemePalette("night", "dark") })
+  };
+});
+
 describe("SearchScreen", () => {
   beforeEach(() => {
     mockSearchEnabled = true;
@@ -33,6 +42,8 @@ describe("SearchScreen", () => {
   it("routes storefront discovery to Storefront instead of pricing", () => {
     const navigate = jest.fn();
     const screen = render(<SearchScreen navigation={{ navigate }} />);
+
+    expect(screen.getByRole("header", { name: "Search" })).toHaveProp("aria-level", 1);
 
     expect(
       screen.getByText(
@@ -60,6 +71,17 @@ describe("SearchScreen", () => {
     expect(navigate).toHaveBeenCalledWith("Feed");
     expect(navigate).toHaveBeenCalledWith("Forum");
     expect(navigate).not.toHaveBeenCalledWith("PricingMatrix");
+  });
+
+  it("uses the active palette instead of fixed light surfaces", () => {
+    const palette = getThemePalette("night", "dark");
+    const styles = createSearchStyles(palette);
+
+    expect(styles.container.backgroundColor).toBe(palette.page);
+    expect(styles.input.backgroundColor).toBe(palette.surface);
+    expect(styles.input.color).toBe(palette.text);
+    expect(styles.row.backgroundColor).toBe(palette.surface);
+    expect(styles.arrow.color).toBe(palette.link);
   });
 
   it("matches grow-interest and workflow keywords that are not visible titles", () => {
