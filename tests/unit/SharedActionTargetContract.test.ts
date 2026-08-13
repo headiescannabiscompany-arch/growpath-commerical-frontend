@@ -74,4 +74,12 @@ describe("shared action target contract", () => {
     expect(task).toContain("backgroundColor: palette.surface");
     expect(task).not.toContain('backgroundColor: "#fff"');
   });
+
+  it("keeps the active Grow Interest picker readable and touch accessible", () => {
+    const picker = source("src/components/GrowInterestPicker.js");
+    expect(picker).toContain('expanded ? "▲" : "▼"');
+    expect(picker).toMatch(/headerRow:[\s\S]*?minHeight: 44/);
+    expect(picker).toMatch(/chip:[\s\S]*?minHeight: 44,[\s\S]*?minWidth: 44/);
+    expect(picker).toContain('accessibilityRole="checkbox"');
+  });
 });
