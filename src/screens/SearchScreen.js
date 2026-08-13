@@ -3,6 +3,8 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-na
 import AppShell from "../components/AppShell.js";
 import { useEntitlements, CAPABILITY_KEYS } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import BackButton from "@/components/nav/BackButton";
+import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 const SEARCH_SURFACES = [
@@ -76,21 +78,22 @@ const SEARCH_SURFACES = [
   }
 ];
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#F8FAFC" },
-  title: { color: "#0F172A", fontSize: 24, fontWeight: "900" },
-  subtitle: { color: "#64748B", marginTop: 4, marginBottom: 12 },
+export const createSearchStyles = (palette) => StyleSheet.create({
+  container: { flex: 1, padding: 16, backgroundColor: palette.page },
+  title: { color: palette.text, fontSize: 24, fontWeight: "900" },
+  subtitle: { color: palette.textSoft, marginTop: 4, marginBottom: 12 },
   input: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#CBD5E1",
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    color: palette.text,
     borderRadius: radius.card,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
   row: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
     borderRadius: radius.card,
     borderWidth: 1,
     flexDirection: "row",
@@ -98,22 +101,24 @@ const styles = StyleSheet.create({
     marginTop: 10,
     padding: 12
   },
-  rowTitle: { color: "#0F172A", fontSize: 16, fontWeight: "900" },
-  rowSubtitle: { color: "#64748B", marginTop: 3 },
-  arrow: { color: "#166534", fontSize: 20, fontWeight: "900" },
+  rowTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+  rowSubtitle: { color: palette.textSoft, marginTop: 3 },
+  arrow: { color: palette.link, fontSize: 20, fontWeight: "900" },
   locked: {
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FED7AA",
+    backgroundColor: palette.surfaceMuted,
+    borderColor: palette.border,
     borderRadius: radius.card,
     borderWidth: 1,
     marginTop: 14,
     padding: 12
   },
-  lockedText: { color: "#9A3412", fontWeight: "800" }
+  lockedText: { color: palette.text, fontWeight: "800" }
 });
 
-export default function SearchScreen({ navigation }) {
+export default function SearchScreen({ navigation, showBack = false }) {
   const ent = useEntitlements();
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createSearchStyles(palette), [palette]);
   const searchEnabled = ent.can(CAPABILITY_KEYS.SEARCH);
   const [query, setQuery] = useState("");
 
@@ -137,8 +142,11 @@ export default function SearchScreen({ navigation }) {
 
   return (
     <AppShell style={{}} contentContainerStyle={{}}>
+      {showBack ? <BackButton fallbackHref="/home" /> : null}
       <View style={styles.container}>
-        <Text style={styles.title}>Search</Text>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+          Search
+        </Text>
         <Text style={styles.subtitle}>
           Find storefronts, Feed / Campaigns, courses, Forum/Q&A, and grow records.
         </Text>
@@ -147,6 +155,7 @@ export default function SearchScreen({ navigation }) {
           value={query}
           onChangeText={setQuery}
           placeholder="Search GrowPath"
+          placeholderTextColor={palette.textMuted}
           accessibilityLabel="Search GrowPath"
           style={styles.input}
         />
