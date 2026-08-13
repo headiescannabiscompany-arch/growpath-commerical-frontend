@@ -328,7 +328,12 @@ export default function PersonalFeaturedFeed() {
           </Text>
         </View>
         <Link href="/home/personal/discover" asChild>
-          <Pressable accessibilityRole="button" style={styles.moreButton}>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Open Discover"
+            accessibilityHint="Opens the GrowPath discovery page"
+            style={styles.moreButton}
+          >
             <Text style={styles.moreButtonText}>Open Discover</Text>
           </Pressable>
         </Link>
@@ -346,6 +351,8 @@ export default function PersonalFeaturedFeed() {
           <Link key={card.key} href={card.href as any} asChild>
             <Pressable
               accessibilityRole="link"
+              accessibilityLabel={`${card.label}: ${card.title}`}
+              accessibilityHint="Opens this featured item"
               style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
             >
               {card.imageUrl ? (

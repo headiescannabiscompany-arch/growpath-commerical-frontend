@@ -20,6 +20,7 @@ export default function EducationPostCard({
   onPress
 }: EducationPostCardProps) {
   const { palette } = useAppTheme();
+  const linkLabel = cta || title || "Open education resource";
   function openHref() {
     const location = (globalThis as any)?.window?.location;
     if (location) location.href = href;
@@ -44,20 +45,35 @@ export default function EducationPostCard({
 
   if (onPress) {
     return (
-      <TouchableOpacity accessibilityRole="link" onPress={onPress} activeOpacity={0.85}>
+      <TouchableOpacity
+        accessibilityRole="link"
+        accessibilityLabel={linkLabel}
+        accessibilityHint="Opens this education resource"
+        onPress={onPress}
+        activeOpacity={0.85}
+        style={styles.touchTarget}
+      >
         {Content}
       </TouchableOpacity>
     );
   }
 
   return (
-    <TouchableOpacity accessibilityRole="link" onPress={openHref} activeOpacity={0.85}>
+    <TouchableOpacity
+      accessibilityRole="link"
+      accessibilityLabel={linkLabel}
+      accessibilityHint="Opens this education resource"
+      onPress={openHref}
+      activeOpacity={0.85}
+      style={styles.touchTarget}
+    >
       {Content}
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
+  touchTarget: { minHeight: 44 },
   card: {
     padding: 12,
     borderWidth: 1,
