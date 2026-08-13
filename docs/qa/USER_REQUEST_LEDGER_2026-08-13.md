@@ -220,7 +220,11 @@ Legend:
       no claims, stock, price, or guaranteed analysis may be invented.
 - [~] Commercial Orders, Analytics, Product Lines, Batches/Lots, Trials, Inventory,
       Forum/Feed, Videos, Lives, and dispensary handoff have automated coverage; populated
-      owner mutation, reload, public visibility, and visual evidence remain.
+      owner mutation, reload, public visibility, and visual evidence remain. The
+      signed-in Commercial route audit and frontend `161afbe9` repaired and live-verified
+      the blank Batch Planner and duplicate Storefront/Grows/Discover headings; all
+      audited route shells now load without visible errors. See
+      `docs/qa/COMMERCIAL_ROUTE_REPAIR_PRODUCTION_EVIDENCE_2026-08-13.md`.
 
 ## Billing, gifts, email, and data rights
 
