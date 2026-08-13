@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams } from "expo-router";
 
 import { sendSupportContact, type SupportContactTopic } from "@/api/support";
+import BackButton from "@/components/nav/BackButton";
 import {
   SUPPORT_CONTACT_ROUTING,
   SUPPORT_CONTACTS,
@@ -159,6 +160,9 @@ export default function SupportPage() {
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
+      <View style={styles.backRow}>
+        <BackButton fallbackHref="/" />
+      </View>
       <View style={styles.header}>
         <Text style={styles.brand}>GrowPath</Text>
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>
@@ -299,6 +303,9 @@ export const createSupportStyles = (palette: ThemePalette) =>
       paddingHorizontal: 24,
       paddingVertical: 40,
       width: "100%"
+    },
+    backRow: {
+      marginBottom: 18
     },
     header: { marginBottom: 24 },
     brand: { color: palette.accent, fontSize: 16, fontWeight: "800", marginBottom: 10 },
