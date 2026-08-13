@@ -69,8 +69,7 @@ function rows(response: any): NotificationRow[] {
       linkedTaskId:
         row.linkedTaskId ||
         (normalizedSourceType === "task" ? nestedSourceId || undefined : undefined),
-      workspaceType:
-        row.workspaceType || (data.facilityId ? "facility" : undefined)
+      workspaceType: row.workspaceType || (data.facilityId ? "facility" : undefined)
     };
   };
   if (Array.isArray(response)) return response.map(normalize);
