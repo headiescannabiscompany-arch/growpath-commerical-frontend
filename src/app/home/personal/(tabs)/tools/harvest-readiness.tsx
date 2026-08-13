@@ -853,8 +853,8 @@ function HarvestPhotoAnalyzer({
             {analysis.headDevelopmentBasis ? ` · ${analysis.headDevelopmentBasis}` : ""}
           </Text>
           <Text style={photoStyles.warning}>
-            Head development supports the review but does not prove potency, chemistry,
-            a harvest date, or whole-plant maturity.
+            Head development supports the review but does not prove potency, chemistry, a
+            harvest date, or whole-plant maturity.
           </Text>
           {analysis.qualityChecks ? (
             <View style={photoStyles.qualityChecks}>

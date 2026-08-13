@@ -865,9 +865,13 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
         });
       }
       if (photo.headDevelopmentBasis || photo.headDevelopmentObservation) {
-        const observation = String(photo.headDevelopmentObservation || "uncertain").replaceAll("_", " ");
+        const observation = String(
+          photo.headDevelopmentObservation || "uncertain"
+        ).replaceAll("_", " ");
         const signals = Array.isArray(photo.headDevelopmentSignals)
-          ? photo.headDevelopmentSignals.map((signal: unknown) => String(signal).replaceAll("_", " ")).join(", ")
+          ? photo.headDevelopmentSignals
+              .map((signal: unknown) => String(signal).replaceAll("_", " "))
+              .join(", ")
           : "";
         provenance.push({
           key: "harvest-head-development",
