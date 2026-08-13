@@ -188,6 +188,7 @@ describe("live URL verifier", () => {
     )?.[1];
 
     expect(fallbackBlock).toContain('"account/workspace"');
+    expect(fallbackBlock).toContain('"search"');
     expect(fallbackBlock).toContain('"account/mode"');
   });
 
