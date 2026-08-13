@@ -47,11 +47,17 @@ jest.mock("@/components/layout/AppPage", () => {
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
-  return function MockAppCard({ title, subtitle, children }: any) {
+  return function MockAppCard({ title, titleLevel, subtitle, children }: any) {
     return React.createElement(
       View,
       null,
-      React.createElement(Text, null, title),
+      React.createElement(
+        Text,
+        titleLevel
+          ? { accessibilityRole: "header", "aria-level": titleLevel }
+          : null,
+        title
+      ),
       React.createElement(Text, null, subtitle),
       children
     );
