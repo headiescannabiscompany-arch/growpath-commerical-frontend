@@ -39,6 +39,10 @@ jest.mock("@/auth/AuthContext", () => ({
   })
 }));
 
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({ mode: mockWorkspaceMode })
+}));
+
 jest.mock("expo-router", () => {
   const React = require("react");
   const { Text } = require("react-native");
@@ -322,6 +326,17 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /home/facility/profile")
     ).toBeTruthy();
     expect(screen.getAllByLabelText("Back to /home/facility/profile")).toHaveLength(1);
+  });
+
+  it("opens Commercial profile settings when Commercial is the active workspace", async () => {
+    mockWorkspaceMode = "commercial";
+    const screen = render(<NotificationCenterRoute />);
+
+    await waitFor(() => expect(screen.getByText("Notification Center")).toBeTruthy());
+    expect(
+      screen.getByLabelText("Notification link /home/commercial/profile")
+    ).toBeTruthy();
+    expect(screen.getAllByLabelText("Back to /home/commercial/profile")).toHaveLength(1);
   });
 
   it("lets facility users change and save notification types", async () => {
