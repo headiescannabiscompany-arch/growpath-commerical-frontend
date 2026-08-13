@@ -101,6 +101,9 @@ describe("lesson media authoring and playback", () => {
     );
 
     expect(screen.getByText("Load video from YouTube?")).toBeTruthy();
+    expect(screen.getByLabelText("Load YouTube lesson video").props.style).toEqual(
+      expect.objectContaining({ minHeight: 44 })
+    );
     expect(screen.queryByLabelText("Provider lesson player")).toBeNull();
     fireEvent.press(screen.getByLabelText("Load YouTube lesson video"));
     expect(screen.getByLabelText("Provider lesson player")).toBeTruthy();
@@ -136,6 +139,9 @@ describe("lesson media authoring and playback", () => {
       screen.getByText("The written application steps remain available here.")
     ).toBeTruthy();
     expect(screen.getByText("Open on Rumble")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Open Rumble lesson video in provider").props.style
+    ).toEqual(expect.objectContaining({ minHeight: 44 }));
   });
 
   it("uses authorized playback instead of exposing a private object path", async () => {
