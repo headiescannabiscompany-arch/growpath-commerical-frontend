@@ -198,6 +198,9 @@ describe("FacilityPlantsRoute", () => {
     const screen = render(<FacilityPlantsRoute />);
 
     const plantLink = await screen.findByRole("link", { name: "Open plant Plant A" });
+    expect(screen.getByLabelText("Facility plants").props.contentContainerStyle).toEqual(
+      expect.objectContaining({ paddingBottom: 104 })
+    );
     fireEvent.press(plantLink);
 
     expect(mockPush).toHaveBeenCalledWith({
