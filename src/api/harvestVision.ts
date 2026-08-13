@@ -3,7 +3,8 @@ import type { EvidenceWorkspaceType } from "@/types/evidence";
 
 export const SUPPORTED_HARVEST_REVIEW_POLICIES = [
   "harvest-trichome-server-attestation-v1",
-  "harvest-trichome-server-attestation-v2-full-grid"
+  "harvest-trichome-server-attestation-v2-full-grid",
+  "harvest-trichome-server-attestation-v3-head-development"
 ] as const;
 
 export function isSupportedHarvestReviewPolicy(value: unknown) {
@@ -46,6 +47,9 @@ export type TrichomeVisionResult = {
     | "substantial_visible"
     | "uncertain";
   amberEvidenceBasis?: string;
+  headDevelopmentObservation?: "developing" | "intact_swollen" | "mixed" | "advanced_senescence" | "not_visible" | "uncertain";
+  headDevelopmentBasis?: string;
+  headDevelopmentSignals?: Array<"small_developing_heads" | "intact_turgid_heads" | "visibly_swollen_heads" | "wrinkled_heads" | "collapsed_heads" | "resin_exudation" | "fused_heads" | "detached_or_missing_heads">;
   visibleTraits: string[];
   evidence: string[];
   recommendation: string;

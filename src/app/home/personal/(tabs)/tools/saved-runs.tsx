@@ -864,6 +864,17 @@ function noticesFor(run: ToolRun | null): ToolResultNotice[] {
           message: `Amber evidence: ${photo.amberEvidenceBasis}`
         });
       }
+      if (photo.headDevelopmentBasis || photo.headDevelopmentObservation) {
+        const observation = String(photo.headDevelopmentObservation || "uncertain").replaceAll("_", " ");
+        const signals = Array.isArray(photo.headDevelopmentSignals)
+          ? photo.headDevelopmentSignals.map((signal: unknown) => String(signal).replaceAll("_", " ")).join(", ")
+          : "";
+        provenance.push({
+          key: "harvest-head-development",
+          severity: "info",
+          message: `Gland-head development: ${observation}${signals ? ` · ${signals}` : ""}${photo.headDevelopmentBasis ? ` · ${photo.headDevelopmentBasis}` : ""}. This supports the sampled-area review but does not prove potency, chemistry, a harvest date, or whole-plant maturity.`
+        });
+      }
       const limitations = Array.isArray(photo.limitations)
         ? photo.limitations.map(String).filter(Boolean)
         : [];
