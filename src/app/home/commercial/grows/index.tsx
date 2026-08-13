@@ -190,7 +190,7 @@ function RecordPicker({
               accessibilityRole="link"
               accessibilityState={{ disabled }}
               disabled={disabled}
-              style={[styles.action, disabled && styles.disabled]}
+              style={StyleSheet.flatten([styles.action, disabled && styles.disabled])}
             >
               <Text style={styles.actionText}>{createLabel}</Text>
             </Pressable>
