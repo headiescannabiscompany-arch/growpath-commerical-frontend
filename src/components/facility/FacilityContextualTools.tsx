@@ -65,7 +65,9 @@ export default function FacilityContextualTools({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
+      <Text accessibilityRole="header" aria-level={3} style={styles.title}>
+        {title}
+      </Text>
       <Text style={styles.helper}>
         Facility, room, grow, and plant context carries into the shared tool.
       </Text>
@@ -101,10 +103,13 @@ const createStyles = (palette: ThemePalette) =>
     helper: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
     row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     action: {
+      alignItems: "center",
       backgroundColor: palette.surface,
       borderColor: palette.accent,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 11,
       paddingVertical: 9
     },
