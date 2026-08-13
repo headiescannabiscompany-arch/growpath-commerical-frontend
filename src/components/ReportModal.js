@@ -51,10 +51,24 @@ const ReportModal = ({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={() => {
+        if (!loading) onClose();
+      }}
+    >
       <View style={styles.overlay}>
-        <View testID="report-content-modal" style={styles.container}>
-          <Text style={styles.title}>Report Content</Text>
+        <View
+          testID="report-content-modal"
+          accessibilityLabel="Report content dialog"
+          accessibilityViewIsModal
+          style={styles.container}
+        >
+          <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+            Report Content
+          </Text>
           <TextInput
             style={styles.input}
             placeholder="Reason for report..."
@@ -65,11 +79,20 @@ const ReportModal = ({
             multiline
             accessibilityLabel="Report reason"
           />
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? (
+            <Text
+              accessibilityRole="alert"
+              accessibilityLiveRegion="assertive"
+              style={styles.error}
+            >
+              {error}
+            </Text>
+          ) : null}
           <View style={styles.buttonRow}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Cancel"
+              accessibilityState={{ disabled: loading }}
               style={[
                 styles.actionButton,
                 styles.cancelButton,
@@ -83,6 +106,7 @@ const ReportModal = ({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Submit"
+              accessibilityState={{ disabled: loading || !reason.trim() }}
               style={[
                 styles.actionButton,
                 styles.submitButton,
@@ -151,6 +175,8 @@ export const createReportModalStyles = (palette) =>
       borderRadius: radius.card,
       borderWidth: 1,
       flex: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 12,
       paddingVertical: 10
     },

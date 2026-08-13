@@ -539,7 +539,12 @@ public visibility, or screenshot/video acceptance still called out below.
         preserve 44px targets. Focused video picker/theme suites pass 4/4.
       - The shared Day/Night/Auto radio choices and Auto-location actions preserve
         44px targets while retaining checked, disabled, and live-status semantics.
-        Its focused behavior suite passes 2/2.
+        Its focused behavior suite passes 2/2; frontend merge `db192906` passed the
+        full 9m11s CI gate.
+      - The shared content-report dialog now exposes modal and heading semantics,
+        announces disabled submit/cancel state and errors, handles safe device-back
+        dismissal, and preserves 44px actions. Its focused critical-theme/submission
+        suite passes 4/4.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
