@@ -497,6 +497,12 @@ describe("GrowPath knowledge registries", () => {
       "readable Facility inventory details with confirmed mistaken-record removal"
     );
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
+      "actionable SOP steps with a Facility Journal evidence path before status review"
+    );
+    expect(getMethod("facility-workflow")?.warnings).toContain(
+      "Never ask an operator to mark an SOP step done or skipped without a visible action and a direct path to record evidence."
+    );
+    expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
       "cross-platform confirmed Facility member removal with preserved history"
     );
     expect(getMethod("facility-workflow")?.requiredOutputs).toContain(
