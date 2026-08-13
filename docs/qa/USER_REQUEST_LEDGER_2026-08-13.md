@@ -190,9 +190,9 @@ Legend:
       revisions, retirement, execution checklists, history, audit events, and role gates.
 - [x] AI can recommend SOPs for non-Facility users without pretending those suggestions
       are Facility-controlled procedures.
-- [ ] Add direct, named links from Facility SOP comparison results to each compared run
-      and the relevant checklist/follow-up work. The comparison currently reports the
-      recorded outcome but still strands the user on the result screen.
+- [x] Facility SOP comparison results link directly to both named runs and Facility
+      Tasks. Production frontend `b8742f1a` opened the retained reference and comparison
+      checklist-evidence pages plus the live follow-up task queue from one real result.
 - [x] Facility operational routes include Dashboard, Grows, Rooms, Plants, Tasks,
       Journal/Logs, Inventory, Compliance, SOPs, Reports, Analytics, Integrations,
       AI Tools, Team, and Notifications with grouped navigation.
