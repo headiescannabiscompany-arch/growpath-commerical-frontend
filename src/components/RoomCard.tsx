@@ -1,6 +1,7 @@
 import React from "react";
 import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import { radius } from "../theme/theme";
+import { useAppTheme } from "../theme/appTheme";
 
 export default function RoomCard({
   room,
@@ -9,10 +10,19 @@ export default function RoomCard({
   room: { id: string; name: string };
   onPress: () => void;
 }) {
+  const { palette } = useAppTheme();
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={`Open facility room ${room.name}`}
+      style={[
+        styles.card,
+        { backgroundColor: palette.surface, shadowColor: palette.shadow }
+      ]}
+      onPress={onPress}
+    >
       <View>
-        <Text style={styles.name}>{room.name}</Text>
+        <Text style={[styles.name, { color: palette.text }]}>{room.name}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -21,7 +31,7 @@ export default function RoomCard({
 const styles = StyleSheet.create({
   card: {
     padding: 16,
-    backgroundColor: "#fff",
+    minHeight: 44,
     borderRadius: radius.card,
     marginVertical: 8,
     shadowColor: "#000",

@@ -51,4 +51,27 @@ describe("shared action target contract", () => {
     );
     expect(errorState).toMatch(/retryBtn:[\s\S]*?minHeight: 44,[\s\S]*?minWidth: 44/);
   });
+
+  it("keeps shared follow and record-row actions named, busy-safe, and themed", () => {
+    const follow = source("src/components/FollowButton.js");
+    expect(follow).toContain('accessibilityRole="button"');
+    expect(follow).toContain('following ? "Unfollow user" : "Follow user"');
+    expect(follow).toContain("accessibilityState={{ busy, disabled: busy }}");
+    expect(follow).toMatch(/minHeight: 44,[\s\S]*?minWidth: 44/);
+
+    const inventory = source("src/components/InventoryRow.tsx");
+    expect(inventory).toContain("Edit inventory item ${item.name}");
+    expect(inventory).toMatch(/editBtn:[\s\S]*?minHeight: 44,[\s\S]*?minWidth: 44/);
+    expect(inventory).toContain("palette.accent");
+
+    const room = source("src/components/RoomCard.tsx");
+    expect(room).toContain("Open facility room ${room.name}");
+    expect(room).toContain("backgroundColor: palette.surface");
+    expect(room).not.toContain('backgroundColor: "#fff"');
+
+    const task = source("src/components/TaskRow.js");
+    expect(task).toContain("Open task ${task.title}");
+    expect(task).toContain("backgroundColor: palette.surface");
+    expect(task).not.toContain('backgroundColor: "#fff"');
+  });
 });

@@ -516,6 +516,10 @@ public visibility, or screenshot/video acceptance still called out below.
         a 44-by-44 target and stable roles/names. Tappable shared cards and both shared
         error-retry surfaces now expose stable control roles/names, with retry targets
         at least 44-by-44. Focused shared-control and theme suites pass.
+      - Shared Follow, Facility Room, Inventory edit, and Schedule task controls now
+        expose record-specific names and 44px targets. Follow suppresses duplicate
+        requests while busy; Room/Inventory/Task rows use active Day/Night palette
+        surfaces instead of hardcoded light colors. Three focused suites pass 42/42.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
