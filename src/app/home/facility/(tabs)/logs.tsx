@@ -65,6 +65,8 @@ export default function FacilityLogsTab() {
   const params = useLocalSearchParams<{
     growId?: string | string[];
     contextName?: string | string[];
+    sopRunId?: string | string[];
+    sopStepId?: string | string[];
   }>();
   const ent = useEntitlements();
   const facilityRole = String(ent?.facilityRole || "").toUpperCase();
@@ -74,6 +76,7 @@ export default function FacilityLogsTab() {
   const { selectedId: facilityId } = useFacility();
   const contextGrowId = String(firstParam(params.growId) || "");
   const contextName = String(firstParam(params.contextName) || "");
+  const contextSopRunId = String(firstParam(params.sopRunId) || "");
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -96,6 +99,11 @@ export default function FacilityLogsTab() {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [type, setType] = useState<(typeof LOG_TYPES)[number]>("OBSERVATION");
+
+  useEffect(() => {
+    if (!contextSopRunId || !contextName) return;
+    setTitle((current) => current || `SOP evidence: ${contextName}`);
+  }, [contextName, contextSopRunId]);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -182,9 +190,11 @@ export default function FacilityLogsTab() {
       title={contextName ? `${contextName} journal` : "Facility Grow Journal"}
       showBack
       backFallbackHref={
-        contextGrowId
-          ? `/home/facility/grows/${contextGrowId}`
-          : "/home/facility/dashboard"
+        contextSopRunId
+          ? `/home/facility/sop-runs/${contextSopRunId}`
+          : contextGrowId
+            ? `/home/facility/grows/${contextGrowId}`
+            : "/home/facility/dashboard"
       }
     >
       <View style={styles.container}>
@@ -212,8 +222,9 @@ export default function FacilityLogsTab() {
               Add journal entry
             </Text>
             <Text style={styles.muted}>
-              Record work, observations, and measurements where the team will find them
-              later.
+              {contextSopRunId
+                ? `Record what was done for “${contextName}”, the result, and any follow-up. Saving this entry creates the evidence record; then return to the SOP checklist and mark the step Done or Skipped.`
+                : "Record work, observations, and measurements where the team will find them later."}
             </Text>
             <View
               accessibilityLabel="Facility journal type"
@@ -266,6 +277,16 @@ export default function FacilityLogsTab() {
                 {saving ? "Saving…" : "Save journal entry"}
               </Text>
             </Pressable>
+            {contextSopRunId ? (
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel={`Return to SOP checklist after recording ${contextName}`}
+                onPress={() => router.push(`/home/facility/sop-runs/${contextSopRunId}`)}
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryText}>Return to SOP checklist</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
 
@@ -396,6 +417,17 @@ const createStyles = (palette: ThemePalette) =>
       padding: 11
     },
     primaryText: { color: palette.accentText, fontWeight: "900" },
+    secondaryBtn: {
+      alignItems: "center",
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryText: { color: palette.link, fontWeight: "900" },
     disabled: { opacity: 0.5 },
 
     loading: { paddingVertical: 18, alignItems: "center" },

@@ -127,6 +127,33 @@ describe("FacilityLogsRoute", () => {
     );
   });
 
+  it("prefills SOP evidence and returns to the exact run", async () => {
+    mockSearchParams = {
+      sopRunId: "run-1",
+      sopStepId: "step-1",
+      contextName: "Inspect room"
+    };
+
+    const screen = render(<FacilityLogsRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Facility journal title").props.value).toBe(
+        "SOP evidence: Inspect room"
+      )
+    );
+    expect(mockScreenBoundaryProps).toMatchObject({
+      showBack: true,
+      backFallbackHref: "/home/facility/sop-runs/run-1"
+    });
+
+    fireEvent.press(
+      screen.getByRole("link", {
+        name: "Return to SOP checklist after recording Inspect room"
+      })
+    );
+    expect(mockPush).toHaveBeenCalledWith("/home/facility/sop-runs/run-1");
+  });
+
   it("keeps a viewer read-only even if a stale capability claims write access", async () => {
     mockFacilityRole = "VIEWER";
     mockCanWriteLogs = true;
