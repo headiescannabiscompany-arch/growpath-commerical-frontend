@@ -53,13 +53,33 @@ type FilterKey =
   | Exclude<keyof NotificationPreferenceState, "pushEnabled">;
 
 function rows(response: any): NotificationRow[] {
-  if (Array.isArray(response)) return response;
+  const normalize = (row: NotificationRow): NotificationRow => {
+    const source = row?.source && typeof row.source === "object" ? row.source : {};
+    const data = row?.data && typeof row.data === "object" ? row.data : {};
+    const nestedSourceType = source.model || data.sourceType;
+    const nestedSourceId = source.id || data.taskId || data.sourceId;
+    const normalizedSourceType = String(nestedSourceType || "")
+      .trim()
+      .replace(/[^a-z0-9]+/gi, "_")
+      .toLowerCase();
+    return {
+      ...row,
+      sourceType: row.sourceType || normalizedSourceType || undefined,
+      sourceId: row.sourceId || nestedSourceId || undefined,
+      linkedTaskId:
+        row.linkedTaskId ||
+        (normalizedSourceType === "task" ? nestedSourceId || undefined : undefined),
+      workspaceType:
+        row.workspaceType || (data.facilityId ? "facility" : undefined)
+    };
+  };
+  if (Array.isArray(response)) return response.map(normalize);
   const value =
     response?.notifications ??
     response?.items ??
     response?.data?.notifications ??
     response?.data?.items;
-  return Array.isArray(value) ? value : [];
+  return Array.isArray(value) ? value.map(normalize) : [];
 }
 
 function rowId(row: NotificationRow) {
