@@ -74,6 +74,9 @@ export default function GrowInterestPicker({
         onPress={toggleExpanded}
         accessibilityRole={collapsible ? "button" : undefined}
         accessibilityLabel={collapsible ? `Toggle ${title}` : undefined}
+        accessibilityHint={
+          collapsible ? `${expanded ? "Collapse" : "Expand"} ${title}` : undefined
+        }
         accessibilityState={collapsible ? { expanded } : undefined}
       >
         <View style={{ flex: 1 }}>
@@ -165,6 +168,7 @@ const createStyles = (palette) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
+      minHeight: 44,
       paddingVertical: 4
     },
     headerRowStatic: {
@@ -216,6 +220,7 @@ const createStyles = (palette) =>
       flexWrap: "wrap"
     },
     chip: {
+      alignItems: "center",
       borderWidth: 1,
       borderColor: palette.border,
       borderRadius: radius.pill,
@@ -223,7 +228,10 @@ const createStyles = (palette) =>
       paddingVertical: 6,
       backgroundColor: palette.surfaceMuted,
       marginRight: 8,
-      marginBottom: 8
+      marginBottom: 8,
+      justifyContent: "center",
+      minHeight: 44,
+      minWidth: 44
     },
     chipActive: {
       backgroundColor: palette.accent,
