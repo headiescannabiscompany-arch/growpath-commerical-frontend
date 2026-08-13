@@ -30,32 +30,32 @@ Each route below rendered its expected level-one heading, a shared Back control,
 no visible unmatched-route, not-found, unauthorized, unable-to-load, failed-to-load,
 screen-unavailable, or generic error state:
 
-| Route | Expected heading |
-| --- | --- |
-| `/home/personal` | Your Garden |
-| `/home/personal/grows` | Grows |
-| `/home/personal/tools` | AI Tools |
-| `/home/personal/community` | Forum / Q&A |
-| `/home/personal/discover` | Discover |
-| `/home/personal/more` | More Personal Workspaces |
-| `/home/personal/courses` | Courses |
-| `/home/personal/profile` | Profile |
-| `/home/personal/diagnose` | Plant Issue Diagnosis |
-| `/home/personal/field-studies` | Field Studies |
-| `/home/personal/tasks` | Task Center / Schedule |
-| `/courses` | Courses |
-| `/videos?tab=library` | Videos |
-| `/lives` | Lives |
-| `/home/notifications` | Notification Center |
-| `/field-observations` | Explore the living world |
-| `/account/mode` | Choose Workspace |
-| `/home/personal/tools/ppfd` | PPFD / DLI Planner |
-| `/home/personal/tools/recipe-builder` | Mix Builders |
-| `/home/personal/tools/saved-runs` | Saved Tool Runs |
-| `/home/personal/tools/ipm-scout` | IPM Scout |
-| `/home/personal/tools/species-crop-id` | Species / Crop ID |
-| `/home/personal/tools/environment-analysis` | Environment Review |
-| `/home/personal/tools/harvest-readiness` | Harvest Readiness |
+| Route                                       | Expected heading         |
+| ------------------------------------------- | ------------------------ |
+| `/home/personal`                            | Your Garden              |
+| `/home/personal/grows`                      | Grows                    |
+| `/home/personal/tools`                      | AI Tools                 |
+| `/home/personal/community`                  | Forum / Q&A              |
+| `/home/personal/discover`                   | Discover                 |
+| `/home/personal/more`                       | More Personal Workspaces |
+| `/home/personal/courses`                    | Courses                  |
+| `/home/personal/profile`                    | Profile                  |
+| `/home/personal/diagnose`                   | Plant Issue Diagnosis    |
+| `/home/personal/field-studies`              | Field Studies            |
+| `/home/personal/tasks`                      | Task Center / Schedule   |
+| `/courses`                                  | Courses                  |
+| `/videos?tab=library`                       | Videos                   |
+| `/lives`                                    | Lives                    |
+| `/home/notifications`                       | Notification Center      |
+| `/field-observations`                       | Explore the living world |
+| `/account/mode`                             | Choose Workspace         |
+| `/home/personal/tools/ppfd`                 | PPFD / DLI Planner       |
+| `/home/personal/tools/recipe-builder`       | Mix Builders             |
+| `/home/personal/tools/saved-runs`           | Saved Tool Runs          |
+| `/home/personal/tools/ipm-scout`            | IPM Scout                |
+| `/home/personal/tools/species-crop-id`      | Species / Crop ID        |
+| `/home/personal/tools/environment-analysis` | Environment Review       |
+| `/home/personal/tools/harvest-readiness`    | Harvest Readiness        |
 
 The Grows Back control was also exercised in production and returned to
 `/home/personal`. The other root controls use the same covered component and were
@@ -67,32 +67,32 @@ mutated.
 Each route below rendered its expected level-one heading, a shared Back control, and
 no visible failure state:
 
-| Route | Expected heading or behavior |
-| --- | --- |
-| `/home/facility` | Redirected to Dashboard |
-| `/home/facility/dashboard` | Dashboard |
-| `/home/facility/more` | More Facility Workspaces |
-| `/home/facility/rooms` | Facility Rooms & Workspaces |
-| `/home/facility/grows` | Facility Grows |
-| `/home/facility/plants` | Facility Plants |
-| `/home/facility/tasks` | Facility Tasks |
-| `/home/facility/sop-runs` | SOP Library & Runs |
-| `/home/facility/sop-runs/presets` | SOP Library |
-| `/home/facility/compliance` | Facility Compliance |
-| `/home/facility/inventory` | Facility Inventory |
-| `/home/facility/team` | Facility Team |
-| `/home/facility/transfers` | Licensed Sales & Transfers |
-| `/home/facility/reports` | Facility Reports |
-| `/home/facility/analytics` | Facility Analytics |
-| `/home/facility/integrations` | Connect rooms and sensor data |
-| `/home/facility/ai-tools` | Facility Grow Intelligence |
-| `/home/facility/feed` | Facility Outreach |
-| `/courses` | Courses |
-| `/videos?tab=library` | Videos |
-| `/forum` | Forum / Q&A |
-| `/home/notifications?workspace=facility` | Notification Center |
-| `/home/facility/profile` | Profile |
-| `/account/mode` | Choose Workspace |
+| Route                                    | Expected heading or behavior  |
+| ---------------------------------------- | ----------------------------- |
+| `/home/facility`                         | Redirected to Dashboard       |
+| `/home/facility/dashboard`               | Dashboard                     |
+| `/home/facility/more`                    | More Facility Workspaces      |
+| `/home/facility/rooms`                   | Facility Rooms & Workspaces   |
+| `/home/facility/grows`                   | Facility Grows                |
+| `/home/facility/plants`                  | Facility Plants               |
+| `/home/facility/tasks`                   | Facility Tasks                |
+| `/home/facility/sop-runs`                | SOP Library & Runs            |
+| `/home/facility/sop-runs/presets`        | SOP Library                   |
+| `/home/facility/compliance`              | Facility Compliance           |
+| `/home/facility/inventory`               | Facility Inventory            |
+| `/home/facility/team`                    | Facility Team                 |
+| `/home/facility/transfers`               | Licensed Sales & Transfers    |
+| `/home/facility/reports`                 | Facility Reports              |
+| `/home/facility/analytics`               | Facility Analytics            |
+| `/home/facility/integrations`            | Connect rooms and sensor data |
+| `/home/facility/ai-tools`                | Facility Grow Intelligence    |
+| `/home/facility/feed`                    | Facility Outreach             |
+| `/courses`                               | Courses                       |
+| `/videos?tab=library`                    | Videos                        |
+| `/forum`                                 | Forum / Q&A                   |
+| `/home/notifications?workspace=facility` | Notification Center           |
+| `/home/facility/profile`                 | Profile                       |
+| `/account/mode`                          | Choose Workspace              |
 
 SOPs, Compliance, Inventory, Team, Transfers, Reports, and Integrations exposed a
 Viewer or read-only boundary where applicable. The Facility profile resolved:
@@ -163,6 +163,20 @@ found no failing sample in the states that were rendered. Parent link/button def
 were excluded so styled child text was measured instead of non-rendered inherited
 defaults. This does not cover hidden states, every error/empty variant, image text,
 native rendering, or human visual review on physical devices.
+
+## Facility mutation contract batch
+
+The follow-on automated contract pass covered Facility Rooms, Plants, Tasks,
+Inventory create/detail, Compliance naming, SOP run navigation, reporting
+presentation, Facility workflow API behavior, email verification, endpoint routing,
+and role/task/room access rules. All **14 suites and 103 assertions passed** with the
+original assertions intact.
+
+This batch is deliberately classified as local automated evidence. It does not claim
+that production Owner or Manager mutations were performed, that a prohibited request
+was observed returning 403 over the production network, or that approved temporary
+production records were created and cleaned up. Those remain explicit open acceptance
+items in the canonical checklist.
 
 ## Acceptance boundary
 
