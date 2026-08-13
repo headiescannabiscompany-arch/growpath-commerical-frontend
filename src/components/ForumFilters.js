@@ -36,6 +36,9 @@ export default function ForumFilters({
                 return (
                   <TouchableOpacity
                     key={option}
+                    accessibilityRole="checkbox"
+                    accessibilityLabel={`Filter Forum by ${option}`}
+                    accessibilityState={{ checked: isActive }}
                     style={[
                       styles.filterChip,
                       {
@@ -98,6 +101,10 @@ const styles = StyleSheet.create({
     gap: 8
   },
   filterChip: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+    minWidth: 44,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radius.pill,
