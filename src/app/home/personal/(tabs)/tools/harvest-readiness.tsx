@@ -478,12 +478,7 @@ function HarvestPhotoAnalyzer({
   };
 
   async function analyze() {
-    if (
-      photoCount < MIN_HARVEST_PHOTOS ||
-      busy ||
-      restoringEvidence
-    )
-      return;
+    if (photoCount < MIN_HARVEST_PHOTOS || busy || restoringEvidence) return;
     const requestScopeKey = analysisScopeKey;
     const requestRevision = analysisRequestRevisionRef.current;
     setBusy(true);
@@ -707,16 +702,10 @@ function HarvestPhotoAnalyzer({
       <Pressable
         accessibilityLabel="Analyze harvest trichome photo"
         onPress={analyze}
-        disabled={
-          busy ||
-          restoringEvidence ||
-          photoCount < MIN_HARVEST_PHOTOS
-        }
+        disabled={busy || restoringEvidence || photoCount < MIN_HARVEST_PHOTOS}
         style={[
           photoStyles.button,
-          (busy ||
-            restoringEvidence ||
-            photoCount < MIN_HARVEST_PHOTOS) &&
+          (busy || restoringEvidence || photoCount < MIN_HARVEST_PHOTOS) &&
             photoStyles.disabled
         ]}
       >
