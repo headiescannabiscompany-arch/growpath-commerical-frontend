@@ -100,6 +100,7 @@ export default function VideoCard({
             <Pressable
               accessibilityLabel={`Edit video ${video.title}`}
               accessibilityRole="button"
+              accessibilityState={{ disabled: busy }}
               disabled={busy}
               onPress={() => onEdit(video)}
               style={styles.secondaryButton}
@@ -111,6 +112,7 @@ export default function VideoCard({
             <Pressable
               accessibilityLabel={`${video.status === "published" ? "Unpublish" : "Publish"} video ${video.title}`}
               accessibilityRole="button"
+              accessibilityState={{ disabled: busy }}
               disabled={busy}
               onPress={() => onTogglePublished(video)}
               style={styles.secondaryButton}
@@ -124,6 +126,7 @@ export default function VideoCard({
             <Pressable
               accessibilityLabel={`Remove video ${video.title}`}
               accessibilityRole="button"
+              accessibilityState={{ disabled: busy }}
               disabled={busy}
               onPress={() => onDelete(video)}
               style={styles.dangerButton}
@@ -178,26 +181,35 @@ export const createStyles = (palette: ThemePalette) =>
     storage: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
     actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
     primaryButton: {
+      alignItems: "center",
       backgroundColor: palette.accent,
       borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 12,
       paddingVertical: 9
     },
     primaryText: { color: palette.accentText, fontWeight: "800" },
     secondaryButton: {
+      alignItems: "center",
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 12,
       paddingVertical: 9
     },
     secondaryText: { color: palette.link, fontWeight: "800" },
     dangerButton: {
+      alignItems: "center",
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.danger,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 12,
       paddingVertical: 9
     },
