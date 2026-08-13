@@ -47,11 +47,14 @@ export const createEvidenceReviewPanelStyles = (palette: ThemePalette) =>
     groupTitle: { color: palette.text, fontWeight: "800", fontSize: 12 },
     item: { color: palette.textMuted, lineHeight: 18, fontSize: 12 },
     button: {
+      alignItems: "center",
       alignSelf: "flex-start",
       backgroundColor: palette.surface,
       borderColor: palette.accent,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 10,
       paddingVertical: 8
     },
@@ -65,7 +68,9 @@ function list(values: string[], label: string, styles: EvidenceReviewPanelStyles
   if (!values.length) return null;
   return (
     <View style={styles.group}>
-      <Text style={styles.groupTitle}>{label}</Text>
+      <Text accessibilityRole="header" aria-level={3} style={styles.groupTitle}>
+        {label}
+      </Text>
       {values.map((value) => (
         <Text key={`${label}-${value}`} style={styles.item}>
           • {value}
@@ -107,7 +112,9 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
   return (
     <View style={styles.card} accessibilityLabel="Evidence review summary">
       <View style={styles.header}>
-        <Text style={styles.title}>Evidence review</Text>
+        <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+          Evidence review
+        </Text>
         <Text style={styles.status}>{status(review)}</Text>
       </View>
       <Text style={styles.summary}>
@@ -115,7 +122,7 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
         {review.providerLabel ? ` · ${review.providerLabel}` : ""}
       </Text>
       {!review.performed && review.requested ? (
-        <Text style={styles.warning}>
+        <Text accessibilityRole="alert" style={styles.warning}>
           The files are attached, but this result does not prove that the provider
           inspected their pixels. Add written observations or retry with an image-capable
           provider.

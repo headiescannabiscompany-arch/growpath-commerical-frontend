@@ -55,6 +55,10 @@ describe("EvidenceReviewPanel", () => {
       const warning = screen.getByText(/files are attached/);
       const action = screen.getByLabelText("How to add requested evidence");
 
+      expect(screen.getByRole("header", { name: "Evidence review" })).toBeTruthy();
+      expect(screen.getByRole("header", { name: "Evidence used" })).toBeTruthy();
+      expect(warning.props.accessibilityRole).toBe("alert");
+
       expect(StyleSheet.flatten(card.props.style)).toEqual(
         expect.objectContaining({
           backgroundColor: palette.surface,
@@ -83,7 +87,8 @@ describe("EvidenceReviewPanel", () => {
       expect(StyleSheet.flatten(action.props.style)).toEqual(
         expect.objectContaining({
           backgroundColor: palette.surface,
-          borderColor: palette.accent
+          borderColor: palette.accent,
+          minHeight: 44
         })
       );
       expect(
