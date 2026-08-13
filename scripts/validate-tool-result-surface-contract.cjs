@@ -47,10 +47,21 @@ const test = read("src/features/personal/tools/__tests__/ToolResultSurface.test.
   ["action state", /const \[activeAction, setActiveAction\]/],
   ["action feedback", /const \[actionFeedback, setActionFeedback\]/],
   ["disabled while action active", /if \(activeAction \|\| action\.disabled\) return/],
-  ["pending label", /pending \? action\.pendingLabel \|\| "Working\.\.\." : action\.label/],
-  ["success message", /if \(action\.successMessage\) setActionFeedback\(action\.successMessage\)/],
-  ["error message", /setActionFeedback\(error\?\.message \|\| "Unable to complete this action\."\)/],
+  [
+    "pending label",
+    /pending \? action\.pendingLabel \|\| "Working\.\.\." : action\.label/
+  ],
+  [
+    "success message",
+    /if \(action\.successMessage\) setActionFeedback\(action\.successMessage\)/
+  ],
+  [
+    "error message",
+    /setActionFeedback\(error\?\.message \|\| "Unable to complete this action\."\)/
+  ],
   ["copy result action", /key: "copy-result"/],
+  ["share result action", /key: "share-result"/],
+  ["readable result summary", /function readableResultSummary/],
   ["reuse inputs action", /key: "reuse-inputs"/],
   ["ask AI action", /key: "ask-ai"/],
   ["AI prompt safety", /Do not make absolute diagnosis claims/],
@@ -62,13 +73,21 @@ const test = read("src/features/personal/tools/__tests__/ToolResultSurface.test.
 [
   "renders canonical tool result sections and standard actions",
   "opens personal AI with structured result context by default",
-  "copies the structured result payload",
+  "copies a readable result summary without private technical payload fields",
+  "opens the native share sheet with the readable summary",
   "shows pending and success feedback for result actions",
   "shows action error feedback without losing the result"
 ].forEach((name) => {
-  requireText("ToolResultSurface tests", test, new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), name);
+  requireText(
+    "ToolResultSurface tests",
+    test,
+    new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    name
+  );
 });
 
 if (!process.exitCode) {
-  console.log("[tool-result-surface-contract] Tool result surface/action contract verified");
+  console.log(
+    "[tool-result-surface-contract] Tool result surface/action contract verified"
+  );
 }
