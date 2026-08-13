@@ -45,6 +45,7 @@ These are valid role-gated route results, not evidence that the moderation revie
 
 ## Remaining acceptance
 
-- Reopen the moderation case in a platform-owner session.
-- Reopen the reported content in a role with the required content permission.
-- Record the final live deployment SHA and timestamp for that retest.
+- Completed 2026-08-13: the real platform Admin session reopened and focused the exact moderation case without changing it.
+- Completed 2026-08-13: the same authorized session opened the exact reported-course URL without an authorization error.
+- Remaining: the old QA course has since been removed and the route truthfully showed `No courses found`; use a future retained-content report to prove the loaded reported item end to end.
+- See `docs/qa/ADMIN_COMMERCIAL_WORKSPACE_PRODUCTION_EVIDENCE_2026-08-13.md` for the final deployment SHAs and live retest boundary.

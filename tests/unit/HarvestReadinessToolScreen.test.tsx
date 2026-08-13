@@ -735,7 +735,7 @@ describe("HarvestReadinessToolRoute", () => {
     await facility.unmountAsync();
   });
 
-  it("auto-selects the sole authorized grow for a required shared workflow", async () => {
+  it("keeps a sole Facility grow optional and allows a standalone Facility review", async () => {
     mockRouteParams = {};
     mockEntitlements = {
       plan: "facility",
@@ -753,9 +753,25 @@ describe("HarvestReadinessToolRoute", () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByText("Grow context: facility-grow-only")).toBeTruthy()
+      expect(screen.getByLabelText("Select grow Only Flower Room")).toBeTruthy()
     );
-    expect(screen.getByLabelText("Select grow Only Flower Room")).toBeTruthy();
+    expect(screen.getByText(/Standalone review: upload the required photos now/i)).toBeTruthy();
+    expect(screen.queryByText("Grow context: facility-grow-only")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: undefined,
+          workspaceType: "facility",
+          workspaceId: "facility-1",
+          facilityId: "facility-1"
+        })
+      )
+    );
+    expect(screen.queryByText("Create Harvest Follow-up Tasks")).toBeNull();
+    expect(screen.queryByText("Save Harvest Review")).toBeNull();
   });
 
   it("restores durable harvest evidence after a page or account-session reload", async () => {
