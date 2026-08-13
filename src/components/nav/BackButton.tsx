@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -11,6 +11,9 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     borderRadius: radius.card,
     borderWidth: 1,
+    minHeight: 44,
+    minWidth: 44,
+    justifyContent: "center",
     paddingHorizontal: 10,
     paddingVertical: 8
   },
@@ -28,6 +31,7 @@ export default function BackButton({
 }) {
   const router = useRouter();
   const { palette } = useAppTheme();
+  const [focused, setFocused] = useState(false);
 
   const goBack = () => {
     const canGoBack =
@@ -49,12 +53,24 @@ export default function BackButton({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Back"
+      accessibilityHint="Returns to the previous page"
+      hitSlop={4}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       style={[
         styles.btn,
         {
           backgroundColor: palette.surfaceMuted,
           borderColor: palette.borderSoft
-        }
+        },
+        focused
+          ? ({
+              outlineColor: palette.link,
+              outlineOffset: 2,
+              outlineStyle: "solid",
+              outlineWidth: 2
+            } as any)
+          : null
       ]}
       onPress={goBack}
     >

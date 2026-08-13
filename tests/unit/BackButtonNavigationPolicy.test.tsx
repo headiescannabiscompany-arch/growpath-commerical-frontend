@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 
 import BackButton from "@/components/nav/BackButton";
 
@@ -52,5 +53,24 @@ describe("BackButton navigation policy", () => {
 
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows");
     expect(mockBack).not.toHaveBeenCalled();
+  });
+
+  it("provides a 44px touch target and visible keyboard focus", () => {
+    mockCanGoBack.mockReturnValue(true);
+    const screen = render(<BackButton />);
+    const button = screen.getByLabelText("Back");
+
+    expect(StyleSheet.flatten(button.props.style)).toMatchObject({
+      minHeight: 44,
+      minWidth: 44
+    });
+    expect(button.props.hitSlop).toBe(4);
+    expect(button.props.accessibilityHint).toBe("Returns to the previous page");
+
+    fireEvent(button, "focus");
+    expect(StyleSheet.flatten(screen.getByLabelText("Back").props.style)).toMatchObject({
+      outlineStyle: "solid",
+      outlineWidth: 2
+    });
   });
 });

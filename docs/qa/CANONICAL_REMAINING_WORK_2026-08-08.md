@@ -504,9 +504,15 @@ public visibility, or screenshot/video acceptance still called out below.
   scan of visible direct text against its actual rendered opaque surface at WCAG
   normal/large-text thresholds. No failing sample appeared in the rendered states;
   hidden/error/native states and physical-device human review remain open.
-- [ ] Verify keyboard and focus order, visible focus, actionable labels, screen-reader
+- [~] Verify keyboard and focus order, visible focus, actionable labels, screen-reader
       names, heading hierarchy, font scaling, touch targets, loading/error/empty states,
       and back navigation.
+      - Shared Back, primary-action, and Report Bug controls now preserve at least a
+        44-by-44 CSS-pixel target. Back and primary actions expose a visible keyboard
+        focus outline; primary actions derive a stable accessible name from their title
+        and announce disabled state. Four focused suites pass 15/15 assertions.
+      - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
+        screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
   categories, including opt-in/out persistence and links to the correct record.
   Profile and Notification Center controls, push-token registration, category
