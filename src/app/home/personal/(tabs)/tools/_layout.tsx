@@ -132,7 +132,8 @@ export default function ToolsLayout() {
     !canOpenCannabisTool(
       pathname,
       auth.user?.growInterests,
-      (auth.user as any)?.contentControls?.cannabisVisibility,
+      auth.user?.cannabisVisibility ||
+        (auth.user as any)?.contentControls?.cannabisVisibility,
       routeGrow,
       (auth.user as any)?.accountPurpose
     )
