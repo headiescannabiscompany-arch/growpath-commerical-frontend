@@ -368,6 +368,12 @@ grow`, private current location without a Field Study, and an optional approxima
 
 ## C. Payments, email, delivery, and entitlements
 
+Automated contract status on 2026-08-12: the billing, entitlement, trial, pricing,
+gift-attempt/review/return/recovery, sent-gift, subscription-gift API, and webhook API
+batch passed **14 suites and 253 assertions**. This verifies the retained application
+contracts but does not substitute for the production Stripe, webhook-delivery, email,
+refund/dispute, or mutation-capable acceptance items below.
+
 - [ ] Verify paid-course Checkout, cancel/success return, webhook enrollment,
       unlock, refund, and dispute state.
 - [ ] Verify Pro and Facility subscription settlement, same-plan repeat protection,
