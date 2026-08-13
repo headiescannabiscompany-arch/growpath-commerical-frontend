@@ -111,6 +111,16 @@ jest.mock("@/components/layout/AppCard", () => ({
 }));
 
 describe("Offers billing safety", () => {
+  it("exposes the visible plan title as the page heading", async () => {
+    const screen = render(<Offers />);
+    await waitFor(() => expect(getSubscriptionSetupStatus).toHaveBeenCalled());
+
+    expect(screen.getByRole("header", { name: "Choose your GrowPath plan" })).toHaveProp(
+      "aria-level",
+      1
+    );
+  });
+
   beforeEach(async () => {
     installAttemptSessionStorage();
     await clearGiftCheckoutAttemptWhenAllowed(true);

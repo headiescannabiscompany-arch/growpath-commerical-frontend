@@ -266,7 +266,9 @@ export default function Offers() {
       header={
         <View style={styles.header}>
           <Text style={styles.kicker}>Plans</Text>
-          <Text style={styles.headerTitle}>Choose your GrowPath plan</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.headerTitle}>
+            Choose your GrowPath plan
+          </Text>
           <Text style={styles.headerSubtitle}>
             {eligibleTrialPlanTitles.length > 0
               ? `This account has a separate ${trialDays}-day trial available for ${eligibleTrialPlanTitles.join(", ")}. Each trial requires a payment method, and paid billing begins after that plan's trial unless canceled.`
