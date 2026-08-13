@@ -477,6 +477,18 @@ grow`, private current location without a Field Study, and an optional approxima
 
 ## F. App Store and final release
 
+The autonomous release boundary was rechecked on 2026-08-12. The production-build
+command remained dry-run-only and listed the intended non-interactive iOS and Android
+EAS builds without starting or charging for either build. Public live-URL verification
+passed 12/12 required website and API routes and wrote valid local go/no-go evidence.
+Twelve release-contract suites passed 53/53 tests across store graphics, privacy and
+data-rights handling, production-build safeguards, Sentry validation, evidence
+recording, live URLs, and the go/no-go gate. Strict preflight passed its release scan,
+Codex workflow contract, 1,011-file surface audit, and strict application scan, then
+correctly stopped because `EXPO_PUBLIC_SENTRY_DSN` is not supplied to the native
+production-build environment. The DSN must be configured as a protected EAS
+production secret and must never be committed to the repository.
+
 - [ ] Obtain owner/legal decisions for final app name, cannabis language, age rating,
       privacy/support URLs, deep-link domain, store records, and listing copy.
 - [ ] Configure protected Apple and Google submit credentials and the production
