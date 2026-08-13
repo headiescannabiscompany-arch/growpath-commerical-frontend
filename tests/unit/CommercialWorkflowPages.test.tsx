@@ -105,7 +105,11 @@ describe("commercial workflow pages", () => {
       if (path === "/api/commercial/dashboard") {
         return Promise.resolve({
           dashboard: {
-            storefront: { name: "Living Soil Labs", slug: "living-soil-labs" },
+            storefront: {
+              name: "Living Soil Labs",
+              slug: "living-soil-labs",
+              status: "draft"
+            },
             counts: {
               activeTrials: 3,
               completedTrials: 2,
@@ -823,6 +827,12 @@ describe("commercial workflow pages", () => {
     expect(
       screen.getByText("Storefront: Living Soil Labs /living-soil-labs")
     ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Storefront slug is set, but the public brand home is still draft."
+      )
+    ).toBeTruthy();
+    expect(screen.getAllByText("Draft").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Open Storefront").props.href).toBe(
       "/home/commercial/storefront"
     );
