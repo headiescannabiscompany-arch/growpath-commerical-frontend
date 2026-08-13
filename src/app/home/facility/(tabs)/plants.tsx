@@ -600,7 +600,7 @@ const createStyles = (palette: ThemePalette) =>
     disabled: { opacity: 0.55 },
 
     loading: { paddingVertical: 18, alignItems: "center" },
-    list: { paddingVertical: 6 },
+    list: { paddingTop: 6, paddingBottom: 104 },
 
     row: {
       flexDirection: "row",
