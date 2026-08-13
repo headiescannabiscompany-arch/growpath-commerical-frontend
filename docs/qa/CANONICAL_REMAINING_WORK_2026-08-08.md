@@ -204,9 +204,16 @@ grow`, private current location without a Field Study, and an optional approxima
   route and visibly showed `No grow is required`, direct observations/media, the
   optional-grow standalone-review message, and the truthful `Select a grow first`
   batch state. No media was uploaded, no AI credit was spent, and no record was
-  created. Admin correctly received Access denied on the Facility route, so a real
-  Facility writer session is still required for role-correct standalone production
-  acceptance. Generic result summaries support readable Copy and native Share actions
+  created. On 2026-08-13, the real Triple Bag Genetics Facility-owner session then
+  opened the production Facility AI Tools page with the Facility-owned `2000 / 2000`
+  balance, a visible Harvest Readiness entry, and the explicit selected-Facility
+  authorization boundary. The same session opened the Facility Harvest route, which
+  offered `No grow`, the authorized temporary Facility grow, direct media and
+  observation inputs, and the truthful standalone-review message. No media was
+  uploaded, no AI credit was spent, and no record was created. This closes the
+  role-correct Facility standalone entry proof; a fresh rightful no-grow media run
+  remains part of provider/provenance/billing acceptance. Generic result summaries
+  support readable Copy and native Share actions
   without exposing private or technical JSON. A fresh rightful no-grow media run is
   still needed to combine this entry path with provider/provenance/billing acceptance.
 
