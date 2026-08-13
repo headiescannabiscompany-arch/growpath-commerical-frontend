@@ -650,15 +650,16 @@ correctly stopped because `EXPO_PUBLIC_SENTRY_DSN` is not supplied to the native
 production-build environment. The DSN must be configured as a protected EAS
 production secret and must never be committed to the repository.
 
-- [ ] Before the final App Store/app-wide tightening pass, complete the hat-research
-      sequence in order: approve the exact BLVNK blank/sample/cost/decoration details;
-      finish accurate multi-view GrowPathAI and Triple Bag Genetics designs; give the
-      Admin identity governed Commercial tools and make the Admin/GrowPathAI brand the
-      GrowPathAI-hat owner; publish only owner-approved, rights-cleared designs as
+- [ ] Before the final App Store/app-wide tightening pass, complete the remaining
+      hat-research sequence in order: approve the exact BLVNK blank/sample/cost/
+      decoration details; finish accurate multi-view GrowPathAI and Triple Bag Genetics
+      designs; publish only owner-approved, rights-cleared designs as
       zero-stock `Not for sale` research listings under their correct brands; then run
       owner-priced purchase-intent trials and verify response/revision/aggregate/close
       behavior. Third-party-mark TBG designs remain private until rights clearance. No
-      concept may imply inventory, checkout, payment, production, or shipping.
+      concept may imply inventory, checkout, payment, production, or shipping. The
+      Admin identity's governed, separate GrowPathAI Commercial workspace is already
+      complete and live-verified through backend PR `#156` and frontend PR `#558`.
 - [ ] Obtain owner/legal decisions for final app name, cannabis language, age rating,
       privacy/support URLs, deep-link domain, store records, and listing copy.
 - [ ] Configure protected Apple and Google submit credentials and the production

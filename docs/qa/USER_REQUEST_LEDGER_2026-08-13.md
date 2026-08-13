@@ -265,10 +265,15 @@ Legend:
       approved BLVNK blank. Produce accurate front, left, right, and rear views; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
       small rear wordmarks; retain approved source files and final review images.
-- [ ] Give the `admin@growpathai.com` Admin identity the governed Commercial toolset and
+- [x] Give the `admin@growpathai.com` Admin identity the governed Commercial toolset and
       use the Admin/GrowPathAI brand—not Living Soil Labs—to own and present GrowPathAI
-      hat research. Keep brand records, storefront content, trials, and analytics
-      separated from Living Soil Labs and Triple Bag Genetics.
+      hat research. Backend PR `#156` (`f49fae1f`) and frontend PR `#558`
+      (`a581c7d9`) grant the role-based platform Admin a distinct Commercial workspace
+      without hardcoded-email or billing mutations. Live production acceptance on
+      2026-08-13 showed `GrowPathAI Admin`, Personal and Commercial choices, and an
+      empty separate Admin storefront (`Storefront not configured yet`, Draft,
+      0 products), proving it is not Living Soil Labs or Triple Bag Genetics. Brand
+      records, storefront content, trials, and analytics remain separated.
 - [ ] Add all owner-approved, rights-cleared GrowPathAI and Triple Bag Genetics hat
       concepts to their correct website brand presentation as zero-stock, non-sale
       research listings. Show `Not for sale` prominently and provide no checkout,
