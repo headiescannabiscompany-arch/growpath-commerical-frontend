@@ -549,6 +549,10 @@ public visibility, or screenshot/video acceptance still called out below.
         announces the selected section, and preserves 44px targets across Overview,
         Plants, Journal, Tasks, AI Tools, Automation, Timeline, and Compare. Focused
         navigation/theme suites pass 8/8.
+      - Shared AI evidence-review panels now expose the review and evidence groups as
+        navigable headings, announce an unperformed pixel review as an alert, and
+        preserve a 44px follow-up-guidance action. The Day/Night behavior suite passes
+        4/4.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
