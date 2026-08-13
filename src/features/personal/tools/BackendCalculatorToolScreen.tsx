@@ -237,7 +237,7 @@ const RUN_LABELS: Record<string, string> = {
   "dry-amendment-mix": "Calculate Blend",
   "dry-cure-guard": "Check Dry / Cure Risk",
   "genetics-inventory": "Review Genetics",
-  "harvest-readiness": "Estimate Readiness",
+  "harvest-readiness": "Review Harvest Readiness",
   "ipm-scout": "Analyze Scout",
   "nutrient-source-comparison": "Compare Sources",
   "ph-ec-check": "Check pH / EC",

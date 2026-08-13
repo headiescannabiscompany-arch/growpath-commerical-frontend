@@ -17,6 +17,8 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import FacilityContextualTools from "@/components/facility/FacilityContextualTools";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { getTier1Options } from "@/utils/growInterests";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -44,6 +46,8 @@ export default function FacilityGrowDetail() {
   const styles = useMemo(() => createFacilityGrowDetailStyles(palette), [palette]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { selectedId: facilityId } = useFacility();
+  const entitlements = useEntitlements();
+  const canEditGrow = Boolean(entitlements?.can?.(CAPABILITY_KEYS.GROWS_WRITE));
 
   const apiErr: any = useApiErrorHandler();
   const error = apiErr?.error ?? apiErr?.[0] ?? null;
@@ -59,6 +63,9 @@ export default function FacilityGrowDetail() {
   const [item, setItem] = useState<AnyRec | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
+  const [savingCrops, setSavingCrops] = useState(false);
+  const [cropFeedback, setCropFeedback] = useState("");
   const loadInFlightRef = useRef(false);
 
   const load = useCallback(
@@ -72,7 +79,15 @@ export default function FacilityGrowDetail() {
       try {
         clearError();
         const res = await apiRequest(endpoints.grow(facilityId, String(id)));
-        setItem(unwrapGrow(res));
+        const grow = unwrapGrow(res);
+        setItem(grow);
+        setSelectedCrops(
+          Array.isArray(grow?.cropTypes)
+            ? grow.cropTypes.filter(Boolean)
+            : Array.isArray(grow?.growInterests?.crops)
+              ? grow.growInterests.crops.filter(Boolean)
+              : []
+        );
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -97,6 +112,49 @@ export default function FacilityGrowDetail() {
   }, [facilityId, id, load, router]);
 
   const title = useMemo(() => (item ? pickTitle(item) : "Grow Detail"), [item]);
+
+  function toggleCrop(crop: string) {
+    setSelectedCrops((current) =>
+      current.includes(crop)
+        ? current.filter((value) => value !== crop)
+        : [...current, crop]
+    );
+    setCropFeedback("");
+  }
+
+  async function saveCropContext() {
+    if (!facilityId || !id || !selectedCrops.length || savingCrops) {
+      if (!selectedCrops.length) setCropFeedback("Select at least one crop type.");
+      return;
+    }
+    setSavingCrops(true);
+    setCropFeedback("");
+    try {
+      const res = await apiRequest(endpoints.grow(facilityId, String(id)), {
+        method: "PATCH",
+        body: {
+          cropTypes: selectedCrops,
+          growInterests: { ...(item?.growInterests || {}), crops: selectedCrops }
+        }
+      });
+      const updated = unwrapGrow(res);
+      setItem((current) => ({
+        ...(current || {}),
+        ...(updated || {}),
+        cropTypes: selectedCrops
+      }));
+      setCropFeedback(
+        selectedCrops.some((crop) => /^(cannabis|hemp)$/i.test(crop))
+          ? "Saved. Harvest Readiness is now available in Facility AI Tools."
+          : "Crop context saved."
+      );
+    } catch (saveError) {
+      handleApiError(saveError);
+      setCropFeedback("Unable to save crop context.");
+    } finally {
+      setSavingCrops(false);
+    }
+  }
 
   return (
     <ScreenBoundary title={title} showBack backFallbackHref="/home/facility/grows">
@@ -171,6 +229,64 @@ export default function FacilityGrowDetail() {
                   </Text>
                 </View>
               </View>
+              <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+                Crop context
+              </Text>
+              <Text style={styles.muted}>
+                Crop context controls crop-specific Facility tools. Select Cannabis for
+                the full Harvest Readiness review.
+              </Text>
+              <View style={styles.cropGrid}>
+                {getTier1Options().map((crop) => {
+                  const active = selectedCrops.includes(crop);
+                  return (
+                    <Pressable
+                      key={crop}
+                      disabled={!canEditGrow || savingCrops}
+                      onPress={() => toggleCrop(crop)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${active ? "Remove" : "Select"} crop ${crop}`}
+                      accessibilityState={{
+                        disabled: !canEditGrow || savingCrops,
+                        selected: active
+                      }}
+                      style={[styles.cropChip, active && styles.cropChipActive]}
+                    >
+                      <Text
+                        style={[styles.cropChipText, active && styles.cropChipTextActive]}
+                      >
+                        {crop}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              {canEditGrow ? (
+                <Pressable
+                  onPress={saveCropContext}
+                  disabled={savingCrops || !selectedCrops.length}
+                  accessibilityRole="button"
+                  accessibilityLabel="Save crop context"
+                  accessibilityState={{ disabled: savingCrops || !selectedCrops.length }}
+                  style={[
+                    styles.saveButton,
+                    (savingCrops || !selectedCrops.length) && styles.disabled
+                  ]}
+                >
+                  <Text style={styles.saveButtonText}>
+                    {savingCrops ? "Saving..." : "Save crop context"}
+                  </Text>
+                </Pressable>
+              ) : (
+                <Text style={styles.muted}>
+                  Only an owner or manager can change crop context.
+                </Text>
+              )}
+              {cropFeedback ? (
+                <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+                  {cropFeedback}
+                </Text>
+              ) : null}
               <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
                 Grow workspace
               </Text>
@@ -254,6 +370,31 @@ export const createFacilityGrowDetailStyles = (palette: ThemePalette) =>
     },
     summaryLabel: { color: palette.textMuted, fontSize: 11, fontWeight: "800" },
     summaryValue: { color: palette.text, fontSize: 14, fontWeight: "900", marginTop: 3 },
+    cropGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    cropChip: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 8
+    },
+    cropChipActive: { backgroundColor: palette.accent, borderColor: palette.accent },
+    cropChipText: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    cropChipTextActive: { color: palette.accentText },
+    saveButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      minHeight: 44,
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    saveButtonText: { color: palette.accentText, fontWeight: "900" },
+    disabled: { opacity: 0.5 },
+    feedback: { color: palette.text, fontWeight: "800" },
     empty: { alignItems: "center", gap: 8, paddingVertical: 26 },
     emptyTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
     workspaceGrid: { gap: 8, marginTop: 4 },

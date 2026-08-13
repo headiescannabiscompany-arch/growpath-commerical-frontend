@@ -516,7 +516,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "calculator and saved-run retention of the attested visible-sample five buckets, counted-head total, count source, confidence, exact basis, directly confirmed amber floor separated from the possible amber total, cloudy-versus-glare uncertainty, and inspected-area-only boundary even when representative autofill remains blank",
       "one-click Personal saved-run retry that restores the exact retained Harvest evidence with optional canonical grow context without spending a credit until the user starts analysis",
       "explicit Personal owned-harvest-batch selection scoped to the current grow, cleared on grow changes, and used only for user-triggered review write-back",
-      "explicit user-date or breeder-timing planning range with separate reasons the window may be open, reasons to wait, missing evidence, confidence, and a non-trichome-date boundary"
+      "explicit user-date or breeder-timing planning range with separate reasons the window may be open, reasons to wait, missing evidence, confidence, and a non-trichome-date boundary",
+      "Harvest Readiness named and explained as a multi-signal review, with trichome photo review presented only as one evidence component"
     ],
     [
       "Never estimate sensor values from images.",
@@ -838,6 +839,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "record-backed non-submitting Facility AI readiness presets",
       "selected-Facility Plant/Crop Identification, Plant Diagnosis, IPM Scout, and Saved AI Runs with Facility-safe back navigation",
       "cannabis-specific Facility AI discovery gated by structured eligible Facility grow evidence",
+      "explicit Facility grow crop-type setup and correction so authorized owners and managers can establish the structured context required by crop-specific tools",
       "owner-only single-flight Facility AI validation with readable request feedback",
       "notification-backed Facility alerts with supported source and task actions",
       "named Facility task assignments, rooms, and record summaries",
@@ -877,6 +879,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never ignore a selected Facility AI preset, auto-submit its request, fabricate missing inspection evidence, or claim legal compliance.",
       "Never send a shared Facility AI tool back to Personal Tools, charge a member's Personal balance, or save its result outside the selected Facility scope.",
       "Never expose cannabis-specific Facility AI shortcuts from a facility name, free-text note, or unconfirmed image candidate; require structured eligible Facility grow evidence.",
+      "Never require structured Facility crop evidence for a crop-specific tool while omitting the authorized grow setup and correction controls needed to record that evidence.",
       "Never expose Facility AI validation payloads or training-feedback exports outside a capable owner role, allow duplicate concurrent submissions, or leave an active request without readable progress and outcome feedback.",
       "Never show assign, snooze, or AI controls for a notification-backed alert without a server-backed action and its exact source context.",
       "Never show a raw account identifier as the assignee on a Facility alert card.",

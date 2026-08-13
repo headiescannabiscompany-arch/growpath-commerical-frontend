@@ -641,7 +641,7 @@ function HarvestPhotoAnalyzer({
   return (
     <View style={photoStyles.card}>
       <Text accessibilityRole="header" aria-level={2} style={photoStyles.title}>
-        AI trichome photo estimate (optional)
+        AI trichome evidence review (one readiness input)
       </Text>
       <Text style={photoStyles.help}>
         The free readiness calculator works from observations you enter. Optional AI photo
@@ -940,7 +940,7 @@ function HarvestPhotoAnalyzer({
             </View>
           ) : null}
           <View
-            accessibilityLabel="Correct Harvest trichome estimate"
+            accessibilityLabel="Correct Harvest Readiness trichome evidence"
             style={photoStyles.qualityChecks}
           >
             <Text style={photoStyles.checklistTitle}>Help correct this estimate</Text>

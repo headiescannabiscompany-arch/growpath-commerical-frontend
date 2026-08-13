@@ -90,7 +90,10 @@ export default function HarvestWindowScreen({
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.h1}>Harvest Window</Text>
-      <Text style={styles.sub}>Estimate harvest window from trichome distribution</Text>
+      <Text style={styles.sub}>
+        Review flower development, pistils, sampled trichomes, timing, aroma, and user
+        observations together.
+      </Text>
 
       <View style={styles.card}>
         <Text style={styles.label}>Days since flip</Text>
