@@ -345,6 +345,12 @@ grow`, private current location without a Field Study, and an optional approxima
   route-level Personal and Facility Viewer slice, not page mutations, mobile visuals,
   remaining roles, or independent-user acceptance. See
   `docs/qa/PERSONAL_FACILITY_ROUTE_ACCEPTANCE_2026-08-12.md`.
+  A second populated, read-only production pass that evening confirmed 15 rooms,
+  four team members, one SOP, 69 audit events, the Viewer permission boundary, and
+  the correct `/home/facility/audit-logs` destination. Twelve core Facility routes
+  again showed their expected headings, Back control, and no visible failure; the
+  related navigation/role/access batch passed 16 suites and 58 tests. This does not
+  close the mutation or remaining-role work below.
 - [ ] Retest content-report admin email deep links as an authorized platform owner
       for Forum, Feed, product, course, video, and live-session reports.
 - [ ] Create only approved temporary production/staging records needed to verify

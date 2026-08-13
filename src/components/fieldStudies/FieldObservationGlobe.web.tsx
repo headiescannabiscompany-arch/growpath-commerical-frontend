@@ -16,6 +16,29 @@ const MAPLIBRE_READY_EVENT = "growpath-maplibre-ready";
 let mapLibrePromise: Promise<MapLibreModule> | null = null;
 const removedMapInstances = new WeakSet<object>();
 
+export function maintainMapLibreControlAccessibleNames(container: HTMLDivElement) {
+  const synchronize = () => {
+    container
+      .querySelectorAll<HTMLButtonElement>(".maplibregl-ctrl button")
+      .forEach((button) => {
+        const title = button.getAttribute("title")?.trim();
+        if (title && !button.getAttribute("aria-label")?.trim()) {
+          button.setAttribute("aria-label", title);
+        }
+      });
+  };
+
+  synchronize();
+  const observer = new MutationObserver(synchronize);
+  observer.observe(container, {
+    attributeFilter: ["title"],
+    attributes: true,
+    childList: true,
+    subtree: true
+  });
+  return () => observer.disconnect();
+}
+
 export function safelyRemoveMapLibreMap(
   map: MapLibreMap | null,
   container: HTMLDivElement | null
@@ -259,6 +282,7 @@ export default function FieldObservationGlobe({
     if (!container || mapRef.current) return;
 
     let map: MapLibreMap | null = null;
+    let stopMaintainingControlNames: () => void = () => undefined;
     let disposed = false;
     void loadMapLibreModule()
       .then((maplibregl) => {
@@ -425,6 +449,7 @@ export default function FieldObservationGlobe({
             "top-right"
           );
         }
+        stopMaintainingControlNames = maintainMapLibreControlAccessibleNames(container);
       })
       .catch((error) => {
         if (!disposed) {
@@ -438,6 +463,7 @@ export default function FieldObservationGlobe({
 
     return () => {
       disposed = true;
+      stopMaintainingControlNames();
       if (mapRef.current === map) mapRef.current = null;
       safelyRemoveMapLibreMap(map, container);
       map = null;
