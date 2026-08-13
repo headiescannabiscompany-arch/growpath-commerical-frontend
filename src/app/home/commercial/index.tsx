@@ -475,14 +475,16 @@ export default function CommercialHome() {
   const storefrontStatus = String(
     dashboard?.storefront?.status || dashboard?.storefront?.storefrontStatus || ""
   ).trim();
-  const storefrontIsLive = Boolean(dashboard?.storefront?.slug);
-  const storefrontLaunchCopy = !storefrontIsLive
+  const storefrontIsLive =
+    Boolean(dashboard?.storefront?.slug) &&
+    ["published", "active"].includes(storefrontStatus.toLowerCase());
+  const storefrontHasSlug = Boolean(dashboard?.storefront?.slug);
+  const storefrontLaunchCopy = !storefrontHasSlug
     ? productCount > 0
       ? "Draft shell: add a public slug and finish the brand profile. Products are already in place, so the next step is publishing the storefront."
       : "Draft shell: add a public slug, finish the brand profile, and create at least one product before publishing."
-    : storefrontStatus &&
-        !["published", "active"].includes(storefrontStatus.toLowerCase())
-      ? `Storefront slug is set, but the public brand home is still ${storefrontStatus}.`
+    : !storefrontIsLive
+      ? `Storefront slug is set, but the public brand home is still ${storefrontStatus || "draft"}.`
       : `Storefront is live at /${String(dashboard?.storefront?.slug || "").trim()}.`;
 
   async function createActionItemTask(
@@ -605,9 +607,7 @@ export default function CommercialHome() {
           </View>
           <View style={styles.pulseStack}>
             <View style={styles.pulse}>
-              <Text style={styles.pulseValue}>
-                {dashboard?.storefront?.slug ? "Live" : "Draft"}
-              </Text>
+              <Text style={styles.pulseValue}>{storefrontIsLive ? "Live" : "Draft"}</Text>
               <Text style={styles.pulseLabel}>Storefront</Text>
             </View>
             <View style={styles.pulse}>
