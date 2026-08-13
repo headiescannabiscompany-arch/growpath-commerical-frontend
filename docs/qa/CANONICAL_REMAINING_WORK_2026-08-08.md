@@ -178,6 +178,13 @@ grow`, private current location without a Field Study, and an optional approxima
   swelling, fresh pistils, and unconfirmed trichomes as reasons to wait. The same
   saved run was reopened in production and successfully wrote both a grow-log entry
   and a follow-up task to attached grow `6a603a8fda5c5bfdc030ac1b`.
+  Personal Harvest Readiness now also works without a grow while keeping grow
+  attachment optional; Commercial and Facility remain grow-scoped. Frontend merge
+  `4585b59b` and backend merge `52af744e` passed full CI. The cache-busted production
+  route visibly presented the no-grow workflow and removed the former grow-required
+  warning. Generic result summaries now support readable Copy and native Share actions
+  without exposing private or technical JSON. A fresh rightful no-grow media run is
+  still needed to combine this entry path with provider/provenance/billing acceptance.
 
   The exact four retained Headies photos from saved run
   `6a7632764f34c5f3a9943cb6` now form a repeatable calibration case. Under backend
@@ -364,6 +371,16 @@ grow`, private current location without a Field Study, and an optional approxima
   `adminReportNotification.test.js` + `reports.test.js` (23/23). - Still required before `[x]`: click representative delivered emails while signed
   in as the authorized platform owner and confirm both links open the intended live
   content/case without exposing the admin route to a non-admin account.
+  On 2026-08-13, the authorized production administrator opened the retained
+  moderation queue and followed its stored exact-content actions without mutating
+  either case. A Forum report opened retained post
+  `6a5ba5236459013643be5cf3` with its title, body, photo, and discussion controls.
+  A Course report opened stored course ID `6a663d0508a5c374af9abf28` at the canonical
+  Course route; that historical course is no longer present, so the destination
+  truthfully rendered `No courses found`. The available Gmail connector was the
+  support mailbox rather than `admin@growpathai.com`, and production held no
+  retained Feed, product, video, or live-session report cases. Delivered admin-email
+  clicks, non-admin denial, and those four data-bearing report types therefore remain.
 - [ ] Create only approved temporary production/staging records needed to verify
       populated Facility Grow/Plant/Journal/Inventory/Compliance/SOP comparison and
       Owner-only AI Validation Lab states; verify create/edit/reload/audit/permissions,
