@@ -111,14 +111,18 @@ export default function SavedGrowPhotoEvidencePicker({
 
   return (
     <View style={styles.section} accessibilityLabel="Saved grow photo evidence">
-      <Text style={styles.title}>Use photos already in this grow</Text>
+      <Text accessibilityRole="header" aria-level={3} style={styles.title}>
+        Use photos already in this grow
+      </Text>
       <Text style={styles.help}>
         Reuse saved grow evidence instead of uploading the same photo again. Selecting a
         photo explicitly includes it in this {workflowLabel} request; it is not used for
         model training.
       </Text>
       {loading ? (
-        <Text style={styles.status}>Loading saved photos...</Text>
+        <Text accessibilityLiveRegion="polite" style={styles.status}>
+          Loading saved photos...
+        </Text>
       ) : candidates.length ? (
         <View style={styles.grid}>
           {candidates.map((candidate, index) => {
@@ -217,6 +221,8 @@ export const createSavedGrowPhotoEvidenceStyles = (palette: ThemePalette) =>
       alignItems: "center",
       backgroundColor: palette.accent,
       borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 10,
       paddingVertical: 8
     },
