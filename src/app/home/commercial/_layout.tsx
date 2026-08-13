@@ -85,7 +85,11 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="storefront/index"
-        options={{ title: "Storefront", tabBarLabel: "Storefront" }}
+        options={{
+          title: "Storefront",
+          tabBarLabel: "Storefront",
+          headerShown: false
+        }}
       />
       <Tabs.Screen
         name="grows/index"
