@@ -464,6 +464,18 @@ grow`, private current location without a Field Study, and an optional approxima
   shared Back behavior, Notification Center routing, privacy controls, and Commercial
   Inventory accessibility. These are automated contract checks, not final device
   screenshots or completion of the theme/route/role matrix.
+  On 2026-08-12, signed-in production accessibility-tree checks covered 12 Facility
+  and 12 Personal destinations. Every route exposed a named level-one heading and no
+  unnamed application control. A deeper focus-order inspection found MapLibre's
+  third-party globe toggle lacked an accessible name; merge `79047c20` now keeps its
+  changing `Enable globe` / `Disable globe` title synchronized to `aria-label`.
+  Production Build Preflight and Frontend CI passed on that exact SHA, and the live
+  Personal Home globe exposed the named `Enable globe` control. This closes that
+  control defect, not the remaining device/accessibility matrix.
+  The same 12 Personal and 12 Facility destinations passed a computed live contrast
+  scan of visible direct text against its actual rendered opaque surface at WCAG
+  normal/large-text thresholds. No failing sample appeared in the rendered states;
+  hidden/error/native states and physical-device human review remain open.
 - [ ] Verify keyboard and focus order, visible focus, actionable labels, screen-reader
       names, heading hierarchy, font scaling, touch targets, loading/error/empty states,
       and back navigation.

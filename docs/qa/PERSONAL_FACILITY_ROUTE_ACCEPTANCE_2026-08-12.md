@@ -149,7 +149,20 @@ focus-order inspection then found one unnamed third-party MapLibre globe-toggle
 button on Personal Home. The shared globe now copies a control's changing title into
 its accessible name, including `Enable globe` / `Disable globe`, and keeps the value
 synchronized. The focused globe lifecycle/accessibility suite passes 3/3 tests;
-production deployment and live retest remain required before that repair is accepted.
+PR `#517` passed its complete gate and merged as `79047c20`. Production Build
+Preflight and Frontend CI both passed on that exact SHA. The cache-busted signed-in
+production page then exposed the globe control as a named `Enable globe` button whose
+accessible name matched its current title. This accepts the missing-name repair; the
+broader keyboard, physical screen-reader, font-scaling, touch-target, and mobile-device
+matrix remains open.
+
+Those 12 Personal and 12 Facility destinations also passed a live computed contrast
+scan of every visible direct text node against its nearest opaque rendered surface.
+The scan applied WCAG contrast thresholds separately to normal and large/bold text and
+found no failing sample in the states that were rendered. Parent link/button defaults
+were excluded so styled child text was measured instead of non-rendered inherited
+defaults. This does not cover hidden states, every error/empty variant, image text,
+native rendering, or human visual review on physical devices.
 
 ## Acceptance boundary
 
