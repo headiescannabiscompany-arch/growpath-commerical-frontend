@@ -193,11 +193,20 @@ grow`, private current location without a Field Study, and an optional approxima
   swelling, fresh pistils, and unconfirmed trichomes as reasons to wait. The same
   saved run was reopened in production and successfully wrote both a grow-log entry
   and a follow-up task to attached grow `6a603a8fda5c5bfdc030ac1b`.
-  Personal Harvest Readiness now also works without a grow while keeping grow
-  attachment optional; Commercial and Facility remain grow-scoped. Frontend merge
-  `4585b59b` and backend merge `52af744e` passed full CI. The cache-busted production
-  route visibly presented the no-grow workflow and removed the former grow-required
-  warning. Generic result summaries now support readable Copy and native Share actions
+  Harvest Readiness now supports standalone authenticated analysis in Personal,
+  Commercial, and Facility workspaces while keeping grow attachment optional.
+  Frontend merges `4585b59b` and `2569d571` plus backend merges `52af744e` and
+  `222b2011` passed their full main CI and production-build gates. Facility standalone
+  analysis remains Facility-credit scoped and write-role gated; an optional supplied
+  grow still passes ownership/authorization checks, and grow-log, task, plant-history,
+  and Harvest-batch actions stay unavailable until a grow is attached. On 2026-08-13,
+  the real `admin@growpathai.com` Personal session opened the cache-busted production
+  route and visibly showed `No grow is required`, direct observations/media, the
+  optional-grow standalone-review message, and the truthful `Select a grow first`
+  batch state. No media was uploaded, no AI credit was spent, and no record was
+  created. Admin correctly received Access denied on the Facility route, so a real
+  Facility writer session is still required for role-correct standalone production
+  acceptance. Generic result summaries support readable Copy and native Share actions
   without exposing private or technical JSON. A fresh rightful no-grow media run is
   still needed to combine this entry path with provider/provenance/billing acceptance.
 
