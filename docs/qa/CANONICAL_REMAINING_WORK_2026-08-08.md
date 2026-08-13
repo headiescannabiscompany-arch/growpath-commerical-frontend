@@ -563,6 +563,9 @@ public visibility, or screenshot/video acceptance still called out below.
       - Contextual workflow handoffs now expose a navigable panel heading plus named,
         described, 44px links while retaining the grow/source context in destination
         URLs. Its focused link/navigation suite passes.
+      - Commercial and Facility contextual-tool panels now expose navigable headings
+        and 44px links while preserving commercial/facility record context in their
+        destination URLs. Four focused navigation/theme suites pass 7/7.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
