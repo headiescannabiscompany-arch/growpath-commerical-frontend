@@ -106,7 +106,9 @@ export default function ContextualWorkflowLinks({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
+      <Text accessibilityRole="header" aria-level={3} style={styles.title}>
+        {title}
+      </Text>
       {helper ? <Text style={styles.helper}>{helper}</Text> : null}
       <View style={styles.row}>
         {workflows.map((workflow) => {
@@ -116,6 +118,7 @@ export default function ContextualWorkflowLinks({
               key={workflow}
               accessibilityRole="link"
               accessibilityLabel={`${definition.label} from ${context.source}`}
+              accessibilityHint={definition.description}
               onPress={() =>
                 router.push?.(contextualWorkflowHref(workflow, context) as any)
               }
@@ -146,10 +149,12 @@ const createStyles = (palette: ThemePalette) =>
     helper: { color: palette.textMuted, fontSize: 12, fontWeight: "700", lineHeight: 18 },
     row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     action: {
+      justifyContent: "center",
       backgroundColor: palette.surface,
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
+      minHeight: 44,
       minWidth: 180,
       paddingHorizontal: 11,
       paddingVertical: 9

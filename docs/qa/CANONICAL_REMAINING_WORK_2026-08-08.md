@@ -560,6 +560,9 @@ public visibility, or screenshot/video acceptance still called out below.
         navigable heading, announces upload errors and disabled Add/Retry/Remove state,
         and preserves 44px mutation targets. Its complete focused upload/retry/
         protected-media/workspace suite passes 33/33.
+      - Contextual workflow handoffs now expose a navigable panel heading plus named,
+        described, 44px links while retaining the grow/source context in destination
+        URLs. Its focused link/navigation suite passes.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
