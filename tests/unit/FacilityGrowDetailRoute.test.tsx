@@ -20,6 +20,10 @@ jest.mock("@/api/apiRequest", () => ({
 jest.mock("@/state/useFacility", () => ({
   useFacility: () => ({ selectedId: "facility-1" })
 }));
+jest.mock("@/entitlements", () => ({
+  CAPABILITY_KEYS: { GROWS_WRITE: "GROWS_WRITE" },
+  useEntitlements: () => ({ can: () => true })
+}));
 jest.mock("@/hooks/useApiErrorHandler", () => {
   const clearError = jest.fn();
   const handleApiError = jest.fn();
@@ -110,5 +114,36 @@ describe("FacilityGrowDetailRoute", () => {
     await act(async () => {
       finishRefresh?.({ grow: { id: "grow-1", name: "Summer crop" } });
     });
+  });
+
+  it("lets an authorized Facility member add structured crop context", async () => {
+    const screen = render(<FacilityGrowDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Crop context")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Select crop Cannabis"));
+    mockApiRequest.mockResolvedValueOnce({
+      grow: {
+        id: "grow-1",
+        name: "Summer crop",
+        cropTypes: ["Cannabis"],
+        growInterests: { crops: ["Cannabis"] }
+      }
+    });
+    fireEvent.press(screen.getByLabelText("Save crop context"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(expect.stringContaining("grow-1"), {
+        method: "PATCH",
+        body: {
+          cropTypes: ["Cannabis"],
+          growInterests: { crops: ["Cannabis"] }
+        }
+      })
+    );
+    expect(
+      await screen.findByText(
+        "Saved. Harvest Readiness is now available in Facility AI Tools."
+      )
+    ).toBeTruthy();
   });
 });

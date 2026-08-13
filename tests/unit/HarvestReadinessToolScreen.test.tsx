@@ -570,12 +570,12 @@ describe("HarvestReadinessToolRoute", () => {
       accessibilityRole: "header",
       "aria-level": 2
     });
-    expect(screen.getByText("AI trichome photo estimate (optional)").props).toMatchObject(
-      {
-        accessibilityRole: "header",
-        "aria-level": 2
-      }
-    );
+    expect(
+      screen.getByText("AI trichome evidence review (one readiness input)").props
+    ).toMatchObject({
+      accessibilityRole: "header",
+      "aria-level": 2
+    });
     expect(screen.getByText("Photo checklist before analysis").props).toMatchObject({
       accessibilityRole: "header",
       "aria-level": 3

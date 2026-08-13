@@ -17,6 +17,7 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { useRooms } from "../../rooms/hooks";
 import { useCreateGrow } from "../hooks";
+import { getTier1Options } from "@/utils/growInterests";
 
 function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
@@ -42,6 +43,7 @@ export default function StartGrowWizard() {
   const [name, setName] = useState("Batch Cycle 1");
   const [startDate, setStartDate] = useState(todayIsoDate());
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
+  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
   const [feedback, setFeedback] = useState("");
   const { data: rooms, isLoading } = useRooms();
   const createGrow = useCreateGrow();
@@ -82,6 +84,7 @@ export default function StartGrowWizard() {
   const canStart =
     name.trim().length > 1 &&
     startDate.trim().length >= 8 &&
+    selectedCrops.length > 0 &&
     selectedRooms.length > 0 &&
     !createGrow.isPending;
 
@@ -92,9 +95,18 @@ export default function StartGrowWizard() {
     setFeedback("");
   }
 
+  function toggleCrop(crop: string) {
+    setSelectedCrops((current) =>
+      current.includes(crop)
+        ? current.filter((value) => value !== crop)
+        : [...current, crop]
+    );
+    setFeedback("");
+  }
+
   async function startGrow() {
     if (!canStart) {
-      setFeedback("Name, start date, and at least one room are required.");
+      setFeedback("Name, start date, crop type, and at least one room are required.");
       return;
     }
     setFeedback("");
@@ -103,7 +115,9 @@ export default function StartGrowWizard() {
         name: name.trim(),
         startDate: startDate.trim(),
         rooms: selectedRooms,
-        roomIds: selectedRooms
+        roomIds: selectedRooms,
+        cropTypes: selectedCrops,
+        growInterests: { crops: selectedCrops }
       });
       router.replace({
         pathname: "/onboarding/assign-plants",
@@ -195,8 +209,39 @@ export default function StartGrowWizard() {
         />
 
         <View style={styles.sectionHeader}>
+          <Text style={styles.label}>Crop type</Text>
+          <Text style={styles.helper}>
+            {selectedCrops.length} crop{selectedCrops.length === 1 ? "" : "s"} selected
+          </Text>
+        </View>
+        <Text style={styles.helper}>
+          This controls crop-specific Facility tools. Select Cannabis for Harvest
+          Readiness.
+        </Text>
+        <View style={styles.roomGrid}>
+          {getTier1Options().map((crop) => {
+            const active = selectedCrops.includes(crop);
+            return (
+              <Pressable
+                key={crop}
+                onPress={() => toggleCrop(crop)}
+                accessibilityRole="button"
+                accessibilityLabel={`${active ? "Remove" : "Select"} crop ${crop}`}
+                style={[styles.roomChip, active && styles.roomChipActive]}
+              >
+                <Text style={[styles.roomChipText, active && styles.roomChipTextActive]}>
+                  {crop}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.sectionHeader}>
           <Text style={styles.label}>Rooms</Text>
-          <Text style={styles.helper}>{selectedRooms.length} selected</Text>
+          <Text style={styles.helper}>
+            {selectedRooms.length} room{selectedRooms.length === 1 ? "" : "s"} selected
+          </Text>
         </View>
 
         {isLoading ? (

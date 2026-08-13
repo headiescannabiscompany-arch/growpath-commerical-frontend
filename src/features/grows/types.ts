@@ -6,5 +6,7 @@ export type Grow = {
   stage: string;
   yield?: number;
   notes?: string;
+  cropTypes?: string[];
+  growInterests?: Record<string, string[]>;
   deletedAt?: string | null;
 };

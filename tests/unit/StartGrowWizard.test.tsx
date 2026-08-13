@@ -55,10 +55,12 @@ describe("StartGrowWizard", () => {
   it("preselects and submits only the room that launched grow setup", async () => {
     const screen = render(<StartGrowWizard />);
 
-    await waitFor(() => expect(screen.getByText("1 selected")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("1 room selected")).toBeTruthy());
     expect(screen.getByLabelText("Remove room Flower Room")).toBeTruthy();
     expect(screen.getByLabelText("Select room Veg Room")).toBeTruthy();
     expect(screen.getByText(/Create a production cycle in Flower Room/)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Select crop Cannabis"));
 
     fireEvent.press(screen.getByLabelText("Start grow"));
 
@@ -67,7 +69,9 @@ describe("StartGrowWizard", () => {
         name: "Batch Cycle 1",
         startDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         rooms: ["room-1"],
-        roomIds: ["room-1"]
+        roomIds: ["room-1"],
+        cropTypes: ["Cannabis"],
+        growInterests: { crops: ["Cannabis"] }
       })
     );
     expect(mockReplace).toHaveBeenCalledWith({
@@ -79,7 +83,7 @@ describe("StartGrowWizard", () => {
   it("returns to the originating room without starting a grow", async () => {
     const screen = render(<StartGrowWizard />);
 
-    await waitFor(() => expect(screen.getByText("1 selected")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("1 room selected")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Back to room grows"));
 
     expect(mockCanGoBack).toHaveBeenCalled();
@@ -98,7 +102,7 @@ describe("StartGrowWizard", () => {
     try {
       const screen = render(<StartGrowWizard />);
 
-      await waitFor(() => expect(screen.getByText("1 selected")).toBeTruthy());
+      await waitFor(() => expect(screen.getByText("1 room selected")).toBeTruthy());
       fireEvent.press(screen.getByLabelText("Back to room grows"));
 
       expect(mockAssign).toHaveBeenCalledWith(
@@ -123,7 +127,7 @@ describe("StartGrowWizard", () => {
     mockParams = { roomId: "deleted-room", roomName: "Deleted Room" };
     const screen = render(<StartGrowWizard />);
 
-    await waitFor(() => expect(screen.getByText("0 selected")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("0 rooms selected")).toBeTruthy());
     expect(
       screen.getByText(
         "The requested room is no longer available. Select one or more current rooms to continue."
