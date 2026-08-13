@@ -36,6 +36,9 @@ export default function GrowPlantSelector({
       ) : (
         <View style={styles.pillRow}>
           <TouchableOpacity
+            accessibilityRole="radio"
+            accessibilityLabel="Do not link to a grow"
+            accessibilityState={{ checked: !selectedGrowId }}
             style={[
               styles.pill,
               { backgroundColor: palette.surfaceMuted, borderColor: palette.border },
@@ -64,6 +67,9 @@ export default function GrowPlantSelector({
             return (
               <TouchableOpacity
                 key={grow._id}
+                accessibilityRole="radio"
+                accessibilityLabel={`Link to grow ${grow.name || grow.title || "Grow"}`}
+                accessibilityState={{ checked: isSelected }}
                 style={[
                   styles.pill,
                   { backgroundColor: palette.surfaceMuted, borderColor: palette.border },
@@ -109,6 +115,9 @@ export default function GrowPlantSelector({
             return (
               <View style={styles.pillRow}>
                 <TouchableOpacity
+                  accessibilityRole="radio"
+                  accessibilityLabel="Link to the entire grow"
+                  accessibilityState={{ checked: selectedPlantIds.length === 0 }}
                   style={[
                     styles.pill,
                     {
@@ -140,6 +149,9 @@ export default function GrowPlantSelector({
                   return (
                     <TouchableOpacity
                       key={id}
+                      accessibilityRole="checkbox"
+                      accessibilityLabel={`Link plant ${plant.name || plant.strain || "Plant"}`}
+                      accessibilityState={{ checked: isActive }}
                       style={[
                         styles.pill,
                         {
@@ -202,6 +214,10 @@ const styles = StyleSheet.create({
     marginTop: 8
   },
   pill: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+    minWidth: 44,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radius.pill,

@@ -523,6 +523,9 @@ public visibility, or screenshot/video acceptance still called out below.
       - The active Grow Interest picker now gives its expandable header and selectable
         interest chips 44px targets while retaining checkbox names/state and readable
         expand/collapse guidance. Four focused form/theme suites pass 13/13.
+      - Active Forum-filter and Grow/Plant-link selectors now expose checkbox/radio
+        state, record-specific names, and 44px targets. Their focused Forum/shared
+        contract suites pass 19/19.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected

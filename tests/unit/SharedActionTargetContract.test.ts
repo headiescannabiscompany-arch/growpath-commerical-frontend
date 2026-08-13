@@ -82,4 +82,18 @@ describe("shared action target contract", () => {
     expect(picker).toMatch(/chip:[\s\S]*?minHeight: 44,[\s\S]*?minWidth: 44/);
     expect(picker).toContain('accessibilityRole="checkbox"');
   });
+
+  it("keeps Forum filters and Grow/Plant selectors stateful and touch accessible", () => {
+    const forumFilters = source("src/components/ForumFilters.js");
+    expect(forumFilters).toContain('accessibilityRole="checkbox"');
+    expect(forumFilters).toContain("accessibilityState={{ checked: isActive }}");
+    expect(forumFilters).toMatch(/filterChip:[\s\S]*?minHeight: 44,[\s\S]*?minWidth: 44/);
+
+    const selector = source("src/components/GrowPlantSelector.js");
+    expect(selector).toContain('accessibilityRole="radio"');
+    expect(selector).toContain('accessibilityRole="checkbox"');
+    expect(selector).toContain('Link to grow ${grow.name || grow.title || "Grow"}');
+    expect(selector).toContain('Link plant ${plant.name || plant.strain || "Plant"}');
+    expect(selector).toMatch(/pill:[\s\S]*?minHeight: 44,[\s\S]*?minWidth: 44/);
+  });
 });
