@@ -98,7 +98,7 @@ describe("GrowPath knowledge registries", () => {
       "authorized immutable ToolRun follow-up beside the original result with exact evidence, provider, pixel-inspection status, limitations, and one-credit disclosure"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
-      "server-attested harvest image receipt bound to the authenticated workspace, canonical grow, optional plant, exact evidence set, normalized result digest, evidence fingerprint, and review-policy version"
+      "server-attested harvest image receipt bound to the authenticated workspace, optional canonical grow, optional plant, exact evidence set, normalized result digest, evidence fingerprint, and review-policy version"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "additive reviewable trichome-percentage drafts that preserve manual maturity observations and retain visual provenance"
@@ -107,7 +107,7 @@ describe("GrowPath knowledge registries", () => {
       "exact selected Harvest media set separated from the analyzed still/frame set, with a private source video retained as non-AI provenance"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
-      "authorized Personal, Commercial, or Facility grow scope with Facility write-role and Facility-credit enforcement"
+      "authenticated cannabis-enabled Personal account scope with an optional owned grow, plus authorized Commercial or Facility grow scope with Facility write-role and Facility-credit enforcement"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible"
@@ -155,7 +155,7 @@ describe("GrowPath knowledge registries", () => {
       "counting confidence capped by both resolved-head volume and weighted per-photo counting confidence, with not-counted, duplicate-image, blurred, blocking-glare, and unresolved-detail findings excluded from resolved-head tallies"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
-      "one-click Personal saved-run retry that restores the exact retained Harvest evidence with canonical grow context without spending a credit until the user starts analysis"
+      "one-click Personal saved-run retry that restores the exact retained Harvest evidence with optional canonical grow context without spending a credit until the user starts analysis"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "explicit Personal owned-harvest-batch selection scoped to the current grow, cleared on grow changes, and used only for user-triggered review write-back"
