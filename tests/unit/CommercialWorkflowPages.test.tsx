@@ -2549,6 +2549,25 @@ describe("commercial workflow pages", () => {
     );
   });
 
+  it("keeps empty product-trial creation links web-safe", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({ trials: [] })
+      .mockResolvedValueOnce({ products: [] })
+      .mockResolvedValueOnce({ productLines: [] })
+      .mockResolvedValueOnce({ batches: [] })
+      .mockResolvedValueOnce({ grows: [] });
+
+    const screen = render(<CommercialTrialsRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("No saved trial product records yet.")).toBeTruthy()
+    );
+    const createProductLink = screen.UNSAFE_getByProps({
+      href: "/home/commercial/products/new"
+    });
+    expect(Array.isArray(createProductLink.props.style)).toBe(false);
+  });
+
   it("opens and updates commercial product trial detail evidence", async () => {
     const screen = render(<CommercialTrialDetailRoute />);
 
@@ -3148,6 +3167,11 @@ describe("commercial workflow pages", () => {
     expect(
       screen.UNSAFE_getAllByProps({ href: "/home/commercial/batch-planner" }).length
     ).toBeGreaterThan(0);
+    expect(
+      Array.isArray(
+        screen.UNSAFE_getByProps({ href: "/home/commercial/products/new" }).props.style
+      )
+    ).toBe(false);
   });
 
   it("describes analytics as event-backed external clicks and trial outcomes", async () => {
