@@ -436,8 +436,13 @@ refund/dispute, or mutation-capable acceptance items below.
       cross-device purchaser flow, pending-record migration review, production index,
       webhook/live-key evidence, safe single-worker processing, and sandbox plus
       mutation-capable acceptance all pass.
-- [ ] Confirm production email delivery and logs for any remaining report, purchase,
-      invitation, verification, reset, gift, and notification cases not already evidenced.
+- [~] Complete remaining delivered-email evidence. A read-only 2026-08-13 mailbox
+      inventory retained genuine verification, password-reset, Personal/Course/Facility
+      support bug-report, and billing-alias support delivery. It found no Facility
+      invitation, gift claim, real purchase/order/enrollment/refund/dispute receipt,
+      content-report moderation alert, or task/notification email. Those exact
+      recipient and link loops remain; unrelated support messages are not substitutes.
+      See `docs/qa/DELIVERED_EMAIL_INVENTORY_2026-08-13.md`.
 
 ## D. Commercial, commerce data, and owner-supplied sources
 
