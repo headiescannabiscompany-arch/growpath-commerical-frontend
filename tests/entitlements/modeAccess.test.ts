@@ -86,6 +86,25 @@ describe("entitlement mode access", () => {
     expect(inactiveFacilityAccess).toBe(false);
   });
 
+  it("offers Commercial when the server grants the platform-admin workspace explicitly", () => {
+    const ctx = {
+      mode: "personal",
+      commercialWorkspaceAccess: true,
+      capabilities: { [CAPABILITY_KEYS.COMMERCIAL_HOME]: true }
+    };
+
+    const commercialAccess = resolveCommercialWorkspaceAccess(ctx, "free");
+
+    expect(commercialAccess).toBe(true);
+    expect(
+      availableWorkspaceModes({
+        ...ctx,
+        commercialWorkspaceAccess: commercialAccess,
+        can: (capability) => capability === CAPABILITY_KEYS.COMMERCIAL_HOME
+      })
+    ).toEqual(["personal", "commercial"]);
+  });
+
   it("prefers canonical me context over a stale free user plan", () => {
     const requestedPlan = resolveRequestedPlan(
       { requestedPlan: "pro", plan: "pro", subscriptionStatus: "active" },

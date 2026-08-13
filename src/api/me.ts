@@ -17,6 +17,7 @@ export type MeCtx = {
   facilityPlan?: string | null;
   facilitySubscriptionStatus?: string | null;
   facilityFeaturesEnabled?: boolean;
+  commercialWorkspaceAccess?: boolean;
 };
 
 export type MeResponse = {
