@@ -137,7 +137,7 @@ export type HarvestTrichomeFeedbackInput = {
 };
 
 export async function analyzeTrichomePhotos(input: {
-  growId: string;
+  growId?: string;
   evidenceAssetIds: string[];
   workspaceType: EvidenceWorkspaceType;
   workspaceId?: string;

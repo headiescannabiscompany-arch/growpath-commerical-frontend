@@ -41,7 +41,7 @@ Server results and saved readiness runs must retain the review ID, evidence-asse
 When qualified trichome evidence is missing, Harvest Readiness must not translate that gap into a generic three-to-seven-day harvest recommendation or pretend that trichome maturity was assessed. It may still show a clearly labeled, low-confidence **planning range** when the user supplied an approximate harvest date or both current flower day and breeder timing, provided the result separately lists reasons the window may be open, reasons to wait, missing evidence, and the source of the range. Reaching the user's approximate date and a documented aroma decline support close review; unfinished bud/calyx swelling, underdeveloped or clear-dominant trichomes, substantial fresh pistils, and unresolved representative sampling support waiting. Conflicting signals must remain visible together. This planning range is not a trichome-derived harvest date and cannot create an automatic harvest-decision or dry/cure deadline. Without explicit timing context, return `insufficient_evidence`, no range, and evidence-capture or maturity-observation tasks only.
 
 The image-analysis response must include an opaque server receipt bound to the successful
-AI-usage event, authenticated workspace, canonical grow, optional selected plant, exact selected and analyzed evidence IDs,
+AI-usage event, authenticated workspace, optional canonical grow, optional selected plant, exact selected and analyzed evidence IDs,
 normalized trichome-result digest, evidence fingerprint, and review-policy version. Saving or
 calculating Harvest Readiness must validate that exact receipt and reconstruct the provider,
 quality findings, evidence set, and AI-derived percentages from the server record. A client
@@ -58,12 +58,17 @@ frame set passes the shared frame validation. For a device-extracted Harvest set
 frame IDs must equal the complete active linked-frame set for that source video; reject a subset.
 Analysis and save must agree on both exact sets and on the optional plant scope.
 
-Personal, Commercial, and Facility Harvest runs use the authorized grow collection for that
-workspace. Commercial analysis is scoped to the authenticated Commercial account, while a
-Facility run requires an authorized write role and reserves Facility credits. A route account
-or grow identifier is never authority by itself. Resolve it against the authenticated workspace
-before evidence is loaded or a credit is reserved, and validate the same canonical workspace
-and grow again when the result is saved. Persist the canonical grow ID rather than a route alias.
+Personal Harvest Readiness may run without a grow when the authenticated account has cannabis
+visibility or cannabis grow interests enabled. In that standalone path, evidence and the signed
+receipt remain bound to the authenticated Personal workspace/account, and the canonical grow ID
+is null. A user may optionally select an owned grow to add saved history, plant context, logs,
+tasks, and harvest-batch write-back. Commercial and Facility Harvest runs remain attached to an
+authorized shared grow. Commercial analysis is scoped to the authenticated Commercial account,
+while a Facility run requires an authorized write role and reserves Facility credits. A route
+account or grow identifier is never authority by itself. Resolve any supplied identifier against
+the authenticated workspace before evidence is loaded or a credit is reserved, and validate the
+same canonical workspace and optional grow again when the result is saved. Persist a supplied
+canonical grow ID rather than a route alias.
 
 Personal Harvest Readiness may write a saved review back to an existing harvest batch only
 through an owned-batch selector populated for the currently selected grow. Do not ask users to
