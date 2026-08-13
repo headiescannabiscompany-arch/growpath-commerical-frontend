@@ -252,14 +252,31 @@ Legend:
 - [x] A zero-stock, unpriced, non-checkout `Would you buy this at this price?` trial flow
       exists with Yes/Maybe/No, one revisable response per account, aggregate results,
       and explicit `not for sale` language.
-- [ ] Run the two approved GrowPathAI concepts as live owner-priced purchase-intent
-      trials, verify response/revision/aggregate/close behavior, and keep inventory zero.
-- [blocked] Triple Bag Genetics concepts containing third-party marks remain private
-            until rights review; then correct the remaining emblems/scale before trials.
-- [ ] Decide whether GrowPathAI concepts are presented by the Admin brand or Living Soil
-      Labs, then add the approved non-sale research presentation to the website.
-- [ ] Complete exact BLVNK model/fabric/color/sample/cost and local-decoration approval
-      before any product, inventory, checkout, or shipping launch.
+- [ ] Complete the exact BLVNK blank specification first: model, construction, fabric,
+      available color match, brim profile, sample, unit/sample cost, minimums, lead time,
+      and local embroidery/decoration approval. This is the prerequisite for final hat
+      mockups, meaningful price research, product records, inventory, checkout,
+      production, or shipping.
+- [ ] Finish the complete GrowPathAI and Triple Bag Genetics hat design sets against the
+      approved BLVNK blank. Produce accurate front, left, right, and rear views; correct
+      emblem placement, scale, colors, brim proportions, embroidery feasibility, and
+      small rear wordmarks; retain approved source files and final review images.
+- [ ] Give the `admin@growpathai.com` Admin identity the governed Commercial toolset and
+      use the Admin/GrowPathAI brand—not Living Soil Labs—to own and present GrowPathAI
+      hat research. Keep brand records, storefront content, trials, and analytics
+      separated from Living Soil Labs and Triple Bag Genetics.
+- [ ] Add all owner-approved, rights-cleared GrowPathAI and Triple Bag Genetics hat
+      concepts to their correct website brand presentation as zero-stock, non-sale
+      research listings. Show `Not for sale` prominently and provide no checkout,
+      inventory claim, production promise, or shipping promise.
+- [blocked] Triple Bag Genetics designs containing third-party marks may be completed as
+            private internal design studies but cannot be publicly listed or trialed
+            until rights review clears each mark. Rights-cleared TBG designs may proceed
+            to the non-sale research presentation above.
+- [ ] After the exact blank, final designs, brand ownership, and rights-cleared non-sale
+      listings are complete, run owner-priced purchase-intent trials for every approved
+      hat concept. Verify response, revision, aggregation, and close behavior while
+      inventory remains zero and no item can be purchased.
 
 ## App Store and final release
 
