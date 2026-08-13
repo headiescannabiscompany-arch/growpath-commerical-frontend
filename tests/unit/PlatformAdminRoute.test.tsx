@@ -2,7 +2,10 @@ import React from "react";
 import { ActivityIndicator, StyleSheet, TextInput } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import PlatformAdminRoute, { createPlatformAdminStyles } from "@/app/admin";
+import PlatformAdminRoute, {
+  createPlatformAdminStyles,
+  moderationTargetHref
+} from "@/app/admin";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockApiRequest = jest.fn();
@@ -155,6 +158,59 @@ function defaultAdminApi(path: string) {
 }
 
 describe("PlatformAdminRoute", () => {
+  it.each([
+    ["forumPost", "forum-1", "/forum/post/forum-1"],
+    ["commercialPost", "campaign-1", "/feed?campaignId=campaign-1"],
+    ["storefrontProduct", "product-1", "/store?q=product-1"],
+    ["course", "course-1", "/courses?courseId=course-1"],
+    ["video", "video-1", "/videos/video-1"],
+    ["liveSession", "live-1", "/live-session?sessionId=live-1"]
+  ])("builds the canonical %s moderation content link", (targetType, targetId, href) => {
+    expect(
+      moderationTargetHref({
+        _id: "case-1",
+        targetType,
+        targetId,
+        reason: "Reported",
+        severity: "medium",
+        status: "open",
+        action: "none"
+      })
+    ).toBe(href);
+  });
+
+  it("rejects a same-origin submitted URL for the wrong content type", () => {
+    expect(
+      moderationTargetHref({
+        _id: "case-1",
+        targetType: "video",
+        targetId: "video-1",
+        reason: "Reported",
+        severity: "medium",
+        status: "open",
+        action: "none",
+        evidenceSnapshot: { targetUrl: "https://growpathai.com/admin" }
+      })
+    ).toBe("/videos/video-1");
+  });
+
+  it("preserves a matching exact storefront product URL", () => {
+    expect(
+      moderationTargetHref({
+        _id: "case-1",
+        targetType: "storefrontProduct",
+        targetId: "product-1",
+        reason: "Reported",
+        severity: "medium",
+        status: "open",
+        action: "none",
+        evidenceSnapshot: {
+          targetUrl: "https://growpathai.com/store/living-soil-labs/products/product-1"
+        }
+      })
+    ).toBe("/store/living-soil-labs/products/product-1");
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockRole = "admin";

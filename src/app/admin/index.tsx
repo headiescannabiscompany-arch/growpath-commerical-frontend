@@ -93,14 +93,35 @@ const MODERATABLE_TARGETS = new Set([
   "storefrontProduct"
 ]);
 
-function moderationTargetHref(item: ModerationCase) {
+function matchesModerationTargetRoute(targetType: string, pathname: string) {
+  if (targetType === "forumPost" || targetType === "comment") {
+    return pathname.startsWith("/forum/post/") || pathname === "/forum/post";
+  }
+  if (targetType === "course") {
+    return pathname === "/courses" || /^\/store\/[^/]+\/courses\/[^/]+$/.test(pathname);
+  }
+  if (targetType === "video") return pathname.startsWith("/videos/");
+  if (targetType === "commercialPost") {
+    return pathname === "/feed" || pathname.endsWith("/feed");
+  }
+  if (targetType === "feedItem" || targetType === "post") return pathname === "/feed";
+  if (targetType === "storefrontProduct") {
+    return pathname === "/store" || /^\/store\/[^/]+\/products\/[^/]+$/.test(pathname);
+  }
+  if (targetType === "liveSession") return pathname === "/live-session";
+  if (targetType === "user") return pathname === "/profile";
+  return false;
+}
+
+export function moderationTargetHref(item: ModerationCase) {
   const submitted = String(item.evidenceSnapshot?.targetUrl || "").trim();
   if (submitted) {
     try {
       const parsed = new URL(submitted, "https://growpathai.com");
       if (
-        parsed.hostname === "growpathai.com" ||
-        parsed.hostname.endsWith(".growpathai.com")
+        (parsed.hostname === "growpathai.com" ||
+          parsed.hostname.endsWith(".growpathai.com")) &&
+        matchesModerationTargetRoute(item.targetType, parsed.pathname)
       ) {
         return `${parsed.pathname}${parsed.search}`;
       }

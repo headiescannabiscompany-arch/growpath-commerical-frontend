@@ -357,8 +357,17 @@ grow`, private current location without a Field Study, and an optional approxima
   evidence only: it reduces the unverified surface but does not replace the approved
   temporary-record, production reload/audit, forced-403, or cleanup evidence still
   required by the two open items below.
-- [ ] Retest content-report admin email deep links as an authorized platform owner
+- [~] Retest content-report admin email deep links as an authorized platform owner
       for Forum, Feed, product, course, video, and live-session reports.
+      - Automated contract coverage now verifies all six report types produce both the
+        exact reported-content link and a moderation-case-focused admin link.
+      - The admin route now accepts a submitted GrowPath URL only when its route matches
+        the stored target type; otherwise it uses the canonical safe fallback.
+      - Focused checks passed: frontend `PlatformAdminRoute.test.tsx` (18/18) and backend
+        `adminReportNotification.test.js` + `reports.test.js` (23/23).
+      - Still required before `[x]`: click representative delivered emails while signed
+        in as the authorized platform owner and confirm both links open the intended live
+        content/case without exposing the admin route to a non-admin account.
 - [ ] Create only approved temporary production/staging records needed to verify
       populated Facility Grow/Plant/Journal/Inventory/Compliance/SOP comparison and
       Owner-only AI Validation Lab states; verify create/edit/reload/audit/permissions,
