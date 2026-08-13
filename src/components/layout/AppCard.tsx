@@ -7,6 +7,7 @@ import { sanitizeViewChildren } from "./sanitizeViewChildren";
 export type AppCardProps = {
   style?: any;
   title?: string;
+  titleLevel?: 1 | 2 | 3;
   subtitle?: string;
   children?: React.ReactNode;
   onPress?: () => void;
@@ -15,6 +16,7 @@ export type AppCardProps = {
 
 export default function AppCard({
   title,
+  titleLevel,
   subtitle,
   children,
   onPress,
@@ -35,7 +37,15 @@ export default function AppCard({
         style
       ]}
     >
-      {!!title && <Text style={[styles.title, { color: palette.text }]}>{title}</Text>}
+      {!!title && (
+        <Text
+          accessibilityRole={titleLevel ? "header" : undefined}
+          aria-level={titleLevel}
+          style={[styles.title, { color: palette.text }]}
+        >
+          {title}
+        </Text>
+      )}
       {!!subtitle && (
         <Text style={[styles.subtitle, { color: palette.textMuted }]}>{subtitle}</Text>
       )}

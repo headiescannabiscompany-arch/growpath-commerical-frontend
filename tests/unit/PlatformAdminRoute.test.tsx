@@ -253,6 +253,17 @@ describe("PlatformAdminRoute", () => {
       expect(screen.UNSAFE_getByType(ActivityIndicator).props.color).toBe(palette.accent);
       await waitFor(() => expect(screen.getByText("Online now")).toBeTruthy());
 
+      expect(screen.getByRole("header", { name: "Administration" })).toHaveProp(
+        "aria-level",
+        1
+      );
+      expect(
+        screen.getByRole("header", { name: "Actual product activity" })
+      ).toHaveProp("aria-level", 2);
+      expect(
+        screen.getByRole("header", { name: "Harvest trichome calibration queue" })
+      ).toHaveProp("aria-level", 2);
+
       expect(
         StyleSheet.flatten(screen.getByText("Administration").props.style).color
       ).toBe(palette.text);
