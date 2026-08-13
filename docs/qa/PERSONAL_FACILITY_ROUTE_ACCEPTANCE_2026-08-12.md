@@ -164,6 +164,20 @@ were excluded so styled child text was measured instead of non-rendered inherite
 defaults. This does not cover hidden states, every error/empty variant, image text,
 native rendering, or human visual review on physical devices.
 
+## Facility mutation contract batch
+
+The follow-on automated contract pass covered Facility Rooms, Plants, Tasks,
+Inventory create/detail, Compliance naming, SOP run navigation, reporting
+presentation, Facility workflow API behavior, email verification, endpoint routing,
+and role/task/room access rules. All **14 suites and 103 assertions passed** with the
+original assertions intact.
+
+This batch is deliberately classified as local automated evidence. It does not claim
+that production Owner or Manager mutations were performed, that a prohibited request
+was observed returning 403 over the production network, or that approved temporary
+production records were created and cleaned up. Those remain explicit open acceptance
+items in the canonical checklist.
+
 ## Acceptance boundary
 
 This closes the current signed-in Personal and Facility Viewer **route, heading,

@@ -351,6 +351,12 @@ grow`, private current location without a Field Study, and an optional approxima
   again showed their expected headings, Back control, and no visible failure; the
   related navigation/role/access batch passed 16 suites and 58 tests. This does not
   close the mutation or remaining-role work below.
+  The next Facility mutation-contract batch passed 14 suites and 103 assertions on
+  2026-08-12, covering room, plant, task, inventory, compliance, SOP, reporting,
+  endpoint, email-verification, and role/access behavior. This is automated contract
+  evidence only: it reduces the unverified surface but does not replace the approved
+  temporary-record, production reload/audit, forced-403, or cleanup evidence still
+  required by the two open items below.
 - [ ] Retest content-report admin email deep links as an authorized platform owner
       for Forum, Feed, product, course, video, and live-session reports.
 - [ ] Create only approved temporary production/staging records needed to verify
