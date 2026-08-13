@@ -110,8 +110,9 @@ export default function VideoLibraryPicker({
           return (
             <Pressable
               key={option.value}
-              accessibilityRole="button"
+              accessibilityRole="radio"
               accessibilityLabel={`Show ${option.label.toLowerCase()} videos`}
+              accessibilityState={{ checked: selected, disabled }}
               disabled={disabled}
               onPress={() => setScope(option.value)}
               style={[styles.scopeButton, selected && styles.scopeButtonSelected]}
@@ -186,9 +187,12 @@ export function createStyles(palette: ThemePalette) {
     help: { color: palette.textMuted, fontSize: 12, lineHeight: 18, marginTop: 3 },
     error: { color: palette.danger, fontSize: 12 },
     clearButton: {
+      alignItems: "center",
       borderColor: palette.danger,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 10,
       paddingVertical: 8
     },
@@ -199,10 +203,13 @@ export function createStyles(palette: ThemePalette) {
       gap: 8
     },
     scopeButton: {
+      alignItems: "center",
       backgroundColor: palette.surface,
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 10,
       paddingVertical: 8
     },
@@ -218,6 +225,8 @@ export function createStyles(palette: ThemePalette) {
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       minWidth: 180,
       padding: 10
     },

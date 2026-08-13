@@ -76,8 +76,20 @@ describe("VideoLibraryPicker", () => {
       expect(screen.getByText("Reusable lesson clip")).toBeTruthy();
     });
     expect(screen.getByText("Published workspace clip")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Show workspace library videos").props.accessibilityState
+    ).toEqual({ checked: true, disabled: false });
+    expect(screen.getByLabelText("Show my uploads videos").props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ minHeight: 44 })])
+    );
 
     fireEvent.press(screen.getByLabelText("Show my uploads videos"));
+    expect(
+      screen.getByLabelText("Show my uploads videos").props.accessibilityState
+    ).toEqual({
+      checked: true,
+      disabled: false
+    });
     await waitFor(() => {
       expect(screen.getByText("Reusable lesson clip")).toBeTruthy();
     });

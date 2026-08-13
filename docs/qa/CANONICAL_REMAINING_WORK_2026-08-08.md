@@ -533,6 +533,10 @@ public visibility, or screenshot/video acceptance still called out below.
       - Shared scheduling controls now announce all-day as a checked switch and
         reminder/recurrence presets as checked radio choices. Clear and preset chips
         preserve 44px targets; focused calendar/schedule suites pass 5/5.
+      - Shared Video Library scope filters now announce checked radio state; reusable
+        video choices and detach/filter controls preserve 44px targets. Video owner
+        edit/publish/remove actions announce disabled state and all card actions
+        preserve 44px targets. Focused video picker/theme suites pass 4/4.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
