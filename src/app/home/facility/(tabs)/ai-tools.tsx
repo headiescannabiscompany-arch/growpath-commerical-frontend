@@ -1,12 +1,10 @@
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
-import { listGrows } from "@/api/grows";
-import { isCannabisGrow } from "@/features/grows/routeUtils";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -203,24 +201,6 @@ export default function FacilityAiToolsRoute() {
   const { selectedId: facilityId, selected: facility } = useFacility();
   const { palette } = useAppTheme();
   const activeFacilityId = String(facilityId || "");
-  const [showCannabisTools, setShowCannabisTools] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    setShowCannabisTools(false);
-    if (!activeFacilityId) return () => void (active = false);
-    void listGrows(activeFacilityId)
-      .then((grows) => {
-        if (active)
-          setShowCannabisTools(grows.some((grow) => isCannabisGrow(grow as any)));
-      })
-      .catch(() => {
-        if (active) setShowCannabisTools(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [activeFacilityId]);
   return (
     <AppPage
       routeKey="facility-ai-tools"
@@ -257,8 +237,9 @@ export default function FacilityAiToolsRoute() {
         <Text style={[styles.scopeText, { color: palette.textMuted }]}>
           {facility?.name || "The selected Facility"} owns the balance above. AI never
           turns a suggestion into an assignment, SOP approval, inventory change, or
-          compliance claim without a separate authorized action. Cannabis-only lifecycle
-          tools appear from an eligible Facility grow, not from this general hub.
+          compliance claim without a separate authorized action. Harvest Readiness can be
+          reviewed without a grow; selecting one adds Facility context and enables
+          grow-scoped follow-up actions.
         </Text>
       </AppCard>
       <Text
@@ -269,18 +250,14 @@ export default function FacilityAiToolsRoute() {
         Shared grow intelligence
       </Text>
       <ToolGrid facilityId={activeFacilityId} items={FACILITY_CORE_TOOLS} />
-      {showCannabisTools ? (
-        <>
-          <Text
-            accessibilityRole="header"
-            aria-level={2}
-            style={[styles.sectionHeading, { color: palette.text }]}
-          >
-            Cannabis grow intelligence
-          </Text>
-          <ToolGrid facilityId={activeFacilityId} items={FACILITY_CANNABIS_TOOLS} />
-        </>
-      ) : null}
+      <Text
+        accessibilityRole="header"
+        aria-level={2}
+        style={[styles.sectionHeading, { color: palette.text }]}
+      >
+        Harvest intelligence
+      </Text>
+      <ToolGrid facilityId={activeFacilityId} items={FACILITY_CANNABIS_TOOLS} />
       <Text
         accessibilityRole="header"
         aria-level={2}
