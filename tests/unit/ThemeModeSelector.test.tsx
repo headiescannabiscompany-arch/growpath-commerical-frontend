@@ -40,6 +40,9 @@ describe("ThemeModeSelector", () => {
 
   it("exposes appearance modes as one selected radio group", () => {
     const screen = render(<ThemeModeSelector />);
+    expect(screen.getByLabelText("Set appearance to Day").props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ minHeight: 44 })])
+    );
 
     expect(screen.getByLabelText("Appearance mode").props.accessibilityRole).toBe(
       "radiogroup"
@@ -70,6 +73,9 @@ describe("ThemeModeSelector", () => {
         })
     );
     const screen = render(<ThemeModeSelector />);
+    expect(screen.getByLabelText("Use my location for auto theme").props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ minHeight: 44 })])
+    );
 
     fireEvent.press(screen.getByLabelText("Use my location for auto theme"));
 

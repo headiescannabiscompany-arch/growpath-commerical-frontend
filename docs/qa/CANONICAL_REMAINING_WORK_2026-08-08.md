@@ -537,6 +537,9 @@ public visibility, or screenshot/video acceptance still called out below.
         video choices and detach/filter controls preserve 44px targets. Video owner
         edit/publish/remove actions announce disabled state and all card actions
         preserve 44px targets. Focused video picker/theme suites pass 4/4.
+      - The shared Day/Night/Auto radio choices and Auto-location actions preserve
+        44px targets while retaining checked, disabled, and live-status semantics.
+        Its focused behavior suite passes 2/2.
       - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
         screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
