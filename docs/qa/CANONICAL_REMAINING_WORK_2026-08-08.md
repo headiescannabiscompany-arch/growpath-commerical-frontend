@@ -478,6 +478,14 @@ public visibility, or screenshot/video acceptance still called out below.
   non-Commercial access boundary passed. Populated Commercial owner mutations,
   refresh, persistence, and visual acceptance remain open. See
   `docs/qa/COMMERCIAL_ORDERS_ANALYTICS_STATE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-08-12.md`.
+  The signed-in 2026-08-13 route audit also passed Courses, Lives, Feed/Campaigns,
+  Orders, Analytics, Inventory, Trials, Product Lines, Forum, More, Profile, Tasks,
+  and Marketing without visible error states. It found and repaired a blank Batch
+  Planner plus duplicate root headings on Storefront, Grows, and Discover. Frontend
+  `161afbe9` passed the full CI and production preflight gates, and cache-busted live
+  verification confirmed the repaired pages. Populated owner mutations, persistence,
+  public visibility, and final visual evidence remain open. See
+  `docs/qa/COMMERCIAL_ROUTE_REPAIR_PRODUCTION_EVIDENCE_2026-08-13.md`.
 - [~] Seed Penny Saver Soil, Living Soil, and No-Till drafts only from owner-approved
   facts. Keep inventory zero and claims unpublished until labels, guaranteed analyses,
   sizes, prices, directions, shipping, and images are supplied and verified. The
