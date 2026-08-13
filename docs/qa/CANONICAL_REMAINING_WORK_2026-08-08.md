@@ -64,6 +64,12 @@ execution boundaries and the evidence needed not to reopen completed work.
       an existing Facility grow has cannabis crop context; production verified the
       card and complete readiness description under frontend `d6f39cdb` and backend
       `5e6cd014`.
+- [x] Facility SOP comparison no longer strands an operator on the result summary.
+      Frontend `b8742f1a` passed the full validation gate and production entry
+      `/home/facility/sop-runs/compare?release=b8742f1a&verify=sop-followup-links-live`
+      compared two retained completed runs. The named reference and comparison links
+      each opened the correct locked checklist-evidence record, and the follow-up link
+      opened the live Facility Tasks queue. No production record was changed.
 
 ## A. AI image, video, and diagnostic quality
 
@@ -396,9 +402,6 @@ grow`, private current location without a Field Study, and an optional approxima
       then clean up and record the cleanup.
 - [ ] Capture forced backend 403 evidence for prohibited Facility mutations and an
       exported cross-role recording; clean up temporary aliases only with owner approval.
-- [ ] Add direct, named links from Facility SOP comparison results to each compared
-      run and the relevant checklist/follow-up work. The result currently compares
-      recorded completion and status changes but does not provide those next actions.
 
 ## C. Payments, email, delivery, and entitlements
 
