@@ -430,6 +430,30 @@ describe("facility SOP run nested back behavior", () => {
     expect(JSON.stringify(screen.toJSON())).not.toContain('"stepId"');
   });
 
+  it("opens both compared runs and the Facility follow-up task queue", async () => {
+    mockParams = { leftId: "run-1", rightId: "run-2" };
+    const screen = render(<FacilitySopRunsCompareResultRoute />);
+
+    await waitFor(() => expect(screen.getByText("Night room check")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Open reference run Daily room check"));
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: "/home/facility/sop-runs/[id]",
+      params: { id: "run-1" }
+    });
+
+    fireEvent.press(screen.getByLabelText("Open comparison run Night room check"));
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: "/home/facility/sop-runs/[id]",
+      params: { id: "run-2" }
+    });
+
+    fireEvent.press(
+      screen.getByLabelText("Open Facility Tasks for SOP comparison follow-up")
+    );
+    expect(mockPush).toHaveBeenLastCalledWith("/home/facility/tasks");
+  });
+
   it("does not present empty comparison evidence when run selection is missing", async () => {
     mockParams = {};
     const screen = render(<FacilitySopRunsCompareResultRoute />);
