@@ -165,8 +165,9 @@ export default function SchedulePicker({
         <View style={styles.chipRow}>
           <Pressable
             style={[styles.chip, allDay && styles.chipSelected]}
-            accessibilityRole="button"
+            accessibilityRole="switch"
             accessibilityLabel={`${accessibilityPrefix} all day toggle`}
+            accessibilityState={{ checked: allDay }}
             onPress={() => onAllDayChange(!allDay)}
           >
             <Text style={[styles.chipText, allDay && styles.chipTextOn]}>All day</Text>
@@ -182,6 +183,7 @@ export default function SchedulePicker({
             style={[styles.chip, dueDate === value && styles.chipSelected]}
             accessibilityRole="button"
             accessibilityLabel={`${accessibilityPrefix} quick date ${label}`}
+            accessibilityState={{ selected: dueDate === value }}
             onPress={() => onDueDateChange(value)}
           >
             <Text style={[styles.chipText, dueDate === value && styles.chipTextOn]}>
@@ -200,8 +202,11 @@ export default function SchedulePicker({
               (label === "no reminder" ? !reminder : reminder === label) &&
                 styles.chipSelected
             ]}
-            accessibilityRole="button"
+            accessibilityRole="radio"
             accessibilityLabel={`${accessibilityPrefix} reminder preset ${label}`}
+            accessibilityState={{
+              checked: label === "no reminder" ? !reminder : reminder === label
+            }}
             onPress={() => onReminderChange(label === "no reminder" ? "" : label)}
           >
             <Text
@@ -236,8 +241,9 @@ export default function SchedulePicker({
             <Pressable
               key={label}
               style={[styles.chip, active && styles.chipSelected]}
-              accessibilityRole="button"
+              accessibilityRole="radio"
               accessibilityLabel={`${accessibilityPrefix} recurrence preset ${label}`}
+              accessibilityState={{ checked: active }}
               onPress={() => onRecurrenceChange(label === "does not repeat" ? "" : label)}
             >
               <Text style={[styles.chipText, active && styles.chipTextOn]}>{label}</Text>
@@ -267,10 +273,13 @@ const createStyles = (palette: ThemePalette) =>
       minWidth: 220
     },
     clearButton: {
+      alignItems: "center",
       backgroundColor: palette.surface,
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 10,
       paddingVertical: 6
     },
@@ -291,10 +300,13 @@ const createStyles = (palette: ThemePalette) =>
     label: { color: palette.text, fontSize: 13, fontWeight: "900" },
     chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     chip: {
+      alignItems: "center",
       backgroundColor: palette.surface,
       borderColor: palette.border,
       borderRadius: 999,
       borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
       paddingHorizontal: 10,
       paddingVertical: 7
     },
