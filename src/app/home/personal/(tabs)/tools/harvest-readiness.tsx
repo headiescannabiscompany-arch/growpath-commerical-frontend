@@ -844,6 +844,18 @@ function HarvestPhotoAnalyzer({
               : ""}
             {analysis.cloudinessBasis ? ` · ${analysis.cloudinessBasis}` : ""}
           </Text>
+          <Text style={photoStyles.feedback}>
+            Gland-head development:{" "}
+            {(analysis.headDevelopmentObservation || "uncertain").replaceAll("_", " ")}
+            {analysis.headDevelopmentSignals?.length
+              ? ` · ${analysis.headDevelopmentSignals.map((signal) => signal.replaceAll("_", " ")).join(", ")}`
+              : ""}
+            {analysis.headDevelopmentBasis ? ` · ${analysis.headDevelopmentBasis}` : ""}
+          </Text>
+          <Text style={photoStyles.warning}>
+            Head development supports the review but does not prove potency, chemistry, a
+            harvest date, or whole-plant maturity.
+          </Text>
           {analysis.qualityChecks ? (
             <View style={photoStyles.qualityChecks}>
               <Text style={photoStyles.checklistTitle}>Set quality checks</Text>
