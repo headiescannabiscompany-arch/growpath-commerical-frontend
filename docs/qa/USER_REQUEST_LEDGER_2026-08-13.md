@@ -197,8 +197,13 @@ Legend:
       Journal/Logs, Inventory, Compliance, SOPs, Reports, Analytics, Integrations,
       AI Tools, Team, and Notifications with grouped navigation.
 - [~] Automated Facility mutation contracts cover rooms, plants, tasks, inventory,
-      compliance, SOPs, reporting, roles, and access. Approved temporary production
-      create/edit/reload/audit/permission/cleanup evidence remains.
+      compliance, SOPs, reporting, roles, and access. Production now also verifies
+      populated Grow, Plant, Journal, SOP comparison, and Owner-only AI Validation Lab
+      states plus immutable lifecycle audit history. Temporary Inventory is deleted and
+      the Compliance deviation resolved. Retained grow/plant/journal cleanup waits for
+      a durable Cannabis grow context so Facility Harvest Readiness is not regressed;
+      forced-403 and exported cross-role evidence also remain. See
+      `docs/qa/FACILITY_POPULATED_WORKFLOW_PRODUCTION_EVIDENCE_2026-08-13.md`.
 
 ## Commercial, storefronts, dispensaries, products, and trials
 
