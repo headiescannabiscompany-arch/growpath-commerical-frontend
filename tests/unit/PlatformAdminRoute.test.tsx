@@ -248,6 +248,56 @@ describe("PlatformAdminRoute", () => {
     );
   });
 
+  it("requires a successful dry run and exact confirmation before anonymizing a test account", async () => {
+    const nextConfirmation = "ANONYMIZE user-1 member@example.com";
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/admin/users/user-1/anonymize-synthetic-account") {
+        if (options?.body?.execute) {
+          return Promise.resolve({ ok: true, deletion: { deletionMode: "anonymized" } });
+        }
+        return Promise.resolve({
+          ok: true,
+          dryRun: true,
+          target: { id: "user-1", email: "member@example.com" },
+          allowlisted: true,
+          blockers: [],
+          deletionMode: "privacy_anonymization",
+          nextConfirmation
+        });
+      }
+      return defaultAdminApi(path);
+    });
+    const screen = render(<PlatformAdminRoute />);
+    await waitFor(() => expect(screen.getByText("Review test-account cleanup")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Review test-account cleanup"));
+    await waitFor(() => expect(screen.getByText("Anonymize member@example.com")).toBeTruthy());
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/admin/users/user-1/anonymize-synthetic-account",
+      { method: "POST", body: { expectedEmail: "member@example.com" } }
+    );
+
+    const confirmInput = screen.getByLabelText(
+      "Exact synthetic account anonymization confirmation"
+    );
+    fireEvent.changeText(confirmInput, nextConfirmation);
+    fireEvent.press(screen.getByText("Anonymize approved test account"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/users/user-1/anonymize-synthetic-account",
+        {
+          method: "POST",
+          body: {
+            expectedEmail: "member@example.com",
+            execute: true,
+            confirmation: nextConfirmation
+          }
+        }
+      )
+    );
+  });
+
   it.each(["day", "night"] as const)(
     "uses the active %s palette for loaded admin surfaces and form controls",
     async (mode) => {
