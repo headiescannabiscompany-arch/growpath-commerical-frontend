@@ -2363,6 +2363,126 @@
       }
     },
     {
+      "recordId": "plant-id-rose-001",
+      "caseId": "rose",
+      "acceptedName": "Rose",
+      "scientificName": "Rosa species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "blackberry",
+        "other Rosaceae shrub"
+      ],
+      "distinguishingFeatures": [
+        "combined Rosa compound foliage and flower",
+        "rugose rose leaflet texture"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.9,
+        "maximum": 0.99
+      },
+      "expectedResult": "Rose (Rosa) is expected; the rugose foliage is consistent with Rosa rugosa, but genus-level identification is the governed requirement.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390759031",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/715930708/original.jpg",
+      "creator": "(c) Tara Severns, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Tara Severns, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "rose-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "woody shrub shoot",
+          "imparipinnate compound leaves",
+          "coarsely serrated rugose leaflets",
+          "large many-petaled pink flower"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A30002432-2",
+            "outcome": "Kew POWO accepts Rosa L. and describes woody shrubs or climbers with usually prickled stems, imparipinnate serrated leaflets, and five-petaled flowers. Only candidates with matching compound foliage plus flower or bud evidence were approved."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-715930708",
+        "photoId": 715930708,
+        "sourceQuery": "Rosa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 83653,
+        "observedTaxonName": "Rosa rugosa",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-rose-005",
+      "caseId": "rose",
+      "acceptedName": "Rose",
+      "scientificName": "Rosa species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "blackberry",
+        "other Rosaceae shrub"
+      ],
+      "distinguishingFeatures": [
+        "Rosa compound foliage and stipule-like leaf bases",
+        "characteristic rose bud and sepals"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.86,
+        "maximum": 0.98
+      },
+      "expectedResult": "Rose (Rosa) is expected from the compound serrated foliage and flower bud; Rosa laevigata is acceptable if supported by source context.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390948053",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/716290924/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "rose-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "climbing woody stem",
+          "imparipinnate compound leaves",
+          "glossy serrated leaflets",
+          "developing flower bud with five reflexing sepals"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A30002432-2",
+            "outcome": "Kew POWO accepts Rosa L. and describes woody shrubs or climbers with usually prickled stems, imparipinnate serrated leaflets, and five-petaled flowers. Only candidates with matching compound foliage plus flower or bud evidence were approved."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-716290924",
+        "photoId": 716290924,
+        "sourceQuery": "Rosa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 83066,
+        "observedTaxonName": "Rosa laevigata",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
       "recordId": "plant-id-strawberry-001",
       "caseId": "strawberry",
       "acceptedName": "Garden strawberry",

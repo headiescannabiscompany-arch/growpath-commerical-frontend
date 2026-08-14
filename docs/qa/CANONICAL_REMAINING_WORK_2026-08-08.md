@@ -179,7 +179,9 @@ execution boundaries and the evidence needed not to reopen completed work.
       evidence then passed; three isolated vegetative grass candidates were rejected.
       Three common-bean records with seedling or combined foliage-and-flower evidence
       then passed; five red-flowered Phaseolus lookalikes or unresolved distant-bed
-      candidates were rejected. The catalog is now 39/320 reviewed records and
+      candidates were rejected. Two rose records with matching compound foliage plus
+      flower or bud evidence then passed; four wrong-taxon or no-target candidates were
+      rejected. The catalog is now 41/320 reviewed records and
       correctly remains `planning`; 276 candidates in the refreshed queue still need
       review, one is explicitly rejected, and all 36 owned
       adverse-media slots remain.
