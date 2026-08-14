@@ -13,6 +13,8 @@ export type IntegrationProvider = {
   capabilities: string[];
   documentationUrl?: string | null;
   requestUrl?: string | null;
+  credentialRequired?: boolean;
+  setupNote?: string;
   readOnly: true;
   permissionLevel: "read_only";
 };
@@ -48,6 +50,7 @@ export type IntegrationDeviceMapping = {
   roomName: string;
   zoneName: string;
   metrics: string[];
+  metricMap?: Record<string, string>;
 };
 
 export type IntegrationMappingPreview = {
@@ -57,6 +60,25 @@ export type IntegrationMappingPreview = {
   roomCount: number;
   zoneCount: number;
   mappings: IntegrationDeviceMapping[];
+};
+
+export type IntegrationGrowSpace = {
+  id: string;
+  connectionId: string;
+  provider: string;
+  name: string;
+  zoneName: string;
+  roomId?: string | null;
+  growId?: string | null;
+  devices: Array<{
+    providerDeviceId: string;
+    name: string;
+    metrics: string[];
+    metricMap?: Record<string, string>;
+    permissionLevel: "read_only";
+  }>;
+  permissionLevel: "read_only";
+  provenance?: Record<string, unknown>;
 };
 
 function dataOf(response: any) {
@@ -143,6 +165,43 @@ export async function autoBuildIntegrationSpaces(
     body: input
   });
   return dataOf(response);
+}
+
+export async function listIntegrationSpaces(input: {
+  mode: "personal" | "facility" | "commercial";
+  targetRef: string;
+}): Promise<IntegrationGrowSpace[]> {
+  const query = new URLSearchParams({ mode: input.mode, targetRef: input.targetRef });
+  const response = await apiRequest(`/api/integrations/spaces?${query.toString()}`);
+  return dataOf(response)?.spaces ?? [];
+}
+
+export type IntegrationHistoryImportSummary = {
+  provider: string;
+  startIso: string;
+  endIso: string;
+  devices: number;
+  failures: number;
+  pulled: number;
+  ingested: number;
+  updated: number;
+};
+
+export async function importIntegrationHistory(
+  id: string,
+  input: {
+    mode: "personal" | "facility" | "commercial";
+    targetRef: string;
+    startIso: string;
+    endIso: string;
+    timezone?: string;
+  }
+): Promise<IntegrationHistoryImportSummary> {
+  const response = await apiRequest(
+    `/api/integrations/connections/${id}/history/import`,
+    { method: "POST", body: input }
+  );
+  return dataOf(response).summary;
 }
 
 export async function createIntegrationAccessRequest(provider: string) {

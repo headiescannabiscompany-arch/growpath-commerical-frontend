@@ -556,6 +556,29 @@ responsive Commercial workflow pages. This confirms the retained application
 contracts; it does not replace the populated Commercial-owner mutations, persistence,
 public visibility, or screenshot/video acceptance still called out below.
 
+- [~] Complete the shared Grows device/controller workflow for Personal, Commercial,
+  and Facility. The implementation candidate now exposes the same reviewed connection
+  mapping from a selected grow/evidence run, persists read-only spaces and provider
+  device provenance idempotently, creates canonical Facility rooms only for authorized
+  owners/managers, and lets owned Commercial product-trial evidence runs receive the
+  verified AC Infinity-style telemetry import path. The current candidate also adds
+  encrypted customer-key setup for Pulse, ZENTRA, UbiBot, and TrolMaster; implemented
+  ZENTRA/UbiBot discovery clients; provider-neutral 7/30/90-day history import; one
+  idempotent source per mapped device; source timestamp/raw-value/canonical metric/
+  room/device provenance; and honest partial-failure sync receipts. Facility history is
+  now attached to the selected Facility grow rather than only the facility container.
+  The evidence registry also records the customer-authorized paths for SensorPush,
+  WeatherLink/EnviroMonitor, Ecowitt, Monnit, Bluelab Edenic, Home Assistant,
+  OpenSprinkler, Agrowtek, Rachio, Shelly, and Particle without presenting those
+  pending contracts as implemented adapters. The common first-release boundary is
+  read-only discovery/history; equipment-control permissions remain a separate safety
+  review.
+  TrolMaster remains access-required until its subscribed endpoint contract and adapter
+  are verified. Backend focused/regression coverage passes 31/31 and frontend relevant
+  coverage passes 56/56 with TypeScript clean on 2026-08-14. Both PRs must merge and deploy, and signed-in production acceptance must confirm Personal,
+  Commercial, and Facility mapping/reload plus a timestamped history import before this
+  becomes `[x]`.
+
 - [~] Complete populated commercial brand/storefront acceptance: profile, slug,
   products, zero-stock/TBD launch state, shipping, images, labels, external links,
   course placement, and storefront discovery. Frontend merge `6381cd50` now

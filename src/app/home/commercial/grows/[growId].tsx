@@ -20,6 +20,7 @@ import { InlineError } from "@/components/InlineError";
 import CommercialContextualTools from "@/components/commercial/CommercialContextualTools";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import GrowIntegrationBuildPanel from "@/components/integrations/GrowIntegrationBuildPanel";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import {
@@ -279,6 +280,25 @@ export default function CommercialGrowDetailRoute({
             "report"
           ]}
         />
+      ) : null}
+
+      {grow ? (
+        <>
+          <GrowIntegrationBuildPanel mode="commercial" targetRef={growId} />
+          <AppCard>
+            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+              Import controller history
+            </Text>
+            <Text style={styles.body}>
+              Import an AC Infinity or other supported CSV into this evidence run. Review
+              timestamps, units, and columns before any readings are saved.
+            </Text>
+            <ActionLink
+              href={`/home/commercial/tools/history-import?growId=${encodeURIComponent(growId)}&growName=${encodeURIComponent(titleFor(grow))}`}
+              label="Import grow history"
+            />
+          </AppCard>
+        </>
       ) : null}
 
       <AppCard>

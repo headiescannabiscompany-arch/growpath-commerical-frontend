@@ -31,6 +31,7 @@ import {
 import type { GrowlinkController, TelemetrySource } from "@/types/telemetry";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
+import GrowIntegrationBuildPanel from "@/components/integrations/GrowIntegrationBuildPanel";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -375,7 +376,10 @@ export default function DataIntegrationsScreen() {
 
   async function saveConnection() {
     if (!selected) return;
-    if (selected.contractStatus === "implemented" && !secret.trim()) {
+    if (
+      (selected.contractStatus === "implemented" || selected.credentialRequired) &&
+      !secret.trim()
+    ) {
       return Alert.alert("Credential required", "Enter the provider API key or token.");
     }
     setBusy(true);
@@ -602,6 +606,8 @@ export default function DataIntegrationsScreen() {
         routeKey="personal_tools_integrations"
         longContent
       />
+
+      <GrowIntegrationBuildPanel mode="personal" targetRef={growId.trim()} />
 
       <View style={styles.growlinkPanel}>
         <View style={styles.row}>
@@ -839,6 +845,9 @@ export default function DataIntegrationsScreen() {
       {selected ? (
         <View style={styles.editor}>
           <Text style={styles.editorTitle}>{selected.name}</Text>
+          {selected.setupNote ? (
+            <Text style={styles.meta}>{selected.setupNote}</Text>
+          ) : null}
           <TextInput
             style={styles.input}
             value={secret}
