@@ -527,6 +527,18 @@ public visibility, or screenshot/video acceptance still called out below.
   them, and reusable Video Library assets are not deleted. Exact frontend Render
   deploy `dep-d9tutf8ae00c73bftcm0` reached Live; focused backend workflow tests,
   TypeScript, targeted lint, and 38 frontend workflow/knowledge tests passed.
+  On 2026-08-14, the authenticated Admin Commercial workspace completed a real
+  Full Course Builder slice. Frontend merges `df9665d3` and `f2ab5d5c` routed the
+  shared builder into Commercial persistence, stored flat canonical grow-interest
+  tags, and normalized older structured selections. Exact Render deploy
+  `dep-d9vgmlfavr4c73aj3u90` succeeded. Temporary course
+  `6a7f07583556c3da3f277801` appeared in Commercial Courses, survived reload,
+  reopened without `[object Object]` or the prior `join is not a function` failure,
+  persisted category, grow interests, description, and a second Article lesson,
+  truthfully withheld publish while thumbnail/banner were missing, and then archived
+  out of the active list. This closes create/edit/lesson/reload/readiness/archive,
+  not media, paid/public/learner, linkage, or visual acceptance. See
+  `docs/qa/COMMERCIAL_FULL_COURSE_BUILDER_PRODUCTION_EVIDENCE_2026-08-14.md`.
   Populated Commercial-owner create/edit/publish/read-only/unpublish/reload,
   learner/storefront visibility, and one real disposable-draft archive cleanup remain
   open.
