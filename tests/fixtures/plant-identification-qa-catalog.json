@@ -879,6 +879,484 @@
       }
     },
     {
+      "recordId": "plant-id-common_bean-001",
+      "caseId": "common_bean",
+      "acceptedName": "Common bean",
+      "scientificName": "Phaseolus vulgaris",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "soybean",
+        "cowpea"
+      ],
+      "distinguishingFeatures": [
+        "common-bean seedling architecture",
+        "large epigeal seed with Phaseolus-like trifoliate foliage"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.66,
+        "maximum": 0.84
+      },
+      "expectedResult": "Common bean (Phaseolus vulgaris) is expected from the germinated bean and developing trifoliate foliage; keep confidence moderate without flower or pod.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/342763376",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/624237991/original.jpg",
+      "creator": "(c) Nico Hernandez, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Nico Hernandez, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "common_bean-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "germinated large bean seed",
+          "upright juvenile stem",
+          "developing trifoliate leaves",
+          "broad ovate leaflets"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A514191-1",
+            "outcome": "Kew POWO accepts Phaseolus vulgaris L. and describes trifoliate ovate leaflets, pale-to-purple flowers, and linear pods. Approvals retained uncertainty where pods were absent; conspicuous red-flowered Phaseolus lookalikes were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-624237991",
+        "photoId": 624237991,
+        "sourceQuery": "Phaseolus vulgaris",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122850,
+        "observedTaxonName": "Phaseolus vulgaris",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-common_bean-003",
+      "caseId": "common_bean",
+      "acceptedName": "Common bean",
+      "scientificName": "Phaseolus vulgaris",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "soybean",
+        "cowpea"
+      ],
+      "distinguishingFeatures": [
+        "cultivated common-bean seedling habit",
+        "consistent trifoliate Phaseolus foliage"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.64,
+        "maximum": 0.82
+      },
+      "expectedResult": "Common bean (Phaseolus vulgaris) is expected in this cultivated seedling; other Phaseolus species remain an alternative without flower or pod.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/350631823",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/639778910/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "common_bean-003",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "cultivated potted juvenile",
+          "trifoliate compound leaves",
+          "broad ovate-acuminate leaflets",
+          "slender green Phaseolus-like stem"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A514191-1",
+            "outcome": "Kew POWO accepts Phaseolus vulgaris L. and describes trifoliate ovate leaflets, pale-to-purple flowers, and linear pods. Approvals retained uncertainty where pods were absent; conspicuous red-flowered Phaseolus lookalikes were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-639778910",
+        "photoId": 639778910,
+        "sourceQuery": "Phaseolus vulgaris",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122850,
+        "observedTaxonName": "Phaseolus vulgaris",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-common_bean-006",
+      "caseId": "common_bean",
+      "acceptedName": "Common bean",
+      "scientificName": "Phaseolus vulgaris",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "soybean",
+        "cowpea"
+      ],
+      "distinguishingFeatures": [
+        "combined Phaseolus foliage and bean-flower evidence",
+        "common-bean-like scrambling annual habit"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.72,
+        "maximum": 0.88
+      },
+      "expectedResult": "Common bean (Phaseolus vulgaris) is expected from combined trifoliate foliage and pale bean flowers; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/351644011",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/641735821/original.jpg",
+      "creator": "(c) Sebastián Ordóñez, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Sebastián Ordóñez, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "common_bean-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "scrambling vine",
+          "trifoliate broad leaflets",
+          "slender flowering raceme",
+          "small pale papilionaceous flowers"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A514191-1",
+            "outcome": "Kew POWO accepts Phaseolus vulgaris L. and describes trifoliate ovate leaflets, pale-to-purple flowers, and linear pods. Approvals retained uncertainty where pods were absent; conspicuous red-flowered Phaseolus lookalikes were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-641735821",
+        "photoId": 641735821,
+        "sourceQuery": "Phaseolus vulgaris",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122850,
+        "observedTaxonName": "Phaseolus vulgaris",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-corn-002",
+      "caseId": "corn",
+      "acceptedName": "Corn or maize",
+      "scientificName": "Zea mays",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "sorghum",
+        "grass seedling"
+      ],
+      "distinguishingFeatures": [
+        "field-scale maize architecture",
+        "Zea leaf, culm, and tassel combination"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.9,
+        "maximum": 0.99
+      },
+      "expectedResult": "Corn or maize (Zea mays) is expected from the mature crop-row architecture; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/380847998",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/696794489/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "corn-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "dense planted crop row",
+          "tall single jointed culms",
+          "broad strap leaves with parallel venation",
+          "developing tassels"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A426810-1",
+            "outcome": "Kew POWO accepts Zea mays L. Approvals required mature whole-plant/reproductive evidence or repeated agricultural crop context; isolated vegetative grass images were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-696794489",
+        "photoId": 696794489,
+        "sourceQuery": "Zea mays",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 48448,
+        "observedTaxonName": "Zea mays",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-corn-004",
+      "caseId": "corn",
+      "acceptedName": "Corn or maize",
+      "scientificName": "Zea mays",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "sorghum",
+        "grass seedling"
+      ],
+      "distinguishingFeatures": [
+        "diagnostic maize ears and silks",
+        "matching Zea culm and leaf sheaths"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.95,
+        "maximum": 0.995
+      },
+      "expectedResult": "Corn or maize (Zea mays) is expected from the attached ears, silks, culm, and sheathing leaves.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/381277857",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/697631559/original.jpg",
+      "creator": "(c) Gianni Del Bufalo bygdb, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Gianni Del Bufalo bygdb, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "corn-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "thick jointed culm",
+          "broad sheathing leaves",
+          "multiple attached ears",
+          "emerging brown silks"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A426810-1",
+            "outcome": "Kew POWO accepts Zea mays L. Approvals required mature whole-plant/reproductive evidence or repeated agricultural crop context; isolated vegetative grass images were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-697631559",
+        "photoId": 697631559,
+        "sourceQuery": "Zea mays",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 48448,
+        "observedTaxonName": "Zea mays",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-corn-005",
+      "caseId": "corn",
+      "acceptedName": "Corn or maize",
+      "scientificName": "Zea mays",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "sorghum",
+        "grass seedling"
+      ],
+      "distinguishingFeatures": [
+        "whole-plant Zea architecture",
+        "diagnostic terminal maize tassel"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.9,
+        "maximum": 0.99
+      },
+      "expectedResult": "Corn or maize (Zea mays) is expected from the whole-plant culm, foliage, and tassels.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/382929169",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/700816788/original.jpg",
+      "creator": "(c) Jeff Clark, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Jeff Clark, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "corn-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "whole tall annual grass",
+          "thick jointed culm",
+          "broad arching strap leaves",
+          "terminal branched tassels"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A426810-1",
+            "outcome": "Kew POWO accepts Zea mays L. Approvals required mature whole-plant/reproductive evidence or repeated agricultural crop context; isolated vegetative grass images were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-700816788",
+        "photoId": 700816788,
+        "sourceQuery": "Zea mays",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 48448,
+        "observedTaxonName": "Zea mays",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-corn-006",
+      "caseId": "corn",
+      "acceptedName": "Corn or maize",
+      "scientificName": "Zea mays",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "sorghum",
+        "grass seedling"
+      ],
+      "distinguishingFeatures": [
+        "field-scale corn planting pattern",
+        "uniform Zea-like height and foliage"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.68,
+        "maximum": 0.86
+      },
+      "expectedResult": "A corn or maize (Zea mays) field is expected at crop level; the distant view cannot support individual-plant or cultivar detail.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/384459717",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/703768449/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "corn-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "large uniform agricultural field",
+          "dense rows of tall broad-leaved grasses",
+          "consistent maize canopy and row spacing"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A426810-1",
+            "outcome": "Kew POWO accepts Zea mays L. Approvals required mature whole-plant/reproductive evidence or repeated agricultural crop context; isolated vegetative grass images were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-703768449",
+        "photoId": 703768449,
+        "sourceQuery": "Zea mays",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 48448,
+        "observedTaxonName": "Zea mays",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-corn-008",
+      "caseId": "corn",
+      "acceptedName": "Corn or maize",
+      "scientificName": "Zea mays",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "sorghum",
+        "grass seedling"
+      ],
+      "distinguishingFeatures": [
+        "juvenile corn field pattern",
+        "repeated Zea-like leaves rather than an isolated grass seedling"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.66,
+        "maximum": 0.84
+      },
+      "expectedResult": "A juvenile corn or maize (Zea mays) crop is expected at field level; confidence remains moderate because reproductive structures are absent.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/385551494",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/705849194/original.jpg",
+      "creator": "(c) Tereso Hernández Morales, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Tereso Hernández Morales, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "corn-008",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "uniform cultivated field rows",
+          "many juvenile broad strap-leaved grasses",
+          "consistent spacing and maize seedling habit"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A426810-1",
+            "outcome": "Kew POWO accepts Zea mays L. Approvals required mature whole-plant/reproductive evidence or repeated agricultural crop context; isolated vegetative grass images were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-705849194",
+        "photoId": 705849194,
+        "sourceQuery": "Zea mays",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 48448,
+        "observedTaxonName": "Zea mays",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
       "recordId": "plant-id-cucumber-001",
       "caseId": "cucumber",
       "acceptedName": "Cucumber",
