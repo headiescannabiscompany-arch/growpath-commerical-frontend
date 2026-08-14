@@ -193,7 +193,13 @@ execution boundaries and the evidence needed not to reopen completed work.
       spathe/spadix evidence then passed; the foliage-only and isolated-spadix candidates
       were rejected because they could not reliably separate Spathiphyllum from other
       aroids. The catalog is now 52/320 reviewed records and correctly remains
-      `planning`; the remaining candidates still require individual review, and all 36
+      `planning`. Three family-level Orchidaceae records with repeated bilateral orchid
+      floral characters then passed; three visually orchid-like _Duparquetia
+      orchidacea_ candidates were rejected because Kew accepts that species in
+      Fabaceae, not Orchidaceae. This also exercises the rule that supported common or
+      regional aliases belong with the accepted scientific identity while lookalikes
+      and misleading names remain separate. The catalog is now 55/320 reviewed records;
+      the remaining candidates still require individual review, and all 36
       owned adverse-media slots remain.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
