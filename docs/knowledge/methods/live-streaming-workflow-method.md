@@ -39,6 +39,36 @@ page, where they can watch when embedding is supported, open the authorized outs
 player when required, RSVP, join GrowPath chat, sign in or register, and return for the
 replay. The outside watch URL is playback context, not the primary invitation link.
 
+## Two broadcast modes
+
+Live Studio offers two explicit paths. `Use an outside live URL` accepts Facebook,
+Instagram, YouTube, Twitch, Kick, and another reviewed HTTP(S) watch URL. GrowPath keeps
+the canonical session page, chat, sharing, reminders, and replay continuity. It embeds a
+provider player only when that provider and specific URL allow it; otherwise the session
+shows an honest named handoff such as `Open on Instagram` instead of a broken player.
+
+`Broadcast live in GrowPath` is a separate first-party mode. An authorized host receives
+a revocable per-session ingest URL and stream key for OBS or another compatible encoder.
+The secret is shown only to the host, stored encrypted, never placed in public session
+data, and rotated after disclosure or suspected compromise. Starting an encoder does not
+publish a draft session; the host explicitly takes the reviewed session live.
+
+The first-party path requires authenticated RTMP or SRT ingest, bounded transcoding into
+adaptive viewer playback, health/state reporting, in-app play/pause/volume/mute/fullscreen,
+GrowPath chat beside the player, explicit end-of-stream handling, and a reviewed replay
+retention choice. The session page remains the canonical watch/share URL. It exposes
+whether video is `connecting`, `healthy`, `degraded`, `interrupted`, `ended`, or available
+as a replay without claiming health from a stale heartbeat. Hosts still control cameras,
+microphones, scenes, screen sharing, bitrate, and outgoing audio in OBS; GrowPath controls
+ingest authorization, playback delivery, chat, moderation, retention, and session access.
+
+First-party streaming is not complete merely because the OBS chat overlay works. Do not
+show a GrowPath stream key or label a session `hosted by GrowPath` until ingest,
+transcoding, playback, authorization, moderation, recording/retention, quotas, abuse
+response, and production observability are implemented and verified end to end. Outside
+provider broadcasting remains available and never silently receives or reuses a
+first-party stream key.
+
 ## GrowPath chat and OBS overlay
 
 GrowPath chat is its own conversation. It is not an automatic aggregation of Twitch,
@@ -106,3 +136,7 @@ one-entry behavior, JSON/CSV feed parity, linked-identity relay authorization, p
 failure recording, mobile chat usability, keyboard access, and OBS Browser Source rendering.
 Also verify viewer play/pause, volume/mute, fullscreen, and replay seeking independently
 from broadcaster camera, microphone, scene, and outgoing-mix controls.
+For first-party mode, additionally verify stream-key secrecy and rotation, session-scoped
+ingest authorization, draft/live separation, adaptive playback, interruption recovery,
+access revocation, chat continuity, explicit retention, quota enforcement, abuse handling,
+and that ending one session cannot affect another session or expose its replay.

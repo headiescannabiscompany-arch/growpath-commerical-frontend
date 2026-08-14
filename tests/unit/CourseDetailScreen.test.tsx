@@ -2,7 +2,10 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 
-import CourseDetailScreen, { createStyles } from "@/screens/CourseDetailScreen";
+import CourseDetailScreen, {
+  courseDetailImageSource,
+  createStyles
+} from "@/screens/CourseDetailScreen";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockPush = jest.fn();
@@ -90,6 +93,7 @@ jest.mock("@/api/courses", () => ({
 const freeCourse: any = {
   id: "course-1",
   title: "Living Soil Course",
+  coverImageUrl: "https://example.com/living-soil-cover.jpg",
   price: 0,
   lessons: [{ id: "lesson-1", title: "Build the mix", content: "Mix it." }],
   documents: [{ title: "Worksheet", storageUrl: "https://example.com/work.pdf" }],
@@ -154,6 +158,11 @@ describe("CourseDetailScreen learner player", () => {
     const screen = render(<CourseDetailScreen route={{ params: { id: "course-1" } }} />);
 
     const title = await screen.findByText("Living Soil Course");
+    expect(
+      screen.getByLabelText("Living Soil Course full course image").props.source
+    ).toEqual({
+      uri: "https://example.com/living-soil-cover.jpg"
+    });
     const reportTitle = screen.getByText("Report Course");
     const reportInput = screen.getByLabelText("Course report reason");
 
@@ -181,6 +190,16 @@ describe("CourseDetailScreen learner player", () => {
         color: dayPalette.text
       })
     );
+  });
+
+  it("prefers a detail banner and leaves an image-free course intentionally text-only", () => {
+    expect(
+      courseDetailImageSource({
+        bannerUrl: "https://example.com/detail-banner.jpg",
+        coverImageUrl: "https://example.com/catalog-cover.jpg"
+      })
+    ).toEqual({ uri: "https://example.com/detail-banner.jpg" });
+    expect(courseDetailImageSource({})).toBeNull();
   });
 
   it("shows progress, resources, discussion, products, AI, and persistent notes", async () => {

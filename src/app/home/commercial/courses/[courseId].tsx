@@ -99,8 +99,6 @@ function courseTitle(course: CommercialCourse | null) {
 
 function courseSetupWarnings(course: Partial<CommercialCourse>) {
   const warnings: string[] = [];
-  if (!course.thumbnailUrl?.trim()) warnings.push("add thumbnail");
-  if (!course.bannerUrl?.trim()) warnings.push("add banner");
   if (!course.category?.trim()) warnings.push("add category");
   if (!course.description?.trim()) warnings.push("add description");
   if (!courseGrowInterests(course.growInterests).length) {
@@ -127,6 +125,10 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
     if (!course.stripePriceId?.trim()) warnings.push("connect Stripe price");
   }
   return warnings;
+}
+
+export function commercialCourseDetailImageUrl(course: Partial<CommercialCourse>) {
+  return resolveImageUri(course.bannerUrl || course.thumbnailUrl || "");
 }
 
 function blocksCoursePublish(warning: string) {
@@ -616,10 +618,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
             <AppCard>
               <Text style={styles.kicker}>Course overview</Text>
               <Text style={styles.title}>{course.title || "Untitled course"}</Text>
-              {course.bannerUrl ? (
+              {commercialCourseDetailImageUrl(course) ? (
                 <Image
                   accessibilityLabel="Course learner preview banner"
-                  source={{ uri: resolveImageUri(course.bannerUrl) }}
+                  source={{ uri: commercialCourseDetailImageUrl(course) }}
                   style={styles.bannerPreview}
                   resizeMode="cover"
                 />
@@ -697,10 +699,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         <AppCard>
           <Text style={styles.kicker}>Learner preview</Text>
           <Text style={styles.title}>{course.title || "Untitled course"}</Text>
-          {course.bannerUrl ? (
+          {commercialCourseDetailImageUrl(course) ? (
             <Image
               accessibilityLabel="Course learner preview banner"
-              source={{ uri: resolveImageUri(course.bannerUrl) }}
+              source={{ uri: commercialCourseDetailImageUrl(course) }}
               style={styles.bannerPreview}
               resizeMode="cover"
             />

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -49,6 +50,7 @@ import { getLearningAccess } from "@/features/learning/learningAccess";
 import { lessonHasMedia } from "@/features/learning/lessonMedia";
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
+import { resolveImageUri } from "../utils/photoUploads";
 
 function rowId(row) {
   return String(row?._id || row?.id || "");
@@ -78,6 +80,20 @@ function coursePrice(course) {
   if (cents > 0) return `$${(cents / 100).toFixed(2)}`;
   const price = Number(course?.price || 0);
   return price > 0 ? `$${price.toFixed(2)}` : "Free";
+}
+
+export function courseDetailImageSource(course) {
+  const savedImage = resolveImageUri(
+    course?.bannerUrl ||
+      course?.bannerImageUrl ||
+      course?.coverImageUrl ||
+      course?.coverImage ||
+      course?.imageUrl ||
+      course?.thumbnailUrl ||
+      course?.thumbnail ||
+      ""
+  );
+  return savedImage ? { uri: savedImage } : null;
 }
 
 function lessonTitle(lesson, index) {
@@ -722,6 +738,14 @@ export default function CourseDetailScreen({ route, navigation = null }) {
         {coursePrice(course)} |{" "}
         {course?.status || (course?.isPublished ? "published" : "draft")}
       </Text>
+      {courseDetailImageSource(course) ? (
+        <Image
+          accessibilityLabel={`${String(course?.title || course?.name || "Course")} full course image`}
+          resizeMode="cover"
+          source={courseDetailImageSource(course)}
+          style={styles.courseHeroImage}
+        />
+      ) : null}
       {course?.summary || course?.description ? (
         <Text style={styles.body}>{course.summary || course.description}</Text>
       ) : null}
@@ -1370,6 +1394,14 @@ export function createStyles(palette) {
       backgroundColor: palette.page
     },
     title: { fontSize: 24, fontWeight: "800", color: palette.text },
+    courseHeroImage: {
+      width: "100%",
+      maxWidth: 920,
+      aspectRatio: 16 / 9,
+      alignSelf: "center",
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
     body: { color: palette.textSoft, lineHeight: 20 },
     meta: { color: palette.textMuted, fontSize: 13 },
     feedback: {

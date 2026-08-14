@@ -162,8 +162,6 @@ function quizItems(value: string) {
 
 function courseSetupWarnings(course: Partial<CommercialCourse>) {
   const warnings: string[] = [];
-  if (!course.thumbnailUrl?.trim()) warnings.push("add thumbnail");
-  if (!course.bannerUrl?.trim()) warnings.push("add banner");
   if (!course.category?.trim()) warnings.push("add category");
   if (!course.description?.trim()) warnings.push("add description");
   if (!course.growInterests?.length) warnings.push("add grow interests");
