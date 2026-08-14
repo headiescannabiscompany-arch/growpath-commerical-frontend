@@ -3900,6 +3900,171 @@
         "observedTaxonName": "Tagetes erecta",
         "observedTaxonRank": "species"
       }
+    },
+    {
+      "recordId": "plant-id-chrysanthemum-002",
+      "caseId": "chrysanthemum",
+      "acceptedName": "Florists' chrysanthemum",
+      "scientificName": "Chrysanthemum × morifolium",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Chrysanthemum hybrid", "other Asteraceae"],
+      "distinguishingFeatures": [
+        "dense mounded cultivated habit with many yellow double capitula",
+        "lobed chrysanthemum foliage visible beneath repeated flower heads"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.82, "maximum": 0.95 },
+      "expectedResult": "Florists' chrysanthemum is expected from the cultivated mounded habit, repeated double heads, and lobed foliage; do not infer a cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/327979159",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/594239317/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "chrysanthemum-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "dense potted mound",
+          "many yellow double capitula",
+          "lobed leaves",
+          "cultivated fall display context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:77111328-1",
+            "outcome": "Kew POWO accepts Chrysanthemum × morifolium and records the common name florists' chrysanthemum; the image supports that hybrid identity without cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. The exact CC0 dedication was retained. Source computer-vision involvement does not replace the visible morphology and Tier-A cross-check."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-594239317",
+        "photoId": 594239317,
+        "sourceQuery": "Chrysanthemum × morifolium",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 53806,
+        "observedTaxonName": "Chrysanthemum × morifolium",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
+      "recordId": "plant-id-chrysanthemum-004",
+      "caseId": "chrysanthemum",
+      "acceptedName": "Florists' chrysanthemum",
+      "scientificName": "Chrysanthemum × morifolium",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Chrysanthemum hybrid", "other Asteraceae"],
+      "distinguishingFeatures": [
+        "multiple red densely doubled composite heads on one plant",
+        "broad deeply lobed chrysanthemum leaves and flower buds"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.86, "maximum": 0.97 },
+      "expectedResult": "Florists' chrysanthemum is expected from repeated double heads, buds, and diagnostic lobed foliage; cultivar remains unknown.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/331654297",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/601701168/original.jpg",
+      "creator": "(c) Gabriel, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Gabriel, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "chrysanthemum-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "multiple red double capitula",
+          "deeply lobed leaves",
+          "developing buds",
+          "single cultivated plant context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:77111328-1",
+            "outcome": "Kew POWO accepts Chrysanthemum × morifolium as a hybrid; the combined flowering and vegetative view supports the governed target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained. No cultivar was inferred from flower color."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-601701168",
+        "photoId": 601701168,
+        "sourceQuery": "Chrysanthemum × morifolium",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 53806,
+        "observedTaxonName": "Chrysanthemum × morifolium",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
+      "recordId": "plant-id-chrysanthemum-006",
+      "caseId": "chrysanthemum",
+      "acceptedName": "Florists' chrysanthemum",
+      "scientificName": "Chrysanthemum × morifolium",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": [
+        "other Chrysanthemum hybrid",
+        "other daisy-like Asteraceae"
+      ],
+      "distinguishingFeatures": [
+        "repeated pink-and-white ray florets around yellow discs",
+        "deeply lobed chrysanthemum foliage on the same potted plant"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.82, "maximum": 0.95 },
+      "expectedResult": "Florists' chrysanthemum is expected from repeated heads and matching lobed foliage; do not infer a named cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/331725954",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/601846117/original.jpg",
+      "creator": "(c) Gabriel, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Gabriel, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "chrysanthemum-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "many pink-and-white composite heads",
+          "yellow disc florets",
+          "deeply lobed leaves",
+          "single potted plant context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:77111328-1",
+            "outcome": "Kew POWO accepts Chrysanthemum × morifolium and its florists' chrysanthemum common name; repeated heads plus foliage support the hybrid-level target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-601846117",
+        "photoId": 601846117,
+        "sourceQuery": "Chrysanthemum × morifolium",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 53806,
+        "observedTaxonName": "Chrysanthemum × morifolium",
+        "observedTaxonRank": "hybrid"
+      }
     }
   ]
 }

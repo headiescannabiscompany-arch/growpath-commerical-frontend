@@ -161,11 +161,13 @@ Legend:
       46 governed case definitions, zero contract errors, zero reviewed media records,
       and 48 retained blockers. The strict review/promotion inputs were absent from the
       clean worktree, so no catalog write or false promotion was attempted.
-      Subsequent governed visual review has advanced the catalog to 57/320 records in
+      Subsequent governed visual review has advanced the catalog to 60/320 records in
       the current merge pipeline, including an Orchidaceae batch that explicitly
       rejects orchid-like _Duparquetia orchidacea_ as Fabaceae rather than trusting its
       name or appearance and a Marigold batch that rejects butterfly and _Tithonia_
       query/name collisions.
+      The same pipeline now includes three accepted florists' chrysanthemum hybrid
+      records while rejecting mixed, damaged, and foliage-only views.
 
 ## Diagnosis, IPM, Harvest, and shared image/video analysis
 

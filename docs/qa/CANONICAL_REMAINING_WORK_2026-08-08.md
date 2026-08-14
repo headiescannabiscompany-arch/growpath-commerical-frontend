@@ -207,6 +207,10 @@ execution boundaries and the evidence needed not to reopen completed work.
       The following Petunia queue produced zero approvable records: five candidates
       were _Ruellia_ common-name collisions and one was _Physalis_. Replacement
       candidates from the accepted _Petunia_ genus remain required.
+      Three cultivated florists' chrysanthemum records with repeated heads and lobed
+      foliage then passed at the Kew-accepted hybrid name _Chrysanthemum × morifolium_;
+      the mixed, damaged sparse, and foliage-only candidates were rejected. The catalog
+      is now 60/320 reviewed records.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.

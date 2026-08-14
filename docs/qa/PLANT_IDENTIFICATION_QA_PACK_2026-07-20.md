@@ -40,6 +40,10 @@ The governed catalog is now 57/320.
 All six queued Petunia candidates were also rejected: five were common-name/query
 collisions from _Ruellia_ (wild petunias) and one was _Physalis_. Replacement candidates
 from the accepted _Petunia_ genus are required; no false Petunia coverage was added.
+Three cultivated florists' chrysanthemum records with repeated flower heads and lobed
+foliage also passed at the accepted hybrid name _Chrysanthemum × morifolium_. A mixed
+scene, a damaged sparse specimen, and a foliage-only view were rejected. The governed
+catalog is now 60/320.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
