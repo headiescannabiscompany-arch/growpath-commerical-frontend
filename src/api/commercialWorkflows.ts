@@ -206,8 +206,13 @@ export type CommercialLiveEvent = {
   relatedFeedPostId?: string;
   forumThreadId?: string;
   growInterests?: string[];
-  visibility?: "public" | "followers" | "enrolled" | "paid" | "private" | "unlisted";
-  status?: "draft" | "scheduled" | "live" | "ended" | "cancelled" | "replay_available";
+  visibility?: "public" | "followers" | "customers" | "private";
+  status?: "draft" | "scheduled" | "live" | "ended" | "replay_available";
+  sessionType?: "live" | "premiere";
+  sourceVideoId?: string;
+  courseId?: string;
+  chatEnabled?: boolean;
+  chatSlowModeSeconds?: number;
   isPublished?: boolean;
   replayUrl?: string;
   notificationPlan?: string[];
@@ -488,24 +493,31 @@ export async function archiveCommercialCourse(id: string) {
 }
 
 export async function fetchCommercialLives(): Promise<CommercialLiveEvent[]> {
-  const res = await apiRequest("/api/commercial/lives");
+  const res = await apiRequest("/api/lives", { params: { mine: true } });
   return listFromEnvelope(res, ["lives", "liveEvents", "commercialLives"]);
 }
 
 export async function createCommercialLive(data: Partial<CommercialLiveEvent>) {
-  const res = await apiRequest("/api/commercial/lives", {
+  const res = await apiRequest("/api/lives", {
     method: "POST",
     body: data
   });
-  return res?.live ?? res?.liveEvent ?? res?.commercialLive ?? res?.created ?? res;
+  return (
+    res?.session ??
+    res?.live ??
+    res?.liveEvent ??
+    res?.commercialLive ??
+    res?.created ??
+    res
+  );
 }
 
 export async function updateCommercialLive(
   id: string,
   data: Partial<CommercialLiveEvent>
 ) {
-  const res = await apiRequest(`/api/commercial/lives/${encodeURIComponent(id)}`, {
-    method: "PATCH",
+  const res = await apiRequest(`/api/lives/${encodeURIComponent(id)}`, {
+    method: "PUT",
     body: data
   });
   return res?.live ?? res?.liveEvent ?? res?.commercialLive ?? res?.updated ?? res;

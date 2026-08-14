@@ -1,6 +1,6 @@
 import { initUnauthorizedHandler } from "@/auth/initUnauthorized";
 import React, { useEffect, useMemo } from "react";
-import { Slot } from "expo-router";
+import { Slot, usePathname } from "expo-router";
 import { View } from "react-native";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { enableScreens } from "react-native-screens";
@@ -30,6 +30,7 @@ const queryClient = new QueryClient({
 });
 
 function RootShell() {
+  const pathname = usePathname();
   const { palette } = useAppTheme();
   useNotificationDeepLinks();
   const navigationTheme = useMemo(
@@ -51,14 +52,25 @@ function RootShell() {
 
   return (
     <ThemeProvider value={navigationTheme}>
-      <View style={{ flex: 1, backgroundColor: palette.page }}>
-        <GlobalApiStatusBanner />
-        <View style={{ flex: 1, backgroundColor: palette.page }}>
-          <RouteAccessGuard>
-            <Slot />
-          </RouteAccessGuard>
-        </View>
-        <GlobalReportBugButton />
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: pathname === "/live-overlay" ? "transparent" : palette.page
+        }}
+      >
+        {pathname === "/live-overlay" ? (
+          <Slot />
+        ) : (
+          <>
+            <GlobalApiStatusBanner />
+            <View style={{ flex: 1, backgroundColor: palette.page }}>
+              <RouteAccessGuard>
+                <Slot />
+              </RouteAccessGuard>
+            </View>
+            <GlobalReportBugButton />
+          </>
+        )}
       </View>
     </ThemeProvider>
   );

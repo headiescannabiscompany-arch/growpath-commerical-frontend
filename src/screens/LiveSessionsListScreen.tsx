@@ -22,6 +22,7 @@ const FILTERS = [
   { key: "campaigns", label: "Campaign-linked" },
   { key: "upcoming", label: "Upcoming" },
   { key: "live", label: "Live now" },
+  { key: "premieres", label: "Premieres" },
   { key: "replays", label: "Replays" }
 ] as const;
 
@@ -70,6 +71,10 @@ function isLiveNow(item: LiveSession) {
 function isReplay(item: LiveSession) {
   const status = text(item?.status).toLowerCase();
   return status === "replay_available" || Boolean(item?.replayUrl || item?.vodUrl);
+}
+
+function isPremiere(item: LiveSession) {
+  return text(item?.sessionType).toLowerCase() === "premiere";
 }
 
 function isUpcoming(item: LiveSession) {
@@ -170,6 +175,8 @@ function matchesFilter(item: LiveSession, filterKey: (typeof FILTERS)[number]["k
       return isLiveNow(item);
     case "replays":
       return isReplay(item);
+    case "premieres":
+      return isPremiere(item);
     default:
       return true;
   }
@@ -177,6 +184,7 @@ function matchesFilter(item: LiveSession, filterKey: (typeof FILTERS)[number]["k
 
 function cardLabelFor(item: LiveSession) {
   if (isLiveNow(item)) return "Live now";
+  if (isPremiere(item)) return "Video premiere";
   if (isReplay(item)) return "Replay";
   if (isUpcoming(item)) return "Upcoming";
   if (campaignIdOf(item)) return "Campaign-linked";
@@ -231,7 +239,8 @@ export default function LiveSessionsListScreen() {
       campaigns: sessions.filter((item) => Boolean(campaignIdOf(item))).length,
       upcoming: sessions.filter((item) => isUpcoming(item)).length,
       live: sessions.filter((item) => isLiveNow(item)).length,
-      replays: sessions.filter((item) => isReplay(item)).length
+      replays: sessions.filter((item) => isReplay(item)).length,
+      premieres: sessions.filter((item) => isPremiere(item)).length
     }),
     [sessions]
   );
@@ -241,9 +250,14 @@ export default function LiveSessionsListScreen() {
     const liveNow = filteredSessions.filter((item) => isLiveNow(item));
     const upcoming = filteredSessions.filter((item) => isUpcoming(item));
     const replays = filteredSessions.filter((item) => isReplay(item));
+    const premieres = filteredSessions.filter((item) => isPremiere(item));
     const remaining = filteredSessions.filter(
       (item) =>
-        !campaignIdOf(item) && !isLiveNow(item) && !isUpcoming(item) && !isReplay(item)
+        !campaignIdOf(item) &&
+        !isLiveNow(item) &&
+        !isUpcoming(item) &&
+        !isReplay(item) &&
+        !isPremiere(item)
     );
 
     return [
@@ -267,6 +281,13 @@ export default function LiveSessionsListScreen() {
         empty: "No live sessions are currently active.",
         summary: "Sessions currently broadcasting or marked live.",
         items: liveNow
+      },
+      {
+        key: "premieres",
+        title: "Video premieres",
+        empty: "No GrowPath video premieres are scheduled.",
+        summary: "Published videos scheduled as shared watch events with live chat.",
+        items: premieres
       },
       {
         key: "replays",
@@ -381,6 +402,13 @@ export default function LiveSessionsListScreen() {
           Browse campaign-linked live opportunities, upcoming sessions, live broadcasts,
           and replays. The detail screen handles RSVP and playback when you need it.
         </Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push("/live-studio" as any)}
+          style={styles.heroAction}
+        >
+          <Text style={styles.heroActionText}>Create or manage a live</Text>
+        </Pressable>
       </View>
 
       <View style={styles.summaryCard}>
@@ -521,6 +549,15 @@ export function createStyles(palette: ThemePalette) {
     },
     title: { color: palette.heroText, fontSize: 30, fontWeight: "900" },
     subtitle: { color: palette.heroMuted, lineHeight: 21 },
+    heroAction: {
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.pill,
+      marginTop: 4,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    heroActionText: { color: palette.accentText, fontWeight: "900" },
     summaryCard: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.border,

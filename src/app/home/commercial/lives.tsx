@@ -86,10 +86,8 @@ const LIVE_VISIBILITY_OPTIONS: Array<{
 }> = [
   { value: "public", label: "Public" },
   { value: "followers", label: "Followers only" },
-  { value: "enrolled", label: "Enrolled learners" },
-  { value: "paid", label: "Paid access" },
-  { value: "private", label: "Private" },
-  { value: "unlisted", label: "Unlisted" }
+  { value: "customers", label: "Customers only" },
+  { value: "private", label: "Private" }
 ];
 
 const notificationPlan = [
@@ -328,7 +326,7 @@ export default function CommercialLivesRoute() {
         twitchChannelId: form.twitchChannelId.trim() || undefined,
         twitchEmbedUrl: form.twitchEmbedUrl.trim() || undefined,
         eventSubStatus: form.eventSubStatus.trim() || "not_connected",
-        relatedCourseId: form.relatedCourseId.trim() || undefined,
+        courseId: form.relatedCourseId.trim() || undefined,
         relatedProductId: form.relatedProductId.trim() || undefined,
         relatedFeedCampaignId,
         relatedFeedPostId: relatedFeedCampaignId,
@@ -431,15 +429,17 @@ export default function CommercialLivesRoute() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.kicker}>Commercial workspace</Text>
-            <Text style={styles.title}>Lives / Twitch</Text>
+            <Text style={styles.title}>Lives / Streaming</Text>
             <Text style={styles.subtitle}>
               Schedule live product demos, course sessions, launch events, and Q&A. Link
               lives to courses, products, feed campaigns, storefronts, and Forum/Q&A
-              threads.
+              threads. Use Live Studio for GrowPath chat, video premieres, an OBS overlay,
+              Discord announcements, and platform-neutral stream destinations.
             </Text>
           </View>
           <View style={styles.headerActions}>
             <ActionLink href="/lives" label="Public Lives" />
+            <ActionLink href="/live-studio" label="Open Live Studio" />
             <ActionLink href="/home/commercial/courses" label="Courses" />
             <ActionLink href="/home/commercial/products" label="Products" />
             <ActionLink href="/home/commercial/feed" label="Create Feed Campaign" />

@@ -63,7 +63,7 @@ describe("CommercialLivesRoute", () => {
   beforeEach(() => {
     mockApiRequest.mockReset();
     mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/commercial/lives" && !options) {
+      if (path === "/api/lives" && options?.params?.mine) {
         return Promise.resolve({
           lives: [
             {
@@ -109,7 +109,7 @@ describe("CommercialLivesRoute", () => {
           authorizationUrl: "https://id.twitch.tv/oauth2/authorize?state=test"
         });
       }
-      if (path === "/api/commercial/lives" && options?.method === "POST") {
+      if (path === "/api/lives" && options?.method === "POST") {
         return Promise.resolve({ live: { id: "live-new", ...options.body } });
       }
       if (path === "/api/tasks" && options?.method === "POST") {
@@ -127,7 +127,7 @@ describe("CommercialLivesRoute", () => {
   it("schedules lives with course, product, feed, forum, replay, and reminder links", async () => {
     const screen = render(<CommercialLivesRoute />);
 
-    await waitFor(() => expect(screen.getByText("Lives / Twitch")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Lives / Streaming")).toBeTruthy());
 
     [
       "Commercial live title",
@@ -285,17 +285,17 @@ describe("CommercialLivesRoute", () => {
       "https://twitch.tv/videos/veg"
     );
     fireEvent.press(
-      screen.getByLabelText("Set commercial live visibility to Enrolled learners")
+      screen.getByLabelText("Set commercial live visibility to Followers only")
     );
     expect(
       screen.getByRole("radio", {
-        name: "Set commercial live visibility to Enrolled learners"
+        name: "Set commercial live visibility to Followers only"
       }).props.accessibilityState?.checked
     ).toBe(true);
     fireEvent.press(screen.getByLabelText("Schedule commercial live"));
 
     await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/lives", {
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/lives", {
         method: "POST",
         body: expect.objectContaining({
           title: "Friday mix demo",
@@ -310,13 +310,13 @@ describe("CommercialLivesRoute", () => {
           twitchChannelId: "67890",
           twitchEmbedUrl: "https://player.twitch.tv/?channel=livingsoillabs",
           eventSubStatus: "connected",
-          relatedCourseId: "course-veg",
+          courseId: "course-veg",
           relatedProductId: "product-veg",
           relatedFeedCampaignId: "campaign-veg",
           relatedFeedPostId: "campaign-veg",
           forumThreadId: "thread-veg",
           growInterests: ["living soil", "dry amendments"],
-          visibility: "enrolled",
+          visibility: "followers",
           replayUrl: "https://twitch.tv/videos/veg",
           status: "scheduled",
           notificationPlan: expect.arrayContaining([
@@ -334,7 +334,7 @@ describe("CommercialLivesRoute", () => {
   it("blocks scheduled commercial lives until setup is complete", async () => {
     const screen = render(<CommercialLivesRoute />);
 
-    await waitFor(() => expect(screen.getByText("Lives / Twitch")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Lives / Streaming")).toBeTruthy());
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial live title"),
@@ -346,14 +346,14 @@ describe("CommercialLivesRoute", () => {
       screen.getByLabelText("Schedule commercial live").props.accessibilityState?.disabled
     ).toBe(true);
     expect(mockApiRequest).not.toHaveBeenCalledWith(
-      "/api/commercial/lives",
+      "/api/lives",
       expect.objectContaining({ method: "POST" })
     );
   });
 
   it("treats a missing Twitch status route as unavailable setup guidance", async () => {
     mockApiRequest.mockImplementation((path: string, options?: any) => {
-      if (path === "/api/commercial/lives" && !options) {
+      if (path === "/api/lives" && options?.params?.mine) {
         return Promise.resolve({ lives: [] });
       }
       if (path === "/api/twitch/status") {

@@ -12,7 +12,7 @@ const ReportModal = ({
   contentId,
   contentTitle,
   targetUrl,
-  parentPostId = null,
+  parentPostId = "",
   token = null,
   onSuccess
 }) => {

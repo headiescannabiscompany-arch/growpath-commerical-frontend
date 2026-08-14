@@ -17,7 +17,7 @@ export default function GlobalReportBugButton() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGlobalReportBugButtonStyles(palette), [palette]);
   const isDocked = shouldDockReportBugButton(width);
-  if (pathname === "/support") return null;
+  if (pathname === "/support" || pathname === "/live-overlay") return null;
   return (
     <View pointerEvents="box-none" style={isDocked ? styles.mobileDock : styles.layer}>
       <View style={isDocked ? styles.mobileButton : styles.button}>

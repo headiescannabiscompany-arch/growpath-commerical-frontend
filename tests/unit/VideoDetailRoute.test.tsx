@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import VideoDetailRoute from "@/app/videos/[videoId]";
 
 const mockGetVideo = jest.fn();
+const mockListVideoComments = jest.fn();
 let mockReportProps: any = null;
 let mockLessonMediaCardProps: any = null;
 let mockAppPageProps: any = null;
@@ -21,7 +22,10 @@ jest.mock("@/auth/AuthContext", () => ({
 }));
 
 jest.mock("@/api/videos", () => ({
-  getVideo: (...args: any[]) => mockGetVideo(...args)
+  getVideo: (...args: any[]) => mockGetVideo(...args),
+  listVideoComments: (...args: any[]) => mockListVideoComments(...args),
+  createVideoComment: jest.fn(),
+  deleteVideoComment: jest.fn()
 }));
 
 jest.mock("@/components/FollowButton", () => () => null);
@@ -29,7 +33,7 @@ jest.mock("@/components/InlineError", () => ({ InlineError: () => null }));
 jest.mock("@/components/ReportModal", () => ({
   __esModule: true,
   default: (props: any) => {
-    mockReportProps = props;
+    if (props.visible) mockReportProps = props;
     return null;
   }
 }));
@@ -90,6 +94,7 @@ describe("VideoDetailRoute reporting", () => {
     mockAppPageProps = null;
     mockUserId = "viewer-1";
     mockGetVideo.mockResolvedValue(video);
+    mockListVideoComments.mockResolvedValue([]);
   });
 
   it("uses exactly one shared back action with a videos fallback", async () => {
