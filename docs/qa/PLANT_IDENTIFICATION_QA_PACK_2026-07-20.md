@@ -37,6 +37,9 @@ no candidate is automatically promoted. Two genus-level Marigold records with co
 heads and divided foliage also passed; three _Erynnis tages_ butterfly results and one
 _Tithonia rotundifolia_ lookalike were rejected despite appearing in the Tagetes query.
 The governed catalog is now 57/320.
+All six queued Petunia candidates were also rejected: five were common-name/query
+collisions from _Ruellia_ (wild petunias) and one was _Physalis_. Replacement candidates
+from the accepted _Petunia_ genus are required; no false Petunia coverage was added.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 

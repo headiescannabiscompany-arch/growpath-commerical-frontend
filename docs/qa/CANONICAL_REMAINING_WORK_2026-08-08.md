@@ -204,6 +204,9 @@ execution boundaries and the evidence needed not to reopen completed work.
       composite heads and divided foliage then passed; three butterfly results caused
       by the _Erynnis tages_ name collision and one _Tithonia rotundifolia_ lookalike
       were rejected. The catalog is now 57/320 reviewed records.
+      The following Petunia queue produced zero approvable records: five candidates
+      were _Ruellia_ common-name collisions and one was _Physalis_. Replacement
+      candidates from the accepted _Petunia_ genus remain required.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.
