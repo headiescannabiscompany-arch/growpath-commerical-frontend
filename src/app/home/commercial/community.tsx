@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
@@ -160,6 +160,26 @@ export default function CommercialCommunityRoute() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<any>(null);
+  const params = useLocalSearchParams<{
+    compose?: string | string[];
+    linkedGrowId?: string | string[];
+    title?: string | string[];
+    body?: string | string[];
+    tags?: string | string[];
+  }>();
+
+  useEffect(() => {
+    const value = (input?: string | string[]) =>
+      String(Array.isArray(input) ? input[0] || "" : input || "").trim();
+    if (value(params.compose) !== "timeline") return;
+    setForm((current) => ({
+      ...current,
+      title: value(params.title),
+      body: value(params.body),
+      linkedGrowId: value(params.linkedGrowId),
+      tags: value(params.tags) || "grow-timeline,evidence"
+    }));
+  }, [params.body, params.compose, params.linkedGrowId, params.tags, params.title]);
 
   async function loadSupportPosts() {
     setLoading(true);

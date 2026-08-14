@@ -317,6 +317,16 @@ grow`, private current location without a Field Study, and an optional approxima
 
 ## B. Personal, Commercial, Facility, and public user loops
 
+- [ ] Complete and production-accept the first-class Visual Grow Timeline for Personal
+  and Commercial grow workspaces. Personal now has Lifecycle/Month/Week/Day detail,
+  saved-event photos and important notes, viewer-friendly HTML/native-share export, and
+  a review-first Forum draft that keeps the source grow private. Commercial evidence
+  runs now use stored plan, notes, quality observations, summaries, lifecycle dates, and
+  media; export stays separate from compliance and the brand Forum draft remains locked
+  until the owner saves `public_ready`. Remaining: automated/live acceptance and confirm
+  production payloads expose every intended saved photo. Facility retains its internal
+  operational journal/timeline and compliance boundary, not public timeline sharing.
+
 - [~] Complete and record the independent outside-user session. Preserve the completed
   Public, Personal Free/Pro, Commercial, Facility Owner/Manager/Staff/Viewer, and
   cross-role shared-record evidence unless regression testing fails. On 2026-08-09

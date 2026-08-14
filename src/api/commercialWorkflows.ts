@@ -54,6 +54,9 @@ export type ProductTrial = {
   AIReview?: Record<string, any>;
   aiReview?: Record<string, any>;
   notes?: string;
+  photos?: string[];
+  photoUrls?: string[];
+  imageUrl?: string;
   status?: "planned" | "active" | "complete" | "archived";
   trialType?: "evidence" | "purchase_intent_concept";
   conceptAssetId?: string;
@@ -98,6 +101,9 @@ export type ProductTrialEvidenceRun = {
   harvestQualityNotes?: string;
   commercialCropSummary?: string;
   notes?: string;
+  photos?: string[];
+  photoUrls?: string[];
+  imageUrl?: string;
   status?: "planned" | "active" | "completed" | "archived";
   createdAt?: string;
   updatedAt?: string;

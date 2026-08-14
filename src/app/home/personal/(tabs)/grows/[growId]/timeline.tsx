@@ -3,6 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,7 +11,12 @@ import {
   View
 } from "react-native";
 
-import { getPersonalGrowTimeline, type PersonalGrowTimelineEvent } from "@/api/grows";
+import {
+  getPersonalGrowTimeline,
+  listPersonalGrows,
+  type PersonalGrow,
+  type PersonalGrowTimelineEvent
+} from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
@@ -19,6 +25,11 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
+import {
+  groupTimelineEvents,
+  timelineEventPhotos,
+  type GrowTimelineZoom
+} from "@/features/grows/timeline";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -28,6 +39,13 @@ const FILTERS = [
   { key: "diagnosis", label: "AI" },
   { key: "automation", label: "Automation" }
 ] as const;
+
+const ZOOM_LEVELS: { key: GrowTimelineZoom; label: string; helper: string }[] = [
+  { key: "lifecycle", label: "Lifecycle", helper: "Milestones across the complete grow" },
+  { key: "month", label: "Month", helper: "Monthly progress and important notes" },
+  { key: "week", label: "Week", helper: "Weekly work, evidence, and changes" },
+  { key: "day", label: "Day", helper: "Full saved detail for each day" }
+];
 
 export const createGrowTimelineStyles = (palette: ThemePalette) =>
   StyleSheet.create({
@@ -53,6 +71,19 @@ export const createGrowTimelineStyles = (palette: ThemePalette) =>
     filterActive: { borderColor: palette.accent, backgroundColor: palette.accent },
     filterText: { fontWeight: "800", color: palette.text, fontSize: 12 },
     filterTextActive: { color: palette.accentText },
+    zoomPanel: {
+      marginTop: 12,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
+    zoomTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    zoomHelp: { marginTop: 4, color: palette.textMuted, lineHeight: 18 },
+    period: { marginTop: 18 },
+    periodTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    periodMeta: { color: palette.textMuted, marginTop: 3 },
     event: {
       marginTop: 12,
       padding: 14,
@@ -64,6 +95,13 @@ export const createGrowTimelineStyles = (palette: ThemePalette) =>
     eventTitle: { fontSize: 15, fontWeight: "800", color: palette.text },
     eventMeta: { marginTop: 4, color: palette.textMuted, fontSize: 12 },
     eventSummary: { marginTop: 8, color: palette.textSoft, lineHeight: 19 },
+    photoRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    photo: {
+      width: 150,
+      height: 110,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface
+    },
     detailRow: {
       marginTop: 6,
       color: palette.textMuted,
@@ -112,6 +150,22 @@ function eventGroup(event: PersonalGrowTimelineEvent) {
   if (type.includes("diagnosis") || model.includes("diagnosis")) return "diagnosis";
   if (type.includes("automation") || model.includes("automation")) return "automation";
   return "other";
+}
+
+function periodLabel(key: string, zoom: GrowTimelineZoom) {
+  if (key === "unknown") return "Date not recorded";
+  if (zoom === "lifecycle") return key;
+  const date = new Date(`${key}T12:00:00`);
+  if (!Number.isFinite(date.getTime())) return key;
+  if (zoom === "month")
+    return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  if (zoom === "week") return `Week of ${date.toLocaleDateString()}`;
+  return date.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
 }
 
 function eventMatchesFilter(event: PersonalGrowTimelineEvent, filter: string) {
@@ -258,7 +312,9 @@ export default function GrowTimelineScreen() {
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
   const [events, setEvents] = useState<PersonalGrowTimelineEvent[]>([]);
+  const [grow, setGrow] = useState<PersonalGrow | null>(null);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
+  const [zoom, setZoom] = useState<GrowTimelineZoom>("lifecycle");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -271,7 +327,19 @@ export default function GrowTimelineScreen() {
     setLoading(true);
     setError("");
     try {
-      setEvents(await getPersonalGrowTimeline(growId));
+      const timelineRows = await getPersonalGrowTimeline(growId);
+      setEvents(timelineRows);
+      try {
+        const grows =
+          typeof listPersonalGrows === "function" ? await listPersonalGrows() : [];
+        setGrow(
+          grows.find(
+            (candidate) => String(candidate.id || (candidate as any)._id) === growId
+          ) || null
+        );
+      } catch {
+        setGrow(null);
+      }
     } catch {
       setEvents([]);
       setError("Failed to load grow timeline.");
@@ -290,12 +358,43 @@ export default function GrowTimelineScreen() {
     () => events.filter((event) => eventMatchesFilter(event, filter)),
     [events, filter]
   );
+  const groupedEvents = useMemo(
+    () => groupTimelineEvents(visibleEvents, zoom),
+    [visibleEvents, zoom]
+  );
+  const selectedPhotos = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...(grow?.photos || []).filter(Boolean),
+          ...visibleEvents.flatMap((event) => timelineEventPhotos(event as any))
+        ])
+      ).slice(0, 10),
+    [grow, visibleEvents]
+  );
+  const shareHref = useMemo(() => {
+    const query = new URLSearchParams({
+      growId,
+      title: `Grow timeline: ${grow?.name || "My grow"}`,
+      body:
+        visibleEvents
+          .slice(0, 8)
+          .map(
+            (event) =>
+              `${fmtDate(event.timestamp)} — ${event.title}${event.summary ? `: ${event.summary}` : ""}`
+          )
+          .join("\n") || "Sharing a visual grow timeline from GrowPath."
+    });
+    if (selectedPhotos.length) query.set("photos", selectedPhotos.join(","));
+    return `/home/personal/forum/new-post?${query.toString()}`;
+  }, [grow?.name, growId, selectedPhotos, visibleEvents]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Grow Timeline</Text>
       <Text style={styles.subtitle}>
-        Saved logs, photos, tasks, tool runs, diagnoses, and automation events.
+        A visual history of saved photos, important notes, tasks, tool results, diagnoses,
+        and milestones. Zoom changes detail; it never invents missing events.
       </Text>
       <PersonalFeedPlacement
         placement="top"
@@ -304,12 +403,57 @@ export default function GrowTimelineScreen() {
       />
       <GrowWorkspaceNav growId={growId} active="timeline" />
       <ContextualWorkflowLinks
-        title="Timeline report"
-        helper="Export this grow's journal, tasks, plants, and ToolRuns from the shared report workflow."
+        title="Viewer-friendly timeline export"
+        helper="Create a readable narrative export with dates, notes, and photo links. Compliance reporting remains separate."
         source="grow_timeline"
         growId={growId}
         workflows={["pdf-export"]}
       />
+
+      <View style={styles.zoomPanel}>
+        <Text style={styles.zoomTitle}>Timeline detail</Text>
+        <Text style={styles.zoomHelp}>
+          {ZOOM_LEVELS.find((item) => item.key === zoom)?.helper}
+        </Text>
+        <View style={styles.filterRow}>
+          {ZOOM_LEVELS.map((item) => {
+            const active = item.key === zoom;
+            return (
+              <Pressable
+                key={item.key}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={`Show timeline by ${item.label}`}
+                style={[styles.filter, active && styles.filterActive]}
+                onPress={() => setZoom(item.key)}
+              >
+                <Text style={[styles.filterText, active && styles.filterTextActive]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <View style={styles.filterRow}>
+          <Link
+            href={`/home/personal/tools/pdf-export?growId=${encodeURIComponent(growId)}&presentation=timeline`}
+            asChild
+          >
+            <Pressable style={styles.sourceAction} accessibilityRole="link">
+              <Text style={styles.sourceActionText}>Export Visual Timeline</Text>
+            </Pressable>
+          </Link>
+          <Link href={shareHref as any} asChild>
+            <Pressable
+              style={styles.sourceAction}
+              accessibilityRole="link"
+              accessibilityLabel="Review and share grow timeline"
+            >
+              <Text style={styles.sourceActionText}>Review & Share Copy</Text>
+            </Pressable>
+          </Link>
+        </View>
+      </View>
 
       <View style={styles.filterRow}>
         {FILTERS.map((item) => {
@@ -344,40 +488,68 @@ export default function GrowTimelineScreen() {
         </Text>
       ) : null}
 
-      {visibleEvents.map((event) => (
-        <View key={event.id} style={styles.event}>
-          <Text style={styles.eventTitle}>{event.title}</Text>
-          <Text style={styles.eventMeta}>
-            {eventKind(event)} | {fmtDate(event.timestamp)}
+      {groupedEvents.map((period) => (
+        <View key={period.key} style={styles.period}>
+          <Text accessibilityRole="header" style={styles.periodTitle}>
+            {periodLabel(period.key, zoom)}
           </Text>
-          {event.summary ? (
-            <Text style={styles.eventSummary}>{event.summary}</Text>
-          ) : null}
-          {eventPayloadDetails(event).map((detail) => (
-            <Text key={detail} style={styles.detailRow}>
-              {detail}
-            </Text>
-          ))}
-          {sourceHref(event, growId) ? (
-            <Link href={sourceHref(event, growId)} asChild>
-              <Pressable
-                style={styles.sourceAction}
-                accessibilityRole="button"
-                accessibilityLabel={`${sourceLabel(event)}: ${event.title}`}
-              >
-                <Text style={styles.sourceActionText}>{sourceLabel(event)}</Text>
-              </Pressable>
-            </Link>
-          ) : null}
-          {Array.isArray(event.tags) && event.tags.length ? (
-            <View style={styles.tags}>
-              {event.tags.slice(0, 5).map((tag) => (
-                <View key={tag} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
+          <Text style={styles.periodMeta}>
+            {period.items.length} saved {period.items.length === 1 ? "event" : "events"}
+          </Text>
+          {period.items.map((event) => {
+            const photos = timelineEventPhotos(event as any);
+            return (
+              <View key={event.id} style={styles.event}>
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                <Text style={styles.eventMeta}>
+                  {eventKind(event)} | {fmtDate(event.timestamp)}
+                </Text>
+                {event.summary ? (
+                  <Text style={styles.eventSummary}>{event.summary}</Text>
+                ) : null}
+                {photos.length ? (
+                  <View style={styles.photoRow}>
+                    {photos
+                      .slice(0, zoom === "lifecycle" ? 1 : zoom === "month" ? 2 : 4)
+                      .map((photo, index) => (
+                        <Image
+                          key={`${photo}-${index}`}
+                          source={{ uri: photo }}
+                          style={styles.photo}
+                          resizeMode="cover"
+                          accessibilityLabel={`Timeline photo for ${event.title}`}
+                        />
+                      ))}
+                  </View>
+                ) : null}
+                {eventPayloadDetails(event).map((detail) => (
+                  <Text key={detail} style={styles.detailRow}>
+                    {detail}
+                  </Text>
+                ))}
+                {sourceHref(event, growId) ? (
+                  <Link href={sourceHref(event, growId)} asChild>
+                    <Pressable
+                      style={styles.sourceAction}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${sourceLabel(event)}: ${event.title}`}
+                    >
+                      <Text style={styles.sourceActionText}>{sourceLabel(event)}</Text>
+                    </Pressable>
+                  </Link>
+                ) : null}
+                {Array.isArray(event.tags) && event.tags.length ? (
+                  <View style={styles.tags}>
+                    {event.tags.slice(0, 5).map((tag) => (
+                      <View key={tag} style={styles.tag}>
+                        <Text style={styles.tagText}>{tag}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
         </View>
       ))}
 
