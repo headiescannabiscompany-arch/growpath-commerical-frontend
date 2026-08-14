@@ -404,6 +404,13 @@ grow`, private current location without a Field Study, and an optional approxima
   again showed their expected headings, Back control, and no visible failure; the
   related navigation/role/access batch passed 16 suites and 58 tests. This does not
   close the mutation or remaining-role work below.
+  On 2026-08-14, frontend `5518cd7d308865f237da03c68c27da8ea3f3f9da`
+  and Render deploy `dep-d9vcj2bncjis738qmh8g` repaired the shared Search route's
+  effective-workspace handling. The signed-in Admin account remained visibly in
+  Commercial mode and Search `Open Tools` reached `/home/commercial/tools`, rendered
+  all eight Commercial actions, and retained the Commercial `99 / 100` balance.
+  This closes the reproduced Admin-Commercial Search shortcut defect without claiming
+  the remaining mutation, role, mobile, or outside-user cases.
   The next Facility mutation-contract batch passed 14 suites and 103 assertions on
   2026-08-12, covering room, plant, task, inventory, compliance, SOP, reporting,
   endpoint, email-verification, and role/access behavior. This is automated contract
