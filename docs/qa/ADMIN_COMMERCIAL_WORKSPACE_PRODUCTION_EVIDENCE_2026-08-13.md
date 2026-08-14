@@ -65,6 +65,27 @@ The cache-busted production route
 No AI request, record mutation, credit charge, or Commercial task was created during
 this repair check.
 
+### Search selected-workspace routing repair — 2026-08-14
+
+The signed-in Admin workspace selector reported `Acting in Commercial workspace
+mode`, but the shared Search route originally read the account's base identity. Its
+visible `Open Tools` shortcut therefore followed Personal routing and the Admin guard
+redirected the request to `/admin`.
+
+Frontend PRs `#582` and `#583` separated full-search entitlement from the visible
+navigation shortcuts and changed route selection to the effective entitlement
+workspace. They merged as `e68630d22db9108562678cea233386737b63d113` and
+`5518cd7d308865f237da03c68c27da8ea3f3f9da`. Both PR gates passed. The final merge's
+Frontend CI and Production Build Preflight passed, and Render deployment
+`dep-d9vcj2bncjis738qmh8g` succeeded for the exact final SHA.
+
+The cache-busted production retest confirmed the Admin identity was still acting in
+Commercial mode, then followed Search `Open Tools` to the exact
+`/home/commercial/tools` destination. The page rendered its `AI Tools` heading, all
+eight Commercial workflow actions, the Commercial workspace boundary, and the actual
+Commercial balance `99 / 100`. The test created no AI request, credit charge, record,
+or task.
+
 ## Report deep-link follow-up
 
 The same Admin session opened the genuine emailed moderation-case link for case `6a66da9ea79aafa8dc0cfca5`. The page focused the exact reviewing course report and exposed its reversible moderation controls. No moderation action was invoked.
