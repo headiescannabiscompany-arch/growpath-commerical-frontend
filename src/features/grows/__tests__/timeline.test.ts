@@ -1,4 +1,10 @@
-import { buildGrowTimeline } from "../timeline";
+import {
+  buildGrowTimeline,
+  buildCommercialGrowTimeline,
+  groupTimelineEvents,
+  timelineEventPhotos,
+  timelinePeriodKey
+} from "../timeline";
 
 describe("buildGrowTimeline", () => {
   it("merges logs, tool runs, and tasks in descending time order", () => {
@@ -69,5 +75,56 @@ describe("buildGrowTimeline", () => {
         title: "Nitrogen deficiency likely"
       })
     );
+  });
+
+  it("builds a commercial evidence timeline without inventing empty milestones", () => {
+    const timeline = buildCommercialGrowTimeline({
+      id: "run-1",
+      createdAt: "2026-08-01T12:00:00Z",
+      updatedAt: "2026-08-10T12:00:00Z",
+      purpose: "Product trial",
+      measurementPlan: "Weekly canopy photos",
+      commercialCropSummary: "Improved vigor",
+      publicShareStatus: "public_ready"
+    });
+    expect(timeline.map((event) => event.title)).toEqual(
+      expect.arrayContaining([
+        "Evidence run started",
+        "Measurement plan",
+        "Commercial crop summary",
+        "Evidence run updated"
+      ])
+    );
+    expect(timeline.some((event) => event.title === "Harvest and quality notes")).toBe(
+      false
+    );
+  });
+});
+
+describe("visual grow timeline", () => {
+  it("extracts unique photos from event and payload records", () => {
+    expect(
+      timelineEventPhotos({
+        photoUrl: "https://example.com/whole.jpg",
+        payload: {
+          photos: [
+            "https://example.com/detail.jpg",
+            { url: "https://example.com/whole.jpg" }
+          ]
+        }
+      })
+    ).toEqual(["https://example.com/whole.jpg", "https://example.com/detail.jpg"]);
+  });
+
+  it("groups events at lifecycle, month, week, and day zoom levels", () => {
+    const events = [
+      { timestamp: "2026-08-14T12:00:00.000Z", id: "a" },
+      { timestamp: "2026-08-12T12:00:00.000Z", id: "b" },
+      { timestamp: "2026-07-02T12:00:00.000Z", id: "c" }
+    ];
+    expect(groupTimelineEvents(events, "lifecycle")).toHaveLength(1);
+    expect(groupTimelineEvents(events, "month")).toHaveLength(2);
+    expect(groupTimelineEvents(events, "week")).toHaveLength(2);
+    expect(timelinePeriodKey(events[0].timestamp, "day")).toBe("2026-08-14");
   });
 });

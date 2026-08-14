@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -476,12 +477,46 @@ export default function PersonalGrowsRoute() {
               </View>
             ) : null}
           </View>
+          {latestGrow && Array.isArray(latestGrow.photos) && latestGrow.photos.length ? (
+            <View
+              style={styles.timelinePreview}
+              accessibilityLabel="Latest grow visual timeline preview"
+            >
+              <View style={styles.timelinePreviewHeader}>
+                <View>
+                  <Text style={styles.cardKicker}>Visual timeline</Text>
+                  <Text style={styles.timelinePreviewText}>
+                    Photos and important notes across this grow
+                  </Text>
+                </View>
+                <ActionButton
+                  href={growHref(latestGrow.id, "timeline")}
+                  label="Explore Timeline"
+                  primary
+                />
+              </View>
+              <View style={styles.timelinePhotos}>
+                {latestGrow.photos.slice(0, 4).map((photo, index) => (
+                  <Image
+                    key={`${photo}-${index}`}
+                    source={{ uri: photo }}
+                    style={styles.timelinePhoto}
+                    resizeMode="cover"
+                    accessibilityLabel={`Grow timeline preview photo ${index + 1}`}
+                  />
+                ))}
+              </View>
+            </View>
+          ) : null}
           {latestGrow ? (
             <View style={styles.featuredActions}>
               <ActionButton href={growHref(latestGrow.id)} label="Open Grow" primary />
               <ActionButton href={growHref(latestGrow.id, "journal")} label="Journal" />
               <ActionButton href={growHref(latestGrow.id, "tasks")} label="Tasks" />
-              <ActionButton href={growHref(latestGrow.id, "timeline")} label="Timeline" />
+              <ActionButton
+                href={growHref(latestGrow.id, "timeline")}
+                label="Visual Timeline"
+              />
               <ActionButton href={growHref(latestGrow.id, "tools")} label="AI Tools" />
             </View>
           ) : (
@@ -837,6 +872,32 @@ function createStyles(palette: ThemePalette) {
       color: palette.textMuted,
       lineHeight: 19,
       marginTop: 4
+    },
+    timelinePreview: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      marginTop: 12,
+      padding: 12
+    },
+    timelinePreviewHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "space-between"
+    },
+    timelinePreviewText: { color: palette.textMuted, marginTop: 3 },
+    timelinePhotos: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    timelinePhoto: {
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      height: 100,
+      minWidth: 130,
+      flexGrow: 1,
+      flexBasis: 150
     },
     statusChip: {
       borderRadius: radius.card,

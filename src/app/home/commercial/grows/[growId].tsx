@@ -2,6 +2,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -21,6 +22,11 @@ import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import {
+  buildCommercialGrowTimeline,
+  timelineEventPhotos
+} from "@/features/grows/timeline";
+import { exportVisualTimeline } from "@/utils/exportVisualTimeline";
 
 function TextInput(props: TextInputProps) {
   const { palette } = useAppTheme();
@@ -129,6 +135,23 @@ export default function CommercialGrowDetailRoute({
   const loadInFlightRef = useRef(false);
   const saveInFlightRef = useRef(false);
   const canSave = !!growId && !!grow && !loading && !saving;
+  const timeline = useMemo(() => (grow ? buildCommercialGrowTimeline(grow) : []), [grow]);
+  const shareReady = grow?.publicShareStatus === "public_ready";
+  const shareHref = useMemo(() => {
+    const query = new URLSearchParams({
+      compose: "timeline",
+      linkedGrowId: growId,
+      title: `Grow timeline: ${titleFor(grow)}`,
+      body: timeline
+        .map(
+          (event) =>
+            `${new Date(event.timestamp).toLocaleDateString()} — ${event.title}${event.summary ? `: ${event.summary}` : ""}`
+        )
+        .join("\n"),
+      tags: "grow-timeline,evidence"
+    });
+    return `/home/commercial/community?${query.toString()}`;
+  }, [grow, growId, timeline]);
 
   const hydrate = useCallback((next: CommercialGrow | null) => {
     setGrow(next);
@@ -475,6 +498,79 @@ export default function CommercialGrowDetailRoute({
         </Pressable>
       </AppCard>
 
+      {grow ? (
+        <AppCard>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Visual Grow Timeline
+          </Text>
+          <Text style={styles.body}>
+            A viewer-friendly history of this evidence run&apos;s photos, plan, important
+            notes, quality observations, and reviewed summary. This is separate from
+            compliance reporting.
+          </Text>
+          <View style={styles.timelineRail}>
+            {timeline.map((event) => {
+              const photos = timelineEventPhotos(event);
+              return (
+                <View key={event.id} style={styles.timelineEvent}>
+                  <Text style={styles.detailLabel}>
+                    {new Date(event.timestamp).toLocaleDateString()}
+                  </Text>
+                  <Text style={styles.timelineTitle}>{event.title}</Text>
+                  {event.summary ? (
+                    <Text style={styles.body}>{event.summary}</Text>
+                  ) : null}
+                  {photos.length ? (
+                    <View style={styles.timelinePhotos}>
+                      {photos.slice(0, 4).map((photo, index) => (
+                        <Image
+                          key={`${photo}-${index}`}
+                          source={{ uri: photo }}
+                          style={styles.timelinePhoto}
+                          resizeMode="cover"
+                          accessibilityLabel={`Evidence timeline photo for ${event.title}`}
+                        />
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+          <View style={styles.actions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Export commercial visual grow timeline"
+              disabled={!timeline.length}
+              onPress={async () => {
+                const method = await exportVisualTimeline(
+                  `${titleFor(grow)} — Visual Grow Timeline`,
+                  timeline as any
+                );
+                setMessage(
+                  method === "web-download"
+                    ? "Visual timeline download prepared."
+                    : "Visual timeline share sheet opened."
+                );
+              }}
+              style={[styles.action, !timeline.length && styles.disabled]}
+            >
+              <Text style={styles.actionText}>Export Visual Timeline</Text>
+            </Pressable>
+            {shareReady ? (
+              <ActionLink href={shareHref} label="Review & Share Timeline" />
+            ) : (
+              <View style={styles.shareBlocked}>
+                <Text style={styles.muted}>
+                  Set Public-share readiness to Public ready, save, then review the public
+                  copy before publishing.
+                </Text>
+              </View>
+            )}
+          </View>
+        </AppCard>
+      ) : null}
+
       <AppCard>
         <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
           Next Commercial Actions
@@ -551,6 +647,23 @@ export function createCommercialGrowDetailStyles(palette: ThemePalette) {
       paddingVertical: 8
     },
     actionText: { color: palette.link, fontSize: 13, fontWeight: "900" },
+    timelineRail: { gap: 10, marginTop: 12 },
+    timelineEvent: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    timelineTitle: { color: palette.text, fontSize: 15, fontWeight: "900", marginTop: 4 },
+    timelinePhotos: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+    timelinePhoto: {
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      height: 110,
+      width: 150
+    },
+    shareBlocked: { flexBasis: 280, flexGrow: 1, justifyContent: "center" },
     choiceGroup: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.border,

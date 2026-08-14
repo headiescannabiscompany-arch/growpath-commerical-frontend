@@ -14,6 +14,118 @@ export type GrowTimelineItem = {
   raw: unknown;
 };
 
+export type GrowTimelineZoom = "lifecycle" | "month" | "week" | "day";
+
+const PHOTO_KEYS = [
+  "photos",
+  "photoUrls",
+  "imageUrls",
+  "attachments",
+  "photoUrl",
+  "imageUrl",
+  "thumbnailUrl"
+] as const;
+
+function addPhotoCandidate(target: string[], value: unknown) {
+  if (Array.isArray(value)) {
+    value.forEach((item) => addPhotoCandidate(target, item));
+    return;
+  }
+  if (value && typeof value === "object") {
+    const row = value as Record<string, unknown>;
+    addPhotoCandidate(
+      target,
+      row.url || row.uri || row.src || row.photoUrl || row.imageUrl
+    );
+    return;
+  }
+  const candidate = String(value || "").trim();
+  if (/^(https?:|data:image\/|blob:)/i.test(candidate) && !target.includes(candidate))
+    target.push(candidate);
+}
+
+export function timelineEventPhotos(event: Record<string, any>): string[] {
+  const photos: string[] = [];
+  [event, event?.payload, event?.raw].filter(Boolean).forEach((source) => {
+    PHOTO_KEYS.forEach((key) => addPhotoCandidate(photos, source?.[key]));
+  });
+  return photos.slice(0, 12);
+}
+
+export function timelinePeriodKey(timestamp: string, zoom: GrowTimelineZoom) {
+  const date = new Date(timestamp);
+  if (!Number.isFinite(date.getTime())) return "unknown";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  if (zoom === "lifecycle") return String(year);
+  if (zoom === "month") return `${year}-${month}`;
+  if (zoom === "day")
+    return `${year}-${month}-${String(date.getDate()).padStart(2, "0")}`;
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+  return `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+}
+
+export function groupTimelineEvents<T extends { timestamp: string }>(
+  events: T[],
+  zoom: GrowTimelineZoom
+) {
+  const groups = new Map<string, T[]>();
+  events.forEach((event) => {
+    const key = timelinePeriodKey(event.timestamp, zoom);
+    groups.set(key, [...(groups.get(key) || []), event]);
+  });
+  return Array.from(groups, ([key, items]) => ({ key, items }));
+}
+
+export function buildCommercialGrowTimeline(grow: Record<string, any>) {
+  const id = String(grow?.id || grow?._id || "commercial-grow");
+  const rows: Array<Record<string, any>> = [];
+  const add = (
+    suffix: string,
+    timestamp: unknown,
+    title: string,
+    summary: unknown,
+    photos: string[] = []
+  ) => {
+    const detail = String(summary || "").trim();
+    if (!detail && !photos.length) return;
+    rows.push({
+      id: `${id}-${suffix}`,
+      timestamp: String(timestamp || grow?.updatedAt || grow?.createdAt || ""),
+      title,
+      summary: detail,
+      type: "commercial_milestone",
+      sourceModel: "CommercialGrow",
+      sourceId: id,
+      payload: { photos }
+    });
+  };
+  add(
+    "created",
+    grow?.createdAt,
+    "Evidence run started",
+    [grow?.purpose, grow?.cropType, grow?.cultivar].filter(Boolean).join(" • "),
+    timelineEventPhotos(grow)
+  );
+  add("measurement", grow?.createdAt, "Measurement plan", grow?.measurementPlan);
+  add("quality", grow?.updatedAt, "Harvest and quality notes", grow?.harvestQualityNotes);
+  add("summary", grow?.updatedAt, "Commercial crop summary", grow?.commercialCropSummary);
+  add("notes", grow?.updatedAt, "Important notes", grow?.notes);
+  if (grow?.updatedAt && grow?.updatedAt !== grow?.createdAt)
+    add(
+      "updated",
+      grow.updatedAt,
+      "Evidence run updated",
+      `Status: ${String(grow?.status || "active").replace(/_/g, " ")}`
+    );
+  return rows.sort(
+    (left, right) =>
+      new Date(right.timestamp).getTime() - new Date(left.timestamp).getTime()
+  );
+}
+
 export function growJournalItemHref(item: GrowTimelineItem, growId: string) {
   if (item.kind === "tool_run") {
     return savedRunSourceHref({
