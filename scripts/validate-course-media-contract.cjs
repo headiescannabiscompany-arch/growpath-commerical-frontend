@@ -32,7 +32,9 @@ const registry = read("src/knowledge/methodRegistry.ts");
 const sources = read("src/knowledge/sourceRegistry.ts");
 const tests = `${read("tests/unit/lessonMedia.test.ts")}\n${read(
   "tests/unit/LessonMediaComponents.test.tsx"
-)}\n${read("tests/unit/CreateCourseScreen.test.tsx")}`;
+)}\n${read("tests/unit/CreateCourseScreen.test.tsx")}\n${read(
+  "tests/unit/CommercialWorkflowPages.test.tsx"
+)}`;
 
 [
   ["GrowPath upload", /growpath_upload/],
@@ -118,10 +120,28 @@ requireText(
   "Commercial workspace course creation boundary"
 );
 requireText(
+  "shared course creator",
+  sharedCreate,
+  /entitlements\.mode === "commercial"[\s\S]*growInterests:[\s\S]*growInterestTags/,
+  "Commercial flat grow-interest handoff"
+);
+requireText(
+  "commercial course author",
+  commercialAuthor,
+  /courseGrowInterests[\s\S]*flattenTierSelections/,
+  "legacy structured grow-interest normalization"
+);
+requireText(
   "course media tests",
   tests,
   /creates Commercial drafts through the Commercial course workflow/,
   "Commercial full-builder creation test"
+);
+requireText(
+  "course media tests",
+  tests,
+  /normalizes structured Full Course Builder grow interests on Commercial detail/,
+  "Commercial structured grow-interest regression test"
 );
 
 if (!process.exitCode) {

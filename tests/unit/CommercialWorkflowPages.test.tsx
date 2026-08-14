@@ -1435,6 +1435,39 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Create a course")).toBeTruthy();
   });
 
+  it("normalizes structured Full Course Builder grow interests on Commercial detail", async () => {
+    const baseline = mockApiRequest.getMockImplementation();
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/commercial/courses/course-1" && !options) {
+        return Promise.resolve({
+          course: {
+            id: "course-1",
+            title: "Structured Interest Course",
+            description: "Created by the shared Full Course Builder.",
+            category: "Plant care",
+            access: "free",
+            growInterests: {
+              crops: ["Cannabis"],
+              environment: ["Indoor"]
+            },
+            lessons: [{ id: "lesson-1", title: "Evidence", status: "draft" }],
+            status: "draft"
+          }
+        });
+      }
+      return baseline?.(path, options);
+    });
+
+    const screen = render(<CommercialCourseDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Structured Interest Course")).toBeTruthy());
+    expect(screen.queryByText("Something went wrong")).toBeNull();
+    expect(screen.getByLabelText("Commercial course detail grow interests").props.value).toBe(
+      "Cannabis, Indoor"
+    );
+    expect(screen.getAllByText("Cannabis, Indoor").length).toBeGreaterThan(0);
+  });
+
   it("opens and updates commercial course detail with lessons and publish", async () => {
     const screen = render(<CommercialCourseDetailRoute />);
 

@@ -32,6 +32,7 @@ import {
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
+import { flattenTierSelections } from "@/utils/growInterests";
 
 function cleanId(value: unknown) {
   return String(Array.isArray(value) ? value[0] : value || "").trim();
@@ -41,6 +42,19 @@ function splitIds(value: string) {
   return value
     .split(",")
     .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function courseGrowInterests(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+  if (value && typeof value === "object") {
+    return flattenTierSelections(value as Record<string, string[]>);
+  }
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
     .filter(Boolean);
 }
 
@@ -89,7 +103,9 @@ function courseSetupWarnings(course: Partial<CommercialCourse>) {
   if (!course.bannerUrl?.trim()) warnings.push("add banner");
   if (!course.category?.trim()) warnings.push("add category");
   if (!course.description?.trim()) warnings.push("add description");
-  if (!course.growInterests?.length) warnings.push("add grow interests");
+  if (!courseGrowInterests(course.growInterests).length) {
+    warnings.push("add grow interests");
+  }
   if (!COURSE_ACCESS_OPTIONS.some(({ value }) => value === course.access)) {
     warnings.push("choose access");
   }
@@ -212,7 +228,7 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     setThumbnailUrl(next?.thumbnailUrl || "");
     setBannerUrl(next?.bannerUrl || "");
     setCategory(next?.category || "");
-    setGrowInterests((next?.growInterests || []).join(", "));
+    setGrowInterests(courseGrowInterests(next?.growInterests).join(", "));
     setDescription(next?.description || "");
     setStripeProductId(next?.stripeProductId || "");
     setStripePriceId(next?.stripePriceId || "");
@@ -613,7 +629,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
               </Text>
               <View style={styles.detailGrid}>
                 <DetailRow label="Category" value={course.category} />
-                <DetailRow label="Grow interests" value={course.growInterests} />
+                <DetailRow
+                  label="Grow interests"
+                  value={courseGrowInterests(course.growInterests).join(", ")}
+                />
                 <DetailRow label="Access" value={course.access} />
                 <DetailRow label="Status" value={course.status} />
                 <DetailRow label="Lessons" value={lessons.length} />
@@ -704,7 +723,10 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
         </Text>
         <View style={styles.detailGrid}>
           <DetailRow label="Category" value={course?.category} />
-          <DetailRow label="Grow interests" value={course?.growInterests} />
+          <DetailRow
+            label="Grow interests"
+            value={courseGrowInterests(course?.growInterests).join(", ")}
+          />
           <DetailRow label="Thumbnail" value={course?.thumbnailUrl} />
           <DetailRow label="Banner" value={course?.bannerUrl} />
           <DetailRow label="Access" value={course?.access} />
