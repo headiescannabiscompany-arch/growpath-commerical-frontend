@@ -641,6 +641,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "RSVP and reminder state",
       "moderated GrowPath chat",
       "transparent configurable OBS Browser Source overlay",
+      "two explicit broadcast modes: outside provider URL with embed-or-handoff behavior, and first-party GrowPath encoder ingest with adaptive in-app playback",
+      "revocable session-scoped first-party ingest secret, explicit draft/live control, stream health states, GrowPath chat, and reviewed replay retention",
       "outside-picker JSON or CSV entry feed",
       "provider-confirmed linked-identity relay status",
       "replay, moderation, and deletion audit continuity"
@@ -651,7 +653,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never claim a host or bot relay represents a distinct viewer identity.",
       "Never choose a giveaway winner inside GrowPath when the host selected an outside picker.",
       "Never relay deleted, hidden, duplicate, blocked, or unauthorized entries.",
-      "Never treat chat or giveaway engagement as scientific evidence or AI-training permission."
+      "Never treat chat or giveaway engagement as scientific evidence or AI-training permission.",
+      "Never label the OBS chat overlay as first-party live-video hosting or expose a GrowPath stream key before ingest, transcoding, playback, authorization, moderation, retention, quotas, abuse response, and observability are verified end to end."
     ],
     ["lives", "live-chat", "premieres", "obs-overlay", "external-picker-feed"]
   ),
@@ -695,6 +698,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "flat canonical Commercial course grow-interest tags with separately retained structured builder selections and legacy-reader normalization",
       "outer bounded-total independent public, owned, and Commercial-public catalog loading, including token retrieval, with partial results and a named retry action",
       "stable authenticated identity dependencies that cannot restart catalog loading on each result render",
+      "optional catalog imagery plus one full-width course-detail hero selected from the saved banner, cover, image, or thumbnail without duplicate rendering",
       "owner-controlled publish and private-draft unpublish",
       "confirmed owner-scoped soft archive for unpublished generic course drafts with retained audit history",
       "single page heading, ordered level-two builder steps, one shared back action, and checked pricing or access controls",
@@ -720,6 +724,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never render a structured grow-interest selection as object text or assume every persisted Commercial course grow-interest value is already an array.",
       "Never let one unavailable course source leave the shared catalog loading forever or hide courses returned by the other sources.",
       "Never depend on a referentially unstable whole user object for the course catalog load effect.",
+      "Never manufacture a generic image for a course with no saved imagery or render duplicate overview images for the same course.",
       "Never expose paid lesson text, media, documents, assessments, protected playback, or completion controls before active enrollment.",
       "Never treat checkout creation, a success redirect, direct enrollment, or lesson completion as proof of paid access.",
       "Never increment paid enrollment, revenue, or creator earnings more than once when Stripe retries a webhook.",

@@ -86,7 +86,6 @@ function coursePriceLabel(course) {
   return Number.isFinite(dollars) && dollars > 0 ? `$${dollars.toFixed(2)}` : "Free";
 }
 
-const COURSE_IMAGE_FALLBACK = require("../../assets/banner.png");
 export const COURSE_CATALOG_REQUEST_TIMEOUT_MS = 8000;
 
 export function courseCatalogRequest(path) {
@@ -116,7 +115,7 @@ export function courseImageSource(course) {
       course?.bannerImageUrl ||
       ""
   );
-  return savedImage ? { uri: savedImage } : COURSE_IMAGE_FALLBACK;
+  return savedImage ? { uri: savedImage } : null;
 }
 
 function isPublishedCourse(course) {
@@ -489,12 +488,14 @@ export default function CoursesScreen({
           disabled={!matchesCourseInterests(item, userInterests)}
           onPress={() => openCourse(item)}
         >
-          <Image
-            accessibilityLabel={`${String(item?.title || item?.name || "Untitled")} cover`}
-            resizeMode="cover"
-            source={courseImageSource(item)}
-            style={styles.courseImage}
-          />
+          {courseImageSource(item) ? (
+            <Image
+              accessibilityLabel={`${String(item?.title || item?.name || "Untitled")} cover`}
+              resizeMode="cover"
+              source={courseImageSource(item)}
+              style={styles.courseImage}
+            />
+          ) : null}
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             {String(item?.title || item?.name || "Untitled")}
           </Text>

@@ -108,6 +108,19 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-08-14"
   },
   {
+    id: "cloudflare-stream-live-documentation",
+    name: "Cloudflare Stream Live and API documentation",
+    domain: "developers.cloudflare.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["platform_data_access", "course_media"],
+    notTrustedFor: ["diagnosis", "ipm", "lab_result", "legal_regulatory"],
+    notes:
+      "Provider authority for per-input RTMPS/SRT credentials, automatic recording, adaptive HLS/DASH and Stream Player delivery, lifecycle state, signed playback, allowed origins, webhooks, retention settings, and minute-based billing. It does not establish creator rights, host identity, GrowPath moderation or viewer authorization, content legality, intentional publication, or health beyond provider state. Keep account credentials server-only and treat each returned stream key as a private broadcaster secret.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-14"
+  },
+  {
     id: "twitch-send-chat-message-documentation",
     name: "Twitch Send Chat Message documentation",
     domain: "dev.twitch.tv",

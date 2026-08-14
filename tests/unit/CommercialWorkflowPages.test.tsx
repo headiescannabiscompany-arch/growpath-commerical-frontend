@@ -1217,8 +1217,8 @@ describe("commercial workflow pages", () => {
     ).toBe(true);
     expect(screen.getByText("Product Trials")).toBeTruthy();
     expect(screen.getByText("Course setup checklist")).toBeTruthy();
-    expect(screen.getByText(/add thumbnail/)).toBeTruthy();
-    expect(screen.getByText(/add banner/)).toBeTruthy();
+    expect(screen.queryByText(/add thumbnail/)).toBeNull();
+    expect(screen.queryByText(/add banner/)).toBeNull();
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/product-lines")
     );
@@ -1479,11 +1479,13 @@ describe("commercial workflow pages", () => {
 
     const screen = render(<CommercialCourseDetailRoute />);
 
-    await waitFor(() => expect(screen.getByText("Structured Interest Course")).toBeTruthy());
-    expect(screen.queryByText("Something went wrong")).toBeNull();
-    expect(screen.getByLabelText("Commercial course detail grow interests").props.value).toBe(
-      "Cannabis, Indoor"
+    await waitFor(() =>
+      expect(screen.getByText("Structured Interest Course")).toBeTruthy()
     );
+    expect(screen.queryByText("Something went wrong")).toBeNull();
+    expect(
+      screen.getByLabelText("Commercial course detail grow interests").props.value
+    ).toBe("Cannabis, Indoor");
     expect(screen.getAllByText("Cannabis, Indoor").length).toBeGreaterThan(0);
   });
 

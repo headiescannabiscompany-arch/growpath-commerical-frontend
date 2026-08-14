@@ -601,6 +601,15 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("course-media-workflow")?.warnings).toContain(
       "Never include held or refunded course earnings in creator payout eligibility."
     );
+    expect(getMethod("live-streaming-workflow")?.requiredOutputs).toContain(
+      "two explicit broadcast modes: outside provider URL with embed-or-handoff behavior, and first-party GrowPath encoder ingest with adaptive in-app playback"
+    );
+    expect(getSourceEntry("cloudflare-stream-live-documentation")).toMatchObject({
+      sourceType: "provider_documentation",
+      reliabilityTier: "B",
+      trustedFor: expect.arrayContaining(["platform_data_access", "course_media"]),
+      lastReviewedAt: "2026-08-14"
+    });
     expect(getSourceEntry("youtube-player-documentation")?.trustedFor).toContain(
       "course_media"
     );

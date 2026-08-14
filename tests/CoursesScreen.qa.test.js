@@ -142,7 +142,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
     );
   };
 
-  it("renders saved course cover imagery and uses the existing banner fallback", async () => {
+  it("renders saved course cover imagery and leaves courses without imagery text-only", async () => {
     mockUseEntitlements.mockReturnValue({
       ready: true,
       mode: "personal",
@@ -154,9 +154,7 @@ describe("CoursesScreen QA (capability-driven)", () => {
     expect((await findByLabelText("Free Course cover")).props.source).toEqual({
       uri: "https://example.com/course-cover.jpg"
     });
-    expect((await findByLabelText("Pro Course cover")).props.source).toEqual(
-      courseImageSource({})
-    );
+    expect(courseImageSource({})).toBeNull();
   });
 
   it("canonicalizes legacy crop types and rejects courses for a different selected crop", () => {

@@ -575,9 +575,16 @@ public visibility, or screenshot/video acceptance still called out below.
   review.
   TrolMaster remains access-required until its subscribed endpoint contract and adapter
   are verified. Backend focused/regression coverage passes 31/31 and frontend relevant
-  coverage passes 56/56 with TypeScript clean on 2026-08-14. Both PRs must merge and deploy, and signed-in production acceptance must confirm Personal,
-  Commercial, and Facility mapping/reload plus a timestamped history import before this
-  becomes `[x]`.
+  coverage passes 56/56 with TypeScript clean on 2026-08-14. Backend PR `#173`
+  merged as `95e2e350549e16ace704e5e8049a7b8b9be17419` and Render deploy
+  `dep-d9vpo6id0e5s739s5k3g` reached Live. Frontend PR `#625` merged as
+  `26b90d6efed6cddad75771288db798c3d37fcf2f` and Render deploy
+  `dep-d9vpo6jncjis73enofb0` reached Live. Signed-in Admin production verified the
+  Personal provider catalog, read-only provenance copy, and Commercial history-import
+  route, then restored Personal mode. That account had zero Personal grows and zero
+  Commercial evidence runs, so no fake record or credential was created. Production
+  acceptance must still confirm Personal, Commercial, and Facility mapping/reload plus
+  one real timestamped history import before this becomes `[x]`.
 
 - [~] Complete populated commercial brand/storefront acceptance: profile, slug,
   products, zero-stock/TBD launch state, shipping, images, labels, external links,
@@ -833,6 +840,17 @@ public visibility, or screenshot/video acceptance still called out below.
 
 ## F. Release-quality product presentation and inspection evidence
 
+- [ ] Complete Live Studio's two-mode broadcast contract. Keep `Use an outside live URL`
+      for Facebook, Instagram, YouTube, Twitch, Kick, and other reviewed providers, with
+      in-app embedding where allowed and a named provider handoff where embedding is not
+      supported. Add `Broadcast live in GrowPath`: session-scoped revocable RTMP or SRT
+      ingest credentials for OBS/encoders, explicit draft/live control, adaptive in-app
+      playback with viewer controls, health/interruption states, GrowPath chat, recording
+      and replay-retention choices, access enforcement, quotas, moderation/abuse response,
+      production observability, and secret rotation. The current sessions, chat, private
+      OBS chat overlay, premieres, reminders, sharing, replay links, and outside-provider
+      handoffs do not by themselves complete first-party hosted video.
+
 - [ ] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
       inspected, without treating them as additional photos or independent evidence.
       Let an authorized user open each view at full size, save an individual image,
@@ -846,10 +864,16 @@ public visibility, or screenshot/video acceptance still called out below.
       common path forward from every page, not only route loading, and retain exact
       role/account, viewport, theme, URL, timestamp, screenshot/video, deployment, and
       defect/fix evidence.
-- [ ] Give published courses a deliberate media hierarchy: an optional list/banner
+- [~] Give published courses a deliberate media hierarchy: an optional list/banner
       image outside the opened course and one full course image inside it, without an
       unlabeled duplicate or an unexplained missing-image gap. Verify author add,
-      replace, remove, publish, and learner rendering paths.
+      replace, remove, publish, and learner rendering paths. The shared Personal/public
+      catalog now leaves image-free records deliberately text-only and opens a single
+      full-width saved hero; Commercial publication no longer treats optional thumbnail
+      or banner art as a blocker, and its learner view prefers a banner then falls back
+      to the saved thumbnail. Focused course, Commercial workflow, and knowledge tests
+      pass 64/64, along with TypeScript, targeted lint, and the static production build.
+      Merge/deploy plus live author replace/remove/publish and learner rendering remain.
 - [ ] Put storefront imagery above the storefront description where available, keep
       empty states intentional, and verify every product, course, video, website, and
       pickup handoff opens the correct public or signed-in destination.
