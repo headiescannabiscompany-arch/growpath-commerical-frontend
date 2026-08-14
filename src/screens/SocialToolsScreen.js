@@ -108,8 +108,8 @@ export default function SocialToolsScreen() {
         External Channels
       </Text>
       <Text style={styles.subheader}>
-        Schedule and review off-platform channel posts. GrowPath Feed / Campaigns is the
-        in-app advertising surface, and Forum/Q&A is where discussion lives.
+        Review connected off-platform channels and metrics. GrowPath Feed / Campaigns
+        is the in-app advertising surface, and Forum/Q&A is where discussion lives.
       </Text>
 
       {loading ? (
