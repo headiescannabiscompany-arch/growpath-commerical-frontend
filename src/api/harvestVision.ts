@@ -1,5 +1,6 @@
 import { apiRequest } from "./apiRequest";
 import type { EvidenceWorkspaceType } from "@/types/evidence";
+import type { AiInspectionView } from "@/types/evidence";
 
 export const SUPPORTED_HARVEST_REVIEW_POLICIES = [
   "harvest-trichome-server-attestation-v1",
@@ -108,6 +109,7 @@ export type TrichomeVisionResult = {
   imageDetail?: "low" | "high" | "original" | "auto";
   imagesAnalyzed: number;
   diagnosticViewsAnalyzed?: number;
+  inspectionViews?: AiInspectionView[];
   evidenceUsed: string[];
   analysisId: string;
   analysisReceipt?: {

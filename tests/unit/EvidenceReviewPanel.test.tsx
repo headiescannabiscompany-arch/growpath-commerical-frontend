@@ -7,6 +7,19 @@ import type { EvidenceReview } from "@/features/personal/evidence/evidenceReview
 import { getThemePalette } from "@/theme/appTheme";
 
 let mockThemeMode: "day" | "night" = "night";
+const mockLoadAiInspectionView = jest.fn();
+const mockSaveAiInspectionImage = jest.fn();
+const mockExportAiInspectionEvidence = jest.fn();
+
+jest.mock("@/api/evidence", () => ({
+  loadAiInspectionView: (...args: any[]) => mockLoadAiInspectionView(...args)
+}));
+
+jest.mock("@/utils/aiInspectionEvidenceExport", () => ({
+  saveAiInspectionImage: (...args: any[]) => mockSaveAiInspectionImage(...args),
+  exportAiInspectionEvidence: (...args: any[]) =>
+    mockExportAiInspectionEvidence(...args)
+}));
 
 jest.mock("@/theme/appTheme", () => {
   const actual = jest.requireActual("@/theme/appTheme");
@@ -39,6 +52,9 @@ const incompleteReview: EvidenceReview = {
 describe("EvidenceReviewPanel", () => {
   beforeEach(() => {
     mockThemeMode = "night";
+    mockLoadAiInspectionView.mockReset();
+    mockSaveAiInspectionImage.mockReset();
+    mockExportAiInspectionEvidence.mockReset();
   });
 
   it.each(["day", "night"] as const)(
@@ -154,5 +170,49 @@ describe("EvidenceReviewPanel", () => {
     expect(screen.queryByText(/Requested next evidence: Leaf underside/)).toBeNull();
     expect(screen.getByText(/Sharp stem-node photo/)).toBeTruthy();
     expect(screen.getByText(/Whole-plant context/)).toBeTruthy();
+  });
+
+  it("shows source-bound inspection views with view, save, and export actions", async () => {
+    const inspectionView = {
+      sourceEvidenceAssetId: "evidence-1",
+      sourceImageIndex: 1,
+      kind: "center",
+      cropStrategy: "focus" as const,
+      sourceBounds: null,
+      width: 900,
+      height: 900,
+      mimeType: "image/jpeg" as const,
+      sha256: "a".repeat(64),
+      workspaceType: "personal" as const,
+      workspaceId: "user-1"
+    };
+    mockLoadAiInspectionView.mockResolvedValue({
+      ...inspectionView,
+      dataUrl: "data:image/jpeg;base64,ZmFrZQ=="
+    });
+    const screen = render(
+      <EvidenceReviewPanel
+        review={{ ...incompleteReview, performed: true, inspectionViews: [inspectionView] }}
+      />
+    );
+
+    expect(screen.getByRole("header", { name: "AI inspection views" })).toBeTruthy();
+    expect(screen.getByText(/not extra photos or independent evidence/i)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("View center from source photo 1"));
+    expect(mockLoadAiInspectionView).toHaveBeenCalledWith(
+      inspectionView,
+      expect.objectContaining({ workspaceType: "personal", workspaceId: "user-1" })
+    );
+
+    fireEvent.press(screen.getByLabelText("Export all AI inspection views"));
+    await screen.findByText("Inspection evidence package exported.");
+    expect(mockExportAiInspectionEvidence).toHaveBeenCalledWith(
+      "GrowPathAI inspection evidence",
+      [expect.objectContaining({ dataUrl: expect.stringContaining("base64") })],
+      expect.objectContaining({
+        analysisId: undefined,
+        reviewPolicyVersion: undefined
+      })
+    );
   });
 });

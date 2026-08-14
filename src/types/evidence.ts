@@ -20,6 +20,30 @@ export type EvidenceSource = "camera" | "library" | "upload" | "generated" | "ex
 
 export type EvidenceWorkspaceType = "personal" | "commercial" | "facility";
 
+export type AiInspectionView = {
+  sourceEvidenceAssetId: string;
+  workspaceType?: EvidenceWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
+  sourceImageIndex: number;
+  kind: string;
+  cropStrategy: "focus" | "coverage" | "macro_coverage";
+  sourceBounds?: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    sourceWidth: number;
+    sourceHeight: number;
+  } | null;
+  width: number;
+  height: number;
+  mimeType: "image/jpeg";
+  sha256: string;
+  dataUrl?: string;
+  limitation?: string;
+};
+
 export type EvidenceFrameExtractionStatus =
   | "idle"
   | "processing"

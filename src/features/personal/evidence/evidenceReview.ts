@@ -1,3 +1,5 @@
+import type { AiInspectionView } from "@/types/evidence";
+
 export type EvidenceReviewConfidence = "high" | "medium" | "low" | "unknown";
 
 export type EvidenceReview = {
@@ -8,12 +10,52 @@ export type EvidenceReview = {
   quality: string;
   confidence: EvidenceReviewConfidence;
   providerLabel?: string;
+  analysisId?: string;
+  reviewPolicyVersion?: string;
+  providerModel?: string;
+  imageDetail?: string;
   evidenceUsed: string[];
   counterEvidence: string[];
   missingInformation: string[];
   requiredNextPhotos: string[];
   limitations: string[];
+  inspectionViews?: AiInspectionView[];
 };
+
+function inspectionViews(value: unknown): AiInspectionView[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item) => item && typeof item === "object")
+    .map((item: any) => ({
+      sourceEvidenceAssetId: String(item.sourceEvidenceAssetId || "").trim(),
+      workspaceType: ["personal", "commercial", "facility"].includes(
+        String(item.workspaceType)
+      )
+        ? item.workspaceType
+        : undefined,
+      workspaceId: item.workspaceId ? String(item.workspaceId) : undefined,
+      facilityId: item.facilityId ? String(item.facilityId) : undefined,
+      sourceImageIndex: Math.max(1, Math.trunc(Number(item.sourceImageIndex) || 1)),
+      kind: String(item.kind || "diagnostic view").trim(),
+      cropStrategy: ["focus", "coverage", "macro_coverage"].includes(
+        String(item.cropStrategy)
+      )
+        ? item.cropStrategy
+        : "focus",
+      sourceBounds: item.sourceBounds || null,
+      width: Math.max(0, Math.trunc(Number(item.width) || 0)),
+      height: Math.max(0, Math.trunc(Number(item.height) || 0)),
+      mimeType: "image/jpeg" as const,
+      sha256: String(item.sha256 || "").trim().toLowerCase(),
+      dataUrl: item.dataUrl ? String(item.dataUrl) : undefined,
+      limitation: item.limitation ? String(item.limitation) : undefined
+    }))
+    .filter(
+      (item) =>
+        Boolean(item.sourceEvidenceAssetId) && /^[a-f0-9]{64}$/.test(item.sha256)
+    )
+    .slice(0, 36);
+}
 
 function itemText(item: unknown): string {
   if (typeof item === "string" || typeof item === "number") {
@@ -101,6 +143,18 @@ export function normalizeEvidenceReview(
     ),
     providerLabel:
       String(fallback.providerLabel ?? value.providerLabel ?? "").trim() || undefined,
+    analysisId:
+      String(fallback.analysisId ?? value.analysisId ?? value.reviewId ?? "").trim() ||
+      undefined,
+    reviewPolicyVersion:
+      String(
+        fallback.reviewPolicyVersion ?? value.reviewPolicyVersion ?? value.policyVersion ?? ""
+      ).trim() || undefined,
+    providerModel:
+      String(fallback.providerModel ?? value.providerModel ?? value.model ?? "").trim() ||
+      undefined,
+    imageDetail:
+      String(fallback.imageDetail ?? value.imageDetail ?? "").trim() || undefined,
     evidenceUsed: list(fallback.evidenceUsed ?? value.evidenceUsed ?? value.evidence),
     counterEvidence: list(fallback.counterEvidence ?? value.counterEvidence),
     missingInformation: mergedList(
@@ -117,7 +171,10 @@ export function normalizeEvidenceReview(
       value.requiredPhotos,
       value.qualityIssues
     ),
-    limitations: mergedList(fallback.limitations, value.limitations)
+    limitations: mergedList(fallback.limitations, value.limitations),
+    inspectionViews: inspectionViews(
+      (fallback as any).inspectionViews ?? value.inspectionViews
+    )
   };
 }
 
@@ -207,6 +264,10 @@ export function inferEvidenceReview(
     },
     {
       requested,
+      analysisId: outputs.analysisId || outputs.reviewId,
+      reviewPolicyVersion: outputs.reviewPolicyVersion,
+      providerModel: outputs.providerModel || mediaValue.providerModel,
+      imageDetail: outputs.imageDetail || mediaValue.imageDetail,
       confidence: outputs.confidence ?? mediaValue.confidence,
       photoCount:
         assetIds.length ||

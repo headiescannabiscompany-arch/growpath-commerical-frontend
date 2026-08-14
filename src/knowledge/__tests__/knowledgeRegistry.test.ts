@@ -85,6 +85,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "authorized view, save, and viewer-friendly export of the exact digest-bound AI inspection crops with source photo, crop strategy, source bounds, output dimensions, and derived-evidence limitation"
+    );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not retain high confidence, urgent status, treatment actions, completed tasks, or issue-detected automation from diagnosis media the provider marked unusable, and do not replace explicit user crop context with a conflicting visual suggestion."
     );
@@ -114,6 +117,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "original-resolution images plus source-bound enlarged diagnostic crops that never count as independent evidence"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "authorized immediate and saved-result view, save, and viewer-friendly export of the exact digest-bound Harvest coverage crops with source coordinates and the no-independent-sample boundary"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "staging-only same-pixel trichome luminance audit with the original mean, bounded uniform RGB multiplier, and method retained as non-independent evidence that cannot confirm amber by itself"

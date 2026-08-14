@@ -1,12 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { loadAiInspectionView } from "@/api/evidence";
 import {
   evidenceReviewNextChecks,
   type EvidenceReview
 } from "@/features/personal/evidence/evidenceReview";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import {
+  exportAiInspectionEvidence,
+  saveAiInspectionImage
+} from "@/utils/aiInspectionEvidenceExport";
+import type { AiInspectionView } from "@/types/evidence";
 
 type Props = {
   review: EvidenceReview;
@@ -59,7 +65,25 @@ export const createEvidenceReviewPanelStyles = (palette: ThemePalette) =>
       paddingVertical: 8
     },
     buttonText: { color: palette.link, fontWeight: "800", fontSize: 12 },
-    followUp: { color: palette.text, fontSize: 12, lineHeight: 18 }
+    followUp: { color: palette.text, fontSize: 12, lineHeight: 18 },
+    inspectionCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 10,
+      width: 250
+    },
+    inspectionImage: {
+      backgroundColor: palette.page,
+      borderRadius: radius.card,
+      height: 210,
+      width: "100%"
+    },
+    inspectionRow: { gap: 10, paddingVertical: 4 },
+    inspectionActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    inspectionMeta: { color: palette.textMuted, fontSize: 11, lineHeight: 16 }
   });
 
 type EvidenceReviewPanelStyles = ReturnType<typeof createEvidenceReviewPanelStyles>;
@@ -83,9 +107,12 @@ function list(values: string[], label: string, styles: EvidenceReviewPanelStyles
 export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createEvidenceReviewPanelStyles(palette), [palette]);
+  const inspectionViews = review.inspectionViews || [];
   const nextChecks = evidenceReviewNextChecks(review);
   const reviewFingerprint = JSON.stringify({ review, nextChecks });
   const [followUpFeedback, setFollowUpFeedback] = useState("");
+  const [inspectionFeedback, setInspectionFeedback] = useState("");
+  const [loadedViews, setLoadedViews] = useState<Record<string, AiInspectionView>>({});
   const followUpBusyRef = useRef(false);
   const previousReviewFingerprintRef = useRef(reviewFingerprint);
 
@@ -109,6 +136,53 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
       followUpBusyRef.current = false;
     }
   }
+
+  function viewKey(view: AiInspectionView) {
+    return `${view.sourceEvidenceAssetId}:${view.sha256}`;
+  }
+
+  async function loadView(view: AiInspectionView) {
+    const key = viewKey(view);
+    if (loadedViews[key]?.dataUrl) return loadedViews[key];
+    setInspectionFeedback(`Loading ${view.kind} from source photo ${view.sourceImageIndex}...`);
+    const loaded = await loadAiInspectionView(view, {
+      workspaceType: view.workspaceType || "personal",
+      workspaceId: view.workspaceId,
+      facilityId: view.facilityId
+    });
+    setLoadedViews((current) => ({ ...current, [key]: loaded }));
+    setInspectionFeedback(
+      `Opened the exact ${view.kind} inspected from source photo ${view.sourceImageIndex}.`
+    );
+    return loaded;
+  }
+
+  async function saveView(view: AiInspectionView) {
+    try {
+      const loaded = await loadView(view);
+      await saveAiInspectionImage(loaded);
+      setInspectionFeedback("Inspection image saved or opened in the device share sheet.");
+    } catch (error: any) {
+      setInspectionFeedback(error?.message || "The inspection image could not be saved.");
+    }
+  }
+
+  async function exportViews() {
+    try {
+      setInspectionFeedback("Loading the exact inspected views for export...");
+      const complete: AiInspectionView[] = [];
+      for (const view of inspectionViews) complete.push(await loadView(view));
+      await exportAiInspectionEvidence("GrowPathAI inspection evidence", complete, {
+        analysisId: review.analysisId,
+        reviewPolicyVersion: review.reviewPolicyVersion,
+        providerModel: review.providerModel,
+        imageDetail: review.imageDetail
+      });
+      setInspectionFeedback("Inspection evidence package exported.");
+    } catch (error: any) {
+      setInspectionFeedback(error?.message || "Inspection evidence could not be exported.");
+    }
+  }
   return (
     <View style={styles.card} accessibilityLabel="Evidence review summary">
       <View style={styles.header}>
@@ -130,6 +204,86 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
       ) : null}
       {list(review.evidenceUsed, "Evidence used", styles)}
       {list(review.counterEvidence, "Counter-evidence", styles)}
+      {inspectionViews.length ? (
+        <View style={styles.group}>
+          <Text accessibilityRole="header" aria-level={3} style={styles.groupTitle}>
+            AI inspection views
+          </Text>
+          <Text style={styles.item}>
+            These are the exact enlarged views inspected from the retained originals.
+            They are supplemental views, not extra photos or independent evidence.
+          </Text>
+          <ScrollView
+            horizontal
+            contentContainerStyle={styles.inspectionRow}
+            accessibilityLabel="AI inspection views"
+          >
+            {inspectionViews.map((view) => {
+              const loaded = loadedViews[viewKey(view)];
+              return (
+                <View key={viewKey(view)} style={styles.inspectionCard}>
+                  {loaded?.dataUrl ? (
+                    <Image
+                      source={{ uri: loaded.dataUrl }}
+                      resizeMode="contain"
+                      style={styles.inspectionImage}
+                      accessibilityLabel={`${view.kind} from source photo ${view.sourceImageIndex}`}
+                    />
+                  ) : null}
+                  <Text style={styles.groupTitle}>
+                    Photo {view.sourceImageIndex}: {view.kind}
+                  </Text>
+                  <Text style={styles.inspectionMeta}>
+                    {view.width} x {view.height} Â· {view.cropStrategy.replaceAll("_", " ")}
+                    {view.sourceBounds
+                      ? ` Â· source x ${view.sourceBounds.left}-${
+                          view.sourceBounds.left + view.sourceBounds.width
+                        }, y ${view.sourceBounds.top}-${
+                          view.sourceBounds.top + view.sourceBounds.height
+                        }`
+                      : ""}
+                  </Text>
+                  <View style={styles.inspectionActions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`View ${view.kind} from source photo ${view.sourceImageIndex}`}
+                      onPress={() => void loadView(view).catch((error) =>
+                        setInspectionFeedback(
+                          error?.message || "The inspection view could not be opened."
+                        )
+                      )}
+                      style={styles.button}
+                    >
+                      <Text style={styles.buttonText}>View</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Save ${view.kind} from source photo ${view.sourceImageIndex}`}
+                      onPress={() => void saveView(view)}
+                      style={styles.button}
+                    >
+                      <Text style={styles.buttonText}>Save</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              );
+            })}
+          </ScrollView>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Export all AI inspection views"
+            onPress={() => void exportViews()}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Export inspection evidence</Text>
+          </Pressable>
+          {inspectionFeedback ? (
+            <Text accessibilityLiveRegion="polite" style={styles.followUp}>
+              {inspectionFeedback}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
       {list(nextChecks, "Next evidence or checks", styles)}
       {onAddEvidence && nextChecks.length ? (
         <Pressable
