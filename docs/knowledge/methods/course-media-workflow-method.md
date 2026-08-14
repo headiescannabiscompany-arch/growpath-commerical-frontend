@@ -8,7 +8,7 @@ The shared Full Course Builder must create the record in the active workspace's 
 
 Commercial course persistence stores a flat canonical grow-interest tag list for catalog and detail use. The shared builder may retain its structured tier selections separately, and Commercial readers must normalize legacy structured selections instead of rendering object text or failing the page.
 
-The shared course catalog loads public, owned, and Commercial-public sources independently with a bounded total request time and no hidden automatic retry extension. One unavailable source must not leave the whole catalog loading forever or discard fulfilled sources; show available courses, disclose the partial result, and provide a named retry action.
+The shared course catalog loads public, owned, and Commercial-public sources independently with an outer bounded total operation time and no hidden automatic retry extension. The outer deadline includes authentication-token retrieval as well as network and response parsing. One unavailable source must not leave the whole catalog loading forever or discard fulfilled sources; show available courses, disclose the partial result, and provide a named retry action.
 
 Catalog loading depends on stable authenticated identity values, not a whole session-user object whose reference may change during rendering. Course-result state updates must not retrigger the same catalog load indefinitely.
 

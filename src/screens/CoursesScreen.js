@@ -89,6 +89,23 @@ function coursePriceLabel(course) {
 const COURSE_IMAGE_FALLBACK = require("../../assets/banner.png");
 export const COURSE_CATALOG_REQUEST_TIMEOUT_MS = 8000;
 
+export function courseCatalogRequest(path) {
+  let deadlineId;
+  const deadline = new Promise((_, reject) => {
+    deadlineId = setTimeout(
+      () => reject(new Error("Course source timed out")),
+      COURSE_CATALOG_REQUEST_TIMEOUT_MS
+    );
+  });
+  return Promise.race([
+    apiRequest(path, {
+      timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS,
+      retries: 0
+    }),
+    deadline
+  ]).finally(() => clearTimeout(deadlineId));
+}
+
 export function courseImageSource(course) {
   const savedImage = resolveImageUri(
     course?.coverImageUrl ||
@@ -195,20 +212,11 @@ export default function CoursesScreen({
 
       try {
         const [publicResult, ownedResult, commercialResult] = await Promise.allSettled([
-          apiRequest("/api/courses", {
-            timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS,
-            retries: 0
-          }),
+          courseCatalogRequest("/api/courses"),
           canCreateCourses
-            ? apiRequest("/api/courses/mine", {
-                timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS,
-                retries: 0
-              })
+            ? courseCatalogRequest("/api/courses/mine")
             : Promise.resolve([]),
-          apiRequest("/api/commercial/courses/public", {
-            timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS,
-            retries: 0
-          })
+          courseCatalogRequest("/api/commercial/courses/public")
         ]);
         if (
           publicResult.status === "rejected" &&

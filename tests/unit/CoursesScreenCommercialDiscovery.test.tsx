@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import CoursesScreen from "@/screens/CoursesScreen";
+import CoursesScreen, { courseCatalogRequest } from "@/screens/CoursesScreen";
 
 const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
@@ -78,6 +78,17 @@ describe("CoursesScreen commercial discovery", () => {
     expect(mockPush).toHaveBeenCalledWith(
       "/store/soil-school/courses/commercial-course-1"
     );
+  });
+
+  it("bounds a course source even when the transport never settles", async () => {
+    jest.useFakeTimers();
+    mockApiRequest.mockReturnValue(new Promise(() => undefined));
+
+    const pending = courseCatalogRequest("/api/courses/mine");
+    jest.advanceTimersByTime(8000);
+
+    await expect(pending).rejects.toThrow("Course source timed out");
+    jest.useRealTimers();
   });
 
   it("shows available courses and a retry when one source fails", async () => {
