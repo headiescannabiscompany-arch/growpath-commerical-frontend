@@ -16,12 +16,16 @@ import { runCalculator, saveToolRunToLog, type ToolRun } from "@/api/toolRuns";
 import {
   archiveNutrientRecipe,
   cloneNutrientRecipe,
+  compareNutrientRecipes,
+  convertRecipeToProductDraft,
+  convertRecipeToProductionBatch,
   createNutrientRecipe,
   listNutrientRecipes,
   recordNutrientRecipeUse,
   reviseNutrientRecipe,
   updateNutrientRecipe,
-  type NutrientRecipe
+  type NutrientRecipe,
+  type RecipeComparison
 } from "@/api/nutrientRecipes";
 import {
   saveToolRunAndCreateTask,
@@ -32,7 +36,6 @@ import {
   buildNutrientContextNotices
 } from "@/features/personal/tools/nutrientContext";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
-import { createProduct } from "@/api/products";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -582,9 +585,11 @@ function buildAiRecipeBrief(payload: Record<string, any>) {
 }
 
 export default function NpkToolScreen({
-  backFallbackHref = "/home/personal/tools"
+  backFallbackHref = "/home/personal/tools",
+  facilityId
 }: {
   backFallbackHref?: string;
+  facilityId?: string | null;
 } = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createNpkStyles(palette), [palette]);
@@ -610,6 +615,8 @@ export default function NpkToolScreen({
   const [recipeName, setRecipeName] = useState("");
   const [savedRecipes, setSavedRecipes] = useState<NutrientRecipe[]>([]);
   const [selectedRecipeId, setSelectedRecipeId] = useState("");
+  const [compareRecipeId, setCompareRecipeId] = useState("");
+  const [comparison, setComparison] = useState<RecipeComparison | null>(null);
   const [daysUntilHarvest, setDaysUntilHarvest] = useState("");
   const [sourceEC, setSourceEC] = useState("");
   const [sourcePH, setSourcePH] = useState("");
@@ -765,6 +772,59 @@ export default function NpkToolScreen({
     }
   }
 
+  async function compareSelectedRecipes() {
+    if (!selectedRecipeId || !compareRecipeId || selectedRecipeId === compareRecipeId)
+      return;
+    try {
+      const nextComparison = await compareNutrientRecipes(
+        selectedRecipeId,
+        compareRecipeId
+      );
+      setComparison(nextComparison);
+      setFeedback("Recipe comparison ready.");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to compare recipes.");
+    }
+  }
+
+  async function createSelectedProductDraft() {
+    if (!selectedRecipeId) return;
+    try {
+      const product = await convertRecipeToProductDraft(selectedRecipeId, {
+        name: recipeName.trim() || undefined
+      });
+      const productId = product?._id || product?.id;
+      setFeedback(
+        productId
+          ? `Not-for-sale product draft created: ${productId}.`
+          : "Not-for-sale product draft created."
+      );
+      await reloadRecipes();
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to create product draft.");
+    }
+  }
+
+  async function createSelectedProductionBatch() {
+    if (!selectedRecipeId) return;
+    try {
+      const batch = await convertRecipeToProductionBatch(selectedRecipeId, {
+        facilityId: facilityId || undefined,
+        batchVolume: Number(batchVolume),
+        batchUnit
+      });
+      const batchId = batch?._id || batch?.id;
+      setFeedback(
+        batchId
+          ? `Planned production batch created without changing inventory: ${batchId}.`
+          : "Planned production batch created without changing inventory."
+      );
+      await reloadRecipes();
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to plan production batch.");
+    }
+  }
+
   function updateRow(id: string, key: keyof ProductRow, value: string) {
     setRows((current) =>
       current.map((row) => (row.id === id ? { ...row, [key]: value } : row))
@@ -794,83 +854,6 @@ export default function NpkToolScreen({
     } finally {
       setRunning(false);
     }
-  }
-
-  function productDraftFromRecipe() {
-    const payload = recipePayload();
-    const linkedRecipeId = selectedRecipeId || toolRun?.linkedRecipeId || null;
-    const linkedToolRunId = toolRun?._id || toolRun?.id || null;
-    const normalizedProducts = payload.products || [];
-    const primaryFormula = result?.formula || "";
-    const warnings = [
-      ...(Array.isArray(result?.warnings) ? result.warnings : []),
-      result?.releaseDisclaimer,
-      "Draft product created from calculator output. Review label, batch, image, price, Stripe, stock, and compliance fields before publishing."
-    ].filter(Boolean);
-    const directions = [
-      primaryFormula,
-      "Verify guaranteed analysis, source water, final EC/pH, and stage fit before use.",
-      "Keep release timing visible on the product page when this draft is used for a soil or dry amendment product."
-    ].filter(Boolean);
-
-    return {
-      name: recipeName.trim() || "NPK feed recipe draft",
-      category:
-        recipeMode === "build_dry_blend"
-          ? "dry_amendment"
-          : recipeMode === "soil_amendment_plan"
-            ? "soil_amendment"
-            : "nutrient_recipe",
-      shortDescription:
-        "Draft created from GrowPath Nutrient Mix Builder. Review label, batch, image, price, Stripe, and stock before publishing.",
-      fullDescription: [
-        `Mode: ${recipeMode.replaceAll("_", " ")}`,
-        `Stage: ${stage}`,
-        `Medium: ${medium}`,
-        `Target label N-P2O5-K2O: ${[targetN || "-", targetP || "-", targetK || "-"].join("-")}`,
-        `Desired release: ${desiredReleaseProfile}`,
-        result?.formula ? `Formula: ${result.formula}` : "",
-        result?.releaseDisclaimer || ""
-      ]
-        .filter(Boolean)
-        .join("\n"),
-      status: "draft" as const,
-      linkedRecipeId,
-      linkedToolRunId,
-      specs: {
-        source: "npk_feed_recipe_builder",
-        targetNpk: payload.targetNpk,
-        desiredReleaseProfile,
-        dryMixWeightLb: payload.dryMixWeightLb,
-        batchVolume: payload.batchVolume,
-        batchUnit: payload.batchUnit,
-        stage,
-        medium,
-        products: normalizedProducts,
-        ingredients: normalizedProducts,
-        guaranteedAnalysisEstimate:
-          result?.guaranteedAnalysisEstimate || result?.totals || null,
-        elementalEstimate: result?.elementalEstimate || result?.totals || null,
-        directions,
-        applicationRate: result?.applicationRate || {
-          batchVolume: payload.batchVolume,
-          batchUnit: payload.batchUnit
-        },
-        releaseCurve: result?.releaseCurve || result?.releaseTimeline || null,
-        releaseTimeline: result?.releaseTimeline,
-        calculatedTotals: result?.totals,
-        availabilityEstimate: result?.availabilityEstimate,
-        warnings,
-        sourceConfidence: result?.sourceConfidence
-      },
-      growInterests: [
-        medium,
-        recipeMode === "build_dry_blend" ? "dry amendments" : "",
-        recipeMode === "soil_amendment_plan" ? "living soil" : "",
-        "NPK",
-        "recipe building"
-      ].filter(Boolean)
-    };
   }
 
   if (!enabled) {
@@ -1038,13 +1021,98 @@ export default function NpkToolScreen({
               </Pressable>
             ))}
             {selectedRecipeId ? (
-              <View style={styles.row}>
-                <Pressable style={styles.secondaryButton} onPress={updateSelectedRecipe}>
-                  <Text style={styles.secondaryButtonText}>Update Selected Recipe</Text>
-                </Pressable>
-                <Pressable style={styles.secondaryButton} onPress={archiveSelectedRecipe}>
-                  <Text style={styles.secondaryButtonText}>Archive Selected Recipe</Text>
-                </Pressable>
+              <View style={styles.savedActions}>
+                <View style={styles.row}>
+                  <Pressable
+                    style={styles.secondaryButton}
+                    onPress={updateSelectedRecipe}
+                  >
+                    <Text style={styles.secondaryButtonText}>Update Selected Recipe</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.secondaryButton}
+                    onPress={archiveSelectedRecipe}
+                  >
+                    <Text style={styles.secondaryButtonText}>
+                      Archive Selected Recipe
+                    </Text>
+                  </Pressable>
+                </View>
+                {savedRecipes.length > 1 ? (
+                  <View style={styles.comparePanel}>
+                    <Text style={styles.label}>Compare selected recipe with</Text>
+                    <View style={styles.selectWrap}>
+                      <Picker
+                        accessibilityLabel="Recipe to compare"
+                        selectedValue={compareRecipeId}
+                        onValueChange={setCompareRecipeId}
+                        style={styles.picker}
+                      >
+                        <Picker.Item label="Choose another saved recipe" value="" />
+                        {savedRecipes
+                          .filter((item) => item._id !== selectedRecipeId)
+                          .map((item) => (
+                            <Picker.Item
+                              key={item._id}
+                              label={`${item.name} v${item.version}`}
+                              value={item._id}
+                            />
+                          ))}
+                      </Picker>
+                    </View>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Compare saved recipes"
+                      disabled={!compareRecipeId}
+                      style={[
+                        styles.secondaryButton,
+                        !compareRecipeId && styles.buttonDisabled
+                      ]}
+                      onPress={compareSelectedRecipes}
+                    >
+                      <Text style={styles.secondaryButtonText}>Compare Recipes</Text>
+                    </Pressable>
+                    {comparison ? (
+                      <View style={styles.comparisonResult}>
+                        <Text
+                          accessibilityRole="header"
+                          aria-level={3}
+                          style={styles.resultTitle}
+                        >
+                          Recipe differences
+                        </Text>
+                        <Text style={styles.fieldHint}>
+                          {comparison.fieldChanges.length} field changes and{" "}
+                          {comparison.ingredientChanges.length} ingredient changes. Review
+                          both formulas before choosing one.
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                ) : null}
+                {entitlements.mode === "commercial" ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Create zero-stock not-for-sale product draft"
+                    style={styles.secondaryButton}
+                    onPress={createSelectedProductDraft}
+                  >
+                    <Text style={styles.secondaryButtonText}>
+                      Create Not-for-Sale Product Draft
+                    </Text>
+                  </Pressable>
+                ) : null}
+                {entitlements.mode === "commercial" ||
+                entitlements.mode === "facility" ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Create planned production batch without changing inventory"
+                    style={styles.secondaryButton}
+                    onPress={createSelectedProductionBatch}
+                  >
+                    <Text style={styles.secondaryButtonText}>Plan Production Batch</Text>
+                  </Pressable>
+                ) : null}
               </View>
             ) : null}
           </View>
@@ -1746,7 +1814,9 @@ export default function NpkToolScreen({
                       }
                     ]
                   : []),
-                ...(recipeName.trim()
+                ...(recipeName.trim() &&
+                selectedRecipeId &&
+                entitlements.mode === "commercial"
                   ? [
                       {
                         key: "convert-product-draft",
@@ -1754,17 +1824,7 @@ export default function NpkToolScreen({
                         variant: "secondary" as const,
                         pendingLabel: "Creating draft...",
                         successMessage: "Product draft created.",
-                        onPress: async () => {
-                          const created = await createProduct(
-                            productDraftFromRecipe() as any
-                          );
-                          const productId = created?.product?.id || created?.id;
-                          setFeedback(
-                            productId
-                              ? `Product draft created: ${productId}.`
-                              : "Product draft created."
-                          );
-                        }
+                        onPress: createSelectedProductDraft
                       }
                     ]
                   : [])
@@ -1946,6 +2006,16 @@ export function createNpkStyles(palette: ThemePalette) {
       padding: 10
     },
     savedRecipeOn: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+    savedActions: { gap: 10 },
+    comparePanel: { gap: 8 },
+    comparisonResult: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      padding: 12
+    },
+    buttonDisabled: { opacity: 0.5 },
     timelineRow: {
       borderTopWidth: 1,
       borderColor: palette.borderSoft,
