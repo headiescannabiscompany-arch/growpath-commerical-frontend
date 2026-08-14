@@ -603,6 +603,14 @@ public visibility, or screenshot/video acceptance still called out below.
   afterward and still resolved from the saved preference. This is real production
   browser evidence for those seven routes, not completion of the remaining workspace,
   responsive, font-scaling, screen-reader, or physical-device matrix.
+  The 21-route Admin Commercial Night pass found one route-level defect on AI Tools.
+  An initial correction deployed as `aba16d08` produced a blank web route and was
+  rejected during live verification. Hotfix `74afb7e5` passed the full PR and main
+  gates, deployed as Render `dep-d9vbppu7bikc73bvdc60`, restored the complete route,
+  and rendered all eight action controls as visible blue surfaces with black text.
+  A live action opened the correct Environment Review workflow. This closes the
+  reproduced Commercial Tools defect, not the remaining mobile, font-scaling,
+  screen-reader, or physical-device matrix.
   The same 12 Personal and 12 Facility destinations passed a computed live contrast
   scan of visible direct text against its actual rendered opaque surface at WCAG
   normal/large-text thresholds. No failing sample appeared in the rendered states;
