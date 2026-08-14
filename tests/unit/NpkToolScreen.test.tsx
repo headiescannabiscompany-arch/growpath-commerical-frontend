@@ -7,9 +7,12 @@ import { getThemePalette } from "@/theme/appTheme";
 
 const mockRunCalculator = jest.fn();
 const mockListNutrientRecipes = jest.fn();
-const mockCreateProduct = jest.fn();
+const mockCompareNutrientRecipes = jest.fn();
+const mockConvertRecipeToProductDraft = jest.fn();
+const mockConvertRecipeToProductionBatch = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 const mockRouterPush = jest.fn();
+const mockWorkspaceMode = { value: "personal" };
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -25,7 +28,7 @@ jest.mock("@/entitlements", () => ({
   CAPABILITY_KEYS: { TOOL_NPK: "tool_npk" },
   useEntitlements: () => ({
     plan: "pro",
-    mode: "personal",
+    mode: mockWorkspaceMode.value,
     can: () => true
   })
 }));
@@ -108,11 +111,12 @@ jest.mock("@/api/nutrientRecipes", () => ({
   updateNutrientRecipe: jest.fn(),
   archiveNutrientRecipe: jest.fn(),
   cloneNutrientRecipe: jest.fn(),
-  recordNutrientRecipeUse: jest.fn()
-}));
-
-jest.mock("@/api/products", () => ({
-  createProduct: (...args: any[]) => mockCreateProduct(...args)
+  recordNutrientRecipeUse: jest.fn(),
+  compareNutrientRecipes: (...args: any[]) => mockCompareNutrientRecipes(...args),
+  convertRecipeToProductDraft: (...args: any[]) =>
+    mockConvertRecipeToProductDraft(...args),
+  convertRecipeToProductionBatch: (...args: any[]) =>
+    mockConvertRecipeToProductionBatch(...args)
 }));
 
 async function renderNpkToolScreen() {
@@ -138,6 +142,7 @@ describe("NpkToolScreen", () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    mockWorkspaceMode.value = "personal";
     mockListNutrientRecipes.mockResolvedValue([]);
     mockRunCalculator.mockResolvedValue({
       outputs: {
@@ -172,6 +177,76 @@ describe("NpkToolScreen", () => {
       toolRunId: "toolrun-1",
       taskIds: ["task-1", "task-2", "task-3", "task-4", "task-5"]
     });
+    mockConvertRecipeToProductDraft.mockResolvedValue({ _id: "product-draft-1" });
+    mockConvertRecipeToProductionBatch.mockResolvedValue({ _id: "batch-1" });
+    mockCompareNutrientRecipes.mockResolvedValue({
+      leftRecipeId: "recipe-1",
+      rightRecipeId: "recipe-2",
+      sameRecipeFamily: false,
+      versionChange: 1,
+      fieldChanges: [{ field: "stage", left: "veg", right: "flower" }],
+      ingredientChanges: [],
+      calculationChanges: { left: {}, right: {} }
+    });
+  });
+
+  it("uses governed saved-recipe handoffs in Commercial mode", async () => {
+    mockWorkspaceMode.value = "commercial";
+    mockListNutrientRecipes.mockResolvedValue([
+      {
+        _id: "recipe-1",
+        name: "Living mix",
+        version: 1,
+        stage: "veg",
+        medium: "living_soil",
+        batchVolume: 10,
+        batchUnit: "gal",
+        products: []
+      },
+      {
+        _id: "recipe-2",
+        name: "Flower mix",
+        version: 2,
+        stage: "flower",
+        medium: "living_soil",
+        batchVolume: 10,
+        batchUnit: "gal",
+        products: []
+      }
+    ]);
+    const screen = await renderNpkToolScreen();
+
+    fireEvent.press(screen.getByText("Living mix v1"));
+    fireEvent(screen.getByLabelText("Recipe to compare"), "valueChange", "recipe-2");
+    fireEvent.press(screen.getByRole("button", { name: "Compare saved recipes" }));
+    await waitFor(() =>
+      expect(mockCompareNutrientRecipes).toHaveBeenCalledWith("recipe-1", "recipe-2")
+    );
+    expect(screen.getByRole("header", { name: "Recipe differences" })).toBeTruthy();
+
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Create zero-stock not-for-sale product draft"
+      })
+    );
+    await waitFor(() =>
+      expect(mockConvertRecipeToProductDraft).toHaveBeenCalledWith(
+        "recipe-1",
+        expect.objectContaining({ name: "Living mix" })
+      )
+    );
+
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Create planned production batch without changing inventory"
+      })
+    );
+    await waitFor(() =>
+      expect(mockConvertRecipeToProductionBatch).toHaveBeenCalledWith(
+        "recipe-1",
+        expect.objectContaining({ batchVolume: 10, batchUnit: "gal" })
+      )
+    );
   });
 
   it("shows the canonical nutrient mix builder and its evidence limits", async () => {
@@ -428,7 +503,7 @@ describe("NpkToolScreen", () => {
     );
   });
 
-  it("converts calculated recipes into commercial-ready product draft fields", async () => {
+  it("does not expose a storefront handoff for an unsaved Personal calculation", async () => {
     const screen = await renderNpkToolScreen();
 
     fireEvent.changeText(screen.getByPlaceholderText("e.g. Veg base"), "Kelp veg feed");
@@ -442,51 +517,11 @@ describe("NpkToolScreen", () => {
 
     await waitFor(() => expect(screen.getByText("NPK recipe result")).toBeTruthy());
 
-    fireEvent.press(screen.getByText("Convert to Product Draft"));
-
-    await waitFor(() =>
-      expect(mockCreateProduct).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: "Kelp veg feed",
-          category: "nutrient_recipe",
-          status: "draft",
-          linkedToolRunId: "toolrun-1",
-          fullDescription: expect.stringContaining("Target label N-P2O5-K2O"),
-          specs: expect.objectContaining({
-            source: "npk_feed_recipe_builder",
-            targetNpk: { N: undefined, P: undefined, K: undefined },
-            ingredients: expect.arrayContaining([
-              expect.objectContaining({
-                name: "Kelp meal",
-                guaranteedAnalysis: expect.objectContaining({
-                  N: 3,
-                  P2O5: 1,
-                  K2O: 2
-                }),
-                elementalAnalysis: expect.objectContaining({
-                  P: 0.4364,
-                  K: 1.6602
-                })
-              })
-            ]),
-            guaranteedAnalysisEstimate: { Nppm: 20, Pppm: 4.36, Kppm: 8.3 },
-            elementalEstimate: { Nppm: 20, Pppm: 4.36, Kppm: 8.3 },
-            directions: expect.arrayContaining([
-              "Kelp meal recipe",
-              expect.stringContaining("Verify guaranteed analysis")
-            ]),
-            applicationRate: { batchVolume: 5, batchUnit: "gal" },
-            releaseCurve: {
-              days_7_21: [{ name: "Kelp meal", form: "meal", confidence: "medium" }]
-            },
-            warnings: expect.arrayContaining([
-              "Verify source labels before publishing.",
-              expect.stringContaining("Draft product created")
-            ])
-          }),
-          growInterests: expect.arrayContaining(["soil", "NPK", "recipe building"])
-        })
-      )
-    );
+    expect(screen.queryByText("Convert to Product Draft")).toBeNull();
+    expect(
+      screen.queryByRole("button", {
+        name: "Create zero-stock not-for-sale product draft"
+      })
+    ).toBeNull();
   });
 });
