@@ -539,9 +539,17 @@ public visibility, or screenshot/video acceptance still called out below.
   out of the active list. This closes create/edit/lesson/reload/readiness/archive,
   not media, paid/public/learner, linkage, or visual acceptance. See
   `docs/qa/COMMERCIAL_FULL_COURSE_BUILDER_PRODUCTION_EVIDENCE_2026-08-14.md`.
-  Cover/banner upload, GrowPath and external lesson media, product/task/live/Forum
-  linkage, publish/read-only/unpublish, paid and free learner access, and public
-  storefront visibility remain open. Production merges `e5be59f9`, `c797ad2e`, and
+  A second production slice used backend merge `299d0daa` and frontend merge
+  `405390af`. Temporary course `6a7f2f86a79b6a29ee321736` retained its uploaded
+  thumbnail/banner, canonical interest, linked product, task template, and an edited
+  builder-created lesson after reload without duplicating that lesson. It then
+  completed free publish/read-only/owner-preview/unpublish/archive. The Admin
+  storefront was intentionally unpublished and only 1/14 ready, so the public
+  catalog correctly withheld the course. This closes cover/banner, product/task,
+  initial-lesson edit/reload, free publication lifecycle, owner preview, and cleanup.
+  GrowPath-hosted lesson video, rights-confirmed external-video publication,
+  Live/Forum linkage, paid learner/Stripe acceptance, and public visibility through
+  a published storefront remain open. Production merges `e5be59f9`, `c797ad2e`, and
   `c26b6398` now force JavaScript revalidation, attach a content-derived revision to
   every exported script URL, and preserve page state when Back visibility changes.
   Exact Render deploy `dep-d9vifp0u01pc73af56r0` succeeded; the formerly looping
