@@ -541,8 +541,14 @@ public visibility, or screenshot/video acceptance still called out below.
   `docs/qa/COMMERCIAL_FULL_COURSE_BUILDER_PRODUCTION_EVIDENCE_2026-08-14.md`.
   Cover/banner upload, GrowPath and external lesson media, product/task/live/Forum
   linkage, publish/read-only/unpublish, paid and free learner access, and public
-  storefront visibility remain open. The pre-fix generic private draft recorded in
-  the evidence file also remains a cleanup candidate outside Commercial persistence.
+  storefront visibility remain open. Production merges `e5be59f9`, `c797ad2e`, and
+  `c26b6398` now force JavaScript revalidation, attach a content-derived revision to
+  every exported script URL, and preserve page state when Back visibility changes.
+  Exact Render deploy `dep-d9vifp0u01pc73af56r0` succeeded; the formerly looping
+  generic deep link opened its exact draft and lesson once on `growpathai.com`.
+  The pre-fix generic private draft remains a cleanup candidate because the recovered
+  generic owner detail exposes no archive/delete lifecycle; it is no longer blocked
+  by catalog loading. No destructive endpoint was inferred.
 - [~] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
   Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
   navigation hierarchy, and persistence checks. Orders and Analytics state,
