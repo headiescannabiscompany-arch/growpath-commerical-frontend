@@ -97,6 +97,9 @@ const uiTest = read("tests/unit/NpkToolScreen.test.tsx");
   "reviseNutrientRecipe",
   "updateNutrientRecipe",
   "cloneNutrientRecipe",
+  "compareNutrientRecipes",
+  "convertRecipeToProductDraft",
+  "convertRecipeToProductionBatch",
   "recordNutrientRecipeUse",
   "archiveNutrientRecipe"
 ].forEach((helper) => {
@@ -113,6 +116,9 @@ const uiTest = read("tests/unit/NpkToolScreen.test.tsx");
   "Clone Recipe",
   "Recipe use saved to grow history",
   "Create Recipe Task Plan",
+  "Compare Recipes",
+  "Create Not-for-Sale Product Draft",
+  "Plan Production Batch",
   "Convert to Product Draft"
 ].forEach((text) => {
   requireText(
@@ -161,9 +167,13 @@ requireText(
   "updateNutrientRecipe",
   "archiveNutrientRecipe",
   "cloneNutrientRecipe",
+  "compareNutrientRecipes",
+  "convertRecipeToProductDraft",
+  "convertRecipeToProductionBatch",
   "recordNutrientRecipeUse",
   "creates a source-linked NPK recipe task plan",
-  "converts calculated recipes into commercial-ready product draft fields"
+  "uses governed saved-recipe handoffs in Commercial mode",
+  "does not expose a storefront handoff for an unsaved Personal calculation"
 ].forEach((text) => {
   requireText(
     "NPK UI tests",
