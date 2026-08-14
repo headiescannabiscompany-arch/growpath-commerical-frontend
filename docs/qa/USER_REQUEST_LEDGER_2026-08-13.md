@@ -191,8 +191,9 @@ Legend:
   Harvest review. Backend merge `735c056f` passed both CI suites plus the ZAP API
   scan and was manually released to the production `growpath-api` service on
   2026-08-14. Frontend merge `0a9ecda2` passed PR CI and production preflight; its
-  final main CI/deploy and a newly generated live AI result remain before this is
-  fully checked off.
+  final main CI passed and Render served that exact revision live. A newly generated
+  eligible AI result still needs the production View/Save/Export interaction loop
+  before this is fully checked off.
 - [x] Shared photo/video upload reports oversize, unreachable, retry, and remove states;
       Plant ID video frames and retained evidence have production acceptance.
 - [x] Harvest Readiness is not undersold as only a trichome estimator: it combines
@@ -354,12 +355,17 @@ Legend:
 - [ ] All applicable automated gates, governed catalogs, security/configuration checks,
       production builds, role loops, external integrations, devices, accessibility, and
       independent validation pass without weakening a gate.
-- [~] The read-only production Admin inventory now identifies 38 exact synthetic
-  QA/Codex/smoke/demo candidates and a protected-account boundary in
-  `docs/qa/PRODUCTION_TEST_ACCOUNT_CLEANUP_PLAN_2026-08-13.md`. The live Admin API
-  still needs an allowlisted, audited anonymization operation; production mutation,
-  protected-record regression proof, remaining temporary data, and untracked-file
-  reconciliation remain open. Suspend or Ban is not counted as cleanup.
+- [~] The production Admin cleanup boundary identifies 38 exact synthetic
+  QA/Codex/smoke/demo candidates and protects the real Admin, Headies, Living Soil
+  Labs, Triple Bag Genetics, Facility-team, outside-user, billing, moderation, and
+  audit records in `docs/qa/PRODUCTION_TEST_ACCOUNT_CLEANUP_PLAN_2026-08-13.md`.
+  The live Admin API now has an exact ID-and-email allowlist, platform-Admin gate,
+  blockers, typed confirmation, privacy-policy anonymization, session revocation,
+  idempotence, and immutable audit event. Authenticated production dry runs passed
+  for all 38 targets with zero blockers and zero mutations. Explicit action-time
+  owner confirmation, the production mutation, protected-record regression proof,
+  and remaining temporary-data reconciliation remain open. Suspend or Ban is not
+  counted as cleanup.
 - [ ] Final evidence records frontend/backend SHAs, production URLs, inspected deployment
       IDs, timestamps, accounts/roles, checks, failures/fixes, screenshots/video,
       external delivery, cleanup, and the final release decision.
