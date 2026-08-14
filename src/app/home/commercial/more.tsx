@@ -76,7 +76,7 @@ const workspaceGroups: Array<{
         label: "External Channels",
         href: "/home/commercial/social-tools",
         description:
-          "Review connected social channels, metrics, and scheduled off-platform posts."
+          "Review connected social channels and metrics, with a clear provider handoff for publishing."
       }
     ]
   },
