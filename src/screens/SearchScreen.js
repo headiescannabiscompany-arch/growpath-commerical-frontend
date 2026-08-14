@@ -133,10 +133,6 @@ export default function SearchScreen({ navigation, showBack = false }) {
   }, [query]);
 
   function openRoute(route) {
-    if (!searchEnabled) {
-      navigation?.navigate?.("Subscription");
-      return;
-    }
     navigation?.navigate?.(route);
   }
 
@@ -166,7 +162,9 @@ export default function SearchScreen({ navigation, showBack = false }) {
             onPress={() => navigation?.navigate?.("Subscription")}
             style={styles.locked}
           >
-            <Text style={styles.lockedText}>Upgrade to unlock search.</Text>
+            <Text style={styles.lockedText}>
+              Upgrade to unlock full search. Navigation shortcuts remain available.
+            </Text>
           </Pressable>
         ) : null}
         <FlatList
