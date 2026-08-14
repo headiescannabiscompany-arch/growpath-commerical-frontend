@@ -304,6 +304,9 @@ export const methodRegistry: GrowPathMethod[] = [
       "release timeline",
       "source confidence and uncertainty",
       "antagonisms",
+      "owner-scoped recipe comparison and revision history",
+      "zero-stock not-for-sale storefront draft handoff",
+      "planned Facility production snapshot without inventory mutation",
       "commercial batch yield, packaging, cost completeness and inventory review",
       "tasks"
     ],
@@ -311,7 +314,9 @@ export const methodRegistry: GrowPathMethod[] = [
       "Compost, biology, mineralization and long-term availability remain uncertain without testing.",
       "Official labels support guaranteed analysis and use rates, not superiority, uptake or crop response.",
       "Do not coerce missing batch quantity, analysis, cost, shrinkage, margin, lot or inventory values to zero.",
-      "Calculate blended label analysis only from complete values expressed in compatible quantity units; inventory review never decrements stock."
+      "Calculate blended label analysis only from complete values expressed in compatible quantity units; inventory review never decrements stock.",
+      "Never trust client-supplied storefront or Facility scope: storefront drafts require owner scope and Facility production batches require owner or manager access.",
+      "Recipe handoff never publishes a product, enables checkout, claims inventory, or decrements stock."
     ],
     [
       "npk",
