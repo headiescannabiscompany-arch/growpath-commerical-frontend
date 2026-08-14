@@ -1,6 +1,6 @@
 # GrowPathAI Canonical Remaining Work
 
-Date: 2026-08-13
+Date: 2026-08-14
 
 Status: Active execution list; reconciled against retained production evidence on
 2026-08-12. A checked sub-scope stays checked even when its larger end-to-end workflow
@@ -53,6 +53,12 @@ execution boundaries and the evidence needed not to reopen completed work.
 - [x] Commercial Feed/Campaigns and Tasks have the shared themed Back control in production
       under frontend `79c6dba2`; the signed-in route sweep also found no visible route/load
       failure. Populated Commercial mutations remain separate open work.
+- [x] Commercial External Channels and Public Links are reachable from More without becoming
+      duplicate bottom tabs. Frontend `0aab65b5` passed Production Build Preflight and Frontend
+      CI, then production rendered one canonical heading, the six intended Commercial tabs,
+      readable empty states, real backend channel routes, and truthful provider-handoff copy on
+      both routes. This closes route placement and empty-state acceptance, not populated channel
+      connection or link mutations.
 - [x] The governed Diagnosis/IPM catalog assembly is complete at 252 reviewed cases and
       504 rights-reviewed images. Executing all cases against authorized staging remains a
       separate open action because it spends credits and writes records.
@@ -423,6 +429,15 @@ grow`, private current location without a Field Study, and an optional approxima
       `docs/qa/FACILITY_POPULATED_WORKFLOW_PRODUCTION_EVIDENCE_2026-08-13.md`.
 - [ ] Capture forced backend 403 evidence for prohibited Facility mutations and an
       exported cross-role recording; clean up temporary aliases only with owner approval.
+- [~] Anonymize the exact 38 approved synthetic production accounts without touching protected
+      owner, customer, brand, Facility-team, billing, moderation, support, consent, audit, or
+      legal evidence. Backend production deployment `dep-d9vb0ntbedkc73bapv10` loaded the exact
+      ID-and-email allowlist on 2026-08-14. The authenticated platform Admin resolved all 38
+      candidates and every live dry run reported `approved`, `Safety blockers: none`, and
+      `Dry run: passed`; zero candidates were missing or blocked and no mutation was performed.
+      Permanent anonymization, session revocation, after-state search, and protected-account/
+      brand/Facility regression evidence remain pending explicit action-time owner confirmation.
+      See `docs/qa/PRODUCTION_TEST_ACCOUNT_CLEANUP_PLAN_2026-08-13.md`.
 
 ## C. Payments, email, delivery, and entitlements
 
