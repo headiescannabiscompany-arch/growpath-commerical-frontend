@@ -10,6 +10,10 @@ thread. It is the readable history of what was requested and what has been deliv
 The canonical remaining-work document is the execution list. A checked item here is
 not reopened unless a current regression reproduces a defect.
 
+The frozen functional entry gate for final crawl/polish is
+`docs/qa/PRE_POLISH_DEFINITION_OF_DONE_2026-08-14.md`. It states what every remaining
+section must prove so finished work is not repeatedly reinterpreted or redone.
+
 Legend:
 
 - `[x]` implemented and supported by retained test, deployment, or production evidence;

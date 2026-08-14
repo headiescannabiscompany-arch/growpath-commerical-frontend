@@ -16,6 +16,12 @@ execution boundaries and the evidence needed not to reopen completed work.
 
 ## Rules
 
+The frozen pre-polish definition of done is
+`docs/qa/PRE_POLISH_DEFINITION_OF_DONE_2026-08-14.md`. It consolidates the evidence
+required before the final route crawl and prevents completed sections from reopening
+without a reproduced failure, failed regression, changed owner requirement, or new
+authoritative evidence.
+
 - Do not reopen implementation already backed by a deployed SHA and production
   evidence unless a current regression reproduces a defect.
 - Do not mark local implementation complete as production acceptance.
