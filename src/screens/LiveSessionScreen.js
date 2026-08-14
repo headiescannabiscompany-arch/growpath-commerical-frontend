@@ -115,7 +115,19 @@ export default function LiveSessionScreen({ route }) {
   }, [sessionId]);
 
   const twitchChannel = session?.twitchChannel ? String(session.twitchChannel) : "";
-  const watchUrl = twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "";
+  const streamPlatform = String(
+    session?.streamPlatform || (twitchChannel ? "twitch" : "other")
+  );
+  const streamPlatformLabel =
+    String(session?.externalPlatformLabel || "") ||
+    { twitch: "Twitch", youtube: "YouTube", kick: "Kick", facebook: "Facebook Live" }[
+      streamPlatform
+    ] ||
+    "Streaming service";
+  const watchUrl = String(
+    session?.externalWatchUrl ||
+      (twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "")
+  );
   const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
   const replayUrl = session?.replayUrl || session?.vodUrl || "";
   const twitchVodId = String(replayUrl).match(/twitch\.tv\/videos\/(\d+)/i)?.[1] || "";
@@ -399,6 +411,9 @@ export default function LiveSessionScreen({ route }) {
           {session.twitchChannel ? (
             <Text style={styles.meta}>Channel: {String(session.twitchChannel)}</Text>
           ) : null}
+          {watchUrl ? (
+            <Text style={styles.meta}>Streaming on {streamPlatformLabel}</Text>
+          ) : null}
 
           {twitchChannel || twitchVodId ? (
             <View style={styles.embedWrap}>
@@ -410,7 +425,9 @@ export default function LiveSessionScreen({ route }) {
             </View>
           ) : (
             <Text style={styles.meta}>
-              No Twitch channel is attached to this live yet.
+              {watchUrl
+                ? `Use the ${streamPlatformLabel} watch button below for video. GrowPath chat remains here.`
+                : "No video destination is attached to this live yet."}
             </Text>
           )}
 
@@ -650,7 +667,7 @@ export default function LiveSessionScreen({ route }) {
                 Linking.openURL(watchUrl).catch(() => {});
               }}
             >
-              <Text style={styles.btnText}>Watch on Twitch</Text>
+              <Text style={styles.btnText}>Watch on {streamPlatformLabel}</Text>
             </Pressable>
           ) : null}
 

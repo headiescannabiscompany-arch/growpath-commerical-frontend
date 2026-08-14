@@ -27,6 +27,15 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type SessionType = "live" | "premiere";
+type StreamPlatform = "twitch" | "youtube" | "kick" | "facebook" | "other";
+
+const STREAM_DESTINATIONS: Array<{ value: StreamPlatform; label: string }> = [
+  { value: "twitch", label: "Twitch" },
+  { value: "youtube", label: "YouTube" },
+  { value: "kick", label: "Kick" },
+  { value: "facebook", label: "Facebook Live" },
+  { value: "other", label: "Another service" }
+];
 
 export default function LiveStudioRoute() {
   const router = useRouter();
@@ -37,6 +46,10 @@ export default function LiveStudioRoute() {
   const [sessionType, setSessionType] = useState<SessionType>("live");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [streamPlatform, setStreamPlatform] = useState<StreamPlatform>("twitch");
+  const [twitchChannel, setTwitchChannel] = useState("");
+  const [externalWatchUrl, setExternalWatchUrl] = useState("");
+  const [externalPlatformLabel, setExternalPlatformLabel] = useState("");
   const [startsAt, setStartsAt] = useState("");
   const [reminder, setReminder] = useState("24 hours before");
   const [sourceVideoId, setSourceVideoId] = useState("");
@@ -136,6 +149,18 @@ export default function LiveStudioRoute() {
       setError("Choose one of your published videos for the premiere.");
       return;
     }
+    if (sessionType === "live" && streamPlatform === "twitch" && !twitchChannel.trim()) {
+      setError("Add the Twitch channel viewers should watch.");
+      return;
+    }
+    if (
+      sessionType === "live" &&
+      streamPlatform !== "twitch" &&
+      !/^https:\/\//i.test(externalWatchUrl.trim())
+    ) {
+      setError("Add the secure https watch URL for this stream.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -143,6 +168,19 @@ export default function LiveStudioRoute() {
         title: title.trim(),
         description: description.trim(),
         sessionType,
+        streamPlatform: sessionType === "premiere" ? "growpath" : streamPlatform,
+        twitchChannel:
+          sessionType === "live" && streamPlatform === "twitch"
+            ? twitchChannel.trim()
+            : "",
+        externalWatchUrl:
+          sessionType === "live" && streamPlatform !== "twitch"
+            ? externalWatchUrl.trim()
+            : "",
+        externalPlatformLabel:
+          sessionType === "live" && streamPlatform === "other"
+            ? externalPlatformLabel.trim()
+            : "",
         sourceVideoId: sessionType === "premiere" ? sourceVideoId : null,
         startsAt: startsAt || null,
         scheduledStart: startsAt,
@@ -264,6 +302,83 @@ export default function LiveStudioRoute() {
           style={[styles.input, styles.multiline]}
           value={description}
         />
+
+        {sessionType === "live" ? (
+          <View style={styles.videoSection}>
+            <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+              Where are you streaming?
+            </Text>
+            <Text style={styles.muted}>
+              This is the video destination viewers will watch. Discord announcements are
+              configured separately below.
+            </Text>
+            <View style={styles.row}>
+              {STREAM_DESTINATIONS.map((destination) => (
+                <Pressable
+                  key={destination.value}
+                  accessibilityRole="radio"
+                  accessibilityLabel={`Stream on ${destination.label}`}
+                  accessibilityState={{ checked: streamPlatform === destination.value }}
+                  onPress={() => setStreamPlatform(destination.value)}
+                  style={[
+                    styles.choice,
+                    streamPlatform === destination.value && styles.choiceSelected
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.choiceText,
+                      streamPlatform === destination.value && styles.choiceTextSelected
+                    ]}
+                  >
+                    {destination.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            {streamPlatform === "twitch" ? (
+              <>
+                <Text style={styles.label}>Twitch channel</Text>
+                <TextInput
+                  accessibilityLabel="Twitch channel viewers will watch"
+                  autoCapitalize="none"
+                  onChangeText={setTwitchChannel}
+                  placeholder="channel name"
+                  placeholderTextColor={palette.textMuted}
+                  style={styles.input}
+                  value={twitchChannel}
+                />
+              </>
+            ) : (
+              <>
+                {streamPlatform === "other" ? (
+                  <>
+                    <Text style={styles.label}>Service name</Text>
+                    <TextInput
+                      accessibilityLabel="Other streaming service name"
+                      onChangeText={setExternalPlatformLabel}
+                      placeholder="Streaming service"
+                      placeholderTextColor={palette.textMuted}
+                      style={styles.input}
+                      value={externalPlatformLabel}
+                    />
+                  </>
+                ) : null}
+                <Text style={styles.label}>Viewer watch URL</Text>
+                <TextInput
+                  accessibilityLabel={`${streamPlatform} viewer watch URL`}
+                  autoCapitalize="none"
+                  keyboardType="url"
+                  onChangeText={setExternalWatchUrl}
+                  placeholder="https://..."
+                  placeholderTextColor={palette.textMuted}
+                  style={styles.input}
+                  value={externalWatchUrl}
+                />
+              </>
+            )}
+          </View>
+        ) : null}
 
         {sessionType === "premiere" ? (
           <View style={styles.videoSection}>
