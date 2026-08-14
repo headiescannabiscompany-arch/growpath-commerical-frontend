@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import {
+  archiveCourse,
   completeLesson,
   enrollInCourse,
   getCourse,
@@ -122,6 +123,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
   const [liveRsvpIds, setLiveRsvpIds] = useState([]);
   const [learnerNotes, setLearnerNotes] = useState({});
   const [lessonNote, setLessonNote] = useState("");
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
 
   const loadedCourseId = rowId(course) || courseId;
   const lessons = useMemo(() => normalizeList(course?.lessons, "lessons"), [course]);
@@ -479,6 +481,21 @@ export default function CourseDetailScreen({ route, navigation = null }) {
       await load();
     } catch (error) {
       setFeedback(error?.message || "Unable to unpublish course.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function archiveCurrentCourse() {
+    if (!loadedCourseId || course?.isPublished) return;
+    setSaving(true);
+    try {
+      await archiveCourse(loadedCourseId);
+      setArchiveConfirmOpen(false);
+      setFeedback("Course archived. Returning to your active courses.");
+      router.replace?.("/home/personal/courses");
+    } catch (error) {
+      setFeedback(error?.message || "Unable to archive course.");
     } finally {
       setSaving(false);
     }
@@ -1256,6 +1273,56 @@ export default function CourseDetailScreen({ route, navigation = null }) {
                   : "Publish Course"}
             </Text>
           </Pressable>
+        </View>
+      ) : null}
+
+      {ownsCourse && !course?.isPublished ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Archive draft course</Text>
+          <Text style={styles.meta}>
+            Remove this draft from active course lists while retaining its audit record.
+            Reusable Video Library files are not deleted.
+          </Text>
+          {archiveConfirmOpen ? (
+            <>
+              <Text style={styles.body}>Archive this private draft course?</Text>
+              <View style={styles.actions}>
+                <Pressable
+                  disabled={saving}
+                  onPress={archiveCurrentCourse}
+                  style={[styles.primaryBtn, saving && styles.disabled]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Confirm archive course"
+                  accessibilityState={{ disabled: saving }}
+                >
+                  <Text style={styles.primaryText}>
+                    {saving ? "Archiving..." : "Confirm Archive"}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  disabled={saving}
+                  onPress={() => setArchiveConfirmOpen(false)}
+                  style={styles.secondaryBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel="Keep course"
+                  accessibilityState={{ disabled: saving }}
+                >
+                  <Text style={styles.secondaryText}>Keep Course</Text>
+                </Pressable>
+              </View>
+            </>
+          ) : (
+            <Pressable
+              disabled={saving}
+              onPress={() => setArchiveConfirmOpen(true)}
+              style={styles.secondaryBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Archive draft course"
+              accessibilityState={{ disabled: saving }}
+            >
+              <Text style={styles.secondaryText}>Archive Course</Text>
+            </Pressable>
+          )}
         </View>
       ) : null}
 

@@ -106,6 +106,7 @@ export const ROUTES = {
     LESSON_DETAIL: (id) => `${PREFIX}/courses/lesson/${id}`,
     PUBLISH: (id) => `${PREFIX}/courses/${id}/publish`,
     UNPUBLISH: (id) => `${PREFIX}/courses/${id}/unpublish`,
+    ARCHIVE: (id) => `${PREFIX}/courses/${id}/archive`,
     ENROLL: (id) => `${PREFIX}/courses/${id}/enroll`,
     BUY: (id) => `${PREFIX}/courses/${id}/buy`,
     STATUS: (id) => `${PREFIX}/courses/${id}/enrollment-status`,

@@ -79,6 +79,12 @@ export function unpublishCourse(id) {
   });
 }
 
+export function archiveCourse(id) {
+  return apiRequest(apiRoutes.COURSES.ARCHIVE(id), {
+    method: "PATCH"
+  });
+}
+
 export function updateCourse(id, payload) {
   return apiRequest(apiRoutes.COURSES.DETAIL(id), {
     method: "PUT",
