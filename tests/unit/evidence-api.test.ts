@@ -10,6 +10,7 @@ import {
   getEvidenceAssetsByIds,
   getEvidenceVideoFrameExtraction,
   isTerminalEvidenceRegistrationError,
+  loadAiInspectionView,
   listEvidenceAssets,
   providerEvidencePayload
 } from "@/api/evidence";
@@ -166,6 +167,43 @@ describe("providerEvidencePayload", () => {
         facilityId: "facility-1"
       }
     });
+  });
+
+  it("loads an exact fingerprinted AI inspection view in its authorized workspace", async () => {
+    const view = {
+      sourceEvidenceAssetId: "photo/1",
+      sourceImageIndex: 1,
+      kind: "upper coverage",
+      cropStrategy: "coverage" as const,
+      width: 900,
+      height: 900,
+      mimeType: "image/jpeg" as const,
+      sha256: "b".repeat(64)
+    };
+    mockApiRequest.mockResolvedValue({ view: { ...view, dataUrl: "data:image/jpeg;base64,eA==" } });
+
+    await expect(
+      loadAiInspectionView(view, {
+        workspaceType: "facility",
+        workspaceId: "facility-1",
+        facilityId: "facility-1"
+      })
+    ).resolves.toEqual(expect.objectContaining({ dataUrl: expect.stringContaining("base64") }));
+
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/evidence-assets/photo%2F1/inspection-view",
+      expect.objectContaining({
+        timeoutMs: 30000,
+        params: expect.objectContaining({
+          sha256: "b".repeat(64),
+          kind: "upper coverage",
+          cropStrategy: "coverage",
+          format: "json",
+          workspaceType: "facility",
+          facilityId: "facility-1"
+        })
+      })
+    );
   });
 
   it("retires the obsolete Harvest dimension warning without hiding real quality findings", async () => {

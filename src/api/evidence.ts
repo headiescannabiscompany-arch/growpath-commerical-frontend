@@ -2,6 +2,7 @@ import { apiRequest } from "@/api/apiRequest";
 import type {
   EvidenceAsset,
   EvidenceAssetCreateInput,
+  AiInspectionView,
   EvidenceFrameExtractionStatus,
   EvidenceLinks,
   EvidenceWorkspaceType,
@@ -13,6 +14,32 @@ export type EvidenceWorkspaceScope = {
   workspaceId?: string;
   facilityId?: string;
 };
+
+export async function loadAiInspectionView(
+  view: AiInspectionView,
+  workspace: EvidenceWorkspaceScope,
+  options: { signal?: AbortSignal } = {}
+) {
+  const response = await apiRequest<any>(
+    `/api/evidence-assets/${encodeURIComponent(
+      view.sourceEvidenceAssetId
+    )}/inspection-view`,
+    {
+      signal: options.signal,
+      timeoutMs: 30000,
+      params: {
+        sha256: view.sha256,
+        kind: view.kind,
+        cropStrategy: view.cropStrategy,
+        format: "json",
+        workspaceType: workspace.workspaceType,
+        ...(workspace.workspaceId ? { workspaceId: workspace.workspaceId } : {}),
+        ...(workspace.facilityId ? { facilityId: workspace.facilityId } : {})
+      }
+    }
+  );
+  return response?.view as AiInspectionView;
+}
 
 export type EvidenceFrameExtraction = {
   status: EvidenceFrameExtractionStatus;

@@ -807,7 +807,39 @@ public visibility, or screenshot/video acceptance still called out below.
 - [ ] Capture genuine final-SHA screenshots and video tied to URL, timestamp,
       account/role, viewport/device, checks, and evidence type.
 
-## F. App Store and final release
+## F. Release-quality product presentation and inspection evidence
+
+- [ ] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
+      inspected, without treating them as additional photos or independent evidence.
+      Let an authorized user open each view at full size, save an individual image,
+      and export a viewer-friendly inspection-evidence package with source-photo index,
+      crop bounds/strategy, provider detail, analysis/review ID, policy version, and the
+      explicit derived-evidence limitation. Apply this shared behavior to every AI
+      still-image inspection workflow and its saved result; never fabricate a crop from
+      a count-only response or expose another workspace's protected media.
+- [ ] Complete a route-by-route live acceptance crawl of Personal, Commercial,
+      Facility, public, and Admin surfaces on the final candidate SHAs. Exercise the
+      common path forward from every page, not only route loading, and retain exact
+      role/account, viewport, theme, URL, timestamp, screenshot/video, deployment, and
+      defect/fix evidence.
+- [ ] Give published courses a deliberate media hierarchy: an optional list/banner
+      image outside the opened course and one full course image inside it, without an
+      unlabeled duplicate or an unexplained missing-image gap. Verify author add,
+      replace, remove, publish, and learner rendering paths.
+- [ ] Put storefront imagery above the storefront description where available, keep
+      empty states intentional, and verify every product, course, video, website, and
+      pickup handoff opens the correct public or signed-in destination.
+- [ ] Surface frequent deep links and next actions beside the records and tools where
+      people naturally need them, including videos, live/premiere viewing, Plant ID,
+      saved AI results, grows, storefronts, courses, Forum/Q&A, and shared timelines.
+      Avoid duplicate top-level navigation when a contextual action is clearer.
+- [ ] Consolidate headers, cards, media aspect ratios, spacing, text hierarchy,
+      buttons, loading/error/empty states, Back behavior, bottom navigation, Day/Night/
+      Auto rendering, and responsive behavior into one professional visual system
+      across every workspace. Close each defect only after its final SHA is live and
+      the affected route and path forward have been exercised successfully.
+
+## G. App Store and final release
 
 The autonomous release boundary was rechecked on 2026-08-12. The production-build
 command remained dry-run-only and listed the intended non-interactive iOS and Android

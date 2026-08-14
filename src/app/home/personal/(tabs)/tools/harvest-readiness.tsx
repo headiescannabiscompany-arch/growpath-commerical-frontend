@@ -24,6 +24,7 @@ import { listEvidenceAssets, providerEvidencePayload } from "@/api/evidence";
 import { getToolRun, type ToolRun } from "@/api/toolRuns";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
 import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
+import EvidenceReviewPanel from "@/components/personal/EvidenceReviewPanel";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import {
   inspectedPhotoEstimateCounts,
@@ -774,6 +775,30 @@ function HarvestPhotoAnalyzer({
           <Text style={photoStyles.feedback}>
             Review ID: {analysis.analysisId || "not provided"}
           </Text>
+          {analysis.inspectionViews?.length ? (
+            <EvidenceReviewPanel
+              review={{
+                requested: true,
+                performed: true,
+                photoCount: analysis.imagesAnalyzed,
+                photosAnalyzed: analysis.imagesAnalyzed,
+                quality: analysis.imageQuality,
+                confidence:
+                  analysis.confidence >= 0.75
+                    ? "high"
+                    : analysis.confidence >= 0.45
+                      ? "medium"
+                      : "low",
+                providerLabel: analysis.providerLabel,
+                evidenceUsed: analysis.evidenceUsed || [],
+                counterEvidence: [],
+                missingInformation: [],
+                requiredNextPhotos: [],
+                limitations: analysis.limitations || [],
+                inspectionViews: analysis.inspectionViews
+              }}
+            />
+          ) : null}
           {analysis.photoUsable ? (
             <Text style={photoStyles.feedback}>
               AI estimate: {Math.round(Number(analysis.cloudy) * 100)}% cloudy,{" "}
