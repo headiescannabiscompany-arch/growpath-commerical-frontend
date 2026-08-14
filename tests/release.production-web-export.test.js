@@ -37,13 +37,16 @@ const outIndex = process.argv.indexOf("--output-dir");
 const outputDir = outIndex >= 0 ? process.argv[outIndex + 1] : "dist";
 const absoluteOutputDir = path.resolve(process.cwd(), outputDir);
 fs.mkdirSync(absoluteOutputDir, { recursive: true });
+fs.mkdirSync(path.join(absoluteOutputDir, "_expo", "static", "js", "web"), {
+  recursive: true
+});
 const apiUrl = process.env.EXPO_PUBLIC_API_URL || "";
 fs.writeFileSync(
   path.join(absoluteOutputDir, "index.html"),
-  \`<!doctype html><html><head><title>GrowPath</title></head><body><div id="root"></div><noscript></noscript><script>window.__apiBase = "\${apiUrl}";</script></body></html>\`
+  \`<!doctype html><html><head><title>GrowPath</title></head><body><div id="root"></div><noscript></noscript><script src="/_expo/static/js/web/index-stable.js"></script><script>window.__apiBase = "\${apiUrl}";</script></body></html>\`
 );
 fs.writeFileSync(
-  path.join(absoluteOutputDir, "bundle.js"),
+  path.join(absoluteOutputDir, "_expo", "static", "js", "web", "index-stable.js"),
   \`window.__apiBase = "\${apiUrl}";\`
 );
 console.log("fake expo export complete");
@@ -90,5 +93,16 @@ describe("production web export", () => {
     const indexHtml = fs.readFileSync(path.join(tempRoot, "dist", "index.html"), "utf8");
     expect(indexHtml).toContain("https://api.growpathai.com");
     expect(indexHtml).not.toContain("https://\"");
+    expect(indexHtml).toMatch(
+      /\/_expo\/static\/js\/web\/index-stable\.js\?v=[a-f0-9]{12}/
+    );
+
+    const fallbackHtml = fs.readFileSync(
+      path.join(tempRoot, "dist", "courses", "index.html"),
+      "utf8"
+    );
+    expect(fallbackHtml).toMatch(
+      /\/_expo\/static\/js\/web\/index-stable\.js\?v=[a-f0-9]{12}/
+    );
   });
 });

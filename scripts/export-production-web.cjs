@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { spawnSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -251,6 +252,30 @@ const fallbackRoutes = [
 ];
 const indexHtml = path.join(absoluteOutputDir, "index.html");
 const rawIndexHtml = fs.readFileSync(indexHtml, "utf8");
+
+function revisionStaticJavaScript(html) {
+  return html.replace(
+    /(<script\b[^>]*\bsrc=["'])(\/_expo\/static\/js\/[^"'?]+\.js)(["'])/gi,
+    (match, prefix, assetPath, suffix) => {
+      const absoluteAssetPath = path.join(
+        absoluteOutputDir,
+        ...assetPath.split("/").filter(Boolean)
+      );
+      if (!fs.existsSync(absoluteAssetPath)) {
+        return match;
+      }
+
+      const revision = crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(absoluteAssetPath))
+        .digest("hex")
+        .slice(0, 12);
+      return `${prefix}${assetPath}?v=${revision}${suffix}`;
+    }
+  );
+}
+
+const revisionedIndexHtml = revisionStaticJavaScript(rawIndexHtml);
 const siteUrl = "https://growpathai.com";
 const indexNowKey = "growpathai-2026-indexnow-7f4b2a91c6d8e305";
 
@@ -692,12 +717,15 @@ function applySeo(html, route) {
     .replace('<div id="root"></div>', `<div id="root">${staticMarkup}</div>`);
 }
 
-fs.writeFileSync(indexHtml, applySeo(rawIndexHtml, ""));
+fs.writeFileSync(indexHtml, applySeo(revisionedIndexHtml, ""));
 
 for (const route of fallbackRoutes) {
   const routeDir = path.join(absoluteOutputDir, route);
   fs.mkdirSync(routeDir, { recursive: true });
-  fs.writeFileSync(path.join(routeDir, "index.html"), applySeo(rawIndexHtml, route));
+  fs.writeFileSync(
+    path.join(routeDir, "index.html"),
+    applySeo(revisionedIndexHtml, route)
+  );
 }
 
 const robotsTxt = [
