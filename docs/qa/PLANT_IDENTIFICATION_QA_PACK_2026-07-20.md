@@ -23,10 +23,12 @@ evidence also passed; four wrong-taxon or no-target candidates were rejected. Th
 governed catalog is now 41/320. Three Pothos records with repeated
 golden-variegated climbing foliage also passed; three ambiguous mixed, isolated-leaf,
 or unvariegated candidates were rejected. The governed catalog is now 44/320. Two
-cucumber candidates were
-rejected because cotyledon-only or flower-only evidence could not support dependable
-species ground truth. The catalog remains planning until all governed slots are filled;
-no candidate is automatically promoted.
+cucumber candidates were rejected because cotyledon-only or flower-only evidence could
+not support dependable species ground truth. Four mature Monstera records with repeated
+split-and-fenestrated leaves or combined leaf-and-inflorescence evidence also passed;
+two distant candidates were rejected. The governed catalog is now 48/320. The catalog
+remains planning until all governed slots are filled; no candidate is automatically
+promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
