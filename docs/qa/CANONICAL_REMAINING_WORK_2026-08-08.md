@@ -363,6 +363,15 @@ grow`, private current location without a Field Study, and an optional approxima
   slice also passed 20/20 tests. This reinforces token attachment and canonical
   workspace navigation but does not substitute for the remaining genuine expired
   invitation, logout, server-down, or outside-user production cases.
+  On 2026-08-14, the real Admin multi-workspace session completed a controlled,
+  browser-tab-only server-outage recovery check without changing production data.
+  With `api.growpathai.com` blocked only inside the test tab, Commercial and Personal
+  each rendered `Session check failed`, `Unable to reach the server`, and the explicit
+  `Retry /api/me` action. After the block was removed, Commercial recovered to
+  `Dashboard`; the real workspace chooser then switched to Personal, and Personal
+  independently failed readably and recovered to `Your Garden`. The tab ended with
+  normal network access restored. Genuine expired invitation, logout, remaining-role,
+  and independent outside-user cases are still open.
 - [~] Finish the all-route/button checklist: correct destination, back behavior,
   role gate, readable empty/loading/error state, persistence, and no dead or duplicate
   controls. Personal Pro top-level and More destinations plus Facility Staff
