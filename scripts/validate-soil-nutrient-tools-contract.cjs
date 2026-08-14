@@ -151,7 +151,11 @@ requireText(
 [
   ["NPK screen ToolRun calculator", screens.npk, /runCalculator<any>\("npk-recipe"/],
   ["NPK task plan", screens.npk, /Create Recipe Task Plan[\s\S]*npkRecipeTasks/],
-  ["NPK product draft", screens.npk, /Convert to Product Draft[\s\S]*createProduct/],
+  [
+    "NPK governed product draft",
+    screens.npk,
+    /(?=[\s\S]*Create Not-for-Sale Product Draft)(?=[\s\S]*convertRecipeToProductDraft)/
+  ],
   [
     "nutrient chemistry compatibility",
     screens.nutrientChemistry,
@@ -272,7 +276,7 @@ requireText(
   [
     "NPK UI tests",
     tests.npk,
-    /source-linked NPK recipe task plan[\s\S]*commercial-ready product draft/
+    /(?=[\s\S]*source-linked NPK recipe task plan)(?=[\s\S]*governed saved-recipe handoffs in Commercial mode)/
   ],
   [
     "chemistry UI test",
