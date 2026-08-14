@@ -595,6 +595,14 @@ public visibility, or screenshot/video acceptance still called out below.
   Production Build Preflight and Frontend CI passed on that exact SHA, and the live
   Personal Home globe exposed the named `Enable globe` control. This closes that
   control defect, not the remaining device/accessibility matrix.
+  On 2026-08-14, the real Admin Personal workspace completed a representative live
+  Day/Night text-contrast pass across Home, Grows, AI Tools, Forum/Q&A, Discover,
+  Courses, and Profile. The refined check measured the actual direct text-rendering
+  elements rather than colorless wrapper links/buttons: 103 Day and 268 Night text
+  elements produced no WCAG large/normal-text contrast failures. Auto was restored
+  afterward and still resolved from the saved preference. This is real production
+  browser evidence for those seven routes, not completion of the remaining workspace,
+  responsive, font-scaling, screen-reader, or physical-device matrix.
   The same 12 Personal and 12 Facility destinations passed a computed live contrast
   scan of visible direct text against its actual rendered opaque surface at WCAG
   normal/large-text thresholds. No failing sample appeared in the rendered states;
