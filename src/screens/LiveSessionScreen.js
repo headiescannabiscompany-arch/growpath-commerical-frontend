@@ -18,6 +18,7 @@ import { apiRequest } from "../api/apiRequest";
 import { listPersonalGrows } from "../api/grows";
 import { createPersonalTask } from "../api/tasks";
 import LiveSessionTwitchEmbed from "./LiveSessionTwitchEmbed";
+import GrowPathHostedLivePlayer from "./GrowPathHostedLivePlayer";
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
@@ -25,9 +26,13 @@ import ReportModal from "../components/ReportModal";
 import { currentPublicUrl, sharePublicLink } from "../utils/publicLinks";
 import {
   deleteLiveChatMessage,
+  getHostedLiveLifecycle,
+  getHostedLivePlayback,
   listLiveChat,
+  releaseHostedLiveInput,
   rotateLiveOverlayToken,
-  sendLiveChat
+  sendLiveChat,
+  updateLive
 } from "../api/lives";
 
 export function buildLiveShareTargets(title, sessionId) {
@@ -80,6 +85,9 @@ export default function LiveSessionScreen({ route }) {
   const [chatError, setChatError] = useState("");
   const [overlayToken, setOverlayToken] = useState("");
   const [reportedChatMessage, setReportedChatMessage] = useState(null);
+  const [hostedPlayback, setHostedPlayback] = useState(null);
+  const [hostedLifecycle, setHostedLifecycle] = useState("");
+  const [endingLive, setEndingLive] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -147,6 +155,37 @@ export default function LiveSessionScreen({ route }) {
     session?.externalWatchUrl ||
       (twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "")
   );
+  const isGrowPathHosted = session?.broadcastMode === "growpath";
+
+  useEffect(() => {
+    if (!sessionId || !isGrowPathHosted) return undefined;
+    let alive = true;
+    let timeout;
+    async function refreshHostedVideo() {
+      try {
+        const status = await getHostedLiveLifecycle(sessionId);
+        if (!alive) return;
+        setHostedLifecycle(String(status?.lifecycle || status?.status || "connecting"));
+        if (
+          ["connected", "degraded", "ended", "replay"].includes(
+            String(status?.lifecycle || status?.status)
+          )
+        ) {
+          const playback = await getHostedLivePlayback(sessionId).catch(() => null);
+          if (alive && playback?.playerUrl) setHostedPlayback(playback);
+        }
+      } catch {
+        if (alive) setHostedLifecycle("connecting");
+      } finally {
+        if (alive) timeout = setTimeout(refreshHostedVideo, 5000);
+      }
+    }
+    void refreshHostedVideo();
+    return () => {
+      alive = false;
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [isGrowPathHosted, sessionId]);
   const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
   const replayUrl = session?.replayUrl || session?.vodUrl || "";
   const twitchVodId = String(replayUrl).match(/twitch\.tv\/videos\/(\d+)/i)?.[1] || "";
@@ -316,6 +355,26 @@ export default function LiveSessionScreen({ route }) {
       setFeedback(successMessage);
     } catch (error) {
       setChatError(String(error?.message || error || "Unable to copy this link."));
+    }
+  }
+
+  async function endBroadcast() {
+    if (endingLive) return;
+    setEndingLive(true);
+    try {
+      if (isGrowPathHosted) await releaseHostedLiveInput(sessionId);
+      const result = await updateLive(sessionId, { status: "ended" });
+      setSession(result?.session || result || { ...session, status: "ended" });
+      setHostedLifecycle("ended");
+      setFeedback(
+        isGrowPathHosted
+          ? "Broadcast ended. Your OBS channel remains saved for the next live."
+          : "Live session ended."
+      );
+    } catch (error) {
+      setFeedback(String(error?.message || error || "The live could not be ended."));
+    } finally {
+      setEndingLive(false);
     }
   }
 
@@ -513,7 +572,22 @@ export default function LiveSessionScreen({ route }) {
             ) : null}
           </View>
 
-          {twitchChannel || twitchVodId ? (
+          {isGrowPathHosted && hostedPlayback?.playerUrl ? (
+            <View style={styles.embedWrap}>
+              <GrowPathHostedLivePlayer playerUrl={String(hostedPlayback.playerUrl)} />
+            </View>
+          ) : isGrowPathHosted ? (
+            <View style={styles.premiereNotice}>
+              <Text style={styles.premiereTitle}>
+                GrowPath video · {hostedLifecycle || "connecting"}
+              </Text>
+              <Text style={styles.meta}>
+                {hostedLifecycle === "ended"
+                  ? "This broadcast ended. Its replay will appear here when processing finishes."
+                  : "The session page and chat are ready. Video appears when the host connects OBS and the stream becomes available."}
+              </Text>
+            </View>
+          ) : twitchChannel || twitchVodId ? (
             <View style={styles.embedWrap}>
               <LiveSessionTwitchEmbed
                 twitchChannel={twitchVodId || twitchChannel}
@@ -528,6 +602,19 @@ export default function LiveSessionScreen({ route }) {
                 : "No video destination is attached to this live yet."}
             </Text>
           )}
+
+          {isHost && session.status === "live" ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={endingLive}
+              onPress={() => void endBroadcast()}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryBtnText}>
+                {endingLive ? "Ending broadcast..." : "End broadcast"}
+              </Text>
+            </Pressable>
+          ) : null}
 
           {session.sessionType === "premiere" ? (
             <View style={styles.premiereNotice}>

@@ -5,6 +5,8 @@ import LiveStudioRoute from "@/app/live-studio";
 
 const mockListVideoLibrary = jest.fn();
 const mockGetDiscordLiveConnection = jest.fn();
+const mockGetHostedLiveStatus = jest.fn();
+const mockListHostedLiveChannels = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() })
@@ -18,7 +20,12 @@ jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({ mode: "personal", facilityId: null })
 }));
 
-jest.mock("@/api/lives", () => ({ createLive: jest.fn() }));
+jest.mock("@/api/lives", () => ({
+  createLive: jest.fn(),
+  getHostedLiveStatus: (...args: any[]) => mockGetHostedLiveStatus(...args),
+  listHostedLiveChannels: (...args: any[]) => mockListHostedLiveChannels(...args),
+  provisionHostedLiveInput: jest.fn()
+}));
 jest.mock("@/api/videos", () => ({
   listVideoLibrary: (...args: any[]) => mockListVideoLibrary(...args)
 }));
@@ -39,6 +46,12 @@ describe("LiveStudioRoute", () => {
       configured: false,
       connection: null
     });
+    mockGetHostedLiveStatus.mockResolvedValue({
+      enabled: true,
+      remainingMonthlyMinutes: 120,
+      limits: { monthlyMinutes: 120, sessionMinutes: 60 }
+    });
+    mockListHostedLiveChannels.mockResolvedValue([]);
   });
 
   it("offers all-account live and premiere creation without a GrowPath picker", async () => {
@@ -52,11 +65,14 @@ describe("LiveStudioRoute", () => {
     ).toBeTruthy();
     expect(screen.getByText("Live stream")).toBeTruthy();
     expect(screen.getByText("Video premiere")).toBeTruthy();
-    expect(screen.getByText("Where are you streaming?")).toBeTruthy();
-    expect(screen.getByRole("radio", { name: "Stream on Twitch" })).toBeTruthy();
-    expect(screen.getByRole("radio", { name: "Stream on YouTube" })).toBeTruthy();
-    expect(screen.getByRole("radio", { name: "Stream on Kick" })).toBeTruthy();
-    expect(screen.getByRole("radio", { name: "Stream on Facebook Live" })).toBeTruthy();
+    expect(screen.getByText("Choose how you broadcast")).toBeTruthy();
+    expect(screen.getByText("Use an outside live URL")).toBeTruthy();
+    expect(screen.getByText("Broadcast live in GrowPath")).toBeTruthy();
+    expect(screen.getByText("Twitch")).toBeTruthy();
+    expect(screen.getByText("YouTube")).toBeTruthy();
+    expect(screen.getByText("Kick")).toBeTruthy();
+    expect(screen.getByText("Facebook Live")).toBeTruthy();
+    expect(screen.getByText("Instagram Live")).toBeTruthy();
     expect(screen.getByText("Playback and broadcast controls")).toBeTruthy();
     expect(screen.getByText(/watching inside GrowPath.*volume/i)).toBeTruthy();
     expect(screen.getByText(/Broadcasters use OBS.*control cameras/i)).toBeTruthy();
