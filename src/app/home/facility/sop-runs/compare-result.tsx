@@ -369,7 +369,7 @@ export const createFacilitySopCompareResultStyles = (palette: ThemePalette) =>
     action: {
       alignItems: "center",
       alignSelf: "flex-start",
-      borderColor: palette.borderStrong,
+      borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
       justifyContent: "center",
