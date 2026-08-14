@@ -177,7 +177,9 @@ execution boundaries and the evidence needed not to reopen completed work.
       evidence could not establish the garden-strawberry hybrid rather than a wild
       relative. Five corn records with reproductive or repeated field-scale crop
       evidence then passed; three isolated vegetative grass candidates were rejected.
-      The catalog is now 36/320 reviewed records and
+      Three common-bean records with seedling or combined foliage-and-flower evidence
+      then passed; five red-flowered Phaseolus lookalikes or unresolved distant-bed
+      candidates were rejected. The catalog is now 39/320 reviewed records and
       correctly remains `planning`; 276 candidates in the refreshed queue still need
       review, one is explicitly rejected, and all 36 owned
       adverse-media slots remain.

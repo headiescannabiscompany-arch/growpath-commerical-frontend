@@ -879,6 +879,186 @@
       }
     },
     {
+      "recordId": "plant-id-common_bean-001",
+      "caseId": "common_bean",
+      "acceptedName": "Common bean",
+      "scientificName": "Phaseolus vulgaris",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "soybean",
+        "cowpea"
+      ],
+      "distinguishingFeatures": [
+        "common-bean seedling architecture",
+        "large epigeal seed with Phaseolus-like trifoliate foliage"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.66,
+        "maximum": 0.84
+      },
+      "expectedResult": "Common bean (Phaseolus vulgaris) is expected from the germinated bean and developing trifoliate foliage; keep confidence moderate without flower or pod.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/342763376",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/624237991/original.jpg",
+      "creator": "(c) Nico Hernandez, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Nico Hernandez, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "common_bean-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "germinated large bean seed",
+          "upright juvenile stem",
+          "developing trifoliate leaves",
+          "broad ovate leaflets"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A514191-1",
+            "outcome": "Kew POWO accepts Phaseolus vulgaris L. and describes trifoliate ovate leaflets, pale-to-purple flowers, and linear pods. Approvals retained uncertainty where pods were absent; conspicuous red-flowered Phaseolus lookalikes were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-624237991",
+        "photoId": 624237991,
+        "sourceQuery": "Phaseolus vulgaris",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122850,
+        "observedTaxonName": "Phaseolus vulgaris",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-common_bean-003",
+      "caseId": "common_bean",
+      "acceptedName": "Common bean",
+      "scientificName": "Phaseolus vulgaris",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "soybean",
+        "cowpea"
+      ],
+      "distinguishingFeatures": [
+        "cultivated common-bean seedling habit",
+        "consistent trifoliate Phaseolus foliage"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.64,
+        "maximum": 0.82
+      },
+      "expectedResult": "Common bean (Phaseolus vulgaris) is expected in this cultivated seedling; other Phaseolus species remain an alternative without flower or pod.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/350631823",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/639778910/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "common_bean-003",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "cultivated potted juvenile",
+          "trifoliate compound leaves",
+          "broad ovate-acuminate leaflets",
+          "slender green Phaseolus-like stem"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A514191-1",
+            "outcome": "Kew POWO accepts Phaseolus vulgaris L. and describes trifoliate ovate leaflets, pale-to-purple flowers, and linear pods. Approvals retained uncertainty where pods were absent; conspicuous red-flowered Phaseolus lookalikes were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-639778910",
+        "photoId": 639778910,
+        "sourceQuery": "Phaseolus vulgaris",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122850,
+        "observedTaxonName": "Phaseolus vulgaris",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-common_bean-006",
+      "caseId": "common_bean",
+      "acceptedName": "Common bean",
+      "scientificName": "Phaseolus vulgaris",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "soybean",
+        "cowpea"
+      ],
+      "distinguishingFeatures": [
+        "combined Phaseolus foliage and bean-flower evidence",
+        "common-bean-like scrambling annual habit"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.72,
+        "maximum": 0.88
+      },
+      "expectedResult": "Common bean (Phaseolus vulgaris) is expected from combined trifoliate foliage and pale bean flowers; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/351644011",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/641735821/original.jpg",
+      "creator": "(c) Sebastián Ordóñez, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Sebastián Ordóñez, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "common_bean-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "scrambling vine",
+          "trifoliate broad leaflets",
+          "slender flowering raceme",
+          "small pale papilionaceous flowers"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A514191-1",
+            "outcome": "Kew POWO accepts Phaseolus vulgaris L. and describes trifoliate ovate leaflets, pale-to-purple flowers, and linear pods. Approvals retained uncertainty where pods were absent; conspicuous red-flowered Phaseolus lookalikes were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-641735821",
+        "photoId": 641735821,
+        "sourceQuery": "Phaseolus vulgaris",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122850,
+        "observedTaxonName": "Phaseolus vulgaris",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
       "recordId": "plant-id-corn-002",
       "caseId": "corn",
       "acceptedName": "Corn or maize",
