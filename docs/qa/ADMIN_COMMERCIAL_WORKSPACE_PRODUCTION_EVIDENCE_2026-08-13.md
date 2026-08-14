@@ -35,6 +35,36 @@ Public Links each rendered one canonical heading and remained reachable from Mor
 without becoming duplicate bottom tabs. No create, edit, publish, connect, purchase,
 or archive action was invoked during this sweep.
 
+### Commercial Tools night-mode production repair — 2026-08-14
+
+The expanded 21-route Admin Commercial night-theme review found that eight AI Tools
+actions had dark text on a dark card because Expo Router's web `Link asChild` path did
+not preserve a function-valued React Native `Pressable` background. Frontend
+`aba16d081387d324a602ede3429be931d4a71dc3` attempted to make the background static,
+but live production immediately exposed a web-only `CSSStyleDeclaration` indexed
+property exception and a blank Commercial Tools route. That revision was not accepted
+as live evidence.
+
+Hotfix frontend `74afb7e513a43ffd74a2183472a5130665d398bf` replaced the web-cloned link with the
+direct `Pressable` navigation pattern already used by Facility AI Tools. PR `#579`, its
+full Frontend CI gate, main Production Build Preflight, and the Render auto-deploy all
+completed successfully. Render deployment `dep-d9vbppu7bikc73bvdc60` published the
+exact hotfix SHA.
+
+The cache-busted production route
+`/home/commercial/tools?release=74afb7e&verify=commercial-tools-hotfix-live` then:
+
+- rendered the complete Commercial Tools page rather than a blank screen;
+- exposed all eight named action controls as visible `rgb(120, 170, 255)` surfaces
+  with black text in the resolved Night theme;
+- retained the intended credit and workspace-boundary copy; and
+- navigated `Open Environment Review` to the complete
+  `/home/commercial/tools/environment` workflow with its Back control and analysis
+  form.
+
+No AI request, record mutation, credit charge, or Commercial task was created during
+this repair check.
+
 ## Report deep-link follow-up
 
 The same Admin session opened the genuine emailed moderation-case link for case `6a66da9ea79aafa8dc0cfca5`. The page focused the exact reviewing course report and exposed its reversible moderation controls. No moderation action was invoked.
