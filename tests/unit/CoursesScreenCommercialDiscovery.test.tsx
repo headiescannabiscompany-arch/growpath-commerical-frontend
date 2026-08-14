@@ -5,9 +5,10 @@ import CoursesScreen from "@/screens/CoursesScreen";
 
 const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
+const mockAuthState = { isAuthed: true, user: { id: "learner", growInterests: {} } };
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "learner", growInterests: {} } })
+  useAuth: () => mockAuthState
 }));
 
 jest.mock("expo-router", () => ({
@@ -66,12 +67,46 @@ describe("CoursesScreen commercial discovery", () => {
     await waitFor(() =>
       expect(screen.getByText("Living Soil Product School")).toBeTruthy()
     );
-    expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/courses/public");
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/courses/public", {
+      timeoutMs: 8000
+    });
 
     fireEvent.press(screen.getByText("Living Soil Product School"));
 
     expect(mockPush).toHaveBeenCalledWith(
       "/store/soil-school/courses/commercial-course-1"
+    );
+  });
+
+  it("shows available courses and a retry when one source fails", async () => {
+    mockApiRequest.mockImplementation(async (path: string) => {
+      if (path === "/api/courses/mine") throw new Error("Owned courses timed out");
+      if (path === "/api/courses") {
+        return {
+          courses: [
+            {
+              id: "public-course-1",
+              title: "Available Public Course",
+              price: 0,
+              status: "published"
+            }
+          ]
+        };
+      }
+      return { courses: [] };
+    });
+
+    const screen = render(<CoursesScreen />);
+
+    await waitFor(() => expect(screen.getByText("Available Public Course")).toBeTruthy());
+    expect(
+      screen.getByText("Some course sources could not load. Showing the available courses.")
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByRole("button", { name: "Retry course catalog" }));
+
+    await waitFor(() =>
+      expect(mockApiRequest.mock.calls.filter(([path]) => path === "/api/courses")).toHaveLength(2)
     );
   });
 });

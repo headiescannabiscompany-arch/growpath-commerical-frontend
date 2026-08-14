@@ -87,6 +87,7 @@ function coursePriceLabel(course) {
 }
 
 const COURSE_IMAGE_FALLBACK = require("../../assets/banner.png");
+export const COURSE_CATALOG_REQUEST_TIMEOUT_MS = 8000;
 
 export function courseImageSource(course) {
   const savedImage = resolveImageUri(
@@ -167,6 +168,8 @@ export default function CoursesScreen({
   const [courseActionId, setCourseActionId] = useState("");
   const [courseActionFeedback, setCourseActionFeedback] = useState("");
   const [courseActionError, setCourseActionError] = useState("");
+  const [catalogWarning, setCatalogWarning] = useState("");
+  const [catalogReloadKey, setCatalogReloadKey] = useState(0);
 
   useEffect(() => {
     onDetailVisibilityChange?.(Boolean(selectedCourse));
@@ -187,12 +190,19 @@ export default function CoursesScreen({
       }
       setLoading(true);
       setErr("");
+      setCatalogWarning("");
 
       try {
         const [publicResult, ownedResult, commercialResult] = await Promise.allSettled([
-          apiRequest("/api/courses"),
-          canCreateCourses ? apiRequest("/api/courses/mine") : Promise.resolve([]),
-          apiRequest("/api/commercial/courses/public")
+          apiRequest("/api/courses", { timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS }),
+          canCreateCourses
+            ? apiRequest("/api/courses/mine", {
+                timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS
+              })
+            : Promise.resolve([]),
+          apiRequest("/api/commercial/courses/public", {
+            timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS
+          })
         ]);
         if (
           publicResult.status === "rejected" &&
@@ -200,6 +210,15 @@ export default function CoursesScreen({
           commercialResult.status === "rejected"
         ) {
           throw publicResult.reason;
+        }
+        if (
+          publicResult.status === "rejected" ||
+          ownedResult.status === "rejected" ||
+          commercialResult.status === "rejected"
+        ) {
+          setCatalogWarning(
+            "Some course sources could not load. Showing the available courses."
+          );
         }
         const list = mergeCourses(
           publicResult.status === "fulfilled" ? normalizeList(publicResult.value) : [],
@@ -247,7 +266,8 @@ export default function CoursesScreen({
     access.canViewCourses,
     auth.user,
     canCreateCourses,
-    isSignedIn
+    isSignedIn,
+    catalogReloadKey
   ]);
 
   useEffect(() => {
@@ -424,6 +444,19 @@ export default function CoursesScreen({
       ) : null}
 
       {err ? <Text style={styles.error}>{err}</Text> : null}
+      {catalogWarning ? (
+        <View style={styles.lockedCard}>
+          <Text style={styles.meta}>{catalogWarning}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry course catalog"
+            onPress={() => setCatalogReloadKey((current) => current + 1)}
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryBtnText}>Retry course catalog</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {courseActionFeedback ? (
         <Text style={styles.successText}>{courseActionFeedback}</Text>
       ) : null}
