@@ -5,6 +5,7 @@ const {
 const {
   buildPromotionPlan,
   parseArgs,
+  renderCatalogUpdate,
   sha256,
   verifyExpectedHashes
 } = require("../../scripts/promote-plant-id-qa-reviews.cjs");
@@ -255,5 +256,22 @@ describe("Plant ID reviewed-record promotion gate", () => {
     expect(value.reviewManifest.catalogDefinitionSnapshot.sha256).toBe(
       sha256(JSON.stringify(catalogDefinitionProjection(value.catalog)))
     );
+  });
+
+  it("preserves catalog formatting outside status and reviewed media", () => {
+    let value = inputs();
+    approve(value.reviewManifest);
+    value = rebuildReviewRaw(value);
+    const plan = buildPromotionPlan(value);
+    const formattedCatalog = `${JSON.stringify(value.catalog, null, 2).replace(
+      '"expectedAlternatives": [\n          "nightshade seedling"\n        ]',
+      '"expectedAlternatives": ["nightshade seedling"]'
+    )}\n`;
+
+    const rendered = renderCatalogUpdate(formattedCatalog, plan.nextCatalog);
+
+    expect(JSON.parse(rendered)).toEqual(plan.nextCatalog);
+    expect(rendered).toContain('"expectedAlternatives": ["nightshade seedling"]');
+    expect(rendered).toContain('"mediaRecords": [');
   });
 });

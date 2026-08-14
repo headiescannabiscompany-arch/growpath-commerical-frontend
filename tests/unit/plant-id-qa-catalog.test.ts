@@ -185,11 +185,12 @@ describe("plant-identification QA catalog", () => {
     );
   });
 
-  it("keeps source collection in planning until reviewed media exists", () => {
+  it("keeps the catalog in planning until every governed media slot is reviewed", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toEqual([]);
+    expect(catalog.mediaRecords).toHaveLength(7);
+    expect(catalog.mediaRecords.length).toBeLessThan(catalog.targetRecordCount);
     expect(catalog.sourcePlan).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

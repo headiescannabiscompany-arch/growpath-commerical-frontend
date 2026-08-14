@@ -3,8 +3,10 @@
 Date: 2026-07-20
 
 Status: Catalog, rights gate, candidate collector, review queue, and promotion gate
-implemented. Image-level identity, life-stage, rights, and intended-use review remain
-pending; no candidate is automatically promoted into the 320-record evaluation catalog.
+implemented. Seven tomato records have passed image-level morphology, identity,
+life-stage, Tier-A taxonomy, exact-license, rights, expected-result, and intended-use
+review. The catalog remains planning until all 320 governed slots are filled; no
+candidate is automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
@@ -65,7 +67,9 @@ npm.cmd run verify:plant-id-qa-catalog:planning
 npm.cmd run verify:plant-id-qa-catalog
 ```
 
-Planning mode validates the 320-case allocation and rights contract while media is still empty. Strict mode must fail until all 320 reviewed records exist and satisfy the license/attribution rules.
+Planning mode validates the 320-case allocation and rights contract while reviewed
+records accumulate. Strict mode must fail until all 320 reviewed records exist and
+satisfy the license/attribution rules.
 
 Candidate collection is dry-run by default:
 
