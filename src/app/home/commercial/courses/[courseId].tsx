@@ -1313,7 +1313,11 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
               />
             </View>
             <Pressable
-              accessibilityLabel="Add commercial course lesson"
+              accessibilityLabel={
+                editingLessonId
+                  ? "Save commercial course lesson changes"
+                  : "Add commercial course lesson"
+              }
               accessibilityRole="button"
               disabled={courseBusy || !lessonTitle.trim()}
               onPress={addLesson}
