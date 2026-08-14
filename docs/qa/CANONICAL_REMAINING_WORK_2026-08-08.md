@@ -189,8 +189,12 @@ execution boundaries and the evidence needed not to reopen completed work.
       leaves or combined leaf-and-inflorescence evidence then passed; the distant
       wall-climber and far-canopy candidates were rejected because diagnostic leaf
       characters were not dependable at that scale. The catalog is now 48/320 reviewed
-      records and correctly remains `planning`; the remaining candidates still require
-      individual review, and all 36 owned adverse-media slots remain.
+      records. Four genus-level Peace Lily records with combined basal foliage and
+      spathe/spadix evidence then passed; the foliage-only and isolated-spadix candidates
+      were rejected because they could not reliably separate Spathiphyllum from other
+      aroids. The catalog is now 52/320 reviewed records and correctly remains
+      `planning`; the remaining candidates still require individual review, and all 36
+      owned adverse-media slots remain.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.

@@ -3414,6 +3414,222 @@
         "observedTaxonName": "Monstera deliciosa",
         "observedTaxonRank": "species"
       }
+    },
+    {
+      "recordId": "plant-id-peace-lily-002",
+      "caseId": "peace_lily",
+      "acceptedName": "Peace lily",
+      "scientificName": "Spathiphyllum species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["Anthurium species", "calla lily"],
+      "distinguishingFeatures": [
+        "white concave spathe with an upright pale spadix",
+        "basal glossy elliptic leaves with strong parallel-pinnate lateral veins"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.82, "maximum": 0.96 },
+      "expectedResult": "Peace lily (Spathiphyllum) is expected at genus level from the inflorescences and foliage; do not force an exact species or cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/376202047",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/687809387/original.jpg",
+      "creator": "(c) 胡正恆(Jackson Hu), some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) 胡正恆(Jackson Hu), some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "peace_lily-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "white concave spathe",
+          "pale cylindrical spadix",
+          "multiple basal glossy elliptic leaves",
+          "prominent parallel-pinnate lateral venation"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30003632-2",
+            "outcome": "Kew POWO accepts Spathiphyllum Schott and describes evergreen herbs with several oblong-to-elliptic leaves, long sheathing petioles, and parallel-pinnate lateral venation."
+          }
+        ],
+        "notes": "The governed target is genus-level. Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-687809387",
+        "photoId": 687809387,
+        "sourceQuery": "Spathiphyllum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 284040,
+        "observedTaxonName": "Spathiphyllum wallisii",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-peace-lily-003",
+      "caseId": "peace_lily",
+      "acceptedName": "Peace lily",
+      "scientificName": "Spathiphyllum species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["Anthurium species", "other aroid"],
+      "distinguishingFeatures": [
+        "basal rosette of large ribbed elliptic leaves",
+        "white spathe and slender pale spadix on a long peduncle"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.86, "maximum": 0.97 },
+      "expectedResult": "Peace lily (Spathiphyllum) is expected at genus level from the full vegetative and flowering habit.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/339965637",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/618559227/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "peace_lily-003",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "acaulescent basal habit",
+          "large oblong-elliptic ribbed blades",
+          "white hooded spathe",
+          "slender cream spadix"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30003632-2",
+            "outcome": "Kew POWO accepts Spathiphyllum Schott and describes acaulescent evergreen herbs with oblong-to-elliptic, cuspidate leaves and parallel-pinnate venation."
+          }
+        ],
+        "notes": "The governed target is genus-level. Visual review used the retained iNaturalist reference; no media was copied. The exact CC0 dedication was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-618559227",
+        "photoId": 618559227,
+        "sourceQuery": "Spathiphyllum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 284040,
+        "observedTaxonName": "Spathiphyllum wallisii",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-peace-lily-004",
+      "caseId": "peace_lily",
+      "acceptedName": "Peace lily",
+      "scientificName": "Spathiphyllum species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["Anthurium species", "calla lily"],
+      "distinguishingFeatures": [
+        "several upright white-to-green spathes",
+        "dense basal clump of glossy lanceolate-elliptic leaves"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.8, "maximum": 0.94 },
+      "expectedResult": "Peace lily (Spathiphyllum) is expected at genus level from repeated inflorescences and basal foliage; no species or cultivar claim.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/377178302",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/689702530/original.jpg",
+      "creator": "(c) Nisarg Sankhala, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Nisarg Sankhala, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "peace_lily-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "basal clumping habit",
+          "many glossy lanceolate-elliptic leaves",
+          "several white-to-green spathes",
+          "upright pale spadices"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30003632-2",
+            "outcome": "Kew POWO accepts Spathiphyllum Schott; the photographed clumping leaf habit and repeated aroid inflorescences support the governed genus-level target."
+          }
+        ],
+        "notes": "The governed target is genus-level. Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-689702530",
+        "photoId": 689702530,
+        "sourceQuery": "Spathiphyllum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 206271,
+        "observedTaxonName": "Spathiphyllum",
+        "observedTaxonRank": "genus"
+      }
+    },
+    {
+      "recordId": "plant-id-peace-lily-005",
+      "caseId": "peace_lily",
+      "acceptedName": "Peace lily",
+      "scientificName": "Spathiphyllum species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["Anthurium species", "other aroid"],
+      "distinguishingFeatures": [
+        "broad white spathe surrounding a compact pale spadix",
+        "wet-forest Spathiphyllum foliage visible beside the inflorescence"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.76, "maximum": 0.92 },
+      "expectedResult": "Peace lily (Spathiphyllum) is expected at genus level; request a whole-plant leaf view before high confidence.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/343851595",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/626437430/original.jpg",
+      "creator": "(c) Thomas Ebner, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Thomas Ebner, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "peace_lily-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "broad white concave spathe",
+          "short pale cylindrical spadix",
+          "green midrib through the spathe",
+          "partial large elliptic foliage"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30003632-2",
+            "outcome": "Kew POWO accepts Spathiphyllum Schott and places the genus in wet tropical forest habitats; the image supports a genus-level inflorescence result but not a species claim."
+          }
+        ],
+        "notes": "The governed target is genus-level and the confidence ceiling reflects partial foliage. Visual review used the retained iNaturalist reference; no media was copied."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-626437430",
+        "photoId": 626437430,
+        "sourceQuery": "Spathiphyllum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 284040,
+        "observedTaxonName": "Spathiphyllum wallisii",
+        "observedTaxonRank": "species"
+      }
     }
   ]
 }
