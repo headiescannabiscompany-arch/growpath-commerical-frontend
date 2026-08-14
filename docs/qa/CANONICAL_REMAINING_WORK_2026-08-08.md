@@ -559,6 +559,22 @@ public visibility, or screenshot/video acceptance still called out below.
   recovery is complete; owner-controlled Twitch app credentials, real broadcaster
   authorization, EventSub challenge/events, and disconnect/reconnect acceptance remain.
   See `docs/qa/TWITCH_BACKEND_RECOVERY_PRODUCTION_EVIDENCE_2026-08-14.md`.
+  On 2026-08-14, the governed nutrient-recipe handoff slice completed production
+  acceptance. Backend merge `38e2dc87f40420de5711f90ee0a1e36f52b9fc21`
+  deployed as `dep-d9vfmf3bc2fs73cd3iig`; frontend merge
+  `0bc928ab0f4110d289fb0ca02432bd1a36173d2b` passed both main release gates and
+  deployed as `dep-d9vfspgu01pc73aceupg`. In the signed-in Admin Commercial
+  workspace, a real Flower/living-soil recipe was calculated, saved, and retained
+  after reload. The governed action created product draft
+  `6a7f00e63556c3da3f26e342`, which appeared in Products as Price TBD,
+  draft/private, unpublished, with no checkout path or inventory claim. The same
+  recipe created planned batch `6a7f00ee3556c3da3f26e349`; its live detail stated
+  that the calculation did not decrement stock or assign lots. The temporary recipe,
+  product, and batch were archived after persistence verification. This closes the
+  recipe comparison/product-draft/planned-batch slice without claiming the remaining
+  populated product, storefront, public visibility, checkout, or production-inventory
+  workflows. See
+  `docs/qa/GOVERNED_RECIPE_HANDOFF_PRODUCTION_EVIDENCE_2026-08-14.md`.
 - [~] Seed Penny Saver Soil, Living Soil, and No-Till drafts only from owner-approved
   facts. Keep inventory zero and claims unpublished until labels, guaranteed analyses,
   sizes, prices, directions, shipping, and images are supplied and verified. The
