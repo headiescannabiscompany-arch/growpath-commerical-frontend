@@ -166,7 +166,16 @@ execution boundaries and the evidence needed not to reopen completed work.
       candidate was explicitly rejected because its visible characters were not
       dependable ground truth. Six cucumber records subsequently passed the same
       gates; the cotyledon-only and flower-only candidates were rejected as
-      insufficient species ground truth. The catalog is now 20/320 reviewed records and
+      insufficient species ground truth. Four cultivated-form lettuce records then
+      passed; four flowering or wild-relative candidates were rejected because their
+      visible evidence could not reliably establish cultivated lettuce. The catalog is
+      now 24/320 reviewed records. Three basil records with strong cultivated foliage
+      or combined leaf-and-flower evidence then passed; five unresolved flower-only,
+      single-leaf, or close-relative candidates were rejected. The catalog is now
+      27/320 reviewed records. Four cultivated-context garden-strawberry records then
+      passed; four wild-context Fragaria candidates were rejected because the visible
+      evidence could not establish the garden-strawberry hybrid rather than a wild
+      relative. The catalog is now 31/320 reviewed records and
       correctly remains `planning`; 276 candidates in the refreshed queue still need
       review, one is explicitly rejected, and all 36 owned
       adverse-media slots remain.
@@ -319,15 +328,23 @@ grow`, private current location without a Field Study, and an optional approxima
 
 ## B. Personal, Commercial, Facility, and public user loops
 
-- [ ] Complete and production-accept the first-class Visual Grow Timeline for Personal
+- [x] Complete and production-accept the first-class Visual Grow Timeline for Personal
   and Commercial grow workspaces. Personal now has Lifecycle/Month/Week/Day detail,
   saved-event photos and important notes, viewer-friendly HTML/native-share export, and
   a review-first Forum draft that keeps the source grow private. Commercial evidence
   runs now use stored plan, notes, quality observations, summaries, lifecycle dates, and
   media; export stays separate from compliance and the brand Forum draft remains locked
-  until the owner saves `public_ready`. Remaining: automated/live acceptance and confirm
-  production payloads expose every intended saved photo. Facility retains its internal
-  operational journal/timeline and compliance boundary, not public timeline sharing.
+  until the owner saves `public_ready`. Facility retains its internal operational
+  journal/timeline and compliance boundary, not public timeline sharing. Merge SHA
+  `e699e5fe212fe14983f4fda73aced0b18d2a07db` passed the full 99-batch frontend suite,
+  production preflight, and main CI. Production URL
+  `/home/personal/grows/production-timeline-verification/timeline?release=e699e5fe`
+  visibly exposed the new description, Lifecycle/Month/Week/Day controls, Visual
+  Timeline export, and review-first share control on 2026-08-14. The deployed bundle
+  also contained the Commercial `Export Visual Timeline` and `Review & Share Timeline`
+  controls. Populated-photo behavior remains covered by automated timeline tests; a
+  later genuine populated production grow can strengthen final media evidence without
+  reopening this delivered feature.
 
 - [~] Complete and record the independent outside-user session. Preserve the completed
   Public, Personal Free/Pro, Commercial, Facility Owner/Manager/Staff/Viewer, and

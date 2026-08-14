@@ -6,7 +6,15 @@ Status: Catalog, rights gate, candidate collector, review queue, and promotion g
 implemented. Seven tomato records have passed image-level morphology, identity,
 life-stage, Tier-A taxonomy, exact-license, rights, expected-result, and intended-use
 review. Seven pepper records and six cucumber records have also passed the same
-gates, bringing the governed catalog to 20/320. Two cucumber candidates were
+gates. Four cultivated-form lettuce records also passed; four flowering or
+wild-relative lettuce candidates were rejected because the images could not reliably
+separate cultivated lettuce from other Lactuca species. The governed catalog is now
+24/320. Three basil records with strong cultivated foliage or combined leaf-and-flower
+evidence also passed; five flower-only, single-leaf, or unresolved close-relative
+candidates were rejected. Four cultivated-context garden-strawberry records also passed;
+four wild-context Fragaria candidates were rejected because they could not establish the
+garden-strawberry hybrid rather than a wild relative. The governed catalog is now
+31/320. Two cucumber candidates were
 rejected because cotyledon-only or flower-only evidence could not support dependable
 species ground truth. The catalog remains planning until all governed slots are filled;
 no candidate is automatically promoted.
