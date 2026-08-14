@@ -8,6 +8,8 @@ The shared Full Course Builder must create the record in the active workspace's 
 
 Commercial course persistence stores a flat canonical grow-interest tag list for catalog and detail use. The shared builder may retain its structured tier selections separately, and Commercial readers must normalize legacy structured selections instead of rendering object text or failing the page.
 
+The shared course catalog loads public, owned, and Commercial-public sources independently with a bounded request time. One unavailable source must not leave the whole catalog loading forever or discard fulfilled sources; show available courses, disclose the partial result, and provide a named retry action.
+
 ## Source selection and normalization
 
 Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Detect YouTube, Vimeo, and Rumble from recognized video-page URLs even when the author initially chooses Other. Preserve the submitted URL for traceability and store a separate canonical URL, provider video ID, Vimeo unlisted privacy hash when present, provider label, thumbnail when deterministically available, embed capability, external-link fallback, privacy mode, and last availability-check time.

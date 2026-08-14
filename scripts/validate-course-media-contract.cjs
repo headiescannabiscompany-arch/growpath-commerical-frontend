@@ -26,6 +26,7 @@ const personalEdit = read("src/screens/EditLessonScreen.js");
 const personalPlayer = read("src/screens/CourseDetailScreen.js");
 const commercialAuthor = read("src/app/home/commercial/courses/[courseId].tsx");
 const sharedCreate = read("src/screens/commercial/CreateCourseScreen.js");
+const sharedCatalog = read("src/screens/CoursesScreen.js");
 const nestedService = read("backend/services/lessonMedia.js");
 const method = read("docs/knowledge/methods/course-media-workflow-method.md");
 const registry = read("src/knowledge/methodRegistry.ts");
@@ -34,6 +35,8 @@ const tests = `${read("tests/unit/lessonMedia.test.ts")}\n${read(
   "tests/unit/LessonMediaComponents.test.tsx"
 )}\n${read("tests/unit/CreateCourseScreen.test.tsx")}\n${read(
   "tests/unit/CommercialWorkflowPages.test.tsx"
+)}\n${read(
+  "tests/unit/CoursesScreenCommercialDiscovery.test.tsx"
 )}`;
 
 [
@@ -132,10 +135,22 @@ requireText(
   "legacy structured grow-interest normalization"
 );
 requireText(
+  "shared course catalog",
+  sharedCatalog,
+  /COURSE_CATALOG_REQUEST_TIMEOUT_MS[\s\S]*Promise\.allSettled[\s\S]*Some course sources could not load[\s\S]*Retry course catalog/,
+  "bounded partial catalog recovery"
+);
+requireText(
   "course media tests",
   tests,
   /creates Commercial drafts through the Commercial course workflow/,
   "Commercial full-builder creation test"
+);
+requireText(
+  "course media tests",
+  tests,
+  /shows available courses and a retry when one source fails/,
+  "partial catalog recovery regression test"
 );
 requireText(
   "course media tests",

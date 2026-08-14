@@ -106,7 +106,9 @@ describe("CoursesScreen route params", () => {
     expect(screen.getByText("Course detail course-2")).toBeTruthy();
     expect(screen.getByText("Back to courses")).toBeTruthy();
     expect(screen.queryByText("Shared catalog Back")).toBeNull();
-    expect(mockApiRequest).toHaveBeenCalledWith("/api/courses/mine");
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/courses/mine", {
+      timeoutMs: 8000
+    });
 
     fireEvent.press(screen.getByText("Back to courses"));
 
