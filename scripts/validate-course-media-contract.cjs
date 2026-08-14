@@ -137,7 +137,7 @@ requireText(
 requireText(
   "shared course catalog",
   sharedCatalog,
-  /COURSE_CATALOG_REQUEST_TIMEOUT_MS[\s\S]*Promise\.allSettled[\s\S]*Some course sources could not load[\s\S]*Retry course catalog/,
+  /COURSE_CATALOG_REQUEST_TIMEOUT_MS[\s\S]*Promise\.allSettled[\s\S]*retries: 0[\s\S]*Some course sources could not load[\s\S]*Retry course catalog/,
   "bounded partial catalog recovery"
 );
 requireText(

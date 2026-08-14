@@ -68,7 +68,8 @@ describe("CoursesScreen commercial discovery", () => {
       expect(screen.getByText("Living Soil Product School")).toBeTruthy()
     );
     expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/courses/public", {
-      timeoutMs: 8000
+      timeoutMs: 8000,
+      retries: 0
     });
 
     fireEvent.press(screen.getByText("Living Soil Product School"));
