@@ -64,7 +64,10 @@ jest.mock("@/theme/appTheme", () => {
   };
 });
 
-import DiscoverDirectory, { createDiscoverVideoFilterStyles } from "@/app/discover";
+import DiscoverDirectory, {
+  createDiscoverVideoFilterStyles,
+  discoverImageOf
+} from "@/app/discover";
 import { getThemePalette } from "@/theme/appTheme";
 
 describe("Discover video search", () => {
@@ -83,6 +86,16 @@ describe("Discover video search", () => {
         mediaSource: {}
       }
     ]);
+  });
+
+  it("selects available presentation images for discovery cards", () => {
+    expect(discoverImageOf({ bannerUrl: "https://images.test/store.jpg" })).toContain(
+      "store.jpg"
+    );
+    expect(
+      discoverImageOf({ mediaSource: { thumbnailUrl: "https://images.test/video.jpg" } })
+    ).toContain("video.jpg");
+    expect(discoverImageOf({})).toBe("");
   });
 
   it("routes non-personal workspaces through the workspace switcher for Plant ID", async () => {

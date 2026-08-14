@@ -71,6 +71,23 @@ function summaryOf(row: any) {
   return String(row?.summary || row?.description || row?.bio || row?.body || "");
 }
 
+export function discoverImageOf(row: any) {
+  return resolveImageUri(
+    row?.coverImageUrl ||
+      row?.coverImage ||
+      row?.thumbnailUrl ||
+      row?.thumbnail ||
+      row?.bannerImageUrl ||
+      row?.bannerUrl ||
+      row?.creativeImageUrl ||
+      row?.imageUrl ||
+      row?.logoUrl ||
+      row?.profileImageUrl ||
+      row?.mediaSource?.thumbnailUrl ||
+      ""
+  );
+}
+
 function storeSlug(row: any) {
   return String(
     row?.slug || row?.storefrontSlug || row?.brandSlug || row?.publicSlug || ""
@@ -165,7 +182,8 @@ export default function DiscoverDirectory() {
         id: idOf(row),
         title: titleOf(row, "Feed update"),
         summary: summaryOf(row),
-        href: `/feed?campaignId=${encodeURIComponent(idOf(row))}`
+        href: `/feed?campaignId=${encodeURIComponent(idOf(row))}`,
+        thumbnailUrl: discoverImageOf(row)
       }));
     const storeResults = stores.map((row) => {
       const slug = storeSlug(row);
@@ -173,7 +191,8 @@ export default function DiscoverDirectory() {
         id: idOf(row),
         title: titleOf(row, "Storefront"),
         summary: summaryOf(row),
-        href: slug ? `/store/${encodeURIComponent(slug)}` : "/store"
+        href: slug ? `/store/${encodeURIComponent(slug)}` : "/store",
+        thumbnailUrl: discoverImageOf(row)
       };
     });
 
@@ -227,9 +246,7 @@ export default function DiscoverDirectory() {
           title: titleOf(row, "Video"),
           summary: summaryOf(row),
           href: `/videos/${encodeURIComponent(idOf(row))}`,
-          thumbnailUrl: resolveImageUri(
-            row.thumbnailUrl || row.mediaSource?.thumbnailUrl || ""
-          ),
+          thumbnailUrl: discoverImageOf(row),
           meta: [
             row.owner?.displayName,
             row.visibility ? String(row.visibility).replace(/_/g, " ") : ""
@@ -275,7 +292,8 @@ export default function DiscoverDirectory() {
           id: idOf(row),
           title: titleOf(row, "Marketplace item"),
           summary: summaryOf(row),
-          href: "/marketplace"
+          href: "/marketplace",
+          thumbnailUrl: discoverImageOf(row)
         })),
         browseHref: "/marketplace"
       },
@@ -288,7 +306,8 @@ export default function DiscoverDirectory() {
           id: idOf(row),
           title: titleOf(row, "Course"),
           summary: summaryOf(row),
-          href: "/home/personal/courses"
+          href: `/courses?courseId=${encodeURIComponent(idOf(row))}`,
+          thumbnailUrl: discoverImageOf(row)
         })),
         browseHref: "/home/personal/courses"
       },
@@ -297,7 +316,13 @@ export default function DiscoverDirectory() {
         title: "Live opportunities",
         ranking: "Campaign-linked, upcoming, and replay content",
         empty: "No matching live opportunities.",
-        results: feedResults(lives),
+        results: lives.map((row) => ({
+          id: idOf(row),
+          title: titleOf(row, "Live session"),
+          summary: summaryOf(row),
+          href: `/live-session?sessionId=${encodeURIComponent(String(row.linkedLiveId))}`,
+          thumbnailUrl: discoverImageOf(row)
+        })),
         browseHref: "/lives"
       }
     ];

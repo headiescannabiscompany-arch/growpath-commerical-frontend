@@ -2,7 +2,10 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 
-import CourseDetailScreen, { createStyles } from "@/screens/CourseDetailScreen";
+import CourseDetailScreen, {
+  courseHeroImage,
+  createStyles
+} from "@/screens/CourseDetailScreen";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockPush = jest.fn();
@@ -117,6 +120,15 @@ const freeCourse: any = {
 };
 
 describe("CourseDetailScreen learner player", () => {
+  it("uses a real course image when one was supplied and no placeholder otherwise", () => {
+    expect(
+      courseHeroImage({ coverImageUrl: "https://images.test/course.jpg" })
+    ).toContain("course.jpg");
+    expect(courseHeroImage({ bannerUrl: "https://images.test/banner.jpg" })).toContain(
+      "banner.jpg"
+    );
+    expect(courseHeroImage({})).toBe("");
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     Object.assign(mockLearningAccess, {

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -49,6 +50,7 @@ import { getLearningAccess } from "@/features/learning/learningAccess";
 import { lessonHasMedia } from "@/features/learning/lessonMedia";
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
+import { resolveImageUri } from "../utils/photoUploads";
 
 function rowId(row) {
   return String(row?._id || row?.id || "");
@@ -78,6 +80,19 @@ function coursePrice(course) {
   if (cents > 0) return `$${(cents / 100).toFixed(2)}`;
   const price = Number(course?.price || 0);
   return price > 0 ? `$${price.toFixed(2)}` : "Free";
+}
+
+export function courseHeroImage(course) {
+  return resolveImageUri(
+    course?.coverImageUrl ||
+      course?.coverImage ||
+      course?.bannerImageUrl ||
+      course?.bannerUrl ||
+      course?.thumbnailUrl ||
+      course?.thumbnail ||
+      course?.imageUrl ||
+      ""
+  );
 }
 
 function lessonTitle(lesson, index) {
@@ -127,6 +142,7 @@ export default function CourseDetailScreen({ route, navigation = null }) {
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
 
   const loadedCourseId = rowId(course) || courseId;
+  const heroImageUrl = courseHeroImage(course);
   const lessons = useMemo(() => normalizeList(course?.lessons, "lessons"), [course]);
   const liveSessions = useMemo(
     () => normalizeList(course?.liveSessions, "liveSessions"),
@@ -722,6 +738,14 @@ export default function CourseDetailScreen({ route, navigation = null }) {
         {coursePrice(course)} |{" "}
         {course?.status || (course?.isPublished ? "published" : "draft")}
       </Text>
+      {heroImageUrl ? (
+        <Image
+          accessibilityLabel={`${course?.title || course?.name || "Course"} image`}
+          resizeMode="cover"
+          source={{ uri: heroImageUrl }}
+          style={styles.courseHero}
+        />
+      ) : null}
       {course?.summary || course?.description ? (
         <Text style={styles.body}>{course.summary || course.description}</Text>
       ) : null}
@@ -1372,6 +1396,12 @@ export function createStyles(palette) {
     title: { fontSize: 24, fontWeight: "800", color: palette.text },
     body: { color: palette.textSoft, lineHeight: 20 },
     meta: { color: palette.textMuted, fontSize: 13 },
+    courseHero: {
+      width: "100%",
+      aspectRatio: 16 / 9,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
     feedback: {
       color: palette.text,
       backgroundColor: palette.surfaceMuted,
