@@ -103,4 +103,20 @@ describe("CommercialToolsIndex", () => {
       "/home/commercial/tools/recipe-builder?workspace=commercial"
     );
   });
+
+  it("keeps every web-linked action on a visible theme accent background", () => {
+    const screen = render(<CommercialToolsIndex />);
+    const allItems = [...COMMERCIAL_CORE_TOOLS, ...COMMERCIAL_PRODUCTION_TOOLS];
+
+    for (const item of allItems) {
+      const action = screen.getByLabelText(item.actionLabel);
+
+      expect(typeof action.props.style).not.toBe("function");
+      expect(action.props.style).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ backgroundColor: expect.any(String) })
+        ])
+      );
+    }
+  });
 });

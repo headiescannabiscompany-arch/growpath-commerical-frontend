@@ -135,11 +135,7 @@ function ToolGrid({ items }: { items: readonly CommercialToolHubItem[] }) {
             <Pressable
               accessibilityRole="link"
               accessibilityLabel={tool.actionLabel}
-              style={({ pressed }) => [
-                styles.button,
-                { backgroundColor: palette.accent },
-                pressed && styles.buttonPressed
-              ]}
+              style={[styles.button, { backgroundColor: palette.accent }]}
             >
               <Text style={[styles.buttonText, { color: palette.accentText }]}>
                 {tool.actionLabel}
@@ -219,7 +215,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10
   },
-  buttonPressed: { opacity: 0.7 },
   buttonText: { fontWeight: "800" },
   scopeCard: { gap: 6 },
   scopeTitle: { fontSize: 17, fontWeight: "900" },
