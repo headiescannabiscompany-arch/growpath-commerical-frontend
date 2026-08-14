@@ -3727,6 +3727,48 @@ export default function SpeciesCropIdToolRoute({
           }
         ];
 
+        if (activeWorkspaceType === "personal" && !growId && !invalidIdentity) {
+          actions.splice(1, 0, {
+            key: "confirm-and-start-grow",
+            label: "Confirm & Start a Grow",
+            pendingLabel: "Preparing grow...",
+            disabled:
+              userIdentityClaim.invalidScientificName ||
+              outputs.confirmationAvailable === false ||
+              (!userCorrectionCanConfirm &&
+                (imageEvidenceBlocksConfirmation ||
+                  sameEvidenceConflict ||
+                  outputs.identityConflictDetected === true ||
+                  payload.identityConflictDetected === true)),
+            onPress: async () => {
+              await recordCropIdentificationDecision({
+                decision: "accepted",
+                toolRun,
+                moduleRecord,
+                workspaceScope: toolRunScope
+              });
+              const query = new URLSearchParams();
+              query.set("source", "ai");
+              query.set("name", `${cropCommonName} grow`);
+              query.set("cropCommonName", cropCommonName);
+              if (identity.scientificName) {
+                query.set("scientificName", identity.scientificName);
+              }
+              if (identity.commonNames.length) {
+                query.set("commonNames", identity.commonNames.join(","));
+              }
+              if (identity.cultivar) query.set("cultivar", identity.cultivar);
+              if (identity.cropProfileId) {
+                query.set("cropProfileId", identity.cropProfileId);
+              }
+              if (identity.sourceToolRunId) {
+                query.set("sourceToolRunId", identity.sourceToolRunId);
+              }
+              router.push(`/home/personal/grows/new?${query.toString()}` as any);
+            }
+          });
+        }
+
         if (activeWorkspaceType === "personal" && growId) {
           actions.push({
             key: "create-crop-identity-tasks",

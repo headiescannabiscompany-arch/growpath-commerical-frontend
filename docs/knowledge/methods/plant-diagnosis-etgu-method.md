@@ -422,6 +422,26 @@ model-training data under the current policy.
 
 Species/crop identification suggestions remain drafts until the user presses an explicit confirmation action. Confirmation must write the common name, scientific name when known, cultivar separately, aliases, confirmation provenance, timestamp, and source tool run to the selected grow or plant. A user correction must preserve the rejected AI draft as provenance, present the corrected common identity first, keep exact scientific species unverified when unknown, and request a new whole-plant view, full leaf and underside with node, open flower, and fruit or seed structure for another AI review. A grow-level confirmation also updates crop tags and interests so downstream diagnosis and crop-specific tool visibility can use the same identity. Never infer or persist a cultivar from appearance alone.
 
+When no grow is attached, a confirmed Plant ID must offer a direct **Confirm & Start a
+Grow** path. The grow draft carries the confirmed common name, scientific name when
+known, aliases, cultivar only when user-supplied, reviewed crop-profile identifier, and
+source ToolRun provenance. It must not copy an exact location into a URL, publish a
+location, or create the grow until the user reviews and submits the grow form. Manual grow
+creation uses the same crop-identity fields and may match a reviewed crop profile so crops
+such as tomatoes receive crop-appropriate setup help rather than cannabis-only timing.
+Unknown crop facts remain blank or explicitly user-confirmed; a profile search result is not
+itself a species confirmation.
+
+Crop-aware grow setup must distinguish lifespan from harvest behavior. Supported planning
+paths are annual, biennial, short-lived perennial, long-lived perennial or woody, continuous
+indoor/tropical, and unknown. Production is separately described as one main harvest,
+repeated picking or flushes, seasonal perennial harvest, continuous production, observation
+without harvest, or unknown. Dormancy is also separate and may be absent, seasonal,
+climate-dependent, or unknown. A reviewed crop profile may propose these values, but region,
+cultivar, propagation method, climate, and management can change them, so the grow owner
+reviews the proposal before it becomes the grow plan. Never turn a species' theoretical
+maximum lifespan into a promised productive lifespan or harvest date.
+
 Crop identification must run without a grow. Grow and plant context are optional attachments used for private history, saving, logs, and follow-up tasks; they are not prerequisites for inspecting uploaded media or returning a draft identity. Collect photo evidence before presenting the image-analysis action. User confirmation is an explicit result action, not a free-form true/false input. The result must state whether image pixels were actually analyzed. A clear cannabis flower or harvested bud may support a draft crop-level identification when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent. Do not require a fan-leaf photo when the flower is independently recognizable, and never infer a cultivar/strain from bud appearance.
 
 When exact species is unresolved but the evidence supports a defensible common, genus, or family-level working candidate, surface that candidate with its actual confidence and limitations instead of replacing it with a confirmation placeholder. `Not confirmed` is reserved for cases where no useful plant candidate is defensible; every candidate still remains a draft until the user confirms it.

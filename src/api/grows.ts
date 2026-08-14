@@ -120,6 +120,10 @@ export interface PersonalGrow extends Grow {
     vegLengthWeeks?: number;
     expectedFlowerDays?: number;
     createStarterCalendar?: boolean;
+    lifeSpanPath?: string;
+    productionPattern?: string;
+    dormancyPattern?: string;
+    lifecycleGuidanceSourceIds?: string[];
   };
 }
 

@@ -35,6 +35,7 @@ const mockUpdateFieldObservation = jest.fn();
 const mockUpdateFieldStudy = jest.fn();
 const mockRequestCurrentCoordinates = jest.fn();
 const mockUseToolPlantContext = jest.fn();
+const mockRouterPush = jest.fn();
 let mockSearchParams: Record<string, string> = { growId: "grow-1" };
 let mockEvidenceAssets: any[] = [];
 let mockEntitlementMode: "personal" | "commercial" | "facility" = "personal";
@@ -51,7 +52,7 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({
     back: jest.fn(),
     canGoBack: jest.fn(() => true),
-    push: jest.fn(),
+    push: mockRouterPush,
     replace: jest.fn()
   })
 }));
@@ -4778,6 +4779,28 @@ describe("SpeciesCropIdToolRoute", () => {
         decision: "accepted"
       })
     );
+  });
+
+  it("starts a grow with the confirmed identity and source run prefilled", async () => {
+    mockSearchParams = {};
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(screen.getByText("Confirm & Start a Grow")).toBeTruthy());
+    await act(async () => {
+      fireEvent.press(screen.getByText("Confirm & Start a Grow"));
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    });
+
+    await waitFor(() => expect(mockRouterPush).toHaveBeenCalled());
+    const destination = String(mockRouterPush.mock.calls.at(-1)?.[0] || "");
+    expect(destination).toContain("/home/personal/grows/new?");
+    expect(destination).toContain("cropCommonName=Cannabis");
+    expect(destination).toContain("scientificName=Cannabis+sativa");
+    expect(destination).toContain("sourceToolRunId=toolrun-1");
+    expect(mockUpdatePlantIdCorrection).toHaveBeenCalledWith("toolrun-1", {
+      decision: "accepted"
+    });
   });
 
   it("saves the AI candidate and missing evidence to a selected Field Study", async () => {

@@ -223,6 +223,10 @@ grow`, private current location without a Field Study, and an optional approxima
   live-verified on the same retained run: saving the common identity `cannabis`
   marks it user-corrected, preserves/rejects the original AI draft, keeps exact
   scientific species unverified, and clears the confirmation requirement.
+  The frontend now has a governed confirmed-Plant-ID-to-create-grow draft and a
+  shared manual crop setup path carrying identity provenance plus separate lifespan,
+  production, and dormancy planning. Automated and production acceptance of this
+  new path remain open; do not count local implementation as live completion.
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
   inference warnings, pistil/bud-development context, top/middle/lower/context

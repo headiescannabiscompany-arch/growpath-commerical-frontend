@@ -24,7 +24,8 @@ export type SourceUseCase =
   | "qa_evaluation"
   | "photo_quality_guidance"
   | "platform_data_access"
-  | "plant_identification";
+  | "plant_identification"
+  | "crop_lifecycle";
 
 export type SourceType =
   | "university_extension"
@@ -64,10 +65,70 @@ const horticulture = [
   "water_quality",
   "propagation",
   "education",
-  "plant_identification"
+  "plant_identification",
+  "crop_lifecycle"
 ] as SourceUseCase[];
 
 export const sourceRegistry: SourceRegistryEntry[] = [
+  {
+    id: "missouri-botanical-garden-plant-finder",
+    name: "Missouri Botanical Garden Plant Finder",
+    domain: "missouribotanicalgarden.org",
+    sourceType: "botanical_database",
+    reliabilityTier: "A",
+    trustedFor: ["plant_identification", "crop_lifecycle", "education"],
+    notTrustedFor: ["legal_regulatory", "lab_result"],
+    notes:
+      "Reviewed botanical habit and horticultural-use context. Tomato is documented as a tender herbaceous perennial commonly used as an annual; regional and cultivar-specific production timing requires extension cross-checking.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: [
+      "extension-penn-state-tomato-production",
+      "extension-minnesota-tomato-growing"
+    ],
+    lastReviewedAt: "2026-08-14"
+  },
+  {
+    id: "extension-penn-state-tomato-production",
+    name: "Penn State Extension — Tomato Production",
+    domain: "extension.psu.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for determinate versus indeterminate production habit and repeated fresh-market harvest context; timings remain production- and cultivar-specific.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["extension-minnesota-tomato-growing"],
+    lastReviewedAt: "2026-08-14"
+  },
+  {
+    id: "extension-minnesota-tomato-growing",
+    name: "University of Minnesota Extension — Growing Tomatoes",
+    domain: "extension.umn.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for determinate concentrated ripening and indeterminate continued flowering and ripening until cold weather.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["extension-penn-state-tomato-production"],
+    lastReviewedAt: "2026-08-14"
+  },
+  {
+    id: "extension-minnesota-vegetable-planning",
+    name: "University of Minnesota Extension — Vegetable Crop and Field Planning",
+    domain: "extension.umn.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for region-specific tomato transplant-to-first-harvest ranges and cultivar-habit-dependent harvest windows. Minnesota values must not be universalized to other regions.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["extension-minnesota-tomato-growing"],
+    lastReviewedAt: "2026-08-14"
+  },
   {
     id: "meta-automated-data-collection-terms",
     name: "Meta Automated Data Collection Terms and Facebook Terms",
