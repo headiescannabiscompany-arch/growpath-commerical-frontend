@@ -556,6 +556,25 @@ describe("commercial workflow pages", () => {
         });
       }
       if (
+        path === "/api/commercial/courses/course-1/lessons/lesson-1" &&
+        options?.method === "PATCH"
+      ) {
+        return Promise.resolve({
+          course: {
+            id: "course-1",
+            title: "Living Soil Product Use",
+            thumbnailUrl: "https://example.com/course-thumb.jpg",
+            bannerUrl: "https://example.com/course-banner.jpg",
+            category: "product_education",
+            description: "How to use the seedling soil line",
+            access: "free",
+            growInterests: ["living soil"],
+            lessons: [{ id: "lesson-1", ...options.body }],
+            status: "draft"
+          }
+        });
+      }
+      if (
         path === "/api/commercial/courses/course-1/publish" &&
         options?.method === "POST"
       ) {
@@ -1466,6 +1485,32 @@ describe("commercial workflow pages", () => {
       "Cannabis, Indoor"
     );
     expect(screen.getAllByText("Cannabis, Indoor").length).toBeGreaterThan(0);
+  });
+
+  it("labels and performs an existing lesson edit as an update", async () => {
+    const screen = render(<CommercialCourseDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Application rate")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Edit lesson Application rate"));
+
+    expect(screen.getByLabelText("Save commercial course lesson changes")).toBeTruthy();
+    expect(screen.queryByLabelText("Add commercial course lesson")).toBeNull();
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial course lesson body"),
+      "Updated existing lesson body."
+    );
+    fireEvent.press(screen.getByLabelText("Save commercial course lesson changes"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/commercial/courses/course-1/lessons/lesson-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: expect.objectContaining({ body: "Updated existing lesson body." })
+        })
+      )
+    );
+    await waitFor(() => expect(screen.getByText("Lesson updated.")).toBeTruthy());
   });
 
   it("opens and updates commercial course detail with lessons and publish", async () => {
