@@ -6,16 +6,17 @@ import type { AiInspectionView } from "@/types/evidence";
 declare const require: ((id: string) => any) | undefined;
 
 function safeName(value: string) {
-  return value.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-|-$/g, "").toLowerCase();
+  return value
+    .replace(/[^a-z0-9._-]+/gi, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
 }
 
 function escapeHtml(value: unknown) {
   return String(value || "").replace(
-    /[&<>\"]/g,
+    /[&<>"]/g,
     (character) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[
-        character
-      ] || character
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[character] || character
   );
 }
 
@@ -85,7 +86,9 @@ export async function exportAiInspectionEvidence(
   const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(title)}</title><style>body{font-family:system-ui,sans-serif;max-width:980px;margin:auto;padding:28px;color:#17231b}header,article{border:1px solid #ccd8cf;border-radius:14px;padding:18px;margin-bottom:18px}img{display:block;max-width:100%;max-height:720px;object-fit:contain;border-radius:10px;background:#111}dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px}dt{font-weight:700}dd{margin:0;overflow-wrap:anywhere}.notice{background:#eef7f0}</style></head><body><header><h1>${escapeHtml(title)}</h1><p class="notice">These are the exact source-bound enlarged views used as supplemental AI inspection evidence. They expose existing pixels from retained originals and are not additional photos, sites, samples, or independent observations.</p>${provenanceRows ? `<dl>${provenanceRows}</dl>` : ""}</header>${rows}</body></html>`;
   const filename = `${safeName(title) || "ai-inspection-evidence"}.html`;
   if (Platform.OS === "web" && typeof document !== "undefined") {
-    const url = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
+    const url = URL.createObjectURL(
+      new Blob([html], { type: "text/html;charset=utf-8" })
+    );
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = filename;

@@ -144,7 +144,9 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
   async function loadView(view: AiInspectionView) {
     const key = viewKey(view);
     if (loadedViews[key]?.dataUrl) return loadedViews[key];
-    setInspectionFeedback(`Loading ${view.kind} from source photo ${view.sourceImageIndex}...`);
+    setInspectionFeedback(
+      `Loading ${view.kind} from source photo ${view.sourceImageIndex}...`
+    );
     const loaded = await loadAiInspectionView(view, {
       workspaceType: view.workspaceType || "personal",
       workspaceId: view.workspaceId,
@@ -161,7 +163,9 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
     try {
       const loaded = await loadView(view);
       await saveAiInspectionImage(loaded);
-      setInspectionFeedback("Inspection image saved or opened in the device share sheet.");
+      setInspectionFeedback(
+        "Inspection image saved or opened in the device share sheet."
+      );
     } catch (error: any) {
       setInspectionFeedback(error?.message || "The inspection image could not be saved.");
     }
@@ -180,7 +184,9 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
       });
       setInspectionFeedback("Inspection evidence package exported.");
     } catch (error: any) {
-      setInspectionFeedback(error?.message || "Inspection evidence could not be exported.");
+      setInspectionFeedback(
+        error?.message || "Inspection evidence could not be exported."
+      );
     }
   }
   return (
@@ -210,8 +216,8 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
             AI inspection views
           </Text>
           <Text style={styles.item}>
-            These are the exact enlarged views inspected from the retained originals.
-            They are supplemental views, not extra photos or independent evidence.
+            These are the exact enlarged views inspected from the retained originals. They
+            are supplemental views, not extra photos or independent evidence.
           </Text>
           <ScrollView
             horizontal
@@ -234,7 +240,8 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
                     Photo {view.sourceImageIndex}: {view.kind}
                   </Text>
                   <Text style={styles.inspectionMeta}>
-                    {view.width} x {view.height} Â· {view.cropStrategy.replaceAll("_", " ")}
+                    {view.width} x {view.height} Â·{" "}
+                    {view.cropStrategy.replaceAll("_", " ")}
                     {view.sourceBounds
                       ? ` Â· source x ${view.sourceBounds.left}-${
                           view.sourceBounds.left + view.sourceBounds.width
@@ -247,11 +254,13 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`View ${view.kind} from source photo ${view.sourceImageIndex}`}
-                      onPress={() => void loadView(view).catch((error) =>
-                        setInspectionFeedback(
-                          error?.message || "The inspection view could not be opened."
+                      onPress={() =>
+                        void loadView(view).catch((error) =>
+                          setInspectionFeedback(
+                            error?.message || "The inspection view could not be opened."
+                          )
                         )
-                      )}
+                      }
                       style={styles.button}
                     >
                       <Text style={styles.buttonText}>View</Text>
