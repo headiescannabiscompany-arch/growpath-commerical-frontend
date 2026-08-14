@@ -4,6 +4,8 @@ Course video is a lesson resource, not proof that GrowPath owns, hosts, continuo
 
 Course authoring uses one page-level heading, ordered level-two builder steps, one route-level Back action, and named pricing or access radio groups with an exposed checked state. Do not make keyboard or assistive-technology users choose between duplicate Back controls, navigate a flat list of page-level headings, or infer the selected course price or access mode from color alone. User-facing course cards and access choices use readable labels rather than raw stored values.
 
+The shared Full Course Builder must create the record in the active workspace's canonical course collection. A Commercial author therefore creates through the Commercial course endpoint so the new private draft immediately appears in Commercial Courses and retains the Commercial detail, lesson, publish, unpublish, and archive lifecycle. Personal and Facility authoring retain their authorized course paths. Returning to a workspace route with an ID created in a different course collection is a failed handoff, even if the initial create request returned success.
+
 ## Source selection and normalization
 
 Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Detect YouTube, Vimeo, and Rumble from recognized video-page URLs even when the author initially chooses Other. Preserve the submitted URL for traceability and store a separate canonical URL, provider video ID, Vimeo unlisted privacy hash when present, provider label, thumbnail when deterministically available, embed capability, external-link fallback, privacy mode, and last availability-check time.

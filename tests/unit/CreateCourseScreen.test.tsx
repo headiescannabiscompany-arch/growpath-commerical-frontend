@@ -18,6 +18,8 @@ function chooseDateTime(screen: ReturnType<typeof render>, label: string, value:
 }
 
 const mockCreateCourse = jest.fn();
+const mockCreateCommercialCourse = jest.fn();
+const mockWorkspaceMode = { value: "personal" };
 const mockReplace = jest.fn();
 const mockPersistImageUri = jest.fn();
 const mockPersistImageUris = jest.fn();
@@ -46,6 +48,10 @@ jest.mock("expo-router", () => ({
 
 jest.mock("@/api/courses", () => ({
   createCourse: (...args: any[]) => mockCreateCourse(...args)
+}));
+
+jest.mock("@/api/commercialWorkflows", () => ({
+  createCommercialCourse: (...args: any[]) => mockCreateCommercialCourse(...args)
 }));
 
 jest.mock("@/api/uploads", () => ({
@@ -101,7 +107,7 @@ jest.mock("@/entitlements", () => ({
     COURSES_CERTIFICATES: "COURSES_CERTIFICATES"
   },
   useEntitlements: () => ({
-    mode: "personal",
+    mode: mockWorkspaceMode.value,
     limits: { maxPaidCourses: 1, maxLessonsPerCourse: 12 },
     can: (capability: string) =>
       capability === "COURSES_VIEW" ||
@@ -117,8 +123,13 @@ jest.mock("@/auth/AuthContext", () => ({
 describe("CreateCourseScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockWorkspaceMode.value = "personal";
     jest.spyOn(Alert, "alert").mockImplementation(jest.fn());
     mockCreateCourse.mockResolvedValue({ id: "course-new", title: "Living Soil 101" });
+    mockCreateCommercialCourse.mockResolvedValue({
+      id: "commercial-course-new",
+      title: "Commercial Living Soil 101"
+    });
     mockGetTwitchConnection.mockReturnValue(new Promise(() => {}));
     mockBeginTwitchConnection.mockResolvedValue({
       configured: true,
@@ -304,6 +315,42 @@ describe("CreateCourseScreen", () => {
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: "/home/personal/courses",
       params: { courseId: "course-new" }
+    });
+  });
+
+  it("creates Commercial drafts through the Commercial course workflow", async () => {
+    mockWorkspaceMode.value = "commercial";
+    const screen = render(<CreateCourseScreen />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Course title"),
+      "Commercial Living Soil 101"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Course summary"),
+      "A Commercial workspace draft."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Course curriculum lessons"),
+      "Formula evidence"
+    );
+    fireEvent.press(screen.getByText("Create Draft"));
+
+    await waitFor(() => expect(mockCreateCommercialCourse).toHaveBeenCalled());
+    expect(mockCreateCommercialCourse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Commercial Living Soil 101",
+        summary: "A Commercial workspace draft.",
+        workspace: "commercial",
+        status: "draft",
+        isPublished: false,
+        lessons: [expect.objectContaining({ title: "Formula evidence" })]
+      })
+    );
+    expect(mockCreateCourse).not.toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/home/commercial/courses",
+      params: { courseId: "commercial-course-new" }
     });
   });
 

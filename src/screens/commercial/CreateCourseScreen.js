@@ -16,6 +16,7 @@ import {
 
 import ScreenContainer from "../../components/ScreenContainer";
 import { createCourse } from "@/api/courses";
+import { createCommercialCourse } from "@/api/commercialWorkflows";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import {
   beginTwitchConnection,
@@ -521,7 +522,9 @@ export default function CreateCourseScreen({
       );
       const persistedCoverImageUrl = await persistImageUri(coverImageUrl.trim());
       const growInterestTags = flattenTierSelections(growInterestSelections);
-      const course = await createCourse({
+      const createDraft =
+        entitlements.mode === "commercial" ? createCommercialCourse : createCourse;
+      const course = await createDraft({
         title: title.trim(),
         summary: summary.trim(),
         description: description.trim(),
