@@ -198,13 +198,29 @@ export default function LiveStudioRoute() {
       <BackButton fallbackHref="/lives" />
       <View style={styles.hero}>
         <Text style={styles.kicker}>Live Studio</Text>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" aria-level={1} style={styles.title}>
           Create a live or video premiere
         </Text>
         <Text style={styles.subtitle}>
           Available to Personal, Commercial, and Facility accounts. GrowPath chat can be
           shown through OBS on Twitch, YouTube, Kick, Facebook Live, and other stream
           destinations; outside services remain responsible for giveaway selection.
+        </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+          Broadcast controls
+        </Text>
+        <Text style={styles.muted}>
+          GrowPath organizes the session, chat, premiere, replay, and viewer experience.
+          Your streaming software or destination controls cameras, microphones, volume,
+          scenes, screen sharing, bitrate, and the actual broadcast.
+        </Text>
+        <Text style={styles.muted}>
+          Set those controls in OBS, Streamlabs, Twitch, YouTube, Kick, Facebook Live, or
+          the service you broadcast through. You can change cameras and audio during the
+          stream there without interrupting GrowPath chat.
         </Text>
       </View>
 
@@ -347,7 +363,7 @@ export default function LiveStudioRoute() {
       </View>
 
       <View style={styles.card}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Discord live announcements
         </Text>
         <Text style={styles.muted}>
@@ -372,6 +388,7 @@ export default function LiveStudioRoute() {
             ) : null}
             <View style={styles.row}>
               <Pressable
+                accessibilityRole="button"
                 disabled={discordSaving}
                 onPress={testDiscord}
                 style={styles.secondaryButton}
@@ -379,6 +396,7 @@ export default function LiveStudioRoute() {
                 <Text style={styles.secondaryButtonText}>Send test</Text>
               </Pressable>
               <Pressable
+                accessibilityRole="button"
                 disabled={discordSaving}
                 onPress={removeDiscord}
                 style={styles.secondaryButton}
@@ -419,6 +437,8 @@ export default function LiveStudioRoute() {
               />
             </View>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Connect Discord channel"
               disabled={discordSaving || !discordWebhook.trim()}
               onPress={saveDiscord}
               style={[
