@@ -23,6 +23,16 @@ fullscreen controls; captions and replay seeking must remain available when the 
 provides them. Do not force a viewer into OBS or another service to control playback.
 The broadcaster continues to use OBS, Streamlabs, or the destination service for cameras,
 microphones, scene switching, screen sharing, bitrate, and the outgoing audio mix.
+Live Studio must ask where the video is being broadcast and support Twitch, YouTube, Kick,
+Facebook Live, and a labeled secure watch URL for another service. Discord remains an
+optional announcement destination and must never appear to be the only streaming option.
+Scheduled sessions, active streams, premieres, and replays share the canonical GrowPath
+session URL rather than only the outside destination. Provide the system share sheet,
+copy-link behavior, and reliable direct web-share destinations. The shared page preserves
+host identity, schedule, RSVP, chat, video access, and replay continuity. Do not present
+Instagram, YouTube Community, or a federated Mastodon server as a universal direct-compose
+integration when the platform does not offer one; those remain available through the
+system share sheet or copied link.
 
 ## GrowPath chat and OBS overlay
 

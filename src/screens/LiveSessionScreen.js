@@ -22,12 +22,30 @@ import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
 import ReportModal from "../components/ReportModal";
+import { currentPublicUrl, sharePublicLink } from "../utils/publicLinks";
 import {
   deleteLiveChatMessage,
   listLiveChat,
   rotateLiveOverlayToken,
   sendLiveChat
 } from "../api/lives";
+
+export function buildLiveShareTargets(title, sessionId) {
+  const url = currentPublicUrl(
+    `/live-session?sessionId=${encodeURIComponent(String(sessionId || ""))}`
+  );
+  const message = `${String(title || "Watch this GrowPath live")} ${url}`;
+  return {
+    url,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+    x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`,
+    bluesky: `https://bsky.app/intent/compose?text=${encodeURIComponent(message)}`,
+    reddit: `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(String(title || "GrowPath live"))}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+    email: `mailto:?subject=${encodeURIComponent(String(title || "GrowPath live"))}&body=${encodeURIComponent(message)}`,
+    text: `sms:?&body=${encodeURIComponent(message)}`
+  };
+}
 
 export default function LiveSessionScreen({ route }) {
   const { palette } = useAppTheme();
@@ -54,6 +72,7 @@ export default function LiveSessionScreen({ route }) {
   const [savingRsvp, setSavingRsvp] = useState(false);
   const [reportVisible, setReportVisible] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [shareFeedback, setShareFeedback] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [chatText, setChatText] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -115,7 +134,19 @@ export default function LiveSessionScreen({ route }) {
   }, [sessionId]);
 
   const twitchChannel = session?.twitchChannel ? String(session.twitchChannel) : "";
-  const watchUrl = twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "";
+  const streamPlatform = String(
+    session?.streamPlatform || (twitchChannel ? "twitch" : "other")
+  );
+  const streamPlatformLabel =
+    String(session?.externalPlatformLabel || "") ||
+    { twitch: "Twitch", youtube: "YouTube", kick: "Kick", facebook: "Facebook Live" }[
+      streamPlatform
+    ] ||
+    "Streaming service";
+  const watchUrl = String(
+    session?.externalWatchUrl ||
+      (twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "")
+  );
   const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
   const replayUrl = session?.replayUrl || session?.vodUrl || "";
   const twitchVodId = String(replayUrl).match(/twitch\.tv\/videos\/(\d+)/i)?.[1] || "";
@@ -137,6 +168,36 @@ export default function LiveSessionScreen({ route }) {
     session?.brandSlug ||
     session?.publicSlug ||
     "";
+  const shareTargets = buildLiveShareTargets(
+    session?.title,
+    session?._id || session?.id || sessionId
+  );
+
+  async function shareGrowPathSession() {
+    try {
+      const result = await sharePublicLink(
+        String(session?.title || "GrowPath live"),
+        `/live-session?sessionId=${encodeURIComponent(String(session?._id || session?.id || sessionId))}`
+      );
+      setShareFeedback(
+        result.method === "web-clipboard"
+          ? "GrowPath session link copied."
+          : "GrowPath session share options opened."
+      );
+    } catch {
+      setShareFeedback("Unable to open sharing. Use Copy Link instead.");
+    }
+  }
+
+  async function copyGrowPathSession() {
+    const clipboard = globalThis?.navigator?.clipboard;
+    if (typeof clipboard?.writeText === "function") {
+      await clipboard.writeText(shareTargets.url);
+      setShareFeedback("GrowPath session link copied.");
+      return;
+    }
+    await shareGrowPathSession();
+  }
   const startsAt =
     session?.scheduledStart || session?.startsAt || session?.startTime || "";
   const productHref =
@@ -399,6 +460,58 @@ export default function LiveSessionScreen({ route }) {
           {session.twitchChannel ? (
             <Text style={styles.meta}>Channel: {String(session.twitchChannel)}</Text>
           ) : null}
+          {watchUrl ? (
+            <Text style={styles.meta}>Streaming on {streamPlatformLabel}</Text>
+          ) : null}
+
+          <View style={styles.sharePanel} accessibilityLabel="Share GrowPath session">
+            <Text accessibilityRole="header" aria-level={2} style={styles.chatTitle}>
+              Share this {session.sessionType === "premiere" ? "premiere" : "stream"}
+            </Text>
+            <Text style={styles.meta}>
+              Share the GrowPath page so people can watch, RSVP, join chat, and return for
+              the replay.
+            </Text>
+            <View style={styles.actionRow}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={shareGrowPathSession}
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryBtnText}>Share</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={copyGrowPathSession}
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryBtnText}>Copy Link</Text>
+              </Pressable>
+              {[
+                ["Facebook", shareTargets.facebook],
+                ["X", shareTargets.x],
+                ["Bluesky", shareTargets.bluesky],
+                ["Reddit", shareTargets.reddit],
+                ["LinkedIn", shareTargets.linkedin],
+                ["Email", shareTargets.email],
+                ["Text", shareTargets.text]
+              ].map(([label, url]) => (
+                <Pressable
+                  key={label}
+                  accessibilityRole="link"
+                  onPress={() => Linking.openURL(url).catch(() => {})}
+                  style={styles.secondaryBtn}
+                >
+                  <Text style={styles.secondaryBtnText}>{label}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {shareFeedback ? (
+              <Text accessibilityLiveRegion="polite" style={styles.meta}>
+                {shareFeedback}
+              </Text>
+            ) : null}
+          </View>
 
           {twitchChannel || twitchVodId ? (
             <View style={styles.embedWrap}>
@@ -410,7 +523,9 @@ export default function LiveSessionScreen({ route }) {
             </View>
           ) : (
             <Text style={styles.meta}>
-              No Twitch channel is attached to this live yet.
+              {watchUrl
+                ? `Use the ${streamPlatformLabel} watch button below for video. GrowPath chat remains here.`
+                : "No video destination is attached to this live yet."}
             </Text>
           )}
 
@@ -650,7 +765,7 @@ export default function LiveSessionScreen({ route }) {
                 Linking.openURL(watchUrl).catch(() => {});
               }}
             >
-              <Text style={styles.btnText}>Watch on Twitch</Text>
+              <Text style={styles.btnText}>Watch on {streamPlatformLabel}</Text>
             </Pressable>
           ) : null}
 
@@ -937,6 +1052,15 @@ export function createStyles(palette) {
       borderWidth: 1,
       gap: 8,
       padding: 12
+    },
+    sharePanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      gap: 10,
+      marginTop: 14,
+      padding: 14
     },
     overlayUrl: {
       backgroundColor: palette.page,

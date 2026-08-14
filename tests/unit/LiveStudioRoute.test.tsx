@@ -52,6 +52,11 @@ describe("LiveStudioRoute", () => {
     ).toBeTruthy();
     expect(screen.getByText("Live stream")).toBeTruthy();
     expect(screen.getByText("Video premiere")).toBeTruthy();
+    expect(screen.getByText("Where are you streaming?")).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Stream on Twitch" })).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Stream on YouTube" })).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Stream on Kick" })).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Stream on Facebook Live" })).toBeTruthy();
     expect(screen.getByText("Playback and broadcast controls")).toBeTruthy();
     expect(screen.getByText(/watching inside GrowPath.*volume/i)).toBeTruthy();
     expect(screen.getByText(/Broadcasters use OBS.*control cameras/i)).toBeTruthy();
