@@ -547,6 +547,18 @@ public visibility, or screenshot/video acceptance still called out below.
   verification confirmed the repaired pages. Populated owner mutations, persistence,
   public visibility, and final visual evidence remain open. See
   `docs/qa/COMMERCIAL_ROUTE_REPAIR_PRODUCTION_EVIDENCE_2026-08-13.md`.
+  The frontend's existing Twitch status/connect/validate/disconnect contract had no
+  matching production backend route. Backend PR `#161` recovered only that missing
+  current contract, including encrypted credential storage, expiring OAuth state,
+  signed/replay-protected EventSub delivery, and truthful fail-closed configuration.
+  Both PR checks and post-merge main workflow `31785393006` passed. Render deploy
+  `dep-d9vdceb71rfs738sof80` served exact backend merge `f072e840`; unauthenticated
+  production probes returned `401` for Twitch status/connect while a deliberately
+  missing route returned `404`. The authenticated Commercial Lives page loaded all
+  workflow fields and truthfully reported Twitch OAuth unconfigured. Code/deployment
+  recovery is complete; owner-controlled Twitch app credentials, real broadcaster
+  authorization, EventSub challenge/events, and disconnect/reconnect acceptance remain.
+  See `docs/qa/TWITCH_BACKEND_RECOVERY_PRODUCTION_EVIDENCE_2026-08-14.md`.
 - [~] Seed Penny Saver Soil, Living Soil, and No-Till drafts only from owner-approved
   facts. Keep inventory zero and claims unpublished until labels, guaranteed analyses,
   sizes, prices, directions, shipping, and images are supplied and verified. The
