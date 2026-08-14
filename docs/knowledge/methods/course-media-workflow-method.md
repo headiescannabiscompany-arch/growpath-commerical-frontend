@@ -6,6 +6,8 @@ Course authoring uses one page-level heading, ordered level-two builder steps, o
 
 The shared Full Course Builder must create the record in the active workspace's canonical course collection. A Commercial author therefore creates through the Commercial course endpoint so the new private draft immediately appears in Commercial Courses and retains the Commercial detail, lesson, publish, unpublish, and archive lifecycle. Personal and Facility authoring retain their authorized course paths. Returning to a workspace route with an ID created in a different course collection is a failed handoff, even if the initial create request returned success.
 
+Commercial course persistence stores a flat canonical grow-interest tag list for catalog and detail use. The shared builder may retain its structured tier selections separately, and Commercial readers must normalize legacy structured selections instead of rendering object text or failing the page.
+
 ## Source selection and normalization
 
 Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Detect YouTube, Vimeo, and Rumble from recognized video-page URLs even when the author initially chooses Other. Preserve the submitted URL for traceability and store a separate canonical URL, provider video ID, Vimeo unlisted privacy hash when present, provider label, thumbnail when deterministically available, embed capability, external-link fallback, privacy mode, and last availability-check time.

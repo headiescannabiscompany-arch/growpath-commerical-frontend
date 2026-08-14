@@ -532,7 +532,11 @@ export default function CreateCourseScreen({
         category: category.trim(),
         difficulty: difficulty.trim(),
         cropType: selectedCropTypes[0] || "",
-        growInterests: growInterestSelections,
+        growInterests:
+          entitlements.mode === "commercial"
+            ? growInterestTags
+            : growInterestSelections,
+        growInterestSelections,
         interestTags: growInterestTags,
         tags: growInterestTags,
         curriculumPlan: curriculumPlan.trim(),

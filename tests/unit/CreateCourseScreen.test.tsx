@@ -344,6 +344,8 @@ describe("CreateCourseScreen", () => {
         workspace: "commercial",
         status: "draft",
         isPublished: false,
+        growInterests: [],
+        growInterestSelections: expect.any(Object),
         lessons: [expect.objectContaining({ title: "Formula evidence" })]
       })
     );
