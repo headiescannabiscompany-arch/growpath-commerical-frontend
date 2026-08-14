@@ -53,6 +53,17 @@ export type VideoQuota = {
   growPathUploadsConsumeStorage: boolean;
 };
 
+export type VideoComment = {
+  id: string;
+  videoId: string;
+  parentCommentId: string | null;
+  body: string;
+  status: "visible" | "hidden" | "deleted";
+  editedAt?: string | null;
+  createdAt?: string;
+  author: { id: string; displayName: string; avatarUrl: string };
+};
+
 export type VideoPermissions = {
   canUpload: boolean;
   canPublish: boolean;
@@ -205,6 +216,40 @@ export async function getVideo(id: string): Promise<GrowPathVideo> {
     invalidateOn401: false
   });
   return result?.video ?? result;
+}
+
+export async function listVideoComments(id: string): Promise<VideoComment[]> {
+  const result: any = await apiRequest(`/api/videos/${encodeURIComponent(id)}/comments`, {
+    invalidateOn401: false
+  });
+  return Array.isArray(result?.comments) ? result.comments : [];
+}
+
+export async function createVideoComment(
+  id: string,
+  body: string,
+  parentCommentId?: string | null
+): Promise<VideoComment> {
+  const result: any = await apiRequest(`/api/videos/${encodeURIComponent(id)}/comments`, {
+    method: "POST",
+    body: { body, parentCommentId: parentCommentId || undefined }
+  });
+  return result.comment;
+}
+
+export async function updateVideoComment(id: string, commentId: string, body: string) {
+  const result: any = await apiRequest(
+    `/api/videos/${encodeURIComponent(id)}/comments/${encodeURIComponent(commentId)}`,
+    { method: "PATCH", body: { body } }
+  );
+  return result.comment as VideoComment;
+}
+
+export async function deleteVideoComment(id: string, commentId: string, reason = "") {
+  return apiRequest(
+    `/api/videos/${encodeURIComponent(id)}/comments/${encodeURIComponent(commentId)}`,
+    { method: "DELETE", body: reason ? { reason } : undefined }
+  );
 }
 
 export async function getVideoPlayback(

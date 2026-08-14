@@ -210,6 +210,11 @@ export const ROUTES = {
     LIST: `${PREFIX}/lives`,
     DETAIL: (id) => `${PREFIX}/lives/${id}`,
     RSVP: (id) => `${PREFIX}/lives/${id}/rsvp`,
+    CHAT: (id) => `${PREFIX}/lives/${id}/chat`,
+    CHAT_MESSAGE: (id, messageId) => `${PREFIX}/lives/${id}/chat/${messageId}`,
+    ROTATE_OVERLAY_TOKEN: (id) => `${PREFIX}/lives/${id}/overlay-token/rotate`,
+    OVERLAY: (token) => `${PREFIX}/lives/overlay/${token}`,
+    GIVEAWAY_FEED: (token) => `${PREFIX}/lives/giveaway-feed/${token}`,
     CREATE: `${PREFIX}/lives`,
     UPDATE: (id) => `${PREFIX}/lives/${id}`,
     DELETE: (id) => `${PREFIX}/lives/${id}`

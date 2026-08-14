@@ -591,7 +591,9 @@ export const methodRegistry: GrowPathMethod[] = [
       "stable course and content references",
       "reference-safe detach and deletion status",
       "cannabis-aware discovery filtering",
-      "stored video moderation case with exact-content and administrator-email links"
+      "stored video moderation case with exact-content and administrator-email links",
+      "threaded video discussion with author editing and owner moderation",
+      "creator profile continuity and canonical Follow actions"
     ],
     [
       "Never limit video upload or sharing only to accounts labeled as creators.",
@@ -607,6 +609,49 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never send a video-report email before storing the report and moderation case, accept an off-site reported-content link, or erase the report when email delivery fails."
     ],
     ["videos", "discover", "course-builder", "profiles", "following-feed"]
+  ),
+  method(
+    "live-streaming-workflow",
+    "Live Streaming and Premiere Workflow",
+    ["live", "premiere", "chat", "obs", "giveaway-relay"],
+    "live-streaming-workflow-method.md",
+    [
+      "draft or schedule",
+      "publish",
+      "discover or follow",
+      "stream or premiere",
+      "moderate GrowPath chat",
+      "render private OBS overlay",
+      "relay eligible outside-picker entries",
+      "retain replay and audit"
+    ],
+    [
+      "signed-in Personal, Commercial, or Facility host",
+      "session title, schedule, timezone, visibility, and grow interests",
+      "published owned source video for a premiere",
+      "explicit chat and slow-mode settings",
+      "private rotatable overlay token",
+      "optional giveaway keyword and one-entry policy",
+      "deliberately linked viewer platform identity before platform-chat relay"
+    ],
+    [
+      "searchable live, upcoming, premiere, and replay directory",
+      "RSVP and reminder state",
+      "moderated GrowPath chat",
+      "transparent configurable OBS Browser Source overlay",
+      "outside-picker JSON or CSV entry feed",
+      "provider-confirmed linked-identity relay status",
+      "replay, moderation, and deletion audit continuity"
+    ],
+    [
+      "Never expose the overlay token in public session data.",
+      "Never combine outside-platform chats unless a separate authorized integration is deliberately enabled.",
+      "Never claim a host or bot relay represents a distinct viewer identity.",
+      "Never choose a giveaway winner inside GrowPath when the host selected an outside picker.",
+      "Never relay deleted, hidden, duplicate, blocked, or unauthorized entries.",
+      "Never treat chat or giveaway engagement as scientific evidence or AI-training permission."
+    ],
+    ["lives", "live-chat", "premieres", "obs-overlay", "external-picker-feed"]
   ),
   method(
     "course-media-workflow",

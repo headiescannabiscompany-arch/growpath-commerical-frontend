@@ -46,7 +46,7 @@ jest.mock("../src/api/commercialAnalytics", () => ({
 jest.mock("../src/components/ReportModal", () => ({
   __esModule: true,
   default: (props) => {
-    mockReportProps = props;
+    if (props.visible) mockReportProps = props;
     return null;
   }
 }));

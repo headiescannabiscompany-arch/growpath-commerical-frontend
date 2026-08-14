@@ -76,6 +76,21 @@ video. That counter is not verified watch time, completion, unique reach, learni
 progress, or scientific reliability. Do not expose engagement-based ranking until a real
 engagement event contract exists.
 
+## Discussion and creator continuity
+
+An accessible published video may have a threaded GrowPath discussion. Each comment keeps
+its author, parent comment, edit state, moderation state, and timestamps. The comment
+author may edit or remove their own visible comment. The video owner and authorized
+workspace moderators may remove a comment without erasing its moderation history. A
+removed comment is absent from public playback and creator engagement totals; replies may
+retain a neutral removed-parent placeholder when necessary for context.
+
+Video detail must show the owning account's avatar and display name and provide a direct
+profile and Follow action. Discover supports All videos and People I follow without
+requiring a special creator account. A profile video library contains only records the
+viewer is authorized to see. Comments, follows, views, and popularity remain social
+signals rather than scientific evidence or AI-training permission.
+
 ## Cannabis visibility
 
 Mark cannabis/hemp-specific videos explicitly. Public and followers-only cannabis videos

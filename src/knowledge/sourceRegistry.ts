@@ -95,6 +95,71 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-07-22"
   },
   {
+    id: "obs-browser-source-documentation",
+    name: "OBS Browser Source documentation",
+    domain: "obsproject.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["platform_data_access", "course_media"],
+    notTrustedFor: ["diagnosis", "ipm", "lab_result", "legal_regulatory"],
+    notes:
+      "Provider authority for loading a URL as a browser-rendered stream source with configurable dimensions and CSS. It supports a transparent GrowPath chat overlay but does not supply authentication, moderation, giveaway eligibility, rights, or proof that a third-party picker consumed an entry.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-14"
+  },
+  {
+    id: "twitch-send-chat-message-documentation",
+    name: "Twitch Send Chat Message documentation",
+    domain: "dev.twitch.tv",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["platform_data_access"],
+    notTrustedFor: ["diagnosis", "ipm", "lab_result", "legal_regulatory"],
+    notes:
+      "Provider authority for Twitch chat-send identity, scopes, limits, message IDs, and drop reasons. A host or bot message does not become a distinct viewer identity for a platform-only giveaway picker.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-14"
+  },
+  {
+    id: "youtube-live-chat-message-documentation",
+    name: "YouTube Live Chat Messages documentation",
+    domain: "developers.google.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["platform_data_access"],
+    notTrustedFor: ["diagnosis", "ipm", "lab_result", "legal_regulatory"],
+    notes:
+      "Provider authority for YouTube live-chat listing and insertion, required OAuth scopes, active-chat constraints, and provider errors. Insertion does not prove that an outside giveaway picker accepted an entry.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-14"
+  },
+  {
+    id: "kick-streaming-obs-documentation",
+    name: "Kick streaming and OBS documentation",
+    domain: "help.kick.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["platform_data_access", "course_media"],
+    notTrustedFor: ["diagnosis", "ipm", "lab_result", "legal_regulatory"],
+    notes:
+      "Provider authority that Kick accepts major streaming applications including OBS and documents custom stream setup. It supports using the destination-neutral GrowPath Browser Source overlay in a Kick broadcast; it does not prove chat relay identity or outside-picker acceptance.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-14"
+  },
+  {
+    id: "discord-webhook-gateway-oauth-documentation",
+    name: "Discord Webhooks, Gateway and OAuth2 documentation",
+    domain: "docs.discord.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["platform_data_access"],
+    notTrustedFor: ["diagnosis", "ipm", "lab_result", "legal_regulatory"],
+    notes:
+      "Provider authority for authorized incoming-channel webhooks, Gateway events and intents, privileged message-content restrictions, and OAuth2 identity/permissions. Use for explicit one-way live announcements; never expose webhook tokens, ingest private server chat without separately authorized need, or claim a webhook/app post represents an individual giveaway entrant.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-14"
+  },
+  {
     id: "crime-pays-but-botany-doesnt",
     name: "Crime Pays But Botany Doesn't",
     domain: "youtube.com",

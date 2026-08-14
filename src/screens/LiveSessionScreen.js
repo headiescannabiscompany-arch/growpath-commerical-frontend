@@ -2,11 +2,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Linking,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
@@ -20,6 +22,12 @@ import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
 import ReportModal from "../components/ReportModal";
+import {
+  deleteLiveChatMessage,
+  listLiveChat,
+  rotateLiveOverlayToken,
+  sendLiveChat
+} from "../api/lives";
 
 export default function LiveSessionScreen({ route }) {
   const { palette } = useAppTheme();
@@ -46,6 +54,13 @@ export default function LiveSessionScreen({ route }) {
   const [savingRsvp, setSavingRsvp] = useState(false);
   const [reportVisible, setReportVisible] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatText, setChatText] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatSaving, setChatSaving] = useState(false);
+  const [chatError, setChatError] = useState("");
+  const [overlayToken, setOverlayToken] = useState("");
+  const [reportedChatMessage, setReportedChatMessage] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -157,6 +172,91 @@ export default function LiveSessionScreen({ route }) {
   );
   const signedInUserId = String(auth?.user?.id || auth?.user?._id || "");
   const canReport = Boolean(signedInUserId) && (!ownerId || ownerId !== signedInUserId);
+  const isHost = Boolean(signedInUserId && ownerId === signedInUserId);
+
+  useEffect(() => {
+    if (!sessionId || !session?.chatEnabled) return undefined;
+    let alive = true;
+    let timeout;
+    async function refreshChat({ initial = false } = {}) {
+      if (initial && alive) setChatLoading(true);
+      try {
+        const result = await listLiveChat(sessionId);
+        if (!alive) return;
+        setChatMessages(Array.isArray(result?.messages) ? result.messages : []);
+        setChatError("");
+      } catch (error) {
+        if (alive)
+          setChatError(String(error?.message || error || "Chat could not be loaded."));
+      } finally {
+        if (alive) {
+          if (initial) setChatLoading(false);
+          timeout = setTimeout(() => void refreshChat(), 3000);
+        }
+      }
+    }
+    void refreshChat({ initial: true });
+    return () => {
+      alive = false;
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [session?.chatEnabled, sessionId]);
+
+  async function postChatMessage() {
+    const body = chatText.trim();
+    if (!body || chatSaving) return;
+    setChatSaving(true);
+    setChatError("");
+    try {
+      const result = await sendLiveChat(sessionId, body);
+      if (result?.message) setChatMessages((rows) => [...rows, result.message]);
+      setChatText("");
+      if (result?.externalPickerRelay?.status === "identity_connection_required") {
+        setFeedback(
+          "Your giveaway keyword was recorded. Connect the matching streaming identity before a platform-only picker can count it."
+        );
+      }
+    } catch (error) {
+      setChatError(String(error?.message || error || "Chat message not sent."));
+    } finally {
+      setChatSaving(false);
+    }
+  }
+
+  async function removeChatMessage(messageId) {
+    try {
+      await deleteLiveChatMessage(sessionId, messageId, isHost ? "Host moderation" : "");
+      setChatMessages((rows) =>
+        rows.filter((row) => String(row?.id) !== String(messageId))
+      );
+    } catch (error) {
+      setChatError(String(error?.message || error || "Chat message not removed."));
+    }
+  }
+
+  async function rotateOverlay() {
+    try {
+      const result = await rotateLiveOverlayToken(sessionId);
+      setOverlayToken(String(result?.overlayToken || ""));
+    } catch (error) {
+      Alert.alert(
+        "Overlay link not created",
+        String(error?.message || error || "Try again.")
+      );
+    }
+  }
+
+  async function copyText(value, successMessage) {
+    try {
+      if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+        throw new Error("Clipboard access is unavailable in this browser.");
+      }
+      await navigator.clipboard.writeText(value);
+      setFeedback(successMessage);
+    } catch (error) {
+      setChatError(String(error?.message || error || "Unable to copy this link."));
+    }
+  }
 
   useEffect(() => {
     if (!session || !storefrontSlug) return;
@@ -313,6 +413,178 @@ export default function LiveSessionScreen({ route }) {
               No Twitch channel is attached to this live yet.
             </Text>
           )}
+
+          {session.sessionType === "premiere" ? (
+            <View style={styles.premiereNotice}>
+              <Text style={styles.premiereTitle}>GrowPath video premiere</Text>
+              <Text style={styles.meta}>
+                This scheduled session plays a published GrowPath video with live chat.
+              </Text>
+              {session.sourceVideoId ? (
+                <Link href={`/videos/${String(session.sourceVideoId)}`} asChild>
+                  <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
+                    <Text style={styles.secondaryBtnText}>Open Premiere Video</Text>
+                  </Pressable>
+                </Link>
+              ) : null}
+            </View>
+          ) : null}
+
+          {session.chatEnabled ? (
+            <View style={styles.chatPanel}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.chatTitle}>
+                GrowPath Chat
+              </Text>
+              <Text style={styles.meta}>
+                Messages can appear in the host&apos;s GrowPath OBS overlay. Outside
+                giveaway pickers remain controlled by the streamer.
+              </Text>
+              {chatLoading ? <ActivityIndicator color={palette.accent} /> : null}
+              {chatError ? <Text style={styles.error}>{chatError}</Text> : null}
+              <View style={styles.chatList}>
+                {chatMessages.map((message) => {
+                  const mayRemove =
+                    isHost || String(message?.author?.id || "") === signedInUserId;
+                  return (
+                    <View key={String(message?.id)} style={styles.chatMessage}>
+                      {message?.author?.avatarUrl ? (
+                        <Image
+                          accessibilityLabel={`${message.author.displayName} avatar`}
+                          source={{ uri: message.author.avatarUrl }}
+                          style={styles.chatAvatar}
+                        />
+                      ) : (
+                        <View style={styles.chatAvatarFallback}>
+                          <Text style={styles.chatAvatarText}>
+                            {String(message?.author?.displayName || "G")
+                              .slice(0, 1)
+                              .toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      <View style={styles.chatCopy}>
+                        <Text style={styles.chatAuthor}>
+                          {String(message?.author?.displayName || "GrowPath member")}
+                          {message?.giveawayEntry ? " · entry recorded" : ""}
+                        </Text>
+                        <Text style={styles.chatBody}>{String(message?.body || "")}</Text>
+                      </View>
+                      <View style={styles.chatActions}>
+                        {auth.isAuthed &&
+                        String(message?.author?.id || "") !== signedInUserId ? (
+                          <Pressable
+                            accessibilityRole="button"
+                            onPress={() => setReportedChatMessage(message)}
+                          >
+                            <Text style={styles.chatActionText}>Report</Text>
+                          </Pressable>
+                        ) : null}
+                        {mayRemove ? (
+                          <Pressable
+                            accessibilityRole="button"
+                            onPress={() => void removeChatMessage(message.id)}
+                          >
+                            <Text style={styles.removeChat}>Remove</Text>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+              {auth.isAuthed ? (
+                <View style={styles.chatComposer}>
+                  <TextInput
+                    accessibilityLabel="Write a GrowPath live chat message"
+                    maxLength={500}
+                    onChangeText={setChatText}
+                    placeholder="Write a message"
+                    placeholderTextColor={palette.textMuted}
+                    style={styles.chatInput}
+                    value={chatText}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={!chatText.trim() || chatSaving}
+                    onPress={() => void postChatMessage()}
+                    style={[
+                      styles.btn,
+                      (!chatText.trim() || chatSaving) && styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.btnText}>
+                      {chatSaving ? "Sending..." : "Send"}
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Text style={styles.meta}>Sign in to join GrowPath Chat.</Text>
+              )}
+            </View>
+          ) : null}
+
+          {isHost ? (
+            <View style={styles.overlayPanel}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.chatTitle}>
+                Stream overlay
+              </Text>
+              <Text style={styles.meta}>
+                Create a private Browser Source link for OBS. Rotating it immediately
+                invalidates the previous link.
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => void rotateOverlay()}
+                style={styles.secondaryBtn}
+              >
+                <Text style={styles.secondaryBtnText}>
+                  {overlayToken ? "Rotate OBS Overlay Link" : "Create OBS Overlay Link"}
+                </Text>
+              </Pressable>
+              {overlayToken ? (
+                <View style={styles.overlayUrlBox}>
+                  <Text selectable style={styles.overlayUrl}>
+                    {`https://growpathai.com/live-overlay?token=${encodeURIComponent(overlayToken)}`}
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() =>
+                      void copyText(
+                        `https://growpathai.com/live-overlay?token=${encodeURIComponent(overlayToken)}`,
+                        "OBS overlay link copied."
+                      )
+                    }
+                    style={styles.secondaryBtn}
+                  >
+                    <Text style={styles.secondaryBtnText}>Copy OBS Overlay Link</Text>
+                  </Pressable>
+                  <Link
+                    href={`/live-overlay?token=${encodeURIComponent(overlayToken)}`}
+                    asChild
+                  >
+                    <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
+                      <Text style={styles.secondaryBtnText}>Preview Overlay</Text>
+                    </Pressable>
+                  </Link>
+                  {session?.giveawayRelay?.enabled ? (
+                    <View style={styles.externalFeedBox}>
+                      <Text style={styles.chatAuthor}>Outside-picker entry feed</Text>
+                      <Text style={styles.meta}>
+                        GrowPath never chooses the winner. Give these private JSON or CSV
+                        feeds only to a compatible outside picker or stream tool.
+                      </Text>
+                      <Text selectable style={styles.overlayUrl}>
+                        {`https://growpathai.com/api/lives/giveaway-feed/${encodeURIComponent(overlayToken)}`}
+                      </Text>
+                      <Text selectable style={styles.overlayUrl}>
+                        {`https://growpathai.com/api/lives/giveaway-feed/${encodeURIComponent(overlayToken)}?format=csv`}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
+            </View>
+          ) : null}
 
           <View style={styles.linkGrid}>
             {relatedProductId ? (
@@ -472,6 +744,18 @@ export default function LiveSessionScreen({ route }) {
           setFeedback("Live-session report submitted for administrator review.")
         }
       />
+      <ReportModal
+        visible={Boolean(reportedChatMessage)}
+        onClose={() => setReportedChatMessage(null)}
+        contentType="liveChatMessage"
+        contentId={String(reportedChatMessage?.id || "")}
+        contentTitle={`Chat message in ${String(session?.title || "live session")}`}
+        targetUrl={`/live-session?sessionId=${encodeURIComponent(sessionId)}&messageId=${encodeURIComponent(String(reportedChatMessage?.id || ""))}`}
+        parentPostId={sessionId}
+        onSuccess={() =>
+          setFeedback("Chat-message report submitted for administrator review.")
+        }
+      />
     </ScrollView>
   );
 }
@@ -587,6 +871,82 @@ export function createStyles(palette) {
       paddingVertical: 11
     },
     secondaryBtnText: { color: palette.link, fontWeight: "900" },
-    completedBtn: { backgroundColor: palette.accentSoft, borderColor: palette.accent }
+    completedBtn: { backgroundColor: palette.accentSoft, borderColor: palette.accent },
+    premiereNotice: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 14,
+      padding: 12
+    },
+    premiereTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    chatPanel: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 16,
+      padding: 12
+    },
+    chatTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
+    chatList: { gap: 8, marginTop: 12 },
+    chatMessage: {
+      alignItems: "flex-start",
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      flexDirection: "row",
+      gap: 8,
+      padding: 10
+    },
+    chatAvatar: { borderRadius: 16, height: 32, width: 32 },
+    chatAvatarFallback: {
+      alignItems: "center",
+      backgroundColor: palette.accentSoft,
+      borderRadius: 16,
+      height: 32,
+      justifyContent: "center",
+      width: 32
+    },
+    chatAvatarText: { color: palette.link, fontWeight: "900" },
+    chatCopy: { flex: 1 },
+    chatActions: { alignItems: "flex-end", gap: 7 },
+    chatActionText: { color: palette.link, fontSize: 12, fontWeight: "800" },
+    chatAuthor: { color: palette.text, fontSize: 12, fontWeight: "900" },
+    chatBody: { color: palette.text, lineHeight: 19, marginTop: 3 },
+    removeChat: { color: palette.danger, fontSize: 12, fontWeight: "800" },
+    chatComposer: { gap: 8, marginTop: 12 },
+    chatInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      padding: 11
+    },
+    overlayPanel: {
+      backgroundColor: palette.surfaceStrong,
+      borderRadius: radius.card,
+      marginTop: 16,
+      padding: 12
+    },
+    overlayUrlBox: { gap: 8, marginTop: 10 },
+    externalFeedBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    overlayUrl: {
+      backgroundColor: palette.page,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      fontFamily: "monospace",
+      padding: 10
+    },
+    disabled: { opacity: 0.55 }
   });
 }
