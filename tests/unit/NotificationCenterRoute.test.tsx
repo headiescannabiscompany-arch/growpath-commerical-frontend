@@ -285,6 +285,15 @@ describe("NotificationCenterRoute", () => {
               linkedStorefrontSlug: "living-soil-labs",
               workspaceType: "personal",
               readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-task-nested",
+              title: "Task assigned from Facility",
+              body: "Assigned: Inspect the north bench",
+              source: { model: "Task", id: "task-nested" },
+              data: { event: "assigned", taskId: "task-nested", facilityId: "fac-1" },
+              channel: "in_app",
+              readAt: "2026-07-07T12:00:00.000Z"
             }
           ]
         });
@@ -411,6 +420,10 @@ describe("NotificationCenterRoute", () => {
 
     fireEvent.press(screen.getByLabelText("Notification filter taskReminders"));
     expect(screen.getByText("Task overdue")).toBeTruthy();
+    expect(screen.getByText("Task assigned from Facility")).toBeTruthy();
+    expect(
+      screen.getAllByText(/Category Task reminders \| Delivery push eligible/).length
+    ).toBeGreaterThan(0);
 
     fireEvent.press(screen.getByLabelText("Notification filter all"));
     expect(
@@ -418,6 +431,9 @@ describe("NotificationCenterRoute", () => {
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/facility/tasks/task-1")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Notification link /home/facility/tasks/task-nested")
     ).toBeTruthy();
     expect(
       screen.getByLabelText("Notification link /home/personal/courses?courseId=course-1")
@@ -509,7 +525,7 @@ describe("NotificationCenterRoute", () => {
     expect(screen.getByText("Task created from notification.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from notification");
-    expect(createButtons).toHaveLength(21);
+    expect(createButtons).toHaveLength(22);
     await waitFor(() => expect(createButtons[7].props.disabled).toBeFalsy());
     fireEvent.press(createButtons[7]);
     await waitFor(() =>
