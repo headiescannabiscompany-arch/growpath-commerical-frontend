@@ -29,7 +29,10 @@ split-and-fenestrated leaves or combined leaf-and-inflorescence evidence also pa
 two distant candidates were rejected. The governed catalog is now 48/320. The catalog
 also now includes four genus-level Peace Lily records with combined foliage and
 spathe/spadix evidence; foliage-only and isolated-spadix candidates were rejected. The
-governed catalog is now 52/320 and remains planning until all governed slots are filled;
+catalog also includes three family-level Orchidaceae records with visible bilateral
+orchid floral structure; three orchid-like _Duparquetia orchidacea_ candidates were
+rejected because that accepted species belongs to Fabaceae despite its name and flower
+appearance. The governed catalog is now 55/320 and remains planning until all governed slots are filled;
 no candidate is automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
@@ -76,9 +79,22 @@ Owner-supplied or commissioned media is preferred for cannabis/hemp stages, harv
 
 ## Per-record contract
 
+This 320-record pack is a governed evaluation set, not a closed-world species
+database and not a claim to cover global plant diversity. A plant absent from the pack
+must not be forced into the nearest catalog label. GrowPathAI should narrow from visible
+morphology to the strongest supported rank, verify names and synonymy against current
+authoritative external sources when available, and return family, genus, species,
+subspecies/variety, hybrid, or unresolved identity only as the evidence supports. New
+rights-reviewed cases improve regression coverage over time without replacing live
+taxonomic verification or qualified botanical review.
+
 Each of the 320 media records must provide:
 
-- accepted and scientific name, category, stage, acceptable alternatives, distinguishing features, expected confidence range, and expected behavior;
+- accepted common and scientific name, category, stage, acceptable alternatives,
+  distinguishing features, expected confidence range, and expected behavior. Results
+  must present supported common, nursery, or regional aliases as names for the same
+  taxon while keeping true lookalikes separate; a suggestive epithet or common-name
+  overlap never overrides the accepted taxonomy;
 - source and media URLs, creator, image-level license, attribution, retrieval date, rights-review date, and explicit intended-use approval;
 - handling mode (`external_reference` or `copied_fixture`); copied fixtures also require an immutable hash and local fixture path;
 - a crop-level result only for clear cannabis/hemp morphology, never cultivar/strain inference;

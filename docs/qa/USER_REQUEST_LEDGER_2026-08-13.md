@@ -34,11 +34,11 @@ Legend:
 - [x] The `admin@growpathai.com` account has the platform-admin role and reaches the
       moderation/knowledge-governance area.
 - [~] Admin report cases store exact content and moderation links for Forum, Feed,
-      product, course, video, and live reports. Representative live moderation links
-      work; delivered-email clicks for every content type and non-admin denial remain.
+  product, course, video, and live reports. Representative live moderation links
+  work; delivered-email clicks for every content type and non-admin denial remain.
 - [~] Login, reload, verification, reset, workspace switching, malformed-token recovery,
-      and the retained real role chain are covered. Genuine expired-invitation, logout,
-      server-down recovery, and independent outside-user acceptance remain.
+  and the retained real role chain are covered. Genuine expired-invitation, logout,
+  server-down recovery, and independent outside-user acceptance remain.
 - [ ] Capture a forced backend 403 for prohibited Facility mutations and export the
       cross-role recording.
 
@@ -62,9 +62,9 @@ Legend:
 - [x] Shared date inputs use calendar/date dialogs with accessible year/month/day
       selection and scheduling semantics.
 - [~] Route-level headings, Back controls, loading/error states, contrast, major touch
-      targets, and many control names have automated and live evidence. Full keyboard,
-      focus-order, font-scaling, screen-reader, responsive-role, and physical-device
-      review remains.
+  targets, and many control names have automated and live evidence. Full keyboard,
+  focus-order, font-scaling, screen-reader, responsive-role, and physical-device
+  review remains.
 - [ ] Capture final-SHA desktop/mobile screenshots and video with URL, role, viewport,
       timestamp, and evidence type.
 
@@ -93,13 +93,13 @@ Legend:
       exact Personal coordinates remain private and cannabis/hemp requires the separate
       interest/consent boundary.
 - [~] The Discovery Nature viewer, map/globe, photo cards, privacy copy, current-location
-      and manual-pin paths are live. One deliberate photo publication, reload, public
-      card/photo opening, privacy check, and withdrawal remain.
-      A 2026-08-13 Headies saved-run review deliberately did not publish the available
-      candidate: the AI identity was only medium-confidence, no external botanical
-      verification had been performed, confirmation was still required, and its exact
-      saved location remained private and explicitly not shared. A reviewed, confirmed
-      non-sensitive candidate is still required for the publication/withdrawal loop.
+  and manual-pin paths are live. One deliberate photo publication, reload, public
+  card/photo opening, privacy check, and withdrawal remain.
+  A 2026-08-13 Headies saved-run review deliberately did not publish the available
+  candidate: the AI identity was only medium-confidence, no external botanical
+  verification had been performed, confirmation was still required, and its exact
+  saved location remained private and explicitly not shared. A reviewed, confirmed
+  non-sensitive candidate is still required for the publication/withdrawal loop.
 
 ## Courses, videos, Lives, Forum media, and notifications
 
@@ -120,20 +120,24 @@ Legend:
 - [x] Notification Center and Profile expose Device push plus Task, Forum, Video,
       Courses/Lives, Commerce, and Facility categories with persisted preferences.
 - [~] Native cold-start/background notification routing and exact-record links are
-      implemented. Frontend `5b1f69bb` normalized retained nested Facility Task
-      notifications to `Task reminders`, `push eligible`, and exact task links in
-      production; backend `6805fdd9` now preserves the in-app record and also sends
-      assignment push when the assignee has a registered token and has not disabled
-      push or task reminders. Both branch gates and both post-merge gates passed.
-      Real iOS/Android receipt, opt-out suppression, and tap-through acceptance remain.
+  implemented. Frontend `5b1f69bb` normalized retained nested Facility Task
+  notifications to `Task reminders`, `push eligible`, and exact task links in
+  production; backend `6805fdd9` now preserves the in-app record and also sends
+  assignment push when the assignee has a registered token and has not disabled
+  push or task reminders. Both branch gates and both post-merge gates passed.
+  Real iOS/Android receipt, opt-out suppression, and tap-through acceptance remain.
 - [~] Commercial course creation, edit, publish/unpublish, archive, storefront/learner
-      visibility, and one disposable-draft cleanup still need populated live acceptance.
+  visibility, and one disposable-draft cleanup still need populated live acceptance.
 
 ## Plant ID and Discovery Nature
 
 - [x] Plant ID follows a field-botanist method: morphology, family/genus traits,
       habitat, geography, ecology, lookalikes, source verification, uncertainty, and
       requests for missing evidence instead of one-image certainty.
+- [x] The governed catalog is an expanding evaluation library, not a closed list of
+      possible plants. Unlisted taxa must not be forced into a known label; external
+      authoritative verification and the strongest supported family/genus/species or
+      infraspecific rank remain part of the identification method.
 - [x] Plant ID accepts up to the governed multi-photo limit plus video; server frame
       extraction, original evidence retention, saved-run reload, and correction
       provenance are live-verified.
@@ -141,13 +145,15 @@ Legend:
       Study or attaching a Grow.
 - [x] Device location and a browser-independent manual map-pin fallback are available;
       an unsaved test point at the owner's home was removed and was never published.
-- [x] Common and scientific names are displayed separately, and user corrections retain
-      the rejected AI draft rather than rewriting history.
+- [x] Common and scientific names are displayed separately; supported common, nursery,
+      and regional aliases can be shown as names for the same plant, true lookalikes
+      remain separate, and user corrections retain the rejected AI draft rather than
+      rewriting history.
 - [x] Uncertain identity is visibly bounded and asks for the next useful whole-plant,
       leaf, stem, flower, fruit, habitat, or location evidence.
 - [~] Optional direct publication to Discovery Nature is implemented with sensitive
-      species obscuring, exact-coordinate privacy, photo requirements, cannabis/hemp
-      consent, and withdrawal support. The data-bearing live loop remains.
+  species obscuring, exact-coordinate privacy, photo requirements, cannabis/hemp
+  consent, and withdrawal support. The data-bearing live loop remains.
 - [ ] Complete the governed Plant ID evaluation pack: 320 reviewed slots, including
       owned/commissioned adverse images, exact rights, morphology, taxonomy, expected
       results, and approved use. Metadata-only candidates are not accepted evidence.
@@ -155,6 +161,10 @@ Legend:
       46 governed case definitions, zero contract errors, zero reviewed media records,
       and 48 retained blockers. The strict review/promotion inputs were absent from the
       clean worktree, so no catalog write or false promotion was attempted.
+      Subsequent governed visual review has advanced the catalog to 55/320 records in
+      the current merge pipeline, including an Orchidaceae batch that explicitly
+      rejects orchid-like _Duparquetia orchidacea_ as Fabaceae rather than trusting its
+      name or appearance.
 
 ## Diagnosis, IPM, Harvest, and shared image/video analysis
 
@@ -181,13 +191,13 @@ Legend:
 - [x] Harvest results use visible-sample ranges and do not claim a whole-plant trichome
       percentage from selected areas.
 - [~] IPM/Diagnosis governed-case execution against the primary path plus GPT second
-      opinion is implemented as a resumable, staging-only, dry-run-by-default harness.
-      Authorized 252-case staging execution, billing, linked-record checks, and cleanup
-      remain.
+  opinion is implemented as a resumable, staging-only, dry-run-by-default harness.
+  Authorized 252-case staging execution, billing, linked-record checks, and cleanup
+  remain.
 - [~] The Harvest counter now counts hundreds of candidate heads across the full sampled
-      areas and preserves confirmed/possible amber and cloudy/glare uncertainty. Its
-      remaining disagreement with the owner's visual estimate is recorded rather than
-      tuned away.
+  areas and preserves confirmed/possible amber and cloudy/glare uncertainty. Its
+  remaining disagreement with the owner's visual estimate is recorded rather than
+  tuned away.
 - [ ] Build and independently adjudicate a rights-cleared ordinary-phone trichome corpus
       with blinded head boxes/classes, capture diversity, difficult lighting, and the
       non-weakenable evaluation floors already in the repository.
@@ -210,13 +220,13 @@ Legend:
       Journal/Logs, Inventory, Compliance, SOPs, Reports, Analytics, Integrations,
       AI Tools, Team, and Notifications with grouped navigation.
 - [~] Automated Facility mutation contracts cover rooms, plants, tasks, inventory,
-      compliance, SOPs, reporting, roles, and access. Production now also verifies
-      populated Grow, Plant, Journal, SOP comparison, and Owner-only AI Validation Lab
-      states plus immutable lifecycle audit history. Temporary Inventory is deleted and
-      the Compliance deviation resolved. Retained grow/plant/journal cleanup waits for
-      a durable Cannabis grow context so Facility Harvest Readiness is not regressed;
-      forced-403 and exported cross-role evidence also remain. See
-      `docs/qa/FACILITY_POPULATED_WORKFLOW_PRODUCTION_EVIDENCE_2026-08-13.md`.
+  compliance, SOPs, reporting, roles, and access. Production now also verifies
+  populated Grow, Plant, Journal, SOP comparison, and Owner-only AI Validation Lab
+  states plus immutable lifecycle audit history. Temporary Inventory is deleted and
+  the Compliance deviation resolved. Retained grow/plant/journal cleanup waits for
+  a durable Cannabis grow context so Facility Harvest Readiness is not regressed;
+  forced-403 and exported cross-role evidence also remain. See
+  `docs/qa/FACILITY_POPULATED_WORKFLOW_PRODUCTION_EVIDENCE_2026-08-13.md`.
 
 ## Commercial, storefronts, dispensaries, products, and trials
 
@@ -230,14 +240,14 @@ Legend:
 - [x] Storefront/product publication blocks incomplete prices, invalid links, or
       unsupported inventory claims and retains drafts on failure.
 - [~] Populated Living Soil Labs storefront/product/course/discovery acceptance remains;
-      no claims, stock, price, or guaranteed analysis may be invented.
+  no claims, stock, price, or guaranteed analysis may be invented.
 - [~] Commercial Orders, Analytics, Product Lines, Batches/Lots, Trials, Inventory,
-      Forum/Feed, Videos, Lives, and dispensary handoff have automated coverage; populated
-      owner mutation, reload, public visibility, and visual evidence remain. The
-      signed-in Commercial route audit and frontend `161afbe9` repaired and live-verified
-      the blank Batch Planner and duplicate Storefront/Grows/Discover headings; all
-      audited route shells now load without visible errors. See
-      `docs/qa/COMMERCIAL_ROUTE_REPAIR_PRODUCTION_EVIDENCE_2026-08-13.md`.
+  Forum/Feed, Videos, Lives, and dispensary handoff have automated coverage; populated
+  owner mutation, reload, public visibility, and visual evidence remain. The
+  signed-in Commercial route audit and frontend `161afbe9` repaired and live-verified
+  the blank Batch Planner and duplicate Storefront/Grows/Discover headings; all
+  audited route shells now load without visible errors. See
+  `docs/qa/COMMERCIAL_ROUTE_REPAIR_PRODUCTION_EVIDENCE_2026-08-13.md`.
 
 ## Billing, gifts, email, and data rights
 
@@ -248,8 +258,8 @@ Legend:
       purchaser history, exact pricing binding, delivery leases, and refund-worker
       foundations are implemented behind a disabled launch flag.
 - [~] Gift checkout intentionally remains disabled until policy, signed-out/cross-device
-      recovery, pending-record migration/index review, Stripe webhook/live-key evidence,
-      safe worker activation, sandbox, and mutation-capable acceptance pass.
+  recovery, pending-record migration/index review, Stripe webhook/live-key evidence,
+  safe worker activation, sandbox, and mutation-capable acceptance pass.
 - [ ] Complete paid-course checkout/enrollment/refund/dispute acceptance.
 - [ ] Complete Pro/Facility trial-to-paid/cancel/expiry/downgrade acceptance.
 - [ ] Complete Commercial product Stripe and external-only order/lead/analytics
@@ -292,9 +302,9 @@ Legend:
       research listings. Show `Not for sale` prominently and provide no checkout,
       inventory claim, production promise, or shipping promise.
 - [blocked] Triple Bag Genetics designs containing third-party marks may be completed as
-            private internal design studies but cannot be publicly listed or trialed
-            until rights review clears each mark. Rights-cleared TBG designs may proceed
-            to the non-sale research presentation above.
+  private internal design studies but cannot be publicly listed or trialed
+  until rights review clears each mark. Rights-cleared TBG designs may proceed
+  to the non-sale research presentation above.
 - [ ] After the exact blank, final designs, brand ownership, and rights-cleared non-sale
       listings are complete, run owner-priced purchase-intent trials for every approved
       hat concept. Verify response, revision, aggregation, and close behavior while
@@ -303,15 +313,15 @@ Legend:
 ## App Store and final release
 
 - [~] Release scripts, store graphics contracts, privacy/data-rights contracts, live URL
-      checks, and dry-run build/go-no-go gates are implemented. Strict preflight correctly
-      stops when protected native Sentry configuration is absent.
+  checks, and dry-run build/go-no-go gates are implemented. Strict preflight correctly
+  stops when protected native Sentry configuration is absent.
 - [ ] Finish the approved GrowPathAI hat research presentation above before the final
       App Store/app-wide tightening pass, as requested; this does not block technical
       build preparation.
 - [blocked] Obtain owner/legal decisions for final name, cannabis language, age rating,
-            privacy/support/deep-link records, and listing copy.
+  privacy/support/deep-link records, and listing copy.
 - [blocked] Configure protected Apple, Google, and production Sentry credentials outside
-            source control.
+  source control.
 - [ ] Produce iOS and Android production builds and required device screenshots.
 - [ ] Run physical-device smoke for auth, all workspaces, entitlement status,
       permissions, photo/video upload, notifications, offline/error states, and logout.
@@ -327,11 +337,11 @@ Legend:
       production builds, role loops, external integrations, devices, accessibility, and
       independent validation pass without weakening a gate.
 - [~] The read-only production Admin inventory now identifies 38 exact synthetic
-      QA/Codex/smoke/demo candidates and a protected-account boundary in
-      `docs/qa/PRODUCTION_TEST_ACCOUNT_CLEANUP_PLAN_2026-08-13.md`. The live Admin API
-      still needs an allowlisted, audited anonymization operation; production mutation,
-      protected-record regression proof, remaining temporary data, and untracked-file
-      reconciliation remain open. Suspend or Ban is not counted as cleanup.
+  QA/Codex/smoke/demo candidates and a protected-account boundary in
+  `docs/qa/PRODUCTION_TEST_ACCOUNT_CLEANUP_PLAN_2026-08-13.md`. The live Admin API
+  still needs an allowlisted, audited anonymization operation; production mutation,
+  protected-record regression proof, remaining temporary data, and untracked-file
+  reconciliation remain open. Suspend or Ban is not counted as cleanup.
 - [ ] Final evidence records frontend/backend SHAs, production URLs, inspected deployment
       IDs, timestamps, accounts/roles, checks, failures/fixes, screenshots/video,
       external delivery, cleanup, and the final release decision.

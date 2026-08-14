@@ -3630,6 +3630,168 @@
         "observedTaxonName": "Spathiphyllum wallisii",
         "observedTaxonRank": "species"
       }
+    },
+    {
+      "recordId": "plant-id-orchid-002",
+      "caseId": "orchid",
+      "acceptedName": "Orchid",
+      "scientificName": "Orchidaceae species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other monocot", "orchid-like flower"],
+      "distinguishingFeatures": [
+        "branched inflorescence carrying many bilaterally symmetric flowers",
+        "orchid flowers with a differentiated lip and central column"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.8, "maximum": 0.94 },
+      "expectedResult": "Orchidaceae is expected at family level from the repeated orchid floral structure; do not force a genus or species.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386673018",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/707989776/original.jpg",
+      "creator": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "orchid-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "many flowers on a branched inflorescence",
+          "bilateral floral symmetry",
+          "differentiated labellum",
+          "central fused reproductive column"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30000046-2",
+            "outcome": "Kew POWO accepts Orchidaceae Juss.; the photographed repeated orchid floral organization supports only the governed family-level target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained. Orchid-like Duparquetia candidates were excluded as Fabaceae lookalikes."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-707989776",
+        "photoId": 707989776,
+        "sourceQuery": "Orchidaceae",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 47217,
+        "observedTaxonName": "Orchidaceae",
+        "observedTaxonRank": "family"
+      }
+    },
+    {
+      "recordId": "plant-id-orchid-004",
+      "caseId": "orchid",
+      "acceptedName": "Orchid",
+      "scientificName": "Orchidaceae species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other monocot", "orchid-like flower"],
+      "distinguishingFeatures": [
+        "bilaterally symmetric flowers with a patterned differentiated lip",
+        "central orchid column visible in multiple flowers"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.86, "maximum": 0.97 },
+      "expectedResult": "Orchidaceae is expected at family level from the close repeated floral characters; do not infer an exact hybrid, genus, or species.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386673029",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/707990222/original.jpg",
+      "creator": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "orchid-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "strong bilateral symmetry",
+          "three sepals and lateral petals around a differentiated lip",
+          "central fused reproductive column",
+          "multiple consistent flowers in one inflorescence"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30000046-2",
+            "outcome": "Kew POWO accepts Orchidaceae Juss.; the close flower view supports the family while remaining insufficient for a reliable lower-rank claim."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-707990222",
+        "photoId": 707990222,
+        "sourceQuery": "Orchidaceae",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 47217,
+        "observedTaxonName": "Orchidaceae",
+        "observedTaxonRank": "family"
+      }
+    },
+    {
+      "recordId": "plant-id-orchid-006",
+      "caseId": "orchid",
+      "acceptedName": "Orchid",
+      "scientificName": "Orchidaceae species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other monocot", "small white inflorescence"],
+      "distinguishingFeatures": [
+        "small bilaterally symmetric flowers with yellow differentiated lips",
+        "slender branched floral stem beside strap-like monocot foliage"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.72, "maximum": 0.9 },
+      "expectedResult": "Orchidaceae is expected at family level; the small flowers justify a lower confidence ceiling and no lower-rank claim.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386673041",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/707990493/original.jpg",
+      "creator": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "orchid-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "small bilateral white flowers",
+          "yellow differentiated lips",
+          "slender branched inflorescence",
+          "strap-like foliage in context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30000046-2",
+            "outcome": "Kew POWO accepts Orchidaceae Juss.; the visible family characters support a cautious family-level result."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained. The confidence ceiling reflects the small floral scale."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-707990493",
+        "photoId": 707990493,
+        "sourceQuery": "Orchidaceae",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 47217,
+        "observedTaxonName": "Orchidaceae",
+        "observedTaxonRank": "family"
+      }
     }
   ]
 }
