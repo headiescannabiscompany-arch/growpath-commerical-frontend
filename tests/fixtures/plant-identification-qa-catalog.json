@@ -702,6 +702,412 @@
   },
   "mediaRecords": [
     {
+      "recordId": "plant-id-pepper-001",
+      "caseId": "pepper",
+      "acceptedName": "Pepper",
+      "scientificName": "Capsicum species",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "nightshade species"
+      ],
+      "distinguishingFeatures": [
+        "diagnostic cultivated pepper fruit",
+        "Capsicum-like simple leaves and fruiting calyx"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.86,
+        "maximum": 0.98
+      },
+      "expectedResult": "Pepper (Capsicum) is expected; the blocky fruit is consistent with a cultivated sweet pepper.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/379999720",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/695157060/original.jpg",
+      "creator": "(c) Noland Aull, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Noland Aull, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pepper-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "whole pepper plant",
+          "simple ovate leaves",
+          "developing blocky green fruit with persistent calyx"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30006872-2",
+            "outcome": "Kew POWO recognizes Capsicum as the governed pepper genus; visible fruit, calyx, and foliage characters support the genus-level target without cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-695157060",
+        "photoId": 695157060,
+        "sourceQuery": "Capsicum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 48514,
+        "observedTaxonName": "Capsicum annuum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-pepper-002",
+      "caseId": "pepper",
+      "acceptedName": "Pepper",
+      "scientificName": "Capsicum species",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "nightshade species"
+      ],
+      "distinguishingFeatures": [
+        "wild-chile fruit placement",
+        "Capsicum foliage and persistent fruiting calyx"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.78,
+        "maximum": 0.94
+      },
+      "expectedResult": "Pepper (Capsicum) is expected; a wild Capsicum annuum form is acceptable.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/384996796",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/706397524/original.jpg",
+      "creator": "(c) Evan A Miller, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Evan A Miller, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pepper-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "branched shrub",
+          "simple entire leaves",
+          "multiple small upright red berry-like chile fruits"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30006872-2",
+            "outcome": "Kew POWO recognizes Capsicum as the governed pepper genus; visible fruit, calyx, and foliage characters support the genus-level target without cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-706397524",
+        "photoId": 706397524,
+        "sourceQuery": "Capsicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 239734,
+        "observedTaxonName": "Capsicum annuum glabriusculum",
+        "observedTaxonRank": "variety"
+      }
+    },
+    {
+      "recordId": "plant-id-pepper-003",
+      "caseId": "pepper",
+      "acceptedName": "Pepper",
+      "scientificName": "Capsicum species",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "nightshade species"
+      ],
+      "distinguishingFeatures": [
+        "diagnostic chile-pepper fruit form",
+        "retained Capsicum pedicel and calyx"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.72,
+        "maximum": 0.91
+      },
+      "expectedResult": "Pepper (Capsicum) is expected from the harvested fruit; species-level confidence should remain lower without the plant.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/380938557",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/696975829/original.jpg",
+      "creator": "(c) Kiran Jonnalagadda, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Kiran Jonnalagadda, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pepper-003",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "single harvested glossy red fruit",
+          "wrinkled tapering pepper shape",
+          "green pedicel and calyx retained"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30006872-2",
+            "outcome": "Kew POWO recognizes Capsicum as the governed pepper genus; visible fruit, calyx, and foliage characters support the genus-level target without cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-696975829",
+        "photoId": 696975829,
+        "sourceQuery": "Capsicum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 69135,
+        "observedTaxonName": "Capsicum chinense",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-pepper-004",
+      "caseId": "pepper",
+      "acceptedName": "Pepper",
+      "scientificName": "Capsicum species",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "nightshade species"
+      ],
+      "distinguishingFeatures": [
+        "Capsicum fruit and calyx",
+        "pepper-like branching and simple leaves"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.74,
+        "maximum": 0.92
+      },
+      "expectedResult": "Pepper (Capsicum) is expected; avoid cultivar inference.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386750932",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/708141140/original.jpg",
+      "creator": "(c) Víctor Alonso Hernández González, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Víctor Alonso Hernández González, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pepper-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "branched plant",
+          "simple ovate leaves",
+          "small upright red fruit with persistent calyx"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30006872-2",
+            "outcome": "Kew POWO recognizes Capsicum as the governed pepper genus; visible fruit, calyx, and foliage characters support the genus-level target without cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-708141140",
+        "photoId": 708141140,
+        "sourceQuery": "Capsicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 48514,
+        "observedTaxonName": "Capsicum annuum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-pepper-005",
+      "caseId": "pepper",
+      "acceptedName": "Pepper",
+      "scientificName": "Capsicum species",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "nightshade species"
+      ],
+      "distinguishingFeatures": [
+        "whole-plant cultivated pepper habit",
+        "mixed-ripeness elongated Capsicum fruits"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.86,
+        "maximum": 0.98
+      },
+      "expectedResult": "Pepper (Capsicum) is expected from whole-plant foliage and multiple fruits.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/381218007",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/697513465/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pepper-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "whole cultivated branching plant",
+          "simple lanceolate leaves",
+          "multiple elongated red and green fruits"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30006872-2",
+            "outcome": "Kew POWO recognizes Capsicum as the governed pepper genus; visible fruit, calyx, and foliage characters support the genus-level target without cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-697513465",
+        "photoId": 697513465,
+        "sourceQuery": "Capsicum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 48514,
+        "observedTaxonName": "Capsicum annuum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-pepper-007",
+      "caseId": "pepper",
+      "acceptedName": "Pepper",
+      "scientificName": "Capsicum species",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "nightshade species"
+      ],
+      "distinguishingFeatures": [
+        "diagnostic chile-pepper fruit form",
+        "consistent Capsicum calyx and pedicel morphology"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.78,
+        "maximum": 0.94
+      },
+      "expectedResult": "Pepper (Capsicum) is expected from the harvested fruits; do not infer cultivar from appearance alone.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/383125438",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/701189115/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pepper-007",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "four harvested narrow red fruits",
+          "tapered chile shape",
+          "green pedicels and calyces retained"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30006872-2",
+            "outcome": "Kew POWO recognizes Capsicum as the governed pepper genus; visible fruit, calyx, and foliage characters support the genus-level target without cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-701189115",
+        "photoId": 701189115,
+        "sourceQuery": "Capsicum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 48514,
+        "observedTaxonName": "Capsicum annuum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-pepper-008",
+      "caseId": "pepper",
+      "acceptedName": "Pepper",
+      "scientificName": "Capsicum species",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "nightshade species"
+      ],
+      "distinguishingFeatures": [
+        "wild-chile fruit clusters",
+        "Capsicum foliage and persistent fruiting calyces"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.82,
+        "maximum": 0.96
+      },
+      "expectedResult": "Pepper (Capsicum) is expected; a wild Capsicum annuum form is acceptable.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/387037786",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/708686100/original.jpg",
+      "creator": "(c) mattmsa, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) mattmsa, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pepper-008",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "branched plant",
+          "simple ovate leaves",
+          "multiple upright green-to-red small chile fruits"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30006872-2",
+            "outcome": "Kew POWO recognizes Capsicum as the governed pepper genus; visible fruit, calyx, and foliage characters support the genus-level target without cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-708686100",
+        "photoId": 708686100,
+        "sourceQuery": "Capsicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 239734,
+        "observedTaxonName": "Capsicum annuum glabriusculum",
+        "observedTaxonRank": "variety"
+      }
+    },
+    {
       "recordId": "plant-id-tomato-001",
       "caseId": "tomato",
       "acceptedName": "Tomato",

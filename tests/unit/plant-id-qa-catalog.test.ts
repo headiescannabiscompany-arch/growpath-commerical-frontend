@@ -189,7 +189,7 @@ describe("plant-identification QA catalog", () => {
     const catalog = loadCatalog();
 
     expect(catalog.status).toBe("planning");
-    expect(catalog.mediaRecords).toHaveLength(7);
+    expect(catalog.mediaRecords).toHaveLength(14);
     expect(catalog.mediaRecords.length).toBeLessThan(catalog.targetRecordCount);
     expect(catalog.sourcePlan).toEqual(
       expect.arrayContaining([

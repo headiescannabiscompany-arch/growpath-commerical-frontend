@@ -162,8 +162,12 @@ execution boundaries and the evidence needed not to reopen completed work.
       image-license, attribution, expected-result, and commercial-QA-use gates and
       were promoted as external references. One casual, computer-vision-assisted
       foliage-only candidate was explicitly rejected as insufficient ground truth.
-      The catalog is now 7/320 reviewed records and correctly remains `planning`;
-      277 queued candidates and all 36 owned adverse-media slots remain.
+      Seven pepper records subsequently passed the same gates; one blurred pepper
+      candidate was explicitly rejected because its visible characters were not
+      dependable ground truth. The catalog is now 14/320 reviewed records and
+      correctly remains `planning`; 276 candidates in the refreshed queue still need
+      review, one is explicitly rejected, and all 36 owned
+      adverse-media slots remain.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.
