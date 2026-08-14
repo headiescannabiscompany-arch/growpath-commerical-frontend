@@ -3198,6 +3198,222 @@
         "observedTaxonName": "Epipremnum aureum",
         "observedTaxonRank": "species"
       }
+    },
+    {
+      "recordId": "plant-id-monstera-001",
+      "caseId": "monstera",
+      "acceptedName": "Monstera",
+      "scientificName": "Monstera deliciosa",
+      "plantCategory": "ornamentals",
+      "lifeStage": "mature",
+      "expectedAlternatives": ["split-leaf philodendron", "Rhaphidophora tetrasperma"],
+      "distinguishingFeatures": [
+        "multiple very large cordate leaves",
+        "both deep marginal splits and enclosed blade fenestrations"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.88, "maximum": 0.98 },
+      "expectedResult": "Monstera deliciosa is expected from multiple mature leaves with both pinnatifid margins and internal fenestrations.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/382247069",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/699509530/original.jpg",
+      "creator": "(c) Tom Field, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Tom Field, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "monstera-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "large glossy cordate blades",
+          "deep pinnatifid marginal divisions",
+          "many enclosed perforations beside the midrib",
+          "repeated mature leaf architecture"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:87478-1",
+            "outcome": "Kew POWO accepts Monstera deliciosa Liebm. and describes it as a wet-tropical liana; the genus treatment notes conspicuously perforated or deeply pinnatifid blades."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-699509530",
+        "photoId": 699509530,
+        "sourceQuery": "Monstera deliciosa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122521,
+        "observedTaxonName": "Monstera deliciosa",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-monstera-002",
+      "caseId": "monstera",
+      "acceptedName": "Monstera",
+      "scientificName": "Monstera deliciosa",
+      "plantCategory": "ornamentals",
+      "lifeStage": "mature",
+      "expectedAlternatives": ["other Monstera species", "split-leaf philodendron"],
+      "distinguishingFeatures": [
+        "mature split-and-fenestrated leaf",
+        "large cream spathe surrounding a pale spadix"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.9, "maximum": 0.99 },
+      "expectedResult": "Monstera deliciosa is expected from the combined mature leaf and inflorescence evidence.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/383875551",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/702639404/original.jpg",
+      "creator": "(c) naturewatchwidow, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) naturewatchwidow, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "monstera-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "large cream spathe",
+          "pale cylindrical spadix",
+          "thick mature leaf with marginal splits",
+          "multiple enclosed fenestrations"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:87478-1",
+            "outcome": "Kew POWO accepts Monstera deliciosa Liebm.; its Monstera treatment describes elaborately perforated or pinnatifid blades and an aroid spathe that is deciduous after flowering."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-702639404",
+        "photoId": 702639404,
+        "sourceQuery": "Monstera deliciosa",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 122521,
+        "observedTaxonName": "Monstera deliciosa",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-monstera-004",
+      "caseId": "monstera",
+      "acceptedName": "Monstera",
+      "scientificName": "Monstera deliciosa",
+      "plantCategory": "ornamentals",
+      "lifeStage": "mature",
+      "expectedAlternatives": ["split-leaf philodendron", "other Monstera species"],
+      "distinguishingFeatures": [
+        "dense stand of mature glossy leaves",
+        "repeated deep marginal splits plus internal fenestrations"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.87, "maximum": 0.98 },
+      "expectedResult": "Monstera deliciosa is expected from repeated mature split-and-fenestrated leaf architecture across the stand.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/384714839",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/704233774/original.jpg",
+      "creator": "(c) Sofia Zvolanek, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Sofia Zvolanek, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "monstera-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "many large glossy cordate leaves",
+          "deep symmetrical marginal divisions",
+          "multiple enclosed perforations",
+          "consistent mature morphology across plants"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:87478-1",
+            "outcome": "Kew POWO accepts Monstera deliciosa Liebm. and its genus treatment describes climbing plants with conspicuously perforated or deeply pinnatifid blades."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-704233774",
+        "photoId": 704233774,
+        "sourceQuery": "Monstera deliciosa",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 122521,
+        "observedTaxonName": "Monstera deliciosa",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-monstera-005",
+      "caseId": "monstera",
+      "acceptedName": "Monstera",
+      "scientificName": "Monstera deliciosa",
+      "plantCategory": "ornamentals",
+      "lifeStage": "mature",
+      "expectedAlternatives": ["other Monstera species", "split-leaf philodendron"],
+      "distinguishingFeatures": [
+        "very large thick cordate blade",
+        "deep marginal divisions and numerous enclosed fenestrations"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.83, "maximum": 0.96 },
+      "expectedResult": "Monstera deliciosa is expected from the characteristic mature blade; request whole-plant or inflorescence context before unusually high confidence.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/384923985",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/704648443/original.jpg",
+      "creator": "(c) krickard0505, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) krickard0505, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "monstera-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "very large glossy cordate leaf",
+          "deep pinnatifid margin",
+          "many oval fenestrations beside the midrib",
+          "thick leathery blade"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:87478-1",
+            "outcome": "Kew POWO accepts Monstera deliciosa Liebm.; the visible mature blade agrees with the genus treatment's elaborately perforated and deeply pinnatifid morphology."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-704648443",
+        "photoId": 704648443,
+        "sourceQuery": "Monstera deliciosa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122521,
+        "observedTaxonName": "Monstera deliciosa",
+        "observedTaxonRank": "species"
+      }
     }
   ]
 }

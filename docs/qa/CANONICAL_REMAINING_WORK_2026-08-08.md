@@ -185,8 +185,12 @@ execution boundaries and the evidence needed not to reopen completed work.
       then passed; the mixed-species groundcover, single-leaf context, and unvariegated
       mass candidates were rejected because their visible evidence could not reliably
       separate Epipremnum aureum from other climbing aroids. The catalog is now 44/320
-      reviewed records and correctly remains `planning`; the remaining candidates
-      still require individual review, and all 36 owned adverse-media slots remain.
+      reviewed records. Four mature Monstera records with repeated split-and-fenestrated
+      leaves or combined leaf-and-inflorescence evidence then passed; the distant
+      wall-climber and far-canopy candidates were rejected because diagnostic leaf
+      characters were not dependable at that scale. The catalog is now 48/320 reviewed
+      records and correctly remains `planning`; the remaining candidates still require
+      individual review, and all 36 owned adverse-media slots remain.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.
