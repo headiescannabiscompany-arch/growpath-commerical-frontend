@@ -66,7 +66,10 @@ jest.mock("expo-router", () => {
   };
 });
 
-import LiveSessionScreen, { createStyles } from "../src/screens/LiveSessionScreen.js";
+import LiveSessionScreen, {
+  buildLiveShareTargets,
+  createStyles
+} from "../src/screens/LiveSessionScreen.js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function renderWithNav(params = { sessionId: "session-1" }) {
@@ -86,6 +89,16 @@ function renderWithNav(params = { sessionId: "session-1" }) {
 }
 
 describe("LiveSessionScreen QA", () => {
+  it("builds social shares around the GrowPath session rather than the outside stream", () => {
+    const targets = buildLiveShareTargets("Plant premiere", "session-1");
+
+    expect(targets.url).toContain("growpathai.com/live-session?sessionId=session-1");
+    expect(targets.facebook).toContain(encodeURIComponent(targets.url));
+    expect(targets.bluesky).toContain("bsky.app/intent/compose");
+    expect(targets.reddit).toContain("reddit.com/submit");
+    expect(targets.linkedin).toContain("linkedin.com/sharing/share-offsite");
+  });
+
   beforeEach(() => {
     mockUseAuth.mockReset();
     mockUseEntitlements.mockReset();
