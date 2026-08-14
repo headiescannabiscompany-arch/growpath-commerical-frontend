@@ -18,7 +18,9 @@ garden-strawberry hybrid rather than a wild relative. The governed catalog is no
 crop context also passed; three isolated vegetative grass candidates were rejected.
 Three common-bean records with seedling or combined foliage-and-flower evidence also
 passed; five red-flowered Phaseolus lookalikes or unresolved distant-bed candidates
-were rejected. The governed catalog is now 39/320. Two cucumber candidates were
+were rejected. Two rose records with matching compound foliage plus flower or bud
+evidence also passed; four wrong-taxon or no-target candidates were rejected. The
+governed catalog is now 41/320. Two cucumber candidates were
 rejected because cotyledon-only or flower-only evidence could not support dependable
 species ground truth. The catalog remains planning until all governed slots are filled;
 no candidate is automatically promoted.

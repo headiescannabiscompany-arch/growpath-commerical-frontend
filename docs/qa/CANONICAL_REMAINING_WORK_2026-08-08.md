@@ -179,7 +179,9 @@ execution boundaries and the evidence needed not to reopen completed work.
       evidence then passed; three isolated vegetative grass candidates were rejected.
       Three common-bean records with seedling or combined foliage-and-flower evidence
       then passed; five red-flowered Phaseolus lookalikes or unresolved distant-bed
-      candidates were rejected. The catalog is now 39/320 reviewed records and
+      candidates were rejected. Two rose records with matching compound foliage plus
+      flower or bud evidence then passed; four wrong-taxon or no-target candidates were
+      rejected. The catalog is now 41/320 reviewed records and
       correctly remains `planning`; 276 candidates in the refreshed queue still need
       review, one is explicitly rejected, and all 36 owned
       adverse-media slots remain.
@@ -333,22 +335,22 @@ grow`, private current location without a Field Study, and an optional approxima
 ## B. Personal, Commercial, Facility, and public user loops
 
 - [x] Complete and production-accept the first-class Visual Grow Timeline for Personal
-  and Commercial grow workspaces. Personal now has Lifecycle/Month/Week/Day detail,
-  saved-event photos and important notes, viewer-friendly HTML/native-share export, and
-  a review-first Forum draft that keeps the source grow private. Commercial evidence
-  runs now use stored plan, notes, quality observations, summaries, lifecycle dates, and
-  media; export stays separate from compliance and the brand Forum draft remains locked
-  until the owner saves `public_ready`. Facility retains its internal operational
-  journal/timeline and compliance boundary, not public timeline sharing. Merge SHA
-  `e699e5fe212fe14983f4fda73aced0b18d2a07db` passed the full 99-batch frontend suite,
-  production preflight, and main CI. Production URL
-  `/home/personal/grows/production-timeline-verification/timeline?release=e699e5fe`
-  visibly exposed the new description, Lifecycle/Month/Week/Day controls, Visual
-  Timeline export, and review-first share control on 2026-08-14. The deployed bundle
-  also contained the Commercial `Export Visual Timeline` and `Review & Share Timeline`
-  controls. Populated-photo behavior remains covered by automated timeline tests; a
-  later genuine populated production grow can strengthen final media evidence without
-  reopening this delivered feature.
+      and Commercial grow workspaces. Personal now has Lifecycle/Month/Week/Day detail,
+      saved-event photos and important notes, viewer-friendly HTML/native-share export, and
+      a review-first Forum draft that keeps the source grow private. Commercial evidence
+      runs now use stored plan, notes, quality observations, summaries, lifecycle dates, and
+      media; export stays separate from compliance and the brand Forum draft remains locked
+      until the owner saves `public_ready`. Facility retains its internal operational
+      journal/timeline and compliance boundary, not public timeline sharing. Merge SHA
+      `e699e5fe212fe14983f4fda73aced0b18d2a07db` passed the full 99-batch frontend suite,
+      production preflight, and main CI. Production URL
+      `/home/personal/grows/production-timeline-verification/timeline?release=e699e5fe`
+      visibly exposed the new description, Lifecycle/Month/Week/Day controls, Visual
+      Timeline export, and review-first share control on 2026-08-14. The deployed bundle
+      also contained the Commercial `Export Visual Timeline` and `Review & Share Timeline`
+      controls. Populated-photo behavior remains covered by automated timeline tests; a
+      later genuine populated production grow can strengthen final media evidence without
+      reopening this delivered feature.
 
 - [~] Complete and record the independent outside-user session. Preserve the completed
   Public, Personal Free/Pro, Commercial, Facility Owner/Manager/Staff/Viewer, and
@@ -483,25 +485,25 @@ grow`, private current location without a Field Study, and an optional approxima
   heading and moderation content were not exposed. This closes the non-admin denial
   slice without changing the retained case.
 - [~] Approved temporary production records verified populated Facility Grow, Plant,
-      Journal, Inventory, Compliance, SOP comparison, and Owner-only AI Validation Lab
-      states. Live reload/navigation and immutable create/update/delete/resolve/SOP
-      audit events were confirmed without a new mutation. Inventory was deleted and
-      the deviation resolved. Remaining cleanup is limited to the retained temporary
-      grow, plant, and journal after a durable Cannabis grow context replaces the grow's
-      current role in exposing Facility Harvest Readiness. Specific forced-403 and
-      cross-role recording evidence remains in the separate item below. See
-      `docs/qa/FACILITY_POPULATED_WORKFLOW_PRODUCTION_EVIDENCE_2026-08-13.md`.
+  Journal, Inventory, Compliance, SOP comparison, and Owner-only AI Validation Lab
+  states. Live reload/navigation and immutable create/update/delete/resolve/SOP
+  audit events were confirmed without a new mutation. Inventory was deleted and
+  the deviation resolved. Remaining cleanup is limited to the retained temporary
+  grow, plant, and journal after a durable Cannabis grow context replaces the grow's
+  current role in exposing Facility Harvest Readiness. Specific forced-403 and
+  cross-role recording evidence remains in the separate item below. See
+  `docs/qa/FACILITY_POPULATED_WORKFLOW_PRODUCTION_EVIDENCE_2026-08-13.md`.
 - [ ] Capture forced backend 403 evidence for prohibited Facility mutations and an
       exported cross-role recording; clean up temporary aliases only with owner approval.
 - [~] Anonymize the exact 38 approved synthetic production accounts without touching protected
-      owner, customer, brand, Facility-team, billing, moderation, support, consent, audit, or
-      legal evidence. Backend production deployment `dep-d9vb0ntbedkc73bapv10` loaded the exact
-      ID-and-email allowlist on 2026-08-14. The authenticated platform Admin resolved all 38
-      candidates and every live dry run reported `approved`, `Safety blockers: none`, and
-      `Dry run: passed`; zero candidates were missing or blocked and no mutation was performed.
-      Permanent anonymization, session revocation, after-state search, and protected-account/
-      brand/Facility regression evidence remain pending explicit action-time owner confirmation.
-      See `docs/qa/PRODUCTION_TEST_ACCOUNT_CLEANUP_PLAN_2026-08-13.md`.
+  owner, customer, brand, Facility-team, billing, moderation, support, consent, audit, or
+  legal evidence. Backend production deployment `dep-d9vb0ntbedkc73bapv10` loaded the exact
+  ID-and-email allowlist on 2026-08-14. The authenticated platform Admin resolved all 38
+  candidates and every live dry run reported `approved`, `Safety blockers: none`, and
+  `Dry run: passed`; zero candidates were missing or blocked and no mutation was performed.
+  Permanent anonymization, session revocation, after-state search, and protected-account/
+  brand/Facility regression evidence remain pending explicit action-time owner confirmation.
+  See `docs/qa/PRODUCTION_TEST_ACCOUNT_CLEANUP_PLAN_2026-08-13.md`.
 
 ## C. Payments, email, delivery, and entitlements
 
@@ -523,17 +525,17 @@ refund/dispute, or mutation-capable acceptance items below.
       webhook/live-key evidence, safe single-worker processing, and sandbox plus
       mutation-capable acceptance all pass.
 - [~] Complete remaining delivered-email evidence. A read-only 2026-08-13 mailbox
-      inventory retained genuine verification, password-reset, Personal/Course/Facility
-      support bug-report, and billing-alias support delivery. It found no Facility
-      invitation, gift claim, real purchase/order/enrollment/refund/dispute receipt,
-      content-report moderation alert, or task/notification email. Those exact
-      recipient and link loops remain; unrelated support messages are not substitutes.
-      A focused 2026-08-14 recheck of the connected `support@growpathai.com` mailbox
-      found no new moderation/content-report, Facility invitation/task-notification,
-      purchase, enrollment, subscription, receipt, or refund evidence after
-      2026-08-12. This confirms the evidence is still absent; it does not close any
-      delivery loop or imply access to the separate Admin mailbox.
-      See `docs/qa/DELIVERED_EMAIL_INVENTORY_2026-08-13.md`.
+  inventory retained genuine verification, password-reset, Personal/Course/Facility
+  support bug-report, and billing-alias support delivery. It found no Facility
+  invitation, gift claim, real purchase/order/enrollment/refund/dispute receipt,
+  content-report moderation alert, or task/notification email. Those exact
+  recipient and link loops remain; unrelated support messages are not substitutes.
+  A focused 2026-08-14 recheck of the connected `support@growpathai.com` mailbox
+  found no new moderation/content-report, Facility invitation/task-notification,
+  purchase, enrollment, subscription, receipt, or refund evidence after
+  2026-08-12. This confirms the evidence is still absent; it does not close any
+  delivery loop or imply access to the separate Admin mailbox.
+  See `docs/qa/DELIVERED_EMAIL_INVENTORY_2026-08-13.md`.
 
 ## D. Commercial, commerce data, and owner-supplied sources
 
@@ -742,61 +744,46 @@ public visibility, or screenshot/video acceptance still called out below.
   expose record-specific names and 44px targets. Follow suppresses duplicate
   requests while busy; Room/Inventory/Task rows use active Day/Night palette
   surfaces instead of hardcoded light colors. Three focused suites pass 42/42. - The active Grow Interest picker now gives its expandable header and selectable
-        interest chips 44px targets while retaining checkbox names/state and readable
-        expand/collapse guidance. Four focused form/theme suites pass 13/13.
-      - Active Forum-filter and Grow/Plant-link selectors now expose checkbox/radio
-        state, record-specific names, and 44px targets. Their focused Forum/shared
-        contract suites pass 19/19.
-      - Workspace mode selectors now expose selected radio state, selected workspace
-        cards announce their state and action, and both control layers preserve 44px
-        touch targets. Lesson/video provider-load and external-provider actions also
-        preserve 44px targets. Four focused mode/media/theme suites pass 25/25;
-        frontend merge `00b13d24` passed the full 9m32s CI gate.
-      - Personal featured-feed discovery and content cards now expose link semantics,
-        stable content-specific names, and navigation hints. Shared education cards
-        use their CTA/title as a stable link name and preserve a 44px target. Two
-        focused suites pass 7/7.
-      - Shared calendar/date dialogs now expose a named heading and preserve 44px
-        targets for month navigation and clear/cancel/confirm actions. Two focused
-        date/theme suites pass 9/9.
-      - Shared scheduling controls now announce all-day as a checked switch and
-        reminder/recurrence presets as checked radio choices. Clear and preset chips
-        preserve 44px targets; focused calendar/schedule suites pass 5/5.
-      - Shared Video Library scope filters now announce checked radio state; reusable
-        video choices and detach/filter controls preserve 44px targets. Video owner
-        edit/publish/remove actions announce disabled state and all card actions
-        preserve 44px targets. Focused video picker/theme suites pass 4/4.
-      - The shared Day/Night/Auto radio choices and Auto-location actions preserve
-        44px targets while retaining checked, disabled, and live-status semantics.
-        Its focused behavior suite passes 2/2; frontend merge `db192906` passed the
-        full 9m11s CI gate.
-      - The shared content-report dialog now exposes modal and heading semantics,
-        announces disabled submit/cancel state and errors, handles safe device-back
-        dismissal, and preserves 44px actions. Its focused critical-theme/submission
-        suite passes 4/4.
-      - Personal Grow workspace section navigation now exposes a named tab list,
-        announces the selected section, and preserves 44px targets across Overview,
-        Plants, Journal, Tasks, AI Tools, Automation, Timeline, and Compare. Focused
-        navigation/theme suites pass 8/8.
-      - Shared AI evidence-review panels now expose the review and evidence groups as
-        navigable headings, announce an unperformed pixel review as an alert, and
-        preserve a 44px follow-up-guidance action. The Day/Night behavior suite passes
-        4/4.
-      - Saved grow-photo evidence reuse now exposes a navigable heading, announces its
-        loading state, and preserves 44px explicit-selection targets without changing
-        IPM/harvest evidence linking. Its focused suite passes 3/3.
-      - The main photo/video evidence uploader now exposes image guidance as a
-        navigable heading, announces upload errors and disabled Add/Retry/Remove state,
-        and preserves 44px mutation targets. Its complete focused upload/retry/
-        protected-media/workspace suite passes 33/33.
-      - Contextual workflow handoffs now expose a navigable panel heading plus named,
-        described, 44px links while retaining the grow/source context in destination
-        URLs. Its focused link/navigation suite passes.
-      - Commercial and Facility contextual-tool panels now expose navigable headings
-        and 44px links while preserving commercial/facility record context in their
-        destination URLs. Four focused navigation/theme suites pass 7/7.
-      - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
-        screen-reader, and physical-device review across the major route matrix.
+  interest chips 44px targets while retaining checkbox names/state and readable
+  expand/collapse guidance. Four focused form/theme suites pass 13/13. - Active Forum-filter and Grow/Plant-link selectors now expose checkbox/radio
+  state, record-specific names, and 44px targets. Their focused Forum/shared
+  contract suites pass 19/19. - Workspace mode selectors now expose selected radio state, selected workspace
+  cards announce their state and action, and both control layers preserve 44px
+  touch targets. Lesson/video provider-load and external-provider actions also
+  preserve 44px targets. Four focused mode/media/theme suites pass 25/25;
+  frontend merge `00b13d24` passed the full 9m32s CI gate. - Personal featured-feed discovery and content cards now expose link semantics,
+  stable content-specific names, and navigation hints. Shared education cards
+  use their CTA/title as a stable link name and preserve a 44px target. Two
+  focused suites pass 7/7. - Shared calendar/date dialogs now expose a named heading and preserve 44px
+  targets for month navigation and clear/cancel/confirm actions. Two focused
+  date/theme suites pass 9/9. - Shared scheduling controls now announce all-day as a checked switch and
+  reminder/recurrence presets as checked radio choices. Clear and preset chips
+  preserve 44px targets; focused calendar/schedule suites pass 5/5. - Shared Video Library scope filters now announce checked radio state; reusable
+  video choices and detach/filter controls preserve 44px targets. Video owner
+  edit/publish/remove actions announce disabled state and all card actions
+  preserve 44px targets. Focused video picker/theme suites pass 4/4. - The shared Day/Night/Auto radio choices and Auto-location actions preserve
+  44px targets while retaining checked, disabled, and live-status semantics.
+  Its focused behavior suite passes 2/2; frontend merge `db192906` passed the
+  full 9m11s CI gate. - The shared content-report dialog now exposes modal and heading semantics,
+  announces disabled submit/cancel state and errors, handles safe device-back
+  dismissal, and preserves 44px actions. Its focused critical-theme/submission
+  suite passes 4/4. - Personal Grow workspace section navigation now exposes a named tab list,
+  announces the selected section, and preserves 44px targets across Overview,
+  Plants, Journal, Tasks, AI Tools, Automation, Timeline, and Compare. Focused
+  navigation/theme suites pass 8/8. - Shared AI evidence-review panels now expose the review and evidence groups as
+  navigable headings, announce an unperformed pixel review as an alert, and
+  preserve a 44px follow-up-guidance action. The Day/Night behavior suite passes
+  4/4. - Saved grow-photo evidence reuse now exposes a navigable heading, announces its
+  loading state, and preserves 44px explicit-selection targets without changing
+  IPM/harvest evidence linking. Its focused suite passes 3/3. - The main photo/video evidence uploader now exposes image guidance as a
+  navigable heading, announces upload errors and disabled Add/Retry/Remove state,
+  and preserves 44px mutation targets. Its complete focused upload/retry/
+  protected-media/workspace suite passes 33/33. - Contextual workflow handoffs now expose a navigable panel heading plus named,
+  described, 44px links while retaining the grow/source context in destination
+  URLs. Its focused link/navigation suite passes. - Commercial and Facility contextual-tool panels now expose navigable headings
+  and 44px links while preserving commercial/facility record context in their
+  destination URLs. Four focused navigation/theme suites pass 7/7. - Still required before `[x]`: complete keyboard/focus-order, font-scaling,
+  screen-reader, and physical-device review across the major route matrix.
 - [~] Verify notification preferences and delivery to supported devices for selected
   categories, including opt-in/out persistence and links to the correct record.
   Profile and Notification Center controls, push-token registration, category
