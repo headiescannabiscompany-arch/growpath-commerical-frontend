@@ -240,10 +240,10 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
                     Photo {view.sourceImageIndex}: {view.kind}
                   </Text>
                   <Text style={styles.inspectionMeta}>
-                    {view.width} x {view.height} Â·{" "}
+                    {view.width} x {view.height} {" | "}
                     {view.cropStrategy.replaceAll("_", " ")}
                     {view.sourceBounds
-                      ? ` Â· source x ${view.sourceBounds.left}-${
+                      ? ` | source x ${view.sourceBounds.left}-${
                           view.sourceBounds.left + view.sourceBounds.width
                         }, y ${view.sourceBounds.top}-${
                           view.sourceBounds.top + view.sourceBounds.height
