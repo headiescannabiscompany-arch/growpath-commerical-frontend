@@ -115,6 +115,12 @@ Legend:
 - [x] Published videos are searchable in Discover, can be opened from Forum/Video areas,
       and retain follow-user/video activity behavior.
 - [x] Grow interests are selectable when publishing a video.
+- [x] Canonical AI/tool results expose a privacy-conscious readable summary that the
+      user can copy, open in the Forum/Q&A composer, or send through the native share
+      sheet without leaking the private raw input/output payload. Videos, courses,
+      live sessions/premieres, Forum discussions, and journal entries retain their
+      corresponding public or deliberate-share actions. Focused result/share suites
+      pass 7/7 tests.
 - [x] Lives have a joinable live-session directory separate from Commercial campaigns
       and remain linked from Forum/shared navigation.
 - [~] Live Studio now supports live streams and video premieres, destination-neutral
