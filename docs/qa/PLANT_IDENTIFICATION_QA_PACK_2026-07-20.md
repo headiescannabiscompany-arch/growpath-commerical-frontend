@@ -14,7 +14,9 @@ evidence also passed; five flower-only, single-leaf, or unresolved close-relativ
 candidates were rejected. Four cultivated-context garden-strawberry records also passed;
 four wild-context Fragaria candidates were rejected because they could not establish the
 garden-strawberry hybrid rather than a wild relative. The governed catalog is now
-31/320. Two cucumber candidates were
+31/320. Five corn records with mature reproductive evidence or repeated field-scale
+crop context also passed; three isolated vegetative grass candidates were rejected.
+The governed catalog is now 36/320. Two cucumber candidates were
 rejected because cotyledon-only or flower-only evidence could not support dependable
 species ground truth. The catalog remains planning until all governed slots are filled;
 no candidate is automatically promoted.

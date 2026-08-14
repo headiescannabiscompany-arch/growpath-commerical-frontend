@@ -175,7 +175,9 @@ execution boundaries and the evidence needed not to reopen completed work.
       27/320 reviewed records. Four cultivated-context garden-strawberry records then
       passed; four wild-context Fragaria candidates were rejected because the visible
       evidence could not establish the garden-strawberry hybrid rather than a wild
-      relative. The catalog is now 31/320 reviewed records and
+      relative. Five corn records with reproductive or repeated field-scale crop
+      evidence then passed; three isolated vegetative grass candidates were rejected.
+      The catalog is now 36/320 reviewed records and
       correctly remains `planning`; 276 candidates in the refreshed queue still need
       review, one is explicitly rejected, and all 36 owned
       adverse-media slots remain.
