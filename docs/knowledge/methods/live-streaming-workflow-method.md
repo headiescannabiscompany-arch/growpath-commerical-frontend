@@ -17,6 +17,13 @@ Hosts can draft, preview, publish, start, end, and attach a replay. Viewers can 
 published sessions allowed by public, following, customer, or private access. Ending a
 session must not erase its chat, RSVP, moderation, or replay records.
 
+Viewer playback and broadcaster production are separate control surfaces. A viewer
+watching inside GrowPath must have the source player's play, pause, volume, mute, and
+fullscreen controls; captions and replay seeking must remain available when the source
+provides them. Do not force a viewer into OBS or another service to control playback.
+The broadcaster continues to use OBS, Streamlabs, or the destination service for cameras,
+microphones, scene switching, screen sharing, bitrate, and the outgoing audio mix.
+
 ## GrowPath chat and OBS overlay
 
 GrowPath chat is its own conversation. It is not an automatic aggregation of Twitch,
@@ -82,3 +89,5 @@ Test role and visibility boundaries, slow mode, premiere ownership, token rotati
 cross-session token isolation, no-store responses, overlay filtering, deletion propagation,
 one-entry behavior, JSON/CSV feed parity, linked-identity relay authorization, provider
 failure recording, mobile chat usability, keyboard access, and OBS Browser Source rendering.
+Also verify viewer play/pause, volume/mute, fullscreen, and replay seeking independently
+from broadcaster camera, microphone, scene, and outgoing-mix controls.

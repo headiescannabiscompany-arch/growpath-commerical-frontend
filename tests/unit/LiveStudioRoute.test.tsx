@@ -52,8 +52,9 @@ describe("LiveStudioRoute", () => {
     ).toBeTruthy();
     expect(screen.getByText("Live stream")).toBeTruthy();
     expect(screen.getByText("Video premiere")).toBeTruthy();
-    expect(screen.getByText("Broadcast controls")).toBeTruthy();
-    expect(screen.getByText(/controls cameras, microphones, volume/i)).toBeTruthy();
+    expect(screen.getByText("Playback and broadcast controls")).toBeTruthy();
+    expect(screen.getByText(/watching inside GrowPath.*volume/i)).toBeTruthy();
+    expect(screen.getByText(/Broadcasters use OBS.*control cameras/i)).toBeTruthy();
     expect(screen.getByText(/GrowPath does not pick winners/i)).toBeTruthy();
     expect(screen.getByText("Discord live announcements")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Connect Discord channel" })).toBeTruthy();

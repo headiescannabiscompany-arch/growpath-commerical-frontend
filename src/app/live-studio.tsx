@@ -210,17 +210,16 @@ export default function LiveStudioRoute() {
 
       <View style={styles.card}>
         <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
-          Broadcast controls
+          Playback and broadcast controls
         </Text>
         <Text style={styles.muted}>
+          People watching inside GrowPath use the player controls for play, pause, volume,
+          mute, fullscreen, captions, and replay seeking when the source supports them.
+        </Text>
+        <Text style={styles.muted}>
+          Broadcasters use OBS, Streamlabs, or their destination to control cameras,
+          microphones, scenes, screen sharing, bitrate, and the outgoing audio mix.
           GrowPath organizes the session, chat, premiere, replay, and viewer experience.
-          Your streaming software or destination controls cameras, microphones, volume,
-          scenes, screen sharing, bitrate, and the actual broadcast.
-        </Text>
-        <Text style={styles.muted}>
-          Set those controls in OBS, Streamlabs, Twitch, YouTube, Kick, Facebook Live, or
-          the service you broadcast through. You can change cameras and audio during the
-          stream there without interrupting GrowPath chat.
         </Text>
       </View>
 

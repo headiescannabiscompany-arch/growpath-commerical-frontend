@@ -12,7 +12,7 @@ const ReportModal = ({
   contentId,
   contentTitle,
   targetUrl,
-  parentPostId = "",
+  parentPostId = /** @type {string | null | undefined} */ (undefined),
   token = null,
   onSuccess
 }) => {
@@ -31,7 +31,7 @@ const ReportModal = ({
         contentId,
         contentTitle,
         targetUrl,
-        parentPostId,
+        parentPostId: parentPostId || null,
         reason,
         token
       });

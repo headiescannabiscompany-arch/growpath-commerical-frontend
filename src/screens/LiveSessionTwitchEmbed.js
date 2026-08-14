@@ -35,17 +35,25 @@ export default function LiveSessionTwitchEmbed({
   // For VOD, you would use video={vodId} instead
   const playerUrl =
     embedType === "vod"
-      ? `https://player.twitch.tv/?video=${channel}&parent=${parent}&autoplay=true`
-      : `https://player.twitch.tv/?channel=${channel}&parent=${parent}&autoplay=true`;
+      ? `https://player.twitch.tv/?video=${channel}&parent=${parent}&autoplay=false`
+      : `https://player.twitch.tv/?channel=${channel}&parent=${parent}&autoplay=false`;
   const chatUrl = `https://www.twitch.tv/embed/${channel}/chat?parent=${parent}`;
 
   return (
     <View style={styles.container}>
+      <Text accessibilityLiveRegion="polite" style={styles.playerHelp}>
+        Use the player for play, pause, volume, mute, and fullscreen.
+        {embedType === "vod" ? " Replays also support seeking." : ""}
+      </Text>
       <WebView
+        accessibilityLabel={
+          embedType === "vod" ? "Twitch replay player" : "Twitch live player"
+        }
         source={{ uri: playerUrl }}
         style={styles.webview}
+        allowsFullscreenVideo
         allowsInlineMediaPlayback
-        mediaPlaybackRequiresUserAction={false}
+        mediaPlaybackRequiresUserAction
       />
       {chatEnabled && (
         <WebView
@@ -86,6 +94,14 @@ const styles = StyleSheet.create({
   unconfiguredText: {
     color: "#fff",
     fontWeight: "700",
+    textAlign: "center"
+  },
+  playerHelp: {
+    color: "#f8fafc",
+    fontSize: 14,
+    lineHeight: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     textAlign: "center"
   }
 });
