@@ -5,8 +5,10 @@ Date: 2026-07-20
 Status: Catalog, rights gate, candidate collector, review queue, and promotion gate
 implemented. Seven tomato records have passed image-level morphology, identity,
 life-stage, Tier-A taxonomy, exact-license, rights, expected-result, and intended-use
-review. Seven pepper records have also passed the same gates, bringing the governed
-catalog to 14/320. The catalog remains planning until all governed slots are filled;
+review. Seven pepper records and six cucumber records have also passed the same
+gates, bringing the governed catalog to 20/320. Two cucumber candidates were
+rejected because cotyledon-only or flower-only evidence could not support dependable
+species ground truth. The catalog remains planning until all governed slots are filled;
 no candidate is automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`

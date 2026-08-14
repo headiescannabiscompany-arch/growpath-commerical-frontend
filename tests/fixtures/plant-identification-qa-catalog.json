@@ -702,6 +702,367 @@
   },
   "mediaRecords": [
     {
+      "recordId": "plant-id-cucumber-001",
+      "caseId": "cucumber",
+      "acceptedName": "Cucumber",
+      "scientificName": "Cucumis sativus",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "melon",
+        "squash"
+      ],
+      "distinguishingFeatures": [
+        "Cucumis-like yellow flower and rough foliage",
+        "vining cucurbit habit with bristly vegetative parts"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.72,
+        "maximum": 0.9
+      },
+      "expectedResult": "Cucumber (Cucumis sativus) is expected; retain some uncertainty because no fruit is visible and other cucurbits can share these vegetative traits.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/240048366",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/427614075/original.jpeg",
+      "creator": "(c) Juan Cruzado Cortés, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Juan Cruzado Cortés, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "cucumber-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "trailing vine among grasses",
+          "large rough triangular-cordate leaves",
+          "yellow five-lobed flower",
+          "bristly stem and petiole"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A292296-1",
+            "outcome": "Kew POWO recognizes Cucumis sativus as the accepted cucumber species; image-visible vine, leaf, tendril, flower, and fruit evidence was evaluated against that target while preserving cucurbit alternatives where diagnostic fruit is absent."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-427614075",
+        "photoId": 427614075,
+        "sourceQuery": "Cucumis sativus",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 54919,
+        "observedTaxonName": "Cucumis sativus",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-cucumber-002",
+      "caseId": "cucumber",
+      "acceptedName": "Cucumber",
+      "scientificName": "Cucumis sativus",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "melon",
+        "squash"
+      ],
+      "distinguishingFeatures": [
+        "cultivated cucumber-like leaf and flower combination",
+        "trained vining habit"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.7,
+        "maximum": 0.88
+      },
+      "expectedResult": "Cucumber (Cucumis sativus) is expected; melon or another cultivated cucurbit remains an alternative without fruit.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/338970053",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/616528034/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "cucumber-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "trained vine",
+          "large angular-cordate rough leaf",
+          "yellow five-lobed flowers",
+          "slender bristly stem"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A292296-1",
+            "outcome": "Kew POWO recognizes Cucumis sativus as the accepted cucumber species; image-visible vine, leaf, tendril, flower, and fruit evidence was evaluated against that target while preserving cucurbit alternatives where diagnostic fruit is absent."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-616528034",
+        "photoId": 616528034,
+        "sourceQuery": "Cucumis sativus",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 54919,
+        "observedTaxonName": "Cucumis sativus",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-cucumber-003",
+      "caseId": "cucumber",
+      "acceptedName": "Cucumber",
+      "scientificName": "Cucumis sativus",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "melon",
+        "squash"
+      ],
+      "distinguishingFeatures": [
+        "coiled cucurbit tendril",
+        "Cucumis-like leaf form and prostrate habit"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.68,
+        "maximum": 0.86
+      },
+      "expectedResult": "Cucumber (Cucumis sativus) is expected at vegetative stage; keep species confidence moderate because fruit and flowers are absent.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/252545528",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/452102784/original.jpeg",
+      "creator": "(c) Pablo Cauã da Silva Toledo, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Pablo Cauã da Silva Toledo, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "cucumber-003",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "low sprawling vine",
+          "multiple rough triangular-cordate leaves",
+          "coiled tendril",
+          "bristly stems and leaf petioles"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A292296-1",
+            "outcome": "Kew POWO recognizes Cucumis sativus as the accepted cucumber species; image-visible vine, leaf, tendril, flower, and fruit evidence was evaluated against that target while preserving cucurbit alternatives where diagnostic fruit is absent."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-452102784",
+        "photoId": 452102784,
+        "sourceQuery": "Cucumis sativus",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 54919,
+        "observedTaxonName": "Cucumis sativus",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-cucumber-004",
+      "caseId": "cucumber",
+      "acceptedName": "Cucumber",
+      "scientificName": "Cucumis sativus",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "melon",
+        "squash"
+      ],
+      "distinguishingFeatures": [
+        "diagnostic attached cucumber fruit",
+        "matching Cucumis vine and foliage"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.9,
+        "maximum": 0.99
+      },
+      "expectedResult": "Cucumber (Cucumis sativus) is expected from the attached fruit, vine, and foliage; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/360449434",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/657722688/original.jpg",
+      "creator": "(c) Aidan Murrell, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Aidan Murrell, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "cucumber-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "attached oblong green pepo fruit",
+          "mottled cucumber skin",
+          "bristly ridged vine",
+          "rough cucurbit leaves"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A292296-1",
+            "outcome": "Kew POWO recognizes Cucumis sativus as the accepted cucumber species; image-visible vine, leaf, tendril, flower, and fruit evidence was evaluated against that target while preserving cucurbit alternatives where diagnostic fruit is absent."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-657722688",
+        "photoId": 657722688,
+        "sourceQuery": "Cucumis sativus",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 54919,
+        "observedTaxonName": "Cucumis sativus",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-cucumber-005",
+      "caseId": "cucumber",
+      "acceptedName": "Cucumber",
+      "scientificName": "Cucumis sativus",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "melon",
+        "squash"
+      ],
+      "distinguishingFeatures": [
+        "diagnostic immature cucumber fruit",
+        "matching climbing Cucumis foliage and tendril"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.92,
+        "maximum": 0.99
+      },
+      "expectedResult": "Cucumber (Cucumis sativus) is expected from the attached fruit and whole-vine characters; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/303781427",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/547687248/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "cucumber-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "attached elongated dark-green tuberculate fruit",
+          "climbing bristly vine",
+          "large angular rough leaves",
+          "coiled tendril"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A292296-1",
+            "outcome": "Kew POWO recognizes Cucumis sativus as the accepted cucumber species; image-visible vine, leaf, tendril, flower, and fruit evidence was evaluated against that target while preserving cucurbit alternatives where diagnostic fruit is absent."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-547687248",
+        "photoId": 547687248,
+        "sourceQuery": "Cucumis sativus",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 54919,
+        "observedTaxonName": "Cucumis sativus",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-cucumber-007",
+      "caseId": "cucumber",
+      "acceptedName": "Cucumber",
+      "scientificName": "Cucumis sativus",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "melon",
+        "squash"
+      ],
+      "distinguishingFeatures": [
+        "combined tendril, flower, and Cucumis-like leaf evidence",
+        "prostrate cultivated cucurbit habit"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.76,
+        "maximum": 0.92
+      },
+      "expectedResult": "Cucumber (Cucumis sativus) is expected; retain limited uncertainty without a visible fruit.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/304212514",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/548391590/original.jpg",
+      "creator": "(c) Viktor Strenada, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Viktor Strenada, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "cucumber-007",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "sprawling vine",
+          "coiled tendrils",
+          "yellow flower",
+          "rough triangular-cordate leaves",
+          "bristly stems"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A292296-1",
+            "outcome": "Kew POWO recognizes Cucumis sativus as the accepted cucumber species; image-visible vine, leaf, tendril, flower, and fruit evidence was evaluated against that target while preserving cucurbit alternatives where diagnostic fruit is absent."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-548391590",
+        "photoId": 548391590,
+        "sourceQuery": "Cucumis sativus",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 54919,
+        "observedTaxonName": "Cucumis sativus",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
       "recordId": "plant-id-pepper-001",
       "caseId": "pepper",
       "acceptedName": "Pepper",
