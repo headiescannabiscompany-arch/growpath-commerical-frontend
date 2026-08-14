@@ -1,6 +1,6 @@
 # GrowPathAI Canonical Remaining Work
 
-Date: 2026-08-13
+Date: 2026-08-14
 
 Status: Active execution list; reconciled against retained production evidence on
 2026-08-12. A checked sub-scope stays checked even when its larger end-to-end workflow
@@ -53,6 +53,12 @@ execution boundaries and the evidence needed not to reopen completed work.
 - [x] Commercial Feed/Campaigns and Tasks have the shared themed Back control in production
       under frontend `79c6dba2`; the signed-in route sweep also found no visible route/load
       failure. Populated Commercial mutations remain separate open work.
+- [x] Commercial External Channels and Public Links are reachable from More without becoming
+      duplicate bottom tabs. Frontend `0aab65b5` passed Production Build Preflight and Frontend
+      CI, then production rendered one canonical heading, the six intended Commercial tabs,
+      readable empty states, real backend channel routes, and truthful provider-handoff copy on
+      both routes. This closes route placement and empty-state acceptance, not populated channel
+      connection or link mutations.
 - [x] The governed Diagnosis/IPM catalog assembly is complete at 252 reviewed cases and
       504 rights-reviewed images. Executing all cases against authorized staging remains a
       separate open action because it spends credits and writes records.
@@ -357,6 +363,15 @@ grow`, private current location without a Field Study, and an optional approxima
   slice also passed 20/20 tests. This reinforces token attachment and canonical
   workspace navigation but does not substitute for the remaining genuine expired
   invitation, logout, server-down, or outside-user production cases.
+  On 2026-08-14, the real Admin multi-workspace session completed a controlled,
+  browser-tab-only server-outage recovery check without changing production data.
+  With `api.growpathai.com` blocked only inside the test tab, Commercial and Personal
+  each rendered `Session check failed`, `Unable to reach the server`, and the explicit
+  `Retry /api/me` action. After the block was removed, Commercial recovered to
+  `Dashboard`; the real workspace chooser then switched to Personal, and Personal
+  independently failed readably and recovered to `Your Garden`. The tab ended with
+  normal network access restored. Genuine expired invitation, logout, remaining-role,
+  and independent outside-user cases are still open.
 - [~] Finish the all-route/button checklist: correct destination, back behavior,
   role gate, readable empty/loading/error state, persistence, and no dead or duplicate
   controls. Personal Pro top-level and More destinations plus Facility Staff
@@ -411,7 +426,11 @@ grow`, private current location without a Field Study, and an optional approxima
   truthfully rendered `No courses found`. The available Gmail connector was the
   support mailbox rather than `admin@growpathai.com`, and production held no
   retained Feed, product, video, or live-session report cases. Delivered admin-email
-  clicks, non-admin denial, and those four data-bearing report types therefore remain.
+  clicks and those four data-bearing report types therefore remain. On 2026-08-14,
+  the separate real `EtGU_Jay` non-admin Chrome session opened the exact retained
+  moderation-case URL and received `Platform owner access required`; the Admin
+  heading and moderation content were not exposed. This closes the non-admin denial
+  slice without changing the retained case.
 - [~] Approved temporary production records verified populated Facility Grow, Plant,
       Journal, Inventory, Compliance, SOP comparison, and Owner-only AI Validation Lab
       states. Live reload/navigation and immutable create/update/delete/resolve/SOP
@@ -423,6 +442,15 @@ grow`, private current location without a Field Study, and an optional approxima
       `docs/qa/FACILITY_POPULATED_WORKFLOW_PRODUCTION_EVIDENCE_2026-08-13.md`.
 - [ ] Capture forced backend 403 evidence for prohibited Facility mutations and an
       exported cross-role recording; clean up temporary aliases only with owner approval.
+- [~] Anonymize the exact 38 approved synthetic production accounts without touching protected
+      owner, customer, brand, Facility-team, billing, moderation, support, consent, audit, or
+      legal evidence. Backend production deployment `dep-d9vb0ntbedkc73bapv10` loaded the exact
+      ID-and-email allowlist on 2026-08-14. The authenticated platform Admin resolved all 38
+      candidates and every live dry run reported `approved`, `Safety blockers: none`, and
+      `Dry run: passed`; zero candidates were missing or blocked and no mutation was performed.
+      Permanent anonymization, session revocation, after-state search, and protected-account/
+      brand/Facility regression evidence remain pending explicit action-time owner confirmation.
+      See `docs/qa/PRODUCTION_TEST_ACCOUNT_CLEANUP_PLAN_2026-08-13.md`.
 
 ## C. Payments, email, delivery, and entitlements
 
@@ -449,6 +477,11 @@ refund/dispute, or mutation-capable acceptance items below.
       invitation, gift claim, real purchase/order/enrollment/refund/dispute receipt,
       content-report moderation alert, or task/notification email. Those exact
       recipient and link loops remain; unrelated support messages are not substitutes.
+      A focused 2026-08-14 recheck of the connected `support@growpathai.com` mailbox
+      found no new moderation/content-report, Facility invitation/task-notification,
+      purchase, enrollment, subscription, receipt, or refund evidence after
+      2026-08-12. This confirms the evidence is still absent; it does not close any
+      delivery loop or imply access to the separate Admin mailbox.
       See `docs/qa/DELIVERED_EMAIL_INVENTORY_2026-08-13.md`.
 
 ## D. Commercial, commerce data, and owner-supplied sources
@@ -562,6 +595,14 @@ public visibility, or screenshot/video acceptance still called out below.
   Production Build Preflight and Frontend CI passed on that exact SHA, and the live
   Personal Home globe exposed the named `Enable globe` control. This closes that
   control defect, not the remaining device/accessibility matrix.
+  On 2026-08-14, the real Admin Personal workspace completed a representative live
+  Day/Night text-contrast pass across Home, Grows, AI Tools, Forum/Q&A, Discover,
+  Courses, and Profile. The refined check measured the actual direct text-rendering
+  elements rather than colorless wrapper links/buttons: 103 Day and 268 Night text
+  elements produced no WCAG large/normal-text contrast failures. Auto was restored
+  afterward and still resolved from the saved preference. This is real production
+  browser evidence for those seven routes, not completion of the remaining workspace,
+  responsive, font-scaling, screen-reader, or physical-device matrix.
   The same 12 Personal and 12 Facility destinations passed a computed live contrast
   scan of visible direct text against its actual rendered opaque surface at WCAG
   normal/large-text thresholds. No failing sample appeared in the rendered states;

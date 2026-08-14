@@ -4,7 +4,24 @@
 
 Remove synthetic QA, Codex, smoke, and legacy demo identities from the live product before store release without deleting or disabling owner, customer, brand, Facility-team, billing, moderation, or audit evidence.
 
-This is a destructive-data plan, not proof that deletion has run.
+This is a destructive-data plan. The exact production dry run has completed; permanent
+anonymization has not run.
+
+## Production dry-run evidence — 2026-08-14
+
+- Production API deployment: `dep-d9vb0ntbedkc73bapv10`
+- Exact ID-and-email allowlist entries resolved: 38 of 38
+- Unique target IDs: 38
+- Dry runs passed: 38
+- Safety blockers: 0
+- Missing targets: 0
+- Mutations performed: 0
+
+Each authenticated Admin preview reported `Exact production allowlist: approved`,
+`Safety blockers: none`, and `Dry run: passed`. The next step is destructive and still
+requires explicit action-time owner confirmation. After execution, the required search,
+protected-identity, live-brand, Facility, audit, and session-revocation checks below must
+be recorded before this cleanup can be marked complete.
 
 ## Read-only production inventory
 
