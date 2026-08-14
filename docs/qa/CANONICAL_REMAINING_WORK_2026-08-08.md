@@ -584,9 +584,17 @@ public visibility, or screenshot/video acceptance still called out below.
   passed 20/20 tests. Live Commercial trial creation with an owner-entered price,
   public response/revision, aggregate review, and close-state acceptance remain.
   Triple Bag public trials remain blocked by rights review.
-- [ ] Collect owner-approved knowledge sources: domains, authors/channels,
-      reliability tiers, allowed uses, exclusions, cross-check requirements, and review
-      dates; update both documentation and runtime registries.
+- [x] Owner-approved botanical and horticultural knowledge sources are retained with
+      stable domains or named channels, reliability tiers, allowed uses, exclusions,
+      cross-check requirements, and review dates in both
+      `docs/knowledge/source-reliability-registry.md` and
+      `src/knowledge/sourceRegistry.ts`. The approved Plant ID boundary includes Crime
+      Pays But Botany Doesn't as Tier C method/education context only, with USDA PLANTS,
+      Kew POWO, GBIF, iNaturalist, individually reviewed Wikimedia media, regional keys,
+      herbarium/expert evidence, and university extension separated by their supported
+      uses. Runtime contract tests enforce allow/caveat/lead-only/reject behavior. This
+      closes collection and encoding of the sources the owner supplied; adding a future
+      source still requires a separately reviewed registry revision.
 
 ## E. Visual, accessibility, device, and notification acceptance
 
