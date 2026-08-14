@@ -464,6 +464,11 @@ refund/dispute, or mutation-capable acceptance items below.
       invitation, gift claim, real purchase/order/enrollment/refund/dispute receipt,
       content-report moderation alert, or task/notification email. Those exact
       recipient and link loops remain; unrelated support messages are not substitutes.
+      A focused 2026-08-14 recheck of the connected `support@growpathai.com` mailbox
+      found no new moderation/content-report, Facility invitation/task-notification,
+      purchase, enrollment, subscription, receipt, or refund evidence after
+      2026-08-12. This confirms the evidence is still absent; it does not close any
+      delivery loop or imply access to the separate Admin mailbox.
       See `docs/qa/DELIVERED_EMAIL_INVENTORY_2026-08-13.md`.
 
 ## D. Commercial, commerce data, and owner-supplied sources
