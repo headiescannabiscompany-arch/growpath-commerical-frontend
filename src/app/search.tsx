@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useRouter } from "expo-router";
 
-import { useAuth } from "@/auth/AuthContext";
+import { useEntitlements } from "@/entitlements";
 import SearchScreen from "@/screens/SearchScreen";
 
 const COMMON_ROUTES: Record<string, string> = {
@@ -41,8 +41,7 @@ export function searchHref(route: string, mode?: string) {
 
 export default function SearchRoute() {
   const router = useRouter();
-  const { ctx } = useAuth();
-  const mode = ctx?.mode;
+  const { mode } = useEntitlements();
   const navigation = useMemo(
     () => ({ navigate: (route: string) => router.push(searchHref(route, mode) as any) }),
     [mode, router]

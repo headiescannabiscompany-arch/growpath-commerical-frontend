@@ -9,8 +9,8 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush })
 }));
 
-jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ ctx: { mode: "commercial" } })
+jest.mock("@/entitlements", () => ({
+  useEntitlements: () => ({ mode: "commercial" })
 }));
 
 jest.mock("@/screens/SearchScreen", () => {
@@ -40,7 +40,7 @@ describe("Search web route mapping", () => {
     expect(searchHref("Subscription", "personal")).toBe("/offers");
   });
 
-  it("routes results from the authenticated workspace context", () => {
+  it("routes results from the effective entitled workspace context", () => {
     const screen = render(<SearchRoute />);
 
     fireEvent.press(screen.getByLabelText("Open mocked Tools result"));
