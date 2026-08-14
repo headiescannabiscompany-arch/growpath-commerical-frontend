@@ -1063,6 +1063,245 @@
       }
     },
     {
+      "recordId": "plant-id-lettuce-001",
+      "caseId": "lettuce",
+      "acceptedName": "Lettuce",
+      "scientificName": "Lactuca sativa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "wild lettuce",
+        "endive"
+      ],
+      "distinguishingFeatures": [
+        "cultivated loose-leaf lettuce rosette",
+        "soft ruffled leaves without spines or a bolting stem"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.84,
+        "maximum": 0.97
+      },
+      "expectedResult": "Lettuce (Lactuca sativa) is expected; loose-leaf type is acceptable, but do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/350640723",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/639797206/original.jpg",
+      "creator": "(c) Miriam Salazar, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Miriam Salazar, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "lettuce-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "compact basal rosette",
+          "broad soft green leaves",
+          "strongly undulate loose-leaf margins",
+          "overlapping tender foliage"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A228239-1",
+            "outcome": "Kew POWO accepts Lactuca sativa L.; only images with a cultivated lettuce rosette or repeated crop-row habit were approved, while ambiguous flowering and wild-relative forms were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-639797206",
+        "photoId": 639797206,
+        "sourceQuery": "Lactuca sativa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122976,
+        "observedTaxonName": "Lactuca sativa",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-lettuce-003",
+      "caseId": "lettuce",
+      "acceptedName": "Lettuce",
+      "scientificName": "Lactuca sativa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "wild lettuce",
+        "endive"
+      ],
+      "distinguishingFeatures": [
+        "consistent crop-row lettuce habit",
+        "multiple matching Lactuca sativa rosettes"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.88,
+        "maximum": 0.98
+      },
+      "expectedResult": "Lettuce (Lactuca sativa) is expected from repeated cultivated rosettes; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/361643335",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/660022789/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "lettuce-003",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "repeated cultivated rows",
+          "upright loose rosettes",
+          "broad smooth bright-green leaves",
+          "soft entire-to-wavy margins"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A228239-1",
+            "outcome": "Kew POWO accepts Lactuca sativa L.; only images with a cultivated lettuce rosette or repeated crop-row habit were approved, while ambiguous flowering and wild-relative forms were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-660022789",
+        "photoId": 660022789,
+        "sourceQuery": "Lactuca sativa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122976,
+        "observedTaxonName": "Lactuca sativa",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-lettuce-005",
+      "caseId": "lettuce",
+      "acceptedName": "Lettuce",
+      "scientificName": "Lactuca sativa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "wild lettuce",
+        "endive"
+      ],
+      "distinguishingFeatures": [
+        "juvenile cultivated lettuce rosette",
+        "broad tender leaves and Lactuca crop habit"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.76,
+        "maximum": 0.92
+      },
+      "expectedResult": "Lettuce (Lactuca sativa) is expected; confidence remains below mature crop-row examples because the plant is juvenile.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/362514858",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/661653701/original.jpg",
+      "creator": "(c) Christopher Patterson, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Christopher Patterson, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "lettuce-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "single potted juvenile rosette",
+          "broad oblong light-green leaves",
+          "prominent pale midribs",
+          "soft wavy margins"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A228239-1",
+            "outcome": "Kew POWO accepts Lactuca sativa L.; only images with a cultivated lettuce rosette or repeated crop-row habit were approved, while ambiguous flowering and wild-relative forms were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-661653701",
+        "photoId": 661653701,
+        "sourceQuery": "Lactuca sativa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122976,
+        "observedTaxonName": "Lactuca sativa",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-lettuce-007",
+      "caseId": "lettuce",
+      "acceptedName": "Lettuce",
+      "scientificName": "Lactuca sativa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "wild lettuce",
+        "endive"
+      ],
+      "distinguishingFeatures": [
+        "field-scale lettuce planting pattern",
+        "multiple consistent loose-leaf rosettes"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.8,
+        "maximum": 0.95
+      },
+      "expectedResult": "Lettuce (Lactuca sativa) is expected at crop level; the wide view supports the planting but limits fine cultivar or individual-plant inference.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/364440213",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/665301229/original.jpg",
+      "creator": "(c) Brian Oakes Haiti Hunter, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Brian Oakes Haiti Hunter, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "lettuce-007",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "many evenly spaced cultivated rosettes",
+          "broad ruffled green foliage",
+          "repeated low loose-leaf crop habit"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A228239-1",
+            "outcome": "Kew POWO accepts Lactuca sativa L.; only images with a cultivated lettuce rosette or repeated crop-row habit were approved, while ambiguous flowering and wild-relative forms were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-665301229",
+        "photoId": 665301229,
+        "sourceQuery": "Lactuca sativa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 122976,
+        "observedTaxonName": "Lactuca sativa",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
       "recordId": "plant-id-pepper-001",
       "caseId": "pepper",
       "acceptedName": "Pepper",
