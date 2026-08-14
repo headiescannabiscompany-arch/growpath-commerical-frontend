@@ -104,7 +104,7 @@ describe("SearchScreen", () => {
     expect(screen.queryByText("Feed / Campaigns")).toBeNull();
   });
 
-  it("keeps locked search routed to subscription", () => {
+  it("keeps navigation shortcuts usable while the full search upgrade is locked", () => {
     mockSearchEnabled = false;
     const navigate = jest.fn();
     const screen = render(<SearchScreen navigation={{ navigate }} />);
@@ -113,6 +113,6 @@ describe("SearchScreen", () => {
     fireEvent.press(screen.getByLabelText("Open Storefront"));
 
     expect(navigate).toHaveBeenCalledWith("Subscription");
-    expect(navigate).not.toHaveBeenCalledWith("Storefront");
+    expect(navigate).toHaveBeenCalledWith("Storefront");
   });
 });
