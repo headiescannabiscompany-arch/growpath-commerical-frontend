@@ -38,22 +38,19 @@ class ScreenBoundaryBase extends React.PureComponent<BoundaryProps, State> {
     const { palette } = this.props;
 
     if (!this.state.error) {
-      if (!showBack) {
-        return (
-          <View style={{ flex: 1, backgroundColor: palette.page }}>
-            {this.props.children}
-          </View>
-        );
-      }
       return (
         <View style={{ flex: 1, backgroundColor: palette.page }}>
-          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-            <BackButton
-              fallbackHref={fallbackHref}
-              preferFallback={this.props.preferBackFallback}
-            />
+          {showBack ? (
+            <View key="screen-back" style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+              <BackButton
+                fallbackHref={fallbackHref}
+                preferFallback={this.props.preferBackFallback}
+              />
+            </View>
+          ) : null}
+          <View key="screen-content" style={{ flex: 1 }}>
+            {this.props.children}
           </View>
-          {this.props.children}
         </View>
       );
     }
