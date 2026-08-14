@@ -539,9 +539,10 @@ public visibility, or screenshot/video acceptance still called out below.
   out of the active list. This closes create/edit/lesson/reload/readiness/archive,
   not media, paid/public/learner, linkage, or visual acceptance. See
   `docs/qa/COMMERCIAL_FULL_COURSE_BUILDER_PRODUCTION_EVIDENCE_2026-08-14.md`.
-  Populated Commercial-owner create/edit/publish/read-only/unpublish/reload,
-  learner/storefront visibility, and one real disposable-draft archive cleanup remain
-  open.
+  Cover/banner upload, GrowPath and external lesson media, product/task/live/Forum
+  linkage, publish/read-only/unpublish, paid and free learner access, and public
+  storefront visibility remain open. The pre-fix generic private draft recorded in
+  the evidence file also remains a cleanup candidate outside Commercial persistence.
 - [~] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
   Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
   navigation hierarchy, and persistence checks. Orders and Analytics state,
