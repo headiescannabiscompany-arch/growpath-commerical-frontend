@@ -11,7 +11,10 @@ wild-relative lettuce candidates were rejected because the images could not reli
 separate cultivated lettuce from other Lactuca species. The governed catalog is now
 24/320. Three basil records with strong cultivated foliage or combined leaf-and-flower
 evidence also passed; five flower-only, single-leaf, or unresolved close-relative
-candidates were rejected. The governed catalog is now 27/320. Two cucumber candidates were
+candidates were rejected. Four cultivated-context garden-strawberry records also passed;
+four wild-context Fragaria candidates were rejected because they could not establish the
+garden-strawberry hybrid rather than a wild relative. The governed catalog is now
+31/320. Two cucumber candidates were
 rejected because cotyledon-only or flower-only evidence could not support dependable
 species ground truth. The catalog remains planning until all governed slots are filled;
 no candidate is automatically promoted.
