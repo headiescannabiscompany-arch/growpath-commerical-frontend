@@ -181,10 +181,12 @@ execution boundaries and the evidence needed not to reopen completed work.
       then passed; five red-flowered Phaseolus lookalikes or unresolved distant-bed
       candidates were rejected. Two rose records with matching compound foliage plus
       flower or bud evidence then passed; four wrong-taxon or no-target candidates were
-      rejected. The catalog is now 41/320 reviewed records and
-      correctly remains `planning`; 276 candidates in the refreshed queue still need
-      review, one is explicitly rejected, and all 36 owned
-      adverse-media slots remain.
+      rejected. Three Pothos records with repeated golden-variegated climbing foliage
+      then passed; the mixed-species groundcover, single-leaf context, and unvariegated
+      mass candidates were rejected because their visible evidence could not reliably
+      separate Epipremnum aureum from other climbing aroids. The catalog is now 44/320
+      reviewed records and correctly remains `planning`; the remaining candidates
+      still require individual review, and all 36 owned adverse-media slots remain.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.
