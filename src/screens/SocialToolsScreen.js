@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,9 +15,12 @@ import {
 
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import { getSocialAccounts, getSocialMetrics, schedulePost } from "../api/socialMedia.js";
+import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 
 export default function SocialToolsScreen() {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createSocialToolsStyles(palette), [palette]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -96,7 +99,9 @@ export default function SocialToolsScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>External Channels</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.header}>
+        External Channels
+      </Text>
       <Text style={styles.subheader}>
         Schedule and review off-platform channel posts. GrowPath Feed / Campaigns is the
         in-app advertising surface, and Forum/Q&A is where discussion lives.
@@ -156,6 +161,8 @@ export default function SocialToolsScreen() {
             <TextInput
               style={styles.input}
               placeholder="Content"
+              placeholderTextColor={palette.textMuted}
+              selectionColor={palette.accent}
               value={content}
               onChangeText={setContent}
               autoFocus
@@ -212,109 +219,129 @@ export default function SocialToolsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  header: { color: "#111827", fontSize: 24, fontWeight: "800", marginBottom: 8 },
-  subheader: {
-    color: "#475569",
-    fontSize: 13,
-    fontWeight: "600",
-    lineHeight: 19,
-    marginBottom: 16
-  },
-  sectionTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 8 },
-  loader: { marginTop: 40 },
-  errorBox: {
-    marginTop: 24,
-    padding: 20,
-    borderRadius: radius.card,
-    backgroundColor: "#FEE2E2",
-    borderWidth: 1,
-    borderColor: "#FCA5A5"
-  },
-  errorTitle: { color: "#B91C1C", fontSize: 18, fontWeight: "800", marginBottom: 4 },
-  errorText: { color: "#B91C1C" },
-  accountRow: {
-    alignItems: "flex-start",
-    borderBottomWidth: 1,
-    borderColor: "#E5E7EB",
-    paddingVertical: 12
-  },
-  accountName: { color: "#111827", fontSize: 18, fontWeight: "700" },
-  metricsText: { color: "#475569", fontSize: 13, marginTop: 6 },
-  emptyText: { color: "#64748B", fontWeight: "600" },
-  actions: { alignItems: "flex-end", marginTop: 24 },
-  loadingText: { color: "#047857", fontWeight: "700", marginTop: 8 },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: radius.card,
-    padding: 24,
-    width: 320,
-    alignItems: "center",
-    elevation: 4,
-    ...(Platform.OS === "web"
-      ? { boxShadow: "0px 6px 24px rgba(0,0,0,0.18)" }
-      : {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.18,
-          shadowRadius: 12
-        })
-  },
-  modalTitle: { color: "#111827", fontSize: 18, fontWeight: "800", marginBottom: 12 },
-  input: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    borderRadius: radius.card,
-    padding: 10,
-    marginBottom: 12,
-    fontSize: 15
-  },
-  label: {
-    alignSelf: "flex-start",
-    color: "#111827",
-    fontWeight: "800",
-    marginBottom: 8
-  },
-  platformList: { flexDirection: "row", flexWrap: "wrap", marginBottom: 8 },
-  platformBtn: {
-    backgroundColor: "#E5E7EB",
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 8,
-    marginBottom: 8
-  },
-  platformSelected: {
-    backgroundColor: "#10B981",
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 8,
-    marginBottom: 8
-  },
-  platformText: { color: "#111827", fontWeight: "700" },
-  platformTextSelected: { color: "#FFFFFF", fontWeight: "800" },
-  modalActions: { flexDirection: "row", gap: 12, marginTop: 12 },
-  saveBtn: {
-    backgroundColor: "#10B981",
-    borderRadius: radius.card,
-    paddingHorizontal: 18,
-    paddingVertical: 10
-  },
-  saveBtnText: { color: "white", fontWeight: "800", fontSize: 15 },
-  cancelBtn: {
-    backgroundColor: "#E5E7EB",
-    borderRadius: radius.card,
-    paddingHorizontal: 18,
-    paddingVertical: 10
-  },
-  cancelBtnText: { color: "#334155", fontWeight: "800", fontSize: 15 }
-});
+export const createSocialToolsStyles = (palette) =>
+  StyleSheet.create({
+    container: { flex: 1, padding: 16, backgroundColor: palette.page },
+    header: { color: palette.text, fontSize: 24, fontWeight: "800", marginBottom: 8 },
+    subheader: {
+      color: palette.textMuted,
+      fontSize: 13,
+      fontWeight: "600",
+      lineHeight: 19,
+      marginBottom: 16
+    },
+    sectionTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "800",
+      marginBottom: 8
+    },
+    loader: { marginTop: 40 },
+    errorBox: {
+      marginTop: 24,
+      padding: 20,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      borderWidth: 1,
+      borderColor: palette.danger
+    },
+    errorTitle: {
+      color: palette.danger,
+      fontSize: 18,
+      fontWeight: "800",
+      marginBottom: 4
+    },
+    errorText: { color: palette.danger },
+    accountRow: {
+      alignItems: "flex-start",
+      borderBottomWidth: 1,
+      borderColor: palette.borderSoft,
+      paddingVertical: 12
+    },
+    accountName: { color: palette.text, fontSize: 18, fontWeight: "700" },
+    metricsText: { color: palette.textMuted, fontSize: 13, marginTop: 6 },
+    emptyText: { color: palette.textMuted, fontWeight: "600" },
+    actions: { alignItems: "flex-end", marginTop: 24 },
+    loadingText: { color: palette.link, fontWeight: "700", marginTop: 8 },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: palette.shadow,
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    modalContent: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderWidth: 1,
+      borderRadius: radius.card,
+      padding: 24,
+      width: 320,
+      alignItems: "center",
+      elevation: 4,
+      ...(Platform.OS === "web"
+        ? { boxShadow: "0px 6px 24px rgba(0,0,0,0.18)" }
+        : {
+            shadowColor: palette.shadow,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.18,
+            shadowRadius: 12
+          })
+    },
+    modalTitle: {
+      color: palette.text,
+      fontSize: 18,
+      fontWeight: "800",
+      marginBottom: 12
+    },
+    input: {
+      width: "100%",
+      borderWidth: 1,
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      color: palette.text,
+      borderRadius: radius.card,
+      padding: 10,
+      marginBottom: 12,
+      fontSize: 15
+    },
+    label: {
+      alignSelf: "flex-start",
+      color: palette.text,
+      fontWeight: "800",
+      marginBottom: 8
+    },
+    platformList: { flexDirection: "row", flexWrap: "wrap", marginBottom: 8 },
+    platformBtn: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.pill,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      marginRight: 8,
+      marginBottom: 8
+    },
+    platformSelected: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.pill,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      marginRight: 8,
+      marginBottom: 8
+    },
+    platformText: { color: palette.text, fontWeight: "700" },
+    platformTextSelected: { color: palette.accentText, fontWeight: "800" },
+    modalActions: { flexDirection: "row", gap: 12, marginTop: 12 },
+    saveBtn: {
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      paddingHorizontal: 18,
+      paddingVertical: 10
+    },
+    saveBtnText: { color: palette.accentText, fontWeight: "800", fontSize: 15 },
+    cancelBtn: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      paddingHorizontal: 18,
+      paddingVertical: 10
+    },
+    cancelBtnText: { color: palette.text, fontWeight: "800", fontSize: 15 }
+  });

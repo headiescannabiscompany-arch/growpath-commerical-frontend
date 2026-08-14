@@ -63,9 +63,12 @@ describe("LinksScreen", () => {
       expect(screen.UNSAFE_getByType(ActivityIndicator).props.color).toBe(palette.accent);
       await waitFor(() => expect(screen.getByText("Grow guide")).toBeTruthy());
 
-      expect(StyleSheet.flatten(screen.getByText("Links").props.style).color).toBe(
+      expect(StyleSheet.flatten(screen.getByText("Public Links").props.style).color).toBe(
         palette.text
       );
+      expect(
+        screen.getByRole("header", { name: "Public Links" }).props["aria-level"]
+      ).toBe(1);
       expect(StyleSheet.flatten(screen.getByText("Grow guide").props.style).color).toBe(
         palette.text
       );

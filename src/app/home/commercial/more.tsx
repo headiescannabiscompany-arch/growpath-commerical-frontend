@@ -71,6 +71,12 @@ const workspaceGroups: Array<{
         href: "/home/commercial/community",
         description:
           "Answer product, course, and live questions through the shared Forum."
+      },
+      {
+        label: "External Channels",
+        href: "/home/commercial/social-tools",
+        description:
+          "Review connected social channels, metrics, and scheduled off-platform posts."
       }
     ]
   },
@@ -124,6 +130,12 @@ const workspaceGroups: Array<{
         href: "/home/commercial/profile",
         description:
           "Manage the commercial identity, storefront setup, and account context."
+      },
+      {
+        label: "Public Links",
+        href: "/home/commercial/links",
+        description:
+          "Manage the public links shown with the Commercial brand and storefront."
       },
       {
         label: "Tools",
