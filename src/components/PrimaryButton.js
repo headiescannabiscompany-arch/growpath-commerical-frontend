@@ -6,13 +6,13 @@ import { useAppTheme } from "@/theme/appTheme";
 export default function PrimaryButton({
   title,
   onPress,
-  style,
+  style = null,
   textStyle = {},
-  disabled,
-  children,
+  disabled = false,
+  children = null,
   accessibilityRole = "button",
-  accessibilityLabel,
-  accessibilityState,
+  accessibilityLabel = undefined,
+  accessibilityState = undefined,
   ...rest
 }) {
   const { palette } = useAppTheme();

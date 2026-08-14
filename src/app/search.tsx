@@ -41,7 +41,8 @@ export function searchHref(route: string, mode?: string) {
 
 export default function SearchRoute() {
   const router = useRouter();
-  const { mode } = useAuth();
+  const { ctx } = useAuth();
+  const mode = ctx?.mode;
   const navigation = useMemo(
     () => ({ navigate: (route: string) => router.push(searchHref(route, mode) as any) }),
     [mode, router]
