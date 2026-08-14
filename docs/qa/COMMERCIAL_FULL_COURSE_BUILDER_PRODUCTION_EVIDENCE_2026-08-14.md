@@ -40,3 +40,55 @@ The pre-fix generic private draft `6a7f01a13556c3da3f26e3c8` remains a cleanup c
 The same recovery also closed a production asset-delivery defect. Expo can reuse a JavaScript filename even when its content changes, while Render previously served that path with a five-minute shared-cache lifetime. Merge `e5be59f9d35c4cd2cf949ad4ff4580f80fc96233` changed JavaScript responses to `max-age=0, s-maxage=0, must-revalidate`; merge `c797ad2e894c8ee7e57c6a7d8b9ae655a1a20756` additionally appends a content-derived revision to every exported root and fallback-route script URL. Production HTML served `?v=55e9c910908f` after the first revision deployment and a new asset/revision after the screen-state deployment, proving releases no longer depend on an already-open browser discarding a stale body.
 
 No generic-course archive/delete control exists on the recovered owner detail. The draft was not published or otherwise mutated. Cleanup therefore remains an explicit product/backend lifecycle gap rather than an inaccessible-loading blocker; no destructive API behavior was guessed.
+
+## Governed media, linkage, and publication follow-up
+
+- Backend production merge: `299d0daaebc9fea94f2cc645ef1a1ea99bb17ac1`
+- Render backend deploy: `dep-d9viu0bbc2fs73cgcv20`
+- Frontend production merge: `405390af2e96a090af35a72973fe0f5ccf3f4e0e`
+- Render frontend deploy: `dep-d9vj0d67bikc73c5sh7g`
+- Production course tested: `6a7f2f86a79b6a29ee321736`
+- Authenticated workspace: platform Admin in Commercial mode
+
+The backend now assigns stable identifiers and order to lessons created with a new
+Commercial course. Existing builder-created lessons without stored identifiers are
+also exposed through deterministic legacy identifiers, and their first edit persists
+that identifier. The frontend now uses PATCH for an existing lesson, retains one
+lesson instead of duplicating it, and names the edit-mode control `Save commercial
+course lesson changes`.
+
+The production course completed the following owner lifecycle with real persisted
+data:
+
+- uploaded and retained a thumbnail and banner from repository-owned GrowPathAI
+  assets;
+- selected `Living Soil / No-Till` and linked existing product
+  `6a7f00e63556c3da3f26e342`;
+- edited the builder-created Article lesson in place, linked the product, and added
+  the task template `Record an evidence-first plant observation` with a two-day
+  offset;
+- showed `Lesson updated.`, retained exactly one lesson, and preserved its body,
+  product, task, and count after reload;
+- published the free course, exposed the published/read-only owner state, and opened
+  the owner learner preview with the banner, description, category, interests, and
+  one lesson;
+- unpublished and archived the temporary course, then confirmed it was absent from
+  the active Commercial course list after reload.
+
+The public shared catalog did not list this course because the Admin Commercial
+storefront is intentionally unpublished and only 1/14 ready. That is a truthful
+storefront-publication boundary, not evidence of a course-discovery defect.
+
+Backend focused workflow tests passed 16/16, the full backend CI and security gates
+passed, the frontend regression suite passed 35/35, TypeScript passed, and full
+frontend CI passed. Render frontend deploy `dep-d9vj0d67bikc73c5sh7g` succeeded in
+1m58s on exact merge `405390af`. A fresh production draft
+`6a7f30e4a79b6a29ee321834` then exposed `Save commercial course lesson changes`
+after entering edit mode for its initial lesson. The test draft was cancelled out of
+edit mode, archived, and confirmed absent from the active list after reload.
+
+This follow-up closes cover/banner upload, linked product/task, initial-lesson edit
+and reload, free publish/read-only/unpublish, owner learner preview, and archive
+cleanup. It does not claim GrowPath-hosted lesson video, rights-confirmed external
+video publication, Live or Forum linkage, paid learner/Stripe acceptance, or public
+storefront discovery. Those remain open and require truthful populated inputs.
