@@ -14,7 +14,12 @@ import {
 } from "react-native";
 
 import CalendarDateField from "@/components/forms/CalendarDateField";
-import { getSocialAccounts, getSocialMetrics, schedulePost } from "../api/socialMedia.js";
+import {
+  EXTERNAL_POST_SCHEDULING_AVAILABLE,
+  getSocialAccounts,
+  getSocialMetrics,
+  schedulePost
+} from "../api/socialMedia.js";
 import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 
@@ -144,9 +149,19 @@ export default function SocialToolsScreen() {
         </>
       )}
 
-      <View style={styles.actions}>
-        <Button title="Schedule External Post" onPress={openScheduleModal} />
-      </View>
+      {EXTERNAL_POST_SCHEDULING_AVAILABLE ? (
+        <View style={styles.actions}>
+          <Button title="Schedule External Post" onPress={openScheduleModal} />
+        </View>
+      ) : (
+        <View style={styles.noticeBox}>
+          <Text style={styles.noticeTitle}>Scheduling is not connected yet</Text>
+          <Text style={styles.noticeText}>
+            Review connected-channel metrics here. Publish or schedule posts in the
+            provider until a reviewed provider connection is enabled.
+          </Text>
+        </View>
+      )}
       {metricsLoading ? <Text style={styles.loadingText}>Loading metrics...</Text> : null}
 
       <Modal
@@ -262,6 +277,16 @@ export const createSocialToolsStyles = (palette) =>
     metricsText: { color: palette.textMuted, fontSize: 13, marginTop: 6 },
     emptyText: { color: palette.textMuted, fontWeight: "600" },
     actions: { alignItems: "flex-end", marginTop: 24 },
+    noticeBox: {
+      marginTop: 24,
+      padding: 16,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted,
+      borderWidth: 1,
+      borderColor: palette.borderSoft
+    },
+    noticeTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    noticeText: { color: palette.textMuted, lineHeight: 20, marginTop: 4 },
     loadingText: { color: palette.link, fontWeight: "700", marginTop: 8 },
     modalOverlay: {
       flex: 1,

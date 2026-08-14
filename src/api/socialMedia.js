@@ -8,18 +8,18 @@ import apiClient from "./apiClient.js";
 const enc = (v) => encodeURIComponent(String(v ?? ""));
 
 export const SOCIAL_ROUTES = {
-  CONNECT: "/api/social/connect",
-  DISCONNECT: "/api/social/disconnect",
-  GET_ACCOUNTS: "/api/social/accounts",
-  GET_METRICS: (platform) => `/api/social/${enc(platform)}/metrics`,
-  SYNC_DATA: (platform) => `/api/social/${enc(platform)}/sync`,
-  POST_SCHEDULE: "/api/social/schedule-post"
+  CONNECT: (platform) => `/api/social/platforms/${enc(platform)}/connect`,
+  DISCONNECT: (platform) => `/api/social/platforms/${enc(platform)}/disconnect`,
+  GET_ACCOUNTS: "/api/social/platforms",
+  GET_METRICS: (platform) => `/api/social/metrics/${enc(platform)}`,
+  SYNC_DATA: (platform) => `/api/social/platforms/${enc(platform)}/sync`
 };
+
+export const EXTERNAL_POST_SCHEDULING_AVAILABLE = false;
 
 export const connectSocialAccount = async (platform, accessToken, apiKey) => {
   try {
-    const connectRes = await apiClient.post(SOCIAL_ROUTES.CONNECT, {
-      platform,
+    const connectRes = await apiClient.post(SOCIAL_ROUTES.CONNECT(platform), {
       accessToken,
       apiKey
     });
@@ -31,9 +31,7 @@ export const connectSocialAccount = async (platform, accessToken, apiKey) => {
 
 export const disconnectSocialAccount = async (platform) => {
   try {
-    const disconnectRes = await apiClient.post(SOCIAL_ROUTES.DISCONNECT, {
-      platform
-    });
+    const disconnectRes = await apiClient.post(SOCIAL_ROUTES.DISCONNECT(platform));
     return disconnectRes.data;
   } catch (error) {
     throw new Error(`Failed to disconnect ${platform}: ${error.message}`);
@@ -68,14 +66,10 @@ export const syncSocialData = async (platform) => {
 };
 
 export const schedulePost = async (platforms, content, scheduledTime) => {
-  try {
-    const scheduleRes = await apiClient.post(SOCIAL_ROUTES.POST_SCHEDULE, {
-      platforms,
-      content,
-      scheduledTime
-    });
-    return scheduleRes.data;
-  } catch (error) {
-    throw new Error(`Failed to schedule external channel post: ${error.message}`);
-  }
+  void platforms;
+  void content;
+  void scheduledTime;
+  throw new Error(
+    "External post scheduling is not configured. Use the connected provider directly."
+  );
 };
