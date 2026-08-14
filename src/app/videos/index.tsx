@@ -722,7 +722,8 @@ export default function VideosRoute() {
                 value={growInterestSelections}
                 onChange={setGrowInterestSelections}
                 tierOptionsOverride={{ crops: getTier1Options() }}
-                collapsible={false}
+                collapsible
+                defaultExpanded={false}
                 showEmptyTiers
               />
               <Pressable

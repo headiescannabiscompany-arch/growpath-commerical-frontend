@@ -156,6 +156,8 @@ describe("universal Videos route", () => {
     expect(screen.getByText("100 MB used of 500 MB")).toBeTruthy();
     expect(screen.getByText("Add a video")).toBeTruthy();
     expect(screen.getByText("Video grow interests")).toBeTruthy();
+    expect(screen.queryByLabelText("Toggle grow interest Cannabis")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Toggle Video grow interests"));
     expect(screen.getByLabelText("Toggle grow interest Cannabis")).toBeTruthy();
     expect(mockListVideoLibrary).toHaveBeenCalledWith("personal", undefined);
   });
