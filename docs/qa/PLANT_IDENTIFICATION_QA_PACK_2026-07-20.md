@@ -27,8 +27,10 @@ cucumber candidates were rejected because cotyledon-only or flower-only evidence
 not support dependable species ground truth. Four mature Monstera records with repeated
 split-and-fenestrated leaves or combined leaf-and-inflorescence evidence also passed;
 two distant candidates were rejected. The governed catalog is now 48/320. The catalog
-remains planning until all governed slots are filled; no candidate is automatically
-promoted.
+also now includes four genus-level Peace Lily records with combined foliage and
+spathe/spadix evidence; foliage-only and isolated-spadix candidates were rejected. The
+governed catalog is now 52/320 and remains planning until all governed slots are filled;
+no candidate is automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
