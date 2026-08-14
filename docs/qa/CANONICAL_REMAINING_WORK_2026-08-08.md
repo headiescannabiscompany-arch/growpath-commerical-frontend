@@ -426,7 +426,11 @@ grow`, private current location without a Field Study, and an optional approxima
   truthfully rendered `No courses found`. The available Gmail connector was the
   support mailbox rather than `admin@growpathai.com`, and production held no
   retained Feed, product, video, or live-session report cases. Delivered admin-email
-  clicks, non-admin denial, and those four data-bearing report types therefore remain.
+  clicks and those four data-bearing report types therefore remain. On 2026-08-14,
+  the separate real `EtGU_Jay` non-admin Chrome session opened the exact retained
+  moderation-case URL and received `Platform owner access required`; the Admin
+  heading and moderation content were not exposed. This closes the non-admin denial
+  slice without changing the retained case.
 - [~] Approved temporary production records verified populated Facility Grow, Plant,
       Journal, Inventory, Compliance, SOP comparison, and Owner-only AI Validation Lab
       states. Live reload/navigation and immutable create/update/delete/resolve/SOP
