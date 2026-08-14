@@ -117,6 +117,20 @@ Legend:
 - [x] Grow interests are selectable when publishing a video.
 - [x] Lives have a joinable live-session directory separate from Commercial campaigns
       and remain linked from Forum/shared navigation.
+- [~] Live Studio now supports live streams and video premieres, destination-neutral
+      Twitch/YouTube/Kick/Facebook/other watch links, GrowPath chat, a private rotatable
+      OBS Browser Source overlay, optional outside-picker comment export, Discord
+      announcements, viewer playback controls, replays, and public share links. Six
+      focused frontend suites passed 16 tests; backend Lives, video comments, Discord,
+      video, and course-live contracts passed 39 tests after one transient Windows test
+      database file lock cleared on retry. The signed-in production Live browser and
+      Live Studio loaded the complete read-only workflow on 2026-08-14. A disposable
+      end-to-end stream/premiere, OBS render, chat moderation, replay, and external
+      destination acceptance loop remains before this is fully checked off.
+- [~] Viewer-friendly grow timelines with photos, important notes, zoom/detail levels,
+      exports, and public sharing are implemented for Personal and Commercial grow
+      workflows. Focused frontend timeline/share tests pass; a populated owner-approved
+      production grow still needs the complete share/open/export/revoke acceptance loop.
 - [x] Notification Center and Profile expose Device push plus Task, Forum, Video,
       Courses/Lives, Commerce, and Facility categories with persisted preferences.
 - [~] Native cold-start/background notification routing and exact-record links are
@@ -165,6 +179,14 @@ Legend:
       rights-reviewed images and passes the strict seed-ready dry-run validator.
 - [x] AI photo review retains original-detail provider input and systematic enlargement
       views instead of silently relying on lower-resolution thumbnails.
+- [~] Exact AI inspection views are retained with source-photo identity, crop bounds,
+      dimensions, strategy, and SHA-256 integrity; authenticated users can view, save,
+      or export the exact enlargement/crop set used for Plant ID, Diagnosis, IPM, and
+      Harvest review. Backend merge `735c056f` passed both CI suites plus the ZAP API
+      scan and was manually released to the production `growpath-api` service on
+      2026-08-14. Frontend merge `0a9ecda2` passed PR CI and production preflight; its
+      final main CI/deploy and a newly generated live AI result remain before this is
+      fully checked off.
 - [x] Shared photo/video upload reports oversize, unreachable, retry, and remove states;
       Plant ID video frames and retained evidence have production acceptance.
 - [x] Harvest Readiness is not undersold as only a trichome estimator: it combines
