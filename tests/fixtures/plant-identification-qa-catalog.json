@@ -3021,6 +3021,183 @@
         "observedTaxonName": "Solanum lycopersicum",
         "observedTaxonRank": "species"
       }
+    },
+    {
+      "recordId": "plant-id-pothos-002",
+      "caseId": "pothos",
+      "acceptedName": "Pothos",
+      "scientificName": "Epipremnum aureum",
+      "plantCategory": "ornamentals",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["heartleaf philodendron", "Epipremnum pinnatum"],
+      "distinguishingFeatures": [
+        "mature climbing aroid with repeated fenestrated leaves",
+        "yellow-green marbling across juvenile and mature foliage"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.84, "maximum": 0.97 },
+      "expectedResult": "Pothos (Epipremnum aureum) is expected from the climbing habit, repeated golden variegation, and mature fenestrated foliage; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/382064892",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/699153928/original.jpg",
+      "creator": "(c) Mark Wagner, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Mark Wagner, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pothos-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "thick vine climbing a tree trunk",
+          "large glossy cordate-to-ovate leaves",
+          "repeated yellow-green marbling",
+          "fenestration on mature leaves"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/87014-1",
+            "outcome": "Kew POWO accepts Epipremnum aureum (Linden & André) G.S.Bunting as an Araceae climber."
+          },
+          {
+            "sourceId": "ncsu-extension",
+            "recordUrl": "https://plants.ces.ncsu.edu/plants/epipremnum-aureum/",
+            "outcome": "NC State Extension describes glossy cordate foliage, yellow-to-cream variegation, and grooved clasping petioles; the image supports leaf form, variegation, and climbing habit without claiming an unseen petiole groove."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-699153928",
+        "photoId": 699153928,
+        "sourceQuery": "Epipremnum aureum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 69223,
+        "observedTaxonName": "Epipremnum aureum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-pothos-003",
+      "caseId": "pothos",
+      "acceptedName": "Pothos",
+      "scientificName": "Epipremnum aureum",
+      "plantCategory": "ornamentals",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["heartleaf philodendron"],
+      "distinguishingFeatures": [
+        "dense climbing vine with repeated glossy heart-shaped leaves",
+        "consistent golden marbling across the plant"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.8, "maximum": 0.95 },
+      "expectedResult": "Pothos (Epipremnum aureum) is expected from repeated cordate golden-variegated foliage and climbing habit; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/376430190",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/688259373/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pothos-003",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "dense vine climbing a palm trunk",
+          "many glossy cordate leaves",
+          "yellow-green marbling",
+          "consistent foliage across multiple nodes"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/87014-1",
+            "outcome": "Kew POWO accepts Epipremnum aureum (Linden & André) G.S.Bunting as an Araceae climber."
+          },
+          {
+            "sourceId": "ncsu-extension",
+            "recordUrl": "https://plants.ces.ncsu.edu/plants/epipremnum-aureum/",
+            "outcome": "NC State Extension describes glossy cordate leaves with yellow-to-cream variegation and climbing or cascading habit; those characters recur throughout this image."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. The photo's CC0 dedication is retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-688259373",
+        "photoId": 688259373,
+        "sourceQuery": "Epipremnum aureum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 69223,
+        "observedTaxonName": "Epipremnum aureum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-pothos-004",
+      "caseId": "pothos",
+      "acceptedName": "Pothos",
+      "scientificName": "Epipremnum aureum",
+      "plantCategory": "ornamentals",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["heartleaf philodendron"],
+      "distinguishingFeatures": [
+        "climbing vine with many glossy cordate leaves",
+        "repeated cream-yellow marbling across the same vine"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.82, "maximum": 0.96 },
+      "expectedResult": "Pothos (Epipremnum aureum) is expected from repeated variegated cordate leaves on a climbing vine; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/382733412",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/700412010/original.jpg",
+      "creator": "(c) M Rutherford, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) M Rutherford, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pothos-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "vine climbing a forest tree trunk",
+          "many glossy cordate leaves",
+          "cream-yellow and green marbling",
+          "consistent leaf architecture on sequential nodes"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/87014-1",
+            "outcome": "Kew POWO accepts Epipremnum aureum (Linden & André) G.S.Bunting and records it as a wet-tropical climber widely introduced beyond its native range."
+          },
+          {
+            "sourceId": "ncsu-extension",
+            "recordUrl": "https://plants.ces.ncsu.edu/plants/epipremnum-aureum/",
+            "outcome": "NC State Extension describes glossy cordate foliage with yellow-to-cream variegation; those characters repeat on the photographed vine while unseen petiole details are not claimed."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-700412010",
+        "photoId": 700412010,
+        "sourceQuery": "Epipremnum aureum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 69223,
+        "observedTaxonName": "Epipremnum aureum",
+        "observedTaxonRank": "species"
+      }
     }
   ]
 }

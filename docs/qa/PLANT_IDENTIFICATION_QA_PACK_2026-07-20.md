@@ -20,7 +20,10 @@ Three common-bean records with seedling or combined foliage-and-flower evidence 
 passed; five red-flowered Phaseolus lookalikes or unresolved distant-bed candidates
 were rejected. Two rose records with matching compound foliage plus flower or bud
 evidence also passed; four wrong-taxon or no-target candidates were rejected. The
-governed catalog is now 41/320. Two cucumber candidates were
+governed catalog is now 41/320. Three Pothos records with repeated
+golden-variegated climbing foliage also passed; three ambiguous mixed, isolated-leaf,
+or unvariegated candidates were rejected. The governed catalog is now 44/320. Two
+cucumber candidates were
 rejected because cotyledon-only or flower-only evidence could not support dependable
 species ground truth. The catalog remains planning until all governed slots are filled;
 no candidate is automatically promoted.
