@@ -95,6 +95,11 @@ Legend:
 - [~] The Discovery Nature viewer, map/globe, photo cards, privacy copy, current-location
       and manual-pin paths are live. One deliberate photo publication, reload, public
       card/photo opening, privacy check, and withdrawal remain.
+      A 2026-08-13 Headies saved-run review deliberately did not publish the available
+      candidate: the AI identity was only medium-confidence, no external botanical
+      verification had been performed, confirmation was still required, and its exact
+      saved location remained private and explicitly not shared. A reviewed, confirmed
+      non-sensitive candidate is still required for the publication/withdrawal loop.
 
 ## Courses, videos, Lives, Forum media, and notifications
 
@@ -146,6 +151,10 @@ Legend:
 - [ ] Complete the governed Plant ID evaluation pack: 320 reviewed slots, including
       owned/commissioned adverse images, exact rights, morphology, taxonomy, expected
       results, and approved use. Metadata-only candidates are not accepted evidence.
+      A clean-main planning validation on 2026-08-13 passed with 320 allocated slots,
+      46 governed case definitions, zero contract errors, zero reviewed media records,
+      and 48 retained blockers. The strict review/promotion inputs were absent from the
+      clean worktree, so no catalog write or false promotion was attempted.
 
 ## Diagnosis, IPM, Harvest, and shared image/video analysis
 
