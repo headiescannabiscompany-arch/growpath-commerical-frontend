@@ -91,6 +91,23 @@ requiring a special creator account. A profile video library contains only recor
 viewer is authorized to see. Comments, follows, views, and popularity remain social
 signals rather than scientific evidence or AI-training permission.
 
+## Canonical sharing
+
+Published videos use the canonical GrowPath video page as their share target. Offer the
+device share sheet, Copy Link, and reliable direct destinations such as Facebook, X,
+Bluesky, Reddit, LinkedIn, email, and text. The canonical page preserves the video,
+creator identity, follow control, discussion, reports, and access rules; never replace it
+with an expiring object-store URL.
+
+This is part of the shared content contract. Published Forum discussions, courses,
+storefront records, live sessions, premieres, replays, and opted-in Nature findings use
+their own canonical GrowPath pages. Private AI results, journal entries, grows, Facility
+records, and other owner-scoped material must not become public merely because Share was
+pressed. For those records, open a reviewed Forum/Q&A draft or another explicit public
+copy workflow first, include only the selected summary and links, and keep unselected
+photos, exact locations, account data, and private operational fields private. The user
+must confirm publication before an outside audience receives a public link.
+
 ## Cannabis visibility
 
 Mark cannabis/hemp-specific videos explicitly. Public and followers-only cannabis videos

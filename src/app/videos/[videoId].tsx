@@ -26,6 +26,7 @@ import ReportModal from "@/components/ReportModal";
 import LessonMediaCard from "@/components/learning/LessonMediaCard";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { formatDuration } from "@/features/videos/videoPresentation";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -210,6 +211,11 @@ export default function VideoDetailRoute() {
               videoAssetId: video.id,
               playbackUrl: video.playbackUrl
             }}
+          />
+          <PublicShareActions
+            title={video.title || "GrowPath video"}
+            path={`/videos/${encodeURIComponent(videoId)}`}
+            heading="Share this video"
           />
           {video.tags?.length || video.growInterests?.length ? (
             <AppCard>

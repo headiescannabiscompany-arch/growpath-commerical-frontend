@@ -34,6 +34,11 @@ Instagram, YouTube Community, or a federated Mastodon server as a universal dire
 integration when the platform does not offer one; those remain available through the
 system share sheet or copied link.
 
+Every live share invitation must bring the recipient to the canonical GrowPath session
+page, where they can watch when embedding is supported, open the authorized outside
+player when required, RSVP, join GrowPath chat, sign in or register, and return for the
+replay. The outside watch URL is playback context, not the primary invitation link.
+
 ## GrowPath chat and OBS overlay
 
 GrowPath chat is its own conversation. It is not an automatic aggregation of Twitch,

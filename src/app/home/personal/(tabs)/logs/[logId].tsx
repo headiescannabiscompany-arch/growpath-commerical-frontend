@@ -144,6 +144,27 @@ export default function LogDetailScreen() {
     );
   }
 
+  function shareToForum() {
+    if (!log) return;
+    const body = [
+      log.notes || "",
+      `Journal date: ${fmtDate(log.date || log.createdAt)}`,
+      Array.isArray(log.tags) && log.tags.length ? `Tags: ${log.tags.join(", ")}` : ""
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    const query = [
+      `title=${encodeURIComponent(log.title || "Grow journal update")}`,
+      `body=${encodeURIComponent(body)}`,
+      log.growId ? `growId=${encodeURIComponent(String(log.growId))}` : "",
+      log.plantId ? `plantId=${encodeURIComponent(String(log.plantId))}` : "",
+      "purpose=journal-entry"
+    ]
+      .filter(Boolean)
+      .join("&");
+    router.push(`/forum/new-post?${query}` as any);
+  }
+
   if (loading) {
     return (
       <ScreenBoundary
@@ -332,6 +353,21 @@ export default function LogDetailScreen() {
             />
 
             <View style={styles.card}>
+              <Text style={styles.cardTitle}>Share this journal entry</Text>
+              <Text style={styles.cardText}>
+                Review the prefilled discussion before publishing. Private grow records
+                and unselected photos stay private.
+              </Text>
+              <Pressable
+                onPress={shareToForum}
+                accessibilityRole="button"
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryButtonText}>Share in Forum / Q&amp;A</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.card}>
               <Text style={styles.cardTitle}>History Links</Text>
               <Text style={styles.linkMeta}>Grow: {log.growId || "Unlinked"}</Text>
               <Text style={styles.linkMeta}>Plant: {log.plantId || "Whole grow"}</Text>
@@ -431,6 +467,7 @@ export function createLogDetailStyles(palette: ThemePalette) {
       gap: 8
     },
     cardTitle: { fontSize: 16, fontWeight: "800", color: palette.text },
+    cardText: { color: palette.textMuted, lineHeight: 20 },
     notes: { color: palette.textSoft, lineHeight: 20 },
     linkMeta: { color: palette.textMuted, lineHeight: 19 },
     label: { color: palette.text, fontWeight: "800" },

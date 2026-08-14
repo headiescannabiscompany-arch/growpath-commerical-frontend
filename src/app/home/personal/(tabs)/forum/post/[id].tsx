@@ -28,6 +28,7 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
+import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
@@ -543,6 +544,14 @@ export default function ForumPostDetailRoute() {
             placement="middle"
             routeKey="personal_forum_post_id"
             longContent
+          />
+        ) : null}
+
+        {canView && post ? (
+          <PublicShareActions
+            title={titleOf(post)}
+            path={`/forum/post/${encodeURIComponent(id)}`}
+            heading="Share this discussion"
           />
         ) : null}
 
