@@ -40,6 +40,7 @@ import {
 import { submitReport, exportCourseSales } from "../api/reports";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import LessonMediaCard from "@/components/learning/LessonMediaCard";
+import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { listPersonalGrows } from "@/api/grows";
 import { createPersonalTask } from "@/api/tasks";
 import { useAuth } from "@/auth/AuthContext";
@@ -723,6 +724,13 @@ export default function CourseDetailScreen({ route, navigation = null }) {
       </Text>
       {course?.summary || course?.description ? (
         <Text style={styles.body}>{course.summary || course.description}</Text>
+      ) : null}
+      {course?.isPublished && loadedCourseId ? (
+        <PublicShareActions
+          title={course?.title || course?.name || "GrowPath course"}
+          path={`/courses?courseId=${encodeURIComponent(loadedCourseId)}`}
+          heading="Share this course"
+        />
       ) : null}
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 

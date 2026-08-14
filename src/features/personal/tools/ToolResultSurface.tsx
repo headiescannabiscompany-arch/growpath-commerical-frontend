@@ -257,6 +257,12 @@ export default function ToolResultSurface({
     objectValue(inputs, "growId"),
     objectValue(outputs, "growId")
   );
+  const toolRunId = firstString(
+    objectValue(copyPayload, "toolRunId"),
+    objectValue(copyPayload, "_id"),
+    objectValue(copyPayload, "id"),
+    objectValue(outputs, "toolRunId")
+  );
   const defaultAskAi = enableDefaultAskAI
     ? onAskAI ||
       (copyPayload || inputs || outputs || metrics.length || summary
@@ -294,6 +300,24 @@ export default function ToolResultSurface({
     confidence
   });
   const standardActions: ToolResultAction[] = [
+    {
+      key: "share-to-forum",
+      label: "Share in Forum / Q&A",
+      variant: "secondary" as const,
+      pendingLabel: "Opening...",
+      onPress: () => {
+        const query = [
+          `title=${encodeURIComponent(title)}`,
+          `body=${encodeURIComponent(shareSummary)}`,
+          toolRunId ? `toolRunId=${encodeURIComponent(toolRunId)}` : "",
+          growId ? `growId=${encodeURIComponent(growId)}` : "",
+          "purpose=tool-result"
+        ]
+          .filter(Boolean)
+          .join("&");
+        router.push(`/forum/new-post?${query}` as any);
+      }
+    },
     ...(canShareText()
       ? [
           {
