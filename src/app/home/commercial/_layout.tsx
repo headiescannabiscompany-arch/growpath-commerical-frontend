@@ -350,6 +350,10 @@ export default function CommercialTabsLayout() {
         }}
       />
       <Tabs.Screen name="tools/report" options={{ title: "Export Report", href: null }} />
+      <Tabs.Screen
+        name="tools/history-import"
+        options={{ title: "Import Grow History", href: null }}
+      />
     </Tabs>
   );
 }

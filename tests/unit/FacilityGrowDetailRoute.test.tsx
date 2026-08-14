@@ -42,6 +42,11 @@ jest.mock("@/components/facility/FacilityContextualTools", () => {
   const { Text } = require("react-native");
   return () => React.createElement(Text, null, "Contextual grow tools");
 });
+jest.mock("@/components/integrations/GrowIntegrationBuildPanel", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return () => React.createElement(Text, null, "Grow integrations");
+});
 
 describe("FacilityGrowDetailRoute", () => {
   beforeEach(() => {

@@ -15,6 +15,7 @@ import { endpoints } from "@/api/endpoints";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import FacilityContextualTools from "@/components/facility/FacilityContextualTools";
+import GrowIntegrationBuildPanel from "@/components/integrations/GrowIntegrationBuildPanel";
 import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -338,6 +339,12 @@ export default function FacilityGrowDetail() {
               growId={String(id)}
               roomId={String(item.roomId ?? "")}
               prompt={`Review ${pickTitle(item)} and recommend the next facility action.`}
+            />
+            <GrowIntegrationBuildPanel
+              mode="facility"
+              targetRef={String(id || "")}
+              facilityId={String(facilityId || "")}
+              canConfigure={canEditGrow}
             />
           </>
         ) : null}
