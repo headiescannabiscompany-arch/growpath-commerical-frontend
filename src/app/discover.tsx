@@ -102,6 +102,11 @@ function courseRows(payload: any) {
   return rows(payload, ["courses", "results"]);
 }
 
+export function isDiscoverableCourse(row: any) {
+  const title = titleOf(row, "");
+  return !/\bqa[\s-]+only\b/i.test(title) && !/\btest[\s-]+only\b/i.test(title);
+}
+
 export default function DiscoverDirectory() {
   const router = useRouter();
   const entitlements = useEntitlements();
@@ -153,7 +158,11 @@ export default function DiscoverDirectory() {
     setMarketplace(
       marketResult.status === "fulfilled" ? marketplaceRows(marketResult.value) : []
     );
-    setCourses(courseResult.status === "fulfilled" ? courseRows(courseResult.value) : []);
+    setCourses(
+      courseResult.status === "fulfilled"
+        ? courseRows(courseResult.value).filter(isDiscoverableCourse)
+        : []
+    );
     setVideos(videoResult.status === "fulfilled" ? videoResult.value : []);
     if (
       [feedResult, storeResult, marketResult, courseResult, videoResult].every(

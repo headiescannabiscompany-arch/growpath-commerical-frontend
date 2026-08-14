@@ -66,7 +66,8 @@ jest.mock("@/theme/appTheme", () => {
 
 import DiscoverDirectory, {
   createDiscoverVideoFilterStyles,
-  discoverImageOf
+  discoverImageOf,
+  isDiscoverableCourse
 } from "@/app/discover";
 import { getThemePalette } from "@/theme/appTheme";
 
@@ -96,6 +97,12 @@ describe("Discover video search", () => {
       discoverImageOf({ mediaSource: { thumbnailUrl: "https://images.test/video.jpg" } })
     ).toContain("video.jpg");
     expect(discoverImageOf({})).toBe("");
+  });
+
+  it("keeps internal QA courses out of customer discovery", () => {
+    expect(isDiscoverableCourse({ title: "QA ONLY - paid course test" })).toBe(false);
+    expect(isDiscoverableCourse({ title: "Test-only enrollment fixture" })).toBe(false);
+    expect(isDiscoverableCourse({ title: "Living Soil Fundamentals" })).toBe(true);
   });
 
   it("routes non-personal workspaces through the workspace switcher for Plant ID", async () => {
