@@ -137,7 +137,7 @@ requireText(
 requireText(
   "shared course catalog",
   sharedCatalog,
-  /COURSE_CATALOG_REQUEST_TIMEOUT_MS[\s\S]*Promise\.allSettled[\s\S]*retries: 0[\s\S]*Some course sources could not load[\s\S]*Retry course catalog/,
+  /COURSE_CATALOG_REQUEST_TIMEOUT_MS[\s\S]*courseCatalogRequest[\s\S]*Promise\.race[\s\S]*retries: 0[\s\S]*Promise\.allSettled[\s\S]*Some course sources could not load[\s\S]*Retry course catalog/,
   "bounded partial catalog recovery"
 );
 requireText(
@@ -151,6 +151,12 @@ requireText(
   tests,
   /creates Commercial drafts through the Commercial course workflow/,
   "Commercial full-builder creation test"
+);
+requireText(
+  "course media tests",
+  tests,
+  /bounds a course source even when the transport never settles/,
+  "outer catalog deadline regression test"
 );
 requireText(
   "course media tests",
