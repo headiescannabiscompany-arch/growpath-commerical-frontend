@@ -33,7 +33,10 @@ catalog also includes three family-level Orchidaceae records with visible bilate
 orchid floral structure; three orchid-like _Duparquetia orchidacea_ candidates were
 rejected because that accepted species belongs to Fabaceae despite its name and flower
 appearance. The governed catalog is now 55/320 and remains planning until all governed slots are filled;
-no candidate is automatically promoted.
+no candidate is automatically promoted. Two genus-level Marigold records with composite
+heads and divided foliage also passed; three _Erynnis tages_ butterfly results and one
+_Tithonia rotundifolia_ lookalike were rejected despite appearing in the Tagetes query.
+The governed catalog is now 57/320.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 

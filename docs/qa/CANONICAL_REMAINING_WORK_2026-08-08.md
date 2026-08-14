@@ -200,7 +200,10 @@ execution boundaries and the evidence needed not to reopen completed work.
       regional aliases belong with the accepted scientific identity while lookalikes
       and misleading names remain separate. The catalog is now 55/320 reviewed records;
       the remaining candidates still require individual review, and all 36
-      owned adverse-media slots remain.
+      owned adverse-media slots remain. Two genus-level Marigold records with matching
+      composite heads and divided foliage then passed; three butterfly results caused
+      by the _Erynnis tages_ name collision and one _Tithonia rotundifolia_ lookalike
+      were rejected. The catalog is now 57/320 reviewed records.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.
