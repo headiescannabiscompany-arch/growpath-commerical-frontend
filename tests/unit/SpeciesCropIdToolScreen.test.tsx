@@ -4583,11 +4583,11 @@ describe("SpeciesCropIdToolRoute", () => {
 
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     expect(await screen.findByText("Species / Crop Identification result")).toBeTruthy();
-    fireEvent.press(
-      screen.getByLabelText(
-        "Include or update current location privately with this Plant ID"
-      )
+    const includeLocationButton = screen.getByLabelText(
+      "Include or update current location privately with this Plant ID"
     );
+    await waitFor(() => expect(includeLocationButton).not.toBeDisabled());
+    fireEvent.press(includeLocationButton);
     await waitFor(() => expect(mockUpdateToolRun).toHaveBeenCalledTimes(1));
     expect(
       await screen.findByLabelText("Remove private location from this Plant ID")

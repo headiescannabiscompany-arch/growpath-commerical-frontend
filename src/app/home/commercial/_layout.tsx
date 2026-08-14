@@ -217,6 +217,14 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="tasks/[id]" options={{ title: "Task Detail", href: null }} />
       <Tabs.Screen name="marketing" options={{ title: "Marketing", href: null }} />
       <Tabs.Screen
+        name="social-tools"
+        options={{ title: "External Channels", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="links"
+        options={{ title: "Public Links", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
         name="inventory-create"
         options={{
           title: "Add Inventory Support Record",
