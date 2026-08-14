@@ -25,13 +25,14 @@ const personalAdd = read("src/screens/AddLessonScreen.js");
 const personalEdit = read("src/screens/EditLessonScreen.js");
 const personalPlayer = read("src/screens/CourseDetailScreen.js");
 const commercialAuthor = read("src/app/home/commercial/courses/[courseId].tsx");
+const sharedCreate = read("src/screens/commercial/CreateCourseScreen.js");
 const nestedService = read("backend/services/lessonMedia.js");
 const method = read("docs/knowledge/methods/course-media-workflow-method.md");
 const registry = read("src/knowledge/methodRegistry.ts");
 const sources = read("src/knowledge/sourceRegistry.ts");
 const tests = `${read("tests/unit/lessonMedia.test.ts")}\n${read(
   "tests/unit/LessonMediaComponents.test.tsx"
-)}`;
+)}\n${read("tests/unit/CreateCourseScreen.test.tsx")}`;
 
 [
   ["GrowPath upload", /growpath_upload/],
@@ -109,6 +110,18 @@ requireText(
   tests,
   /requires learner consent before loading/,
   "click-to-load test"
+);
+requireText(
+  "shared course creator",
+  sharedCreate,
+  /entitlements\.mode === "commercial" \? createCommercialCourse : createCourse/,
+  "Commercial workspace course creation boundary"
+);
+requireText(
+  "course media tests",
+  tests,
+  /creates Commercial drafts through the Commercial course workflow/,
+  "Commercial full-builder creation test"
 );
 
 if (!process.exitCode) {
