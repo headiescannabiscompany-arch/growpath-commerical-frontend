@@ -115,8 +115,12 @@ Legend:
 - [x] Notification Center and Profile expose Device push plus Task, Forum, Video,
       Courses/Lives, Commerce, and Facility categories with persisted preferences.
 - [~] Native cold-start/background notification routing and exact-record links are
-      implemented. Real iOS/Android receipt, opt-out suppression, and tap-through
-      acceptance remain.
+      implemented. Frontend `5b1f69bb` normalized retained nested Facility Task
+      notifications to `Task reminders`, `push eligible`, and exact task links in
+      production; backend `6805fdd9` now preserves the in-app record and also sends
+      assignment push when the assignee has a registered token and has not disabled
+      push or task reminders. Both branch gates and both post-merge gates passed.
+      Real iOS/Android receipt, opt-out suppression, and tap-through acceptance remain.
 - [~] Commercial course creation, edit, publish/unpublish, archive, storefront/learner
       visibility, and one disposable-draft cleanup still need populated live acceptance.
 
