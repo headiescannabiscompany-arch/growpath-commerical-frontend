@@ -28,3 +28,7 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+    headers:
+      - path: /_expo/static/js/*
+        name: Cache-Control
+        value: public, max-age=0, s-maxage=0, must-revalidate
