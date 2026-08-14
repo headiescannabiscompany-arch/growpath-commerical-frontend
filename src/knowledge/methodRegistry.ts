@@ -646,7 +646,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "one provider-aware media contract shared by initial course creation and later lesson editing",
       "shared Full Course Builder creation routed into the active workspace's canonical course collection, including Commercial draft persistence in Commercial Courses",
       "flat canonical Commercial course grow-interest tags with separately retained structured builder selections and legacy-reader normalization",
-      "bounded independent public, owned, and Commercial-public catalog loading with partial results and a named retry action",
+      "bounded-total independent public, owned, and Commercial-public catalog loading with partial results and a named retry action",
       "owner-controlled publish and private-draft unpublish",
       "single page heading, ordered level-two builder steps, one shared back action, and checked pricing or access controls",
       "paid discovery metadata without protected lesson, assessment, document, or media content",

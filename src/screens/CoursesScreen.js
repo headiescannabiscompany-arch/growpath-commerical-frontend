@@ -194,14 +194,19 @@ export default function CoursesScreen({
 
       try {
         const [publicResult, ownedResult, commercialResult] = await Promise.allSettled([
-          apiRequest("/api/courses", { timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS }),
+          apiRequest("/api/courses", {
+            timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS,
+            retries: 0
+          }),
           canCreateCourses
             ? apiRequest("/api/courses/mine", {
-                timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS
+                timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS,
+                retries: 0
               })
             : Promise.resolve([]),
           apiRequest("/api/commercial/courses/public", {
-            timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS
+            timeoutMs: COURSE_CATALOG_REQUEST_TIMEOUT_MS,
+            retries: 0
           })
         ]);
         if (
