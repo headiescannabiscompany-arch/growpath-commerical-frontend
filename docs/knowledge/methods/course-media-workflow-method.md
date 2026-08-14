@@ -10,6 +10,8 @@ Commercial course persistence stores a flat canonical grow-interest tag list for
 
 The shared course catalog loads public, owned, and Commercial-public sources independently with a bounded total request time and no hidden automatic retry extension. One unavailable source must not leave the whole catalog loading forever or discard fulfilled sources; show available courses, disclose the partial result, and provide a named retry action.
 
+Catalog loading depends on stable authenticated identity values, not a whole session-user object whose reference may change during rendering. Course-result state updates must not retrigger the same catalog load indefinitely.
+
 ## Source selection and normalization
 
 Authors choose one source type: GrowPath upload, YouTube, Rumble, Vimeo, or Other video URL. Detect YouTube, Vimeo, and Rumble from recognized video-page URLs even when the author initially chooses Other. Preserve the submitted URL for traceability and store a separate canonical URL, provider video ID, Vimeo unlisted privacy hash when present, provider label, thumbnail when deterministically available, embed capability, external-link fallback, privacy mode, and last availability-check time.

@@ -141,6 +141,12 @@ requireText(
   "bounded partial catalog recovery"
 );
 requireText(
+  "shared course catalog",
+  sharedCatalog,
+  /const viewerId = entityId\(auth\.user\)[\s\S]*viewerOwnsCourse\(course, viewerId\)[\s\S]*viewerId,/,
+  "stable authenticated catalog dependency"
+);
+requireText(
   "course media tests",
   tests,
   /creates Commercial drafts through the Commercial course workflow/,

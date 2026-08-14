@@ -155,6 +155,7 @@ export default function CoursesScreen({
   const styles = useMemo(() => createCoursesScreenStyles(palette), [palette]);
   const access = getLearningAccess(ent);
   const isSignedIn = Boolean(auth.isAuthed || auth.user?.id);
+  const viewerId = entityId(auth.user);
   const canCreateCourses = isSignedIn && access.canCreateCourses;
   const canInvite = isSignedIn && !!ent.can?.(CAPABILITY_KEYS.COMMERCIAL_HOME);
 
@@ -240,7 +241,7 @@ export default function CoursesScreen({
         const ownershipScoped = list.map((course) => ({
           ...course,
           _viewerOwnsCourse:
-            Boolean(course?._viewerOwnsCourse) || viewerOwnsCourse(course, auth.user)
+            Boolean(course?._viewerOwnsCourse) || viewerOwnsCourse(course, viewerId)
         }));
         const publicCleanScoped = ownershipScoped.filter(
           (course) => course?._viewerOwnsCourse || !isExplicitQaCourse(course)
@@ -269,7 +270,7 @@ export default function CoursesScreen({
   }, [
     access.canSeePaidCourses,
     access.canViewCourses,
-    auth.user,
+    viewerId,
     canCreateCourses,
     isSignedIn,
     catalogReloadKey
