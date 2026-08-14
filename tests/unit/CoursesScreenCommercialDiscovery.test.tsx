@@ -8,7 +8,7 @@ const mockPush = jest.fn();
 const mockAuthState = { isAuthed: true, user: { id: "learner", growInterests: {} } };
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => mockAuthState
+  useAuth: () => ({ ...mockAuthState, user: { ...mockAuthState.user } })
 }));
 
 jest.mock("expo-router", () => ({
@@ -67,6 +67,7 @@ describe("CoursesScreen commercial discovery", () => {
     await waitFor(() =>
       expect(screen.getByText("Living Soil Product School")).toBeTruthy()
     );
+    await waitFor(() => expect(screen.queryByText("Loading courses...")).toBeNull());
     expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/courses/public", {
       timeoutMs: 8000,
       retries: 0
@@ -100,6 +101,7 @@ describe("CoursesScreen commercial discovery", () => {
     const screen = render(<CoursesScreen />);
 
     await waitFor(() => expect(screen.getByText("Available Public Course")).toBeTruthy());
+    await waitFor(() => expect(screen.queryByText("Loading courses...")).toBeNull());
     expect(
       screen.getByText("Some course sources could not load. Showing the available courses.")
     ).toBeTruthy();
