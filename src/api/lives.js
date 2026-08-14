@@ -70,3 +70,41 @@ export function getLiveOverlay(token, after) {
     invalidateOn401: false
   });
 }
+
+export function getHostedLiveStatus() {
+  return apiRequest(apiRoutes.LIVES.HOSTED_STATUS);
+}
+
+export function listHostedLiveChannels() {
+  return apiRequest(apiRoutes.LIVES.HOSTED_CHANNELS);
+}
+
+export function provisionHostedLiveInput(id, data = {}) {
+  return apiRequest(apiRoutes.LIVES.HOSTED_INPUT(id), { method: "POST", body: data });
+}
+
+export function rotateHostedLiveInput(id) {
+  return apiRequest(apiRoutes.LIVES.ROTATE_HOSTED_INPUT(id), {
+    method: "POST",
+    body: {}
+  });
+}
+
+export function getHostedLiveLifecycle(id) {
+  return apiRequest(apiRoutes.LIVES.HOSTED_LIFECYCLE(id));
+}
+
+export function getHostedLivePlayback(id) {
+  return apiRequest(apiRoutes.LIVES.PLAYBACK(id), {
+    method: "POST",
+    body: {}
+  });
+}
+
+export function removeHostedLiveChannel(channelId) {
+  return apiRequest(apiRoutes.LIVES.HOSTED_CHANNEL(channelId), { method: "DELETE" });
+}
+
+export function releaseHostedLiveInput(id) {
+  return apiRequest(apiRoutes.LIVES.HOSTED_INPUT(id), { method: "DELETE" });
+}

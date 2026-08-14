@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -10,7 +11,12 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import { createLive } from "@/api/lives";
+import {
+  createLive,
+  getHostedLiveStatus,
+  listHostedLiveChannels,
+  provisionHostedLiveInput
+} from "@/api/lives";
 import {
   connectDiscordLive,
   disconnectDiscordLive,
@@ -27,13 +33,18 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type SessionType = "live" | "premiere";
-type StreamPlatform = "twitch" | "youtube" | "kick" | "facebook" | "other";
+type BroadcastMode = "external" | "growpath";
+type StreamPlatform = "twitch" | "youtube" | "kick" | "facebook" | "instagram" | "other";
+
+type HostedChannel = { id: string; label: string; lifecycle?: string };
+type HostedCredentials = { rtmpsUrl?: string; streamKey?: string };
 
 const STREAM_DESTINATIONS: Array<{ value: StreamPlatform; label: string }> = [
   { value: "twitch", label: "Twitch" },
   { value: "youtube", label: "YouTube" },
   { value: "kick", label: "Kick" },
   { value: "facebook", label: "Facebook Live" },
+  { value: "instagram", label: "Instagram Live" },
   { value: "other", label: "Another service" }
 ];
 
@@ -44,6 +55,7 @@ export default function LiveStudioRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [sessionType, setSessionType] = useState<SessionType>("live");
+  const [broadcastMode, setBroadcastMode] = useState<BroadcastMode>("external");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [streamPlatform, setStreamPlatform] = useState<StreamPlatform>("twitch");
@@ -67,6 +79,14 @@ export default function LiveStudioRoute() {
   const [discordChannel, setDiscordChannel] = useState("");
   const [discordSaving, setDiscordSaving] = useState(false);
   const [discordMessage, setDiscordMessage] = useState("");
+  const [hostedStatus, setHostedStatus] = useState<any>(null);
+  const [hostedChannels, setHostedChannels] = useState<HostedChannel[]>([]);
+  const [hostedChannelId, setHostedChannelId] = useState("");
+  const [hostedChannelLabel, setHostedChannelLabel] = useState("My OBS channel");
+  const [hostedCredentials, setHostedCredentials] = useState<HostedCredentials | null>(
+    null
+  );
+  const [savedSessionId, setSavedSessionId] = useState("");
 
   useEffect(() => {
     if (!auth.isAuthed) return;
@@ -89,6 +109,19 @@ export default function LiveStudioRoute() {
     getDiscordLiveConnection()
       .then((result) => setDiscord(result.connection || null))
       .catch(() => setDiscord(null));
+  }, [auth.isAuthed]);
+
+  useEffect(() => {
+    if (!auth.isAuthed) return;
+    Promise.all([getHostedLiveStatus(), listHostedLiveChannels()])
+      .then(([status, channels]) => {
+        setHostedStatus(status);
+        setHostedChannels(Array.isArray(channels) ? channels : []);
+      })
+      .catch(() => {
+        setHostedStatus({ enabled: false });
+        setHostedChannels([]);
+      });
   }, [auth.isAuthed]);
 
   async function saveDiscord() {
@@ -149,12 +182,28 @@ export default function LiveStudioRoute() {
       setError("Choose one of your published videos for the premiere.");
       return;
     }
-    if (sessionType === "live" && streamPlatform === "twitch" && !twitchChannel.trim()) {
+    if (
+      sessionType === "live" &&
+      broadcastMode === "growpath" &&
+      !hostedStatus?.enabled
+    ) {
+      setError(
+        "GrowPath-hosted broadcasting is not activated yet. Use an outside live URL for now."
+      );
+      return;
+    }
+    if (
+      sessionType === "live" &&
+      broadcastMode === "external" &&
+      streamPlatform === "twitch" &&
+      !twitchChannel.trim()
+    ) {
       setError("Add the Twitch channel viewers should watch.");
       return;
     }
     if (
       sessionType === "live" &&
+      broadcastMode === "external" &&
       streamPlatform !== "twitch" &&
       !/^https:\/\//i.test(externalWatchUrl.trim())
     ) {
@@ -168,13 +217,21 @@ export default function LiveStudioRoute() {
         title: title.trim(),
         description: description.trim(),
         sessionType,
-        streamPlatform: sessionType === "premiere" ? "growpath" : streamPlatform,
+        streamPlatform:
+          sessionType === "premiere" || broadcastMode === "growpath"
+            ? "growpath"
+            : streamPlatform,
+        broadcastMode: sessionType === "live" ? broadcastMode : "external",
         twitchChannel:
-          sessionType === "live" && streamPlatform === "twitch"
+          sessionType === "live" &&
+          broadcastMode === "external" &&
+          streamPlatform === "twitch"
             ? twitchChannel.trim()
             : "",
         externalWatchUrl:
-          sessionType === "live" && streamPlatform !== "twitch"
+          sessionType === "live" &&
+          broadcastMode === "external" &&
+          streamPlatform !== "twitch"
             ? externalWatchUrl.trim()
             : "",
         externalPlatformLabel:
@@ -185,7 +242,7 @@ export default function LiveStudioRoute() {
         startsAt: startsAt || null,
         scheduledStart: startsAt,
         reminderPreference: reminder,
-        status: startsAt ? "scheduled" : "draft",
+        status: startsAt ? "scheduled" : isPublished ? "live" : "draft",
         isPublished,
         visibility: "public",
         chatEnabled,
@@ -209,11 +266,39 @@ export default function LiveStudioRoute() {
       });
       const id = String(result?.session?.id || result?.session?._id || "");
       if (!id) throw new Error("The session was saved but could not be opened.");
+      if (sessionType === "live" && broadcastMode === "growpath") {
+        const provisioned: any = await provisionHostedLiveInput(
+          id,
+          hostedChannelId
+            ? { channelId: hostedChannelId }
+            : { channelLabel: hostedChannelLabel.trim() || "My OBS channel" }
+        );
+        setSavedSessionId(id);
+        setHostedCredentials(provisioned?.credentials || null);
+        if (!provisioned?.credentials) {
+          router.replace(`/live-session?sessionId=${encodeURIComponent(id)}` as any);
+        }
+        return;
+      }
       router.replace(`/live-session?sessionId=${encodeURIComponent(id)}` as any);
     } catch (cause: any) {
       setError(String(cause?.message || cause || "Unable to save this session."));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function copyCredential(value: string, label: string) {
+    try {
+      if (Platform.OS !== "web" || !globalThis.navigator?.clipboard) {
+        throw new Error("Clipboard unavailable");
+      }
+      await globalThis.navigator.clipboard.writeText(value);
+      setError(
+        `${label} copied. Save it in OBS now; GrowPath will not show the stream key again.`
+      );
+    } catch {
+      setError(`Select and copy the ${label.toLowerCase()} shown below.`);
     }
   }
 
@@ -306,76 +391,190 @@ export default function LiveStudioRoute() {
         {sessionType === "live" ? (
           <View style={styles.videoSection}>
             <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
-              Where are you streaming?
+              Choose how you broadcast
             </Text>
             <Text style={styles.muted}>
-              This is the video destination viewers will watch. Discord announcements are
-              configured separately below.
+              Both choices keep the same GrowPath session page, chat, reminders, sharing,
+              and replay history.
             </Text>
             <View style={styles.row}>
-              {STREAM_DESTINATIONS.map((destination) => (
+              {(
+                [
+                  { value: "external", label: "Use an outside live URL" },
+                  { value: "growpath", label: "Broadcast live in GrowPath" }
+                ] as Array<{ value: BroadcastMode; label: string }>
+              ).map((mode) => (
                 <Pressable
-                  key={destination.value}
+                  key={mode.value}
                   accessibilityRole="radio"
-                  accessibilityLabel={`Stream on ${destination.label}`}
-                  accessibilityState={{ checked: streamPlatform === destination.value }}
-                  onPress={() => setStreamPlatform(destination.value)}
+                  accessibilityState={{ checked: broadcastMode === mode.value }}
+                  onPress={() => setBroadcastMode(mode.value)}
                   style={[
                     styles.choice,
-                    streamPlatform === destination.value && styles.choiceSelected
+                    broadcastMode === mode.value && styles.choiceSelected
                   ]}
                 >
                   <Text
                     style={[
                       styles.choiceText,
-                      streamPlatform === destination.value && styles.choiceTextSelected
+                      broadcastMode === mode.value && styles.choiceTextSelected
                     ]}
                   >
-                    {destination.label}
+                    {mode.label}
                   </Text>
                 </Pressable>
               ))}
             </View>
-            {streamPlatform === "twitch" ? (
+
+            {broadcastMode === "external" ? (
               <>
-                <Text style={styles.label}>Twitch channel</Text>
-                <TextInput
-                  accessibilityLabel="Twitch channel viewers will watch"
-                  autoCapitalize="none"
-                  onChangeText={setTwitchChannel}
-                  placeholder="channel name"
-                  placeholderTextColor={palette.textMuted}
-                  style={styles.input}
-                  value={twitchChannel}
-                />
-              </>
-            ) : (
-              <>
-                {streamPlatform === "other" ? (
+                <Text style={styles.label}>Outside service</Text>
+                <View style={styles.row}>
+                  {STREAM_DESTINATIONS.map((destination) => (
+                    <Pressable
+                      key={destination.value}
+                      accessibilityRole="radio"
+                      accessibilityState={{
+                        checked: streamPlatform === destination.value
+                      }}
+                      onPress={() => setStreamPlatform(destination.value)}
+                      style={[
+                        styles.choice,
+                        streamPlatform === destination.value && styles.choiceSelected
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.choiceText,
+                          streamPlatform === destination.value &&
+                            styles.choiceTextSelected
+                        ]}
+                      >
+                        {destination.label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+                {streamPlatform === "twitch" ? (
                   <>
-                    <Text style={styles.label}>Service name</Text>
+                    <Text style={styles.label}>Twitch channel</Text>
                     <TextInput
-                      accessibilityLabel="Other streaming service name"
-                      onChangeText={setExternalPlatformLabel}
-                      placeholder="Streaming service"
+                      accessibilityLabel="Twitch channel viewers will watch"
+                      autoCapitalize="none"
+                      onChangeText={setTwitchChannel}
+                      placeholder="channel name"
                       placeholderTextColor={palette.textMuted}
                       style={styles.input}
-                      value={externalPlatformLabel}
+                      value={twitchChannel}
+                    />
+                  </>
+                ) : (
+                  <>
+                    {streamPlatform === "other" ? (
+                      <>
+                        <Text style={styles.label}>Service name</Text>
+                        <TextInput
+                          accessibilityLabel="Other streaming service name"
+                          onChangeText={setExternalPlatformLabel}
+                          placeholder="Streaming service"
+                          placeholderTextColor={palette.textMuted}
+                          style={styles.input}
+                          value={externalPlatformLabel}
+                        />
+                      </>
+                    ) : null}
+                    <Text style={styles.label}>Viewer watch URL</Text>
+                    <TextInput
+                      accessibilityLabel={`${streamPlatform} viewer watch URL`}
+                      autoCapitalize="none"
+                      keyboardType="url"
+                      onChangeText={setExternalWatchUrl}
+                      placeholder="https://..."
+                      placeholderTextColor={palette.textMuted}
+                      style={styles.input}
+                      value={externalWatchUrl}
+                    />
+                  </>
+                )}
+              </>
+            ) : hostedStatus?.enabled ? (
+              <View style={styles.hostedPanel}>
+                <Text style={styles.settingTitle}>Your reusable OBS connection</Text>
+                <Text style={styles.muted}>
+                  Save one GrowPath channel in OBS and reuse it for future broadcasts.
+                  Ending a live keeps the connection; rotating or removing it changes the
+                  key.
+                </Text>
+                {hostedChannels.length ? (
+                  <>
+                    <Text style={styles.label}>Saved channel</Text>
+                    <View style={styles.row}>
+                      {hostedChannels.map((channel) => (
+                        <Pressable
+                          key={channel.id}
+                          accessibilityRole="radio"
+                          accessibilityState={{ checked: hostedChannelId === channel.id }}
+                          onPress={() => setHostedChannelId(channel.id)}
+                          style={[
+                            styles.choice,
+                            hostedChannelId === channel.id && styles.choiceSelected
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.choiceText,
+                              hostedChannelId === channel.id && styles.choiceTextSelected
+                            ]}
+                          >
+                            {channel.label}
+                          </Text>
+                        </Pressable>
+                      ))}
+                      <Pressable
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: !hostedChannelId }}
+                        onPress={() => setHostedChannelId("")}
+                        style={[styles.choice, !hostedChannelId && styles.choiceSelected]}
+                      >
+                        <Text
+                          style={[
+                            styles.choiceText,
+                            !hostedChannelId && styles.choiceTextSelected
+                          ]}
+                        >
+                          New channel
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </>
+                ) : null}
+                {!hostedChannelId ? (
+                  <>
+                    <Text style={styles.label}>Channel name</Text>
+                    <TextInput
+                      accessibilityLabel="Reusable OBS channel name"
+                      onChangeText={setHostedChannelLabel}
+                      style={styles.input}
+                      value={hostedChannelLabel}
                     />
                   </>
                 ) : null}
-                <Text style={styles.label}>Viewer watch URL</Text>
-                <TextInput
-                  accessibilityLabel={`${streamPlatform} viewer watch URL`}
-                  autoCapitalize="none"
-                  keyboardType="url"
-                  onChangeText={setExternalWatchUrl}
-                  placeholder="https://..."
-                  placeholderTextColor={palette.textMuted}
-                  style={styles.input}
-                  value={externalWatchUrl}
-                />
-              </>
+                <Text style={styles.muted}>
+                  {hostedStatus.remainingMonthlyMinutes} of{" "}
+                  {hostedStatus.limits?.monthlyMinutes} hosted stream minutes remain this
+                  month. Maximum session: {hostedStatus.limits?.sessionMinutes} minutes.
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.notice}>
+                <Text style={styles.settingTitle}>
+                  GrowPath-hosted broadcasting is not activated yet
+                </Text>
+                <Text style={styles.muted}>
+                  Outside live URLs and premieres still work. Hosted OBS broadcasting will
+                  appear here after the streaming provider is activated.
+                </Text>
+              </View>
             )}
           </View>
         ) : null}
@@ -469,8 +668,11 @@ export default function LiveStudioRoute() {
         ) : null}
         <View style={styles.settingRow}>
           <View style={styles.settingCopy}>
-            <Text style={styles.settingTitle}>Publish now</Text>
-            <Text style={styles.muted}>Otherwise this stays a private draft.</Text>
+            <Text style={styles.settingTitle}>Go live now</Text>
+            <Text style={styles.muted}>
+              Publishes this session now. Leave off to save a private draft or scheduled
+              session.
+            </Text>
           </View>
           <Switch value={isPublished} onValueChange={setIsPublished} />
         </View>
@@ -567,12 +769,60 @@ export default function LiveStudioRoute() {
         {discordMessage ? <Text style={styles.muted}>{discordMessage}</Text> : null}
       </View>
 
+      {hostedCredentials && savedSessionId ? (
+        <View style={styles.secretCard}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+            Save this GrowPath channel in OBS now
+          </Text>
+          <Text style={styles.secretWarning}>
+            The stream key is shown once. Do not share it. OBS can retain both fields so
+            this account can reuse the same channel for later lives.
+          </Text>
+          <Text style={styles.label}>OBS server</Text>
+          <Text selectable style={styles.secretValue}>
+            {hostedCredentials.rtmpsUrl}
+          </Text>
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={() =>
+              void copyCredential(String(hostedCredentials.rtmpsUrl || ""), "OBS server")
+            }
+          >
+            <Text style={styles.secondaryButtonText}>Copy OBS server</Text>
+          </Pressable>
+          <Text style={styles.label}>Stream key</Text>
+          <Text selectable style={styles.secretValue}>
+            {hostedCredentials.streamKey}
+          </Text>
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={() =>
+              void copyCredential(String(hostedCredentials.streamKey || ""), "Stream key")
+            }
+          >
+            <Text style={styles.secondaryButtonText}>Copy stream key</Text>
+          </Pressable>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={() =>
+              router.replace(
+                `/live-session?sessionId=${encodeURIComponent(savedSessionId)}` as any
+              )
+            }
+          >
+            <Text style={styles.primaryButtonText}>I saved it in OBS · Open session</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Pressable
         accessibilityRole="button"
-        disabled={saving}
+        disabled={saving || Boolean(hostedCredentials)}
         onPress={save}
-        style={[styles.primaryButton, saving && styles.disabled]}
+        style={[
+          styles.primaryButton,
+          (saving || Boolean(hostedCredentials)) && styles.disabled
+        ]}
       >
         <Text style={styles.primaryButtonText}>
           {saving ? "Saving..." : isPublished ? "Publish session" : "Save draft"}
@@ -655,6 +905,32 @@ function createStyles(palette: ThemePalette) {
       backgroundColor: palette.surfaceMuted,
       borderRadius: radius.pill,
       gap: 8,
+      padding: 12
+    },
+    hostedPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 14
+    },
+    secretCard: {
+      backgroundColor: palette.surface,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 2,
+      gap: 10,
+      padding: 16
+    },
+    secretWarning: { color: palette.warning, fontWeight: "900", lineHeight: 20 },
+    secretValue: {
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      color: palette.text,
+      fontFamily: "monospace",
       padding: 12
     },
     settingRow: {
