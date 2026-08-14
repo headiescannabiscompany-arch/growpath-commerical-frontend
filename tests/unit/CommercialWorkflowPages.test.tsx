@@ -3270,6 +3270,7 @@ describe("commercial workflow pages", () => {
       "Courses",
       "Lives",
       "Forum / Q&A",
+      "External Channels",
       "Orders",
       "Analytics",
       "Product Lines",
@@ -3277,6 +3278,7 @@ describe("commercial workflow pages", () => {
       "Product Trials",
       "Inventory Support",
       "Profile",
+      "Public Links",
       "Tools"
     ].forEach((destination) => {
       expect(screen.getByRole("link", { name: `Open ${destination}` })).toBeTruthy();

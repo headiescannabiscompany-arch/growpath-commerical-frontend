@@ -108,7 +108,9 @@ export default function LinksScreen() {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.header}>Links</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.header}>
+            Public Links
+          </Text>
           <Text style={styles.subtitle}>
             Manage public links for the commercial profile.
           </Text>
