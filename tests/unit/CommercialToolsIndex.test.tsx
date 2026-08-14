@@ -10,14 +10,8 @@ const mockPush = jest.fn();
 const mockTokenBalanceWidget = jest.fn();
 
 jest.mock("expo-router", () => {
-  const React = require("react");
   return {
-    Link: ({ children, href, target }: any) =>
-      React.cloneElement(children, {
-        href,
-        target,
-        onPress: () => mockPush(href)
-      })
+    useRouter: () => ({ push: mockPush })
   };
 });
 
@@ -64,7 +58,6 @@ describe("CommercialToolsIndex", () => {
 
     const batchPlannerLink = screen.getByLabelText("Open batch planner");
 
-    expect(batchPlannerLink.props.target).toBe("_top");
     fireEvent.press(batchPlannerLink);
 
     expect(mockPush).toHaveBeenCalledWith("/home/commercial/tools/soil-nutrient-batch");

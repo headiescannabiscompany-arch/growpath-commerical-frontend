@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -100,6 +100,7 @@ export const COMMERCIAL_PRODUCTION_TOOLS: readonly CommercialToolHubItem[] = [
 
 function ToolGrid({ items }: { items: readonly CommercialToolHubItem[] }) {
   const { palette } = useAppTheme();
+  const router = useRouter();
 
   return (
     <View style={styles.grid}>
@@ -123,25 +124,16 @@ function ToolGrid({ items }: { items: readonly CommercialToolHubItem[] }) {
             <Text style={[styles.detailLabel, { color: palette.text }]}>You get: </Text>
             {tool.output}
           </Text>
-          <Link
-            href={tool.href as any}
-            asChild
-            target={
-              tool.href === "/home/commercial/tools/soil-nutrient-batch"
-                ? "_top"
-                : undefined
-            }
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={tool.actionLabel}
+            onPress={() => router.push(tool.href as any)}
+            style={[styles.button, { backgroundColor: palette.accent }]}
           >
-            <Pressable
-              accessibilityRole="link"
-              accessibilityLabel={tool.actionLabel}
-              style={[styles.button, { backgroundColor: palette.accent }]}
-            >
-              <Text style={[styles.buttonText, { color: palette.accentText }]}>
-                {tool.actionLabel}
-              </Text>
-            </Pressable>
-          </Link>
+            <Text style={[styles.buttonText, { color: palette.accentText }]}>
+              {tool.actionLabel}
+            </Text>
+          </Pressable>
         </AppCard>
       ))}
     </View>
