@@ -169,7 +169,10 @@ execution boundaries and the evidence needed not to reopen completed work.
       insufficient species ground truth. Four cultivated-form lettuce records then
       passed; four flowering or wild-relative candidates were rejected because their
       visible evidence could not reliably establish cultivated lettuce. The catalog is
-      now 24/320 reviewed records and
+      now 24/320 reviewed records. Three basil records with strong cultivated foliage
+      or combined leaf-and-flower evidence then passed; five unresolved flower-only,
+      single-leaf, or close-relative candidates were rejected. The catalog is now
+      27/320 reviewed records and
       correctly remains `planning`; 276 candidates in the refreshed queue still need
       review, one is explicitly rejected, and all 36 owned
       adverse-media slots remain.

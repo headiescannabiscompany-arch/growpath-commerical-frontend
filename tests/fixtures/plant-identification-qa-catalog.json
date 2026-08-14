@@ -702,6 +702,183 @@
   },
   "mediaRecords": [
     {
+      "recordId": "plant-id-basil-003",
+      "caseId": "basil",
+      "acceptedName": "Basil",
+      "scientificName": "Ocimum basilicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "mint family herb"
+      ],
+      "distinguishingFeatures": [
+        "classic cultivated sweet-basil leaf form",
+        "opposite aromatic-herb architecture"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.82,
+        "maximum": 0.96
+      },
+      "expectedResult": "Basil (Ocimum basilicum) is expected from the characteristic opposite, broad, puckered foliage; no cultivar inference.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/315929283",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/570765836/original.jpg",
+      "creator": "(c) Ryan Donnelly, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Ryan Donnelly, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "basil-003",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "young entire herb",
+          "opposite decussate leaves",
+          "broad ovate glossy puckered blades",
+          "prominent pinnate venation"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A452874-1",
+            "outcome": "Kew POWO accepts Ocimum basilicum L. and notes frequent confusion with O. africanum and O. americanum based on indumentum and flower size. Only candidates with strong cultivated foliage or combined leaf-and-flower evidence were approved; unresolved flower-only and single-leaf candidates were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-570765836",
+        "photoId": 570765836,
+        "sourceQuery": "Ocimum basilicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 61398,
+        "observedTaxonName": "Ocimum basilicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-basil-005",
+      "caseId": "basil",
+      "acceptedName": "Basil",
+      "scientificName": "Ocimum basilicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "mint family herb"
+      ],
+      "distinguishingFeatures": [
+        "combined basil foliage and bilabiate flower evidence",
+        "flowering-node structure consistent with Ocimum"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.76,
+        "maximum": 0.92
+      },
+      "expectedResult": "Basil (Ocimum basilicum) is expected from combined leaf and flower characters; retain some uncertainty among closely related Ocimum species.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/326773806",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/591889275/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "basil-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "opposite broad glossy leaves",
+          "white bilabiate flowers",
+          "clustered green calyces",
+          "Ocimum-like flowering node"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A452874-1",
+            "outcome": "Kew POWO accepts Ocimum basilicum L. and notes frequent confusion with O. africanum and O. americanum based on indumentum and flower size. Only candidates with strong cultivated foliage or combined leaf-and-flower evidence were approved; unresolved flower-only and single-leaf candidates were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-591889275",
+        "photoId": 591889275,
+        "sourceQuery": "Ocimum basilicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 61398,
+        "observedTaxonName": "Ocimum basilicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-basil-007",
+      "caseId": "basil",
+      "acceptedName": "Basil",
+      "scientificName": "Ocimum basilicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "mint family herb"
+      ],
+      "distinguishingFeatures": [
+        "whole-plant sweet-basil habit",
+        "repeated opposite Ocimum basilicum-like foliage"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.84,
+        "maximum": 0.97
+      },
+      "expectedResult": "Basil (Ocimum basilicum) is expected from the whole-plant architecture and repeated characteristic foliage; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/352648668",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/643584612/original.jpg",
+      "creator": "(c) Guillaume Delaitre, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Guillaume Delaitre, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "basil-007",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "whole branching herb",
+          "repeated opposite leaves",
+          "broad ovate glossy puckered blades",
+          "cultivated garden setting"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A452874-1",
+            "outcome": "Kew POWO accepts Ocimum basilicum L. and notes frequent confusion with O. africanum and O. americanum based on indumentum and flower size. Only candidates with strong cultivated foliage or combined leaf-and-flower evidence were approved; unresolved flower-only and single-leaf candidates were rejected."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-643584612",
+        "photoId": 643584612,
+        "sourceQuery": "Ocimum basilicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 61398,
+        "observedTaxonName": "Ocimum basilicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
       "recordId": "plant-id-cucumber-001",
       "caseId": "cucumber",
       "acceptedName": "Cucumber",
