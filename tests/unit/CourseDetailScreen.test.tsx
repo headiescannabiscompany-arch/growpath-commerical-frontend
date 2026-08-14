@@ -6,6 +6,8 @@ import CourseDetailScreen, { createStyles } from "@/screens/CourseDetailScreen";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
+const mockArchiveCourse = jest.fn();
 const mockSaveNote = jest.fn();
 const mockCompleteLesson = jest.fn();
 const mockApiRequest = jest.fn();
@@ -28,7 +30,9 @@ const mockLearningAccess = {
   maxLessonsPerCourse: 12
 };
 
-jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: mockPush, replace: mockReplace })
+}));
 jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({ user: { id: "learner-1" } })
 }));
@@ -62,6 +66,7 @@ jest.mock("@/api/reports", () => ({
   exportCourseSales: jest.fn()
 }));
 jest.mock("@/api/courses", () => ({
+  archiveCourse: (...args: any[]) => mockArchiveCourse(...args),
   completeLesson: (...args: any[]) => mockCompleteLesson(...args),
   enrollInCourse: jest.fn(),
   getCourse: (...args: any[]) => mockGetCourse(...args),
@@ -128,6 +133,7 @@ describe("CourseDetailScreen learner player", () => {
     mockSubmitReport.mockResolvedValue({ accepted: true });
     mockUnpublishCourse.mockResolvedValue({ published: false });
     mockUpdateCourse.mockResolvedValue({});
+    mockArchiveCourse.mockResolvedValue({ archived: true });
     mockGetCourse.mockResolvedValue(freeCourse);
     mockGetEnrollmentStatus.mockResolvedValue({
       enrolled: true,
@@ -377,5 +383,32 @@ describe("CourseDetailScreen learner player", () => {
     expect(await screen.findByText("Publish Course")).toBeTruthy();
     expect(screen.queryByText("Submit for Review")).toBeNull();
     expect(screen.queryByText("Approve Course")).toBeNull();
+  });
+
+  it("lets an owner confirm a soft archive only while the course is a draft", async () => {
+    Object.assign(mockLearningAccess, {
+      canCreateCourses: true,
+      canPublishCourses: true
+    });
+    mockGetCourse.mockResolvedValue({
+      id: "course-owner",
+      title: "Owner Draft",
+      creator: "learner-1",
+      _viewerOwnsCourse: true,
+      isPublished: false,
+      lessons: [{ id: "owner-lesson", title: "Owner lesson" }]
+    });
+
+    const screen = render(
+      <CourseDetailScreen route={{ params: { id: "course-owner" } }} />
+    );
+
+    await waitFor(() => expect(screen.getByText("Owner Draft")).toBeTruthy());
+    fireEvent.press(screen.getByRole("button", { name: "Archive draft course" }));
+    expect(screen.getByText("Archive this private draft course?")).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Confirm archive course" }));
+
+    await waitFor(() => expect(mockArchiveCourse).toHaveBeenCalledWith("course-owner"));
+    expect(mockReplace).toHaveBeenCalledWith("/home/personal/courses");
   });
 });
