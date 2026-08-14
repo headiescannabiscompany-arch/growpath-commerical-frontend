@@ -700,5 +700,419 @@
       }
     ]
   },
-  "mediaRecords": []
+  "mediaRecords": [
+    {
+      "recordId": "plant-id-tomato-001",
+      "caseId": "tomato",
+      "acceptedName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "black nightshade",
+        "potato"
+      ],
+      "distinguishingFeatures": [
+        "tomato-like compound leaf architecture",
+        "dense glandular-looking stem and leaf hairs"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.78,
+        "maximum": 0.92
+      },
+      "expectedResult": "Tomato is expected; cherry tomato is an acceptable more-specific result.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386271612",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/707231158/original.jpg",
+      "creator": "(c) The Great Walter, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) The Great Walter, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "tomato-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "pinnately compound and deeply divided leaves",
+          "serrated leaflet margins",
+          "hairy green stems and petioles"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:316947-2",
+            "outcome": "Kew POWO accepts Solanum lycopersicum L.; the reviewed image morphology is consistent with the governed tomato target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-707231158",
+        "photoId": 707231158,
+        "sourceQuery": "Solanum lycopersicum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 242951,
+        "observedTaxonName": "Solanum lycopersicum cerasiforme",
+        "observedTaxonRank": "variety"
+      }
+    },
+    {
+      "recordId": "plant-id-tomato-002",
+      "caseId": "tomato",
+      "acceptedName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "black nightshade",
+        "potato"
+      ],
+      "distinguishingFeatures": [
+        "whole-plant tomato habit",
+        "compound leaflet pattern consistent with tomato"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.68,
+        "maximum": 0.88
+      },
+      "expectedResult": "Tomato is expected, with lower confidence because no flower or fruit is visible.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/389745997",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/713940274/original.jpg",
+      "creator": "(c) Алёна Осипова, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Алёна Осипова, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "tomato-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "whole young herbaceous plant",
+          "alternate pinnately compound leaves",
+          "irregularly lobed and serrated leaflets"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:316947-2",
+            "outcome": "Kew POWO accepts Solanum lycopersicum L.; the reviewed image morphology is consistent with the governed tomato target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-713940274",
+        "photoId": 713940274,
+        "sourceQuery": "Solanum lycopersicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 51737,
+        "observedTaxonName": "Solanum lycopersicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-tomato-004",
+      "caseId": "tomato",
+      "acceptedName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "black nightshade",
+        "potato"
+      ],
+      "distinguishingFeatures": [
+        "repeated tomato-like compound leaves across the plant",
+        "research-grade source identification with visible supporting foliage"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.65,
+        "maximum": 0.86
+      },
+      "expectedResult": "Tomato is expected; request flower or fruit evidence before claiming unusually high confidence.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/389752139",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/713952984/original.jpg",
+      "creator": "(c) Алёна Осипова, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Алёна Осипова, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "tomato-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "branched herbaceous plant",
+          "pinnately compound leaves",
+          "lobed serrated leaflets"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:316947-2",
+            "outcome": "Kew POWO accepts Solanum lycopersicum L.; the reviewed image morphology is consistent with the governed tomato target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-713952984",
+        "photoId": 713952984,
+        "sourceQuery": "Solanum lycopersicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 51737,
+        "observedTaxonName": "Solanum lycopersicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-tomato-005",
+      "caseId": "tomato",
+      "acceptedName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "black nightshade",
+        "potato"
+      ],
+      "distinguishingFeatures": [
+        "tomato foliage and stem pubescence",
+        "developing tomato fruit clusters"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.84,
+        "maximum": 0.97
+      },
+      "expectedResult": "Tomato is expected from combined foliage, stems, and developing fruit.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/387253888",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/709106843/original.jpg",
+      "creator": "(c) Albin Lindqvist, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Albin Lindqvist, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "tomato-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "pinnately compound serrated leaves",
+          "hairy green stems",
+          "clusters of small green developing fruit in the background"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:316947-2",
+            "outcome": "Kew POWO accepts Solanum lycopersicum L.; the reviewed image morphology is consistent with the governed tomato target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-709106843",
+        "photoId": 709106843,
+        "sourceQuery": "Solanum lycopersicum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 51737,
+        "observedTaxonName": "Solanum lycopersicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-tomato-006",
+      "caseId": "tomato",
+      "acceptedName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "black nightshade",
+        "potato"
+      ],
+      "distinguishingFeatures": [
+        "yellow tomato flower structure",
+        "pubescent inflorescence and tomato-like leaflets"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.86,
+        "maximum": 0.98
+      },
+      "expectedResult": "Tomato is expected from diagnostic flower and vegetative morphology.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390092801",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714551393/original.jpg",
+      "creator": "(c) Alex Press, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Alex Press, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "tomato-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "yellow five-parted rotate flower",
+          "reflexed green calyx",
+          "hairy pedicels and compound foliage"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:316947-2",
+            "outcome": "Kew POWO accepts Solanum lycopersicum L.; the reviewed image morphology is consistent with the governed tomato target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714551393",
+        "photoId": 714551393,
+        "sourceQuery": "Solanum lycopersicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 51737,
+        "observedTaxonName": "Solanum lycopersicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-tomato-007",
+      "caseId": "tomato",
+      "acceptedName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "black nightshade",
+        "potato"
+      ],
+      "distinguishingFeatures": [
+        "tomato inflorescence morphology",
+        "yellow corolla with hairy pedicel and calyx"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.88,
+        "maximum": 0.98
+      },
+      "expectedResult": "Tomato is expected from diagnostic flowers, calyx, pubescence, and foliage.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/387657677",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/709885501/original.jpg",
+      "creator": "(c) Sandy Wolkenberg, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Sandy Wolkenberg, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "tomato-007",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "yellow tomato-like flowers",
+          "long narrow reflexed sepals",
+          "densely hairy stems and compound leaves"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:316947-2",
+            "outcome": "Kew POWO accepts Solanum lycopersicum L.; the reviewed image morphology is consistent with the governed tomato target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-709885501",
+        "photoId": 709885501,
+        "sourceQuery": "Solanum lycopersicum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 51737,
+        "observedTaxonName": "Solanum lycopersicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-tomato-008",
+      "caseId": "tomato",
+      "acceptedName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": [
+        "black nightshade",
+        "potato"
+      ],
+      "distinguishingFeatures": [
+        "whole-plant tomato habit",
+        "consistent compound leaf architecture across multiple stems"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.62,
+        "maximum": 0.84
+      },
+      "expectedResult": "Tomato is expected, but flower or fruit evidence would materially improve confidence.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390223151",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714882909/original.jpg",
+      "creator": "(c) Pavel Kacl, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Pavel Kacl, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "tomato-008",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "whole sprawling herbaceous plant",
+          "multiple pinnately compound leaves",
+          "lobed and serrated leaflets"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:316947-2",
+            "outcome": "Kew POWO accepts Solanum lycopersicum L.; the reviewed image morphology is consistent with the governed tomato target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist preview/original reference; no media was copied. Photo-level license code and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714882909",
+        "photoId": 714882909,
+        "sourceQuery": "Solanum lycopersicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 51737,
+        "observedTaxonName": "Solanum lycopersicum",
+        "observedTaxonRank": "species"
+      }
+    }
+  ]
 }

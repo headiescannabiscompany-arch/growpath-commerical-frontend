@@ -465,8 +465,26 @@ function verifyExpectedHashes(options, plan) {
 
 function writeAtomically(targetPath, value) {
   const temporaryPath = `${targetPath}.${process.pid}.tmp`;
-  fs.writeFileSync(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  fs.writeFileSync(temporaryPath, value, "utf8");
   fs.renameSync(temporaryPath, targetPath);
+}
+
+function renderCatalogUpdate(catalogRaw, nextCatalog) {
+  const mediaJson = JSON.stringify(nextCatalog.mediaRecords, null, 2)
+    .split("\n")
+    .map((line, index) => (index === 0 ? line : `  ${line}`))
+    .join("\n");
+  let rendered = catalogRaw.replace(
+    / {2}"mediaRecords": \[[\s\S]*\]\r?\n}\s*$/,
+    `  "mediaRecords": ${mediaJson}\n}\n`
+  );
+  rendered = rendered.replace(/("status":\s*")[^"]+("\s*,)/, `$1${nextCatalog.status}$2`);
+  if (JSON.stringify(JSON.parse(rendered)) !== JSON.stringify(nextCatalog)) {
+    throw new Error(
+      "Rendered catalog update does not match the validated promotion plan."
+    );
+  }
+  return rendered;
 }
 
 function readRequired(targetPath, label) {
@@ -495,7 +513,10 @@ function main() {
         "No newly approved Plant ID review records are available to promote."
       );
     }
-    writeAtomically(options.catalogPath, plan.nextCatalog);
+    writeAtomically(
+      options.catalogPath,
+      renderCatalogUpdate(catalogRaw, plan.nextCatalog)
+    );
   }
   console.log(
     JSON.stringify(
@@ -531,6 +552,7 @@ module.exports = {
   parseArgs,
   sha256,
   toMediaRecord,
+  renderCatalogUpdate,
   verifyExpectedHashes,
   writeAtomically
 };
