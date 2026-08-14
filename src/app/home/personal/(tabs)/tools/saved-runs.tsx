@@ -51,6 +51,8 @@ import {
   plantIdentificationCandidates
 } from "@/features/personal/tools/plantIdentificationCandidates";
 import PlantIdentificationResultDetails from "@/features/personal/tools/PlantIdentificationResultDetails";
+import EvidenceReviewPanel from "@/components/personal/EvidenceReviewPanel";
+import { inferEvidenceReview } from "@/features/personal/evidence/evidenceReview";
 import {
   inspectedPhotoEstimateCounts,
   inspectedPhotoEstimateHeader,
@@ -1831,6 +1833,9 @@ export default function SavedToolRunsScreen() {
   }
 
   const selectedRunId = selectedRun ? idFor(selectedRun) : "";
+  const selectedEvidenceReview = selectedRun
+    ? inferEvidenceReview(runOutputs(selectedRun), runInputs(selectedRun))
+    : null;
   const selectedRunLinkedObservation = selectedRunId
     ? fieldObservations.find(
         (observation) => String(observation.sourceToolRunId || "") === selectedRunId
@@ -2012,6 +2017,9 @@ export default function SavedToolRunsScreen() {
               feedback={feedback}
               copyPayload={selectedRun}
             />
+            {selectedEvidenceReview?.inspectionViews?.length ? (
+              <EvidenceReviewPanel review={selectedEvidenceReview} />
+            ) : null}
             {diagnosisRetryHref ? (
               <View style={styles.editor}>
                 <View style={styles.studyPanel}>

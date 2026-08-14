@@ -103,6 +103,17 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   return () => React.createElement(View, { testID: "personal-feed-placement" });
 });
 
+jest.mock("@/components/personal/EvidenceReviewPanel", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return ({ review }: any) =>
+    React.createElement(
+      Text,
+      { accessibilityLabel: "Saved AI inspection views" },
+      `Saved AI inspection views: ${review.inspectionViews?.length || 0}`
+    );
+});
+
 jest.mock("@/features/personal/tools/ToolResultSurface", () => {
   const React = require("react");
   const { Text } = require("react-native");
@@ -184,6 +195,42 @@ describe("SavedToolRunsRoute", () => {
       accuracyMeters: 25
     });
     mockUpdatePlantIdCorrection.mockResolvedValue(null);
+  });
+
+  it("keeps exact AI inspection views available from a saved run", async () => {
+    const inspectionRun = {
+      id: "inspection-run-1",
+      _id: "inspection-run-1",
+      toolType: "harvest_readiness",
+      summary: "Saved harvest inspection.",
+      inputs: { evidenceAssetIds: ["photo-1"] },
+      outputs: {
+        photoAnalysis: {
+          performed: true,
+          photosAnalyzed: 1,
+          inspectionViews: [
+            {
+              sourceEvidenceAssetId: "photo-1",
+              sourceImageIndex: 1,
+              kind: "trichome detail",
+              cropStrategy: "focus",
+              width: 640,
+              height: 640,
+              sha256: "a".repeat(64)
+            }
+          ]
+        }
+      }
+    };
+    mockSearchParams = { toolRunId: "inspection-run-1" };
+    mockListToolRuns.mockResolvedValue([inspectionRun]);
+    mockGetToolRun.mockResolvedValue(inspectionRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(await screen.findByLabelText("Saved AI inspection views")).toHaveTextContent(
+      "Saved AI inspection views: 1"
+    );
   });
 
   it("offers the retry for the historical ai diagnosis saved-run type", async () => {
