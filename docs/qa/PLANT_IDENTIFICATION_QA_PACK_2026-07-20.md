@@ -44,6 +44,9 @@ Three cultivated florists' chrysanthemum records with repeated flower heads and 
 foliage also passed at the accepted hybrid name _Chrysanthemum × morifolium_. A mixed
 scene, a damaged sparse specimen, and a foliage-only view were rejected. The governed
 catalog is now 60/320.
+Four large-crabgrass records with digitate seedheads, including two whole-habit views,
+also passed; two _Sorghastrum nutans_ results were rejected as non-Digitaria grasses.
+The governed catalog is now 64/320.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
