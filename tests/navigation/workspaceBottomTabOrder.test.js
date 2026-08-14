@@ -66,10 +66,14 @@ describe("workspace bottom-tab order", () => {
       "orders",
       "inventory",
       "analytics",
-      "tasks"
+      "tasks",
+      "social-tools",
+      "links"
     ]) {
       expect(screenBlock(contents, name)).toContain("href: null");
     }
+    expect(screenBlock(contents, "social-tools")).toContain("headerShown: false");
+    expect(screenBlock(contents, "links")).toContain("headerShown: false");
     for (const name of [
       "index",
       "storefront/index",
