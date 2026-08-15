@@ -183,6 +183,16 @@ const publicPayload = {
       videoCount: 3
     }
   ],
+  videos: [
+    {
+      id: "video-1",
+      title: "Build a soil bed",
+      description: "A public storefront video.",
+      thumbnailUrl: "https://example.com/soil-bed.jpg",
+      durationSeconds: 305,
+      visibility: "public"
+    }
+  ],
   lives: [
     {
       id: "live-1",
@@ -390,6 +400,14 @@ describe("public commercial routes", () => {
     });
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/store/living-soil-labs/courses/course-1");
+    expect(screen.getByText("Videos")).toBeTruthy();
+    expect(screen.getByText("Build a soil bed")).toBeTruthy();
+    expect(screen.getByText("5 min")).toBeTruthy();
+    expect(screen.getByLabelText("Build a soil bed thumbnail").props.source).toEqual({
+      uri: "https://example.com/soil-bed.jpg"
+    });
+    expect(screen.getByText("Watch Video")).toBeTruthy();
+    expect(mockLinkHrefs).toContain("/videos/video-1");
     expect(screen.getByText("Upcoming Lives")).toBeTruthy();
     expect(screen.getByText("Veg Mix Live Demo")).toBeTruthy();
     expect(screen.getByText("Open Live")).toBeTruthy();

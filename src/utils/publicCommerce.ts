@@ -42,6 +42,9 @@ export function extractPublicCommercialPayload(res: any) {
     courses: asArray(
       res?.courses || data?.courses || res?.featuredCourses || data?.featuredCourses
     ),
+    videos: asArray(
+      res?.videos || data?.videos || res?.featuredVideos || data?.featuredVideos
+    ),
     lives: asArray(
       res?.lives ||
         data?.lives ||

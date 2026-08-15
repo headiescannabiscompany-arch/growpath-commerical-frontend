@@ -592,6 +592,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("video-sharing-workflow")?.requiredOutputs).toContain(
       "verified private object and authorized short-lived playback"
     );
+    expect(getMethod("video-sharing-workflow")?.requiredOutputs).toContain(
+      "safe public Commercial storefront video previews"
+    );
+    expect(getMethod("video-sharing-workflow")?.warnings).toContain(
+      "Never expose protected playback sources, private owner IDs, follower-only, unlisted, Facility, deleted, or cannabis-specific videos through a general public Commercial storefront."
+    );
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
       "Vimeo unlisted privacy hash when present"
     );

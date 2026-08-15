@@ -71,6 +71,14 @@ visibility, and publication date. Results open the exact video and expose a real
 control for the owning user. Following must use the canonical follow relationship; a
 client-provided flag or merely opening a profile is not proof of following.
 
+A published Commercial storefront may show a compact preview of videos owned by that
+Commercial account only when each video is published, explicitly public, non-cannabis,
+and not deleted. The storefront projection exposes display metadata and the canonical
+GrowPath video ID, not a protected playback source, storage path, transcript, captions,
+private owner ID, follower-only record, unlisted record, or Facility record. Cannabis-
+specific video remains available only through an eligible cannabis-aware discovery or
+direct-view context; a public horticulture storefront page does not establish eligibility.
+
 The Most viewed order may count a successful non-owner open of an accessible published
 video. That counter is not verified watch time, completion, unique reach, learning
 progress, or scientific reliability. Do not expose engagement-based ranking until a real
