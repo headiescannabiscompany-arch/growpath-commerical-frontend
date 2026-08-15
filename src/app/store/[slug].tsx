@@ -398,78 +398,93 @@ export default function PublicStorefrontRoute() {
                 product,
                 storefront
               );
+              const productImage = resolveImageUri(
+                String(product?.imageUrl || product?.images?.[0] || "")
+              );
               return (
                 <View key={id || product?.name} style={styles.product}>
-                  <View style={styles.productBody}>
-                    <Text style={styles.productName}>{product?.name || "Product"}</Text>
-                    {product?.description ? (
-                      <Text style={styles.meta}>{product.description}</Text>
-                    ) : null}
-                    {publicGrowInterests(product).length ? (
-                      <Text style={styles.interests}>
-                        Interests: {publicGrowInterests(product).join(", ")}
-                      </Text>
-                    ) : null}
-                    <Text style={styles.price}>{money(product, storefront)}</Text>
-                    {dispensaryStorefront ? (
-                      <Text style={styles.inventory}>
-                        {publicInventorySummary(product)}
-                      </Text>
-                    ) : null}
-                    {regulatedCannabis && dispensaryStorefront ? (
-                      <Text style={styles.warning}>
-                        No GrowPath checkout · open Details to check an approved legal
-                        handoff or review in-store pickup information
-                      </Text>
-                    ) : regulatedCannabis ? (
-                      <Text style={styles.warning}>
-                        Catalog only · licensed commercial transfer required
-                      </Text>
-                    ) : null}
-                    {pickupAvailable ? (
-                      <Text style={styles.pickup}>
-                        In-store pickup available
-                        {pickupInstructions ? ` · ${pickupInstructions}` : ""}
-                      </Text>
-                    ) : null}
-                  </View>
-                  <View style={styles.productActions}>
-                    <Link
-                      href={
-                        `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(
-                          id || product?.slug || product?.name || "product"
-                        )}` as any
-                      }
-                      asChild
-                    >
-                      <Pressable style={styles.secondaryButton}>
-                        <Text style={styles.secondaryButtonText}>Details</Text>
-                      </Pressable>
-                    </Link>
-                    {canCheckout ? (
-                      <Pressable
-                        accessibilityLabel={`Buy ${product?.name || "product"}`}
-                        style={[styles.button, busyId === id && styles.disabled]}
-                        disabled={busyId === id}
-                        onPress={() => buy(product)}
-                      >
-                        <Text style={styles.buttonText}>
-                          {busyId === id ? "Opening..." : "Buy"}
+                  {productImage ? (
+                    <Image
+                      accessibilityLabel={`${product?.name || "Product"} image`}
+                      resizeMode="cover"
+                      source={{ uri: productImage }}
+                      style={styles.productImage}
+                    />
+                  ) : null}
+                  <View style={styles.productMainRow}>
+                    <View style={styles.productBody}>
+                      <Text style={styles.productName}>{product?.name || "Product"}</Text>
+                      {product?.description ? (
+                        <Text style={styles.meta}>{product.description}</Text>
+                      ) : null}
+                      {publicGrowInterests(product).length ? (
+                        <Text style={styles.interests}>
+                          Interests: {publicGrowInterests(product).join(", ")}
                         </Text>
-                      </Pressable>
-                    ) : externalUrl ? (
-                      <Pressable
-                        accessibilityLabel={`Open external product ${product?.name || "product"}`}
-                        style={styles.secondaryButton}
-                        onPress={() => {
-                          void openExternalProduct(product);
-                        }}
-                      >
-                        <Text style={styles.secondaryButtonText}>
-                          {dispensaryStorefront ? "Dispensary Website" : "External Link"}
+                      ) : null}
+                      <Text style={styles.price}>{money(product, storefront)}</Text>
+                      {dispensaryStorefront ? (
+                        <Text style={styles.inventory}>
+                          {publicInventorySummary(product)}
                         </Text>
-                      </Pressable>
-                    ) : null}
+                      ) : null}
+                      {regulatedCannabis && dispensaryStorefront ? (
+                        <Text style={styles.warning}>
+                          No GrowPath checkout · open Details to check an approved legal
+                          handoff or review in-store pickup information
+                        </Text>
+                      ) : regulatedCannabis ? (
+                        <Text style={styles.warning}>
+                          Catalog only · licensed commercial transfer required
+                        </Text>
+                      ) : null}
+                      {pickupAvailable ? (
+                        <Text style={styles.pickup}>
+                          In-store pickup available
+                          {pickupInstructions ? ` · ${pickupInstructions}` : ""}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <View style={styles.productActions}>
+                      <Link
+                        href={
+                          `/store/${encodeURIComponent(slug)}/products/${encodeURIComponent(
+                            id || product?.slug || product?.name || "product"
+                          )}` as any
+                        }
+                        asChild
+                      >
+                        <Pressable style={styles.secondaryButton}>
+                          <Text style={styles.secondaryButtonText}>Details</Text>
+                        </Pressable>
+                      </Link>
+                      {canCheckout ? (
+                        <Pressable
+                          accessibilityLabel={`Buy ${product?.name || "product"}`}
+                          style={[styles.button, busyId === id && styles.disabled]}
+                          disabled={busyId === id}
+                          onPress={() => buy(product)}
+                        >
+                          <Text style={styles.buttonText}>
+                            {busyId === id ? "Opening..." : "Buy"}
+                          </Text>
+                        </Pressable>
+                      ) : externalUrl ? (
+                        <Pressable
+                          accessibilityLabel={`Open external product ${product?.name || "product"}`}
+                          style={styles.secondaryButton}
+                          onPress={() => {
+                            void openExternalProduct(product);
+                          }}
+                        >
+                          <Text style={styles.secondaryButtonText}>
+                            {dispensaryStorefront
+                              ? "Dispensary Website"
+                              : "External Link"}
+                          </Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
                   </View>
                 </View>
               );
@@ -716,16 +731,25 @@ export function createStyles(palette: ThemePalette) {
     location: { color: palette.text, fontWeight: "900" },
     pickup: { color: palette.success, fontSize: 12, fontWeight: "800" },
     product: {
-      alignItems: "center",
       backgroundColor: palette.surface,
       borderColor: palette.border,
       borderRadius: radius.card,
       borderWidth: 1,
-      flexDirection: "row",
       gap: 12,
-      justifyContent: "space-between",
       marginBottom: 10,
       padding: 12
+    },
+    productImage: {
+      aspectRatio: 16 / 7,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      width: "100%"
+    },
+    productMainRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between"
     },
     productBody: { flex: 1, gap: 4 },
     productActions: {

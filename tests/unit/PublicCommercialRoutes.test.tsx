@@ -119,6 +119,7 @@ const publicPayload = {
       id: "product-1",
       name: "Veg Mix",
       description: "Nitrogen-forward veg support.",
+      imageUrl: "https://example.com/veg-mix.jpg",
       priceCents: 2500,
       productLineId: "line-1",
       unitSize: "5 lb bag",
@@ -374,6 +375,9 @@ describe("public commercial routes", () => {
     expect(screen.getAllByText("Veg Mix").length).toBeGreaterThan(0);
     expect(screen.getByText("Interests: living soil, veg")).toBeTruthy();
     expect(screen.getByText("$25.00")).toBeTruthy();
+    expect(screen.getByLabelText("Veg Mix image").props.source).toEqual({
+      uri: "https://example.com/veg-mix.jpg"
+    });
     expect(screen.getAllByText("Details").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Buy Veg Mix")).toBeTruthy();
     expect(screen.queryByLabelText("Buy Bloom Mix")).toBeNull();
