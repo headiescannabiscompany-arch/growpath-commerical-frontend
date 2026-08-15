@@ -649,10 +649,10 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     experience: {
       mode: "ai_assisted",
       aiCredits: "optional",
-      grow: "required",
+      grow: "optional",
       audience: "cannabis_context",
       inputSummary:
-        "Cannabis grow timing, maturity signals, goals, and sharp trichome photos.",
+        "Optional cannabis grow timing and history, plus maturity signals, goals, and sharp trichome photos.",
       outputSummary:
         "Photo usability, maturity estimate, uncertainty, retake guidance, and decision tasks."
     },

@@ -292,6 +292,7 @@ describe("personal feature status manifest", () => {
     expect(harvest.title).toBe("Harvest Readiness Calculator");
     expect(harvest.hubVisible).toBe(true);
     expect(harvest.href).toBe("/home/personal/tools/harvest-readiness");
+    expect(harvest.experience?.grow).toBe("optional");
     expect(hub).toContain(harvest);
     expect(growOverview).toContain('workflows={["harvest-readiness"]}');
     expect(growTools).toContain('"/home/personal/tools/harvest-readiness"');
