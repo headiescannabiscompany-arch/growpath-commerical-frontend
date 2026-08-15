@@ -92,6 +92,11 @@ export function discoverCourseHref(row: any) {
   return `/courses?courseId=${encodeURIComponent(idOf(row))}`;
 }
 
+export function isDiscoverableCourse(row: any) {
+  const title = titleOf(row, "");
+  return !/\b(?:qa|test)[\s-]+only\b/i.test(title);
+}
+
 export function discoverLiveHref(row: any) {
   return `/live-session?sessionId=${encodeURIComponent(String(row?.linkedLiveId || ""))}`;
 }
@@ -310,7 +315,7 @@ export default function DiscoverDirectory() {
         title: "Courses",
         ranking: "Top & relevant",
         empty: "No matching courses.",
-        results: courses.map((row) => ({
+        results: courses.filter(isDiscoverableCourse).map((row) => ({
           id: idOf(row),
           title: titleOf(row, "Course"),
           summary: summaryOf(row),
