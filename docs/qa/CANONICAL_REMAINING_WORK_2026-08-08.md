@@ -69,6 +69,28 @@ execution boundaries and the evidence needed not to reopen completed work.
       readable empty states, real backend channel routes, and truthful provider-handoff copy on
       both routes. This closes route placement and empty-state acceptance, not populated channel
       connection or link mutations.
+- [x] Regulated commerce is defined as progressively granted, exact-route capability rather
+      than a permanent cannabis-sales ban or a warning-only gate. Policy merge `d2df35d3`
+      and frontend merge `dd1d9523` separate informational catalog/website visibility from
+      external handoff, inquiry, reservation, checkout, payment, pickup, delivery, domestic
+      shipping, export, and import. Backend merges `f3b5ea2` / `6fad2c3` require an active
+      versioned decision for seller, verified authorization, product class, origin,
+      destination, buyer eligibility, and fulfillment method; missing, expired, mismatched,
+      or unsupported evidence defaults to `review_required`. Multi-role nursery, cultivator,
+      breeder/seed-bank, distributor, dispensary, and retailer businesses remain supported.
+      A future U.S. federal change or legal international seed route can therefore enable
+      only the reviewed capabilities it actually permits without opening unrelated routes.
+      Current public regulated listings remain informational because no production route has
+      been authorized; ordinary non-cannabis commerce remains enabled.
+- [x] Admin security visibility is separated from the task queue and verified live. Frontend
+      merge from PR `#651` and backend merge from PR `#179` expose open/resolved tallies,
+      by-kind counts, retained resolved history, source-by-source coverage state, and direct
+      investigation links. Production `/admin?verify=security-center-live` on 2026-08-15
+      reported 0 open / 0 resolved records across the four connected GrowPath sources
+      (submitted security reports, high/critical safety reports, audited account enforcement,
+      and failed integration deliveries). It also truthfully marked Sentry Admin read access
+      `not configured`; Sentry issues are therefore not represented as covered until that
+      separate credentialed integration is completed.
 - [x] The governed Diagnosis/IPM catalog assembly is complete at 252 reviewed cases and
       504 rights-reviewed images. Executing all cases against authorized staging remains a
       separate open action because it spends credits and writes records.
@@ -429,7 +451,22 @@ grow`, private current location without a Field Study, and an optional approxima
   `6a6140ec67a6aeadb8f4a0c9` with persisted status/timestamps and no update controls.
   Together with the retained Owner-create, Manager-reassign, Staff-complete, and
   Owner-audit evidence, the cross-role shared-record chain remains complete. The
-  independent outside-user loop remains open.
+  independent outside-user loop remains open. On 2026-08-15, the real Headies Personal
+  Pro account completed the retained owner-video lifecycle: the Library reported 2
+  owned/workspace GrowPath uploads and 674 MB used of 10 GB; edit exposed title,
+  description, visibility, structured grow interests, and the separate cannabis/hemp
+  context control; one published upload completed unpublish and republish with its
+  public status restored. The same retained upload was attached to the empty `Lesson 1`
+  in course `6a60e9d09f3dbb9d83d2c611`, persisted across reload, detached, persisted as
+  detached across another reload, and remained available for reuse. This closes the
+  real owner edit/publication and course attach/detach slice without deleting a video,
+  uploading a duplicate, or fabricating a followed account.
+  The same pass reproduced the lesson editor's shared Back control falling through
+  browser history to Personal Home. Frontend merge
+  `26548ee98adf35c9072bf04bada906bb9a5177ca` passed the full 9m14s gate and deployed
+  as bundle `index-a2cc0b5942d80d314b56a95d5afdb60b.js`; production then returned from lesson
+  `6a60e9d09f3dbb9d83d2c612` directly to selected course
+  `6a60e9d09f3dbb9d83d2c611` with its title and lesson list retained.
 - [~] Verify login/session/workspace selection and recovery across Free, Pro,
   Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
   server-down, reload, logout, and multi-workspace states. The same Personal Pro
@@ -933,7 +970,7 @@ public visibility, or screenshot/video acceptance still called out below.
   proof, in-app playback/volume, overlay rendering in OBS, replay/retention,
   cost-limit observation, and final QA-session cleanup remain before `[x]`.
 
-- [~] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
+- [x] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
   inspected, without treating them as additional photos or independent evidence.
   Let an authorized user open each view at full size, save an individual image,
   and export a viewer-friendly inspection-evidence package with source-photo index,
@@ -943,9 +980,18 @@ public visibility, or screenshot/video acceptance still called out below.
   a count-only response or expose another workspace's protected media. Frontend
   merge `8ba74a0ae84a9718515cb3a7b70061b67e2f6a2e` is deployed and lets Saved Runs
   render the shared Evidence Review panel only when digest-bound diagnostic views
-  exist. An authorized retained run containing real persisted views must still prove
-  full-size View, individual Save, viewer-friendly Export, metadata, reload, and
-  cross-workspace denial before this item can close.
+  exist. Frontend merge `a7cd087e18e66a553998dfa6d2be7d1a76bd3a3c` and backend merge
+  `054b5ef4fb687a0a013a431c9d1b5369520bcc86` recover only exact, same-owner,
+  same-workspace, digest-matched manifests and keep list responses lightweight;
+  count-only historical results remain crop-free. Frontend merge
+  `ef673a03dc87deecf94cbb7c1df921ba710aa8e0` prevents a retained retry from
+  overwriting its fresh charged result. Production Harvest review
+  `6a8026ec1d624a9bedb94211` retained 4 originals plus 24 supplemental views.
+  Saved ToolRun `6a8027191d624a9bedb9421c` reopened the Evidence Review, source-photo
+  and crop-bound View/Save controls, viewer-friendly export, and a full-size 648 x
+  648 exact crop with its bounds and derived-evidence limitation. The overwrite
+  regression passed the full 9m37s gate; production served bundle
+  `index-c79e0e6e23609e121dafb15bece3d93f.js` for this acceptance.
 - [ ] Complete a route-by-route live acceptance crawl of Personal, Commercial,
       Facility, public, and Admin surfaces on the final candidate SHAs. Exercise the
       common path forward from every page, not only route loading, and retain exact
