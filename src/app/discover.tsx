@@ -320,9 +320,7 @@ export default function DiscoverDirectory() {
           id: idOf(row),
           title: titleOf(row, "Live session"),
           summary: summaryOf(row),
-          href: `/live-session?sessionId=${encodeURIComponent(
-            String(row.linkedLiveId)
-          )}`,
+          href: `/live-session?sessionId=${encodeURIComponent(String(row.linkedLiveId))}`,
           thumbnailUrl: discoverImageOf(row)
         })),
         browseHref: "/lives"
