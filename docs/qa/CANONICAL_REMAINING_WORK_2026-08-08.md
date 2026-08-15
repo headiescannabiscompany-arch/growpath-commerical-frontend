@@ -656,6 +656,23 @@ public visibility, or screenshot/video acceptance still called out below.
   The pre-fix generic private draft remains a cleanup candidate because the recovered
   generic owner detail exposes no archive/delete lifecycle; it is no longer blocked
   by catalog loading. No destructive endpoint was inferred.
+  On 2026-08-14, Commercial course-media acceptance completed against production.
+  Frontend merges `2f658c6b0f948047a90a13d63ae96e577823eb8d`,
+  `8ada902be8f85c9d077ad047f7f7f107d8fb30d7`, and
+  `ffefc95da66d5950b10822f23f37ea93712bc5ad` repaired the author/learner
+  presentation and made deliberate thumbnail/banner clearing persist; exact Render
+  deploy `dep-d9vt0l2d0e5s73a74dvg` reached Live. Backend merge
+  `3db27be1ccd9c535411e10edc11999324d021006` removed optional course art from
+  publication blockers without weakening lesson-media or other readiness gates; exact
+  Render deploy `dep-d9vt54e7bikc73bipbug` reached Live. Frontend policy merge
+  `ce890580e7cbc2ab00b0f6da440044f46023ae11` made that rule durable. Production
+  author acceptance proved add, replace, reload, remove, reload, text-only publish,
+  one-image learner rendering when art exists, deliberate text-only learner rendering
+  when art is absent, unpublish, and archive. Temporary course
+  `6a7fcc32b17555f966449dc0` was archived and the active Commercial course list
+  returned to zero. This closes course-media behavior and cleanup; hosted lesson
+  video, paid enrollment, Live/Forum linkage, and published-storefront visibility
+  remain in the broader course item.
 - [~] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
   Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
   navigation hierarchy, and persistence checks. Orders and Analytics state,
@@ -909,7 +926,7 @@ public visibility, or screenshot/video acceptance still called out below.
       common path forward from every page, not only route loading, and retain exact
       role/account, viewport, theme, URL, timestamp, screenshot/video, deployment, and
       defect/fix evidence.
-- [~] Give published courses a deliberate media hierarchy: an optional list/banner
+- [x] Give published courses a deliberate media hierarchy: an optional list/banner
       image outside the opened course and one full course image inside it, without an
       unlabeled duplicate or an unexplained missing-image gap. Verify author add,
       replace, remove, publish, and learner rendering paths. The shared Personal/public
@@ -918,8 +935,17 @@ public visibility, or screenshot/video acceptance still called out below.
       or banner art as a blocker, and its learner view prefers a banner then falls back
       to the saved thumbnail. Focused course, Commercial workflow, and knowledge tests
       pass 64/64, along with TypeScript, targeted lint, and the static production build.
-      Frontend merge `6bcaddac64c53b3370ba3ae3a9b1f69ec77f3b07` is deployed. Live
-      author replace/remove/publish and populated learner rendering remain.
+      Frontend merge `6bcaddac64c53b3370ba3ae3a9b1f69ec77f3b07` is deployed. Final
+      production acceptance used frontend merges
+      `2f658c6b0f948047a90a13d63ae96e577823eb8d`,
+      `8ada902be8f85c9d077ad047f7f7f107d8fb30d7`,
+      `ffefc95da66d5950b10822f23f37ea93712bc5ad`, and
+      `ce890580e7cbc2ab00b0f6da440044f46023ae11`, plus backend merge
+      `3db27be1ccd9c535411e10edc11999324d021006`. Exact Render deploys
+      `dep-d9vt0l2d0e5s73a74dvg` and `dep-d9vt54e7bikc73bipbug` reached Live.
+      Author add/replace/remove/reload, image-backed and text-only publication,
+      learner rendering, unpublish, archive, and cleanup all passed. See
+      `docs/qa/COMMERCIAL_COURSE_MEDIA_PRODUCTION_EVIDENCE_2026-08-14.md`.
 - [~] Put storefront imagery above the storefront description where available, keep
       empty states intentional, and verify every product, course, video, website, and
       pickup handoff opens the correct public or signed-in destination. Frontend merge
