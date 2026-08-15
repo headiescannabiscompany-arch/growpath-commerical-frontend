@@ -164,8 +164,8 @@ const regulatedCommerce = {
   },
   businessRoles: ["nursery", "cultivator"],
   productClasses: ["cannabis_seed"],
-  capabilities: ["catalog_display", "growpath_checkout"],
-  fulfillmentMethods: ["informational_only", "domestic_shipping"],
+  capabilities: ["catalog_display", "external_product_handoff", "growpath_checkout"],
+  fulfillmentMethods: ["none", "external_handoff", "domestic_shipping"],
   authorizations: [
     {
       _id: "authorization-1",
@@ -418,6 +418,61 @@ describe("PlatformAdminRoute", () => {
             reviewStatus: "verified",
             reviewNotes: "Verified against the issuing authority record."
           }
+        }
+      )
+    );
+  });
+
+  it("records a versioned decision for one exact regulated route", async () => {
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Regulated commerce review");
+
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Use authorization for Living Soil Labs route decision"
+      })
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Route capability"),
+      "external_product_handoff"
+    );
+    fireEvent.changeText(screen.getByLabelText("Route destination country"), "us");
+    fireEvent.changeText(screen.getByLabelText("Route destination subdivision"), "ma");
+    fireEvent.changeText(
+      screen.getByLabelText("Route buyer eligibility"),
+      "age_21_verified"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Route fulfillment method"),
+      "external_handoff"
+    );
+    fireEvent.changeText(screen.getByLabelText("Route decision"), "allowed");
+    fireEvent.changeText(
+      screen.getByLabelText("Route reason codes"),
+      "verified_license, local_route_reviewed"
+    );
+    fireEvent.press(
+      screen.getByRole("button", { name: "Record exact regulated route decision" })
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/regulated-commerce/decisions",
+        {
+          method: "POST",
+          body: expect.objectContaining({
+            storefrontId: "store-1",
+            authorizationIds: ["authorization-1"],
+            capability: "external_product_handoff",
+            productClass: "cannabis_seed",
+            origin: { countryCode: "US", subdivisionCode: "MA" },
+            destination: { countryCode: "US", subdivisionCode: "MA" },
+            buyerEligibility: "age_21_verified",
+            fulfillmentMethod: "external_handoff",
+            decision: "allowed",
+            policyVersion: "regulated-commerce-v1",
+            reasonCodes: ["verified_license", "local_route_reviewed"]
+          })
         }
       )
     );
