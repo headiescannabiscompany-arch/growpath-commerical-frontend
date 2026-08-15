@@ -3622,6 +3622,9 @@ export default function SpeciesCropIdToolRoute({
           !cropCommonName || /^(unknown crop|not confirmed)$/i.test(cropCommonName);
         const payloadImageAnalysis = payload.imageAnalysis || {};
         const imageAnalysis = outputs.imageAnalysis || payloadImageAnalysis;
+        const completedImageAnalyses = [payloadImageAnalysis, outputs.imageAnalysis]
+          .filter(Boolean)
+          .filter((analysis) => analysis.performed === true);
         const sameEvidenceConflict = [
           ...stringList(outputs.counterEvidence),
           ...stringList(outputs.identificationDraft?.counterEvidence),
@@ -3631,12 +3634,16 @@ export default function SpeciesCropIdToolRoute({
         ].some((item) =>
           /same unchanged evidence produced a conflicting identity/i.test(item)
         );
-        const imageAnalysisRequested = imageAnalysis.requested === true;
+        const imageAnalysisRequested = [payloadImageAnalysis, outputs.imageAnalysis]
+          .filter(Boolean)
+          .some((analysis) => analysis.requested === true);
         const imageEvidenceBlocksConfirmation =
           imageAnalysisRequested &&
-          (imageAnalysis.performed !== true ||
-            imageAnalysis.quality !== "usable" ||
-            imageAnalysis.confidence !== "high");
+          (completedImageAnalyses.length === 0 ||
+            completedImageAnalyses.some(
+              (analysis) =>
+                analysis.quality !== "usable" || analysis.confidence !== "high"
+            ));
         const target = plantContext.plantId ? "Plant" : "Grow";
         const identity = {
           growId,
