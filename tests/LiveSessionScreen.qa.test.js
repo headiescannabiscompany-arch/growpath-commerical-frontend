@@ -218,6 +218,24 @@ describe("LiveSessionScreen QA", () => {
     expect(Linking.openURL).toHaveBeenCalledWith("https://www.twitch.tv/videos/123");
   });
 
+  it("labels an unpublished session as a private draft and withholds sharing", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockResolvedValueOnce({
+      _id: "draft-1",
+      title: "Private hosted-live check",
+      status: "draft",
+      visibility: "public",
+      isPublished: false
+    });
+
+    const { getByText, queryByText } = renderWithNav({ sessionId: "draft-1" });
+
+    await waitFor(() => expect(getByText("private draft")).toBeTruthy());
+    expect(queryByText("public")).toBeNull();
+    expect(queryByText("Share this stream")).toBeNull();
+  });
+
   it("creates a personal task at the configured live-stream date", async () => {
     mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
     mockUseEntitlements.mockReturnValue({ can: () => false });
