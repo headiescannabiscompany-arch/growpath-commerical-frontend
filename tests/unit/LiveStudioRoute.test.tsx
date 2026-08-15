@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 import LiveStudioRoute from "@/app/live-studio";
 
@@ -79,5 +79,28 @@ describe("LiveStudioRoute", () => {
     expect(screen.getByText(/GrowPath does not pick winners/i)).toBeTruthy();
     expect(screen.getByText("Discord live announcements")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Connect Discord channel" })).toBeTruthy();
+  });
+
+  it("defaults hosted broadcasts to the account's saved OBS channel", async () => {
+    mockListHostedLiveChannels.mockResolvedValue([
+      { id: "channel-1", label: "GrowPathAI production OBS", lifecycle: "ready" },
+      { id: "channel-2", label: "Backup OBS", lifecycle: "ready" }
+    ]);
+
+    render(<LiveStudioRoute />);
+
+    fireEvent.press(
+      await screen.findByRole("radio", { name: "Broadcast live in GrowPath" })
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("radio", { name: "GrowPathAI production OBS" }).props
+          .accessibilityState
+      ).toEqual({ checked: true })
+    );
+    expect(
+      screen.getByRole("radio", { name: "New channel" }).props.accessibilityState
+    ).toEqual({ checked: false });
   });
 });

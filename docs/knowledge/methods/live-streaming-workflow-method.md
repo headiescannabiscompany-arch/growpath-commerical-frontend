@@ -17,6 +17,13 @@ Hosts can draft, preview, publish, start, end, and attach a replay. Viewers can 
 published sessions allowed by public, following, customer, or private access. Ending a
 session must not erase its chat, RSVP, moderation, or replay records.
 
+GrowPath-hosted broadcasts use private account-owned encoder channels. A host may save
+the RTMPS server and stream key in OBS and reuse that channel for later sessions. When
+saved channels exist, Live Studio selects the first available account channel by default;
+creating another channel remains an explicit choice. A session binds to the chosen
+channel without exposing its key again. Different accounts and concurrent channel slots
+never share credentials, and rotating or removing a channel invalidates its old key.
+
 Viewer playback and broadcaster production are separate control surfaces. A viewer
 watching inside GrowPath must have the source player's play, pause, volume, mute, and
 fullscreen controls; captions and replay seeking must remain available when the source
@@ -135,7 +142,9 @@ cross-session token isolation, no-store responses, overlay filtering, deletion p
 one-entry behavior, JSON/CSV feed parity, linked-identity relay authorization, provider
 failure recording, mobile chat usability, keyboard access, and OBS Browser Source rendering.
 Also verify viewer play/pause, volume/mute, fullscreen, and replay seeking independently
-from broadcaster camera, microphone, scene, and outgoing-mix controls.
+from broadcaster camera, microphone, scene, and outgoing-mix controls. For hosted video,
+verify that a saved account channel is the default on a later session, a deliberate new
+channel remains available, and neither route exposes another account's encoder secret.
 For first-party mode, additionally verify stream-key secrecy and rotation, session-scoped
 ingest authorization, draft/live separation, adaptive playback, interruption recovery,
 access revocation, chat continuity, explicit retention, quota enforcement, abuse handling,

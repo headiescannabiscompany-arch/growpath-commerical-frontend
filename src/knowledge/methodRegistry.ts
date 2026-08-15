@@ -647,7 +647,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "moderated GrowPath chat",
       "transparent configurable OBS Browser Source overlay",
       "two explicit broadcast modes: outside provider URL with embed-or-handoff behavior, and first-party GrowPath encoder ingest with adaptive in-app playback",
-      "revocable session-scoped first-party ingest secret, explicit draft/live control, stream health states, GrowPath chat, and reviewed replay retention",
+      "private account-owned reusable encoder channel with revocable ingest secret, explicit saved-channel default or deliberate new-channel choice, draft/live control, stream health states, GrowPath chat, and reviewed replay retention",
       "outside-picker JSON or CSV entry feed",
       "provider-confirmed linked-identity relay status",
       "replay, moderation, and deletion audit continuity"

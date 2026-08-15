@@ -604,6 +604,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("live-streaming-workflow")?.requiredOutputs).toContain(
       "two explicit broadcast modes: outside provider URL with embed-or-handoff behavior, and first-party GrowPath encoder ingest with adaptive in-app playback"
     );
+    expect(getMethod("live-streaming-workflow")?.requiredOutputs).toContain(
+      "private account-owned reusable encoder channel with revocable ingest secret, explicit saved-channel default or deliberate new-channel choice, draft/live control, stream health states, GrowPath chat, and reviewed replay retention"
+    );
     expect(getSourceEntry("cloudflare-stream-live-documentation")).toMatchObject({
       sourceType: "provider_documentation",
       reliabilityTier: "B",

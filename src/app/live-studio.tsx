@@ -115,8 +115,10 @@ export default function LiveStudioRoute() {
     if (!auth.isAuthed) return;
     Promise.all([getHostedLiveStatus(), listHostedLiveChannels()])
       .then(([status, channels]) => {
+        const availableChannels = Array.isArray(channels) ? channels : [];
         setHostedStatus(status);
-        setHostedChannels(Array.isArray(channels) ? channels : []);
+        setHostedChannels(availableChannels);
+        setHostedChannelId((current) => current || availableChannels[0]?.id || "");
       })
       .catch(() => {
         setHostedStatus({ enabled: false });
