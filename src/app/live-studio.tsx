@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Pressable,
   Platform,
@@ -82,6 +82,7 @@ export default function LiveStudioRoute() {
   const [hostedStatus, setHostedStatus] = useState<any>(null);
   const [hostedChannels, setHostedChannels] = useState<HostedChannel[]>([]);
   const [hostedChannelId, setHostedChannelId] = useState("");
+  const hostedChannelSelectionTouched = useRef(false);
   const [hostedChannelLabel, setHostedChannelLabel] = useState("My OBS channel");
   const [hostedCredentials, setHostedCredentials] = useState<HostedCredentials | null>(
     null
@@ -118,7 +119,9 @@ export default function LiveStudioRoute() {
         const availableChannels = Array.isArray(channels) ? channels : [];
         setHostedStatus(status);
         setHostedChannels(availableChannels);
-        setHostedChannelId((current) => current || availableChannels[0]?.id || "");
+        if (!hostedChannelSelectionTouched.current) {
+          setHostedChannelId(availableChannels[0]?.id || "");
+        }
       })
       .catch(() => {
         setHostedStatus({ enabled: false });
@@ -516,7 +519,10 @@ export default function LiveStudioRoute() {
                           key={channel.id}
                           accessibilityRole="radio"
                           accessibilityState={{ checked: hostedChannelId === channel.id }}
-                          onPress={() => setHostedChannelId(channel.id)}
+                          onPress={() => {
+                            hostedChannelSelectionTouched.current = true;
+                            setHostedChannelId(channel.id);
+                          }}
                           style={[
                             styles.choice,
                             hostedChannelId === channel.id && styles.choiceSelected
@@ -535,7 +541,10 @@ export default function LiveStudioRoute() {
                       <Pressable
                         accessibilityRole="radio"
                         accessibilityState={{ checked: !hostedChannelId }}
-                        onPress={() => setHostedChannelId("")}
+                        onPress={() => {
+                          hostedChannelSelectionTouched.current = true;
+                          setHostedChannelId("");
+                        }}
                         style={[styles.choice, !hostedChannelId && styles.choiceSelected]}
                       >
                         <Text
