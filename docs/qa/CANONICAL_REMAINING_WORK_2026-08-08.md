@@ -870,10 +870,26 @@ public visibility, or screenshot/video acceptance still called out below.
       chat/premiere/share flow, reusable-channel copy, and host-only confirmed key
       rotation with one-time replacement credentials; both complete gates passed and
       Render deploy `dep-d9vrf5bncjis7388me20` served the exact rotation SHA.
-      Production currently truthfully reports `GrowPath-hosted broadcasting is not
-      activated yet`. Cloudflare Stream activation and protected configuration, one
-      real OBS ingest, simultaneous two-account proof, in-app playback/volume/chat/
-      overlay, replay/retention, key rotation, cost-limit, and cleanup acceptance remain.
+      Cloudflare Stream was activated on 2026-08-14 with 1,000 stored minutes for
+      `$5/month` and documented delivery overage of `$1 per 1,000 delivered minutes`;
+      no larger bundle was purchased. The production account ID, Stream-write token,
+      customer code, and hosted-live switch are protected Render environment values,
+      not source-controlled values. Backend merge
+      `b9ed176ba31679d6d9e48c3be6769204b1e52a57` passed both full gates and deployed as
+      `dep-d9vs0pu7bikc73bi52eg`; a signed-in host then opened the real private draft
+      while unrelated/signed-out isolation remains test-covered. Frontend merge
+      `48d6b288a82e7b7da89ba73e23bf7fa752705b2c` passed the full gate and deployed as
+      `dep-d9vs5ku7bikc73bi7q7g`; a fresh production navigation selected the saved
+      `GrowPathAI production OBS` channel and did not expose the new-channel form.
+      Frontend merge `499290a28ee890f8f999cba7f8851bafc2bf0343` passed 36 focused
+      tests plus the full gate and deployed as `dep-d9vsac5g1s2s73b4ij0g`; production
+      then listed, opened, confirmed deletion of, and removed both private QA drafts.
+      A fresh private `QA OBS ingest acceptance` draft now retains the reusable channel;
+      production GrowPath chat accepted a real message and created its host-only OBS
+      overlay path. Replacement of the setup-time Cloudflare API token and OBS key,
+      real OBS ingest, simultaneous two-account
+      proof, in-app playback/volume, overlay rendering in OBS, replay/retention,
+      cost-limit observation, and final QA-session cleanup remain before `[x]`.
 
 - [~] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
       inspected, without treating them as additional photos or independent evidence.
