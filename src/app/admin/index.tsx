@@ -133,6 +133,9 @@ export function moderationTargetHref(item: ModerationCase) {
           parsed.hostname.endsWith(".growpathai.com")) &&
         matchesModerationTargetRoute(item.targetType, parsed.pathname)
       ) {
+        if (item.targetType === "course") {
+          parsed.searchParams.set("moderationCaseId", String(item._id || ""));
+        }
         return `${parsed.pathname}${parsed.search}`;
       }
     } catch {

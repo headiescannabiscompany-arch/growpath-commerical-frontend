@@ -215,6 +215,23 @@ describe("PlatformAdminRoute", () => {
     ).toBe("/store/living-soil-labs/products/product-1");
   });
 
+  it("keeps a submitted course URL and adds the focused moderation case", () => {
+    expect(
+      moderationTargetHref({
+        _id: "case-course",
+        targetType: "course",
+        targetId: "course-1",
+        reason: "Reported",
+        severity: "medium",
+        status: "open",
+        action: "none",
+        evidenceSnapshot: {
+          targetUrl: "https://growpathai.com/courses?courseId=course-1"
+        }
+      })
+    ).toBe("/courses?courseId=course-1&moderationCaseId=case-course");
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockRole = "admin";
