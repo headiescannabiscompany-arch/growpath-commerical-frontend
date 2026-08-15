@@ -3,13 +3,22 @@ import { Text } from "react-native";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 jest.mock("@/components/ScreenBoundary", () => ({
-  ScreenBoundary: ({ children, showBack, backFallbackHref, title }: any) => {
+  ScreenBoundary: ({
+    children,
+    showBack,
+    backFallbackHref,
+    preferBackFallback,
+    title
+  }: any) => {
     const React = require("react");
     const { Text } = require("react-native");
     return (
       <>
         <Text>Boundary {title}</Text>
         {showBack ? <Text>Shared Back {backFallbackHref}</Text> : null}
+        {showBack ? (
+          <Text>Shared Back Mode {preferBackFallback ? "fallback" : "history"}</Text>
+        ) : null}
         {children}
       </>
     );
@@ -132,6 +141,7 @@ describe("legacy course authoring route back behavior", () => {
       expect(screen.getByText("Edit lesson form lesson-456")).toBeTruthy()
     );
     expect(screen.getByText("Shared Back /courses?courseId=course-123")).toBeTruthy();
+    expect(screen.getByText("Shared Back Mode fallback")).toBeTruthy();
 
     screen.getByText("Save edited lesson").props.onPress();
     expect(mockReplace).toHaveBeenCalledWith("/courses?courseId=course-123");
