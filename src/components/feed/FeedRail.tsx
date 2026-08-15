@@ -292,6 +292,33 @@ const FACILITY_FIRST_PARTY_SHORTCUTS = [
   }
 ] satisfies AdItem[];
 
+const COMMERCIAL_FIRST_PARTY_SHORTCUTS = [
+  {
+    title: "Discover commercial suppliers",
+    body: "Browse published GrowPath storefronts without leaving your brand workspace.",
+    cta: "Browse storefronts",
+    href: "/store",
+    imageUrl: "",
+    isFirstPartyShortcut: true
+  },
+  {
+    title: "Teach customers and growers",
+    body: "Use courses, live sessions, and product-linked lessons for education and support.",
+    cta: "Browse courses",
+    href: "/courses",
+    imageUrl: "",
+    isFirstPartyShortcut: true
+  },
+  {
+    title: "Connect with the grower community",
+    body: "Share brand updates and participate in crop-focused discussions.",
+    cta: "Open forum",
+    href: "/forum",
+    imageUrl: "",
+    isFirstPartyShortcut: true
+  }
+] satisfies AdItem[];
+
 const PLACEMENT_OFFSET = { top: 0, middle: 1, bottom: 2 };
 
 function rotate<T>(items: T[], offset: number) {
@@ -394,9 +421,11 @@ export default function FeedRail({
   if (!slots || slots <= 0) return null;
 
   const fallbackAds =
-    mode === "facility" || mode === "commercial"
+    mode === "facility"
       ? FACILITY_FIRST_PARTY_SHORTCUTS
-      : FIRST_PARTY_SHORTCUTS;
+      : mode === "commercial"
+        ? COMMERCIAL_FIRST_PARTY_SHORTCUTS
+        : FIRST_PARTY_SHORTCUTS;
   const ads = campaignAds.length ? campaignAds : fallbackAds;
   const adSlotCount =
     railMode === "promo-only"

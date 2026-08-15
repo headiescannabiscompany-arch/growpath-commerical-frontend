@@ -117,6 +117,10 @@ export default function CommercialTabsLayout() {
         name="courses"
         options={{ title: "Courses", tabBarLabel: "Courses", href: null }}
       />
+      <Tabs.Screen
+        name="courses/[courseId]"
+        options={{ title: "Course", headerShown: false, href: null }}
+      />
       <Tabs.Screen name="products/index" options={{ title: "Products", href: null }} />
       <Tabs.Screen
         name="feed"
