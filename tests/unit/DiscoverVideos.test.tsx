@@ -4,6 +4,9 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 
 const mockPush = jest.fn();
 const mockSearchVideos = jest.fn();
+const mockListFeed = jest.fn();
+const mockSearchStores = jest.fn();
+const mockListCourses = jest.fn();
 let mockThemeMode: "day" | "night" = "night";
 let mockWorkspaceMode: "personal" | "commercial" = "personal";
 
@@ -33,16 +36,16 @@ jest.mock("@/components/layout/AppCard", () => ({
 }));
 
 jest.mock("@/api/commercialFeed", () => ({
-  listCommercialFeedCampaigns: jest.fn(async () => ({ items: [] }))
+  listCommercialFeedCampaigns: (...args: any[]) => mockListFeed(...args)
 }));
 jest.mock("@/api/marketplace", () => ({
   searchContent: jest.fn(async () => [])
 }));
 jest.mock("@/api/storefront", () => ({
-  searchPublicStorefronts: jest.fn(async () => [])
+  searchPublicStorefronts: (...args: any[]) => mockSearchStores(...args)
 }));
 jest.mock("@/api/courses", () => ({
-  listCourses: jest.fn(async () => []),
+  listCourses: (...args: any[]) => mockListCourses(...args),
   searchCourses: jest.fn(async () => [])
 }));
 jest.mock("@/api/videos", () => ({
@@ -71,8 +74,14 @@ describe("Discover video search", () => {
   beforeEach(() => {
     mockPush.mockReset();
     mockSearchVideos.mockReset();
+    mockListFeed.mockReset();
+    mockSearchStores.mockReset();
+    mockListCourses.mockReset();
     mockThemeMode = "night";
     mockWorkspaceMode = "personal";
+    mockListFeed.mockResolvedValue({ items: [] });
+    mockSearchStores.mockResolvedValue([]);
+    mockListCourses.mockResolvedValue([]);
     mockSearchVideos.mockResolvedValue([
       {
         id: "video-1",
@@ -83,6 +92,52 @@ describe("Discover video search", () => {
         mediaSource: {}
       }
     ]);
+  });
+
+  it("shows available discovery art and opens course and live records directly", async () => {
+    mockListFeed.mockResolvedValue({
+      items: [
+        {
+          id: "campaign-live-1",
+          title: "Live garden walk",
+          linkedLiveId: "live-1",
+          creativeImageUrl: "https://cdn.example.com/live.jpg"
+        }
+      ]
+    });
+    mockSearchStores.mockResolvedValue([
+      {
+        id: "store-1",
+        businessName: "Living Soil Labs",
+        slug: "living-soil-labs",
+        bannerImageUrl: "https://cdn.example.com/store.jpg"
+      }
+    ]);
+    mockListCourses.mockResolvedValue([
+      {
+        id: "course-1",
+        title: "Build living soil",
+        thumbnailUrl: "https://cdn.example.com/course.jpg"
+      }
+    ]);
+
+    render(<DiscoverDirectory />);
+
+    await waitFor(() => expect(screen.getByText("Build living soil")).toBeTruthy());
+    expect(screen.getByLabelText("Build living soil thumbnail").props.source).toEqual({
+      uri: "https://cdn.example.com/course.jpg"
+    });
+    expect(
+      screen.getAllByLabelText("Living Soil Labs thumbnail")[0].props.source
+    ).toEqual({ uri: "https://cdn.example.com/store.jpg" });
+    expect(screen.getByLabelText("Live garden walk thumbnail").props.source).toEqual({
+      uri: "https://cdn.example.com/live.jpg"
+    });
+
+    fireEvent.press(screen.getByLabelText("Open Build living soil"));
+    expect(mockPush).toHaveBeenCalledWith("/courses?courseId=course-1");
+    fireEvent.press(screen.getByLabelText("Open Live garden walk"));
+    expect(mockPush).toHaveBeenCalledWith("/live-session?sessionId=live-1");
   });
 
   it("routes non-personal workspaces through the workspace switcher for Plant ID", async () => {
