@@ -106,6 +106,7 @@ const publicPayload = {
   storefront: {
     name: "Living Soil Labs",
     description: "Purpose-built soil and nutrient products.",
+    bannerUrl: "https://example.com/living-soil-banner.jpg",
     websiteUrl: "https://example.com",
     supportEmail: "support@example.com",
     growInterests: ["living soil", "dry amendments"],
@@ -345,6 +346,10 @@ describe("public commercial routes", () => {
       expect(mockFetchPublicStorefront).toHaveBeenCalledWith("living-soil-labs")
     );
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Living Soil Labs storefront image").props.source
+    ).toEqual({ uri: "https://example.com/living-soil-banner.jpg" });
+    expect(screen.getByText("Purpose-built soil and nutrient products.")).toBeTruthy();
     expect(screen.getByText("Storefront profile")).toBeTruthy();
     expect(screen.getByText("Open Legacy Profile")).toBeTruthy();
     expect(screen.getByText("Share Store")).toBeTruthy();

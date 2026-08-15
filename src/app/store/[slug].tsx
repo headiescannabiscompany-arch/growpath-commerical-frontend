@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -30,6 +31,7 @@ import {
 import { sharePublicLink } from "@/utils/publicLinks";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { resolveImageUri } from "@/utils/photoUploads";
 import {
   isDispensaryStorefront,
   isRegulatedCannabisProduct,
@@ -214,6 +216,9 @@ export default function PublicStorefrontRoute() {
     .map((value) => String(value || "").trim())
     .filter(Boolean)
     .join(", ");
+  const storefrontImage = resolveImageUri(
+    String(storefront?.bannerUrl || storefront?.logoUrl || "")
+  );
   const visibleProducts = useMemo(() => {
     if (!selectedLineId) return products;
     return products.filter((product) => {
@@ -236,6 +241,14 @@ export default function PublicStorefrontRoute() {
       header={
         <View>
           <Text style={styles.title}>{storefront?.name || "Storefront"}</Text>
+          {storefrontImage ? (
+            <Image
+              accessibilityLabel={`${storefront?.name || "Storefront"} storefront image`}
+              resizeMode={storefront?.bannerUrl ? "cover" : "contain"}
+              source={{ uri: storefrontImage }}
+              style={styles.storefrontImage}
+            />
+          ) : null}
           <Text style={styles.subtitle}>
             {storefront?.description || "Published products"}
           </Text>
@@ -660,6 +673,15 @@ export default function PublicStorefrontRoute() {
 export function createStyles(palette: ThemePalette) {
   return StyleSheet.create({
     title: { color: palette.text, fontSize: 24, fontWeight: "800" },
+    storefrontImage: {
+      aspectRatio: 3,
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 10,
+      width: "100%"
+    },
     subtitle: { color: palette.textMuted, marginTop: 4 },
     center: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180 },
     error: { color: palette.danger, fontWeight: "700" },
