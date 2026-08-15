@@ -41,8 +41,16 @@ chrysanthemum records with repeated flower heads and lobed foliage passed at the
 hybrid name _Chrysanthemum × morifolium_; a mixed scene, damaged sparse specimen, and
 foliage-only view were rejected. Four large-crabgrass records with digitate seedheads,
 including two whole-habit views, also passed; two _Sorghastrum nutans_ results were
-rejected as non-_Digitaria_ grasses. The governed catalog is now 64/320 and remains
-planning until all governed slots are filled; no candidate is automatically promoted.
+rejected as non-_Digitaria_ grasses. The governed catalog is now 64/320. Three
+common-dandelion-complex records with combined flower, stalk, and basal-rosette
+evidence also passed at the accepted _Taraxacum sect. Taraxacum_ rank. The queued
+_Taraxacum officinale_ name is a POWO synonym of that section, so none of these phone
+images is treated as a microspecies identification. Two foliage-only candidates and
+one isolated flower underside were rejected because they lack the combined characters
+needed to distinguish close dandelion and dandelion-like taxa. The governed catalog is
+now 67/320; the candidate queue must be regenerated against the corrected accepted
+name. The catalog remains planning until all governed slots are filled; no candidate
+is automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 

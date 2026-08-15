@@ -428,8 +428,8 @@
       },
       {
         "caseId": "dandelion",
-        "acceptedName": "Common dandelion",
-        "scientificName": "Taraxacum officinale",
+        "acceptedName": "Common dandelion complex",
+        "scientificName": "Taraxacum sect. Taraxacum",
         "lifeStage": "mixed",
         "quota": 6,
         "expectedAlternatives": ["catsear", "sow thistle"],
@@ -4279,6 +4279,168 @@
         "collectionMode": "research_wild",
         "observedTaxonId": 51633,
         "observedTaxonName": "Digitaria sanguinalis",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-dandelion-002",
+      "caseId": "dandelion",
+      "acceptedName": "Common dandelion complex",
+      "scientificName": "Taraxacum sect. Taraxacum",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["catsear", "sow thistle", "other Taraxacum sections"],
+      "distinguishingFeatures": [
+        "yellow ligulate composite head on a leafless stalk",
+        "deeply lobed basal-rosette foliage with the flowering plant"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.72, "maximum": 0.88 },
+      "expectedResult": "The common dandelion complex is expected from the combined flower and basal foliage, but a phone image must not claim a Taraxacum microspecies.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/389780023",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714007331/original.jpg",
+      "creator": "(c) Stanislav Murashkin, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Stanislav Murashkin, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "dandelion-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "yellow ligulate flower head",
+          "leafless flowering stalk",
+          "deeply lobed basal leaves",
+          "whole flowering plant context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:1003018-2",
+            "outcome": "Kew POWO treats Taraxacum officinale as a synonym of accepted Taraxacum sect. Taraxacum, so the target is corrected to the accepted section rather than a false exact species."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714007331",
+        "photoId": 714007331,
+        "sourceQuery": "Taraxacum officinale",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 47602,
+        "observedTaxonName": "Taraxacum officinale",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-dandelion-004",
+      "caseId": "dandelion",
+      "acceptedName": "Common dandelion complex",
+      "scientificName": "Taraxacum sect. Taraxacum",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["catsear", "sow thistle", "other Taraxacum sections"],
+      "distinguishingFeatures": [
+        "yellow ligulate composite head",
+        "lobed basal leaves visible below the flower"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.68, "maximum": 0.84 },
+      "expectedResult": "The common dandelion complex is a defensible section-level result; request the full rosette, stalk cross-section, involucral bracts, fruit, and regional context before narrower identification.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/389999014",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714443057/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "dandelion-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "single yellow ligulate flower head",
+          "leafless-looking flower stalk",
+          "lobed basal foliage",
+          "attached plant context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:1003018-2",
+            "outcome": "Kew POWO places the queried Taraxacum officinale name in synonymy under Taraxacum sect. Taraxacum; the image supports only that broader accepted complex."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. The exact CC0 dedication was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714443057",
+        "photoId": 714443057,
+        "sourceQuery": "Taraxacum officinale",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 47602,
+        "observedTaxonName": "Taraxacum officinale",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-dandelion-005",
+      "caseId": "dandelion",
+      "acceptedName": "Common dandelion complex",
+      "scientificName": "Taraxacum sect. Taraxacum",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["catsear", "sow thistle", "other Taraxacum sections"],
+      "distinguishingFeatures": [
+        "multiple yellow ligulate heads and closed buds on separate stalks",
+        "deeply lobed basal-rosette foliage"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.78, "maximum": 0.9 },
+      "expectedResult": "The common dandelion complex is expected from repeated flowers, buds, stalks, and rosette foliage; exact microspecies remains unresolved.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390051529",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714543815/original.jpg",
+      "creator": "(c) Евгений Маринкин, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Евгений Маринкин, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "dandelion-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "multiple yellow ligulate flower heads",
+          "several closed buds",
+          "separate leafless stalks",
+          "deeply lobed basal rosette"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/254151-1",
+            "outcome": "Kew POWO accepts Taraxacum sect. Taraxacum; repeated reproductive and foliage evidence supports the section-level complex without supporting a microspecies."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714543815",
+        "photoId": 714543815,
+        "sourceQuery": "Taraxacum officinale",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 47602,
+        "observedTaxonName": "Taraxacum officinale",
         "observedTaxonRank": "species"
       }
     }
