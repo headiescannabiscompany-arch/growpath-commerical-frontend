@@ -2687,6 +2687,168 @@
       }
     },
     {
+      "recordId": "plant-id-strawberry-002",
+      "caseId": "strawberry",
+      "acceptedName": "Garden strawberry",
+      "scientificName": "Fragaria × ananassa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["mock strawberry", "wild strawberry"],
+      "distinguishingFeatures": [
+        "cultivated container context",
+        "trifoliate serrated foliage with developing aggregate fruit"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.78, "maximum": 0.92 },
+      "expectedResult": "Garden strawberry (Fragaria × ananassa) is expected from combined cultivated context, repeated trifoliate foliage, and developing aggregate fruit; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/379552491",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/694288233/original.jpg",
+      "creator": "(c) Laila GE, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Laila GE, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "strawberry-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "cultivated planter",
+          "repeated trifoliate leaves",
+          "coarsely serrated leaflets",
+          "developing aggregate fruit with retained calyx"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A30117681-2",
+            "outcome": "Kew POWO accepts Fragaria × ananassa as the garden-strawberry hybrid. Approval required cultivated context plus combined Fragaria foliage and fruit evidence."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist original reference; no media was copied. Photo-level CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-694288233",
+        "photoId": 694288233,
+        "sourceQuery": "Fragaria × ananassa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 55366,
+        "observedTaxonName": "Fragaria × ananassa",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
+      "recordId": "plant-id-strawberry-004",
+      "caseId": "strawberry",
+      "acceptedName": "Garden strawberry",
+      "scientificName": "Fragaria × ananassa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["mock strawberry", "wild strawberry"],
+      "distinguishingFeatures": [
+        "harvested cultivated strawberry crop",
+        "numerous large aggregate fruits with retained calyces"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.76, "maximum": 0.9 },
+      "expectedResult": "Garden strawberry (Fragaria × ananassa) is expected from the cultivated harvest of numerous large aggregate fruits; keep confidence below a whole-plant record and do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/378770221",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/692774758/original.jpg",
+      "creator": "(c) Полина Полежанкина, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Полина Полежанкина, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "strawberry-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "multiple harvested red aggregate fruits",
+          "surface achenes",
+          "retained leafy calyces",
+          "large cultivated-fruit range"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A30117681-2",
+            "outcome": "Kew POWO accepts Fragaria × ananassa as the garden-strawberry hybrid. Approval required a cultivated record and repeated large Fragaria fruit evidence."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist original reference; no media was copied. Photo-level CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-692774758",
+        "photoId": 692774758,
+        "sourceQuery": "Fragaria × ananassa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 55366,
+        "observedTaxonName": "Fragaria × ananassa",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
+      "recordId": "plant-id-strawberry-006",
+      "caseId": "strawberry",
+      "acceptedName": "Garden strawberry",
+      "scientificName": "Fragaria × ananassa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["mock strawberry", "wild strawberry"],
+      "distinguishingFeatures": [
+        "large ripe aggregate fruit attached to plant",
+        "co-occurring trifoliate serrated strawberry foliage"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.8, "maximum": 0.94 },
+      "expectedResult": "Garden strawberry (Fragaria × ananassa) is expected from the attached large aggregate fruit plus cultivated Fragaria foliage; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/375354532",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/686179262/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "strawberry-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "attached large red aggregate fruit",
+          "surface achenes",
+          "retained leafy calyx",
+          "co-occurring trifoliate serrated foliage"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A30117681-2",
+            "outcome": "Kew POWO accepts Fragaria × ananassa as the garden-strawberry hybrid. Approval required cultivated context plus attached fruit and foliage evidence."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist original reference; no media was copied. The CC0 rights status was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-686179262",
+        "photoId": 686179262,
+        "sourceQuery": "Fragaria × ananassa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 55366,
+        "observedTaxonName": "Fragaria × ananassa",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
       "recordId": "plant-id-tomato-001",
       "caseId": "tomato",
       "acceptedName": "Tomato",

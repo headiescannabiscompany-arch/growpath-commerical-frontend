@@ -55,7 +55,10 @@ pepper candidate and two cucumber candidates lacking species-level combined evid
 were rejected. One additional flowering basil candidate with combined opposite foliage
 and inflorescence evidence passed at medium confidence; four flower-dominant or
 single-leaf candidates were rejected because they could not exclude close _Ocimum_
-species. The catalog is now 69/320 and remains planning until all governed slots are
+species. Three additional cultivated garden-strawberry records with fruit plus foliage
+or repeated harvested-fruit evidence passed; a flower-only candidate remained rejected
+because it did not independently establish the garden-strawberry hybrid. The catalog is
+now 72/320 and remains planning until all governed slots are
 filled; no candidate is automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
