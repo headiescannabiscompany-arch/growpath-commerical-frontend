@@ -7,10 +7,13 @@ const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockApiRequest = jest.fn();
 const mockAppendGrowPhotos = jest.fn();
+const mockSavePersonalGrowCropIdentity = jest.fn();
+const mockListCropProfiles = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockPersistImageUris = jest.fn();
 const mockEntitlementsCan = jest.fn();
 let mockLimits: Record<string, number> = {};
+let mockSearchParams: Record<string, string> = {};
 
 function chooseDate(
   screen: ReturnType<typeof render>,
@@ -30,7 +33,7 @@ jest.mock("expo-router", () => ({
     replace: mockReplace,
     push: mockPush
   }),
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => mockSearchParams,
   usePathname: () => "/home/personal/grows/new",
   Link: ({ children }: any) => children
 }));
@@ -61,7 +64,13 @@ jest.mock("@/api/apiRequest", () => ({
 
 jest.mock("@/api/grows", () => ({
   appendGrowPhotos: (...args: any[]) => mockAppendGrowPhotos(...args),
-  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args),
+  savePersonalGrowCropIdentity: (...args: any[]) =>
+    mockSavePersonalGrowCropIdentity(...args)
+}));
+
+jest.mock("@/api/cropKnowledge", () => ({
+  listCropProfiles: (...args: any[]) => mockListCropProfiles(...args)
 }));
 
 jest.mock("@/utils/photoUploads", () => ({
@@ -100,10 +109,13 @@ describe("NewGrowScreen access", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockEntitlementsCan.mockReturnValue(true);
+    mockSearchParams = {};
     mockLimits = {};
     mockListPersonalGrows.mockResolvedValue([]);
     mockPersistImageUris.mockResolvedValue([]);
     mockApiRequest.mockResolvedValue({ grow: { id: "grow-bruce-banner" } });
+    mockSavePersonalGrowCropIdentity.mockResolvedValue({ id: "grow-bruce-banner" });
+    mockListCropProfiles.mockResolvedValue([]);
   });
 
   it("locks grow creation after the free one-grow limit is used", async () => {
@@ -204,5 +216,43 @@ describe("NewGrowScreen access", () => {
     );
     fireEvent.press(screen.getByText("Open Grow Dashboard"));
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows/grow-bruce-banner");
+  });
+
+  it("preserves a confirmed Plant ID when it creates the grow", async () => {
+    mockSearchParams = {
+      source: "ai",
+      name: "Tomato grow",
+      cropCommonName: "Tomato",
+      scientificName: "Solanum lycopersicum",
+      commonNames: "tomato,garden tomato",
+      cultivar: "Brandywine",
+      cropProfileId: "crop-profile-tomato",
+      sourceToolRunId: "plant-id-run-1"
+    };
+
+    render(<NewGrowScreen />);
+
+    await waitFor(() => expect(screen.getByDisplayValue("Tomato grow")).toBeTruthy());
+    expect(screen.getByDisplayValue("Tomato")).toBeTruthy();
+    expect(screen.getByDisplayValue("Solanum lycopersicum")).toBeTruthy();
+    expect(screen.getByLabelText("Establishment weeks")).toBeTruthy();
+    expect(screen.getByLabelText("Expected days to first harvest")).toBeTruthy();
+    chooseDate(screen, "Anchor date", "2026-08-14");
+    fireEvent.press(screen.getByLabelText("Create grow"));
+
+    await waitFor(() =>
+      expect(mockSavePersonalGrowCropIdentity).toHaveBeenCalledWith(
+        "grow-bruce-banner",
+        expect.objectContaining({
+          cropCommonName: "Tomato",
+          scientificName: "Solanum lycopersicum",
+          commonNames: ["tomato", "garden tomato"],
+          cultivar: "Brandywine",
+          cropProfileId: "crop-profile-tomato",
+          sourceToolRunId: "plant-id-run-1",
+          userConfirmed: true
+        })
+      )
+    );
   });
 });

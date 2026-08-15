@@ -76,6 +76,24 @@ export type CropProfileInput = {
   commonNames?: string[];
   cropCategory?: string;
   growthHabit?: string;
+  lifeSpanPath?:
+    | "annual"
+    | "biennial"
+    | "short_lived_perennial"
+    | "long_lived_perennial"
+    | "continuous_tropical"
+    | "climate_dependent_perennial"
+    | "unknown";
+  productionPattern?:
+    | "single_harvest"
+    | "repeat_harvest"
+    | "seasonal_perennial"
+    | "continuous"
+    | "non_harvest_observation"
+    | "cultivar_dependent"
+    | "unknown";
+  dormancyPattern?: "none" | "seasonal" | "climate_dependent" | "unknown";
+  expectedProductiveYears?: { min?: number; max?: number; basis?: string };
   productionSystems?: string[];
   stages?: string[];
   environmentTargets?: unknown[];

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
@@ -1099,6 +1099,7 @@ export default function SpeciesCropIdToolRoute({
   backFallbackHref?: string;
 } = {}) {
   const { palette } = useAppTheme();
+  const router = useRouter();
   const entitlements = useEntitlements();
   const styles = useMemo(() => createSpeciesCropIdStyles(palette), [palette]);
   const params = useLocalSearchParams<{
@@ -3622,6 +3623,9 @@ export default function SpeciesCropIdToolRoute({
           !cropCommonName || /^(unknown crop|not confirmed)$/i.test(cropCommonName);
         const payloadImageAnalysis = payload.imageAnalysis || {};
         const imageAnalysis = outputs.imageAnalysis || payloadImageAnalysis;
+        const completedImageAnalyses = [payloadImageAnalysis, outputs.imageAnalysis]
+          .filter(Boolean)
+          .filter((analysis) => analysis.performed === true);
         const sameEvidenceConflict = [
           ...stringList(outputs.counterEvidence),
           ...stringList(outputs.identificationDraft?.counterEvidence),
@@ -3631,18 +3635,16 @@ export default function SpeciesCropIdToolRoute({
         ].some((item) =>
           /same unchanged evidence produced a conflicting identity/i.test(item)
         );
-        const imageAnalysisRequested =
-          imageAnalysis.requested === true || payloadImageAnalysis.requested === true;
+        const imageAnalysisRequested = [payloadImageAnalysis, outputs.imageAnalysis]
+          .filter(Boolean)
+          .some((analysis) => analysis.requested === true);
         const imageEvidenceBlocksConfirmation =
           imageAnalysisRequested &&
-          ((imageAnalysis.requested === true &&
-            (imageAnalysis.performed !== true ||
-              imageAnalysis.quality !== "usable" ||
-              imageAnalysis.confidence !== "high")) ||
-            (payloadImageAnalysis.requested === true &&
-              (payloadImageAnalysis.performed !== true ||
-                payloadImageAnalysis.quality !== "usable" ||
-                payloadImageAnalysis.confidence !== "high")));
+          (completedImageAnalyses.length === 0 ||
+            completedImageAnalyses.some(
+              (analysis) =>
+                analysis.quality !== "usable" || analysis.confidence !== "high"
+            ));
         const target = plantContext.plantId ? "Plant" : "Grow";
         const identity = {
           growId,
@@ -3726,6 +3728,48 @@ export default function SpeciesCropIdToolRoute({
               })
           }
         ];
+
+        if (activeWorkspaceType === "personal" && !growId && !invalidIdentity) {
+          actions.splice(1, 0, {
+            key: "confirm-and-start-grow",
+            label: "Confirm & Start a Grow",
+            pendingLabel: "Preparing grow...",
+            disabled:
+              userIdentityClaim.invalidScientificName ||
+              outputs.confirmationAvailable === false ||
+              (!userCorrectionCanConfirm &&
+                (imageEvidenceBlocksConfirmation ||
+                  sameEvidenceConflict ||
+                  outputs.identityConflictDetected === true ||
+                  payload.identityConflictDetected === true)),
+            onPress: async () => {
+              await recordCropIdentificationDecision({
+                decision: "accepted",
+                toolRun,
+                moduleRecord,
+                workspaceScope: toolRunScope
+              });
+              const query = new URLSearchParams();
+              query.set("source", "ai");
+              query.set("name", `${cropCommonName} grow`);
+              query.set("cropCommonName", cropCommonName);
+              if (identity.scientificName) {
+                query.set("scientificName", identity.scientificName);
+              }
+              if (identity.commonNames.length) {
+                query.set("commonNames", identity.commonNames.join(","));
+              }
+              if (identity.cultivar) query.set("cultivar", identity.cultivar);
+              if (identity.cropProfileId) {
+                query.set("cropProfileId", identity.cropProfileId);
+              }
+              if (identity.sourceToolRunId) {
+                query.set("sourceToolRunId", identity.sourceToolRunId);
+              }
+              router.push(`/home/personal/grows/new?${query.toString()}` as any);
+            }
+          });
+        }
 
         if (activeWorkspaceType === "personal" && growId) {
           actions.push({

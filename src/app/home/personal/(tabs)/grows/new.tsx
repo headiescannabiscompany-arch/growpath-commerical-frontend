@@ -13,7 +13,12 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
-import { appendGrowPhotos, listPersonalGrows } from "@/api/grows";
+import {
+  appendGrowPhotos,
+  listPersonalGrows,
+  savePersonalGrowCropIdentity
+} from "@/api/grows";
+import { listCropProfiles } from "@/api/cropKnowledge";
 import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import GrowInterestPicker from "@/components/GrowInterestPicker";
@@ -32,11 +37,28 @@ import {
   groupTagsByTier
 } from "@/utils/growInterests";
 import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
+import { findReviewedCropLifecycle } from "@/knowledge/cropLifecycleRegistry";
 
 const GROWS_CREATE_PATH = "/api/personal/grows";
 
 type SystemPreset = "soil" | "coco" | "hydro";
 type AnchorType = "vegStart" | "flowerDay1";
+type LifeSpanPath =
+  | "annual"
+  | "biennial"
+  | "short_lived_perennial"
+  | "long_lived_perennial"
+  | "continuous_tropical"
+  | "climate_dependent_perennial"
+  | "unknown";
+type ProductionPattern =
+  | "single_harvest"
+  | "repeat_harvest"
+  | "seasonal_perennial"
+  | "continuous"
+  | "non_harvest_observation"
+  | "cultivar_dependent"
+  | "unknown";
 type SelectedPhoto = {
   uri: string;
   width?: number | null;
@@ -82,6 +104,11 @@ export default function NewGrowScreen() {
     plantCount?: string | string[];
     vegLengthWeeks?: string | string[];
     expectedFlowerDays?: string | string[];
+    cropCommonName?: string | string[];
+    scientificName?: string | string[];
+    commonNames?: string | string[];
+    cropProfileId?: string | string[];
+    sourceToolRunId?: string | string[];
   }>();
   const auth = useAuth();
   const entitlements = useEntitlements();
@@ -134,10 +161,18 @@ export default function NewGrowScreen() {
     firstParam(params.plantCount) || "1"
   );
   const [vegLengthWeeks, setVegLengthWeeks] = React.useState(
-    firstParam(params.vegLengthWeeks) || "4"
+    firstParam(params.vegLengthWeeks) ||
+      (firstParam(params.cropCommonName) &&
+      !/cannabis/i.test(firstParam(params.cropCommonName))
+        ? ""
+        : "4")
   );
   const [expectedFlowerDays, setExpectedFlowerDays] = React.useState(
-    firstParam(params.expectedFlowerDays) || "63"
+    firstParam(params.expectedFlowerDays) ||
+      (firstParam(params.cropCommonName) &&
+      !/cannabis/i.test(firstParam(params.cropCommonName))
+        ? ""
+        : "63")
   );
   const [growInterestSelections, setGrowInterestSelections] = React.useState<
     Record<string, string[]>
@@ -157,6 +192,29 @@ export default function NewGrowScreen() {
   const [potSize, setPotSize] = React.useState("");
   const [potCount, setPotCount] = React.useState("");
   const [cultivar, setCultivar] = React.useState(firstParam(params.cultivar));
+  const [cropCommonName, setCropCommonName] = React.useState(
+    firstParam(params.cropCommonName)
+  );
+  const [scientificName, setScientificName] = React.useState(
+    firstParam(params.scientificName)
+  );
+  const [commonNames, setCommonNames] = React.useState(
+    commaList(params.commonNames).join(", ")
+  );
+  const [cropProfileId, setCropProfileId] = React.useState(
+    firstParam(params.cropProfileId)
+  );
+  const [cropProfileLabel, setCropProfileLabel] = React.useState("");
+  const [profileSearching, setProfileSearching] = React.useState(false);
+  const [lifeSpanPath, setLifeSpanPath] = React.useState<LifeSpanPath>("unknown");
+  const [productionPattern, setProductionPattern] =
+    React.useState<ProductionPattern>("unknown");
+  const [dormancyPattern, setDormancyPattern] = React.useState("unknown");
+  const [lifecycleGuidance, setLifecycleGuidance] = React.useState<string[]>([]);
+  const [lifecycleQuestions, setLifecycleQuestions] = React.useState<string[]>([]);
+  const [lifecycleGuidanceSourceIds, setLifecycleGuidanceSourceIds] = React.useState<
+    string[]
+  >([]);
   const [targetVpdBand, setTargetVpdBand] = React.useState("");
   const [notes, setNotes] = React.useState(firstParam(params.notes));
   const [photos, setPhotos] = React.useState<SelectedPhoto[]>([]);
@@ -167,6 +225,129 @@ export default function NewGrowScreen() {
   const [existingGrowCount, setExistingGrowCount] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
   const [createdGrowId, setCreatedGrowId] = React.useState("");
+
+  const cropSpecificSetup = Boolean(cropCommonName.trim() || scientificName.trim());
+  const adjustedGenericTimingForCrop = React.useRef(false);
+
+  React.useEffect(() => {
+    if (
+      adjustedGenericTimingForCrop.current ||
+      !cropSpecificSetup ||
+      /cannabis/i.test(cropCommonName)
+    ) {
+      return;
+    }
+    adjustedGenericTimingForCrop.current = true;
+    setVegLengthWeeks((current) => (current === "4" ? "" : current));
+    setExpectedFlowerDays((current) => (current === "63" ? "" : current));
+  }, [cropCommonName, cropSpecificSetup]);
+
+  const matchCropProfile = React.useCallback(async () => {
+    const query = scientificName.trim() || cropCommonName.trim();
+    if (!query || profileSearching) return;
+    setProfileSearching(true);
+    setError(null);
+    try {
+      const profiles: any[] = await listCropProfiles({ q: query, limit: 5 });
+      const normalizedScientificName = scientificName.trim().toLowerCase();
+      const normalizedCommonName = cropCommonName.trim().toLowerCase();
+      const exact =
+        profiles.find(
+          (profile) =>
+            (normalizedScientificName &&
+              String(profile.scientificName || "").toLowerCase() ===
+                normalizedScientificName) ||
+            (normalizedCommonName &&
+              String(profile.displayName || "").toLowerCase() === normalizedCommonName) ||
+            (normalizedCommonName &&
+              (Array.isArray(profile.commonNames) ? profile.commonNames : []).some(
+                (item: unknown) =>
+                  String(item || "").toLowerCase() === normalizedCommonName
+              ))
+        ) || profiles[0];
+      if (!exact?._id && !exact?.id) {
+        const reviewedLifecycle = findReviewedCropLifecycle({
+          scientificName,
+          commonName: cropCommonName
+        });
+        setCropProfileId("");
+        if (reviewedLifecycle) {
+          setCropProfileLabel(`${reviewedLifecycle.scientificName} (reviewed lifecycle)`);
+          setLifeSpanPath(reviewedLifecycle.lifeSpanPath);
+          setProductionPattern(reviewedLifecycle.productionPattern);
+          setDormancyPattern(reviewedLifecycle.dormancyPattern);
+          setLifecycleGuidance(reviewedLifecycle.guidance);
+          setLifecycleQuestions(reviewedLifecycle.requiredQuestions);
+          setLifecycleGuidanceSourceIds(reviewedLifecycle.sourceIds);
+          setError(null);
+        } else {
+          setCropProfileLabel("");
+          setLifecycleGuidance([]);
+          setLifecycleQuestions([]);
+          setLifecycleGuidanceSourceIds([]);
+          setError(
+            "No reviewed crop profile matched. Keep lifecycle fields as Not sure until reviewed crop guidance is available."
+          );
+        }
+        return;
+      }
+      setCropProfileId(String(exact._id || exact.id));
+      setCropProfileLabel(
+        `${exact.displayName || cropCommonName || scientificName}${
+          exact.curationStatus ? ` (${exact.curationStatus})` : ""
+        }`
+      );
+      if (!cropCommonName.trim() && exact.displayName) {
+        setCropCommonName(String(exact.displayName));
+      }
+      if (!scientificName.trim() && exact.scientificName) {
+        setScientificName(String(exact.scientificName));
+      }
+      if (!commonNames.trim() && Array.isArray(exact.commonNames)) {
+        setCommonNames(exact.commonNames.map(String).filter(Boolean).join(", "));
+      }
+      if (
+        [
+          "annual",
+          "biennial",
+          "short_lived_perennial",
+          "long_lived_perennial",
+          "continuous_tropical"
+        ].includes(String(exact.lifeSpanPath || ""))
+      ) {
+        setLifeSpanPath(exact.lifeSpanPath as LifeSpanPath);
+      }
+      if (
+        [
+          "single_harvest",
+          "repeat_harvest",
+          "seasonal_perennial",
+          "continuous",
+          "non_harvest_observation"
+        ].includes(String(exact.productionPattern || ""))
+      ) {
+        setProductionPattern(exact.productionPattern as ProductionPattern);
+      }
+      if (["none", "seasonal", "climate_dependent"].includes(exact.dormancyPattern)) {
+        setDormancyPattern(exact.dormancyPattern);
+      }
+      setLifecycleGuidance(
+        Array.isArray(exact.lifecycleGuidance) ? exact.lifecycleGuidance : []
+      );
+      setLifecycleQuestions(
+        Array.isArray(exact.lifecycleQuestions) ? exact.lifecycleQuestions : []
+      );
+      setLifecycleGuidanceSourceIds(
+        Array.isArray(exact.lifecycleGuidanceSourceIds)
+          ? exact.lifecycleGuidanceSourceIds
+          : []
+      );
+    } catch {
+      setError("Unable to match crop guidance right now. You can still save the grow.");
+    } finally {
+      setProfileSearching(false);
+    }
+  }, [commonNames, cropCommonName, profileSearching, scientificName]);
 
   const isValid = name.trim().length > 0 && anchorDate.trim().length > 0;
   const canCreateGrow =
@@ -272,9 +453,15 @@ export default function NewGrowScreen() {
           planning: {
             startType,
             plantCount: Number(plannedPlantCount) || 1,
-            vegLengthWeeks: Number(vegLengthWeeks) || 0,
-            expectedFlowerDays: Number(expectedFlowerDays) || 0,
-            createStarterCalendar: true
+            vegLengthWeeks: vegLengthWeeks.trim() ? Number(vegLengthWeeks) : undefined,
+            expectedFlowerDays: expectedFlowerDays.trim()
+              ? Number(expectedFlowerDays)
+              : undefined,
+            createStarterCalendar: true,
+            lifeSpanPath,
+            productionPattern,
+            dormancyPattern,
+            lifecycleGuidanceSourceIds
           },
           systemPreset,
           anchorDateType,
@@ -313,6 +500,21 @@ export default function NewGrowScreen() {
       if (createdId && uploadedPhotos.length) {
         await appendGrowPhotos(createdId, uploadedPhotos);
       }
+      if (createdId && cropCommonName.trim()) {
+        await savePersonalGrowCropIdentity(createdId, {
+          cropCommonName: cropCommonName.trim(),
+          scientificName: scientificName.trim() || undefined,
+          commonNames: commonNames
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
+          cultivar: cultivar.trim() || undefined,
+          cropProfileId: cropProfileId || null,
+          confidence: "user_confirmed",
+          sourceToolRunId: firstParam(params.sourceToolRunId) || null,
+          userConfirmed: true
+        });
+      }
 
       if (createdId) {
         setCreatedGrowId(createdId);
@@ -328,6 +530,9 @@ export default function NewGrowScreen() {
     anchorDate,
     anchorDateType,
     cultivar,
+    commonNames,
+    cropCommonName,
+    cropProfileId,
     actualHarvestDate,
     cloneCutDate,
     cureStartDate,
@@ -352,8 +557,14 @@ export default function NewGrowScreen() {
     aiSource,
     expectedFlowerDays,
     plannedPlantCount,
+    lifeSpanPath,
+    productionPattern,
+    dormancyPattern,
+    lifecycleGuidanceSourceIds,
     startType,
-    vegLengthWeeks
+    vegLengthWeeks,
+    scientificName,
+    params.sourceToolRunId
   ]);
 
   function openCreated(path: string) {
@@ -509,6 +720,259 @@ export default function NewGrowScreen() {
         <View
           style={{
             borderWidth: 1,
+            borderColor: palette.border,
+            borderRadius: radius.card,
+            padding: 12,
+            gap: 9,
+            backgroundColor: palette.surface
+          }}
+        >
+          <Text style={{ color: palette.text, fontSize: 16, fontWeight: "900" }}>
+            Crop identity and guidance
+          </Text>
+          <Text style={{ color: palette.textMuted }}>
+            Choose the crop first—tomatoes, herbs, houseplants, and other crops should not
+            inherit cannabis-only timing. A confirmed Plant ID can prefill these fields
+            automatically.
+          </Text>
+          <TextInput
+            value={cropCommonName}
+            onChangeText={(value) => {
+              setCropCommonName(value);
+              setCropProfileId("");
+              setCropProfileLabel("");
+            }}
+            placeholder="Tomato"
+            accessibilityLabel="Crop common name"
+            style={{
+              borderWidth: 1,
+              borderColor: palette.border,
+              borderRadius: radius.card,
+              backgroundColor: palette.surfaceMuted,
+              color: palette.text,
+              paddingHorizontal: 12,
+              paddingVertical: 10
+            }}
+          />
+          <TextInput
+            value={scientificName}
+            onChangeText={(value) => {
+              setScientificName(value);
+              setCropProfileId("");
+              setCropProfileLabel("");
+            }}
+            placeholder="Solanum lycopersicum (optional)"
+            accessibilityLabel="Crop scientific name"
+            autoCapitalize="none"
+            style={{
+              borderWidth: 1,
+              borderColor: palette.border,
+              borderRadius: radius.card,
+              backgroundColor: palette.surfaceMuted,
+              color: palette.text,
+              paddingHorizontal: 12,
+              paddingVertical: 10
+            }}
+          />
+          <TextInput
+            value={commonNames}
+            onChangeText={setCommonNames}
+            placeholder="Other names, comma separated"
+            accessibilityLabel="Other crop names"
+            style={{
+              borderWidth: 1,
+              borderColor: palette.border,
+              borderRadius: radius.card,
+              backgroundColor: palette.surfaceMuted,
+              color: palette.text,
+              paddingHorizontal: 12,
+              paddingVertical: 10
+            }}
+          />
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Match crop profile"
+              disabled={!cropSpecificSetup || profileSearching}
+              onPress={matchCropProfile}
+              style={{
+                borderWidth: 1,
+                borderColor: palette.accent,
+                borderRadius: radius.card,
+                paddingHorizontal: 12,
+                paddingVertical: 9,
+                opacity: !cropSpecificSetup || profileSearching ? 0.5 : 1
+              }}
+            >
+              <Text style={{ color: palette.accent, fontWeight: "800" }}>
+                {profileSearching ? "Matching..." : "Match crop guidance"}
+              </Text>
+            </Pressable>
+            {cropSpecificSetup ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Ask AI for crop setup help"
+                onPress={() => {
+                  const crop = scientificName.trim() || cropCommonName.trim();
+                  router.push(
+                    `/home/personal/ai?prompt=${encodeURIComponent(
+                      `Help me set up a new grow for ${crop}. Use reviewed crop-specific guidance, explain uncertain inputs, and leave unknown facts for me to confirm.`
+                    )}` as any
+                  );
+                }}
+                style={{
+                  borderWidth: 1,
+                  borderColor: palette.accent,
+                  borderRadius: radius.card,
+                  paddingHorizontal: 12,
+                  paddingVertical: 9,
+                  backgroundColor: palette.accentSoft
+                }}
+              >
+                <Text style={{ color: palette.accent, fontWeight: "800" }}>
+                  Get crop setup help
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+          {cropProfileLabel ? (
+            <Text style={{ color: palette.success, fontWeight: "800" }}>
+              Matched: {cropProfileLabel}. Review all suggested settings before saving.
+            </Text>
+          ) : null}
+          <Text style={{ color: palette.text, fontWeight: "800" }}>
+            Plant lifespan path
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {[
+              ["unknown", "Not sure"],
+              ["annual", "Annual / one season"],
+              ["biennial", "Biennial / two seasons"],
+              ["short_lived_perennial", "Short-lived perennial"],
+              ["long_lived_perennial", "Long-lived perennial / woody"],
+              ["continuous_tropical", "Continuous indoor / tropical"],
+              ["climate_dependent_perennial", "Tender perennial / climate-dependent"]
+            ].map(([value, label]) => (
+              <Pressable
+                key={value}
+                accessibilityRole="button"
+                accessibilityLabel={`Plant lifespan ${label}`}
+                onPress={() => setLifeSpanPath(value as LifeSpanPath)}
+                style={{
+                  borderWidth: 1,
+                  borderColor: lifeSpanPath === value ? palette.accent : palette.border,
+                  borderRadius: 999,
+                  backgroundColor:
+                    lifeSpanPath === value ? palette.accent : palette.surfaceMuted,
+                  paddingHorizontal: 10,
+                  paddingVertical: 7
+                }}
+              >
+                <Text
+                  style={{
+                    color: lifeSpanPath === value ? palette.accentText : palette.text
+                  }}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text style={{ color: palette.text, fontWeight: "800" }}>
+            Harvest or observation pattern
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {[
+              ["unknown", "Not sure"],
+              ["single_harvest", "One main harvest"],
+              ["repeat_harvest", "Repeated picking / flushes"],
+              ["seasonal_perennial", "Seasonal harvest each year"],
+              ["continuous", "Continuous production"],
+              ["non_harvest_observation", "Observation / no harvest"],
+              ["cultivar_dependent", "Depends on cultivar / growth habit"]
+            ].map(([value, label]) => (
+              <Pressable
+                key={value}
+                accessibilityRole="button"
+                accessibilityLabel={`Production pattern ${label}`}
+                onPress={() => setProductionPattern(value as ProductionPattern)}
+                style={{
+                  borderWidth: 1,
+                  borderColor:
+                    productionPattern === value ? palette.accent : palette.border,
+                  borderRadius: 999,
+                  backgroundColor:
+                    productionPattern === value ? palette.accent : palette.surfaceMuted,
+                  paddingHorizontal: 10,
+                  paddingVertical: 7
+                }}
+              >
+                <Text
+                  style={{
+                    color: productionPattern === value ? palette.accentText : palette.text
+                  }}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          {lifecycleGuidance.length ? (
+            <View style={{ gap: 4 }}>
+              <Text style={{ color: palette.text, fontWeight: "900" }}>
+                Reviewed crop guidance
+              </Text>
+              {lifecycleGuidance.map((item) => (
+                <Text key={item} style={{ color: palette.textMuted }}>
+                  • {item}
+                </Text>
+              ))}
+              {lifecycleQuestions.map((item) => (
+                <Text key={item} style={{ color: palette.accent }}>
+                  Needed: {item}
+                </Text>
+              ))}
+            </View>
+          ) : null}
+          <Text style={{ color: palette.text, fontWeight: "800" }}>Dormancy</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {[
+              ["unknown", "Not sure"],
+              ["none", "No planned dormancy"],
+              ["seasonal", "Seasonal dormancy"],
+              ["climate_dependent", "Depends on climate / location"]
+            ].map(([value, label]) => (
+              <Pressable
+                key={value}
+                accessibilityRole="button"
+                accessibilityLabel={`Dormancy ${label}`}
+                onPress={() => setDormancyPattern(value)}
+                style={{
+                  borderWidth: 1,
+                  borderColor:
+                    dormancyPattern === value ? palette.accent : palette.border,
+                  borderRadius: 999,
+                  backgroundColor:
+                    dormancyPattern === value ? palette.accent : palette.surfaceMuted,
+                  paddingHorizontal: 10,
+                  paddingVertical: 7
+                }}
+              >
+                <Text
+                  style={{
+                    color: dormancyPattern === value ? palette.accentText : palette.text
+                  }}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View
+          style={{
+            borderWidth: 1,
             borderColor: palette.success,
             borderRadius: radius.card,
             padding: 12,
@@ -556,8 +1020,20 @@ export default function NewGrowScreen() {
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {[
               ["Plant count", plannedPlantCount, setPlannedPlantCount],
-              ["Veg length (weeks)", vegLengthWeeks, setVegLengthWeeks],
-              ["Expected flower days", expectedFlowerDays, setExpectedFlowerDays]
+              [
+                !cropSpecificSetup || /cannabis/i.test(cropCommonName)
+                  ? "Veg length (weeks)"
+                  : "Establishment weeks",
+                vegLengthWeeks,
+                setVegLengthWeeks
+              ],
+              [
+                !cropSpecificSetup || /cannabis/i.test(cropCommonName)
+                  ? "Expected flower days"
+                  : "Expected days to first harvest",
+                expectedFlowerDays,
+                setExpectedFlowerDays
+              ]
             ].map(([label, value, setter]) => (
               <View key={String(label)} style={{ flex: 1, minWidth: 150, gap: 4 }}>
                 <Text style={{ color: palette.text, fontWeight: "700" }}>
