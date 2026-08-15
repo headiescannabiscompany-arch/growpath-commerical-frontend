@@ -428,8 +428,8 @@
       },
       {
         "caseId": "dandelion",
-        "acceptedName": "Common dandelion",
-        "scientificName": "Taraxacum officinale",
+        "acceptedName": "Common dandelion complex",
+        "scientificName": "Taraxacum sect. Taraxacum",
         "lifeStage": "mixed",
         "quota": 6,
         "expectedAlternatives": ["catsear", "sow thistle"],
@@ -701,6 +701,62 @@
     ]
   },
   "mediaRecords": [
+    {
+      "recordId": "plant-id-basil-001",
+      "caseId": "basil",
+      "acceptedName": "Basil",
+      "scientificName": "Ocimum basilicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["mint family herb"],
+      "distinguishingFeatures": [
+        "opposite ovate basil-like leaves",
+        "terminal flower spike with whorled white bilabiate flowers"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.66,
+        "maximum": 0.86
+      },
+      "expectedResult": "Basil is expected from combined opposite foliage and flowering-spike evidence; close Ocimum species remain a material comparison.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/315435378",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/569826514/original.jpg",
+      "creator": "(c) Ricardo Betancourt Sánchez, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Ricardo Betancourt Sánchez, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-15",
+      "rightsReviewedAt": "2026-08-15",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "basil-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-15",
+        "visibleMorphology": [
+          "opposite ovate leaves",
+          "terminal spike with repeated flower whorls",
+          "white bilabiate flowers and hairy calyces"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A452874-1",
+            "outcome": "Kew POWO accepts Ocimum basilicum L. and records confusion with close Ocimum species; combined foliage and inflorescence support a medium-confidence governed basil result rather than cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the full-resolution iNaturalist reference; no media was copied into the product. Close Ocimum species remain explicit alternatives. Photo-level CC BY status and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-569826514",
+        "photoId": 569826514,
+        "sourceQuery": "Ocimum basilicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 61398,
+        "observedTaxonName": "Ocimum basilicum",
+        "observedTaxonRank": "species"
+      }
+    },
     {
       "recordId": "plant-id-basil-003",
       "caseId": "basil",
@@ -2631,6 +2687,168 @@
       }
     },
     {
+      "recordId": "plant-id-strawberry-002",
+      "caseId": "strawberry",
+      "acceptedName": "Garden strawberry",
+      "scientificName": "Fragaria × ananassa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["mock strawberry", "wild strawberry"],
+      "distinguishingFeatures": [
+        "cultivated container context",
+        "trifoliate serrated foliage with developing aggregate fruit"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.78, "maximum": 0.92 },
+      "expectedResult": "Garden strawberry (Fragaria × ananassa) is expected from combined cultivated context, repeated trifoliate foliage, and developing aggregate fruit; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/379552491",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/694288233/original.jpg",
+      "creator": "(c) Laila GE, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Laila GE, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "strawberry-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "cultivated planter",
+          "repeated trifoliate leaves",
+          "coarsely serrated leaflets",
+          "developing aggregate fruit with retained calyx"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A30117681-2",
+            "outcome": "Kew POWO accepts Fragaria × ananassa as the garden-strawberry hybrid. Approval required cultivated context plus combined Fragaria foliage and fruit evidence."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist original reference; no media was copied. Photo-level CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-694288233",
+        "photoId": 694288233,
+        "sourceQuery": "Fragaria × ananassa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 55366,
+        "observedTaxonName": "Fragaria × ananassa",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
+      "recordId": "plant-id-strawberry-004",
+      "caseId": "strawberry",
+      "acceptedName": "Garden strawberry",
+      "scientificName": "Fragaria × ananassa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["mock strawberry", "wild strawberry"],
+      "distinguishingFeatures": [
+        "harvested cultivated strawberry crop",
+        "numerous large aggregate fruits with retained calyces"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.76, "maximum": 0.9 },
+      "expectedResult": "Garden strawberry (Fragaria × ananassa) is expected from the cultivated harvest of numerous large aggregate fruits; keep confidence below a whole-plant record and do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/378770221",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/692774758/original.jpg",
+      "creator": "(c) Полина Полежанкина, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Полина Полежанкина, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "strawberry-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "multiple harvested red aggregate fruits",
+          "surface achenes",
+          "retained leafy calyces",
+          "large cultivated-fruit range"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A30117681-2",
+            "outcome": "Kew POWO accepts Fragaria × ananassa as the garden-strawberry hybrid. Approval required a cultivated record and repeated large Fragaria fruit evidence."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist original reference; no media was copied. Photo-level CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-692774758",
+        "photoId": 692774758,
+        "sourceQuery": "Fragaria × ananassa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 55366,
+        "observedTaxonName": "Fragaria × ananassa",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
+      "recordId": "plant-id-strawberry-006",
+      "caseId": "strawberry",
+      "acceptedName": "Garden strawberry",
+      "scientificName": "Fragaria × ananassa",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["mock strawberry", "wild strawberry"],
+      "distinguishingFeatures": [
+        "large ripe aggregate fruit attached to plant",
+        "co-occurring trifoliate serrated strawberry foliage"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.8, "maximum": 0.94 },
+      "expectedResult": "Garden strawberry (Fragaria × ananassa) is expected from the attached large aggregate fruit plus cultivated Fragaria foliage; do not infer cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/375354532",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/686179262/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "strawberry-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "attached large red aggregate fruit",
+          "surface achenes",
+          "retained leafy calyx",
+          "co-occurring trifoliate serrated foliage"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A30117681-2",
+            "outcome": "Kew POWO accepts Fragaria × ananassa as the garden-strawberry hybrid. Approval required cultivated context plus attached fruit and foliage evidence."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist original reference; no media was copied. The CC0 rights status was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-686179262",
+        "photoId": 686179262,
+        "sourceQuery": "Fragaria × ananassa",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 55366,
+        "observedTaxonName": "Fragaria × ananassa",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
       "recordId": "plant-id-tomato-001",
       "caseId": "tomato",
       "acceptedName": "Tomato",
@@ -2737,6 +2955,62 @@
         "photoId": 713940274,
         "sourceQuery": "Solanum lycopersicum",
         "collectionMode": "research_wild",
+        "observedTaxonId": 51737,
+        "observedTaxonName": "Solanum lycopersicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-tomato-003",
+      "caseId": "tomato",
+      "acceptedName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "vegetative",
+      "expectedAlternatives": ["black nightshade", "potato"],
+      "distinguishingFeatures": [
+        "repeated tomato-like compound foliage",
+        "lobed and serrated leaflets on a pubescent herbaceous stem"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.62,
+        "maximum": 0.84
+      },
+      "expectedResult": "Tomato is expected from repeated compound foliage and pubescence, but flower or fruit evidence would improve confidence.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386702147",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/708044940/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-15",
+      "rightsReviewedAt": "2026-08-15",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "tomato-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-15",
+        "visibleMorphology": [
+          "repeated pinnately compound tomato-like leaves",
+          "irregularly lobed and serrated leaflets",
+          "visible pubescence on stems and leaf margins"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:316947-2",
+            "outcome": "Kew POWO accepts Solanum lycopersicum L.; the reviewed vegetative morphology is consistent with the governed tomato target."
+          }
+        ],
+        "notes": "Visual review used the full-resolution iNaturalist reference; no media was copied into the product. This vegetative-only view remains below high confidence. Photo-level CC0 status was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-708044940",
+        "photoId": 708044940,
+        "sourceQuery": "Solanum lycopersicum",
+        "collectionMode": "cultivated",
         "observedTaxonId": 51737,
         "observedTaxonName": "Solanum lycopersicum",
         "observedTaxonRank": "species"
@@ -4279,6 +4553,168 @@
         "collectionMode": "research_wild",
         "observedTaxonId": 51633,
         "observedTaxonName": "Digitaria sanguinalis",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-dandelion-002",
+      "caseId": "dandelion",
+      "acceptedName": "Common dandelion complex",
+      "scientificName": "Taraxacum sect. Taraxacum",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["catsear", "sow thistle", "other Taraxacum sections"],
+      "distinguishingFeatures": [
+        "yellow ligulate composite head on a leafless stalk",
+        "deeply lobed basal-rosette foliage with the flowering plant"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.72, "maximum": 0.88 },
+      "expectedResult": "The common dandelion complex is expected from the combined flower and basal foliage, but a phone image must not claim a Taraxacum microspecies.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/389780023",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714007331/original.jpg",
+      "creator": "(c) Stanislav Murashkin, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Stanislav Murashkin, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "dandelion-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "yellow ligulate flower head",
+          "leafless flowering stalk",
+          "deeply lobed basal leaves",
+          "whole flowering plant context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:1003018-2",
+            "outcome": "Kew POWO treats Taraxacum officinale as a synonym of accepted Taraxacum sect. Taraxacum, so the target is corrected to the accepted section rather than a false exact species."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714007331",
+        "photoId": 714007331,
+        "sourceQuery": "Taraxacum officinale",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 47602,
+        "observedTaxonName": "Taraxacum officinale",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-dandelion-004",
+      "caseId": "dandelion",
+      "acceptedName": "Common dandelion complex",
+      "scientificName": "Taraxacum sect. Taraxacum",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["catsear", "sow thistle", "other Taraxacum sections"],
+      "distinguishingFeatures": [
+        "yellow ligulate composite head",
+        "lobed basal leaves visible below the flower"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.68, "maximum": 0.84 },
+      "expectedResult": "The common dandelion complex is a defensible section-level result; request the full rosette, stalk cross-section, involucral bracts, fruit, and regional context before narrower identification.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/389999014",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714443057/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "dandelion-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "single yellow ligulate flower head",
+          "leafless-looking flower stalk",
+          "lobed basal foliage",
+          "attached plant context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:1003018-2",
+            "outcome": "Kew POWO places the queried Taraxacum officinale name in synonymy under Taraxacum sect. Taraxacum; the image supports only that broader accepted complex."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. The exact CC0 dedication was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714443057",
+        "photoId": 714443057,
+        "sourceQuery": "Taraxacum officinale",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 47602,
+        "observedTaxonName": "Taraxacum officinale",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-dandelion-005",
+      "caseId": "dandelion",
+      "acceptedName": "Common dandelion complex",
+      "scientificName": "Taraxacum sect. Taraxacum",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["catsear", "sow thistle", "other Taraxacum sections"],
+      "distinguishingFeatures": [
+        "multiple yellow ligulate heads and closed buds on separate stalks",
+        "deeply lobed basal-rosette foliage"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.78, "maximum": 0.9 },
+      "expectedResult": "The common dandelion complex is expected from repeated flowers, buds, stalks, and rosette foliage; exact microspecies remains unresolved.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390051529",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714543815/original.jpg",
+      "creator": "(c) Евгений Маринкин, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Евгений Маринкин, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "dandelion-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "multiple yellow ligulate flower heads",
+          "several closed buds",
+          "separate leafless stalks",
+          "deeply lobed basal rosette"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/254151-1",
+            "outcome": "Kew POWO accepts Taraxacum sect. Taraxacum; repeated reproductive and foliage evidence supports the section-level complex without supporting a microspecies."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714543815",
+        "photoId": 714543815,
+        "sourceQuery": "Taraxacum officinale",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 47602,
+        "observedTaxonName": "Taraxacum officinale",
         "observedTaxonRank": "species"
       }
     }

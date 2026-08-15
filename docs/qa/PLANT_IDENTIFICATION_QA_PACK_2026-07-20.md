@@ -3,13 +3,13 @@
 Date: 2026-07-20
 
 Status: Catalog, rights gate, candidate collector, review queue, and promotion gate
-implemented. Seven tomato records have passed image-level morphology, identity,
+implemented. Eight tomato records have passed image-level morphology, identity,
 life-stage, Tier-A taxonomy, exact-license, rights, expected-result, and intended-use
 review. Seven pepper records and six cucumber records have also passed the same
 gates. Four cultivated-form lettuce records also passed; four flowering or
 wild-relative lettuce candidates were rejected because the images could not reliably
 separate cultivated lettuce from other Lactuca species. The governed catalog is now
-24/320. Three basil records with strong cultivated foliage or combined leaf-and-flower
+24/320. Four basil records with strong cultivated foliage or combined leaf-and-flower
 evidence also passed; five flower-only, single-leaf, or unresolved close-relative
 candidates were rejected. Four cultivated-context garden-strawberry records also passed;
 four wild-context Fragaria candidates were rejected because they could not establish the
@@ -41,8 +41,25 @@ chrysanthemum records with repeated flower heads and lobed foliage passed at the
 hybrid name _Chrysanthemum × morifolium_; a mixed scene, damaged sparse specimen, and
 foliage-only view were rejected. Four large-crabgrass records with digitate seedheads,
 including two whole-habit views, also passed; two _Sorghastrum nutans_ results were
-rejected as non-_Digitaria_ grasses. The governed catalog is now 64/320 and remains
-planning until all governed slots are filled; no candidate is automatically promoted.
+rejected as non-_Digitaria_ grasses. The governed catalog is now 64/320. Three
+common-dandelion-complex records with combined flower, stalk, and basal-rosette
+evidence also passed at the accepted _Taraxacum sect. Taraxacum_ rank. The queued
+_Taraxacum officinale_ name is a POWO synonym of that section, so none of these phone
+images is treated as a microspecies identification. Two foliage-only candidates and
+one isolated flower underside were rejected because they lack the combined characters
+needed to distinguish close dandelion and dandelion-like taxa. The governed catalog is
+now 67/320; the candidate queue must be regenerated against the corrected accepted
+name. One additional vegetative tomato record with repeated compound foliage and
+pubescence passed at medium confidence, completing the governed tomato quota; a blurry
+pepper candidate and two cucumber candidates lacking species-level combined evidence
+were rejected. One additional flowering basil candidate with combined opposite foliage
+and inflorescence evidence passed at medium confidence; four flower-dominant or
+single-leaf candidates were rejected because they could not exclude close _Ocimum_
+species. Three additional cultivated garden-strawberry records with fruit plus foliage
+or repeated harvested-fruit evidence passed; a flower-only candidate remained rejected
+because it did not independently establish the garden-strawberry hybrid. The catalog is
+now 72/320 and remains planning until all governed slots are
+filled; no candidate is automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
