@@ -1,7 +1,7 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { Linking } from "react-native";
+import { Alert, Linking } from "react-native";
 
 // Mocks
 const mockUseAuth = jest.fn();
@@ -324,6 +324,63 @@ describe("LiveSessionScreen QA", () => {
     await waitFor(() => {
       expect(queryByText(/Session 1/i)).toBeTruthy();
       expect(queryByText(/Open Twitch Moderation/i)).toBeNull();
+    });
+  });
+
+  it("lets a hosted-live owner rotate and save replacement OBS credentials", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      if (url === "/api/lives/hosted-1" && options.method === "GET") {
+        return Promise.resolve({
+          _id: "hosted-1",
+          owner: { id: "host-1" },
+          title: "Garden walk",
+          broadcastMode: "growpath",
+          chatEnabled: false
+        });
+      }
+      if (url === "/api/lives/hosted-1/rsvp") {
+        return Promise.resolve({ rsvped: false });
+      }
+      if (url === "/api/lives/hosted-1/hosted-status") {
+        return Promise.resolve({ lifecycle: "ready" });
+      }
+      if (url === "/api/lives/hosted-1/hosted-input/rotate") {
+        return Promise.resolve({
+          credentials: {
+            rtmpsUrl: "rtmps://live.example.test/input",
+            streamKey: "replacement-secret"
+          },
+          shownOnce: true
+        });
+      }
+      return Promise.resolve({});
+    });
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+
+    const { getByText } = renderWithNav({ sessionId: "hosted-1" });
+    await waitFor(() => expect(getByText("Rotate OBS Stream Key")).toBeTruthy());
+    fireEvent.press(getByText("Rotate OBS Stream Key"));
+
+    expect(alertSpy).toHaveBeenCalledWith(
+      "Rotate OBS stream key?",
+      expect.stringContaining("stop working immediately"),
+      expect.any(Array)
+    );
+    const actions = alertSpy.mock.calls.at(-1)[2];
+    await act(async () => {
+      await actions.find((action) => action.text === "Rotate key").onPress();
+    });
+
+    await waitFor(() => {
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/lives/hosted-1/hosted-input/rotate",
+        { method: "POST", body: {} }
+      );
+      expect(getByText("rtmps://live.example.test/input")).toBeTruthy();
+      expect(getByText("replacement-secret")).toBeTruthy();
+      expect(getByText("Copy replacement key")).toBeTruthy();
     });
   });
 

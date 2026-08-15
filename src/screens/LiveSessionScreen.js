@@ -30,6 +30,7 @@ import {
   getHostedLivePlayback,
   listLiveChat,
   releaseHostedLiveInput,
+  rotateHostedLiveInput,
   rotateLiveOverlayToken,
   sendLiveChat,
   updateLive
@@ -88,6 +89,8 @@ export default function LiveSessionScreen({ route }) {
   const [hostedPlayback, setHostedPlayback] = useState(null);
   const [hostedLifecycle, setHostedLifecycle] = useState("");
   const [endingLive, setEndingLive] = useState(false);
+  const [rotatingHostedKey, setRotatingHostedKey] = useState(false);
+  const [rotatedHostedCredentials, setRotatedHostedCredentials] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -376,6 +379,44 @@ export default function LiveSessionScreen({ route }) {
     } finally {
       setEndingLive(false);
     }
+  }
+
+  async function rotateHostedKey() {
+    if (rotatingHostedKey) return;
+    setRotatingHostedKey(true);
+    setFeedback("");
+    try {
+      const result = await rotateHostedLiveInput(sessionId);
+      const credentials = result?.credentials || null;
+      if (!credentials?.rtmpsUrl || !credentials?.streamKey) {
+        throw new Error("The replacement OBS connection was not returned.");
+      }
+      setRotatedHostedCredentials(credentials);
+      setFeedback(
+        "Stream key rotated. Replace the saved GrowPath server and key in OBS before the next broadcast."
+      );
+    } catch (error) {
+      setFeedback(
+        String(error?.message || error || "The stream key could not be rotated.")
+      );
+    } finally {
+      setRotatingHostedKey(false);
+    }
+  }
+
+  function confirmHostedKeyRotation() {
+    Alert.alert(
+      "Rotate OBS stream key?",
+      "The current key will stop working immediately. End any active broadcast first, then save the replacement key in OBS.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Rotate key",
+          style: "destructive",
+          onPress: () => void rotateHostedKey()
+        }
+      ]
+    );
   }
 
   useEffect(() => {
@@ -783,6 +824,69 @@ export default function LiveSessionScreen({ route }) {
                       </Text>
                     </View>
                   ) : null}
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+
+          {isHost && isGrowPathHosted ? (
+            <View style={styles.overlayPanel}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.chatTitle}>
+                OBS connection security
+              </Text>
+              <Text style={styles.meta}>
+                Your saved OBS connection remains reusable for future broadcasts. Rotate
+                its private key only if it was exposed or you need to disconnect the old
+                connection.
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                disabled={rotatingHostedKey}
+                onPress={confirmHostedKeyRotation}
+                style={[styles.secondaryBtn, rotatingHostedKey && styles.disabled]}
+              >
+                <Text style={styles.secondaryBtnText}>
+                  {rotatingHostedKey ? "Rotating..." : "Rotate OBS Stream Key"}
+                </Text>
+              </Pressable>
+              {rotatedHostedCredentials ? (
+                <View style={styles.overlayUrlBox}>
+                  <Text style={styles.chatAuthor}>Save this replacement in OBS now</Text>
+                  <Text style={styles.meta}>
+                    This private key is shown once. The previous key no longer works.
+                  </Text>
+                  <Text style={styles.meta}>OBS server</Text>
+                  <Text selectable style={styles.overlayUrl}>
+                    {String(rotatedHostedCredentials.rtmpsUrl)}
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() =>
+                      void copyText(
+                        String(rotatedHostedCredentials.rtmpsUrl),
+                        "Replacement OBS server copied."
+                      )
+                    }
+                    style={styles.secondaryBtn}
+                  >
+                    <Text style={styles.secondaryBtnText}>Copy replacement server</Text>
+                  </Pressable>
+                  <Text style={styles.meta}>Stream key</Text>
+                  <Text selectable style={styles.overlayUrl}>
+                    {String(rotatedHostedCredentials.streamKey)}
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() =>
+                      void copyText(
+                        String(rotatedHostedCredentials.streamKey),
+                        "Replacement stream key copied."
+                      )
+                    }
+                    style={styles.secondaryBtn}
+                  >
+                    <Text style={styles.secondaryBtnText}>Copy replacement key</Text>
+                  </Pressable>
                 </View>
               ) : null}
             </View>
