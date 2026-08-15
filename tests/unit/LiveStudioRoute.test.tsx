@@ -7,6 +7,8 @@ const mockListVideoLibrary = jest.fn();
 const mockGetDiscordLiveConnection = jest.fn();
 const mockGetHostedLiveStatus = jest.fn();
 const mockListHostedLiveChannels = jest.fn();
+const mockListLives = jest.fn();
+const mockDeleteLive = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() })
@@ -22,7 +24,9 @@ jest.mock("@/entitlements", () => ({
 
 jest.mock("@/api/lives", () => ({
   createLive: jest.fn(),
+  deleteLive: (...args: any[]) => mockDeleteLive(...args),
   getHostedLiveStatus: (...args: any[]) => mockGetHostedLiveStatus(...args),
+  listLives: (...args: any[]) => mockListLives(...args),
   listHostedLiveChannels: (...args: any[]) => mockListHostedLiveChannels(...args),
   provisionHostedLiveInput: jest.fn()
 }));
@@ -52,6 +56,8 @@ describe("LiveStudioRoute", () => {
       limits: { monthlyMinutes: 120, sessionMinutes: 60 }
     });
     mockListHostedLiveChannels.mockResolvedValue([]);
+    mockListLives.mockResolvedValue([]);
+    mockDeleteLive.mockResolvedValue({ success: true });
   });
 
   it("offers all-account live and premiere creation without a GrowPath picker", async () => {
@@ -102,5 +108,31 @@ describe("LiveStudioRoute", () => {
     expect(
       screen.getByRole("radio", { name: "New channel" }).props.accessibilityState
     ).toEqual({ checked: false });
+  });
+
+  it("opens and safely deletes the host's private drafts", async () => {
+    mockListLives.mockResolvedValue([
+      {
+        id: "draft-1",
+        title: "Spring garden Q&A",
+        isPublished: false,
+        status: "draft",
+        sessionType: "live"
+      }
+    ]);
+
+    render(<LiveStudioRoute />);
+
+    expect(await screen.findByText("Your live sessions")).toBeTruthy();
+    expect(await screen.findByText("Spring garden Q&A")).toBeTruthy();
+    expect(mockListLives).toHaveBeenCalledWith({ mine: true });
+
+    fireEvent.press(screen.getByRole("button", { name: "Delete Spring garden Q&A" }));
+    fireEvent.press(
+      screen.getByRole("button", { name: "Confirm delete Spring garden Q&A" })
+    );
+
+    await waitFor(() => expect(mockDeleteLive).toHaveBeenCalledWith("draft-1"));
+    await waitFor(() => expect(screen.queryByText("Spring garden Q&A")).toBeNull());
   });
 });

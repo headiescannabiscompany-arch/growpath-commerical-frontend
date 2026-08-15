@@ -624,6 +624,7 @@ export const methodRegistry: GrowPathMethod[] = [
     "live-streaming-workflow-method.md",
     [
       "draft or schedule",
+      "open or explicitly delete an owned private draft",
       "publish",
       "discover or follow",
       "stream or premiere",
@@ -648,6 +649,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "transparent configurable OBS Browser Source overlay",
       "two explicit broadcast modes: outside provider URL with embed-or-handoff behavior, and first-party GrowPath encoder ingest with adaptive in-app playback",
       "private account-owned reusable encoder channel with revocable ingest secret, explicit saved-channel default or deliberate new-channel choice, draft/live control, stream health states, GrowPath chat, and reviewed replay retention",
+      "host-owned session manager for opening drafts, scheduled sessions, active broadcasts, and replays with confirmed draft deletion",
       "outside-picker JSON or CSV entry feed",
       "provider-confirmed linked-identity relay status",
       "replay, moderation, and deletion audit continuity"

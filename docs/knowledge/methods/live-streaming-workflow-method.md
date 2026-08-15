@@ -16,6 +16,10 @@ The directory and detail page label premieres clearly.
 Hosts can draft, preview, publish, start, end, and attach a replay. Viewers can open only
 published sessions allowed by public, following, customer, or private access. Ending a
 session must not erase its chat, RSVP, moderation, or replay records.
+Live Studio must also list the signed-in host's drafts, scheduled sessions, active
+broadcasts, and replays. The host can open each canonical session page from that list.
+Deleting an unpublished draft requires an explicit confirmation and must never delete
+another account's session or an active broadcast.
 
 GrowPath-hosted broadcasts use private account-owned encoder channels. A host may save
 the RTMPS server and stream key in OBS and reuse that channel for later sessions. When
