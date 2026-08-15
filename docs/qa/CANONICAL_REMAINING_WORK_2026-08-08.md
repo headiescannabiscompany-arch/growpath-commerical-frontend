@@ -965,18 +965,44 @@ public visibility, or screenshot/video acceptance still called out below.
       Author add/replace/remove/reload, image-backed and text-only publication,
       learner rendering, unpublish, archive, and cleanup all passed. See
       `docs/qa/COMMERCIAL_COURSE_MEDIA_PRODUCTION_EVIDENCE_2026-08-14.md`.
+      A later public-route regression omitted saved course art from the storefront
+      course card and opened public course. Frontend merge
+      `985046056640bc7493c968b4fe7a76f92a8cc9cb` restored the intended hierarchy:
+      the card prefers thumbnail then banner/image fallback, and the opened course
+      prefers banner then thumbnail/image fallback. Its focused 18/18 route checks,
+      TypeScript, lint, full Frontend CI, and Production Build Preflight passed.
 - [~] Put storefront imagery above the storefront description where available, keep
   empty states intentional, and verify every product, course, video, website, and
   pickup handoff opens the correct public or signed-in destination. Frontend merge
   `70ee4a9839e3503c1d4d7f0de7df907d51cebe6d` is deployed and renders banner media,
   or a logo fallback, above the public description with distinct cover/contain
   presentation and an accessible label. The current Admin Commercial storefront
-  is intentionally unconfigured and unpublished, so populated imagery and every
-  public handoff still require owner-data acceptance.
-- [ ] Surface frequent deep links and next actions beside the records and tools where
+  is intentionally unconfigured and unpublished. Frontend merge
+  `719d1d131292ab3b34ee1ca1a7d0ce9950e7bb3e` now also renders each saved public
+  product image above its product content/actions. Backend merge
+  `464e23908a8eb1532ae9b7d27d4919915ae8cc82` and frontend merge
+  `4ac91a91148865315478526a67caf45af02a8885` add a safe public brand-video
+  projection and storefront video cards linked to the canonical video detail.
+  The projection is owner-matched Commercial, published, public, non-deleted, and
+  non-cannabis-specific; it excludes protected playback/storage, transcripts,
+  follower-only/unlisted/private/course-only media, Facility media, and owner user
+  identifiers. Focused backend tests passed 16/16, focused frontend/knowledge tests
+  passed 24/24, both PR gates passed, and the post-merge backend gate passed. The
+  live public catalog returned an intentional empty `storefronts`/`brands`/`items`
+  result on 2026-08-15, so populated imagery and every public handoff still require
+  owner-data acceptance rather than fabricated records.
+- [~] Surface frequent deep links and next actions beside the records and tools where
       people naturally need them, including videos, live/premiere viewing, Plant ID,
       saved AI results, grows, storefronts, courses, Forum/Q&A, and shared timelines.
-      Avoid duplicate top-level navigation when a contextual action is clearer.
+      Avoid duplicate top-level navigation when a contextual action is clearer. The
+      authenticated Admin Personal saved-result production route on 2026-08-15 exposed
+      focused follow-up questions, saved-evidence rerun, correction, private location,
+      grow-log/task writes, Forum sharing, summary sharing/copying, and Archive beside
+      the selected result. Existing contextual panels retain Grow/Plant/source context,
+      the Lives directory links sessions and Live Studio, and public storefront video
+      cards now reach the canonical watch/comment/report/share detail. The final
+      route-by-route crawl must still exercise the path forward from every listed
+      surface and fix any remaining missing or duplicate action before `[x]`.
 - [ ] Consolidate headers, cards, media aspect ratios, spacing, text hierarchy,
       buttons, loading/error/empty states, Back behavior, bottom navigation, Day/Night/
       Auto rendering, and responsive behavior into one professional visual system
