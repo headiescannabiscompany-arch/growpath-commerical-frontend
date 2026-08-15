@@ -134,6 +134,19 @@ describe("FeedRail", () => {
     expect(recordCommercialAnalyticsEvent).not.toHaveBeenCalled();
   });
 
+  it("uses Commercial workspace language for Commercial fallback shortcuts", async () => {
+    mockListCommercialFeedCampaigns.mockResolvedValue({ items: [], nextCursor: null });
+
+    const screen = render(
+      <FeedRail slots={1} mode="commercial" railMode="promo-only" placement="top" />
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText(/without leaving your brand workspace/i)).toBeTruthy()
+    );
+    expect(screen.queryByText(/facility workflow/i)).toBeNull();
+  });
+
   it("uses account-neutral fallback education instead of fabricated brand posts", () => {
     mockListCommercialFeedCampaigns.mockResolvedValue({ items: [], nextCursor: null });
 

@@ -29,6 +29,9 @@ describe("Commercial page header policy", () => {
       /name="discover"\s+options=\{\{[\s\S]*?title: "Discover",[\s\S]*?tabBarLabel: "Discover",[\s\S]*?headerShown: false/
     );
     expect(layout).toMatch(
+      /name="courses\/\[courseId\]"\s+options=\{\{[\s\S]*?title: "Course",[\s\S]*?headerShown: false,[\s\S]*?href: null/
+    );
+    expect(layout).toMatch(
       /name="orders"\s+options=\{\{[\s\S]*?title: "Orders",[\s\S]*?headerShown: false/
     );
     expect(layout).toMatch(
