@@ -38,14 +38,16 @@ export function publicProductExternalUrl(product: any, storefront?: any) {
   const regulatedCannabis = isRegulatedCannabisProduct(product);
   const dispensary =
     isDispensaryStorefront(storefront) || isDispensaryStorefront(product);
-  if (regulatedCannabis && !dispensary) return "";
+  if (
+    regulatedCannabis ||
+    dispensary ||
+    product?.transactionAccess === "requires_exact_route_review"
+  ) {
+    return "";
+  }
 
   return publicWebUrl(
-    product?.externalPurchaseUrl ||
-      product?.purchaseUrl ||
-      product?.url ||
-      product?.link ||
-      (dispensary ? storefront?.websiteUrl : "")
+    product?.externalPurchaseUrl || product?.purchaseUrl || product?.url || product?.link
   );
 }
 

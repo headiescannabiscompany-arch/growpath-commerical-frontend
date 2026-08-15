@@ -418,8 +418,8 @@ export default function PublicStorefrontRoute() {
                     ) : null}
                     {regulatedCannabis && dispensaryStorefront ? (
                       <Text style={styles.warning}>
-                        No GrowPath checkout · use the dispensary website or in-store
-                        pickup
+                        No GrowPath checkout · open Details to check an approved legal
+                        handoff or review in-store pickup information
                       </Text>
                     ) : regulatedCannabis ? (
                       <Text style={styles.warning}>
