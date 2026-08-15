@@ -577,7 +577,13 @@ refund/dispute, or mutation-capable acceptance items below.
   purchase, enrollment, subscription, receipt, or refund evidence after
   2026-08-12. This confirms the evidence is still absent; it does not close any
   delivery loop or imply access to the separate Admin mailbox.
-  See `docs/qa/DELIVERED_EMAIL_INVENTORY_2026-08-13.md`.
+  A second read-only reconciliation on 2026-08-15 retained actual account
+  verification, verification-resend, password-reset, and Personal/Facility support
+  bug-report deliveries. It again found no content-report alert, Facility invitation
+  or task notice, commerce receipt, selected-device notification, or independent
+  outside-user feedback. No mailbox state changed. See
+  `docs/qa/DELIVERED_EMAIL_INVENTORY_2026-08-13.md` and
+  `docs/qa/AUTH_AND_SUPPORT_EMAIL_PRODUCTION_EVIDENCE_2026-08-15.md`.
 
 ## D. Commercial, commerce data, and owner-supplied sources
 
@@ -1012,8 +1018,13 @@ public visibility, or screenshot/video acceptance still called out below.
       `660b1d28782e4559a58172c01ec067d1e20d59fb` and the matching saved Render rewrite
       table repaired every root dynamic route family; exact Video, Store, and Forum
       probes returned 200, and the populated video/Forum paths rendered their intended
-      actions. Owner video mutations, populated Following/storefront/Nature data, and
-      real hosted ingest/playback remain. See
+      actions. A later Headies owner pass showed 674 MB/10 GB, two owner-published
+      videos, Watch/Edit/Unpublish/Remove controls, and a fully populated Edit form
+      with first-party media, rights, availability, captions/transcript, summary,
+      visibility, tags, and Grow Interests. It did not mutate or delete retained
+      content. The owner Following filter worked but truthfully had no accessible
+      followed-creator videos. Owner video mutations, course attach/detach, populated
+      Following/storefront/Nature data, and real hosted ingest/playback remain. See
       `docs/qa/PERSONAL_SOCIAL_AND_DYNAMIC_LINK_PRODUCTION_EVIDENCE_2026-08-15.md`.
 - [ ] Consolidate headers, cards, media aspect ratios, spacing, text hierarchy,
       buttons, loading/error/empty states, Back behavior, bottom navigation, Day/Night/
