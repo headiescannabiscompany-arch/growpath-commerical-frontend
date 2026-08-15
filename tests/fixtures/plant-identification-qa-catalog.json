@@ -3630,6 +3630,657 @@
         "observedTaxonName": "Spathiphyllum wallisii",
         "observedTaxonRank": "species"
       }
+    },
+    {
+      "recordId": "plant-id-orchid-002",
+      "caseId": "orchid",
+      "acceptedName": "Orchid",
+      "scientificName": "Orchidaceae species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other monocot", "orchid-like flower"],
+      "distinguishingFeatures": [
+        "branched inflorescence carrying many bilaterally symmetric flowers",
+        "orchid flowers with a differentiated lip and central column"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.8, "maximum": 0.94 },
+      "expectedResult": "Orchidaceae is expected at family level from the repeated orchid floral structure; do not force a genus or species.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386673018",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/707989776/original.jpg",
+      "creator": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "orchid-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "many flowers on a branched inflorescence",
+          "bilateral floral symmetry",
+          "differentiated labellum",
+          "central fused reproductive column"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30000046-2",
+            "outcome": "Kew POWO accepts Orchidaceae Juss.; the photographed repeated orchid floral organization supports only the governed family-level target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained. Orchid-like Duparquetia candidates were excluded as Fabaceae lookalikes."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-707989776",
+        "photoId": 707989776,
+        "sourceQuery": "Orchidaceae",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 47217,
+        "observedTaxonName": "Orchidaceae",
+        "observedTaxonRank": "family"
+      }
+    },
+    {
+      "recordId": "plant-id-orchid-004",
+      "caseId": "orchid",
+      "acceptedName": "Orchid",
+      "scientificName": "Orchidaceae species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other monocot", "orchid-like flower"],
+      "distinguishingFeatures": [
+        "bilaterally symmetric flowers with a patterned differentiated lip",
+        "central orchid column visible in multiple flowers"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.86, "maximum": 0.97 },
+      "expectedResult": "Orchidaceae is expected at family level from the close repeated floral characters; do not infer an exact hybrid, genus, or species.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386673029",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/707990222/original.jpg",
+      "creator": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "orchid-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "strong bilateral symmetry",
+          "three sepals and lateral petals around a differentiated lip",
+          "central fused reproductive column",
+          "multiple consistent flowers in one inflorescence"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30000046-2",
+            "outcome": "Kew POWO accepts Orchidaceae Juss.; the close flower view supports the family while remaining insufficient for a reliable lower-rank claim."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-707990222",
+        "photoId": 707990222,
+        "sourceQuery": "Orchidaceae",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 47217,
+        "observedTaxonName": "Orchidaceae",
+        "observedTaxonRank": "family"
+      }
+    },
+    {
+      "recordId": "plant-id-orchid-006",
+      "caseId": "orchid",
+      "acceptedName": "Orchid",
+      "scientificName": "Orchidaceae species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other monocot", "small white inflorescence"],
+      "distinguishingFeatures": [
+        "small bilaterally symmetric flowers with yellow differentiated lips",
+        "slender branched floral stem beside strap-like monocot foliage"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.72, "maximum": 0.9 },
+      "expectedResult": "Orchidaceae is expected at family level; the small flowers justify a lower confidence ceiling and no lower-rank claim.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386673041",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/707990493/original.jpg",
+      "creator": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Dan Schofield, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "orchid-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "small bilateral white flowers",
+          "yellow differentiated lips",
+          "slender branched inflorescence",
+          "strap-like foliage in context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30000046-2",
+            "outcome": "Kew POWO accepts Orchidaceae Juss.; the visible family characters support a cautious family-level result."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained. The confidence ceiling reflects the small floral scale."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-707990493",
+        "photoId": 707990493,
+        "sourceQuery": "Orchidaceae",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 47217,
+        "observedTaxonName": "Orchidaceae",
+        "observedTaxonRank": "family"
+      }
+    },
+    {
+      "recordId": "plant-id-marigold-001",
+      "caseId": "marigold",
+      "acceptedName": "Marigold",
+      "scientificName": "Tagetes species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Asteraceae", "Tithonia species"],
+      "distinguishingFeatures": [
+        "dense orange double composite flower heads",
+        "divided pinnate Tagetes-type foliage among repeated blooms"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.84, "maximum": 0.96 },
+      "expectedResult": "Marigold (Tagetes) is expected at genus level from repeated composite heads and divided foliage; do not force an exact species or cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/387566460",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/709709270/original.jpg",
+      "creator": "(c) Tobias Thrien, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Tobias Thrien, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "marigold-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "many dense orange double capitula",
+          "ruffled ray florets",
+          "divided pinnate foliage",
+          "repeated cultivated bedding habit"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:325872-2",
+            "outcome": "Kew POWO accepts Tagetes L. in Asteraceae and describes usually pinnate, gland-dotted leaves and terminal composite heads; the image supports the governed genus-level target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained. The source label was computer-vision-assisted, so promotion relies on repeated visible morphology and the Tier-A cross-check rather than that label alone."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-709709270",
+        "photoId": 709709270,
+        "sourceQuery": "Tagetes",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 79312,
+        "observedTaxonName": "Tagetes erecta",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-marigold-005",
+      "caseId": "marigold",
+      "acceptedName": "Marigold",
+      "scientificName": "Tagetes species",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Asteraceae", "double-flowered cultivar"],
+      "distinguishingFeatures": [
+        "yellow densely doubled composite flower head",
+        "divided serrate leaflets visible in the same plant context"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.76, "maximum": 0.92 },
+      "expectedResult": "Marigold (Tagetes) is expected at genus level; the single-head view supports no exact species or cultivar claim.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/388484966",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/711510752/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "marigold-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "dense yellow double capitulum",
+          "many ruffled ray florets",
+          "divided leaves with narrow serrate leaflets",
+          "cultivated flowering context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:325872-2",
+            "outcome": "Kew POWO accepts Tagetes L. and documents pinnate leaves and terminal capitula; the image supports a cautious genus-level result."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. The exact CC0 dedication was retained. Confidence is capped because only one flower head and partial foliage are in focus."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-711510752",
+        "photoId": 711510752,
+        "sourceQuery": "Tagetes",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 79312,
+        "observedTaxonName": "Tagetes erecta",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-chrysanthemum-002",
+      "caseId": "chrysanthemum",
+      "acceptedName": "Florists' chrysanthemum",
+      "scientificName": "Chrysanthemum × morifolium",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Chrysanthemum hybrid", "other Asteraceae"],
+      "distinguishingFeatures": [
+        "dense mounded cultivated habit with many yellow double capitula",
+        "lobed chrysanthemum foliage visible beneath repeated flower heads"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.82, "maximum": 0.95 },
+      "expectedResult": "Florists' chrysanthemum is expected from the cultivated mounded habit, repeated double heads, and lobed foliage; do not infer a cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/327979159",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/594239317/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "chrysanthemum-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "dense potted mound",
+          "many yellow double capitula",
+          "lobed leaves",
+          "cultivated fall display context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:77111328-1",
+            "outcome": "Kew POWO accepts Chrysanthemum × morifolium and records the common name florists' chrysanthemum; the image supports that hybrid identity without cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. The exact CC0 dedication was retained. Source computer-vision involvement does not replace the visible morphology and Tier-A cross-check."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-594239317",
+        "photoId": 594239317,
+        "sourceQuery": "Chrysanthemum × morifolium",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 53806,
+        "observedTaxonName": "Chrysanthemum × morifolium",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
+      "recordId": "plant-id-chrysanthemum-004",
+      "caseId": "chrysanthemum",
+      "acceptedName": "Florists' chrysanthemum",
+      "scientificName": "Chrysanthemum × morifolium",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Chrysanthemum hybrid", "other Asteraceae"],
+      "distinguishingFeatures": [
+        "multiple red densely doubled composite heads on one plant",
+        "broad deeply lobed chrysanthemum leaves and flower buds"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.86, "maximum": 0.97 },
+      "expectedResult": "Florists' chrysanthemum is expected from repeated double heads, buds, and diagnostic lobed foliage; cultivar remains unknown.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/331654297",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/601701168/original.jpg",
+      "creator": "(c) Gabriel, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Gabriel, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "chrysanthemum-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "multiple red double capitula",
+          "deeply lobed leaves",
+          "developing buds",
+          "single cultivated plant context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:77111328-1",
+            "outcome": "Kew POWO accepts Chrysanthemum × morifolium as a hybrid; the combined flowering and vegetative view supports the governed target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained. No cultivar was inferred from flower color."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-601701168",
+        "photoId": 601701168,
+        "sourceQuery": "Chrysanthemum × morifolium",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 53806,
+        "observedTaxonName": "Chrysanthemum × morifolium",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
+      "recordId": "plant-id-chrysanthemum-006",
+      "caseId": "chrysanthemum",
+      "acceptedName": "Florists' chrysanthemum",
+      "scientificName": "Chrysanthemum × morifolium",
+      "plantCategory": "ornamentals",
+      "lifeStage": "flowering",
+      "expectedAlternatives": [
+        "other Chrysanthemum hybrid",
+        "other daisy-like Asteraceae"
+      ],
+      "distinguishingFeatures": [
+        "repeated pink-and-white ray florets around yellow discs",
+        "deeply lobed chrysanthemum foliage on the same potted plant"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.82, "maximum": 0.95 },
+      "expectedResult": "Florists' chrysanthemum is expected from repeated heads and matching lobed foliage; do not infer a named cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/331725954",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/601846117/original.jpg",
+      "creator": "(c) Gabriel, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Gabriel, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "chrysanthemum-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "many pink-and-white composite heads",
+          "yellow disc florets",
+          "deeply lobed leaves",
+          "single potted plant context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:77111328-1",
+            "outcome": "Kew POWO accepts Chrysanthemum × morifolium and its florists' chrysanthemum common name; repeated heads plus foliage support the hybrid-level target."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-601846117",
+        "photoId": 601846117,
+        "sourceQuery": "Chrysanthemum × morifolium",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 53806,
+        "observedTaxonName": "Chrysanthemum × morifolium",
+        "observedTaxonRank": "hybrid"
+      }
+    },
+    {
+      "recordId": "plant-id-crabgrass-002",
+      "caseId": "crabgrass",
+      "acceptedName": "Large crabgrass",
+      "scientificName": "Digitaria sanguinalis",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Digitaria species", "other fingergrass"],
+      "distinguishingFeatures": [
+        "several slender finger-like racemes radiating near one point",
+        "paired narrow spikelets along the raceme axes"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.7, "maximum": 0.88 },
+      "expectedResult": "Large crabgrass is expected from the digitate racemes, but the limited vegetative view should cap confidence and preserve other Digitaria species as alternatives.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390045826",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714525916/original.jpg",
+      "creator": "(c) petitcrabe, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) petitcrabe, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "crabgrass-002",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "digitate raceme cluster",
+          "slender radiating branches",
+          "small paired spikelets",
+          "partial basal foliage"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/399115-1",
+            "outcome": "Kew POWO accepts Digitaria sanguinalis; the image supports the species candidate while the partial habit requires a confidence ceiling."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714525916",
+        "photoId": 714525916,
+        "sourceQuery": "Digitaria",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 51633,
+        "observedTaxonName": "Digitaria sanguinalis",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-crabgrass-003",
+      "caseId": "crabgrass",
+      "acceptedName": "Large crabgrass",
+      "scientificName": "Digitaria sanguinalis",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Digitaria species", "other fingergrass"],
+      "distinguishingFeatures": [
+        "multiple slender racemes spreading like fingers",
+        "closely arranged spikelets visible along each branch"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.72, "maximum": 0.9 },
+      "expectedResult": "Large crabgrass is expected from the flowering structure; request basal nodes, sheaths, and whole habit before very high confidence.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390277379",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/714984640/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "crabgrass-003",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "several radiating racemes",
+          "slender raceme axes",
+          "dense small spikelets",
+          "grass foliage in context"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/399115-1",
+            "outcome": "Kew POWO accepts Digitaria sanguinalis; visible flowering characters support a cautious species result."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. The exact CC0 dedication was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-714984640",
+        "photoId": 714984640,
+        "sourceQuery": "Digitaria",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 51633,
+        "observedTaxonName": "Digitaria sanguinalis",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-crabgrass-004",
+      "caseId": "crabgrass",
+      "acceptedName": "Large crabgrass",
+      "scientificName": "Digitaria sanguinalis",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Digitaria species", "goosegrass"],
+      "distinguishingFeatures": [
+        "spreading low grass clump rooted at branching nodes",
+        "several finger-like seedhead branches above broad blades"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.82, "maximum": 0.95 },
+      "expectedResult": "Large crabgrass is expected from the spreading habit, blades, nodes, and digitate seedheads; retain close Digitaria species as alternatives.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390321121",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/715070857/original.jpg",
+      "creator": "(c) Pavel Kacl, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Pavel Kacl, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "crabgrass-004",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "low spreading clump",
+          "branching culms",
+          "broad flat blades",
+          "multiple digitate seedheads"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/399115-1",
+            "outcome": "Kew POWO accepts Digitaria sanguinalis; the image combines whole habit and reproductive structures for stronger support."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. Exact CC BY attribution was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-715070857",
+        "photoId": 715070857,
+        "sourceQuery": "Digitaria",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 51633,
+        "observedTaxonName": "Digitaria sanguinalis",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
+      "recordId": "plant-id-crabgrass-005",
+      "caseId": "crabgrass",
+      "acceptedName": "Large crabgrass",
+      "scientificName": "Digitaria sanguinalis",
+      "plantCategory": "weeds",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["other Digitaria species", "goosegrass"],
+      "distinguishingFeatures": [
+        "spreading roadside grass with broad blades and branching base",
+        "several radiating finger-like racemes with aligned spikelets"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.82, "maximum": 0.95 },
+      "expectedResult": "Large crabgrass is expected from combined habit and seedheads; preserve other Digitaria species as alternatives when sheath hair detail is absent.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/390342179",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/715114298/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-14",
+      "rightsReviewedAt": "2026-08-14",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "crabgrass-005",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-14",
+        "visibleMorphology": [
+          "spreading disturbed-ground habit",
+          "broad grass blades",
+          "branching base",
+          "several radiating seedhead racemes"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/399115-1",
+            "outcome": "Kew POWO accepts Digitaria sanguinalis; whole-plant context and seedhead form support the candidate."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist reference; no media was copied. The exact CC0 dedication was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-715114298",
+        "photoId": 715114298,
+        "sourceQuery": "Digitaria",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 51633,
+        "observedTaxonName": "Digitaria sanguinalis",
+        "observedTaxonRank": "species"
+      }
     }
   ]
 }
