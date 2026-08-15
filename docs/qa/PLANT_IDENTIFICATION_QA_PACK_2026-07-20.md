@@ -47,6 +47,13 @@ catalog is now 60/320.
 Four large-crabgrass records with digitate seedheads, including two whole-habit views,
 also passed; two _Sorghastrum nutans_ results were rejected as non-Digitaria grasses.
 The governed catalog is now 64/320.
+Three common-dandelion-complex records with combined flower, stalk, and basal-rosette
+evidence also passed at the accepted _Taraxacum sect. Taraxacum_ rank. The queued
+_Taraxacum officinale_ name is a POWO synonym of that section, so none of these phone
+images is treated as a microspecies identification. Two foliage-only candidates and one
+isolated flower underside were rejected because they lack the combined characters needed
+to distinguish close dandelion and dandelion-like taxa. The governed catalog is now
+67/320; the candidate queue must be regenerated against the corrected accepted name.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
