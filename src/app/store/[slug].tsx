@@ -88,6 +88,7 @@ export default function PublicStorefrontRoute() {
   const [products, setProducts] = useState<any[]>([]);
   const [productLines, setProductLines] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
   const [lives, setLives] = useState<any[]>([]);
   const [feedPosts, setFeedPosts] = useState<any[]>([]);
   const [trials, setTrials] = useState<any[]>([]);
@@ -106,6 +107,7 @@ export default function PublicStorefrontRoute() {
       setProducts(payload.products);
       setProductLines(payload.productLines);
       setCourses(payload.courses);
+      setVideos(payload.videos);
       setLives((payload as any).lives || []);
       setFeedPosts(payload.feedPosts);
       setTrials(payload.trials);
@@ -551,6 +553,56 @@ export default function PublicStorefrontRoute() {
             </View>
           ) : null}
 
+          {videos.length ? (
+            <View style={styles.profilePanel}>
+              <Text style={styles.profileTitle}>Videos</Text>
+              <Text style={styles.meta}>
+                Watch published GrowPath videos from this brand, then follow or join the
+                discussion from the video page.
+              </Text>
+              {videos.slice(0, 3).map((video) => {
+                const id = publicItemId(video);
+                const thumbnail = resolveImageUri(
+                  String(video?.thumbnailUrl || video?.mediaSource?.thumbnailUrl || "")
+                );
+                return (
+                  <View
+                    key={id || publicItemTitle(video, "Video")}
+                    style={styles.videoRow}
+                  >
+                    {thumbnail ? (
+                      <Image
+                        accessibilityLabel={`${publicItemTitle(video, "Video")} thumbnail`}
+                        resizeMode="cover"
+                        source={{ uri: thumbnail }}
+                        style={styles.videoThumbnail}
+                      />
+                    ) : null}
+                    <View style={styles.productBody}>
+                      <Text style={styles.productName}>
+                        {publicItemTitle(video, "Video")}
+                      </Text>
+                      {publicItemSummary(video) ? (
+                        <Text style={styles.meta}>{publicItemSummary(video)}</Text>
+                      ) : null}
+                      {Number(video?.durationSeconds || 0) > 0 ? (
+                        <Text style={styles.meta}>
+                          {Math.max(1, Math.round(Number(video.durationSeconds) / 60))}{" "}
+                          min
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Link href={`/videos/${encodeURIComponent(id)}` as any} asChild>
+                      <Pressable style={styles.secondaryButton}>
+                        <Text style={styles.secondaryButtonText}>Watch Video</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                );
+              })}
+            </View>
+          ) : null}
+
           {lives.length ? (
             <View style={styles.profilePanel}>
               <Text style={styles.profileTitle}>Upcoming Lives</Text>
@@ -767,6 +819,21 @@ export function createStyles(palette: ThemePalette) {
     },
     productName: { color: palette.text, fontSize: 16, fontWeight: "800" },
     courseThumbnail: {
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      height: 88,
+      width: 118
+    },
+    videoRow: {
+      alignItems: "center",
+      borderTopColor: palette.border,
+      borderTopWidth: 1,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      paddingVertical: 10
+    },
+    videoThumbnail: {
       backgroundColor: palette.surface,
       borderRadius: radius.card,
       height: 88,

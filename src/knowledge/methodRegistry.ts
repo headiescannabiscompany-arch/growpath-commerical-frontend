@@ -600,7 +600,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "cannabis-aware discovery filtering",
       "stored video moderation case with exact-content and administrator-email links",
       "threaded video discussion with author editing and owner moderation",
-      "creator profile continuity and canonical Follow actions"
+      "creator profile continuity and canonical Follow actions",
+      "safe public Commercial storefront video previews"
     ],
     [
       "Never limit video upload or sharing only to accounts labeled as creators.",
@@ -613,7 +614,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never persist object-storage credentials or expiring signed upload or playback URLs in video, course, or lesson records.",
       "Never show cannabis/hemp-specific video discovery to unrelated horticulture viewers.",
       "Never treat video popularity, follows, or engagement as scientific verification or AI-training permission.",
-      "Never send a video-report email before storing the report and moderation case, accept an off-site reported-content link, or erase the report when email delivery fails."
+      "Never send a video-report email before storing the report and moderation case, accept an off-site reported-content link, or erase the report when email delivery fails.",
+      "Never expose protected playback sources, private owner IDs, follower-only, unlisted, Facility, deleted, or cannabis-specific videos through a general public Commercial storefront."
     ],
     ["videos", "discover", "course-builder", "profiles", "following-feed"]
   ),
