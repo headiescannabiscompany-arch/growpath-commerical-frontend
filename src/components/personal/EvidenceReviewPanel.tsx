@@ -363,8 +363,8 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
                     style={styles.viewerImage}
                   />
                   <Text style={styles.inspectionMeta}>
-                    Exact inspected view Â· {activeInspectionView.width} x{" "}
-                    {activeInspectionView.height} Â· supplemental pixels from the retained
+                    Exact inspected view - {activeInspectionView.width} x{" "}
+                    {activeInspectionView.height} - supplemental pixels from the retained
                     original
                   </Text>
                   <View style={styles.viewerActions}>
