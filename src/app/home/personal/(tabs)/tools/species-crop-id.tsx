@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import BackendCalculatorToolScreen, {
@@ -1099,6 +1099,7 @@ export default function SpeciesCropIdToolRoute({
   backFallbackHref?: string;
 } = {}) {
   const { palette } = useAppTheme();
+  const router = useRouter();
   const entitlements = useEntitlements();
   const styles = useMemo(() => createSpeciesCropIdStyles(palette), [palette]);
   const params = useLocalSearchParams<{

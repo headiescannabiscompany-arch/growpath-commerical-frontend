@@ -4787,8 +4787,10 @@ describe("SpeciesCropIdToolRoute", () => {
 
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() => expect(screen.getByText("Confirm & Start a Grow")).toBeTruthy());
+    const startGrow = screen.getByRole("button", { name: "Confirm & Start a Grow" });
+    expect(startGrow).not.toBeDisabled();
     await act(async () => {
-      fireEvent.press(screen.getByText("Confirm & Start a Grow"));
+      fireEvent.press(startGrow);
       await new Promise<void>((resolve) => setImmediate(resolve));
     });
 
