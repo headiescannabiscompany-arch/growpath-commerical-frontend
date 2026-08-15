@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, StyleSheet, TextInput } from "react-native";
+import { ActivityIndicator, Linking, StyleSheet, TextInput } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import PlatformAdminRoute, {
@@ -91,6 +91,72 @@ const usage = {
   },
   note: "Activity counts are records, not time spent."
 };
+const securityCenter = {
+  tally: {
+    total: 3,
+    open: 2,
+    resolved: 1,
+    bySeverity: { critical: 1, high: 1, medium: 1, low: 0 },
+    byKind: { security: 1, safety: 0, enforcement: 1, reliability: 1 },
+    bySource: { security_report: 1, moderation_escalation: 1, account_enforcement: 1 }
+  },
+  issues: [
+    {
+      id: "support:security-1",
+      source: "security_report",
+      kind: "security",
+      category: "reported_security_issue",
+      title: "Suspicious account access",
+      summary: "The account owner reported an unexpected access notice.",
+      severity: "critical",
+      status: "open",
+      affected: "member@example.com",
+      occurredAt: "2026-08-15T12:00:00.000Z",
+      investigationHref: "/admin?section=support"
+    },
+    {
+      id: "audit:security-2",
+      source: "account_enforcement",
+      kind: "enforcement",
+      category: "user_suspended",
+      title: "user suspended",
+      summary: "Investigation completed.",
+      severity: "high",
+      status: "resolved",
+      affected: "user:user-2",
+      occurredAt: "2026-08-14T12:00:00.000Z",
+      resolvedAt: "2026-08-14T12:00:00.000Z",
+      investigationHref: "/admin?targetType=user&targetId=user-2"
+    },
+    {
+      id: "sentry:123",
+      source: "application_monitoring",
+      kind: "reliability",
+      category: "TypeError",
+      title: "Map renderer cleanup error",
+      summary: "An unresolved production application error.",
+      severity: "high",
+      status: "open",
+      affected: "react-native",
+      occurredAt: "2026-08-15T13:00:00.000Z",
+      investigationHref: "https://growpath.sentry.io/issues/123"
+    }
+  ],
+  coverage: [
+    {
+      source: "security_report",
+      label: "Submitted security reports",
+      state: "connected"
+    },
+    {
+      source: "application_monitoring",
+      label: "Sentry application errors",
+      state: "external_only",
+      note: "Open Sentry for the authoritative application-error tally."
+    }
+  ],
+  note: "Totals include every issue in connected sources."
+};
 const supportRequest = {
   _id: "support-1",
   name: "Outside Grower",
@@ -147,6 +213,7 @@ const harvestCalibrationCandidate = {
 function defaultAdminApi(path: string) {
   if (path === "/api/admin/overview") return Promise.resolve({ overview });
   if (path === "/api/admin/usage") return Promise.resolve({ usage });
+  if (path === "/api/admin/security-center") return Promise.resolve(securityCenter);
   if (path.startsWith("/api/admin/users")) return Promise.resolve({ users: [member] });
   if (path === "/api/admin/moderation-cases")
     return Promise.resolve({ cases: [moderationCase] });
@@ -261,6 +328,35 @@ describe("PlatformAdminRoute", () => {
         body: { reason: "Platform owner token refresh" }
       })
     );
+  });
+
+  it("shows security tallies, source coverage, and direct investigations outside tasks", async () => {
+    const screen = render(<PlatformAdminRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Security and investigations")).toBeTruthy()
+    );
+    expect(screen.getByText("Open investigations")).toBeTruthy();
+    expect(screen.getByText("Security reports")).toBeTruthy();
+    expect(screen.getByText("Sentry application errors")).toBeTruthy();
+    expect(screen.queryByText("user suspended")).toBeNull();
+
+    fireEvent.press(
+      screen.getByRole("button", { name: "Investigate Suspicious account access" })
+    );
+    expect(mockPush).toHaveBeenCalledWith("/admin?section=support");
+
+    const openUrl = jest.spyOn(Linking, "openURL").mockResolvedValueOnce(undefined);
+    fireEvent.press(
+      screen.getByRole("button", { name: "Investigate Map renderer cleanup error" })
+    );
+    await waitFor(() =>
+      expect(openUrl).toHaveBeenCalledWith("https://growpath.sentry.io/issues/123")
+    );
+    openUrl.mockRestore();
+
+    fireEvent.press(screen.getByText("Show resolved security history"));
+    expect(screen.getAllByText(/user suspended/).length).toBeGreaterThan(0);
   });
 
   it("requires a successful dry run and exact confirmation before anonymizing a test account", async () => {
