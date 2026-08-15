@@ -229,8 +229,17 @@ grow`, private current location without a Field Study, and an optional approxima
   scientific species unverified, and clears the confirmation requirement.
   The frontend now has a governed confirmed-Plant-ID-to-create-grow draft and a
   shared manual crop setup path carrying identity provenance plus separate lifespan,
-  production, and dormancy planning. Automated and production acceptance of this
-  new path remain open; do not count local implementation as live completion.
+  production, and dormancy planning. Frontend merge
+  `dbedf2960824360bbc9ff0e9dbf7fc6f6b9a307c` passed the complete frontend gate and
+  Render deploy `dep-d9vrbmh42hec739hkcug` served that exact SHA. Signed-in
+  production loaded the cache-busted Plant ID route and exercised a no-credit,
+  no-location manual tomato candidate. The result preserved its missing-photo and
+  missing-authoritative-source warnings, remained medium confidence, disabled both
+  confirmation and `Confirm & Start a Grow`, and was explicitly marked rejected as
+  module record `6a7fb678ef9787450d6444aa`. This proves the live safety boundary and
+  deployment, not the successful handoff. Reopen the retained confirmed Headies run,
+  create its reviewed crop-aware draft, verify provenance/lifecycle fields after
+  reload, and archive the temporary grow before closing this path.
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
   inference warnings, pistil/bud-development context, top/middle/lower/context
@@ -844,25 +853,41 @@ public visibility, or screenshot/video acceptance still called out below.
 
 ## F. Release-quality product presentation and inspection evidence
 
-- [ ] Complete Live Studio's two-mode broadcast contract. Keep `Use an outside live URL`
+- [~] Complete Live Studio's two-mode broadcast contract. Keep `Use an outside live URL`
       for Facebook, Instagram, YouTube, Twitch, Kick, and other reviewed providers, with
       in-app embedding where allowed and a named provider handoff where embedding is not
       supported. Add `Broadcast live in GrowPath`: session-scoped revocable RTMP or SRT
       ingest credentials for OBS/encoders, explicit draft/live control, adaptive in-app
       playback with viewer controls, health/interruption states, GrowPath chat, recording
       and replay-retention choices, access enforcement, quotas, moderation/abuse response,
-      production observability, and secret rotation. The current sessions, chat, private
-      OBS chat overlay, premieres, reminders, sharing, replay links, and outside-provider
-      handoffs do not by themselves complete first-party hosted video.
+      production observability, and secret rotation. Backend merges `571e60d7` and
+      `230df1bf4bc3e83f2fefff320a2cc71ed4050db8` now implement owner-isolated reusable
+      channels, per-plan and global concurrency limits, one-time credentials, provider
+      lifecycle/playback/retention, release/removal, and rotation. Route tests prove
+      separate users never share inputs or keys and one account can reuse its OBS
+      connection across sequential sessions. Frontend merges `8ce1b5f97` and
+      `4b364c9fcb16edc7d79ef5cb216a92abf329d40f` expose the two modes, hosted player,
+      chat/premiere/share flow, reusable-channel copy, and host-only confirmed key
+      rotation with one-time replacement credentials; both complete gates passed and
+      Render deploy `dep-d9vrf5bncjis7388me20` served the exact rotation SHA.
+      Production currently truthfully reports `GrowPath-hosted broadcasting is not
+      activated yet`. Cloudflare Stream activation and protected configuration, one
+      real OBS ingest, simultaneous two-account proof, in-app playback/volume/chat/
+      overlay, replay/retention, key rotation, cost-limit, and cleanup acceptance remain.
 
-- [ ] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
+- [~] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
       inspected, without treating them as additional photos or independent evidence.
       Let an authorized user open each view at full size, save an individual image,
       and export a viewer-friendly inspection-evidence package with source-photo index,
       crop bounds/strategy, provider detail, analysis/review ID, policy version, and the
       explicit derived-evidence limitation. Apply this shared behavior to every AI
       still-image inspection workflow and its saved result; never fabricate a crop from
-      a count-only response or expose another workspace's protected media.
+      a count-only response or expose another workspace's protected media. Frontend
+      merge `8ba74a0ae84a9718515cb3a7b70061b67e2f6a2e` is deployed and lets Saved Runs
+      render the shared Evidence Review panel only when digest-bound diagnostic views
+      exist. An authorized retained run containing real persisted views must still prove
+      full-size View, individual Save, viewer-friendly Export, metadata, reload, and
+      cross-workspace denial before this item can close.
 - [ ] Complete a route-by-route live acceptance crawl of Personal, Commercial,
       Facility, public, and Admin surfaces on the final candidate SHAs. Exercise the
       common path forward from every page, not only route loading, and retain exact
@@ -877,10 +902,16 @@ public visibility, or screenshot/video acceptance still called out below.
       or banner art as a blocker, and its learner view prefers a banner then falls back
       to the saved thumbnail. Focused course, Commercial workflow, and knowledge tests
       pass 64/64, along with TypeScript, targeted lint, and the static production build.
-      Merge/deploy plus live author replace/remove/publish and learner rendering remain.
-- [ ] Put storefront imagery above the storefront description where available, keep
+      Frontend merge `6bcaddac64c53b3370ba3ae3a9b1f69ec77f3b07` is deployed. Live
+      author replace/remove/publish and populated learner rendering remain.
+- [~] Put storefront imagery above the storefront description where available, keep
       empty states intentional, and verify every product, course, video, website, and
-      pickup handoff opens the correct public or signed-in destination.
+      pickup handoff opens the correct public or signed-in destination. Frontend merge
+      `70ee4a9839e3503c1d4d7f0de7df907d51cebe6d` is deployed and renders banner media,
+      or a logo fallback, above the public description with distinct cover/contain
+      presentation and an accessible label. The current Admin Commercial storefront
+      is intentionally unconfigured and unpublished, so populated imagery and every
+      public handoff still require owner-data acceptance.
 - [ ] Surface frequent deep links and next actions beside the records and tools where
       people naturally need them, including videos, live/premiere viewing, Plant ID,
       saved AI results, grows, storefronts, courses, Forum/Q&A, and shared timelines.

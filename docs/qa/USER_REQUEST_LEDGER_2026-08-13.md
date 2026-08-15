@@ -117,6 +117,14 @@ Legend:
 - [x] Grow interests are selectable when publishing a video.
 - [x] Lives have a joinable live-session directory separate from Commercial campaigns
       and remain linked from Forum/shared navigation.
+- [~] Live Studio now separates outside watch URLs from first-party GrowPath-hosted
+      OBS broadcasting. The hosted path has reusable owner-isolated channels, per-plan
+      and global concurrency limits, in-app player/chat, premieres, replay/retention
+      hooks, private OBS chat overlay, one-time credentials, and confirmed stream-key
+      rotation. Automated isolation proves two accounts never share a key and normal
+      sequential broadcasts reuse the account's saved OBS connection. Cloudflare Stream
+      activation/configuration and a real concurrent two-account OBS/playback/chat/
+      replay/rotation/cost-limit production run remain.
 - [x] Notification Center and Profile expose Device push plus Task, Forum, Video,
       Courses/Lives, Commerce, and Facility categories with persisted preferences.
 - [~] Native cold-start/background notification routing and exact-record links are
@@ -148,6 +156,12 @@ Legend:
 - [~] Optional direct publication to Discovery Nature is implemented with sensitive
       species obscuring, exact-coordinate privacy, photo requirements, cannabis/hemp
       consent, and withdrawal support. The data-bearing live loop remains.
+- [~] A confirmed Plant ID can open a reviewed crop-aware New Grow draft carrying
+      common/scientific names, aliases, cultivar, source ToolRun, and separate lifespan,
+      production-cycle, and dormancy planning. The exact frontend revision is live and
+      correctly refused an unverified medium-confidence manual tomato candidate. A
+      retained confirmed Headies result still must complete draft review, grow creation,
+      reload/provenance verification, and temporary-grow cleanup.
 - [ ] Complete the governed Plant ID evaluation pack: 320 reviewed slots, including
       owned/commissioned adverse images, exact rights, morphology, taxonomy, expected
       results, and approved use. Metadata-only candidates are not accepted evidence.
