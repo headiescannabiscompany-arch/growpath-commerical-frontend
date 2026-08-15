@@ -72,7 +72,12 @@ export default function EditLessonRoute() {
   }, [courseId, lessonId]);
 
   return (
-    <ScreenBoundary title="Edit Lesson" showBack backFallbackHref={backTarget}>
+    <ScreenBoundary
+      title="Edit Lesson"
+      showBack
+      backFallbackHref={backTarget}
+      preferBackFallback
+    >
       {loading ? (
         <View style={styles.stateCard}>
           <ActivityIndicator
