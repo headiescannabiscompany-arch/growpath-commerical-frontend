@@ -93,9 +93,7 @@ export function discoverCourseHref(row: any) {
 }
 
 export function discoverLiveHref(row: any) {
-  return `/live-session?sessionId=${encodeURIComponent(
-    String(row?.linkedLiveId || "")
-  )}`;
+  return `/live-session?sessionId=${encodeURIComponent(String(row?.linkedLiveId || ""))}`;
 }
 
 function storeSlug(row: any) {
