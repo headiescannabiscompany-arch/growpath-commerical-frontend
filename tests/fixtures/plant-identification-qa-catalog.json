@@ -702,6 +702,62 @@
   },
   "mediaRecords": [
     {
+      "recordId": "plant-id-basil-001",
+      "caseId": "basil",
+      "acceptedName": "Basil",
+      "scientificName": "Ocimum basilicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "flowering",
+      "expectedAlternatives": ["mint family herb"],
+      "distinguishingFeatures": [
+        "opposite ovate basil-like leaves",
+        "terminal flower spike with whorled white bilabiate flowers"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.66,
+        "maximum": 0.86
+      },
+      "expectedResult": "Basil is expected from combined opposite foliage and flowering-spike evidence; close Ocimum species remain a material comparison.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/315435378",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/569826514/original.jpg",
+      "creator": "(c) Ricardo Betancourt Sánchez, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Ricardo Betancourt Sánchez, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-15",
+      "rightsReviewedAt": "2026-08-15",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "basil-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-15",
+        "visibleMorphology": [
+          "opposite ovate leaves",
+          "terminal spike with repeated flower whorls",
+          "white bilabiate flowers and hairy calyces"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A452874-1",
+            "outcome": "Kew POWO accepts Ocimum basilicum L. and records confusion with close Ocimum species; combined foliage and inflorescence support a medium-confidence governed basil result rather than cultivar inference."
+          }
+        ],
+        "notes": "Visual review used the full-resolution iNaturalist reference; no media was copied into the product. Close Ocimum species remain explicit alternatives. Photo-level CC BY status and attribution were retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-569826514",
+        "photoId": 569826514,
+        "sourceQuery": "Ocimum basilicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 61398,
+        "observedTaxonName": "Ocimum basilicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
       "recordId": "plant-id-basil-003",
       "caseId": "basil",
       "acceptedName": "Basil",

@@ -9,7 +9,7 @@ review. Seven pepper records and six cucumber records have also passed the same
 gates. Four cultivated-form lettuce records also passed; four flowering or
 wild-relative lettuce candidates were rejected because the images could not reliably
 separate cultivated lettuce from other Lactuca species. The governed catalog is now
-24/320. Three basil records with strong cultivated foliage or combined leaf-and-flower
+24/320. Four basil records with strong cultivated foliage or combined leaf-and-flower
 evidence also passed; five flower-only, single-leaf, or unresolved close-relative
 candidates were rejected. Four cultivated-context garden-strawberry records also passed;
 four wild-context Fragaria candidates were rejected because they could not establish the
@@ -52,8 +52,11 @@ now 67/320; the candidate queue must be regenerated against the corrected accept
 name. One additional vegetative tomato record with repeated compound foliage and
 pubescence passed at medium confidence, completing the governed tomato quota; a blurry
 pepper candidate and two cucumber candidates lacking species-level combined evidence
-were rejected. The catalog is now 68/320 and remains planning until all governed slots
-are filled; no candidate is automatically promoted.
+were rejected. One additional flowering basil candidate with combined opposite foliage
+and inflorescence evidence passed at medium confidence; four flower-dominant or
+single-leaf candidates were rejected because they could not exclude close _Ocimum_
+species. The catalog is now 69/320 and remains planning until all governed slots are
+filled; no candidate is automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
