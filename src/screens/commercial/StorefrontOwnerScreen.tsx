@@ -30,6 +30,15 @@ import { requestCurrentCoordinates } from "@/utils/locationSearch";
 
 type AnyRec = Record<string, any>;
 
+const regulatedProductClasses = [
+  ["hemp_seed", "Hemp seed"],
+  ["cannabis_seed", "Cannabis seed"],
+  ["hemp_plant", "Hemp plant"],
+  ["cannabis_plant", "Cannabis plant"],
+  ["hemp_product", "Hemp product"],
+  ["regulated_cannabis_product", "Regulated cannabis product"]
+] as const;
+
 const commercialEndpoints = {
   storefront: "/api/commercial/storefront",
   products: "/api/commercial/products",
@@ -355,6 +364,7 @@ export default function Storefront({
     storefrontType: "general",
     description: "",
     city: "",
+    countryCode: "",
     stateCode: "",
     latitude: "",
     longitude: "",
@@ -383,6 +393,7 @@ export default function Storefront({
     imageUrl: "",
     externalPurchaseUrl: "",
     regulatedCannabis: false,
+    regulatedProductClass: "",
     pickupAvailable: false,
     pickupInstructions: "",
     stripeProductId: "",
@@ -468,6 +479,7 @@ export default function Storefront({
           : "general",
       description: String(storefront.description ?? ""),
       city: String(storefront.city ?? ""),
+      countryCode: String(storefront.countryCode ?? ""),
       stateCode: String(storefront.stateCode ?? storefront.state ?? ""),
       latitude:
         storefront.latitude === null || storefront.latitude === undefined
@@ -681,7 +693,20 @@ export default function Storefront({
       setFeedback("");
       return;
     }
+    if (
+      storeDraft.countryCode.trim() &&
+      !/^[A-Za-z]{2}$/.test(storeDraft.countryCode.trim())
+    ) {
+      setActionError(new Error("Business country must be a two-letter code."));
+      setFeedback("");
+      return;
+    }
     if (storeDraft.storefrontType === "dispensary") {
+      if (!/^[A-Za-z]{2}$/.test(storeDraft.countryCode.trim())) {
+        setActionError(new Error("Dispensary country must be a two-letter code."));
+        setFeedback("");
+        return;
+      }
       if (!/^[A-Za-z]{2}$/.test(storeDraft.stateCode.trim())) {
         setActionError(new Error("Dispensary state must be a two-letter code."));
         setFeedback("");
@@ -715,6 +740,7 @@ export default function Storefront({
         method: storefront ? "PATCH" : "POST",
         body: {
           ...storefrontPayload,
+          countryCode: storefrontPayload.countryCode.trim().toUpperCase(),
           stateCode: storefrontPayload.stateCode.trim().toUpperCase(),
           latitude,
           longitude,
@@ -920,6 +946,13 @@ export default function Storefront({
       setFeedback("");
       return;
     }
+    if (productDraft.regulatedCannabis && !productDraft.regulatedProductClass) {
+      setActionError(
+        new Error("Choose the regulated product class before saving this listing.")
+      );
+      setFeedback("");
+      return;
+    }
     const price = priceNumber;
     const proposedProduct = {
       ...productDraft,
@@ -962,6 +995,7 @@ export default function Storefront({
           imageUrl: productDraft.imageUrl.trim() || undefined,
           externalPurchaseUrl: productDraft.externalPurchaseUrl.trim() || undefined,
           regulatedCannabis: productDraft.regulatedCannabis,
+          regulatedProductClass: productDraft.regulatedProductClass.trim() || undefined,
           pickupAvailable: isDispensary && productDraft.pickupAvailable,
           pickupInstructions:
             isDispensary && productDraft.pickupInstructions.trim()
@@ -1016,6 +1050,7 @@ export default function Storefront({
         imageUrl: "",
         externalPurchaseUrl: "",
         regulatedCannabis: false,
+        regulatedProductClass: "",
         pickupAvailable: false,
         pickupInstructions: "",
         stripeProductId: "",
@@ -1385,6 +1420,18 @@ export default function Storefront({
               {storeDraft.isPublished ? "Published" : "Draft"}
             </Text>
           </View>
+          <View style={styles.objectActions}>
+            <ObjectActionLink
+              href="/home/commercial/regulated-commerce"
+              label="Regulated commerce permissions"
+            />
+          </View>
+          <Text style={styles.muted}>
+            Add every business role you perform and submit jurisdiction-specific
+            authorization evidence. Profiles and informational inventory remain separate
+            from checkout, payment, pickup, delivery, shipping, import, and export
+            permissions.
+          </Text>
           <TextInput
             value={storeDraft.name}
             editable={!interactionBusy}
@@ -1437,9 +1484,25 @@ export default function Storefront({
               <Text style={styles.warningTitle}>Dispensary discovery and handoff</Text>
               <Text style={styles.muted}>
                 Published dispensaries can show linked inventory and be found by state or
-                distance. GrowPath will not provide cannabis checkout.
+                distance. A regulated handoff requires an exact reviewed decision that
+                matches product, origin, destination, buyer eligibility, and fulfillment.
               </Text>
               <View style={styles.linkGrid}>
+                <TextInput
+                  value={storeDraft.countryCode}
+                  editable={!interactionBusy}
+                  onChangeText={(countryCode) =>
+                    setStoreDraft((draft) => ({
+                      ...draft,
+                      countryCode: countryCode.toUpperCase()
+                    }))
+                  }
+                  accessibilityLabel="Dispensary country"
+                  placeholder="Country code, e.g. US"
+                  autoCapitalize="characters"
+                  maxLength={2}
+                  style={[styles.input, styles.linkInput]}
+                />
                 <TextInput
                   value={storeDraft.city}
                   editable={!interactionBusy}
@@ -1552,6 +1615,23 @@ export default function Storefront({
             multiline
             style={[styles.input, styles.notesInput]}
           />
+          {!isDispensary ? (
+            <TextInput
+              value={storeDraft.countryCode}
+              editable={!interactionBusy}
+              onChangeText={(countryCode) =>
+                setStoreDraft((draft) => ({
+                  ...draft,
+                  countryCode: countryCode.toUpperCase()
+                }))
+              }
+              accessibilityLabel="Business country"
+              placeholder="Country code for regulated listings, e.g. US"
+              autoCapitalize="characters"
+              maxLength={2}
+              style={styles.input}
+            />
+          ) : null}
           <TextInput
             value={storeDraft.growInterestsText}
             editable={!interactionBusy}
@@ -2053,38 +2133,83 @@ export default function Storefront({
             autoCapitalize="none"
             style={styles.input}
           />
+          <View style={styles.dispensaryPanel}>
+            <Text style={styles.fieldLabel}>Regulated product handling</Text>
+            <Text style={styles.muted}>
+              Use this for hemp or cannabis seeds, plants, and regulated products.
+              Informational inventory stays separate from any transaction permission.
+            </Text>
+            <View style={styles.objectActions}>
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityLabel="Product is regulated cannabis"
+                accessibilityState={{
+                  checked: productDraft.regulatedCannabis,
+                  disabled: interactionBusy
+                }}
+                disabled={interactionBusy}
+                onPress={() =>
+                  setProductDraft((draft) => ({
+                    ...draft,
+                    regulatedCannabis: !draft.regulatedCannabis,
+                    regulatedProductClass: draft.regulatedCannabis
+                      ? ""
+                      : draft.regulatedProductClass
+                  }))
+                }
+                style={[
+                  styles.secondaryButton,
+                  productDraft.regulatedCannabis && styles.selectedButton
+                ]}
+              >
+                <Text style={styles.secondaryText}>
+                  {productDraft.regulatedCannabis
+                    ? "Regulated Item"
+                    : "Not Marked Regulated"}
+                </Text>
+              </Pressable>
+            </View>
+            {productDraft.regulatedCannabis ? (
+              <View>
+                <Text style={styles.fieldLabel}>Regulated product class</Text>
+                <View style={styles.objectActions}>
+                  {regulatedProductClasses.map(([value, label]) => (
+                    <Pressable
+                      key={value}
+                      accessibilityRole="radio"
+                      accessibilityLabel={`Regulated product class ${label}`}
+                      accessibilityState={{
+                        selected: productDraft.regulatedProductClass === value,
+                        disabled: interactionBusy
+                      }}
+                      disabled={interactionBusy}
+                      onPress={() =>
+                        setProductDraft((draft) => ({
+                          ...draft,
+                          regulatedProductClass: value
+                        }))
+                      }
+                      style={[
+                        styles.secondaryButton,
+                        productDraft.regulatedProductClass === value &&
+                          styles.selectedButton
+                      ]}
+                    >
+                      <Text style={styles.secondaryText}>{label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+          </View>
           {isDispensary ? (
             <View style={styles.dispensaryPanel}>
               <Text style={styles.muted}>
-                Dispensary inventory never uses GrowPath checkout. Link to your public
-                menu or publish truthful pickup availability.
+                Inventory can remain publicly listed. GrowPath releases a regulated
+                product handoff only when an active reviewed decision matches the exact
+                product, origin, destination, buyer eligibility, and fulfillment route.
               </Text>
               <View style={styles.objectActions}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Product is regulated cannabis"
-                  accessibilityState={{
-                    checked: productDraft.regulatedCannabis,
-                    disabled: interactionBusy
-                  }}
-                  disabled={interactionBusy}
-                  onPress={() =>
-                    setProductDraft((draft) => ({
-                      ...draft,
-                      regulatedCannabis: !draft.regulatedCannabis
-                    }))
-                  }
-                  style={[
-                    styles.secondaryButton,
-                    productDraft.regulatedCannabis && styles.selectedButton
-                  ]}
-                >
-                  <Text style={styles.secondaryText}>
-                    {productDraft.regulatedCannabis
-                      ? "Regulated Cannabis Item"
-                      : "Non-cannabis Item"}
-                  </Text>
-                </Pressable>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Product available for in-store pickup"

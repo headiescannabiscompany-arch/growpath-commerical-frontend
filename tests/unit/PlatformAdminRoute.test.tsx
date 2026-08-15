@@ -157,6 +157,36 @@ const securityCenter = {
   ],
   note: "Totals include every issue in connected sources."
 };
+const regulatedCommerce = {
+  tallies: {
+    authorizations: { pending: 1, verified: 0 },
+    decisions: { allowed: 0 }
+  },
+  businessRoles: ["nursery", "cultivator"],
+  productClasses: ["cannabis_seed"],
+  capabilities: ["catalog_display", "external_product_handoff", "growpath_checkout"],
+  fulfillmentMethods: ["none", "external_handoff", "domestic_shipping"],
+  authorizations: [
+    {
+      _id: "authorization-1",
+      storefrontId: {
+        _id: "store-1",
+        name: "Living Soil Labs",
+        slug: "living-soil-labs"
+      },
+      userId: { email: "owner@example.com", displayName: "Owner" },
+      businessRoles: ["nursery", "cultivator"],
+      productClasses: ["cannabis_seed"],
+      jurisdiction: { countryCode: "US", subdivisionCode: "MA" },
+      authorizationType: "Cannabis establishment license",
+      authorizationIdentifier: "LIC-123",
+      issuer: "Massachusetts CCC",
+      evidenceUrl: "https://example.gov/licenses/LIC-123",
+      reviewStatus: "pending"
+    }
+  ],
+  decisions: []
+};
 const supportRequest = {
   _id: "support-1",
   name: "Outside Grower",
@@ -214,6 +244,7 @@ function defaultAdminApi(path: string) {
   if (path === "/api/admin/overview") return Promise.resolve({ overview });
   if (path === "/api/admin/usage") return Promise.resolve({ usage });
   if (path === "/api/admin/security-center") return Promise.resolve(securityCenter);
+  if (path === "/api/admin/regulated-commerce") return Promise.resolve(regulatedCommerce);
   if (path.startsWith("/api/admin/users")) return Promise.resolve({ users: [member] });
   if (path === "/api/admin/moderation-cases")
     return Promise.resolve({ cases: [moderationCase] });
@@ -357,6 +388,94 @@ describe("PlatformAdminRoute", () => {
 
     fireEvent.press(screen.getByText("Show resolved security history"));
     expect(screen.getAllByText(/user suspended/).length).toBeGreaterThan(0);
+  });
+
+  it("reviews regulated authorization evidence without enabling blanket sales", async () => {
+    const screen = render(<PlatformAdminRoute />);
+
+    expect(await screen.findByText("Regulated commerce review")).toBeTruthy();
+    expect(screen.getByText("Pending authorizations")).toBeTruthy();
+    expect(screen.getByText("Allowed exact routes")).toBeTruthy();
+    expect(screen.getByText(/not blanket sales permission/i)).toBeTruthy();
+    expect(screen.getByText(/require a separate exact-route decision/i)).toBeTruthy();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Review notes for Living Soil Labs"),
+      "Verified against the issuing authority record."
+    );
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "verified authorization for Living Soil Labs"
+      })
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/regulated-commerce/authorizations/authorization-1",
+        {
+          method: "PATCH",
+          body: {
+            reviewStatus: "verified",
+            reviewNotes: "Verified against the issuing authority record."
+          }
+        }
+      )
+    );
+  });
+
+  it("records a versioned decision for one exact regulated route", async () => {
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Regulated commerce review");
+
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Use authorization for Living Soil Labs route decision"
+      })
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Route capability"),
+      "external_product_handoff"
+    );
+    fireEvent.changeText(screen.getByLabelText("Route destination country"), "us");
+    fireEvent.changeText(screen.getByLabelText("Route destination subdivision"), "ma");
+    fireEvent.changeText(
+      screen.getByLabelText("Route buyer eligibility"),
+      "age_21_verified"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Route fulfillment method"),
+      "external_handoff"
+    );
+    fireEvent.changeText(screen.getByLabelText("Route decision"), "allowed");
+    fireEvent.changeText(
+      screen.getByLabelText("Route reason codes"),
+      "verified_license, local_route_reviewed"
+    );
+    fireEvent.press(
+      screen.getByRole("button", { name: "Record exact regulated route decision" })
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/regulated-commerce/decisions",
+        {
+          method: "POST",
+          body: expect.objectContaining({
+            storefrontId: "store-1",
+            authorizationIds: ["authorization-1"],
+            capability: "external_product_handoff",
+            productClass: "cannabis_seed",
+            origin: { countryCode: "US", subdivisionCode: "MA" },
+            destination: { countryCode: "US", subdivisionCode: "MA" },
+            buyerEligibility: "age_21_verified",
+            fulfillmentMethod: "external_handoff",
+            decision: "allowed",
+            policyVersion: "regulated-commerce-v1",
+            reasonCodes: ["verified_license", "local_route_reviewed"]
+          })
+        }
+      )
+    );
   });
 
   it("requires a successful dry run and exact confirmation before anonymizing a test account", async () => {

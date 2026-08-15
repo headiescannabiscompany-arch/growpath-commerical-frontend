@@ -22,6 +22,15 @@ export type Storefront = {
   updatedAt?: string;
 };
 
+export type PublicProductAccessResult = {
+  allowed: boolean;
+  decision: "allowed" | "denied" | "review_required" | "not_regulated";
+  reasonCodes?: string[];
+  policyVersion?: string | null;
+  externalPurchaseUrl?: string;
+  message?: string;
+};
+
 export async function fetchStorefront(): Promise<Storefront | null> {
   const res = await apiRequest(STOREFRONT_BASE);
   return res?.storefront ?? res?.data?.storefront ?? res?.data ?? res ?? null;
@@ -45,6 +54,21 @@ export async function fetchPublicStorefront(slug: string) {
   return apiRequest(`${STOREFRONT_BASE}/public/${encodeURIComponent(slug)}`, {
     method: "GET"
   });
+}
+
+export async function checkPublicProductAccess(
+  productId: string,
+  input: {
+    capability: string;
+    destination: { countryCode: string; subdivisionCode?: string };
+    buyerEligibility: string;
+    fulfillmentMethod: string;
+  }
+): Promise<PublicProductAccessResult> {
+  return apiRequest(
+    `${STOREFRONT_BASE}/public/products/${encodeURIComponent(productId)}/access`,
+    { method: "POST", body: input }
+  );
 }
 
 export async function searchPublicStorefronts(

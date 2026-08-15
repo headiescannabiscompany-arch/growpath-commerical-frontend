@@ -72,6 +72,37 @@ type SecurityCenter = {
   note?: string;
 };
 
+type RegulatedCommerceAdmin = {
+  tallies: {
+    authorizations: Record<string, number>;
+    decisions: Record<string, number>;
+  };
+  authorizations: Array<{
+    _id: string;
+    storefrontId?: { _id?: string; name?: string; slug?: string };
+    userId?: { email?: string; name?: string; displayName?: string };
+    businessRoles: string[];
+    productClasses: string[];
+    jurisdiction: {
+      countryCode: string;
+      subdivisionCode?: string;
+      locality?: string;
+    };
+    authorizationType: string;
+    authorizationIdentifier: string;
+    issuer: string;
+    evidenceUrl?: string;
+    effectiveAt?: string | null;
+    expiresAt?: string | null;
+    reviewStatus: string;
+    reviewNotes?: string;
+    createdAt?: string;
+  }>;
+  decisions: Array<{ _id: string; decision: string }>;
+  capabilities: string[];
+  fulfillmentMethods: string[];
+};
+
 type AdminUser = {
   _id: string;
   email: string;
@@ -351,6 +382,26 @@ export default function PlatformAdminRoute() {
   const [usage, setUsage] = useState<Usage | null>(null);
   const [securityCenter, setSecurityCenter] = useState<SecurityCenter | null>(null);
   const [showResolvedSecurity, setShowResolvedSecurity] = useState(false);
+  const [regulatedCommerce, setRegulatedCommerce] =
+    useState<RegulatedCommerceAdmin | null>(null);
+  const [regulatedReviewNotes, setRegulatedReviewNotes] = useState<
+    Record<string, string>
+  >({});
+  const [regulatedDecisionDraft, setRegulatedDecisionDraft] = useState({
+    storefrontId: "",
+    authorizationIds: [] as string[],
+    capability: "external_product_handoff",
+    productClass: "",
+    originCountryCode: "",
+    originSubdivisionCode: "",
+    destinationCountryCode: "",
+    destinationSubdivisionCode: "",
+    buyerEligibility: "",
+    fulfillmentMethod: "external_handoff",
+    decision: "review_required",
+    policyVersion: "regulated-commerce-v1",
+    reasonCodes: ""
+  });
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>([]);
   const orderedModerationCases = useMemo(() => {
@@ -441,6 +492,7 @@ export default function PlatformAdminRoute() {
         "Overview",
         "Usage",
         "Security center",
+        "Regulated commerce",
         "Users",
         "Moderation",
         "Evidence requests",
@@ -453,6 +505,7 @@ export default function PlatformAdminRoute() {
         apiRequest("/api/admin/overview"),
         apiRequest("/api/admin/usage"),
         apiRequest("/api/admin/security-center"),
+        apiRequest("/api/admin/regulated-commerce"),
         apiRequest(`/api/admin/users${suffix}`),
         apiRequest("/api/admin/moderation-cases"),
         apiRequest("/api/admin/evidence-requests"),
@@ -473,13 +526,14 @@ export default function PlatformAdminRoute() {
       const overviewResponse = responseAt(0);
       const usageResponse = responseAt(1);
       const securityResponse = responseAt(2);
-      const usersResponse = responseAt(3);
-      const moderationResponse = responseAt(4);
-      const evidenceResponse = responseAt(5);
-      const supportResponse = responseAt(6);
-      const knowledgeResponse = responseAt(7);
-      const methodReviewResponse = responseAt(8);
-      const harvestCalibrationResponse = responseAt(9);
+      const regulatedCommerceResponse = responseAt(3);
+      const usersResponse = responseAt(4);
+      const moderationResponse = responseAt(5);
+      const evidenceResponse = responseAt(6);
+      const supportResponse = responseAt(7);
+      const knowledgeResponse = responseAt(8);
+      const methodReviewResponse = responseAt(9);
+      const harvestCalibrationResponse = responseAt(10);
 
       if (overviewResponse) setOverview(overviewResponse.overview || null);
       if (usageResponse) setUsage(usageResponse.usage || null);
@@ -491,6 +545,25 @@ export default function PlatformAdminRoute() {
             ? securityResponse.coverage
             : [],
           note: securityResponse.note
+        });
+      if (regulatedCommerceResponse)
+        setRegulatedCommerce({
+          tallies: regulatedCommerceResponse.tallies || {
+            authorizations: {},
+            decisions: {}
+          },
+          authorizations: Array.isArray(regulatedCommerceResponse.authorizations)
+            ? regulatedCommerceResponse.authorizations
+            : [],
+          decisions: Array.isArray(regulatedCommerceResponse.decisions)
+            ? regulatedCommerceResponse.decisions
+            : [],
+          capabilities: Array.isArray(regulatedCommerceResponse.capabilities)
+            ? regulatedCommerceResponse.capabilities
+            : [],
+          fulfillmentMethods: Array.isArray(regulatedCommerceResponse.fulfillmentMethods)
+            ? regulatedCommerceResponse.fulfillmentMethods
+            : []
         });
       if (usersResponse)
         setUsers(Array.isArray(usersResponse.users) ? usersResponse.users : []);
@@ -533,6 +606,92 @@ export default function PlatformAdminRoute() {
       setLoading(false);
     }
   }, [isAdmin, query]);
+
+  async function reviewRegulatedAuthorization(
+    authorizationId: string,
+    reviewStatus: "verified" | "rejected" | "revoked"
+  ) {
+    const reviewNotes = String(regulatedReviewNotes[authorizationId] || "").trim();
+    if (!reviewNotes) {
+      setError("Review notes are required before changing authorization status.");
+      return;
+    }
+    setBusyId(`regulated-${authorizationId}`);
+    setError("");
+    try {
+      await apiRequest(
+        `/api/admin/regulated-commerce/authorizations/${authorizationId}`,
+        { method: "PATCH", body: { reviewStatus, reviewNotes } }
+      );
+      setRegulatedReviewNotes((current) => ({ ...current, [authorizationId]: "" }));
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Authorization review failed.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function createRegulatedDecision() {
+    const reasonCodes = splitAdminList(regulatedDecisionDraft.reasonCodes);
+    if (
+      !regulatedDecisionDraft.storefrontId ||
+      !regulatedDecisionDraft.productClass ||
+      !regulatedDecisionDraft.originCountryCode ||
+      !regulatedDecisionDraft.destinationCountryCode ||
+      !regulatedDecisionDraft.buyerEligibility.trim() ||
+      !regulatedDecisionDraft.policyVersion.trim() ||
+      !reasonCodes.length
+    ) {
+      setError(
+        "Choose authorization evidence and complete product, origin, destination, buyer eligibility, policy version, and reason codes."
+      );
+      return;
+    }
+    setBusyId("regulated-decision");
+    setError("");
+    try {
+      await apiRequest("/api/admin/regulated-commerce/decisions", {
+        method: "POST",
+        body: {
+          storefrontId: regulatedDecisionDraft.storefrontId,
+          authorizationIds: regulatedDecisionDraft.authorizationIds,
+          capability: regulatedDecisionDraft.capability,
+          productClass: regulatedDecisionDraft.productClass,
+          origin: {
+            countryCode: regulatedDecisionDraft.originCountryCode,
+            subdivisionCode: regulatedDecisionDraft.originSubdivisionCode
+          },
+          destination: {
+            countryCode: regulatedDecisionDraft.destinationCountryCode,
+            subdivisionCode: regulatedDecisionDraft.destinationSubdivisionCode
+          },
+          buyerEligibility: regulatedDecisionDraft.buyerEligibility.trim(),
+          fulfillmentMethod: regulatedDecisionDraft.fulfillmentMethod,
+          decision: regulatedDecisionDraft.decision,
+          policyVersion: regulatedDecisionDraft.policyVersion.trim(),
+          reasonCodes
+        }
+      });
+      setRegulatedDecisionDraft((current) => ({
+        ...current,
+        storefrontId: "",
+        authorizationIds: [],
+        productClass: "",
+        originCountryCode: "",
+        originSubdivisionCode: "",
+        destinationCountryCode: "",
+        destinationSubdivisionCode: "",
+        buyerEligibility: "",
+        reasonCodes: ""
+      }));
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Route decision could not be recorded.");
+    } finally {
+      setBusyId("");
+    }
+  }
 
   async function createKnowledgeEntry() {
     const preferredAuthors = splitAdminList(knowledgeDraft.preferredAuthors);
@@ -981,6 +1140,213 @@ export default function PlatformAdminRoute() {
           ) ? (
             <Text style={styles.meta}>No open security issues in connected sources.</Text>
           ) : null}
+        </AppCard>
+      ) : null}
+
+      {regulatedCommerce ? (
+        <AppCard
+          title="Regulated commerce review"
+          titleLevel={2}
+          subtitle="Review authorization evidence without treating a plan, profile, warning, or business label as transaction permission."
+        >
+          <View style={styles.metrics}>
+            <Metric
+              label="Pending authorizations"
+              value={Number(regulatedCommerce.tallies.authorizations.pending || 0)}
+              helper={`${regulatedCommerce.authorizations.length} retained authorization records`}
+            />
+            <Metric
+              label="Verified authorizations"
+              value={Number(regulatedCommerce.tallies.authorizations.verified || 0)}
+              helper="Evidence only; not blanket sales permission"
+            />
+            <Metric
+              label="Allowed exact routes"
+              value={Number(regulatedCommerce.tallies.decisions.allowed || 0)}
+              helper={`${regulatedCommerce.decisions.length} versioned route decisions`}
+            />
+          </View>
+          <Text style={styles.meta}>
+            Verify the exact seller authorization, roles, product classes, jurisdiction,
+            issuer, dates, and evidence. Checkout, payment, pickup, delivery, shipping,
+            import, and export require a separate exact-route decision.
+          </Text>
+          {regulatedCommerce.authorizations.length ? (
+            regulatedCommerce.authorizations.slice(0, 100).map((authorization) => {
+              const reviewBusy = busyId === `regulated-${authorization._id}`;
+              const storefrontName =
+                authorization.storefrontId?.name || "Unknown storefront";
+              return (
+                <View key={authorization._id} style={styles.caseRow}>
+                  <View style={styles.caseCopy}>
+                    <Text style={styles.caseTitle}>
+                      {storefrontName} · {authorization.reviewStatus}
+                    </Text>
+                    <Text style={styles.meta}>
+                      {authorization.authorizationType} · {authorization.issuer} ·{" "}
+                      {authorization.authorizationIdentifier}
+                    </Text>
+                    <Text style={styles.meta}>
+                      Roles: {authorization.businessRoles.join(", ")} · Products:{" "}
+                      {authorization.productClasses.join(", ")}
+                    </Text>
+                    <Text style={styles.meta}>
+                      Jurisdiction: {authorization.jurisdiction.countryCode}
+                      {authorization.jurisdiction.subdivisionCode
+                        ? `-${authorization.jurisdiction.subdivisionCode}`
+                        : ""}
+                      {authorization.jurisdiction.locality
+                        ? ` · ${authorization.jurisdiction.locality}`
+                        : ""}
+                    </Text>
+                    {authorization.evidenceUrl ? (
+                      <Pressable
+                        accessibilityRole="link"
+                        accessibilityLabel={`Open evidence for ${storefrontName}`}
+                        onPress={() =>
+                          void Linking.openURL(authorization.evidenceUrl || "")
+                        }
+                      >
+                        <Text style={styles.secondaryText}>Open submitted evidence</Text>
+                      </Pressable>
+                    ) : (
+                      <Text style={styles.meta}>No evidence URL supplied.</Text>
+                    )}
+                    {authorization.reviewNotes ? (
+                      <Text style={styles.evidencePreview}>
+                        Prior review: {authorization.reviewNotes}
+                      </Text>
+                    ) : null}
+                    <TextInput
+                      {...inputThemeProps}
+                      accessibilityLabel={`Review notes for ${storefrontName}`}
+                      value={regulatedReviewNotes[authorization._id] || ""}
+                      onChangeText={(value) =>
+                        setRegulatedReviewNotes((current) => ({
+                          ...current,
+                          [authorization._id]: value
+                        }))
+                      }
+                      placeholder="Required evidence review notes"
+                      multiline
+                      style={[styles.input, styles.messageInput]}
+                    />
+                    <View style={styles.searchRow}>
+                      {(["verified", "rejected", "revoked"] as const).map(
+                        (reviewStatus) => (
+                          <Pressable
+                            key={reviewStatus}
+                            accessibilityRole="button"
+                            accessibilityLabel={`${reviewStatus} authorization for ${storefrontName}`}
+                            accessibilityState={{ disabled: reviewBusy }}
+                            disabled={reviewBusy}
+                            style={styles.secondaryButton}
+                            onPress={() =>
+                              void reviewRegulatedAuthorization(
+                                authorization._id,
+                                reviewStatus
+                              )
+                            }
+                          >
+                            <Text style={styles.secondaryText}>
+                              {reviewStatus.replace(/^./, (letter) =>
+                                letter.toUpperCase()
+                              )}
+                            </Text>
+                          </Pressable>
+                        )
+                      )}
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Use authorization for ${storefrontName} route decision`}
+                        style={styles.secondaryButton}
+                        onPress={() =>
+                          setRegulatedDecisionDraft((current) => ({
+                            ...current,
+                            storefrontId: String(authorization.storefrontId?._id || ""),
+                            authorizationIds: [authorization._id],
+                            productClass: authorization.productClasses[0] || "",
+                            originCountryCode:
+                              authorization.jurisdiction.countryCode || "",
+                            originSubdivisionCode:
+                              authorization.jurisdiction.subdivisionCode || ""
+                          }))
+                        }
+                      >
+                        <Text style={styles.secondaryText}>Use for route decision</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+              );
+            })
+          ) : (
+            <Text style={styles.meta}>
+              No regulated authorization evidence submitted.
+            </Text>
+          )}
+          <View style={styles.evidencePreview}>
+            <Text style={styles.caseTitle}>
+              Create an exact capability route decision
+            </Text>
+            <Text style={styles.meta}>
+              Start with reviewed evidence above. An allowed decision applies only to the
+              exact capability, product class, origin, destination, buyer rule,
+              fulfillment method, and policy version entered here.
+            </Text>
+            <Text style={styles.meta}>
+              Storefront: {regulatedDecisionDraft.storefrontId || "not selected"} ·
+              Evidence: {regulatedDecisionDraft.authorizationIds.join(", ") || "none"}
+            </Text>
+            {[
+              ["Route capability", "capability", "external_product_handoff"],
+              ["Route product class", "productClass", "regulated_cannabis_product"],
+              ["Route origin country", "originCountryCode", "US"],
+              ["Route origin subdivision", "originSubdivisionCode", "MA"],
+              ["Route destination country", "destinationCountryCode", "US"],
+              ["Route destination subdivision", "destinationSubdivisionCode", "MA"],
+              ["Route buyer eligibility", "buyerEligibility", "age_21_verified"],
+              ["Route fulfillment method", "fulfillmentMethod", "external_handoff"],
+              ["Route decision", "decision", "allowed, denied, or review_required"],
+              ["Route policy version", "policyVersion", "regulated-commerce-v1"],
+              ["Route reason codes", "reasonCodes", "Comma-separated reason codes"]
+            ].map(([label, field, placeholder]) => (
+              <TextInput
+                key={field}
+                {...inputThemeProps}
+                accessibilityLabel={label}
+                value={(regulatedDecisionDraft as any)[field]}
+                onChangeText={(value) =>
+                  setRegulatedDecisionDraft((current) => ({
+                    ...current,
+                    [field]:
+                      field.toLowerCase().includes("country") ||
+                      field.toLowerCase().includes("subdivision")
+                        ? value.toUpperCase()
+                        : value
+                  }))
+                }
+                placeholder={placeholder}
+                style={styles.input}
+              />
+            ))}
+            <Text style={styles.meta}>
+              Supported capabilities: {regulatedCommerce.capabilities.join(", ")}
+            </Text>
+            <Text style={styles.meta}>
+              Supported fulfillment: {regulatedCommerce.fulfillmentMethods.join(", ")}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Record exact regulated route decision"
+              accessibilityState={{ disabled: busyId === "regulated-decision" }}
+              disabled={busyId === "regulated-decision"}
+              style={styles.primaryButton}
+              onPress={() => void createRegulatedDecision()}
+            >
+              <Text style={styles.primaryText}>Record Exact Route Decision</Text>
+            </Pressable>
+          </View>
         </AppCard>
       ) : null}
 

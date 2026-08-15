@@ -19,6 +19,7 @@ import PublicStorefrontCourseAliasRoute from "@/app/storefront/[slug]/courses/[c
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockFetchPublicStorefront = jest.fn();
+const mockCheckPublicProductAccess = jest.fn();
 const mockRecordCommercialAnalyticsEvent = jest.fn();
 const mockStartCourseCheckout = jest.fn();
 const mockLinkHrefs: string[] = [];
@@ -73,7 +74,8 @@ jest.mock("@/components/layout/AppCard", () => {
 });
 
 jest.mock("@/api/storefront", () => ({
-  fetchPublicStorefront: (...args: any[]) => mockFetchPublicStorefront(...args)
+  fetchPublicStorefront: (...args: any[]) => mockFetchPublicStorefront(...args),
+  checkPublicProductAccess: (...args: any[]) => mockCheckPublicProductAccess(...args)
 }));
 
 jest.mock("@/api/products", () => ({
@@ -230,6 +232,7 @@ const publicPayload = {
 describe("public commercial routes", () => {
   beforeEach(() => {
     mockFetchPublicStorefront.mockReset();
+    mockCheckPublicProductAccess.mockReset();
     mockRecordCommercialAnalyticsEvent.mockReset();
     mockStartCourseCheckout.mockReset();
     mockLinkHrefs.length = 0;
@@ -241,6 +244,11 @@ describe("public commercial routes", () => {
     mockRecordCommercialAnalyticsEvent.mockResolvedValue({ success: true });
     mockStartCourseCheckout.mockResolvedValue({});
     mockFetchPublicStorefront.mockResolvedValue(publicPayload);
+    mockCheckPublicProductAccess.mockResolvedValue({
+      allowed: false,
+      decision: "review_required",
+      message: "No approved handoff is available for this route."
+    });
   });
 
   it("uses the active Night palette across public storefront routes", () => {
@@ -434,12 +442,11 @@ describe("public commercial routes", () => {
     expect(
       screen.getByText("In-store pickup available · Bring a valid government-issued ID.")
     ).toBeTruthy();
-    expect(screen.getByText("Dispensary Website")).toBeTruthy();
+    expect(screen.queryByText("Dispensary Website")).toBeNull();
+    expect(screen.getByText("Website")).toBeTruthy();
     expect(screen.queryByLabelText("Buy Licensed Flower")).toBeNull();
     expect(
-      screen.getByText(
-        "No GrowPath checkout · use the dispensary website or in-store pickup"
-      )
+      screen.getByText(/No GrowPath checkout .* open Details to check/)
     ).toBeTruthy();
   });
 
@@ -646,12 +653,102 @@ describe("public commercial routes", () => {
       expect(mockFetchPublicStorefront).toHaveBeenCalledWith("example-dispensary")
     );
     expect(screen.getByText("4 units available")).toBeTruthy();
-    expect(screen.getByText("Dispensary Website")).toBeTruthy();
+    expect(screen.getByText("Check legal purchase options")).toBeTruthy();
+    expect(screen.queryByText("Dispensary Website")).toBeNull();
     expect(
       screen.getByText("In-store pickup available · Pickup during posted store hours.")
     ).toBeTruthy();
     expect(screen.queryByText("Buy")).toBeNull();
     expect(screen.getByText(/GrowPath does not verify licensing/)).toBeTruthy();
+  });
+
+  it("releases a regulated product handoff only after an exact reviewed route", async () => {
+    mockRouteParams = {
+      slug: "example-dispensary",
+      productId: "flower-1",
+      courseId: "course-1"
+    };
+    mockFetchPublicStorefront.mockResolvedValue({
+      storefront: {
+        name: "Example Dispensary",
+        storefrontType: "dispensary",
+        countryCode: "US"
+      },
+      products: [
+        {
+          id: "flower-1",
+          name: "Licensed Flower",
+          regulatedCannabis: true,
+          regulatedProductClass: "regulated_cannabis_product",
+          transactionAccess: "requires_exact_route_review"
+        }
+      ]
+    });
+    mockCheckPublicProductAccess.mockResolvedValueOnce({
+      allowed: true,
+      decision: "allowed",
+      policyVersion: "2026-08-15",
+      externalPurchaseUrl: "https://licensed.example.com/flower"
+    });
+
+    const screen = render(<PublicProductRoute />);
+    await waitFor(() =>
+      expect(screen.getAllByText("Licensed Flower").length).toBeGreaterThan(0)
+    );
+    expect(screen.queryByText("Continue to licensed provider")).toBeNull();
+
+    fireEvent.changeText(screen.getByLabelText("Destination country code"), "us");
+    fireEvent.changeText(
+      screen.getByLabelText("Destination state or province code"),
+      "ma"
+    );
+    fireEvent.press(screen.getByLabelText("Check approved product handoff"));
+
+    await waitFor(() =>
+      expect(mockCheckPublicProductAccess).toHaveBeenCalledWith("flower-1", {
+        capability: "external_product_handoff",
+        destination: { countryCode: "US", subdivisionCode: "MA" },
+        buyerEligibility: "external_provider_verification_required",
+        fulfillmentMethod: "external_handoff"
+      })
+    );
+    expect(screen.getByText("Continue to licensed provider")).toBeTruthy();
+    expect(
+      screen.getByText(/licensed provider must still verify eligibility/i)
+    ).toBeTruthy();
+  });
+
+  it("does not expose a regulated product URL when the route is not approved", async () => {
+    mockRouteParams = {
+      slug: "example-dispensary",
+      productId: "flower-1",
+      courseId: "course-1"
+    };
+    mockFetchPublicStorefront.mockResolvedValue({
+      storefront: { name: "Example Dispensary", storefrontType: "dispensary" },
+      products: [
+        {
+          id: "flower-1",
+          name: "Licensed Flower",
+          regulatedCannabis: true,
+          transactionAccess: "requires_exact_route_review"
+        }
+      ]
+    });
+
+    const screen = render(<PublicProductRoute />);
+    await waitFor(() =>
+      expect(screen.getAllByText("Licensed Flower").length).toBeGreaterThan(0)
+    );
+    fireEvent.changeText(screen.getByLabelText("Destination country code"), "US");
+    fireEvent.press(screen.getByLabelText("Check approved product handoff"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("No approved handoff is available for this route.")
+      ).toBeTruthy()
+    );
+    expect(screen.queryByText("Continue to licensed provider")).toBeNull();
   });
 
   it("loads a public storefront course detail with checkout and connected context", async () => {

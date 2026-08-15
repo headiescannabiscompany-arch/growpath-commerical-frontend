@@ -558,7 +558,7 @@ describe("Storefront route", () => {
     await waitFor(() => expect(screen.getByDisplayValue("Grow Shop")).toBeTruthy());
     fireEvent.press(screen.getByLabelText("Storefront type Dispensary"));
 
-    expect(screen.getByText(/GrowPath will not provide cannabis checkout/)).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Dispensary country"), "us");
     fireEvent.changeText(screen.getByLabelText("Dispensary city"), "Boston");
     fireEvent.changeText(screen.getByLabelText("Dispensary state"), "ma");
     fireEvent.changeText(screen.getByLabelText("Dispensary latitude"), "42.3601");
@@ -582,6 +582,7 @@ describe("Storefront route", () => {
           body: expect.objectContaining({
             storefrontType: "dispensary",
             city: "Boston",
+            countryCode: "US",
             stateCode: "MA",
             latitude: 42.3601,
             longitude: -71.0589,
@@ -601,6 +602,9 @@ describe("Storefront route", () => {
       "https://dispensary.example.com/menu/flower"
     );
     fireEvent.press(screen.getByLabelText("Product is regulated cannabis"));
+    fireEvent.press(
+      screen.getByLabelText("Regulated product class Regulated cannabis product")
+    );
     fireEvent.press(screen.getByLabelText("Product available for in-store pickup"));
     fireEvent.changeText(
       screen.getByLabelText("Product pickup instructions"),
@@ -616,6 +620,7 @@ describe("Storefront route", () => {
           body: expect.objectContaining({
             name: "Licensed Flower",
             regulatedCannabis: true,
+            regulatedProductClass: "regulated_cannabis_product",
             externalPurchaseUrl: "https://dispensary.example.com/menu/flower",
             pickupAvailable: true,
             pickupInstructions: "Pickup during posted store hours.",
@@ -741,6 +746,7 @@ describe("Storefront route", () => {
 
     fireEvent.press(screen.getByLabelText("Storefront type Dispensary"));
     fireEvent.changeText(screen.getByLabelText("Dispensary city"), "Boston");
+    fireEvent.changeText(screen.getByLabelText("Dispensary country"), "US");
     fireEvent.changeText(screen.getByLabelText("Dispensary state"), "MA");
     fireEvent.changeText(screen.getByLabelText("Dispensary latitude"), "100");
     fireEvent.changeText(screen.getByLabelText("Dispensary longitude"), "-71.0589");
@@ -866,5 +872,7 @@ describe("Storefront route", () => {
     ].forEach((heading) => {
       expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
     });
+    expect(screen.getByTestId("link-/home/commercial/regulated-commerce")).toBeTruthy();
+    expect(screen.getByText(/informational inventory remain separate/i)).toBeTruthy();
   });
 });

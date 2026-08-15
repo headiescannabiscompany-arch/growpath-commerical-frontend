@@ -24,7 +24,7 @@ describe("regulated storefront commerce", () => {
     expect(publicProductExternalUrl(row)).toBe("");
   });
 
-  test("allows a dispensary website handoff without GrowPath checkout", () => {
+  test("keeps dispensary inventory public while withholding unreviewed handoffs", () => {
     const storefront = {
       storefrontType: "dispensary",
       websiteUrl: "https://dispensary.example.com/menu",
@@ -38,9 +38,7 @@ describe("regulated storefront commerce", () => {
 
     expect(isDispensaryStorefront(storefront)).toBe(true);
     expect(publicProductCanCheckout(product, storefront)).toBe(false);
-    expect(publicProductExternalUrl(product, storefront)).toBe(
-      "https://dispensary.example.com/menu"
-    );
+    expect(publicProductExternalUrl(product, storefront)).toBe("");
     expect(publicProductPickupAvailable(product, storefront)).toBe(true);
     expect(publicInventorySummary(product)).toBe("12 units available");
   });

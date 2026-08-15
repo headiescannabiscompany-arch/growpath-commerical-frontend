@@ -8,12 +8,17 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 
 import { checkoutProduct } from "@/api/products";
-import { fetchPublicStorefront } from "@/api/storefront";
+import {
+  checkPublicProductAccess,
+  fetchPublicStorefront,
+  type PublicProductAccessResult
+} from "@/api/storefront";
 import {
   recordCommercialAnalyticsEvent,
   type CommercialAnalyticsEvent
@@ -199,6 +204,11 @@ export default function PublicProductRoute() {
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [reportVisible, setReportVisible] = useState(false);
+  const [destinationCountry, setDestinationCountry] = useState("");
+  const [destinationSubdivision, setDestinationSubdivision] = useState("");
+  const [accessResult, setAccessResult] = useState<PublicProductAccessResult | null>(
+    null
+  );
 
   const load = useCallback(async () => {
     if (!slug) return;
@@ -344,6 +354,41 @@ export default function PublicProductRoute() {
     }
   }
 
+  async function checkRegulatedHandoff() {
+    const id = productKey(product);
+    if (!id) return;
+    if (!/^[A-Za-z]{2}$/.test(destinationCountry.trim())) {
+      setFeedback("Enter a two-letter destination country code.");
+      return;
+    }
+    setBusy(true);
+    setFeedback("");
+    setAccessResult(null);
+    try {
+      const result = await checkPublicProductAccess(id, {
+        capability: "external_product_handoff",
+        destination: {
+          countryCode: destinationCountry.trim().toUpperCase(),
+          subdivisionCode: destinationSubdivision.trim().toUpperCase()
+        },
+        buyerEligibility: "external_provider_verification_required",
+        fulfillmentMethod: "external_handoff"
+      });
+      setAccessResult(result);
+      setFeedback(
+        result.allowed
+          ? "An approved external handoff is available for this route. The licensed provider must still verify eligibility."
+          : result.message || "No approved handoff is available for this route."
+      );
+    } catch (err: any) {
+      setFeedback(
+        err?.message || "No approved handoff is currently available for this route."
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function shareProduct() {
     try {
       const result = await sharePublicLink(
@@ -364,6 +409,14 @@ export default function PublicProductRoute() {
   const canCheckout = productCanCheckout(product, storefront);
   const licensedTransferOnly = isRegulatedCannabisProduct(product);
   const dispensaryStorefront = isDispensaryStorefront(storefront);
+  const requiresRouteReview =
+    licensedTransferOnly ||
+    dispensaryStorefront ||
+    product?.transactionAccess === "requires_exact_route_review";
+  const approvedExternalUrl =
+    accessResult?.allowed && accessResult.externalPurchaseUrl
+      ? accessResult.externalPurchaseUrl
+      : "";
   const pickupAvailable = publicProductPickupAvailable(product, storefront);
   const pickupInstructions = publicProductPickupInstructions(product, storefront);
   const brandName = storefront?.businessName || storefront?.name || "Brand";
@@ -447,6 +500,79 @@ export default function PublicProductRoute() {
                 In-store pickup available
                 {pickupInstructions ? ` · ${pickupInstructions}` : ""}
               </Text>
+            ) : null}
+
+            {requiresRouteReview ? (
+              <View style={styles.routePanel}>
+                <Text style={styles.cardTitle}>Check legal purchase options</Text>
+                <Text style={styles.meta}>
+                  This inventory listing is informational. Enter the destination for this
+                  product. GrowPath releases a purchase handoff only when an active,
+                  reviewed route matches. GrowPath does not take payment, and the licensed
+                  provider must still verify age, identity, eligibility, and local law.
+                </Text>
+                <TextInput
+                  accessibilityLabel="Destination country code"
+                  autoCapitalize="characters"
+                  maxLength={2}
+                  placeholder="Country code (US)"
+                  placeholderTextColor={palette.textMuted}
+                  style={styles.input}
+                  value={destinationCountry}
+                  onChangeText={(value) => {
+                    setDestinationCountry(value);
+                    setAccessResult(null);
+                  }}
+                />
+                <TextInput
+                  accessibilityLabel="Destination state or province code"
+                  autoCapitalize="characters"
+                  placeholder="State or province (optional)"
+                  placeholderTextColor={palette.textMuted}
+                  style={styles.input}
+                  value={destinationSubdivision}
+                  onChangeText={(value) => {
+                    setDestinationSubdivision(value);
+                    setAccessResult(null);
+                  }}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Check approved product handoff"
+                  disabled={busy}
+                  onPress={checkRegulatedHandoff}
+                  style={[styles.primaryButton, busy && styles.disabled]}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {busy ? "Checking..." : "Check approved handoff"}
+                  </Text>
+                </Pressable>
+                {approvedExternalUrl ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel={`Continue to licensed provider for ${
+                      product?.name || "product"
+                    }`}
+                    style={styles.secondaryButton}
+                    onPress={() => {
+                      trackCommercialClick({
+                        eventType: "product_external_link_click",
+                        objectType: "product",
+                        objectId: productKey(product),
+                        productId: productKey(product),
+                        storefrontSlug: slug,
+                        targetUrl: approvedExternalUrl,
+                        source: "public_product_route_approved"
+                      });
+                      void openUrl(approvedExternalUrl);
+                    }}
+                  >
+                    <Text style={styles.secondaryButtonText}>
+                      Continue to licensed provider
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
             ) : null}
 
             <View style={styles.actionRow}>
@@ -874,6 +1000,25 @@ export function createStyles(palette: ThemePalette) {
     pickup: { color: palette.success, fontWeight: "800", lineHeight: 20 },
     price: { color: palette.success, fontSize: 18, fontWeight: "800", marginTop: 4 },
     warning: { color: palette.warning, fontWeight: "700", lineHeight: 20 },
+    routePanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      marginTop: 12,
+      padding: 12
+    },
+    input: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
     specGrid: { gap: 8 },
     specRow: {
       borderColor: palette.border,
