@@ -311,6 +311,15 @@ describe("GrowPath knowledge registries", () => {
       "explicit dispensary discovery by state or user-authorized distance with published linked inventory and external-site or in-store-pickup handoff"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "composable regulated business roles kept separate from jurisdiction authorization and transaction capability"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "versioned regulated-commerce decisions for the exact seller, authorization, product class, origin, destination, buyer eligibility, fulfillment route, and requested capability"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "progressive regulated-commerce capabilities from public profile and informational inventory through separately approved handoff, reservation, checkout, payment, pickup, delivery, shipping, export, and import"
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "direct draft-course detail limited to the authenticated author or platform administrator"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
@@ -471,6 +480,12 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never invent dispensary availability or imply pickup completion; use published linked inventory and a dispensary-provided website or pickup instructions."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never treat a business role, paid plan, warning, age gate, or seller attestation as transaction authority; default deny the requested regulated transaction capability when route evidence is missing, expired, conflicting, or unsupported."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never treat federal legalization as permission to bypass remaining state, Tribal, territorial, local, destination, carrier, payment-provider, tax, marketplace, app-store, export, or import requirements."
     );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never honor deterministic test identity headers as production authentication."
