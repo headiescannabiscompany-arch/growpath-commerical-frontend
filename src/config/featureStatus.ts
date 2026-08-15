@@ -40,6 +40,7 @@ export type FeatureDefinition = {
   hubVisible?: boolean;
   acceptsGrowContext?: boolean;
   capabilityKey?: string;
+  freePlanAccess?: boolean;
   experience?: ToolExperience;
   internalNote: string;
 };
@@ -623,6 +624,7 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     status: "beta",
     href: "/home/personal/tools/species-crop-id",
     acceptsGrowContext: true,
+    freePlanAccess: true,
     experience: {
       mode: "ai_assisted",
       aiCredits: "optional",
@@ -634,7 +636,7 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
         "Ranked botanical candidates with supporting and conflicting evidence, confidence limits, missing-photo guidance, and source-verification status."
     },
     internalNote:
-      "Approved beta crop-context workflow. Regional invasive alerts stay out of current programming."
+      "Approved beta crop-context workflow. Personal Free users may use their governed weekly AI allowance; a grow or Field Study is not required. Regional invasive alerts stay out of current programming."
   },
   {
     key: "tools.harvest_readiness_ai",
