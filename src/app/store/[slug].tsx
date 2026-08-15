@@ -487,11 +487,24 @@ export default function PublicStorefrontRoute() {
               <Text style={styles.profileTitle}>Courses</Text>
               {courses.slice(0, 3).map((course) => {
                 const id = publicItemId(course);
+                const courseThumbnail = resolveImageUri(
+                  String(
+                    course?.thumbnailUrl || course?.bannerUrl || course?.imageUrl || ""
+                  )
+                );
                 return (
                   <View
                     key={id || publicItemTitle(course, "Course")}
                     style={styles.linkRow}
                   >
+                    {courseThumbnail ? (
+                      <Image
+                        accessibilityLabel={`${publicItemTitle(course, "Course")} thumbnail`}
+                        resizeMode="cover"
+                        source={{ uri: courseThumbnail }}
+                        style={styles.courseThumbnail}
+                      />
+                    ) : null}
                     <View style={styles.productBody}>
                       <Text style={styles.productName}>
                         {publicItemTitle(course, "Course")}
@@ -729,6 +742,12 @@ export function createStyles(palette: ThemePalette) {
       paddingVertical: 10
     },
     productName: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    courseThumbnail: {
+      backgroundColor: palette.surface,
+      borderRadius: radius.card,
+      height: 88,
+      width: 118
+    },
     price: { color: palette.success, fontWeight: "800" },
     warning: { color: palette.warning, fontSize: 12, fontWeight: "800" },
     profilePanel: {
