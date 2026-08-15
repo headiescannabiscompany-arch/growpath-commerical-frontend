@@ -118,4 +118,46 @@ describe("CoursesScreen route params", () => {
     expect(screen.getByText("Shared catalog Back")).toBeTruthy();
     expect(mockReplace).toHaveBeenCalledWith("/courses");
   });
+
+  it("loads an authorized reported course directly when catalogs omit it", async () => {
+    mockSearchParams = { courseId: "reported-course", moderationCaseId: "case-1" };
+    mockApiRequest.mockImplementation(async (path: string) => {
+      if (path === "/api/courses/reported-course") {
+        return {
+          id: "reported-course",
+          title: "Reported draft course",
+          priceCents: 0,
+          status: "draft"
+        };
+      }
+      return { courses: [] };
+    });
+
+    const screen = render(<CoursesRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Selected course reported-course")).toBeTruthy()
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/courses/reported-course");
+    expect(screen.getByText("Course detail reported-course")).toBeTruthy();
+  });
+
+  it("explains stale reported content and returns to the focused moderation case", async () => {
+    mockSearchParams = { courseId: "removed-course", moderationCaseId: "case-2" };
+    mockApiRequest.mockImplementation(async (path: string) => {
+      if (path === "/api/courses/removed-course") {
+        throw new Error("Course not found");
+      }
+      return { courses: [] };
+    });
+
+    const screen = render(<CoursesRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Reported course is unavailable")).toBeTruthy()
+    );
+    expect(screen.queryByText("No courses found")).toBeNull();
+    fireEvent.press(screen.getByRole("button", { name: "Return to moderation queue" }));
+    expect(mockReplace).toHaveBeenCalledWith("/admin?moderationCaseId=case-2");
+  });
 });
