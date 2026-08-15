@@ -142,7 +142,11 @@ export function moderationTargetHref(item: ModerationCase) {
 
   const id = encodeURIComponent(String(item.targetId || ""));
   if (item.targetType === "forumPost") return `/forum/post/${id}`;
-  if (item.targetType === "course") return `/courses?courseId=${id}`;
+  if (item.targetType === "course") {
+    return `/courses?courseId=${id}&moderationCaseId=${encodeURIComponent(
+      String(item._id || "")
+    )}`;
+  }
   if (item.targetType === "video") return `/videos/${id}`;
   if (item.targetType === "commercialPost") return `/feed?campaignId=${id}`;
   if (item.targetType === "feedItem") return `/feed?feedItemId=${id}`;

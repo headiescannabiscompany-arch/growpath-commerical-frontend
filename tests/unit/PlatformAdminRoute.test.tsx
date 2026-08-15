@@ -166,7 +166,7 @@ describe("PlatformAdminRoute", () => {
     ["forumPost", "forum-1", "/forum/post/forum-1"],
     ["commercialPost", "campaign-1", "/feed?campaignId=campaign-1"],
     ["storefrontProduct", "product-1", "/store?q=product-1"],
-    ["course", "course-1", "/courses?courseId=course-1"],
+    ["course", "course-1", "/courses?courseId=course-1&moderationCaseId=case-1"],
     ["video", "video-1", "/videos/video-1"],
     ["liveSession", "live-1", "/live-session?sessionId=live-1"]
   ])("builds the canonical %s moderation content link", (targetType, targetId, href) => {

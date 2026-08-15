@@ -13,7 +13,7 @@ import {
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useAuth } from "@/auth/AuthContext";
 import { apiRequest } from "@/api/apiRequest";
-import { unpublishCourse } from "@/api/courses";
+import { getCourse, unpublishCourse } from "@/api/courses";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { countPaidCourses, getLearningAccess } from "@/features/learning/learningAccess";
 import { useAppTheme } from "@/theme/appTheme";
@@ -162,6 +162,9 @@ export default function CoursesScreen({
   const requestedCourseId = Array.isArray(params?.courseId)
     ? params.courseId[0]
     : params?.courseId;
+  const moderationCaseId = Array.isArray(params?.moderationCaseId)
+    ? params.moderationCaseId[0]
+    : params?.moderationCaseId;
   const checkoutResult = Array.isArray(params?.checkout)
     ? params.checkout[0]
     : params?.checkout;
@@ -186,6 +189,7 @@ export default function CoursesScreen({
   const [courseActionFeedback, setCourseActionFeedback] = useState("");
   const [courseActionError, setCourseActionError] = useState("");
   const [catalogWarning, setCatalogWarning] = useState("");
+  const [requestedCourseError, setRequestedCourseError] = useState("");
   const [catalogReloadKey, setCatalogReloadKey] = useState(0);
 
   useEffect(() => {
@@ -208,6 +212,7 @@ export default function CoursesScreen({
       setLoading(true);
       setErr("");
       setCatalogWarning("");
+      setRequestedCourseError("");
 
       try {
         const [publicResult, ownedResult, commercialResult] = await Promise.allSettled([
@@ -256,11 +261,31 @@ export default function CoursesScreen({
         const publicationScoped = isSignedIn
           ? publicCleanScoped
           : publicCleanScoped.filter(isPublishedCourse);
-        const filtered = access.canSeePaidCourses
+        let filtered = access.canSeePaidCourses
           ? publicationScoped
           : publicationScoped.filter(
               (c) => Number(c?.priceCents || 0) === 0 && Number(c?.price || 0) === 0
             );
+        if (
+          requestedCourseId &&
+          !filtered.some(
+            (course) =>
+              String(course?._id || course?.id || "") === String(requestedCourseId)
+          )
+        ) {
+          try {
+            const requestedCourse = await getCourse(String(requestedCourseId));
+            if (requestedCourse) filtered = mergeCourses(filtered, [requestedCourse]);
+          } catch (_requestedError) {
+            if (alive) {
+              setRequestedCourseError(
+                moderationCaseId
+                  ? "The reported course is no longer available. Return to the moderation queue to resolve or retain the case for audit."
+                  : "The requested course is unavailable or you no longer have access."
+              );
+            }
+          }
+        }
         if (alive) setCourses(filtered);
       } catch (e) {
         const msg = String(e?.message || e || "Failed to load courses");
@@ -280,7 +305,9 @@ export default function CoursesScreen({
     viewerId,
     canCreateCourses,
     isSignedIn,
-    catalogReloadKey
+    catalogReloadKey,
+    requestedCourseId,
+    moderationCaseId
   ]);
 
   useEffect(() => {
@@ -475,7 +502,30 @@ export default function CoursesScreen({
       ) : null}
       {courseActionError ? <Text style={styles.error}>{courseActionError}</Text> : null}
 
-      {!loading && !err && courses.length === 0 ? (
+      {!loading && !err && requestedCourseError ? (
+        <View style={styles.lockedCard}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
+            {moderationCaseId
+              ? "Reported course is unavailable"
+              : "Requested course is unavailable"}
+          </Text>
+          <Text style={styles.meta}>{requestedCourseError}</Text>
+          {moderationCaseId ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Return to moderation queue"
+              onPress={() =>
+                router.replace?.(`/admin?moderationCaseId=${moderationCaseId}`)
+              }
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryBtnText}>Return to moderation queue</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+
+      {!loading && !err && !requestedCourseError && courses.length === 0 ? (
         <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
           {isSignedIn ? "No courses found" : "No published courses yet"}
         </Text>
