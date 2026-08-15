@@ -26,6 +26,36 @@ services:
         source: /home/*
         destination: /index.html
       - type: rewrite
+        source: /videos/*
+        destination: /index.html
+      - type: rewrite
+        source: /store/*
+        destination: /index.html
+      - type: rewrite
+        source: /storefront/*
+        destination: /index.html
+      - type: rewrite
+        source: /brands/*
+        destination: /index.html
+      - type: rewrite
+        source: /forum/*
+        destination: /index.html
+      - type: rewrite
+        source: /field-observations/*
+        destination: /index.html
+      - type: rewrite
+        source: /facilities/*
+        destination: /index.html
+      - type: rewrite
+        source: /alerts/*
+        destination: /index.html
+      - type: rewrite
+        source: /tasks/*
+        destination: /index.html
+      - type: rewrite
+        source: /logs/*
+        destination: /index.html
+      - type: rewrite
         source: /*
         destination: /index.html
     headers:
