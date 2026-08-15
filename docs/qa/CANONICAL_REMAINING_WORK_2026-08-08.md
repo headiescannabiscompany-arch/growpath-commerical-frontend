@@ -922,7 +922,30 @@ public visibility, or screenshot/video acceptance still called out below.
       across every workspace. Close each defect only after its final SHA is live and
       the affected route and path forward have been exercised successfully.
 
-## G. App Store and final release
+- [ ] After the final crawl fixes are stable, invite `roberto.tomas.cuentas@gmail.com`
+      through a separate reviewer identity and workspace instead of sharing the
+      owner's credentials. Collect his AI-quality, user-flow, navigation, and
+      usability findings in a detailed, itemized review log with route, role,
+      evidence, expected behavior, proposed change, and disposition. Implement
+      accepted revisions on a preview branch/environment, show the owner the exact
+      list and live preview, and obtain owner approval before merging or deploying
+      any reviewer-driven change. Complete this gate before beginning hats.
+
+## G. Hat research and presentation
+
+- [ ] After the final live crawl, professional polish, and Roberto review gate,
+      complete the remaining hat-research sequence in order: approve the exact BLVNK
+      blank/sample/cost/decoration details; finish accurate multi-view GrowPathAI and
+      Triple Bag Genetics designs; publish only owner-approved, rights-cleared designs
+      as zero-stock `Not for sale` research listings under their correct brands; then
+      run owner-priced purchase-intent trials and verify response/revision/aggregate/
+      close behavior. Third-party-mark TBG designs remain private until rights
+      clearance. No concept may imply inventory, checkout, payment, production, or
+      shipping. The Admin identity's governed, separate GrowPathAI Commercial
+      workspace is already complete and live-verified through backend PR `#156` and
+      frontend PR `#558`.
+
+## H. App Store and final release
 
 The autonomous release boundary was rechecked on 2026-08-12. The production-build
 command remained dry-run-only and listed the intended non-interactive iOS and Android
@@ -936,16 +959,6 @@ correctly stopped because `EXPO_PUBLIC_SENTRY_DSN` is not supplied to the native
 production-build environment. The DSN must be configured as a protected EAS
 production secret and must never be committed to the repository.
 
-- [ ] Before the final App Store/app-wide tightening pass, complete the remaining
-      hat-research sequence in order: approve the exact BLVNK blank/sample/cost/
-      decoration details; finish accurate multi-view GrowPathAI and Triple Bag Genetics
-      designs; publish only owner-approved, rights-cleared designs as
-      zero-stock `Not for sale` research listings under their correct brands; then run
-      owner-priced purchase-intent trials and verify response/revision/aggregate/close
-      behavior. Third-party-mark TBG designs remain private until rights clearance. No
-      concept may imply inventory, checkout, payment, production, or shipping. The
-      Admin identity's governed, separate GrowPathAI Commercial workspace is already
-      complete and live-verified through backend PR `#156` and frontend PR `#558`.
 - [ ] Obtain owner/legal decisions for final app name, cannabis language, age rating,
       privacy/support URLs, deep-link domain, store records, and listing copy.
 - [ ] Configure protected Apple and Google submit credentials and the production
