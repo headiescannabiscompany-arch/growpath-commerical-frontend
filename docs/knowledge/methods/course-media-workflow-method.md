@@ -26,6 +26,14 @@ Accept HTTP(S) video-page URLs, legacy first-party `/uploads/` paths, and protec
 
 ## Author review and publishing
 
+A course-level thumbnail and banner are optional presentation media. When supplied, use
+the thumbnail for compact catalog/storefront cards and the banner once as the learner
+page hero; do not duplicate the same asset as multiple learner-page heroes. Authors may
+deliberately clear either image, and that removal must survive save and reload. Missing
+course-level imagery may remain a quality recommendation, but it must not by itself
+block publication. Lesson-level media continues to follow the evidence, rights,
+availability, accessibility, summary, and fallback gates below.
+
 A draft may retain incomplete media so an author can return to it. Publishing or approval is blocked when a lesson with video lacks any of:
 
 - creator ownership or permission confirmation;

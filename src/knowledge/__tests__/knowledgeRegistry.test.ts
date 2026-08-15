@@ -586,6 +586,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
       "owner-controlled publish and private-draft unpublish"
     );
+    expect(getMethod("course-media-workflow")?.requiredOutputs).toContain(
+      "optional removable course thumbnail for compact cards and optional single learner-page banner"
+    );
+    expect(getMethod("course-media-workflow")?.warnings).toContain(
+      "Never block course publication solely because an optional course thumbnail or banner is absent, and never restore deliberately cleared course media after reload."
+    );
     expect(getMethod("course-media-workflow")?.warnings).toContain(
       "Never expose submit, approve, or reject course actions unless a real moderated-review backend workflow and role policy are implemented end to end."
     );
