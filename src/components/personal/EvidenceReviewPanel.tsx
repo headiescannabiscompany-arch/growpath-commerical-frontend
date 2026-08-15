@@ -105,6 +105,7 @@ export const createEvidenceReviewPanelStyles = (palette: ThemePalette) =>
       borderRadius: radius.card,
       borderWidth: 1,
       gap: 12,
+      height: "92%",
       maxWidth: 1200,
       padding: 14,
       width: "100%"
@@ -112,8 +113,8 @@ export const createEvidenceReviewPanelStyles = (palette: ThemePalette) =>
     viewerImage: {
       backgroundColor: palette.page,
       borderRadius: radius.card,
-      height: "75%",
-      minHeight: 320,
+      flex: 1,
+      minHeight: 220,
       width: "100%"
     },
     viewerTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
