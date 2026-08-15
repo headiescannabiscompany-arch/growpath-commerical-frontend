@@ -88,6 +88,16 @@ export function discoverImageOf(row: any) {
   );
 }
 
+export function discoverCourseHref(row: any) {
+  return `/courses?courseId=${encodeURIComponent(idOf(row))}`;
+}
+
+export function discoverLiveHref(row: any) {
+  return `/live-session?sessionId=${encodeURIComponent(
+    String(row?.linkedLiveId || "")
+  )}`;
+}
+
 function storeSlug(row: any) {
   return String(
     row?.slug || row?.storefrontSlug || row?.brandSlug || row?.publicSlug || ""
@@ -306,7 +316,7 @@ export default function DiscoverDirectory() {
           id: idOf(row),
           title: titleOf(row, "Course"),
           summary: summaryOf(row),
-          href: `/courses?courseId=${encodeURIComponent(idOf(row))}`,
+          href: discoverCourseHref(row),
           thumbnailUrl: discoverImageOf(row)
         })),
         browseHref: "/home/personal/courses"
@@ -320,7 +330,7 @@ export default function DiscoverDirectory() {
           id: idOf(row),
           title: titleOf(row, "Live session"),
           summary: summaryOf(row),
-          href: `/live-session?sessionId=${encodeURIComponent(String(row.linkedLiveId))}`,
+          href: discoverLiveHref(row),
           thumbnailUrl: discoverImageOf(row)
         })),
         browseHref: "/lives"
