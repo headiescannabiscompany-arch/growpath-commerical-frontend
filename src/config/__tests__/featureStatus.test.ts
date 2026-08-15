@@ -382,6 +382,7 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.ipm_scout"].status).toBe("beta");
     expect(byKey["tools.ipm_scout"].href).toBe("/home/personal/tools/ipm-scout");
     expect(byKey["tools.species_crop_identification"].status).toBe("beta");
+    expect(byKey["tools.species_crop_identification"].freePlanAccess).toBe(true);
     expect(byKey["tools.species_crop_identification"].href).toBe(
       "/home/personal/tools/species-crop-id"
     );

@@ -118,6 +118,20 @@ function renderCloneRootingTool() {
   );
 }
 
+function renderPlantIdTool() {
+  return render(
+    <BackendCalculatorToolScreen
+      tool="species-crop-id"
+      toolKey="species-crop-id"
+      title="Species / Crop Identification"
+      subtitle="Identify a plant from evidence."
+      fields={[{ key: "habitat", label: "Habitat", defaultValue: "woodland" }]}
+      buildPayload={(values) => ({ habitat: values.habitat })}
+      defaultLogTitle={() => "Plant identification"}
+    />
+  );
+}
+
 describe("BackendCalculatorToolScreen beta access", () => {
   it("uses the active Night palette for the shared calculator surface", () => {
     const palette = getThemePalette("night", "dark");
@@ -168,6 +182,19 @@ describe("BackendCalculatorToolScreen beta access", () => {
     expect(screen.getByText("Clone Rooting Troubleshooter is a Pro tool")).toBeTruthy();
     expect(screen.queryByText("Calculate")).toBeNull();
     expect(mockRunCalculator).not.toHaveBeenCalled();
+  });
+
+  it("lets free personal users open Plant ID with their weekly AI allowance", () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "free",
+      can: jest.fn(() => true)
+    });
+
+    renderPlantIdTool();
+
+    expect(screen.queryByText("Species / Crop Identification is a Pro tool")).toBeNull();
+    expect(screen.getByText("Habitat")).toBeTruthy();
   });
 
   it("lets the local paid preview flag run beta packet tools for free accounts", async () => {

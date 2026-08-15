@@ -421,7 +421,8 @@ export default function BackendCalculatorToolScreen({
     (item) => item.key === TOOL_FEATURE_KEY_BY_TOOL_KEY[toolKey]
   ) as FeatureDefinition | undefined;
   const requiredCapability = feature?.capabilityKey || null;
-  const betaLockedForFree = feature?.status === "beta" && isFreePlan;
+  const betaLockedForFree =
+    feature?.status === "beta" && isFreePlan && feature.freePlanAccess !== true;
   const capabilityLocked =
     !paidPreviewOverride &&
     Boolean(requiredCapability) &&
