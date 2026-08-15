@@ -1385,6 +1385,18 @@ export default function Storefront({
               {storeDraft.isPublished ? "Published" : "Draft"}
             </Text>
           </View>
+          <View style={styles.objectActions}>
+            <ObjectActionLink
+              href="/home/commercial/regulated-commerce"
+              label="Regulated commerce permissions"
+            />
+          </View>
+          <Text style={styles.muted}>
+            Add every business role you perform and submit jurisdiction-specific
+            authorization evidence. Profiles and informational inventory remain separate
+            from checkout, payment, pickup, delivery, shipping, import, and export
+            permissions.
+          </Text>
           <TextInput
             value={storeDraft.name}
             editable={!interactionBusy}

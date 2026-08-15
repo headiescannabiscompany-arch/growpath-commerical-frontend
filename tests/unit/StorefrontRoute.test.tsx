@@ -866,5 +866,7 @@ describe("Storefront route", () => {
     ].forEach((heading) => {
       expect(screen.getByRole("header", { name: heading }).props["aria-level"]).toBe(2);
     });
+    expect(screen.getByTestId("link-/home/commercial/regulated-commerce")).toBeTruthy();
+    expect(screen.getByText(/informational inventory remain separate/i)).toBeTruthy();
   });
 });
