@@ -192,7 +192,13 @@ execution boundaries and the evidence needed not to reopen completed work.
       records. Four genus-level Peace Lily records with combined basal foliage and
       spathe/spadix evidence then passed; the foliage-only and isolated-spadix candidates
       were rejected because they could not reliably separate Spathiphyllum from other
-      aroids. The catalog is now 52/320 reviewed records and correctly remains
+      aroids. Three family-level Orchidaceae, two genus-level Marigold, three cultivated
+      florists' chrysanthemum, and four large-crabgrass records then passed their
+      individual morphology, taxonomy, exact-license, rights, expected-result, and
+      intended-use reviews. Orchid-like Fabaceae, butterfly/query collisions, a
+      _Tithonia_ lookalike, unresolved Petunia common-name collisions, weak
+      chrysanthemum scenes, and non-_Digitaria_ grasses were rejected rather than used
+      as ground truth. The catalog is now 64/320 reviewed records and correctly remains
       `planning`; the remaining candidates still require individual review, and all 36
       owned adverse-media slots remain.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a

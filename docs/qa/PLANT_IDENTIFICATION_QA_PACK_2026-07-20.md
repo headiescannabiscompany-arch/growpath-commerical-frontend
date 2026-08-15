@@ -29,8 +29,20 @@ split-and-fenestrated leaves or combined leaf-and-inflorescence evidence also pa
 two distant candidates were rejected. The governed catalog is now 48/320. The catalog
 also now includes four genus-level Peace Lily records with combined foliage and
 spathe/spadix evidence; foliage-only and isolated-spadix candidates were rejected. The
-governed catalog is now 52/320 and remains planning until all governed slots are filled;
-no candidate is automatically promoted.
+catalog also includes three family-level Orchidaceae records with visible bilateral
+orchid floral structure; three orchid-like _Duparquetia orchidacea_ candidates were
+rejected because that accepted species belongs to Fabaceae despite its name and flower
+appearance. Two genus-level Marigold records with composite heads and divided foliage
+also passed; three _Erynnis tages_ butterfly query collisions and one _Tithonia
+rotundifolia_ lookalike were rejected. All six queued Petunia candidates were rejected
+because they were _Ruellia_ common-name collisions or _Physalis_; replacement candidates
+from the accepted _Petunia_ genus remain required. Three cultivated florists'
+chrysanthemum records with repeated flower heads and lobed foliage passed at the accepted
+hybrid name _Chrysanthemum × morifolium_; a mixed scene, damaged sparse specimen, and
+foliage-only view were rejected. Four large-crabgrass records with digitate seedheads,
+including two whole-habit views, also passed; two _Sorghastrum nutans_ results were
+rejected as non-_Digitaria_ grasses. The governed catalog is now 64/320 and remains
+planning until all governed slots are filled; no candidate is automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 
