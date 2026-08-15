@@ -1612,6 +1612,23 @@ describe("commercial workflow pages", () => {
       )
     );
 
+    fireEvent.press(screen.getByLabelText("Clear commercial course detail thumbnail"));
+    fireEvent.press(screen.getByLabelText("Clear commercial course detail banner"));
+    fireEvent.press(screen.getByLabelText("Save commercial course detail"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenLastCalledWith(
+        "/api/commercial/courses/course-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: expect.objectContaining({
+            thumbnailUrl: "",
+            bannerUrl: ""
+          })
+        })
+      )
+    );
+
     fireEvent.changeText(
       screen.getByLabelText("Commercial course lesson title"),
       "Water-in schedule"

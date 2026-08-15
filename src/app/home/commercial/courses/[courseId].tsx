@@ -279,8 +279,11 @@ export default function CommercialCourseDetailRoute({ route }: { route?: any } =
     const updated = await updateCommercialCourse(courseId, {
       access: (access.trim() || "free") as CommercialCourse["access"],
       price: paidCoursePrice(),
-      thumbnailUrl: persistedThumbnailUrl || undefined,
-      bannerUrl: persistedBannerUrl || undefined,
+      // Empty strings are intentional deletion values. Omitting these fields leaves
+      // previously saved media in place on PATCH and makes Clear appear successful
+      // until the next reload.
+      thumbnailUrl: persistedThumbnailUrl || "",
+      bannerUrl: persistedBannerUrl || "",
       category: category.trim() || undefined,
       growInterests: splitIds(growInterests),
       description: description.trim(),
