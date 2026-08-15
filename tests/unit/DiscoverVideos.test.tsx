@@ -64,7 +64,12 @@ jest.mock("@/theme/appTheme", () => {
   };
 });
 
-import DiscoverDirectory, { createDiscoverVideoFilterStyles } from "@/app/discover";
+import DiscoverDirectory, {
+  createDiscoverVideoFilterStyles,
+  discoverCourseHref,
+  discoverImageOf,
+  discoverLiveHref
+} from "@/app/discover";
 import { getThemePalette } from "@/theme/appTheme";
 
 describe("Discover video search", () => {
@@ -83,6 +88,18 @@ describe("Discover video search", () => {
         mediaSource: {}
       }
     ]);
+  });
+
+  it("resolves available discovery art and exact course/live destinations", () => {
+    expect(
+      discoverImageOf({ bannerImageUrl: "https://cdn.example.com/store.jpg" })
+    ).toBe("https://cdn.example.com/store.jpg");
+    expect(discoverCourseHref({ id: "course / 1" })).toBe(
+      "/courses?courseId=course%20%2F%201"
+    );
+    expect(discoverLiveHref({ linkedLiveId: "live / 1" })).toBe(
+      "/live-session?sessionId=live%20%2F%201"
+    );
   });
 
   it("routes non-personal workspaces through the workspace switcher for Plant ID", async () => {
