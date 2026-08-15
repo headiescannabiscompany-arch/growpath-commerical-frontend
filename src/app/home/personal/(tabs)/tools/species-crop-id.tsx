@@ -3631,18 +3631,12 @@ export default function SpeciesCropIdToolRoute({
         ].some((item) =>
           /same unchanged evidence produced a conflicting identity/i.test(item)
         );
-        const imageAnalysisRequested =
-          imageAnalysis.requested === true || payloadImageAnalysis.requested === true;
+        const imageAnalysisRequested = imageAnalysis.requested === true;
         const imageEvidenceBlocksConfirmation =
           imageAnalysisRequested &&
-          ((imageAnalysis.requested === true &&
-            (imageAnalysis.performed !== true ||
-              imageAnalysis.quality !== "usable" ||
-              imageAnalysis.confidence !== "high")) ||
-            (payloadImageAnalysis.requested === true &&
-              (payloadImageAnalysis.performed !== true ||
-                payloadImageAnalysis.quality !== "usable" ||
-                payloadImageAnalysis.confidence !== "high")));
+          (imageAnalysis.performed !== true ||
+            imageAnalysis.quality !== "usable" ||
+            imageAnalysis.confidence !== "high");
         const target = plantContext.plantId ? "Plant" : "Grow";
         const identity = {
           growId,
