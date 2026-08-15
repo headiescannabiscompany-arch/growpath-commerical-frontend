@@ -319,6 +319,38 @@ export default function PlatformAdminRoute() {
   }, [focusedModerationCaseId, moderationCases]);
   const [evidenceRequests, setEvidenceRequests] = useState<EvidenceRequest[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
+  const [showCompletedWork, setShowCompletedWork] = useState(false);
+  const activeSupportRequests = useMemo(
+    () => supportRequests.filter((item) => !["resolved", "spam"].includes(item.status)),
+    [supportRequests]
+  );
+  const completedSupportRequests = useMemo(
+    () => supportRequests.filter((item) => ["resolved", "spam"].includes(item.status)),
+    [supportRequests]
+  );
+  const activeModerationCases = useMemo(
+    () => orderedModerationCases.filter((item) => item.status !== "actioned"),
+    [orderedModerationCases]
+  );
+  const completedModerationCases = useMemo(
+    () => orderedModerationCases.filter((item) => item.status === "actioned"),
+    [orderedModerationCases]
+  );
+  const visibleModerationCases = useMemo(() => {
+    if (showCompletedWork) return orderedModerationCases;
+    if (!focusedModerationCaseId) return activeModerationCases;
+    const focused = orderedModerationCases.find(
+      (item) => item._id === focusedModerationCaseId
+    );
+    return focused && focused.status === "actioned"
+      ? [focused, ...activeModerationCases]
+      : activeModerationCases;
+  }, [
+    activeModerationCases,
+    focusedModerationCaseId,
+    orderedModerationCases,
+    showCompletedWork
+  ]);
   const [knowledgeEntries, setKnowledgeEntries] = useState<KnowledgeEntry[]>([]);
   const [methodReviewProposals, setMethodReviewProposals] = useState<
     MethodReviewProposal[]
@@ -1308,53 +1340,84 @@ export default function PlatformAdminRoute() {
       ) : null}
 
       <AppCard
+        title="Admin work queue"
+        titleLevel={2}
+        subtitle="Resolved support and actioned moderation records are achieved work. They remain in the audit history without crowding active work."
+      >
+        <Text style={styles.meta}>
+          Active: {activeSupportRequests.length + activeModerationCases.length} ·
+          Completed: {completedSupportRequests.length + completedModerationCases.length}
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: showCompletedWork }}
+          style={styles.secondaryButton}
+          onPress={() => setShowCompletedWork((current) => !current)}
+        >
+          <Text style={styles.secondaryText}>
+            {showCompletedWork ? "Hide completed work" : "Show completed work"}
+          </Text>
+        </Pressable>
+      </AppCard>
+
+      <AppCard
         title="Bug and support inbox"
         titleLevel={2}
-        subtitle="Stored in GrowPathAI even if email delivery fails. Newest requests appear first."
+        subtitle={
+          showCompletedWork
+            ? "Active and completed requests. Completed records remain available as audit history."
+            : "Active requests only. Resolved and spam records are retained under Show completed work."
+        }
       >
-        {supportRequests.length ? (
-          supportRequests.slice(0, 30).map((item) => (
-            <View key={item._id} style={styles.caseRow}>
-              <View style={styles.caseCopy}>
-                <Text style={styles.caseTitle}>
-                  {item.topic} · {item.status} · {item.subject}
-                </Text>
-                <Text style={styles.meta}>
-                  {item.name} · {item.replyEmail} ·{" "}
-                  {new Date(item.createdAt).toLocaleString()}
-                </Text>
-                {item.workspace || item.page ? (
-                  <Text style={styles.meta}>
-                    {[item.workspace, item.page].filter(Boolean).join(" · ")}
+        {(showCompletedWork ? supportRequests : activeSupportRequests).length ? (
+          (showCompletedWork ? supportRequests : activeSupportRequests)
+            .slice(0, 30)
+            .map((item) => (
+              <View key={item._id} style={styles.caseRow}>
+                <View style={styles.caseCopy}>
+                  <Text style={styles.caseTitle}>
+                    {item.topic} · {item.status} · {item.subject}
                   </Text>
-                ) : null}
-                <Text style={styles.evidencePreview}>{item.message}</Text>
-                <Text style={styles.meta}>
-                  Email delivery: {item.emailDelivery?.sent ? "sent" : "not confirmed"}
-                </Text>
+                  <Text style={styles.meta}>
+                    {item.name} · {item.replyEmail} ·{" "}
+                    {new Date(item.createdAt).toLocaleString()}
+                  </Text>
+                  {item.workspace || item.page ? (
+                    <Text style={styles.meta}>
+                      {[item.workspace, item.page].filter(Boolean).join(" · ")}
+                    </Text>
+                  ) : null}
+                  <Text style={styles.evidencePreview}>{item.message}</Text>
+                  <Text style={styles.meta}>
+                    Email delivery: {item.emailDelivery?.sent ? "sent" : "not confirmed"}
+                  </Text>
+                </View>
+                {["resolved", "spam"].includes(item.status) ? (
+                  <Text style={styles.meta}>Completed · retained for audit</Text>
+                ) : (
+                  <View style={styles.actions}>
+                    <Pressable
+                      disabled={busyId === item._id || item.status === "in_progress"}
+                      style={styles.secondaryButton}
+                      onPress={() => void updateSupportStatus(item, "in_progress")}
+                    >
+                      <Text style={styles.secondaryText}>Mark in progress</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.primaryButton}
+                      onPress={() => void updateSupportStatus(item, "resolved")}
+                    >
+                      <Text style={styles.primaryText}>Resolve</Text>
+                    </Pressable>
+                  </View>
+                )}
               </View>
-              <View style={styles.actions}>
-                <Pressable
-                  disabled={busyId === item._id}
-                  style={styles.secondaryButton}
-                  onPress={() => void updateSupportStatus(item, "in_progress")}
-                >
-                  <Text style={styles.secondaryText}>Mark in progress</Text>
-                </Pressable>
-                <Pressable
-                  disabled={busyId === item._id}
-                  style={styles.primaryButton}
-                  onPress={() => void updateSupportStatus(item, "resolved")}
-                >
-                  <Text style={styles.primaryText}>Resolve</Text>
-                </Pressable>
-              </View>
-            </View>
-          ))
+            ))
         ) : (
           <Text style={styles.meta}>
-            No stored bug or support requests yet. Email-only history before this release
-            is not backfilled.
+            No active bug or support requests. Completed history is retained and can be
+            shown above.
           </Text>
         )}
       </AppCard>
@@ -1371,8 +1434,8 @@ export default function PlatformAdminRoute() {
           placeholder="Destination category"
           style={styles.input}
         />
-        {orderedModerationCases.length ? (
-          orderedModerationCases.slice(0, 20).map((item) => (
+        {visibleModerationCases.length ? (
+          visibleModerationCases.slice(0, 20).map((item) => (
             <View
               key={item._id}
               style={[
@@ -1490,7 +1553,10 @@ export default function PlatformAdminRoute() {
             </View>
           ))
         ) : (
-          <Text style={styles.meta}>No moderation cases are waiting for review.</Text>
+          <Text style={styles.meta}>
+            No active moderation cases. Completed history is retained and can be shown
+            above.
+          </Text>
         )}
       </AppCard>
 

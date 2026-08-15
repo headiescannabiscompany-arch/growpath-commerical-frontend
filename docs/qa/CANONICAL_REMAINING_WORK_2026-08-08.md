@@ -25,6 +25,16 @@ execution boundaries and the evidence needed not to reopen completed work.
   failures, payment events, screenshots, or populated production records.
 - Commit and push each coherent tested section. Record deployment and live evidence
   separately.
+- Use one-way completion: reopen a decision only for a reproduced regression, missing
+  live evidence, or a later change that touched the same path. The final crawl
+  regression-checks completed work; it does not redesign it.
+- Treat governed catalog expansion beyond the currently reviewed, passing evidence as
+  continuing post-launch quality work unless a named launch-critical case is failing.
+  A planning catalog must remain honest and may not be called complete, but it does not
+  block finishing unrelated product workflows or the final release crawl.
+- Review real-user feedback only when it was intentionally submitted through support,
+  reporting, explicit product feedback, or a QA-consented upload. Administrative access
+  alone is not consent to inspect unrelated private media.
 
 ## Verified closures retained by this audit
 
@@ -122,85 +132,88 @@ execution boundaries and the evidence needed not to reopen completed work.
   visible route/load error; it did not add an accuracy case or justify another
   behavior change. Further rule changes require a failing governed or retained real
   case; the next substantive step remains authorized 252-case staging execution.
-- [ ] Complete the Plant ID evaluation pack with 300-500 rights-reviewed images,
-      scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
-      licenses, and exact follow-up-photo expectations. Never use the pack as training
-      data without a separately approved policy. A governed iNaturalist candidate
-      collector now dry-runs by default, filters and rechecks individual photo-license
-      codes, separates research-wild candidates from cultivated/captive candidates for
-      crop, ornamental, cannabis/hemp, and lookalike coverage, excludes coordinates,
-      stores no copied media, and leaves identity, stage, exact license version, and
-      intended use unapproved. USDA ARS and Wikimedia Commons conditional source rules
-      are documented. The 320 image-level reviews and catalog promotions remain;
-      candidate metadata is not counted as completion. A dry-run-by-default review-queue
-      preparer now selects the governed per-case quotas, balances wild/cultivated
-      candidates where applicable, preserves the remaining owned failure-case blockers,
-      and refuses to treat an item as promotable without explicit morphology, identity,
-      stage, Tier A cross-check, exact-license, rights, expected-result, and intended-use
-      decisions. A separate dry-run-by-default promotion gate now binds the catalog,
-      candidate manifest, and review manifest by exact hashes; revalidates immutable
-      candidates, governed case definitions, quotas, duplicates, review decisions, and
-      rights; and can only atomically import fully approved records. The real 284-item
-      pending queue produces 0 promotions and leaves the catalog unchanged. On
-      2026-08-12, the governed collector completed without collection errors and
-      produced 540 metadata-only candidates: 338 research-wild and 202 cultivated.
-      It copied no media, retained no coordinates, and granted no identity, stage,
-      rights, or intended-use approval. The hash-bound review preparer filled 284 of
-      the 320 governed slots. The remaining 36 slots are the ten deliberately adverse
-      acquisition cases (blurry, partial-leaf, mixed-plant, dead-leaf, artificial,
-      no-plant, low-light, direct-flash, glare, and mixed-light) that require owned or
-      commissioned media. All 284 queued candidates still require explicit morphology,
-      identity, life-stage, Tier A taxonomy, exact-license, rights, expected-result,
-      and intended-use review; candidate metadata is not accepted evidence. A fresh
-      2026-08-12 dry run revalidated all three boundaries against the current catalog:
-      planning validation reported zero contract errors, review preparation retained
-      exactly 284 queued / 36 missing / 0 promotable, and promotion retained all 284
-      items as blocked with zero catalog writes. On 2026-08-14, the collector and
-      review queue were rebound to the current catalog with the same 540-candidate,
-      284-queued, and 36-owned-media-blocker totals. Eight tomato candidates were
-      visually reviewed; seven passed the full morphology, Tier-A Kew taxonomy,
-      image-license, attribution, expected-result, and commercial-QA-use gates and
-      were promoted as external references. One casual, computer-vision-assisted
-      foliage-only candidate was explicitly rejected as insufficient ground truth.
-      Seven pepper records subsequently passed the same gates; one blurred pepper
-      candidate was explicitly rejected because its visible characters were not
-      dependable ground truth. Six cucumber records subsequently passed the same
-      gates; the cotyledon-only and flower-only candidates were rejected as
-      insufficient species ground truth. Four cultivated-form lettuce records then
-      passed; four flowering or wild-relative candidates were rejected because their
-      visible evidence could not reliably establish cultivated lettuce. The catalog is
-      now 24/320 reviewed records. Three basil records with strong cultivated foliage
-      or combined leaf-and-flower evidence then passed; five unresolved flower-only,
-      single-leaf, or close-relative candidates were rejected. The catalog is now
-      27/320 reviewed records. Four cultivated-context garden-strawberry records then
-      passed; four wild-context Fragaria candidates were rejected because the visible
-      evidence could not establish the garden-strawberry hybrid rather than a wild
-      relative. Five corn records with reproductive or repeated field-scale crop
-      evidence then passed; three isolated vegetative grass candidates were rejected.
-      Three common-bean records with seedling or combined foliage-and-flower evidence
-      then passed; five red-flowered Phaseolus lookalikes or unresolved distant-bed
-      candidates were rejected. Two rose records with matching compound foliage plus
-      flower or bud evidence then passed; four wrong-taxon or no-target candidates were
-      rejected. Three Pothos records with repeated golden-variegated climbing foliage
-      then passed; the mixed-species groundcover, single-leaf context, and unvariegated
-      mass candidates were rejected because their visible evidence could not reliably
-      separate Epipremnum aureum from other climbing aroids. The catalog is now 44/320
-      reviewed records. Four mature Monstera records with repeated split-and-fenestrated
-      leaves or combined leaf-and-inflorescence evidence then passed; the distant
-      wall-climber and far-canopy candidates were rejected because diagnostic leaf
-      characters were not dependable at that scale. The catalog is now 48/320 reviewed
-      records. Four genus-level Peace Lily records with combined basal foliage and
-      spathe/spadix evidence then passed; the foliage-only and isolated-spadix candidates
-      were rejected because they could not reliably separate Spathiphyllum from other
-      aroids. Three family-level Orchidaceae, two genus-level Marigold, three cultivated
-      florists' chrysanthemum, and four large-crabgrass records then passed their
-      individual morphology, taxonomy, exact-license, rights, expected-result, and
-      intended-use reviews. Orchid-like Fabaceae, butterfly/query collisions, a
-      _Tithonia_ lookalike, unresolved Petunia common-name collisions, weak
-      chrysanthemum scenes, and non-_Digitaria_ grasses were rejected rather than used
-      as ground truth. The catalog is now 64/320 reviewed records and correctly remains
-      `planning`; the remaining candidates still require individual review, and all 36
-      owned adverse-media slots remain.
+- [~] Continue the Plant ID evaluation pack toward 300-500 rights-reviewed images,
+  scientific/common names, morphology, habitat/geography, lookalikes, uncertainty,
+  licenses, and exact follow-up-photo expectations. Never use the pack as training
+  data without a separately approved policy. A governed iNaturalist candidate
+  collector now dry-runs by default, filters and rechecks individual photo-license
+  codes, separates research-wild candidates from cultivated/captive candidates for
+  crop, ornamental, cannabis/hemp, and lookalike coverage, excludes coordinates,
+  stores no copied media, and leaves identity, stage, exact license version, and
+  intended use unapproved. USDA ARS and Wikimedia Commons conditional source rules
+  are documented. The 320 image-level reviews and catalog promotions remain;
+  candidate metadata is not counted as completion. This remains a governed QA
+  expansion rather than a reason to reopen already verified Plant ID product paths;
+  any reproduced real-user failure is tracked as its own finite defect. A
+  dry-run-by-default review-queue
+  preparer now selects the governed per-case quotas, balances wild/cultivated
+  candidates where applicable, preserves the remaining owned failure-case blockers,
+  and refuses to treat an item as promotable without explicit morphology, identity,
+  stage, Tier A cross-check, exact-license, rights, expected-result, and intended-use
+  decisions. A separate dry-run-by-default promotion gate now binds the catalog,
+  candidate manifest, and review manifest by exact hashes; revalidates immutable
+  candidates, governed case definitions, quotas, duplicates, review decisions, and
+  rights; and can only atomically import fully approved records. The real 284-item
+  pending queue produces 0 promotions and leaves the catalog unchanged. On
+  2026-08-12, the governed collector completed without collection errors and
+  produced 540 metadata-only candidates: 338 research-wild and 202 cultivated.
+  It copied no media, retained no coordinates, and granted no identity, stage,
+  rights, or intended-use approval. The hash-bound review preparer filled 284 of
+  the 320 governed slots. The remaining 36 slots are the ten deliberately adverse
+  acquisition cases (blurry, partial-leaf, mixed-plant, dead-leaf, artificial,
+  no-plant, low-light, direct-flash, glare, and mixed-light) that require owned or
+  commissioned media. All 284 queued candidates still require explicit morphology,
+  identity, life-stage, Tier A taxonomy, exact-license, rights, expected-result,
+  and intended-use review; candidate metadata is not accepted evidence. A fresh
+  2026-08-12 dry run revalidated all three boundaries against the current catalog:
+  planning validation reported zero contract errors, review preparation retained
+  exactly 284 queued / 36 missing / 0 promotable, and promotion retained all 284
+  items as blocked with zero catalog writes. On 2026-08-14, the collector and
+  review queue were rebound to the current catalog with the same 540-candidate,
+  284-queued, and 36-owned-media-blocker totals. Eight tomato candidates were
+  visually reviewed; seven passed the full morphology, Tier-A Kew taxonomy,
+  image-license, attribution, expected-result, and commercial-QA-use gates and
+  were promoted as external references. One casual, computer-vision-assisted
+  foliage-only candidate was explicitly rejected as insufficient ground truth.
+  Seven pepper records subsequently passed the same gates; one blurred pepper
+  candidate was explicitly rejected because its visible characters were not
+  dependable ground truth. Six cucumber records subsequently passed the same
+  gates; the cotyledon-only and flower-only candidates were rejected as
+  insufficient species ground truth. Four cultivated-form lettuce records then
+  passed; four flowering or wild-relative candidates were rejected because their
+  visible evidence could not reliably establish cultivated lettuce. The catalog is
+  now 24/320 reviewed records. Three basil records with strong cultivated foliage
+  or combined leaf-and-flower evidence then passed; five unresolved flower-only,
+  single-leaf, or close-relative candidates were rejected. The catalog is now
+  27/320 reviewed records. Four cultivated-context garden-strawberry records then
+  passed; four wild-context Fragaria candidates were rejected because the visible
+  evidence could not establish the garden-strawberry hybrid rather than a wild
+  relative. Five corn records with reproductive or repeated field-scale crop
+  evidence then passed; three isolated vegetative grass candidates were rejected.
+  Three common-bean records with seedling or combined foliage-and-flower evidence
+  then passed; five red-flowered Phaseolus lookalikes or unresolved distant-bed
+  candidates were rejected. Two rose records with matching compound foliage plus
+  flower or bud evidence then passed; four wrong-taxon or no-target candidates were
+  rejected. Three Pothos records with repeated golden-variegated climbing foliage
+  then passed; the mixed-species groundcover, single-leaf context, and unvariegated
+  mass candidates were rejected because their visible evidence could not reliably
+  separate Epipremnum aureum from other climbing aroids. The catalog is now 44/320
+  reviewed records. Four mature Monstera records with repeated split-and-fenestrated
+  leaves or combined leaf-and-inflorescence evidence then passed; the distant
+  wall-climber and far-canopy candidates were rejected because diagnostic leaf
+  characters were not dependable at that scale. The catalog is now 48/320 reviewed
+  records. Four genus-level Peace Lily records with combined basal foliage and
+  spathe/spadix evidence then passed; the foliage-only and isolated-spadix candidates
+  were rejected because they could not reliably separate Spathiphyllum from other
+  aroids. Three family-level Orchidaceae, two genus-level Marigold, three cultivated
+  florists' chrysanthemum, and four large-crabgrass records then passed their
+  individual morphology, taxonomy, exact-license, rights, expected-result, and
+  intended-use reviews. Orchid-like Fabaceae, butterfly/query collisions, a
+  _Tithonia_ lookalike, unresolved Petunia common-name collisions, weak
+  chrysanthemum scenes, and non-_Digitaria_ grasses were rejected rather than used
+  as ground truth. The catalog is now 64/320 reviewed records and correctly remains
+  `planning`; the remaining candidates still require individual review, and all 36
+  owned adverse-media slots remain.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.
@@ -877,56 +890,56 @@ public visibility, or screenshot/video acceptance still called out below.
 ## F. Release-quality product presentation and inspection evidence
 
 - [~] Complete Live Studio's two-mode broadcast contract. Keep `Use an outside live URL`
-      for Facebook, Instagram, YouTube, Twitch, Kick, and other reviewed providers, with
-      in-app embedding where allowed and a named provider handoff where embedding is not
-      supported. Add `Broadcast live in GrowPath`: session-scoped revocable RTMP or SRT
-      ingest credentials for OBS/encoders, explicit draft/live control, adaptive in-app
-      playback with viewer controls, health/interruption states, GrowPath chat, recording
-      and replay-retention choices, access enforcement, quotas, moderation/abuse response,
-      production observability, and secret rotation. Backend merges `571e60d7` and
-      `230df1bf4bc3e83f2fefff320a2cc71ed4050db8` now implement owner-isolated reusable
-      channels, per-plan and global concurrency limits, one-time credentials, provider
-      lifecycle/playback/retention, release/removal, and rotation. Route tests prove
-      separate users never share inputs or keys and one account can reuse its OBS
-      connection across sequential sessions. Frontend merges `8ce1b5f97` and
-      `4b364c9fcb16edc7d79ef5cb216a92abf329d40f` expose the two modes, hosted player,
-      chat/premiere/share flow, reusable-channel copy, and host-only confirmed key
-      rotation with one-time replacement credentials; both complete gates passed and
-      Render deploy `dep-d9vrf5bncjis7388me20` served the exact rotation SHA.
-      Cloudflare Stream was activated on 2026-08-14 with 1,000 stored minutes for
-      `$5/month` and documented delivery overage of `$1 per 1,000 delivered minutes`;
-      no larger bundle was purchased. The production account ID, Stream-write token,
-      customer code, and hosted-live switch are protected Render environment values,
-      not source-controlled values. Backend merge
-      `b9ed176ba31679d6d9e48c3be6769204b1e52a57` passed both full gates and deployed as
-      `dep-d9vs0pu7bikc73bi52eg`; a signed-in host then opened the real private draft
-      while unrelated/signed-out isolation remains test-covered. Frontend merge
-      `48d6b288a82e7b7da89ba73e23bf7fa752705b2c` passed the full gate and deployed as
-      `dep-d9vs5ku7bikc73bi7q7g`; a fresh production navigation selected the saved
-      `GrowPathAI production OBS` channel and did not expose the new-channel form.
-      Frontend merge `499290a28ee890f8f999cba7f8851bafc2bf0343` passed 36 focused
-      tests plus the full gate and deployed as `dep-d9vsac5g1s2s73b4ij0g`; production
-      then listed, opened, confirmed deletion of, and removed both private QA drafts.
-      A fresh private `QA OBS ingest acceptance` draft now retains the reusable channel;
-      production GrowPath chat accepted a real message and created its host-only OBS
-      overlay path. Replacement of the setup-time Cloudflare API token and OBS key,
-      real OBS ingest, simultaneous two-account
-      proof, in-app playback/volume, overlay rendering in OBS, replay/retention,
-      cost-limit observation, and final QA-session cleanup remain before `[x]`.
+  for Facebook, Instagram, YouTube, Twitch, Kick, and other reviewed providers, with
+  in-app embedding where allowed and a named provider handoff where embedding is not
+  supported. Add `Broadcast live in GrowPath`: session-scoped revocable RTMP or SRT
+  ingest credentials for OBS/encoders, explicit draft/live control, adaptive in-app
+  playback with viewer controls, health/interruption states, GrowPath chat, recording
+  and replay-retention choices, access enforcement, quotas, moderation/abuse response,
+  production observability, and secret rotation. Backend merges `571e60d7` and
+  `230df1bf4bc3e83f2fefff320a2cc71ed4050db8` now implement owner-isolated reusable
+  channels, per-plan and global concurrency limits, one-time credentials, provider
+  lifecycle/playback/retention, release/removal, and rotation. Route tests prove
+  separate users never share inputs or keys and one account can reuse its OBS
+  connection across sequential sessions. Frontend merges `8ce1b5f97` and
+  `4b364c9fcb16edc7d79ef5cb216a92abf329d40f` expose the two modes, hosted player,
+  chat/premiere/share flow, reusable-channel copy, and host-only confirmed key
+  rotation with one-time replacement credentials; both complete gates passed and
+  Render deploy `dep-d9vrf5bncjis7388me20` served the exact rotation SHA.
+  Cloudflare Stream was activated on 2026-08-14 with 1,000 stored minutes for
+  `$5/month` and documented delivery overage of `$1 per 1,000 delivered minutes`;
+  no larger bundle was purchased. The production account ID, Stream-write token,
+  customer code, and hosted-live switch are protected Render environment values,
+  not source-controlled values. Backend merge
+  `b9ed176ba31679d6d9e48c3be6769204b1e52a57` passed both full gates and deployed as
+  `dep-d9vs0pu7bikc73bi52eg`; a signed-in host then opened the real private draft
+  while unrelated/signed-out isolation remains test-covered. Frontend merge
+  `48d6b288a82e7b7da89ba73e23bf7fa752705b2c` passed the full gate and deployed as
+  `dep-d9vs5ku7bikc73bi7q7g`; a fresh production navigation selected the saved
+  `GrowPathAI production OBS` channel and did not expose the new-channel form.
+  Frontend merge `499290a28ee890f8f999cba7f8851bafc2bf0343` passed 36 focused
+  tests plus the full gate and deployed as `dep-d9vsac5g1s2s73b4ij0g`; production
+  then listed, opened, confirmed deletion of, and removed both private QA drafts.
+  A fresh private `QA OBS ingest acceptance` draft now retains the reusable channel;
+  production GrowPath chat accepted a real message and created its host-only OBS
+  overlay path. Replacement of the setup-time Cloudflare API token and OBS key,
+  real OBS ingest, simultaneous two-account
+  proof, in-app playback/volume, overlay rendering in OBS, replay/retention,
+  cost-limit observation, and final QA-session cleanup remain before `[x]`.
 
 - [~] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
-      inspected, without treating them as additional photos or independent evidence.
-      Let an authorized user open each view at full size, save an individual image,
-      and export a viewer-friendly inspection-evidence package with source-photo index,
-      crop bounds/strategy, provider detail, analysis/review ID, policy version, and the
-      explicit derived-evidence limitation. Apply this shared behavior to every AI
-      still-image inspection workflow and its saved result; never fabricate a crop from
-      a count-only response or expose another workspace's protected media. Frontend
-      merge `8ba74a0ae84a9718515cb3a7b70061b67e2f6a2e` is deployed and lets Saved Runs
-      render the shared Evidence Review panel only when digest-bound diagnostic views
-      exist. An authorized retained run containing real persisted views must still prove
-      full-size View, individual Save, viewer-friendly Export, metadata, reload, and
-      cross-workspace denial before this item can close.
+  inspected, without treating them as additional photos or independent evidence.
+  Let an authorized user open each view at full size, save an individual image,
+  and export a viewer-friendly inspection-evidence package with source-photo index,
+  crop bounds/strategy, provider detail, analysis/review ID, policy version, and the
+  explicit derived-evidence limitation. Apply this shared behavior to every AI
+  still-image inspection workflow and its saved result; never fabricate a crop from
+  a count-only response or expose another workspace's protected media. Frontend
+  merge `8ba74a0ae84a9718515cb3a7b70061b67e2f6a2e` is deployed and lets Saved Runs
+  render the shared Evidence Review panel only when digest-bound diagnostic views
+  exist. An authorized retained run containing real persisted views must still prove
+  full-size View, individual Save, viewer-friendly Export, metadata, reload, and
+  cross-workspace denial before this item can close.
 - [ ] Complete a route-by-route live acceptance crawl of Personal, Commercial,
       Facility, public, and Admin surfaces on the final candidate SHAs. Exercise the
       common path forward from every page, not only route loading, and retain exact
@@ -953,13 +966,13 @@ public visibility, or screenshot/video acceptance still called out below.
       learner rendering, unpublish, archive, and cleanup all passed. See
       `docs/qa/COMMERCIAL_COURSE_MEDIA_PRODUCTION_EVIDENCE_2026-08-14.md`.
 - [~] Put storefront imagery above the storefront description where available, keep
-      empty states intentional, and verify every product, course, video, website, and
-      pickup handoff opens the correct public or signed-in destination. Frontend merge
-      `70ee4a9839e3503c1d4d7f0de7df907d51cebe6d` is deployed and renders banner media,
-      or a logo fallback, above the public description with distinct cover/contain
-      presentation and an accessible label. The current Admin Commercial storefront
-      is intentionally unconfigured and unpublished, so populated imagery and every
-      public handoff still require owner-data acceptance.
+  empty states intentional, and verify every product, course, video, website, and
+  pickup handoff opens the correct public or signed-in destination. Frontend merge
+  `70ee4a9839e3503c1d4d7f0de7df907d51cebe6d` is deployed and renders banner media,
+  or a logo fallback, above the public description with distinct cover/contain
+  presentation and an accessible label. The current Admin Commercial storefront
+  is intentionally unconfigured and unpublished, so populated imagery and every
+  public handoff still require owner-data acceptance.
 - [ ] Surface frequent deep links and next actions beside the records and tools where
       people naturally need them, including videos, live/premiere viewing, Plant ID,
       saved AI results, grows, storefronts, courses, Forum/Q&A, and shared timelines.

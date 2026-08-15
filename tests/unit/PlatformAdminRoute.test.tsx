@@ -53,9 +53,7 @@ jest.mock("@/components/layout/AppCard", () => {
       null,
       React.createElement(
         Text,
-        titleLevel
-          ? { accessibilityRole: "header", "aria-level": titleLevel }
-          : null,
+        titleLevel ? { accessibilityRole: "header", "aria-level": titleLevel } : null,
         title
       ),
       React.createElement(Text, null, subtitle),
@@ -268,10 +266,14 @@ describe("PlatformAdminRoute", () => {
       return defaultAdminApi(path);
     });
     const screen = render(<PlatformAdminRoute />);
-    await waitFor(() => expect(screen.getByText("Review test-account cleanup")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText("Review test-account cleanup")).toBeTruthy()
+    );
 
     fireEvent.press(screen.getByText("Review test-account cleanup"));
-    await waitFor(() => expect(screen.getByText("Anonymize member@example.com")).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText("Anonymize member@example.com")).toBeTruthy()
+    );
     expect(mockApiRequest).toHaveBeenCalledWith(
       "/api/admin/users/user-1/anonymize-synthetic-account",
       { method: "POST", body: { expectedEmail: "member@example.com" } }
@@ -313,9 +315,10 @@ describe("PlatformAdminRoute", () => {
         "aria-level",
         1
       );
-      expect(
-        screen.getByRole("header", { name: "Actual product activity" })
-      ).toHaveProp("aria-level", 2);
+      expect(screen.getByRole("header", { name: "Actual product activity" })).toHaveProp(
+        "aria-level",
+        2
+      );
       expect(
         screen.getByRole("header", { name: "Harvest trichome calibration queue" })
       ).toHaveProp("aria-level", 2);
@@ -472,6 +475,44 @@ describe("PlatformAdminRoute", () => {
         }
       )
     );
+  });
+
+  it("keeps resolved support and actioned moderation out of the active work queue", async () => {
+    const resolvedSupport = {
+      ...supportRequest,
+      _id: "support-resolved",
+      subject: "Resolved support history",
+      status: "resolved"
+    };
+    const actionedCase = {
+      ...moderationCase,
+      _id: "case-actioned",
+      reason: "Completed moderation history",
+      status: "actioned"
+    };
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/admin/support-requests") {
+        return Promise.resolve({ requests: [supportRequest, resolvedSupport] });
+      }
+      if (path === "/api/admin/moderation-cases") {
+        return Promise.resolve({ cases: [moderationCase, actionedCase] });
+      }
+      return defaultAdminApi(path);
+    });
+
+    const screen = render(<PlatformAdminRoute />);
+    await waitFor(() => expect(screen.getByText("Admin work queue")).toBeTruthy());
+
+    expect(screen.getByText(/Active: 2/)).toBeTruthy();
+    expect(screen.getByText(/Completed: 2/)).toBeTruthy();
+    expect(screen.queryByText("Resolved support history")).toBeNull();
+    expect(screen.queryByText("Completed moderation history")).toBeNull();
+
+    fireEvent.press(screen.getByRole("button", { name: "Show completed work" }));
+
+    expect(screen.getByText(/Resolved support history/)).toBeTruthy();
+    expect(screen.getByText("Completed moderation history")).toBeTruthy();
+    expect(screen.getByText("Completed · retained for audit")).toBeTruthy();
   });
 
   it("focuses a moderation case opened from email and links to its exact content", async () => {
