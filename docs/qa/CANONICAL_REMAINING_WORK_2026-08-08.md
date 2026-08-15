@@ -965,10 +965,23 @@ public visibility, or screenshot/video acceptance still called out below.
   then listed, opened, confirmed deletion of, and removed both private QA drafts.
   A fresh private `QA OBS ingest acceptance` draft now retains the reusable channel;
   production GrowPath chat accepted a real message and created its host-only OBS
-  overlay path. Replacement of the setup-time Cloudflare API token and OBS key,
-  real OBS ingest, simultaneous two-account
-  proof, in-app playback/volume, overlay rendering in OBS, replay/retention,
-  cost-limit observation, and final QA-session cleanup remain before `[x]`.
+  overlay path. On 2026-08-15, the production provider credential was replaced with
+  an active Cloudflare user API token scoped only to the Headies account's Stream Edit
+  permission. The running Render process, rather than only the masked dashboard field,
+  reported the expected 53-character secret fingerprint and correct account ID; a
+  direct provider create/delete probe succeeded. Production then provisioned the
+  reusable OBS RTMPS channel through GrowPath, retained all 240 monthly minutes because
+  no ingest occurred, and removed four stale private QA drafts plus the final acceptance
+  draft. A separate signed-in Admin account received the unavailable state at the exact
+  private session URL and could not see its title. Frontend merge `5c3f9201` from PR
+  `#665` corrects the owner view so an unpublished session is labeled `private draft`
+  and public sharing controls remain hidden until publication; its focused Live Session
+  suite passed 16/16, the full 8m55s gate passed, and Render deploy
+  `dep-da03lou7bikc73bmgf9g` served the corrected owner page in production. Rotating the
+  reusable OBS key and saving its replacement in a real encoder, real OBS ingest,
+  simultaneous two-account proof, in-app playback/volume,
+  overlay rendering in OBS, replay/retention, and cost-limit observation remain before
+  `[x]`.
 
 - [x] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
   inspected, without treating them as additional photos or independent evidence.
