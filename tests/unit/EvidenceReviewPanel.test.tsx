@@ -17,8 +17,7 @@ jest.mock("@/api/evidence", () => ({
 
 jest.mock("@/utils/aiInspectionEvidenceExport", () => ({
   saveAiInspectionImage: (...args: any[]) => mockSaveAiInspectionImage(...args),
-  exportAiInspectionEvidence: (...args: any[]) =>
-    mockExportAiInspectionEvidence(...args)
+  exportAiInspectionEvidence: (...args: any[]) => mockExportAiInspectionEvidence(...args)
 }));
 
 jest.mock("@/theme/appTheme", () => {
@@ -192,7 +191,11 @@ describe("EvidenceReviewPanel", () => {
     });
     const screen = render(
       <EvidenceReviewPanel
-        review={{ ...incompleteReview, performed: true, inspectionViews: [inspectionView] }}
+        review={{
+          ...incompleteReview,
+          performed: true,
+          inspectionViews: [inspectionView]
+        }}
       />
     );
 
@@ -203,6 +206,19 @@ describe("EvidenceReviewPanel", () => {
       inspectionView,
       expect.objectContaining({ workspaceType: "personal", workspaceId: "user-1" })
     );
+    expect(
+      await screen.findByLabelText("Full-size center from source photo 1")
+    ).toBeTruthy();
+    expect(screen.getByTestId("ai-inspection-full-size-viewer")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Save full-size center from source photo 1"));
+    await screen.findByText(
+      "Inspection image saved or opened in the device share sheet."
+    );
+    expect(mockSaveAiInspectionImage).toHaveBeenCalledWith(
+      expect.objectContaining({ dataUrl: expect.stringContaining("base64") })
+    );
+    fireEvent.press(screen.getByLabelText("Close full-size inspection view"));
+    expect(screen.queryByTestId("ai-inspection-full-size-viewer")).toBeNull();
 
     fireEvent.press(screen.getByLabelText("Export all AI inspection views"));
     await screen.findByText("Inspection evidence package exported.");
@@ -214,5 +230,21 @@ describe("EvidenceReviewPanel", () => {
         reviewPolicyVersion: undefined
       })
     );
+
+    fireEvent.press(screen.getByLabelText("View center from source photo 1"));
+    expect(
+      await screen.findByLabelText("Full-size center from source photo 1")
+    ).toBeTruthy();
+    screen.rerender(
+      <EvidenceReviewPanel
+        review={{
+          ...incompleteReview,
+          performed: true,
+          analysisId: "different-review",
+          inspectionViews: []
+        }}
+      />
+    );
+    expect(screen.queryByTestId("ai-inspection-full-size-viewer")).toBeNull();
   });
 });

@@ -1,5 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
 import { loadAiInspectionView } from "@/api/evidence";
 import {
@@ -83,7 +91,39 @@ export const createEvidenceReviewPanelStyles = (palette: ThemePalette) =>
     },
     inspectionRow: { gap: 10, paddingVertical: 4 },
     inspectionActions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-    inspectionMeta: { color: palette.textMuted, fontSize: 11, lineHeight: 16 }
+    inspectionMeta: { color: palette.textMuted, fontSize: 11, lineHeight: 16 },
+    viewerBackdrop: {
+      backgroundColor: "rgba(0, 0, 0, 0.88)",
+      flex: 1,
+      justifyContent: "center",
+      padding: 18
+    },
+    viewerCard: {
+      alignSelf: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 12,
+      height: "92%",
+      maxWidth: 1200,
+      padding: 14,
+      width: "100%"
+    },
+    viewerImage: {
+      backgroundColor: palette.page,
+      borderRadius: radius.card,
+      flex: 1,
+      minHeight: 220,
+      width: "100%"
+    },
+    viewerTitle: { color: palette.text, fontSize: 16, fontWeight: "800" },
+    viewerActions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      justifyContent: "flex-end"
+    }
   });
 
 type EvidenceReviewPanelStyles = ReturnType<typeof createEvidenceReviewPanelStyles>;
@@ -113,6 +153,8 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
   const [followUpFeedback, setFollowUpFeedback] = useState("");
   const [inspectionFeedback, setInspectionFeedback] = useState("");
   const [loadedViews, setLoadedViews] = useState<Record<string, AiInspectionView>>({});
+  const [activeInspectionView, setActiveInspectionView] =
+    useState<AiInspectionView | null>(null);
   const followUpBusyRef = useRef(false);
   const previousReviewFingerprintRef = useRef(reviewFingerprint);
 
@@ -120,6 +162,9 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
     if (previousReviewFingerprintRef.current === reviewFingerprint) return;
     previousReviewFingerprintRef.current = reviewFingerprint;
     setFollowUpFeedback("");
+    setInspectionFeedback("");
+    setLoadedViews({});
+    setActiveInspectionView(null);
   }, [reviewFingerprint]);
 
   async function showRequestedEvidenceGuidance() {
@@ -168,6 +213,15 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
       );
     } catch (error: any) {
       setInspectionFeedback(error?.message || "The inspection image could not be saved.");
+    }
+  }
+
+  async function openView(view: AiInspectionView) {
+    try {
+      const loaded = await loadView(view);
+      setActiveInspectionView(loaded);
+    } catch (error: any) {
+      setInspectionFeedback(error?.message || "The inspection view could not be opened.");
     }
   }
 
@@ -254,13 +308,7 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`View ${view.kind} from source photo ${view.sourceImageIndex}`}
-                      onPress={() =>
-                        void loadView(view).catch((error) =>
-                          setInspectionFeedback(
-                            error?.message || "The inspection view could not be opened."
-                          )
-                        )
-                      }
+                      onPress={() => void openView(view)}
                       style={styles.button}
                     >
                       <Text style={styles.buttonText}>View</Text>
@@ -291,6 +339,56 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
               {inspectionFeedback}
             </Text>
           ) : null}
+          <Modal
+            animationType="fade"
+            onRequestClose={() => setActiveInspectionView(null)}
+            transparent
+            visible={Boolean(activeInspectionView)}
+          >
+            {activeInspectionView ? (
+              <View
+                accessibilityViewIsModal
+                style={styles.viewerBackdrop}
+                testID="ai-inspection-full-size-viewer"
+              >
+                <View style={styles.viewerCard}>
+                  <Text accessibilityRole="header" style={styles.viewerTitle}>
+                    Photo {activeInspectionView.sourceImageIndex}:{" "}
+                    {activeInspectionView.kind}
+                  </Text>
+                  <Image
+                    accessibilityLabel={`Full-size ${activeInspectionView.kind} from source photo ${activeInspectionView.sourceImageIndex}`}
+                    resizeMode="contain"
+                    source={{ uri: activeInspectionView.dataUrl }}
+                    style={styles.viewerImage}
+                  />
+                  <Text style={styles.inspectionMeta}>
+                    Exact inspected view - {activeInspectionView.width} x{" "}
+                    {activeInspectionView.height} - supplemental pixels from the retained
+                    original
+                  </Text>
+                  <View style={styles.viewerActions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Save full-size ${activeInspectionView.kind} from source photo ${activeInspectionView.sourceImageIndex}`}
+                      onPress={() => void saveView(activeInspectionView)}
+                      style={styles.button}
+                    >
+                      <Text style={styles.buttonText}>Save image</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Close full-size inspection view"
+                      onPress={() => setActiveInspectionView(null)}
+                      style={styles.button}
+                    >
+                      <Text style={styles.buttonText}>Close</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            ) : null}
+          </Modal>
         </View>
       ) : null}
       {list(nextChecks, "Next evidence or checks", styles)}

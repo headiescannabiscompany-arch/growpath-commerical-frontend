@@ -17,7 +17,7 @@ never count as additional photos, sample sites, view roles, observations, agreem
 independent evidence. Inspect available enlarged regions before declaring existing detail
 unreadable; crop generation failure falls back to the original rather than rejecting it.
 For a successful image review, retain and show the exact bounded crop manifest used by the
-provider. View, save, and export actions must remain authorized to the original evidence
+provider. Full-screen view, save, and export actions must remain authorized to the original evidence
 workspace and verify the crop digest against a deterministic regeneration from that original.
 The interface must show source-photo number, strategy, source bounds when available, output
 size, and the derived-evidence limitation. A missing or mismatched digest is unavailable
