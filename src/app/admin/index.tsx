@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -34,6 +35,40 @@ type Usage = {
     last24Hours: Record<string, number>;
     last7Days: Record<string, number>;
   };
+  note?: string;
+};
+
+type SecurityIssue = {
+  id: string;
+  source: string;
+  kind: "security" | "safety" | "enforcement" | "reliability";
+  category: string;
+  title: string;
+  summary: string;
+  severity: "low" | "medium" | "high" | "critical";
+  status: "open" | "resolved";
+  affected: string;
+  occurredAt: string;
+  resolvedAt?: string | null;
+  investigationHref: string;
+};
+
+type SecurityCenter = {
+  tally: {
+    total: number;
+    open: number;
+    resolved: number;
+    bySeverity: Record<string, number>;
+    byKind: Record<string, number>;
+    bySource: Record<string, number>;
+  };
+  issues: SecurityIssue[];
+  coverage: Array<{
+    source: string;
+    label: string;
+    state: "connected" | "external_only" | "not_configured" | "error" | "truncated";
+    note?: string;
+  }>;
   note?: string;
 };
 
@@ -314,6 +349,8 @@ export default function PlatformAdminRoute() {
   const isAdmin = String(user?.role || "").toLowerCase() === "admin";
   const [overview, setOverview] = useState<Overview | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
+  const [securityCenter, setSecurityCenter] = useState<SecurityCenter | null>(null);
+  const [showResolvedSecurity, setShowResolvedSecurity] = useState(false);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>([]);
   const orderedModerationCases = useMemo(() => {
@@ -403,6 +440,7 @@ export default function PlatformAdminRoute() {
       const labels = [
         "Overview",
         "Usage",
+        "Security center",
         "Users",
         "Moderation",
         "Evidence requests",
@@ -414,6 +452,7 @@ export default function PlatformAdminRoute() {
       const settled = await Promise.allSettled([
         apiRequest("/api/admin/overview"),
         apiRequest("/api/admin/usage"),
+        apiRequest("/api/admin/security-center"),
         apiRequest(`/api/admin/users${suffix}`),
         apiRequest("/api/admin/moderation-cases"),
         apiRequest("/api/admin/evidence-requests"),
@@ -433,16 +472,26 @@ export default function PlatformAdminRoute() {
 
       const overviewResponse = responseAt(0);
       const usageResponse = responseAt(1);
-      const usersResponse = responseAt(2);
-      const moderationResponse = responseAt(3);
-      const evidenceResponse = responseAt(4);
-      const supportResponse = responseAt(5);
-      const knowledgeResponse = responseAt(6);
-      const methodReviewResponse = responseAt(7);
-      const harvestCalibrationResponse = responseAt(8);
+      const securityResponse = responseAt(2);
+      const usersResponse = responseAt(3);
+      const moderationResponse = responseAt(4);
+      const evidenceResponse = responseAt(5);
+      const supportResponse = responseAt(6);
+      const knowledgeResponse = responseAt(7);
+      const methodReviewResponse = responseAt(8);
+      const harvestCalibrationResponse = responseAt(9);
 
       if (overviewResponse) setOverview(overviewResponse.overview || null);
       if (usageResponse) setUsage(usageResponse.usage || null);
+      if (securityResponse)
+        setSecurityCenter({
+          tally: securityResponse.tally,
+          issues: Array.isArray(securityResponse.issues) ? securityResponse.issues : [],
+          coverage: Array.isArray(securityResponse.coverage)
+            ? securityResponse.coverage
+            : [],
+          note: securityResponse.note
+        });
       if (usersResponse)
         setUsers(Array.isArray(usersResponse.users) ? usersResponse.users : []);
       if (moderationResponse)
@@ -776,6 +825,21 @@ export default function PlatformAdminRoute() {
     }
   }
 
+  async function openSecurityInvestigation(href: string) {
+    const destination = String(href || "").trim();
+    if (!destination) return;
+    try {
+      const parsed = new URL(destination, "https://growpathai.com");
+      if (parsed.hostname === "sentry.io" || parsed.hostname.endsWith(".sentry.io")) {
+        await Linking.openURL(parsed.toString());
+        return;
+      }
+    } catch {
+      return;
+    }
+    router.push(destination as never);
+  }
+
   if (!isAdmin) {
     return (
       <View accessibilityRole="alert" style={styles.denied}>
@@ -835,6 +899,89 @@ export default function PlatformAdminRoute() {
             helper={modeSummary || "All account types"}
           />
         </View>
+      ) : null}
+
+      {securityCenter ? (
+        <AppCard
+          title="Security and investigations"
+          titleLevel={2}
+          subtitle="Platform-wide security visibility is separate from the task queue. Open an issue to follow its evidence and affected record."
+        >
+          <View style={styles.metrics}>
+            <Metric
+              label="Open investigations"
+              value={securityCenter.tally.open}
+              helper={`${securityCenter.tally.total} recorded across connected sources`}
+            />
+            <Metric
+              label="Security reports"
+              value={Number(securityCenter.tally.byKind.security || 0)}
+              helper="Submitted account or platform security concerns"
+            />
+            <Metric
+              label="Resolved"
+              value={securityCenter.tally.resolved}
+              helper="Retained investigation history"
+            />
+          </View>
+          <Text style={styles.caseTitle}>Source coverage</Text>
+          {securityCenter.coverage.map((source) => (
+            <View key={source.source} style={styles.activityRow}>
+              <Text style={styles.activityLabel}>{source.label}</Text>
+              <Text style={styles.activityValue}>
+                {source.state.replaceAll("_", " ")}
+              </Text>
+              {source.note ? <Text style={styles.meta}>{source.note}</Text> : null}
+            </View>
+          ))}
+          <Text style={styles.meta}>{securityCenter.note}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showResolvedSecurity }}
+            style={styles.secondaryButton}
+            onPress={() => setShowResolvedSecurity((current) => !current)}
+          >
+            <Text style={styles.secondaryText}>
+              {showResolvedSecurity
+                ? "Hide resolved security history"
+                : "Show resolved security history"}
+            </Text>
+          </Pressable>
+          {securityCenter.issues
+            .filter((issue) => showResolvedSecurity || issue.status === "open")
+            .slice(0, 50)
+            .map((issue) => (
+              <View key={issue.id} style={styles.caseRow}>
+                <View style={styles.caseCopy}>
+                  <Text style={styles.caseTitle}>
+                    {issue.kind} · {issue.severity} · {issue.status} · {issue.title}
+                  </Text>
+                  <Text style={styles.meta}>
+                    {issue.source.replaceAll("_", " ")} ·{" "}
+                    {issue.category.replaceAll("_", " ")}
+                  </Text>
+                  <Text style={styles.meta}>
+                    Affected: {issue.affected} ·{" "}
+                    {new Date(issue.occurredAt).toLocaleString()}
+                  </Text>
+                  <Text style={styles.evidencePreview}>{issue.summary}</Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Investigate ${issue.title}`}
+                  style={styles.secondaryButton}
+                  onPress={() => void openSecurityInvestigation(issue.investigationHref)}
+                >
+                  <Text style={styles.secondaryText}>Investigate</Text>
+                </Pressable>
+              </View>
+            ))}
+          {!securityCenter.issues.some(
+            (issue) => showResolvedSecurity || issue.status === "open"
+          ) ? (
+            <Text style={styles.meta}>No open security issues in connected sources.</Text>
+          ) : null}
+        </AppCard>
       ) : null}
 
       {usage ? (
