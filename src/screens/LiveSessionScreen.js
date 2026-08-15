@@ -553,8 +553,10 @@ export default function LiveSessionScreen({ route }) {
             {startsAt ? (
               <Text style={styles.badge}>Starts {String(startsAt)}</Text>
             ) : null}
-            {session.visibility ? (
+            {session.isPublished !== false && session.visibility ? (
               <Text style={styles.badge}>{String(session.visibility)}</Text>
+            ) : session.isPublished === false ? (
+              <Text style={styles.badge}>private draft</Text>
             ) : null}
           </View>
           {session.twitchChannel ? (
@@ -564,54 +566,56 @@ export default function LiveSessionScreen({ route }) {
             <Text style={styles.meta}>Streaming on {streamPlatformLabel}</Text>
           ) : null}
 
-          <View style={styles.sharePanel} accessibilityLabel="Share GrowPath session">
-            <Text accessibilityRole="header" aria-level={2} style={styles.chatTitle}>
-              Share this {session.sessionType === "premiere" ? "premiere" : "stream"}
-            </Text>
-            <Text style={styles.meta}>
-              Share the GrowPath page so people can watch, RSVP, join chat, and return for
-              the replay.
-            </Text>
-            <View style={styles.actionRow}>
-              <Pressable
-                accessibilityRole="button"
-                onPress={shareGrowPathSession}
-                style={styles.secondaryBtn}
-              >
-                <Text style={styles.secondaryBtnText}>Share</Text>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                onPress={copyGrowPathSession}
-                style={styles.secondaryBtn}
-              >
-                <Text style={styles.secondaryBtnText}>Copy Link</Text>
-              </Pressable>
-              {[
-                ["Facebook", shareTargets.facebook],
-                ["X", shareTargets.x],
-                ["Bluesky", shareTargets.bluesky],
-                ["Reddit", shareTargets.reddit],
-                ["LinkedIn", shareTargets.linkedin],
-                ["Email", shareTargets.email],
-                ["Text", shareTargets.text]
-              ].map(([label, url]) => (
+          {session.isPublished !== false ? (
+            <View style={styles.sharePanel} accessibilityLabel="Share GrowPath session">
+              <Text accessibilityRole="header" aria-level={2} style={styles.chatTitle}>
+                Share this {session.sessionType === "premiere" ? "premiere" : "stream"}
+              </Text>
+              <Text style={styles.meta}>
+                Share the GrowPath page so people can watch, RSVP, join chat, and return
+                for the replay.
+              </Text>
+              <View style={styles.actionRow}>
                 <Pressable
-                  key={label}
-                  accessibilityRole="link"
-                  onPress={() => Linking.openURL(url).catch(() => {})}
+                  accessibilityRole="button"
+                  onPress={shareGrowPathSession}
                   style={styles.secondaryBtn}
                 >
-                  <Text style={styles.secondaryBtnText}>{label}</Text>
+                  <Text style={styles.secondaryBtnText}>Share</Text>
                 </Pressable>
-              ))}
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={copyGrowPathSession}
+                  style={styles.secondaryBtn}
+                >
+                  <Text style={styles.secondaryBtnText}>Copy Link</Text>
+                </Pressable>
+                {[
+                  ["Facebook", shareTargets.facebook],
+                  ["X", shareTargets.x],
+                  ["Bluesky", shareTargets.bluesky],
+                  ["Reddit", shareTargets.reddit],
+                  ["LinkedIn", shareTargets.linkedin],
+                  ["Email", shareTargets.email],
+                  ["Text", shareTargets.text]
+                ].map(([label, url]) => (
+                  <Pressable
+                    key={label}
+                    accessibilityRole="link"
+                    onPress={() => Linking.openURL(url).catch(() => {})}
+                    style={styles.secondaryBtn}
+                  >
+                    <Text style={styles.secondaryBtnText}>{label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              {shareFeedback ? (
+                <Text accessibilityLiveRegion="polite" style={styles.meta}>
+                  {shareFeedback}
+                </Text>
+              ) : null}
             </View>
-            {shareFeedback ? (
-              <Text accessibilityLiveRegion="polite" style={styles.meta}>
-                {shareFeedback}
-              </Text>
-            ) : null}
-          </View>
+          ) : null}
 
           {isGrowPathHosted && hostedPlayback?.playerUrl ? (
             <View style={styles.embedWrap}>
