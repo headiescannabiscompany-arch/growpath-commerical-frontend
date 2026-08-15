@@ -1003,6 +1003,18 @@ public visibility, or screenshot/video acceptance still called out below.
       cards now reach the canonical watch/comment/report/share detail. The final
       route-by-route crawl must still exercise the path forward from every listed
       surface and fix any remaining missing or duplicate action before `[x]`.
+      The 2026-08-15 Admin Personal production pass verified Video discovery,
+      Following-only filtering, storage/allotment, upload/provider/visibility fields,
+      Grow Interests, exact video detail, Follow/Report/share/comments, Forum media
+      links, the Lives directory, Live Studio, and the retained hosted-live draft.
+      It found a real static-host failure: a public video API detail returned 200 while
+      its canonical `/videos/{id}` URL returned Render 404. Frontend merge
+      `660b1d28782e4559a58172c01ec067d1e20d59fb` and the matching saved Render rewrite
+      table repaired every root dynamic route family; exact Video, Store, and Forum
+      probes returned 200, and the populated video/Forum paths rendered their intended
+      actions. Owner video mutations, populated Following/storefront/Nature data, and
+      real hosted ingest/playback remain. See
+      `docs/qa/PERSONAL_SOCIAL_AND_DYNAMIC_LINK_PRODUCTION_EVIDENCE_2026-08-15.md`.
 - [ ] Consolidate headers, cards, media aspect ratios, spacing, text hierarchy,
       buttons, loading/error/empty states, Back behavior, bottom navigation, Day/Night/
       Auto rendering, and responsive behavior into one professional visual system
