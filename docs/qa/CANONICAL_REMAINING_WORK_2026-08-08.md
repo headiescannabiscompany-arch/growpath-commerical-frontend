@@ -82,6 +82,15 @@ execution boundaries and the evidence needed not to reopen completed work.
       only the reviewed capabilities it actually permits without opening unrelated routes.
       Current public regulated listings remain informational because no production route has
       been authorized; ordinary non-cannabis commerce remains enabled.
+- [x] Admin security visibility is separated from the task queue and verified live. Frontend
+      merge from PR `#651` and backend merge from PR `#179` expose open/resolved tallies,
+      by-kind counts, retained resolved history, source-by-source coverage state, and direct
+      investigation links. Production `/admin?verify=security-center-live` on 2026-08-15
+      reported 0 open / 0 resolved records across the four connected GrowPath sources
+      (submitted security reports, high/critical safety reports, audited account enforcement,
+      and failed integration deliveries). It also truthfully marked Sentry Admin read access
+      `not configured`; Sentry issues are therefore not represented as covered until that
+      separate credentialed integration is completed.
 - [x] The governed Diagnosis/IPM catalog assembly is complete at 252 reviewed cases and
       504 rights-reviewed images. Executing all cases against authorized staging remains a
       separate open action because it spends credits and writes records.
