@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -27,6 +28,7 @@ import {
   publicItemTitle
 } from "@/utils/publicCommerce";
 import { sharePublicLink } from "@/utils/publicLinks";
+import { resolveImageUri } from "@/utils/photoUploads";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -228,6 +230,9 @@ export default function PublicStorefrontCourseRoute() {
   ].slice(0, 4);
   const priceLabel = money(course);
   const paid = isPaidCourse(course);
+  const courseHeroImage = resolveImageUri(
+    String(course?.bannerUrl || course?.thumbnailUrl || course?.imageUrl || "")
+  );
 
   useEffect(() => {
     if (!slug || !id) return;
@@ -364,6 +369,14 @@ export default function PublicStorefrontCourseRoute() {
           ) : null}
           {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
           <AppCard>
+            {courseHeroImage ? (
+              <Image
+                accessibilityLabel={`${publicItemTitle(course, "Course")} course image`}
+                resizeMode="cover"
+                source={{ uri: courseHeroImage }}
+                style={styles.courseHeroImage}
+              />
+            ) : null}
             <Text style={styles.cardTitle}>{publicItemTitle(course, "Course")}</Text>
             {publicItemSummary(course) ? (
               <Text style={styles.bodyText}>{publicItemSummary(course)}</Text>
@@ -630,6 +643,13 @@ export function createStyles(palette: ThemePalette) {
       padding: 8
     },
     cardTitle: { color: palette.text, fontSize: 18, fontWeight: "800", marginBottom: 8 },
+    courseHeroImage: {
+      aspectRatio: 16 / 7,
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      marginBottom: 14,
+      width: "100%"
+    },
     bodyText: { color: palette.textSoft, lineHeight: 20, marginBottom: 10 },
     meta: { color: palette.textMuted, lineHeight: 19 },
     interests: { color: palette.link, fontSize: 12, fontWeight: "800" },

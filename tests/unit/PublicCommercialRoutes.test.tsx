@@ -168,6 +168,8 @@ const publicPayload = {
       id: "course-1",
       title: "Using Veg Mix",
       summary: "A short setup course for the veg blend.",
+      thumbnailUrl: "https://example.com/using-veg-mix-thumbnail.jpg",
+      bannerUrl: "https://example.com/using-veg-mix-banner.jpg",
       growInterests: ["living soil", "product education"],
       linkedProductIds: ["product-1"],
       access: "paid",
@@ -379,6 +381,9 @@ describe("public commercial routes", () => {
       screen.getByLabelText("Open external product External Clone Pack")
     ).toBeTruthy();
     expect(screen.getByText("Using Veg Mix")).toBeTruthy();
+    expect(screen.getByLabelText("Using Veg Mix thumbnail").props.source).toEqual({
+      uri: "https://example.com/using-veg-mix-thumbnail.jpg"
+    });
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
     expect(mockLinkHrefs).toContain("/store/living-soil-labs/courses/course-1");
     expect(screen.getByText("Upcoming Lives")).toBeTruthy();
@@ -763,6 +768,9 @@ describe("public commercial routes", () => {
     );
     expect(screen.getAllByText("Shared Back /store/living-soil-labs")).toHaveLength(1);
     expect(screen.getAllByText("Using Veg Mix").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Using Veg Mix course image").props.source).toEqual({
+      uri: "https://example.com/using-veg-mix-banner.jpg"
+    });
     expect(screen.getByText("Living Soil Labs")).toBeTruthy();
     expect(screen.getByText("A short setup course for the veg blend.")).toBeTruthy();
     expect(screen.getByText("Interests: living soil, product education")).toBeTruthy();
