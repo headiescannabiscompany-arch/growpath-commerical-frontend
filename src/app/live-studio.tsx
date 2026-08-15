@@ -13,7 +13,9 @@ import { useRouter } from "expo-router";
 
 import {
   createLive,
+  deleteLive,
   getHostedLiveStatus,
+  listLives,
   listHostedLiveChannels,
   provisionHostedLiveInput
 } from "@/api/lives";
@@ -83,6 +85,10 @@ export default function LiveStudioRoute() {
   const [hostedChannels, setHostedChannels] = useState<HostedChannel[]>([]);
   const [hostedChannelId, setHostedChannelId] = useState("");
   const hostedChannelSelectionTouched = useRef(false);
+  const [mySessions, setMySessions] = useState<any[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [confirmDeleteId, setConfirmDeleteId] = useState("");
+  const [deletingSessionId, setDeletingSessionId] = useState("");
   const [hostedChannelLabel, setHostedChannelLabel] = useState("My OBS channel");
   const [hostedCredentials, setHostedCredentials] = useState<HostedCredentials | null>(
     null
@@ -114,6 +120,15 @@ export default function LiveStudioRoute() {
 
   useEffect(() => {
     if (!auth.isAuthed) return;
+    setSessionsLoading(true);
+    listLives({ mine: true })
+      .then((sessions) => setMySessions(Array.isArray(sessions) ? sessions : []))
+      .catch(() => setMySessions([]))
+      .finally(() => setSessionsLoading(false));
+  }, [auth.isAuthed]);
+
+  useEffect(() => {
+    if (!auth.isAuthed) return;
     Promise.all([getHostedLiveStatus(), listHostedLiveChannels()])
       .then(([status, channels]) => {
         const availableChannels = Array.isArray(channels) ? channels : [];
@@ -128,6 +143,22 @@ export default function LiveStudioRoute() {
         setHostedChannels([]);
       });
   }, [auth.isAuthed]);
+
+  async function removeDraft(sessionId: string) {
+    setDeletingSessionId(sessionId);
+    setError("");
+    try {
+      await deleteLive(sessionId);
+      setMySessions((current) =>
+        current.filter((session) => String(session?.id || session?._id) !== sessionId)
+      );
+      setConfirmDeleteId("");
+    } catch (cause: any) {
+      setError(String(cause?.message || cause || "Unable to delete this draft."));
+    } finally {
+      setDeletingSessionId("");
+    }
+  }
 
   async function saveDiscord() {
     setDiscordSaving(true);
@@ -334,6 +365,90 @@ export default function LiveStudioRoute() {
           shown through OBS on Twitch, YouTube, Kick, Facebook Live, and other stream
           destinations; outside services remain responsible for giveaway selection.
         </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+          Your live sessions
+        </Text>
+        <Text style={styles.muted}>
+          Open private drafts, scheduled sessions, active broadcasts, and replays from the
+          same place you create them.
+        </Text>
+        {sessionsLoading ? (
+          <Text style={styles.muted}>Loading your sessions...</Text>
+        ) : null}
+        {!sessionsLoading && mySessions.length === 0 ? (
+          <Text style={styles.muted}>You have not created a live or premiere yet.</Text>
+        ) : null}
+        {mySessions.map((session) => {
+          const sessionId = String(session?.id || session?._id || "");
+          const isDraft = !session?.isPublished;
+          return (
+            <View key={sessionId} style={styles.sessionRow}>
+              <View style={styles.settingCopy}>
+                <Text style={styles.settingTitle}>
+                  {session.title || "Untitled session"}
+                </Text>
+                <Text style={styles.muted}>
+                  {isDraft ? "Private draft" : session.status || "Published"}
+                  {session.sessionType === "premiere" ? " · Video premiere" : " · Live"}
+                </Text>
+              </View>
+              <View style={styles.row}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open ${session.title || "untitled session"}`}
+                  onPress={() =>
+                    router.push(
+                      `/live-session?sessionId=${encodeURIComponent(sessionId)}` as any
+                    )
+                  }
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>Open</Text>
+                </Pressable>
+                {isDraft ? (
+                  confirmDeleteId === sessionId ? (
+                    <>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Confirm delete ${session.title || "untitled draft"}`}
+                        disabled={deletingSessionId === sessionId}
+                        onPress={() => void removeDraft(sessionId)}
+                        style={styles.dangerButton}
+                      >
+                        <Text style={styles.dangerButtonText}>
+                          {deletingSessionId === sessionId
+                            ? "Deleting..."
+                            : "Confirm delete"}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Cancel draft deletion"
+                        disabled={deletingSessionId === sessionId}
+                        onPress={() => setConfirmDeleteId("")}
+                        style={styles.secondaryButton}
+                      >
+                        <Text style={styles.secondaryButtonText}>Cancel</Text>
+                      </Pressable>
+                    </>
+                  ) : (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Delete ${session.title || "untitled draft"}`}
+                      onPress={() => setConfirmDeleteId(sessionId)}
+                      style={styles.dangerButton}
+                    >
+                      <Text style={styles.dangerButtonText}>Delete draft</Text>
+                    </Pressable>
+                  )
+                ) : null}
+              </View>
+            </View>
+          );
+        })}
       </View>
 
       <View style={styles.card}>
@@ -918,6 +1033,14 @@ function createStyles(palette: ThemePalette) {
       gap: 8,
       padding: 12
     },
+    sessionRow: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12
+    },
     hostedPanel: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.border,
@@ -978,6 +1101,18 @@ function createStyles(palette: ThemePalette) {
       paddingVertical: 10
     },
     secondaryButtonText: { color: palette.accent, fontWeight: "900" },
+    dangerButton: {
+      alignItems: "center",
+      backgroundColor: palette.surfaceStrong,
+      borderColor: palette.danger,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 46,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    dangerButtonText: { color: palette.danger, fontWeight: "900" },
     disabled: { opacity: 0.55 }
   });
 }

@@ -1,8 +1,8 @@
 import { apiRequest } from "./apiRequest";
 import apiRoutes from "./routes.js";
 
-export function listLives() {
-  return apiRequest(apiRoutes.LIVES.LIST);
+export function listLives(params = {}) {
+  return apiRequest(apiRoutes.LIVES.LIST, { params });
 }
 
 export function getLive(id) {
