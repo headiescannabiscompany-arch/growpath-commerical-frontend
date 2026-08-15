@@ -2743,6 +2743,62 @@
       }
     },
     {
+      "recordId": "plant-id-tomato-003",
+      "caseId": "tomato",
+      "acceptedName": "Tomato",
+      "scientificName": "Solanum lycopersicum",
+      "plantCategory": "foodCrops",
+      "lifeStage": "vegetative",
+      "expectedAlternatives": ["black nightshade", "potato"],
+      "distinguishingFeatures": [
+        "repeated tomato-like compound foliage",
+        "lobed and serrated leaflets on a pubescent herbaceous stem"
+      ],
+      "expectedConfidenceRange": {
+        "minimum": 0.62,
+        "maximum": 0.84
+      },
+      "expectedResult": "Tomato is expected from repeated compound foliage and pubescence, but flower or fruit evidence would improve confidence.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/386702147",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/708044940/original.jpg",
+      "creator": "no rights reserved",
+      "licenseId": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionText": "no rights reserved",
+      "retrievedAt": "2026-08-15",
+      "rightsReviewedAt": "2026-08-15",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "tomato-001",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-15",
+        "visibleMorphology": [
+          "repeated pinnately compound tomato-like leaves",
+          "irregularly lobed and serrated leaflets",
+          "visible pubescence on stems and leaf margins"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:316947-2",
+            "outcome": "Kew POWO accepts Solanum lycopersicum L.; the reviewed vegetative morphology is consistent with the governed tomato target."
+          }
+        ],
+        "notes": "Visual review used the full-resolution iNaturalist reference; no media was copied into the product. This vegetative-only view remains below high confidence. Photo-level CC0 status was retained."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-708044940",
+        "photoId": 708044940,
+        "sourceQuery": "Solanum lycopersicum",
+        "collectionMode": "cultivated",
+        "observedTaxonId": 51737,
+        "observedTaxonName": "Solanum lycopersicum",
+        "observedTaxonRank": "species"
+      }
+    },
+    {
       "recordId": "plant-id-tomato-004",
       "caseId": "tomato",
       "acceptedName": "Tomato",
