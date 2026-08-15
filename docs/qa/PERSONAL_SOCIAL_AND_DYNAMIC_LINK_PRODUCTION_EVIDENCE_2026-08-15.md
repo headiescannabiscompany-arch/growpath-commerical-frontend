@@ -30,6 +30,22 @@ The production Videos route exposed:
 Discover exposed `All videos`, `Following only`, and exact populated-video actions.
 Forum/Q&A exposed direct links to the video library, video browser, and Lives browser.
 
+A later authenticated owner pass used `headiescannabiscompany@gmail.com` in its
+Personal Pro workspace. The live library reported `674 MB used of 10 GB`, two
+workspace videos, two owner uploads, two published records, and zero drafts. Both
+retained videos exposed Watch, Edit, Unpublish, and Remove actions. Opening Edit on
+the non-cannabis gardening video loaded its saved title, description, first-party
+GrowPath object, public visibility, rights confirmation, availability, captions,
+transcript, learner-visible fallback summary, tags, and seven-tier Grow Interests.
+The first-party source verification link and Replace/Remove-media controls were also
+present. This read-only inspection did not save changes, unpublish, or remove either
+retained owner video.
+
+The same owner session changed discovery from `All accessible videos` to `People I
+follow`. The filter worked and returned the truthful `No accessible videos match
+this search` state. This proves the filter behavior, not a populated followed-creator
+result.
+
 ## Defect found and repaired
 
 Public discovery returned video `6a6a52f42ac7c03b4303a7d6`, and its public API
@@ -84,7 +100,9 @@ Neither empty state substitutes for populated media acceptance.
 
 ## Remaining acceptance
 
-- Owner upload/edit/publish/remove and course attach/detach for a real retained video.
+- Owner upload/save/publish/unpublish/remove and course attach/detach mutations. The
+  retained owner library and populated Edit form are now live-verified without
+  changing or deleting real owner content.
 - A real followed account with a populated Following result.
 - A populated public Commercial storefront proving product/course/video/website/pickup
   handoffs without fabricated records.
