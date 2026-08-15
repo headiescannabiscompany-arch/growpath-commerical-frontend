@@ -129,4 +129,107 @@ describe("evidence review contract", () => {
       ])
     );
   });
+
+  it("reopens the exact retained Harvest inspection manifest from saved inputs", () => {
+    const sha256 = "a".repeat(64);
+    const review = inferEvidenceReview(
+      {
+        photoAnalysis: {
+          performed: true,
+          imagesAnalyzed: 4,
+          quality: "limited"
+        }
+      },
+      {
+        evidenceAssetIds: ["photo-1", "photo-2", "photo-3", "photo-4"],
+        photoAnalysis: {
+          performed: true,
+          analysisId: "analysis-1",
+          reviewPolicyVersion: "harvest-trichome-visible-sample-v1",
+          inspectionViews: [
+            {
+              sourceEvidenceAssetId: "photo-1",
+              sourceImageIndex: 1,
+              kind: "macro-r0-c0",
+              cropStrategy: "macro_coverage",
+              sourceBounds: {
+                left: 0,
+                top: 0,
+                width: 640,
+                height: 640,
+                sourceWidth: 1280,
+                sourceHeight: 1280
+              },
+              width: 640,
+              height: 640,
+              mimeType: "image/jpeg",
+              sha256
+            }
+          ]
+        }
+      }
+    );
+
+    expect(review).toMatchObject({
+      performed: true,
+      photosAnalyzed: 4,
+      analysisId: "analysis-1",
+      reviewPolicyVersion: "harvest-trichome-visible-sample-v1",
+      inspectionViews: [
+        {
+          sourceEvidenceAssetId: "photo-1",
+          kind: "macro-r0-c0",
+          cropStrategy: "macro_coverage",
+          sha256
+        }
+      ]
+    });
+  });
+
+  it("never replaces a current output manifest with retained input metadata", () => {
+    const currentSha = "b".repeat(64);
+    const retainedSha = "c".repeat(64);
+    const review = inferEvidenceReview(
+      {
+        photoAnalysis: {
+          performed: true,
+          inspectionViews: [
+            {
+              sourceEvidenceAssetId: "current-photo",
+              sourceImageIndex: 1,
+              kind: "center",
+              cropStrategy: "focus",
+              width: 640,
+              height: 640,
+              mimeType: "image/jpeg",
+              sha256: currentSha
+            }
+          ]
+        }
+      },
+      {
+        photoAnalysis: {
+          performed: true,
+          inspectionViews: [
+            {
+              sourceEvidenceAssetId: "retained-photo",
+              sourceImageIndex: 1,
+              kind: "center",
+              cropStrategy: "focus",
+              width: 640,
+              height: 640,
+              mimeType: "image/jpeg",
+              sha256: retainedSha
+            }
+          ]
+        }
+      }
+    );
+
+    expect(review?.inspectionViews).toHaveLength(1);
+    expect(review?.inspectionViews?.[0]).toMatchObject({
+      sourceEvidenceAssetId: "current-photo",
+      sha256: currentSha
+    });
+  });
 });

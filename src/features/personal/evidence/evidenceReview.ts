@@ -46,13 +46,14 @@ function inspectionViews(value: unknown): AiInspectionView[] {
       width: Math.max(0, Math.trunc(Number(item.width) || 0)),
       height: Math.max(0, Math.trunc(Number(item.height) || 0)),
       mimeType: "image/jpeg" as const,
-      sha256: String(item.sha256 || "").trim().toLowerCase(),
+      sha256: String(item.sha256 || "")
+        .trim()
+        .toLowerCase(),
       dataUrl: item.dataUrl ? String(item.dataUrl) : undefined,
       limitation: item.limitation ? String(item.limitation) : undefined
     }))
     .filter(
-      (item) =>
-        Boolean(item.sourceEvidenceAssetId) && /^[a-f0-9]{64}$/.test(item.sha256)
+      (item) => Boolean(item.sourceEvidenceAssetId) && /^[a-f0-9]{64}$/.test(item.sha256)
     )
     .slice(0, 36);
 }
@@ -136,7 +137,9 @@ export function normalizeEvidenceReview(
     requested: fallback.requested ?? requested,
     performed: fallback.performed ?? performed,
     photoCount: numberValue(fallback.photoCount ?? value.photoCount),
-    photosAnalyzed: numberValue(fallback.photosAnalyzed ?? value.photosAnalyzed),
+    photosAnalyzed: numberValue(
+      fallback.photosAnalyzed ?? value.photosAnalyzed ?? value.imagesAnalyzed
+    ),
     quality: String(fallback.quality ?? value.quality ?? value.imageQuality ?? "unknown"),
     confidence: confidence(
       fallback.confidence ?? value.confidence ?? value.visualConfidence
@@ -148,7 +151,10 @@ export function normalizeEvidenceReview(
       undefined,
     reviewPolicyVersion:
       String(
-        fallback.reviewPolicyVersion ?? value.reviewPolicyVersion ?? value.policyVersion ?? ""
+        fallback.reviewPolicyVersion ??
+          value.reviewPolicyVersion ??
+          value.policyVersion ??
+          ""
       ).trim() || undefined,
     providerModel:
       String(fallback.providerModel ?? value.providerModel ?? value.model ?? "").trim() ||
@@ -218,18 +224,40 @@ export function inferEvidenceReview(
   outputs: Record<string, any>,
   payload: Record<string, any>
 ) {
-  const media = outputs.mediaAnalysis || outputs.photoAnalysis || outputs.imageAnalysis;
+  const outputMedia =
+    outputs.mediaAnalysis || outputs.photoAnalysis || outputs.imageAnalysis;
+  const retainedMedia =
+    payload.mediaAnalysis || payload.photoAnalysis || payload.imageAnalysis;
   const assetIds = Array.isArray(payload.evidenceAssetIds)
     ? payload.evidenceAssetIds
     : [];
   const mediaEvidence = Array.isArray(payload.mediaEvidence) ? payload.mediaEvidence : [];
   const photoUrls = Array.isArray(payload.photoUrls) ? payload.photoUrls : [];
   const requested = Boolean(
-    media || assetIds.length || mediaEvidence.length || photoUrls.length
+    outputMedia ||
+    retainedMedia ||
+    assetIds.length ||
+    mediaEvidence.length ||
+    photoUrls.length
   );
   if (!requested) return null;
-  const mediaValue =
-    media && typeof media === "object" ? (media as Record<string, any>) : {};
+  const outputMediaValue =
+    outputMedia && typeof outputMedia === "object"
+      ? (outputMedia as Record<string, any>)
+      : {};
+  const retainedMediaValue =
+    retainedMedia && typeof retainedMedia === "object"
+      ? (retainedMedia as Record<string, any>)
+      : {};
+  const mediaValue: Record<string, any> = {
+    ...retainedMediaValue,
+    ...outputMediaValue,
+    inspectionViews:
+      Array.isArray(outputMediaValue.inspectionViews) &&
+      outputMediaValue.inspectionViews.length
+        ? outputMediaValue.inspectionViews
+        : retainedMediaValue.inspectionViews
+  };
   const harvestRequests = harvestRoleRequests(mediaValue);
   return normalizeEvidenceReview(
     {
