@@ -162,6 +162,9 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
     if (previousReviewFingerprintRef.current === reviewFingerprint) return;
     previousReviewFingerprintRef.current = reviewFingerprint;
     setFollowUpFeedback("");
+    setInspectionFeedback("");
+    setLoadedViews({});
+    setActiveInspectionView(null);
   }, [reviewFingerprint]);
 
   async function showRequestedEvidenceGuidance() {

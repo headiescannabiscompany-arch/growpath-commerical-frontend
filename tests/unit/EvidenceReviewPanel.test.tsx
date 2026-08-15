@@ -230,5 +230,21 @@ describe("EvidenceReviewPanel", () => {
         reviewPolicyVersion: undefined
       })
     );
+
+    fireEvent.press(screen.getByLabelText("View center from source photo 1"));
+    expect(
+      await screen.findByLabelText("Full-size center from source photo 1")
+    ).toBeTruthy();
+    screen.rerender(
+      <EvidenceReviewPanel
+        review={{
+          ...incompleteReview,
+          performed: true,
+          analysisId: "different-review",
+          inspectionViews: []
+        }}
+      />
+    );
+    expect(screen.queryByTestId("ai-inspection-full-size-viewer")).toBeNull();
   });
 });
