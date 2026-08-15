@@ -242,6 +242,7 @@ function HarvestPhotoAnalyzer({
   const analysisScopeKeyRef = useRef(analysisScopeKey);
   const previousAnalysisScopeKeyRef = useRef(analysisScopeKey);
   const analysisRequestRevisionRef = useRef(0);
+  const signedAnalysisRestoreKeyRef = useRef("");
   analysisScopeKeyRef.current = analysisScopeKey;
 
   useEffect(() => {
@@ -397,6 +398,17 @@ function HarvestPhotoAnalyzer({
       };
     }
 
+    const restoreKey = `${retryToolRunId}:${currentEvidenceAssetIds
+      .slice()
+      .sort()
+      .join("|")}`;
+    if (signedAnalysisRestoreKeyRef.current === restoreKey) {
+      return () => {
+        active = false;
+      };
+    }
+    signedAnalysisRestoreKeyRef.current = restoreKey;
+
     void getToolRun(retryToolRunId)
       .then((retryRun) => {
         if (!active) return;
@@ -435,6 +447,9 @@ function HarvestPhotoAnalyzer({
         );
       })
       .catch(() => {
+        if (active && signedAnalysisRestoreKeyRef.current === restoreKey) {
+          signedAnalysisRestoreKeyRef.current = "";
+        }
         // The exact evidence remains available even when the signed result cannot be replayed.
       });
 

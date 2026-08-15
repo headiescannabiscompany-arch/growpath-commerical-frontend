@@ -755,7 +755,9 @@ describe("HarvestReadinessToolRoute", () => {
     await waitFor(() =>
       expect(screen.getByLabelText("Select grow Only Flower Room")).toBeTruthy()
     );
-    expect(screen.getByText(/Standalone review: upload the required photos now/i)).toBeTruthy();
+    expect(
+      screen.getByText(/Standalone review: upload the required photos now/i)
+    ).toBeTruthy();
     expect(screen.queryByText("Grow context: facility-grow-only")).toBeNull();
 
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
@@ -915,6 +917,103 @@ describe("HarvestReadinessToolRoute", () => {
       )
     );
     expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
+  });
+
+  it("preserves a fresh analysis after restoring a saved Harvest run", async () => {
+    mockRouteParams = { growId: "grow-1", retryToolRunId: "harvest-run-1" };
+    const retainedIds = [1, 2, 3, 4].map((index) => `64c00000000000000000000${index}`);
+    mockGetToolRun.mockResolvedValue({
+      id: "harvest-run-1",
+      toolType: "harvest_readiness",
+      growId: "grow-1",
+      inputs: { evidenceAssetIds: retainedIds },
+      outputs: {
+        photoAnalysis: {
+          performed: true,
+          photoUsable: true,
+          imageQuality: "usable",
+          clear: 0.17,
+          cloudy: 0.52,
+          amber: 0.01,
+          confidence: 0.62,
+          dominant: "cloudy",
+          visibleTraits: ["Resolved trichome heads"],
+          evidence: ["Full-area grid review"],
+          recommendation: "Review the sampled-area range.",
+          limitations: ["Warm light overlaps possible amber."],
+          provider: "openai",
+          providerLabel: "OpenAI trichome image review",
+          providerModel: "gpt-4o-mini",
+          imagesAnalyzed: 4,
+          evidenceUsed: retainedIds,
+          analysisId: "saved-analysis-1",
+          aiUsageEventId: "saved-analysis-1",
+          normalizedHarvestResultDigest: "b".repeat(64),
+          evidenceFingerprint: retainedIds.join("|"),
+          reviewPolicyVersion: "harvest-trichome-server-attestation-v1",
+          aiCreditsUsed: 1,
+          aiTokensRemaining: 90,
+          creditStatus: "charged"
+        }
+      }
+    });
+    mockListEvidenceAssets.mockResolvedValue(
+      retainedIds.map((id, index) => ({
+        id,
+        _id: id,
+        growId: "grow-1",
+        assetType: "photo",
+        originalUri: `/uploads/retained-${index + 1}.jpg`,
+        durableUrl: `/uploads/retained-${index + 1}.jpg`,
+        mimeType: "image/jpeg",
+        source: "library",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        aiUsable: true,
+        qualityWarnings: []
+      }))
+    );
+    mockAnalyzeTrichomePhotos.mockResolvedValueOnce({
+      photoUsable: true,
+      imageQuality: "usable",
+      clear: 0.08,
+      cloudy: 0.69,
+      amber: 0.23,
+      confidence: 0.78,
+      dominant: "cloudy",
+      visibleTraits: ["Persistent cloudy heads", "Visible amber heads"],
+      evidence: ["Four retained photos"],
+      recommendation: "Review the updated visible-area estimate.",
+      limitations: [],
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      imagesAnalyzed: 4,
+      evidenceUsed: retainedIds,
+      analysisId: "fresh-analysis-2",
+      analysisReceipt: {
+        aiUsageEventId: "fresh-analysis-2",
+        normalizedHarvestResultDigest: "c".repeat(64),
+        evidenceFingerprint: retainedIds.join("|"),
+        reviewPolicyVersion: "harvest-trichome-server-attestation-v2-full-grid"
+      },
+      aiCreditsUsed: 1,
+      aiTokensRemaining: 89,
+      creditStatus: "charged"
+    });
+
+    const screen = await renderHarvestReadinessTool();
+
+    await waitFor(() =>
+      expect(screen.getByText("Review ID: saved-analysis-1")).toBeTruthy()
+    );
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() =>
+      expect(screen.getByText("Review ID: fresh-analysis-2")).toBeTruthy()
+    );
+    expect(screen.queryByText("Review ID: saved-analysis-1")).toBeNull();
+    expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledTimes(1);
   });
 
   it("blocks an incomplete photo set without spending a credit", async () => {
