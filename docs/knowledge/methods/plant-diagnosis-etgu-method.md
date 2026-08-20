@@ -591,6 +591,13 @@ public only as part of the same explicit direct-publish intent, contains no publ
 observation until the final publish action succeeds, and does not change the protected
 exact ToolRun location.
 
+Direct Nature publishing must offer an optional contributor-authored public description
+before the final publish action. Preserve that text as `publicNotes` and show it with the
+public pin and photo card. It is user context, not AI evidence and not an identity or
+invasive-status claim. Warn contributors not to include personal names, exact addresses,
+private-property details, or directions to sensitive species. Never synthesize this note
+from AI output or expose a private note as its fallback.
+
 An existing saved Crop Identification ToolRun may be explicitly linked to an editable
 Field Study without rerunning AI or re-uploading its owned evidence. That link creates
 one private draft observation from the saved structured identity, context, provenance,

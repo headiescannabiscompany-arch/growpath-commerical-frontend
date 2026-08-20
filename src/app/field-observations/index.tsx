@@ -57,6 +57,10 @@ function observationImages(observation: FieldObservation) {
   ).map(resolveImageUri);
 }
 
+function observationPublicNotes(observation: FieldObservation) {
+  return String(observation.publication?.publicNotes || observation.notes || "").trim();
+}
+
 function readableStatus(value = "") {
   return value.replaceAll("_", " ");
 }
@@ -397,6 +401,11 @@ export default function PublicFieldObservationsScreen() {
                 )}{" "}
                 · {selectedObservation.identity?.confidence || "unknown"} confidence
               </Text>
+              {observationPublicNotes(selectedObservation) ? (
+                <Text style={styles.cardBody}>
+                  {observationPublicNotes(selectedObservation)}
+                </Text>
+              ) : null}
               {selectedObservation.study?.slug ? (
                 <Link
                   href={`/field-observations/${selectedObservation.study.slug}`}
@@ -494,8 +503,8 @@ export default function PublicFieldObservationsScreen() {
                 )}
                 {precision ? ` · ${precision} map location` : ""}
               </Text>
-              {observation.notes ? (
-                <Text style={styles.cardBody}>{observation.notes}</Text>
+              {observationPublicNotes(observation) ? (
+                <Text style={styles.cardBody}>{observationPublicNotes(observation)}</Text>
               ) : null}
               {studySlug ? (
                 <Link href={`/field-observations/${studySlug}`} asChild>

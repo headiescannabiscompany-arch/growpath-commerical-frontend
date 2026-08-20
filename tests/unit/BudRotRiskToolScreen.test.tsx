@@ -3,7 +3,7 @@ import { render } from "@testing-library/react-native";
 
 import BudRotRiskLegacyRoute from "@/app/home/personal/(tabs)/tools/bud-rot-risk";
 
-const mockRedirect = jest.fn(() => null);
+const mockRedirect = jest.fn((_props?: unknown) => null);
 let mockParams: Record<string, string | string[]> = {};
 
 jest.mock("expo-router", () => ({

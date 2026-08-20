@@ -37,6 +37,10 @@ function observationImages(observation: FieldObservation) {
   ).map(resolveImageUri);
 }
 
+function observationPublicNotes(observation: FieldObservation) {
+  return String(observation.publication?.publicNotes || observation.notes || "").trim();
+}
+
 export default function PublicFieldStudyScreen() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -174,8 +178,10 @@ export default function PublicFieldStudyScreen() {
                 {String(observation.observationContext?.habitat || "Habitat not shared")}
                 {location?.precision ? ` · ${location.precision} location` : ""}
               </Text>
-              {observation.notes ? (
-                <Text style={styles.description}>{observation.notes}</Text>
+              {observationPublicNotes(observation) ? (
+                <Text style={styles.description}>
+                  {observationPublicNotes(observation)}
+                </Text>
               ) : null}
               {(observation.identity?.evidence || []).length ? (
                 <Text style={styles.evidence}>

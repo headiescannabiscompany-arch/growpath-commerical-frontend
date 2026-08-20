@@ -4057,6 +4057,10 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     await screen.findByText(/Exact location is ready to save privately/);
     fireEvent.press(screen.getByText(/Nature map.*approximate pin/));
+    fireEvent.changeText(
+      screen.getByLabelText("Public Nature description"),
+      "Native plants beside a shaded trail at Maydale Nature Classroom."
+    );
     fireEvent.press(
       screen.getByText(/This is Cannabis\/hemp.*review public-context sharing/)
     );
@@ -4088,7 +4092,8 @@ describe("SpeciesCropIdToolRoute", () => {
         }),
         publication: expect.objectContaining({
           status: "published",
-          cannabisContextConfirmed: true
+          cannabisContextConfirmed: true,
+          publicNotes: "Native plants beside a shaded trail at Maydale Nature Classroom."
         })
       })
     );
