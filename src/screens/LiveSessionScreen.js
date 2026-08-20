@@ -4,6 +4,7 @@ import {
   Alert,
   Image,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -405,18 +406,26 @@ export default function LiveSessionScreen({ route }) {
   }
 
   function confirmHostedKeyRotation() {
-    Alert.alert(
-      "Rotate OBS stream key?",
-      "The current key will stop working immediately. End any active broadcast first, then save the replacement key in OBS.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Rotate key",
-          style: "destructive",
-          onPress: () => void rotateHostedKey()
-        }
-      ]
-    );
+    const title = "Rotate OBS stream key?";
+    const message =
+      "The current key will stop working immediately. End any active broadcast first, then save the replacement key in OBS.";
+
+    // React Native Web cannot invoke custom Alert button callbacks reliably.
+    // Use the browser's native confirmation so the owner can actually rotate a
+    // retained OBS channel from the production web app.
+    if (Platform.OS === "web" && typeof globalThis.confirm === "function") {
+      if (globalThis.confirm(`${title}\n\n${message}`)) void rotateHostedKey();
+      return;
+    }
+
+    Alert.alert(title, message, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Rotate key",
+        style: "destructive",
+        onPress: () => void rotateHostedKey()
+      }
+    ]);
   }
 
   useEffect(() => {
