@@ -64,6 +64,21 @@ describe("Regulated commerce route", () => {
     expect(screen.getByText("Back /home/commercial/storefront")).toBeTruthy();
   });
 
+  it("routes a missing storefront into setup instead of presenting a raw request failure", async () => {
+    mockFetch.mockRejectedValueOnce(
+      Object.assign(new Error("Set up a storefront first"), { code: "HTTP_ERROR" })
+    );
+
+    const screen = render(<RegulatedCommerceRoute />);
+
+    expect(await screen.findByText("Storefront setup required")).toBeTruthy();
+    expect(
+      screen.getByText(/This is a setup step, not a failed legal review/i)
+    ).toBeTruthy();
+    expect(screen.getByText("Set Up Storefront")).toBeTruthy();
+    expect(screen.queryByText("HTTP_ERROR")).toBeNull();
+  });
+
   it("submits a multi-role, product-specific authorization for review", async () => {
     const screen = render(<RegulatedCommerceRoute />);
 

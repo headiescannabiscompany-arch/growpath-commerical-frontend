@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -43,6 +44,12 @@ function toggle(values: string[], value: string) {
     : [...values, value];
 }
 
+export function requiresStorefrontSetup(error: any) {
+  return String(error?.message || error?.error?.message || error || "")
+    .toLowerCase()
+    .includes("set up a storefront first");
+}
+
 export default function RegulatedCommerceRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -64,6 +71,7 @@ export default function RegulatedCommerceRoute() {
     effectiveAt: "",
     expiresAt: ""
   });
+  const storefrontSetupRequired = requiresStorefrontSetup(error);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -176,7 +184,30 @@ export default function RegulatedCommerceRoute() {
       </AppCard>
 
       {loading ? <ActivityIndicator color={palette.accent} /> : null}
-      {error ? <InlineError error={error} onRetry={load} /> : null}
+      {error && !storefrontSetupRequired ? (
+        <InlineError error={error} onRetry={load} />
+      ) : null}
+      {storefrontSetupRequired ? (
+        <AppCard
+          title="Storefront setup required"
+          titleLevel={2}
+          subtitle="Create the Commercial storefront identity before submitting regulated-business authorization evidence."
+        >
+          <Text style={styles.body}>
+            This is a setup step, not a failed legal review. No commerce capability has
+            been enabled or denied.
+          </Text>
+          <Link href="/home/commercial/storefront/edit" asChild>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Set up Commercial storefront"
+              style={styles.primaryButton}
+            >
+              <Text style={styles.primaryText}>Set Up Storefront</Text>
+            </Pressable>
+          </Link>
+        </AppCard>
+      ) : null}
       {feedback ? (
         <Text accessibilityLiveRegion="polite" style={styles.success}>
           {feedback}
