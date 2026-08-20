@@ -1101,6 +1101,7 @@ describe("Tools Router (tools.js)", () => {
         .post("/api/tools/auto-grow-calendar")
         .send({
           growId: "grow_1",
+          cropCommonName: "Cannabis",
           plantCount: 4,
           startDate: "2026-07-01",
           vegLengthWeeks: 4,
@@ -1191,6 +1192,45 @@ describe("Tools Router (tools.js)", () => {
         "Flower time is a range. Breeder timing is a reference, not a command."
       ])
     );
+
+    const tomatoCalendar = await authed(
+      request(app).post("/api/tools/auto-grow-calendar").send({
+        growId: "grow_1",
+        cropCommonName: "Tomato",
+        scientificName: "Solanum lycopersicum",
+        lifeSpanPath: "annual",
+        productionPattern: "repeat_harvest",
+        dormancyPattern: "none",
+        plantCount: 3,
+        startDate: "2026-07-01",
+        vegLengthWeeks: 2,
+        expectedFlowerDays: 70
+      })
+    );
+    expect(tomatoCalendar.status).toBe(201);
+    expect(tomatoCalendar.body.outputs).toEqual(
+      expect.objectContaining({
+        calendarMode: "general_crop",
+        cropCommonName: "Tomato",
+        stageTimeline: expect.objectContaining({
+          startDate: "2026-07-01",
+          establishmentReviewDate: "2026-07-15",
+          expectedHarvestStart: "2026-09-09"
+        })
+      })
+    );
+    expect(tomatoCalendar.body.outputs.taskSchedule).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ title: "Confirm Tomato grow setup and evidence" }),
+        expect.objectContaining({ title: "Review establishment and root-zone progress" }),
+        expect.objectContaining({ title: "Review first-harvest readiness" })
+      ])
+    );
+    expect(
+      tomatoCalendar.body.outputs.taskSchedule.some((task) =>
+        /flip|flower day|dry room|cure/i.test(task.title)
+      )
+    ).toBe(false);
   });
 
   test("runs tissue culture and soil nutrient batch tools", async () => {

@@ -107,6 +107,22 @@ describe("AutoGrowCalendarToolRoute", () => {
   it("creates tasks from the generated grow calendar schedule", async () => {
     const screen = render(<AutoGrowCalendarToolRoute />);
 
+    expect(screen.getByLabelText("Auto Grow Calendar Crop common name")).toBeTruthy();
+    expect(screen.getByLabelText("Auto Grow Calendar Lifecycle path")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Auto Grow Calendar Harvest or observation pattern")
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Auto Grow Calendar Establishment / vegetative weeks (if known)"
+      ).props.value
+    ).toBe("");
+    expect(
+      screen.getByLabelText(
+        "Auto Grow Calendar Flowering or first-harvest days (if known)"
+      ).props.value
+    ).toBe("");
+
     fireEvent.press(screen.getByLabelText("Auto Grow Calendar Start date"));
     fireEvent(
       screen.getByLabelText("Auto Grow Calendar Start date year"),

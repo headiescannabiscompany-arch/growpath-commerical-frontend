@@ -1582,6 +1582,11 @@ export default function NewGrowScreen() {
                   `/home/personal/tools/auto-grow-calendar?${new URLSearchParams({
                     growId: createdGrowId,
                     source: "start_grow",
+                    cropCommonName: cropCommonName.trim(),
+                    scientificName: scientificName.trim(),
+                    lifeSpanPath,
+                    productionPattern,
+                    dormancyPattern,
                     plantCount: plannedPlantCount,
                     startDate: anchorDate,
                     vegLengthWeeks,
