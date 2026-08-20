@@ -246,8 +246,8 @@ export default function NewGrowScreen() {
   const explicitCannabisCrop = /cannabis|hemp/i.test(
     `${cropCommonName} ${scientificName}`
   );
-  const showCannabisPlanning = explicitCannabisCrop ||
-    (!cropSpecificSetup && profileCannabisContext);
+  const showCannabisPlanning =
+    explicitCannabisCrop || (!cropSpecificSetup && profileCannabisContext);
   const interestOptionsOverride = React.useMemo(() => {
     if (showCannabisPlanning) return baseInterestOptionsOverride;
     const filtered: Record<string, string[]> = {};
@@ -1053,9 +1053,7 @@ export default function NewGrowScreen() {
             {[
               ["Plant count", plannedPlantCount, setPlannedPlantCount],
               [
-                showCannabisPlanning
-                  ? "Veg length (weeks)"
-                  : "Establishment weeks",
+                showCannabisPlanning ? "Veg length (weeks)" : "Establishment weeks",
                 vegLengthWeeks,
                 setVegLengthWeeks
               ],
