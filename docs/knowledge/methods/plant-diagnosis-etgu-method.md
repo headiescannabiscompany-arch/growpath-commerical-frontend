@@ -442,6 +442,19 @@ cultivar, propagation method, climate, and management can change them, so the gr
 reviews the proposal before it becomes the grow plan. Never turn a species' theoretical
 maximum lifespan into a promised productive lifespan or harvest date.
 
+The blank grow form is crop-neutral. It must not preload cannabis veg or flower durations,
+show cannabis-only milestones, or label generic establishment as a cannabis flower cycle
+unless an explicit cannabis/hemp crop or an otherwise eligible structured cannabis context
+exists. Ordinary crops use establishment and first-flowering/fruiting anchors while retaining
+the same canonical stored anchor values for compatibility. Reviewed starter lifecycle profiles
+cover representative annual repeated-harvest herbs (sweet basil), annual whole-plant or
+repeated-leaf crops (lettuce), cultivar- and production-system-dependent short-lived perennial
+fruit (strawberry), and long-lived seasonally dormant woody fruit (apple). Each profile asks for
+the cultivar or production facts that can change the path. An unmatched crop remains fully
+creatable through explicit owner-selected lifespan, production, dormancy, start method, and
+dates; the app must say that reviewed auto-guidance is unavailable instead of inventing a
+lifecycle.
+
 Crop identification must run without a grow. Grow and plant context are optional attachments used for private history, saving, logs, and follow-up tasks; they are not prerequisites for inspecting uploaded media or returning a draft identity. Collect photo evidence before presenting the image-analysis action. User confirmation is an explicit result action, not a free-form true/false input. The result must state whether image pixels were actually analyzed. A clear cannabis flower or harvested bud may support a draft crop-level identification when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent. Do not require a fan-leaf photo when the flower is independently recognizable, and never infer a cultivar/strain from bud appearance.
 
 When exact species is unresolved but the evidence supports a defensible common, genus, or family-level working candidate, surface that candidate with its actual confidence and limitations instead of replacing it with a confirmation placeholder. `Not confirmed` is reserved for cases where no useful plant candidate is defensible; every candidate still remains a draft until the user confirms it.

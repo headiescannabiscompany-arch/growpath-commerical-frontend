@@ -67,6 +67,18 @@ type SelectedPhoto = {
   sizeBytes?: number | null;
 };
 
+const CANNABIS_ONLY_INTERESTS = new Set([
+  "FIM",
+  "Mainlining / Manifolding",
+  "SCROG",
+  "SOG",
+  "Lollipopping",
+  "Feminization",
+  "Terpene Optimization",
+  "Bag Appeal",
+  "Stealth / Odor Control"
+]);
+
 function firstParam(value: string | string[] | undefined) {
   return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
 }
@@ -122,6 +134,10 @@ export default function NewGrowScreen() {
     () => flattenGrowInterests(auth.user?.growInterests || {}),
     [auth.user?.growInterests]
   );
+  const profileCannabisContext = React.useMemo(
+    () => initialProfileTags.some((tag) => /cannabis|hemp/i.test(tag)),
+    [initialProfileTags]
+  );
   const initialQueryTags = React.useMemo(
     () => commaList(params.growTags),
     [params.growTags]
@@ -134,7 +150,7 @@ export default function NewGrowScreen() {
       ),
     [initialProfileTags, initialQueryTags]
   );
-  const interestOptionsOverride = React.useMemo(() => {
+  const baseInterestOptionsOverride = React.useMemo(() => {
     const overrides: Record<string, string[]> = {};
     for (const tier of INTEREST_TIERS) {
       const profileValues = Array.isArray(auth.user?.growInterests?.[tier.id])
@@ -162,17 +178,17 @@ export default function NewGrowScreen() {
   );
   const [vegLengthWeeks, setVegLengthWeeks] = React.useState(
     firstParam(params.vegLengthWeeks) ||
-      (firstParam(params.cropCommonName) &&
-      !/cannabis/i.test(firstParam(params.cropCommonName))
-        ? ""
-        : "4")
+      (/cannabis|hemp/i.test(firstParam(params.cropCommonName)) ||
+      (!firstParam(params.cropCommonName) && profileCannabisContext)
+        ? "4"
+        : "")
   );
   const [expectedFlowerDays, setExpectedFlowerDays] = React.useState(
     firstParam(params.expectedFlowerDays) ||
-      (firstParam(params.cropCommonName) &&
-      !/cannabis/i.test(firstParam(params.cropCommonName))
-        ? ""
-        : "63")
+      (/cannabis|hemp/i.test(firstParam(params.cropCommonName)) ||
+      (!firstParam(params.cropCommonName) && profileCannabisContext)
+        ? "63"
+        : "")
   );
   const [growInterestSelections, setGrowInterestSelections] = React.useState<
     Record<string, string[]>
@@ -227,20 +243,36 @@ export default function NewGrowScreen() {
   const [createdGrowId, setCreatedGrowId] = React.useState("");
 
   const cropSpecificSetup = Boolean(cropCommonName.trim() || scientificName.trim());
+  const explicitCannabisCrop = /cannabis|hemp/i.test(
+    `${cropCommonName} ${scientificName}`
+  );
+  const showCannabisPlanning = explicitCannabisCrop ||
+    (!cropSpecificSetup && profileCannabisContext);
+  const interestOptionsOverride = React.useMemo(() => {
+    if (showCannabisPlanning) return baseInterestOptionsOverride;
+    const filtered: Record<string, string[]> = {};
+    for (const tier of INTEREST_TIERS) {
+      const options = baseInterestOptionsOverride[tier.id] ?? tier.options;
+      filtered[tier.id] = options.filter(
+        (option) => !CANNABIS_ONLY_INTERESTS.has(option)
+      );
+    }
+    return filtered;
+  }, [baseInterestOptionsOverride, showCannabisPlanning]);
   const adjustedGenericTimingForCrop = React.useRef(false);
 
   React.useEffect(() => {
     if (
       adjustedGenericTimingForCrop.current ||
       !cropSpecificSetup ||
-      /cannabis/i.test(cropCommonName)
+      explicitCannabisCrop
     ) {
       return;
     }
     adjustedGenericTimingForCrop.current = true;
     setVegLengthWeeks((current) => (current === "4" ? "" : current));
     setExpectedFlowerDays((current) => (current === "63" ? "" : current));
-  }, [cropCommonName, cropSpecificSetup]);
+  }, [cropCommonName, cropSpecificSetup, explicitCannabisCrop]);
 
   const matchCropProfile = React.useCallback(async () => {
     const query = scientificName.trim() || cropCommonName.trim();
@@ -1021,14 +1053,14 @@ export default function NewGrowScreen() {
             {[
               ["Plant count", plannedPlantCount, setPlannedPlantCount],
               [
-                !cropSpecificSetup || /cannabis/i.test(cropCommonName)
+                showCannabisPlanning
                   ? "Veg length (weeks)"
                   : "Establishment weeks",
                 vegLengthWeeks,
                 setVegLengthWeeks
               ],
               [
-                !cropSpecificSetup || /cannabis/i.test(cropCommonName)
+                showCannabisPlanning
                   ? "Expected flower days"
                   : "Expected days to first harvest",
                 expectedFlowerDays,
@@ -1105,8 +1137,16 @@ export default function NewGrowScreen() {
         <View style={{ flexDirection: "row", gap: 8 }}>
           {(
             [
-              { key: "vegStart", label: "Veg start" },
-              { key: "flowerDay1", label: "Flower day 1" }
+              {
+                key: "vegStart",
+                label: showCannabisPlanning ? "Veg start" : "Grow / establishment start"
+              },
+              {
+                key: "flowerDay1",
+                label: showCannabisPlanning
+                  ? "Flower day 1"
+                  : "First flowering / fruiting stage"
+              }
             ] as { key: AnchorType; label: string }[]
           ).map((opt) => (
             <Pressable
@@ -1317,18 +1357,22 @@ export default function NewGrowScreen() {
               onChangeText={setTransplantDate}
               accessibilityLabel="Transplant date"
             />
-            <DateInput
-              label="Flip date (optional)"
-              value={flipDate}
-              onChangeText={setFlipDate}
-              accessibilityLabel="Flip date"
-            />
-            <DateInput
-              label="Flower day 1 (optional)"
-              value={flowerDay1Date}
-              onChangeText={setFlowerDay1Date}
-              accessibilityLabel="Flower day 1"
-            />
+            {showCannabisPlanning ? (
+              <>
+                <DateInput
+                  label="Flip date (optional)"
+                  value={flipDate}
+                  onChangeText={setFlipDate}
+                  accessibilityLabel="Flip date"
+                />
+                <DateInput
+                  label="Flower day 1 (optional)"
+                  value={flowerDay1Date}
+                  onChangeText={setFlowerDay1Date}
+                  accessibilityLabel="Flower day 1"
+                />
+              </>
+            ) : null}
             <DateInput
               label="Expected harvest date (optional)"
               value={expectedHarvestDate}
@@ -1347,12 +1391,14 @@ export default function NewGrowScreen() {
               onChangeText={setDryStartDate}
               accessibilityLabel="Dry start date"
             />
-            <DateInput
-              label="Cure start date (optional)"
-              value={cureStartDate}
-              onChangeText={setCureStartDate}
-              accessibilityLabel="Cure start date"
-            />
+            {showCannabisPlanning ? (
+              <DateInput
+                label="Cure start date (optional)"
+                value={cureStartDate}
+                onChangeText={setCureStartDate}
+                accessibilityLabel="Cure start date"
+              />
+            ) : null}
 
             <Text style={{ color: palette.text, fontWeight: "700" }}>
               Pot size (optional)

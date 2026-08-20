@@ -130,6 +130,88 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-08-14"
   },
   {
+    id: "extension-minnesota-growing-basil",
+    name: "University of Minnesota Extension — Growing Basil",
+    domain: "extension.umn.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for sweet basil as a tender annual, repeated vegetative harvest, flowering effects, and frost-limited outdoor production. It does not establish a universal harvest day.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["extension-minnesota-vegetable-harvest"],
+    lastReviewedAt: "2026-08-20"
+  },
+  {
+    id: "extension-minnesota-vegetable-harvest",
+    name: "University of Minnesota Extension — Harvesting Home Garden Vegetables",
+    domain: "extension.umn.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for crop-specific harvest state, including tender basil leaves. Storage estimates are not crop-lifecycle or field-harvest guarantees.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["extension-minnesota-growing-basil"],
+    lastReviewedAt: "2026-08-20"
+  },
+  {
+    id: "extension-minnesota-growing-lettuce",
+    name: "University of Minnesota Extension — Growing Lettuce, Endive and Radicchio",
+    domain: "extension.umn.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for cool-season lettuce production, bolting risk, whole-plant versus repeated leaf harvest, and succession planting. Regional temperature guidance must not be universalized.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-20"
+  },
+  {
+    id: "extension-minnesota-strawberry-systems",
+    name: "University of Minnesota Extension — Choosing a Strawberry Production System",
+    domain: "extension.umn.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for the distinct perennial June-bearing and commonly annual day-neutral production systems, harvest windows, renovation, and replacement context.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["extension-minnesota-growing-strawberries"],
+    lastReviewedAt: "2026-08-20"
+  },
+  {
+    id: "extension-minnesota-growing-strawberries",
+    name: "University of Minnesota Extension — Growing Strawberries in the Home Garden",
+    domain: "extension.umn.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for June-bearing, ever-bearing, and day-neutral flowering and harvest patterns, runner management, renovation, and winter protection.",
+    requiresCrossCheck: true,
+    preferredCrossCheckSources: ["extension-minnesota-strawberry-systems"],
+    lastReviewedAt: "2026-08-20"
+  },
+  {
+    id: "extension-minnesota-growing-apples",
+    name: "University of Minnesota Extension — Growing Apples in the Home Garden",
+    domain: "extension.umn.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for apple as a woody perennial with seasonal care, pollination requirements, rootstock-dependent size and years to bearing, annual pruning, thinning, and harvest context.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-20"
+  },
+  {
     id: "meta-automated-data-collection-terms",
     name: "Meta Automated Data Collection Terms and Facebook Terms",
     domain: "facebook.com",
