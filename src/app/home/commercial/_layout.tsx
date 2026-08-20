@@ -140,6 +140,14 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen name="lives" options={{ title: "Lives", href: null }} />
       <Tabs.Screen
+        name="regulated-commerce"
+        options={{
+          title: "Regulated Commerce Permissions",
+          href: null,
+          headerShown: false
+        }}
+      />
+      <Tabs.Screen
         name="orders"
         options={{
           title: "Orders",
@@ -297,7 +305,6 @@ export default function CommercialTabsLayout() {
         name="products/[productId]"
         options={{ title: "Product Detail", href: null }}
       />
-      <Tabs.Screen name="courses/[courseId]" options={{ href: null }} />
       <Tabs.Screen name="batch-planner/[batchId]" options={{ href: null }} />
       <Tabs.Screen name="product-lines/[lineId]" options={{ href: null }} />
       <Tabs.Screen name="trials/[trialId]" options={{ href: null }} />

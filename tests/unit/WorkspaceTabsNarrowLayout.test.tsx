@@ -130,9 +130,18 @@ describe("workspace bottom tabs at narrow widths", () => {
     expect(screen.queryByTestId("rendered-tab-tools/index")).toBeNull();
     expect(screen.queryByTestId("rendered-tab-products/index")).toBeNull();
     expect(screen.queryByTestId("rendered-tab-tools/report")).toBeNull();
+    expect(screen.queryByTestId("rendered-tab-regulated-commerce")).toBeNull();
     expect(screen.queryByTestId("redirect")).toBeNull();
 
-    const { screenOptions } = mockTabs.mock.calls[0][0];
+    const { children, screenOptions } = mockTabs.mock.calls[0][0];
+    const allScreens = React.Children.toArray(children) as React.ReactElement<any>[];
+    expect(
+      allScreens.find((child) => child.props.name === "regulated-commerce")?.props.options
+        ?.href
+    ).toBeNull();
+    expect(
+      allScreens.filter((child) => child.props.name === "courses/[courseId]")
+    ).toHaveLength(1);
     expect(screenOptions.tabBarActiveTintColor).toBe("#166534");
     expect(screenOptions.tabBarInactiveTintColor).toBe("#5F6F5F");
     expect(screenOptions.tabBarLabelStyle.fontSize).toBe(9);
