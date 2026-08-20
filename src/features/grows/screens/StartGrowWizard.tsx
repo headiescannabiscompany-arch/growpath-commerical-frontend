@@ -144,7 +144,10 @@ export default function StartGrowWizard() {
   }
 
   function matchCropGuidance() {
-    const match = findReviewedCropLifecycle({ cropCommonName, scientificName });
+    const match = findReviewedCropLifecycle({
+      commonName: cropCommonName,
+      scientificName
+    });
     if (!match) {
       setCropProfileId("");
       setCropProfileLabel("");
