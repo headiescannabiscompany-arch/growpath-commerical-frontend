@@ -45,6 +45,7 @@ type LifeSpanPath =
   | "short_lived_perennial"
   | "long_lived_perennial"
   | "continuous_tropical"
+  | "finite_cycle"
   | "climate_dependent_perennial"
   | "unknown";
 type ProductionPattern =
@@ -890,6 +891,7 @@ export default function NewGrowScreen({
               ["short_lived_perennial", "Short-lived perennial"],
               ["long_lived_perennial", "Long-lived perennial / woody"],
               ["continuous_tropical", "Continuous indoor / tropical"],
+              ["finite_cycle", "Finite production cycle / non-plant"],
               ["climate_dependent_perennial", "Tender perennial / climate-dependent"]
             ].map(([value, label]) => (
               <Pressable
@@ -1030,28 +1032,33 @@ export default function NewGrowScreen({
             How are you starting?
           </Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {["seed", "clone", "transplant", "existing plant"].map((option) => (
+            {[
+              ["seed", "seed"],
+              ["clone", "clone / cutting"],
+              ["transplant", "transplant"],
+              ["existing plant", "existing plant"],
+              ["culture_spawn", "culture / spawn / inoculated block"]
+            ].map(([value, label]) => (
               <Pressable
-                key={option}
+                key={value}
                 accessibilityRole="button"
-                accessibilityLabel={`Grow start type ${option}`}
-                onPress={() => setStartType(option)}
+                accessibilityLabel={`Grow start type ${label}`}
+                onPress={() => setStartType(value)}
                 style={{
                   borderWidth: 1,
-                  borderColor: startType === option ? palette.accent : palette.border,
+                  borderColor: startType === value ? palette.accent : palette.border,
                   borderRadius: 999,
-                  backgroundColor:
-                    startType === option ? palette.accent : palette.surface,
+                  backgroundColor: startType === value ? palette.accent : palette.surface,
                   paddingHorizontal: 10,
                   paddingVertical: 7
                 }}
               >
                 <Text
                   style={{
-                    color: startType === option ? palette.accentText : palette.text
+                    color: startType === value ? palette.accentText : palette.text
                   }}
                 >
-                  {option}
+                  {label}
                 </Text>
               </Pressable>
             ))}

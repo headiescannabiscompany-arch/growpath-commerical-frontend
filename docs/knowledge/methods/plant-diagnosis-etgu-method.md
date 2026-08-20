@@ -442,6 +442,13 @@ lifespan, production pattern, or dormancy fields. The selected rooms, start date
 identity, and owner-reviewed lifecycle proposal must persist atomically with the Facility grow.
 Viewer and Staff role restrictions remain unchanged.
 
+Facility crop setup also records how the grow starts, plant count, and optional owner- or
+source-confirmed establishment and first-harvest planning anchors. These fields follow the same
+crop-neutral meaning used in Personal and Commercial grows. Unknown timing remains blank, and
+the interface must label it as an editable planning anchor rather than a biological guarantee.
+Crop-specific AI setup help must carry the named crop into Facility scope without silently
+choosing rooms, dates, lifecycle values, or cannabis-only milestones.
+
 Commercial workspaces inherit the same ordinary crop-aware grow records and connected grow
 workspace available to Personal users. Product Trial Evidence Runs remain a separate
 Commercial workflow: they may link products, product lines, formulas, batches, measurements,
@@ -452,7 +459,7 @@ purpose is commercial evidence.
 
 Crop-aware grow setup must distinguish lifespan from harvest behavior. Supported planning
 paths are annual, biennial, short-lived perennial, long-lived perennial or woody, continuous
-indoor/tropical, and unknown. Production is separately described as one main harvest,
+indoor/tropical, finite non-plant production cycle, and unknown. Production is separately described as one main harvest,
 repeated picking or flushes, seasonal perennial harvest, continuous production, observation
 without harvest, or unknown. Dormancy is also separate and may be absent, seasonal,
 climate-dependent, or unknown. A reviewed crop profile may propose these values, but region,
@@ -472,6 +479,14 @@ the cultivar or production facts that can change the path. An unmatched crop rem
 creatable through explicit owner-selected lifespan, production, dormancy, start method, and
 dates; the app must say that reviewed auto-guidance is unavailable instead of inventing a
 lifecycle.
+
+Representative reviewed profiles also cover a long-lived non-harvest tropical houseplant
+(pothos), an annual ornamental whose use depends on type (marigold), a short single-cut tray
+crop (radish microgreens), and a finite fungal substrate cycle with repeated flushes (button
+mushroom). Fungal grows may start from culture, spawn, or an inoculated block and must not be
+forced into seed, annual, perennial, flowering, or dormancy language. A broad category such as
+Mushrooms or Microgreens still does not establish the exact species, strain, seed lot,
+substrate, cycle length, or harvest timing.
 
 The post-create calendar follows the same crop boundary. Cannabis/hemp may use explicit
 vegetative, flip, flowering, harvest, dry, and cure milestones. Other crops use confirmed
