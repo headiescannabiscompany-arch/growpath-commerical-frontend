@@ -768,6 +768,26 @@ public visibility, or screenshot/video acceptance still called out below.
   recovery is complete; owner-controlled Twitch app credentials, real broadcaster
   authorization, EventSub challenge/events, and disconnect/reconnect acceptance remain.
   See `docs/qa/TWITCH_BACKEND_RECOVERY_PRODUCTION_EVIDENCE_2026-08-14.md`.
+  The existing GrowPath-hosted Live implementation has also been recovered and retained;
+  it was not rebuilt or replaced. Production backend configuration exposes the masked
+  Cloudflare Stream account/token/customer-code settings and the hosted-Live feature
+  gate. The retained implementation includes reusable account-owned channels, private
+  one-time RTMPS credentials, signed playback, lifecycle synchronization, session and
+  concurrency limits, hard-stop handling, replay retention, GrowPath chat, and a
+  rotatable private OBS browser-overlay token. Retained production session
+  `6a7fc664511d16304b96da9d` reloaded its private draft and chat evidence. A web-only
+  React Native confirmation defect prevented the owner from rotating the OBS stream
+  key; frontend PR `#679` fixed that boundary without changing native Alert behavior.
+  Exact merge `3bed76f714e162495d5bf3b4ca67702c236fd99b` passed Production Build
+  Preflight and Frontend CI, deployed successfully as Render
+  `dep-da3ctrc9v7es73fm5vj0`, and live verification reached the real browser
+  confirmation instead of silently doing nothing. OBS 32.2.2 is installed and running
+  locally, but remains configured for Twitch until the owner explicitly authorizes
+  rotation and transmission of the private GrowPath RTMPS server/key. Private ingest,
+  connected/live lifecycle, playback and viewer-volume controls, chat-overlay
+  rendering, stop/replay, and multi-account concurrency acceptance therefore remain
+  open. Do not reopen the hosted-Live architecture while completing those acceptance
+  steps.
   On 2026-08-14, the governed nutrient-recipe handoff slice completed production
   acceptance. Backend merge `38e2dc87f40420de5711f90ee0a1e36f52b9fc21`
   deployed as `dep-d9vfmf3bc2fs73cd3iig`; frontend merge
