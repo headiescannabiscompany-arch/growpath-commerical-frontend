@@ -268,6 +268,10 @@ export default function CommercialTabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="logs/new"
+        options={{ href: null, title: "New Journal Entry", headerShown: false }}
+      />
+      <Tabs.Screen
         name="evidence-runs/index"
         options={{
           href: null,
@@ -361,6 +365,10 @@ export default function CommercialTabsLayout() {
         }}
       />
       <Tabs.Screen name="tools/report" options={{ title: "Export Report", href: null }} />
+      <Tabs.Screen
+        name="tools/integrations"
+        options={{ title: "Data Integrations", href: null, headerShown: false }}
+      />
       <Tabs.Screen
         name="tools/history-import"
         options={{ title: "Import Grow History", href: null }}

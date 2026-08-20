@@ -322,7 +322,7 @@ function GrowOverviewContent() {
 
       <View style={styles.quickRow}>
         <Link
-          href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`}
+          href={`${basePath}/logs/new?growId=${encodeURIComponent(growId)}`}
           asChild
         >
           <Pressable style={styles.action}>
@@ -340,7 +340,7 @@ function GrowOverviewContent() {
           </Pressable>
         </Link>
         <Link
-          href={`/home/personal/tools/integrations?growId=${encodeURIComponent(growId)}`}
+          href={`${basePath}/tools/integrations?growId=${encodeURIComponent(growId)}`}
           asChild
         >
           <Pressable style={styles.action}>
@@ -348,7 +348,7 @@ function GrowOverviewContent() {
           </Pressable>
         </Link>
         <Link
-          href={`/home/personal/tools/pdf-export?growId=${encodeURIComponent(growId)}`}
+          href={`${basePath}/tools/${basePath === "/home/commercial" ? "report" : "pdf-export"}?growId=${encodeURIComponent(growId)}`}
           asChild
         >
           <Pressable style={styles.action}>

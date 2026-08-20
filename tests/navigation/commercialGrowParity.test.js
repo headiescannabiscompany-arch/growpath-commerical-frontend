@@ -60,4 +60,22 @@ describe("Commercial crop-aware grow parity", () => {
       ).toBe(true);
     }
   });
+
+  it("keeps grow journal, integration, and report actions inside Commercial", () => {
+    const overview = read("src/app/home/personal/(tabs)/grows/[growId]/index.tsx");
+    const journal = read("src/app/home/commercial/grows/[growId]/journal.tsx");
+    const newLog = read("src/app/home/commercial/logs/new.tsx");
+    const integrations = read("src/app/home/commercial/tools/integrations.tsx");
+
+    expect(overview).toContain(
+      'href={`${basePath}/logs/new?growId=${encodeURIComponent(growId)}`}'
+    );
+    expect(overview).toContain(
+      'href={`${basePath}/tools/integrations?growId=${encodeURIComponent(growId)}`}'
+    );
+    expect(overview).toContain('basePath === "/home/commercial" ? "report" : "pdf-export"');
+    expect(journal).toContain('<GrowJournalScreen workspace="commercial" />');
+    expect(newLog).toContain('<NewLogScreen workspace="commercial" />');
+    expect(integrations).toContain('backFallbackHref="/home/commercial/grows"');
+  });
 });

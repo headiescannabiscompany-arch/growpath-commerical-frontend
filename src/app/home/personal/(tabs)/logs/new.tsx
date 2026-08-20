@@ -42,8 +42,13 @@ function param(value?: string | string[]) {
   return typeof value === "string" ? value : Array.isArray(value) ? value[0] || "" : "";
 }
 
-export default function NewLogScreen() {
+export type NewLogScreenProps = {
+  workspace?: "personal" | "commercial";
+};
+
+export default function NewLogScreen({ workspace = "personal" }: NewLogScreenProps = {}) {
   const router = useRouter();
+  const basePath = workspace === "commercial" ? "/home/commercial" : "/home/personal";
   const params = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
@@ -58,6 +63,7 @@ export default function NewLogScreen() {
   const canCreateLog =
     entitlements.can(CAPABILITY_KEYS.LOGS_PERSONAL_WRITE) ||
     (entitlements as any).mode === "personal" ||
+    (entitlements as any).mode === "commercial" ||
     !(entitlements as any).mode;
   const { plants, plantId, selectedPlant, setPlantId, toolRunContext } =
     useToolPlantContext(growId, initialPlantId);
@@ -223,7 +229,7 @@ export default function NewLogScreen() {
           : undefined
       });
       if (!created) throw new Error("Failed to create log.");
-      router.replace(`/home/personal/grows/${growId}/journal`);
+      router.replace(`${basePath}/grows/${growId}/journal`);
     } catch (failure: any) {
       setError(failure?.message || "Failed to create log.");
     } finally {
@@ -231,6 +237,7 @@ export default function NewLogScreen() {
     }
   }, [
     acceptedTags,
+    basePath,
     canSave,
     date,
     growId,
@@ -272,8 +279,8 @@ export default function NewLogScreen() {
       preferBackFallback
       backFallbackHref={
         growId
-          ? `/home/personal/grows/${encodeURIComponent(growId)}/journal`
-          : "/home/personal/grows"
+          ? `${basePath}/grows/${encodeURIComponent(growId)}/journal`
+          : `${basePath}/grows`
       }
     >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -283,7 +290,11 @@ export default function NewLogScreen() {
         <Text style={styles.subtitle}>
           {growId ? `Grow context: ${growId}` : "No grow selected"}
         </Text>
-        <PersonalFeedPlacement placement="top" routeKey="personal_new_log" longContent />
+        <PersonalFeedPlacement
+          placement="top"
+          routeKey={workspace === "commercial" ? "commercial_new_log" : "personal_new_log"}
+          longContent
+        />
         {!canCreateLog ? (
           <Text style={styles.notice}>
             Basic journal entries are available to personal growers. If saving fails, use

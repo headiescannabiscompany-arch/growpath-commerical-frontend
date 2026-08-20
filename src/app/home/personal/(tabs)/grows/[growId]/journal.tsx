@@ -76,11 +76,18 @@ function sourceActionLabel(kind: GrowTimelineItem["kind"]) {
   return "Open journal entry";
 }
 
-export default function GrowJournalScreen() {
+export type GrowJournalScreenProps = {
+  workspace?: "personal" | "commercial";
+};
+
+export default function GrowJournalScreen({
+  workspace = "personal"
+}: GrowJournalScreenProps = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowJournalStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const basePath = workspace === "commercial" ? "/home/commercial" : "/home/personal";
 
   const [items, setItems] = useState<GrowTimelineItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,7 +159,7 @@ export default function GrowJournalScreen() {
       />
       <GrowWorkspaceNav growId={growId} active="journal" />
 
-      <Link href={`/home/personal/logs/new?growId=${encodeURIComponent(growId)}`} asChild>
+      <Link href={`${basePath}/logs/new?growId=${encodeURIComponent(growId)}`} asChild>
         <Pressable style={styles.cta}>
           <Text style={styles.ctaText}>+ New Journal Entry</Text>
         </Pressable>
