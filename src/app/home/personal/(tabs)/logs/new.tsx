@@ -292,7 +292,9 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
         </Text>
         <PersonalFeedPlacement
           placement="top"
-          routeKey={workspace === "commercial" ? "commercial_new_log" : "personal_new_log"}
+          routeKey={
+            workspace === "commercial" ? "commercial_new_log" : "personal_new_log"
+          }
           longContent
         />
         {!canCreateLog ? (

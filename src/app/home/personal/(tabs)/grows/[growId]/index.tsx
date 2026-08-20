@@ -321,10 +321,7 @@ function GrowOverviewContent() {
       />
 
       <View style={styles.quickRow}>
-        <Link
-          href={`${basePath}/logs/new?growId=${encodeURIComponent(growId)}`}
-          asChild
-        >
+        <Link href={`${basePath}/logs/new?growId=${encodeURIComponent(growId)}`} asChild>
           <Pressable style={styles.action}>
             <Text style={styles.actionText}>+ Journal Entry</Text>
           </Pressable>
