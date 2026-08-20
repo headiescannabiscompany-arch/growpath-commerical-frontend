@@ -3188,6 +3188,14 @@ export default function SpeciesCropIdToolRoute({
             hydratedEvidenceReviewKeysRef.current.add(activeEvidenceReviewKey);
           }
           return {
+            ...(currentEvidenceAssets.some(
+              (asset) =>
+                String(asset.purpose || "")
+                  .trim()
+                  .toLowerCase() === "other"
+            ) && retryToolRunId
+              ? { legacySourceToolRunId: String(retryToolRunId).trim() }
+              : {}),
             identificationDraft: buildIdentificationDraft(parsed, assessment),
             imageAnalysis: {
               requested: uploadedEvidence.imageEvidenceAssetIds.length > 0,
