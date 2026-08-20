@@ -160,6 +160,7 @@ export default function LiveSessionScreen({ route }) {
       (twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "")
   );
   const isGrowPathHosted = session?.broadcastMode === "growpath";
+  const hasHostedPlayback = Boolean(hostedPlayback?.playerUrl);
 
   useEffect(() => {
     if (!sessionId || !isGrowPathHosted) return undefined;
@@ -171,6 +172,7 @@ export default function LiveSessionScreen({ route }) {
         if (!alive) return;
         setHostedLifecycle(String(status?.lifecycle || status?.status || "connecting"));
         if (
+          !hasHostedPlayback &&
           ["connected", "degraded", "ended", "replay"].includes(
             String(status?.lifecycle || status?.status)
           )
@@ -189,7 +191,7 @@ export default function LiveSessionScreen({ route }) {
       alive = false;
       if (timeout) clearTimeout(timeout);
     };
-  }, [isGrowPathHosted, sessionId]);
+  }, [hasHostedPlayback, isGrowPathHosted, sessionId]);
   const moderationUrl = session?.twitchModerationUrl || session?.moderationUrl || "";
   const replayUrl = session?.replayUrl || session?.vodUrl || "";
   const twitchVodId = String(replayUrl).match(/twitch\.tv\/videos\/(\d+)/i)?.[1] || "";
