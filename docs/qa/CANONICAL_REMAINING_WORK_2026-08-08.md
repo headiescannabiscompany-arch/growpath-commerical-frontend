@@ -471,6 +471,18 @@ grow`, private current location without a Field Study, and an optional approxima
   as bundle `index-a2cc0b5942d80d314b56a95d5afdb60b.js`; production then returned from lesson
   `6a60e9d09f3dbb9d83d2c612` directly to selected course
   `6a60e9d09f3dbb9d83d2c611` with its title and lesson list retained.
+  On 2026-08-20, the real Admin Commercial session completed a non-mutating public
+  video-discovery acceptance pass. `/videos?tab=discover` loaded two published
+  GrowPath uploads with title, author, visibility, description, cannabis-context
+  disclosure where applicable, and working Watch actions. `People I follow` changed
+  the same live query to a truthful zero-result state without inventing followed
+  accounts. Opening published video `6a6a52f42ac7c03b4303a7d6` rendered the GrowPath
+  player, author and Follow control, report action, provider/source status,
+  cross-platform Share and Copy Link actions, topics, and the empty Discussion state
+  with a disabled blank-comment submit. No account was followed, report filed, link
+  shared, or comment posted. This closes discovery/list/detail/player/filter and
+  empty-comment rendering for retained production data; deliberate follow/unfollow,
+  comment create/reload/reply/moderation, and independent-user acceptance remain.
 - [~] Verify login/session/workspace selection and recovery across Free, Pro,
   Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
   server-down, reload, logout, and multi-workspace states. The same Personal Pro
@@ -788,6 +800,22 @@ public visibility, or screenshot/video acceptance still called out below.
   rendering, stop/replay, and multi-account concurrency acceptance therefore remain
   open. Do not reopen the hosted-Live architecture while completing those acceptance
   steps.
+  A non-mutating 2026-08-20 Admin Commercial production pass also verified the public
+  Lives browser and complete Studio entry surface. `/lives` truthfully reported zero
+  published sessions while exposing search plus All, Campaign-linked, Upcoming, Live
+  now, Premieres, and Replays filters. Its Create/Manage action opened `/live-studio`,
+  where the retained `QA OBS ingest acceptance` record appeared only as a private Live
+  draft with Open and Delete-draft controls. Studio exposed Live stream and Video
+  premiere formats; outside URL or GrowPath-hosted broadcast; Twitch, YouTube, Kick,
+  Facebook Live, Instagram Live, and custom destinations; timed scheduling, reminders,
+  recurrence, GrowPath chat, slow mode, the outside-picker entry feed, publish-now
+  control, Discord announcement handoff, and a disabled-until-valid connection action.
+  Viewer copy explicitly assigns play, pause, volume, mute, fullscreen, captions, and
+  replay seeking to the GrowPath player while OBS/Streamlabs controls broadcast cameras,
+  microphones, scenes, bitrate, and outgoing audio. No draft was changed or deleted,
+  no destination connected, and no session published. This closes the retained
+  zero-data Lives-browser and Studio-form rendering slice, not credentialed ingest,
+  published discovery, viewer playback/chat, replay, or external-destination delivery.
   On 2026-08-14, the governed nutrient-recipe handoff slice completed production
   acceptance. Backend merge `38e2dc87f40420de5711f90ee0a1e36f52b9fc21`
   deployed as `dep-d9vfmf3bc2fs73cd3iig`; frontend merge
