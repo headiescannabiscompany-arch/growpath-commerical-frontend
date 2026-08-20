@@ -800,6 +800,22 @@ public visibility, or screenshot/video acceptance still called out below.
   rendering, stop/replay, and multi-account concurrency acceptance therefore remain
   open. Do not reopen the hosted-Live architecture while completing those acceptance
   steps.
+  A non-mutating 2026-08-20 Admin Commercial production pass also verified the public
+  Lives browser and complete Studio entry surface. `/lives` truthfully reported zero
+  published sessions while exposing search plus All, Campaign-linked, Upcoming, Live
+  now, Premieres, and Replays filters. Its Create/Manage action opened `/live-studio`,
+  where the retained `QA OBS ingest acceptance` record appeared only as a private Live
+  draft with Open and Delete-draft controls. Studio exposed Live stream and Video
+  premiere formats; outside URL or GrowPath-hosted broadcast; Twitch, YouTube, Kick,
+  Facebook Live, Instagram Live, and custom destinations; timed scheduling, reminders,
+  recurrence, GrowPath chat, slow mode, the outside-picker entry feed, publish-now
+  control, Discord announcement handoff, and a disabled-until-valid connection action.
+  Viewer copy explicitly assigns play, pause, volume, mute, fullscreen, captions, and
+  replay seeking to the GrowPath player while OBS/Streamlabs controls broadcast cameras,
+  microphones, scenes, bitrate, and outgoing audio. No draft was changed or deleted,
+  no destination connected, and no session published. This closes the retained
+  zero-data Lives-browser and Studio-form rendering slice, not credentialed ingest,
+  published discovery, viewer playback/chat, replay, or external-destination delivery.
   On 2026-08-14, the governed nutrient-recipe handoff slice completed production
   acceptance. Backend merge `38e2dc87f40420de5711f90ee0a1e36f52b9fc21`
   deployed as `dep-d9vfmf3bc2fs73cd3iig`; frontend merge
