@@ -634,6 +634,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("live-streaming-workflow")?.requiredOutputs).toContain(
       "private account-owned reusable encoder channel with revocable ingest secret, explicit saved-channel default or deliberate new-channel choice, draft/live control, stream health states, GrowPath chat, and reviewed replay retention"
     );
+    expect(getMethod("live-streaming-workflow")?.requiredOutputs).toContain(
+      "transparent configurable OBS Browser Source overlay that the host can preview without publishing the draft"
+    );
+    expect(getMethod("live-streaming-workflow")?.warnings).toContain(
+      "Never treat private OBS overlay preview as session publication or public discovery permission."
+    );
     expect(getSourceEntry("cloudflare-stream-live-documentation")).toMatchObject({
       sourceType: "provider_documentation",
       reliabilityTier: "B",

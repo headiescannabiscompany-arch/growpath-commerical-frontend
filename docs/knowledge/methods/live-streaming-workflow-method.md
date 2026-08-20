@@ -99,7 +99,10 @@ leaf, user avatar, display name, and message with configurable placement, theme,
 font size, duration, and message count. It contains no application navigation, account
 details, exact location, credentials, or moderation controls. Overlay responses are
 no-store and expose only messages for that session. Rotating the token invalidates the old
-URL immediately.
+URL immediately. A host may preview the token-protected overlay while the session remains
+an unpublished draft so the OBS scene can be configured privately before broadcast. Draft
+preview does not publish the session or place it in Lives, Discover, profiles, feeds, or
+notifications; possession of the current private token remains required.
 
 The overlay is destination-neutral: it is part of the broadcaster's OBS, Streamlabs,
 XSplit, or comparable scene, so it can appear on Twitch, YouTube, Kick, Facebook Live,

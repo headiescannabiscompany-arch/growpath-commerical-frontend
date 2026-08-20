@@ -633,7 +633,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "discover or follow",
       "stream or premiere",
       "moderate GrowPath chat",
-      "render private OBS overlay",
+      "privately preview and render the token-protected OBS overlay before publication",
       "relay eligible outside-picker entries",
       "retain replay and audit"
     ],
@@ -651,7 +651,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "saved-session labels that keep Live stream or Video premiere format distinct from draft, scheduled, live-now, ended, replay, and connection-health state",
       "RSVP and reminder state",
       "moderated GrowPath chat",
-      "transparent configurable OBS Browser Source overlay",
+      "transparent configurable OBS Browser Source overlay that the host can preview without publishing the draft",
       "two explicit broadcast modes: outside provider URL with embed-or-handoff behavior, and first-party GrowPath encoder ingest with adaptive in-app playback",
       "private account-owned reusable encoder channel with revocable ingest secret, explicit saved-channel default or deliberate new-channel choice, draft/live control, stream health states, GrowPath chat, and reviewed replay retention",
       "host-owned session manager for opening drafts, scheduled sessions, active broadcasts, and replays with confirmed draft deletion",
@@ -661,6 +661,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never expose the overlay token in public session data.",
+      "Never treat private OBS overlay preview as session publication or public discovery permission.",
       "Never combine outside-platform chats unless a separate authorized integration is deliberately enabled.",
       "Never claim a host or bot relay represents a distinct viewer identity.",
       "Never choose a giveaway winner inside GrowPath when the host selected an outside picker.",
