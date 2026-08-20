@@ -15,7 +15,13 @@ describe("Personal top-level back controls", () => {
     const source = read(relativePath);
 
     expect(source).toContain('import BackButton from "@/components/nav/BackButton"');
-    expect(source).toContain('<BackButton fallbackHref="/home/personal" />');
+    if (_name === "grows") {
+      expect(source).toContain("const basePath = `/home/${workspace}`");
+      expect(source).toContain("<BackButton fallbackHref={basePath} />");
+      expect(source).toContain('type GrowWorkspace = "personal" | "commercial"');
+    } else {
+      expect(source).toContain('<BackButton fallbackHref="/home/personal" />');
+    }
   });
 
   test("keeps a shared Back control on the personal course catalog", () => {
