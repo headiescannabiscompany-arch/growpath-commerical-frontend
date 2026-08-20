@@ -341,11 +341,13 @@ function evidenceReviewKey(evidenceAssetIds: unknown) {
 
 function savedPlantIdEvidenceIds(run: ToolRun) {
   const inputs = run.inputs || run.input || run.params || {};
+  const outputs = run.outputs || run.result || {};
   const mediaEvidence = Array.isArray(inputs.mediaEvidence) ? inputs.mediaEvidence : [];
   return Array.from(
     new Set([
       ...stringList(inputs.evidenceAssetIds),
       ...stringList(inputs.imageAnalysis?.evidenceUsed),
+      ...stringList(outputs.imageAnalysis?.evidenceUsed),
       ...mediaEvidence
         .map((item: any) => String(item?.id || item?.assetId || "").trim())
         .filter(Boolean)
@@ -366,11 +368,17 @@ function legacyGenericPlantIdAsset(run: ToolRun, asset: EvidenceAsset, id: strin
     .trim()
     .toLowerCase()
     .replace(/-/g, "_");
-  const createdAtMs = toolRunCreatedAtMs(run);
   const inputs = run.inputs || run.input || run.params || {};
+  const outputs = run.outputs || run.result || {};
+  const legacySourceToolRunId = String(inputs.legacySourceToolRunId || "").trim();
+  const legacySourceCreatedAtMs = /^[0-9a-f]{24}$/i.test(legacySourceToolRunId)
+    ? Number.parseInt(legacySourceToolRunId.slice(0, 8), 16) * 1000
+    : Number.NaN;
+  const createdAtMs = toolRunCreatedAtMs(run);
   const recordedIds = new Set([
     ...stringList(inputs.evidenceAssetIds),
     ...stringList(inputs.imageAnalysis?.evidenceUsed),
+    ...stringList(outputs.imageAnalysis?.evidenceUsed),
     ...(Array.isArray(inputs.mediaEvidence)
       ? inputs.mediaEvidence.map((item: any) =>
           String(item?.id || item?.assetId || "").trim()
@@ -381,7 +389,9 @@ function legacyGenericPlantIdAsset(run: ToolRun, asset: EvidenceAsset, id: strin
     asset.purpose === "other" &&
     (toolType === "species_crop_id" || toolType === "species_crop_identification") &&
     Number.isFinite(createdAtMs) &&
-    createdAtMs < LEGACY_PLANT_ID_PURPOSE_CUTOFF_MS &&
+    (createdAtMs < LEGACY_PLANT_ID_PURPOSE_CUTOFF_MS ||
+      (Number.isFinite(legacySourceCreatedAtMs) &&
+        legacySourceCreatedAtMs < LEGACY_PLANT_ID_PURPOSE_CUTOFF_MS)) &&
     recordedIds.has(id)
   );
 }
