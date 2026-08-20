@@ -7,7 +7,6 @@ const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockApiRequest = jest.fn();
 const mockAppendGrowPhotos = jest.fn();
-const mockSavePersonalGrowCropIdentity = jest.fn();
 const mockListCropProfiles = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockPersistImageUris = jest.fn();
@@ -60,9 +59,7 @@ jest.mock("@/api/apiRequest", () => ({
 
 jest.mock("@/api/grows", () => ({
   appendGrowPhotos: (...args: any[]) => mockAppendGrowPhotos(...args),
-  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args),
-  savePersonalGrowCropIdentity: (...args: any[]) =>
-    mockSavePersonalGrowCropIdentity(...args)
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
 }));
 
 jest.mock("@/api/cropKnowledge", () => ({
@@ -116,7 +113,6 @@ describe("NewGrowScreen access", () => {
     mockListPersonalGrows.mockResolvedValue([]);
     mockPersistImageUris.mockResolvedValue([]);
     mockApiRequest.mockResolvedValue({ grow: { id: "grow-bruce-banner" } });
-    mockSavePersonalGrowCropIdentity.mockResolvedValue({ id: "grow-bruce-banner" });
     mockListCropProfiles.mockResolvedValue([]);
   });
 
@@ -232,7 +228,9 @@ describe("NewGrowScreen access", () => {
     expect(screen.getByLabelText("Establishment weeks").props.value).toBe("");
     expect(screen.getByLabelText("Expected days to first harvest").props.value).toBe("");
     expect(screen.getByLabelText("Anchor type Grow / establishment start")).toBeTruthy();
-    expect(screen.getByLabelText("Anchor type First flowering / fruiting stage")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Anchor type First flowering / fruiting stage")
+    ).toBeTruthy();
     expect(screen.queryByLabelText("Veg length (weeks)")).toBeNull();
     expect(screen.queryByLabelText("Expected flower days")).toBeNull();
     expect(screen.queryByText("Feminization")).toBeNull();
@@ -268,16 +266,23 @@ describe("NewGrowScreen access", () => {
     fireEvent.press(screen.getByLabelText("Create grow"));
 
     await waitFor(() =>
-      expect(mockSavePersonalGrowCropIdentity).toHaveBeenCalledWith(
-        "grow-bruce-banner",
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/personal/grows",
         expect.objectContaining({
-          cropCommonName: "Tomato",
-          scientificName: "Solanum lycopersicum",
-          commonNames: ["tomato", "garden tomato"],
-          cultivar: "Brandywine",
-          cropProfileId: "crop-profile-tomato",
-          sourceToolRunId: "plant-id-run-1",
-          userConfirmed: true
+          method: "POST",
+          body: expect.objectContaining({
+            cropCommonName: "Tomato",
+            scientificName: "Solanum lycopersicum",
+            commonNames: ["tomato", "garden tomato"],
+            cultivar: "Brandywine",
+            cropProfileId: "crop-profile-tomato",
+            cropIdentity: expect.objectContaining({
+              commonName: "Tomato",
+              scientificName: "Solanum lycopersicum",
+              sourceToolRunId: "plant-id-run-1",
+              userConfirmed: true
+            })
+          })
         })
       )
     );

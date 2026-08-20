@@ -98,6 +98,15 @@ describe("Personal grows route", () => {
         name: "Flower Tent",
         stage: "flower",
         cultivar: "Test cultivar",
+        cropCommonName: "Tomato",
+        scientificName: "Solanum lycopersicum",
+        commonNames: ["tomato", "garden tomato"],
+        cropIdentity: {
+          commonName: "Tomato",
+          scientificName: "Solanum lycopersicum",
+          confidence: "user_confirmed",
+          userConfirmed: true
+        },
         growTags: ["Cannabis", "Indoor"],
         growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
         cropTypes: ["Cannabis"],
@@ -109,7 +118,11 @@ describe("Personal grows route", () => {
           plantCount: 4,
           vegLengthWeeks: 5,
           expectedFlowerDays: 63,
-          createStarterCalendar: true
+          createStarterCalendar: true,
+          lifeSpanPath: "annual",
+          productionPattern: "repeated",
+          dormancyPattern: "not_sure",
+          lifecycleGuidanceSourceIds: ["umn-extension-growing-tomatoes"]
         },
         germinationDate: "2026-01-03",
         expectedHarvestDate: "2026-04-15"
@@ -134,6 +147,15 @@ describe("Personal grows route", () => {
         stage: "flower",
         strain: "Test cultivar",
         cultivar: "Test cultivar",
+        cropCommonName: "Tomato",
+        scientificName: "Solanum lycopersicum",
+        commonNames: ["tomato", "garden tomato"],
+        cropIdentity: expect.objectContaining({
+          commonName: "Tomato",
+          scientificName: "Solanum lycopersicum",
+          userConfirmed: true
+        }),
+        cropIdentityConfirmedAt: expect.any(Date),
         growTags: ["Cannabis", "Indoor"],
         cropTypes: ["Cannabis"],
         environmentTypes: ["Indoor"],
@@ -144,7 +166,11 @@ describe("Personal grows route", () => {
           plantCount: 4,
           vegLengthWeeks: 5,
           expectedFlowerDays: 63,
-          createStarterCalendar: true
+          createStarterCalendar: true,
+          lifeSpanPath: "annual",
+          productionPattern: "repeated",
+          dormancyPattern: "not_sure",
+          lifecycleGuidanceSourceIds: ["umn-extension-growing-tomatoes"]
         },
         germinationDate: new Date("2026-01-03"),
         expectedHarvestDate: new Date("2026-04-15")

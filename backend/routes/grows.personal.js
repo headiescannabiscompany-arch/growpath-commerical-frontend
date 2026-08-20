@@ -150,6 +150,15 @@ router.post("/", async (req, res) => {
         : [],
     strain: req.body?.strain || req.body?.cultivar || undefined,
     cultivar: req.body?.cultivar || req.body?.strain || undefined,
+    cropCommonName: String(req.body?.cropCommonName || "").trim(),
+    scientificName: String(req.body?.scientificName || "").trim(),
+    commonNames: stringList(req.body?.commonNames),
+    cropProfileId: req.body?.cropProfileId || null,
+    cropIdentity:
+      req.body?.cropIdentity && typeof req.body.cropIdentity === "object"
+        ? req.body.cropIdentity
+        : null,
+    cropIdentityConfirmedAt: req.body?.cropIdentity ? new Date() : null,
     notes: req.body?.notes || undefined,
     growTags: stringList(req.body?.growTags),
     growInterests:
@@ -167,7 +176,13 @@ router.post("/", async (req, res) => {
             plantCount: optionalNumber(req.body.planning.plantCount),
             vegLengthWeeks: optionalNumber(req.body.planning.vegLengthWeeks),
             expectedFlowerDays: optionalNumber(req.body.planning.expectedFlowerDays),
-            createStarterCalendar: Boolean(req.body.planning.createStarterCalendar)
+            createStarterCalendar: Boolean(req.body.planning.createStarterCalendar),
+            lifeSpanPath: String(req.body.planning.lifeSpanPath || "not_sure"),
+            productionPattern: String(req.body.planning.productionPattern || "not_sure"),
+            dormancyPattern: String(req.body.planning.dormancyPattern || "not_sure"),
+            lifecycleGuidanceSourceIds: stringList(
+              req.body.planning.lifecycleGuidanceSourceIds
+            )
           }
         : {},
     systemPreset: req.body?.systemPreset || undefined,
@@ -296,15 +311,6 @@ router.patch("/:id/crop-identity", async (req, res) => {
 
   const scientificName = String(req.body?.scientificName || "").trim();
   const cultivar = String(req.body?.cultivar || req.body?.cultivarOrStrain || "").trim();
-  if (
-    req.body?.cropProfileId &&
-    !mongoose.isValidObjectId(String(req.body.cropProfileId))
-  ) {
-    return res.status(400).json({
-      success: false,
-      error: { code: "INVALID_INPUT", message: "cropProfileId must be a valid id" }
-    });
-  }
   const commonNames = Array.from(
     new Set([cropCommonName, ...flexibleStringList(req.body?.commonNames)])
   );
@@ -339,12 +345,7 @@ router.patch("/:id/crop-identity", async (req, res) => {
     grow.cultivar = cultivar;
     grow.strain = cultivar;
   }
-  if (
-    req.body?.cropProfileId &&
-    mongoose.isValidObjectId(String(req.body.cropProfileId))
-  ) {
-    grow.cropProfileId = req.body.cropProfileId;
-  }
+  if (req.body?.cropProfileId) grow.cropProfileId = String(req.body.cropProfileId);
   grow.cropTypes = cropTypes;
   grow.growTags = growTags;
   grow.growInterests = growInterests;
