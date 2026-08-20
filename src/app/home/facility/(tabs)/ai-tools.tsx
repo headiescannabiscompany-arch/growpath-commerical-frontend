@@ -5,6 +5,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import TokenBalanceWidget from "@/components/TokenBalanceWidget";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -26,6 +27,16 @@ export const FACILITY_CORE_TOOLS: readonly FacilityToolHubItem[] = [
     credit: "Provider-backed text help uses the selected Facility's AI credits.",
     output: "Evidence-aware guidance, limitations, and reviewable draft actions.",
     actionLabel: "Open Ask AI"
+  },
+  {
+    title: "Facility AI Templates",
+    description:
+      "Start a specialized dew-point, inspection-readiness, inventory-risk, or deviation review without submitting it automatically.",
+    href: "/home/facility/ai-template",
+    credit: "Opening and reviewing a template is free; credits apply only after Send.",
+    output:
+      "A reviewable Facility-scoped prompt with the selected template context and normal evidence limits.",
+    actionLabel: "Open AI Templates"
   },
   {
     title: "Plant Diagnose",
@@ -119,6 +130,19 @@ export const FACILITY_RECORD_TOOLS: readonly FacilityToolHubItem[] = [
   }
 ] as const;
 
+export const FACILITY_OWNER_QA_TOOLS: readonly FacilityToolHubItem[] = [
+  {
+    title: "AI Validation Lab",
+    description:
+      "Compare predictions with observed results, record quality feedback, and export training feedback for review.",
+    href: "/home/facility/ai-validation",
+    credit: "Owner-only quality operations do not use the ordinary Ask AI credit path.",
+    output:
+      "Facility-scoped verification, candidate comparison, feedback, and readable validation responses.",
+    actionLabel: "Open AI Validation Lab"
+  }
+] as const;
+
 export const FACILITY_CANNABIS_TOOLS: readonly FacilityToolHubItem[] = [
   {
     title: "Harvest Readiness",
@@ -198,9 +222,13 @@ function ToolGrid({
 
 export default function FacilityAiToolsRoute() {
   const router = useRouter();
+  const ent = useEntitlements();
   const { selectedId: facilityId, selected: facility } = useFacility();
   const { palette } = useAppTheme();
   const activeFacilityId = String(facilityId || "");
+  const canUseValidationLab =
+    ent?.facilityRole === "OWNER" &&
+    Boolean(ent?.can?.(CAPABILITY_KEYS.FACILITY_SETTINGS_EDIT));
   return (
     <AppPage
       routeKey="facility-ai-tools"
@@ -266,6 +294,18 @@ export default function FacilityAiToolsRoute() {
         Facility records and operations
       </Text>
       <ToolGrid facilityId={activeFacilityId} items={FACILITY_RECORD_TOOLS} />
+      {canUseValidationLab ? (
+        <>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={[styles.sectionHeading, { color: palette.text }]}
+          >
+            Owner AI quality controls
+          </Text>
+          <ToolGrid facilityId={activeFacilityId} items={FACILITY_OWNER_QA_TOOLS} />
+        </>
+      ) : null}
       <Text
         accessibilityRole="header"
         aria-level={2}

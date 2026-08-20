@@ -595,7 +595,9 @@ export default function DataIntegrationsScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Data Integrations</Text>
+      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+        Data Integrations
+      </Text>
       <Text style={styles.subtitle}>
         Connect grow sensors, controllers, irrigation, and environmental data. Imported
         account structure can suggest tents, rooms, devices, and streams before any data

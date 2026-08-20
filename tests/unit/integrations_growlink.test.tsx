@@ -98,6 +98,7 @@ describe("Data Integrations Growlink flow", () => {
   it("verifies credentials, lists controllers, creates a read-only Growlink source, and pulls readings", async () => {
     const screen = render(<DataIntegrationsScreen />);
 
+    expect(await screen.findByRole("header", { name: "Data Integrations" })).toBeTruthy();
     await waitFor(() =>
       expect(screen.getByText("Growlink read-only telemetry")).toBeTruthy()
     );
