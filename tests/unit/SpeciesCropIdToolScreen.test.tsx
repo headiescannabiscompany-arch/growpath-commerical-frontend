@@ -1885,6 +1885,14 @@ describe("SpeciesCropIdToolRoute", () => {
         evidenceAssetIds: ["legacy-plant-photo-1"]
       })
     );
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+    expect(mockRunCalculator).toHaveBeenCalledWith(
+      "species-crop-id",
+      expect.objectContaining({
+        legacySourceToolRunId: "6a6fad99510a22fe5a5e352d",
+        evidenceAssetIds: ["legacy-plant-photo-1"]
+      })
+    );
   });
 
   it("does not treat a modern generic-purpose asset as legacy Plant ID evidence", async () => {
