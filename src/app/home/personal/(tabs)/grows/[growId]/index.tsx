@@ -73,6 +73,19 @@ export const createGrowOverviewStyles = (palette: ThemePalette) =>
       fontWeight: "800",
       color: palette.text
     },
+    detailGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
+    detailItem: {
+      minWidth: 150,
+      flexGrow: 1,
+      flexBasis: "45%",
+      padding: 10,
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface
+    },
+    detailLabel: { color: palette.textMuted, fontSize: 12 },
+    detailValue: { marginTop: 3, color: palette.text, fontWeight: "700" },
     timelineItem: {
       marginTop: 10,
       paddingTop: 10,
@@ -88,6 +101,31 @@ export const createGrowOverviewStyles = (palette: ThemePalette) =>
   });
 
 type GrowOverviewStyles = ReturnType<typeof createGrowOverviewStyles>;
+
+function readablePlanningValue(value: unknown, fallback = "Not confirmed") {
+  const normalized = String(value || "").trim();
+  if (!normalized || normalized === "unknown") return fallback;
+  const labels: Record<string, string> = {
+    annual: "Annual / one season",
+    biennial: "Biennial / two seasons",
+    short_lived_perennial: "Short-lived perennial",
+    long_lived_perennial: "Long-lived perennial / woody",
+    continuous_tropical: "Continuous indoor / tropical",
+    finite_cycle: "Finite production cycle / non-plant",
+    climate_dependent_perennial: "Tender perennial / climate-dependent",
+    single_harvest: "One main harvest",
+    repeat_harvest: "Repeated picking / flushes",
+    seasonal_perennial: "Seasonal harvest each year",
+    continuous: "Continuous production",
+    non_harvest_observation: "Observation / no harvest",
+    cultivar_dependent: "Depends on cultivar / growth habit",
+    none: "No planned dormancy",
+    seasonal: "Seasonal dormancy",
+    climate_dependent: "Depends on climate / location"
+  };
+  if (labels[normalized]) return labels[normalized];
+  return normalized.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 function hasExplicitSharedSource(event: PersonalGrowTimelineEvent) {
   const row = event as any;
@@ -267,6 +305,70 @@ function GrowOverviewContent() {
             <Text style={styles.statLabel}>Tool Runs</Text>
             <Text style={styles.statValue}>{counts.runs}</Text>
           </View>
+        </View>
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.sectionTitle}>Crop identity and lifecycle</Text>
+        <Text style={styles.subtitle}>
+          Review the crop context that guides calendars, tasks, AI tools, and seasonal
+          expectations for this grow.
+        </Text>
+        <View style={styles.detailGrid}>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Crop</Text>
+            <Text style={styles.detailValue}>
+              {grow?.cropCommonName || grow?.cropTypes?.[0] || "Not confirmed"}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Scientific name</Text>
+            <Text style={styles.detailValue}>
+              {grow?.scientificName || "Not confirmed"}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Cultivar / variety</Text>
+            <Text style={styles.detailValue}>
+              {grow?.cultivar || grow?.strain || "Not confirmed"}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Lifespan path</Text>
+            <Text style={styles.detailValue}>
+              {readablePlanningValue(grow?.planning?.lifeSpanPath)}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Harvest / observation pattern</Text>
+            <Text style={styles.detailValue}>
+              {readablePlanningValue(grow?.planning?.productionPattern)}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <Text style={styles.detailLabel}>Dormancy</Text>
+            <Text style={styles.detailValue}>
+              {readablePlanningValue(grow?.planning?.dormancyPattern)}
+            </Text>
+          </View>
+        </View>
+        {Array.isArray(grow?.commonNames) && grow.commonNames.length ? (
+          <Text style={styles.subtitle}>Other names: {grow.commonNames.join(", ")}</Text>
+        ) : null}
+        <View style={styles.quickRow}>
+          <Link
+            href={`${basePath}/tools/auto-grow-calendar?growId=${encodeURIComponent(growId)}`}
+            asChild
+          >
+            <Pressable style={styles.action} accessibilityLabel="Open crop grow calendar">
+              <Text style={styles.actionText}>Open Grow Calendar</Text>
+            </Pressable>
+          </Link>
+          <Link href={`${basePath}/grows/${growId}/plants`} asChild>
+            <Pressable style={styles.action} accessibilityLabel="Review grow plants">
+              <Text style={styles.actionText}>Review Plants</Text>
+            </Pressable>
+          </Link>
         </View>
       </View>
 
