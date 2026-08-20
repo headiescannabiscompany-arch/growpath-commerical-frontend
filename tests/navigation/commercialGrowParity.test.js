@@ -6,6 +6,23 @@ function read(file) {
 }
 
 describe("Commercial crop-aware grow parity", () => {
+  it("keeps Commercial grows distinct from product trial evidence runs", () => {
+    const source = read("src/app/home/commercial/_layout.tsx");
+
+    expect(source).toMatch(
+      /name="grows\/new"[\s\S]*?title: "Create Grow"/
+    );
+    expect(source).toMatch(
+      /name="grows\/\[growId\]"[\s\S]*?title: "Grow Workspace"/
+    );
+    expect(source).toMatch(
+      /name="evidence-runs\/new"[\s\S]*?title: "Create Product Trial Evidence Run"/
+    );
+    expect(source).toMatch(
+      /name="evidence-runs\/\[id\]"[\s\S]*?title: "Product Trial Evidence Run Detail"/
+    );
+  });
+
   it("uses the canonical grow list and crop-aware creation form", () => {
     const listRoute = read("src/app/home/commercial/grows/index.tsx");
     const createRoute = read("src/app/home/commercial/grows/new.tsx");

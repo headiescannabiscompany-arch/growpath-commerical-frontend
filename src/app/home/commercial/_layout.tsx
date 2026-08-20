@@ -256,7 +256,7 @@ export default function CommercialTabsLayout() {
         name="grows/new"
         options={{
           href: null,
-          title: "Create Product Trial Evidence Run",
+          title: "Create Grow",
           headerShown: false
         }}
       />
@@ -264,7 +264,7 @@ export default function CommercialTabsLayout() {
         name="grows/[growId]"
         options={{
           href: null,
-          title: "Product Trial Evidence Run Detail"
+          title: "Grow Workspace"
         }}
       />
       <Tabs.Screen
