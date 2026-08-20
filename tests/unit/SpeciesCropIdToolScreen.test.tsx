@@ -1876,6 +1876,15 @@ describe("SpeciesCropIdToolRoute", () => {
 
     expect(await screen.findByText(/Recovered 1 saved photo/i)).toBeTruthy();
     expect(screen.queryByText(/belongs to another workflow/i)).toBeNull();
+
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalledTimes(1));
+    expect(mockAskPersonalAssistant.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        sourceToolRunId: "6a6fad99510a22fe5a5e352d",
+        evidenceAssetIds: ["legacy-plant-photo-1"]
+      })
+    );
   });
 
   it("does not treat a modern generic-purpose asset as legacy Plant ID evidence", async () => {
