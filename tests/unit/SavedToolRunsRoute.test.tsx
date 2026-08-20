@@ -12,10 +12,14 @@ const mockListToolRuns = jest.fn();
 const mockUpdateToolRun = jest.fn();
 const mockUpdatePlantIdCorrection = jest.fn();
 const mockGetFieldStudy = jest.fn();
+const mockListFieldStudies = jest.fn();
+const mockCreateFieldStudy = jest.fn();
+const mockUpdateFieldStudy = jest.fn();
 const mockCreateFieldObservation = jest.fn();
 const mockUpdateFieldObservation = jest.fn();
 const mockRequestCurrentCoordinates = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
+const mockGetEvidencePhotoSourceMetadata = jest.fn();
 let mockSearchParams: Record<string, string> = {
   toolRunId: "run-1",
   growId: "grow-1",
@@ -57,13 +61,21 @@ jest.mock("@/api/toolRuns", () => ({
 }));
 
 jest.mock("@/api/fieldStudies", () => ({
+  createFieldStudy: (...args: any[]) => mockCreateFieldStudy(...args),
   createFieldObservation: (...args: any[]) => mockCreateFieldObservation(...args),
   getFieldStudy: (...args: any[]) => mockGetFieldStudy(...args),
+  listFieldStudies: (...args: any[]) => mockListFieldStudies(...args),
+  updateFieldStudy: (...args: any[]) => mockUpdateFieldStudy(...args),
   updateFieldObservation: (...args: any[]) => mockUpdateFieldObservation(...args)
 }));
 
 jest.mock("@/api/personalAssistant", () => ({
   askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
+}));
+
+jest.mock("@/api/evidence", () => ({
+  getEvidencePhotoSourceMetadata: (...args: any[]) =>
+    mockGetEvidencePhotoSourceMetadata(...args)
 }));
 
 jest.mock("@/utils/locationSearch", () => ({
@@ -195,6 +207,10 @@ describe("SavedToolRunsRoute", () => {
       accuracyMeters: 25
     });
     mockUpdatePlantIdCorrection.mockResolvedValue(null);
+    mockListFieldStudies.mockResolvedValue([]);
+    mockGetEvidencePhotoSourceMetadata.mockRejectedValue(
+      new Error("No retained photo metadata")
+    );
   });
 
   it("keeps exact AI inspection views available from a saved run", async () => {
@@ -655,6 +671,171 @@ describe("SavedToolRunsRoute", () => {
     expect(
       await screen.findByText(
         "Private location removed from this Plant ID only. Field Studies and Nature were not changed."
+      )
+    ).toBeTruthy();
+  });
+
+  it("reviews retained photo GPS before explicitly saving it privately", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      growId: null,
+      summary: "Park plant candidate.",
+      inputs: { evidenceAssetIds: ["photo-1", "photo-2"] },
+      outputs: { likelyCrop: "Magnolia", confidence: "medium" },
+      createdAt: "2026-08-02T12:00:00.000Z"
+    };
+    const locatedRun = {
+      ...cropRun,
+      inputs: {
+        ...cropRun.inputs,
+        observationContext: { observationDate: "2026-07-27" },
+        capturedLocation: {
+          latitude: 35.78613,
+          longitude: -78.78119,
+          privacy: "private",
+          userAuthorized: true,
+          source: "photo_metadata",
+          sourceEvidenceAssetId: "photo-1"
+        }
+      }
+    };
+    mockSearchParams = { toolRunId: "run-1", toolType: "species_crop_id" };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+    mockGetEvidencePhotoSourceMetadata.mockResolvedValue({
+      sourceEvidenceAssetId: "photo-1",
+      latitude: 35.78613,
+      longitude: -78.78119,
+      capturedAt: "2026-07-27T14:20:00.000Z",
+      hasLocation: true,
+      hasCaptureDate: true
+    });
+    mockUpdateToolRun.mockResolvedValue(locatedRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+    expect(await screen.findByText("Use Photo Location")).toBeTruthy();
+    fireEvent.press(screen.getByText("Use Photo Location"));
+
+    expect(await screen.findByText("Private photo location found")).toBeTruthy();
+    expect(mockUpdateToolRun).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        /Applying it saves the exact location privately with this Plant ID/
+      )
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByText("Apply Privately"));
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "run-1",
+        expect.objectContaining({
+          inputs: expect.objectContaining({
+            observationContext: { observationDate: "2026-07-27" },
+            capturedLocation: expect.objectContaining({
+              latitude: 35.78613,
+              longitude: -78.78119,
+              source: "photo_metadata",
+              privacy: "private",
+              userAuthorized: true
+            })
+          })
+        })
+      )
+    );
+    expect(
+      await screen.findByText(
+        "Photo location and capture date saved privately to this Plant ID. Nothing was published to Nature."
+      )
+    ).toBeTruthy();
+  });
+
+  it("publishes an existing saved Plant ID to an approximate Nature pin without rerunning AI", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      growId: null,
+      summary: "Park magnolia.",
+      inputs: {
+        evidenceAssetIds: ["photo-1"],
+        observationContext: { observationDate: "2026-07-27" },
+        capturedLocation: {
+          latitude: 35.78613,
+          longitude: -78.78119,
+          privacy: "private",
+          userAuthorized: true
+        },
+        mediaEvidence: [
+          {
+            id: "photo-1",
+            durableUrl: "https://example.com/magnolia.jpg",
+            kind: "photo"
+          }
+        ]
+      },
+      outputs: {
+        likelyCrop: "Magnolia",
+        scientificName: "Magnolia spp.",
+        confidence: "medium"
+      }
+    };
+    mockSearchParams = { toolRunId: "run-1", toolType: "species_crop_id" };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+    mockCreateFieldStudy.mockResolvedValue({
+      id: "nature-study",
+      _id: "nature-study",
+      title: "My Nature Finds",
+      description:
+        "Plant IDs deliberately shared from the direct Discovery Nature workflow.",
+      purpose: "biodiversity_survey",
+      visibility: "public",
+      accessRole: "owner"
+    });
+    mockGetFieldStudy.mockResolvedValue({
+      study: { id: "nature-study", title: "My Nature Finds" },
+      observations: []
+    });
+    mockCreateFieldObservation.mockResolvedValue({
+      observation: { id: "observation-1", sourceToolRunId: "run-1" }
+    });
+
+    const screen = render(<SavedToolRunsRoute />);
+    expect(await screen.findByText("Share this saved Plant ID to Nature")).toBeTruthy();
+    fireEvent.changeText(
+      screen.getByLabelText("Nature public description"),
+      "Observed beside the park path."
+    );
+    fireEvent.press(
+      screen.getByText(/Share an approximate public pin, photos, identity, date/)
+    );
+    fireEvent.press(screen.getByText("Publish to Nature"));
+
+    await waitFor(() =>
+      expect(mockCreateFieldObservation).toHaveBeenCalledWith(
+        "nature-study",
+        expect.objectContaining({
+          sourceToolRunId: "run-1",
+          observationDate: "2026-07-27",
+          notes: "Observed beside the park path.",
+          location: expect.objectContaining({
+            latitude: 35.78613,
+            longitude: -78.78119,
+            privacy: "public_approximate",
+            exactLocationPublicConfirmed: false
+          }),
+          publication: expect.objectContaining({
+            status: "published",
+            publicNotes: "Observed beside the park path."
+          })
+        })
+      )
+    );
+    expect(
+      await screen.findByText(
+        "Nature observation published. Open Nature to verify its approximate pin, photos, and description."
       )
     ).toBeTruthy();
   });

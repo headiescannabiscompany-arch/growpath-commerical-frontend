@@ -23,9 +23,12 @@ import {
   type ToolRunWorkspaceScope
 } from "@/api/toolRuns";
 import {
+  createFieldStudy,
   createFieldObservation,
   getFieldStudy,
+  listFieldStudies,
   updateFieldObservation,
+  updateFieldStudy,
   type FieldObservation,
   type FieldStudy
 } from "@/api/fieldStudies";
@@ -37,6 +40,10 @@ import ToolResultSurface, {
 } from "@/features/personal/tools/ToolResultSurface";
 import ResultQuestionCard from "@/features/personal/tools/ResultQuestionCard";
 import { askPersonalAssistant } from "@/api/personalAssistant";
+import {
+  getEvidencePhotoSourceMetadata,
+  type EvidencePhotoSourceMetadata
+} from "@/api/evidence";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -69,6 +76,21 @@ import {
   resolveToolWorkspaceType,
   toolWorkspaceIdentity
 } from "@/features/personal/tools/toolWorkspaceScope";
+
+const DIRECT_NATURE_COLLECTION_TITLE = "My Nature Finds";
+const DIRECT_NATURE_COLLECTION_DESCRIPTION =
+  "Plant IDs deliberately shared from the direct Discovery Nature workflow.";
+
+function directNatureCollection(studies: FieldStudy[]) {
+  return (
+    studies.find(
+      (study) =>
+        study.title === DIRECT_NATURE_COLLECTION_TITLE &&
+        study.description === DIRECT_NATURE_COLLECTION_DESCRIPTION &&
+        study.purpose === "biodiversity_survey"
+    ) || null
+  );
+}
 
 const TOOL_FILTERS = [
   { label: "All", value: "" },
@@ -1331,6 +1353,15 @@ export default function SavedToolRunsScreen() {
     null
   );
   const [capturingFieldLocation, setCapturingFieldLocation] = useState(false);
+  const [photoMetadataCandidate, setPhotoMetadataCandidate] =
+    useState<EvidencePhotoSourceMetadata | null>(null);
+  const [checkingPhotoMetadata, setCheckingPhotoMetadata] = useState(false);
+  const [natureDateDraft, setNatureDateDraft] = useState("");
+  const [natureNotesDraft, setNatureNotesDraft] = useState("");
+  const [naturePublishConfirmed, setNaturePublishConfirmed] = useState(false);
+  const [cannabisNatureConfirmed, setCannabisNatureConfirmed] = useState(false);
+  const [publishingNature, setPublishingNature] = useState(false);
+  const [natureFeedback, setNatureFeedback] = useState("");
   const [savingFieldObservation, setSavingFieldObservation] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const pendingFocusRunIdRef = useRef("");
@@ -1403,6 +1434,14 @@ export default function SavedToolRunsScreen() {
     setPrivateLocationFeedback("");
     setFieldCoordinates(null);
     setCapturingFieldLocation(false);
+    setPhotoMetadataCandidate(null);
+    setCheckingPhotoMetadata(false);
+    setNatureDateDraft("");
+    setNatureNotesDraft("");
+    setNaturePublishConfirmed(false);
+    setCannabisNatureConfirmed(false);
+    setPublishingNature(false);
+    setNatureFeedback("");
     setSavingFieldObservation(false);
   }, [initialToolType, workspaceIdentityKey]);
 
@@ -1470,6 +1509,16 @@ export default function SavedToolRunsScreen() {
   useEffect(() => {
     selectedRunIdRef.current = selectedRun ? idFor(selectedRun) : "";
     setFieldCoordinates(selectedRun ? coordinatesFromToolRun(selectedRun) : null);
+    setPhotoMetadataCandidate(null);
+    setNatureDateDraft(
+      selectedRun
+        ? String(runInputs(selectedRun).observationContext?.observationDate || "")
+        : ""
+    );
+    setNatureNotesDraft("");
+    setNaturePublishConfirmed(false);
+    setCannabisNatureConfirmed(false);
+    setNatureFeedback("");
   }, [selectedRun]);
 
   const selectRun = useCallback(
@@ -1676,6 +1725,233 @@ export default function SavedToolRunsScreen() {
     }
   }
 
+  async function checkSavedPhotoLocation() {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    const id = selectedRun ? idFor(selectedRun) : "";
+    if (!id || !selectedRun || !isSpeciesCropRun(selectedRun)) return;
+    const evidenceIds = savedRunEvidenceAssetIds(selectedRun);
+    if (!evidenceIds.length) {
+      setPrivateLocationFeedback("This saved Plant ID has no retained photos to check.");
+      return;
+    }
+    setCheckingPhotoMetadata(true);
+    setPhotoMetadataCandidate(null);
+    setPrivateLocationFeedback("");
+    try {
+      const results = await Promise.allSettled(
+        evidenceIds.map((evidenceId) =>
+          getEvidencePhotoSourceMetadata(evidenceId, { workspaceType: "personal" })
+        )
+      );
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      const candidates = results
+        .filter(
+          (result): result is PromiseFulfilledResult<EvidencePhotoSourceMetadata> =>
+            result.status === "fulfilled" && result.value.hasLocation
+        )
+        .map((result) => result.value);
+      if (!candidates.length) {
+        setPrivateLocationFeedback(
+          "No GPS was retained in these original photos. Use the device location or place the observation on the map instead."
+        );
+        return;
+      }
+      const first = candidates[0];
+      const conflictingLocation = candidates.some(
+        (candidate) =>
+          Math.abs(Number(candidate.latitude) - Number(first.latitude)) > 0.002 ||
+          Math.abs(Number(candidate.longitude) - Number(first.longitude)) > 0.002
+      );
+      if (conflictingLocation) {
+        setPrivateLocationFeedback(
+          "These photos contain more than one location. Nothing was selected; review the trip before attaching a pin."
+        );
+        return;
+      }
+      const earliestCapture = candidates
+        .map((candidate) => candidate.capturedAt)
+        .filter((value): value is string => Boolean(value))
+        .sort()[0];
+      setPhotoMetadataCandidate({
+        ...first,
+        capturedAt: earliestCapture || first.capturedAt,
+        hasCaptureDate: Boolean(earliestCapture || first.capturedAt)
+      });
+      setPrivateLocationFeedback(
+        `Photo location found privately${earliestCapture ? ` · captured ${earliestCapture.slice(0, 10)}` : ""}. Review it before applying; nothing has been saved or published.`
+      );
+    } finally {
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setCheckingPhotoMetadata(false);
+      }
+    }
+  }
+
+  async function applySavedPhotoLocation() {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    const id = selectedRun ? idFor(selectedRun) : "";
+    if (
+      !id ||
+      !selectedRun ||
+      !photoMetadataCandidate?.hasLocation ||
+      photoMetadataCandidate.latitude == null ||
+      photoMetadataCandidate.longitude == null
+    )
+      return;
+    setCapturingFieldLocation(true);
+    setPrivateLocationFeedback("");
+    try {
+      const inputs = runInputs(selectedRun);
+      const observationContext = {
+        ...(inputs.observationContext || {}),
+        ...(photoMetadataCandidate.capturedAt
+          ? { observationDate: photoMetadataCandidate.capturedAt.slice(0, 10) }
+          : {})
+      };
+      const nextInputs = {
+        ...inputs,
+        observationContext,
+        capturedLocation: {
+          latitude: photoMetadataCandidate.latitude,
+          longitude: photoMetadataCandidate.longitude,
+          accuracyMeters: null,
+          privacy: "private",
+          userAuthorized: true,
+          source: "photo_metadata",
+          sourceEvidenceAssetId: photoMetadataCandidate.sourceEvidenceAssetId,
+          sourceCapturedAt: photoMetadataCandidate.capturedAt,
+          capturedAt: new Date().toISOString()
+        }
+      };
+      const locationPatch = { inputs: nextInputs, input: nextInputs, params: nextInputs };
+      const updated = await updateToolRun(id, locationPatch);
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      if (!updated) throw new Error("The photo location was not saved.");
+      setRuns((current) => current.map((run) => (idFor(run) === id ? updated : run)));
+      if (selectedRunIdRef.current !== id) return;
+      setSelectedRun(updated);
+      setFieldCoordinates({
+        latitude: photoMetadataCandidate.latitude,
+        longitude: photoMetadataCandidate.longitude
+      });
+      setPhotoMetadataCandidate(null);
+      if (photoMetadataCandidate.capturedAt) {
+        setNatureDateDraft(photoMetadataCandidate.capturedAt.slice(0, 10));
+      }
+      setPrivateLocationFeedback(
+        "Photo location and capture date saved privately to this Plant ID. Nothing was published to Nature."
+      );
+    } catch (locationError: any) {
+      setPrivateLocationFeedback(
+        locationError?.message || "The photo location could not be saved."
+      );
+    } finally {
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setCapturingFieldLocation(false);
+      }
+    }
+  }
+
+  async function publishSavedRunToNature() {
+    if (workspaceType !== "personal") return;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    const id = selectedRun ? idFor(selectedRun) : "";
+    if (!id || !selectedRun || !isSpeciesCropRun(selectedRun)) return;
+    if (!fieldCoordinates) {
+      setNatureFeedback("Add or recover the private plant location before publishing.");
+      return;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(natureDateDraft.trim())) {
+      setNatureFeedback("Enter the observation date as YYYY-MM-DD before publishing.");
+      return;
+    }
+    if (!naturePublishConfirmed) {
+      setNatureFeedback("Confirm the approximate public pin before publishing.");
+      return;
+    }
+    const outputs = displayOutputsFor(selectedRun);
+    const cannabisObservation = isCannabisPlantIdentification(outputs);
+    if (cannabisObservation && !cannabisNatureConfirmed) {
+      setNatureFeedback(
+        "Cannabis/hemp observations require a separate public-location confirmation."
+      );
+      return;
+    }
+
+    setPublishingNature(true);
+    setNatureFeedback("");
+    try {
+      let studies = await listFieldStudies();
+      let collection = directNatureCollection(studies);
+      if (!collection) {
+        collection = await createFieldStudy({
+          title: DIRECT_NATURE_COLLECTION_TITLE,
+          description: DIRECT_NATURE_COLLECTION_DESCRIPTION,
+          purpose: "biodiversity_survey",
+          visibility: "public",
+          defaultLocationPrivacy: "public_approximate",
+          obscureSensitiveSpecies: true
+        });
+      } else if (collection.visibility !== "public") {
+        collection = await updateFieldStudy(String(collection.id || collection._id), {
+          visibility: "public"
+        });
+      }
+      const collectionId = String(collection.id || collection._id || "");
+      if (!collectionId) throw new Error("The Nature collection could not be prepared.");
+      const fullCollection = await getFieldStudy(collectionId);
+      const existing = fullCollection.observations.find(
+        (observation) => String(observation.sourceToolRunId || "") === id
+      );
+      const draft = privateFieldObservationFromToolRun(selectedRun, fieldCoordinates);
+      const observationInput = {
+        ...draft,
+        observationDate: natureDateDraft.trim(),
+        notes: natureNotesDraft.trim(),
+        location: {
+          ...draft.location,
+          ...fieldCoordinates,
+          precision: "exact" as const,
+          privacy: "public_approximate" as const,
+          exactLocationPublicConfirmed: false
+        },
+        publication: {
+          ...draft.publication,
+          status: "published" as const,
+          publicNotes: natureNotesDraft.trim(),
+          sensitiveSpecies: cannabisObservation,
+          cannabisContextConfirmed: cannabisObservation && cannabisNatureConfirmed
+        }
+      };
+      if (existing) {
+        await updateFieldObservation(
+          collectionId,
+          String(existing.id || existing._id),
+          observationInput
+        );
+      } else {
+        await createFieldObservation(collectionId, observationInput);
+      }
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setNatureFeedback(
+        existing
+          ? "Nature observation updated. Open Nature to verify its approximate pin, photos, and description."
+          : "Nature observation published. Open Nature to verify its approximate pin, photos, and description."
+      );
+      setNaturePublishConfirmed(false);
+      setCannabisNatureConfirmed(false);
+    } catch (publishError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setNatureFeedback(
+        publishError?.message || "The Nature observation could not be published."
+      );
+    } finally {
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setPublishingNature(false);
+      }
+    }
+  }
+
   async function removePrivateFieldLocation() {
     const requestWorkspaceIdentity = workspaceIdentityKey;
     const id = selectedRun ? idFor(selectedRun) : "";
@@ -1833,6 +2109,9 @@ export default function SavedToolRunsScreen() {
   }
 
   const selectedRunId = selectedRun ? idFor(selectedRun) : "";
+  const selectedRunIsCannabis = selectedRun
+    ? isCannabisPlantIdentification(displayOutputsFor(selectedRun))
+    : false;
   const selectedEvidenceReview = selectedRun
     ? inferEvidenceReview(runOutputs(selectedRun), runInputs(selectedRun))
     : null;
@@ -2161,6 +2440,29 @@ export default function SavedToolRunsScreen() {
                           : "Include Current Location Privately"}
                     </Text>
                   </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Check original saved photos for a private location"
+                    disabled={
+                      checkingPhotoMetadata ||
+                      capturingFieldLocation ||
+                      savingFieldObservation
+                    }
+                    onPress={checkSavedPhotoLocation}
+                    style={[
+                      styles.secondary,
+                      (checkingPhotoMetadata ||
+                        capturingFieldLocation ||
+                        savingFieldObservation) &&
+                        styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.secondaryText}>
+                      {checkingPhotoMetadata
+                        ? "Checking Original Photos..."
+                        : "Use Photo Location"}
+                    </Text>
+                  </Pressable>
                   {fieldCoordinates ? (
                     <Pressable
                       accessibilityRole="button"
@@ -2177,9 +2479,146 @@ export default function SavedToolRunsScreen() {
                     </Pressable>
                   ) : null}
                 </View>
+                {photoMetadataCandidate ? (
+                  <View style={styles.studyPanel}>
+                    <Text style={styles.cardTitle}>Private photo location found</Text>
+                    <Text style={styles.cardText}>
+                      The original photo contains GPS
+                      {photoMetadataCandidate.capturedAt
+                        ? ` and a ${photoMetadataCandidate.capturedAt.slice(0, 10)} capture date`
+                        : ""}
+                      . Applying it saves the exact location privately with this Plant ID.
+                      It does not create or publish a Nature pin.
+                    </Text>
+                    <View style={styles.buttonRow}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Apply the original photo location privately"
+                        disabled={capturingFieldLocation}
+                        onPress={applySavedPhotoLocation}
+                        style={[
+                          styles.primary,
+                          capturingFieldLocation && styles.disabled
+                        ]}
+                      >
+                        <Text style={styles.primaryText}>Apply Privately</Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Discard the detected photo location"
+                        disabled={capturingFieldLocation}
+                        onPress={() => {
+                          setPhotoMetadataCandidate(null);
+                          setPrivateLocationFeedback(
+                            "Photo location discarded. Nothing was saved or published."
+                          );
+                        }}
+                        style={[
+                          styles.secondary,
+                          capturingFieldLocation && styles.disabled
+                        ]}
+                      >
+                        <Text style={styles.secondaryText}>Discard</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : null}
                 {privateLocationFeedback ? (
                   <Text accessibilityRole="alert" style={styles.feedback}>
                     {privateLocationFeedback}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
+            {workspaceType === "personal" && isSpeciesCropRun(selectedRun) ? (
+              <View style={styles.studyPanel}>
+                <Text style={styles.cardTitle}>Share this saved Plant ID to Nature</Text>
+                <Text style={styles.cardText}>
+                  Publish the existing identification and its retained photos without
+                  rerunning AI. GrowPath keeps the exact coordinate private and shows an
+                  approximate public pin only after you confirm below.
+                </Text>
+                <Text style={styles.label}>Observation date</Text>
+                <TextInput
+                  accessibilityLabel="Nature observation date"
+                  value={natureDateDraft}
+                  onChangeText={setNatureDateDraft}
+                  style={styles.input}
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor={palette.textMuted}
+                  selectionColor={palette.accent}
+                />
+                <Text style={styles.label}>Public description</Text>
+                <TextInput
+                  accessibilityLabel="Nature public description"
+                  value={natureNotesDraft}
+                  onChangeText={setNatureNotesDraft}
+                  style={[styles.input, styles.textArea]}
+                  multiline
+                  placeholder="What did you observe at this location?"
+                  placeholderTextColor={palette.textMuted}
+                  selectionColor={palette.accent}
+                />
+                <Pressable
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: naturePublishConfirmed }}
+                  onPress={() => setNaturePublishConfirmed((current) => !current)}
+                  style={[
+                    styles.secondary,
+                    naturePublishConfirmed && styles.choiceSelected
+                  ]}
+                >
+                  <Text style={styles.secondaryText}>
+                    {naturePublishConfirmed ? "✓ " : ""}Share an approximate public pin,
+                    photos, identity, date, and description
+                  </Text>
+                </Pressable>
+                {selectedRunIsCannabis ? (
+                  <Pressable
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: cannabisNatureConfirmed }}
+                    onPress={() => setCannabisNatureConfirmed((current) => !current)}
+                    style={[
+                      styles.secondary,
+                      cannabisNatureConfirmed && styles.choiceSelected
+                    ]}
+                  >
+                    <Text style={styles.secondaryText}>
+                      {cannabisNatureConfirmed ? "✓ " : ""}I understand this is a
+                      Cannabis/hemp observation and deliberately want its obscured
+                      location shown publicly
+                    </Text>
+                  </Pressable>
+                ) : null}
+                <View style={styles.buttonRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Publish saved Plant ID to Nature"
+                    disabled={publishingNature || !fieldCoordinates}
+                    onPress={publishSavedRunToNature}
+                    style={[
+                      styles.primary,
+                      (publishingNature || !fieldCoordinates) && styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.primaryText}>
+                      {publishingNature ? "Publishing..." : "Publish to Nature"}
+                    </Text>
+                  </Pressable>
+                  <Link href="/field-observations" asChild>
+                    <Pressable accessibilityRole="link" style={styles.secondary}>
+                      <Text style={styles.secondaryText}>Open Nature Map</Text>
+                    </Pressable>
+                  </Link>
+                </View>
+                {!fieldCoordinates ? (
+                  <Text style={styles.cardText}>
+                    Add, recover, or place the private plant location above first.
+                  </Text>
+                ) : null}
+                {natureFeedback ? (
+                  <Text accessibilityRole="alert" style={styles.feedback}>
+                    {natureFeedback}
                   </Text>
                 ) : null}
               </View>
@@ -2442,6 +2881,7 @@ export const createSavedToolRunsStyles = (palette: ThemePalette) =>
       padding: 10,
       textAlignVertical: "top"
     },
+    textArea: { minHeight: 88 },
     primary: {
       alignSelf: "flex-start",
       borderRadius: radius.card,
@@ -2459,6 +2899,10 @@ export const createSavedToolRunsStyles = (palette: ThemePalette) =>
       paddingVertical: 9
     },
     secondaryText: { color: palette.text, fontWeight: "800" },
+    choiceSelected: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.accent
+    },
     disabled: { opacity: 0.55 },
     feedback: { color: palette.textSoft, fontWeight: "700" }
   });

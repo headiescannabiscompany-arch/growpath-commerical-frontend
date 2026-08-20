@@ -1927,6 +1927,45 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(screen.queryByText(/Recovered 1 saved photo/i)).toBeNull();
   });
 
+  it("keeps original legacy photos reusable from a newer Plant ID rerun", async () => {
+    mockSearchParams = { retryToolRunId: "6a87424f29a2753aa3dcbfcc" };
+    mockEvidenceAssets = [];
+    mockGetToolRun.mockResolvedValue({
+      id: "6a87424f29a2753aa3dcbfcc",
+      toolType: "species_crop_id",
+      inputs: {
+        legacySourceToolRunId: "6a6fa267510a22fe5a5e32cd",
+        evidenceAssetIds: ["legacy-plant-photo-1"],
+        mediaEvidence: [{ id: "legacy-plant-photo-1", type: "photo" }]
+      },
+      outputs: {
+        imageAnalysis: { evidenceUsed: ["legacy-plant-photo-1"] }
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      {
+        id: "legacy-plant-photo-1",
+        assetType: "photo",
+        originalUri: "file:///legacy-plant-photo.jpg",
+        durableUrl: "/protected/legacy-plant-photo.jpg",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: true,
+        purpose: "other",
+        qualityWarnings: []
+      }
+    ]);
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(await screen.findByText(/Recovered 1 saved photo/i)).toBeTruthy();
+    expect(screen.queryByText(/belongs to another workflow/i)).toBeNull();
+    expect(mockGetEvidenceAssetsByIds).toHaveBeenCalledWith(
+      ["legacy-plant-photo-1"],
+      expect.objectContaining({ workspaceType: "personal" })
+    );
+  });
+
   it("keeps an unverified generated frame and its source video out of AI", async () => {
     mockSearchParams = {};
     mockEvidenceAssets = [

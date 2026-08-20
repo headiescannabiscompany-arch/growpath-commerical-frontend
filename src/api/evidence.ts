@@ -57,6 +57,15 @@ export type EvidenceFrameExtractionResult = {
   extraction: EvidenceFrameExtraction;
 };
 
+export type EvidencePhotoSourceMetadata = {
+  sourceEvidenceAssetId: string;
+  latitude: number | null;
+  longitude: number | null;
+  capturedAt: string | null;
+  hasLocation: boolean;
+  hasCaptureDate: boolean;
+};
+
 export type ExtractEvidenceVideoFramesInput = EvidenceWorkspaceScope & {
   maxFrames?: number;
   purpose?: "crop_identification";
@@ -176,6 +185,41 @@ export async function getEvidenceAssetsByIds(
   });
   const rows = Array.isArray(response?.assets) ? response.assets : [];
   return rows.map(normalizeEvidenceAsset);
+}
+
+export async function getEvidencePhotoSourceMetadata(
+  id: string,
+  workspace: EvidenceWorkspaceScope,
+  options: { signal?: AbortSignal } = {}
+) {
+  if (!String(id || "").trim()) {
+    throw new Error("A retained photo is required to check source metadata.");
+  }
+  const response = await apiRequest<any>(
+    `/api/evidence-assets/${encodeURIComponent(id)}/source-metadata`,
+    {
+      signal: options.signal,
+      timeoutMs: 30000,
+      params: {
+        workspaceType: workspace.workspaceType,
+        ...(workspace.workspaceId ? { workspaceId: workspace.workspaceId } : {}),
+        ...(workspace.facilityId ? { facilityId: workspace.facilityId } : {})
+      }
+    }
+  );
+  const metadata = response?.metadata || {};
+  return {
+    sourceEvidenceAssetId: String(response?.sourceEvidenceAssetId || id),
+    latitude: Number.isFinite(Number(metadata.latitude))
+      ? Number(metadata.latitude)
+      : null,
+    longitude: Number.isFinite(Number(metadata.longitude))
+      ? Number(metadata.longitude)
+      : null,
+    capturedAt: metadata.capturedAt ? String(metadata.capturedAt) : null,
+    hasLocation: metadata.hasLocation === true,
+    hasCaptureDate: metadata.hasCaptureDate === true
+  } satisfies EvidencePhotoSourceMetadata;
 }
 
 export async function deleteEvidenceAsset(

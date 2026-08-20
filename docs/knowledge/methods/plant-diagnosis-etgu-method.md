@@ -598,6 +598,16 @@ invasive-status claim. Warn contributors not to include personal names, exact ad
 private-property details, or directions to sensitive species. Never synthesize this note
 from AI output or expose a private note as its fallback.
 
+For an owned retained original photo, the contributor may explicitly ask GrowPath to
+check embedded source metadata for GPS and capture date. Reading metadata is a private,
+owner-scoped preview action: it must not change the ToolRun, create an observation, or
+publish anything. Show the recovered date and the fact that GPS exists without exposing
+the exact coordinate in ordinary UI. Applying the recovered values requires a second
+explicit private-save action. When photos in one saved run contain materially different
+locations, do not choose one automatically; require the contributor to resolve the trip
+or place the observation manually. Missing or stripped metadata is not an error and must
+fall back to device or manual placement.
+
 An existing saved Crop Identification ToolRun may be explicitly linked to an editable
 Field Study without rerunning AI or re-uploading its owned evidence. That link creates
 one private draft observation from the saved structured identity, context, provenance,
@@ -608,6 +618,12 @@ study visibility, make coordinates public, or confirm a cannabis/hemp public con
 Repeated linking of the same ToolRun to the same study must reopen or update the existing
 draft rather than creating duplicate observations. Nature sharing remains a later,
 separately confirmed workflow that must satisfy every ordinary map-readiness gate.
+That later workflow may start directly from the saved ToolRun: it reuses the owned
+identity and evidence without rerunning AI, requires an observation date and explicit
+approximate-public-pin confirmation, and creates or updates the one observation keyed by
+that source ToolRun in the account's dedicated Nature collection. It must never create a
+duplicate merely because the user publishes again. Cannabis/hemp additionally requires
+the separate public-context confirmation before publication.
 If the user authorizes device location after a private draft was linked, the standalone
 Plant ID location action still changes only the ToolRun. Copying that coordinate into the
 existing Field Study observation requires a separate, clearly named Field Study action

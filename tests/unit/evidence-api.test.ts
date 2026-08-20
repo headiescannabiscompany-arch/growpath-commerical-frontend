@@ -8,6 +8,7 @@ import {
   deleteEvidenceAsset,
   extractEvidenceVideoFrames,
   getEvidenceAssetsByIds,
+  getEvidencePhotoSourceMetadata,
   getEvidenceVideoFrameExtraction,
   isTerminalEvidenceRegistrationError,
   loadAiInspectionView,
@@ -180,7 +181,9 @@ describe("providerEvidencePayload", () => {
       mimeType: "image/jpeg" as const,
       sha256: "b".repeat(64)
     };
-    mockApiRequest.mockResolvedValue({ view: { ...view, dataUrl: "data:image/jpeg;base64,eA==" } });
+    mockApiRequest.mockResolvedValue({
+      view: { ...view, dataUrl: "data:image/jpeg;base64,eA==" }
+    });
 
     await expect(
       loadAiInspectionView(view, {
@@ -188,7 +191,9 @@ describe("providerEvidencePayload", () => {
         workspaceId: "facility-1",
         facilityId: "facility-1"
       })
-    ).resolves.toEqual(expect.objectContaining({ dataUrl: expect.stringContaining("base64") }));
+    ).resolves.toEqual(
+      expect.objectContaining({ dataUrl: expect.stringContaining("base64") })
+    );
 
     expect(mockApiRequest).toHaveBeenCalledWith(
       "/api/evidence-assets/photo%2F1/inspection-view",
@@ -202,6 +207,39 @@ describe("providerEvidencePayload", () => {
           workspaceType: "facility",
           facilityId: "facility-1"
         })
+      })
+    );
+  });
+
+  it("loads private GPS and capture date from one retained original", async () => {
+    mockApiRequest.mockResolvedValue({
+      sourceEvidenceAssetId: "photo/1",
+      metadata: {
+        latitude: 35.78613,
+        longitude: -78.78119,
+        capturedAt: "2026-07-27T14:20:00.000Z",
+        hasLocation: true,
+        hasCaptureDate: true
+      }
+    });
+
+    await expect(
+      getEvidencePhotoSourceMetadata("photo/1", {
+        workspaceType: "personal"
+      })
+    ).resolves.toEqual({
+      sourceEvidenceAssetId: "photo/1",
+      latitude: 35.78613,
+      longitude: -78.78119,
+      capturedAt: "2026-07-27T14:20:00.000Z",
+      hasLocation: true,
+      hasCaptureDate: true
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/evidence-assets/photo%2F1/source-metadata",
+      expect.objectContaining({
+        timeoutMs: 30000,
+        params: { workspaceType: "personal" }
       })
     );
   });
