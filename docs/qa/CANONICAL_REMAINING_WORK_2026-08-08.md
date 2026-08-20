@@ -233,9 +233,13 @@ execution boundaries and the evidence needed not to reopen completed work.
   intended-use reviews. Orchid-like Fabaceae, butterfly/query collisions, a
   _Tithonia_ lookalike, unresolved Petunia common-name collisions, weak
   chrysanthemum scenes, and non-_Digitaria_ grasses were rejected rather than used
-  as ground truth. The catalog is now 64/320 reviewed records and correctly remains
-  `planning`; the remaining candidates still require individual review, and all 36
-  owned adverse-media slots remain.
+  as ground truth. Governed collection on 2026-08-20 refreshed 536 public candidates
+  and generated a 284-item individual-review queue without copying media or approving
+  identity automatically. One additional research-grade wild-chile record then passed
+  morphology, genus-level taxonomy, life-stage, exact CC BY license, expected-result,
+  and intended-use review. The catalog is now 73/320 reviewed records and correctly
+  remains `planning`; the remaining candidates still require individual review, and
+  all 36 owned adverse-media slots remain.
 - [~] Production-retest Plant ID autofill, direct optional geolocation without a
   Field Study, opt-in photo pins on Discovery Nature, privacy controls, video frame
   extraction, prompt length, saved-run reload, and correction/confirmation flows.

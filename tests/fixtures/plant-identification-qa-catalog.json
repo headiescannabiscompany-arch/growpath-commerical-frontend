@@ -4717,6 +4717,60 @@
         "observedTaxonName": "Taraxacum officinale",
         "observedTaxonRank": "species"
       }
+    },
+    {
+      "recordId": "plant-id-pepper-006",
+      "caseId": "pepper",
+      "acceptedName": "Pepper",
+      "scientificName": "Capsicum species",
+      "plantCategory": "foodCrops",
+      "lifeStage": "mixed",
+      "expectedAlternatives": ["nightshade species"],
+      "distinguishingFeatures": [
+        "wild-chile fruit clusters",
+        "Capsicum foliage with upright green-to-red fruits"
+      ],
+      "expectedConfidenceRange": { "minimum": 0.84, "maximum": 0.97 },
+      "expectedResult": "Pepper (Capsicum) is expected from the foliage and multiple attached green-to-red fruits; do not infer a cultivar.",
+      "sourceId": "inaturalist",
+      "sourceUrl": "https://www.inaturalist.org/observations/388537701",
+      "mediaUrl": "https://inaturalist-open-data.s3.amazonaws.com/photos/711612571/original.jpg",
+      "creator": "(c) Noland Martin, some rights reserved (CC BY)",
+      "licenseId": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "(c) Noland Martin, some rights reserved (CC BY)",
+      "retrievedAt": "2026-08-20",
+      "rightsReviewedAt": "2026-08-20",
+      "intendedUseApproved": true,
+      "handling": "external_reference",
+      "reviewProvenance": {
+        "reviewId": "pepper-006",
+        "reviewedBy": "OpenAI Codex visual QA",
+        "reviewedAt": "2026-08-20",
+        "visibleMorphology": [
+          "branched herbaceous plant",
+          "simple ovate leaves",
+          "multiple upright small fruits ripening from green to red",
+          "persistent fruiting calyces"
+        ],
+        "taxonomyCrossChecks": [
+          {
+            "sourceId": "kew-powo",
+            "recordUrl": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:30006872-2",
+            "outcome": "Kew POWO recognizes Capsicum as the governed pepper genus; the research-grade observation is identified as Capsicum annuum glabriusculum, while GrowPath keeps the target at genus level and does not infer cultivar."
+          }
+        ],
+        "notes": "Visual review used the retained iNaturalist original reference; no media was copied. The observation API reports research grade, photo-level CC BY, creator attribution, two agreeing identifications, and no disagreement."
+      },
+      "candidateProvenance": {
+        "candidateId": "inat-photo-711612571",
+        "photoId": 711612571,
+        "sourceQuery": "Capsicum",
+        "collectionMode": "research_wild",
+        "observedTaxonId": 239734,
+        "observedTaxonName": "Capsicum annuum glabriusculum",
+        "observedTaxonRank": "variety"
+      }
     }
   ]
 }
