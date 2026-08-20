@@ -12,11 +12,13 @@ import {
 } from "react-native";
 
 import { listCommercialFeedCampaigns } from "@/api/commercialFeed";
+import { type FieldObservation, listPublicFieldObservations } from "@/api/fieldStudies";
 import { searchContent } from "@/api/marketplace";
 import { searchPublicStorefronts } from "@/api/storefront";
 import { searchVideos } from "@/api/videos";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import FieldObservationGlobe from "@/components/fieldStudies/FieldObservationGlobe";
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -132,26 +134,34 @@ export default function DiscoverDirectory() {
   const [marketplace, setMarketplace] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
+  const [natureObservations, setNatureObservations] = useState<FieldObservation[]>([]);
   const [videoFollowingOnly, setVideoFollowingOnly] = useState(false);
 
   const load = useCallback(async (q = "", followingOnly = false) => {
     setLoading(true);
     setError("");
-    const [feedResult, storeResult, marketResult, courseResult, videoResult] =
-      await Promise.allSettled([
-        listCommercialFeedCampaigns({ q: q || undefined, sort: "new", limit: 18 }),
-        searchPublicStorefronts({ q: q || undefined, limit: 18 }),
-        searchContent(q, undefined),
-        import("@/api/courses").then((api) =>
-          q ? api.searchCourses(q) : api.listCourses(1)
-        ),
-        searchVideos({
-          q: q || undefined,
-          sort: "new",
-          limit: 18,
-          followingOnly: followingOnly || undefined
-        })
-      ]);
+    const [
+      feedResult,
+      storeResult,
+      marketResult,
+      courseResult,
+      videoResult,
+      natureResult
+    ] = await Promise.allSettled([
+      listCommercialFeedCampaigns({ q: q || undefined, sort: "new", limit: 18 }),
+      searchPublicStorefronts({ q: q || undefined, limit: 18 }),
+      searchContent(q, undefined),
+      import("@/api/courses").then((api) =>
+        q ? api.searchCourses(q) : api.listCourses(1)
+      ),
+      searchVideos({
+        q: q || undefined,
+        sort: "new",
+        limit: 18,
+        followingOnly: followingOnly || undefined
+      }),
+      listPublicFieldObservations({ limit: 100 })
+    ]);
 
     setFeed(
       feedResult.status === "fulfilled"
@@ -168,10 +178,16 @@ export default function DiscoverDirectory() {
     );
     setCourses(courseResult.status === "fulfilled" ? courseRows(courseResult.value) : []);
     setVideos(videoResult.status === "fulfilled" ? videoResult.value : []);
+    setNatureObservations(natureResult.status === "fulfilled" ? natureResult.value : []);
     if (
-      [feedResult, storeResult, marketResult, courseResult, videoResult].every(
-        (r) => r.status === "rejected"
-      )
+      [
+        feedResult,
+        storeResult,
+        marketResult,
+        courseResult,
+        videoResult,
+        natureResult
+      ].every((r) => r.status === "rejected")
     ) {
       setError("We couldn't load discovery. Please try again.");
     }
@@ -525,6 +541,32 @@ export default function DiscoverDirectory() {
                 </Pressable>
               </View>
             ) : null}
+            {section.key === "field-observations" ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Open Discovery Nature globe"
+                onPress={() => router.push("/field-observations" as any)}
+                style={({ pressed }) => [
+                  styles.naturePreview,
+                  { borderColor: palette.border },
+                  pressed && styles.buttonPressed
+                ]}
+              >
+                <View pointerEvents="none">
+                  <FieldObservationGlobe
+                    compact
+                    observations={natureObservations}
+                    onSelectObservations={() => undefined}
+                    onViewportChange={() => undefined}
+                  />
+                </View>
+                <Text style={[styles.naturePreviewHint, { color: palette.textMuted }]}>
+                  {natureObservations.length
+                    ? "Tap to explore shared plant photos and mapped findings."
+                    : "No public pins yet. Tap to open the globe or identify and deliberately share a plant finding."}
+                </Text>
+              </Pressable>
+            ) : null}
             {section.results.length ? (
               <ScrollView
                 horizontal
@@ -631,6 +673,18 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     marginBottom: 10
+  },
+  naturePreview: {
+    borderRadius: radius.card,
+    borderWidth: 1,
+    marginBottom: 12,
+    overflow: "hidden"
+  },
+  naturePreviewHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 10
   },
   sectionTitle: { color: "#111827", fontSize: 20, fontWeight: "800" },
   ranking: { color: "#64748B", fontSize: 12, marginTop: 2 },
