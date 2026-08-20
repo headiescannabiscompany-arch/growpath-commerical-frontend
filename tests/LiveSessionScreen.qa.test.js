@@ -1,7 +1,7 @@
 import React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { Alert, Linking } from "react-native";
+import { Alert, Linking, Platform } from "react-native";
 
 // Mocks
 const mockUseAuth = jest.fn();
@@ -400,6 +400,65 @@ describe("LiveSessionScreen QA", () => {
       expect(getByText("replacement-secret")).toBeTruthy();
       expect(getByText("Copy replacement key")).toBeTruthy();
     });
+  });
+
+  it("uses a working browser confirmation before rotating hosted OBS credentials", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      if (url === "/api/lives/hosted-1" && options.method === "GET") {
+        return Promise.resolve({
+          _id: "hosted-1",
+          owner: { id: "host-1" },
+          title: "Garden walk",
+          broadcastMode: "growpath",
+          chatEnabled: false
+        });
+      }
+      if (url === "/api/lives/hosted-1/rsvp") {
+        return Promise.resolve({ rsvped: false });
+      }
+      if (url === "/api/lives/hosted-1/hosted-status") {
+        return Promise.resolve({ lifecycle: "ready" });
+      }
+      if (url === "/api/lives/hosted-1/hosted-input/rotate") {
+        return Promise.resolve({
+          credentials: {
+            rtmpsUrl: "rtmps://live.example.test/input",
+            streamKey: "replacement-secret"
+          },
+          shownOnce: true
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const platformDescriptor = Object.getOwnPropertyDescriptor(Platform, "OS");
+    const originalConfirm = globalThis.confirm;
+    const confirmSpy = jest.fn(() => true);
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "web" });
+    globalThis.confirm = confirmSpy;
+
+    try {
+      const { getByText } = renderWithNav({ sessionId: "hosted-1" });
+      await waitFor(() => expect(getByText("Rotate OBS Stream Key")).toBeTruthy());
+      fireEvent.press(getByText("Rotate OBS Stream Key"));
+
+      expect(confirmSpy).toHaveBeenCalledWith(
+        expect.stringContaining("current key will stop working immediately")
+      );
+      await waitFor(() => {
+        expect(mockApiRequest).toHaveBeenCalledWith(
+          "/api/lives/hosted-1/hosted-input/rotate",
+          { method: "POST", body: {} }
+        );
+        expect(getByText("Copy replacement key")).toBeTruthy();
+      });
+    } finally {
+      if (platformDescriptor) Object.defineProperty(Platform, "OS", platformDescriptor);
+      else delete Platform.OS;
+      globalThis.confirm = originalConfirm;
+    }
   });
 
   it("lets a signed-in non-owner open an exact live-session report", async () => {
