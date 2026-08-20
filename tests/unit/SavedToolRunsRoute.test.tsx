@@ -16,6 +16,7 @@ const mockCreateFieldObservation = jest.fn();
 const mockUpdateFieldObservation = jest.fn();
 const mockRequestCurrentCoordinates = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
+const mockGetEvidencePhotoSourceMetadata = jest.fn();
 let mockSearchParams: Record<string, string> = {
   toolRunId: "run-1",
   growId: "grow-1",
@@ -64,6 +65,11 @@ jest.mock("@/api/fieldStudies", () => ({
 
 jest.mock("@/api/personalAssistant", () => ({
   askPersonalAssistant: (...args: any[]) => mockAskPersonalAssistant(...args)
+}));
+
+jest.mock("@/api/evidence", () => ({
+  getEvidencePhotoSourceMetadata: (...args: any[]) =>
+    mockGetEvidencePhotoSourceMetadata(...args)
 }));
 
 jest.mock("@/utils/locationSearch", () => ({
@@ -195,6 +201,9 @@ describe("SavedToolRunsRoute", () => {
       accuracyMeters: 25
     });
     mockUpdatePlantIdCorrection.mockResolvedValue(null);
+    mockGetEvidencePhotoSourceMetadata.mockRejectedValue(
+      new Error("No retained photo metadata")
+    );
   });
 
   it("keeps exact AI inspection views available from a saved run", async () => {
@@ -655,6 +664,82 @@ describe("SavedToolRunsRoute", () => {
     expect(
       await screen.findByText(
         "Private location removed from this Plant ID only. Field Studies and Nature were not changed."
+      )
+    ).toBeTruthy();
+  });
+
+  it("reviews retained photo GPS before explicitly saving it privately", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      growId: null,
+      summary: "Park plant candidate.",
+      inputs: { evidenceAssetIds: ["photo-1", "photo-2"] },
+      outputs: { likelyCrop: "Magnolia", confidence: "medium" },
+      createdAt: "2026-08-02T12:00:00.000Z"
+    };
+    const locatedRun = {
+      ...cropRun,
+      inputs: {
+        ...cropRun.inputs,
+        observationContext: { observationDate: "2026-07-27" },
+        capturedLocation: {
+          latitude: 35.78613,
+          longitude: -78.78119,
+          privacy: "private",
+          userAuthorized: true,
+          source: "photo_metadata",
+          sourceEvidenceAssetId: "photo-1"
+        }
+      }
+    };
+    mockSearchParams = { toolRunId: "run-1", toolType: "species_crop_id" };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+    mockGetEvidencePhotoSourceMetadata.mockResolvedValue({
+      sourceEvidenceAssetId: "photo-1",
+      latitude: 35.78613,
+      longitude: -78.78119,
+      capturedAt: "2026-07-27T14:20:00.000Z",
+      hasLocation: true,
+      hasCaptureDate: true
+    });
+    mockUpdateToolRun.mockResolvedValue(locatedRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+    expect(await screen.findByText("Use Photo Location")).toBeTruthy();
+    fireEvent.press(screen.getByText("Use Photo Location"));
+
+    expect(await screen.findByText("Private photo location found")).toBeTruthy();
+    expect(mockUpdateToolRun).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(
+        /Applying it saves the exact location privately with this Plant ID/
+      )
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByText("Apply Privately"));
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "run-1",
+        expect.objectContaining({
+          inputs: expect.objectContaining({
+            observationContext: { observationDate: "2026-07-27" },
+            capturedLocation: expect.objectContaining({
+              latitude: 35.78613,
+              longitude: -78.78119,
+              source: "photo_metadata",
+              privacy: "private",
+              userAuthorized: true
+            })
+          })
+        })
+      )
+    );
+    expect(
+      await screen.findByText(
+        "Photo location and capture date saved privately to this Plant ID. Nothing was published to Nature."
       )
     ).toBeTruthy();
   });
