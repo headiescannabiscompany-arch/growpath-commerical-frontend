@@ -18,6 +18,34 @@ import { radius } from "@/theme/theme";
 import { useRooms } from "../../rooms/hooks";
 import { useCreateGrow } from "../hooks";
 import { getTier1Options } from "@/utils/growInterests";
+import { findReviewedCropLifecycle } from "@/knowledge/cropLifecycleRegistry";
+
+const LIFE_SPAN_OPTIONS = [
+  ["unknown", "Not sure"],
+  ["annual", "Annual / one season"],
+  ["biennial", "Biennial / two seasons"],
+  ["short_lived_perennial", "Short-lived perennial"],
+  ["long_lived_perennial", "Long-lived perennial / woody"],
+  ["continuous_tropical", "Continuous indoor / tropical"],
+  ["climate_dependent_perennial", "Tender perennial / climate-dependent"]
+] as const;
+
+const PRODUCTION_OPTIONS = [
+  ["unknown", "Not sure"],
+  ["single_harvest", "One main harvest"],
+  ["repeat_harvest", "Repeated picking / flushes"],
+  ["seasonal_perennial", "Seasonal harvest each year"],
+  ["continuous", "Continuous production"],
+  ["non_harvest_observation", "Observation / no harvest"],
+  ["cultivar_dependent", "Depends on cultivar / growth habit"]
+] as const;
+
+const DORMANCY_OPTIONS = [
+  ["unknown", "Not sure"],
+  ["none", "No planned dormancy"],
+  ["seasonal", "Seasonal dormancy"],
+  ["climate_dependent", "Depends on climate / location"]
+] as const;
 
 function todayIsoDate() {
   return new Date().toISOString().slice(0, 10);
@@ -44,6 +72,17 @@ export default function StartGrowWizard() {
   const [startDate, setStartDate] = useState(todayIsoDate());
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
   const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
+  const [cropCommonName, setCropCommonName] = useState("");
+  const [scientificName, setScientificName] = useState("");
+  const [commonNames, setCommonNames] = useState("");
+  const [cultivar, setCultivar] = useState("");
+  const [cropProfileId, setCropProfileId] = useState("");
+  const [cropProfileLabel, setCropProfileLabel] = useState("");
+  const [lifeSpanPath, setLifeSpanPath] = useState("unknown");
+  const [productionPattern, setProductionPattern] = useState("unknown");
+  const [dormancyPattern, setDormancyPattern] = useState("unknown");
+  const [lifecycleGuidance, setLifecycleGuidance] = useState<string[]>([]);
+  const [lifecycleQuestions, setLifecycleQuestions] = useState<string[]>([]);
   const [feedback, setFeedback] = useState("");
   const { data: rooms, isLoading } = useRooms();
   const createGrow = useCreateGrow();
@@ -104,6 +143,29 @@ export default function StartGrowWizard() {
     setFeedback("");
   }
 
+  function matchCropGuidance() {
+    const match = findReviewedCropLifecycle({ cropCommonName, scientificName });
+    if (!match) {
+      setCropProfileId("");
+      setCropProfileLabel("");
+      setLifecycleGuidance([]);
+      setLifecycleQuestions([]);
+      setFeedback(
+        "No reviewed crop profile matched. Keep unknown lifecycle fields as Not sure and enter only facts you know."
+      );
+      return;
+    }
+    setScientificName((current) => current.trim() || match.scientificName);
+    setCropProfileId(match.id);
+    setCropProfileLabel(`${match.scientificName} (reviewed lifecycle)`);
+    setLifeSpanPath(match.lifeSpanPath);
+    setProductionPattern(match.productionPattern);
+    setDormancyPattern(match.dormancyPattern);
+    setLifecycleGuidance(match.guidance);
+    setLifecycleQuestions(match.requiredQuestions);
+    setFeedback("");
+  }
+
   async function startGrow() {
     if (!canStart) {
       setFeedback("Name, start date, crop type, and at least one room are required.");
@@ -117,7 +179,35 @@ export default function StartGrowWizard() {
         rooms: selectedRooms,
         roomIds: selectedRooms,
         cropTypes: selectedCrops,
-        growInterests: { crops: selectedCrops }
+        growInterests: { crops: selectedCrops },
+        cropCommonName: cropCommonName.trim() || undefined,
+        scientificName: scientificName.trim() || undefined,
+        commonNames: commonNames
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean),
+        cultivar: cultivar.trim() || undefined,
+        cropProfileId: cropProfileId || undefined,
+        cropIdentity: cropCommonName.trim()
+          ? {
+              commonName: cropCommonName.trim(),
+              scientificName: scientificName.trim() || null,
+              commonNames: commonNames
+                .split(",")
+                .map((value) => value.trim())
+                .filter(Boolean),
+              cultivar: cultivar.trim() || null,
+              source: "facility_grow_setup",
+              userConfirmed: true
+            }
+          : undefined,
+        planning: {
+          lifeSpanPath,
+          productionPattern,
+          dormancyPattern,
+          roomIds: selectedRooms,
+          guidanceSourceIds: cropProfileId ? [cropProfileId] : []
+        }
       });
       router.replace({
         pathname: "/onboarding/assign-plants",
@@ -207,6 +297,150 @@ export default function StartGrowWizard() {
           }}
           optional={false}
         />
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.label}>Exact crop identity</Text>
+          <Text style={styles.helper}>Recommended for crop-aware planning</Text>
+        </View>
+        <Text style={styles.helper}>
+          Record the crop itself separately from its broad category. Reviewed matches can
+          suggest a lifecycle, but the owner reviews every suggestion before saving.
+        </Text>
+        <TextInput
+          accessibilityLabel="Crop common name"
+          style={styles.input}
+          placeholder="Tomato"
+          placeholderTextColor={palette.textMuted}
+          value={cropCommonName}
+          onChangeText={(value) => {
+            setCropCommonName(value);
+            setCropProfileId("");
+            setCropProfileLabel("");
+            setFeedback("");
+          }}
+        />
+        <TextInput
+          accessibilityLabel="Crop scientific name"
+          style={styles.input}
+          placeholder="Solanum lycopersicum (optional)"
+          placeholderTextColor={palette.textMuted}
+          value={scientificName}
+          onChangeText={(value) => {
+            setScientificName(value);
+            setCropProfileId("");
+            setCropProfileLabel("");
+            setFeedback("");
+          }}
+        />
+        <TextInput
+          accessibilityLabel="Other crop names"
+          style={styles.input}
+          placeholder="Other names, comma separated"
+          placeholderTextColor={palette.textMuted}
+          value={commonNames}
+          onChangeText={setCommonNames}
+        />
+        <TextInput
+          accessibilityLabel="Cultivar"
+          style={styles.input}
+          placeholder="Cultivar or variety, if known"
+          placeholderTextColor={palette.textMuted}
+          value={cultivar}
+          onChangeText={setCultivar}
+        />
+        <Pressable
+          onPress={matchCropGuidance}
+          disabled={!cropCommonName.trim() && !scientificName.trim()}
+          accessibilityRole="button"
+          accessibilityLabel="Match crop guidance"
+          style={styles.secondaryButton}
+        >
+          <Text style={styles.secondaryButtonText}>Match reviewed crop guidance</Text>
+        </Pressable>
+        {cropProfileLabel ? (
+          <Text style={styles.profileMatch}>Matched: {cropProfileLabel}</Text>
+        ) : null}
+
+        <Text style={styles.label}>Plant lifespan</Text>
+        <View style={styles.roomGrid}>
+          {LIFE_SPAN_OPTIONS.map(([value, label]) => (
+            <Pressable
+              key={value}
+              onPress={() => setLifeSpanPath(value)}
+              accessibilityRole="button"
+              accessibilityLabel={`Plant lifespan ${label}`}
+              style={[styles.roomChip, lifeSpanPath === value && styles.roomChipActive]}
+            >
+              <Text
+                style={[
+                  styles.roomChipText,
+                  lifeSpanPath === value && styles.roomChipTextActive
+                ]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.label}>Harvest or observation pattern</Text>
+        <View style={styles.roomGrid}>
+          {PRODUCTION_OPTIONS.map(([value, label]) => (
+            <Pressable
+              key={value}
+              onPress={() => setProductionPattern(value)}
+              accessibilityRole="button"
+              accessibilityLabel={`Production pattern ${label}`}
+              style={[
+                styles.roomChip,
+                productionPattern === value && styles.roomChipActive
+              ]}
+            >
+              <Text
+                style={[
+                  styles.roomChipText,
+                  productionPattern === value && styles.roomChipTextActive
+                ]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.label}>Dormancy</Text>
+        <View style={styles.roomGrid}>
+          {DORMANCY_OPTIONS.map(([value, label]) => (
+            <Pressable
+              key={value}
+              onPress={() => setDormancyPattern(value)}
+              accessibilityRole="button"
+              accessibilityLabel={`Dormancy ${label}`}
+              style={[
+                styles.roomChip,
+                dormancyPattern === value && styles.roomChipActive
+              ]}
+            >
+              <Text
+                style={[
+                  styles.roomChipText,
+                  dormancyPattern === value && styles.roomChipTextActive
+                ]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        {lifecycleGuidance.length ? (
+          <View style={styles.guidanceCard}>
+            <Text style={styles.guidanceTitle}>Reviewed planning context</Text>
+            {lifecycleGuidance.map((item) => (
+              <Text key={item} style={styles.helper}>• {item}</Text>
+            ))}
+            {lifecycleQuestions.map((item) => (
+              <Text key={item} style={styles.question}>Confirm: {item}</Text>
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.label}>Crop type</Text>
@@ -378,6 +612,17 @@ export const createStartGrowStyles = (palette: ThemePalette) =>
       justifyContent: "space-between"
     },
     helper: { color: palette.textMuted, fontWeight: "700" },
+    profileMatch: { color: palette.accent, fontWeight: "900" },
+    guidanceCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 12
+    },
+    guidanceTitle: { color: palette.text, fontSize: 15, fontWeight: "900" },
+    question: { color: palette.textSoft, fontWeight: "800" },
     loadingRow: { alignItems: "center", flexDirection: "row", gap: 8 },
     roomGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     roomChip: {
