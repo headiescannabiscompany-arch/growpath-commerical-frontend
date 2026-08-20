@@ -4,12 +4,22 @@ import { fireEvent, render } from "@testing-library/react-native";
 import FacilityAiToolsRoute, {
   FACILITY_CORE_TOOLS,
   FACILITY_CANNABIS_TOOLS,
+  FACILITY_OWNER_QA_TOOLS,
   FACILITY_RECORD_TOOLS,
   facilityToolHref
 } from "@/app/home/facility/(tabs)/ai-tools";
 
 const mockTokenBalanceWidget = jest.fn((_props: any) => null);
 const mockPush = jest.fn();
+let mockEntitlements = {
+  facilityRole: "OWNER",
+  can: jest.fn(() => true)
+};
+
+jest.mock("@/entitlements", () => ({
+  CAPABILITY_KEYS: { FACILITY_SETTINGS_EDIT: "facility.settings.edit" },
+  useEntitlements: () => mockEntitlements
+}));
 
 jest.mock(
   "@/components/TokenBalanceWidget",
@@ -37,6 +47,10 @@ describe("FacilityAiToolsRoute", () => {
   beforeEach(() => {
     mockPush.mockReset();
     mockTokenBalanceWidget.mockClear();
+    mockEntitlements = {
+      facilityRole: "OWNER",
+      can: jest.fn(() => true)
+    };
   });
 
   it("shows grow-optional Harvest Readiness from the general Facility hub", () => {
@@ -112,6 +126,29 @@ describe("FacilityAiToolsRoute", () => {
     expect(mockPush).toHaveBeenLastCalledWith(
       "/home/facility/tools/npk?workspace=facility&facilityId=facility-headies"
     );
+  });
+
+  it("surfaces AI templates for Facility users and gates the validation lab entry to a capable owner", () => {
+    const ownerScreen = render(<FacilityAiToolsRoute />);
+
+    expect(ownerScreen.getByText("Facility AI Templates")).toBeTruthy();
+    fireEvent.press(ownerScreen.getByRole("button", { name: "Open AI Templates" }));
+    expect(mockPush).toHaveBeenLastCalledWith("/home/facility/ai-template");
+
+    expect(ownerScreen.getByText("Owner AI quality controls")).toBeTruthy();
+    expect(ownerScreen.getByText(FACILITY_OWNER_QA_TOOLS[0].title)).toBeTruthy();
+    fireEvent.press(ownerScreen.getByRole("button", { name: "Open AI Validation Lab" }));
+    expect(mockPush).toHaveBeenLastCalledWith("/home/facility/ai-validation");
+
+    ownerScreen.unmount();
+    mockEntitlements = {
+      facilityRole: "STAFF",
+      can: jest.fn(() => false)
+    };
+    const staffScreen = render(<FacilityAiToolsRoute />);
+    expect(staffScreen.getByText("Facility AI Templates")).toBeTruthy();
+    expect(staffScreen.queryByText("Owner AI quality controls")).toBeNull();
+    expect(staffScreen.queryByText("AI Validation Lab")).toBeNull();
   });
 
   it("does not invent a Facility identifier when none is selected", () => {
