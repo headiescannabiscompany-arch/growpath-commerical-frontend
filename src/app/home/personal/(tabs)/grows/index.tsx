@@ -27,6 +27,16 @@ function formatDate(value?: string) {
   return date.toLocaleDateString();
 }
 
+export function formatGrowStartDate(value?: string) {
+  if (!value) return "n/a";
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return formatDate(value);
+  const [, year, month, day] = match;
+  const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+  if (Number.isNaN(localDate.getTime())) return String(value).slice(0, 10);
+  return localDate.toLocaleDateString();
+}
+
 function safeText(value: unknown) {
   return String(value || "").trim();
 }
@@ -51,7 +61,7 @@ function growIdentity(grow?: PersonalGrow | null) {
 function growSummary(grow?: PersonalGrow | null) {
   const parts = [
     safeText(grow?.location),
-    grow?.startDate ? `Started ${formatDate(grow.startDate)}` : "",
+    grow?.startDate ? `Started ${formatGrowStartDate(grow.startDate)}` : "",
     grow?.updatedAt ? `Updated ${formatDate(grow.updatedAt)}` : ""
   ].filter(Boolean);
   return parts.length
@@ -652,7 +662,7 @@ export default function PersonalGrowsRoute({
               safeText(grow?.location),
               safeText(grow?.cropCommonName || grow?.scientificName),
               safeText(grow?.cultivar || grow?.strain),
-              grow?.startDate ? `Started ${formatDate(grow.startDate)}` : "",
+              grow?.startDate ? `Started ${formatGrowStartDate(grow.startDate)}` : "",
               grow?.updatedAt ? `Updated ${formatDate(grow.updatedAt)}` : ""
             ].filter(Boolean);
             const note = safeText(grow?.notes);

@@ -1588,11 +1588,11 @@ export default function NewGrowScreen({
                 ["Add Plants", `${basePath}/grows/${createdGrowId}/plants`],
                 [
                   "Create First Journal Entry",
-                  `/home/personal/logs/new?growId=${encodeURIComponent(createdGrowId)}`
+                  `${basePath}/logs/new?growId=${encodeURIComponent(createdGrowId)}`
                 ],
                 [
                   "Create Grow Calendar",
-                  `/home/personal/tools/auto-grow-calendar?${new URLSearchParams({
+                  `${basePath}/tools/auto-grow-calendar?${new URLSearchParams({
                     growId: createdGrowId,
                     source: "start_grow",
                     cropCommonName: cropCommonName.trim(),

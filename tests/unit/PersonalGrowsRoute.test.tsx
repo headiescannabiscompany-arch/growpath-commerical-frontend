@@ -1,7 +1,9 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
-import PersonalGrowsRoute from "@/app/home/personal/(tabs)/grows";
+import PersonalGrowsRoute, {
+  formatGrowStartDate
+} from "@/app/home/personal/(tabs)/grows";
 
 const mockListPersonalGrows = jest.fn();
 const mockPush = jest.fn();
@@ -44,6 +46,12 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
 });
 
 describe("PersonalGrowsRoute", () => {
+  it("renders a date-only grow anchor without shifting it across timezones", () => {
+    expect(formatGrowStartDate("2026-08-20T00:00:00.000Z")).toBe(
+      new Date(2026, 7, 20).toLocaleDateString()
+    );
+  });
+
   beforeEach(() => {
     mockListPersonalGrows.mockReset();
     mockPush.mockReset();

@@ -256,7 +256,7 @@ export default function CommercialTabsLayout() {
         name="grows/new"
         options={{
           href: null,
-          title: "Create Product Trial Evidence Run",
+          title: "Create Grow",
           headerShown: false
         }}
       />
@@ -264,8 +264,12 @@ export default function CommercialTabsLayout() {
         name="grows/[growId]"
         options={{
           href: null,
-          title: "Product Trial Evidence Run Detail"
+          title: "Grow Workspace"
         }}
+      />
+      <Tabs.Screen
+        name="logs/new"
+        options={{ href: null, title: "New Journal Entry", headerShown: false }}
       />
       <Tabs.Screen
         name="evidence-runs/index"
@@ -361,6 +365,14 @@ export default function CommercialTabsLayout() {
         }}
       />
       <Tabs.Screen name="tools/report" options={{ title: "Export Report", href: null }} />
+      <Tabs.Screen
+        name="tools/integrations"
+        options={{ title: "Data Integrations", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="tools/auto-grow-calendar"
+        options={{ title: "Auto Grow Calendar", href: null, headerShown: false }}
+      />
       <Tabs.Screen
         name="tools/history-import"
         options={{ title: "Import Grow History", href: null }}
