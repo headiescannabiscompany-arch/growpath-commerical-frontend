@@ -657,6 +657,28 @@ grow`, private current location without a Field Study, and an optional approxima
   no new content-report alert; it did not claim access to the separate Admin mailbox.
   Delivered Admin-email clicks plus retained Feed, product, video, and live-session
   report cases therefore remain.
+- [ ] Complete the final Admin workspace and moderation acceptance as a distinct
+      final-crawl role. Give the platform owner one clearly labeled Admin entry/tab
+      and a consolidated Admin Tools hub while also placing contextual moderation
+      actions on the content/account surfaces they govern. The hub must combine
+      moderation cases, security and safety reports, delivery/integration failures,
+      actionable notifications, open/resolved tallies, retained resolution history,
+      exact source links, account context, assignment/status/notes, and audited
+      resolve/reopen/escalate/account-enforcement actions. Reported items must be
+      removable from the active queue only through an explicit disposition, not by
+      hiding or deleting the audit history. Define a high-severity human-safety path
+      for credible imminent-danger, exploitation, trafficking, or child-safety reports
+      with restricted access, evidence preservation, emergency/contact guidance, and
+      documented escalation; do not automatically contact authorities or expose private
+      account data from an unverified user report. Add a controlled legal-request flow
+      for subpoenas, warrants, emergency disclosure requests, preservation requests,
+      and account-holder data production that requires request authentication, legal/
+      owner authorization, minimum-necessary scope, export manifest, chain-of-custody,
+      immutable audit events, and disclosure/denial status. Final acceptance must crawl
+      every Admin page and contextual action in Day/Night/Auto, desktop/mobile, empty and
+      populated states, verify non-admin denial, and exercise safe temporary report and
+      resolution records through reload and cleanup without fabricating a real emergency
+      or disclosing unrelated private user data.
 - [~] Approved temporary production records verified populated Facility Grow, Plant,
   Journal, Inventory, Compliance, SOP comparison, and Owner-only AI Validation Lab
   states. Live reload/navigation and immutable create/update/delete/resolve/SOP
