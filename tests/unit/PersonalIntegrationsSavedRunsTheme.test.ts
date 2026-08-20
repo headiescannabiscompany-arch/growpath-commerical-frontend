@@ -90,7 +90,7 @@ describe("Personal integrations and saved runs active palette", () => {
     expect(styles.primaryText.color).toBe(nightPalette.accentText);
   });
 
-  it("keeps Day mode palette-driven and themes all eight text fields", () => {
+  it("keeps Day mode palette-driven and themes all ten text fields", () => {
     expect(createDataIntegrationsStyles(dayPalette).container.backgroundColor).toBe(
       dayPalette.page
     );
@@ -110,7 +110,7 @@ describe("Personal integrations and saved runs active palette", () => {
       fs.readFileSync(path.join(process.cwd(), file), "utf8")
     );
     expect(sources[0].match(/<TextInput\b/g) || []).toHaveLength(6);
-    expect(sources[1].match(/<TextInput\b/g) || []).toHaveLength(2);
+    expect(sources[1].match(/<TextInput\b/g) || []).toHaveLength(4);
     for (const source of sources) {
       const inputCount = (source.match(/<TextInput\b/g) || []).length;
       expect(
