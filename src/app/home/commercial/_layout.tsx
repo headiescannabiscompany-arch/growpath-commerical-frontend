@@ -140,6 +140,14 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen name="lives" options={{ title: "Lives", href: null }} />
       <Tabs.Screen
+        name="regulated-commerce"
+        options={{
+          title: "Regulated Commerce Permissions",
+          href: null,
+          headerShown: false
+        }}
+      />
+      <Tabs.Screen
         name="orders"
         options={{
           title: "Orders",
