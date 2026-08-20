@@ -27,6 +27,18 @@ concurrency load test, or a successful confirmed-Plant-ID-to-grow mutation.
   were persisted but not reviewable there. This change adds a shared crop-identity and
   lifecycle panel plus direct Grow Calendar and Plants actions for Personal and
   Commercial grow details.
+- Merge `95d946bae8c9c9fd4befd96495134de937f4a612` passed both main-branch
+  production checks. Production then rendered the new panel on grow
+  `6a86c181e4f8953edcc6ec11`, classified the saved tomato as a climate-dependent
+  tender perennial with cultivar-dependent production and climate-dependent dormancy,
+  kept its absent scientific identity explicitly `Not confirmed`, and opened both the
+  exact grow-scoped Calendar and Plants destinations.
+- The linked Calendar initially recognized only the grow ID and required an optional
+  AI-credit action to fill facts already stored on the grow. The follow-up change
+  deterministically loads saved crop identity, reviewed lifecycle, count, start date,
+  establishment/harvest timing, environment, method, and reviewed-source notice for
+  Personal, Commercial, and Facility grow selections. AI remains optional for deeper
+  evidence synthesis and cannot replace confirmed saved values.
 
 Focused verification: six suites / 34 assertions passed across New Grow access,
 Facility Start Grow, Auto Grow Calendar, the reviewed lifecycle registry, Grow

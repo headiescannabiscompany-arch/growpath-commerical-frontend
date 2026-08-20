@@ -46,6 +46,48 @@ function growCalendarMetadata(sourceStage: string) {
   };
 }
 
+const CALENDAR_CONTEXT_FIELDS = [
+  "cropCommonName",
+  "scientificName",
+  "lifeSpanPath",
+  "productionPattern",
+  "dormancyPattern",
+  "plantCount",
+  "startDate",
+  "vegLengthWeeks",
+  "expectedFlowerDays",
+  "growStyle",
+  "medium",
+  "plants",
+  "planningNotes"
+];
+
+function savedGrowCalendarValues(grow: Record<string, any>) {
+  const planning =
+    grow?.planning && typeof grow.planning === "object" ? grow.planning : {};
+  const plantCount = Number(planning.plantCount);
+  return {
+    cropCommonName: grow.cropCommonName || grow.strain || grow.cropTypes?.[0] || "",
+    scientificName: grow.scientificName || "",
+    lifeSpanPath: planning.lifeSpanPath || "",
+    productionPattern: planning.productionPattern || "",
+    dormancyPattern: planning.dormancyPattern || "",
+    plantCount: Number.isFinite(plantCount) && plantCount > 0 ? String(plantCount) : "",
+    startDate: grow.startDate || grow.startedAt || "",
+    vegLengthWeeks:
+      planning.vegLengthWeeks == null ? "" : String(planning.vegLengthWeeks),
+    expectedFlowerDays:
+      planning.expectedFlowerDays == null ? "" : String(planning.expectedFlowerDays),
+    growStyle: grow.environmentTypes?.[0] || grow.environmentType || "",
+    medium: grow.growingMethods?.[0] || grow.medium || "",
+    planningNotes:
+      Array.isArray(planning.lifecycleGuidanceSourceIds) &&
+      planning.lifecycleGuidanceSourceIds.length
+        ? "Lifecycle guidance is backed by reviewed source records. Confirm cultivar, region, and dates before scheduling."
+        : ""
+  };
+}
+
 function calendarTaskPlan(outputs: Record<string, any>) {
   const schedule = Array.isArray(outputs.taskSchedule) ? outputs.taskSchedule : [];
   return schedule.slice(0, 20).map((item: any, index: number) => {
@@ -76,6 +118,8 @@ export default function AutoGrowCalendarToolRoute() {
       toolKey="auto-grow-calendar"
       title="Auto Grow Calendar"
       subtitle="Build one editable crop lifecycle plan from confirmed identity, establishment, flowering or fruiting, harvest, observation, and dormancy context. Cannabis grows retain their detailed veg, flower, harvest, dry, and cure path."
+      resetFieldsOnContextChange={CALENDAR_CONTEXT_FIELDS}
+      growContextPrefill={savedGrowCalendarValues}
       aiPrefill={{
         buttonLabel: "Fill lifecycle plan from grow",
         clearUnfilled: true,

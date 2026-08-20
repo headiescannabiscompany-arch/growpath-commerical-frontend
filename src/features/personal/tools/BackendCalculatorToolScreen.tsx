@@ -68,6 +68,7 @@ type SelectableGrow = {
   _id?: string;
   name?: string;
   growName?: string;
+  [key: string]: unknown;
 };
 
 export type ExternalAiDraft = {
@@ -118,6 +119,7 @@ type BackendCalculatorToolScreenProps = {
   experienceMessage?: string;
   aiCreditMessage?: string;
   fields: ToolField[];
+  growContextPrefill?: (grow: SelectableGrow) => Record<string, unknown>;
   validateValues?: (
     values: Record<string, string>,
     context?: {
@@ -353,6 +355,7 @@ export default function BackendCalculatorToolScreen({
   experienceMessage,
   aiCreditMessage: aiCreditMessageOverride,
   fields,
+  growContextPrefill,
   validateValues,
   buildPayload,
   buildMetrics = defaultMetrics,
@@ -798,6 +801,37 @@ export default function BackendCalculatorToolScreen({
       active = false;
     };
   }, [commercialAccountId, facilityId, growOptional, locked, routeGrowId, workspaceType]);
+
+  React.useEffect(() => {
+    if (!growContextPrefill || !growId || !availableGrows.length) return;
+    const selectedGrow = availableGrows.find(
+      (grow) => String(grow.id || grow._id || "") === String(growId)
+    );
+    if (!selectedGrow) return;
+
+    const savedValues = growContextPrefill(selectedGrow);
+    const supportedFieldKeys = new Set(fields.map((field) => field.key));
+    const nextSavedValues: Record<string, string> = Object.fromEntries(
+      Object.entries(savedValues)
+        .filter(([fieldKey]) => supportedFieldKeys.has(fieldKey))
+        .map(([fieldKey, value]) => [fieldKey, normalizedPrefillText(value)])
+        .filter(([, value]) => Boolean(value))
+    );
+    if (!Object.keys(nextSavedValues).length) return;
+
+    setValues((current) => {
+      const next = { ...current };
+      for (const [fieldKey, value] of Object.entries(nextSavedValues)) {
+        if (!userEditedFieldKeysRef.current.has(fieldKey)) next[fieldKey] = value;
+      }
+      valuesRef.current = next;
+      userValuesRef.current = next;
+      return next;
+    });
+    setFeedback(
+      "Loaded saved crop and lifecycle facts from this grow. AI remains optional for deeper context."
+    );
+  }, [availableGrows, fields, growContextPrefill, growId]);
 
   function updateValue(key: string, value: string) {
     inputRevisionRef.current += 1;

@@ -6,6 +6,7 @@ import AutoGrowCalendarToolRoute from "@/app/home/personal/(tabs)/tools/auto-gro
 const mockRunCalculator = jest.fn();
 const mockCreateGrowpathModuleRecord = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
+const mockListPersonalGrows = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "grow-1" }),
@@ -48,6 +49,15 @@ jest.mock("@/features/personal/tools/ToolPlantContextPicker", () => {
 
 jest.mock("@/api/toolRuns", () => ({
   runCalculator: (...args: any[]) => mockRunCalculator(...args)
+}));
+
+jest.mock("@/api/grows", () => ({
+  listGrows: jest.fn(),
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
+}));
+
+jest.mock("@/api/commercialWorkflows", () => ({
+  fetchCommercialGrows: jest.fn()
 }));
 
 jest.mock("@/api/growpathModules", () => ({
@@ -102,12 +112,56 @@ describe("AutoGrowCalendarToolRoute", () => {
       toolRunId: "toolrun-1",
       taskIds: ["task-1", "task-2", "task-3"]
     });
+    mockListPersonalGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        name: "Tomato production",
+        cropCommonName: "tomato",
+        scientificName: "Solanum lycopersicum",
+        startDate: "2026-06-01",
+        environmentTypes: ["greenhouse"],
+        growingMethods: ["soil"],
+        planning: {
+          lifeSpanPath: "climate_dependent_perennial",
+          productionPattern: "cultivar_dependent",
+          dormancyPattern: "climate_dependent",
+          plantCount: 12,
+          vegLengthWeeks: 5,
+          expectedFlowerDays: 74,
+          lifecycleGuidanceSourceIds: ["extension-minnesota-tomato-growing"]
+        }
+      }
+    ]);
   });
 
   it("creates tasks from the generated grow calendar schedule", async () => {
     const screen = render(<AutoGrowCalendarToolRoute />);
 
-    expect(screen.getByLabelText("Auto Grow Calendar Crop common name")).toBeTruthy();
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Auto Grow Calendar Crop common name").props.value
+      ).toBe("tomato")
+    );
+    expect(
+      screen.getByLabelText("Auto Grow Calendar Scientific name (optional)").props.value
+    ).toBe("Solanum lycopersicum");
+    expect(screen.getByLabelText("Auto Grow Calendar Lifecycle path").props.value).toBe(
+      "climate_dependent_perennial"
+    );
+    expect(
+      screen.getByLabelText("Auto Grow Calendar Harvest or observation pattern").props
+        .value
+    ).toBe("cultivar_dependent");
+    expect(screen.getByLabelText("Auto Grow Calendar Dormancy pattern").props.value).toBe(
+      "climate_dependent"
+    );
+    expect(screen.getByLabelText("Auto Grow Calendar Plant count").props.value).toBe(
+      "12"
+    );
+    expect(screen.getByLabelText("Auto Grow Calendar Grow style").props.value).toBe(
+      "greenhouse"
+    );
+    expect(screen.getByLabelText("Auto Grow Calendar Medium").props.value).toBe("soil");
     expect(screen.getByLabelText("Auto Grow Calendar Lifecycle path")).toBeTruthy();
     expect(
       screen.getByLabelText("Auto Grow Calendar Harvest or observation pattern")
@@ -116,12 +170,12 @@ describe("AutoGrowCalendarToolRoute", () => {
       screen.getByLabelText(
         "Auto Grow Calendar Establishment / vegetative weeks (if known)"
       ).props.value
-    ).toBe("");
+    ).toBe("5");
     expect(
       screen.getByLabelText(
         "Auto Grow Calendar Flowering or first-harvest days (if known)"
       ).props.value
-    ).toBe("");
+    ).toBe("74");
 
     fireEvent.press(screen.getByLabelText("Auto Grow Calendar Start date"));
     fireEvent(
@@ -148,7 +202,11 @@ describe("AutoGrowCalendarToolRoute", () => {
         expect.objectContaining({
           growId: "grow-1",
           startDate: "2026-07-07",
-          plantCount: "4"
+          plantCount: "12",
+          cropCommonName: "tomato",
+          scientificName: "Solanum lycopersicum",
+          lifeSpanPath: "climate_dependent_perennial",
+          productionPattern: "cultivar_dependent"
         })
       )
     );
@@ -166,7 +224,7 @@ describe("AutoGrowCalendarToolRoute", () => {
           toolRunId: "toolrun-1",
           input: expect.objectContaining({
             startDate: "2026-07-07",
-            plantCount: "4"
+            plantCount: "12"
           }),
           output: expect.objectContaining({
             taskSchedule: expect.any(Array)
