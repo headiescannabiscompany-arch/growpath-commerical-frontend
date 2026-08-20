@@ -3126,6 +3126,15 @@ export default function SpeciesCropIdToolRoute({
         clearUnfilled: false,
         preserveAllExistingFields: true,
         evidenceAssetIds: () => assistantEvidenceAssetIds,
+        sourceToolRunId: () =>
+          currentEvidenceAssets.some(
+            (asset) =>
+              String(asset.purpose || "")
+                .trim()
+                .toLowerCase() === "other"
+          )
+            ? String(retryToolRunId || "").trim()
+            : "",
         isReady: () =>
           uploadedEvidence.images.length > 0 &&
           !locationBusy &&

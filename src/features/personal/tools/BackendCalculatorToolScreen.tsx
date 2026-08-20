@@ -191,6 +191,7 @@ type BackendCalculatorToolScreenProps = {
     preserveAllExistingFields?: boolean;
     preserveExistingFields?: string[];
     evidenceAssetIds?: () => string[];
+    sourceToolRunId?: () => string;
     isReady?: () => boolean;
     notReadyMessage?: string;
     prepare?: () => void | Promise<void>;
@@ -995,6 +996,7 @@ export default function BackendCalculatorToolScreen({
       const response = await askPersonalAssistant({
         growId: growId || undefined,
         plantId: plantContext.plantId || undefined,
+        sourceToolRunId: aiPrefill.sourceToolRunId?.() || undefined,
         ...(isCropIdentification || workspaceType !== "personal"
           ? { workspaceType }
           : {}),
