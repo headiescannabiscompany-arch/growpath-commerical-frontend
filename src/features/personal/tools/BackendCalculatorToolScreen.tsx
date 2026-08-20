@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -99,6 +99,7 @@ type BackendCalculatorToolScreenProps = {
   externalAiDraftScopeKey?: string;
   externalAiDraft?: ExternalAiDraft | null;
   onToolRunChange?: (toolRun: ToolRun | null) => void;
+  onValuesChange?: (values: Record<string, string>) => void;
   onGrowIdChange?: (growId: string) => void;
   resetFieldsOnContextChange?: string[];
   executionBlocked?: boolean;
@@ -343,6 +344,7 @@ export default function BackendCalculatorToolScreen({
   externalAiDraftScopeKey = "",
   externalAiDraft = null,
   onToolRunChange,
+  onValuesChange,
   onGrowIdChange,
   resetFieldsOnContextChange = [],
   executionBlocked = false,
@@ -479,6 +481,10 @@ export default function BackendCalculatorToolScreen({
     [fields, params]
   );
   const [values, setValues] = useState<Record<string, string>>(initialValues);
+
+  useEffect(() => {
+    onValuesChange?.(values);
+  }, [onValuesChange, values]);
   const [outputs, setOutputs] = useState<Record<string, any> | null>(null);
   const [toolRun, setToolRun] = useState<ToolRun | null>(null);
   const [moduleRecord, setModuleRecord] = useState<GrowpathModuleRecord | null>(null);

@@ -46,6 +46,13 @@ function openLocationAndSharing(screen: any) {
   if (collapsedControl) fireEvent.press(collapsedControl);
 }
 
+function chooseObservationDate(screen: any, date = "2026-08-12") {
+  const label = "Species / Crop Identification Observation date";
+  fireEvent.press(screen.getByLabelText(label));
+  fireEvent.press(screen.getByLabelText(`${label} day ${date}`));
+  fireEvent.press(screen.getByLabelText(`${label} use selected date`));
+}
+
 jest.mock("expo-router", () => ({
   Link: ({ children }: any) => children,
   useLocalSearchParams: () => mockSearchParams,
@@ -1838,6 +1845,70 @@ describe("SpeciesCropIdToolRoute", () => {
       expect(mockRunCalculator).not.toHaveBeenCalled();
     }
   );
+
+  it("recovers a legacy Plant ID photo saved under the former generic purpose", async () => {
+    mockSearchParams = { retryToolRunId: "6a6fad99510a22fe5a5e352d" };
+    mockEvidenceAssets = [];
+    mockGetToolRun.mockResolvedValue({
+      id: "6a6fad99510a22fe5a5e352d",
+      toolType: "species_crop_id",
+      inputs: {
+        evidenceAssetIds: ["legacy-plant-photo-1"],
+        imageAnalysis: { evidenceUsed: ["legacy-plant-photo-1"] },
+        mediaEvidence: [{ id: "legacy-plant-photo-1", type: "photo" }]
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      {
+        id: "legacy-plant-photo-1",
+        assetType: "photo",
+        originalUri: "file:///legacy-plant-photo.jpg",
+        durableUrl: "/protected/legacy-plant-photo.jpg",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: true,
+        purpose: "other",
+        qualityWarnings: []
+      }
+    ]);
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(await screen.findByText(/Recovered 1 saved photo/i)).toBeTruthy();
+    expect(screen.queryByText(/belongs to another workflow/i)).toBeNull();
+  });
+
+  it("does not treat a modern generic-purpose asset as legacy Plant ID evidence", async () => {
+    mockSearchParams = { retryToolRunId: "6a86c181e4f8953edcc6ec11" };
+    mockEvidenceAssets = [];
+    mockGetToolRun.mockResolvedValue({
+      id: "6a86c181e4f8953edcc6ec11",
+      toolType: "species_crop_id",
+      inputs: {
+        evidenceAssetIds: ["modern-generic-photo-1"],
+        imageAnalysis: { evidenceUsed: ["modern-generic-photo-1"] },
+        mediaEvidence: [{ id: "modern-generic-photo-1", type: "photo" }]
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      {
+        id: "modern-generic-photo-1",
+        assetType: "photo",
+        originalUri: "file:///modern-generic-photo.jpg",
+        durableUrl: "/protected/modern-generic-photo.jpg",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: true,
+        purpose: "other",
+        qualityWarnings: []
+      }
+    ]);
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(await screen.findByText(/belongs to another workflow/i)).toBeTruthy();
+    expect(screen.queryByText(/Recovered 1 saved photo/i)).toBeNull();
+  });
 
   it("keeps an unverified generated frame and its source video out of AI", async () => {
     mockSearchParams = {};
@@ -4064,6 +4135,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText(/This is Cannabis\/hemp.*review public-context sharing/)
     );
+    chooseObservationDate(screen);
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     fireEvent.press(await screen.findByText("Publish Approximate Pin to Nature"));
 
@@ -4090,6 +4162,7 @@ describe("SpeciesCropIdToolRoute", () => {
           privacy: "public_approximate",
           exactLocationPublicConfirmed: false
         }),
+        observationDate: "2026-08-12",
         publication: expect.objectContaining({
           status: "published",
           cannabisContextConfirmed: true,
@@ -4164,6 +4237,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
+    chooseObservationDate(screen);
     await waitFor(() =>
       expect(
         screen.getByText("Ready to create an approximate map pin after AI review.")
@@ -4209,6 +4283,7 @@ describe("SpeciesCropIdToolRoute", () => {
             privacy: "public_approximate",
             exactLocationPublicConfirmed: false
           }),
+          observationDate: "2026-08-12",
           publication: expect.objectContaining({
             status: "published",
             cannabisContextConfirmed: true
@@ -4269,6 +4344,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
+    chooseObservationDate(screen);
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() =>
       expect(screen.getByText("Publish Approximate Pin to Nature")).toBeTruthy()
@@ -4316,6 +4392,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
+    chooseObservationDate(screen);
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() =>
       expect(screen.getByText("Publish Approximate Pin to Nature")).toBeTruthy()
@@ -4370,6 +4447,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
+    chooseObservationDate(screen);
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() =>
       expect(screen.getByText("Publish Approximate Pin to Nature")).toBeTruthy()
