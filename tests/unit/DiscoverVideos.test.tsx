@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 
 const mockPush = jest.fn();
 const mockSearchVideos = jest.fn();
+const mockListPublicFieldObservations = jest.fn();
 let mockThemeMode: "day" | "night" = "night";
 let mockWorkspaceMode: "personal" | "commercial" = "personal";
 
@@ -41,6 +42,17 @@ jest.mock("@/api/marketplace", () => ({
 jest.mock("@/api/storefront", () => ({
   searchPublicStorefronts: jest.fn(async () => [])
 }));
+jest.mock("@/api/fieldStudies", () => ({
+  listPublicFieldObservations: (...args: any[]) =>
+    mockListPublicFieldObservations(...args)
+}));
+jest.mock("@/components/fieldStudies/FieldObservationGlobe", () => ({
+  __esModule: true,
+  default: function MockFieldObservationGlobe({ observations }: any) {
+    const MockText = require("react-native").Text;
+    return <MockText>{`${observations.length} globe observations`}</MockText>;
+  }
+}));
 jest.mock("@/api/courses", () => ({
   listCourses: jest.fn(async () => []),
   searchCourses: jest.fn(async () => [])
@@ -77,6 +89,7 @@ describe("Discover video search", () => {
   beforeEach(() => {
     mockPush.mockReset();
     mockSearchVideos.mockReset();
+    mockListPublicFieldObservations.mockReset();
     mockThemeMode = "night";
     mockWorkspaceMode = "personal";
     mockSearchVideos.mockResolvedValue([
@@ -89,6 +102,7 @@ describe("Discover video search", () => {
         mediaSource: {}
       }
     ]);
+    mockListPublicFieldObservations.mockResolvedValue([]);
   });
 
   it("resolves available discovery art and exact course/live destinations", () => {
@@ -130,8 +144,14 @@ describe("Discover video search", () => {
     expect(screen.getAllByText("Discovery Nature")).toHaveLength(1);
     expect(screen.getByText("Identify a Plant")).toBeTruthy();
     expect(screen.getByText("Explore Mapped Plant Findings")).toBeTruthy();
-    expect(screen.queryByLabelText("Loading globe preview")).toBeNull();
-    expect(screen.queryByLabelText("Open Discovery Nature globe")).toBeNull();
+    expect(screen.getByText("0 globe observations")).toBeTruthy();
+    expect(screen.getByLabelText("Open Discovery Nature globe")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "No public pins yet. Tap to open the globe or identify and deliberately share a plant finding."
+      )
+    ).toBeTruthy();
+    expect(mockListPublicFieldObservations).toHaveBeenCalledWith({ limit: 100 });
     expect(mockSearchVideos).toHaveBeenCalledWith({
       q: undefined,
       sort: "new",
@@ -155,6 +175,8 @@ describe("Discover video search", () => {
     fireEvent.press(screen.getByLabelText("Open Identify a Plant"));
     expect(mockPush).toHaveBeenCalledWith("/home/personal/tools/species-crop-id");
     fireEvent.press(screen.getByLabelText("Open Explore Mapped Plant Findings"));
+    expect(mockPush).toHaveBeenCalledWith("/field-observations");
+    fireEvent.press(screen.getByLabelText("Open Discovery Nature globe"));
     expect(mockPush).toHaveBeenCalledWith("/field-observations");
   });
 

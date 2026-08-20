@@ -623,6 +623,10 @@ photo-evidence candidate, not a generic attachment; the publication service must
 confirm that it is an owned uploaded image and can produce the safe public derivative.
 
 The public discovery surface is an interactive, zoomable globe with clustered pins.
+The main Discover directory includes a compact globe preview that opens this canonical
+public discovery surface. The preview remains visible when there are zero public
+observations and must say that no public pins exist; an empty result must not collapse
+into text-only navigation that makes the globe appear missing.
 The server queries only the rounded or explicitly approved public point that the visitor
 is allowed to see; it must never use the protected exact point for viewport filtering, as
 that could reveal hidden precision through repeated map requests. The accessible
