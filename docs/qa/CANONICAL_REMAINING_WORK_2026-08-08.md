@@ -471,6 +471,18 @@ grow`, private current location without a Field Study, and an optional approxima
   as bundle `index-a2cc0b5942d80d314b56a95d5afdb60b.js`; production then returned from lesson
   `6a60e9d09f3dbb9d83d2c612` directly to selected course
   `6a60e9d09f3dbb9d83d2c611` with its title and lesson list retained.
+  On 2026-08-20, the real Admin Commercial session completed a non-mutating public
+  video-discovery acceptance pass. `/videos?tab=discover` loaded two published
+  GrowPath uploads with title, author, visibility, description, cannabis-context
+  disclosure where applicable, and working Watch actions. `People I follow` changed
+  the same live query to a truthful zero-result state without inventing followed
+  accounts. Opening published video `6a6a52f42ac7c03b4303a7d6` rendered the GrowPath
+  player, author and Follow control, report action, provider/source status,
+  cross-platform Share and Copy Link actions, topics, and the empty Discussion state
+  with a disabled blank-comment submit. No account was followed, report filed, link
+  shared, or comment posted. This closes discovery/list/detail/player/filter and
+  empty-comment rendering for retained production data; deliberate follow/unfollow,
+  comment create/reload/reply/moderation, and independent-user acceptance remain.
 - [~] Verify login/session/workspace selection and recovery across Free, Pro,
   Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
   server-down, reload, logout, and multi-workspace states. The same Personal Pro
