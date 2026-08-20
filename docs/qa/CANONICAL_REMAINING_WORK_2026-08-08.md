@@ -1103,6 +1103,20 @@ public visibility, or screenshot/video acceptance still called out below.
       common path forward from every page, not only route loading, and retain exact
       role/account, viewport, theme, URL, timestamp, screenshot/video, deployment, and
       defect/fix evidence.
+      A non-mutating signed-in desktop production batch on 2026-08-20 covered the
+      Admin Personal Home, Grows, AI Tools, Forum/Q&A, Discover, Courses, and Profile
+      routes and the Admin Commercial Dashboard, Grows, Storefront, Products, Courses,
+      Lives, Feed/Campaigns, Forum/Q&A, Tasks, and Profile routes. Every route loaded
+      its intended heading, Back control, contextual actions, and six-item workspace
+      navigation without an access, load, or application-error state. Commercial New
+      Grow reused the same reviewed/unknown crop setup as Personal. A direct Facility
+      Grow attempt from Commercial mode correctly returned the Facility-only access
+      boundary. The same batch loaded Discovery, Discovery Nature, Videos, Lives,
+      Store, Courses, and Forum public surfaces; empty Nature, Live, Storefront, and
+      Course data remained explicit instead of fabricated. This is useful route and
+      common-action evidence, but it is not the final candidate crawl: Facility role
+      paths, signed-out public state, mobile/tablet viewports, both themes, screenshots/
+      video, populated owner mutations, and every deep handoff still remain.
 - [x] Give published courses a deliberate media hierarchy: an optional list/banner
       image outside the opened course and one full course image inside it, without an
       unlabeled duplicate or an unexplained missing-image gap. Verify author add,
