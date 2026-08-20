@@ -17,12 +17,13 @@ describe("CommercialStack", () => {
     );
   });
 
-  it("routes evidence stack entries through canonical wrappers with legacy aliases", () => {
+  it("keeps evidence runs separate from ordinary crop-aware grows", () => {
     expect(source).toContain("../app/home/commercial/evidence-runs");
     expect(source).toContain("../app/home/commercial/evidence-runs/[id]");
     expect(source).toContain("../app/home/commercial/evidence-runs/new");
-    expect(source).not.toContain('../app/home/commercial/grows"');
-    expect(source).not.toContain("../app/home/commercial/grows/[growId]");
+    expect(source).toContain('../app/home/commercial/grows"');
+    expect(source).toContain("../app/home/commercial/grows/[growId]");
+    expect(source).toContain("../app/home/commercial/grows/new");
     expect(source).toMatch(
       /name="CommercialEvidenceRuns"\s+component={CommercialEvidenceRunsRoute}/
     );
@@ -33,13 +34,13 @@ describe("CommercialStack", () => {
       /name="CommercialEvidenceRunDetail"\s+component={CommercialEvidenceRunDetailRoute}/
     );
     expect(source).toContain(
-      '<Stack.Screen name="CommercialGrows" component={CommercialEvidenceRunsRoute} />'
+      '<Stack.Screen name="CommercialGrows" component={CommercialGrowsRoute} />'
     );
     expect(source).toContain(
-      '<Stack.Screen name="NewCommercialGrow" component={NewCommercialEvidenceRunRoute} />'
+      '<Stack.Screen name="NewCommercialGrow" component={NewCommercialGrowRoute} />'
     );
     expect(source).toMatch(
-      /name="CommercialGrowDetail"\s+component={CommercialEvidenceRunDetailRoute}/
+      /name="CommercialGrowDetail"\s+component={CommercialGrowDetailRoute}/
     );
   });
 

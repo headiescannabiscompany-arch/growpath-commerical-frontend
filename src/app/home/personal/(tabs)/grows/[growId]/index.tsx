@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, usePathname } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -103,7 +103,7 @@ function timelinePreviewHref(event: PersonalGrowTimelineEvent) {
   return sourceObjectHref({ ...(event as any), workspaceType: "personal" });
 }
 
-function shareGrowHref(grow: PersonalGrow | null, growId: string) {
+function shareGrowHref(grow: PersonalGrow | null, growId: string, basePath: string) {
   const tags = Array.from(
     new Set([
       ...(Array.isArray(grow?.growTags) ? grow.growTags : []),
@@ -124,7 +124,7 @@ function shareGrowHref(grow: PersonalGrow | null, growId: string) {
   });
   if (tags.length) query.set("growTags", tags.join(","));
   if (photos.length) query.set("photos", photos.join(","));
-  return `/home/personal/forum/new-post?${query.toString()}`;
+  return `${basePath === "/home/commercial" ? "/home/commercial/community" : "/home/personal/forum/new-post"}?${query.toString()}`;
 }
 
 function TimelinePreviewItem({
@@ -169,6 +169,10 @@ function TimelinePreviewItem({
 function GrowOverviewContent() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowOverviewStyles(palette), [palette]);
+  const pathname = usePathname?.() || "";
+  const basePath = pathname.startsWith("/home/commercial")
+    ? "/home/commercial"
+    : "/home/personal";
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
@@ -298,7 +302,7 @@ function GrowOverviewContent() {
             here after they are saved to this grow.
           </Text>
         )}
-        <Link href={`/home/personal/grows/${growId}/timeline`} asChild>
+        <Link href={`${basePath}/grows/${growId}/timeline`} asChild>
           <Pressable
             style={StyleSheet.flatten([
               styles.action,
@@ -325,12 +329,12 @@ function GrowOverviewContent() {
             <Text style={styles.actionText}>+ Journal Entry</Text>
           </Pressable>
         </Link>
-        <Link href={`/home/personal/grows/${growId}/tools`} asChild>
+        <Link href={`${basePath}/grows/${growId}/tools`} asChild>
           <Pressable style={styles.action}>
             <Text style={styles.actionText}>Grow Intelligence</Text>
           </Pressable>
         </Link>
-        <Link href={`/home/personal/grows/${growId}/tasks`} asChild>
+        <Link href={`${basePath}/grows/${growId}/tasks`} asChild>
           <Pressable style={styles.action}>
             <Text style={styles.actionText}>Add Task</Text>
           </Pressable>
@@ -351,7 +355,7 @@ function GrowOverviewContent() {
             <Text style={styles.actionText}>Export Report</Text>
           </Pressable>
         </Link>
-        <Link href={shareGrowHref(grow, growId) as any} asChild>
+        <Link href={shareGrowHref(grow, growId, basePath) as any} asChild>
           <Pressable style={styles.action} accessibilityLabel="Share grow to forum">
             <Text style={styles.actionText}>Share Grow</Text>
           </Pressable>
@@ -369,12 +373,12 @@ function GrowOverviewContent() {
 }
 
 export default function GrowOverviewScreen() {
+  const pathname = usePathname?.() || "";
+  const basePath = pathname.startsWith("/home/commercial")
+    ? "/home/commercial"
+    : "/home/personal";
   return (
-    <ScreenBoundary
-      title="Grow overview"
-      showBack
-      backFallbackHref="/home/personal/grows"
-    >
+    <ScreenBoundary title="Grow overview" showBack backFallbackHref={`${basePath}/grows`}>
       <GrowOverviewContent />
     </ScreenBoundary>
   );

@@ -33,6 +33,9 @@ import CommercialCourseDetailRoute from "../app/home/commercial/courses/[courseI
 import CommercialLivesRoute from "../app/home/commercial/lives";
 import CommercialEvidenceRunsRoute from "../app/home/commercial/evidence-runs";
 import CommercialEvidenceRunDetailRoute from "../app/home/commercial/evidence-runs/[id]";
+import CommercialGrowsRoute from "../app/home/commercial/grows";
+import NewCommercialGrowRoute from "../app/home/commercial/grows/new";
+import CommercialGrowDetailRoute from "../app/home/commercial/grows/[growId]";
 import CommercialProductsRoute from "../app/home/commercial/products";
 import CommercialProductDetailRoute from "../app/home/commercial/products/[productId]";
 import NewCommercialProductRoute from "../app/home/commercial/products/new";
@@ -87,12 +90,9 @@ export default function CommercialStack() {
         name="CommercialEvidenceRunDetail"
         component={CommercialEvidenceRunDetailRoute}
       />
-      <Stack.Screen name="CommercialGrows" component={CommercialEvidenceRunsRoute} />
-      <Stack.Screen name="NewCommercialGrow" component={NewCommercialEvidenceRunRoute} />
-      <Stack.Screen
-        name="CommercialGrowDetail"
-        component={CommercialEvidenceRunDetailRoute}
-      />
+      <Stack.Screen name="CommercialGrows" component={CommercialGrowsRoute} />
+      <Stack.Screen name="NewCommercialGrow" component={NewCommercialGrowRoute} />
+      <Stack.Screen name="CommercialGrowDetail" component={CommercialGrowDetailRoute} />
       <Stack.Screen name="CommercialProducts" component={CommercialProductsRoute} />
       <Stack.Screen name="NewCommercialProduct" component={NewCommercialProductRoute} />
       <Stack.Screen

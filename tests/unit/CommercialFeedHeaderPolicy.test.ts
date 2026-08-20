@@ -14,7 +14,9 @@ describe("Commercial page header policy", () => {
     const batchPlanner = read("src/app/home/commercial/batch-planner.tsx");
     const productTrials = read("src/app/home/commercial/trials.tsx");
     const inventorySupport = read("src/app/home/commercial/inventory.tsx");
-    const evidenceRuns = read("src/app/home/commercial/grows/index.tsx");
+    const evidenceRuns = read(
+      "src/features/commercial/screens/CommercialEvidenceRunsScreen.tsx"
+    );
 
     expect(layout).toMatch(
       /name="feed"\s+options=\{\{[\s\S]*?title: "Feed \/ Campaigns",[\s\S]*?tabBarLabel: compactTabs \? "Feed" : "Feed \/ Campaigns",[\s\S]*?headerShown: false/

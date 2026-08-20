@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Link } from "expo-router";
+import { Link, usePathname } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
@@ -45,9 +45,9 @@ type Section =
   | "timeline"
   | "compare";
 
-function hrefFor(growId: string, section: Section) {
-  if (section === "overview") return `/home/personal/grows/${growId}`;
-  return `/home/personal/grows/${growId}/${section}`;
+function hrefFor(basePath: string, growId: string, section: Section) {
+  if (section === "overview") return `${basePath}/grows/${growId}`;
+  return `${basePath}/grows/${growId}/${section}`;
 }
 
 export default function GrowWorkspaceNav({
@@ -58,6 +58,10 @@ export default function GrowWorkspaceNav({
   active: Section;
 }) {
   const { palette } = useAppTheme();
+  const pathname = usePathname?.() || "";
+  const basePath = pathname.startsWith("/home/commercial")
+    ? "/home/commercial"
+    : "/home/personal";
   const styles = useMemo(() => createGrowWorkspaceNavStyles(palette), [palette]);
   const tabs: { key: Section; label: string }[] = [
     { key: "overview", label: "Overview" },
@@ -84,7 +88,7 @@ export default function GrowWorkspaceNav({
       {tabs.map((tab) => {
         const isActive = tab.key === active;
         return (
-          <Link key={tab.key} href={hrefFor(growId, tab.key)} asChild>
+          <Link key={tab.key} href={hrefFor(basePath, growId, tab.key)} asChild>
             <Pressable
               accessibilityRole="tab"
               accessibilityLabel={`${tab.label} grow section`}

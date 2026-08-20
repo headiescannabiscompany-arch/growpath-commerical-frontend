@@ -97,8 +97,13 @@ function mergeTierSelections(...sources: Record<string, string[]>[]) {
   return merged;
 }
 
-export default function NewGrowScreen() {
+export default function NewGrowScreen({
+  workspace = "personal"
+}: {
+  workspace?: "personal" | "commercial";
+} = {}) {
   const router = useRouter();
+  const basePath = `/home/${workspace}`;
   const { palette } = useAppTheme();
   const params = useLocalSearchParams<{
     source?: string | string[];
@@ -552,7 +557,7 @@ export default function NewGrowScreen() {
       if (createdId) {
         setCreatedGrowId(createdId);
       } else {
-        router.replace(`/home/personal/grows?r=${Date.now()}`);
+        router.replace(`${basePath}/grows?r=${Date.now()}` as any);
       }
     } catch (err: any) {
       setError(err?.message ?? "Failed to create grow.");
@@ -597,7 +602,8 @@ export default function NewGrowScreen() {
     startType,
     vegLengthWeeks,
     scientificName,
-    params.sourceToolRunId
+    params.sourceToolRunId,
+    basePath
   ]);
 
   function openCreated(path: string) {
@@ -632,7 +638,7 @@ export default function NewGrowScreen() {
 
   if (checkingLimit && hasCreateCapability) {
     return (
-      <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
+      <ScreenBoundary title="New Grow" showBack backFallbackHref={`${basePath}/grows`}>
         <ScrollView
           style={{ flex: 1, backgroundColor: palette.page }}
           contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
@@ -649,7 +655,7 @@ export default function NewGrowScreen() {
 
   if (!canCreateGrow) {
     return (
-      <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
+      <ScreenBoundary title="New Grow" showBack backFallbackHref={`${basePath}/grows`}>
         <LockedScreen
           title={maxGrows === 1 ? "Free grow limit reached" : "Grow limit reached"}
           message={
@@ -663,7 +669,7 @@ export default function NewGrowScreen() {
   }
 
   return (
-    <ScreenBoundary title="New Grow" showBack backFallbackHref="/home/personal/grows">
+    <ScreenBoundary title="New Grow" showBack backFallbackHref={`${basePath}/grows`}>
       <ScrollView
         style={{ flex: 1, backgroundColor: palette.page }}
         contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
@@ -698,7 +704,7 @@ export default function NewGrowScreen() {
             accessibilityLabel="Ask AI to build a grow draft"
             onPress={() =>
               router.push(
-                "/home/personal/ai?prompt=Help%20me%20build%20a%20new%20grow%20from%20my%20grow%20interests" as any
+                `${workspace === "commercial" ? `${basePath}/tools/ask-ai` : `${basePath}/ai`}?prompt=Help%20me%20build%20a%20new%20grow%20from%20my%20grow%20interests` as any
               )
             }
             style={{
@@ -848,7 +854,7 @@ export default function NewGrowScreen() {
                 onPress={() => {
                   const crop = scientificName.trim() || cropCommonName.trim();
                   router.push(
-                    `/home/personal/ai?prompt=${encodeURIComponent(
+                    `${workspace === "commercial" ? `${basePath}/tools/ask-ai` : `${basePath}/ai`}?prompt=${encodeURIComponent(
                       `Help me set up a new grow for ${crop}. Use reviewed crop-specific guidance, explain uncertain inputs, and leave unknown facts for me to confirm.`
                     )}` as any
                   );
@@ -1572,7 +1578,7 @@ export default function NewGrowScreen() {
                 AI context attached.
               </Text>
               {[
-                ["Add Plants", `/home/personal/grows/${createdGrowId}/plants`],
+                ["Add Plants", `${basePath}/grows/${createdGrowId}/plants`],
                 [
                   "Create First Journal Entry",
                   `/home/personal/logs/new?growId=${encodeURIComponent(createdGrowId)}`
@@ -1597,9 +1603,9 @@ export default function NewGrowScreen() {
                 ],
                 [
                   "Run Diagnosis / Ask AI",
-                  `/home/personal/diagnose?growId=${encodeURIComponent(createdGrowId)}`
+                  `${workspace === "commercial" ? `${basePath}/tools/diagnose` : `${basePath}/diagnose`}?growId=${encodeURIComponent(createdGrowId)}`
                 ],
-                ["Open Grow Dashboard", `/home/personal/grows/${createdGrowId}`]
+                ["Open Grow Dashboard", `${basePath}/grows/${createdGrowId}`]
               ].map(([label, path]) => (
                 <Pressable
                   key={label}
