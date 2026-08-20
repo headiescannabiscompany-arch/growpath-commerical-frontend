@@ -291,6 +291,25 @@ grow`, private current location without a Field Study, and an optional approxima
   deployment, not the successful handoff. Reopen the retained confirmed Headies run,
   create its reviewed crop-aware draft, verify provenance/lifecycle fields after
   reload, and archive the temporary grow before closing this path.
+  A separate signed-in production acceptance on 2026-08-20 verified the downstream
+  crop-aware Grow experience without claiming that missing Plant-ID handoff. Frontend
+  merges `95d946bae8c9c9fd4befd96495134de937f4a612` and
+  `d50e3124ce1f963402bd19455af6869663a62a22` expose truthful reviewed lifecycle facts
+  on the Grow overview and deterministically prefill Auto Grow Calendar from saved
+  grow facts without spending AI credits or overwriting user edits. Grow
+  `6a86c181e4f8953edcc6ec11` reloaded tomato, climate-dependent perennial lifespan,
+  cultivar-dependent production, climate-dependent dormancy, one plant, the saved
+  start date, indoor style, and living-soil medium. Scientific name remained blank
+  because it was not saved; the application did not invent one. The reviewed-source
+  notice and optional deeper AI action remained distinct. The Plant-ID-to-Grow
+  provenance mutation and cleanup above are still required.
+  The same production pass exercised New Grow without saving another record. Tomato
+  matched reviewed `Solanum lycopersicum` guidance and exposed cultivar, climate,
+  start-method, and region questions instead of inventing exact timing. An unmatched
+  baobab entry returned `No reviewed crop profile matched`, retained lifespan,
+  production, and dormancy as `Not sure`, and offered optional crop-setup help. This
+  closes the known/unknown crop-selection behavior, not the remaining confirmed
+  Plant-ID handoff.
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
   inference warnings, pistil/bud-development context, top/middle/lower/context
@@ -585,6 +604,16 @@ grow`, private current location without a Field Study, and an optional approxima
   moderation-case URL and received `Platform owner access required`; the Admin
   heading and moderation content were not exposed. This closes the non-admin denial
   slice without changing the retained case.
+  A second authorized read-only production pass on 2026-08-20 reopened both retained
+  exact-content actions from Admin. The Course case now resolved to its populated
+  published course with title, price, description, two lessons, resources, scheduled
+  Lives, reporting, sharing, and owner controls. The Forum case again resolved to the
+  exact retained post with body, photo, tags, reporting, sharing, and discussion.
+  Completed Admin work expanded to nine retained audit records without mutation.
+  A same-day read-only search of the connected `support@growpathai.com` mailbox found
+  no new content-report alert; it did not claim access to the separate Admin mailbox.
+  Delivered Admin-email clicks plus retained Feed, product, video, and live-session
+  report cases therefore remain.
 - [~] Approved temporary production records verified populated Facility Grow, Plant,
   Journal, Inventory, Compliance, SOP comparison, and Owner-only AI Validation Lab
   states. Live reload/navigation and immutable create/update/delete/resolve/SOP
@@ -1074,6 +1103,20 @@ public visibility, or screenshot/video acceptance still called out below.
       common path forward from every page, not only route loading, and retain exact
       role/account, viewport, theme, URL, timestamp, screenshot/video, deployment, and
       defect/fix evidence.
+      A non-mutating signed-in desktop production batch on 2026-08-20 covered the
+      Admin Personal Home, Grows, AI Tools, Forum/Q&A, Discover, Courses, and Profile
+      routes and the Admin Commercial Dashboard, Grows, Storefront, Products, Courses,
+      Lives, Feed/Campaigns, Forum/Q&A, Tasks, and Profile routes. Every route loaded
+      its intended heading, Back control, contextual actions, and six-item workspace
+      navigation without an access, load, or application-error state. Commercial New
+      Grow reused the same reviewed/unknown crop setup as Personal. A direct Facility
+      Grow attempt from Commercial mode correctly returned the Facility-only access
+      boundary. The same batch loaded Discovery, Discovery Nature, Videos, Lives,
+      Store, Courses, and Forum public surfaces; empty Nature, Live, Storefront, and
+      Course data remained explicit instead of fabricated. This is useful route and
+      common-action evidence, but it is not the final candidate crawl: Facility role
+      paths, signed-out public state, mobile/tablet viewports, both themes, screenshots/
+      video, populated owner mutations, and every deep handoff still remain.
 - [x] Give published courses a deliberate media hierarchy: an optional list/banner
       image outside the opened course and one full course image inside it, without an
       unlabeled duplicate or an unexplained missing-image gap. Verify author add,
