@@ -71,6 +71,10 @@ const FRAME_EXTRACTION_MAX_AUTOMATIC_POLLS = 20;
 const DIRECT_NATURE_COLLECTION_TITLE = "My Nature Finds";
 const DIRECT_NATURE_COLLECTION_DESCRIPTION =
   "Plant IDs deliberately shared from the direct Discovery Nature workflow.";
+// Plant ID uploads used the generic `other` purpose before the dedicated evidence
+// purpose shipped. Keep that finite legacy window recoverable without allowing a
+// modern run (or a diagnosis/IPM asset) to cross workflow boundaries.
+const LEGACY_PLANT_ID_PURPOSE_CUTOFF_MS = Date.parse("2026-08-07T00:00:00.000Z");
 
 function directNatureCollection(studies: FieldStudy[]) {
   return (
@@ -349,6 +353,39 @@ function savedPlantIdEvidenceIds(run: ToolRun) {
   );
 }
 
+function toolRunCreatedAtMs(run: ToolRun) {
+  const explicit = Date.parse(String(run.createdAt || ""));
+  if (Number.isFinite(explicit)) return explicit;
+  const id = String(run.id || run._id || "").trim();
+  if (!/^[0-9a-f]{24}$/i.test(id)) return Number.NaN;
+  return Number.parseInt(id.slice(0, 8), 16) * 1000;
+}
+
+function legacyGenericPlantIdAsset(run: ToolRun, asset: EvidenceAsset, id: string) {
+  const toolType = String(run.toolType || run.toolName || "")
+    .trim()
+    .toLowerCase()
+    .replace(/-/g, "_");
+  const createdAtMs = toolRunCreatedAtMs(run);
+  const inputs = run.inputs || run.input || run.params || {};
+  const recordedIds = new Set([
+    ...stringList(inputs.evidenceAssetIds),
+    ...stringList(inputs.imageAnalysis?.evidenceUsed),
+    ...(Array.isArray(inputs.mediaEvidence)
+      ? inputs.mediaEvidence.map((item: any) =>
+          String(item?.id || item?.assetId || "").trim()
+        )
+      : [])
+  ]);
+  return (
+    asset.purpose === "other" &&
+    (toolType === "species_crop_id" || toolType === "species_crop_identification") &&
+    Number.isFinite(createdAtMs) &&
+    createdAtMs < LEGACY_PLANT_ID_PURPOSE_CUTOFF_MS &&
+    recordedIds.has(id)
+  );
+}
+
 function savedPlantIdRecoveryEligibilityError(run: ToolRun, assets: EvidenceAsset[]) {
   const inputs = run.inputs || run.input || run.params || {};
   const expectedTypes = new Map<string, "photo" | "video">();
@@ -371,7 +408,10 @@ function savedPlantIdRecoveryEligibilityError(run: ToolRun, assets: EvidenceAsse
   const videos: EvidenceAsset[] = [];
   for (const asset of assets) {
     const id = String(asset.id || asset._id || "").trim();
-    if (asset.purpose !== "crop_identification") {
+    if (
+      asset.purpose !== "crop_identification" &&
+      !legacyGenericPlantIdAsset(run, asset, id)
+    ) {
       return "Saved Plant ID evidence belongs to another workflow. Nothing was loaded; add fresh Plant ID photos instead.";
     }
     if (asset.assetType !== "photo" && asset.assetType !== "video") {

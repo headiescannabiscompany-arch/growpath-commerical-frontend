@@ -1846,6 +1846,70 @@ describe("SpeciesCropIdToolRoute", () => {
     }
   );
 
+  it("recovers a legacy Plant ID photo saved under the former generic purpose", async () => {
+    mockSearchParams = { retryToolRunId: "6a6fad99510a22fe5a5e352d" };
+    mockEvidenceAssets = [];
+    mockGetToolRun.mockResolvedValue({
+      id: "6a6fad99510a22fe5a5e352d",
+      toolType: "species_crop_id",
+      inputs: {
+        evidenceAssetIds: ["legacy-plant-photo-1"],
+        imageAnalysis: { evidenceUsed: ["legacy-plant-photo-1"] },
+        mediaEvidence: [{ id: "legacy-plant-photo-1", type: "photo" }]
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      {
+        id: "legacy-plant-photo-1",
+        assetType: "photo",
+        originalUri: "file:///legacy-plant-photo.jpg",
+        durableUrl: "/protected/legacy-plant-photo.jpg",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: true,
+        purpose: "other",
+        qualityWarnings: []
+      }
+    ]);
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(await screen.findByText(/Recovered 1 saved photo/i)).toBeTruthy();
+    expect(screen.queryByText(/belongs to another workflow/i)).toBeNull();
+  });
+
+  it("does not treat a modern generic-purpose asset as legacy Plant ID evidence", async () => {
+    mockSearchParams = { retryToolRunId: "6a86c181e4f8953edcc6ec11" };
+    mockEvidenceAssets = [];
+    mockGetToolRun.mockResolvedValue({
+      id: "6a86c181e4f8953edcc6ec11",
+      toolType: "species_crop_id",
+      inputs: {
+        evidenceAssetIds: ["modern-generic-photo-1"],
+        imageAnalysis: { evidenceUsed: ["modern-generic-photo-1"] },
+        mediaEvidence: [{ id: "modern-generic-photo-1", type: "photo" }]
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValue([
+      {
+        id: "modern-generic-photo-1",
+        assetType: "photo",
+        originalUri: "file:///modern-generic-photo.jpg",
+        durableUrl: "/protected/modern-generic-photo.jpg",
+        uploadStatus: "uploaded",
+        source: "library",
+        aiUsable: true,
+        purpose: "other",
+        qualityWarnings: []
+      }
+    ]);
+
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    expect(await screen.findByText(/belongs to another workflow/i)).toBeTruthy();
+    expect(screen.queryByText(/Recovered 1 saved photo/i)).toBeNull();
+  });
+
   it("keeps an unverified generated frame and its source video out of AI", async () => {
     mockSearchParams = {};
     mockEvidenceAssets = [
