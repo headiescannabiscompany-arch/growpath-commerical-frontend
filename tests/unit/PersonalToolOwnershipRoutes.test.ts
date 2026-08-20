@@ -30,8 +30,12 @@ describe("personal tool ownership", () => {
 
     expect(grows).toContain("/home/personal/tools/integrations?growId=${id}");
     expect(grows).toContain("/home/personal/tools/pdf-export?growId=${id}");
-    expect(growOverview).toContain("/home/personal/tools/integrations?growId=");
-    expect(growOverview).toContain("/home/personal/tools/pdf-export?growId=");
+    expect(growOverview).toContain(
+      "`${basePath}/tools/integrations?growId=${encodeURIComponent(growId)}`"
+    );
+    expect(growOverview).toContain(
+      'basePath === "/home/commercial" ? "report" : "pdf-export"'
+    );
     expect(growTools).toContain(
       '["Data integrations", "/home/personal/tools/integrations"]'
     );
