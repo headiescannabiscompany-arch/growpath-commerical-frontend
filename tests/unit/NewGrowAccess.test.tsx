@@ -14,6 +14,7 @@ const mockPersistImageUris = jest.fn();
 const mockEntitlementsCan = jest.fn();
 let mockLimits: Record<string, number> = {};
 let mockSearchParams: Record<string, string> = {};
+let mockGrowInterests: Record<string, string[]> = {};
 
 function chooseDate(
   screen: ReturnType<typeof render>,
@@ -42,12 +43,7 @@ jest.mock("@/auth/AuthContext", () => ({
   useAuth: () => ({
     user: {
       id: "personal-pro-user",
-      growInterests: {
-        crops: ["Fruit Trees & Bushes"],
-        environment: ["Outdoor"],
-        methods: ["Organic (Amended Soil)"],
-        experience: ["Intermediate"]
-      }
+      growInterests: mockGrowInterests
     }
   })
 }));
@@ -110,6 +106,12 @@ describe("NewGrowScreen access", () => {
     jest.clearAllMocks();
     mockEntitlementsCan.mockReturnValue(true);
     mockSearchParams = {};
+    mockGrowInterests = {
+      crops: ["Fruit Trees & Bushes"],
+      environment: ["Outdoor"],
+      methods: ["Organic (Amended Soil)"],
+      experience: ["Intermediate"]
+    };
     mockLimits = {};
     mockListPersonalGrows.mockResolvedValue([]);
     mockPersistImageUris.mockResolvedValue([]);
@@ -166,6 +168,11 @@ describe("NewGrowScreen access", () => {
   });
 
   it("lets pro personal users create a grow record", async () => {
+    mockGrowInterests = {
+      crops: ["Cannabis / Hemp"],
+      environment: ["Indoor"],
+      methods: ["Living Soil / No-Till"]
+    };
     render(<NewGrowScreen />);
 
     expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
@@ -216,6 +223,26 @@ describe("NewGrowScreen access", () => {
     );
     fireEvent.press(screen.getByText("Open Grow Dashboard"));
     expect(mockReplace).toHaveBeenCalledWith("/home/personal/grows/grow-bruce-banner");
+  });
+
+  it("keeps an ordinary crop grow neutral until reviewed crop guidance is chosen", async () => {
+    render(<NewGrowScreen />);
+
+    await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
+    expect(screen.getByLabelText("Establishment weeks").props.value).toBe("");
+    expect(screen.getByLabelText("Expected days to first harvest").props.value).toBe("");
+    expect(screen.getByLabelText("Anchor type Grow / establishment start")).toBeTruthy();
+    expect(screen.getByLabelText("Anchor type First flowering / fruiting stage")).toBeTruthy();
+    expect(screen.queryByLabelText("Veg length (weeks)")).toBeNull();
+    expect(screen.queryByLabelText("Expected flower days")).toBeNull();
+    expect(screen.queryByText("Feminization")).toBeNull();
+    expect(screen.queryByText("Terpene Optimization")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Show advanced fields"));
+    expect(screen.queryByLabelText("Flip date")).toBeNull();
+    expect(screen.queryByLabelText("Flower day 1")).toBeNull();
+    expect(screen.queryByLabelText("Cure start date")).toBeNull();
+    expect(screen.getByLabelText("Expected harvest date")).toBeTruthy();
   });
 
   it("preserves a confirmed Plant ID when it creates the grow", async () => {
