@@ -12,6 +12,11 @@ grow interests, status, thumbnail, chat state, external stream destination, link
 forum, product or feed record, and replay. A premiere schedules a published video owned
 by the host; it does not copy the video or bypass its visibility and playback controls.
 The directory and detail page label premieres clearly.
+Saved-session cards must also keep the session format separate from runtime state. Use
+`Live stream` or `Video premiere` for the format, and use `draft`, `scheduled`, `live
+now`, `ended`, `replay`, or the current connection-health label for state. A private
+draft must never read as though it is actively broadcasting merely because its format is
+live video.
 
 Hosts can draft, preview, publish, start, end, and attach a replay. Viewers can open only
 published sessions allowed by public, following, customer, or private access. Ending a
