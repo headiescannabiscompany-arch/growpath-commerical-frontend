@@ -78,6 +78,15 @@ as a replay without claiming health from a stale heartbeat. Hosts still control 
 microphones, scenes, screen sharing, bitrate, and outgoing audio in OBS; GrowPath controls
 ingest authorization, playback delivery, chat, moderation, retention, and session access.
 
+When a hosted encoder disconnects, GrowPath must discover recordings owned by that exact
+live input and promote only a provider-confirmed `ready` recording to replay. Recording
+processing is a temporary state, not a failed broadcast and not a playable replay. The
+replay uses the recording's video identifier and a newly authorized, short-lived playback
+grant; it must not reuse a live-input identifier as though it were the recording. Keep the
+canonical session, chat, moderation, visibility, and host authorization unchanged across
+the live-to-replay transition. Do not reserve viewer delivery or advertise replay
+availability until the provider confirms the recording is ready.
+
 First-party streaming is not complete merely because the OBS chat overlay works. Do not
 show a GrowPath stream key or label a session `hosted by GrowPath` until ingest,
 transcoding, playback, authorization, moderation, recording/retention, quotas, abuse
@@ -160,4 +169,6 @@ channel remains available, and neither route exposes another account's encoder s
 For first-party mode, additionally verify stream-key secrecy and rotation, session-scoped
 ingest authorization, draft/live separation, adaptive playback, interruption recovery,
 access revocation, chat continuity, explicit retention, quota enforcement, abuse handling,
-and that ending one session cannot affect another session or expose its replay.
+that ending one session cannot affect another session or expose its replay, provider-ready
+recording discovery after encoder disconnect, signed playback against the recording video
+identifier, and an honest processing state before replay is ready.
