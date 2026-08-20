@@ -133,6 +133,12 @@ function productIsPublished(product: AnyRec) {
   );
 }
 
+export function productIsAvailableToOwnerStorefront(product: AnyRec) {
+  return !["archived", "deleted", "removed", "cancelled", "hidden"].includes(
+    String(product.status || "").toLowerCase()
+  );
+}
+
 function productCheckoutReady(product: AnyRec, dispensary = false) {
   if (dispensary) {
     return hasText(product.externalPurchaseUrl) || product.pickupAvailable === true;
@@ -446,7 +452,9 @@ export default function Storefront({
         ]);
         const nextStorefront = storeRes?.storefront ?? storeRes ?? null;
         setStorefront(nextStorefront);
-        setProducts(asArray(productRes, "products"));
+        setProducts(
+          asArray(productRes, "products").filter(productIsAvailableToOwnerStorefront)
+        );
         setProductLines(asArray(productLineRes, "productLines"));
         setCourses(asArray(courseRes, "courses").filter(courseIsPublic));
         setLives(asArray(liveRes, "lives").filter(liveIsPublic));

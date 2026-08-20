@@ -2433,6 +2433,34 @@ describe("commercial workflow pages", () => {
     ).toBe(false);
   });
 
+  it("keeps an unavailable product detail read-only", async () => {
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/commercial/products/product-1") {
+        return Promise.reject(
+          Object.assign(new Error("Not found"), { code: "NOT_FOUND" })
+        );
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialProductDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Product unavailable")).toBeTruthy());
+    expect(
+      screen.getByText(
+        "This product is missing, archived, or no longer available in this Commercial workspace."
+      )
+    ).toBeTruthy();
+    expect(screen.getByText("Choose a safe next step")).toBeTruthy();
+    expect(screen.UNSAFE_getByProps({ href: "/home/commercial/products" })).toBeTruthy();
+    expect(
+      screen.UNSAFE_getByProps({ href: "/home/commercial/storefront" })
+    ).toBeTruthy();
+    expect(screen.queryByText("Update Product")).toBeNull();
+    expect(screen.queryByLabelText("Save commercial product detail")).toBeNull();
+    expect(screen.queryByText("Tools for this record")).toBeNull();
+  });
+
   it("routes create-product to the real product form", async () => {
     const screen = render(<NewCommercialProductRoute />);
 
