@@ -65,19 +65,67 @@ describe("StartGrowWizard", () => {
     fireEvent.press(screen.getByLabelText("Start grow"));
 
     await waitFor(() =>
-      expect(mockMutateAsync).toHaveBeenCalledWith({
+      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({
         name: "Batch Cycle 1",
         startDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         rooms: ["room-1"],
         roomIds: ["room-1"],
         cropTypes: ["Cannabis"],
-        growInterests: { crops: ["Cannabis"] }
-      })
+        growInterests: { crops: ["Cannabis"] },
+        planning: expect.objectContaining({
+          lifeSpanPath: "unknown",
+          productionPattern: "unknown",
+          dormancyPattern: "unknown",
+          roomIds: ["room-1"]
+        })
+      }))
     );
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: "/onboarding/assign-plants",
       params: { growId: "grow-1" }
     });
+  });
+
+  it("persists reviewed tomato identity and lifecycle without cannabis timing", async () => {
+    const screen = render(<StartGrowWizard />);
+
+    await waitFor(() => expect(screen.getByText("1 room selected")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Crop common name"), "tomato");
+    fireEvent.changeText(screen.getByLabelText("Cultivar"), "Brandywine");
+    await waitFor(() =>
+      expect(screen.getByLabelText("Crop common name").props.value).toBe("tomato")
+    );
+    fireEvent.press(screen.getByLabelText("Match crop guidance"));
+    fireEvent.press(screen.getByLabelText("Select crop Vegetables"));
+
+    expect(screen.getByText(/Solanum lycopersicum \(reviewed lifecycle\)/)).toBeTruthy();
+    expect(screen.getByText(/Determinate cultivars concentrate fruit production/)).toBeTruthy();
+    expect(screen.queryByText(/vegetative weeks/i)).toBeNull();
+    expect(screen.queryByText(/flower days/i)).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Start grow"));
+
+    await waitFor(() =>
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cropCommonName: "tomato",
+          scientificName: "Solanum lycopersicum",
+          cultivar: "Brandywine",
+          cropProfileId: "tomato-solanum-lycopersicum-lifecycle-v1",
+          cropTypes: ["Vegetables"],
+          cropIdentity: expect.objectContaining({
+            commonName: "tomato",
+            scientificName: "Solanum lycopersicum",
+            userConfirmed: true
+          }),
+          planning: expect.objectContaining({
+            lifeSpanPath: "climate_dependent_perennial",
+            productionPattern: "cultivar_dependent",
+            dormancyPattern: "climate_dependent"
+          })
+        })
+      )
+    );
   });
 
   it("returns to the originating room without starting a grow", async () => {
