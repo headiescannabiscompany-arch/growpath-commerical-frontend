@@ -1,13 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { createCommercialGrowDetailStyles } from "@/app/home/commercial/grows/[growId]";
-import { createCommercialGrowsStyles } from "@/app/home/commercial/grows";
+import { createCommercialGrowDetailStyles } from "@/features/commercial/screens/CommercialEvidenceRunDetailScreen";
+import { createCommercialGrowsStyles } from "@/features/commercial/screens/CommercialEvidenceRunsScreen";
 import { getThemePalette } from "@/theme/appTheme";
 
 const SOURCE_FILES = [
-  "src/app/home/commercial/grows/index.tsx",
-  "src/app/home/commercial/grows/[growId].tsx"
+  "src/features/commercial/screens/CommercialEvidenceRunsScreen.tsx",
+  "src/features/commercial/screens/CommercialEvidenceRunDetailScreen.tsx"
 ];
 
 describe("Commercial evidence run active palette", () => {

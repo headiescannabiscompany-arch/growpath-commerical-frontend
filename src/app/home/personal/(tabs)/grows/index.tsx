@@ -95,11 +95,13 @@ function metricTone(index: number, styles: ReturnType<typeof createStyles>) {
   return tones[index % tones.length];
 }
 
-function growHref(id: string, section?: string) {
+type GrowWorkspace = "personal" | "commercial";
+
+function growHref(basePath: string, id: string, section?: string) {
   const encodedId = encodeURIComponent(String(id || "").trim());
-  if (!encodedId) return "/home/personal/grows";
-  if (!section) return `/home/personal/grows/${encodedId}`;
-  return `/home/personal/grows/${encodedId}/${section}`;
+  if (!encodedId) return `${basePath}/grows`;
+  if (!section) return `${basePath}/grows/${encodedId}`;
+  return `${basePath}/grows/${encodedId}/${section}`;
 }
 
 function ActionButton({
@@ -146,10 +148,16 @@ function ActionButton({
   );
 }
 
-export default function PersonalGrowsRoute() {
+export default function PersonalGrowsRoute({
+  workspace = "personal"
+}: {
+  workspace?: GrowWorkspace;
+} = {}) {
   const ent = useEntitlements();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
+  const basePath = `/home/${workspace}`;
+  const workspaceLabel = workspace === "commercial" ? "Commercial" : "Personal";
   const hasCreateCapability = ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const [items, setItems] = useState<PersonalGrow[]>([]);
   const grows = items;
@@ -242,17 +250,23 @@ export default function PersonalGrowsRoute() {
   ];
   const roadmapActions = latestGrow
     ? [
-        { href: growHref(latestGrow.id), label: "Open Grow", primary: true },
-        { href: growHref(latestGrow.id, "journal"), label: "Journal" },
-        { href: growHref(latestGrow.id, "tasks"), label: "Tasks" },
-        { href: growHref(latestGrow.id, "timeline"), label: "Timeline" },
-        { href: growHref(latestGrow.id, "tools"), label: "AI Tools" }
+        { href: growHref(basePath, latestGrow.id), label: "Open Grow", primary: true },
+        { href: growHref(basePath, latestGrow.id, "journal"), label: "Journal" },
+        { href: growHref(basePath, latestGrow.id, "tasks"), label: "Tasks" },
+        { href: growHref(basePath, latestGrow.id, "timeline"), label: "Timeline" },
+        { href: growHref(basePath, latestGrow.id, "tools"), label: "AI Tools" }
       ]
     : [
-        { href: "/home/personal/grows/new", label: "Create Grow", primary: true },
-        { href: "/home/personal/tools", label: "Open AI Tools" },
-        { href: "/home/personal/diagnose", label: "Run Diagnosis" },
-        { href: "/home/personal/tasks", label: "Open Tasks" }
+        { href: `${basePath}/grows/new`, label: "Create Grow", primary: true },
+        { href: `${basePath}/tools`, label: "Open AI Tools" },
+        {
+          href:
+            workspace === "commercial"
+              ? `${basePath}/tools/diagnose`
+              : `${basePath}/diagnose`,
+          label: "Run Diagnosis"
+        },
+        { href: `${basePath}/tasks`, label: "Open Tasks" }
       ];
   const growToolsActions: Array<{ href: string; label: string; primary?: boolean }> =
     latestGrow
@@ -298,7 +312,7 @@ export default function PersonalGrowsRoute() {
       }
     >
       <View style={styles.stack}>
-        <BackButton fallbackHref="/home/personal" />
+        <BackButton fallbackHref={basePath} />
         <AppCard
           style={[
             styles.heroCard,
@@ -306,7 +320,7 @@ export default function PersonalGrowsRoute() {
           ]}
         >
           <Text style={[styles.kicker, { color: palette.accent }]}>
-            Personal grow workspace
+            {workspaceLabel} grow workspace
           </Text>
           <Text
             accessibilityRole="header"
@@ -321,21 +335,24 @@ export default function PersonalGrowsRoute() {
           <View style={styles.heroActions}>
             {canCreateGrow ? (
               <ActionButton
-                href="/home/personal/grows/new"
+                href={`${basePath}/grows/new`}
                 label="Create Grow"
                 primary
                 testID="btn-new-grow"
               />
             ) : (
-              <ActionButton
-                href="/home/personal/profile/billing"
-                label="Manage Billing"
-                primary
-              />
+              <ActionButton href={`${basePath}/profile`} label="Manage Billing" primary />
             )}
-            <ActionButton href="/home/personal/tools" label="Open AI Tools" />
-            <ActionButton href="/home/personal/diagnose" label="Run Diagnosis" />
-            <ActionButton href="/home/personal/tasks" label="Open Tasks" />
+            <ActionButton href={`${basePath}/tools`} label="Open AI Tools" />
+            <ActionButton
+              href={
+                workspace === "commercial"
+                  ? `${basePath}/tools/diagnose`
+                  : `${basePath}/diagnose`
+              }
+              label="Run Diagnosis"
+            />
+            <ActionButton href={`${basePath}/tasks`} label="Open Tasks" />
           </View>
           {!canCreateGrow ? (
             <View>
@@ -490,7 +507,7 @@ export default function PersonalGrowsRoute() {
                   </Text>
                 </View>
                 <ActionButton
-                  href={growHref(latestGrow.id, "timeline")}
+                  href={growHref(basePath, latestGrow.id, "timeline")}
                   label="Explore Timeline"
                   primary
                 />
@@ -510,19 +527,32 @@ export default function PersonalGrowsRoute() {
           ) : null}
           {latestGrow ? (
             <View style={styles.featuredActions}>
-              <ActionButton href={growHref(latestGrow.id)} label="Open Grow" primary />
-              <ActionButton href={growHref(latestGrow.id, "journal")} label="Journal" />
-              <ActionButton href={growHref(latestGrow.id, "tasks")} label="Tasks" />
               <ActionButton
-                href={growHref(latestGrow.id, "timeline")}
+                href={growHref(basePath, latestGrow.id)}
+                label="Open Grow"
+                primary
+              />
+              <ActionButton
+                href={growHref(basePath, latestGrow.id, "journal")}
+                label="Journal"
+              />
+              <ActionButton
+                href={growHref(basePath, latestGrow.id, "tasks")}
+                label="Tasks"
+              />
+              <ActionButton
+                href={growHref(basePath, latestGrow.id, "timeline")}
                 label="Visual Timeline"
               />
-              <ActionButton href={growHref(latestGrow.id, "tools")} label="AI Tools" />
+              <ActionButton
+                href={growHref(basePath, latestGrow.id, "tools")}
+                label="AI Tools"
+              />
             </View>
           ) : (
             <View style={styles.featuredActions}>
               <ActionButton
-                href="/home/personal/grows/new"
+                href={`${basePath}/grows/new`}
                 label="Start First Grow"
                 primary
               />
@@ -588,20 +618,27 @@ export default function PersonalGrowsRoute() {
             <View style={styles.emptyActions}>
               {canCreateGrow ? (
                 <ActionButton
-                  href="/home/personal/grows/new"
+                  href={`${basePath}/grows/new`}
                   label="New Grow"
                   primary
                   testID="btn-create-first-grow"
                 />
               ) : (
                 <ActionButton
-                  href="/home/personal/profile/billing"
+                  href={`${basePath}/profile`}
                   label="Manage Billing"
                   primary
                 />
               )}
-              <ActionButton href="/home/personal/tools" label="Open AI Tools" />
-              <ActionButton href="/home/personal/diagnose" label="Diagnose" />
+              <ActionButton href={`${basePath}/tools`} label="Open AI Tools" />
+              <ActionButton
+                href={
+                  workspace === "commercial"
+                    ? `${basePath}/tools/diagnose`
+                    : `${basePath}/diagnose`
+                }
+                label="Diagnose"
+              />
             </View>
           </AppCard>
         ) : null}
@@ -655,11 +692,17 @@ export default function PersonalGrowsRoute() {
                 {note ? <Text style={styles.note}>{note}</Text> : null}
 
                 <View style={styles.growActions}>
-                  <ActionButton href={growHref(id)} label="Open" primary />
-                  <ActionButton href={growHref(id, "journal")} label="Journal" />
-                  <ActionButton href={growHref(id, "tasks")} label="Tasks" />
-                  <ActionButton href={growHref(id, "tools")} label="AI Tools" />
-                  <ActionButton href={growHref(id, "timeline")} label="Timeline" />
+                  <ActionButton href={growHref(basePath, id)} label="Open" primary />
+                  <ActionButton
+                    href={growHref(basePath, id, "journal")}
+                    label="Journal"
+                  />
+                  <ActionButton href={growHref(basePath, id, "tasks")} label="Tasks" />
+                  <ActionButton href={growHref(basePath, id, "tools")} label="AI Tools" />
+                  <ActionButton
+                    href={growHref(basePath, id, "timeline")}
+                    label="Timeline"
+                  />
                 </View>
               </AppCard>
             );

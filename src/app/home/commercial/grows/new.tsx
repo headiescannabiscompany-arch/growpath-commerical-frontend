@@ -1,5 +1,5 @@
-import CommercialGrowsRoute from "./index";
+import NewGrowScreen from "@/app/home/personal/(tabs)/grows/new";
 
 export default function NewCommercialGrowRoute() {
-  return <CommercialGrowsRoute routeKey="commercial-grow-create" />;
+  return <NewGrowScreen workspace="commercial" />;
 }

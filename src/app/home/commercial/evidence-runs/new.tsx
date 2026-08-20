@@ -1,7 +1,5 @@
-import CommercialEvidenceRunsCompatibilityRoute from "@/app/home/commercial/grows";
+import CommercialEvidenceRunsScreen from "@/features/commercial/screens/CommercialEvidenceRunsScreen";
 
 export default function NewCommercialEvidenceRunRoute() {
-  return (
-    <CommercialEvidenceRunsCompatibilityRoute routeKey="commercial-evidence-run-create" />
-  );
+  return <CommercialEvidenceRunsScreen routeKey="commercial-evidence-run-create" />;
 }

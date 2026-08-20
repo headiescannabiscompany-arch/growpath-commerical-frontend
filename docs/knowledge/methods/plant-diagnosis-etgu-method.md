@@ -442,6 +442,14 @@ lifespan, production pattern, or dormancy fields. The selected rooms, start date
 identity, and owner-reviewed lifecycle proposal must persist atomically with the Facility grow.
 Viewer and Staff role restrictions remain unchanged.
 
+Commercial workspaces inherit the same ordinary crop-aware grow records and connected grow
+workspace available to Personal users. Product Trial Evidence Runs remain a separate
+Commercial workflow: they may link products, product lines, formulas, batches, measurements,
+and public-evidence review, but they must never replace or masquerade as the ordinary Grows
+area. A Commercial user can therefore maintain tomatoes, herbs, fruit trees, cannabis when
+eligible, or another crop as a normal grow and separately create a product trial when the
+purpose is commercial evidence.
+
 Crop-aware grow setup must distinguish lifespan from harvest behavior. Supported planning
 paths are annual, biennial, short-lived perennial, long-lived perennial or woody, continuous
 indoor/tropical, and unknown. Production is separately described as one main harvest,
