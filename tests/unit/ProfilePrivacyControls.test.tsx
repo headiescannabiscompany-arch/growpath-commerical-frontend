@@ -211,6 +211,26 @@ describe("Profile privacy controls", () => {
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
   });
 
+  it("logs out through an in-page confirmation that can be cancelled", async () => {
+    const screen = render(<Profile />);
+
+    fireEvent.press(screen.getByLabelText("Log out"));
+    expect(screen.getByLabelText("Log out confirmation")).toBeTruthy();
+    expect(mockLogout).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByLabelText("Cancel logout"));
+    expect(screen.queryByLabelText("Log out confirmation")).toBeNull();
+    expect(mockLogout).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByLabelText("Log out"));
+    fireEvent.press(screen.getByLabelText("Confirm logout"));
+
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith("/login");
+    });
+  });
+
   it("shows a Pro account the shared upgrade action for higher plans", () => {
     mockEntitlementsPlan = "pro";
     const screen = render(<Profile />);
