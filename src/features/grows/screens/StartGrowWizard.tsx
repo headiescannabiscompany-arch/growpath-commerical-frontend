@@ -27,6 +27,7 @@ const LIFE_SPAN_OPTIONS = [
   ["short_lived_perennial", "Short-lived perennial"],
   ["long_lived_perennial", "Long-lived perennial / woody"],
   ["continuous_tropical", "Continuous indoor / tropical"],
+  ["finite_cycle", "Finite production cycle / non-plant"],
   ["climate_dependent_perennial", "Tender perennial / climate-dependent"]
 ] as const;
 
@@ -45,6 +46,14 @@ const DORMANCY_OPTIONS = [
   ["none", "No planned dormancy"],
   ["seasonal", "Seasonal dormancy"],
   ["climate_dependent", "Depends on climate / location"]
+] as const;
+
+const START_TYPE_OPTIONS = [
+  ["seed", "Seed"],
+  ["clone", "Clone / cutting"],
+  ["transplant", "Transplant"],
+  ["existing_plant", "Existing plant"],
+  ["culture_spawn", "Culture / spawn / inoculated block"]
 ] as const;
 
 function todayIsoDate() {
@@ -81,6 +90,10 @@ export default function StartGrowWizard() {
   const [lifeSpanPath, setLifeSpanPath] = useState("unknown");
   const [productionPattern, setProductionPattern] = useState("unknown");
   const [dormancyPattern, setDormancyPattern] = useState("unknown");
+  const [startType, setStartType] = useState("seed");
+  const [plantCount, setPlantCount] = useState("1");
+  const [establishmentWeeks, setEstablishmentWeeks] = useState("");
+  const [expectedDaysToFirstHarvest, setExpectedDaysToFirstHarvest] = useState("");
   const [lifecycleGuidance, setLifecycleGuidance] = useState<string[]>([]);
   const [lifecycleQuestions, setLifecycleQuestions] = useState<string[]>([]);
   const [feedback, setFeedback] = useState("");
@@ -205,6 +218,14 @@ export default function StartGrowWizard() {
             }
           : undefined,
         planning: {
+          startType,
+          plantCount: Number(plantCount) || 1,
+          establishmentWeeks: establishmentWeeks.trim()
+            ? Number(establishmentWeeks)
+            : undefined,
+          expectedDaysToFirstHarvest: expectedDaysToFirstHarvest.trim()
+            ? Number(expectedDaysToFirstHarvest)
+            : undefined,
           lifeSpanPath,
           productionPattern,
           dormancyPattern,
@@ -360,6 +381,23 @@ export default function StartGrowWizard() {
         >
           <Text style={styles.secondaryButtonText}>Match reviewed crop guidance</Text>
         </Pressable>
+        {cropCommonName.trim() || scientificName.trim() ? (
+          <Pressable
+            onPress={() => {
+              const crop = scientificName.trim() || cropCommonName.trim();
+              router.push(
+                `/home/facility/ai-ask?prompt=${encodeURIComponent(
+                  `Help me set up a Facility grow for ${crop}. Use reviewed crop-specific guidance, explain uncertain inputs, and leave unknown facts for me to confirm.`
+                )}` as any
+              );
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Ask AI for crop setup help"
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryButtonText}>Get crop setup help</Text>
+          </Pressable>
+        ) : null}
         {cropProfileLabel ? (
           <Text style={styles.profileMatch}>Matched: {cropProfileLabel}</Text>
         ) : null}
@@ -437,13 +475,71 @@ export default function StartGrowWizard() {
           <View style={styles.guidanceCard}>
             <Text style={styles.guidanceTitle}>Reviewed planning context</Text>
             {lifecycleGuidance.map((item) => (
-              <Text key={item} style={styles.helper}>• {item}</Text>
+              <Text key={item} style={styles.helper}>
+                • {item}
+              </Text>
             ))}
             {lifecycleQuestions.map((item) => (
-              <Text key={item} style={styles.question}>Confirm: {item}</Text>
+              <Text key={item} style={styles.question}>
+                Confirm: {item}
+              </Text>
             ))}
           </View>
         ) : null}
+
+        <Text style={styles.label}>How are you starting?</Text>
+        <View style={styles.roomGrid}>
+          {START_TYPE_OPTIONS.map(([value, label]) => (
+            <Pressable
+              key={value}
+              onPress={() => setStartType(value)}
+              accessibilityRole="button"
+              accessibilityLabel={`Grow start type ${label}`}
+              style={[styles.roomChip, startType === value && styles.roomChipActive]}
+            >
+              <Text
+                style={[
+                  styles.roomChipText,
+                  startType === value && styles.roomChipTextActive
+                ]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.label}>Plant count</Text>
+        <TextInput
+          accessibilityLabel="Plant count"
+          style={styles.input}
+          keyboardType="number-pad"
+          value={plantCount}
+          onChangeText={setPlantCount}
+        />
+        <Text style={styles.label}>Establishment weeks</Text>
+        <TextInput
+          accessibilityLabel="Establishment weeks"
+          style={styles.input}
+          keyboardType="number-pad"
+          placeholder="Leave blank when unknown"
+          placeholderTextColor={palette.textMuted}
+          value={establishmentWeeks}
+          onChangeText={setEstablishmentWeeks}
+        />
+        <Text style={styles.label}>Expected days to first harvest</Text>
+        <TextInput
+          accessibilityLabel="Expected days to first harvest"
+          style={styles.input}
+          keyboardType="number-pad"
+          placeholder="Use a sourced or owner-confirmed estimate"
+          placeholderTextColor={palette.textMuted}
+          value={expectedDaysToFirstHarvest}
+          onChangeText={setExpectedDaysToFirstHarvest}
+        />
+        <Text style={styles.helper}>
+          Unknown timing stays blank. These are editable planning anchors, not biological
+          guarantees.
+        </Text>
 
         <View style={styles.sectionHeader}>
           <Text style={styles.label}>Crop type</Text>

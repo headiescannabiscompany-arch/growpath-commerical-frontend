@@ -65,20 +65,22 @@ describe("StartGrowWizard", () => {
     fireEvent.press(screen.getByLabelText("Start grow"));
 
     await waitFor(() =>
-      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({
-        name: "Batch Cycle 1",
-        startDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-        rooms: ["room-1"],
-        roomIds: ["room-1"],
-        cropTypes: ["Cannabis"],
-        growInterests: { crops: ["Cannabis"] },
-        planning: expect.objectContaining({
-          lifeSpanPath: "unknown",
-          productionPattern: "unknown",
-          dormancyPattern: "unknown",
-          roomIds: ["room-1"]
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Batch Cycle 1",
+          startDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+          rooms: ["room-1"],
+          roomIds: ["room-1"],
+          cropTypes: ["Cannabis"],
+          growInterests: { crops: ["Cannabis"] },
+          planning: expect.objectContaining({
+            lifeSpanPath: "unknown",
+            productionPattern: "unknown",
+            dormancyPattern: "unknown",
+            roomIds: ["room-1"]
+          })
         })
-      }))
+      )
     );
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: "/onboarding/assign-plants",
@@ -92,6 +94,10 @@ describe("StartGrowWizard", () => {
     await waitFor(() => expect(screen.getByText("1 room selected")).toBeTruthy());
     fireEvent.changeText(screen.getByLabelText("Crop common name"), "tomato");
     fireEvent.changeText(screen.getByLabelText("Cultivar"), "Brandywine");
+    fireEvent.press(screen.getByLabelText("Grow start type Transplant"));
+    fireEvent.changeText(screen.getByLabelText("Plant count"), "12");
+    fireEvent.changeText(screen.getByLabelText("Establishment weeks"), "3");
+    fireEvent.changeText(screen.getByLabelText("Expected days to first harvest"), "78");
     await waitFor(() =>
       expect(screen.getByLabelText("Crop common name").props.value).toBe("tomato")
     );
@@ -99,7 +105,9 @@ describe("StartGrowWizard", () => {
     fireEvent.press(screen.getByLabelText("Select crop Vegetables"));
 
     expect(screen.getByText(/Solanum lycopersicum \(reviewed lifecycle\)/)).toBeTruthy();
-    expect(screen.getByText(/Determinate cultivars concentrate fruit production/)).toBeTruthy();
+    expect(
+      screen.getByText(/Determinate cultivars concentrate fruit production/)
+    ).toBeTruthy();
     expect(screen.queryByText(/vegetative weeks/i)).toBeNull();
     expect(screen.queryByText(/flower days/i)).toBeNull();
 
@@ -119,9 +127,59 @@ describe("StartGrowWizard", () => {
             userConfirmed: true
           }),
           planning: expect.objectContaining({
+            startType: "transplant",
+            plantCount: 12,
+            establishmentWeeks: 3,
+            expectedDaysToFirstHarvest: 78,
             lifeSpanPath: "climate_dependent_perennial",
             productionPattern: "cultivar_dependent",
             dormancyPattern: "climate_dependent"
+          })
+        })
+      )
+    );
+  });
+
+  it("opens Facility AI with crop-specific setup context", async () => {
+    const screen = render(<StartGrowWizard />);
+
+    await waitFor(() => expect(screen.getByText("1 room selected")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Crop common name"), "lettuce");
+    fireEvent.press(screen.getByLabelText("Ask AI for crop setup help"));
+
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining("/home/facility/ai-ask?prompt=")
+    );
+    expect(decodeURIComponent(String(mockPush.mock.calls[0][0]))).toContain(
+      "Facility grow for lettuce"
+    );
+  });
+
+  it("keeps a mushroom grow out of plant-only lifecycle language", async () => {
+    const screen = render(<StartGrowWizard />);
+
+    await waitFor(() => expect(screen.getByText("1 room selected")).toBeTruthy());
+    fireEvent.changeText(screen.getByLabelText("Crop common name"), "button mushroom");
+    fireEvent.press(screen.getByLabelText("Match crop guidance"));
+    fireEvent.press(
+      screen.getByLabelText("Grow start type Culture / spawn / inoculated block")
+    );
+    fireEvent.press(screen.getByLabelText("Select crop Mushrooms"));
+
+    expect(screen.getByText(/Agaricus bisporus \(reviewed lifecycle\)/)).toBeTruthy();
+    expect(screen.getByText(/finite fungal substrate cycle/)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Start grow"));
+
+    await waitFor(() =>
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cropCommonName: "button mushroom",
+          cropTypes: ["Mushrooms"],
+          planning: expect.objectContaining({
+            startType: "culture_spawn",
+            lifeSpanPath: "finite_cycle",
+            productionPattern: "repeat_harvest",
+            dormancyPattern: "none"
           })
         })
       )

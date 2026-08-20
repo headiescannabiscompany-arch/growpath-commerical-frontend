@@ -10,7 +10,11 @@ describe("reviewed crop lifecycle registry", () => {
     ["sweet basil", "annual", "repeat_harvest"],
     ["leaf lettuce", "annual", "cultivar_dependent"],
     ["strawberry", "climate_dependent_perennial", "cultivar_dependent"],
-    ["apple tree", "long_lived_perennial", "seasonal_perennial"]
+    ["apple tree", "long_lived_perennial", "seasonal_perennial"],
+    ["golden pothos", "long_lived_perennial", "non_harvest_observation"],
+    ["french marigold", "annual", "cultivar_dependent"],
+    ["radish microgreens", "annual", "single_harvest"],
+    ["button mushroom", "finite_cycle", "repeat_harvest"]
   ])("maps %s to reviewed lifecycle guidance", (commonName, lifeSpan, production) => {
     const profile = findReviewedCropLifecycle({ commonName });
 
@@ -25,9 +29,9 @@ describe("reviewed crop lifecycle registry", () => {
   });
 
   it("matches accepted scientific names without guessing unknown crops", () => {
-    expect(
-      findReviewedCropLifecycle({ scientificName: "Fragaria × ananassa" })?.id
-    ).toBe("strawberry-fragaria-ananassa-lifecycle-v1");
+    expect(findReviewedCropLifecycle({ scientificName: "Fragaria × ananassa" })?.id).toBe(
+      "strawberry-fragaria-ananassa-lifecycle-v1"
+    );
     expect(findReviewedCropLifecycle({ commonName: "dragon fruit" })).toBeUndefined();
   });
 

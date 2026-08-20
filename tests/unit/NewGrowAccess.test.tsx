@@ -235,6 +235,9 @@ describe("NewGrowScreen access", () => {
     expect(screen.queryByLabelText("Expected flower days")).toBeNull();
     expect(screen.queryByText("Feminization")).toBeNull();
     expect(screen.queryByText("Terpene Optimization")).toBeNull();
+    expect(
+      screen.getByLabelText("Grow start type culture / spawn / inoculated block")
+    ).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText("Show advanced fields"));
     expect(screen.queryByLabelText("Flip date")).toBeNull();

@@ -212,6 +212,58 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-08-20"
   },
   {
+    id: "extension-penn-state-pothos-houseplant",
+    name: "Penn State Extension — Pothos as a Houseplant",
+    domain: "extension.psu.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for pothos as a long-lived tropical foliage houseplant, annual repotting context, pruning, and propagation by cuttings, layering, or division. It does not establish a universal growth rate or care schedule for every cultivar and environment.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-20"
+  },
+  {
+    id: "extension-minnesota-marigolds",
+    name: "University of Minnesota Extension — Marigolds",
+    domain: "extension.umn.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for French, African, and Signet marigolds as ornamental annuals, seed versus transplant establishment, bloom through frost, and type-dependent size and use. Minnesota timing must not be universalized.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-20"
+  },
+  {
+    id: "extension-penn-state-growing-microgreens",
+    name: "Penn State Extension — Growing Microgreens",
+    domain: "extension.psu.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for microgreens as short seed-to-cut tray cycles, species-dependent production time, single cutting, sanitation, and tray reuse after harvest. Published timing and yield examples are not guarantees for another cultivar or environment.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-20"
+  },
+  {
+    id: "extension-penn-state-mushroom-production",
+    name: "Penn State Extension — Mushroom Production and Harvesting",
+    domain: "extension.psu.edu",
+    sourceType: "university_extension",
+    reliabilityTier: "A",
+    trustedFor: ["crop_lifecycle", "education"],
+    notTrustedFor: ["plant_identification", "legal_regulatory"],
+    notes:
+      "Reviewed for Agaricus bisporus production as a finite substrate cycle with spawn, colonization, casing, pinning, repeated flushes, and spent-substrate termination. Commercial timing and environmental values are system-specific rather than universal defaults.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-20"
+  },
+  {
     id: "meta-automated-data-collection-terms",
     name: "Meta Automated Data Collection Terms and Facebook Terms",
     domain: "facebook.com",
