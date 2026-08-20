@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { createBudRotRiskStyles } from "@/app/home/personal/(tabs)/tools/bud-rot-risk";
 import { createCloneRootingStyles } from "@/app/home/personal/(tabs)/tools/clone-rooting";
 import { createDryCureGuardStyles } from "@/app/home/personal/(tabs)/tools/dry-cure-guard";
 import { createIpmScoutStyles } from "@/app/home/personal/(tabs)/tools/ipm-scout";
@@ -9,7 +8,6 @@ import { createTissueCultureStyles } from "@/app/home/personal/(tabs)/tools/tiss
 import { getThemePalette } from "@/theme/appTheme";
 
 const SOURCE_FILES = [
-  "src/app/home/personal/(tabs)/tools/bud-rot-risk.tsx",
   "src/app/home/personal/(tabs)/tools/dry-cure-guard.tsx",
   "src/app/home/personal/(tabs)/tools/clone-rooting.tsx",
   "src/app/home/personal/(tabs)/tools/tissue-culture.tsx",
@@ -25,32 +23,6 @@ function fieldCount(source: string) {
 describe("Personal risk tool active palettes", () => {
   const nightPalette = getThemePalette("night", "dark");
   const dayPalette = getThemePalette("day", "light");
-
-  it.each([
-    ["Night", nightPalette],
-    ["Day", dayPalette]
-  ])("themes the Bud Rot page, lock state, and four inputs in %s", (_name, palette) => {
-    const styles = createBudRotRiskStyles(palette);
-
-    expect(styles.container.backgroundColor).toBe(palette.page);
-    expect(styles.title.color).toBe(palette.text);
-    expect(styles.subtitle.color).toBe(palette.textMuted);
-    expect(styles.context.color).toBe(palette.link);
-    expect(styles.input).toEqual(
-      expect.objectContaining({
-        backgroundColor: palette.surface,
-        borderColor: palette.border,
-        color: palette.text
-      })
-    );
-    expect(styles.lockedCard).toEqual(
-      expect.objectContaining({
-        backgroundColor: palette.surfaceMuted,
-        borderColor: palette.border
-      })
-    );
-    expect(styles.lockedTitle.color).toBe(palette.text);
-  });
 
   it.each([
     ["Night", nightPalette],
@@ -87,11 +59,10 @@ describe("Personal risk tool active palettes", () => {
     expect(ipmScout.evidenceGuidance.color).toBe(palette.textMuted);
   });
 
-  it("keeps all 126 tool fields and source colors palette-aware", () => {
+  it("keeps all 122 active risk-tool fields and source colors palette-aware", () => {
     const sources = SOURCE_FILES.map((file) =>
       fs.readFileSync(path.join(process.cwd(), file), "utf8")
     );
-    const budRotSource = sources[0];
     const backendSource = fs.readFileSync(
       path.join(
         process.cwd(),
@@ -100,19 +71,8 @@ describe("Personal risk tool active palettes", () => {
       "utf8"
     );
 
-    expect(budRotSource.match(/<TextInput\b/g) || []).toHaveLength(4);
-    expect(
-      budRotSource.match(/placeholderTextColor={palette\.textMuted}/g) || []
-    ).toHaveLength(4);
-    expect(budRotSource.match(/selectionColor={palette\.accent}/g) || []).toHaveLength(4);
-    expect(sources.slice(1).map(fieldCount)).toEqual([15, 24, 67, 16]);
-    expect(
-      4 +
-        sources
-          .slice(1)
-          .map(fieldCount)
-          .reduce((sum, count) => sum + count, 0)
-    ).toBe(126);
+    expect(sources.map(fieldCount)).toEqual([15, 24, 67, 16]);
+    expect(sources.map(fieldCount).reduce((sum, count) => sum + count, 0)).toBe(122);
 
     expect(backendSource).toContain("placeholderTextColor={palette.textMuted}");
     expect(backendSource).toContain("selectionColor={palette.accent}");

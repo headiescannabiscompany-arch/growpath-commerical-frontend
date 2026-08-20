@@ -1,7 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 
-import BudRotRiskToolScreen from "@/app/home/personal/(tabs)/tools/bud-rot-risk";
 import EnvironmentAnalysisToolScreen from "@/app/home/personal/(tabs)/tools/environment-analysis";
 import FeedingScheduleToolScreen from "@/app/home/personal/(tabs)/tools/feeding-schedule";
 import NutrientChemistryToolScreen from "@/app/home/personal/(tabs)/tools/nutrient-chemistry";
@@ -110,13 +109,6 @@ describe("legacy personal tool shared back routes", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCan.mockReturnValue(false);
-  });
-
-  it("uses shared back behavior on Bud Rot Risk", () => {
-    const screen = render(<BudRotRiskToolScreen />);
-
-    expect(screen.getByText("Shared Back /home/personal/tools")).toBeTruthy();
-    expect(screen.getByText("Bud Rot Risk")).toBeTruthy();
   });
 
   it("uses shared back behavior on Feeding Schedule Planner", () => {
