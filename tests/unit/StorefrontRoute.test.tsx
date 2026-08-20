@@ -129,6 +129,12 @@ function apiResponseFor(path: string, options?: any) {
           growInterests: ["living soil", "flower"],
           stripePriceId: "price_123",
           inventoryItem: { name: "Bloom batch 001" }
+        },
+        {
+          id: "product-archived",
+          name: "Archived QA Product",
+          status: "archived",
+          imageUrl: "https://example.com/archived.jpg"
         }
       ]
     });
@@ -314,6 +320,10 @@ describe("Storefront route", () => {
     expect(screen.getByText("Price TBD | soil_mix")).toBeTruthy();
     expect(screen.getAllByText("Open Product").length).toBeGreaterThan(0);
     expect(screen.getByText("Published Bloom Topdress")).toBeTruthy();
+    expect(screen.queryByText("Archived QA Product")).toBeNull();
+    expect(
+      screen.queryByTestId("link-/home/commercial/products/product-archived")
+    ).toBeNull();
     expect(screen.getByText("Missing grow interests")).toBeTruthy();
     expect(screen.getByText("Missing size/weight")).toBeTruthy();
     expect(screen.getByText("Missing checkout link")).toBeTruthy();

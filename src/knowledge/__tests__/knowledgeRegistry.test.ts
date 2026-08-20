@@ -469,8 +469,14 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "single-flight Commercial storefront loading and mutually exclusive storefront, product, media, and setup-task actions with retained drafts"
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "active-only owner Storefront products and a read-only unavailable Product detail state"
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never silently omit invalid storefront coordinates, support email, HTTPS handoff, or product price, publish an incomplete quick product, submit a storefront/product write twice, or hide a load/action failure."
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never count archived, deleted, removed, cancelled, or hidden Products as active Storefront inventory or render editing controls after Product detail returns unavailable."
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "single-flight Commercial order and analytics requests with retained last-good data, explicit cancellation confirmation, and truthful failure-versus-zero states"

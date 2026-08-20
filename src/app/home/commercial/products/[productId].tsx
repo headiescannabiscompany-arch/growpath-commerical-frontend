@@ -387,6 +387,39 @@ export default function CommercialProductDetailRoute({ route }: { route?: any } 
   const specs = (product as any)?.specs || {};
   const missingSetup = productMissingSetup(product);
 
+  if (!loading && error && !product) {
+    return (
+      <AppPage
+        routeKey="commercial-product-detail-missing"
+        backFallbackHref="/home/commercial/products"
+        longContent
+        header={
+          <View style={styles.header}>
+            <Text style={styles.kicker}>Commercial product workspace</Text>
+            <Text style={styles.title}>Product unavailable</Text>
+            <Text style={styles.subtitle}>
+              This product is missing, archived, or no longer available in this Commercial
+              workspace.
+            </Text>
+          </View>
+        }
+      >
+        <InlineError error={error} />
+        <AppCard>
+          <Text style={styles.cardTitle}>Choose a safe next step</Text>
+          <Text style={styles.body}>
+            Return to the active product list or review the Storefront. GrowPath will not
+            expose editing controls for an unavailable product.
+          </Text>
+          <View style={styles.actions}>
+            <ActionLink href="/home/commercial/products" label="All Products" />
+            <ActionLink href="/home/commercial/storefront" label="Storefront" />
+          </View>
+        </AppCard>
+      </AppPage>
+    );
+  }
+
   return (
     <AppPage
       routeKey="commercial-product-detail"
