@@ -57,9 +57,13 @@ and inflorescence evidence passed at medium confidence; four flower-dominant or
 single-leaf candidates were rejected because they could not exclude close _Ocimum_
 species. Three additional cultivated garden-strawberry records with fruit plus foliage
 or repeated harvested-fruit evidence passed; a flower-only candidate remained rejected
-because it did not independently establish the garden-strawberry hybrid. The catalog is
-now 72/320 and remains planning until all governed slots are
-filled; no candidate is automatically promoted.
+because it did not independently establish the garden-strawberry hybrid. The catalog
+reached 72/320, then one additional research-grade wild-chile view passed individual
+morphology, genus-level taxonomy, life-stage, exact-license, expected-result, and
+intended-use review. The attached green-to-red fruits, persistent calyces, and Capsicum
+foliage support the governed pepper target without a cultivar claim. The catalog is now
+73/320 and remains planning until all governed slots are filled; no candidate is
+automatically promoted.
 
 Machine-readable catalog: `tests/fixtures/plant-identification-qa-catalog.json`
 

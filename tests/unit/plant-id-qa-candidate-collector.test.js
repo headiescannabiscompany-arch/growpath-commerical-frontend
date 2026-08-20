@@ -237,7 +237,7 @@ describe("Plant ID QA candidate collector", () => {
     );
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain('"blockerCount": 47');
+    expect(result.stdout).toContain('"blockerCount": 46');
     expect(result.stdout).not.toMatch(/Crime Pays.*not approved/i);
 
     const masterResult = spawnSync(
