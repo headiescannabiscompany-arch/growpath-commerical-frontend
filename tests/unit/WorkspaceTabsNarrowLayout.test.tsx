@@ -139,6 +139,9 @@ describe("workspace bottom tabs at narrow widths", () => {
       allScreens.find((child) => child.props.name === "regulated-commerce")?.props.options
         ?.href
     ).toBeNull();
+    expect(
+      allScreens.filter((child) => child.props.name === "courses/[courseId]")
+    ).toHaveLength(1);
     expect(screenOptions.tabBarActiveTintColor).toBe("#166534");
     expect(screenOptions.tabBarInactiveTintColor).toBe("#5F6F5F");
     expect(screenOptions.tabBarLabelStyle.fontSize).toBe(9);
