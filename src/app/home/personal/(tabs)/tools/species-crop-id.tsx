@@ -1175,6 +1175,7 @@ export default function SpeciesCropIdToolRoute({
   const [confirmPublicStudy, setConfirmPublicStudy] = useState(false);
   const [cannabisMapConsent, setCannabisMapConsent] = useState(false);
   const [naturePublicNotes, setNaturePublicNotes] = useState("");
+  const [observationDate, setObservationDate] = useState("");
   const [showLocationAndSharing, setShowLocationAndSharing] = useState(
     workspaceType === "personal" && Boolean(params.fieldStudyId)
   );
@@ -2195,11 +2196,18 @@ export default function SpeciesCropIdToolRoute({
     },
     { ready: Boolean(observationLocation), label: "Plant location added" },
     {
+      ready: Boolean(observationDate),
+      label: "Observation date added"
+    },
+    {
       ready: uploadedEvidence.images.length > 0,
       label: "Uploaded photo evidence added"
     }
   ];
   const natureMapReady = natureMapChecks.every((check) => check.ready);
+  const handleValuesChange = useCallback((values: Record<string, string>) => {
+    setObservationDate(String(values.observationDate || "").trim());
+  }, []);
 
   useEffect(() => {
     setSavedFieldObservationId("");
@@ -2465,6 +2473,7 @@ export default function SpeciesCropIdToolRoute({
       toolKey="species-crop-id"
       externalInputKey={evidenceInputKey}
       onToolRunChange={handleToolRunChange}
+      onValuesChange={handleValuesChange}
       executionBlocked={
         locationBusy || evidenceBusy || retryEvidenceLoading || frameExtractionBusy
       }
@@ -3961,6 +3970,14 @@ export default function SpeciesCropIdToolRoute({
                   "Choose a Field Study for a private draft, or select the Nature map option for a direct public pin."
                 );
               }
+              const observationDate = String(
+                payload.observationContext?.observationDate || ""
+              ).trim();
+              if (publishObservation && !observationDate) {
+                throw new Error(
+                  "Add the date the plant was observed before publishing it to Nature."
+                );
+              }
               const observationInput = {
                 sourceToolRunId: String(toolRun?.id || toolRun?._id || "") || null,
                 growId: growId || null,
@@ -3968,8 +3985,7 @@ export default function SpeciesCropIdToolRoute({
                   observationDisplayName ||
                   String(payload.userEnteredName || "").trim() ||
                   "Unconfirmed plant observation",
-                observationDate:
-                  payload.observationContext?.observationDate || new Date().toISOString(),
+                observationDate,
                 identity: {
                   commonName:
                     observationCommonName || String(payload.userEnteredName || "").trim(),

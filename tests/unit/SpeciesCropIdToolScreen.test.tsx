@@ -46,6 +46,13 @@ function openLocationAndSharing(screen: any) {
   if (collapsedControl) fireEvent.press(collapsedControl);
 }
 
+function chooseObservationDate(screen: any, date = "2026-08-12") {
+  const label = "Species / Crop Identification Observation date";
+  fireEvent.press(screen.getByLabelText(label));
+  fireEvent.press(screen.getByLabelText(`${label} day ${date}`));
+  fireEvent.press(screen.getByLabelText(`${label} use selected date`));
+}
+
 jest.mock("expo-router", () => ({
   Link: ({ children }: any) => children,
   useLocalSearchParams: () => mockSearchParams,
@@ -4064,6 +4071,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText(/This is Cannabis\/hemp.*review public-context sharing/)
     );
+    chooseObservationDate(screen);
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     fireEvent.press(await screen.findByText("Publish Approximate Pin to Nature"));
 
@@ -4090,6 +4098,7 @@ describe("SpeciesCropIdToolRoute", () => {
           privacy: "public_approximate",
           exactLocationPublicConfirmed: false
         }),
+        observationDate: "2026-08-12",
         publication: expect.objectContaining({
           status: "published",
           cannabisContextConfirmed: true,
@@ -4164,6 +4173,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
+    chooseObservationDate(screen);
     await waitFor(() =>
       expect(
         screen.getByText("Ready to create an approximate map pin after AI review.")
@@ -4209,6 +4219,7 @@ describe("SpeciesCropIdToolRoute", () => {
             privacy: "public_approximate",
             exactLocationPublicConfirmed: false
           }),
+          observationDate: "2026-08-12",
           publication: expect.objectContaining({
             status: "published",
             cannabisContextConfirmed: true
