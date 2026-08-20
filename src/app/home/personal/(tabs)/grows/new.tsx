@@ -13,11 +13,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiRequest } from "@/api/apiRequest";
-import {
-  appendGrowPhotos,
-  listPersonalGrows,
-  savePersonalGrowCropIdentity
-} from "@/api/grows";
+import { appendGrowPhotos, listPersonalGrows } from "@/api/grows";
 import { listCropProfiles } from "@/api/cropKnowledge";
 import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
@@ -512,6 +508,27 @@ export default function NewGrowScreen() {
           potSize: potSize.trim() || undefined,
           potCount: potCount ? Number(potCount) : undefined,
           cultivar: cultivar.trim() || undefined,
+          cropCommonName: cropCommonName.trim() || undefined,
+          scientificName: scientificName.trim() || undefined,
+          commonNames: commonNames
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
+          cropProfileId: cropProfileId || undefined,
+          cropIdentity: cropCommonName.trim()
+            ? {
+                commonName: cropCommonName.trim(),
+                scientificName: scientificName.trim() || undefined,
+                commonNames: commonNames
+                  .split(",")
+                  .map((item) => item.trim())
+                  .filter(Boolean),
+                cultivarOrStrain: cultivar.trim() || undefined,
+                confidence: "user_confirmed",
+                sourceToolRunId: firstParam(params.sourceToolRunId) || null,
+                userConfirmed: true
+              }
+            : undefined,
           targetVpdBand: targetVpdBand.trim() || undefined,
           photos: uploadedPhotos,
           photoMetadata: uploadedPhotos.map((url, index) => ({
@@ -532,22 +549,6 @@ export default function NewGrowScreen() {
       if (createdId && uploadedPhotos.length) {
         await appendGrowPhotos(createdId, uploadedPhotos);
       }
-      if (createdId && cropCommonName.trim()) {
-        await savePersonalGrowCropIdentity(createdId, {
-          cropCommonName: cropCommonName.trim(),
-          scientificName: scientificName.trim() || undefined,
-          commonNames: commonNames
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
-          cultivar: cultivar.trim() || undefined,
-          cropProfileId: cropProfileId || null,
-          confidence: "user_confirmed",
-          sourceToolRunId: firstParam(params.sourceToolRunId) || null,
-          userConfirmed: true
-        });
-      }
-
       if (createdId) {
         setCreatedGrowId(createdId);
       } else {

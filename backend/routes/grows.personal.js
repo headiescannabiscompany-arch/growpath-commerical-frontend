@@ -150,6 +150,15 @@ router.post("/", async (req, res) => {
         : [],
     strain: req.body?.strain || req.body?.cultivar || undefined,
     cultivar: req.body?.cultivar || req.body?.strain || undefined,
+    cropCommonName: String(req.body?.cropCommonName || "").trim(),
+    scientificName: String(req.body?.scientificName || "").trim(),
+    commonNames: stringList(req.body?.commonNames),
+    cropProfileId: req.body?.cropProfileId || null,
+    cropIdentity:
+      req.body?.cropIdentity && typeof req.body.cropIdentity === "object"
+        ? req.body.cropIdentity
+        : null,
+    cropIdentityConfirmedAt: req.body?.cropIdentity ? new Date() : null,
     notes: req.body?.notes || undefined,
     growTags: stringList(req.body?.growTags),
     growInterests:
@@ -167,7 +176,13 @@ router.post("/", async (req, res) => {
             plantCount: optionalNumber(req.body.planning.plantCount),
             vegLengthWeeks: optionalNumber(req.body.planning.vegLengthWeeks),
             expectedFlowerDays: optionalNumber(req.body.planning.expectedFlowerDays),
-            createStarterCalendar: Boolean(req.body.planning.createStarterCalendar)
+            createStarterCalendar: Boolean(req.body.planning.createStarterCalendar),
+            lifeSpanPath: String(req.body.planning.lifeSpanPath || "not_sure"),
+            productionPattern: String(req.body.planning.productionPattern || "not_sure"),
+            dormancyPattern: String(req.body.planning.dormancyPattern || "not_sure"),
+            lifecycleGuidanceSourceIds: stringList(
+              req.body.planning.lifecycleGuidanceSourceIds
+            )
           }
         : {},
     systemPreset: req.body?.systemPreset || undefined,

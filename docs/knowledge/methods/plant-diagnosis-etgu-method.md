@@ -432,6 +432,10 @@ such as tomatoes receive crop-appropriate setup help rather than cannabis-only t
 Unknown crop facts remain blank or explicitly user-confirmed; a profile search result is not
 itself a species confirmation.
 
+Grow creation persists the confirmed crop identity, confirmation provenance, and reviewed
+lifecycle path in the same create operation. A successfully created grow must never be
+presented as a failed creation merely because a follow-up crop-identity request is unavailable.
+
 Crop-aware grow setup must distinguish lifespan from harvest behavior. Supported planning
 paths are annual, biennial, short-lived perennial, long-lived perennial or woody, continuous
 indoor/tropical, and unknown. Production is separately described as one main harvest,
