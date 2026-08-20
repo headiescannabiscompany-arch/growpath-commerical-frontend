@@ -90,7 +90,13 @@ execution boundaries and the evidence needed not to reopen completed work.
       (submitted security reports, high/critical safety reports, audited account enforcement,
       and failed integration deliveries). It also truthfully marked Sentry Admin read access
       `not configured`; Sentry issues are therefore not represented as covered until that
-      separate credentialed integration is completed.
+      separate credentialed integration is completed. A second read-only production audit on
+      2026-08-20 confirmed the same four connected sources, zero open/resolved records, direct
+      investigation entry points, and the explicit incomplete-coverage warning. The production
+      `growpath-api` Render environment does not currently define `SENTRY_ADMIN_AUTH_TOKEN` or
+      `SENTRY_ORG_SLUG`; `SENTRY_ADMIN_ENVIRONMENT` and `SENTRY_API_BASE_URL` remain optional
+      overrides. No secret was revealed or changed. Connecting Sentry remains a protected
+      credential action and must be retested here before its source can be called connected.
 - [x] The governed Diagnosis/IPM catalog assembly is complete at 252 reviewed cases and
       504 rights-reviewed images. Executing all cases against authorized staging remains a
       separate open action because it spends credits and writes records.
