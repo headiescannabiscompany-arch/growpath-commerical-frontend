@@ -118,6 +118,9 @@ describe("Public Field Observations request ordering", () => {
             url: "/uploads/public-field-observations/rose-photo.jpg"
           }
         ],
+        publication: {
+          publicNotes: "Native plants beside a shaded trail at Maydale Nature Classroom."
+        },
         location: { latitude: 39, longitude: -76, precision: "approximate" }
       }
     ]);
@@ -125,8 +128,16 @@ describe("Public Field Observations request ordering", () => {
     render(<PublicFieldObservationsScreen />);
 
     expect(await screen.findByLabelText("Evidence for Mapped rose")).toBeTruthy();
+    expect(
+      screen.getByText("Native plants beside a shaded trail at Maydale Nature Classroom.")
+    ).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Select first globe pin"));
     expect(screen.getByLabelText("Photos for Mapped rose")).toBeTruthy();
     expect(screen.getByLabelText("Evidence photo 1 for Mapped rose")).toBeTruthy();
+    expect(
+      screen.getAllByText(
+        "Native plants beside a shaded trail at Maydale Nature Classroom."
+      )
+    ).toHaveLength(2);
   });
 });

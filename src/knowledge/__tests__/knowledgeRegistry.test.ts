@@ -287,6 +287,12 @@ describe("GrowPath knowledge registries", () => {
       "standalone private Plant ID location that can be added, updated, or removed without creating a Field Study observation or publishing to Nature"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "optional contributor-authored public Nature description stored as publicNotes and shown with the public photo pin without converting it into AI evidence"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not synthesize a public Nature description from AI output, fall back to a private note, or encourage personal names, exact addresses, private-property details, or sensitive-species directions."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "authenticated Commercial Plant ID ToolRuns kept outside Personal Saved Runs, with unsupported Commercial journal and task actions failing explicitly"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(

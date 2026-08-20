@@ -158,6 +158,34 @@ export function createPersonalProfileStyles(palette: ThemePalette) {
       fontSize: 12,
       color: palette.textMuted,
       lineHeight: 18
+    },
+    logoutConfirmation: {
+      marginTop: 12,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      backgroundColor: palette.surface
+    },
+    logoutConfirmationTitle: {
+      color: palette.text,
+      fontSize: 16,
+      fontWeight: "800"
+    },
+    logoutConfirmationCopy: {
+      color: palette.textMuted,
+      fontSize: 13,
+      lineHeight: 19,
+      marginTop: 4
+    },
+    logoutActions: {
+      flexDirection: "row",
+      gap: 10,
+      marginTop: 12
+    },
+    logoutAction: {
+      flex: 1,
+      marginTop: 0
     }
   });
 }
@@ -213,6 +241,9 @@ export default function ProfileScreen() {
   const [notificationSaving, setNotificationSaving] = useState(false);
   const [notificationFeedback, setNotificationFeedback] = useState("");
   const [notificationError, setNotificationError] = useState("");
+  const [logoutConfirming, setLogoutConfirming] = useState(false);
+  const [logoutBusy, setLogoutBusy] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const mode = ent.mode || "personal";
   const plan = ent.plan || "free";
   const planActions = getPersonalProfilePlanActions(plan);
@@ -331,6 +362,9 @@ export default function ProfileScreen() {
   };
 
   const performLogout = async () => {
+    if (logoutBusy) return;
+    setLogoutBusy(true);
+    setLogoutError("");
     try {
       if (typeof (auth as any).logout === "function") {
         await (auth as any).logout();
@@ -340,36 +374,14 @@ export default function ProfileScreen() {
 
       router.replace("/login" as any);
     } catch (e: any) {
-      if (Platform.OS === "web") {
-        setPrivacyError(e?.message || "Failed to log out");
-      } else {
-        Alert.alert("Error", e?.message || "Failed to log out");
-      }
+      setLogoutError(e?.message || "Failed to log out. Please try again.");
+      setLogoutBusy(false);
     }
   };
 
   const handleLogout = () => {
-    if (
-      Platform.OS === "web" &&
-      typeof window !== "undefined" &&
-      typeof window.confirm === "function"
-    ) {
-      if (window.confirm("Log out?\n\nYou'll be returned to the login screen.")) {
-        void performLogout();
-      }
-      return;
-    }
-
-    Alert.alert("Log out?", "You'll be returned to the login screen.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Log out",
-        style: "destructive",
-        onPress: () => {
-          void performLogout();
-        }
-      }
-    ]);
+    setLogoutError("");
+    setLogoutConfirming(true);
   };
 
   const handleExportData = async () => {
@@ -882,9 +894,63 @@ export default function ProfileScreen() {
           { backgroundColor: palette.surface, borderColor: palette.danger }
         ]}
         onPress={handleLogout}
+        disabled={logoutBusy}
+        accessibilityRole="button"
+        accessibilityLabel="Log out"
       >
-        <Text style={[styles.buttonDangerText, { color: palette.danger }]}>Log out</Text>
+        <Text style={[styles.buttonDangerText, { color: palette.danger }]}>
+          {logoutBusy ? "Logging out..." : "Log out"}
+        </Text>
       </Pressable>
+      {logoutConfirming ? (
+        <View
+          style={styles.logoutConfirmation}
+          accessibilityRole="alert"
+          accessibilityLabel="Log out confirmation"
+        >
+          <Text style={styles.logoutConfirmationTitle}>Log out of this account?</Text>
+          <Text style={styles.logoutConfirmationCopy}>
+            You will return to the login screen. Your saved GrowPathAI data will remain in
+            this account.
+          </Text>
+          {logoutError ? <Text style={styles.error}>{logoutError}</Text> : null}
+          <View style={styles.logoutActions}>
+            <Pressable
+              style={[
+                styles.button,
+                styles.logoutAction,
+                { borderColor: palette.border }
+              ]}
+              onPress={() => {
+                setLogoutConfirming(false);
+                setLogoutError("");
+              }}
+              disabled={logoutBusy}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel logout"
+            >
+              <Text style={styles.buttonSecondaryText}>Cancel</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.button,
+                styles.buttonDanger,
+                styles.logoutAction,
+                { backgroundColor: palette.surface, borderColor: palette.danger },
+                logoutBusy && { opacity: 0.55 }
+              ]}
+              onPress={() => void performLogout()}
+              disabled={logoutBusy}
+              accessibilityRole="button"
+              accessibilityLabel="Confirm logout"
+            >
+              <Text style={[styles.buttonDangerText, { color: palette.danger }]}>
+                {logoutBusy ? "Logging out..." : "Log out now"}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
       <PersonalFeedPlacement placement="bottom" routeKey="personal_profile" longContent />
     </ScrollView>
   );

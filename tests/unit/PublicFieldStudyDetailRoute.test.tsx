@@ -56,7 +56,10 @@ describe("Public Field Study detail route", () => {
       observations: [
         {
           id: "observation-1",
-          identity: { commonName: "Red maple", verificationStatus: "verified" }
+          identity: { commonName: "Red maple", verificationStatus: "verified" },
+          publication: {
+            publicNotes: "Observed along the woodland trail after summer rain."
+          }
         }
       ]
     });
@@ -78,6 +81,9 @@ describe("Public Field Study detail route", () => {
       2
     );
     expect(screen.getByRole("header", { name: "Red maple" })).toHaveProp("aria-level", 3);
+    expect(
+      screen.getByText("Observed along the woodland trail after summer rain.")
+    ).toBeTruthy();
   });
 
   it("uses the active palette for unavailable, privacy, and loaded cards", () => {

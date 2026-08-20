@@ -1174,6 +1174,7 @@ export default function SpeciesCropIdToolRoute({
   const [publishingStudy, setPublishingStudy] = useState(false);
   const [confirmPublicStudy, setConfirmPublicStudy] = useState(false);
   const [cannabisMapConsent, setCannabisMapConsent] = useState(false);
+  const [naturePublicNotes, setNaturePublicNotes] = useState("");
   const [showLocationAndSharing, setShowLocationAndSharing] = useState(
     workspaceType === "personal" && Boolean(params.fieldStudyId)
   );
@@ -1386,6 +1387,7 @@ export default function SpeciesCropIdToolRoute({
     setPublishingStudy(false);
     setConfirmPublicStudy(false);
     setCannabisMapConsent(false);
+    setNaturePublicNotes("");
     setSavedFieldObservationId("");
     setSavedFieldObservationStudyId("");
     setSavedFieldObservationPublished(false);
@@ -2191,7 +2193,7 @@ export default function SpeciesCropIdToolRoute({
         ? "Field Study is public"
         : "Deliberate approximate-pin sharing selected"
     },
-    { ready: Boolean(observationLocation), label: "Device location captured" },
+    { ready: Boolean(observationLocation), label: "Plant location added" },
     {
       ready: uploadedEvidence.images.length > 0,
       label: "Uploaded photo evidence added"
@@ -2773,6 +2775,26 @@ export default function SpeciesCropIdToolRoute({
                     publish action shares a privacy-safe approximate pin and the selected
                     photos. Exact coordinates and Personal account details stay private.
                   </Text>
+                  {wantsNatureMap ? (
+                    <>
+                      <Text style={styles.fieldLabel}>Public description (optional)</Text>
+                      <TextInput
+                        accessibilityLabel="Public Nature description"
+                        maxLength={500}
+                        multiline
+                        onChangeText={setNaturePublicNotes}
+                        placeholder="What did you observe here? Add habitat, visible features, or why this find matters."
+                        placeholderTextColor={palette.textMuted}
+                        style={styles.publicNoteInput}
+                        value={naturePublicNotes}
+                      />
+                      <Text style={styles.evidenceGuidance}>
+                        This text is shown with the public pin. Do not include a
+                        person&apos;s name, exact address, private-property details, or
+                        sensitive-species directions.
+                      </Text>
+                    </>
+                  ) : null}
 
                   <Text style={styles.fieldLabel}>Optional named Field Study</Text>
                   {fieldStudies.length ? (
@@ -3992,7 +4014,7 @@ export default function SpeciesCropIdToolRoute({
                       : ("draft" as const),
                   sensitiveSpecies,
                   cannabisContextConfirmed,
-                  publicNotes: ""
+                  publicNotes: naturePublicNotes.trim()
                 }
               };
               let observationId = savedFieldObservationId;
@@ -4101,6 +4123,17 @@ export function createSpeciesCropIdStyles(palette: ThemePalette) {
       minWidth: 210,
       paddingHorizontal: 12,
       paddingVertical: 8
+    },
+    publicNoteInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: 10,
+      borderWidth: 1,
+      color: palette.text,
+      minHeight: 92,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      textAlignVertical: "top"
     },
     secondaryButton: {
       alignSelf: "flex-start",

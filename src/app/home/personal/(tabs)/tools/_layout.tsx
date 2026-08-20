@@ -152,10 +152,7 @@ export default function ToolsLayout() {
       />
       <Stack.Screen name="integrations" options={{ title: "Data Integrations" }} />
       <Stack.Screen name="ppfd" options={{ title: "PPFD / DLI Planner" }} />
-      <Stack.Screen
-        name="bud-rot-risk"
-        options={{ title: "Environment Review", href: null }}
-      />
+      <Stack.Screen name="bud-rot-risk" options={{ title: "Environment Review" }} />
       <Stack.Screen name="nutrient-chemistry" options={{ title: "Nutrient Chemistry" }} />
       <Stack.Screen
         name="nutrient-source-comparison"
