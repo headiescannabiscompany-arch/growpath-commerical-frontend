@@ -103,7 +103,18 @@ function createStyles(settings: any) {
       backgroundColor: "transparent",
       flex: 1,
       justifyContent: position.startsWith("top") ? "flex-start" : "flex-end",
-      padding: 20
+      padding: 20,
+      ...(Platform.OS === "web"
+        ? ({
+            bottom: 0,
+            height: "100vh",
+            left: 0,
+            position: "fixed",
+            right: 0,
+            top: 0,
+            width: "100vw"
+          } as any)
+        : {})
     },
     stack: { gap: 8, maxWidth: 620, width: "92%" },
     message: {
