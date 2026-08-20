@@ -425,6 +425,13 @@ export function sourceObjectHref(source: SourceLike) {
     }`;
   }
   if (sourceType === "forum") return forumId ? `/forum/post?id=${forumId}` : "/forum";
+  if (
+    sourceType === "moderationcase" ||
+    sourceType === "moderation_case" ||
+    sourceType === "content_report"
+  ) {
+    return sourceId ? `/admin?moderationCaseId=${encoded(sourceId)}` : "/admin";
+  }
 
   return "";
 }
