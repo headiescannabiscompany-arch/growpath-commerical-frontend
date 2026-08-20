@@ -75,14 +75,27 @@ export default function AutoGrowCalendarToolRoute() {
       tool="auto-grow-calendar"
       toolKey="auto-grow-calendar"
       title="Auto Grow Calendar"
-      subtitle="Build one editable grow lifecycle plan from saved dates, plant timing, veg, flower, harvest, dry, and cure context."
+      subtitle="Build one editable crop lifecycle plan from confirmed identity, establishment, flowering or fruiting, harvest, observation, and dormancy context. Cannabis grows retain their detailed veg, flower, harvest, dry, and cure path."
       aiPrefill={{
         buttonLabel: "Fill lifecycle plan from grow",
         clearUnfilled: true,
         buildMessage: () =>
-          `Prefill this grow lifecycle calendar from the selected grow's actual start date, plants, crop/cultivar records, current stage, stage-change logs, breeder timing, tasks, diagnoses, harvest reviews, and dry/cure plans. Return JSON only with exactly these string keys: plantCount, startDate, vegLengthWeeks, expectedFlowerDays, growStyle, medium, plants, planningNotes. plants must be a JSON array encoded as a string; each item may contain plantId, cultivar, expectedFlowerDaysMin, expectedFlowerDaysMax, and timingEvidence. Dates and elapsed durations must come from saved records. Breeder timing is a reference, not a guaranteed harvest date. Leave unknowns blank. In planningNotes identify conflicts, missing dates, cultivar/plant timing differences, uncertainty, and milestones that should remain user-editable proposals.`
+          `Prefill this crop lifecycle calendar from the selected grow's confirmed crop identity, actual start date, plants, lifecycle path, production pattern, dormancy, current stage, stage-change logs, tasks, diagnoses, harvest reviews, and saved timing evidence. Return JSON only with exactly these string keys: cropCommonName, scientificName, lifeSpanPath, productionPattern, dormancyPattern, plantCount, startDate, vegLengthWeeks, expectedFlowerDays, growStyle, medium, plants, planningNotes. For cannabis, vegLengthWeeks and expectedFlowerDays retain their literal meanings. For other crops, use vegLengthWeeks only for a recorded establishment period and expectedFlowerDays only for a recorded days-to-first-harvest or planned observation period. plants must be a JSON array encoded as a string. Dates and elapsed durations must come from saved records. Breeder, cultivar, packet, nursery, or extension timing is a reference, not a guarantee. Leave unknowns blank. Never invent a crop lifecycle. In planningNotes identify conflicts, missing region/cultivar/propagation facts, uncertainty, and milestones that must remain user-editable proposals.`
       }}
       fields={[
+        { key: "cropCommonName", label: "Crop common name", defaultValue: "" },
+        { key: "scientificName", label: "Scientific name (optional)", defaultValue: "" },
+        {
+          key: "lifeSpanPath",
+          label: "Lifecycle path",
+          defaultValue: "not_sure"
+        },
+        {
+          key: "productionPattern",
+          label: "Harvest or observation pattern",
+          defaultValue: "not_sure"
+        },
+        { key: "dormancyPattern", label: "Dormancy pattern", defaultValue: "not_sure" },
         {
           key: "plantCount",
           label: "Plant count",
@@ -97,22 +110,22 @@ export default function AutoGrowCalendarToolRoute() {
         },
         {
           key: "vegLengthWeeks",
-          label: "Veg length weeks",
-          defaultValue: "4",
+          label: "Establishment / vegetative weeks (if known)",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         {
           key: "expectedFlowerDays",
-          label: "Expected flower days",
-          defaultValue: "63",
+          label: "Flowering or first-harvest days (if known)",
+          defaultValue: "",
           keyboardType: "numeric"
         },
         { key: "growStyle", label: "Grow style", defaultValue: "indoor" },
         { key: "medium", label: "Medium", defaultValue: "living_soil" },
         {
           key: "plants",
-          label: "Optional plants: cultivar, flower min days, flower max days",
-          defaultValue: "Sour Diesel, 63, 70\nHaze Hybrid, 70, 77",
+          label: "Optional plants: cultivar/specimen, timing min days, timing max days",
+          defaultValue: "",
           multiline: true
         },
         {
@@ -125,6 +138,11 @@ export default function AutoGrowCalendarToolRoute() {
       buildPayload={(values, { growId, plantContext }) => ({
         growId,
         ...plantContext.toolRunContext,
+        cropCommonName: values.cropCommonName,
+        scientificName: values.scientificName || undefined,
+        lifeSpanPath: values.lifeSpanPath,
+        productionPattern: values.productionPattern,
+        dormancyPattern: values.dormancyPattern,
         plantCount: values.plantCount,
         startDate: values.startDate,
         vegLengthWeeks: values.vegLengthWeeks,
@@ -135,7 +153,15 @@ export default function AutoGrowCalendarToolRoute() {
         planningNotes: values.planningNotes || undefined
       })}
       buildMetrics={(outputs) => [
-        { key: "flip", label: "Flip date", value: outputs.stageTimeline?.flipDate },
+        {
+          key: "transition",
+          label:
+            outputs.calendarMode === "cannabis" ? "Flip date" : "Establishment review",
+          value:
+            outputs.calendarMode === "cannabis"
+              ? outputs.stageTimeline?.flipDate
+              : outputs.stageTimeline?.establishmentReviewDate
+        },
         {
           key: "harvestStart",
           label: "Harvest start",

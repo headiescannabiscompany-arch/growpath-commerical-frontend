@@ -459,6 +459,14 @@ creatable through explicit owner-selected lifespan, production, dormancy, start 
 dates; the app must say that reviewed auto-guidance is unavailable instead of inventing a
 lifecycle.
 
+The post-create calendar follows the same crop boundary. Cannabis/hemp may use explicit
+vegetative, flip, flowering, harvest, dry, and cure milestones. Other crops use confirmed
+establishment, flowering/fruiting, first-harvest, repeated-harvest, observation, and dormancy
+facts. When region, cultivar, propagation method, lifecycle, or supported timing is missing,
+the calendar asks for it or leaves the milestone absent; it must not substitute cannabis
+defaults or invent a biological date. Every generated date remains an editable planning
+anchor, not a guarantee.
+
 Crop identification must run without a grow. Grow and plant context are optional attachments used for private history, saving, logs, and follow-up tasks; they are not prerequisites for inspecting uploaded media or returning a draft identity. Collect photo evidence before presenting the image-analysis action. User confirmation is an explicit result action, not a free-form true/false input. The result must state whether image pixels were actually analyzed. A clear cannabis flower or harvested bud may support a draft crop-level identification when visible bracts/calyxes, pistils, resinous sugar leaves, trichome coverage, and inflorescence structure are consistent. Do not require a fan-leaf photo when the flower is independently recognizable, and never infer a cultivar/strain from bud appearance.
 
 When exact species is unresolved but the evidence supports a defensible common, genus, or family-level working candidate, surface that candidate with its actual confidence and limitations instead of replacing it with a confirmation placeholder. `Not confirmed` is reserved for cases where no useful plant candidate is defensible; every candidate still remains a draft until the user confirms it.

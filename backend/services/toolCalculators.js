@@ -2963,26 +2963,159 @@ function calculateAutoGrowCalendar(input = {}) {
   const startDate = input.startDate ? new Date(input.startDate) : new Date();
   if (Number.isNaN(startDate.getTime()))
     throw new Error("Start date must be a valid date");
+  const cropText = [
+    input.cropCommonName,
+    input.scientificName,
+    input.cropIdentity?.commonName,
+    input.cropIdentity?.scientificName,
+    ...(Array.isArray(input.cropTypes) ? input.cropTypes : []),
+    ...(Array.isArray(input.growTags) ? input.growTags : [])
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const suppliedPlants = Array.isArray(input.plants) ? input.plants : [];
+  const legacyCannabisEvidence =
+    !cropText.trim() &&
+    (suppliedPlants.some(
+      (plant) =>
+        plant?.expectedFlowerDaysMin != null || plant?.expectedFlowerDaysMax != null
+    ) ||
+      (input.expectedFlowerDays != null && input.vegLengthWeeks != null));
+  const cannabisCalendar =
+    /\b(cannabis|hemp)\b/i.test(cropText) || legacyCannabisEvidence;
+  const iso = (offsetDays) => {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + offsetDays);
+    return d.toISOString().slice(0, 10);
+  };
+
+  if (!cannabisCalendar) {
+    const plantCount = Math.max(1, optionalNumber(input.plantCount, "Plant count") ?? 1);
+    const establishmentWeeks = Math.max(
+      0,
+      optionalNumber(input.vegLengthWeeks, "Establishment weeks") ?? 0
+    );
+    const establishmentOffset = Math.round(establishmentWeeks * 7);
+    const firstHarvestDays = optionalNumber(
+      input.expectedFlowerDays ?? input.expectedFirstHarvestDays,
+      "Days to first harvest or observation"
+    );
+    if (firstHarvestDays != null && firstHarvestDays < 1) {
+      throw new Error("Days to first harvest or observation must be at least 1");
+    }
+    const commonName = String(input.cropCommonName || "Unconfirmed crop").trim();
+    const lifeSpanPath = String(input.lifeSpanPath || "not_sure");
+    const productionPattern = String(input.productionPattern || "not_sure");
+    const dormancyPattern = String(input.dormancyPattern || "not_sure");
+    const taskSchedule = [
+      {
+        title: `Confirm ${commonName} grow setup and evidence`,
+        dueDate: iso(0),
+        stage: "start",
+        reason:
+          "Confirm crop identity, propagation method, region, and the dates supplied."
+      }
+    ];
+    if (establishmentOffset > 0) {
+      taskSchedule.push({
+        title: "Review establishment and root-zone progress",
+        dueDate: iso(establishmentOffset),
+        stage: "establishment",
+        reason: "This date comes from the establishment period entered by the grower."
+      });
+    }
+    if (firstHarvestDays != null) {
+      taskSchedule.push({
+        title:
+          productionPattern === "observation_only"
+            ? "Record the planned lifecycle observation"
+            : "Review first-harvest readiness",
+        dueDate: iso(Math.round(firstHarvestDays)),
+        stage:
+          productionPattern === "observation_only" ? "observation" : "harvest_review",
+        reason:
+          "This is a planning review from the grower-entered timing, not a guaranteed harvest date."
+      });
+    }
+    if (dormancyPattern !== "none" && dormancyPattern !== "not_sure") {
+      taskSchedule.push({
+        title: "Confirm seasonal dormancy dates for this location",
+        dueDate: iso(0),
+        stage: "dormancy_planning",
+        reason: "Dormancy timing requires location, climate, and current plant state."
+      });
+    }
+    const limitations = [];
+    if (!String(input.cropCommonName || "").trim())
+      limitations.push("Confirm the crop identity before creating crop-specific tasks.");
+    if (lifeSpanPath === "not_sure")
+      limitations.push(
+        "Choose an annual, biennial, perennial, woody, or other lifecycle path."
+      );
+    if (productionPattern === "not_sure")
+      limitations.push(
+        "Choose whether the goal is harvest, repeated picking, or observation."
+      );
+    if (firstHarvestDays == null)
+      limitations.push(
+        "No first-harvest or observation date was created because no supported timing was supplied."
+      );
+
+    return {
+      calendarMode: "general_crop",
+      cropCommonName: commonName,
+      plantCount,
+      lifeSpanPath,
+      productionPattern,
+      dormancyPattern,
+      stageTimeline: {
+        startDate: iso(0),
+        establishmentReviewDate:
+          establishmentOffset > 0 ? iso(establishmentOffset) : null,
+        expectedHarvestStart:
+          firstHarvestDays != null ? iso(Math.round(firstHarvestDays)) : null,
+        expectedHarvestEnd: null
+      },
+      calendarEvents: taskSchedule.map((task) => ({
+        type: "GROW_TASK",
+        title: task.title,
+        start: task.dueDate,
+        stage: task.stage
+      })),
+      taskSchedule,
+      expectedHarvestWindows:
+        firstHarvestDays != null
+          ? [
+              {
+                start: iso(Math.round(firstHarvestDays)),
+                end: null,
+                confidence: "user_entered_planning_reference"
+              }
+            ]
+          : [],
+      plantSpecificHarvestWindows: [],
+      reminders: [
+        "Calendar dates are editable planning anchors, not biological guarantees.",
+        "Crop, cultivar, propagation method, region, weather, and management can change timing.",
+        ...limitations
+      ]
+    };
+  }
+
   const vegWeeks = Math.max(0, number(input.vegLengthWeeks ?? 4, "Veg length weeks"));
   const flowerDays = Math.max(
     1,
     number(input.expectedFlowerDays ?? input.flowerDays ?? 63, "Flower days")
   );
   const plantCount = Math.max(1, number(input.plantCount ?? 1, "Plant count"));
-  const plants =
-    Array.isArray(input.plants) && input.plants.length
-      ? input.plants
-      : Array.from({ length: plantCount }, (_, index) => ({
-          plantId: `plant_${index + 1}`,
-          cultivar: input.cultivar || `Plant ${index + 1}`,
-          expectedFlowerDaysMin: flowerDays,
-          expectedFlowerDaysMax: flowerDays
-        }));
-  const iso = (offsetDays) => {
-    const d = new Date(startDate);
-    d.setDate(d.getDate() + offsetDays);
-    return d.toISOString().slice(0, 10);
-  };
+  const plants = suppliedPlants.length
+    ? suppliedPlants
+    : Array.from({ length: plantCount }, (_, index) => ({
+        plantId: `plant_${index + 1}`,
+        cultivar: input.cultivar || `Plant ${index + 1}`,
+        expectedFlowerDaysMin: flowerDays,
+        expectedFlowerDaysMax: flowerDays
+      }));
   const flipOffset = Math.round(vegWeeks * 7);
   const plantSpecificHarvestWindows = plants.map((plant, index) => {
     const minDays = Math.max(
@@ -3066,6 +3199,7 @@ function calculateAutoGrowCalendar(input = {}) {
     }
   ];
   return {
+    calendarMode: "cannabis",
     plantCount,
     stageTimeline: {
       startDate: iso(0),
