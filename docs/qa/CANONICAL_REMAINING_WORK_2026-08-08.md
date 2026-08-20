@@ -1,6 +1,6 @@
 # GrowPathAI Canonical Remaining Work
 
-Date: 2026-08-14
+Date: 2026-08-20
 
 Status: Active execution list; reconciled against retained production evidence on
 2026-08-12. A checked sub-scope stays checked even when its larger end-to-end workflow
@@ -13,6 +13,49 @@ broader than an item here, this list's narrower acceptance boundary replaces it.
 The complete checked/partial/open history of user-added requests is retained in
 `docs/qa/USER_REQUEST_LEDGER_2026-08-13.md`; this document contains only current
 execution boundaries and the evidence needed not to reopen completed work.
+
+## Execution cursor and document ownership
+
+This section is the stable handoff point. Update it when a coherent acceptance batch
+starts or finishes; do not create another active todo document.
+
+1. **Active batch:** finish populated Commercial product/storefront acceptance, then
+   continue the remaining non-mutating Commercial route/deep-link crawl. The saved
+   product-detail API regression is repaired and live; the missing-product frontend
+   fallback still needs exact served-bundle proof.
+2. **Next product batches:** finish the still-open Personal/Commercial/Facility/public
+   workflow and mutation items in sections B-F, including provider/device mapping where
+   real credentials or imports are available. Do not reopen retained Hosted Live/OBS,
+   crop-to-grow, Plant ID transport, or other checked implementation unless a current
+   regression is reproduced.
+3. **Release crawl:** after product/workflow items are closed, run the complete live
+   route, button, responsive, theme, accessibility, persistence, security, and visual
+   presentation crawl and repair the defects it finds. Include a route-to-visible-entry
+   matrix for every user-facing feature so a working subsystem cannot remain buried like
+   Hosted Lives was: record its intended workspace/role, visible entry, canonical URL,
+   Back path, empty and populated states, and whether it is intentionally internal or a
+   legacy redirect. Route inventory and zero API orphans alone do not close this check.
+4. **External review:** run the defined Roberto review gate after the final crawl and
+   reconcile each accepted change through normal review/live evidence.
+5. **Merchandise:** hats remain second-to-last, after the product and final-crawl work.
+6. **Store release:** App Store and Play Store work remains last.
+
+Document roles are fixed:
+
+- this file is the **only active execution list**;
+- `USER_REQUEST_LEDGER_2026-08-13.md` is the **request/completion history**;
+- `GROWPATHAI_FULL_SYSTEM_TODO.md` and the numbered connected-workflows todo are
+  **implementation/evidence history**, not alternative queues;
+- method documents define durable domain behavior; production evidence documents
+  prove a named release slice; neither creates a new execution order.
+
+A checkbox may move to `[x]` only when its own definition of done is met. For a live
+workflow that normally means the implementation SHA, focused tests, release gate,
+production URL, account/workspace/role, expected state or mutation, and reload or
+public-visibility result are all recorded. Local tests do not prove deployment; route
+loading does not prove mutation; an empty-state check does not prove a populated flow.
+When one named remainder stays open, narrow the `[~]` text to that remainder instead of
+repeating already accepted work.
 
 ## Rules
 
