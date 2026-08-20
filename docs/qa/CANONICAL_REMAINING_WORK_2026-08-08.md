@@ -983,6 +983,14 @@ public visibility, or screenshot/video acceptance still called out below.
   including tasks, alerts, courses, lives, videos, products, storefronts,
   ToolRuns, facility records, and Forum/Q&A. Focused notification/registration/
   source-link tests passed 17/17 and the main Production Build Preflight passed.
+  A read-only production pass on 2026-08-20 opened `/home/notifications` from the
+  real Admin Commercial session. It rendered Device push plus all seven category
+  switches, the matching category filters, a workspace-correct Commercial Profile
+  link, two retained unread moderation notifications with exact Admin source links,
+  and task-handoff actions. Video activity, Courses and lives, Commerce updates, and
+  Facility alerts each changed to a truthful empty result without a load, access, or
+  route error. No preference, read state, task, or notification was mutated. This
+  closes the current web control/filter/source-link rendering slice only.
   Real iOS and Android receipt, opt-in/out suppression, and exact-record tap
   acceptance remain; web intentionally does not register native push handling.
 - [ ] Capture genuine final-SHA screenshots and video tied to URL, timestamp,
