@@ -1,23 +1,43 @@
 import React from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Platform, StyleSheet, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
 
 export default function GrowPathHostedLivePlayer({ playerUrl }: { playerUrl: string }) {
   if (!playerUrl) return null;
+
+  const player =
+    Platform.OS === "web"
+      ? React.createElement("iframe" as any, {
+          src: playerUrl,
+          title: "GrowPath live video player",
+          allow: "autoplay; encrypted-media; picture-in-picture; fullscreen",
+          allowFullScreen: true,
+          referrerPolicy: "strict-origin-when-cross-origin",
+          style: {
+            width: "100%",
+            minHeight: 340,
+            border: 0,
+            backgroundColor: "#000"
+          }
+        })
+      : (
+          <WebView
+            accessibilityLabel="GrowPath live video player"
+            allowsFullscreenVideo
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction
+            source={{ uri: playerUrl }}
+            style={styles.player}
+          />
+        );
+
   return (
     <View style={styles.container}>
       <Text style={styles.help}>
         Use the player for play, pause, volume, mute, fullscreen, captions, and replay
         seeking when available.
       </Text>
-      <WebView
-        accessibilityLabel="GrowPath live video player"
-        allowsFullscreenVideo
-        allowsInlineMediaPlayback
-        mediaPlaybackRequiresUserAction
-        source={{ uri: playerUrl }}
-        style={styles.player}
-      />
+      {player}
     </View>
   );
 }
