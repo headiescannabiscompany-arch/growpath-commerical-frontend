@@ -401,6 +401,22 @@ export default function FacilityDashboardTab() {
         action: "Browse courses",
         to: "/courses",
         tone: "violet" as Tone
+      },
+      {
+        label: "Lives",
+        detail:
+          "Browse live sessions and replays, or open the shared studio for your existing OBS channel.",
+        action: "Browse lives",
+        to: "/lives",
+        tone: "cyan" as Tone
+      },
+      {
+        label: "Live Studio",
+        detail:
+          "Create or manage a GrowPath live, premiere, chat overlay, and stream destination.",
+        action: "Open studio",
+        to: "/live-studio",
+        tone: "orange" as Tone
       }
     ],
     []

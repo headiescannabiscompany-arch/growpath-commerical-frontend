@@ -497,6 +497,7 @@ export default function PersonalHomeTab() {
         <View style={styles.actions}>
           <ActionLink href="/videos?tab=library" label="My Videos" />
           <ActionLink href="/lives" label="Lives" />
+          <ActionLink href="/live-studio" label="Live Studio" />
           <ActionLink href="/home/notifications" label="Notifications" />
         </View>
       </View>

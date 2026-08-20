@@ -412,6 +412,17 @@ export default function CommunityTab() {
               </Text>
             </Pressable>
           </Link>
+          <Link href="/live-studio" asChild>
+            <Pressable
+              style={StyleSheet.flatten([styles.secondaryBtn, mutedSurface])}
+              accessibilityRole="button"
+              accessibilityLabel="Create or manage a live"
+            >
+              <Text style={[styles.secondaryText, { color: palette.text }]}>
+                Open Live Studio
+              </Text>
+            </Pressable>
+          </Link>
         </View>
       </View>
 
