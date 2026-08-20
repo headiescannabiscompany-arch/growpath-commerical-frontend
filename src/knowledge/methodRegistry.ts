@@ -646,6 +646,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "searchable live, upcoming, premiere, and replay directory",
+      "saved-session labels that keep Live stream or Video premiere format distinct from draft, scheduled, live-now, ended, replay, and connection-health state",
       "RSVP and reminder state",
       "moderated GrowPath chat",
       "transparent configurable OBS Browser Source overlay",
@@ -663,6 +664,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never choose a giveaway winner inside GrowPath when the host selected an outside picker.",
       "Never relay deleted, hidden, duplicate, blocked, or unauthorized entries.",
       "Never treat chat or giveaway engagement as scientific evidence or AI-training permission.",
+      "Never use a bare Live format label beside a draft or disconnected session in a way that implies the session is broadcasting now.",
       "Never label the OBS chat overlay as first-party live-video hosting or expose a GrowPath stream key before ingest, transcoding, playback, authorization, moderation, retention, quotas, abuse response, and observability are verified end to end."
     ],
     ["lives", "live-chat", "premieres", "obs-overlay", "external-picker-feed"]

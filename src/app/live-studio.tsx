@@ -392,7 +392,9 @@ export default function LiveStudioRoute() {
                 </Text>
                 <Text style={styles.muted}>
                   {isDraft ? "Private draft" : session.status || "Published"}
-                  {session.sessionType === "premiere" ? " · Video premiere" : " · Live"}
+                  {session.sessionType === "premiere"
+                    ? " · Video premiere"
+                    : " · Live stream"}
                 </Text>
               </View>
               <View style={styles.row}>

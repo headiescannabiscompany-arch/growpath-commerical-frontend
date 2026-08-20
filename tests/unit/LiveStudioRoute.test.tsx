@@ -125,6 +125,8 @@ describe("LiveStudioRoute", () => {
 
     expect(await screen.findByText("Your live sessions")).toBeTruthy();
     expect(await screen.findByText("Spring garden Q&A")).toBeTruthy();
+    expect(await screen.findByText("Private draft · Live stream")).toBeTruthy();
+    expect(screen.queryByText("Private draft · Live")).toBeNull();
     expect(mockListLives).toHaveBeenCalledWith({ mine: true });
 
     fireEvent.press(screen.getByRole("button", { name: "Delete Spring garden Q&A" }));
