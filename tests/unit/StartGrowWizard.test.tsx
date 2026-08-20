@@ -92,6 +92,9 @@ describe("StartGrowWizard", () => {
     await waitFor(() => expect(screen.getByText("1 room selected")).toBeTruthy());
     fireEvent.changeText(screen.getByLabelText("Crop common name"), "tomato");
     fireEvent.changeText(screen.getByLabelText("Cultivar"), "Brandywine");
+    await waitFor(() =>
+      expect(screen.getByLabelText("Crop common name").props.value).toBe("tomato")
+    );
     fireEvent.press(screen.getByLabelText("Match crop guidance"));
     fireEvent.press(screen.getByLabelText("Select crop Vegetables"));
 
