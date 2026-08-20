@@ -18,6 +18,10 @@ describe("facility learning and community access", () => {
     expect(dashboardSource).toContain('to: "/forum"');
     expect(dashboardSource).toContain('label: "Courses"');
     expect(dashboardSource).toContain('action: "Browse courses"');
+    expect(dashboardSource).toContain('label: "Lives"');
+    expect(dashboardSource).toContain('to: "/lives"');
+    expect(dashboardSource).toContain('label: "Live Studio"');
+    expect(dashboardSource).toContain('to: "/live-studio"');
     expect(dashboardSource).toContain('to: "/courses"');
   });
 });

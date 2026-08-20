@@ -562,6 +562,7 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText("Open Video Library")).toBeTruthy();
     expect(screen.getByText("Browse Videos")).toBeTruthy();
     expect(screen.getByText("Open Lives")).toBeTruthy();
+    expect(screen.getByText("Open Live Studio")).toBeTruthy();
     expect(screen.getByText("Latest discussions")).toBeTruthy();
     expect(screen.getByText("GrowPath Gardener")).toBeTruthy();
     expect(screen.getByText("Living Soil")).toBeTruthy();
