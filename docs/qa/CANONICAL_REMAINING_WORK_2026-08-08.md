@@ -799,13 +799,24 @@ public visibility, or screenshot/video acceptance still called out below.
   Exact merge `3bed76f714e162495d5bf3b4ca67702c236fd99b` passed Production Build
   Preflight and Frontend CI, deployed successfully as Render
   `dep-da3ctrc9v7es73fm5vj0`, and live verification reached the real browser
-  confirmation instead of silently doing nothing. OBS 32.2.2 is installed and running
-  locally, but remains configured for Twitch until the owner explicitly authorizes
-  rotation and transmission of the private GrowPath RTMPS server/key. Private ingest,
-  connected/live lifecycle, playback and viewer-volume controls, chat-overlay
-  rendering, stop/replay, and multi-account concurrency acceptance therefore remain
-  open. Do not reopen the hosted-Live architecture while completing those acceptance
-  steps.
+  confirmation instead of silently doing nothing. OBS 32.2.2 then completed the
+  retained GrowPath-hosted path without rebuilding the architecture: the saved private
+  RTMPS connection was reused, a short broadcast sustained about 6.17 Mbps with zero
+  dropped frames, the session entered its live lifecycle, signed web playback exposed
+  play and viewer-volume controls, GrowPath chat rendered in the OBS Browser Source,
+  and the broadcast stopped cleanly. Backend replay merges
+  `a01ff9a48a4b3603505d963f46d795347dde5184` and
+  `36c2ebfa690f830aa2fcbfdb85b608a6f618a319` correctly discover Cloudflare's nested
+  recording-ready state; frontend merges `0e10b6d216b2e42abf68723fb8eaa1da3274bf04`,
+  `c34b3de6643046c5244ccf6fec4b5acb91800a55`, and
+  `dd0d47630e9d090897cb85befca0d7a326520c1e` retain the governed overlay, OBS
+  viewport, and replay policy. On 2026-08-20 retained private session
+  `6a86ee9a5ebd41c93848993d` reloaded as `replay_available`; its signed player exposed
+  play, volume, settings, picture-in-picture, fullscreen, and replay-seeking-capable
+  controls, while the retained chat/overlay evidence reloaded beside it. Hosted-Live
+  ingest, lifecycle, playback, chat overlay, stop, and replay acceptance are complete.
+  Do not reopen or replace this architecture; future concurrency evidence belongs to
+  the final load/role matrix rather than product reconstruction.
   A non-mutating 2026-08-20 Admin Commercial production pass also verified the public
   Lives browser and complete Studio entry surface. `/lives` truthfully reported zero
   published sessions while exposing search plus All, Campaign-linked, Upcoming, Live

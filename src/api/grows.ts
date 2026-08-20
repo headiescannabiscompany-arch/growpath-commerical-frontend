@@ -109,6 +109,7 @@ export interface PersonalGrow extends Grow {
   cultivar?: string;
   cropCommonName?: string;
   scientificName?: string;
+  commonNames?: string[];
   growTags?: string[];
   growInterests?: Record<string, string[]>;
   cropTypes?: string[];

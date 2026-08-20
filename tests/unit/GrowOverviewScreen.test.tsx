@@ -77,6 +77,15 @@ describe("GrowOverviewScreen", () => {
         id: "grow-1",
         name: "Connected Run",
         status: "flowering",
+        cropCommonName: "Tomato",
+        scientificName: "Solanum lycopersicum",
+        cultivar: "Sungold",
+        commonNames: ["Garden tomato"],
+        planning: {
+          lifeSpanPath: "climate_dependent_perennial",
+          productionPattern: "cultivar_dependent",
+          dormancyPattern: "climate_dependent"
+        },
         growTags: ["Cannabis", "Indoor"],
         growInterests: { crops: ["Cannabis"], environment: ["Indoor"] },
         updatedAt: "2026-07-07T00:00:00.000Z"
@@ -139,6 +148,18 @@ describe("GrowOverviewScreen", () => {
     );
 
     expect(screen.getByText("Connected Run")).toBeTruthy();
+    expect(screen.getByText("Crop identity and lifecycle")).toBeTruthy();
+    expect(screen.getByText("Tomato")).toBeTruthy();
+    expect(screen.getByText("Solanum lycopersicum")).toBeTruthy();
+    expect(screen.getByText("Sungold")).toBeTruthy();
+    expect(screen.getByText("Tender perennial / climate-dependent")).toBeTruthy();
+    expect(screen.getByText("Depends on cultivar / growth habit")).toBeTruthy();
+    expect(screen.getByText("Other names: Garden tomato")).toBeTruthy();
+    expect(
+      screen.getByLabelText(
+        "Overview link /home/personal/tools/auto-grow-calendar?growId=grow-1"
+      )
+    ).toBeTruthy();
     expect(screen.getByText("Pheno / Genetics")).toBeTruthy();
     expect(screen.getByText("Harvest / Diagnosis")).toBeTruthy();
     expect(screen.getByLabelText("Pheno Matrix from grow_detail_pheno")).toBeTruthy();
