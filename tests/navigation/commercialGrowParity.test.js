@@ -9,12 +9,8 @@ describe("Commercial crop-aware grow parity", () => {
   it("keeps Commercial grows distinct from product trial evidence runs", () => {
     const source = read("src/app/home/commercial/_layout.tsx");
 
-    expect(source).toMatch(
-      /name="grows\/new"[\s\S]*?title: "Create Grow"/
-    );
-    expect(source).toMatch(
-      /name="grows\/\[growId\]"[\s\S]*?title: "Grow Workspace"/
-    );
+    expect(source).toMatch(/name="grows\/new"[\s\S]*?title: "Create Grow"/);
+    expect(source).toMatch(/name="grows\/\[growId\]"[\s\S]*?title: "Grow Workspace"/);
     expect(source).toMatch(
       /name="evidence-runs\/new"[\s\S]*?title: "Create Product Trial Evidence Run"/
     );
@@ -68,14 +64,31 @@ describe("Commercial crop-aware grow parity", () => {
     const integrations = read("src/app/home/commercial/tools/integrations.tsx");
 
     expect(overview).toContain(
-      'href={`${basePath}/logs/new?growId=${encodeURIComponent(growId)}`}'
+      "href={`${basePath}/logs/new?growId=${encodeURIComponent(growId)}`}"
     );
     expect(overview).toContain(
-      'href={`${basePath}/tools/integrations?growId=${encodeURIComponent(growId)}`}'
+      "href={`${basePath}/tools/integrations?growId=${encodeURIComponent(growId)}`}"
     );
-    expect(overview).toContain('basePath === "/home/commercial" ? "report" : "pdf-export"');
+    expect(overview).toContain(
+      'basePath === "/home/commercial" ? "report" : "pdf-export"'
+    );
     expect(journal).toContain('<GrowJournalScreen workspace="commercial" />');
     expect(newLog).toContain('<NewLogScreen workspace="commercial" />');
     expect(integrations).toContain('backFallbackHref="/home/commercial/grows"');
+  });
+
+  it("keeps post-create journal and lifecycle planning in the active workspace", () => {
+    const createGrow = read("src/app/home/personal/(tabs)/grows/new.tsx");
+    const commercialCalendar = read(
+      "src/app/home/commercial/tools/auto-grow-calendar.tsx"
+    );
+
+    expect(createGrow).toContain(
+      "`${basePath}/logs/new?growId=${encodeURIComponent(createdGrowId)}`"
+    );
+    expect(createGrow).toContain("`${basePath}/tools/auto-grow-calendar?${");
+    expect(commercialCalendar).toContain(
+      "@/app/home/personal/(tabs)/tools/auto-grow-calendar"
+    );
   });
 });

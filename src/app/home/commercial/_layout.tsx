@@ -370,6 +370,10 @@ export default function CommercialTabsLayout() {
         options={{ title: "Data Integrations", href: null, headerShown: false }}
       />
       <Tabs.Screen
+        name="tools/auto-grow-calendar"
+        options={{ title: "Auto Grow Calendar", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
         name="tools/history-import"
         options={{ title: "Import Grow History", href: null }}
       />
