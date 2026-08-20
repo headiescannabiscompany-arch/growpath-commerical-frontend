@@ -676,5 +676,12 @@ describe("sourceObjectHref", () => {
         workspaceType: "personal"
       })
     ).toBe("/home/personal/grows/grow-1/plants?plantId=plant-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "moderationcase",
+        sourceId: "moderation-case-1"
+      })
+    ).toBe("/admin?moderationCaseId=moderation-case-1");
   });
 });
