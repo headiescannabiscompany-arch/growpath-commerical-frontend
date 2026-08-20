@@ -4280,6 +4280,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
+    chooseObservationDate(screen);
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() =>
       expect(screen.getByText("Publish Approximate Pin to Nature")).toBeTruthy()
@@ -4327,6 +4328,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
+    chooseObservationDate(screen);
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() =>
       expect(screen.getByText("Publish Approximate Pin to Nature")).toBeTruthy()
@@ -4381,6 +4383,7 @@ describe("SpeciesCropIdToolRoute", () => {
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
+    chooseObservationDate(screen);
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() =>
       expect(screen.getByText("Publish Approximate Pin to Nature")).toBeTruthy()
