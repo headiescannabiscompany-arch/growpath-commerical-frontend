@@ -35,6 +35,13 @@ acceptance remains incomplete.
 
 ### Personal AI and Plant ID discovery
 
+- `/home/personal` completed its loading state and rendered a populated active-grow command
+  center with real destinations for the grow, log/photo entry, AI tools, diagnosis, tasks,
+  overdue work, retained ToolRun sources, journal, and grow analytics. Its honest missing-
+  telemetry and missing-photo states linked to integrations and photo collection.
+- The same home exposed Forum, video library, Lives, Live Studio, notifications, storefront/
+  feed/course discovery, the zero-pin Nature globe, and Plant ID without collapsing those
+  capabilities into single-letter menu items.
 - `/home/personal/tools` exposed Species / Crop Identification with no grow required,
   Harvest Readiness as a full readiness workflow, IPM Scout, Saved Runs, and truthful AI
   credit boundaries.
@@ -90,12 +97,26 @@ acceptance remains incomplete.
 
 ### Grow timeline and media discovery
 
+- `/home/personal/grows/new` exposed a grow-optional AI draft path, explicit crop common/
+  scientific/alternate names, reviewed lifecycle and production paths, dormancy, start type,
+  calendar handoff, interests, system/anchor/timezone settings, and photo evidence. Create
+  remained disabled without the required anchors.
+- Entering `Tomato` and selecting Match crop guidance changed only the local unsaved draft.
+  It matched reviewed `Solanum lycopersicum` guidance, separated tender-perennial biology
+  from common annual cultivation, distinguished determinate/indeterminate production, and
+  requested cultivar, climate, start-method, and region details instead of inventing dates.
+  No grow was created.
 - Direct grow timeline
   `/home/personal/grows/6a603a8fda5c5bfdc030ac1b/timeline` loaded 60 retained events,
   lifecycle/month/week/day zoom controls, viewer-friendly export/share actions, and source
   links for logs, tasks, ToolRuns, diagnoses, and automation events.
 - `/videos` exposed published-video search, All accessible and People I follow filters,
   sort controls, and a populated public video.
+- Opening that retained video loaded its GrowPath player, creator name, visibility/date,
+  description, summary, topics, source status, internal Share/Copy actions, Facebook/X/
+  Bluesky/Reddit/LinkedIn/email/text destinations, and an empty comment composer with its
+  submit action disabled. The detail did not expose a creator-profile or follow action, so
+  the creator-discovery slice remains open.
 - `/live-studio` preserved the existing OBS/Cloudflare/chat architecture and its retained
   private draft. `/lives` rendered an honest zero-public-session state.
 
@@ -125,7 +146,7 @@ acceptance remains incomplete.
   Facility-local source links. Its Back action returned to the Personal profile.
 - No preference, notification, billing, export, deletion, or session state was changed.
 
-## Reproduced defect and local repair
+## Reproduced defects and local repairs
 
 The direct timeline was healthy, but the Grows-page ActionButton shortcuts were
 `Pressable` elements with `role="link"` and no real `href`. Mouse, DOM, and keyboard
@@ -137,6 +158,18 @@ Expo Router `Link` children and adds an activation regression.
 - Full TypeScript: passed
 - Focused source and test lint: passed
 - Prettier and diff checks: passed
+- This repair was not yet deployed at the time of this evidence record.
+
+The Personal community preview rendered the retained populated discussion, but the full
+`/forum` route reused the signed-in user's crop-interest-filtered response for both `For
+You` and `All Discussions`. That made the full All view report `No posts yet` even when the
+retained thread existed. The repair gives each tab its own canonical request: For You keeps
+the crop-interest filter, while All requests the unfiltered server page and preserves server
+pagination.
+
+- Focused test: `ForumFeedSeparationRoutes.test.tsx`, 17/17 passed
+- The regression proves the For You request is crop-filtered, switching to All performs a
+  separate unfiltered request, and a retained post outside the crop interests becomes visible.
 - This repair was not yet deployed at the time of this evidence record.
 
 ## Runtime observations

@@ -176,6 +176,7 @@ describe("Forum and feed separation copy", () => {
     const screen = render(<ForumRoute />);
 
     await waitFor(() => expect(mockListForumPosts).toHaveBeenCalled());
+    expect(mockListForumPosts).toHaveBeenCalledWith(1, ["Cannabis"]);
     expect(screen.getByText("Forum / Q&A")).toBeTruthy();
     expect(screen.getByText("New Discussion")).toBeTruthy();
     expect(screen.getByText("Ask for Diagnosis Help")).toBeTruthy();
@@ -194,6 +195,35 @@ describe("Forum and feed separation copy", () => {
     expect(screen.getByText(/tagged by grow interests/)).toBeTruthy();
     expect(screen.getByText(/Discussion, Q&A, grow help/)).toBeTruthy();
     expect(screen.getByText(/campaign ads, not forum threads/)).toBeTruthy();
+  });
+
+  it("loads a separate unfiltered page for All Discussions", async () => {
+    const matched = {
+      id: "cannabis-thread",
+      title: "Matched grow question",
+      tags: ["Cannabis"]
+    };
+    const other = {
+      id: "tomato-thread",
+      title: "Tomato grow question",
+      tags: ["Vegetables"]
+    };
+    mockListForumPosts
+      .mockResolvedValueOnce([matched])
+      .mockResolvedValueOnce([matched, other]);
+
+    const screen = render(<ForumRoute />);
+
+    await waitFor(() => expect(screen.getByText("Matched grow question")).toBeTruthy());
+    expect(mockListForumPosts).toHaveBeenCalledWith(1, ["Cannabis"]);
+    expect(screen.queryByText("Tomato grow question")).toBeNull();
+
+    fireEvent.press(screen.getByLabelText("Show all forum posts"));
+
+    await waitFor(() => {
+      expect(mockListForumPosts).toHaveBeenCalledWith(1);
+      expect(screen.getByText("Tomato grow question")).toBeTruthy();
+    });
   });
 
   it("shows a retryable forum error instead of an empty feed", async () => {
