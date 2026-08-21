@@ -137,6 +137,7 @@ type ModerationCase = {
   severity: string;
   status: string;
   action: string;
+  subjectUserId?: string;
   actionHistory?: Array<{
     action: string;
     reason?: string;
@@ -167,7 +168,12 @@ const MODERATABLE_TARGETS = new Set([
   "comment",
   "course",
   "commercialPost",
-  "storefrontProduct"
+  "feedItem",
+  "storefrontProduct",
+  "video",
+  "videoComment",
+  "liveSession",
+  "liveChatMessage"
 ]);
 
 function matchesModerationTargetRoute(targetType: string, pathname: string) {
@@ -558,11 +564,17 @@ export default function PlatformAdminRoute() {
       : active;
   }, [focusedTargetId, focusedTargetKind, orderedSupportRequests, showCompletedWork]);
   const activeModerationCases = useMemo(
-    () => orderedModerationCases.filter((item) => item.status !== "actioned"),
+    () =>
+      orderedModerationCases.filter(
+        (item) => !["actioned", "closed"].includes(item.status)
+      ),
     [orderedModerationCases]
   );
   const completedModerationCases = useMemo(
-    () => orderedModerationCases.filter((item) => item.status === "actioned"),
+    () =>
+      orderedModerationCases.filter((item) =>
+        ["actioned", "closed"].includes(item.status)
+      ),
     [orderedModerationCases]
   );
   const visibleModerationCases = useMemo(() => {
@@ -571,7 +583,7 @@ export default function PlatformAdminRoute() {
     const focused = orderedModerationCases.find(
       (item) => item._id === focusedModerationCaseId
     );
-    return focused && focused.status === "actioned"
+    return focused && ["actioned", "closed"].includes(focused.status)
       ? [focused, ...activeModerationCases]
       : activeModerationCases;
   }, [
@@ -608,6 +620,7 @@ export default function PlatformAdminRoute() {
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
   const [moveCategory, setMoveCategory] = useState("general");
+  const [sourceModerationCaseId, setSourceModerationCaseId] = useState("");
   const [noticeUser, setNoticeUser] = useState<AdminUser | null>(null);
   const [noticeSubject, setNoticeSubject] = useState("GrowPathAI account warning");
   const [noticeMessage, setNoticeMessage] = useState("");
@@ -1161,7 +1174,18 @@ export default function PlatformAdminRoute() {
 
   async function moderateContent(
     item: ModerationCase,
-    action: "hide" | "restore" | "remove" | "lock" | "unlock" | "pin" | "unpin" | "move"
+    action:
+      | "hide"
+      | "restore"
+      | "remove"
+      | "leave"
+      | "mark_cannabis"
+      | "clear_cannabis"
+      | "lock"
+      | "unlock"
+      | "pin"
+      | "unpin"
+      | "move"
   ) {
     setBusyId(item._id);
     try {
@@ -1287,21 +1311,26 @@ export default function PlatformAdminRoute() {
     setBusyId("evidence-new");
     setError("");
     try {
-      await apiRequest("/api/admin/evidence-requests", {
-        method: "POST",
-        body: {
-          requestType,
-          requesterName,
-          requesterOrganization: evidenceDraft.requesterOrganization.trim(),
-          requesterEmail,
-          authorityDescription,
-          jurisdiction: evidenceDraft.jurisdiction.trim(),
-          targetUserId: targetUserId || null,
-          scope,
-          dateFrom: evidenceDraft.dateFrom || null,
-          dateTo: evidenceDraft.dateTo || null
+      await apiRequest(
+        sourceModerationCaseId
+          ? `/api/admin/moderation-cases/${sourceModerationCaseId}/escalate-legal`
+          : "/api/admin/evidence-requests",
+        {
+          method: "POST",
+          body: {
+            requestType,
+            requesterName,
+            requesterOrganization: evidenceDraft.requesterOrganization.trim(),
+            requesterEmail,
+            authorityDescription,
+            jurisdiction: evidenceDraft.jurisdiction.trim(),
+            targetUserId: targetUserId || null,
+            scope,
+            dateFrom: evidenceDraft.dateFrom || null,
+            dateTo: evidenceDraft.dateTo || null
+          }
         }
-      });
+      );
       setEvidenceDraft({
         requestType: "preservation",
         requesterName: "",
@@ -1315,6 +1344,7 @@ export default function PlatformAdminRoute() {
         dateTo: ""
       });
       setShowEvidenceRequestForm(false);
+      setSourceModerationCaseId("");
       await load();
     } catch (err: any) {
       setError(err?.message || "Unable to open the scoped evidence request.");
@@ -2545,8 +2575,52 @@ export default function PlatformAdminRoute() {
                     >
                       <Text style={styles.secondaryText}>Approve / restore</Text>
                     </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.warningButton}
+                      onPress={() => void moderateContent(item, "remove")}
+                    >
+                      <Text style={styles.warningText}>Soft-remove content</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "mark_cannabis")}
+                    >
+                      <Text style={styles.secondaryText}>Mark cannabis-restricted</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() => void moderateContent(item, "clear_cannabis")}
+                    >
+                      <Text style={styles.secondaryText}>Remove cannabis label</Text>
+                    </Pressable>
                   </>
                 ) : null}
+                <Pressable
+                  disabled={busyId === item._id}
+                  style={styles.secondaryButton}
+                  onPress={() => void moderateContent(item, "leave")}
+                >
+                  <Text style={styles.secondaryText}>Leave content / close case</Text>
+                </Pressable>
+                <Pressable
+                  disabled={busyId === item._id}
+                  style={styles.secondaryButton}
+                  onPress={() => {
+                    setSourceModerationCaseId(item._id);
+                    setEvidenceDraft((current) => ({
+                      ...current,
+                      requestType: "preservation",
+                      targetUserId: item.subjectUserId || "",
+                      scope: `Moderation case ${item._id} · ${item.targetType}:${item.targetId}`
+                    }));
+                    setShowEvidenceRequestForm(true);
+                  }}
+                >
+                  <Text style={styles.secondaryText}>Preserve / legal escalation</Text>
+                </Pressable>
                 {item.targetType === "forumPost" ? (
                   <>
                     <Pressable
@@ -2583,15 +2657,6 @@ export default function PlatformAdminRoute() {
                       onPress={() => void moderateContent(item, "move")}
                     >
                       <Text style={styles.secondaryText}>Move category</Text>
-                    </Pressable>
-                    <Pressable
-                      disabled={busyId === item._id}
-                      accessibilityLabel="Soft-remove Forum post"
-                      accessibilityHint="Removes the post from readers and shared feeds while preserving evidence for review and restoration."
-                      style={styles.warningButton}
-                      onPress={() => void moderateContent(item, "remove")}
-                    >
-                      <Text style={styles.warningText}>Soft-remove post</Text>
                     </Pressable>
                   </>
                 ) : null}

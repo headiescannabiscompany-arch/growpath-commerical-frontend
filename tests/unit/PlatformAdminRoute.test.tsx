@@ -971,7 +971,7 @@ describe("PlatformAdminRoute", () => {
 
   it("sends the enforced Forum moderation actions from the administrator review card", async () => {
     const screen = render(<PlatformAdminRoute />);
-    await waitFor(() => expect(screen.getByText("Soft-remove post")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Soft-remove content")).toBeTruthy());
     const expectReloadCount = (count: number) =>
       waitFor(() =>
         expect(
@@ -1018,7 +1018,7 @@ describe("PlatformAdminRoute", () => {
     );
     await expectReloadCount(4);
 
-    fireEvent.press(screen.getByText("Soft-remove post"));
+    fireEvent.press(screen.getByText("Soft-remove content"));
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
         "/api/admin/moderation-cases/case-1/action",

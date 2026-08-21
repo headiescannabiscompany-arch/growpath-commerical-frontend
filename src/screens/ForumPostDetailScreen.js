@@ -14,6 +14,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import ScreenContainer from "../components/ScreenContainer";
 import FollowButton from "../components/FollowButton";
+import ReportModal from "../components/ReportModal";
 import {
   getPost,
   likePost,
@@ -45,6 +46,7 @@ export function ForumPostDetailScreen({ route, navigation }) {
   const [myComment, setMyComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [assistantResult, setAssistantResult] = useState(null);
+  const [reportedComment, setReportedComment] = useState(null);
 
   const { data: post, isLoading: loadingPost } = useQuery({
     queryKey: ["forum-post", id],
@@ -399,6 +401,9 @@ export function ForumPostDetailScreen({ route, navigation }) {
                 :
               </Text>
               <Text style={styles.commentText}>{item.text}</Text>
+              <TouchableOpacity onPress={() => setReportedComment(item)}>
+                <Text style={styles.actionBtn}>Report comment</Text>
+              </TouchableOpacity>
             </View>
 
             {(item.user?._id || item.author?._id) === currentUserId &&
@@ -426,6 +431,15 @@ export function ForumPostDetailScreen({ route, navigation }) {
           </TouchableOpacity>
         </View>
       )}
+      <ReportModal
+        visible={Boolean(reportedComment)}
+        onClose={() => setReportedComment(null)}
+        contentType="comment"
+        contentId={String(reportedComment?._id || "")}
+        contentTitle="Forum comment"
+        parentPostId={String(id || "")}
+        targetUrl={`/forum/post/${encodeURIComponent(String(id || ""))}`}
+      />
     </ScreenContainer>
   );
 }
