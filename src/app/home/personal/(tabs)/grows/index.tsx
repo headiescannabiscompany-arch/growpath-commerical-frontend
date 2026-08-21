@@ -131,24 +131,23 @@ function ActionButton({
 }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
+  // Expo Router's web Link can pass a child style through to React DOM. Keep this
+  // boundary as one flat object so a native style array never becomes indexed CSS.
+  const buttonStyle = StyleSheet.flatten([
+    styles.action,
+    primary
+      ? {
+          backgroundColor: palette.accent,
+          borderColor: palette.accent
+        }
+      : {
+          backgroundColor: palette.surface,
+          borderColor: palette.border
+        }
+  ]);
   return (
     <Link href={href as any} asChild>
-      <Pressable
-        accessibilityRole="link"
-        testID={testID}
-        style={[
-          styles.action,
-          primary
-            ? {
-                backgroundColor: palette.accent,
-                borderColor: palette.accent
-              }
-            : {
-                backgroundColor: palette.surface,
-                borderColor: palette.border
-              }
-        ]}
-      >
+      <Pressable accessibilityRole="link" testID={testID} style={buttonStyle}>
         <Text
           style={[
             styles.actionText,
