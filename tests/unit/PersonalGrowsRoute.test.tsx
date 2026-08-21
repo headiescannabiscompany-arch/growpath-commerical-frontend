@@ -2,7 +2,8 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import PersonalGrowsRoute, {
-  formatGrowStartDate
+  formatGrowStartDate,
+  supportsPullToRefresh
 } from "@/app/home/personal/(tabs)/grows";
 
 const mockListPersonalGrows = jest.fn();
@@ -61,6 +62,12 @@ describe("PersonalGrowsRoute", () => {
     expect(formatGrowStartDate("2026-08-20T00:00:00.000Z")).toBe(
       new Date(2026, 7, 20).toLocaleDateString()
     );
+  });
+
+  it("keeps pull-to-refresh out of the web renderer", () => {
+    expect(supportsPullToRefresh("web")).toBe(false);
+    expect(supportsPullToRefresh("ios")).toBe(true);
+    expect(supportsPullToRefresh("android")).toBe(true);
   });
 
   beforeEach(() => {

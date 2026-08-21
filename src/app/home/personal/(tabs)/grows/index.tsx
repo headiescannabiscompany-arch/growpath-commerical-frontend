@@ -39,6 +39,10 @@ export function formatGrowStartDate(value?: string) {
   return localDate.toLocaleDateString();
 }
 
+export function supportsPullToRefresh(platform = Platform.OS) {
+  return platform !== "web";
+}
+
 function safeText(value: unknown) {
   return String(value || "").trim();
 }
@@ -321,7 +325,7 @@ export default function PersonalGrowsRoute({
       style={[styles.page, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.pageContent}
       refreshControl={
-        Platform.OS === "web" ? undefined : (
+        supportsPullToRefresh() ? (
           <RefreshControl
             colors={[palette.accent]}
             progressBackgroundColor={palette.surface}
@@ -329,7 +333,7 @@ export default function PersonalGrowsRoute({
             onRefresh={onRefresh}
             tintColor={palette.accent}
           />
-        )
+        ) : undefined
       }
     >
       <View style={styles.stack}>
