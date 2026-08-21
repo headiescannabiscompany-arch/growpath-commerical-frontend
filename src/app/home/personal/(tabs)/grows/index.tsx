@@ -320,15 +320,17 @@ export default function PersonalGrowsRoute({
       testID="screen-personal-grows"
       style={[styles.page, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.pageContent}
-      refreshControl={Platform.OS === "web" ? undefined : (
-        <RefreshControl
-          colors={[palette.accent]}
-          progressBackgroundColor={palette.surface}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={palette.accent}
-        />
-      )}
+      refreshControl={
+        Platform.OS === "web" ? undefined : (
+          <RefreshControl
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={palette.accent}
+          />
+        )
+      }
     >
       <View style={styles.stack}>
         <BackButton fallbackHref={basePath} />
