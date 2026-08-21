@@ -55,7 +55,11 @@ jest.mock("../src/components/FollowButton", () => {
   const React = require("react");
   const { Text } = require("react-native");
   return function MockFollowButton({ userId }) {
-    return React.createElement(Text, { accessibilityLabel: `Follow ${userId}` }, "Follow");
+    return React.createElement(
+      Text,
+      { accessibilityLabel: `Follow ${userId}` },
+      "Follow"
+    );
   };
 });
 
@@ -524,6 +528,114 @@ describe("LiveSessionScreen QA", () => {
       )
     ).toBe(false);
     expect(getByText("ended")).toBeTruthy();
+  });
+
+  it("keeps provider-stop recovery visible until the hosted input is confirmed stopped", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    let endAttempts = 0;
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      if (url === "/api/lives/hosted-retry" && options.method === "GET") {
+        return Promise.resolve({
+          _id: "hosted-retry",
+          owner: { id: "host-1", displayName: "Host" },
+          title: "Provider retry check",
+          status: "live",
+          isPublished: true,
+          broadcastMode: "growpath",
+          chatEnabled: false
+        });
+      }
+      if (url === "/api/lives/hosted-retry/rsvp") {
+        return Promise.resolve({ rsvped: false });
+      }
+      if (url === "/api/lives/hosted-retry/hosted-status") {
+        return Promise.resolve({
+          lifecycle: endAttempts ? "degraded" : "connected",
+          providerStopPending: endAttempts === 1
+        });
+      }
+      if (url === "/api/lives/hosted-retry/playback") return Promise.resolve({});
+      if (url === "/api/lives/hosted-retry/end" && options.method === "POST") {
+        endAttempts += 1;
+        return Promise.resolve({
+          session: {
+            _id: "hosted-retry",
+            owner: { id: "host-1", displayName: "Host" },
+            title: "Provider retry check",
+            status: "ended",
+            isPublished: true,
+            broadcastMode: "growpath",
+            chatEnabled: false
+          },
+          providerStopPending: endAttempts === 1
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const { getByText, queryByText } = renderWithNav({
+      sessionId: "hosted-retry"
+    });
+    fireEvent.press(await waitFor(() => getByText("End broadcast")));
+
+    await waitFor(() => expect(getByText("Retry provider stop")).toBeTruthy());
+    expect(getByText("Video provider stop pending")).toBeTruthy();
+    fireEvent.press(getByText("Retry provider stop"));
+
+    await waitFor(() => expect(endAttempts).toBe(2));
+    await waitFor(() => expect(queryByText("Video provider stop pending")).toBeNull());
+  });
+
+  it("lets the host explicitly start and end a scheduled outside-provider session", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      if (url === "/api/lives/external-scheduled" && options.method === "GET") {
+        return Promise.resolve({
+          _id: "external-scheduled",
+          owner: { id: "host-1", displayName: "Host" },
+          title: "YouTube garden clinic",
+          status: "scheduled",
+          isPublished: true,
+          broadcastMode: "external",
+          streamPlatform: "youtube",
+          externalWatchUrl: "https://youtube.example/live",
+          chatEnabled: false
+        });
+      }
+      if (url === "/api/lives/external-scheduled/rsvp") {
+        return Promise.resolve({ rsvped: false });
+      }
+      if (url === "/api/lives/external-scheduled/start" && options.method === "POST") {
+        return Promise.resolve({
+          session: {
+            _id: "external-scheduled",
+            owner: { id: "host-1", displayName: "Host" },
+            title: "YouTube garden clinic",
+            status: "live",
+            isPublished: true,
+            broadcastMode: "external",
+            streamPlatform: "youtube",
+            externalWatchUrl: "https://youtube.example/live",
+            chatEnabled: false
+          }
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithNav({ sessionId: "external-scheduled" });
+    fireEvent.press(await waitFor(() => getByText("Start live session")));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/lives/external-scheduled/start", {
+        method: "POST",
+        body: {}
+      })
+    );
+    expect(getByText("live")).toBeTruthy();
+    expect(getByText("End broadcast")).toBeTruthy();
   });
 
   it("shows the public creator identity and follow control", async () => {

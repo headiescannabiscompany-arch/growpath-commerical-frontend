@@ -157,6 +157,31 @@ describe("LiveStudioRoute", () => {
     await waitFor(() => expect(screen.queryByText("Spring garden Q&A")).toBeNull());
   });
 
+  it("keeps a retry path when the host session list fails temporarily", async () => {
+    mockListLives
+      .mockRejectedValueOnce(new Error("Temporary session failure"))
+      .mockResolvedValueOnce([
+        {
+          id: "draft-recovered",
+          title: "Recovered private draft",
+          isPublished: false,
+          status: "draft",
+          sessionType: "live"
+        }
+      ]);
+
+    render(<LiveStudioRoute />);
+
+    fireEvent.press(
+      await screen.findByRole("button", {
+        name: "Retry loading your live sessions"
+      })
+    );
+
+    expect(await screen.findByText("Recovered private draft")).toBeTruthy();
+    expect(mockListLives).toHaveBeenCalledTimes(2);
+  });
+
   it("uses a separate reviewed publish action for a scheduled private draft", async () => {
     mockListLives.mockResolvedValue([
       {
@@ -182,8 +207,9 @@ describe("LiveStudioRoute", () => {
     expect(
       screen.queryByRole("button", { name: "Delete Reviewed garden Q&A" })
     ).toBeNull();
-    expect(await screen.findByText("The reviewed scheduled session is published."))
-      .toBeTruthy();
+    expect(
+      await screen.findByText("The reviewed scheduled session is published.")
+    ).toBeTruthy();
   });
 
   it("loads a private draft into the shared editor and saves without publishing", async () => {

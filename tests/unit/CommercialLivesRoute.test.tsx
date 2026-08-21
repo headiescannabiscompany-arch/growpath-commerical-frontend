@@ -344,8 +344,8 @@ describe("CommercialLivesRoute", () => {
     chooseDateTime(screen, "Commercial live scheduled start", "2026-07-20T18:00");
 
     expect(
-      screen.getByLabelText("Save commercial live private draft").props
-        .accessibilityState?.disabled
+      screen.getByLabelText("Save commercial live private draft").props.accessibilityState
+        ?.disabled
     ).toBe(true);
     expect(mockApiRequest).not.toHaveBeenCalledWith(
       "/api/lives",
@@ -398,10 +398,10 @@ describe("CommercialLivesRoute", () => {
       screen.getByLabelText("Publish scheduled session Reviewed product demo")
     );
     await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/lives/live-draft/publish",
-        { method: "POST", body: { goLiveNow: false } }
-      )
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/lives/live-draft/publish", {
+        method: "POST",
+        body: { goLiveNow: false }
+      })
     );
     expect(screen.getByText("Reviewed commercial schedule published.")).toBeTruthy();
   });
@@ -435,5 +435,36 @@ describe("CommercialLivesRoute", () => {
       screen.getByLabelText("Connect Twitch with OAuth").props.accessibilityState
         ?.disabled
     ).toBe(true);
+  });
+
+  it("keeps a retry path when the commercial live list fails temporarily", async () => {
+    let listAttempts = 0;
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/lives" && options?.params?.mine) {
+        listAttempts += 1;
+        if (listAttempts === 1)
+          return Promise.reject(new Error("Temporary list failure"));
+        return Promise.resolve({
+          lives: [
+            {
+              id: "commercial-recovered",
+              title: "Recovered commercial live",
+              status: "draft",
+              isPublished: false
+            }
+          ]
+        });
+      }
+      if (path === "/api/twitch/status") {
+        return Promise.resolve({ configured: false, connection: null });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialLivesRoute />);
+    fireEvent.press(await screen.findByLabelText("Retry loading commercial lives"));
+
+    expect(await screen.findByText("Recovered commercial live")).toBeTruthy();
+    expect(listAttempts).toBe(2);
   });
 });

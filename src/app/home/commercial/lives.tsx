@@ -26,10 +26,7 @@ import AppPage from "@/components/layout/AppPage";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import {
-  isUnpublishedLive,
-  livePublishIntent
-} from "@/features/lives/liveLifecycle";
+import { isUnpublishedLive, livePublishIntent } from "@/features/lives/liveLifecycle";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 import {
   beginTwitchConnection,
@@ -206,6 +203,7 @@ export default function CommercialLivesRoute() {
   const [saving, setSaving] = useState(false);
   const [publishingLiveId, setPublishingLiveId] = useState("");
   const [creatingTaskForLiveId, setCreatingTaskForLiveId] = useState("");
+  const [loadError, setLoadError] = useState<any>(null);
   const [error, setError] = useState<any>(null);
   const [message, setMessage] = useState("");
   const [twitchConnection, setTwitchConnection] = useState<TwitchConnectionStatus | null>(
@@ -223,11 +221,11 @@ export default function CommercialLivesRoute() {
 
   async function loadLives() {
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       setLives(await fetchCommercialLives());
     } catch (err) {
-      setError(err);
+      setLoadError(err);
     } finally {
       setLoading(false);
     }
@@ -572,6 +570,20 @@ export default function CommercialLivesRoute() {
         </View>
         {loading ? <Text style={styles.muted}>Loading lives...</Text> : null}
         {message ? <Text style={styles.success}>{message}</Text> : null}
+        {loadError ? (
+          <View style={styles.actions}>
+            <InlineError error={loadError} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading commercial lives"
+              disabled={loading}
+              onPress={() => void loadLives()}
+              style={[styles.action, loading && styles.disabled]}
+            >
+              <Text style={styles.actionText}>Retry Lives</Text>
+            </Pressable>
+          </View>
+        ) : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
 
@@ -932,7 +944,8 @@ export default function CommercialLivesRoute() {
                           onPress={() => void publishDraft(live)}
                           style={[
                             styles.action,
-                            (warnings.length || publishingLiveId === id) && styles.disabled
+                            (Boolean(warnings.length) || publishingLiveId === id) &&
+                              styles.disabled
                           ]}
                         >
                           <Text style={styles.actionText}>

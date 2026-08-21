@@ -115,6 +115,13 @@ an equivalent server transaction. If provider shutdown temporarily fails, return
 persisted ended state with an explicit retry-pending condition and let the hosted worker
 retry; never unbind first and risk leaving the canonical session live or orphaning replay
 discovery.
+The host-facing session must keep that retry-pending condition visible after the session
+is ended and provide an idempotent `Retry provider stop` action; it must not replace the
+condition with a false success state or hide the only recovery control. A published,
+scheduled outside-provider session also needs explicit, idempotent Start and End actions
+because providers other than Twitch may not offer a usable status webhook. Those controls
+change only the GrowPath session lifecycle and never claim that an outside encoder started
+or stopped unless the provider confirms it.
 
 First-party streaming is not complete merely because the OBS chat overlay works. Do not
 show a GrowPath stream key or label a session `hosted by GrowPath` until ingest,

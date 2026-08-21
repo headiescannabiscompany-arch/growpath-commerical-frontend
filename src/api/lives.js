@@ -42,6 +42,10 @@ export function publishLive(id, { goLiveNow = false } = {}) {
   });
 }
 
+export function startLive(id) {
+  return apiRequest(apiRoutes.LIVES.START(id), { method: "POST", body: {} });
+}
+
 export function endLive(id) {
   return apiRequest(apiRoutes.LIVES.END(id), { method: "POST", body: {} });
 }

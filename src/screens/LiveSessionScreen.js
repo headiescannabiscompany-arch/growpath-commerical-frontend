@@ -34,8 +34,18 @@ import {
   listLiveChat,
   rotateHostedLiveInput,
   rotateLiveOverlayToken,
-  sendLiveChat
+  sendLiveChat,
+  startLive
 } from "../api/lives";
+
+function hasProviderStopPending(value) {
+  return Boolean(
+    value?.providerStopPending ||
+    value?.stopRequired ||
+    value?.hostedLive?.providerStopPending ||
+    value?.hostedLive?.stopRequired
+  );
+}
 
 export function buildLiveShareTargets(title, sessionId) {
   const url = currentPublicUrl(
@@ -57,7 +67,7 @@ export function buildLiveShareTargets(title, sessionId) {
 export default function LiveSessionScreen({ route }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
-  const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
+  const routerParams = useLocalSearchParams() || {};
   const routeParams = route?.params || {};
   const params = { ...routerParams, ...routeParams };
 
@@ -73,6 +83,7 @@ export default function LiveSessionScreen({ route }) {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [err, setErr] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const [savingReminder, setSavingReminder] = useState(false);
   const [reminderCreated, setReminderCreated] = useState(false);
   const [rsvped, setRsvped] = useState(false);
@@ -89,6 +100,8 @@ export default function LiveSessionScreen({ route }) {
   const [reportedChatMessage, setReportedChatMessage] = useState(null);
   const [hostedPlayback, setHostedPlayback] = useState(null);
   const [hostedLifecycle, setHostedLifecycle] = useState("");
+  const [providerStopPending, setProviderStopPending] = useState(false);
+  const [startingLive, setStartingLive] = useState(false);
   const [endingLive, setEndingLive] = useState(false);
   const [rotatingHostedKey, setRotatingHostedKey] = useState(false);
   const [rotatedHostedCredentials, setRotatedHostedCredentials] = useState(null);
@@ -113,6 +126,7 @@ export default function LiveSessionScreen({ route }) {
         });
         if (!alive) return;
         setSession(res || null);
+        setProviderStopPending(hasProviderStopPending(res));
       } catch (e) {
         const msg = String(e?.message || e || "No session found");
         if (!alive) return;
@@ -130,7 +144,7 @@ export default function LiveSessionScreen({ route }) {
     return () => {
       alive = false;
     };
-  }, [sessionId]);
+  }, [reloadKey, sessionId]);
 
   useEffect(() => {
     if (!sessionId) return undefined;
@@ -145,9 +159,10 @@ export default function LiveSessionScreen({ route }) {
     };
   }, [sessionId]);
 
-  const twitchChannel = session?.twitchChannel || session?.twitchChannelName
-    ? String(session.twitchChannel || session.twitchChannelName)
-    : "";
+  const twitchChannel =
+    session?.twitchChannel || session?.twitchChannelName
+      ? String(session.twitchChannel || session.twitchChannelName)
+      : "";
   const streamPlatform = String(
     session?.streamPlatform || (twitchChannel ? "twitch" : "other")
   );
@@ -173,6 +188,7 @@ export default function LiveSessionScreen({ route }) {
         const status = await getHostedLiveLifecycle(sessionId);
         if (!alive) return;
         setHostedLifecycle(String(status?.lifecycle || status?.status || "connecting"));
+        setProviderStopPending(hasProviderStopPending(status));
         if (
           !hasHostedPlayback &&
           ["connected", "degraded", "ended", "replay"].includes(
@@ -282,14 +298,22 @@ export default function LiveSessionScreen({ route }) {
     session?.owner?.displayName || session?.owner?.name || "GrowPath member"
   );
   const ownerAvatarUrl = String(
-    session?.owner?.avatarUrl ||
-      session?.owner?.avatar ||
-      session?.owner?.photoUrl ||
-      ""
+    session?.owner?.avatarUrl || session?.owner?.avatar || session?.owner?.photoUrl || ""
   );
   const signedInUserId = String(auth?.user?.id || auth?.user?._id || "");
   const canReport = Boolean(signedInUserId) && (!ownerId || ownerId !== signedInUserId);
   const isHost = Boolean(signedInUserId && ownerId === signedInUserId);
+  const sessionStatus = String(session?.status || "").toLowerCase();
+  const canStartExternalSession =
+    isHost &&
+    session?.isPublished !== false &&
+    !isGrowPathHosted &&
+    session?.sessionType !== "premiere" &&
+    sessionStatus === "scheduled";
+  const canEndSession =
+    isHost &&
+    session?.isPublished !== false &&
+    (providerStopPending || ["live", "scheduled"].includes(sessionStatus));
 
   useEffect(() => {
     if (!sessionId || !session?.chatEnabled) return undefined;
@@ -380,17 +404,39 @@ export default function LiveSessionScreen({ route }) {
     setEndingLive(true);
     try {
       const result = await endLive(sessionId);
-      setSession(result?.session || result || { ...session, status: "ended" });
-      setHostedLifecycle("ended");
+      const endedSession = result?.session || result || { ...session, status: "ended" };
+      const stopPending =
+        hasProviderStopPending(result) || hasProviderStopPending(endedSession);
+      setSession(endedSession);
+      setProviderStopPending(stopPending);
+      setHostedLifecycle(stopPending ? "degraded" : "ended");
       setFeedback(
-        isGrowPathHosted
-          ? "Broadcast ended. Your OBS channel remains saved for the next live."
-          : "Live session ended."
+        stopPending
+          ? "The GrowPath session is ended, but the video provider still needs to stop. Retry provider stop now; GrowPath will also keep retrying safely."
+          : isGrowPathHosted
+            ? "Broadcast ended. Your OBS channel remains saved for the next live."
+            : "Live session ended."
       );
     } catch (error) {
       setFeedback(String(error?.message || error || "The live could not be ended."));
     } finally {
       setEndingLive(false);
+    }
+  }
+
+  async function startExternalSession() {
+    if (startingLive) return;
+    setStartingLive(true);
+    setFeedback("");
+    try {
+      const result = await startLive(sessionId);
+      const startedSession = result?.session || result;
+      if (startedSession) setSession(startedSession);
+      setFeedback("Live session started. The GrowPath page and chat are now live.");
+    } catch (error) {
+      setFeedback(String(error?.message || error || "The live could not be started."));
+    } finally {
+      setStartingLive(false);
     }
   }
 
@@ -550,6 +596,15 @@ export default function LiveSessionScreen({ route }) {
             Live session unavailable
           </Text>
           <Text style={styles.error}>{err}</Text>
+          {sessionId ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setReloadKey((value) => value + 1)}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryBtnText}>Retry session</Text>
+            </Pressable>
+          ) : null}
           <Link href="/lives" asChild>
             <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
               <Text style={styles.secondaryBtnText}>Browse Lives</Text>
@@ -573,9 +628,7 @@ export default function LiveSessionScreen({ route }) {
                   style={styles.hostAvatar}
                 />
               ) : null}
-              <Text style={styles.hostName}>
-                Hosted by {ownerDisplayName}
-              </Text>
+              <Text style={styles.hostName}>Hosted by {ownerDisplayName}</Text>
               {signedInUserId && !isHost ? <FollowButton userId={ownerId} /> : null}
             </View>
           ) : null}
@@ -684,7 +737,30 @@ export default function LiveSessionScreen({ route }) {
             </Text>
           )}
 
-          {isHost && session.status === "live" ? (
+          {providerStopPending && isHost ? (
+            <View style={styles.premiereNotice}>
+              <Text style={styles.premiereTitle}>Video provider stop pending</Text>
+              <Text style={styles.meta}>
+                GrowPath retained the ended session and chat. Retry the provider stop so
+                the encoder cannot keep consuming streaming resources.
+              </Text>
+            </View>
+          ) : null}
+
+          {canStartExternalSession ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={startingLive}
+              onPress={() => void startExternalSession()}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryBtnText}>
+                {startingLive ? "Starting session..." : "Start live session"}
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {canEndSession ? (
             <Pressable
               accessibilityRole="button"
               disabled={endingLive}
@@ -692,7 +768,15 @@ export default function LiveSessionScreen({ route }) {
               style={styles.secondaryBtn}
             >
               <Text style={styles.secondaryBtnText}>
-                {endingLive ? "Ending broadcast..." : "End broadcast"}
+                {endingLive
+                  ? providerStopPending
+                    ? "Retrying provider stop..."
+                    : "Ending broadcast..."
+                  : providerStopPending
+                    ? "Retry provider stop"
+                    : sessionStatus === "scheduled"
+                      ? "End scheduled session"
+                      : "End broadcast"}
               </Text>
             </Pressable>
           ) : null}

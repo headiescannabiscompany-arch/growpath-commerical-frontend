@@ -101,6 +101,7 @@ export default function LiveStudioRoute() {
   const hostedChannelSelectionTouched = useRef(false);
   const [mySessions, setMySessions] = useState<any[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [sessionsError, setSessionsError] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState("");
   const [deletingSessionId, setDeletingSessionId] = useState("");
   const [publishingSessionId, setPublishingSessionId] = useState("");
@@ -116,11 +117,14 @@ export default function LiveStudioRoute() {
   const refreshSessions = useCallback(async () => {
     if (!auth.isAuthed) return;
     setSessionsLoading(true);
+    setSessionsError("");
     try {
       const sessions = await listLives({ mine: true });
       setMySessions(Array.isArray(sessions) ? sessions : []);
-    } catch {
-      setMySessions([]);
+    } catch (cause: any) {
+      setSessionsError(
+        String(cause?.message || cause || "Unable to load your live sessions.")
+      );
     } finally {
       setSessionsLoading(false);
     }
@@ -177,12 +181,16 @@ export default function LiveStudioRoute() {
         setTitle(String(session?.title || ""));
         setDescription(String(session?.description || ""));
         setStreamPlatform(platform as StreamPlatform);
-        setTwitchChannel(String(session?.twitchChannel || session?.twitchChannelName || ""));
+        setTwitchChannel(
+          String(session?.twitchChannel || session?.twitchChannelName || "")
+        );
         setExternalWatchUrl(String(session?.externalWatchUrl || ""));
         setExternalPlatformLabel(String(session?.externalPlatformLabel || ""));
         setStartsAt(String(session?.startsAt || session?.scheduledStart || ""));
         setReminder(String(session?.reminderPreference || "24 hours before"));
-        setSourceVideoId(String(session?.sourceVideoId?.id || session?.sourceVideoId || ""));
+        setSourceVideoId(
+          String(session?.sourceVideoId?.id || session?.sourceVideoId || "")
+        );
         setChatEnabled(session?.chatEnabled !== false);
         setSlowMode(String(session?.chatSlowModeSeconds ?? 5));
         setGiveawayEnabled(Boolean(session?.giveawayRelay?.enabled));
@@ -196,7 +204,9 @@ export default function LiveStudioRoute() {
       })
       .catch((cause: any) => {
         if (alive) {
-          setError(String(cause?.message || cause || "Unable to open this live session."));
+          setError(
+            String(cause?.message || cause || "Unable to open this live session.")
+          );
           setEditingSession(null);
         }
       })
@@ -502,7 +512,20 @@ export default function LiveStudioRoute() {
         {sessionsLoading ? (
           <Text style={styles.muted}>Loading your sessions...</Text>
         ) : null}
-        {!sessionsLoading && mySessions.length === 0 ? (
+        {!sessionsLoading && sessionsError ? (
+          <View style={styles.sessionRow}>
+            <Text style={styles.error}>{sessionsError}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading your live sessions"
+              onPress={() => void refreshSessions()}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Retry sessions</Text>
+            </Pressable>
+          </View>
+        ) : null}
+        {!sessionsLoading && !sessionsError && mySessions.length === 0 ? (
           <Text style={styles.muted}>You have not created a live or premiere yet.</Text>
         ) : null}
         {mySessions.map((session) => {
@@ -520,9 +543,7 @@ export default function LiveStudioRoute() {
                   {session.title || "Untitled session"}
                 </Text>
                 <Text style={styles.muted}>
-                  {isUnpublished
-                    ? "Private draft"
-                    : session.status || "Published"}
+                  {isUnpublished ? "Private draft" : session.status || "Published"}
                   {session.sessionType === "premiere"
                     ? " · Video premiere"
                     : " · Live stream"}

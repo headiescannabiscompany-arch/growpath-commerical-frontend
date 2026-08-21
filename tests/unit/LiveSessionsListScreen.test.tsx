@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import LiveSessionsListScreen, { createStyles } from "@/screens/LiveSessionsListScreen";
 
 const mockPush = jest.fn();
+const mockApiRequest = jest.fn();
 
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock("@/auth/AuthContext", () => ({
@@ -12,32 +13,44 @@ jest.mock("@/auth/AuthContext", () => ({
 jest.mock("@/components/FollowButton", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return ({ userId }: any) =>
-    React.createElement(Text, { accessibilityLabel: `Follow ${userId}` }, "Follow");
+  return function MockFollowButton({ userId }: any) {
+    return React.createElement(
+      Text,
+      { accessibilityLabel: `Follow ${userId}` },
+      "Follow"
+    );
+  };
 });
 jest.mock("@/api/apiRequest", () => ({
-  apiRequest: () =>
-    Promise.resolve([
-      {
-        _id: "live-1",
-        title: "Living Soil Q&A",
-        description: "Mix review",
-        twitchChannel: "growpath",
-        startsAt: "2026-08-02T18:00:00Z",
-        accessLevel: "free",
-        owner: {
-          id: "creator-1",
-          displayName: "Living Soil Labs",
-          avatarUrl: "https://example.com/creator.jpg"
-        },
-        isPublished: true,
-        rsvpCount: 4,
-        replayUrl: "https://twitch.tv/videos/1"
-      }
-    ])
+  apiRequest: (...args: any[]) => mockApiRequest(...args)
 }));
 
+const publicLives = [
+  {
+    _id: "live-1",
+    title: "Living Soil Q&A",
+    description: "Mix review",
+    twitchChannel: "growpath",
+    startsAt: "2026-08-02T18:00:00Z",
+    accessLevel: "free",
+    owner: {
+      id: "creator-1",
+      displayName: "Living Soil Labs",
+      avatarUrl: "https://example.com/creator.jpg"
+    },
+    isPublished: true,
+    rsvpCount: 4,
+    replayUrl: "https://twitch.tv/videos/1"
+  }
+];
+
 describe("LiveSessionsListScreen", () => {
+  beforeEach(() => {
+    mockPush.mockReset();
+    mockApiRequest.mockReset();
+    mockApiRequest.mockResolvedValue(publicLives);
+  });
+
   it("uses the active palette for every shared browser surface", () => {
     const palette = {
       page: "#0E141B",
@@ -95,5 +108,19 @@ describe("LiveSessionsListScreen", () => {
     expect(screen.getByRole("header", { name: "Lives" })).toHaveProp("aria-level", 1);
     fireEvent.press(screen.getAllByText("Open session")[0]);
     expect(mockPush).toHaveBeenCalledWith("/live-session?sessionId=live-1");
+  });
+
+  it("shows a retry action after a transient live-directory failure", async () => {
+    mockApiRequest
+      .mockRejectedValueOnce(new Error("Temporary live directory failure"))
+      .mockResolvedValueOnce(publicLives);
+
+    const screen = render(<LiveSessionsListScreen />);
+    fireEvent.press(await screen.findByText("Retry Lives"));
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Living Soil Q&A").length).toBeGreaterThan(0)
+    );
+    expect(mockApiRequest).toHaveBeenCalledTimes(2);
   });
 });

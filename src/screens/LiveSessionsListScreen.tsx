@@ -210,6 +210,7 @@ export default function LiveSessionsListScreen() {
   const [sessions, setSessions] = useState<LiveSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] =
     useState<(typeof FILTERS)[number]["key"]>("all");
@@ -236,7 +237,7 @@ export default function LiveSessionsListScreen() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   const filteredSessions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -343,10 +344,7 @@ export default function LiveSessionsListScreen() {
     const signedInUserId = text(auth?.user?.id || auth?.user?._id);
 
     return (
-      <View
-        key={sessionId || titleOf(item)}
-        style={styles.sessionCard}
-      >
+      <View key={sessionId || titleOf(item)} style={styles.sessionCard}>
         {thumb ? (
           <Image
             accessibilityLabel={`${titleOf(item)} thumbnail`}
@@ -505,6 +503,13 @@ export default function LiveSessionsListScreen() {
       ) : error ? (
         <View style={styles.errorCard}>
           <Text style={styles.errorText}>{error}</Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setReloadKey((value) => value + 1)}
+            style={styles.actionButton}
+          >
+            <Text style={styles.actionButtonText}>Retry Lives</Text>
+          </Pressable>
         </View>
       ) : null}
 
