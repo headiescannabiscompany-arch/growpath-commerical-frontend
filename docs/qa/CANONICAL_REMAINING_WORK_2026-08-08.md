@@ -21,8 +21,10 @@ This section is the stable handoff point. Update it when a coherent acceptance b
 starts or finishes; do not create another active todo document.
 
 1. **Completed current release-candidate slice:** exact-candidate Personal, paid Commercial
-   and Platform Admin read-only acceptance is recorded. Commercial mutation, provider,
-   populated-compare, role and recovery slices remain explicitly open. Admin mutation,
+   and Platform Admin read-only acceptance is recorded. The reproduced missing Admin return
+   path from Personal/Commercial/workspace selection is repaired and production-accepted on
+   frontend `ff7ef5d1`; do not reopen it without a current regression. Commercial mutation,
+   provider, populated-compare, role and recovery slices remain explicitly open. Admin mutation,
    assignment/reopen/preservation and backend disclosure/chain-of-custody slices remain
    explicitly open. Do not repeat the accepted routes without a reproduced regression.
 2. **Active next product batch:** close P-03 through P-06 and the populated N-01/N-03 acceptance

@@ -39,6 +39,16 @@ the checks below identify the production behavior that was repeated after integr
 - `GET https://api.growpathai.com/api/health` returned `{"ok":true}` during the
   continuation.
 
+The final Admin-navigation regression repair advanced the served frontend to
+`ff7ef5d12f8d96d3a5acf96936609f481b596509` through Render deploy
+`dep-da48139t0dsc73aavlbg`. Frontend CI run `32504176905` completed successfully, including
+dependency audit, Expo Doctor, lint, delivery guards and the full test step. The delta from
+the already-accepted `907e29ee` candidate is limited to the documented Admin navigation
+contract, three role-gated UI entry points, and their focused tests; it does not reopen an
+unrelated accepted route without a reproduced regression. Backend `main` remained
+`c7b7674c783414a02af4f0ab2ff7f59e8279e652`, and production health returned `{"ok":true}`
+at `2026-08-21T16:51:34.004Z`.
+
 The integrated frontend history includes Commercial grow/tool parity, scoped
 automation/tasks, future Nature metadata/GPS/manual-pin and withdrawal safeguards,
 Admin safety investigation surfaces, device connection/history-import scope, and the
@@ -158,12 +168,32 @@ account-cleanup repairs.
   subsequent direct `/admin` request returned `Platform owner access required`, proving that
   the authenticated identity and saved workspace selection had been cleared. No browser
   runtime errors occurred during the Admin pass.
-- This proves positive-role Admin discoverability, current read-only platform visibility,
+- This initially proved positive-role Admin authorization by direct route, current read-only platform visibility,
   moderation deep linking, completed-history presentation, fail-closed disclosure UI,
   workspace isolation and confirmed logout for the exact candidate. A-01 through A-05 remain
   `partial`: this pass intentionally did not mutate user/security/moderation/legal records,
   exercise assignment/reopen/preservation persistence, or prove a backend disclosure and
   chain-of-custody workflow that the UI itself marks unavailable.
+
+#### Admin workspace-navigation regression and live repair
+
+- After signing back in as `admin@growpathai.com`, production Personal home exposed no
+  visible return path to Platform Administration. The direct `/admin` authorization check
+  remained healthy, so the reproduced defect was discoverability rather than privilege.
+- Frontend PR `#714` added a role-gated `Platform Administration` destination to the
+  workspace chooser and to Admin-owned Personal and Commercial dashboards without adding
+  Admin as a fourth workspace mode or weakening the `/admin` authorization boundary.
+  Focused workspace-switcher, Personal-home, and Commercial-dashboard tests passed `47/47`;
+  full TypeScript, focused source lint, formatting, and diff checks passed.
+- Render deployment `dep-da48139t0dsc73aavlbg` served frontend `ff7ef5d1` on 2026-08-21.
+  At `https://growpathai.com/home/personal?verify=admin-entry-b16ac541`, the signed-in Admin
+  saw exactly one visible `Platform Administration` shortcut. Activating it navigated to
+  `https://growpathai.com/admin`, where Security and Moderation surfaces rendered with zero
+  browser runtime errors. Ordinary-account hiding is covered by the role-gated focused
+  tests; no Admin, moderation, account, security, or legal record was mutated.
+- This closes the reproduced navigation regression only. A-01 through A-05 remain partial
+  for their already-named mutation, assignment, preservation, disclosure, chain-of-custody,
+  and broader role/session acceptance slices.
 
 ### Signed-out public-route continuation
 
