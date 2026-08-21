@@ -30,6 +30,10 @@ responsive behavior, and no console/application error.
   harvest periods and appropriate stages; unsupported crops remain editable and transparent.
 - Photos, journal, tasks, environment history, rooms/devices, timeline, archive and export
   remain attached to the same grow after reload.
+- Archive is an explicit, reversible owner action rather than deletion. Active lists and
+  active-grow plan limits exclude archived records; an Archived Grows surface explains that
+  history is retained and restores only when the user's current plan has capacity. Archived
+  grows cannot be silently edited as if active, and another user receives no existence leak.
 
 ### P-03 through P-06 — Plant ID branches and privacy
 

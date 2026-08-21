@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "expo-router";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Platform,
   Pressable,
@@ -13,7 +14,12 @@ import {
   View
 } from "react-native";
 
-import { type PersonalGrow } from "@/api/grows";
+import {
+  archivePersonalGrow,
+  listPersonalGrows,
+  restorePersonalGrow,
+  type PersonalGrow
+} from "@/api/grows";
 import AppCard from "@/components/layout/AppCard";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import BackButton from "@/components/nav/BackButton";
@@ -174,6 +180,10 @@ export default function PersonalGrowsRoute({
   const hasCreateCapability =
     workspace === "commercial" || ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const [items, setItems] = useState<PersonalGrow[]>([]);
+  const [archivedItems, setArchivedItems] = useState<PersonalGrow[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
+  const [changingGrowId, setChangingGrowId] = useState("");
+  const [notice, setNotice] = useState("");
   const grows = items;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -185,8 +195,12 @@ export default function PersonalGrowsRoute({
   const load = useCallback(async () => {
     setError("");
     try {
-      const res = await listWorkspaceGrows(workspace);
-      setItems(Array.isArray(res) ? res : []);
+      const [activeRows, archivedRows] = await Promise.all([
+        listWorkspaceGrows(workspace),
+        workspace === "personal" ? listPersonalGrows({ archived: true }) : []
+      ]);
+      setItems(Array.isArray(activeRows) ? activeRows : []);
+      setArchivedItems(Array.isArray(archivedRows) ? archivedRows : []);
     } catch (e) {
       setError(String((e as any)?.message || e || "Failed to load grows"));
       setItems([]);
@@ -317,6 +331,62 @@ export default function PersonalGrowsRoute({
     setRefreshing(true);
     void load();
   }, [load]);
+
+  const changeArchiveState = useCallback(
+    async (grow: PersonalGrow, shouldArchive: boolean) => {
+      const growId = String(grow?.id || (grow as any)?._id || "").trim();
+      if (!growId || workspace !== "personal") return;
+      setChangingGrowId(growId);
+      setError("");
+      setNotice("");
+      try {
+        if (shouldArchive) await archivePersonalGrow(growId);
+        else await restorePersonalGrow(growId);
+        setNotice(
+          shouldArchive
+            ? `${growName(grow)} was archived. Its photos, journal, tasks, timeline, and AI history were retained.`
+            : `${growName(grow)} was restored to active grows.`
+        );
+        await load();
+      } catch (archiveError) {
+        setError(
+          String(
+            (archiveError as any)?.message ||
+              archiveError ||
+              `Unable to ${shouldArchive ? "archive" : "restore"} grow.`
+          )
+        );
+      } finally {
+        setChangingGrowId("");
+      }
+    },
+    [load, workspace]
+  );
+
+  const requestArchive = useCallback(
+    (grow: PersonalGrow) => {
+      const message =
+        "This removes the grow from your active workspace but retains its photos, journal, tasks, timeline, and AI history. You can restore it later.";
+      if (Platform.OS === "web" && typeof window !== "undefined") {
+        if (
+          typeof window.confirm === "function" &&
+          window.confirm(`Archive ${growName(grow)}?\n\n${message}`)
+        ) {
+          void changeArchiveState(grow, true);
+        }
+        return;
+      }
+      Alert.alert(`Archive ${growName(grow)}?`, message, [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Archive",
+          style: "destructive",
+          onPress: () => void changeArchiveState(grow, true)
+        }
+      ]);
+    },
+    [changeArchiveState]
+  );
 
   return (
     <ScrollView
@@ -469,6 +539,19 @@ export default function PersonalGrowsRoute({
             >
               <Text style={styles.ctaText}>Try again</Text>
             </Pressable>
+          </AppCard>
+        ) : null}
+
+        {notice ? (
+          <AppCard
+            style={[
+              styles.stateCard,
+              { backgroundColor: palette.surface, borderColor: palette.success }
+            ]}
+          >
+            <Text accessibilityLiveRegion="polite" style={styles.stateText}>
+              {notice}
+            </Text>
           </AppCard>
         ) : null}
 
@@ -714,11 +797,112 @@ export default function PersonalGrowsRoute({
                     href={growHref(basePath, id, "timeline")}
                     label="Timeline"
                   />
+                  {workspace === "personal" ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Archive ${growName(grow)}`}
+                      disabled={changingGrowId === id}
+                      onPress={() => requestArchive(grow)}
+                      style={[
+                        styles.action,
+                        { borderColor: palette.warning },
+                        changingGrowId === id && { opacity: 0.6 }
+                      ]}
+                    >
+                      <Text style={[styles.actionText, { color: palette.warning }]}>
+                        {changingGrowId === id ? "Archiving..." : "Archive"}
+                      </Text>
+                    </Pressable>
+                  ) : null}
                 </View>
               </AppCard>
             );
           })}
         </View>
+
+        {workspace === "personal" ? (
+          <AppCard
+            style={[
+              styles.searchCard,
+              { backgroundColor: palette.surface, borderColor: palette.border }
+            ]}
+          >
+            <View style={styles.sectionHeaderRow}>
+              <View style={styles.growCopy}>
+                <Text style={styles.sectionTitle}>Archived grows</Text>
+                <Text style={styles.searchHint}>
+                  Archived grows do not count toward your active-grow limit. Their records
+                  remain retained and return when you restore them.
+                </Text>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  showArchived ? "Hide archived grows" : "Show archived grows"
+                }
+                onPress={() => setShowArchived((current) => !current)}
+                style={styles.action}
+              >
+                <Text style={styles.actionText}>
+                  {showArchived ? "Hide" : `Show (${archivedItems.length})`}
+                </Text>
+              </Pressable>
+            </View>
+            {showArchived ? (
+              <View style={[styles.growList, { marginTop: 12 }]}>
+                {archivedItems.length ? (
+                  archivedItems.map((grow) => {
+                    const archivedId = String(
+                      grow?.id || (grow as any)?._id || ""
+                    ).trim();
+                    if (!archivedId) return null;
+                    return (
+                      <View
+                        key={archivedId}
+                        style={[
+                          styles.growCard,
+                          {
+                            backgroundColor: palette.surfaceMuted,
+                            borderColor: palette.border,
+                            padding: 14
+                          }
+                        ]}
+                      >
+                        <Text style={styles.growName}>{growName(grow)}</Text>
+                        <Text style={styles.growMeta}>{growIdentity(grow)}</Text>
+                        <Text style={styles.growMeta}>
+                          Archived {formatDate(grow.archivedAt || undefined)}. Restore it
+                          to edit or continue this grow.
+                        </Text>
+                        <View style={styles.growActions}>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={`Restore ${growName(grow)}`}
+                            disabled={changingGrowId === archivedId}
+                            onPress={() => void changeArchiveState(grow, false)}
+                            style={[
+                              styles.action,
+                              { borderColor: palette.accent },
+                              changingGrowId === archivedId && { opacity: 0.6 }
+                            ]}
+                          >
+                            <Text style={styles.actionText}>
+                              {changingGrowId === archivedId
+                                ? "Restoring..."
+                                : "Restore Grow"}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    );
+                  })
+                ) : (
+                  <Text style={styles.emptyText}>No archived grows.</Text>
+                )}
+              </View>
+            ) : null}
+          </AppCard>
+        ) : null}
 
         <PersonalFeedPlacement placement="bottom" routeKey="personal_grows" longContent />
       </View>

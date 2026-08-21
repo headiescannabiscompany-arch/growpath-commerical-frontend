@@ -7,6 +7,8 @@ import PersonalGrowsRoute, {
 } from "@/app/home/personal/(tabs)/grows";
 
 const mockListPersonalGrows = jest.fn();
+const mockArchivePersonalGrow = jest.fn();
+const mockRestorePersonalGrow = jest.fn();
 const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
@@ -34,7 +36,9 @@ jest.mock("@/entitlements", () => ({
 }));
 
 jest.mock("@/api/grows", () => ({
-  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args)
+  listPersonalGrows: (...args: any[]) => mockListPersonalGrows(...args),
+  archivePersonalGrow: (...args: any[]) => mockArchivePersonalGrow(...args),
+  restorePersonalGrow: (...args: any[]) => mockRestorePersonalGrow(...args)
 }));
 
 jest.mock("@/components/layout/AppCard", () => {
@@ -72,8 +76,12 @@ describe("PersonalGrowsRoute", () => {
 
   beforeEach(() => {
     mockListPersonalGrows.mockReset();
+    mockArchivePersonalGrow.mockReset();
+    mockRestorePersonalGrow.mockReset();
     mockPush.mockReset();
     mockListPersonalGrows.mockResolvedValue([]);
+    mockArchivePersonalGrow.mockResolvedValue({});
+    mockRestorePersonalGrow.mockResolvedValue({});
   });
 
   it("uses the normal grows feed policy instead of the Home featured feed", async () => {
@@ -133,5 +141,35 @@ describe("PersonalGrowsRoute", () => {
 
     fireEvent.press(screen.getAllByText("Timeline")[0]);
     expect(mockPush).toHaveBeenCalledWith("/home/personal/grows/grow-1/timeline");
+  });
+
+  it("shows retained archived grows and restores them explicitly", async () => {
+    mockListPersonalGrows.mockImplementation(async (options?: { archived?: boolean }) =>
+      options?.archived
+        ? [
+            {
+              _id: "archived-grow-1",
+              name: "Archived Tomato",
+              cropCommonName: "Tomato",
+              archivedAt: "2026-08-20T12:00:00.000Z"
+            }
+          ]
+        : []
+    );
+
+    const screen = render(<PersonalGrowsRoute />);
+
+    await waitFor(() => expect(screen.getByText("Show (1)")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Show archived grows"));
+    expect(screen.getByText("Archived Tomato")).toBeTruthy();
+    expect(screen.getByText(/Their records remain retained/)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Restore Archived Tomato"));
+    await waitFor(() =>
+      expect(mockRestorePersonalGrow).toHaveBeenCalledWith("archived-grow-1")
+    );
+    expect(
+      await screen.findByText("Archived Tomato was restored to active grows.")
+    ).toBeTruthy();
   });
 });

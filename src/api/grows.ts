@@ -106,6 +106,9 @@ export interface PersonalGrow extends Grow {
   status: "vegetating" | "flowering" | "curing" | "harvested";
   updatedAt: string;
   notes?: string;
+  archivedAt?: string | null;
+  archived?: boolean;
+  isArchived?: boolean;
   cultivar?: string;
   cropCommonName?: string;
   scientificName?: string;
@@ -150,9 +153,13 @@ export interface PersonalGrowTimelineEvent {
  * Fetch all grows for the authenticated personal mode user.
  * Personal mode is user-scoped; no facilityId parameter.
  */
-export async function listPersonalGrows(): Promise<PersonalGrow[]> {
+export async function listPersonalGrows(
+  options: { archived?: boolean } = {}
+): Promise<PersonalGrow[]> {
   try {
-    const personalRes = await apiRequest("/api/personal/grows");
+    const personalRes = await apiRequest("/api/personal/grows", {
+      params: options.archived ? { archived: "true" } : undefined
+    });
     if (Array.isArray(personalRes)) return personalRes as PersonalGrow[];
     if (personalRes && typeof personalRes === "object") {
       const topLevel = (personalRes as any).grows;
@@ -164,6 +171,25 @@ export async function listPersonalGrows(): Promise<PersonalGrow[]> {
   } catch (_err) {
     return [];
   }
+}
+
+async function setPersonalGrowArchived(growId: string, archived: boolean) {
+  const id = String(growId || "").trim();
+  if (!id) throw new Error("Grow ID is required.");
+  const action = archived ? "archive" : "unarchive";
+  const res = await apiRequest(
+    `/api/personal/grows/${encodeURIComponent(id)}/${action}`,
+    { method: "POST" }
+  );
+  return normalizeGrowEntity(res) as PersonalGrow;
+}
+
+export function archivePersonalGrow(growId: string) {
+  return setPersonalGrowArchived(growId, true);
+}
+
+export function restorePersonalGrow(growId: string) {
+  return setPersonalGrowArchived(growId, false);
 }
 
 export async function getPersonalGrowTimeline(
