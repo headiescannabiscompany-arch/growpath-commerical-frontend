@@ -12,11 +12,12 @@ import {
   View
 } from "react-native";
 
-import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
+import { type PersonalGrow } from "@/api/grows";
 import AppCard from "@/components/layout/AppCard";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { listWorkspaceGrows, type GrowWorkspace } from "@/features/grows/workspaceData";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -105,8 +106,6 @@ function metricTone(index: number, styles: ReturnType<typeof createStyles>) {
   return tones[index % tones.length];
 }
 
-type GrowWorkspace = "personal" | "commercial";
-
 function growHref(basePath: string, id: string, section?: string) {
   const encodedId = encodeURIComponent(String(id || "").trim());
   if (!encodedId) return `${basePath}/grows`;
@@ -168,7 +167,8 @@ export default function PersonalGrowsRoute({
   const styles = useMemo(() => createStyles(palette), [palette]);
   const basePath = `/home/${workspace}`;
   const workspaceLabel = workspace === "commercial" ? "Commercial" : "Personal";
-  const hasCreateCapability = ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
+  const hasCreateCapability =
+    workspace === "commercial" || ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const [items, setItems] = useState<PersonalGrow[]>([]);
   const grows = items;
   const [loading, setLoading] = useState(true);
@@ -181,7 +181,7 @@ export default function PersonalGrowsRoute({
   const load = useCallback(async () => {
     setError("");
     try {
-      const res = await listPersonalGrows();
+      const res = await listWorkspaceGrows(workspace);
       setItems(Array.isArray(res) ? res : []);
     } catch (e) {
       setError(String((e as any)?.message || e || "Failed to load grows"));
@@ -190,7 +190,7 @@ export default function PersonalGrowsRoute({
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [workspace]);
 
   useEffect(() => {
     void load();
@@ -282,21 +282,21 @@ export default function PersonalGrowsRoute({
     latestGrow
       ? [
           {
-            href: `/home/personal/tools/integrations?growId=${id}`,
+            href: `${basePath}/tools/integrations?growId=${id}`,
             label: "Integrations"
           },
           {
-            href: `/home/personal/tools/pdf-export?growId=${id}`,
+            href: `${basePath}/tools/${workspace === "commercial" ? "report" : "pdf-export"}?growId=${id}`,
             label: "PDF Export"
           }
         ]
       : [
           {
-            href: "/home/personal/tools/integrations?growId=",
+            href: `${basePath}/tools/integrations?growId=`,
             label: "Integrations"
           },
           {
-            href: "/home/personal/tools/pdf-export?growId=",
+            href: `${basePath}/tools/${workspace === "commercial" ? "report" : "pdf-export"}?growId=`,
             label: "PDF Export"
           }
         ];

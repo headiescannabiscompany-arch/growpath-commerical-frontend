@@ -6,12 +6,16 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import RunComparisonToolRoute, {
   createRunComparisonRouteStyles
 } from "@/app/home/personal/(tabs)/tools/run-comparison";
-import { createRunComparisonStyles } from "@/features/personal/tools/RunComparisonWorkspace";
+import RunComparisonWorkspace, {
+  createRunComparisonStyles
+} from "@/features/personal/tools/RunComparisonWorkspace";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockListPersonalGrows = jest.fn();
+const mockListCommercialGrows = jest.fn();
 const mockCompareSavedGrows = jest.fn();
 const mockSaveToolRunToLog = jest.fn();
+const mockCreateTaskFromToolRun = jest.fn();
 const mockSaveToolRunAndCreateTasks = jest.fn();
 let mockPlan = "pro";
 
@@ -51,7 +55,13 @@ jest.mock("@/api/grows", () => ({
 
 jest.mock("@/api/toolRuns", () => ({
   compareSavedGrows: (...args: any[]) => mockCompareSavedGrows(...args),
+  createTaskFromToolRun: (...args: any[]) => mockCreateTaskFromToolRun(...args),
   saveToolRunToLog: (...args: any[]) => mockSaveToolRunToLog(...args)
+}));
+
+jest.mock("@/features/grows/workspaceData", () => ({
+  listWorkspaceGrows: (workspace: string) =>
+    workspace === "commercial" ? mockListCommercialGrows() : mockListPersonalGrows()
 }));
 
 jest.mock("@/features/personal/tools/saveToolRunAndOpenJournal", () => ({
@@ -83,6 +93,10 @@ describe("RunComparisonToolRoute", () => {
         cropCommonName: "Tomato",
         status: "harvested"
       }
+    ]);
+    mockListCommercialGrows.mockResolvedValue([
+      { id: "grow-1", name: "Commercial reference", status: "harvested" },
+      { id: "grow-2", name: "Commercial comparison", status: "harvested" }
     ]);
     mockCompareSavedGrows.mockResolvedValue({
       toolRun: { id: "toolrun-1", _id: "toolrun-1" },
@@ -176,6 +190,7 @@ describe("RunComparisonToolRoute", () => {
       }
     });
     mockSaveToolRunToLog.mockResolvedValue({ ok: true });
+    mockCreateTaskFromToolRun.mockResolvedValue({ ok: true });
     mockSaveToolRunAndCreateTasks.mockResolvedValue({ ok: true, taskIds: ["task-1"] });
   });
 
@@ -314,5 +329,52 @@ describe("RunComparisonToolRoute", () => {
     const screen = render(<RunComparisonToolRoute />);
     expect(screen.getByText("Run-To-Run Comparison is a Pro tool")).toBeTruthy();
     expect(mockListPersonalGrows).not.toHaveBeenCalled();
+  });
+
+  it("keeps Commercial compare reads, runs, logs, and tasks in Commercial", async () => {
+    const screen = render(
+      <RunComparisonWorkspace workspace="commercial" initialGrowId="grow-1" />
+    );
+    await waitFor(() => expect(screen.getByText("Commercial comparison")).toBeTruthy());
+    expect(mockListCommercialGrows).toHaveBeenCalled();
+    expect(mockListPersonalGrows).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByLabelText("Compare saved grow Commercial comparison"));
+    fireEvent.press(screen.getByLabelText("Compare saved grow histories"));
+
+    await waitFor(() =>
+      expect(mockCompareSavedGrows).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growIds: ["grow-1", "grow-2"],
+          referenceGrowId: "grow-1",
+          workspaceType: "commercial"
+        })
+      )
+    );
+    fireEvent.press(await screen.findByText("Save Comparison to Grow Log"));
+    await waitFor(() =>
+      expect(mockSaveToolRunToLog).toHaveBeenCalledWith(
+        "toolrun-1",
+        expect.objectContaining({ growId: "grow-1", linkedGrowId: "grow-1" }),
+        { workspaceType: "commercial" }
+      )
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Saved comparison to the reference grow log.")).toBeTruthy()
+    );
+
+    fireEvent.press(screen.getByText("Create Reviewed Next-Run Tasks"));
+    await waitFor(() =>
+      expect(mockCreateTaskFromToolRun).toHaveBeenCalledWith(
+        "toolrun-1",
+        expect.objectContaining({
+          growId: "grow-1",
+          linkedGrowId: "grow-1",
+          title: "Review run-comparison evidence gaps"
+        }),
+        { workspaceType: "commercial" }
+      )
+    );
+    expect(mockSaveToolRunAndCreateTasks).not.toHaveBeenCalled();
   });
 });

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
+import { type PersonalPlant } from "@/api/plants";
+import { listWorkspacePlants, type GrowWorkspace } from "@/features/grows/workspaceData";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 export function buildToolPlantContext(plant?: PersonalPlant | null) {
@@ -51,7 +52,8 @@ export function buildToolPlantContextSummary(plant?: PersonalPlant | null) {
 export function useToolPlantContext(
   growId?: string,
   initialPlantId = "",
-  enabled = true
+  enabled = true,
+  workspace: GrowWorkspace = "personal"
 ) {
   const [plants, setPlants] = useState<PersonalPlant[]>([]);
   const [plantId, setPlantId] = useState(enabled ? initialPlantId : "");
@@ -63,7 +65,7 @@ export function useToolPlantContext(
       return;
     }
     let active = true;
-    listPersonalPlants({ growId })
+    listWorkspacePlants(workspace, growId)
       .then((nextPlants) => {
         if (active) setPlants(nextPlants);
       })
@@ -73,7 +75,7 @@ export function useToolPlantContext(
     return () => {
       active = false;
     };
-  }, [enabled, growId]);
+  }, [enabled, growId, workspace]);
 
   const selectedPlant = useMemo(
     () => plants.find((plant) => String(plant.id || (plant as any)._id) === plantId),

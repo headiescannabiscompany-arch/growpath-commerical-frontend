@@ -1,6 +1,6 @@
 import { createPersonalTask } from "@/api/tasks";
 import { createPersonalLog } from "@/api/logs";
-import { createToolRun } from "@/api/toolRuns";
+import { createTaskFromToolRun, createToolRun, saveToolRunToLog } from "@/api/toolRuns";
 
 import {
   saveToolRunAndCreateLog,
@@ -19,7 +19,9 @@ jest.mock("@/api/tasks", () => ({
 }));
 
 jest.mock("@/api/toolRuns", () => ({
-  createToolRun: jest.fn()
+  createToolRun: jest.fn(),
+  createTaskFromToolRun: jest.fn(),
+  saveToolRunToLog: jest.fn()
 }));
 
 const mockedCreatePersonalTask = createPersonalTask as jest.MockedFunction<
@@ -29,12 +31,20 @@ const mockedCreatePersonalLog = createPersonalLog as jest.MockedFunction<
   typeof createPersonalLog
 >;
 const mockedCreateToolRun = createToolRun as jest.MockedFunction<typeof createToolRun>;
+const mockedCreateTaskFromToolRun = createTaskFromToolRun as jest.MockedFunction<
+  typeof createTaskFromToolRun
+>;
+const mockedSaveToolRunToLog = saveToolRunToLog as jest.MockedFunction<
+  typeof saveToolRunToLog
+>;
 
 describe("saveToolRunAndOpenJournal", () => {
   beforeEach(() => {
     mockedCreatePersonalLog.mockReset();
     mockedCreatePersonalTask.mockReset();
     mockedCreateToolRun.mockReset();
+    mockedCreateTaskFromToolRun.mockReset();
+    mockedSaveToolRunToLog.mockReset();
   });
 
   it("reuses an existing tool run instead of creating a duplicate", async () => {
@@ -376,6 +386,97 @@ describe("saveToolRunAndOpenJournal", () => {
         linkedGrowId: "grow-timeline",
         linkedToolRunId: "timeline-run-1"
       })
+    );
+  });
+
+  it("keeps Commercial journal navigation and ToolRun creation in Commercial scope", async () => {
+    mockedCreateToolRun.mockResolvedValue({ _id: "commercial-run" });
+    const router = { push: jest.fn() };
+
+    const result = await saveToolRunAndOpenJournal({
+      router,
+      workspaceType: "commercial",
+      growId: "commercial-grow",
+      toolKey: "dew-point-guard",
+      input: { rh: 68 },
+      output: { riskBand: "high" }
+    });
+
+    expect(result).toEqual({ ok: true, toolRunId: "commercial-run" });
+    expect(mockedCreateToolRun).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceType: "commercial",
+        growId: "commercial-grow"
+      })
+    );
+    expect(router.push).toHaveBeenCalledWith(
+      "/home/commercial/logs/new?growId=commercial-grow&toolRunId=commercial-run"
+    );
+  });
+
+  it("creates Commercial task plans atomically without Personal task writes", async () => {
+    mockedCreateTaskFromToolRun
+      .mockResolvedValueOnce({ task: { id: "commercial-task-1" } } as any)
+      .mockResolvedValueOnce({ task: { id: "commercial-task-2" } } as any);
+
+    const result = await saveToolRunAndCreateTasks({
+      workspaceType: "commercial",
+      growId: "commercial-grow",
+      toolKey: "auto-grow-calendar",
+      toolRunId: "commercial-run",
+      input: {},
+      output: {},
+      tasks: [{ title: "First" }, { title: "Second", priority: "high" }]
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      toolRunId: "commercial-run",
+      taskIds: ["commercial-task-1", "commercial-task-2"]
+    });
+    expect(mockedCreatePersonalTask).not.toHaveBeenCalled();
+    expect(mockedCreateTaskFromToolRun).toHaveBeenCalledTimes(2);
+    expect(mockedCreateTaskFromToolRun).toHaveBeenNthCalledWith(
+      1,
+      "commercial-run",
+      expect.objectContaining({
+        growId: "commercial-grow",
+        linkedGrowId: "commercial-grow",
+        title: "First"
+      }),
+      { workspaceType: "commercial" }
+    );
+  });
+
+  it("saves Commercial logs atomically without Personal log writes", async () => {
+    mockedSaveToolRunToLog.mockResolvedValue({ log: { id: "commercial-log" } } as any);
+
+    const result = await saveToolRunAndCreateLog({
+      workspaceType: "commercial",
+      growId: "commercial-grow",
+      plantId: "commercial-plant",
+      toolKey: "environment-analysis",
+      toolRunId: "commercial-run",
+      input: {},
+      output: {},
+      title: "Environment review",
+      notes: "High humidity"
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      toolRunId: "commercial-run",
+      logId: "commercial-log"
+    });
+    expect(mockedCreatePersonalLog).not.toHaveBeenCalled();
+    expect(mockedSaveToolRunToLog).toHaveBeenCalledWith(
+      "commercial-run",
+      expect.objectContaining({
+        growId: "commercial-grow",
+        linkedGrowId: "commercial-grow",
+        plantId: "commercial-plant"
+      }),
+      { workspaceType: "commercial" }
     );
   });
 });

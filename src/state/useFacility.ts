@@ -37,6 +37,11 @@ function getSnapshot() {
   return store;
 }
 
+export function resetFacilityStore() {
+  store = { selectedId: null, selected: null, facilities: [] };
+  emit();
+}
+
 /**
  * Web-safe facility selection store. Facility layout hydrates it from entitlement
  * context when the account owns or belongs to a single facility.

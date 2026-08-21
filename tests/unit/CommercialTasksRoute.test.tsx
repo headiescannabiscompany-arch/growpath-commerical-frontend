@@ -134,6 +134,18 @@ describe("CommercialTasksRoute", () => {
               status: "open",
               sourceType: "storefront",
               brandSlug: "living-soil-labs"
+            },
+            {
+              id: "grow-task-1",
+              title: "Inspect commercial grow",
+              growId: "grow-7",
+              linkedGrowId: "grow-7",
+              sourceGrowId: "grow-7",
+              completed: false,
+              status: "OPEN",
+              sourceType: "tool_run",
+              recordStore: "commercial_grow",
+              workspaceType: "commercial"
             }
           ]
         });
@@ -182,7 +194,7 @@ describe("CommercialTasksRoute", () => {
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/tasks", {
         method: "GET",
-        params: { workspaceType: "commercial" }
+        params: { workspaceType: "commercial", limit: 100, offset: 0 }
       })
     );
     expect(screen.getByText("Connect Stripe price")).toBeTruthy();
@@ -306,6 +318,7 @@ describe("CommercialTasksRoute", () => {
         expect.objectContaining({
           method: "PATCH",
           body: expect.objectContaining({
+            workspaceType: "commercial",
             status: "complete",
             completed: true,
             completedAt: expect.any(String)
@@ -313,6 +326,88 @@ describe("CommercialTasksRoute", () => {
         })
       )
     );
+  });
+
+  it("updates grow-scoped tasks through the aggregate task contract with canonical grow scope", async () => {
+    const screen = render(<CommercialTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("Inspect commercial grow")).toBeTruthy());
+    const completeButtons = screen.getAllByLabelText("Complete commercial task");
+    fireEvent.press(completeButtons[completeButtons.length - 1]);
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks/grow-task-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            growId: "grow-7",
+            completed: true,
+            status: "complete"
+          })
+        })
+      )
+    );
+    await waitFor(() =>
+      expect(
+        mockApiRequest.mock.calls.filter(
+          ([path, options]) => path === "/api/tasks" && options?.method === "GET"
+        )
+      ).toHaveLength(2)
+    );
+    expect(screen.getAllByText("Inspect commercial grow")).toHaveLength(1);
+    expect(mockApiRequest).not.toHaveBeenCalledWith(
+      "/api/commercial/grows/grow-7/tasks/grow-task-1",
+      expect.anything()
+    );
+  });
+
+  it("loads later Commercial task pages without replacing or duplicating the first page", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path !== "/api/tasks" || options?.method !== "GET") {
+        return Promise.resolve({});
+      }
+      if (options?.params?.offset === 100) {
+        return Promise.resolve({
+          tasks: [
+            {
+              id: "task-page-2",
+              title: "Second page task",
+              status: "open",
+              sourceType: "manual"
+            }
+          ],
+          hasMore: false,
+          nextOffset: null
+        });
+      }
+      return Promise.resolve({
+        tasks: [
+          {
+            id: "task-page-1",
+            title: "First page task",
+            status: "open",
+            sourceType: "manual"
+          }
+        ],
+        hasMore: true,
+        nextOffset: 100
+      });
+    });
+
+    const screen = render(<CommercialTasksRoute />);
+
+    await waitFor(() => expect(screen.getByText("First page task")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Load more commercial tasks"));
+
+    await waitFor(() => expect(screen.getByText("Second page task")).toBeTruthy());
+    expect(screen.getByText("First page task")).toBeTruthy();
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tasks", {
+      method: "GET",
+      params: { workspaceType: "commercial", limit: 100, offset: 100 }
+    });
+    expect(screen.queryByLabelText("Load more commercial tasks")).toBeNull();
   });
 
   it("creates feed-campaign linked commercial tasks with campaign ids", async () => {

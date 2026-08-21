@@ -586,10 +586,12 @@ function buildAiRecipeBrief(payload: Record<string, any>) {
 
 export default function NpkToolScreen({
   backFallbackHref = "/home/personal/tools",
-  facilityId
+  facilityId,
+  workspaceType = "personal"
 }: {
   backFallbackHref?: string;
   facilityId?: string | null;
+  workspaceType?: "personal" | "commercial";
 } = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createNpkStyles(palette), [palette]);
@@ -601,7 +603,12 @@ export default function NpkToolScreen({
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.TOOL_NPK);
   const growContext = coerceParam(growId);
-  const plantContext = useToolPlantContext(growContext, coerceParam(plantId));
+  const plantContext = useToolPlantContext(
+    growContext,
+    coerceParam(plantId),
+    true,
+    workspaceType
+  );
   const [batchVolume, setBatchVolume] = useState("5");
   const [batchUnit, setBatchUnit] = useState<"gal" | "L">("gal");
   const [stage, setStage] = useState("veg");
@@ -655,6 +662,7 @@ export default function NpkToolScreen({
     };
     return {
       name: recipeName.trim(),
+      workspaceType,
       growId: growContext || undefined,
       batchVolume: Number(batchVolume),
       batchUnit,
@@ -843,6 +851,7 @@ export default function NpkToolScreen({
       const response = await runCalculator<any>("npk-recipe", {
         ...payload,
         growId: growContext || undefined,
+        workspaceType,
         ...plantContext.toolRunContext,
         products
       });
@@ -918,7 +927,9 @@ export default function NpkToolScreen({
               ]
                 .filter(Boolean)
                 .join("&");
-              router.push(`/home/personal/ai?${query}` as any);
+              router.push(
+                `${workspaceType === "commercial" ? "/home/commercial/tools/ask-ai" : "/home/personal/ai"}?${query}` as any
+              );
             }}
           >
             <Text style={styles.secondaryButtonText}>Ask AI to Build Nutrient Mix</Text>
@@ -926,7 +937,7 @@ export default function NpkToolScreen({
         </View>
         <PersonalFeedPlacement
           placement="top"
-          routeKey="personal_tools_npk"
+          routeKey={`${workspaceType}_tools_npk`}
           longContent
         />
         {growContext ? (
@@ -1523,15 +1534,43 @@ export default function NpkToolScreen({
                 <Pressable
                   style={styles.primaryButton}
                   onPress={async () => {
-                    await recordNutrientRecipeUse(selectedRecipeId, {
-                      growId: growContext || undefined,
-                      batchVolume: Number(batchVolume),
-                      batchUnit,
-                      measuredEC: measuredEC ? Number(measuredEC) : undefined,
-                      measuredPH: measuredPH ? Number(measuredPH) : undefined,
-                      waterBaseline: recipePayload().waterBaseline,
-                      saveLog: true
-                    });
+                    if (workspaceType === "commercial") {
+                      const toolRunId = String(toolRun?._id || toolRun?.id || "");
+                      if (!growContext || !toolRunId) {
+                        throw new Error(
+                          "Calculate and select a Commercial grow before recording this feeding."
+                        );
+                      }
+                      await saveToolRunToLog(
+                        toolRunId,
+                        {
+                          growId: growContext,
+                          linkedGrowId: growContext,
+                          plantId: plantContext.plantId || undefined,
+                          linkedPlantId: plantContext.plantId || undefined,
+                          linkedToolRunId: toolRunId,
+                          title: `NPK recipe use: ${recipeName.trim() || "recipe"}`,
+                          notes: [
+                            `Batch: ${batchVolume} ${batchUnit}`,
+                            measuredEC ? `Measured EC: ${measuredEC}` : "",
+                            measuredPH ? `Measured pH: ${measuredPH}` : ""
+                          ]
+                            .filter(Boolean)
+                            .join("\n")
+                        },
+                        { workspaceType: "commercial" }
+                      );
+                    } else {
+                      await recordNutrientRecipeUse(selectedRecipeId, {
+                        growId: growContext || undefined,
+                        batchVolume: Number(batchVolume),
+                        batchUnit,
+                        measuredEC: measuredEC ? Number(measuredEC) : undefined,
+                        measuredPH: measuredPH ? Number(measuredPH) : undefined,
+                        waterBaseline: recipePayload().waterBaseline,
+                        saveLog: true
+                      });
+                    }
                     await reloadRecipes();
                     setFeedback("Recipe use saved to grow history.");
                   }}
@@ -1547,7 +1586,7 @@ export default function NpkToolScreen({
           <>
             <PersonalFeedPlacement
               placement="middle"
-              routeKey="personal_tools_npk"
+              routeKey={`${workspaceType}_tools_npk`}
               longContent
             />
             <ToolResultSurface
@@ -1739,7 +1778,19 @@ export default function NpkToolScreen({
                         key: "save-log",
                         label: "Save to Grow Log",
                         onPress: async () => {
-                          await saveToolRunToLog(toolRun._id!);
+                          await saveToolRunToLog(
+                            toolRun._id!,
+                            {
+                              growId: growContext,
+                              linkedGrowId: growContext,
+                              plantId: plantContext.plantId || undefined,
+                              linkedPlantId: plantContext.plantId || undefined,
+                              linkedToolRunId: toolRun._id!
+                            },
+                            workspaceType === "commercial"
+                              ? { workspaceType: "commercial" }
+                              : {}
+                          );
                           setFeedback("Saved to grow journal.");
                         }
                       },
@@ -1749,6 +1800,7 @@ export default function NpkToolScreen({
                         variant: "secondary" as const,
                         onPress: async () => {
                           const taskResult = await saveToolRunAndCreateTask({
+                            workspaceType,
                             growId: growContext,
                             ...plantContext.toolRunContext,
                             toolKey: "npk-recipe",
@@ -1793,6 +1845,7 @@ export default function NpkToolScreen({
                               ? toolRun.outputs
                               : result;
                           const taskResult = await saveToolRunAndCreateTasks({
+                            workspaceType,
                             growId: growContext,
                             ...plantContext.toolRunContext,
                             toolKey: "npk-recipe",
@@ -1841,7 +1894,7 @@ export default function NpkToolScreen({
 
         <PersonalFeedPlacement
           placement="bottom"
-          routeKey="personal_tools_npk"
+          routeKey={`${workspaceType}_tools_npk`}
           longContent
         />
       </ScrollView>

@@ -8,6 +8,7 @@ import type {
   EvidenceWorkspaceType,
   ProviderEvidencePayload
 } from "@/types/evidence";
+import { normalizeSourceCaptureDateCandidate } from "@/utils/sourceCaptureMetadata";
 
 export type EvidenceWorkspaceScope = {
   workspaceType: EvidenceWorkspaceType;
@@ -57,14 +58,20 @@ export type EvidenceFrameExtractionResult = {
   extraction: EvidenceFrameExtraction;
 };
 
-export type EvidencePhotoSourceMetadata = {
+export type EvidenceSourceMetadata = {
   sourceEvidenceAssetId: string;
+  sourceAssetType: "photo" | "video" | null;
   latitude: number | null;
   longitude: number | null;
   capturedAt: string | null;
+  capturedLocalDate: string | null;
+  captureDatePrecision: "date" | "instant" | null;
   hasLocation: boolean;
   hasCaptureDate: boolean;
 };
+
+/** @deprecated Use EvidenceSourceMetadata. Retained for existing callers. */
+export type EvidencePhotoSourceMetadata = EvidenceSourceMetadata;
 
 export type ExtractEvidenceVideoFramesInput = EvidenceWorkspaceScope & {
   maxFrames?: number;
@@ -72,6 +79,14 @@ export type ExtractEvidenceVideoFramesInput = EvidenceWorkspaceScope & {
   growId?: string;
   plantId?: string;
 };
+
+function boundedCoordinate(value: unknown, maximum: number) {
+  if (value === null || value === undefined || value === "") return null;
+  const coordinate = Number(value);
+  return Number.isFinite(coordinate) && Math.abs(coordinate) <= maximum
+    ? coordinate
+    : null;
+}
 
 const RETIRED_EVIDENCE_QUALITY_WARNINGS = new Set([
   "Harvest macro review may not resolve intact trichome heads at this resolution."
@@ -187,13 +202,13 @@ export async function getEvidenceAssetsByIds(
   return rows.map(normalizeEvidenceAsset);
 }
 
-export async function getEvidencePhotoSourceMetadata(
+export async function getEvidenceSourceMetadata(
   id: string,
   workspace: EvidenceWorkspaceScope,
   options: { signal?: AbortSignal } = {}
 ) {
   if (!String(id || "").trim()) {
-    throw new Error("A retained photo is required to check source metadata.");
+    throw new Error("A retained photo or video is required to check source metadata.");
   }
   const response = await apiRequest<any>(
     `/api/evidence-assets/${encodeURIComponent(id)}/source-metadata`,
@@ -207,20 +222,39 @@ export async function getEvidencePhotoSourceMetadata(
       }
     }
   );
-  const metadata = response?.metadata || {};
+  const body = response?.data ?? response;
+  const metadata = body?.metadata || {};
+  const latitude = boundedCoordinate(metadata.latitude, 90);
+  const longitude = boundedCoordinate(metadata.longitude, 180);
+  const instantCandidate = normalizeSourceCaptureDateCandidate(metadata.capturedAt);
+  const localDateCandidate = normalizeSourceCaptureDateCandidate(
+    metadata.capturedLocalDate
+  );
+  const capturedAt = instantCandidate?.capturedAt || null;
+  const capturedLocalDate =
+    localDateCandidate?.capturedLocalDate || instantCandidate?.capturedLocalDate || null;
+  const captureDatePrecision = capturedAt ? "instant" : capturedLocalDate ? "date" : null;
+  const hasLocation =
+    metadata.hasLocation === true && latitude !== null && longitude !== null;
+  const hasCaptureDate =
+    metadata.hasCaptureDate === true && Boolean(capturedAt || capturedLocalDate);
   return {
-    sourceEvidenceAssetId: String(response?.sourceEvidenceAssetId || id),
-    latitude: Number.isFinite(Number(metadata.latitude))
-      ? Number(metadata.latitude)
+    sourceEvidenceAssetId: String(body?.sourceEvidenceAssetId || id),
+    sourceAssetType: new Set(["photo", "video"]).has(body?.sourceAssetType)
+      ? body.sourceAssetType
       : null,
-    longitude: Number.isFinite(Number(metadata.longitude))
-      ? Number(metadata.longitude)
-      : null,
-    capturedAt: metadata.capturedAt ? String(metadata.capturedAt) : null,
-    hasLocation: metadata.hasLocation === true,
-    hasCaptureDate: metadata.hasCaptureDate === true
-  } satisfies EvidencePhotoSourceMetadata;
+    latitude: hasLocation ? latitude : null,
+    longitude: hasLocation ? longitude : null,
+    capturedAt: hasCaptureDate ? capturedAt : null,
+    capturedLocalDate: hasCaptureDate ? capturedLocalDate : null,
+    captureDatePrecision: hasCaptureDate ? captureDatePrecision : null,
+    hasLocation,
+    hasCaptureDate
+  } satisfies EvidenceSourceMetadata;
 }
+
+/** @deprecated Use getEvidenceSourceMetadata. */
+export const getEvidencePhotoSourceMetadata = getEvidenceSourceMetadata;
 
 export async function deleteEvidenceAsset(
   id: string,

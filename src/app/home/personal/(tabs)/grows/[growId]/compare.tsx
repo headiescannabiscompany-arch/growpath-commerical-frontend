@@ -5,6 +5,7 @@ import { useLocalSearchParams } from "expo-router";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam } from "@/features/grows/routeUtils";
+import { type GrowWorkspace } from "@/features/grows/workspaceData";
 import RunComparisonWorkspace from "@/features/personal/tools/RunComparisonWorkspace";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -16,7 +17,11 @@ export const createGrowCompareStyles = (palette: ThemePalette) =>
     subtitle: { color: palette.textMuted, lineHeight: 20 }
   });
 
-export default function GrowCompareScreen() {
+export default function GrowCompareScreen({
+  workspace = "personal"
+}: {
+  workspace?: GrowWorkspace;
+}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowCompareStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{
@@ -32,14 +37,14 @@ export default function GrowCompareScreen() {
       </Text>
       <PersonalFeedPlacement
         placement="top"
-        routeKey="personal_grows_growid_compare"
+        routeKey={`${workspace}_grows_growid_compare`}
         longContent
       />
       <GrowWorkspaceNav growId={growId} active="compare" />
-      <RunComparisonWorkspace initialGrowId={growId} />
+      <RunComparisonWorkspace initialGrowId={growId} workspace={workspace} />
       <PersonalFeedPlacement
         placement="bottom"
-        routeKey="personal_grows_growid_compare"
+        routeKey={`${workspace}_grows_growid_compare`}
         longContent
       />
     </ScrollView>

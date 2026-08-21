@@ -53,6 +53,13 @@ function chooseObservationDate(screen: any, date = "2026-08-12") {
   fireEvent.press(screen.getByLabelText(`${label} use selected date`));
 }
 
+function enterNatureDescription(
+  screen: any,
+  description = "Contributor-reviewed plant finding beside a public trail."
+) {
+  fireEvent.changeText(screen.getByLabelText("Public Nature description"), description);
+}
+
 jest.mock("expo-router", () => ({
   Link: ({ children }: any) => children,
   useLocalSearchParams: () => mockSearchParams,
@@ -485,7 +492,7 @@ describe("SpeciesCropIdToolRoute", () => {
       expect(mockRunCalculator).toHaveBeenCalledWith(
         "species-crop-id",
         expect.objectContaining({
-          growId: "",
+          growId: undefined,
           workspaceType: "personal",
           userEnteredName: "Cannabis",
           scientificName: "Cannabis sativa",
@@ -2071,7 +2078,7 @@ describe("SpeciesCropIdToolRoute", () => {
         })
       )
     );
-    expect(mockUseToolPlantContext).toHaveBeenCalledWith("", "", false);
+    expect(mockUseToolPlantContext).toHaveBeenCalledWith("", "", false, "personal");
     expect(mockListPersonalGrows).not.toHaveBeenCalled();
     expect(mockListFieldStudies).not.toHaveBeenCalled();
     expect(mockCreateGrowpathModuleRecord).not.toHaveBeenCalled();
@@ -2124,7 +2131,12 @@ describe("SpeciesCropIdToolRoute", () => {
         workspaceId: expect.anything()
       })
     );
-    expect(mockUseToolPlantContext).toHaveBeenCalledWith("", "", false);
+    expect(mockUseToolPlantContext).toHaveBeenCalledWith(
+      "",
+      "personal-plant-secret",
+      true,
+      "commercial"
+    );
     expect(mockListPersonalGrows).not.toHaveBeenCalled();
     expect(mockListFieldStudies).not.toHaveBeenCalled();
     expect(mockGetToolRun).not.toHaveBeenCalled();
@@ -2239,7 +2251,7 @@ describe("SpeciesCropIdToolRoute", () => {
     ).toBe("");
     expect(screen.queryByText("Optional: add to a Field Study or Nature")).toBeNull();
     expect(screen.getByText(/current commercial workspace's Saved Runs/i)).toBeTruthy();
-    expect(mockUseToolPlantContext).toHaveBeenLastCalledWith("", "", false);
+    expect(mockUseToolPlantContext).toHaveBeenLastCalledWith("", "", true, "commercial");
     expect(mockListPersonalGrows).not.toHaveBeenCalled();
     expect(mockListFieldStudies).not.toHaveBeenCalled();
   });
@@ -4229,6 +4241,44 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(screen.getByText(/No Field Study setup is required/)).toBeTruthy();
   });
 
+  it("does not publish a Nature pin until the contributor reviews a public description", async () => {
+    mockSearchParams = { fieldStudyId: "study-1" };
+    mockListFieldStudies.mockResolvedValueOnce([
+      {
+        id: "study-1",
+        _id: "study-1",
+        title: "Public survey",
+        slug: "public-survey",
+        visibility: "public",
+        accessRole: "owner"
+      }
+    ]);
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    openLocationAndSharing(screen);
+    await waitFor(() => expect(screen.getByText(/Public survey/)).toBeTruthy());
+    fireEvent.press(
+      screen.getByLabelText(
+        "Include or update current location privately with this Plant ID"
+      )
+    );
+    await screen.findByText(/Exact location is ready to save privately/);
+    fireEvent.press(screen.getByText("Nature map — approximate pin"));
+    fireEvent.press(
+      screen.getByText("This is Cannabis/hemp — review public-context sharing")
+    );
+    chooseObservationDate(screen);
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    fireEvent.press(await screen.findByText("Publish Approximate Pin to Nature"));
+
+    expect(
+      await screen.findByText(
+        "Add and review a public Nature description before publishing this pin."
+      )
+    ).toBeTruthy();
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
+  });
+
   it("requires study-wide confirmation before making a Field Study public", async () => {
     mockSearchParams = { fieldStudyId: "study-1" };
     mockListFieldStudies.mockResolvedValueOnce([
@@ -4290,6 +4340,10 @@ describe("SpeciesCropIdToolRoute", () => {
       ).toBeGreaterThan(0)
     );
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
+    expect(
+      screen.getByText("Needed: Public description added and reviewed")
+    ).toBeTruthy();
+    enterNatureDescription(screen);
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
@@ -4397,6 +4451,7 @@ describe("SpeciesCropIdToolRoute", () => {
       ).toBeGreaterThan(0)
     );
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
+    enterNatureDescription(screen);
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
@@ -4445,6 +4500,7 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     await screen.findByText(/Exact location is ready to save privately/);
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
+    enterNatureDescription(screen);
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
@@ -4500,6 +4556,7 @@ describe("SpeciesCropIdToolRoute", () => {
     );
     await screen.findByText(/Exact location is ready to save privately/);
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
+    enterNatureDescription(screen);
     fireEvent.press(
       screen.getByText("This is Cannabis/hemp — review public-context sharing")
     );
@@ -4553,6 +4610,7 @@ describe("SpeciesCropIdToolRoute", () => {
       ).toBeGreaterThan(0)
     );
     fireEvent.press(screen.getByText("Nature map — approximate pin"));
+    enterNatureDescription(screen);
     fireEvent.press(screen.getByText("Identify Plant from Photos"));
     await waitFor(() =>
       expect(screen.getByText("Publish Approximate Pin to Nature")).toBeTruthy()

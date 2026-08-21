@@ -1,5 +1,7 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
+import fs from "node:fs";
+import path from "node:path";
 
 import CommercialToolsIndex, {
   COMMERCIAL_CORE_TOOLS,
@@ -72,6 +74,9 @@ describe("CommercialToolsIndex", () => {
     ).toBeTruthy();
     expect(screen.getByText("Shared grow intelligence")).toBeTruthy();
     expect(screen.getByText("Commercial production and records")).toBeTruthy();
+    expect(screen.getByText("Plant & Crop Identification")).toBeTruthy();
+    expect(screen.getByText("IPM Scout")).toBeTruthy();
+    expect(screen.getByText("Saved AI Runs")).toBeTruthy();
 
     const allItems = [...COMMERCIAL_CORE_TOOLS, ...COMMERCIAL_PRODUCTION_TOOLS];
     for (const item of allItems) {
@@ -85,6 +90,32 @@ describe("CommercialToolsIndex", () => {
       .join(" ");
     expect(discoveryText).not.toMatch(/harvest|trichome|dry \/ cure|pheno|genetics/i);
     expect(screen.queryByText("Saved Runs / Reports")).toBeNull();
+  });
+
+  it("keeps every displayed Commercial tool on a real Commercial-local route", () => {
+    const allItems = [...COMMERCIAL_CORE_TOOLS, ...COMMERCIAL_PRODUCTION_TOOLS];
+    const missingRoutes = allItems
+      .map((item) => new URL(item.href, "https://growpathai.com").pathname)
+      .filter((pathname) => pathname.startsWith("/home/commercial/"))
+      .filter((pathname) => {
+        const relativePath = pathname.replace(/^\//, "");
+        return ![
+          path.join(process.cwd(), "src", "app", `${relativePath}.tsx`),
+          path.join(process.cwd(), "src", "app", relativePath, "index.tsx")
+        ].some((candidate) => fs.existsSync(candidate));
+      });
+
+    expect(missingRoutes).toEqual([]);
+    expect(
+      COMMERCIAL_CORE_TOOLS.find((item) => item.title === "Plant & Crop Identification")
+        ?.href
+    ).toBe("/home/commercial/tools/species-crop-id?workspace=commercial");
+    expect(COMMERCIAL_CORE_TOOLS.find((item) => item.title === "IPM Scout")?.href).toBe(
+      "/home/commercial/tools/ipm-scout?workspace=commercial"
+    );
+    expect(
+      COMMERCIAL_PRODUCTION_TOOLS.find((item) => item.title === "Saved AI Runs")?.href
+    ).toBe("/home/commercial/tools/saved-runs?workspace=commercial");
   });
 
   it("routes mix builders with explicit Commercial workspace context", () => {

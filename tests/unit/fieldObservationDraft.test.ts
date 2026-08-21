@@ -82,6 +82,19 @@ describe("private Field Study drafts from saved Plant ID runs", () => {
         }
       })
     ).toBeNull();
+
+    for (const capturedLocation of [
+      { latitude: null, longitude: null, userAuthorized: true },
+      { latitude: "", longitude: "", userAuthorized: true },
+      { userAuthorized: true }
+    ]) {
+      expect(
+        coordinatesFromToolRun({
+          ...plantIdRun,
+          inputs: { ...plantIdRun.inputs, capturedLocation }
+        })
+      ).toBeNull();
+    }
   });
 
   it("builds a private draft with saved identity, context, evidence, and location", () => {

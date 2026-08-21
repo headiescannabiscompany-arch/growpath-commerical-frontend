@@ -38,6 +38,26 @@ export const COMMERCIAL_CORE_TOOLS: readonly CommercialToolHubItem[] = [
     actionLabel: "Open Plant Diagnose"
   },
   {
+    title: "Plant & Crop Identification",
+    description:
+      "Identify an unknown plant from morphology, habitat, geography, photos, and optional video frames.",
+    href: "/home/commercial/tools/species-crop-id?workspace=commercial",
+    credit: "Provider-backed image identification uses Commercial AI credits.",
+    output:
+      "Ranked candidates, evidence, counter-evidence, uncertainty, and exact next photos.",
+    actionLabel: "Open Plant & Crop Identification"
+  },
+  {
+    title: "IPM Scout",
+    description:
+      "Separate observed organisms, damage, disease signs, and ranked hypotheses in a repeatable scout.",
+    href: "/home/commercial/tools/ipm-scout?workspace=commercial",
+    credit: "Photo prefill and GPT review are separate Commercial AI actions.",
+    output:
+      "Direct observations, candidates, counter-evidence, missing checks, and follow-up evidence.",
+    actionLabel: "Open IPM Scout"
+  },
+  {
     title: "Environment Review",
     description: "Review temperature, humidity, VPD, and environmental conditions.",
     href: "/home/commercial/tools/environment",
@@ -60,6 +80,15 @@ export const COMMERCIAL_CORE_TOOLS: readonly CommercialToolHubItem[] = [
 ] as const;
 
 export const COMMERCIAL_PRODUCTION_TOOLS: readonly CommercialToolHubItem[] = [
+  {
+    title: "Saved AI Runs",
+    description:
+      "Review prior Commercial AI evidence, corrections, confidence, linked records, and outcomes.",
+    href: "/home/commercial/tools/saved-runs?workspace=commercial",
+    credit: "Reviewing saved results does not use AI credits.",
+    output: "Commercial-scoped run history, evidence, feedback, and follow-up actions.",
+    actionLabel: "Open Saved AI Runs"
+  },
   {
     title: "Product Trial Evidence Runs",
     description:

@@ -40,10 +40,7 @@ import ToolResultSurface, {
 } from "@/features/personal/tools/ToolResultSurface";
 import ResultQuestionCard from "@/features/personal/tools/ResultQuestionCard";
 import { askPersonalAssistant } from "@/api/personalAssistant";
-import {
-  getEvidencePhotoSourceMetadata,
-  type EvidencePhotoSourceMetadata
-} from "@/api/evidence";
+import { getEvidenceSourceMetadata, type EvidenceSourceMetadata } from "@/api/evidence";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -60,6 +57,7 @@ import {
 import PlantIdentificationResultDetails from "@/features/personal/tools/PlantIdentificationResultDetails";
 import EvidenceReviewPanel from "@/components/personal/EvidenceReviewPanel";
 import PrivateLocationPicker from "@/components/fieldStudies/PrivateLocationPicker";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { inferEvidenceReview } from "@/features/personal/evidence/evidenceReview";
 import {
   inspectedPhotoEstimateCounts,
@@ -81,6 +79,32 @@ import {
 const DIRECT_NATURE_COLLECTION_TITLE = "My Nature Finds";
 const DIRECT_NATURE_COLLECTION_DESCRIPTION =
   "Plant IDs deliberately shared from the direct Discovery Nature workflow.";
+
+type SourceMetadataReviewCandidate = EvidenceSourceMetadata & {
+  locationCapturedAt?: string | null;
+  locationCapturedLocalDate?: string | null;
+  locationCaptureDatePrecision?: "date" | "instant" | null;
+};
+
+function metadataCalendarDate(candidate: EvidenceSourceMetadata | null | undefined) {
+  return String(
+    candidate?.capturedLocalDate || candidate?.capturedAt?.slice(0, 10) || ""
+  ).trim();
+}
+
+function isValidNatureObservationDate(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const candidate = new Date(Date.UTC(year, month - 1, day));
+  return (
+    candidate.getUTCFullYear() === year &&
+    candidate.getUTCMonth() === month - 1 &&
+    candidate.getUTCDate() === day
+  );
+}
 
 function directNatureCollection(studies: FieldStudy[]) {
   return (
@@ -1290,7 +1314,11 @@ function savedRunEvidenceAssetIds(run: ToolRun | null) {
   );
 }
 
-export default function SavedToolRunsScreen() {
+export default function SavedToolRunsScreen({
+  workspaceTypeOverride
+}: {
+  workspaceTypeOverride?: "personal" | "commercial" | "facility";
+} = {}) {
   const { palette } = useAppTheme();
   const entitlements = useEntitlements();
   const styles = useMemo(() => createSavedToolRunsStyles(palette), [palette]);
@@ -1338,24 +1366,28 @@ export default function SavedToolRunsScreen() {
       (coerceParam(params.workspaceType) || coerceParam(params.workspace)).toLowerCase(),
     [params.workspace, params.workspaceType]
   );
-  const workspaceType = resolveToolWorkspaceType({
-    entitlementMode: entitlements.mode,
-    requestedWorkspaceType,
-    facilityId: routeFacilityId,
-    commercialAccountId
-  });
+  const workspaceType =
+    workspaceTypeOverride ||
+    resolveToolWorkspaceType({
+      entitlementMode: entitlements.mode,
+      requestedWorkspaceType,
+      facilityId: routeFacilityId,
+      commercialAccountId
+    });
   const facilityId =
     workspaceType === "facility"
       ? entitlements.mode === "facility" && entitlements.facilityId
         ? String(entitlements.facilityId)
         : routeFacilityId
       : "";
-  const growId = workspaceType === "personal" ? requestedGrowId : "";
+  const growId =
+    workspaceType === "personal" || workspaceTypeOverride === "commercial"
+      ? requestedGrowId
+      : "";
   const fieldStudyId = workspaceType === "personal" ? requestedFieldStudyId : "";
   const workspaceIdentityKey = toolWorkspaceIdentity({
     workspaceType,
-    facilityId,
-    commercialAccountId
+    facilityId
   });
   const toolRunScope = useMemo<ToolRunWorkspaceScope>(
     () =>
@@ -1371,19 +1403,18 @@ export default function SavedToolRunsScreen() {
     () =>
       savedRunBackTarget({
         growId,
-        sourceContext: workspaceType === "personal" ? sourceContext : "",
-        sourceTaskId: workspaceType === "personal" ? sourceTaskId : ""
+        sourceContext: workspaceType === "facility" ? "" : sourceContext,
+        sourceTaskId: workspaceType === "facility" ? "" : sourceTaskId,
+        workspaceType: workspaceType === "commercial" ? "commercial" : "personal"
       }),
     [growId, sourceContext, sourceTaskId, workspaceType]
   );
   const backTarget =
     workspaceType === "facility"
       ? "/home/facility/ai-tools"
-      : workspaceType === "commercial"
-        ? "/home/commercial/tools"
-        : fieldStudyId
-          ? `/home/personal/field-studies/${fieldStudyId}`
-          : sourceBackTarget;
+      : fieldStudyId
+        ? `/home/personal/field-studies/${fieldStudyId}`
+        : sourceBackTarget;
   const [toolType, setToolType] = useState(initialToolType);
   const [runs, setRuns] = useState<ToolRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
@@ -1404,10 +1435,15 @@ export default function SavedToolRunsScreen() {
   );
   const [capturingFieldLocation, setCapturingFieldLocation] = useState(false);
   const [photoMetadataCandidate, setPhotoMetadataCandidate] =
-    useState<EvidencePhotoSourceMetadata | null>(null);
+    useState<SourceMetadataReviewCandidate | null>(null);
   const [checkingPhotoMetadata, setCheckingPhotoMetadata] = useState(false);
   const [natureDateDraft, setNatureDateDraft] = useState("");
   const [natureNotesDraft, setNatureNotesDraft] = useState("");
+  const [natureObservationRecord, setNatureObservationRecord] = useState<{
+    studyId: string;
+    observation: FieldObservation;
+  } | null>(null);
+  const [natureStatusLoading, setNatureStatusLoading] = useState(false);
   const [naturePublishConfirmed, setNaturePublishConfirmed] = useState(false);
   const [cannabisNatureConfirmed, setCannabisNatureConfirmed] = useState(false);
   const [publishingNature, setPublishingNature] = useState(false);
@@ -1443,8 +1479,7 @@ export default function SavedToolRunsScreen() {
         workflow,
         sourceToolRunId,
         sourceTool: isIpmRun(selectedRun) ? "ipm-scout" : "species-crop-id",
-        workspaceType,
-        ...(commercialAccountId ? { commercialAccountId } : {})
+        workspaceType
       }
     });
     const answer = String(response?.reply || "").trim();
@@ -1490,6 +1525,8 @@ export default function SavedToolRunsScreen() {
     setCheckingPhotoMetadata(false);
     setNatureDateDraft("");
     setNatureNotesDraft("");
+    setNatureObservationRecord(null);
+    setNatureStatusLoading(false);
     setNaturePublishConfirmed(false);
     setCannabisNatureConfirmed(false);
     setPublishingNature(false);
@@ -1574,6 +1611,61 @@ export default function SavedToolRunsScreen() {
     setCannabisNatureConfirmed(false);
     setNatureFeedback("");
   }, [selectedRun]);
+
+  useEffect(() => {
+    let active = true;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    const sourceToolRunId = selectedRun ? idFor(selectedRun) : "";
+    setNatureObservationRecord(null);
+    if (
+      workspaceType !== "personal" ||
+      !selectedRun ||
+      !sourceToolRunId ||
+      !isSpeciesCropRun(selectedRun)
+    ) {
+      setNatureStatusLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+    setNatureStatusLoading(true);
+    void (async () => {
+      try {
+        const collection = directNatureCollection(await listFieldStudies());
+        const collectionId = String(collection?.id || collection?._id || "");
+        if (!collectionId) return;
+        const fullCollection = await getFieldStudy(collectionId);
+        const observation = fullCollection.observations.find(
+          (item) => String(item.sourceToolRunId || "") === sourceToolRunId
+        );
+        if (
+          !active ||
+          currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity ||
+          !observation
+        )
+          return;
+        setNatureObservationRecord({ studyId: collectionId, observation });
+        const publicNotes = String(observation.publication?.publicNotes || "").trim();
+        if (publicNotes) setNatureNotesDraft(publicNotes);
+        if (observation.observationDate) {
+          setNatureDateDraft(String(observation.observationDate).slice(0, 10));
+        }
+      } catch (statusError: any) {
+        if (active && currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+          setNatureFeedback(
+            statusError?.message || "Nature publication status could not be loaded."
+          );
+        }
+      } finally {
+        if (active && currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+          setNatureStatusLoading(false);
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [selectedRun, workspaceIdentityKey, workspaceType]);
 
   const selectRun = useCallback(
     async (run: ToolRun) => {
@@ -1835,7 +1927,9 @@ export default function SavedToolRunsScreen() {
     if (!id || !selectedRun || !isSpeciesCropRun(selectedRun)) return;
     const evidenceIds = savedRunEvidenceAssetIds(selectedRun);
     if (!evidenceIds.length) {
-      setPrivateLocationFeedback("This saved Plant ID has no retained photos to check.");
+      setPrivateLocationFeedback(
+        "This saved Plant ID has no retained photos or source video to check."
+      );
       return;
     }
     setCheckingPhotoMetadata(true);
@@ -1844,45 +1938,67 @@ export default function SavedToolRunsScreen() {
     try {
       const results = await Promise.allSettled(
         evidenceIds.map((evidenceId) =>
-          getEvidencePhotoSourceMetadata(evidenceId, { workspaceType: "personal" })
+          getEvidenceSourceMetadata(evidenceId, {
+            workspaceType,
+            ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
+          })
         )
       );
       if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      const failedCount = results.filter((result) => result.status === "rejected").length;
       const candidates = results
         .filter(
-          (result): result is PromiseFulfilledResult<EvidencePhotoSourceMetadata> =>
-            result.status === "fulfilled" && result.value.hasLocation
+          (result): result is PromiseFulfilledResult<EvidenceSourceMetadata> =>
+            result.status === "fulfilled" &&
+            (result.value.hasLocation || result.value.hasCaptureDate)
         )
         .map((result) => result.value);
       if (!candidates.length) {
         setPrivateLocationFeedback(
-          "No GPS was retained in these original photos. Use the device location or place the observation on the map instead."
+          failedCount
+            ? `The original media metadata could not be read from ${failedCount} saved item${failedCount === 1 ? "" : "s"}. Try again; nothing was saved or published.`
+            : "The original photos and source video were checked, but no GPS or capture date was retained. Use the device location or place the observation on the map instead."
         );
         return;
       }
-      const first = candidates[0];
-      const conflictingLocation = candidates.some(
+      const locationCandidates = candidates.filter(
+        (candidate) =>
+          candidate.hasLocation &&
+          candidate.latitude != null &&
+          candidate.longitude != null
+      );
+      const first = locationCandidates[0] || candidates[0];
+      const conflictingLocation = locationCandidates.some(
         (candidate) =>
           Math.abs(Number(candidate.latitude) - Number(first.latitude)) > 0.002 ||
           Math.abs(Number(candidate.longitude) - Number(first.longitude)) > 0.002
       );
       if (conflictingLocation) {
         setPrivateLocationFeedback(
-          "These photos contain more than one location. Nothing was selected; review the trip before attaching a pin."
+          "The original photos or video contain more than one location. Nothing was selected; review the trip before attaching a pin."
         );
         return;
       }
-      const earliestCapture = candidates
-        .map((candidate) => candidate.capturedAt)
-        .filter((value): value is string => Boolean(value))
-        .sort()[0];
+      const dateCandidate = candidates
+        .filter((candidate) => Boolean(metadataCalendarDate(candidate)))
+        .sort((left, right) =>
+          metadataCalendarDate(left).localeCompare(metadataCalendarDate(right))
+        )[0];
+      const earliestCaptureDate = metadataCalendarDate(dateCandidate);
       setPhotoMetadataCandidate({
         ...first,
-        capturedAt: earliestCapture || first.capturedAt,
-        hasCaptureDate: Boolean(earliestCapture || first.capturedAt)
+        capturedAt: dateCandidate?.capturedAt || null,
+        capturedLocalDate: earliestCaptureDate || null,
+        captureDatePrecision:
+          dateCandidate?.captureDatePrecision ||
+          (dateCandidate?.capturedAt ? "instant" : earliestCaptureDate ? "date" : null),
+        hasCaptureDate: Boolean(earliestCaptureDate),
+        locationCapturedAt: first.capturedAt,
+        locationCapturedLocalDate: first.capturedLocalDate,
+        locationCaptureDatePrecision: first.captureDatePrecision
       });
       setPrivateLocationFeedback(
-        `Photo location found privately${earliestCapture ? ` · captured ${earliestCapture.slice(0, 10)}` : ""}. Review it before applying; nothing has been saved or published.`
+        `${first.hasLocation ? "Source-media location" : "Source-media capture date"} found privately${earliestCaptureDate ? ` · captured ${earliestCaptureDate}` : ""}. Review it before applying; nothing has been saved or published.${failedCount ? ` ${failedCount} other saved item${failedCount === 1 ? " was" : "s were"} unavailable.` : ""}`
       );
     } finally {
       if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
@@ -1897,53 +2013,78 @@ export default function SavedToolRunsScreen() {
     if (
       !id ||
       !selectedRun ||
-      !photoMetadataCandidate?.hasLocation ||
-      photoMetadataCandidate.latitude == null ||
-      photoMetadataCandidate.longitude == null
+      !photoMetadataCandidate ||
+      (!photoMetadataCandidate.hasCaptureDate &&
+        (!photoMetadataCandidate.hasLocation ||
+          photoMetadataCandidate.latitude == null ||
+          photoMetadataCandidate.longitude == null))
     )
       return;
     setCapturingFieldLocation(true);
     setPrivateLocationFeedback("");
     try {
       const inputs = runInputs(selectedRun);
+      const sourceCalendarDate = metadataCalendarDate(photoMetadataCandidate);
       const observationContext = {
         ...(inputs.observationContext || {}),
-        ...(photoMetadataCandidate.capturedAt
-          ? { observationDate: photoMetadataCandidate.capturedAt.slice(0, 10) }
-          : {})
+        ...(sourceCalendarDate ? { observationDate: sourceCalendarDate } : {})
       };
       const nextInputs = {
         ...inputs,
         observationContext,
-        capturedLocation: {
-          latitude: photoMetadataCandidate.latitude,
-          longitude: photoMetadataCandidate.longitude,
-          accuracyMeters: null,
-          privacy: "private",
-          userAuthorized: true,
-          source: "photo_metadata",
-          sourceEvidenceAssetId: photoMetadataCandidate.sourceEvidenceAssetId,
-          sourceCapturedAt: photoMetadataCandidate.capturedAt,
-          capturedAt: new Date().toISOString()
-        }
+        ...(photoMetadataCandidate.hasLocation &&
+        photoMetadataCandidate.latitude != null &&
+        photoMetadataCandidate.longitude != null
+          ? {
+              capturedLocation: {
+                latitude: photoMetadataCandidate.latitude,
+                longitude: photoMetadataCandidate.longitude,
+                accuracyMeters: null,
+                privacy: "private",
+                userAuthorized: true,
+                source:
+                  photoMetadataCandidate.sourceAssetType === "video"
+                    ? "video_metadata"
+                    : "photo_metadata",
+                sourceEvidenceAssetId: photoMetadataCandidate.sourceEvidenceAssetId,
+                sourceCapturedAt: photoMetadataCandidate.locationCapturedAt,
+                sourceCapturedLocalDate: photoMetadataCandidate.locationCapturedLocalDate,
+                sourceCaptureDatePrecision:
+                  photoMetadataCandidate.locationCaptureDatePrecision,
+                capturedAt: new Date().toISOString()
+              }
+            }
+          : {})
       };
       const locationPatch = { inputs: nextInputs, input: nextInputs, params: nextInputs };
-      const updated = await updateToolRun(id, locationPatch);
+      const updated = toolRunScope.workspaceType
+        ? await updateToolRun(id, locationPatch, toolRunScope)
+        : await updateToolRun(id, locationPatch);
       if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       if (!updated) throw new Error("The photo location was not saved.");
       setRuns((current) => current.map((run) => (idFor(run) === id ? updated : run)));
       if (selectedRunIdRef.current !== id) return;
       setSelectedRun(updated);
-      setFieldCoordinates({
-        latitude: photoMetadataCandidate.latitude,
-        longitude: photoMetadataCandidate.longitude
-      });
+      if (
+        photoMetadataCandidate.hasLocation &&
+        photoMetadataCandidate.latitude != null &&
+        photoMetadataCandidate.longitude != null
+      ) {
+        setFieldCoordinates({
+          latitude: photoMetadataCandidate.latitude,
+          longitude: photoMetadataCandidate.longitude
+        });
+      }
       setPhotoMetadataCandidate(null);
-      if (photoMetadataCandidate.capturedAt) {
-        setNatureDateDraft(photoMetadataCandidate.capturedAt.slice(0, 10));
+      if (sourceCalendarDate) {
+        setNatureDateDraft(sourceCalendarDate);
       }
       setPrivateLocationFeedback(
-        "Photo location and capture date saved privately to this Plant ID. Nothing was published to Nature."
+        photoMetadataCandidate.hasLocation
+          ? photoMetadataCandidate.hasCaptureDate
+            ? "Source-media location and capture date saved privately to this Plant ID. Nothing was published to Nature."
+            : "Source-media location saved privately to this Plant ID. Nothing was published to Nature."
+          : "Source-media capture date saved privately to this Plant ID. No location was added, and nothing was published to Nature."
       );
     } catch (locationError: any) {
       setPrivateLocationFeedback(
@@ -1965,8 +2106,14 @@ export default function SavedToolRunsScreen() {
       setNatureFeedback("Add or recover the private plant location before publishing.");
       return;
     }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(natureDateDraft.trim())) {
-      setNatureFeedback("Enter the observation date as YYYY-MM-DD before publishing.");
+    if (!isValidNatureObservationDate(natureDateDraft)) {
+      setNatureFeedback("Choose a valid observation date before publishing.");
+      return;
+    }
+    if (!natureNotesDraft.trim()) {
+      setNatureFeedback(
+        "Enter a public description of what you observed before publishing."
+      );
       return;
     }
     if (!naturePublishConfirmed) {
@@ -2027,16 +2174,22 @@ export default function SavedToolRunsScreen() {
           cannabisContextConfirmed: cannabisObservation && cannabisNatureConfirmed
         }
       };
+      let savedObservation: FieldObservation;
       if (existing) {
-        await updateFieldObservation(
+        savedObservation = await updateFieldObservation(
           collectionId,
           String(existing.id || existing._id),
           observationInput
         );
       } else {
-        await createFieldObservation(collectionId, observationInput);
+        const created = await createFieldObservation(collectionId, observationInput);
+        savedObservation = created.observation;
       }
       if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setNatureObservationRecord({
+        studyId: collectionId,
+        observation: savedObservation
+      });
       setNatureFeedback(
         existing
           ? "Nature observation updated. Open Nature to verify its approximate pin, photos, and description."
@@ -2048,6 +2201,48 @@ export default function SavedToolRunsScreen() {
       if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setNatureFeedback(
         publishError?.message || "The Nature observation could not be published."
+      );
+    } finally {
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setPublishingNature(false);
+      }
+    }
+  }
+
+  async function withdrawSavedRunFromNature() {
+    if (workspaceType !== "personal" || !natureObservationRecord) return;
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    const observationId = String(
+      natureObservationRecord.observation.id ||
+        natureObservationRecord.observation._id ||
+        ""
+    );
+    if (!observationId) return;
+    setPublishingNature(true);
+    setNatureFeedback("");
+    try {
+      const updated = await updateFieldObservation(
+        natureObservationRecord.studyId,
+        observationId,
+        {
+          publication: {
+            ...natureObservationRecord.observation.publication,
+            status: "withdrawn"
+          }
+        }
+      );
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setNatureObservationRecord({
+        studyId: natureObservationRecord.studyId,
+        observation: updated
+      });
+      setNatureFeedback(
+        "Nature pin withdrawn. The private Plant ID, photos, notes, and saved location were preserved."
+      );
+    } catch (withdrawError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setNatureFeedback(
+        withdrawError?.message || "The Nature pin could not be withdrawn."
       );
     } finally {
       if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
@@ -2549,6 +2744,18 @@ export default function SavedToolRunsScreen() {
                   is optional. This private action never changes a Field Study or
                   publishes a Nature pin.
                 </Text>
+                {natureStatusLoading ? (
+                  <ActivityIndicator color={palette.accent} />
+                ) : natureObservationRecord ? (
+                  <Text style={styles.statusText}>
+                    Nature status:{" "}
+                    {String(
+                      natureObservationRecord.observation.publication?.status || "draft"
+                    ).replace(/^./, (character) => character.toUpperCase())}
+                  </Text>
+                ) : (
+                  <Text style={styles.statusText}>Nature status: Not published</Text>
+                )}
                 <Text style={styles.statusText}>
                   {fieldCoordinates
                     ? "Exact location saved privately · Not shared"
@@ -2576,7 +2783,7 @@ export default function SavedToolRunsScreen() {
                   </Pressable>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Check original saved photos for a private location"
+                    accessibilityLabel="Check original saved photos or video for a private location"
                     disabled={
                       checkingPhotoMetadata ||
                       capturingFieldLocation ||
@@ -2593,8 +2800,8 @@ export default function SavedToolRunsScreen() {
                   >
                     <Text style={styles.secondaryText}>
                       {checkingPhotoMetadata
-                        ? "Checking Original Photos..."
-                        : "Use Photo Location"}
+                        ? "Checking Original Media..."
+                        : "Use Photo / Video Location"}
                     </Text>
                   </Pressable>
                   <Pressable
@@ -2674,19 +2881,28 @@ export default function SavedToolRunsScreen() {
                 ) : null}
                 {photoMetadataCandidate ? (
                   <View style={styles.studyPanel}>
-                    <Text style={styles.cardTitle}>Private photo location found</Text>
+                    <Text style={styles.cardTitle}>
+                      {photoMetadataCandidate.hasLocation
+                        ? "Private source-media location found"
+                        : "Private source-media capture date found"}
+                    </Text>
                     <Text style={styles.cardText}>
-                      The original photo contains GPS
-                      {photoMetadataCandidate.capturedAt
-                        ? ` and a ${photoMetadataCandidate.capturedAt.slice(0, 10)} capture date`
-                        : ""}
-                      . Applying it saves the exact location privately with this Plant ID.
-                      It does not create or publish a Nature pin.
+                      {photoMetadataCandidate.hasLocation
+                        ? `The original ${photoMetadataCandidate.sourceAssetType || "media"} contains GPS${
+                            metadataCalendarDate(photoMetadataCandidate)
+                              ? ` and a ${metadataCalendarDate(photoMetadataCandidate)} capture date`
+                              : ""
+                          }. Applying it saves the exact location privately with this Plant ID. It does not create or publish a Nature pin.`
+                        : `The original ${photoMetadataCandidate.sourceAssetType || "media"} contains a ${metadataCalendarDate(photoMetadataCandidate) || "retained"} capture date but no GPS. Applying it saves only the date with this Plant ID. It does not create or publish a Nature pin.`}
                     </Text>
                     <View style={styles.buttonRow}>
                       <Pressable
                         accessibilityRole="button"
-                        accessibilityLabel="Apply the original photo location privately"
+                        accessibilityLabel={
+                          photoMetadataCandidate.hasLocation
+                            ? "Apply the original media location privately"
+                            : "Apply the original media capture date privately"
+                        }
                         disabled={capturingFieldLocation}
                         onPress={applySavedPhotoLocation}
                         style={[
@@ -2698,12 +2914,12 @@ export default function SavedToolRunsScreen() {
                       </Pressable>
                       <Pressable
                         accessibilityRole="button"
-                        accessibilityLabel="Discard the detected photo location"
+                        accessibilityLabel="Discard the detected media location"
                         disabled={capturingFieldLocation}
                         onPress={() => {
                           setPhotoMetadataCandidate(null);
                           setPrivateLocationFeedback(
-                            "Photo location discarded. Nothing was saved or published."
+                            "Source-media location discarded. Nothing was saved or published."
                           );
                         }}
                         style={[
@@ -2731,15 +2947,13 @@ export default function SavedToolRunsScreen() {
                   rerunning AI. GrowPath keeps the exact coordinate private and shows an
                   approximate public pin only after you confirm below.
                 </Text>
-                <Text style={styles.label}>Observation date</Text>
-                <TextInput
+                <CalendarDateField
                   accessibilityLabel="Nature observation date"
+                  label="Observation date"
                   value={natureDateDraft}
-                  onChangeText={setNatureDateDraft}
-                  style={styles.input}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor={palette.textMuted}
-                  selectionColor={palette.accent}
+                  onChange={setNatureDateDraft}
+                  optional={false}
+                  placeholder="Choose the observation date"
                 />
                 <Text style={styles.label}>Public description</Text>
                 <TextInput
@@ -2752,6 +2966,10 @@ export default function SavedToolRunsScreen() {
                   placeholderTextColor={palette.textMuted}
                   selectionColor={palette.accent}
                 />
+                <Text style={styles.privacyWarning}>
+                  Public description only: do not include names, a home address, private
+                  property details, or precise directions to a sensitive species.
+                </Text>
                 <Pressable
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: naturePublishConfirmed }}
@@ -2803,6 +3021,18 @@ export default function SavedToolRunsScreen() {
                       <Text style={styles.secondaryText}>Open Nature Map</Text>
                     </Pressable>
                   </Link>
+                  {natureObservationRecord?.observation.publication?.status ===
+                  "published" ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Withdraw saved Plant ID from Nature"
+                      disabled={publishingNature}
+                      onPress={withdrawSavedRunFromNature}
+                      style={[styles.secondary, publishingNature && styles.disabled]}
+                    >
+                      <Text style={styles.secondaryText}>Withdraw Nature Pin</Text>
+                    </Pressable>
+                  ) : null}
                 </View>
                 {!fieldCoordinates ? (
                   <Text style={styles.cardText}>
@@ -3083,6 +3313,7 @@ export const createSavedToolRunsStyles = (palette: ThemePalette) =>
       textAlignVertical: "top"
     },
     textArea: { minHeight: 88 },
+    privacyWarning: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
     primary: {
       alignSelf: "flex-start",
       borderRadius: radius.card,

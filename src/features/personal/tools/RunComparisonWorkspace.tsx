@@ -8,9 +8,10 @@ import {
   View
 } from "react-native";
 
-import { listPersonalGrows, type PersonalGrow } from "@/api/grows";
+import { type PersonalGrow } from "@/api/grows";
 import {
   compareSavedGrows,
+  createTaskFromToolRun,
   saveToolRunToLog,
   type RunComparisonObjective,
   type RunComparisonScope,
@@ -21,12 +22,14 @@ import { LockedScreen } from "@/entitlements/LockedScreen";
 import { hasLocalPaidPreviewOverride } from "@/utils/localPaidPreview";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { listWorkspaceGrows, type GrowWorkspace } from "@/features/grows/workspaceData";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
 type RunComparisonWorkspaceProps = {
   initialGrowId?: string;
   showIntro?: boolean;
+  workspace?: GrowWorkspace;
 };
 
 const SCOPES: Array<{
@@ -217,7 +220,8 @@ function EvidenceDetails({
 
 export default function RunComparisonWorkspace({
   initialGrowId = "",
-  showIntro = true
+  showIntro = true,
+  workspace = "personal"
 }: RunComparisonWorkspaceProps) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createRunComparisonStyles(palette), [palette]);
@@ -244,7 +248,7 @@ export default function RunComparisonWorkspace({
     if (locked) return;
     let active = true;
     setLoading(true);
-    listPersonalGrows()
+    listWorkspaceGrows(workspace)
       .then((rows) => {
         if (!active) return;
         setGrows(rows);
@@ -258,7 +262,7 @@ export default function RunComparisonWorkspace({
     return () => {
       active = false;
     };
-  }, [locked]);
+  }, [locked, workspace]);
 
   useEffect(() => {
     if (!initialGrowId) return;
@@ -324,7 +328,8 @@ export default function RunComparisonWorkspace({
         scope,
         objective,
         title,
-        notes
+        notes,
+        ...(workspace === "commercial" ? { workspaceType: "commercial" } : {})
       });
       setReferenceGrowId(reference);
       setOutputs(response.outputs);
@@ -339,13 +344,18 @@ export default function RunComparisonWorkspace({
   async function saveComparisonLog() {
     const id = cleanToolRunId(toolRun);
     if (!id || !outputs || !referenceGrowId) throw new Error("Run the comparison first.");
-    await saveToolRunToLog(id, {
+    const logInput = {
       growId: referenceGrowId,
       linkedGrowId: referenceGrowId,
       linkedToolRunId: id,
       title: outputs.comparisonTitle || "Saved grow comparison",
       notes: outputs.summary || "Saved grow-history comparison"
-    });
+    };
+    if (workspace === "commercial") {
+      await saveToolRunToLog(id, logInput, { workspaceType: "commercial" });
+    } else {
+      await saveToolRunToLog(id, logInput);
+    }
   }
 
   async function createNextRunTasks() {
@@ -375,6 +385,21 @@ export default function RunComparisonWorkspace({
         }
       };
     });
+    if (workspace === "commercial") {
+      for (const task of tasks) {
+        await createTaskFromToolRun(
+          id,
+          {
+            ...task,
+            growId: referenceGrowId,
+            linkedGrowId: referenceGrowId,
+            linkedToolRunId: id
+          },
+          { workspaceType: "commercial" }
+        );
+      }
+      return;
+    }
     const response = await saveToolRunAndCreateTasks({
       growId: referenceGrowId,
       toolKey: "run-comparison",

@@ -111,9 +111,17 @@ function calendarTaskPlan(outputs: Record<string, any>) {
   });
 }
 
-export default function AutoGrowCalendarToolRoute() {
+export default function AutoGrowCalendarToolRoute({
+  backFallbackHref = "/home/personal/tools",
+  workspaceType = "personal"
+}: {
+  backFallbackHref?: string;
+  workspaceType?: "personal" | "commercial";
+} = {}) {
   return (
     <BackendCalculatorToolScreen
+      backFallbackHref={backFallbackHref}
+      workspaceTypeOverride={workspaceType}
       tool="auto-grow-calendar"
       toolKey="auto-grow-calendar"
       title="Auto Grow Calendar"
@@ -249,7 +257,14 @@ export default function AutoGrowCalendarToolRoute() {
         description:
           "Use this as the first calendar task, then create the rest from the saved plan."
       })}
-      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+      buildActions={({
+        outputs,
+        payload,
+        toolRun,
+        growId,
+        plantContext,
+        workspaceType: activeWorkspace
+      }) => [
         {
           key: "create-grow-calendar-tasks",
           label: "Create Calendar Tasks",
@@ -259,6 +274,7 @@ export default function AutoGrowCalendarToolRoute() {
           successMessage: "Created grow calendar tasks.",
           onPress: async () => {
             const result = await saveToolRunAndCreateTasks({
+              workspaceType: activeWorkspace,
               growId,
               ...plantContext.toolRunContext,
               toolKey: "auto-grow-calendar",

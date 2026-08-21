@@ -4,7 +4,8 @@ import React from "react";
 import renderer, { act } from "react-test-renderer";
 
 import FieldObservationGlobe, {
-  maintainMapLibreControlAccessibleNames
+  maintainMapLibreControlAccessibleNames,
+  observationsToGeoJson
 } from "@/components/fieldStudies/FieldObservationGlobe.web";
 
 jest.mock("@/theme/appTheme", () => ({
@@ -25,6 +26,34 @@ jest.mock("@/theme/appTheme", () => ({
 }));
 
 describe("FieldObservationGlobe web lifecycle", () => {
+  it("maps only complete bounded public coordinate pairs", () => {
+    const geoJson = observationsToGeoJson([
+      {
+        id: "valid",
+        location: { latitude: 39.301, longitude: -76.721 }
+      },
+      {
+        id: "null-is-not-zero",
+        location: { latitude: null, longitude: null }
+      },
+      {
+        id: "missing-half",
+        location: { latitude: 39.301 }
+      },
+      {
+        id: "out-of-range",
+        location: { latitude: 91, longitude: -181 }
+      }
+    ] as any);
+
+    expect(geoJson.features).toEqual([
+      expect.objectContaining({
+        id: "valid",
+        geometry: expect.objectContaining({ coordinates: [-76.721, 39.301] })
+      })
+    ]);
+  });
+
   it("gives MapLibre controls an accessible name and keeps changing titles synchronized", async () => {
     const container = document.createElement("div");
     container.innerHTML = `

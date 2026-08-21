@@ -23,6 +23,7 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { askPersonalAssistant } from "@/api/personalAssistant";
+import { createTaskFromToolRun, saveToolRunToLog } from "@/api/toolRuns";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -94,9 +95,11 @@ function environmentTaskMetadata(hasRisk: boolean) {
 }
 
 export default function EnvironmentAnalysisToolScreen({
-  backFallbackHref = "/home/personal/tools"
+  backFallbackHref = "/home/personal/tools",
+  workspaceType = "personal"
 }: {
   backFallbackHref?: string;
+  workspaceType?: "personal" | "commercial";
 } = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createEnvironmentAnalysisStyles(palette), [palette]);
@@ -106,7 +109,7 @@ export default function EnvironmentAnalysisToolScreen({
   }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const initialPlantId = useMemo(() => coerceParam(rawPlantId), [rawPlantId]);
-  const plantContext = useToolPlantContext(growId, initialPlantId);
+  const plantContext = useToolPlantContext(growId, initialPlantId, true, workspaceType);
   const entitlements = useEntitlements();
   const enabled = entitlements.can(CAPABILITY_KEYS.AI_ASSISTANT);
 
@@ -132,8 +135,10 @@ export default function EnvironmentAnalysisToolScreen({
       const response = await askPersonalAssistant({
         growId,
         plantId: plantContext.plantId || undefined,
+        workspaceType,
         context: {
           workflow: "environment-analysis",
+          workspaceType,
           requestedFields: [
             "stage",
             "tempDayC",
@@ -197,6 +202,7 @@ export default function EnvironmentAnalysisToolScreen({
     try {
       const response = await analyzeEnvironment({
         growId: growId || undefined,
+        workspaceType,
         ...plantContext.toolRunContext,
         stage,
         tempDayC: numeric(tempDayC),
@@ -220,6 +226,37 @@ export default function EnvironmentAnalysisToolScreen({
     if (!growId || !result) throw new Error("Select a grow before saving.");
     const issues = list(assessment.issues);
     const riskFlags = list(assessment.riskFlags);
+    if (workspaceType === "commercial") {
+      const toolRunId = resultToolRunId(result);
+      if (!toolRunId) throw new Error("Save the Commercial result before linking it.");
+      await saveToolRunToLog(
+        toolRunId,
+        {
+          growId,
+          linkedGrowId: growId,
+          plantId: plantContext.plantId || undefined,
+          linkedPlantId: plantContext.plantId || undefined,
+          linkedToolRunId: toolRunId,
+          title: `Environment analysis: ${assessment.status || stage}`,
+          notes: [
+            `Stage: ${stage}`,
+            `Status: ${assessment.status || "n/a"}`,
+            `Local environment risk: ${environmentReview.riskLevel}`,
+            environmentReview.warnings.length
+              ? `Local warnings: ${environmentReview.warnings.join("; ")}`
+              : "",
+            issues.length ? `Issues: ${issues.join("; ")}` : "",
+            riskFlags.length ? `Risk flags: ${riskFlags.join("; ")}` : "",
+            recommendations.length ? `Actions: ${recommendations.join("; ")}` : ""
+          ]
+            .filter(Boolean)
+            .join("\n")
+        },
+        { workspaceType: "commercial" }
+      );
+      setFeedback("Saved environment analysis to Commercial grow journal.");
+      return;
+    }
     const created = await saveToolRunAndCreateLog({
       growId,
       ...plantContext.toolRunContext,
@@ -284,7 +321,7 @@ export default function EnvironmentAnalysisToolScreen({
         </Text>
         <PersonalFeedPlacement
           placement="top"
-          routeKey="personal_tools_environment_analysis"
+          routeKey={`${workspaceType}_tools_environment_analysis`}
           longContent
         />
         {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
@@ -423,7 +460,7 @@ export default function EnvironmentAnalysisToolScreen({
 
         <PersonalFeedPlacement
           placement="middle"
-          routeKey="personal_tools_environment_analysis"
+          routeKey={`${workspaceType}_tools_environment_analysis`}
           longContent
         />
 
@@ -509,6 +546,52 @@ export default function EnvironmentAnalysisToolScreen({
                     onPress: async () => {
                       const issues = list(assessment.issues);
                       const riskFlags = list(assessment.riskFlags);
+                      if (workspaceType === "commercial") {
+                        const toolRunId = resultToolRunId(result);
+                        if (!toolRunId)
+                          throw new Error(
+                            "Save the Commercial result before linking it."
+                          );
+                        await createTaskFromToolRun(
+                          toolRunId,
+                          {
+                            growId,
+                            linkedGrowId: growId,
+                            plantId: plantContext.plantId || undefined,
+                            linkedPlantId: plantContext.plantId || undefined,
+                            linkedToolRunId: toolRunId,
+                            title: "Review environment analysis",
+                            description: [
+                              `Status: ${assessment.status || "analysis complete"}`,
+                              `Local risk: ${environmentReview.riskLevel}`,
+                              ...environmentReview.warnings.map(
+                                (warning) => `Warning: ${warning}`
+                              ),
+                              issues.length ? `Issues: ${issues.join("; ")}` : "",
+                              riskFlags.length
+                                ? `Risk flags: ${riskFlags.join("; ")}`
+                                : "",
+                              recommendations.length
+                                ? `Recommended actions: ${recommendations.join("; ")}`
+                                : ""
+                            ]
+                              .filter(Boolean)
+                              .join("\n"),
+                            priority:
+                              riskFlags.length || environmentReview.riskLevel === "high"
+                                ? "high"
+                                : "medium",
+                            dueDate: dueTomorrow(),
+                            ...environmentTaskMetadata(
+                              riskFlags.length > 0 ||
+                                environmentReview.riskLevel === "high"
+                            )
+                          },
+                          { workspaceType: "commercial" }
+                        );
+                        setFeedback("Created Commercial environment review task.");
+                        return;
+                      }
                       const taskResult = await saveToolRunAndCreateTask({
                         growId,
                         ...plantContext.toolRunContext,
@@ -566,7 +649,7 @@ export default function EnvironmentAnalysisToolScreen({
 
         <PersonalFeedPlacement
           placement="bottom"
-          routeKey="personal_tools_environment_analysis"
+          routeKey={`${workspaceType}_tools_environment_analysis`}
           longContent
         />
       </ScrollView>

@@ -13,6 +13,12 @@ const mockListIntegrationConnections = jest.fn();
 const mockCreateIntegrationConnection = jest.fn();
 const mockTestIntegrationConnection = jest.fn();
 const mockCreateIntegrationAccessRequest = jest.fn();
+const mockGrowIntegrationBuildPanel = jest.fn((_props: any) => null);
+
+jest.mock("@/components/integrations/GrowIntegrationBuildPanel", () => ({
+  __esModule: true,
+  default: (props: any) => mockGrowIntegrationBuildPanel(props)
+}));
 
 jest.mock("@/api/integrations", () => ({
   listIntegrationProviders: (...args: any[]) => mockListIntegrationProviders(...args),
@@ -93,6 +99,20 @@ describe("Data Integrations Growlink flow", () => {
       startIso: "2026-06-22T00:00:00.000Z",
       endIso: "2026-06-22T14:00:00.000Z"
     });
+  });
+
+  it("keeps Commercial mapping in Commercial and gates the Personal telemetry path", async () => {
+    const screen = render(<DataIntegrationsScreen workspaceType="commercial" />);
+
+    expect(await screen.findByRole("header", { name: "Data Integrations" })).toBeTruthy();
+    expect(mockGrowIntegrationBuildPanel).toHaveBeenCalledWith({
+      mode: "commercial",
+      targetRef: "grow-1"
+    });
+    expect(screen.getByText("Commercial Growlink connection")).toBeTruthy();
+    expect(screen.queryByText("Growlink read-only telemetry")).toBeNull();
+    expect(mockListTelemetrySources).not.toHaveBeenCalled();
+    expect(mockCreateTelemetrySource).not.toHaveBeenCalled();
   });
 
   it("verifies credentials, lists controllers, creates a read-only Growlink source, and pulls readings", async () => {

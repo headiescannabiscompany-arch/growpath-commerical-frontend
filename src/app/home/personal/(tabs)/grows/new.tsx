@@ -12,8 +12,6 @@ import {
   View
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { apiRequest } from "@/api/apiRequest";
-import { appendGrowPhotos, listPersonalGrows } from "@/api/grows";
 import { listCropProfiles } from "@/api/cropKnowledge";
 import { useAuth } from "@/auth/AuthContext";
 import CalendarDateField from "@/components/forms/CalendarDateField";
@@ -34,8 +32,12 @@ import {
 } from "@/utils/growInterests";
 import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
 import { findReviewedCropLifecycle } from "@/knowledge/cropLifecycleRegistry";
-
-const GROWS_CREATE_PATH = "/api/personal/grows";
+import {
+  appendWorkspaceGrowPhotos,
+  createWorkspaceGrow,
+  listWorkspaceGrows,
+  type GrowWorkspace
+} from "@/features/grows/workspaceData";
 
 type SystemPreset = "soil" | "coco" | "hydro";
 type AnchorType = "vegStart" | "flowerDay1";
@@ -101,7 +103,7 @@ function mergeTierSelections(...sources: Record<string, string[]>[]) {
 export default function NewGrowScreen({
   workspace = "personal"
 }: {
-  workspace?: "personal" | "commercial";
+  workspace?: GrowWorkspace;
 } = {}) {
   const router = useRouter();
   const basePath = `/home/${workspace}`;
@@ -126,7 +128,8 @@ export default function NewGrowScreen({
   }>();
   const auth = useAuth();
   const entitlements = useEntitlements();
-  const hasCreateCapability = entitlements.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
+  const hasCreateCapability =
+    workspace === "commercial" || entitlements.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const maxGrows = Number(entitlements.limits?.maxGrows ?? 0);
   const defaultTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
@@ -401,7 +404,7 @@ export default function NewGrowScreen({
       }
       setCheckingLimit(true);
       try {
-        const rows = await listPersonalGrows();
+        const rows = await listWorkspaceGrows(workspace);
         if (alive) setExistingGrowCount(Array.isArray(rows) ? rows.length : 0);
       } catch {
         if (alive) setExistingGrowCount(maxGrows || 0);
@@ -414,7 +417,7 @@ export default function NewGrowScreen({
     return () => {
       alive = false;
     };
-  }, [hasCreateCapability, maxGrows]);
+  }, [hasCreateCapability, maxGrows, workspace]);
 
   const pickPhotos = React.useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -474,86 +477,81 @@ export default function NewGrowScreen({
     try {
       const uploadedPhotos = await persistImageUris(photos.map((photo) => photo.uri));
       const growTags = flattenTierSelections(growInterestSelections);
-      const created = await apiRequest(GROWS_CREATE_PATH, {
-        method: "POST",
-        body: {
-          name: name.trim(),
-          growTags,
-          growInterests: growInterestSelections,
-          cropTypes: growInterestSelections.crops || [],
-          environmentTypes: growInterestSelections.environment || [],
-          growingMethods: growInterestSelections.methods || [],
-          draftSource: aiSource ? "ai_assistant" : "manual",
-          planning: {
-            startType,
-            plantCount: Number(plannedPlantCount) || 1,
-            vegLengthWeeks: vegLengthWeeks.trim() ? Number(vegLengthWeeks) : undefined,
-            expectedFlowerDays: expectedFlowerDays.trim()
-              ? Number(expectedFlowerDays)
-              : undefined,
-            createStarterCalendar: true,
-            lifeSpanPath,
-            productionPattern,
-            dormancyPattern,
-            lifecycleGuidanceSourceIds
-          },
-          systemPreset,
-          anchorDateType,
-          anchorDate: anchorDate.trim(),
-          timezone: timeZone.trim() || "UTC",
-          startDate: startDate.trim() || undefined,
-          germinationDate: germinationDate.trim() || undefined,
-          cloneCutDate: cloneCutDate.trim() || undefined,
-          transplantDate: transplantDate.trim() || undefined,
-          flipDate: flipDate.trim() || undefined,
-          flowerDay1Date: flowerDay1Date.trim() || undefined,
-          expectedHarvestDate: expectedHarvestDate.trim() || undefined,
-          actualHarvestDate: actualHarvestDate.trim() || undefined,
-          dryStartDate: dryStartDate.trim() || undefined,
-          cureStartDate: cureStartDate.trim() || undefined,
-          potSize: potSize.trim() || undefined,
-          potCount: potCount ? Number(potCount) : undefined,
-          cultivar: cultivar.trim() || undefined,
-          cropCommonName: cropCommonName.trim() || undefined,
-          scientificName: scientificName.trim() || undefined,
-          commonNames: commonNames
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
-          cropProfileId: cropProfileId || undefined,
-          cropIdentity: cropCommonName.trim()
-            ? {
-                commonName: cropCommonName.trim(),
-                scientificName: scientificName.trim() || undefined,
-                commonNames: commonNames
-                  .split(",")
-                  .map((item) => item.trim())
-                  .filter(Boolean),
-                cultivarOrStrain: cultivar.trim() || undefined,
-                confidence: "user_confirmed",
-                sourceToolRunId: firstParam(params.sourceToolRunId) || null,
-                userConfirmed: true
-              }
+      const created = await createWorkspaceGrow(workspace, {
+        name: name.trim(),
+        growTags,
+        growInterests: growInterestSelections,
+        cropTypes: growInterestSelections.crops || [],
+        environmentTypes: growInterestSelections.environment || [],
+        growingMethods: growInterestSelections.methods || [],
+        draftSource: aiSource ? "ai_assistant" : "manual",
+        planning: {
+          startType,
+          plantCount: Number(plannedPlantCount) || 1,
+          vegLengthWeeks: vegLengthWeeks.trim() ? Number(vegLengthWeeks) : undefined,
+          expectedFlowerDays: expectedFlowerDays.trim()
+            ? Number(expectedFlowerDays)
             : undefined,
-          targetVpdBand: targetVpdBand.trim() || undefined,
-          photos: uploadedPhotos,
-          photoMetadata: uploadedPhotos.map((url, index) => ({
-            url,
-            mimeType: photos[index]?.mimeType || null,
-            width: photos[index]?.width || null,
-            height: photos[index]?.height || null,
-            sizeBytes: photos[index]?.sizeBytes || null,
-            source: "grow-create"
-          })),
-          notes: notes.trim() || undefined
-        }
+          createStarterCalendar: true,
+          lifeSpanPath,
+          productionPattern,
+          dormancyPattern,
+          lifecycleGuidanceSourceIds
+        },
+        systemPreset,
+        anchorDateType,
+        anchorDate: anchorDate.trim(),
+        timezone: timeZone.trim() || "UTC",
+        startDate: startDate.trim() || undefined,
+        germinationDate: germinationDate.trim() || undefined,
+        cloneCutDate: cloneCutDate.trim() || undefined,
+        transplantDate: transplantDate.trim() || undefined,
+        flipDate: flipDate.trim() || undefined,
+        flowerDay1Date: flowerDay1Date.trim() || undefined,
+        expectedHarvestDate: expectedHarvestDate.trim() || undefined,
+        actualHarvestDate: actualHarvestDate.trim() || undefined,
+        dryStartDate: dryStartDate.trim() || undefined,
+        cureStartDate: cureStartDate.trim() || undefined,
+        potSize: potSize.trim() || undefined,
+        potCount: potCount ? Number(potCount) : undefined,
+        cultivar: cultivar.trim() || undefined,
+        cropCommonName: cropCommonName.trim() || undefined,
+        scientificName: scientificName.trim() || undefined,
+        commonNames: commonNames
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        cropProfileId: cropProfileId || undefined,
+        cropIdentity: cropCommonName.trim()
+          ? {
+              commonName: cropCommonName.trim(),
+              scientificName: scientificName.trim() || undefined,
+              commonNames: commonNames
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean),
+              cultivarOrStrain: cultivar.trim() || undefined,
+              confidence: "user_confirmed",
+              sourceToolRunId: firstParam(params.sourceToolRunId) || null,
+              userConfirmed: true
+            }
+          : undefined,
+        targetVpdBand: targetVpdBand.trim() || undefined,
+        photos: uploadedPhotos,
+        photoMetadata: uploadedPhotos.map((url, index) => ({
+          url,
+          mimeType: photos[index]?.mimeType || null,
+          width: photos[index]?.width || null,
+          height: photos[index]?.height || null,
+          sizeBytes: photos[index]?.sizeBytes || null,
+          source: "grow-create"
+        })),
+        notes: notes.trim() || undefined
       });
 
-      const createdId = String(
-        created?._id || created?.id || created?.grow?._id || created?.grow?.id || ""
-      );
+      const createdId = String((created as any)?._id || created?.id || "");
       if (createdId && uploadedPhotos.length) {
-        await appendGrowPhotos(createdId, uploadedPhotos);
+        await appendWorkspaceGrowPhotos(workspace, createdId, uploadedPhotos);
       }
       if (createdId) {
         setCreatedGrowId(createdId);
@@ -604,7 +602,8 @@ export default function NewGrowScreen({
     vegLengthWeeks,
     scientificName,
     params.sourceToolRunId,
-    basePath
+    basePath,
+    workspace
   ]);
 
   function openCreated(path: string) {

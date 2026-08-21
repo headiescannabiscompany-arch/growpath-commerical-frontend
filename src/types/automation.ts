@@ -7,6 +7,11 @@ export type AutomationType =
 
 export type AutomationPolicy = {
   id: string;
+  workspaceType?: "personal" | "commercial" | "facility";
+  workspaceId?: string;
+  commercialAccountId?: string;
+  growId?: string | null;
+  plantId?: string | null;
   facilityId: string;
   type: AutomationType;
   name: string;
@@ -29,6 +34,9 @@ export type AutomationPolicy = {
 export type AutomationEvent = {
   id: string;
   userId?: string;
+  workspaceType?: "personal" | "commercial" | "facility";
+  workspaceId?: string;
+  commercialAccountId?: string;
   growId?: string | null;
   plantId?: string | null;
   facilityId?: string | null;
@@ -48,6 +56,7 @@ export type AutomationPolicyPayload = {
   facilityId?: string;
   name: string;
   description?: string;
+  scope?: "user" | "grow" | "plant" | "facility";
   enabled?: boolean;
   trigger: {
     source: string;

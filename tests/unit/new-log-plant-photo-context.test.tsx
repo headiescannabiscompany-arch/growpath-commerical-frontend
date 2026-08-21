@@ -150,7 +150,10 @@ describe("NewLogScreen plant/photo context", () => {
     expect(getByText("Shared Back /home/personal/grows/grow-1/journal")).toBeTruthy();
     expect(queryByText("Create journal entries with Pro")).toBeNull();
     await waitFor(() =>
-      expect(mockListToolRuns).toHaveBeenCalledWith({ growId: "grow-1" })
+      expect(mockListToolRuns).toHaveBeenCalledWith({
+        growId: "grow-1",
+        workspaceType: "personal"
+      })
     );
     fireEvent.changeText(getByLabelText("Log title"), "Free grow journal");
     fireEvent.changeText(getByLabelText("Log notes"), "Basic grow log for free plan.");
@@ -241,7 +244,10 @@ describe("NewLogScreen plant/photo context", () => {
       expect(mockListPersonalPlants).toHaveBeenCalledWith({ growId: "grow-1" })
     );
     await waitFor(() =>
-      expect(mockListToolRuns).toHaveBeenCalledWith({ growId: "grow-1" })
+      expect(mockListToolRuns).toHaveBeenCalledWith({
+        growId: "grow-1",
+        workspaceType: "personal"
+      })
     );
 
     fireEvent.changeText(getByLabelText("Log title"), "Olive canopy check");

@@ -14,6 +14,10 @@ import { FieldObservation, FieldStudy, getPublicFieldStudy } from "@/api/fieldSt
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
+import {
+  publicObservationDateLabel,
+  publicObservationNotes
+} from "@/features/fieldStudies/publicObservation";
 
 function observationName(observation: FieldObservation) {
   return (
@@ -35,10 +39,6 @@ function observationImages(observation: FieldObservation) {
       ].filter(Boolean)
     )
   ).map(resolveImageUri);
-}
-
-function observationPublicNotes(observation: FieldObservation) {
-  return String(observation.publication?.publicNotes || observation.notes || "").trim();
 }
 
 export default function PublicFieldStudyScreen() {
@@ -178,9 +178,10 @@ export default function PublicFieldStudyScreen() {
                 {String(observation.observationContext?.habitat || "Habitat not shared")}
                 {location?.precision ? ` · ${location.precision} location` : ""}
               </Text>
-              {observationPublicNotes(observation) ? (
+              <Text style={styles.meta}>{publicObservationDateLabel(observation)}</Text>
+              {publicObservationNotes(observation) ? (
                 <Text style={styles.description}>
-                  {observationPublicNotes(observation)}
+                  {publicObservationNotes(observation)}
                 </Text>
               ) : null}
               {(observation.identity?.evidence || []).length ? (

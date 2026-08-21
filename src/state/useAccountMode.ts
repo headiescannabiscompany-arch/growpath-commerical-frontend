@@ -22,6 +22,11 @@ function getSnapshot() {
   return store;
 }
 
+export function resetAccountModeStore() {
+  store = { mode: "personal" };
+  emit();
+}
+
 /**
  * Web-safe account mode store. Entitlements hydrate it after auth is ready.
  */

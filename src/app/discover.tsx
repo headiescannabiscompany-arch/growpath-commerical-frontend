@@ -23,6 +23,10 @@ import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
+import {
+  plantIdentificationActionLabel,
+  plantIdentificationDestination
+} from "@/utils/workspaceToolRoutes";
 
 type Result = {
   id: string;
@@ -234,16 +238,10 @@ export default function DiscoverDirectory() {
         results: [
           {
             id: "identify-plant",
-            title:
-              entitlements.mode === "personal"
-                ? "Identify a Plant"
-                : "Switch to Personal for Plant ID",
+            title: plantIdentificationActionLabel(entitlements.mode),
             summary:
               "Upload plant photos, review the AI candidate, add field context, and choose whether to save it privately or share an approximate map pin.",
-            href:
-              entitlements.mode === "personal"
-                ? "/home/personal/tools/species-crop-id"
-                : "/account/mode",
+            href: plantIdentificationDestination(entitlements.mode),
             meta: "Grow optional"
           },
           {

@@ -34,7 +34,38 @@ describe("saved run source routes", () => {
     expect(savedRunSourceHref({ toolRunId: "" })).toBe("");
     expect(savedRunBackTarget({ sourceContext: "journal" })).toBe("/home/personal/tools");
     expect(savedRunBackTarget({ growId: "grow-1", sourceContext: "outside" })).toBe(
-      "/home/personal/tools"
+      "/home/personal/grows/grow-1/tools"
+    );
+  });
+
+  it("keeps Commercial Saved Runs and every return target in Commercial", () => {
+    expect(
+      savedRunSourceHref({
+        toolRunId: "run-1",
+        growId: "grow-1",
+        sourceContext: "timeline",
+        workspaceType: "commercial"
+      })
+    ).toBe(
+      "/home/commercial/tools/saved-runs?toolRunId=run-1&growId=grow-1&sourceContext=timeline"
+    );
+    expect(
+      savedRunBackTarget({
+        growId: "grow-1",
+        sourceContext: "journal",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/grows/grow-1/journal");
+    expect(
+      savedRunBackTarget({
+        growId: "grow-1",
+        sourceContext: "task",
+        sourceTaskId: "task-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/grows/grow-1/tasks?taskId=task-1");
+    expect(savedRunBackTarget({ growId: "grow-1", workspaceType: "commercial" })).toBe(
+      "/home/commercial/grows/grow-1/tools"
     );
   });
 });

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Picker } from "@react-native-picker/picker";
 import {
   ActivityIndicator,
   Linking,
@@ -229,10 +230,78 @@ type EvidenceRequest = {
   requestType: string;
   requesterName: string;
   requesterOrganization?: string;
+  requesterEmail?: string;
+  authorityDescription?: string;
+  jurisdiction?: string;
+  targetUserId?: string | { _id?: string; email?: string; displayName?: string } | null;
   scope: string;
   status: string;
   preservationHold: boolean;
+  userNoticeStatus?: string;
+  dateFrom?: string | null;
+  dateTo?: string | null;
+  evidenceItems?: Array<{
+    _id?: string;
+    sourceType: string;
+    sourceId: string;
+    description?: string;
+    sha256?: string;
+    preservedAt?: string | null;
+    preservedBy?: string | { _id?: string; email?: string } | null;
+  }>;
+  createdBy?: string | { _id?: string; email?: string } | null;
+  reviewedBy?: string | { _id?: string; email?: string } | null;
+  createdAt?: string;
+  updatedAt?: string;
+  closedAt?: string | null;
 };
+
+type AdminAuditEvent = {
+  _id?: string;
+  actorUserId?: string | { _id?: string; email?: string; displayName?: string } | null;
+  action: string;
+  targetType: string;
+  targetId: string;
+  reason?: string;
+  metadata?: Record<string, unknown>;
+  createdAt?: string;
+};
+
+const EVIDENCE_REQUEST_TYPES = [
+  "user_export",
+  "authorized_representative",
+  "preservation",
+  "subpoena",
+  "court_order",
+  "search_warrant",
+  "emergency",
+  "other"
+] as const;
+
+type EvidenceRequestType = (typeof EVIDENCE_REQUEST_TYPES)[number];
+
+function routeParam(value: string | string[] | undefined) {
+  return String(Array.isArray(value) ? value[0] || "" : value || "").trim();
+}
+
+function adminReferenceLabel(
+  value:
+    | string
+    | { _id?: string; email?: string; displayName?: string }
+    | null
+    | undefined
+) {
+  if (!value) return "not recorded";
+  if (typeof value === "string") return value;
+  return value.email || value.displayName || value._id || "not recorded";
+}
+
+function displayAdminDate(value: string | null | undefined) {
+  const dateKey = String(value || "").slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return "not specified";
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, month - 1, day, 12).toLocaleDateString();
+}
 
 type SupportRequest = {
   _id: string;
@@ -360,7 +429,7 @@ function Metric({
 }
 
 export default function PlatformAdminRoute() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createPlatformAdminStyles(palette), [palette]);
   const inputThemeProps = useMemo(
@@ -371,17 +440,43 @@ export default function PlatformAdminRoute() {
     [palette.accent, palette.textMuted]
   );
   const router = useRouter();
-  const routeParams = useLocalSearchParams<{ moderationCaseId?: string | string[] }>();
-  const focusedModerationCaseId = String(
-    Array.isArray(routeParams.moderationCaseId)
-      ? routeParams.moderationCaseId[0]
-      : routeParams.moderationCaseId || ""
-  );
+  const routeParams = useLocalSearchParams<{
+    moderationCaseId?: string | string[];
+    section?: string | string[];
+    targetType?: string | string[];
+    targetId?: string | string[];
+  }>();
+  const focusedSection = routeParam(routeParams.section).toLowerCase();
+  const focusedTargetType = routeParam(routeParams.targetType);
+  const focusedTargetKind = focusedTargetType.toLowerCase();
+  const focusedTargetId = routeParam(routeParams.targetId);
+  const focusedModerationCaseId =
+    routeParam(routeParams.moderationCaseId) ||
+    (focusedTargetKind === "moderationcase" ? focusedTargetId : "");
   const isAdmin = String(user?.role || "").toLowerCase() === "admin";
   const [overview, setOverview] = useState<Overview | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [securityCenter, setSecurityCenter] = useState<SecurityCenter | null>(null);
   const [showResolvedSecurity, setShowResolvedSecurity] = useState(false);
+  const orderedSecurityIssues = useMemo(() => {
+    const issues = securityCenter?.issues || [];
+    if (focusedTargetKind !== "securityissue" || !focusedTargetId) return issues;
+    return [...issues].sort((left, right) => {
+      if (left.id === focusedTargetId) return -1;
+      if (right.id === focusedTargetId) return 1;
+      return 0;
+    });
+  }, [focusedTargetId, focusedTargetKind, securityCenter?.issues]);
+  const visibleSecurityIssues = useMemo(
+    () =>
+      orderedSecurityIssues.filter(
+        (issue) =>
+          showResolvedSecurity ||
+          issue.status === "open" ||
+          (focusedTargetKind === "securityissue" && issue.id === focusedTargetId)
+      ),
+    [focusedTargetId, focusedTargetKind, orderedSecurityIssues, showResolvedSecurity]
+  );
   const [regulatedCommerce, setRegulatedCommerce] =
     useState<RegulatedCommerceAdmin | null>(null);
   const [regulatedReviewNotes, setRegulatedReviewNotes] = useState<
@@ -403,6 +498,14 @@ export default function PlatformAdminRoute() {
     reasonCodes: ""
   });
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const orderedUsers = useMemo(() => {
+    if (focusedTargetKind !== "user" || !focusedTargetId) return users;
+    return [...users].sort((left, right) => {
+      if (left._id === focusedTargetId) return -1;
+      if (right._id === focusedTargetId) return 1;
+      return 0;
+    });
+  }, [focusedTargetId, focusedTargetKind, users]);
   const [moderationCases, setModerationCases] = useState<ModerationCase[]>([]);
   const orderedModerationCases = useMemo(() => {
     if (!focusedModerationCaseId) return moderationCases;
@@ -413,7 +516,27 @@ export default function PlatformAdminRoute() {
     });
   }, [focusedModerationCaseId, moderationCases]);
   const [evidenceRequests, setEvidenceRequests] = useState<EvidenceRequest[]>([]);
+  const orderedEvidenceRequests = useMemo(() => {
+    if (focusedTargetKind !== "legalevidencerequest" || !focusedTargetId) {
+      return evidenceRequests;
+    }
+    return [...evidenceRequests].sort((left, right) => {
+      if (left._id === focusedTargetId) return -1;
+      if (right._id === focusedTargetId) return 1;
+      return 0;
+    });
+  }, [evidenceRequests, focusedTargetId, focusedTargetKind]);
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
+  const orderedSupportRequests = useMemo(() => {
+    if (focusedTargetKind !== "supportrequest" || !focusedTargetId) {
+      return supportRequests;
+    }
+    return [...supportRequests].sort((left, right) => {
+      if (left._id === focusedTargetId) return -1;
+      if (right._id === focusedTargetId) return 1;
+      return 0;
+    });
+  }, [focusedTargetId, focusedTargetKind, supportRequests]);
   const [showCompletedWork, setShowCompletedWork] = useState(false);
   const activeSupportRequests = useMemo(
     () => supportRequests.filter((item) => !["resolved", "spam"].includes(item.status)),
@@ -423,6 +546,17 @@ export default function PlatformAdminRoute() {
     () => supportRequests.filter((item) => ["resolved", "spam"].includes(item.status)),
     [supportRequests]
   );
+  const visibleSupportRequests = useMemo(() => {
+    if (showCompletedWork) return orderedSupportRequests;
+    const active = orderedSupportRequests.filter(
+      (item) => !["resolved", "spam"].includes(item.status)
+    );
+    if (focusedTargetKind !== "supportrequest" || !focusedTargetId) return active;
+    const focused = orderedSupportRequests.find((item) => item._id === focusedTargetId);
+    return focused && ["resolved", "spam"].includes(focused.status)
+      ? [focused, ...active]
+      : active;
+  }, [focusedTargetId, focusedTargetKind, orderedSupportRequests, showCompletedWork]);
   const activeModerationCases = useMemo(
     () => orderedModerationCases.filter((item) => item.status !== "actioned"),
     [orderedModerationCases]
@@ -481,6 +615,102 @@ export default function PlatformAdminRoute() {
     null
   );
   const [cleanupConfirmation, setCleanupConfirmation] = useState("");
+  const [logoutConfirmationOpen, setLogoutConfirmationOpen] = useState(false);
+  const [supportReopenReasons, setSupportReopenReasons] = useState<
+    Record<string, string>
+  >({});
+  const [evidenceReasons, setEvidenceReasons] = useState<Record<string, string>>({});
+  const [evidenceAudit, setEvidenceAudit] = useState<
+    Record<string, { loading: boolean; error: string; events: AdminAuditEvent[] }>
+  >({});
+  const [showEvidenceRequestForm, setShowEvidenceRequestForm] = useState(false);
+  const [evidenceDraft, setEvidenceDraft] = useState({
+    requestType: "preservation" as EvidenceRequestType,
+    requesterName: "",
+    requesterOrganization: "",
+    requesterEmail: "",
+    authorityDescription: "",
+    jurisdiction: "",
+    targetUserId: "",
+    scope: "",
+    dateFrom: "",
+    dateTo: ""
+  });
+  const focusedInvestigation = useMemo(() => {
+    if (focusedModerationCaseId) {
+      const item = moderationCases.find((entry) => entry._id === focusedModerationCaseId);
+      return {
+        title: item
+          ? `${item.targetType} moderation · ${item.status}`
+          : `Moderation case ${focusedModerationCaseId}`,
+        detail: item?.reason || "The linked case is not in the current result set."
+      };
+    }
+    if (focusedTargetKind === "securityissue" && focusedTargetId) {
+      const item = securityCenter?.issues.find((entry) => entry.id === focusedTargetId);
+      return {
+        title: item
+          ? `${item.title} · ${item.status}`
+          : `Security issue ${focusedTargetId}`,
+        detail: item?.summary || "The linked issue is not in the current result set."
+      };
+    }
+    if (focusedTargetKind === "supportrequest" && focusedTargetId) {
+      const item = supportRequests.find((entry) => entry._id === focusedTargetId);
+      return {
+        title: item
+          ? `${item.subject} · ${item.status}`
+          : `Support request ${focusedTargetId}`,
+        detail: item?.message || "The linked request is not in the current result set."
+      };
+    }
+    if (focusedTargetKind === "user" && focusedTargetId) {
+      const item = users.find((entry) => entry._id === focusedTargetId);
+      return {
+        title: item
+          ? `${item.email} · ${item.accountStatus || "active"}`
+          : `Account ${focusedTargetId}`,
+        detail: item
+          ? `${item.mode || "personal"} · ${item.plan || "free"}`
+          : "The linked account is not in the current result set."
+      };
+    }
+    if (focusedTargetKind === "legalevidencerequest" && focusedTargetId) {
+      const item = evidenceRequests.find((entry) => entry._id === focusedTargetId);
+      return {
+        title: item
+          ? `${item.requestType.replaceAll("_", " ")} · ${item.status}`
+          : `Legal/evidence request ${focusedTargetId}`,
+        detail: item?.scope || "The linked request is not in the current result set."
+      };
+    }
+    if (focusedSection) {
+      return {
+        title: `${focusedSection.replaceAll("_", " ")} investigation queue`,
+        detail:
+          "The linked Admin section is identified below; opening it did not mutate data."
+      };
+    }
+    if (focusedTargetType || focusedTargetId) {
+      return {
+        title: `${focusedTargetType || "Admin target"} ${focusedTargetId}`.trim(),
+        detail:
+          "This target type does not have a dedicated focus card. No record was changed."
+      };
+    }
+    return null;
+  }, [
+    evidenceRequests,
+    focusedModerationCaseId,
+    focusedSection,
+    focusedTargetId,
+    focusedTargetKind,
+    focusedTargetType,
+    moderationCases,
+    securityCenter?.issues,
+    supportRequests,
+    users
+  ]);
 
   const load = useCallback(async () => {
     if (!isAdmin) return;
@@ -948,16 +1178,22 @@ export default function PlatformAdminRoute() {
   }
 
   async function preserveEvidence(item: EvidenceRequest) {
+    const reason = String(evidenceReasons[item._id] || "").trim();
+    if (!reason) {
+      setError("A typed preservation reason is required before placing a hold.");
+      return;
+    }
     setBusyId(item._id);
+    setError("");
     try {
       await apiRequest(`/api/admin/evidence-requests/${item._id}`, {
         method: "PATCH",
         body: {
-          status: "preserved",
           preservationHold: true,
-          reason: "Platform owner approved preservation hold"
+          reason
         }
       });
+      setEvidenceReasons((current) => ({ ...current, [item._id]: "" }));
       await load();
     } catch (err: any) {
       setError(err?.message || "Evidence preservation failed.");
@@ -968,19 +1204,167 @@ export default function PlatformAdminRoute() {
 
   async function updateSupportStatus(
     item: SupportRequest,
-    status: SupportRequest["status"]
+    status: SupportRequest["status"],
+    reason = "Platform owner support review"
   ) {
+    const normalizedReason = String(reason || "").trim();
+    if (status === "open" && !normalizedReason) {
+      setError("A typed reason is required to reopen a completed support request.");
+      return;
+    }
     setBusyId(item._id);
+    setError("");
     try {
       await apiRequest(`/api/admin/support-requests/${item._id}`, {
         method: "PATCH",
-        body: { status, reason: "Platform owner support review" }
+        body: { status, reason: normalizedReason }
       });
+      if (status === "open") {
+        setSupportReopenReasons((current) => ({ ...current, [item._id]: "" }));
+      }
       await load();
     } catch (err: any) {
       setError(err?.message || "Support request update failed.");
     } finally {
       setBusyId("");
+    }
+  }
+
+  async function updateEvidenceStatus(item: EvidenceRequest, status: string) {
+    const reason = String(evidenceReasons[item._id] || "").trim();
+    if (!reason) {
+      setError("A typed review reason is required before changing request status.");
+      return;
+    }
+    setBusyId(item._id);
+    setError("");
+    try {
+      await apiRequest(`/api/admin/evidence-requests/${item._id}`, {
+        method: "PATCH",
+        body: { status, reason }
+      });
+      setEvidenceReasons((current) => ({ ...current, [item._id]: "" }));
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Evidence request review failed.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function createEvidenceRequest() {
+    const requestType = String(evidenceDraft.requestType || "").trim();
+    const requesterName = evidenceDraft.requesterName.trim();
+    const requesterEmail = evidenceDraft.requesterEmail.trim().toLowerCase();
+    const authorityDescription = evidenceDraft.authorityDescription.trim();
+    const scope = evidenceDraft.scope.trim();
+    if (!EVIDENCE_REQUEST_TYPES.includes(requestType as EvidenceRequestType)) {
+      setError("Choose a supported legal or evidence request type.");
+      return;
+    }
+    if (!requesterName || !requesterEmail || !authorityDescription || !scope) {
+      setError(
+        "Requester name, requester email, authority description, and exact scope are required."
+      );
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(requesterEmail)) {
+      setError("Enter a valid requester email address.");
+      return;
+    }
+    const targetUserId = evidenceDraft.targetUserId.trim();
+    if (targetUserId && !/^[a-f\d]{24}$/i.test(targetUserId)) {
+      setError("Target user ID must be the exact 24-character account ID.");
+      return;
+    }
+    if (evidenceDraft.dateFrom && evidenceDraft.dateTo) {
+      if (evidenceDraft.dateFrom > evidenceDraft.dateTo) {
+        setError("Evidence request start date must be on or before the end date.");
+        return;
+      }
+    }
+
+    setBusyId("evidence-new");
+    setError("");
+    try {
+      await apiRequest("/api/admin/evidence-requests", {
+        method: "POST",
+        body: {
+          requestType,
+          requesterName,
+          requesterOrganization: evidenceDraft.requesterOrganization.trim(),
+          requesterEmail,
+          authorityDescription,
+          jurisdiction: evidenceDraft.jurisdiction.trim(),
+          targetUserId: targetUserId || null,
+          scope,
+          dateFrom: evidenceDraft.dateFrom || null,
+          dateTo: evidenceDraft.dateTo || null
+        }
+      });
+      setEvidenceDraft({
+        requestType: "preservation",
+        requesterName: "",
+        requesterOrganization: "",
+        requesterEmail: "",
+        authorityDescription: "",
+        jurisdiction: "",
+        targetUserId: "",
+        scope: "",
+        dateFrom: "",
+        dateTo: ""
+      });
+      setShowEvidenceRequestForm(false);
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Unable to open the scoped evidence request.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function loadEvidenceAudit(item: EvidenceRequest) {
+    setEvidenceAudit((current) => ({
+      ...current,
+      [item._id]: { loading: true, error: "", events: current[item._id]?.events || [] }
+    }));
+    try {
+      const response = await apiRequest(
+        `/api/admin/audit?targetType=legalEvidenceRequest&targetId=${encodeURIComponent(
+          item._id
+        )}`
+      );
+      setEvidenceAudit((current) => ({
+        ...current,
+        [item._id]: {
+          loading: false,
+          error: "",
+          events: Array.isArray(response.events) ? response.events : []
+        }
+      }));
+    } catch (err: any) {
+      setEvidenceAudit((current) => ({
+        ...current,
+        [item._id]: {
+          loading: false,
+          error: err?.message || "Unable to load retained audit history.",
+          events: current[item._id]?.events || []
+        }
+      }));
+    }
+  }
+
+  async function confirmAdminLogout() {
+    setBusyId("admin-logout");
+    setError("");
+    try {
+      await logout();
+      router.replace("/login" as never);
+    } catch (err: any) {
+      setError(err?.message || "Unable to log out safely.");
+    } finally {
+      setBusyId("");
+      setLogoutConfirmationOpen(false);
     }
   }
 
@@ -993,10 +1377,20 @@ export default function PlatformAdminRoute() {
         await Linking.openURL(parsed.toString());
         return;
       }
+      if (
+        parsed.hostname !== "growpathai.com" &&
+        !parsed.hostname.endsWith(".growpathai.com")
+      ) {
+        setError(
+          "The investigation link is outside the approved GrowPathAI/Sentry hosts."
+        );
+        return;
+      }
+      router.push(`${parsed.pathname}${parsed.search}${parsed.hash}` as never);
+      return;
     } catch {
       return;
     }
-    router.push(destination as never);
   }
 
   if (!isAdmin) {
@@ -1031,6 +1425,22 @@ export default function PlatformAdminRoute() {
           <Text style={styles.body}>
             Users, presence, account safety, notices, access, and audited enforcement.
           </Text>
+          <View style={styles.actions}>
+            <Pressable
+              accessibilityRole="button"
+              style={styles.secondaryButton}
+              onPress={() => router.push("/account/workspace" as never)}
+            >
+              <Text style={styles.secondaryText}>Switch workspace</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              style={styles.dangerButton}
+              onPress={() => setLogoutConfirmationOpen(true)}
+            >
+              <Text style={styles.dangerText}>Log out</Text>
+            </Pressable>
+          </View>
         </View>
       }
     >
@@ -1038,6 +1448,49 @@ export default function PlatformAdminRoute() {
         <Text accessibilityRole="alert" style={styles.error}>
           {error}
         </Text>
+      ) : null}
+      {focusedInvestigation ? (
+        <AppCard
+          title="Focused investigation"
+          titleLevel={2}
+          subtitle="Opened from an exact Admin deep link. No record was changed."
+        >
+          <Text accessibilityLiveRegion="polite" style={styles.caseTitle}>
+            {focusedInvestigation.title}
+          </Text>
+          <Text style={styles.evidencePreview}>{focusedInvestigation.detail}</Text>
+          <Text style={styles.meta}>
+            {[focusedSection, focusedTargetType, focusedTargetId, focusedModerationCaseId]
+              .filter(Boolean)
+              .join(" · ")}
+          </Text>
+        </AppCard>
+      ) : null}
+      {logoutConfirmationOpen ? (
+        <AppCard
+          title="Confirm platform Admin logout"
+          titleLevel={2}
+          subtitle="This clears the authenticated identity and saved workspace selections on this device."
+        >
+          <View style={styles.actions}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={busyId === "admin-logout"}
+              style={styles.dangerButton}
+              onPress={() => void confirmAdminLogout()}
+            >
+              <Text style={styles.dangerText}>Confirm log out</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={busyId === "admin-logout"}
+              style={styles.secondaryButton}
+              onPress={() => setLogoutConfirmationOpen(false)}
+            >
+              <Text style={styles.secondaryText}>Keep working</Text>
+            </Pressable>
+          </View>
+        </AppCard>
       ) : null}
       {loading && !overview ? <ActivityIndicator color={palette.accent} /> : null}
       {overview ? (
@@ -1066,6 +1519,9 @@ export default function PlatformAdminRoute() {
           titleLevel={2}
           subtitle="Platform-wide security visibility is separate from the task queue. Open an issue to follow its evidence and affected record."
         >
+          {focusedSection === "security" ? (
+            <Text style={styles.focusedCaseLabel}>Opened from a security deep link</Text>
+          ) : null}
           <View style={styles.metrics}>
             <Metric
               label="Open investigations"
@@ -1106,38 +1562,46 @@ export default function PlatformAdminRoute() {
                 : "Show resolved security history"}
             </Text>
           </Pressable>
-          {securityCenter.issues
-            .filter((issue) => showResolvedSecurity || issue.status === "open")
-            .slice(0, 50)
-            .map((issue) => (
-              <View key={issue.id} style={styles.caseRow}>
-                <View style={styles.caseCopy}>
-                  <Text style={styles.caseTitle}>
-                    {issue.kind} · {issue.severity} · {issue.status} · {issue.title}
+          {visibleSecurityIssues.slice(0, 50).map((issue) => (
+            <View
+              key={issue.id}
+              style={[
+                styles.caseRow,
+                focusedTargetKind === "securityissue" && issue.id === focusedTargetId
+                  ? styles.focusedCaseRow
+                  : null
+              ]}
+            >
+              <View style={styles.caseCopy}>
+                {focusedTargetKind === "securityissue" && issue.id === focusedTargetId ? (
+                  <Text style={styles.focusedCaseLabel}>
+                    Opened from a security investigation link
                   </Text>
-                  <Text style={styles.meta}>
-                    {issue.source.replaceAll("_", " ")} ·{" "}
-                    {issue.category.replaceAll("_", " ")}
-                  </Text>
-                  <Text style={styles.meta}>
-                    Affected: {issue.affected} ·{" "}
-                    {new Date(issue.occurredAt).toLocaleString()}
-                  </Text>
-                  <Text style={styles.evidencePreview}>{issue.summary}</Text>
-                </View>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Investigate ${issue.title}`}
-                  style={styles.secondaryButton}
-                  onPress={() => void openSecurityInvestigation(issue.investigationHref)}
-                >
-                  <Text style={styles.secondaryText}>Investigate</Text>
-                </Pressable>
+                ) : null}
+                <Text style={styles.caseTitle}>
+                  {issue.kind} · {issue.severity} · {issue.status} · {issue.title}
+                </Text>
+                <Text style={styles.meta}>
+                  {issue.source.replaceAll("_", " ")} ·{" "}
+                  {issue.category.replaceAll("_", " ")}
+                </Text>
+                <Text style={styles.meta}>
+                  Affected: {issue.affected} ·{" "}
+                  {new Date(issue.occurredAt).toLocaleString()}
+                </Text>
+                <Text style={styles.evidencePreview}>{issue.summary}</Text>
               </View>
-            ))}
-          {!securityCenter.issues.some(
-            (issue) => showResolvedSecurity || issue.status === "open"
-          ) ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Investigate ${issue.title}`}
+                style={styles.secondaryButton}
+                onPress={() => void openSecurityInvestigation(issue.investigationHref)}
+              >
+                <Text style={styles.secondaryText}>Investigate</Text>
+              </Pressable>
+            </View>
+          ))}
+          {!visibleSecurityIssues.length ? (
             <Text style={styles.meta}>No open security issues in connected sources.</Text>
           ) : null}
         </AppCard>
@@ -1748,12 +2212,25 @@ export default function PlatformAdminRoute() {
       </AppCard>
 
       <View style={styles.userList}>
-        {users.map((item) => (
+        {focusedTargetKind === "user" &&
+        focusedTargetId &&
+        !orderedUsers.some((item) => item._id === focusedTargetId) ? (
+          <Text accessibilityRole="alert" style={styles.meta}>
+            The linked account {focusedTargetId} is not in the current result set. Search
+            by the account email or name to load its context without changing it.
+          </Text>
+        ) : null}
+        {orderedUsers.map((item) => (
           <AppCard
             key={item._id}
             title={item.displayName || item.name || item.email}
             subtitle={`${item.email} · ${item.mode || "personal"} · ${item.plan || "free"}`}
           >
+            {focusedTargetKind === "user" && item._id === focusedTargetId ? (
+              <Text style={styles.focusedCaseLabel}>
+                Opened from an account investigation link
+              </Text>
+            ) : null}
             <Text style={styles.meta}>
               {item.accountStatus || "active"} · {item.subscriptionStatus || "inactive"} ·
               AI {item.aiTokens ?? 0}/{item.maxTokens ?? 0}
@@ -1889,51 +2366,98 @@ export default function PlatformAdminRoute() {
             : "Active requests only. Resolved and spam records are retained under Show completed work."
         }
       >
-        {(showCompletedWork ? supportRequests : activeSupportRequests).length ? (
-          (showCompletedWork ? supportRequests : activeSupportRequests)
-            .slice(0, 30)
-            .map((item) => (
-              <View key={item._id} style={styles.caseRow}>
-                <View style={styles.caseCopy}>
-                  <Text style={styles.caseTitle}>
-                    {item.topic} · {item.status} · {item.subject}
+        {focusedSection === "support" ? (
+          <Text style={styles.focusedCaseLabel}>Opened from a support/security link</Text>
+        ) : null}
+        {visibleSupportRequests.length ? (
+          visibleSupportRequests.slice(0, 30).map((item) => (
+            <View
+              key={item._id}
+              style={[
+                styles.caseRow,
+                focusedTargetKind === "supportrequest" && item._id === focusedTargetId
+                  ? styles.focusedCaseRow
+                  : null
+              ]}
+            >
+              <View style={styles.caseCopy}>
+                {focusedTargetKind === "supportrequest" &&
+                item._id === focusedTargetId ? (
+                  <Text style={styles.focusedCaseLabel}>
+                    Opened from a support investigation link
                   </Text>
+                ) : null}
+                <Text style={styles.caseTitle}>
+                  {item.topic} · {item.status} · {item.subject}
+                </Text>
+                <Text style={styles.meta}>
+                  {item.name} · {item.replyEmail} ·{" "}
+                  {new Date(item.createdAt).toLocaleString()}
+                </Text>
+                {item.workspace || item.page ? (
                   <Text style={styles.meta}>
-                    {item.name} · {item.replyEmail} ·{" "}
-                    {new Date(item.createdAt).toLocaleString()}
+                    {[item.workspace, item.page].filter(Boolean).join(" · ")}
                   </Text>
-                  {item.workspace || item.page ? (
-                    <Text style={styles.meta}>
-                      {[item.workspace, item.page].filter(Boolean).join(" · ")}
-                    </Text>
-                  ) : null}
-                  <Text style={styles.evidencePreview}>{item.message}</Text>
-                  <Text style={styles.meta}>
-                    Email delivery: {item.emailDelivery?.sent ? "sent" : "not confirmed"}
-                  </Text>
-                </View>
-                {["resolved", "spam"].includes(item.status) ? (
-                  <Text style={styles.meta}>Completed · retained for audit</Text>
-                ) : (
-                  <View style={styles.actions}>
-                    <Pressable
-                      disabled={busyId === item._id || item.status === "in_progress"}
-                      style={styles.secondaryButton}
-                      onPress={() => void updateSupportStatus(item, "in_progress")}
-                    >
-                      <Text style={styles.secondaryText}>Mark in progress</Text>
-                    </Pressable>
-                    <Pressable
-                      disabled={busyId === item._id}
-                      style={styles.primaryButton}
-                      onPress={() => void updateSupportStatus(item, "resolved")}
-                    >
-                      <Text style={styles.primaryText}>Resolve</Text>
-                    </Pressable>
-                  </View>
-                )}
+                ) : null}
+                <Text style={styles.evidencePreview}>{item.message}</Text>
+                <Text style={styles.meta}>
+                  Email delivery: {item.emailDelivery?.sent ? "sent" : "not confirmed"}
+                </Text>
               </View>
-            ))
+              {["resolved", "spam"].includes(item.status) ? (
+                <View style={styles.caseCopy}>
+                  <Text style={styles.meta}>Completed · retained for audit</Text>
+                  <TextInput
+                    {...inputThemeProps}
+                    accessibilityLabel={`Reason to reopen ${item.subject}`}
+                    value={supportReopenReasons[item._id] || ""}
+                    onChangeText={(reason) =>
+                      setSupportReopenReasons((current) => ({
+                        ...current,
+                        [item._id]: reason
+                      }))
+                    }
+                    placeholder="Required reason to reopen"
+                    style={styles.input}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={
+                      busyId === item._id ||
+                      !String(supportReopenReasons[item._id] || "").trim()
+                    }
+                    style={styles.secondaryButton}
+                    onPress={() =>
+                      void updateSupportStatus(
+                        item,
+                        "open",
+                        supportReopenReasons[item._id]
+                      )
+                    }
+                  >
+                    <Text style={styles.secondaryText}>Reopen request</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <View style={styles.actions}>
+                  <Pressable
+                    disabled={busyId === item._id || item.status === "in_progress"}
+                    style={styles.secondaryButton}
+                    onPress={() => void updateSupportStatus(item, "in_progress")}
+                  >
+                    <Text style={styles.secondaryText}>Mark in progress</Text>
+                  </Pressable>
+                  <Pressable
+                    disabled={busyId === item._id}
+                    style={styles.primaryButton}
+                    onPress={() => void updateSupportStatus(item, "resolved")}
+                  >
+                    <Text style={styles.primaryText}>Resolve</Text>
+                  </Pressable>
+                </View>
+              )}
+            </View>
+          ))
         ) : (
           <Text style={styles.meta}>
             No active bug or support requests. Completed history is retained and can be
@@ -1965,7 +2489,9 @@ export default function PlatformAdminRoute() {
             >
               <View style={styles.caseCopy}>
                 {item._id === focusedModerationCaseId ? (
-                  <Text style={styles.focusedCaseLabel}>Opened from report email</Text>
+                  <Text style={styles.focusedCaseLabel}>
+                    Opened from a moderation investigation link
+                  </Text>
                 ) : null}
                 <Text style={styles.caseTitle}>
                   {item.targetType} · {item.severity} · {item.status}
@@ -2083,38 +2609,379 @@ export default function PlatformAdminRoute() {
       <AppCard
         title="Legal and evidence requests"
         titleLevel={2}
-        subtitle="Preservation is separate from disclosure. Legal review is still required."
+        subtitle="Preservation is separate from disclosure. Identity, authority, legal review, minimization, approval, and a disclosure manifest remain distinct controls."
       >
-        {evidenceRequests.length ? (
-          evidenceRequests.slice(0, 20).map((item) => (
-            <View key={item._id} style={styles.caseRow}>
-              <View style={styles.caseCopy}>
-                <Text style={styles.caseTitle}>
-                  {item.requestType} · {item.status}
-                </Text>
-                <Text style={styles.meta}>
-                  {item.requesterName}
-                  {item.requesterOrganization ? ` · ${item.requesterOrganization}` : ""}
-                </Text>
-                <Text style={styles.meta}>{item.scope}</Text>
-              </View>
-              <Pressable
-                disabled={busyId === item._id || item.preservationHold}
-                style={
-                  item.preservationHold ? styles.secondaryButton : styles.primaryButton
+        <Text style={styles.evidencePreview}>
+          Approval and disclosure are unavailable here until the backend enforces legal
+          approval, minimum-scope manifests, recipient/method recording, and chain of
+          custody. This screen cannot release account data.
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: showEvidenceRequestForm }}
+          style={styles.secondaryButton}
+          onPress={() => setShowEvidenceRequestForm((current) => !current)}
+        >
+          <Text style={styles.secondaryText}>
+            {showEvidenceRequestForm ? "Cancel new request" : "Open scoped request"}
+          </Text>
+        </Pressable>
+        {showEvidenceRequestForm ? (
+          <View style={styles.evidencePreview}>
+            <Text style={styles.caseTitle}>New Admin-only evidence request</Text>
+            <Text style={styles.meta}>
+              Record only the received request and its exact scope. Creating this record
+              does not preserve, approve, disclose, or notify anyone.
+            </Text>
+            <View style={styles.pickerWrap}>
+              <Text style={styles.metricLabel}>Request type</Text>
+              <Picker
+                accessibilityLabel="Evidence request type"
+                selectedValue={evidenceDraft.requestType}
+                onValueChange={(requestType) =>
+                  setEvidenceDraft((current) => ({
+                    ...current,
+                    requestType: requestType as EvidenceRequestType
+                  }))
                 }
-                onPress={() => void preserveEvidence(item)}
+                style={styles.picker}
               >
-                <Text
-                  style={
-                    item.preservationHold ? styles.secondaryText : styles.primaryText
-                  }
-                >
-                  {item.preservationHold ? "Preservation active" : "Preserve evidence"}
-                </Text>
-              </Pressable>
+                {EVIDENCE_REQUEST_TYPES.map((requestType) => (
+                  <Picker.Item
+                    key={requestType}
+                    label={requestType.replaceAll("_", " ")}
+                    value={requestType}
+                  />
+                ))}
+              </Picker>
             </View>
-          ))
+            <TextInput
+              {...inputThemeProps}
+              accessibilityLabel="Evidence requester name"
+              value={evidenceDraft.requesterName}
+              onChangeText={(requesterName) =>
+                setEvidenceDraft((current) => ({ ...current, requesterName }))
+              }
+              placeholder="Required requester name"
+              style={styles.input}
+            />
+            <TextInput
+              {...inputThemeProps}
+              accessibilityLabel="Evidence requester organization"
+              value={evidenceDraft.requesterOrganization}
+              onChangeText={(requesterOrganization) =>
+                setEvidenceDraft((current) => ({
+                  ...current,
+                  requesterOrganization
+                }))
+              }
+              placeholder="Requester organization (optional)"
+              style={styles.input}
+            />
+            <TextInput
+              {...inputThemeProps}
+              accessibilityLabel="Evidence requester email"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={evidenceDraft.requesterEmail}
+              onChangeText={(requesterEmail) =>
+                setEvidenceDraft((current) => ({ ...current, requesterEmail }))
+              }
+              placeholder="Required requester email"
+              style={styles.input}
+            />
+            <TextInput
+              {...inputThemeProps}
+              accessibilityLabel="Evidence authority description"
+              value={evidenceDraft.authorityDescription}
+              onChangeText={(authorityDescription) =>
+                setEvidenceDraft((current) => ({
+                  ...current,
+                  authorityDescription
+                }))
+              }
+              placeholder="Required identity, authority, and document description"
+              multiline
+              style={[styles.input, styles.messageInput]}
+            />
+            <TextInput
+              {...inputThemeProps}
+              accessibilityLabel="Evidence jurisdiction"
+              value={evidenceDraft.jurisdiction}
+              onChangeText={(jurisdiction) =>
+                setEvidenceDraft((current) => ({ ...current, jurisdiction }))
+              }
+              placeholder="Jurisdiction (optional)"
+              style={styles.input}
+            />
+            <TextInput
+              {...inputThemeProps}
+              accessibilityLabel="Evidence target user ID"
+              autoCapitalize="none"
+              value={evidenceDraft.targetUserId}
+              onChangeText={(targetUserId) =>
+                setEvidenceDraft((current) => ({ ...current, targetUserId }))
+              }
+              placeholder="Exact target user ID (optional)"
+              style={styles.input}
+            />
+            <TextInput
+              {...inputThemeProps}
+              accessibilityLabel="Evidence request scope"
+              value={evidenceDraft.scope}
+              onChangeText={(scope) =>
+                setEvidenceDraft((current) => ({ ...current, scope }))
+              }
+              placeholder="Required minimum requested records and purpose"
+              multiline
+              style={[styles.input, styles.messageInput]}
+            />
+            <CalendarDateField
+              accessibilityLabel="Evidence scope start date"
+              label="Requested start date"
+              value={evidenceDraft.dateFrom}
+              onChange={(dateFrom) =>
+                setEvidenceDraft((current) => ({ ...current, dateFrom }))
+              }
+              placeholder="Optional start date"
+            />
+            <CalendarDateField
+              accessibilityLabel="Evidence scope end date"
+              label="Requested end date"
+              value={evidenceDraft.dateTo}
+              onChange={(dateTo) =>
+                setEvidenceDraft((current) => ({ ...current, dateTo }))
+              }
+              placeholder="Optional end date"
+            />
+            <Pressable
+              accessibilityRole="button"
+              disabled={busyId === "evidence-new"}
+              style={styles.primaryButton}
+              onPress={() => void createEvidenceRequest()}
+            >
+              <Text style={styles.primaryText}>Create received request record</Text>
+            </Pressable>
+          </View>
+        ) : null}
+        {focusedTargetKind === "legalevidencerequest" &&
+        focusedTargetId &&
+        !orderedEvidenceRequests.some((item) => item._id === focusedTargetId) ? (
+          <Text accessibilityRole="alert" style={styles.meta}>
+            The linked evidence request {focusedTargetId} is not in the current retained
+            result set.
+          </Text>
+        ) : null}
+        {orderedEvidenceRequests.length ? (
+          orderedEvidenceRequests.slice(0, 20).map((item) => {
+            const audit = evidenceAudit[item._id];
+            const isFocused =
+              focusedTargetKind === "legalevidencerequest" &&
+              item._id === focusedTargetId;
+            const canBeginIdentity = item.status === "received";
+            const canSendLegal = ["identity_review", "preserved"].includes(item.status);
+            const canRejectOrClose = [
+              "received",
+              "identity_review",
+              "legal_review",
+              "preserved"
+            ].includes(item.status);
+            const canClose = canRejectOrClose && !item.preservationHold;
+            return (
+              <View
+                key={item._id}
+                style={[styles.caseRow, isFocused ? styles.focusedCaseRow : null]}
+              >
+                <View style={styles.caseCopy}>
+                  {isFocused ? (
+                    <Text style={styles.focusedCaseLabel}>
+                      Opened from a legal/evidence investigation link
+                    </Text>
+                  ) : null}
+                  <Text style={styles.caseTitle}>
+                    {item.requestType} · {item.status}
+                  </Text>
+                  <Text style={styles.meta}>
+                    {item.requesterName}
+                    {item.requesterOrganization ? ` · ${item.requesterOrganization}` : ""}
+                  </Text>
+                  <Text style={styles.meta}>
+                    Contact: {item.requesterEmail || "not recorded"} · Jurisdiction:{" "}
+                    {item.jurisdiction || "not recorded"}
+                  </Text>
+                  <Text style={styles.meta}>
+                    Target account: {adminReferenceLabel(item.targetUserId)}
+                  </Text>
+                  <Text style={styles.evidencePreview}>
+                    Authority supplied: {item.authorityDescription || "not recorded"}
+                  </Text>
+                  <Text style={styles.evidencePreview}>
+                    Requested scope: {item.scope}
+                  </Text>
+                  <Text style={styles.meta}>
+                    Date scope: {displayAdminDate(item.dateFrom)}
+                    {" to "}
+                    {displayAdminDate(item.dateTo)}
+                  </Text>
+                  <Text style={styles.meta}>
+                    User notice: {item.userNoticeStatus || "not reviewed"} · Evidence
+                    items: {item.evidenceItems?.length || 0}
+                  </Text>
+                  <Text style={styles.meta}>
+                    Created by {adminReferenceLabel(item.createdBy)}
+                    {item.createdAt
+                      ? ` · ${new Date(item.createdAt).toLocaleString()}`
+                      : ""}
+                    {item.reviewedBy
+                      ? ` · last reviewed by ${adminReferenceLabel(item.reviewedBy)}`
+                      : ""}
+                    {item.updatedAt
+                      ? ` · updated ${new Date(item.updatedAt).toLocaleString()}`
+                      : ""}
+                  </Text>
+                  {item.closedAt ? (
+                    <Text style={styles.meta}>
+                      Closed {new Date(item.closedAt).toLocaleString()}
+                    </Text>
+                  ) : null}
+                  {item.evidenceItems?.length ? (
+                    <View style={styles.evidencePreview}>
+                      <Text style={styles.caseTitle}>Retained evidence manifest</Text>
+                      {item.evidenceItems.map((entry, index) => (
+                        <Text
+                          key={entry._id || `${entry.sourceType}-${index}`}
+                          style={styles.meta}
+                        >
+                          {entry.sourceType}:{entry.sourceId}
+                          {entry.description ? ` · ${entry.description}` : ""}
+                          {entry.sha256 ? ` · SHA-256 ${entry.sha256}` : ""}
+                          {entry.preservedAt
+                            ? ` · preserved ${new Date(entry.preservedAt).toLocaleString()}`
+                            : ""}
+                          {entry.preservedBy
+                            ? ` · by ${adminReferenceLabel(entry.preservedBy)}`
+                            : ""}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+                  <TextInput
+                    {...inputThemeProps}
+                    accessibilityLabel={`Review reason for ${item.requestType} request`}
+                    value={evidenceReasons[item._id] || ""}
+                    onChangeText={(reason) =>
+                      setEvidenceReasons((current) => ({
+                        ...current,
+                        [item._id]: reason
+                      }))
+                    }
+                    placeholder="Required preservation or review reason"
+                    multiline
+                    style={styles.input}
+                  />
+                  <View style={styles.actions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={busyId === item._id || item.preservationHold}
+                      style={
+                        item.preservationHold
+                          ? styles.secondaryButton
+                          : styles.primaryButton
+                      }
+                      onPress={() => void preserveEvidence(item)}
+                    >
+                      <Text
+                        style={
+                          item.preservationHold
+                            ? styles.secondaryText
+                            : styles.primaryText
+                        }
+                      >
+                        {item.preservationHold
+                          ? "Preservation active"
+                          : "Place preservation hold"}
+                      </Text>
+                    </Pressable>
+                    {canBeginIdentity ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={busyId === item._id}
+                        style={styles.secondaryButton}
+                        onPress={() => void updateEvidenceStatus(item, "identity_review")}
+                      >
+                        <Text style={styles.secondaryText}>Begin identity review</Text>
+                      </Pressable>
+                    ) : null}
+                    {canSendLegal ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={busyId === item._id}
+                        style={styles.secondaryButton}
+                        onPress={() => void updateEvidenceStatus(item, "legal_review")}
+                      >
+                        <Text style={styles.secondaryText}>Send to legal review</Text>
+                      </Pressable>
+                    ) : null}
+                    {canRejectOrClose ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={busyId === item._id}
+                        style={styles.warningButton}
+                        onPress={() => void updateEvidenceStatus(item, "rejected")}
+                      >
+                        <Text style={styles.warningText}>Reject request</Text>
+                      </Pressable>
+                    ) : null}
+                    {canClose ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={busyId === item._id}
+                        style={styles.secondaryButton}
+                        onPress={() => void updateEvidenceStatus(item, "closed")}
+                      >
+                        <Text style={styles.secondaryText}>Close without disclosure</Text>
+                      </Pressable>
+                    ) : null}
+                    <Pressable
+                      accessibilityRole="button"
+                      disabled={audit?.loading}
+                      style={styles.secondaryButton}
+                      onPress={() => void loadEvidenceAudit(item)}
+                    >
+                      <Text style={styles.secondaryText}>
+                        {audit?.loading ? "Loading audit…" : "Load retained audit"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                  {audit?.error ? (
+                    <Text accessibilityRole="alert" style={styles.error}>
+                      {audit.error}
+                    </Text>
+                  ) : null}
+                  {audit && !audit.loading && !audit.error ? (
+                    audit.events.length ? (
+                      audit.events.map((event, index) => (
+                        <Text
+                          key={event._id || `${event.action}-${index}`}
+                          style={styles.meta}
+                        >
+                          {event.createdAt
+                            ? new Date(event.createdAt).toLocaleString()
+                            : "Time not recorded"}
+                          {" · "}
+                          {event.action.replaceAll("_", " ")}
+                          {event.reason ? ` · ${event.reason}` : ""}
+                          {` · actor ${adminReferenceLabel(event.actorUserId)}`}
+                        </Text>
+                      ))
+                    ) : (
+                      <Text style={styles.meta}>No retained audit events returned.</Text>
+                    )
+                  ) : null}
+                </View>
+              </View>
+            );
+          })
         ) : (
           <Text style={styles.meta}>No legal or evidence requests have been opened.</Text>
         )}
@@ -2278,6 +3145,16 @@ export const createPlatformAdminStyles = (palette: ThemePalette) =>
       paddingVertical: 11
     },
     primaryText: { color: palette.accentText, fontWeight: "800" },
+    picker: { backgroundColor: palette.surface, color: palette.text },
+    pickerWrap: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 8,
+      overflow: "hidden",
+      paddingHorizontal: 10
+    },
     searchRow: {
       alignItems: "center",
       flexDirection: "row",

@@ -39,6 +39,10 @@ function getId(params: Record<string, any>): string {
   return String(raw ?? "");
 }
 
+function commercialTaskFromResponse(value: AnyRec | null | undefined) {
+  return value?.task || value?.item || value?.data?.task || value || null;
+}
+
 function renderKV(
   obj: AnyRec | null,
   key: string,
@@ -295,8 +299,11 @@ export default function CommercialTaskDetailRoute() {
 
       try {
         clearError();
-        const res = await apiRequest(endpoints.taskGlobal(id), { method: "GET" });
-        setItem(res ?? null);
+        const res = await apiRequest(endpoints.taskGlobal(id), {
+          method: "GET",
+          params: { workspaceType: "commercial" }
+        });
+        setItem(commercialTaskFromResponse(res));
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -332,13 +339,21 @@ export default function CommercialTaskDetailRoute() {
       const updated = await apiRequest(endpoints.taskGlobal(id), {
         method: "PATCH",
         body: {
+          workspaceType: "commercial",
           status: "complete",
           completed: true,
-          completedAt
+          completedAt,
+          ...(item.recordStore === "commercial_grow"
+            ? {
+                growId: String(
+                  item.sourceGrowId || item.growId || item.linkedGrowId || ""
+                )
+              }
+            : {})
         }
       });
       setItem(
-        (updated as AnyRec) ?? {
+        commercialTaskFromResponse(updated as AnyRec) ?? {
           ...item,
           status: "complete",
           completed: true,

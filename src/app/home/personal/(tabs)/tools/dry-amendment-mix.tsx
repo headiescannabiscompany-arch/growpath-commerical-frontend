@@ -125,13 +125,16 @@ function buildDryBlendAssistantBrief(payload: Record<string, any>) {
 }
 
 export default function DryAmendmentMixToolScreen({
-  backFallbackHref = "/home/personal/tools"
+  backFallbackHref = "/home/personal/tools",
+  workspaceType = "personal"
 }: {
   backFallbackHref?: string;
+  workspaceType?: "personal" | "commercial";
 } = {}) {
   return (
     <BackendCalculatorToolScreen
       backFallbackHref={backFallbackHref}
+      workspaceTypeOverride={workspaceType}
       tool="dry-amendment-mix"
       toolKey="dry-amendment-mix"
       title="Dry Amendment Mix Builder"
@@ -327,7 +330,7 @@ export default function DryAmendmentMixToolScreen({
         briefTitle: "AI dry amendment brief",
         buildBrief: ({ payload }) => buildDryBlendAssistantBrief(payload)
       }}
-      buildActions={({ outputs, payload, toolRun }) => [
+      buildActions={({ outputs, payload, toolRun, workspaceType: activeWorkspace }) => [
         {
           key: "create-dry-blend-checklist",
           label: "Create Blend Batch Tasks",
@@ -337,6 +340,7 @@ export default function DryAmendmentMixToolScreen({
           disabled: !payload.growId,
           onPress: async () => {
             const result = await saveToolRunAndCreateTasks({
+              workspaceType: activeWorkspace,
               growId: payload.growId,
               toolKey: "dry-amendment-mix",
               toolRunId: toolRun?.id || toolRun?._id,

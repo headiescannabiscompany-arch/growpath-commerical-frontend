@@ -126,12 +126,17 @@ export function buildCommercialGrowTimeline(grow: Record<string, any>) {
   );
 }
 
-export function growJournalItemHref(item: GrowTimelineItem, growId: string) {
+export function growJournalItemHref(
+  item: GrowTimelineItem,
+  growId: string,
+  workspace: "personal" | "commercial" = "personal"
+) {
   if (item.kind === "tool_run") {
     return savedRunSourceHref({
       toolRunId: item.id,
       growId,
-      sourceContext: "journal"
+      sourceContext: "journal",
+      workspaceType: workspace
     });
   }
 
@@ -144,7 +149,7 @@ export function growJournalItemHref(item: GrowTimelineItem, growId: string) {
     sourceType: sourceTypeByKind[item.kind],
     sourceId: item.id,
     growId,
-    workspaceType: "personal"
+    workspaceType: workspace
   });
 }
 

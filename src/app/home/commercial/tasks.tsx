@@ -20,6 +20,8 @@ import { sourceObjectHref } from "@/utils/sourceLinks";
 
 type CommercialTask = Record<string, any>;
 
+const TASK_PAGE_SIZE = 100;
+
 const priorities = ["low", "normal", "high", "critical"] as const;
 const sourceTypes = [
   "manual",
@@ -63,8 +65,31 @@ function asArray(res: any): CommercialTask[] {
   return [];
 }
 
+function nextTaskOffset(res: any): number | null {
+  const envelope =
+    res?.data && typeof res.data === "object" && !Array.isArray(res.data)
+      ? res.data
+      : res;
+  if (envelope?.hasMore !== true) return null;
+  const value = Number(envelope?.nextOffset);
+  return Number.isInteger(value) && value >= 0 ? value : null;
+}
+
+function mergeTaskPages(current: CommercialTask[], incoming: CommercialTask[]) {
+  const merged = new Map<string, CommercialTask>();
+  current.forEach((task) => merged.set(taskKey(task), task));
+  incoming.forEach((task) => merged.set(taskKey(task), task));
+  return Array.from(merged.values());
+}
+
 function idOf(task: CommercialTask) {
   return String(task.id || task._id || "");
+}
+
+function taskKey(task: CommercialTask) {
+  return [task.recordStore, task.sourceGrowId, idOf(task), task.title]
+    .filter(Boolean)
+    .join(":");
 }
 
 function dueValue(task: CommercialTask) {
@@ -297,6 +322,8 @@ export default function CommercialTasksRoute() {
   const styles = useMemo(() => createCommercialTasksStyles(palette), [palette]);
   const [tasks, setTasks] = useState<CommercialTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [title, setTitle] = useState("");
@@ -312,20 +339,41 @@ export default function CommercialTasksRoute() {
   const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
   const [sourceFilter, setSourceFilter] = useState("all");
 
-  async function loadTasks(opts?: { preserveFeedback?: boolean }) {
-    setLoading(true);
+  async function loadTasks(opts?: {
+    preserveFeedback?: boolean;
+    append?: boolean;
+    offset?: number;
+  }) {
+    const append = opts?.append === true;
+    const offset = append ? Math.max(0, opts?.offset || 0) : 0;
+    if (append) setLoadingMore(true);
+    else setLoading(true);
     if (!opts?.preserveFeedback) setFeedback("");
     try {
-      const res = await apiRequest(endpoints.tasksGlobal, {
+      const response = await apiRequest(endpoints.tasksGlobal, {
         method: "GET",
-        params: { workspaceType: "commercial" }
+        params: {
+          workspaceType: "commercial",
+          limit: TASK_PAGE_SIZE,
+          offset
+        }
       });
-      setTasks(asArray(res));
+      const page = asArray(response);
+      setTasks((current) => (append ? mergeTaskPages(current, page) : page));
+      setNextOffset(nextTaskOffset(response));
     } catch {
-      setTasks([]);
-      setFeedback("Unable to load commercial tasks.");
+      if (!append) {
+        setTasks([]);
+        setNextOffset(null);
+      }
+      setFeedback(
+        append
+          ? "Unable to load more commercial tasks."
+          : "Unable to load commercial tasks."
+      );
     } finally {
-      setLoading(false);
+      if (append) setLoadingMore(false);
+      else setLoading(false);
     }
   }
 
@@ -423,13 +471,21 @@ export default function CommercialTasksRoute() {
     if (!id) return;
     setFeedback("");
     try {
+      const completing = !isComplete(task);
+      const patch = {
+        workspaceType: "commercial",
+        status: isComplete(task) ? "open" : "complete",
+        completed: completing,
+        completedAt: isComplete(task) ? null : new Date().toISOString(),
+        ...(task.recordStore === "commercial_grow"
+          ? {
+              growId: String(task.sourceGrowId || task.growId || task.linkedGrowId || "")
+            }
+          : {})
+      };
       await apiRequest(endpoints.taskGlobal(id), {
         method: "PATCH",
-        body: {
-          status: isComplete(task) ? "open" : "complete",
-          completed: !isComplete(task),
-          completedAt: isComplete(task) ? null : new Date().toISOString()
-        }
+        body: patch
       });
       await loadTasks({ preserveFeedback: true });
       setFeedback(isComplete(task) ? "Task reopened." : "Task completed.");
@@ -445,7 +501,7 @@ export default function CommercialTasksRoute() {
     const showLinkedPath = linkedPath && (!path || linkedPath !== path);
     const sourceRef = sourceReference(task);
     return (
-      <View key={idOf(task) || task.title} style={styles.taskCard}>
+      <View key={taskKey(task)} style={styles.taskCard}>
         <View style={styles.cardHeader}>
           <Text style={styles.taskTitle}>{task.title || "Untitled task"}</Text>
           <Text style={styles.sourcePill}>{source}</Text>
@@ -687,6 +743,25 @@ export default function CommercialTasksRoute() {
           {renderSection("today", "Today")}
           {renderSection("upcoming", "Upcoming")}
           {renderSection("completed", "Completed")}
+          {nextOffset !== null ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Load more commercial tasks"
+              disabled={loadingMore}
+              onPress={() =>
+                void loadTasks({
+                  append: true,
+                  offset: nextOffset,
+                  preserveFeedback: true
+                })
+              }
+              style={[styles.primaryButton, loadingMore && styles.disabled]}
+            >
+              <Text style={styles.primaryButtonText}>
+                {loadingMore ? "Loading More..." : "Load More Tasks"}
+              </Text>
+            </Pressable>
+          ) : null}
         </>
       )}
     </ScrollView>

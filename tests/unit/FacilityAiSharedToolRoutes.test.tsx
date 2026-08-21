@@ -30,7 +30,8 @@ describe("Facility shared AI tool routes", () => {
     render(<FacilityIpmScoutToolRoute />);
 
     expect(mockSpeciesRoute).toHaveBeenCalledWith({
-      backFallbackHref: "/home/facility/ai-tools"
+      backFallbackHref: "/home/facility/ai-tools",
+      workspaceTypeOverride: "facility"
     });
     expect(mockIpmRoute).toHaveBeenCalledWith({
       backFallbackHref: "/home/facility/ai-tools"

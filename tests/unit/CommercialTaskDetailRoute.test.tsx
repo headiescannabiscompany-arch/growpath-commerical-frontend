@@ -78,13 +78,16 @@ describe("CommercialTaskDetailRoute", () => {
       }
       if (url === "/api/tasks/task-1" && options?.method === "PATCH") {
         return Promise.resolve({
-          id: "task-1",
-          title: "Connect Stripe price",
-          description: "Product cannot publish until Stripe is ready.",
-          priority: "high",
-          status: "complete",
-          completed: true,
-          completedAt: options.body.completedAt
+          success: true,
+          task: {
+            id: "task-1",
+            title: "Connect Stripe price",
+            description: "Product cannot publish until Stripe is ready.",
+            priority: "high",
+            status: "complete",
+            completed: true,
+            completedAt: options.body.completedAt
+          }
         });
       }
       return Promise.resolve(null);
@@ -97,6 +100,10 @@ describe("CommercialTaskDetailRoute", () => {
     await waitFor(() =>
       expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
     );
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/tasks/task-1", {
+      method: "GET",
+      params: { workspaceType: "commercial" }
+    });
 
     fireEvent.press(screen.getByLabelText("Complete commercial task"));
 
@@ -106,6 +113,7 @@ describe("CommercialTaskDetailRoute", () => {
         expect.objectContaining({
           method: "PATCH",
           body: expect.objectContaining({
+            workspaceType: "commercial",
             status: "complete",
             completed: true,
             completedAt: expect.any(String)
@@ -114,6 +122,55 @@ describe("CommercialTaskDetailRoute", () => {
       )
     );
     expect(screen.getByText("Task marked complete.")).toBeTruthy();
+  });
+
+  it("sends the owning grow when completing an aggregated grow task", async () => {
+    taskOverrides = {
+      recordStore: "commercial_grow",
+      sourceGrowId: "grow-record-7"
+    };
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Connect Stripe price").length).toBeGreaterThan(0)
+    );
+    fireEvent.press(screen.getByLabelText("Complete commercial task"));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/tasks/task-1",
+        expect.objectContaining({
+          method: "PATCH",
+          body: expect.objectContaining({
+            workspaceType: "commercial",
+            growId: "grow-record-7"
+          })
+        })
+      )
+    );
+  });
+
+  it("opens the compatible task envelope returned by the Commercial aggregate", async () => {
+    mockApiRequest.mockImplementation((url: string, options?: any) => {
+      if (url === "/api/tasks/task-1" && options?.method === "GET") {
+        return Promise.resolve({
+          task: {
+            id: "task-1",
+            title: "Nested commercial task",
+            status: "open",
+            recordStore: "commercial_grow",
+            sourceGrowId: "grow-record-7"
+          }
+        });
+      }
+      return Promise.resolve(null);
+    });
+
+    const screen = render(<CommercialTaskDetailRoute />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Nested commercial task").length).toBeGreaterThan(0)
+    );
   });
 
   it("opens the linked source object from the task detail", async () => {

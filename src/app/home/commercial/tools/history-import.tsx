@@ -12,7 +12,7 @@ export default function CommercialHistoryImportRoute() {
       showBack
       backFallbackHref="/home/commercial/grows"
     >
-      <DewPointGuardTool historyImportMode />
+      <DewPointGuardTool historyImportMode workspaceType="commercial" />
     </ScreenBoundary>
   );
 }

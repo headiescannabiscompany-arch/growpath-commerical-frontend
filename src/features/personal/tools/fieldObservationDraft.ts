@@ -42,6 +42,8 @@ function isCropIdentificationRun(run: ToolRun) {
 }
 
 function finiteCoordinate(value: unknown, min: number, max: number) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "string" && !value.trim()) return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= min && parsed <= max ? parsed : null;
 }
@@ -51,11 +53,22 @@ function normalizeCoordinates(value: unknown): PublicCoordinates | null {
   const latitude = finiteCoordinate(candidate.latitude, -90, 90);
   const longitude = finiteCoordinate(candidate.longitude, -180, 180);
   if (latitude === null || longitude === null) return null;
-  const accuracyMeters = Number(candidate.accuracyMeters);
+  const accuracyMeters =
+    candidate.accuracyMeters === null ||
+    candidate.accuracyMeters === undefined ||
+    (typeof candidate.accuracyMeters === "string" && !candidate.accuracyMeters.trim())
+      ? null
+      : Number(candidate.accuracyMeters);
+  const validAccuracyMeters =
+    typeof accuracyMeters === "number" &&
+    Number.isFinite(accuracyMeters) &&
+    accuracyMeters >= 0
+      ? accuracyMeters
+      : null;
   return {
     latitude,
     longitude,
-    ...(Number.isFinite(accuracyMeters) && accuracyMeters >= 0 ? { accuracyMeters } : {})
+    ...(validAccuracyMeters !== null ? { accuracyMeters: validAccuracyMeters } : {})
   };
 }
 

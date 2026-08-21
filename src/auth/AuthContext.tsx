@@ -21,6 +21,7 @@ import { setToken as persistToken, getToken as readToken } from "./tokenStore";
 import { apiRequest, setOnUnauthorized } from "../api/apiRequest";
 import { apiMe } from "../api/me";
 import { PLAN_LIMITS } from "../config/planLimits";
+import { resetWorkspaceSessionState } from "./workspaceSessionReset";
 
 const LOCAL_COMMERCIAL_PREVIEW_TOKEN = "local-preview-commercial-token";
 const LOCAL_COMMERCIAL_PREVIEW_EMAIL = "commercial-demo@growpathai.local";
@@ -405,7 +406,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCtx(null);
       setMeStatus("idle");
       setMeError(null);
-      await persistToken(null);
+      await Promise.allSettled([persistToken(null), resetWorkspaceSessionState()]);
     } finally {
       isLoggingOutRef.current = false;
     }
@@ -541,6 +542,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string) {
     try {
       const loginRes = await apiLogin({ email, password });
+      setToken(null);
+      setUser(null);
+      setCtx(null);
+      setMeStatus("idle");
+      setMeError(null);
+      await persistToken(null);
+      await resetWorkspaceSessionState();
       await persistToken(loginRes.token);
       setToken(loginRes.token);
       setUser(loginRes.user);
@@ -557,11 +565,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const signupRes = await apiSignup(body);
       if (signupRes.token) {
+        setToken(null);
+        setUser(null);
+        setCtx(null);
+        setMeStatus("idle");
+        setMeError(null);
+        await persistToken(null);
+        await resetWorkspaceSessionState();
         await persistToken(signupRes.token);
         setToken(signupRes.token);
         setUser(signupRes.user ?? null);
         await loadMeForToken();
       } else {
+        await resetWorkspaceSessionState();
         await persistToken(null);
         setToken(null);
         setUser(null);

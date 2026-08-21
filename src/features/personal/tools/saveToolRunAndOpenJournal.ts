@@ -1,11 +1,12 @@
 import { createPersonalTask } from "@/api/tasks";
 import { createPersonalLog } from "@/api/logs";
-import { createToolRun } from "@/api/toolRuns";
+import { createTaskFromToolRun, createToolRun, saveToolRunToLog } from "@/api/toolRuns";
 
 import { getCalculatorVersion } from "./calculatorVersions";
 
 type SaveAndOpenArgs = {
   router: { push: (href: string) => void };
+  workspaceType?: "personal" | "commercial" | "facility";
   growId?: string;
   plantId?: string;
   facilityId?: string;
@@ -85,6 +86,7 @@ async function ensureToolRun(args: Omit<SaveAndOpenArgs, "router">) {
   if (!toolRunId) {
     const created = await createToolRun({
       toolType,
+      ...(args.workspaceType ? { workspaceType: args.workspaceType } : {}),
       growId,
       plantId: args.plantId,
       facilityId: args.facilityId,
@@ -130,7 +132,7 @@ export async function saveToolRunAndOpenJournal(
   if (!ensured.ok) return ensured;
 
   args.router.push(
-    `/home/personal/logs/new?growId=${encodeURIComponent(growId)}&toolRunId=${encodeURIComponent(ensured.toolRunId)}`
+    `${args.workspaceType === "commercial" ? "/home/commercial" : "/home/personal"}/logs/new?growId=${encodeURIComponent(growId)}&toolRunId=${encodeURIComponent(ensured.toolRunId)}`
   );
 
   return { ok: true, toolRunId: ensured.toolRunId };
@@ -142,6 +144,55 @@ export async function saveToolRunAndCreateTask(
   const growId = String(args.growId || "").trim();
   const ensured = await ensureToolRun(args);
   if (!ensured.ok) return ensured;
+
+  if (args.workspaceType === "commercial") {
+    const response: any = await createTaskFromToolRun(
+      ensured.toolRunId,
+      {
+        growId,
+        linkedGrowId: growId,
+        plantId: args.plantId,
+        linkedPlantId: args.plantId,
+        title: args.title,
+        description:
+          args.description ||
+          `Follow up on ${String(args.toolKey || args.toolType || "tool")} result.`,
+        priority: args.priority || "medium",
+        dueDate: args.dueDate,
+        ...(args.endAt !== undefined ? { endAt: args.endAt } : {}),
+        allDay: args.allDay ?? true,
+        calendarType:
+          args.calendarType ||
+          `${String(args.toolKey || args.toolType || "tool_run")
+            .replace(/[^a-z0-9]+/gi, "_")
+            .toLowerCase()}_followup`,
+        sourceStage: args.sourceStage || "tool_run_followup",
+        reminderPlan: args.reminderPlan || {
+          label: "12 hours before",
+          channels: ["in_app"]
+        },
+        ...(args.recurrence
+          ? {
+              recurrence:
+                typeof args.recurrence === "string"
+                  ? { rule: args.recurrence }
+                  : args.recurrence
+            }
+          : {}),
+        linkedToolRunId: ensured.toolRunId
+      },
+      { workspaceType: "commercial" }
+    );
+    const taskId = String(
+      response?.task?._id ||
+        response?.task?.id ||
+        response?.data?.task?._id ||
+        response?.data?.task?.id ||
+        ""
+    ).trim();
+    if (!taskId) return { ok: false, error: "Unable to create task from tool run." };
+    return { ok: true, toolRunId: ensured.toolRunId, taskId };
+  }
 
   const task = await createPersonalTask({
     growId,
@@ -193,6 +244,41 @@ export async function saveToolRunAndCreateTasks(
 
   const taskIds: string[] = [];
   for (const draft of args.tasks) {
+    if (args.workspaceType === "commercial") {
+      const response: any = await createTaskFromToolRun(
+        ensured.toolRunId,
+        {
+          growId,
+          linkedGrowId: growId,
+          plantId: args.plantId,
+          linkedPlantId: args.plantId,
+          title: draft.title,
+          description:
+            draft.description ||
+            `Follow up on ${String(args.toolKey || args.toolType || "tool")} result.`,
+          priority: draft.priority || "medium",
+          dueDate: draft.dueDate,
+          endAt: draft.endAt,
+          allDay: draft.allDay,
+          reminderPlan: draft.reminderPlan,
+          recurrence: draft.recurrence,
+          calendarType: draft.calendarType,
+          sourceStage: draft.sourceStage,
+          linkedToolRunId: ensured.toolRunId
+        },
+        { workspaceType: "commercial" }
+      );
+      const taskId = String(
+        response?.task?._id ||
+          response?.task?.id ||
+          response?.data?.task?._id ||
+          response?.data?.task?.id ||
+          ""
+      ).trim();
+      if (!taskId) return { ok: false, error: "Unable to create task from tool run." };
+      taskIds.push(taskId);
+      continue;
+    }
     const task = await createPersonalTask({
       growId,
       plantId: args.plantId,
@@ -229,6 +315,31 @@ export async function saveToolRunAndCreateLog(
   const growId = String(args.growId || "").trim();
   const ensured = await ensureToolRun(args);
   if (!ensured.ok) return ensured;
+
+  if (args.workspaceType === "commercial") {
+    const response: any = await saveToolRunToLog(
+      ensured.toolRunId,
+      {
+        growId,
+        linkedGrowId: growId,
+        plantId: args.plantId,
+        linkedPlantId: args.plantId,
+        linkedToolRunId: ensured.toolRunId,
+        title: args.title,
+        notes: args.notes
+      },
+      { workspaceType: "commercial" }
+    );
+    const logId = String(
+      response?.log?._id ||
+        response?.log?.id ||
+        response?.data?.log?._id ||
+        response?.data?.log?.id ||
+        ""
+    ).trim();
+    if (!logId) return { ok: false, error: "Unable to save tool run to grow log." };
+    return { ok: true, toolRunId: ensured.toolRunId, logId };
+  }
 
   const log = await createPersonalLog({
     growId,

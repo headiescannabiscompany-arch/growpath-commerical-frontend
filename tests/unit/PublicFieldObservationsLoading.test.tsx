@@ -110,6 +110,7 @@ describe("Public Field Observations request ordering", () => {
       {
         id: "rose-result",
         title: "Mapped rose",
+        observationDate: "2026-08-12T00:00:00.000Z",
         identity: { confidence: "medium", verificationStatus: "ai_candidate" },
         evidenceAssets: [
           {
@@ -131,6 +132,7 @@ describe("Public Field Observations request ordering", () => {
     expect(
       screen.getByText("Native plants beside a shaded trail at Maydale Nature Classroom.")
     ).toBeTruthy();
+    expect(screen.getByText("Observed August 12, 2026")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Select first globe pin"));
     expect(screen.getByLabelText("Photos for Mapped rose")).toBeTruthy();
     expect(screen.getByLabelText("Evidence photo 1 for Mapped rose")).toBeTruthy();
@@ -139,5 +141,6 @@ describe("Public Field Observations request ordering", () => {
         "Native plants beside a shaded trail at Maydale Nature Classroom."
       )
     ).toHaveLength(2);
+    expect(screen.getAllByText("Observed August 12, 2026")).toHaveLength(2);
   });
 });

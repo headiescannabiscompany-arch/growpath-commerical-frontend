@@ -11,12 +11,7 @@ import {
   View
 } from "react-native";
 
-import {
-  getPersonalGrowTimeline,
-  listPersonalGrows,
-  type PersonalGrow,
-  type PersonalGrowTimelineEvent
-} from "@/api/grows";
+import { type PersonalGrow, type PersonalGrowTimelineEvent } from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
@@ -30,6 +25,12 @@ import {
   timelineEventPhotos,
   type GrowTimelineZoom
 } from "@/features/grows/timeline";
+import {
+  getWorkspaceGrow,
+  getWorkspaceGrowTimeline,
+  growWorkspaceBasePath,
+  type GrowWorkspace
+} from "@/features/grows/workspaceData";
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -210,7 +211,11 @@ function eventPayloadDetails(event: PersonalGrowTimelineEvent) {
   return [];
 }
 
-function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
+function sourceHref(
+  event: PersonalGrowTimelineEvent,
+  growId: string,
+  workspace: GrowWorkspace
+) {
   const sourceId = String(event.sourceId || "");
   const model = String(event.sourceModel || "").toLowerCase();
   const type = String(event.type || "").toLowerCase();
@@ -224,7 +229,7 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
     const linkedHref = sourceObjectHref({
       ...sourceCandidate,
       growId,
-      workspaceType: "personal"
+      workspaceType: workspace
     });
     if (linkedHref) return linkedHref;
   }
@@ -236,14 +241,15 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
       sourceType: "grow_log",
       sourceId,
       growId,
-      workspaceType: "personal"
+      workspaceType: workspace
     });
   }
   if (model.includes("toolrun") || type.includes("tool")) {
     return savedRunSourceHref({
       toolRunId: sourceId,
       growId,
-      sourceContext: "timeline"
+      sourceContext: "timeline",
+      workspaceType: workspace
     });
   }
   if (model.includes("task") || type.includes("task")) {
@@ -251,7 +257,7 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
       sourceType: "task",
       sourceId,
       growId,
-      workspaceType: "personal"
+      workspaceType: workspace
     });
   }
   if (model.includes("automation") || type.includes("automation")) {
@@ -259,7 +265,7 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
       sourceType: "automation",
       sourceId,
       growId,
-      workspaceType: "personal"
+      workspaceType: workspace
     });
   }
   if (model.includes("plant") || type.includes("plant")) {
@@ -267,7 +273,7 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
       sourceType: "plant",
       sourceId,
       growId,
-      workspaceType: "personal"
+      workspaceType: workspace
     });
   }
   if (model.includes("diagnosis") || type.includes("diagnosis")) {
@@ -275,7 +281,7 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
       sourceType: "ai_diagnosis",
       sourceId,
       growId,
-      workspaceType: "personal"
+      workspaceType: workspace
     });
   }
   if (model.includes("grow") || type.includes("grow")) {
@@ -283,7 +289,7 @@ function sourceHref(event: PersonalGrowTimelineEvent, growId: string) {
       sourceType: "grow",
       sourceId: growId,
       growId,
-      workspaceType: "personal"
+      workspaceType: workspace
     });
   }
   return "";
@@ -305,11 +311,16 @@ function sourceLabel(event: PersonalGrowTimelineEvent) {
   return "Open Source";
 }
 
-export default function GrowTimelineScreen() {
+export default function GrowTimelineScreen({
+  workspace = "personal"
+}: {
+  workspace?: GrowWorkspace;
+} = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowTimelineStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const basePath = growWorkspaceBasePath(workspace);
 
   const [events, setEvents] = useState<PersonalGrowTimelineEvent[]>([]);
   const [grow, setGrow] = useState<PersonalGrow | null>(null);
@@ -327,26 +338,19 @@ export default function GrowTimelineScreen() {
     setLoading(true);
     setError("");
     try {
-      const timelineRows = await getPersonalGrowTimeline(growId);
+      const [timelineRows, currentGrow] = await Promise.all([
+        getWorkspaceGrowTimeline(workspace, growId),
+        getWorkspaceGrow(workspace, growId)
+      ]);
       setEvents(timelineRows);
-      try {
-        const grows =
-          typeof listPersonalGrows === "function" ? await listPersonalGrows() : [];
-        setGrow(
-          grows.find(
-            (candidate) => String(candidate.id || (candidate as any)._id) === growId
-          ) || null
-        );
-      } catch {
-        setGrow(null);
-      }
+      setGrow(currentGrow);
     } catch {
       setEvents([]);
       setError("Failed to load grow timeline.");
     } finally {
       setLoading(false);
     }
-  }, [growId]);
+  }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
@@ -386,8 +390,8 @@ export default function GrowTimelineScreen() {
           .join("\n") || "Sharing a visual grow timeline from GrowPath."
     });
     if (selectedPhotos.length) query.set("photos", selectedPhotos.join(","));
-    return `/home/personal/forum/new-post?${query.toString()}`;
-  }, [grow?.name, growId, selectedPhotos, visibleEvents]);
+    return `${workspace === "commercial" ? "/home/commercial/community" : "/home/personal/forum/new-post"}?${query.toString()}`;
+  }, [grow?.name, growId, selectedPhotos, visibleEvents, workspace]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -406,6 +410,7 @@ export default function GrowTimelineScreen() {
         title="Viewer-friendly timeline export"
         helper="Create a readable narrative export with dates, notes, and photo links. Compliance reporting remains separate."
         source="grow_timeline"
+        workspace={workspace}
         growId={growId}
         workflows={["pdf-export"]}
       />
@@ -436,7 +441,7 @@ export default function GrowTimelineScreen() {
         </View>
         <View style={styles.filterRow}>
           <Link
-            href={`/home/personal/tools/pdf-export?growId=${encodeURIComponent(growId)}&presentation=timeline`}
+            href={`${basePath}/tools/${workspace === "commercial" ? "report" : "pdf-export"}?growId=${encodeURIComponent(growId)}&presentation=timeline`}
             asChild
           >
             <Pressable style={styles.sourceAction} accessibilityRole="link">
@@ -527,8 +532,8 @@ export default function GrowTimelineScreen() {
                     {detail}
                   </Text>
                 ))}
-                {sourceHref(event, growId) ? (
-                  <Link href={sourceHref(event, growId)} asChild>
+                {sourceHref(event, growId, workspace) ? (
+                  <Link href={sourceHref(event, growId, workspace)} asChild>
                     <Pressable
                       style={styles.sourceAction}
                       accessibilityRole="button"

@@ -95,7 +95,13 @@ describe("MediaEvidencePicker", () => {
           mimeType: "image/jpeg",
           fileName: "leaf-top.jpg",
           width: 1200,
-          height: 900
+          height: 900,
+          exif: {
+            GPSLatitude: 39.1023,
+            GPSLongitude: 77.0123,
+            GPSLongitudeRef: "W",
+            DateTimeOriginal: "2026:08:20 14:15:16"
+          }
         }
       ]
     });
@@ -133,12 +139,20 @@ describe("MediaEvidencePicker", () => {
           purpose: "diagnosis",
           durableUrl: "/uploads/evidence.jpg",
           uploadStatus: "uploaded",
-          aiUsable: true
+          aiUsable: true,
+          sourceCaptureMetadata: {
+            latitude: 39.1023,
+            longitude: -77.0123,
+            capturedLocalDate: "2026-08-20",
+            captureDatePrecision: "date",
+            source: "picker_exif"
+          }
         }),
         expect.objectContaining({ signal: expect.anything() })
       )
     );
     const personalRegistrationInput = mockCreate.mock.calls[0][0];
+    expect(mockPicker).toHaveBeenCalledWith(expect.objectContaining({ exif: true }));
     expect(personalRegistrationInput).not.toHaveProperty("workspaceId");
     expect(personalRegistrationInput).not.toHaveProperty("facilityId");
     expect(

@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import type { GrowWorkspace } from "@/features/grows/workspaceData";
 
 export type ContextualWorkflowKey =
   | "auto-grow-calendar"
@@ -66,6 +67,7 @@ type Props = {
   helper?: string;
   workflows: ContextualWorkflowKey[];
   source: string;
+  workspace?: GrowWorkspace;
   growId?: string;
   plantId?: string;
   logId?: string;
@@ -82,6 +84,7 @@ export function contextualWorkflowHref(
   context: Omit<Props, "title" | "helper" | "workflows">
 ) {
   const definition = WORKFLOWS[workflow];
+  const workspace = context.workspace || "personal";
   const query = new URLSearchParams({ source: context.source });
   if (context.growId) query.set("growId", context.growId);
   if (context.plantId) query.set("plantId", context.plantId);
@@ -91,6 +94,16 @@ export function contextualWorkflowHref(
       query.set(key, String(value));
     }
   });
+  if (workspace === "commercial") {
+    const directPaths: Partial<Record<ContextualWorkflowKey, string>> = {
+      "auto-grow-calendar": "/home/commercial/tools/auto-grow-calendar",
+      "harvest-readiness": "/home/commercial/tools/harvest-readiness",
+      "pdf-export": "/home/commercial/tools/report"
+    };
+    const path = directPaths[workflow] || "/home/commercial/tools";
+    if (!directPaths[workflow]) query.set("recommendedTool", workflow);
+    return `${path}?${query.toString()}`;
+  }
   return `${definition.path}?${query.toString()}`;
 }
 

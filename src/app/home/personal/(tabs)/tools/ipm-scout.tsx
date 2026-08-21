@@ -18,7 +18,12 @@ import {
   updateGrowpathModuleRecord,
   type GrowpathModuleRecord
 } from "@/api/growpathModules";
-import { getToolRun, updateIpmToolRunDecision, type ToolRun } from "@/api/toolRuns";
+import {
+  createTaskFromToolRun,
+  getToolRun,
+  updateIpmToolRunDecision,
+  type ToolRun
+} from "@/api/toolRuns";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
@@ -379,9 +384,11 @@ export function verifiedIpmPrefillMetadata({
 }
 
 export default function IpmScoutToolRoute({
-  backFallbackHref = "/home/personal/tools"
+  backFallbackHref = "/home/personal/tools",
+  workspaceType = "personal"
 }: {
   backFallbackHref?: string;
+  workspaceType?: "personal" | "commercial";
 } = {}) {
   const params = useLocalSearchParams<{ retryToolRunId?: string | string[] }>();
   const retryToolRunId = routeParam(params.retryToolRunId);
@@ -413,7 +420,7 @@ export default function IpmScoutToolRoute({
     setRetryRetainedEvidenceIds([]);
     void (async () => {
       try {
-        const savedRun = await getToolRun(retryToolRunId);
+        const savedRun = await getToolRun(retryToolRunId, { workspaceType });
         if (!active) return;
         const type = String(savedRun?.toolType || savedRun?.toolName || "")
           .trim()
@@ -429,7 +436,7 @@ export default function IpmScoutToolRoute({
           );
         }
         const ownedAssets = await getEvidenceAssetsByIds(evidenceIds, {
-          workspaceType: "personal"
+          workspaceType
         });
         if (!active) return;
         const byId = new Map(
@@ -469,11 +476,12 @@ export default function IpmScoutToolRoute({
     return () => {
       active = false;
     };
-  }, [retryToolRunId]);
+  }, [retryToolRunId, workspaceType]);
 
   return (
     <BackendCalculatorToolScreen
       backFallbackHref={backFallbackHref}
+      workspaceTypeOverride={workspaceType}
       externalInputKey={`ipm-evidence:${[...evidencePayload.evidenceAssetIds]
         .map(String)
         .sort()
@@ -1056,13 +1064,40 @@ ${JSON.stringify(values, null, 2)}`,
           label: "Create IPM Task Plan",
           variant: "secondary",
           pendingLabel: "Creating...",
-          disabled: workspaceType === "commercial" || (!growId && !payload.facilityId),
+          disabled: !growId && !payload.facilityId,
           successMessage: "Created IPM tasks.",
           onPress: async () => {
             if (workspaceType === "commercial") {
-              throw new Error(
-                "Commercial IPM task creation is not connected yet; no Personal task was created."
+              const toolRunId = String(toolRun?.id || toolRun?._id || "");
+              if (!toolRunId) {
+                throw new Error("Save the Commercial IPM result before creating tasks.");
+              }
+              await Promise.all(
+                ipmTaskPlan(outputs).map((task) =>
+                  createTaskFromToolRun(
+                    toolRunId,
+                    {
+                      growId,
+                      linkedGrowId: growId,
+                      plantId: plantContext.plantId || undefined,
+                      linkedPlantId: plantContext.plantId || undefined,
+                      linkedToolRunId: toolRunId,
+                      title: task.title,
+                      description: task.description,
+                      priority: task.priority,
+                      dueDate: task.dueDate,
+                      endAt: task.endAt,
+                      allDay: task.allDay,
+                      calendarType: task.calendarType,
+                      sourceStage: task.sourceStage,
+                      reminderPlan: task.reminderPlan,
+                      recurrence: task.recurrence
+                    },
+                    { workspaceType: "commercial" }
+                  )
+                )
               );
+              return;
             }
             const tasks = ipmTaskPlan(outputs);
             if (payload.facilityId) {

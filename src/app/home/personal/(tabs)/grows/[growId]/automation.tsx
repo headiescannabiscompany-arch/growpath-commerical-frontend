@@ -11,11 +11,17 @@ import {
 } from "react-native";
 
 import {
+  createCommercialAutomationPolicy,
   createPersonalAutomationPolicy,
+  deleteCommercialAutomationPolicy,
   deletePersonalAutomationPolicy,
+  listCommercialAutomationEvents,
+  listCommercialAutomationPolicies,
   listPersonalAutomationEvents,
   listPersonalAutomationPolicies,
+  testCommercialAutomationPolicy,
   testPersonalAutomationPolicy,
+  updateCommercialAutomationPolicy,
   updatePersonalAutomationPolicy
 } from "@/api/automation";
 import type {
@@ -183,7 +189,11 @@ function eventSummary(event: AutomationEvent) {
   return `${event.processed ? "Processed" : "Pending"} | matched ${matches} policy(s)`;
 }
 
-export default function GrowAutomationScreen() {
+export default function GrowAutomationScreen({
+  workspace = "personal"
+}: {
+  workspace?: "personal" | "commercial";
+}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowAutomationStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
@@ -205,10 +215,17 @@ export default function GrowAutomationScreen() {
     setLoading(true);
     setError("");
     try {
-      const [policyRows, eventRows] = await Promise.all([
-        listPersonalAutomationPolicies({ growId }),
-        listPersonalAutomationEvents({ growId })
-      ]);
+      const [policyRows, eventRows] = await Promise.all(
+        workspace === "commercial"
+          ? [
+              listCommercialAutomationPolicies({ growId }),
+              listCommercialAutomationEvents({ growId })
+            ]
+          : [
+              listPersonalAutomationPolicies({ growId }),
+              listPersonalAutomationEvents({ growId })
+            ]
+      );
       setPolicies(policyRows);
       setEvents(eventRows);
     } catch {
@@ -218,7 +235,7 @@ export default function GrowAutomationScreen() {
     } finally {
       setLoading(false);
     }
-  }, [growId]);
+  }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
@@ -250,7 +267,7 @@ export default function GrowAutomationScreen() {
       </Text>
       <PersonalFeedPlacement
         placement="top"
-        routeKey="personal_grows_growid_automation"
+        routeKey={`${workspace}_grows_growid_automation`}
         longContent
       />
       <GrowWorkspaceNav growId={growId} active="automation" />
@@ -260,7 +277,13 @@ export default function GrowAutomationScreen() {
           disabled={!growId || busy}
           onPress={() =>
             runAction(
-              () => createPersonalAutomationPolicy(dewPointPolicy(growId)),
+              () =>
+                workspace === "commercial"
+                  ? createCommercialAutomationPolicy({
+                      ...dewPointPolicy(growId),
+                      scope: "grow"
+                    })
+                  : createPersonalAutomationPolicy(dewPointPolicy(growId)),
               "Dew Point automation added."
             )
           }
@@ -278,7 +301,13 @@ export default function GrowAutomationScreen() {
           disabled={!growId || busy}
           onPress={() =>
             runAction(
-              () => createPersonalAutomationPolicy(diagnosisPolicy(growId)),
+              () =>
+                workspace === "commercial"
+                  ? createCommercialAutomationPolicy({
+                      ...diagnosisPolicy(growId),
+                      scope: "grow"
+                    })
+                  : createPersonalAutomationPolicy(diagnosisPolicy(growId)),
               "AI diagnosis automation added."
             )
           }
@@ -301,7 +330,7 @@ export default function GrowAutomationScreen() {
 
       <PersonalFeedPlacement
         placement="middle"
-        routeKey="personal_grows_growid_automation"
+        routeKey={`${workspace}_grows_growid_automation`}
         longContent
       />
 
@@ -327,9 +356,13 @@ export default function GrowAutomationScreen() {
               onPress={() =>
                 runAction(
                   () =>
-                    updatePersonalAutomationPolicy(policy.id, {
-                      enabled: !policy.enabled
-                    }),
+                    workspace === "commercial"
+                      ? updateCommercialAutomationPolicy(policy.id, {
+                          enabled: !policy.enabled
+                        })
+                      : updatePersonalAutomationPolicy(policy.id, {
+                          enabled: !policy.enabled
+                        }),
                   policy.enabled ? "Automation disabled." : "Automation enabled."
                 )
               }
@@ -349,7 +382,13 @@ export default function GrowAutomationScreen() {
               disabled={busy}
               onPress={() =>
                 runAction(
-                  () => testPersonalAutomationPolicy(policy.id, samplePayload(policy)),
+                  () =>
+                    workspace === "commercial"
+                      ? testCommercialAutomationPolicy(policy.id, {
+                          growId,
+                          payload: samplePayload(policy)
+                        })
+                      : testPersonalAutomationPolicy(policy.id, samplePayload(policy)),
                   "Dry-run completed."
                 )
               }
@@ -361,7 +400,10 @@ export default function GrowAutomationScreen() {
               disabled={busy}
               onPress={() =>
                 runAction(
-                  () => deletePersonalAutomationPolicy(policy.id),
+                  () =>
+                    workspace === "commercial"
+                      ? deleteCommercialAutomationPolicy(policy.id)
+                      : deletePersonalAutomationPolicy(policy.id),
                   "Automation deleted."
                 )
               }
@@ -399,7 +441,7 @@ export default function GrowAutomationScreen() {
 
       <PersonalFeedPlacement
         placement="bottom"
-        routeKey="personal_grows_growid_automation"
+        routeKey={`${workspace}_grows_growid_automation`}
         longContent
       />
     </ScrollView>

@@ -95,7 +95,10 @@ describe("GrowToolsScreen", () => {
     const screen = render(<GrowToolsScreen />);
 
     await waitFor(() =>
-      expect(mockListToolRuns).toHaveBeenCalledWith({ growId: "grow-1" })
+      expect(mockListToolRuns).toHaveBeenCalledWith({
+        growId: "grow-1",
+        workspaceType: "personal"
+      })
     );
     expect(screen.getByText("Harvest readiness calculator")).toBeTruthy();
     expect(
@@ -115,7 +118,11 @@ describe("GrowToolsScreen", () => {
 
     fireEvent.press(screen.getByText("View result"));
 
-    await waitFor(() => expect(mockGetToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("run-1", {
+        workspaceType: "personal"
+      })
+    );
     expect(screen.getByText("dew_point_guard result")).toBeTruthy();
     expect(screen.getByText("High condensation risk detected.")).toBeTruthy();
     expect(screen.getAllByText("risk").length).toBeGreaterThan(0);
@@ -127,11 +134,23 @@ describe("GrowToolsScreen", () => {
     ).toBeTruthy();
 
     fireEvent.press(screen.getByText("Save to Grow Log"));
-    await waitFor(() => expect(mockSaveToolRunToLog).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockSaveToolRunToLog).toHaveBeenCalledWith(
+        "run-1",
+        { growId: "grow-1", linkedGrowId: "grow-1" },
+        { workspaceType: "personal" }
+      )
+    );
     await waitFor(() => expect(screen.getByText("Saved to grow log.")).toBeTruthy());
 
     fireEvent.press(screen.getByText("Create Task"));
-    await waitFor(() => expect(mockCreateTaskFromToolRun).toHaveBeenCalledWith("run-1"));
+    await waitFor(() =>
+      expect(mockCreateTaskFromToolRun).toHaveBeenCalledWith(
+        "run-1",
+        { growId: "grow-1", linkedGrowId: "grow-1" },
+        { workspaceType: "personal" }
+      )
+    );
   });
 
   it("keeps cannabis harvest workflows out of non-cannabis grows", async () => {

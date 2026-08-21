@@ -11,13 +11,7 @@ import {
   View
 } from "react-native";
 
-import {
-  createPersonalTask,
-  deletePersonalTask,
-  listPersonalTasks,
-  updatePersonalTask,
-  type PersonalTask
-} from "@/api/tasks";
+import { type PersonalTask } from "@/api/tasks";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
@@ -28,6 +22,13 @@ import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
+import {
+  createWorkspaceTask,
+  deleteWorkspaceTask,
+  listWorkspaceTasks,
+  updateWorkspaceTask,
+  type GrowWorkspace
+} from "@/features/grows/workspaceData";
 
 const priorities = ["low", "medium", "high"] as const;
 const sourceTypes = [
@@ -244,7 +245,7 @@ function taskLinks(task: PersonalTask) {
     .join(" | ");
 }
 
-function taskSourcePath(task: PersonalTask, growId: string) {
+function taskSourcePath(task: PersonalTask, growId: string, workspace: GrowWorkspace) {
   let sourceType = String(task.sourceType || "");
   if (!sourceType && task.linkedLogId) sourceType = "grow_log";
   else if (!sourceType && (task.sourceToolRunId || task.linkedToolRunId)) {
@@ -271,7 +272,8 @@ function taskSourcePath(task: PersonalTask, growId: string) {
       toolRunId,
       growId,
       sourceContext: "task",
-      sourceTaskId: getRowId(task)
+      sourceTaskId: getRowId(task),
+      workspaceType: workspace
     });
   }
   return sourceObjectHref({
@@ -279,11 +281,15 @@ function taskSourcePath(task: PersonalTask, growId: string) {
     sourceType,
     sourceId,
     growId,
-    workspaceType: "personal"
+    workspaceType: workspace
   });
 }
 
-function explicitLinkedObjectPath(task: PersonalTask, growId: string) {
+function explicitLinkedObjectPath(
+  task: PersonalTask,
+  growId: string,
+  workspace: GrowWorkspace
+) {
   const storefrontSlug = storefrontAlias(task);
   const sourceByPriority = [
     task.linkedProductId && {
@@ -345,7 +351,7 @@ function explicitLinkedObjectPath(task: PersonalTask, growId: string) {
     ...(sourceByPriority as Record<string, string | undefined>),
     storefrontSlug,
     growId,
-    workspaceType: "personal"
+    workspaceType: workspace
   });
 }
 
@@ -455,11 +461,16 @@ export const createGrowTasksStyles = (palette: ThemePalette) =>
     chipTextOn: { color: palette.accentText }
   });
 
-export default function GrowTasksScreen() {
+export default function GrowTasksScreen({
+  workspace = "personal"
+}: {
+  workspace?: GrowWorkspace;
+} = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowTasksStyles(palette), [palette]);
   const entitlements = useEntitlements();
-  const canWriteTasks = entitlements.can(CAPABILITY_KEYS.TASK_REMINDERS);
+  const canWriteTasks =
+    workspace === "commercial" || entitlements.can(CAPABILITY_KEYS.TASK_REMINDERS);
   const params = useLocalSearchParams<{
     growId?: string | string[];
     taskId?: string | string[];
@@ -507,14 +518,14 @@ export default function GrowTasksScreen() {
     }
     setLoading(true);
     try {
-      const rows = await listPersonalTasks({ growId });
+      const rows = await listWorkspaceTasks(workspace, growId);
       setTasks(Array.isArray(rows) ? rows : []);
     } catch {
       setTasks([]);
     } finally {
       setLoading(false);
     }
-  }, [growId]);
+  }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
@@ -528,7 +539,7 @@ export default function GrowTasksScreen() {
     setCreating(true);
     setFeedback("");
     try {
-      const created = await createPersonalTask({
+      const created = await createWorkspaceTask(workspace, {
         growId,
         linkedGrowId: growId,
         title: newTitle.trim(),
@@ -578,7 +589,10 @@ export default function GrowTasksScreen() {
       contentContainerStyle={styles.content}
     >
       <Text style={styles.title}>Tasks</Text>
-      <Text style={styles.subtitle}>Personal grow tasks linked to this grow.</Text>
+      <Text style={styles.subtitle}>
+        {workspace === "commercial" ? "Commercial" : "Personal"} grow tasks linked to this
+        grow.
+      </Text>
       <PersonalFeedPlacement
         placement="top"
         routeKey="personal_grows_growid_tasks"
@@ -590,6 +604,7 @@ export default function GrowTasksScreen() {
         title="Task planning tools"
         helper="Build watering, feeding, topdress, milestone, and grow-calendar tasks with this grow already selected."
         source="grow_tasks"
+        workspace={workspace}
         growId={growId}
         workflows={[
           "auto-grow-calendar",
@@ -766,8 +781,8 @@ export default function GrowTasksScreen() {
           const done = Boolean(task?.completed);
           const source = taskSource(task);
           const links = taskLinks(task);
-          const sourcePath = taskSourcePath(task, growId);
-          const linkedObjectPath = explicitLinkedObjectPath(task, growId);
+          const sourcePath = taskSourcePath(task, growId, workspace);
+          const linkedObjectPath = explicitLinkedObjectPath(task, growId, workspace);
           const showLinkedObjectPath =
             linkedObjectPath && (!sourcePath || linkedObjectPath !== sourcePath);
           return (
@@ -818,9 +833,12 @@ export default function GrowTasksScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={done ? "Reopen task" : "Complete task"}
                         onPress={async () => {
-                          const updated = await updatePersonalTask(id, {
-                            completed: !done
-                          });
+                          const updated = await updateWorkspaceTask(
+                            workspace,
+                            id,
+                            { completed: !done },
+                            growId
+                          );
                           if (updated) {
                             setFeedback(done ? "Task reopened." : "Task completed.");
                             await load();
@@ -842,7 +860,12 @@ export default function GrowTasksScreen() {
                             const snoozeUntil = new Date(
                               Date.now() + 86400000
                             ).toISOString();
-                            const updated = await updatePersonalTask(id, { snoozeUntil });
+                            const updated = await updateWorkspaceTask(
+                              workspace,
+                              id,
+                              { snoozeUntil },
+                              growId
+                            );
                             if (updated) {
                               setFeedback("Task snoozed until tomorrow.");
                               await load();
@@ -881,7 +904,11 @@ export default function GrowTasksScreen() {
                         accessibilityRole="button"
                         accessibilityLabel="Delete task"
                         onPress={async () => {
-                          const deleted = await deletePersonalTask(id);
+                          const deleted = await deleteWorkspaceTask(
+                            workspace,
+                            id,
+                            growId
+                          );
                           if (deleted) {
                             setFeedback("Task archived.");
                             await load();

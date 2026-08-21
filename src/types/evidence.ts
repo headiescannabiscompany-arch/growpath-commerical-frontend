@@ -20,6 +20,18 @@ export type EvidenceSource = "camera" | "library" | "upload" | "generated" | "ex
 
 export type EvidenceWorkspaceType = "personal" | "commercial" | "facility";
 
+export type EvidenceSourceCaptureMetadata = {
+  latitude?: number;
+  longitude?: number;
+  /** Absolute instant only when the source supplied a timezone or offset. */
+  capturedAt?: string;
+  /** Camera-local calendar date retained without inventing a timezone. */
+  capturedLocalDate?: string;
+  captureDatePrecision?: "date" | "instant";
+  /** Private picker/file metadata offered back to the owner for confirmation. */
+  source: "picker_exif";
+};
+
 export type AiInspectionView = {
   sourceEvidenceAssetId: string;
   workspaceType?: EvidenceWorkspaceType;
@@ -93,6 +105,8 @@ export type EvidenceAsset = EvidenceLinks & {
   width?: number;
   height?: number;
   durationSeconds?: number;
+  /** Private original-capture metadata retained before any upload normalization. */
+  sourceCaptureMetadata?: EvidenceSourceCaptureMetadata;
   source: EvidenceSource;
   purpose: EvidencePurpose;
   uploadStatus: EvidenceUploadStatus;

@@ -115,10 +115,55 @@ describe("sourceObjectHref", () => {
     expect(
       sourceObjectHref({
         sourceType: "grow",
-        sourceId: "evidence-run-1",
+        sourceId: "commercial-grow-1",
         workspaceType: "commercial"
       })
-    ).toBe("/home/commercial/evidence-runs/evidence-run-1");
+    ).toBe("/home/commercial/grows/commercial-grow-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "plant",
+        sourceId: "plant-1",
+        growId: "commercial-grow-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/grows/commercial-grow-1/plants?plantId=plant-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "grow_log",
+        sourceId: "log-1",
+        growId: "commercial-grow-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/grows/commercial-grow-1/journal?logId=log-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "automation",
+        sourceId: "automation-1",
+        growId: "commercial-grow-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/grows/commercial-grow-1/automation");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "ai_diagnosis",
+        sourceId: "diagnosis-1",
+        growId: "commercial-grow-1",
+        linkedPlantId: "plant-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/tools/diagnose?growId=commercial-grow-1&plantId=plant-1");
+
+    expect(
+      sourceObjectHref({
+        sourceType: "tool_run",
+        sourceId: "tool-run-1",
+        workspaceType: "commercial"
+      })
+    ).toBe("/home/commercial/tools/saved-runs?toolRunId=tool-run-1");
 
     expect(
       sourceObjectHref({

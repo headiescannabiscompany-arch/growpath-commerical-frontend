@@ -152,6 +152,38 @@ function observationsFromResponse(response: any): FieldObservation[] {
     : [];
 }
 
+/**
+ * Public endpoints historically returned the contributor-authored public description as
+ * top-level `notes`. Normalize that sanitized public DTO at this boundary, then remove the
+ * ambiguous field so public screens can never fall back to an owner's private working notes.
+ */
+function publicObservationsFromResponse(response: any): FieldObservation[] {
+  const rows = response?.observations ?? response?.data?.observations ?? response ?? [];
+  return Array.isArray(rows)
+    ? rows.map((observation) => {
+        const { notes: publicDtoNotes, ...publicObservation } = observation || {};
+        const publication =
+          publicObservation.publication &&
+          typeof publicObservation.publication === "object"
+            ? publicObservation.publication
+            : {};
+        const publicNotes = String(
+          publication.publicNotes || publicDtoNotes || ""
+        ).trim();
+
+        return {
+          ...publicObservation,
+          publication: {
+            ...publication,
+            publicNotes
+          },
+          id: entityId(publicObservation),
+          _id: entityId(publicObservation)
+        };
+      })
+    : [];
+}
+
 export async function listFieldStudies(): Promise<FieldStudy[]> {
   return studiesFromResponse(await apiRequest("/api/personal/field-studies"));
 }
@@ -281,7 +313,7 @@ export async function listPublicFieldObservations(
   input: string | PublicFieldObservationQuery = ""
 ): Promise<FieldObservation[]> {
   const query = typeof input === "string" ? { q: input } : input;
-  return observationsFromResponse(
+  return publicObservationsFromResponse(
     await apiRequest("/api/personal/field-studies/public", {
       auth: true,
       params: {
@@ -306,6 +338,6 @@ export async function getPublicFieldStudy(slug: string): Promise<{
   const study = response?.study ?? response?.data?.study;
   return {
     study: { ...study, id: entityId(study), _id: entityId(study) },
-    observations: observationsFromResponse(response)
+    observations: publicObservationsFromResponse(response)
   };
 }

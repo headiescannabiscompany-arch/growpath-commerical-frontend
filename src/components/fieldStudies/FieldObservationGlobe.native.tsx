@@ -1,7 +1,8 @@
 ﻿import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { FieldObservation } from "@/api/fieldStudies";
+import { publicObservationCoordinates } from "@/features/fieldStudies/publicObservation";
 import { useAppTheme } from "@/theme/appTheme";
 
 export type FieldObservationViewport = {
@@ -19,17 +20,41 @@ type Props = {
   compact?: boolean;
 };
 
-export default function FieldObservationGlobe({ observations, compact = false }: Props) {
+function observationId(observation: FieldObservation) {
+  return String(observation.id || observation._id || "");
+}
+
+function observationName(observation: FieldObservation) {
+  return String(
+    observation.identity?.commonName || observation.title || "Shared plant finding"
+  );
+}
+
+function observationRegion(observation: FieldObservation) {
+  return String(
+    observation.observationContext?.region ||
+      observation.location?.label ||
+      "Approximate shared location"
+  );
+}
+
+export default function FieldObservationGlobe({
+  observations,
+  selectedObservationId,
+  onSelectObservations,
+  compact = false
+}: Props) {
   const { palette } = useAppTheme();
   const mapped = observations.filter(
     (observation) =>
-      Number.isFinite(Number(observation.location?.latitude)) &&
-      Number.isFinite(Number(observation.location?.longitude))
-  ).length;
+      Boolean(observationId(observation)) &&
+      Boolean(publicObservationCoordinates(observation))
+  );
+  const visible = mapped.slice(0, compact ? 3 : 8);
 
   return (
     <View
-      accessibilityLabel={`${mapped} shared plant observations. Interactive globe available in the GrowPathAI web experience.`}
+      accessibilityLabel={`${mapped.length} mapped shared plant observations.`}
       style={[
         styles.panel,
         { backgroundColor: palette.accentSoft },
@@ -37,19 +62,57 @@ export default function FieldObservationGlobe({ observations, compact = false }:
       ]}
     >
       <Text style={[styles.title, { color: palette.text }]}>
-        {mapped} shared locations
+        {mapped.length} mapped shared locations
       </Text>
       <Text style={[styles.body, { color: palette.textMuted }]}>
-        The interactive 3D globe is currently available on the GrowPathAI website. The
-        complete accessible observation list remains available below.
+        {compact
+          ? "Open Nature to explore these shared findings."
+          : "Select a mapped finding to open its public photos, identity, and review details."}
       </Text>
+      {visible.length ? (
+        <View style={styles.locationList}>
+          {visible.map((observation) => {
+            const id = observationId(observation);
+            const selected = id === selectedObservationId;
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                key={id}
+                onPress={() => onSelectObservations([id])}
+                style={[
+                  styles.locationRow,
+                  { backgroundColor: palette.surface, borderColor: palette.border },
+                  selected && { borderColor: palette.accent }
+                ]}
+              >
+                <Text style={[styles.locationTitle, { color: palette.text }]}>
+                  {observationName(observation)}
+                </Text>
+                <Text style={[styles.locationMeta, { color: palette.textMuted }]}>
+                  {observationRegion(observation)} ·{" "}
+                  {observation.location?.precision || "approximate"}
+                </Text>
+              </Pressable>
+            );
+          })}
+          {mapped.length > visible.length ? (
+            <Text style={[styles.more, { color: palette.textMuted }]}>
+              {mapped.length - visible.length} more mapped findings in the list below
+            </Text>
+          ) : null}
+        </View>
+      ) : (
+        <Text style={[styles.empty, { color: palette.textMuted }]}>
+          No public mapped findings match these filters yet.
+        </Text>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   panel: {
-    alignItems: "center",
     borderRadius: 16,
     justifyContent: "center",
     minHeight: 280,
@@ -63,7 +126,12 @@ const styles = StyleSheet.create({
   body: {
     lineHeight: 21,
     marginTop: 8,
-    maxWidth: 520,
-    textAlign: "center"
-  }
+    maxWidth: 520
+  },
+  locationList: { gap: 8, marginTop: 16, width: "100%" },
+  locationRow: { borderRadius: 12, borderWidth: 1, padding: 12 },
+  locationTitle: { fontSize: 16, fontWeight: "800" },
+  locationMeta: { fontSize: 13, lineHeight: 18, marginTop: 3 },
+  more: { fontSize: 13, marginTop: 2 },
+  empty: { fontSize: 14, marginTop: 16 }
 });

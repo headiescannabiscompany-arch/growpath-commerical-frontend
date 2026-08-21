@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { Link, useLocalSearchParams, usePathname } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -10,25 +10,21 @@ import {
   View
 } from "react-native";
 
-import {
-  getPersonalGrowTimeline,
-  listPersonalGrows,
-  type PersonalGrow,
-  type PersonalGrowTimelineEvent
-} from "@/api/grows";
-import { listPersonalLogs } from "@/api/logs";
-import { listPersonalTasks } from "@/api/tasks";
+import { type PersonalGrow, type PersonalGrowTimelineEvent } from "@/api/grows";
 import { listToolRuns } from "@/api/toolRuns";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
+import { coerceParam, fmtDate, isCannabisGrow } from "@/features/grows/routeUtils";
 import {
-  coerceParam,
-  findGrowById,
-  fmtDate,
-  isCannabisGrow
-} from "@/features/grows/routeUtils";
+  getWorkspaceGrow,
+  getWorkspaceGrowTimeline,
+  growWorkspaceBasePath,
+  listWorkspaceLogs,
+  listWorkspaceTasks,
+  type GrowWorkspace
+} from "@/features/grows/workspaceData";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
@@ -136,9 +132,9 @@ function hasExplicitSharedSource(event: PersonalGrowTimelineEvent) {
   );
 }
 
-function timelinePreviewHref(event: PersonalGrowTimelineEvent) {
+function timelinePreviewHref(event: PersonalGrowTimelineEvent, workspace: GrowWorkspace) {
   if (!hasExplicitSharedSource(event)) return "";
-  return sourceObjectHref({ ...(event as any), workspaceType: "personal" });
+  return sourceObjectHref({ ...(event as any), workspaceType: workspace });
 }
 
 function shareGrowHref(grow: PersonalGrow | null, growId: string, basePath: string) {
@@ -167,12 +163,14 @@ function shareGrowHref(grow: PersonalGrow | null, growId: string, basePath: stri
 
 function TimelinePreviewItem({
   event,
-  styles
+  styles,
+  workspace
 }: {
   event: PersonalGrowTimelineEvent;
   styles: GrowOverviewStyles;
+  workspace: GrowWorkspace;
 }) {
-  const href = timelinePreviewHref(event);
+  const href = timelinePreviewHref(event, workspace);
   const content = (
     <>
       <Text style={styles.timelineTitle}>{event.title}</Text>
@@ -204,13 +202,10 @@ function TimelinePreviewItem({
   return <View style={styles.timelineItem}>{content}</View>;
 }
 
-function GrowOverviewContent() {
+function GrowOverviewContent({ workspace }: { workspace: GrowWorkspace }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowOverviewStyles(palette), [palette]);
-  const pathname = usePathname?.() || "";
-  const basePath = pathname.startsWith("/home/commercial")
-    ? "/home/commercial"
-    : "/home/personal";
+  const basePath = growWorkspaceBasePath(workspace);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
 
@@ -230,14 +225,13 @@ function GrowOverviewContent() {
     setLoading(true);
     setError("");
     try {
-      const [grows, logs, tasks, runs, timelineRows] = await Promise.all([
-        listPersonalGrows(),
-        listPersonalLogs({ growId }),
-        listPersonalTasks({ growId }),
-        listToolRuns({ growId }),
-        getPersonalGrowTimeline(growId)
+      const [current, logs, tasks, runs, timelineRows] = await Promise.all([
+        getWorkspaceGrow(workspace, growId),
+        listWorkspaceLogs(workspace, growId),
+        listWorkspaceTasks(workspace, growId),
+        listToolRuns({ growId, workspaceType: workspace }),
+        getWorkspaceGrowTimeline(workspace, growId)
       ]);
-      const current = findGrowById(grows, growId);
       setGrow(current);
       setCannabisGrow(isCannabisGrow(current, runs));
       setCounts({
@@ -256,7 +250,7 @@ function GrowOverviewContent() {
     } finally {
       setLoading(false);
     }
-  }, [growId]);
+  }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
@@ -377,6 +371,7 @@ function GrowOverviewContent() {
           title="Pheno / Genetics"
           helper="Compare plants with this grow already selected. Results save through the same shared ToolRun workflow."
           source="grow_detail_pheno"
+          workspace={workspace}
           growId={growId}
           workflows={["pheno-matrix"]}
         />
@@ -387,6 +382,7 @@ function GrowOverviewContent() {
           title="Harvest / Diagnosis"
           helper="Use maturity observations and photos, then create a harvest recheck task from the saved result."
           source="grow_detail_harvest"
+          workspace={workspace}
           growId={growId}
           workflows={["harvest-readiness"]}
         />
@@ -396,7 +392,12 @@ function GrowOverviewContent() {
         <Text style={styles.sectionTitle}>Recent timeline</Text>
         {timeline.length ? (
           timeline.map((event) => (
-            <TimelinePreviewItem key={event.id} event={event} styles={styles} />
+            <TimelinePreviewItem
+              key={event.id}
+              event={event}
+              styles={styles}
+              workspace={workspace}
+            />
           ))
         ) : (
           <Text style={styles.empty}>
@@ -471,14 +472,15 @@ function GrowOverviewContent() {
   );
 }
 
-export default function GrowOverviewScreen() {
-  const pathname = usePathname?.() || "";
-  const basePath = pathname.startsWith("/home/commercial")
-    ? "/home/commercial"
-    : "/home/personal";
+export default function GrowOverviewScreen({
+  workspace = "personal"
+}: {
+  workspace?: GrowWorkspace;
+} = {}) {
+  const basePath = growWorkspaceBasePath(workspace);
   return (
     <ScreenBoundary title="Grow overview" showBack backFallbackHref={`${basePath}/grows`}>
-      <GrowOverviewContent />
+      <GrowOverviewContent workspace={workspace} />
     </ScreenBoundary>
   );
 }
