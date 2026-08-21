@@ -59,6 +59,12 @@ repeating already accepted work.
 
 ## Rules
 
+The compact product contract and execution order are frozen in
+`docs/qa/CANONICAL_PRODUCT_ACCEPTANCE_MATRIX_2026-08-21.md`. This file retains detailed
+history and evidence; it must not be used to invent a different workflow or reopen a
+live-accepted slice without a regression, requirement change, or final-SHA cross-cutting
+crawl.
+
 - Do not reopen implementation already backed by a deployed SHA and production
   evidence unless a current regression reproduces a defect.
 - Do not mark local implementation complete as production acceptance.
@@ -1142,27 +1148,27 @@ public visibility, or screenshot/video acceptance still called out below.
   cost-limit observation, and final QA-session cleanup remain before `[x]`.
 
 - [x] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
-  inspected, without treating them as additional photos or independent evidence.
-  Let an authorized user open each view at full size, save an individual image,
-  and export a viewer-friendly inspection-evidence package with source-photo index,
-  crop bounds/strategy, provider detail, analysis/review ID, policy version, and the
-  explicit derived-evidence limitation. Apply this shared behavior to every AI
-  still-image inspection workflow and its saved result; never fabricate a crop from
-  a count-only response or expose another workspace's protected media. Frontend
-  merge `8ba74a0ae84a9718515cb3a7b70061b67e2f6a2e` is deployed and lets Saved Runs
-  render the shared Evidence Review panel only when digest-bound diagnostic views
-  exist. Frontend merge `a7cd087e18e66a553998dfa6d2be7d1a76bd3a3c` and backend merge
-  `054b5ef4fb687a0a013a431c9d1b5369520bcc86` recover only exact, same-owner,
-  same-workspace, digest-matched manifests and keep list responses lightweight;
-  count-only historical results remain crop-free. Frontend merge
-  `ef673a03dc87deecf94cbb7c1df921ba710aa8e0` prevents a retained retry from
-  overwriting its fresh charged result. Production Harvest review
-  `6a8026ec1d624a9bedb94211` retained 4 originals plus 24 supplemental views.
-  Saved ToolRun `6a8027191d624a9bedb9421c` reopened the Evidence Review, source-photo
-  and crop-bound View/Save controls, viewer-friendly export, and a full-size 648 x
-  648 exact crop with its bounds and derived-evidence limitation. The overwrite
-  regression passed the full 9m37s gate; production served bundle
-  `index-c79e0e6e23609e121dafb15bece3d93f.js` for this acceptance.
+      inspected, without treating them as additional photos or independent evidence.
+      Let an authorized user open each view at full size, save an individual image,
+      and export a viewer-friendly inspection-evidence package with source-photo index,
+      crop bounds/strategy, provider detail, analysis/review ID, policy version, and the
+      explicit derived-evidence limitation. Apply this shared behavior to every AI
+      still-image inspection workflow and its saved result; never fabricate a crop from
+      a count-only response or expose another workspace's protected media. Frontend
+      merge `8ba74a0ae84a9718515cb3a7b70061b67e2f6a2e` is deployed and lets Saved Runs
+      render the shared Evidence Review panel only when digest-bound diagnostic views
+      exist. Frontend merge `a7cd087e18e66a553998dfa6d2be7d1a76bd3a3c` and backend merge
+      `054b5ef4fb687a0a013a431c9d1b5369520bcc86` recover only exact, same-owner,
+      same-workspace, digest-matched manifests and keep list responses lightweight;
+      count-only historical results remain crop-free. Frontend merge
+      `ef673a03dc87deecf94cbb7c1df921ba710aa8e0` prevents a retained retry from
+      overwriting its fresh charged result. Production Harvest review
+      `6a8026ec1d624a9bedb94211` retained 4 originals plus 24 supplemental views.
+      Saved ToolRun `6a8027191d624a9bedb9421c` reopened the Evidence Review, source-photo
+      and crop-bound View/Save controls, viewer-friendly export, and a full-size 648 x
+      648 exact crop with its bounds and derived-evidence limitation. The overwrite
+      regression passed the full 9m37s gate; production served bundle
+      `index-c79e0e6e23609e121dafb15bece3d93f.js` for this acceptance.
 - [ ] Complete a route-by-route live acceptance crawl of Personal, Commercial,
       Facility, public, and Admin surfaces on the final candidate SHAs. Exercise the
       common path forward from every page, not only route loading, and retain exact
@@ -1229,34 +1235,34 @@ public visibility, or screenshot/video acceptance still called out below.
   result on 2026-08-15, so populated imagery and every public handoff still require
   owner-data acceptance rather than fabricated records.
 - [~] Surface frequent deep links and next actions beside the records and tools where
-      people naturally need them, including videos, live/premiere viewing, Plant ID,
-      saved AI results, grows, storefronts, courses, Forum/Q&A, and shared timelines.
-      Avoid duplicate top-level navigation when a contextual action is clearer. The
-      authenticated Admin Personal saved-result production route on 2026-08-15 exposed
-      focused follow-up questions, saved-evidence rerun, correction, private location,
-      grow-log/task writes, Forum sharing, summary sharing/copying, and Archive beside
-      the selected result. Existing contextual panels retain Grow/Plant/source context,
-      the Lives directory links sessions and Live Studio, and public storefront video
-      cards now reach the canonical watch/comment/report/share detail. The final
-      route-by-route crawl must still exercise the path forward from every listed
-      surface and fix any remaining missing or duplicate action before `[x]`.
-      The 2026-08-15 Admin Personal production pass verified Video discovery,
-      Following-only filtering, storage/allotment, upload/provider/visibility fields,
-      Grow Interests, exact video detail, Follow/Report/share/comments, Forum media
-      links, the Lives directory, Live Studio, and the retained hosted-live draft.
-      It found a real static-host failure: a public video API detail returned 200 while
-      its canonical `/videos/{id}` URL returned Render 404. Frontend merge
-      `660b1d28782e4559a58172c01ec067d1e20d59fb` and the matching saved Render rewrite
-      table repaired every root dynamic route family; exact Video, Store, and Forum
-      probes returned 200, and the populated video/Forum paths rendered their intended
-      actions. A later Headies owner pass showed 674 MB/10 GB, two owner-published
-      videos, Watch/Edit/Unpublish/Remove controls, and a fully populated Edit form
-      with first-party media, rights, availability, captions/transcript, summary,
-      visibility, tags, and Grow Interests. It did not mutate or delete retained
-      content. The owner Following filter worked but truthfully had no accessible
-      followed-creator videos. Owner video mutations, course attach/detach, populated
-      Following/storefront/Nature data, and real hosted ingest/playback remain. See
-      `docs/qa/PERSONAL_SOCIAL_AND_DYNAMIC_LINK_PRODUCTION_EVIDENCE_2026-08-15.md`.
+  people naturally need them, including videos, live/premiere viewing, Plant ID,
+  saved AI results, grows, storefronts, courses, Forum/Q&A, and shared timelines.
+  Avoid duplicate top-level navigation when a contextual action is clearer. The
+  authenticated Admin Personal saved-result production route on 2026-08-15 exposed
+  focused follow-up questions, saved-evidence rerun, correction, private location,
+  grow-log/task writes, Forum sharing, summary sharing/copying, and Archive beside
+  the selected result. Existing contextual panels retain Grow/Plant/source context,
+  the Lives directory links sessions and Live Studio, and public storefront video
+  cards now reach the canonical watch/comment/report/share detail. The final
+  route-by-route crawl must still exercise the path forward from every listed
+  surface and fix any remaining missing or duplicate action before `[x]`.
+  The 2026-08-15 Admin Personal production pass verified Video discovery,
+  Following-only filtering, storage/allotment, upload/provider/visibility fields,
+  Grow Interests, exact video detail, Follow/Report/share/comments, Forum media
+  links, the Lives directory, Live Studio, and the retained hosted-live draft.
+  It found a real static-host failure: a public video API detail returned 200 while
+  its canonical `/videos/{id}` URL returned Render 404. Frontend merge
+  `660b1d28782e4559a58172c01ec067d1e20d59fb` and the matching saved Render rewrite
+  table repaired every root dynamic route family; exact Video, Store, and Forum
+  probes returned 200, and the populated video/Forum paths rendered their intended
+  actions. A later Headies owner pass showed 674 MB/10 GB, two owner-published
+  videos, Watch/Edit/Unpublish/Remove controls, and a fully populated Edit form
+  with first-party media, rights, availability, captions/transcript, summary,
+  visibility, tags, and Grow Interests. It did not mutate or delete retained
+  content. The owner Following filter worked but truthfully had no accessible
+  followed-creator videos. Owner video mutations, course attach/detach, populated
+  Following/storefront/Nature data, and real hosted ingest/playback remain. See
+  `docs/qa/PERSONAL_SOCIAL_AND_DYNAMIC_LINK_PRODUCTION_EVIDENCE_2026-08-15.md`.
 - [ ] Consolidate headers, cards, media aspect ratios, spacing, text hierarchy,
       buttons, loading/error/empty states, Back behavior, bottom navigation, Day/Night/
       Auto rendering, and responsive behavior into one professional visual system

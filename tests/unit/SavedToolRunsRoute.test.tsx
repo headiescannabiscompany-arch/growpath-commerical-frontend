@@ -3,6 +3,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import SavedToolRunsRoute, {
   personalDiagnosisRetryHref,
+  personalGrowFromSavedPlantIdHref,
   personalHarvestRetryHref,
   personalPlantIdRetryHref
 } from "@/app/home/personal/(tabs)/tools/saved-runs";
@@ -324,6 +325,50 @@ describe("SavedToolRunsRoute", () => {
       "/home/personal/tools/species-crop-id?retryToolRunId=plant-run-retry&growId=grow-1&fieldStudyId=study-1"
     );
     expect(href).not.toMatch(/sourceContext|sourceTaskId|workspace|facility|commercial/i);
+  });
+
+  it("offers an optional reviewed grow draft from a resolved standalone Plant ID", async () => {
+    const cropRun = {
+      id: "plant-run-grow",
+      _id: "plant-run-grow",
+      toolType: "species_crop_id",
+      summary: "Water-lily candidate.",
+      inputs: { evidenceAssetIds: ["pond-photo-1"] },
+      outputs: {
+        likelyCrop: "water lily",
+        scientificName: "Nymphaea spp.",
+        commonNames: ["water lily", "waterlily"],
+        confidence: "medium"
+      }
+    };
+    mockSearchParams = { toolRunId: "plant-run-grow" };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+    const href = personalGrowFromSavedPlantIdHref(cropRun as any);
+
+    expect(await screen.findByText("Review & Create Grow")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Review and create a grow from this Plant ID")
+    ).toBeTruthy();
+    expect(screen.getByLabelText(`Link to ${href}`)).toBeTruthy();
+    expect(href).toContain("cropCommonName=water+lily");
+    expect(href).toContain("scientificName=Nymphaea+spp.");
+    expect(href).toContain("sourceToolRunId=plant-run-grow");
+    expect(
+      screen.getByText(/Nothing is created until you review and save the grow/i)
+    ).toBeTruthy();
+  });
+
+  it("keeps an unresolved standalone Plant ID out of crop-specific grow creation", () => {
+    expect(
+      personalGrowFromSavedPlantIdHref({
+        id: "unknown-run",
+        toolType: "species_crop_id",
+        outputs: { likelyCrop: "unknown crop" }
+      } as any)
+    ).toBe("");
   });
 
   it("asks an editable evidence-bound IPM follow-up without replacing the saved result", async () => {

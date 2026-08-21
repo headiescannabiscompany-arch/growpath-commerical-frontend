@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import type { PublicCoordinates } from "@/utils/locationSearch";
+import { parsePublicCoordinates, type PublicCoordinates } from "@/utils/locationSearch";
 import {
   fallbackStyle,
   loadMapLibreModule,
@@ -37,12 +37,18 @@ export default function PrivateLocationPicker({ value, onChange }: Props) {
   const onChangeRef = useRef(onChange);
   const initialValueRef = useRef(value);
   const [error, setError] = useState("");
+  const [latitude, setLatitude] = useState(value ? String(value.latitude) : "");
+  const [longitude, setLongitude] = useState(value ? String(value.longitude) : "");
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
   useEffect(() => {
     mapRef.current?.getSource(SOURCE_ID)?.setData(pointData(value));
+    if (value) {
+      setLatitude(String(value.latitude));
+      setLongitude(String(value.longitude));
+    }
   }, [value]);
 
   useEffect(() => {
@@ -109,6 +115,63 @@ export default function PrivateLocationPicker({ value, onChange }: Props) {
         aria-label="Map for placing the private plant location"
         style={{ width: "100%", height: 280, borderRadius: 12, overflow: "hidden" }}
       />
+      <fieldset
+        style={{
+          border: "1px solid currentColor",
+          borderRadius: 10,
+          display: "grid",
+          gap: 8,
+          margin: "12px 0 0",
+          padding: 12
+        }}
+      >
+        <legend>Or enter known coordinates</legend>
+        <p style={{ margin: 0 }}>
+          Use this for a known park or observation point when the original photo no longer
+          contains location data. Coordinates are staged here and are not saved until you
+          choose Save Private Pin.
+        </p>
+        <label>
+          Latitude
+          <input
+            aria-label="Plant latitude"
+            inputMode="decimal"
+            onChange={(event) => setLatitude(event.currentTarget.value)}
+            placeholder="39.104070"
+            style={{ boxSizing: "border-box", marginTop: 4, padding: 8, width: "100%" }}
+            value={latitude}
+          />
+        </label>
+        <label>
+          Longitude
+          <input
+            aria-label="Plant longitude"
+            inputMode="decimal"
+            onChange={(event) => setLongitude(event.currentTarget.value)}
+            placeholder="-76.973493"
+            style={{ boxSizing: "border-box", marginTop: 4, padding: 8, width: "100%" }}
+            value={longitude}
+          />
+        </label>
+        <button
+          onClick={() => {
+            const coordinates = parsePublicCoordinates(latitude, longitude);
+            if (!coordinates) {
+              setError("Enter a valid latitude and longitude.");
+              return;
+            }
+            setError("");
+            onChange(coordinates);
+            mapRef.current?.flyTo?.({
+              center: [coordinates.longitude, coordinates.latitude],
+              zoom: 12
+            });
+          }}
+          type="button"
+        >
+          Stage These Coordinates Privately
+        </button>
+      </fieldset>
       {error ? <p role="alert">{error}</p> : null}
     </div>
   );
