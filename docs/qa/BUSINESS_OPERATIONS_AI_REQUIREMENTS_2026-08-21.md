@@ -109,3 +109,58 @@ the GrowPath contract must show supported models and source freshness. See the
 3. Creator operations and lawful storefront/commerce handoffs.
 4. Provider/jurisdiction feasibility review for regulated-retail adapters.
 5. Full business acceptance before the final product crawl.
+
+## Scope decision: launch core versus later investment
+
+GrowPath should **not** attempt to become a full ERP, point-of-sale system, regulator
+portal, marketing suite, or autonomous grow controller before launch. Those projects
+would delay the product while adding support, legal, security, integration and data-
+quality risk that early customers may not need.
+
+### Keep in the pre-hat product scope
+
+- B-01 identity, role, approval, import-provenance and audit foundation.
+- B-02 core inventory: SKU/product, lot/batch, location, unit, movement, adjustment,
+  receiving, export, source freshness and simple evidence-linked low-stock/expiry/
+  discrepancy flags. A reorder result is a reviewable task/draft only.
+- B-04 horticulture help: evidence-aware plant/product intake, label-required advice
+  boundary, basic nursery batch/hold/care history and fulfillment readiness.
+- B-05 facility operations: reviewed device freshness/anomaly detection, crop/room
+  context, task/SOP/evidence links, maintenance/calibration history and harvest/
+  quality explanation. Never autonomous equipment control.
+- B-06 creator essentials already aligned with GrowPath’s social value: approved asset
+  drafts, live/chat/replay, transparent sharing, reporting/moderation and source links.
+- B-08/B-09 safety and realistic acceptance across those core workflows.
+
+### Removed from the active roadmap
+
+These are not release items and are not part of the post-release backlog by default.
+They should not be reopened merely because a generic AI assistant can demonstrate a
+quick answer over a store export. A future customer request must pass the decision
+rule below before it becomes a new, separately funded product decision.
+
+- **B-03 full regulator/POS integration:** each provider/state combination has separate
+  credentialing, permissions, testing, support and legal obligations. Do not build a
+  live adapter; a customer may use an export/import or their existing system instead.
+- **Serialized-item / recall-recipient platform:** preserve lot/batch lineage now; defer
+  item-level serialization, recipient tracing and automated notices until a customer’s
+  regulated workflow requires them.
+- **Forecasting beyond simple alerts:** no ML demand forecast, yield forecast, labor
+  optimizer, predictive maintenance or automated reorder until enough clean,
+  consented, workspace-scoped history exists and a customer validates the decision.
+- **Full CRM/ERP/accounting/POS:** track the operational references GrowPath needs;
+  integrate/export to the customer’s system of record later instead of duplicating it.
+- **Dynamic pricing, promotion automation, native marketplace/payout/tax tooling:**
+  preserve truthful storefront and external-handoff states; defer price changes,
+  marketing automation and payment administration.
+- **Cross-platform creator analytics, affiliate attribution and automated sponsorship
+  reporting:** export/copy/share and creator-approved content drafts first; add only
+  after official APIs and a real creator workflow justify their ongoing support.
+
+### Rule before reconsidering a removed tool
+
+Reconsider a removed tool only when all are true: a named paying customer has a concrete
+workflow, the system of record/API and data owner are known, authorization and legal
+scope are written down, a human approval/rollback route exists, and a measurable
+success metric is agreed. Otherwise, GrowPath should offer a clear export, import, link
+or review task instead of pretending to replace the specialized system.
