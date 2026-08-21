@@ -631,6 +631,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "reference-safe detach and deletion status",
       "cannabis-aware discovery filtering",
       "stored video moderation case with exact-content and administrator-email links",
+      "audited Admin hide, restore, cannabis-classification, close, and preservation controls for reported videos and video comments",
       "threaded video discussion with author editing and owner moderation",
       "creator profile continuity and canonical Follow actions",
       "safe public Commercial storefront video previews"
@@ -692,7 +693,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "server-owned creator identity and follow control on public live directory and detail surfaces",
       "outside-picker JSON or CSV entry feed",
       "provider-confirmed linked-identity relay status",
-      "replay, moderation, and deletion audit continuity"
+      "replay, moderation, and deletion audit continuity",
+      "audited Admin hide, restore, cannabis-classification, close, and preservation controls for reported live sessions and chat messages"
     ],
     [
       "Never expose the overlay token in public session data.",

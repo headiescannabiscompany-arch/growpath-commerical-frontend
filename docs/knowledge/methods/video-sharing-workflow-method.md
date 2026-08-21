@@ -139,3 +139,7 @@ A signed-in viewer may report a video they do not own. Persist the report and mo
 case before attempting email delivery, then notify the platform administrator with a
 same-origin link to the exact video and a focused moderation-case link. Email is only a
 notification; failed delivery must not erase the stored report or become moderation truth.
+Video-comment reports follow the same stored-case rule and retain the exact video and
+comment link. The platform administrator can review, hide, restore, cannabis-classify,
+close without action, or preserve/escalate reported videos and video comments through the
+same audited Admin workflow; a comment action must not alter the parent video implicitly.
