@@ -2,14 +2,15 @@
 
 Date: 2026-08-20
 
-Status: Active execution list; reconciled against retained production evidence on
-2026-08-12. A checked sub-scope stays checked even when its larger end-to-end workflow
-has a separately named open remainder.
+Status: Detailed evidence and remainder ledger; reconciled against retained production
+evidence on 2026-08-21. A checked sub-scope stays checked even when its larger end-to-end
+workflow has a separately named open remainder.
 
-This is the single authoritative list of unfinished release work. Historical TODOs,
-evidence records, matrices, and numbered implementation ledgers remain useful as
-sources, but they do not define a second execution order. When an older item is
-broader than an item here, this list's narrower acceptance boundary replaces it.
+`CANONICAL_PRODUCT_ACCEPTANCE_MATRIX_2026-08-21.md` is the single authoritative product
+contract and execution order. This file supplies its detailed evidence and precise open
+remainders; it does not define a second queue. Historical TODOs, evidence records and
+numbered implementation ledgers remain useful sources. When an older item is broader
+than a matrix row, the matrix acceptance boundary controls.
 The complete checked/partial/open history of user-added requests is retained in
 `docs/qa/USER_REQUEST_LEDGER_2026-08-13.md`; this document contains only current
 execution boundaries and the evidence needed not to reopen completed work.
@@ -19,10 +20,11 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-1. **Active batch:** finish populated Commercial product/storefront acceptance, then
-   continue the remaining non-mutating Commercial route/deep-link crawl. The saved
-   product-detail API regression is repaired and live; the missing-product frontend
-   fallback still needs exact served-bundle proof.
+1. **Active batch:** close matrix rows P-03 through P-06 and N-04. Frontend PRs `#701`
+   and `#702` are merged; exact production deployment and live acceptance remain open.
+   Publish only positively park-associated Cary/Maydale records after explicit owner
+   confirmation. The separate house crape myrtle and all potted-house records remain
+   private. Then continue matrix reconciliation without reopening accepted slices.
 2. **Next product batches:** finish the still-open Personal/Commercial/Facility/public
    workflow and mutation items in sections B-F, including provider/device mapping where
    real credentials or imports are available. Do not reopen retained Hosted Live/OBS,
@@ -42,7 +44,9 @@ starts or finishes; do not create another active todo document.
 
 Document roles are fixed:
 
-- this file is the **only active execution list**;
+- `CANONICAL_PRODUCT_ACCEPTANCE_MATRIX_2026-08-21.md` is the **only product contract and
+  execution order**;
+- this file is the **detailed evidence and remainder ledger** for those matrix rows;
 - `USER_REQUEST_LEDGER_2026-08-13.md` is the **request/completion history**;
 - `GROWPATHAI_FULL_SYSTEM_TODO.md` and the numbered connected-workflows todo are
   **implementation/evidence history**, not alternative queues;

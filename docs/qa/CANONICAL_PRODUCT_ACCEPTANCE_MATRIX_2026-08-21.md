@@ -2,9 +2,10 @@
 
 Updated: 2026-08-21
 
-This is the compact product contract for finishing GrowPathAI. Detailed historical
-evidence remains in `CANONICAL_REMAINING_WORK_2026-08-08.md`; implementation and final
-acceptance follow this matrix. Chat history is not a substitute.
+This is the single product contract and execution order for finishing GrowPathAI.
+Detailed historical evidence remains in `CANONICAL_REMAINING_WORK_2026-08-08.md`, but
+that evidence ledger cannot create, reorder, reopen, or close a story in this matrix.
+Chat history is not a substitute.
 
 ## Completion rule
 
@@ -14,6 +15,60 @@ data loss or duplication, recover through back/cancel/error/retry, and use it ac
 applicable themes/devices/accessibility/roles. Tests and live evidence must identify the
 exact frontend/backend SHAs and URL. `Local`, `implemented`, `merged`, `deployed`, and
 `live accepted` are distinct states.
+
+Status vocabulary is fixed:
+
+- `open`: acceptance evidence is missing and implementation may also be missing.
+- `partial`: at least one named acceptance slice is proven, but the complete story is not.
+- `implemented`: the named behavior exists and has focused automated evidence, but is not
+  yet production-accepted.
+- `deployed`: the exact change is served in production, but the complete user path has not
+  yet been accepted.
+- `live accepted`: the complete story passed its role, state, persistence, recovery and
+  presentation checks in production. Only this closes a row.
+- `blocked`: an external credential, legal decision, third-party service or owner action is
+  explicitly named; unrelated rows continue.
+
+Each row's evidence record must contain: frontend and backend SHA as applicable, deployment
+ID or served-bundle proof, production URL, date/time, account/workspace/role, starting data
+state, action exercised, persisted/reloaded result, back/cancel/error recovery, viewport and
+theme, accessibility evidence appropriate to the control, cleanup, and any remaining slice.
+Route loading, source inspection, a green test suite or an empty-state check alone cannot
+close a populated or mutating story.
+
+## Document ownership
+
+- This matrix owns product stories, status and execution order.
+- `CANONICAL_REMAINING_WORK_2026-08-08.md` is the detailed evidence and remainder ledger.
+- `USER_REQUEST_LEDGER_2026-08-13.md` preserves request and completion history.
+- Method documents in `docs/knowledge/methods` own durable domain behavior; matching
+  registries in `src/knowledge` make those rules available to the app.
+- Production-evidence documents prove a named slice; they never create a second queue.
+- A new request must map to an existing row or add one new row here before implementation.
+- A regression reopens only the affected acceptance slice, not the entire product area.
+
+## Cross-cutting user-story rules
+
+Every applicable story must preserve these invariants without repeating them in every row:
+
+1. The capability is discoverable from the correct workspace and role, with one canonical
+   route, a working Back path and no duplicate primary navigation.
+2. Empty, loading, disabled, error, offline, permission-denied and populated states explain
+   what happened and provide a truthful next action.
+3. Writes are explicit, idempotent where appropriate, ownership-scoped, persisted after
+   reload, auditable when regulated, and reversible or clearly irreversible.
+4. Media preserves useful source detail, ownership and privacy; derived crops/frames remain
+   linked to the source and are not presented as independent evidence.
+5. AI separates observations, user statements, inferences and verified facts; it exposes
+   uncertainty, counter-evidence, missing evidence and the best next collection step.
+6. Personal, Commercial, Facility and Admin data never leak across roles or workspaces.
+7. Day/Night/Auto, mobile/tablet/desktop, keyboard, focus, screen reader and text scaling
+   remain usable on the final candidate.
+8. Public sharing is a separate opt-in from saving private work, and withdrawal is tested.
+9. Costs, credits, storage, quotas, external-provider handoffs and legal boundaries are
+   visible before the user commits an action.
+10. Completed behavior is not reopened without a reproduced regression, changed requirement
+    or final-candidate cross-cutting failure.
 
 ## Personal and grow workflows
 
