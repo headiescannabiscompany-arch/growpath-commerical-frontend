@@ -360,7 +360,10 @@ ID must offer a deliberate manual-location fallback. On web this should be an in
 map point; a coordinate-entry fallback may be used where the map is unavailable. The
 selected point follows the same private-by-default ToolRun rules as device coordinates and
 must not be described as device accuracy. Manual placement never publishes the point or
-confirms a Nature observation.
+confirms a Nature observation. In a reopened Saved Run, selecting a point must first stage
+it for review; persistence requires a separate, clearly named private-save action. Closing
+the picker, discarding the staged point, or changing the selected run must leave the saved
+ToolRun unchanged. Nature sharing remains a later, separately consented publish action.
 
 The provider request must receive the complete crop-identification output contract and
 the complete bounded user context. Transport limits must never cut off the JSON field

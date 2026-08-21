@@ -126,6 +126,20 @@ jest.mock("@/components/personal/EvidenceReviewPanel", () => {
     );
 });
 
+jest.mock("@/components/fieldStudies/PrivateLocationPicker", () => {
+  const React = require("react");
+  const { Pressable, Text } = require("react-native");
+  return ({ onChange }: any) =>
+    React.createElement(
+      Pressable,
+      {
+        accessibilityRole: "button",
+        onPress: () => onChange({ latitude: 39.10234, longitude: -77.01234 })
+      },
+      React.createElement(Text, null, "Stage Test Map Pin")
+    );
+});
+
 jest.mock("@/features/personal/tools/ToolResultSurface", () => {
   const React = require("react");
   const { Text } = require("react-native");
@@ -749,6 +763,68 @@ describe("SavedToolRunsRoute", () => {
         "Photo location and capture date saved privately to this Plant ID. Nothing was published to Nature."
       )
     ).toBeTruthy();
+  });
+
+  it("stages a saved-run map pin and persists it only after explicit private save", async () => {
+    const cropRun = {
+      id: "run-1",
+      _id: "run-1",
+      toolType: "species_crop_id",
+      growId: null,
+      summary: "Park plant candidate.",
+      inputs: {},
+      outputs: { likelyCrop: "Magnolia", confidence: "medium" },
+      createdAt: "2026-08-02T12:00:00.000Z"
+    };
+    const locatedRun = {
+      ...cropRun,
+      inputs: {
+        capturedLocation: {
+          latitude: 39.10234,
+          longitude: -77.01234,
+          privacy: "private",
+          userAuthorized: true,
+          source: "manual_map"
+        }
+      }
+    };
+    mockSearchParams = { toolRunId: "run-1", toolType: "species_crop_id" };
+    mockListToolRuns.mockResolvedValue([cropRun]);
+    mockGetToolRun.mockResolvedValue(cropRun);
+    mockUpdateToolRun.mockResolvedValue(locatedRun);
+
+    const screen = render(<SavedToolRunsRoute />);
+    fireEvent.press(await screen.findByText("Place Pin on Map"));
+    fireEvent.press(screen.getByText("Stage Test Map Pin"));
+
+    expect(screen.getByText("Save Private Pin")).toBeTruthy();
+    expect(mockUpdateToolRun).not.toHaveBeenCalled();
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Save Private Pin"));
+    await waitFor(() =>
+      expect(mockUpdateToolRun).toHaveBeenCalledWith(
+        "run-1",
+        expect.objectContaining({
+          inputs: expect.objectContaining({
+            capturedLocation: expect.objectContaining({
+              latitude: 39.10234,
+              longitude: -77.01234,
+              privacy: "private",
+              userAuthorized: true,
+              source: "manual_map"
+            })
+          })
+        })
+      )
+    );
+    expect(
+      await screen.findByText(
+        "Map pin saved privately to this Plant ID only. Nothing was published to Nature."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByText("Stage Test Map Pin")).toBeNull();
+    expect(mockCreateFieldObservation).not.toHaveBeenCalled();
   });
 
   it("publishes an existing saved Plant ID to an approximate Nature pin without rerunning AI", async () => {
