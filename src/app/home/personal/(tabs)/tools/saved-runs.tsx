@@ -336,6 +336,52 @@ function savedCropCandidate(outputs: Record<string, any>) {
   return commonName || bestStructuredPlantCandidateName(outputs) || "-";
 }
 
+function savedCropCommonNames(outputs: Record<string, any>) {
+  const correction = savedUserCorrection(outputs);
+  if (correction) return [correction.commonName];
+  const supplied = Array.isArray(outputs.commonNames)
+    ? outputs.commonNames
+    : String(outputs.commonNames || "").split(/[,;\n]/);
+  return Array.from(
+    new Set(
+      supplied
+        .map((candidate: unknown) => String(candidate || "").trim())
+        .filter((candidate: string) => candidate && !unresolvedSavedCropName(candidate))
+    )
+  );
+}
+
+export function personalGrowFromSavedPlantIdHref(run: ToolRun | null) {
+  if (!run || !isSpeciesCropRun(run)) return "";
+  const outputs = runOutputs(run);
+  const correction = savedUserCorrection(outputs);
+  const cropCommonName = savedCropCandidate(outputs);
+  if (
+    !cropCommonName ||
+    cropCommonName === "-" ||
+    unresolvedSavedCropName(cropCommonName)
+  ) {
+    return "";
+  }
+  const scientificName = correction
+    ? String(correction.scientificName || "").trim()
+    : String(outputs.scientificName || "").trim();
+  const commonNames = savedCropCommonNames(outputs);
+  const cultivar = String(outputs.cultivarOrStrain || outputs.cultivar || "").trim();
+  const cropProfileId = String(outputs.cropProfileSuggestion?.cropProfileId || "").trim();
+  const sourceToolRunId = idFor(run);
+  const query = new URLSearchParams();
+  query.set("source", "ai");
+  query.set("name", `${cropCommonName} grow`);
+  query.set("cropCommonName", cropCommonName);
+  if (scientificName) query.set("scientificName", scientificName);
+  if (commonNames.length) query.set("commonNames", commonNames.join(","));
+  if (cultivar) query.set("cultivar", cultivar);
+  if (cropProfileId) query.set("cropProfileId", cropProfileId);
+  if (sourceToolRunId) query.set("sourceToolRunId", sourceToolRunId);
+  return `/home/personal/grows/new?${query.toString()}`;
+}
+
 function displayOutputsFor(run: ToolRun | null) {
   const outputs = runOutputs(run);
   if (!isSpeciesCropRun(run)) return outputs;
@@ -2229,6 +2275,8 @@ export default function SavedToolRunsScreen() {
           fieldStudyId: fieldStudyId || undefined
         })
       : "";
+  const plantIdGrowHref =
+    workspaceType === "personal" ? personalGrowFromSavedPlantIdHref(selectedRun) : "";
   const diagnosisRetryHref =
     workspaceType === "personal" && selectedRunId && isDiagnosisRun(selectedRun)
       ? personalDiagnosisRetryHref({
@@ -2422,6 +2470,34 @@ export default function SavedToolRunsScreen() {
             ) : null}
             {isSpeciesCropRun(selectedRun) ? (
               <View style={styles.editor}>
+                {plantIdGrowHref ? (
+                  <View style={styles.studyPanel}>
+                    <Text style={styles.cardTitle}>Optionally start a grow</Text>
+                    <Text style={styles.cardText}>
+                      Keep this as a standalone Plant ID, or review a new grow prefilled
+                      with the plant name, scientific candidate, aliases, and source Plant
+                      ID. Nothing is created until you review and save the grow, and
+                      Nature sharing stays separate.
+                    </Text>
+                    <Link href={plantIdGrowHref} asChild>
+                      <Pressable
+                        accessibilityRole="link"
+                        accessibilityLabel="Review and create a grow from this Plant ID"
+                        style={styles.primary}
+                      >
+                        <Text style={styles.primaryText}>Review &amp; Create Grow</Text>
+                      </Pressable>
+                    </Link>
+                  </View>
+                ) : (
+                  <View style={styles.studyPanel}>
+                    <Text style={styles.cardTitle}>Grow creation needs an identity</Text>
+                    <Text style={styles.cardText}>
+                      This standalone finding stays saved. Correct or rerun the Plant ID
+                      before creating a crop-specific grow from it.
+                    </Text>
+                  </View>
+                )}
                 {plantIdRetryHref ? (
                   <View style={styles.studyPanel}>
                     <Text style={styles.cardTitle}>Run the same evidence again</Text>

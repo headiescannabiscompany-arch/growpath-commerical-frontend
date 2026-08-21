@@ -355,9 +355,20 @@ observation, confirms identity, or confirms a cannabis/hemp public context. Fiel
 remain optional for collaboration and are required only for the separate public Nature
 workflow described below.
 
+A Saved Plant ID remains a complete standalone record. Creating a grow is an optional,
+separate path only for a plant the user intends to manage; a wild or incidental finding
+must never be forced into Grows. When a defensible common identity exists, Saved Runs may
+open a reviewable create-grow draft carrying the common name, supported scientific
+candidate, aliases, cultivar when supplied, crop-profile reference, and source ToolRun.
+The user must still review and save the grow. Unresolved identities cannot start a
+crop-specific grow, and creating or declining a grow never publishes a Nature observation.
+
 When device geolocation is unavailable, denied, or unsupported by the browser host, Plant
 ID must offer a deliberate manual-location fallback. On web this should be an interactive
-map point; a coordinate-entry fallback may be used where the map is unavailable. The
+map point plus valid latitude/longitude entry for a known observation place when legacy
+media no longer retains location metadata; native may use coordinate entry where the map
+is unavailable. Entering coordinates only stages the point and must remain visibly
+separate from the final private-save action. The
 selected point follows the same private-by-default ToolRun rules as device coordinates and
 must not be described as device accuracy. Manual placement never publishes the point or
 confirms a Nature observation. In a reopened Saved Run, selecting a point must first stage
