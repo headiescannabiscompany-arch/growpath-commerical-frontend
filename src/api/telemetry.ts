@@ -9,14 +9,12 @@ import type {
   PulseDevice,
   PulsePullResult,
   PulseVerifyResult,
+  TelemetryCredentialWorkspaceScope,
   TelemetryPoint,
   TelemetryPointsQuery,
   TelemetryPointsWindowResult,
   TelemetrySource,
-  UbiBotChannel,
-  UbiBotMqttSettingsResult,
-  UbiBotPullResult,
-  UbiBotVerifyResult
+  TelemetryWorkspaceScope
 } from "@/types/telemetry";
 
 export const TELEMETRY_ROUTES = {
@@ -27,10 +25,6 @@ export const TELEMETRY_ROUTES = {
   PULSE_VERIFY: "/api/telemetry/pulse/verify",
   PULSE_DEVICES: "/api/telemetry/pulse/devices",
   PULSE_PULL: "/api/telemetry/pulse/pull",
-  UBIBOT_VERIFY: "/api/telemetry/ubibot/verify",
-  UBIBOT_CHANNELS: "/api/telemetry/ubibot/channels",
-  UBIBOT_PULL: "/api/telemetry/ubibot/pull",
-  UBIBOT_MQTT_SETTINGS: "/api/telemetry/ubibot/mqtt-settings",
   GROWLINK_VERIFY: "/api/telemetry/growlink/verify",
   GROWLINK_CONTROLLERS: "/api/telemetry/growlink/controllers",
   GROWLINK_CURRENT: "/api/telemetry/growlink/current",
@@ -103,7 +97,7 @@ function unwrapCreated(res: any): any {
 
 function normalizeSource(raw: any): TelemetrySource {
   const id = normId(raw);
-  const growId = String(raw?.growId ?? raw?.growID ?? "");
+  const growId = String(raw?.growId ?? raw?.growID ?? raw?.targetRef ?? "");
   const type = String(raw?.type ?? "");
   const name = String(raw?.name ?? "");
   const timezone = String(raw?.timezone ?? "America/New_York");
@@ -147,6 +141,12 @@ function normalizeSource(raw: any): TelemetrySource {
     name,
     timezone,
     isActive,
+    workspaceType: raw?.workspaceType,
+    workspaceId: raw?.workspaceId ? String(raw.workspaceId) : null,
+    facilityId: raw?.facilityId ? String(raw.facilityId) : null,
+    roomId: raw?.roomId ? String(raw.roomId) : null,
+    targetType: raw?.targetType || "grow",
+    targetRef: raw?.targetRef ? String(raw.targetRef) : growId || null,
     config,
     createdAt: raw?.createdAt,
     updatedAt: raw?.updatedAt,
@@ -183,8 +183,16 @@ function normalizePoint(raw: any): TelemetryPoint {
   };
 }
 
-export async function listTelemetrySources(growId: string): Promise<TelemetrySource[]> {
-  const path = `${TELEMETRY_ROUTES.SOURCES}${qs({ growId })}`;
+export async function listTelemetrySources(
+  growId: string,
+  scope: TelemetryWorkspaceScope = { workspaceType: "personal" }
+): Promise<TelemetrySource[]> {
+  const path = `${TELEMETRY_ROUTES.SOURCES}${qs({
+    growId,
+    ...scope,
+    targetType: scope.targetType ?? "grow",
+    targetRef: scope.targetRef ?? growId
+  })}`;
   const res = await apiRequest(path, { method: "GET" });
   const list = unwrapList(res);
   return list.map(normalizeSource);
@@ -199,7 +207,13 @@ export async function createTelemetrySource(
     name: input.name,
     timezone: input.timezone,
     isActive: input.isActive !== false,
-    config: input.config ?? {}
+    config: input.config ?? {},
+    workspaceType: input.workspaceType ?? "personal",
+    targetType: input.targetType ?? "grow",
+    targetRef: input.targetRef ?? input.growId,
+    ...(input.roomId ? { roomId: input.roomId } : {}),
+    ...(input.workspaceId ? { workspaceId: input.workspaceId } : {}),
+    ...(input.facilityId ? { facilityId: input.facilityId } : {})
   };
 
   const res = await apiRequest(TELEMETRY_ROUTES.SOURCES, { method: "POST", body });
@@ -213,7 +227,11 @@ export async function bulkIngestTelemetryPoints(
   const body = {
     sourceId: input.sourceId,
     mode: input.mode ?? "upsert",
-    points: input.points
+    points: input.points,
+    workspaceType: input.workspaceType ?? "personal",
+    workspaceId: input.workspaceId,
+    facilityId: input.facilityId,
+    targetType: input.targetType ?? "grow"
   };
 
   const res = await apiRequest(TELEMETRY_ROUTES.POINTS_BULK, { method: "POST", body });
@@ -235,7 +253,11 @@ export async function getTelemetryPoints(
       sourceId: query.sourceId,
       startIso: query.startIso,
       endIso: query.endIso,
-      limit: query.limit ?? 5000
+      limit: query.limit ?? 5000,
+      workspaceType: query.workspaceType ?? "personal",
+      workspaceId: query.workspaceId,
+      facilityId: query.facilityId,
+      targetType: query.targetType ?? "grow"
     });
 
   const res = await apiRequest(path, { method: "GET" });
@@ -253,35 +275,46 @@ export async function getTelemetryPoints(
   };
 }
 
-export async function getImportedTelemetryToolContext(input: {
-  growId: string;
-  sourceId?: string;
-  startIso?: string;
-  endIso?: string;
-}): Promise<ImportedTelemetryToolContext> {
+export async function getImportedTelemetryToolContext(
+  input: {
+    growId: string;
+    sourceId?: string;
+    startIso?: string;
+    endIso?: string;
+  } & TelemetryWorkspaceScope
+): Promise<ImportedTelemetryToolContext> {
   const path = `${TELEMETRY_ROUTES.TOOL_CONTEXT}${qs({
     growId: input.growId,
     sourceId: input.sourceId,
     start: input.startIso,
-    end: input.endIso
+    end: input.endIso,
+    workspaceType: input.workspaceType ?? "personal",
+    workspaceId: input.workspaceId,
+    facilityId: input.facilityId,
+    targetType: input.targetType ?? "grow",
+    targetRef: input.targetRef ?? input.growId
   })}`;
   const response = await apiRequest(path, { method: "GET" });
   return unwrapData(response)?.context;
 }
 
-export async function verifyPulseApiKey(apiKey: string): Promise<PulseVerifyResult> {
+export async function verifyPulseApiKey(
+  input: TelemetryCredentialWorkspaceScope & { apiKey: string }
+): Promise<PulseVerifyResult> {
   const res = await apiRequest(TELEMETRY_ROUTES.PULSE_VERIFY, {
     method: "POST",
-    body: { apiKey }
+    body: input
   });
   const data = unwrapData(res);
   return { ok: true, ...(data ?? {}) };
 }
 
-export async function listPulseDevices(apiKey: string): Promise<PulseDevice[]> {
+export async function listPulseDevices(
+  input: TelemetryCredentialWorkspaceScope & { apiKey: string }
+): Promise<PulseDevice[]> {
   const res = await apiRequest(TELEMETRY_ROUTES.PULSE_DEVICES, {
     method: "POST",
-    body: { apiKey }
+    body: input
   });
   const list = unwrapList(res);
   return list.map((d: any) => ({ id: normId(d) || String(d?.deviceId ?? ""), ...d }));
@@ -308,84 +341,12 @@ export async function pullPulseWindow(
   };
 }
 
-export async function verifyUbiBotCredentials(input: {
-  accountKey?: string;
-  apiKey?: string;
-  userId?: string;
-}): Promise<UbiBotVerifyResult> {
-  const res = await apiRequest(TELEMETRY_ROUTES.UBIBOT_VERIFY, {
-    method: "POST",
-    body: input
-  });
-  const data = unwrapData(res);
-  return { ok: true, ...(data ?? {}) };
-}
-
-export async function listUbiBotChannels(input: {
-  accountKey?: string;
-  apiKey?: string;
-}): Promise<UbiBotChannel[]> {
-  const res = await apiRequest(TELEMETRY_ROUTES.UBIBOT_CHANNELS, {
-    method: "POST",
-    body: input
-  });
-  const list = unwrapList(res);
-  return list.map((channel: any) => ({
-    id: normId(channel) || String(channel?.channel_id ?? channel?.channelId ?? ""),
-    ...channel
-  }));
-}
-
-export async function pullUbiBotWindow(
-  sourceId: string,
-  startIso: string,
-  endIso: string
-): Promise<UbiBotPullResult> {
-  const res = await apiRequest(TELEMETRY_ROUTES.UBIBOT_PULL, {
-    method: "POST",
-    body: { sourceId, startIso, endIso }
-  });
-  const data = unwrapData(res);
-
-  return {
-    sourceId: String(data?.sourceId ?? sourceId),
-    pulled: Number(data?.pulled ?? 0),
-    ingested: data?.ingested === undefined ? undefined : Number(data.ingested),
-    updated: Number(data?.updated ?? 0),
-    skipped: data?.skipped === undefined ? undefined : Number(data.skipped),
-    startIso: String(data?.startIso ?? startIso),
-    endIso: String(data?.endIso ?? endIso),
-    lastPointIso: data?.lastPointIso ? String(data.lastPointIso) : undefined
-  };
-}
-
-export async function getUbiBotMqttSettings(
-  sourceId: string
-): Promise<UbiBotMqttSettingsResult> {
-  const res = await apiRequest(TELEMETRY_ROUTES.UBIBOT_MQTT_SETTINGS, {
-    method: "POST",
-    body: { sourceId }
-  });
-  const data = unwrapData(res);
-
-  return {
-    host: String(data?.host ?? ""),
-    port: Number(data?.port ?? 1883),
-    username: String(data?.username ?? ""),
-    password: data?.password ? String(data.password) : undefined,
-    topic: String(data?.topic ?? ""),
-    heartbeatUrl: data?.heartbeatUrl ? String(data.heartbeatUrl) : undefined,
-    heartbeatIntervalMs:
-      data?.heartbeatIntervalMs === undefined
-        ? undefined
-        : Number(data.heartbeatIntervalMs)
-  };
-}
-
-export async function verifyGrowlinkCredentials(input: {
-  userName: string;
-  password: string;
-}): Promise<GrowlinkVerifyResult> {
+export async function verifyGrowlinkCredentials(
+  input: TelemetryCredentialWorkspaceScope & {
+    userName: string;
+    password: string;
+  }
+): Promise<GrowlinkVerifyResult> {
   const res = await apiRequest(TELEMETRY_ROUTES.GROWLINK_VERIFY, {
     method: "POST",
     body: input
@@ -394,10 +355,12 @@ export async function verifyGrowlinkCredentials(input: {
   return { ok: true, ...(data ?? {}) };
 }
 
-export async function listGrowlinkControllers(input: {
-  userName: string;
-  password: string;
-}): Promise<GrowlinkController[]> {
+export async function listGrowlinkControllers(
+  input: TelemetryCredentialWorkspaceScope & {
+    userName: string;
+    password: string;
+  }
+): Promise<GrowlinkController[]> {
   const res = await apiRequest(TELEMETRY_ROUTES.GROWLINK_CONTROLLERS, {
     method: "POST",
     body: input

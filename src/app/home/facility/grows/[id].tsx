@@ -310,6 +310,8 @@ export default function FacilityGrowDetail() {
                         params: {
                           growId: String(id),
                           roomId: String(item.roomId ?? ""),
+                          roomName: String(item.roomName ?? ""),
+                          growName: pickTitle(item),
                           contextName: pickTitle(item)
                         }
                       })

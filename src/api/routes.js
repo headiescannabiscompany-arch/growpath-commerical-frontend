@@ -224,6 +224,9 @@ export const ROUTES = {
     GIVEAWAY_FEED: (token) => `${PREFIX}/lives/giveaway-feed/${token}`,
     CREATE: `${PREFIX}/lives`,
     UPDATE: (id) => `${PREFIX}/lives/${id}`,
+    PUBLISH: (id) => `${PREFIX}/lives/${id}/publish`,
+    START: (id) => `${PREFIX}/lives/${id}/start`,
+    END: (id) => `${PREFIX}/lives/${id}/end`,
     DELETE: (id) => `${PREFIX}/lives/${id}`
   },
   SUBSCRIBE: {

@@ -42,7 +42,12 @@ export default function FacilityHistoryImportRoute() {
   const entitlements = useEntitlements();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilityHistoryImportStyles(palette), [palette]);
-  const params = useLocalSearchParams<{ growId?: string; growName?: string }>();
+  const params = useLocalSearchParams<{
+    growId?: string;
+    growName?: string;
+    roomId?: string;
+    roomName?: string;
+  }>();
   const { selectedId: facilityId } = useFacility();
   const growId = String(params.growId || "").trim();
   const [grows, setGrows] = useState<any[]>([]);
@@ -106,6 +111,24 @@ export default function FacilityHistoryImportRoute() {
     );
   }
 
+  if (!facilityId) {
+    return (
+      <ScreenBoundary
+        title="Select a Facility"
+        showBack
+        backFallbackHref="/home/facility/integrations"
+      >
+        <View accessibilityRole="alert" style={styles.readOnlyCard}>
+          <Text style={styles.growName}>A Facility is required for history import.</Text>
+          <Text style={styles.copy}>
+            Choose the Facility that owns the destination grow before selecting or
+            reviewing a controller file.
+          </Text>
+        </View>
+      </ScreenBoundary>
+    );
+  }
+
   if (growId) {
     return (
       <ScreenBoundary
@@ -113,7 +136,14 @@ export default function FacilityHistoryImportRoute() {
         showBack
         backFallbackHref="/home/facility/integrations"
       >
-        <DewPointGuardTool historyImportMode />
+        <DewPointGuardTool
+          historyImportMode
+          workspaceType="facility"
+          facilityId={String(facilityId || "")}
+          growLabel={String(params.growName || "Selected Facility grow")}
+          initialRoomId={String(params.roomId || "")}
+          initialRoomName={String(params.roomName || "")}
+        />
       </ScreenBoundary>
     );
   }
@@ -172,7 +202,12 @@ export default function FacilityHistoryImportRoute() {
                 onPress={() =>
                   router.push({
                     pathname: "/home/facility/tools/history-import" as any,
-                    params: { growId: id, growName: name }
+                    params: {
+                      growId: id,
+                      growName: name,
+                      roomId: String(grow.roomId || ""),
+                      roomName: String(grow.roomName || "")
+                    }
                   })
                 }
               >

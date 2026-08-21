@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -24,18 +24,28 @@ import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
 import ReportModal from "../components/ReportModal";
+import FollowButton from "../components/FollowButton";
 import { currentPublicUrl, sharePublicLink } from "../utils/publicLinks";
 import {
   deleteLiveChatMessage,
+  endLive,
   getHostedLiveLifecycle,
   getHostedLivePlayback,
   listLiveChat,
-  releaseHostedLiveInput,
   rotateHostedLiveInput,
   rotateLiveOverlayToken,
   sendLiveChat,
-  updateLive
+  startLive
 } from "../api/lives";
+
+function hasProviderStopPending(value) {
+  return Boolean(
+    value?.providerStopPending ||
+    value?.stopRequired ||
+    value?.hostedLive?.providerStopPending ||
+    value?.hostedLive?.stopRequired
+  );
+}
 
 export function buildLiveShareTargets(title, sessionId) {
   const url = currentPublicUrl(
@@ -57,7 +67,7 @@ export function buildLiveShareTargets(title, sessionId) {
 export default function LiveSessionScreen({ route }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
-  const routerParams = (useLocalSearchParams && useLocalSearchParams()) || {};
+  const routerParams = useLocalSearchParams() || {};
   const routeParams = route?.params || {};
   const params = { ...routerParams, ...routeParams };
 
@@ -73,6 +83,7 @@ export default function LiveSessionScreen({ route }) {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [err, setErr] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const [savingReminder, setSavingReminder] = useState(false);
   const [reminderCreated, setReminderCreated] = useState(false);
   const [rsvped, setRsvped] = useState(false);
@@ -89,9 +100,25 @@ export default function LiveSessionScreen({ route }) {
   const [reportedChatMessage, setReportedChatMessage] = useState(null);
   const [hostedPlayback, setHostedPlayback] = useState(null);
   const [hostedLifecycle, setHostedLifecycle] = useState("");
+  const [providerStopPending, setProviderStopPending] = useState(false);
+  const [startingLive, setStartingLive] = useState(false);
   const [endingLive, setEndingLive] = useState(false);
+  const activeSessionIdRef = useRef(sessionId);
+  const lifecycleActionRef = useRef(false);
+  const lifecycleEpochRef = useRef(0);
+  const providerStopPendingRef = useRef(false);
   const [rotatingHostedKey, setRotatingHostedKey] = useState(false);
   const [rotatedHostedCredentials, setRotatedHostedCredentials] = useState(null);
+
+  useEffect(() => {
+    activeSessionIdRef.current = sessionId;
+    lifecycleEpochRef.current += 1;
+    lifecycleActionRef.current = false;
+    providerStopPendingRef.current = false;
+    setProviderStopPending(false);
+    setStartingLive(false);
+    setEndingLive(false);
+  }, [sessionId]);
 
   useEffect(() => {
     let alive = true;
@@ -113,6 +140,9 @@ export default function LiveSessionScreen({ route }) {
         });
         if (!alive) return;
         setSession(res || null);
+        const stopPending = hasProviderStopPending(res);
+        providerStopPendingRef.current = stopPending;
+        setProviderStopPending(stopPending);
       } catch (e) {
         const msg = String(e?.message || e || "No session found");
         if (!alive) return;
@@ -130,7 +160,7 @@ export default function LiveSessionScreen({ route }) {
     return () => {
       alive = false;
     };
-  }, [sessionId]);
+  }, [reloadKey, sessionId]);
 
   useEffect(() => {
     if (!sessionId) return undefined;
@@ -145,21 +175,26 @@ export default function LiveSessionScreen({ route }) {
     };
   }, [sessionId]);
 
-  const twitchChannel = session?.twitchChannel ? String(session.twitchChannel) : "";
+  const twitchChannel =
+    session?.twitchChannel || session?.twitchChannelName
+      ? String(session.twitchChannel || session.twitchChannelName)
+      : "";
   const streamPlatform = String(
     session?.streamPlatform || (twitchChannel ? "twitch" : "other")
   );
+  const streamPlatformKey = streamPlatform.trim().toLowerCase();
   const streamPlatformLabel =
     String(session?.externalPlatformLabel || "") ||
     { twitch: "Twitch", youtube: "YouTube", kick: "Kick", facebook: "Facebook Live" }[
-      streamPlatform
+      streamPlatformKey
     ] ||
     "Streaming service";
   const watchUrl = String(
     session?.externalWatchUrl ||
       (twitchChannel ? `https://www.twitch.tv/${twitchChannel}` : "")
   );
-  const isGrowPathHosted = session?.broadcastMode === "growpath";
+  const broadcastMode = String(session?.broadcastMode || "external").toLowerCase();
+  const isGrowPathHosted = broadcastMode === "growpath";
   const hasHostedPlayback = Boolean(hostedPlayback?.playerUrl);
 
   useEffect(() => {
@@ -167,21 +202,57 @@ export default function LiveSessionScreen({ route }) {
     let alive = true;
     let timeout;
     async function refreshHostedVideo() {
+      const polledSessionId = sessionId;
+      const pollEpoch = lifecycleEpochRef.current;
       try {
+        if (lifecycleActionRef.current) return;
         const status = await getHostedLiveLifecycle(sessionId);
-        if (!alive) return;
-        setHostedLifecycle(String(status?.lifecycle || status?.status || "connecting"));
+        if (
+          !alive ||
+          lifecycleActionRef.current ||
+          activeSessionIdRef.current !== polledSessionId ||
+          lifecycleEpochRef.current !== pollEpoch
+        )
+          return;
+        const nextLifecycle = String(status?.lifecycle || status?.status || "connecting");
+        const nextStopPending = hasProviderStopPending(status);
+        const previousStopPending = providerStopPendingRef.current;
+        providerStopPendingRef.current = nextStopPending;
+        setHostedLifecycle(nextLifecycle);
+        setProviderStopPending(nextStopPending);
+        if (previousStopPending && !nextStopPending) {
+          setFeedback("The video provider confirmed the encoder is stopped.");
+        }
+        const nextSessionStatus = String(
+          status?.sessionStatus || status?.session?.status || ""
+        ).toLowerCase();
+        if (nextSessionStatus) {
+          setSession((current) =>
+            current ? { ...current, status: nextSessionStatus } : current
+          );
+        }
         if (
           !hasHostedPlayback &&
-          ["connected", "degraded", "ended", "replay"].includes(
-            String(status?.lifecycle || status?.status)
-          )
+          ["connected", "degraded", "ended", "replay"].includes(nextLifecycle)
         ) {
           const playback = await getHostedLivePlayback(sessionId).catch(() => null);
-          if (alive && playback?.playerUrl) setHostedPlayback(playback);
+          if (
+            alive &&
+            !lifecycleActionRef.current &&
+            activeSessionIdRef.current === polledSessionId &&
+            lifecycleEpochRef.current === pollEpoch &&
+            playback?.playerUrl
+          )
+            setHostedPlayback(playback);
         }
       } catch {
-        if (alive) setHostedLifecycle("connecting");
+        if (
+          alive &&
+          !lifecycleActionRef.current &&
+          activeSessionIdRef.current === polledSessionId &&
+          lifecycleEpochRef.current === pollEpoch
+        )
+          setHostedLifecycle("connecting");
       } finally {
         if (alive) timeout = setTimeout(refreshHostedVideo, 5000);
       }
@@ -276,9 +347,27 @@ export default function LiveSessionScreen({ route }) {
   const ownerId = String(
     session?.owner?.id || session?.owner?._id || session?.ownerId || session?.userId || ""
   );
+  const ownerDisplayName = String(
+    session?.owner?.displayName || session?.owner?.name || "GrowPath member"
+  );
+  const ownerAvatarUrl = String(
+    session?.owner?.avatarUrl || session?.owner?.avatar || session?.owner?.photoUrl || ""
+  );
   const signedInUserId = String(auth?.user?.id || auth?.user?._id || "");
   const canReport = Boolean(signedInUserId) && (!ownerId || ownerId !== signedInUserId);
   const isHost = Boolean(signedInUserId && ownerId === signedInUserId);
+  const sessionStatus = String(session?.status || "").toLowerCase();
+  const canStartExternalSession =
+    isHost &&
+    session?.isPublished !== false &&
+    broadcastMode === "external" &&
+    !["twitch", "growpath"].includes(streamPlatformKey) &&
+    session?.sessionType !== "premiere" &&
+    sessionStatus === "scheduled";
+  const canEndSession =
+    isHost &&
+    session?.isPublished !== false &&
+    (providerStopPending || ["live", "scheduled"].includes(sessionStatus));
 
   useEffect(() => {
     if (!sessionId || !session?.chatEnabled) return undefined;
@@ -365,22 +454,76 @@ export default function LiveSessionScreen({ route }) {
   }
 
   async function endBroadcast() {
-    if (endingLive) return;
+    if (lifecycleActionRef.current) return;
+    const actionSessionId = sessionId;
+    const actionEpoch = lifecycleEpochRef.current + 1;
+    lifecycleEpochRef.current = actionEpoch;
+    lifecycleActionRef.current = true;
     setEndingLive(true);
     try {
-      if (isGrowPathHosted) await releaseHostedLiveInput(sessionId);
-      const result = await updateLive(sessionId, { status: "ended" });
-      setSession(result?.session || result || { ...session, status: "ended" });
-      setHostedLifecycle("ended");
+      const result = await endLive(actionSessionId);
+      if (
+        activeSessionIdRef.current !== actionSessionId ||
+        lifecycleEpochRef.current !== actionEpoch
+      )
+        return;
+      const endedSession = result?.session || result || { ...session, status: "ended" };
+      const stopPending =
+        hasProviderStopPending(result) || hasProviderStopPending(endedSession);
+      setSession(endedSession);
+      providerStopPendingRef.current = stopPending;
+      setProviderStopPending(stopPending);
+      setHostedLifecycle(stopPending ? "degraded" : "ended");
       setFeedback(
-        isGrowPathHosted
-          ? "Broadcast ended. Your OBS channel remains saved for the next live."
-          : "Live session ended."
+        stopPending
+          ? "The GrowPath session is ended, but the video provider still needs to stop. Retry provider stop now; GrowPath will also keep retrying safely."
+          : isGrowPathHosted
+            ? "Broadcast ended. Your OBS channel remains saved for the next live."
+            : "Live session ended."
       );
     } catch (error) {
-      setFeedback(String(error?.message || error || "The live could not be ended."));
+      if (
+        activeSessionIdRef.current === actionSessionId &&
+        lifecycleEpochRef.current === actionEpoch
+      )
+        setFeedback(String(error?.message || error || "The live could not be ended."));
     } finally {
-      setEndingLive(false);
+      if (lifecycleEpochRef.current === actionEpoch) {
+        lifecycleActionRef.current = false;
+        setEndingLive(false);
+      }
+    }
+  }
+
+  async function startExternalSession() {
+    if (lifecycleActionRef.current) return;
+    const actionSessionId = sessionId;
+    const actionEpoch = lifecycleEpochRef.current + 1;
+    lifecycleEpochRef.current = actionEpoch;
+    lifecycleActionRef.current = true;
+    setStartingLive(true);
+    setFeedback("");
+    try {
+      const result = await startLive(actionSessionId);
+      if (
+        activeSessionIdRef.current !== actionSessionId ||
+        lifecycleEpochRef.current !== actionEpoch
+      )
+        return;
+      const startedSession = result?.session || result;
+      if (startedSession) setSession(startedSession);
+      setFeedback("Live session started. The GrowPath page and chat are now live.");
+    } catch (error) {
+      if (
+        activeSessionIdRef.current === actionSessionId &&
+        lifecycleEpochRef.current === actionEpoch
+      )
+        setFeedback(String(error?.message || error || "The live could not be started."));
+    } finally {
+      if (lifecycleEpochRef.current === actionEpoch) {
+        lifecycleActionRef.current = false;
+        setStartingLive(false);
+      }
     }
   }
 
@@ -540,6 +683,15 @@ export default function LiveSessionScreen({ route }) {
             Live session unavailable
           </Text>
           <Text style={styles.error}>{err}</Text>
+          {sessionId ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setReloadKey((value) => value + 1)}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryBtnText}>Retry session</Text>
+            </Pressable>
+          ) : null}
           <Link href="/lives" asChild>
             <Pressable accessibilityRole="button" style={styles.secondaryBtn}>
               <Text style={styles.secondaryBtnText}>Browse Lives</Text>
@@ -547,13 +699,30 @@ export default function LiveSessionScreen({ route }) {
           </Link>
         </View>
       ) : null}
-      {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
+      {feedback ? (
+        <Text accessibilityLiveRegion="polite" style={styles.feedback}>
+          {feedback}
+        </Text>
+      ) : null}
 
       {session ? (
         <View style={styles.card}>
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             {String(session.title || "Untitled Session")}
           </Text>
+          {ownerId ? (
+            <View style={styles.hostRow}>
+              {ownerAvatarUrl ? (
+                <Image
+                  accessibilityLabel={`${ownerDisplayName} avatar`}
+                  source={{ uri: ownerAvatarUrl }}
+                  style={styles.hostAvatar}
+                />
+              ) : null}
+              <Text style={styles.hostName}>Hosted by {ownerDisplayName}</Text>
+              {signedInUserId && !isHost ? <FollowButton userId={ownerId} /> : null}
+            </View>
+          ) : null}
           {session.description ? (
             <Text style={styles.description}>{String(session.description)}</Text>
           ) : null}
@@ -635,12 +804,17 @@ export default function LiveSessionScreen({ route }) {
           ) : isGrowPathHosted ? (
             <View style={styles.premiereNotice}>
               <Text style={styles.premiereTitle}>
-                GrowPath video · {hostedLifecycle || "connecting"}
+                GrowPath video ·
+                {providerStopPending
+                  ? " provider stop pending"
+                  : ` ${hostedLifecycle || "connecting"}`}
               </Text>
               <Text style={styles.meta}>
-                {hostedLifecycle === "ended"
-                  ? "This broadcast ended. Its replay will appear here when processing finishes."
-                  : "The session page and chat are ready. Video appears when the host connects OBS and the stream becomes available."}
+                {providerStopPending
+                  ? "The GrowPath session is ended. The video provider still needs to confirm that the encoder is stopped."
+                  : hostedLifecycle === "ended"
+                    ? "This broadcast ended. Its replay will appear here when processing finishes."
+                    : "The session page and chat are ready. Video appears when the host connects OBS and the stream becomes available."}
               </Text>
             </View>
           ) : twitchChannel || twitchVodId ? (
@@ -659,15 +833,50 @@ export default function LiveSessionScreen({ route }) {
             </Text>
           )}
 
-          {isHost && session.status === "live" ? (
+          {providerStopPending && isHost ? (
+            <View
+              accessibilityLiveRegion="assertive"
+              accessibilityRole="alert"
+              style={styles.premiereNotice}
+            >
+              <Text style={styles.premiereTitle}>Video provider stop pending</Text>
+              <Text style={styles.meta}>
+                GrowPath retained the ended session and chat. Retry the provider stop so
+                the encoder cannot keep consuming streaming resources.
+              </Text>
+            </View>
+          ) : null}
+
+          {canStartExternalSession ? (
             <Pressable
               accessibilityRole="button"
-              disabled={endingLive}
+              disabled={startingLive || endingLive}
+              onPress={() => void startExternalSession()}
+              style={styles.secondaryBtn}
+            >
+              <Text style={styles.secondaryBtnText}>
+                {startingLive ? "Starting session..." : "Start live session"}
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {canEndSession ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={endingLive || startingLive}
               onPress={() => void endBroadcast()}
               style={styles.secondaryBtn}
             >
               <Text style={styles.secondaryBtnText}>
-                {endingLive ? "Ending broadcast..." : "End broadcast"}
+                {endingLive
+                  ? providerStopPending
+                    ? "Retrying provider stop..."
+                    : "Ending broadcast..."
+                  : providerStopPending
+                    ? "Retry provider stop"
+                    : sessionStatus === "scheduled"
+                      ? "End scheduled session"
+                      : "End broadcast"}
               </Text>
             </Pressable>
           ) : null}
@@ -1136,6 +1345,15 @@ export function createStyles(palette) {
       borderColor: palette.border
     },
     cardTitle: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    hostRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 10
+    },
+    hostAvatar: { borderRadius: 20, height: 40, width: 40 },
+    hostName: { color: palette.textSoft, flexGrow: 1, fontWeight: "800" },
     description: {
       color: palette.textSoft,
       fontSize: 14,

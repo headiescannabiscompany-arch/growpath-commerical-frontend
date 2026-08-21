@@ -32,7 +32,9 @@ function main() {
   const failures = [];
 
   if (!fs.existsSync(TELEMETRY_API_FILE)) {
-    console.error(`Missing telemetry API file: ${path.relative(ROOT, TELEMETRY_API_FILE)}`);
+    console.error(
+      `Missing telemetry API file: ${path.relative(ROOT, TELEMETRY_API_FILE)}`
+    );
     process.exit(1);
   }
 
@@ -44,10 +46,6 @@ function main() {
     PULSE_VERIFY: "/api/telemetry/pulse/verify",
     PULSE_DEVICES: "/api/telemetry/pulse/devices",
     PULSE_PULL: "/api/telemetry/pulse/pull",
-    UBIBOT_VERIFY: "/api/telemetry/ubibot/verify",
-    UBIBOT_CHANNELS: "/api/telemetry/ubibot/channels",
-    UBIBOT_PULL: "/api/telemetry/ubibot/pull",
-    UBIBOT_MQTT_SETTINGS: "/api/telemetry/ubibot/mqtt-settings",
     GROWLINK_VERIFY: "/api/telemetry/growlink/verify",
     GROWLINK_CONTROLLERS: "/api/telemetry/growlink/controllers",
     GROWLINK_CURRENT: "/api/telemetry/growlink/current",
@@ -63,32 +61,60 @@ function main() {
 
   const stripped = stripTelemetryRoutesBlock(telemetryRaw);
   if (/["'`]\/api\/telemetry/.test(stripped)) {
-    failures.push('src/api/telemetry.ts contains direct "/api/telemetry" literal outside TELEMETRY_ROUTES');
+    failures.push(
+      'src/api/telemetry.ts contains direct "/api/telemetry" literal outside TELEMETRY_ROUTES'
+    );
   }
 
   if (!/delete\s+config\.pulse\.apiKey\s*;/.test(telemetryRaw)) {
-    failures.push("src/api/telemetry.ts must strip config.pulse.apiKey during source normalization");
+    failures.push(
+      "src/api/telemetry.ts must strip config.pulse.apiKey during source normalization"
+    );
   }
   if (!/delete\s+config\.ubibot\.accountKey\s*;/.test(telemetryRaw)) {
-    failures.push("src/api/telemetry.ts must strip config.ubibot.accountKey during source normalization");
+    failures.push(
+      "src/api/telemetry.ts must strip config.ubibot.accountKey during source normalization"
+    );
   }
   if (!/delete\s+config\.ubibot\.apiKey\s*;/.test(telemetryRaw)) {
-    failures.push("src/api/telemetry.ts must strip config.ubibot.apiKey during source normalization");
+    failures.push(
+      "src/api/telemetry.ts must strip config.ubibot.apiKey during source normalization"
+    );
   }
   if (!/delete\s+config\.growlink\.password\s*;/.test(telemetryRaw)) {
-    failures.push("src/api/telemetry.ts must strip config.growlink.password during source normalization");
+    failures.push(
+      "src/api/telemetry.ts must strip config.growlink.password during source normalization"
+    );
   }
   if (!/delete\s+config\.growlink\.accessToken\s*;/.test(telemetryRaw)) {
-    failures.push("src/api/telemetry.ts must strip config.growlink.accessToken during source normalization");
+    failures.push(
+      "src/api/telemetry.ts must strip config.growlink.accessToken during source normalization"
+    );
   }
   for (const [key, route] of Object.entries(expectedRoutes)) {
-    const keyPattern = new RegExp(`\\b${key}\\s*:\\s*["'\`]${route.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["'\`]`);
+    const keyPattern = new RegExp(
+      `\\b${key}\\s*:\\s*["'\`]${route.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["'\`]`
+    );
     if (!keyPattern.test(telemetryRaw)) {
       failures.push(`src/api/telemetry.ts missing TELEMETRY_ROUTES.${key} = "${route}"`);
     }
   }
+  for (const route of [
+    "/api/telemetry/ubibot/verify",
+    "/api/telemetry/ubibot/channels",
+    "/api/telemetry/ubibot/pull",
+    "/api/telemetry/ubibot/mqtt-settings"
+  ]) {
+    if (telemetryRaw.includes(route)) {
+      failures.push(
+        `src/api/telemetry.ts must not expose unsupported ${route}; use the generic IntegrationConnection adapter`
+      );
+    }
+  }
   if (!/err\.code\s*=\s*res\?\.(error\?\.)?code/.test(telemetryRaw)) {
-    failures.push("src/api/telemetry.ts must preserve backend error code on thrown errors in unwrapData");
+    failures.push(
+      "src/api/telemetry.ts must preserve backend error code on thrown errors in unwrapData"
+    );
   }
 
   const allFiles = walkFiles(SRC_DIR);
@@ -97,7 +123,9 @@ function main() {
     if (file === TELEMETRY_API_FILE) continue;
     const raw = fs.readFileSync(file, "utf8");
     if (/["'`]\/api\/telemetry/.test(raw)) {
-      failures.push(`${rel} contains direct "/api/telemetry" literal; use src/api/telemetry.ts`);
+      failures.push(
+        `${rel} contains direct "/api/telemetry" literal; use src/api/telemetry.ts`
+      );
     }
   }
 

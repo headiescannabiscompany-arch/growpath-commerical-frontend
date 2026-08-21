@@ -30,8 +30,20 @@ export const INTEGRATION_DATA_USE_REGISTRY: IntegrationDataUseRule[] = [
     consumers: ["display", "analytics", "search", "exports"]
   },
   {
+    field: "workspaceId",
+    description:
+      "Canonical account or Facility ownership reference used to isolate connections and imports.",
+    consumers: ["display", "analytics", "search", "exports"]
+  },
+  {
     field: "targetRef",
     description: "Owned grow or Commercial evidence-run receiving the import.",
+    consumers: ["display", "analytics", "AI", "search", "exports"]
+  },
+  {
+    field: "targetType",
+    description:
+      "Reviewed target kind distinguishing a grow from an explicit Commercial evidence run.",
     consumers: ["display", "analytics", "AI", "search", "exports"]
   },
   {
@@ -57,6 +69,24 @@ export const INTEGRATION_DATA_USE_REGISTRY: IntegrationDataUseRule[] = [
   {
     field: "roomId",
     description: "Canonical Facility room selected or created after mapping review.",
+    consumers: ["display", "analytics", "AI", "search", "tasks", "alerts", "exports"]
+  },
+  {
+    field: "sourceTimezone",
+    description:
+      "Reviewed IANA timezone used to interpret source-local history timestamps.",
+    consumers: ["display", "analytics", "AI", "search", "exports"]
+  },
+  {
+    field: "sourceFileIdentity",
+    description:
+      "Bounded file name, size, media type, modification time, and URI scheme retained without a device-local URI.",
+    consumers: ["display", "analytics", "search", "exports"]
+  },
+  {
+    field: "importReview",
+    description:
+      "Confirmed provider, workspace, grow, room, timezone, file, and column-review provenance.",
     consumers: ["display", "analytics", "AI", "search", "tasks", "alerts", "exports"]
   },
   {

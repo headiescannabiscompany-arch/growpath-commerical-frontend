@@ -16,7 +16,8 @@ import { apiRequest } from "@/api/apiRequest";
 import {
   CommercialLiveEvent,
   createCommercialLive,
-  fetchCommercialLives
+  fetchCommercialLives,
+  publishCommercialLive
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
 import CalendarDateField from "@/components/forms/CalendarDateField";
@@ -25,6 +26,7 @@ import AppPage from "@/components/layout/AppPage";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { isUnpublishedLive, livePublishIntent } from "@/features/lives/liveLifecycle";
 import { persistImageUri, resolveImageUri } from "@/utils/photoUploads";
 import {
   beginTwitchConnection,
@@ -199,7 +201,9 @@ export default function CommercialLivesRoute() {
   const [form, setForm] = useState<LiveForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [publishingLiveId, setPublishingLiveId] = useState("");
   const [creatingTaskForLiveId, setCreatingTaskForLiveId] = useState("");
+  const [loadError, setLoadError] = useState<any>(null);
   const [error, setError] = useState<any>(null);
   const [message, setMessage] = useState("");
   const [twitchConnection, setTwitchConnection] = useState<TwitchConnectionStatus | null>(
@@ -217,11 +221,11 @@ export default function CommercialLivesRoute() {
 
   async function loadLives() {
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     try {
       setLives(await fetchCommercialLives());
     } catch (err) {
-      setError(err);
+      setLoadError(err);
     } finally {
       setLoading(false);
     }
@@ -335,15 +339,49 @@ export default function CommercialLivesRoute() {
         visibility: form.visibility,
         replayUrl: form.replayUrl.trim() || undefined,
         notificationPlan,
-        status: form.scheduledStart.trim() ? "scheduled" : "draft"
+        status: "draft",
+        isPublished: false
       });
       setForm(EMPTY_FORM);
-      setMessage("Live scheduled. Reminder plan attached.");
+      setMessage(
+        "Private live draft saved. Review every field below, then explicitly publish it."
+      );
       await loadLives();
     } catch (err) {
       setError(err);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function publishDraft(live: CommercialLiveEvent) {
+    const id = String(liveId(live));
+    const warnings = liveSetupWarnings(live);
+    if (!id || publishingLiveId) return;
+    if (warnings.length) {
+      setMessage(`Publish blocked until setup is reviewed: ${warnings.join(", ")}.`);
+      return;
+    }
+    const intent = livePublishIntent(live);
+    setPublishingLiveId(id);
+    setError(null);
+    setMessage("");
+    try {
+      const published = await publishCommercialLive(id, intent.goLiveNow);
+      setLives((current) =>
+        current.map((item) =>
+          String(liveId(item)) === id ? { ...item, ...published } : item
+        )
+      );
+      setMessage(
+        intent.goLiveNow
+          ? "Reviewed commercial session published live."
+          : "Reviewed commercial schedule published."
+      );
+    } catch (err) {
+      setError(err);
+    } finally {
+      setPublishingLiveId("");
     }
   }
 
@@ -532,6 +570,20 @@ export default function CommercialLivesRoute() {
         </View>
         {loading ? <Text style={styles.muted}>Loading lives...</Text> : null}
         {message ? <Text style={styles.success}>{message}</Text> : null}
+        {loadError ? (
+          <View style={styles.actions}>
+            <InlineError error={loadError} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading commercial lives"
+              disabled={loading}
+              onPress={() => void loadLives()}
+              style={[styles.action, loading && styles.disabled]}
+            >
+              <Text style={styles.actionText}>Retry Lives</Text>
+            </Pressable>
+          </View>
+        ) : null}
         {error ? <InlineError error={error} /> : null}
       </AppCard>
 
@@ -770,7 +822,7 @@ export default function CommercialLivesRoute() {
         ) : null}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Schedule commercial live"
+          accessibilityLabel="Save commercial live private draft"
           disabled={saving || !form.title.trim() || scheduleBlocked}
           onPress={scheduleLive}
           style={[
@@ -779,7 +831,7 @@ export default function CommercialLivesRoute() {
           ]}
         >
           <Text style={styles.primaryActionText}>
-            {saving ? "Scheduling..." : "Schedule Live"}
+            {saving ? "Saving..." : "Save Private Draft"}
           </Text>
         </Pressable>
       </AppCard>
@@ -792,6 +844,8 @@ export default function CommercialLivesRoute() {
               (() => {
                 const id = String(liveId(live));
                 const warnings = liveSetupWarnings(live);
+                const isUnpublished = isUnpublishedLive(live);
+                const publishIntent = livePublishIntent(live);
                 const isFocused = Boolean(focusedLiveId && focusedLiveId === id);
                 return (
                   <View
@@ -866,12 +920,40 @@ export default function CommercialLivesRoute() {
                       </View>
                     ) : null}
                     <View style={styles.actions}>
-                      {(live.isPublished || live.status !== "draft") &&
-                      ["public", "unlisted"].includes(live.visibility || "public") ? (
+                      <ActionLink
+                        href={`/live-session?sessionId=${encodeURIComponent(id)}`}
+                        label={
+                          isUnpublished
+                            ? "Preview Private Draft"
+                            : live.replayUrl
+                              ? "Open Live / Replay"
+                              : "Open Live"
+                        }
+                      />
+                      {["draft", "scheduled"].includes(live.status || "draft") ? (
                         <ActionLink
-                          href={`/live-session?sessionId=${encodeURIComponent(id)}`}
-                          label={live.replayUrl ? "Open Live / Replay" : "Open Live"}
+                          href={`/live-studio?editSessionId=${encodeURIComponent(id)}`}
+                          label="Edit in Live Studio"
                         />
+                      ) : null}
+                      {isUnpublished ? (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`${publishIntent.label} ${live.title || "untitled commercial live"}`}
+                          disabled={Boolean(warnings.length) || publishingLiveId === id}
+                          onPress={() => void publishDraft(live)}
+                          style={[
+                            styles.action,
+                            (Boolean(warnings.length) || publishingLiveId === id) &&
+                              styles.disabled
+                          ]}
+                        >
+                          <Text style={styles.actionText}>
+                            {publishingLiveId === id
+                              ? "Publishing..."
+                              : publishIntent.label}
+                          </Text>
+                        </Pressable>
                       ) : null}
                       {live.forumThreadId ? (
                         <ActionLink

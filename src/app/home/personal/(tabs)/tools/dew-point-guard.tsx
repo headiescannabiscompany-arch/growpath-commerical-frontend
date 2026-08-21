@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system/legacy";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
@@ -31,7 +32,12 @@ import {
   pullPulseWindow,
   verifyPulseApiKey
 } from "@/api/telemetry";
-import type { PulseDevice, TelemetryPoint, TelemetrySource } from "@/types/telemetry";
+import type {
+  PulseDevice,
+  TelemetryCredentialWorkspaceScope,
+  TelemetryPoint,
+  TelemetrySource
+} from "@/types/telemetry";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import {
   cToF,
@@ -106,6 +112,7 @@ function Field(props: {
   onChangeText: (v: string) => void;
   placeholder?: string;
   keyboardType?: "default" | "numeric";
+  secureTextEntry?: boolean;
   testID?: string;
 }) {
   const { palette } = useAppTheme();
@@ -114,7 +121,14 @@ function Field(props: {
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{props.label}</Text>
       <TextInput
+        accessibilityLabel={props.label}
+        autoCapitalize={props.secureTextEntry ? "none" : undefined}
+        autoComplete={props.secureTextEntry ? "off" : undefined}
+        autoCorrect={props.secureTextEntry ? false : undefined}
+        importantForAutofill={props.secureTextEntry ? "noExcludeDescendants" : undefined}
+        secureTextEntry={props.secureTextEntry}
         testID={props.testID}
+        textContentType={props.secureTextEntry ? "none" : undefined}
         value={props.value}
         onChangeText={props.onChangeText}
         placeholder={props.placeholder}
@@ -165,6 +179,15 @@ function headerIndex(headers: string[], key: string): number {
 }
 
 type PendingReading = { ts: string; tempF: number; rh: number };
+type HistoryWorkspace = "personal" | "commercial" | "facility";
+type CsvFileIdentity = {
+  source: "document_picker" | "pasted";
+  name: string;
+  size: number;
+  mimeType: string;
+  lastModified: number | null;
+  uriScheme: string | null;
+};
 const CSV_MAX_ROWS = 5000;
 const PULSE_IMPORTED_METRICS = [
   "air_temperature",
@@ -178,6 +201,60 @@ function normalizeCsvTimestampToIso(
   sourceTimezone: string
 ): string | null {
   return normalizeTelemetryTimestamp(tsRaw, sourceTimezone);
+}
+
+export function isValidTelemetryTimezone(value: string) {
+  const timezone = String(value || "").trim();
+  if (!timezone) return false;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(new Date(0));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function normalizedProvider(value: unknown) {
+  return String(value || "generic")
+    .trim()
+    .toLowerCase();
+}
+
+export function telemetrySourceMatchesImportReview(
+  source: TelemetrySource | undefined,
+  review: {
+    provider: string;
+    growId: string;
+    workspaceType: HistoryWorkspace;
+    facilityId?: string;
+    roomId?: string;
+    roomName: string;
+    timezone: string;
+  }
+) {
+  if (!source || source.type !== "upload") return false;
+  if (String(source.growId || "") !== review.growId) return false;
+  if (
+    normalizedProvider(source.config?.provider) !== normalizedProvider(review.provider)
+  ) {
+    return false;
+  }
+  if (String(source.timezone || "") !== review.timezone) return false;
+  const sourceReview = source.config?.importReview || source.config?.roomMapping || {};
+  if (String(sourceReview.roomId || "") !== String(review.roomId || "")) return false;
+  if (String(sourceReview.roomName || "").trim() !== review.roomName.trim()) return false;
+  const sourceWorkspace = String(
+    source.workspaceType || source.config?.workspaceType || "personal"
+  );
+  if (sourceWorkspace !== review.workspaceType) return false;
+  if (
+    review.workspaceType === "facility" &&
+    String(source.facilityId || source.config?.facilityId || "") !==
+      String(review.facilityId || "")
+  ) {
+    return false;
+  }
+  return true;
 }
 
 function dewPointInspectionTaskMetadata(riskBand: string) {
@@ -197,10 +274,18 @@ function dewPointInspectionTaskMetadata(riskBand: string) {
 
 export default function DewPointGuardTool({
   historyImportMode = false,
-  workspaceType = "personal"
+  workspaceType = "personal",
+  facilityId = "",
+  growLabel = "Selected grow",
+  initialRoomId = "",
+  initialRoomName = ""
 }: {
   historyImportMode?: boolean;
-  workspaceType?: "personal" | "commercial";
+  workspaceType?: HistoryWorkspace;
+  facilityId?: string;
+  growLabel?: string;
+  initialRoomId?: string;
+  initialRoomName?: string;
 } = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createDewPointGuardStyles(palette), [palette]);
@@ -210,8 +295,8 @@ export default function DewPointGuardTool({
   const plantContext = useToolPlantContext(
     growId,
     asString(params.plantId) || "",
-    true,
-    workspaceType
+    !historyImportMode,
+    workspaceType === "commercial" ? "commercial" : "personal"
   );
 
   const [mode, setMode] = useState<"manual" | "source">(
@@ -240,6 +325,13 @@ export default function DewPointGuardTool({
   const [loadingPulseDevices, setLoadingPulseDevices] = useState(false);
   const [pulseDevices, setPulseDevices] = useState<PulseDevice[]>([]);
   const [selectedPulseDeviceId, setSelectedPulseDeviceId] = useState("");
+  const pulseCredentialScope = useMemo<TelemetryCredentialWorkspaceScope>(
+    () =>
+      workspaceType === "facility"
+        ? { workspaceType, facilityId: facilityId.trim() }
+        : { workspaceType },
+    [facilityId, workspaceType]
+  );
 
   const [windowMode, setWindowMode] = useState<"lastNight" | "last24h" | "custom">(
     "lastNight"
@@ -274,6 +366,10 @@ export default function DewPointGuardTool({
     Pick<CsvMapping, "vpdCol" | "co2Col" | "lightCol" | "lightKind">
   >({});
   const [csvSourceConfig, setCsvSourceConfig] = useState<Record<string, any>>({});
+  const [csvFileIdentity, setCsvFileIdentity] = useState<CsvFileIdentity | null>(null);
+  const [csvRoomId] = useState(initialRoomId);
+  const [csvRoomName, setCsvRoomName] = useState(initialRoomName);
+  const [confirmedCsvReviewSignature, setConfirmedCsvReviewSignature] = useState("");
   const [sourceTimezone, setSourceTimezone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"
   );
@@ -284,6 +380,68 @@ export default function DewPointGuardTool({
   const selectedSource = useMemo(
     () => sources.find((s) => s.id === selectedSourceId),
     [sources, selectedSourceId]
+  );
+  const workspaceScope = useMemo(
+    () => ({
+      workspaceType,
+      ...(workspaceType === "facility" && facilityId ? { facilityId } : {}),
+      targetType: "grow" as const
+    }),
+    [facilityId, workspaceType]
+  );
+  const csvProvider = normalizedProvider(csvSourceConfig.provider);
+  const csvReview = useMemo(
+    () => ({
+      provider: csvProvider,
+      growId: String(growId || ""),
+      workspaceType,
+      facilityId: workspaceType === "facility" ? facilityId : undefined,
+      roomId: csvRoomId || undefined,
+      roomName: csvRoomName.trim(),
+      timezone: sourceTimezone.trim()
+    }),
+    [
+      csvProvider,
+      csvRoomId,
+      csvRoomName,
+      facilityId,
+      growId,
+      sourceTimezone,
+      workspaceType
+    ]
+  );
+  const csvReviewSignature = useMemo(
+    () =>
+      JSON.stringify({
+        ...csvReview,
+        file: csvFileIdentity,
+        columns: csvHeaders,
+        timestampColumn: csvTsHeader,
+        temperatureColumn: csvTempHeader,
+        humidityColumn: csvRhHeader,
+        temperatureUnit: csvTempUnit
+      }),
+    [
+      csvFileIdentity,
+      csvHeaders,
+      csvRhHeader,
+      csvReview,
+      csvTempHeader,
+      csvTempUnit,
+      csvTsHeader
+    ]
+  );
+  const csvReviewComplete =
+    Boolean(
+      growId &&
+      csvRows.length &&
+      csvFileIdentity &&
+      csvRoomName.trim() &&
+      isValidTelemetryTimezone(sourceTimezone)
+    ) && confirmedCsvReviewSignature === csvReviewSignature;
+  const selectedSourceMatchesCsv = telemetrySourceMatchesImportReview(
+    selectedSource,
+    csvReview
   );
   const csvMappingStorageKey = selectedSourceId
     ? `dew_point_guard_csv_mapping:${selectedSourceId}`
@@ -445,7 +603,7 @@ export default function DewPointGuardTool({
       );
     setLoadingSources(true);
     try {
-      const list = await listTelemetrySources(growId);
+      const list = await listTelemetrySources(growId, workspaceScope);
       setSources(list);
       if (!selectedSourceId && list.length) setSelectedSourceId(list[0].id);
     } catch (e: any) {
@@ -462,6 +620,18 @@ export default function DewPointGuardTool({
         "Missing growId",
         "A growId is required to create a telemetry source."
       );
+    if (type === "upload" && !csvRows.length) {
+      return Alert.alert(
+        "Choose the history file first",
+        "Pick or paste a controller CSV before creating its reviewed source."
+      );
+    }
+    if (type === "upload" && !csvReviewComplete) {
+      return Alert.alert(
+        "Review required",
+        "Confirm the provider, grow, room, timezone, and file before creating this history source."
+      );
+    }
     setCreatingSource(true);
     setIngestStatus("");
     try {
@@ -475,7 +645,35 @@ export default function DewPointGuardTool({
               ? "AC Infinity CSV History"
               : "Upload Telemetry",
         timezone: sourceTimezone,
-        config: type === "upload" ? csvSourceConfig : {}
+        workspaceType,
+        ...(workspaceType === "facility" && facilityId ? { facilityId } : {}),
+        targetType: "grow",
+        roomId: type === "upload" ? csvRoomId || undefined : undefined,
+        config:
+          type === "upload"
+            ? {
+                ...csvSourceConfig,
+                workspaceType,
+                ...(workspaceType === "facility" && facilityId ? { facilityId } : {}),
+                sourceFileIdentity: csvFileIdentity,
+                roomMapping: {
+                  roomId: csvRoomId || null,
+                  roomName: csvRoomName.trim()
+                },
+                importReview: {
+                  provider: csvProvider,
+                  growId,
+                  growLabel,
+                  workspaceType,
+                  facilityId: workspaceType === "facility" ? facilityId || null : null,
+                  roomId: csvRoomId || null,
+                  roomName: csvRoomName.trim(),
+                  timezone: sourceTimezone.trim(),
+                  sourceFileIdentity: csvFileIdentity,
+                  reviewedAt: new Date().toISOString()
+                }
+              }
+            : {}
       });
       setSources((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
       setSelectedSourceId(created.id);
@@ -491,10 +689,16 @@ export default function DewPointGuardTool({
   async function verifyPulseAndLoadDevices() {
     const apiKey = String(pulseApiKey || "").trim();
     if (!apiKey) return Alert.alert("Missing API key", "Enter your Pulse API key.");
+    if (workspaceType === "facility" && !facilityId.trim()) {
+      return Alert.alert(
+        "Facility required",
+        "Select the Facility that owns this Pulse connection."
+      );
+    }
 
     setVerifyingPulse(true);
     try {
-      await verifyPulseApiKey(apiKey);
+      await verifyPulseApiKey({ ...pulseCredentialScope, apiKey });
       Alert.alert("Pulse verified", "API key verified successfully.");
     } catch (e: any) {
       const auth = telemetryAuthMessage(e);
@@ -506,7 +710,7 @@ export default function DewPointGuardTool({
 
     setLoadingPulseDevices(true);
     try {
-      const devices = await listPulseDevices(apiKey);
+      const devices = await listPulseDevices({ ...pulseCredentialScope, apiKey });
       setPulseDevices(devices);
       if (!selectedPulseDeviceId && devices.length) {
         setSelectedPulseDeviceId(String(devices[0].id || ""));
@@ -542,6 +746,9 @@ export default function DewPointGuardTool({
         type: "pulse",
         name: selected?.name ? `Pulse ${selected.name}` : "Pulse Telemetry",
         timezone: "America/New_York",
+        workspaceType,
+        ...(workspaceType === "facility" && facilityId ? { facilityId } : {}),
+        targetType: "grow",
         config: {
           pulse: {
             apiKey,
@@ -568,6 +775,7 @@ export default function DewPointGuardTool({
       });
       setSources((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
       setSelectedSourceId(created.id);
+      setPulseApiKey("");
       Alert.alert("Pulse source created", `${created.name} (${created.type})`);
     } catch (e: any) {
       const auth = telemetryAuthMessage(e);
@@ -577,12 +785,14 @@ export default function DewPointGuardTool({
     }
   }
 
-  function applyParsedCsv(text: string) {
+  function applyParsedCsv(text: string, fileIdentity: CsvFileIdentity) {
     const parsed = parseCsvText(text);
     if (!parsed.headers.length || !parsed.rows.length) {
       Alert.alert("CSV parse failed", "Need a header row and at least one data row.");
       return;
     }
+    setConfirmedCsvReviewSignature("");
+    setCsvFileIdentity(fileIdentity);
     setCsvText(text);
     setCsvHeaders(parsed.headers);
     setCsvRows(parsed.rows);
@@ -651,10 +861,34 @@ export default function DewPointGuardTool({
       const asset = result.assets?.[0];
       if (!asset) return;
 
+      const uri = String(asset.uri || "");
+      const identity: CsvFileIdentity = {
+        source: "document_picker",
+        name: String(asset.name || "Controller history.csv").slice(0, 200),
+        size: Number.isFinite(Number(asset.size)) ? Number(asset.size) : 0,
+        mimeType: String(asset.mimeType || "text/csv").slice(0, 120),
+        lastModified: Number.isFinite(Number((asset as any).lastModified))
+          ? Number((asset as any).lastModified)
+          : null,
+        uriScheme: uri.match(/^([a-z][a-z0-9+.-]*):/i)?.[1]?.toLowerCase() || null
+      };
+
       const maybeFile = (asset as any).file;
       if (maybeFile && typeof maybeFile.text === "function") {
         const text = await maybeFile.text();
-        applyParsedCsv(text);
+        applyParsedCsv(text, {
+          ...identity,
+          size: identity.size || String(text).length
+        });
+        return;
+      }
+
+      if (uri) {
+        const text = await FileSystem.readAsStringAsync(uri);
+        applyParsedCsv(text, {
+          ...identity,
+          size: identity.size || String(text).length
+        });
         return;
       }
 
@@ -670,7 +904,50 @@ export default function DewPointGuardTool({
   }
 
   function parsePastedCsv() {
-    applyParsedCsv(csvText);
+    applyParsedCsv(csvText, {
+      source: "pasted",
+      name: "Pasted controller history.csv",
+      size: csvText.length,
+      mimeType: "text/csv",
+      lastModified: null,
+      uriScheme: null
+    });
+  }
+
+  function confirmCsvImportReview() {
+    if (!growId) {
+      Alert.alert(
+        "Grow required",
+        "Choose the destination grow before importing history."
+      );
+      return;
+    }
+    if (!csvRows.length || !csvFileIdentity) {
+      Alert.alert("History file required", "Pick or paste and parse a CSV first.");
+      return;
+    }
+    if (!csvRoomName.trim()) {
+      Alert.alert(
+        "Room or space required",
+        "Name the room, tent, greenhouse, bed, or outdoor area represented by this file."
+      );
+      return;
+    }
+    if (!isValidTelemetryTimezone(sourceTimezone)) {
+      Alert.alert(
+        "Timezone not recognized",
+        "Enter an IANA timezone such as America/New_York before importing."
+      );
+      return;
+    }
+    if (!csvTsHeader || !csvTempHeader || !csvRhHeader) {
+      Alert.alert(
+        "Column mapping incomplete",
+        "Review the timestamp, temperature, and humidity columns first."
+      );
+      return;
+    }
+    setConfirmedCsvReviewSignature(csvReviewSignature);
   }
 
   function addReadingToQueue() {
@@ -708,7 +985,8 @@ export default function DewPointGuardTool({
         sourceId: selectedSourceId,
         startIso: window.startIso,
         endIso: window.endIso,
-        limit: 5000
+        limit: 5000,
+        ...workspaceScope
       });
       setTelemetryPoints(res.points || []);
       if (!(res.points || []).length) {
@@ -769,6 +1047,7 @@ export default function DewPointGuardTool({
       const res = await bulkIngestTelemetryPoints({
         sourceId: selectedSource.id,
         mode: "upsert",
+        ...workspaceScope,
         points: pendingReadings.map((r) => ({
           ts: r.ts,
           airTempC: fToC(r.tempF),
@@ -805,6 +1084,18 @@ export default function DewPointGuardTool({
       );
     }
     if (!csvRows.length) return Alert.alert("No CSV rows", "Upload or paste CSV first.");
+    if (!csvReviewComplete) {
+      return Alert.alert(
+        "Review required",
+        "Confirm the provider, grow, room, timezone, file, and column mapping before importing."
+      );
+    }
+    if (!selectedSourceMatchesCsv) {
+      return Alert.alert(
+        "Source does not match this file",
+        `Create or select a reviewed ${csvProvider === "ac_infinity" ? "AC Infinity" : csvProvider} upload source for this grow, room, workspace, and timezone. The file was not imported.`
+      );
+    }
     if (!csvTsHeader || !csvTempHeader || !csvRhHeader) {
       return Alert.alert(
         "Mapping incomplete",
@@ -834,8 +1125,7 @@ export default function DewPointGuardTool({
         { headers: csvHeaders, rows: csvRows },
         mapping,
         {
-          normalizeTimestamp: (tsRaw) =>
-            normalizeCsvTimestampToIso(tsRaw, selectedSource.timezone)
+          normalizeTimestamp: (tsRaw) => normalizeCsvTimestampToIso(tsRaw, sourceTimezone)
         }
       )
         .filter((p) => !!p.ts)
@@ -875,6 +1165,7 @@ export default function DewPointGuardTool({
       const res = await bulkIngestTelemetryPoints({
         sourceId: selectedSource.id,
         mode: "upsert",
+        ...workspaceScope,
         points
       });
       if (csvMappingStorageKey) {
@@ -920,7 +1211,7 @@ export default function DewPointGuardTool({
       const rhRaw = String(row[rhIdx] ?? "").trim();
       const tsIso = normalizeCsvTimestampToIso(
         tsRaw,
-        selectedSource?.timezone || "America/New_York"
+        sourceTimezone || "America/New_York"
       );
       const tempN = Number(tempRaw);
       const rhN = Number(rhRaw);
@@ -933,14 +1224,7 @@ export default function DewPointGuardTool({
       out.push({ ts: tsIso || tsRaw, temp: tempRaw, rh: rhRaw, valid });
     }
     return out;
-  }, [
-    csvRows,
-    csvHeaders,
-    csvTsHeader,
-    csvTempHeader,
-    csvRhHeader,
-    selectedSource?.timezone
-  ]);
+  }, [csvRows, csvHeaders, csvTsHeader, csvTempHeader, csvRhHeader, sourceTimezone]);
 
   function dewPointFlags() {
     return {
@@ -1033,6 +1317,7 @@ export default function DewPointGuardTool({
         const res = await saveToolRunAndOpenJournal({
           router,
           workspaceType,
+          facilityId: workspaceType === "facility" ? facilityId : undefined,
           growId,
           ...plantContext.toolRunContext,
           toolKey: "dew-point-guard",
@@ -1054,6 +1339,7 @@ export default function DewPointGuardTool({
       const res = await saveToolRunAndOpenJournal({
         router,
         workspaceType,
+        facilityId: workspaceType === "facility" ? facilityId : undefined,
         growId,
         ...plantContext.toolRunContext,
         toolKey: "dew-point-guard",
@@ -1085,6 +1371,7 @@ export default function DewPointGuardTool({
       const highRisk = riskBand === "high";
       const result = await saveToolRunAndCreateTask({
         workspaceType,
+        facilityId: workspaceType === "facility" ? facilityId : undefined,
         growId,
         ...plantContext.toolRunContext,
         toolKey: "dew-point-guard",
@@ -1294,24 +1581,6 @@ export default function DewPointGuardTool({
               </Text>
             </Pressable>
             <Pressable
-              onPress={() => createSourceInline("upload")}
-              disabled={creatingSource}
-              style={[
-                styles.secondaryButton,
-                {
-                  opacity: creatingSource ? 0.6 : 1,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  marginRight: 8,
-                  marginBottom: 8
-                }
-              ]}
-            >
-              <Text style={styles.secondaryButtonText}>
-                {creatingSource ? "Creating..." : "Create Upload Source"}
-              </Text>
-            </Pressable>
-            <Pressable
               testID="dpg-create-pulse-source"
               onPress={createPulseSourceInline}
               disabled={
@@ -1346,6 +1615,7 @@ export default function DewPointGuardTool({
               value={pulseApiKey}
               onChangeText={setPulseApiKey}
               keyboardType="default"
+              secureTextEntry
               testID="dpg-pulse-api-key"
             />
             <Pressable
@@ -1432,6 +1702,7 @@ export default function DewPointGuardTool({
             </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
               <Pressable
+                testID="dpg-pick-csv"
                 onPress={pickCsvFile}
                 disabled={parsingCsv}
                 style={[
@@ -1489,28 +1760,6 @@ export default function DewPointGuardTool({
                     {warning}
                   </Text>
                 ))}
-                {!selectedSourceId ? (
-                  <Pressable
-                    testID="dpg-create-source-from-csv"
-                    disabled={creatingSource}
-                    onPress={() => void createSourceInline("upload")}
-                    style={[
-                      styles.primaryButton,
-                      {
-                        alignItems: "center",
-                        marginBottom: 10,
-                        opacity: creatingSource ? 0.6 : 1,
-                        paddingVertical: 11
-                      }
-                    ]}
-                  >
-                    <Text style={[styles.primaryButtonText, { fontWeight: "900" }]}>
-                      {creatingSource
-                        ? "Creating history source..."
-                        : "Create source from this export"}
-                    </Text>
-                  </Pressable>
-                ) : null}
                 <Text style={{ fontWeight: "700", marginBottom: 4 }}>
                   Map timestamp column
                 </Text>
@@ -1628,21 +1877,115 @@ export default function DewPointGuardTool({
                     ))}
                   </View>
                 ) : null}
+                <View style={[styles.panel, { gap: 8, marginBottom: 10, padding: 10 }]}>
+                  <Text style={styles.sectionTitle}>Review import destination</Text>
+                  <Text testID="dpg-csv-review-provider" style={styles.mutedText}>
+                    Provider:{" "}
+                    {csvProvider === "ac_infinity" ? "AC Infinity" : "Generic CSV"}
+                  </Text>
+                  <Text testID="dpg-csv-review-workspace" style={styles.mutedText}>
+                    Workspace: {workspaceType === "facility" ? "Facility" : workspaceType}
+                  </Text>
+                  <Text testID="dpg-csv-review-grow" style={styles.mutedText}>
+                    Grow: {growLabel}
+                  </Text>
+                  <Text style={styles.mutedText}>Room or grow space</Text>
+                  <TextInput
+                    testID="dpg-csv-room-name"
+                    accessibilityLabel="Room or grow space for imported history"
+                    value={csvRoomName}
+                    onChangeText={setCsvRoomName}
+                    placeholder="Flower room, tent, greenhouse, bed, or outdoor area"
+                    placeholderTextColor={palette.textMuted}
+                    selectionColor={palette.accent}
+                    style={styles.input}
+                  />
+                  <Text testID="dpg-csv-review-timezone" style={styles.mutedText}>
+                    Timezone: {sourceTimezone || "Not selected"}
+                  </Text>
+                  <Text testID="dpg-csv-review-file" style={styles.mutedText}>
+                    File: {csvFileIdentity?.name || "Not selected"} ·{" "}
+                    {csvFileIdentity?.size || 0} bytes
+                  </Text>
+                  <Text style={styles.mutedText}>
+                    Re-importing the same source timestamps uses duplicate-safe updates;
+                    it does not create a second reading for the same source and time.
+                  </Text>
+                  <Pressable
+                    testID="dpg-confirm-csv-review"
+                    accessibilityRole="button"
+                    accessibilityLabel="Confirm controller history import review"
+                    onPress={confirmCsvImportReview}
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryButtonText}>
+                      Confirm provider, grow, room, timezone, file, and columns
+                    </Text>
+                  </Pressable>
+                  {csvReviewComplete ? (
+                    <Text testID="dpg-csv-review-confirmed" style={styles.successText}>
+                      Import destination and provenance confirmed.
+                    </Text>
+                  ) : null}
+                </View>
+                {!selectedSourceMatchesCsv ? (
+                  <>
+                    {selectedSourceId ? (
+                      <Text testID="dpg-csv-source-mismatch" style={styles.warningText}>
+                        The selected source does not match this provider, grow, room,
+                        workspace, or timezone. This file cannot be added to that source.
+                      </Text>
+                    ) : null}
+                    <Pressable
+                      testID="dpg-create-source-from-csv"
+                      accessibilityRole="button"
+                      accessibilityLabel="Create a reviewed source from this controller history"
+                      disabled={creatingSource || !csvReviewComplete}
+                      onPress={() => void createSourceInline("upload")}
+                      style={[
+                        styles.primaryButton,
+                        {
+                          alignItems: "center",
+                          marginBottom: 10,
+                          opacity: creatingSource || !csvReviewComplete ? 0.6 : 1,
+                          paddingVertical: 11
+                        }
+                      ]}
+                    >
+                      <Text style={[styles.primaryButtonText, { fontWeight: "900" }]}>
+                        {creatingSource
+                          ? "Creating history source..."
+                          : "Create reviewed source from this export"}
+                      </Text>
+                    </Pressable>
+                  </>
+                ) : null}
                 <Pressable
                   testID="dpg-csv-ingest"
                   onPress={ingestCsvRows}
-                  disabled={ingesting || !csvRows.length}
+                  disabled={
+                    ingesting ||
+                    !csvRows.length ||
+                    !csvReviewComplete ||
+                    !selectedSourceMatchesCsv
+                  }
                   style={[
                     styles.primaryButton,
                     {
-                      opacity: ingesting || !csvRows.length ? 0.6 : 1,
+                      opacity:
+                        ingesting ||
+                        !csvRows.length ||
+                        !csvReviewComplete ||
+                        !selectedSourceMatchesCsv
+                          ? 0.6
+                          : 1,
                       paddingVertical: 12,
                       alignItems: "center"
                     }
                   ]}
                 >
                   <Text style={styles.primaryButtonText}>
-                    {ingesting ? "Ingesting..." : "Ingest CSV Rows"}
+                    {ingesting ? "Importing..." : "Import reviewed CSV rows"}
                   </Text>
                 </Pressable>
                 {csvLimitNotice ? (

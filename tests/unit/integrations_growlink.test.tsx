@@ -122,7 +122,11 @@ describe("Data Integrations Growlink flow", () => {
     await waitFor(() =>
       expect(screen.getByText("Growlink read-only telemetry")).toBeTruthy()
     );
-    await waitFor(() => expect(mockListTelemetrySources).toHaveBeenCalledWith("grow-1"));
+    await waitFor(() =>
+      expect(mockListTelemetrySources).toHaveBeenCalledWith("grow-1", {
+        workspaceType: "personal"
+      })
+    );
 
     fireEvent.changeText(screen.getByPlaceholderText("Source name"), "Growlink Flower A");
     fireEvent.changeText(
@@ -135,10 +139,16 @@ describe("Data Integrations Growlink flow", () => {
 
     await waitFor(() =>
       expect(mockVerifyGrowlinkCredentials).toHaveBeenCalledWith({
+        workspaceType: "personal",
         userName: "grower@example.com",
         password: "secret"
       })
     );
+    expect(mockListGrowlinkControllers).toHaveBeenCalledWith({
+      workspaceType: "personal",
+      userName: "grower@example.com",
+      password: "secret"
+    });
     await waitFor(() => expect(screen.getByText("Flower A")).toBeTruthy());
     expect(screen.getByText("Room import preview")).toBeTruthy();
     expect(screen.getByText("Suggested room: Flower A")).toBeTruthy();
@@ -153,6 +163,8 @@ describe("Data Integrations Growlink flow", () => {
         type: "growlink",
         name: "Growlink Flower A",
         timezone: "America/Denver",
+        workspaceType: "personal",
+        targetType: "grow",
         config: {
           growlink: {
             userName: "grower@example.com",

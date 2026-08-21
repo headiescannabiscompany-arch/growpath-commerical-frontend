@@ -518,6 +518,14 @@ export async function createCommercialLive(data: Partial<CommercialLiveEvent>) {
   );
 }
 
+export async function publishCommercialLive(id: string, goLiveNow = false) {
+  const res = await apiRequest(`/api/lives/${encodeURIComponent(id)}/publish`, {
+    method: "POST",
+    body: { goLiveNow }
+  });
+  return res?.session ?? res?.live ?? res?.updated ?? res;
+}
+
 export async function updateCommercialLive(
   id: string,
   data: Partial<CommercialLiveEvent>

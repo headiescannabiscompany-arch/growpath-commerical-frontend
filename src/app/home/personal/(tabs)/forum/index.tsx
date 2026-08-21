@@ -161,10 +161,14 @@ export default function ForumRoute() {
       else setLoading(true);
       setFeedback("");
       try {
-        const postRows = await listForumPosts(
-          1,
-          normalizeInterestList(auth.user?.growInterests?.crops)
-        );
+        // Each scope must request its own canonical page. Reusing the interest-filtered
+        // response for "All Discussions" made retained posts visible in the Community
+        // preview disappear from the full forum.
+        const cropInterests = normalizeInterestList(auth.user?.growInterests?.crops);
+        const postRows =
+          feedScope === "for-you"
+            ? await listForumPosts(1, cropInterests)
+            : await listForumPosts(1);
         setPosts(postRows);
       } catch (error: any) {
         setFeedback(error?.message || "Unable to load forum posts.");
@@ -174,7 +178,7 @@ export default function ForumRoute() {
         setRefreshing(false);
       }
     },
-    [auth.user?.growInterests?.crops, canView, isSignedIn]
+    [auth.user?.growInterests?.crops, canView, feedScope, isSignedIn]
   );
 
   useEffect(() => {

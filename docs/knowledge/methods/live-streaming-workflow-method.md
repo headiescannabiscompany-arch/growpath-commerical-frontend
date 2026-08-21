@@ -21,10 +21,25 @@ live video.
 Hosts can draft, preview, publish, start, end, and attach a replay. Viewers can open only
 published sessions allowed by public, following, customer, or private access. Ending a
 session must not erase its chat, RSVP, moderation, or replay records.
+Every create path, including Commercial Lives, creates an unpublished private draft on
+the server even if a stale or manipulated client requests `scheduled`, `live`, or
+published state. Ordinary edits preserve the existing publication state. Publication is
+a separate, explicit owner action after review: a scheduled draft becomes `scheduled`,
+while an unscheduled draft requires the host to explicitly choose `Publish live now`.
+Commercial scheduling must never silently leave a session private while describing it as
+published, and must never auto-publish merely because a date was entered.
 Live Studio must also list the signed-in host's drafts, scheduled sessions, active
 broadcasts, and replays. The host can open each canonical session page from that list.
-Deleting an unpublished draft requires an explicit confirmation and must never delete
-another account's session or an active broadcast.
+The Commercial list and Live Studio use the same canonical session editor and publication
+transition. Deleting an unpublished `draft` requires explicit confirmation. Published,
+live, ended, and replay-ready sessions and their chat are retained; routine owner cleanup
+must not hard-delete them. Lifecycle changes retain bounded actor, source, timestamp, and
+safe transition metadata for audit without retaining encoder secrets.
+
+Public directory and detail records identify the creator with their display name and
+avatar when available, and signed-in non-owners can follow that creator without leaving
+the live workflow. Creator identity must come from the server-owned session owner, not a
+client-supplied display label.
 
 GrowPath-hosted broadcasts use private account-owned encoder channels. A host may save
 the RTMPS server and stream key in OBS and reuse that channel for later sessions. When
@@ -86,6 +101,27 @@ grant; it must not reuse a live-input identifier as though it were the recording
 canonical session, chat, moderation, visibility, and host authorization unchanged across
 the live-to-replay transition. Do not reserve viewer delivery or advertise replay
 availability until the provider confirms the recording is ready.
+Provider polling is authoritative even when the host is not viewing the session: a
+connected OBS input promotes an explicitly published scheduled session to `live`; a
+normal disconnect promotes the session to `ended`/offline and starts replay processing.
+Replay discovery is idempotent and bounded to that session's connection/disconnection
+window so a reusable encoder channel cannot attach an earlier or later show's recording.
+After the processing window expires, keep the ended session and honestly mark replay
+unavailable rather than attaching an unrelated recording.
+
+`End broadcast` is one owner action. GrowPath must persist the ended state and retained
+history before disabling the hosted input, either through one atomic backend endpoint or
+an equivalent server transaction. If provider shutdown temporarily fails, return the
+persisted ended state with an explicit retry-pending condition and let the hosted worker
+retry; never unbind first and risk leaving the canonical session live or orphaning replay
+discovery.
+The host-facing session must keep that retry-pending condition visible after the session
+is ended and provide an idempotent `Retry provider stop` action; it must not replace the
+condition with a false success state or hide the only recovery control. A published,
+scheduled outside-provider session also needs explicit, idempotent Start and End actions
+because providers other than Twitch may not offer a usable status webhook. Those controls
+change only the GrowPath session lifecycle and never claim that an outside encoder started
+or stopped unless the provider confirms it.
 
 First-party streaming is not complete merely because the OBS chat overlay works. Do not
 show a GrowPath stream key or label a session `hosted by GrowPath` until ingest,
@@ -172,3 +208,9 @@ access revocation, chat continuity, explicit retention, quota enforcement, abuse
 that ending one session cannot affect another session or expose its replay, provider-ready
 recording discovery after encoder disconnect, signed playback against the recording video
 identifier, and an honest processing state before replay is ready.
+Also verify server-enforced draft creation across Live Studio and Commercial Lives,
+generic-edit publication bypass resistance, explicit scheduled/live-now publication,
+atomic end-before-input-disable ordering, provider-stop retry state, published-session and
+chat retention, creator identity/follow controls, worker-driven live/offline transitions
+without an open owner page, and idempotent replay matching inside the exact session time
+window.

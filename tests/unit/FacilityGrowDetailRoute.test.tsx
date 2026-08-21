@@ -93,7 +93,13 @@ describe("FacilityGrowDetailRoute", () => {
 
     expect(mockPush).toHaveBeenCalledWith({
       pathname: "/home/facility/tasks",
-      params: { growId: "grow-1", roomId: "room-1", contextName: "Summer crop" }
+      params: {
+        growId: "grow-1",
+        roomId: "room-1",
+        contextName: "Summer crop",
+        growName: "Summer crop",
+        roomName: "Flower room"
+      }
     });
   });
 

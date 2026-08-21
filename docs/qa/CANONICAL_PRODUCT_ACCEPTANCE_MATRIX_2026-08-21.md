@@ -49,6 +49,9 @@ close a populated or mutating story.
 - Method documents in `docs/knowledge/methods` own durable domain behavior; matching
   registries in `src/knowledge` make those rules available to the app.
 - Production-evidence documents prove a named slice; they never create a second queue.
+- `CANONICAL_PARITY_LIVE_EVIDENCE_2026-08-21.md` records the exact-SHA production slices
+  exercised after the workspace/Nature parity merge, including the reproduced grow-link
+  defect and the positive-role acceptance that remains.
 - A new request must map to an existing row or add one new row here before implementation.
 - A regression reopens only the affected acceptance slice, not the entire product area.
 
@@ -125,6 +128,23 @@ Every applicable story must preserve these invariants without repeating them in 
 | F-06 | Reviewed sensor/controller imports map rooms/history safely and protect API keys                                  | partial |
 | F-07 | Owner/admin can reach social/course/storefront tools without polluting staff navigation                           | partial |
 
+## Business operations and AI
+
+See `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md` for the complete tool
+inventory, safety boundaries and mandatory production scenarios.
+
+| ID   | User story | Status |
+| ---- | ---------- | ------ |
+| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation | defined; not started |
+| B-02 | Inventory, lots, movement, quality, reorder, holds and recall workbench | partial; business acceptance open |
+| B-03 | Lawful regulated-retail reconciliation, menu quality and staff tools | defined; provider/jurisdiction review open |
+| B-04 | Horticulture store/nursery seasonal, label-aware, fulfillment and care-help tools | defined; not started |
+| B-05 | Facility device, environment, crop/room/labor, quality, SOP and maintenance intelligence | partial; business acceptance open |
+| B-06 | Creator/educator content, live, community and partner operations tools | partial; business acceptance open |
+| B-07 | Truthful storefront, pricing analysis and lawful-commerce handoff | partial; regulated gates open |
+| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result | defined; cross-cutting acceptance open |
+| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios | defined; final acceptance open |
+
 ## Nature, Admin and release
 
 | ID   | User story                                                                                                            | Status        |
@@ -161,6 +181,7 @@ Dipladenia/Mandevilla, are excluded from the Cary/Maydale publication batch.
    using retained-media metadata, authorized device GPS, or a reviewed manual pin. Legacy
    Cary/Maydale recovery is optional and does not block the future workflow.
 2. Reconcile every `partial` row against retained evidence; close only live-accepted slices.
-3. Implement remaining functional gaps.
-4. Run the final frozen-SHA crawl and professional visual/accessibility pass once.
-5. Resolve independent review, then hats, then app stores last.
+3. Complete B-01 through B-09 before the final crawl.
+4. Implement remaining functional gaps.
+5. Run the final frozen-SHA crawl and professional visual/accessibility pass once.
+6. Resolve independent review, then hats, then app stores last.

@@ -1,5 +1,25 @@
 export type TelemetrySourceType = "pulse" | "ubibot" | "growlink" | "upload" | "manual";
 
+export type TelemetryWorkspaceType = "personal" | "commercial" | "facility";
+
+export type TelemetryWorkspaceScope = {
+  workspaceType?: TelemetryWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
+  targetType?: "grow" | "productTrial";
+  targetRef?: string;
+};
+
+export type TelemetryCredentialWorkspaceScope =
+  | {
+      workspaceType: "personal" | "commercial";
+      facilityId?: never;
+    }
+  | {
+      workspaceType: "facility";
+      facilityId: string;
+    };
+
 export type TelemetrySource = {
   id: string;
   growId: string;
@@ -7,6 +27,12 @@ export type TelemetrySource = {
   name: string;
   timezone: string;
   isActive: boolean;
+  workspaceType?: TelemetryWorkspaceType;
+  workspaceId?: string | null;
+  facilityId?: string | null;
+  roomId?: string | null;
+  targetType?: "grow" | "productTrial";
+  targetRef?: string | null;
   config: Record<string, any>;
   createdAt?: string;
   updatedAt?: string;
@@ -55,7 +81,8 @@ export type CreateTelemetrySourceInput = {
   timezone: string;
   config?: Record<string, any>;
   isActive?: boolean;
-};
+  roomId?: string;
+} & TelemetryWorkspaceScope;
 
 export type BulkIngestMode = "insert" | "upsert";
 
@@ -86,7 +113,7 @@ export type BulkIngestTelemetryPointsInput = {
       unit?: string | null;
     }>;
   }>;
-};
+} & TelemetryWorkspaceScope;
 
 export type BulkIngestTelemetryPointsResult = {
   ingested: number;
@@ -99,7 +126,7 @@ export type TelemetryPointsQuery = {
   startIso: string;
   endIso: string;
   limit?: number;
-};
+} & TelemetryWorkspaceScope;
 
 export type TelemetryPointsWindowResult = {
   sourceId: string;
@@ -121,38 +148,6 @@ export type PulseVerifyResult = {
 };
 
 export type PulsePullResult = {
-  sourceId: string;
-  pulled: number;
-  ingested?: number;
-  updated: number;
-  skipped?: number;
-  startIso: string;
-  endIso: string;
-  lastPointIso?: string;
-};
-
-export type UbiBotChannel = {
-  id: string;
-  name?: string;
-  [k: string]: any;
-};
-
-export type UbiBotVerifyResult = {
-  ok: boolean;
-  [k: string]: any;
-};
-
-export type UbiBotMqttSettingsResult = {
-  host: string;
-  port: number;
-  username: string;
-  password?: string;
-  topic: string;
-  heartbeatUrl?: string;
-  heartbeatIntervalMs?: number;
-};
-
-export type UbiBotPullResult = {
   sourceId: string;
   pulled: number;
   ingested?: number;

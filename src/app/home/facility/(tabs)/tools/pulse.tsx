@@ -53,6 +53,10 @@ export default function FacilityPulseConnectionRoute() {
 
   async function connect() {
     if (connectInFlight.current) return;
+    if (!facilityId) {
+      setStatus("Select a Facility before adding a Pulse connection.");
+      return;
+    }
     if (!apiKey.trim()) {
       setStatus("Enter the API key created in the Pulse grow account.");
       return;
@@ -65,6 +69,8 @@ export default function FacilityPulseConnectionRoute() {
         provider: "pulse",
         label: label.trim() || "Pulse facility telemetry",
         credentials: { apiKey: apiKey.trim() },
+        workspaceType: "facility",
+        facilityId: String(facilityId || ""),
         config: { facilityId: String(facilityId || "") }
       });
       if (!connection?.id) {

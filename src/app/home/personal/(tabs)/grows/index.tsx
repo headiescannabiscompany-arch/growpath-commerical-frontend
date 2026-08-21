@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 import {
   ActivityIndicator,
   Image,
@@ -124,36 +124,36 @@ function ActionButton({
   primary?: boolean;
   testID?: string;
 }) {
-  const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   return (
-    <Pressable
-      accessibilityRole="link"
-      testID={testID}
-      onPress={() => router.push(href as any)}
-      style={[
-        styles.action,
-        primary
-          ? {
-              backgroundColor: palette.accent,
-              borderColor: palette.accent
-            }
-          : {
-              backgroundColor: palette.surface,
-              borderColor: palette.border
-            }
-      ]}
-    >
-      <Text
+    <Link href={href as any} asChild>
+      <Pressable
+        accessibilityRole="link"
+        testID={testID}
         style={[
-          styles.actionText,
-          { color: primary ? palette.accentText : palette.link }
+          styles.action,
+          primary
+            ? {
+                backgroundColor: palette.accent,
+                borderColor: palette.accent
+              }
+            : {
+                backgroundColor: palette.surface,
+                borderColor: palette.border
+              }
         ]}
       >
-        {label}
-      </Text>
-    </Pressable>
+        <Text
+          style={[
+            styles.actionText,
+            { color: primary ? palette.accentText : palette.link }
+          ]}
+        >
+          {label}
+        </Text>
+      </Pressable>
+    </Link>
   );
 }
 

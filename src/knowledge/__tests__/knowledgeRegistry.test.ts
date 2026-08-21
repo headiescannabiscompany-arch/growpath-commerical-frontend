@@ -658,8 +658,17 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("live-streaming-workflow")?.requiredOutputs).toContain(
       "transparent configurable OBS Browser Source overlay that the host can preview without publishing the draft"
     );
+    expect(getMethod("live-streaming-workflow")?.requiredOutputs).toContain(
+      "server-enforced private draft creation and explicit reviewed publish action shared by Live Studio and Commercial Lives"
+    );
+    expect(getMethod("live-streaming-workflow")?.requiredOutputs).toContain(
+      "atomic retained session end before hosted-input shutdown with explicit provider-stop retry state"
+    );
     expect(getMethod("live-streaming-workflow")?.warnings).toContain(
       "Never treat private OBS overlay preview as session publication or public discovery permission."
+    );
+    expect(getMethod("live-streaming-workflow")?.warnings).toContain(
+      "Never publish through create or generic edit, auto-publish a Commercial schedule, delete a published or ended session or its chat, or disable and unbind hosted input before the retained end transition succeeds."
     );
     expect(getSourceEntry("cloudflare-stream-live-documentation")).toMatchObject({
       sourceType: "provider_documentation",

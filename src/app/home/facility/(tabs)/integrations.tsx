@@ -1,65 +1,92 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Linking,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import {
-  autoBuildIntegrationSpaces,
-  confirmIntegrationMapping,
-  fetchIntegrationStructure,
-  listIntegrationConnections,
-  previewIntegrationMapping,
-  testIntegrationConnection,
-  type IntegrationDeviceMapping,
-  type IntegrationConnection
-} from "@/api/integrations";
+import { apiRequest } from "@/api/apiRequest";
+import { endpoints } from "@/api/endpoints";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import GrowIntegrationBuildPanel from "@/components/integrations/GrowIntegrationBuildPanel";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { useEntitlements } from "@/entitlements";
+import { useFacility } from "@/state/useFacility";
 
-const PLANNED = [
-  "Growlink",
-  "AROYA",
-  "SensorPush",
-  "UbiBot",
-  "Aranet",
-  "ZENTRA",
-  "HOBOlink",
-  "Monnit"
-];
+const PLANNED = ["Growlink", "AROYA", "SensorPush", "Aranet", "HOBOlink", "Monnit"];
+
+function growRows(response: any) {
+  const rows =
+    response?.grows ??
+    response?.items ??
+    response?.data?.grows ??
+    response?.data?.items ??
+    response?.data ??
+    response;
+  return Array.isArray(rows) ? rows : [];
+}
+
+function growId(row: any) {
+  return String(row?.id || row?._id || row?.growId || "").trim();
+}
+
+function growName(row: any) {
+  return String(row?.name || row?.title || row?.strain || "Facility grow");
+}
 
 export default function FacilityIntegrationsRoute() {
   const router = useRouter();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createFacilityIntegrationsStyles(palette), [palette]);
   const entitlements = useEntitlements();
+  const { selectedId: selectedFacilityId } = useFacility();
   const role = String(entitlements.facilityRole || "VIEWER").toUpperCase();
   const facilityId = String(
-    entitlements.selectedFacilityId || entitlements.facilityId || ""
+    selectedFacilityId || entitlements.selectedFacilityId || entitlements.facilityId || ""
   );
   const canConfigure = role === "OWNER" || role === "MANAGER";
   const [selected, setSelected] = useState<"pulse" | "trolmaster">("pulse");
-  const [connections, setConnections] = useState<IntegrationConnection[]>([]);
-  const [wizardConnectionId, setWizardConnectionId] = useState("");
-  const [wizardStage, setWizardStage] = useState("");
-  const [wizardMappings, setWizardMappings] = useState<IntegrationDeviceMapping[]>([]);
-  const [wizardBusy, setWizardBusy] = useState(false);
-  const [mappingConfirmed, setMappingConfirmed] = useState(false);
+  const [grows, setGrows] = useState<any[]>([]);
+  const [selectedGrowId, setSelectedGrowId] = useState("");
+  const [loadingGrows, setLoadingGrows] = useState(false);
+  const [growError, setGrowError] = useState("");
+  const growLoadInFlight = useRef(false);
+
+  const loadGrows = useCallback(async () => {
+    if (!facilityId || growLoadInFlight.current) return;
+    growLoadInFlight.current = true;
+    setLoadingGrows(true);
+    setGrowError("");
+    try {
+      const response = await apiRequest(endpoints.grows(facilityId), {
+        method: "GET",
+        cache: "no-store"
+      });
+      const rows = growRows(response).filter((row) => growId(row));
+      setGrows(rows);
+      setSelectedGrowId((current) =>
+        rows.some((row) => growId(row) === current) ? current : ""
+      );
+    } catch (error: any) {
+      setGrowError(error?.message || "Unable to load Facility grows.");
+      setGrows([]);
+      setSelectedGrowId("");
+    } finally {
+      growLoadInFlight.current = false;
+      setLoadingGrows(false);
+    }
+  }, [facilityId]);
 
   useEffect(() => {
-    Promise.resolve(listIntegrationConnections())
-      .then((rows) => setConnections(rows || []))
-      .catch(() => setConnections([]));
-  }, []);
+    void loadGrows();
+  }, [loadGrows]);
 
   function requestProvider(provider: string) {
     Alert.alert(
@@ -78,71 +105,7 @@ export default function FacilityIntegrationsRoute() {
     );
   }
 
-  async function testAndFetch(connection: IntegrationConnection) {
-    setWizardBusy(true);
-    setWizardConnectionId(connection.id);
-    try {
-      await testIntegrationConnection(connection.id);
-      setWizardStage("Connection tested. Fetching provider structure...");
-      const structure = await fetchIntegrationStructure(connection.id);
-      setWizardMappings(structure.suggestedMappings);
-      setWizardStage(
-        "Review room, zone, device, and metric mappings before confirmation."
-      );
-    } catch (error: any) {
-      setWizardStage(error?.message || "Connection test or structure fetch failed.");
-    } finally {
-      setWizardBusy(false);
-    }
-  }
-
-  function updateMapping(index: number, field: "roomName" | "zoneName", value: string) {
-    setWizardMappings((rows) =>
-      rows.map((row, rowIndex) => (rowIndex === index ? { ...row, [field]: value } : row))
-    );
-  }
-
-  async function confirmMappings() {
-    if (!wizardConnectionId || !wizardMappings.length) return;
-    setWizardBusy(true);
-    try {
-      const preview = await previewIntegrationMapping(wizardConnectionId, wizardMappings);
-      const updated = await confirmIntegrationMapping(
-        wizardConnectionId,
-        preview.mappings
-      );
-      setConnections((rows) =>
-        rows.map((row) => (row.id === updated.id ? updated : row))
-      );
-      setWizardStage(
-        `Confirmed ${preview.deviceCount} devices across ${preview.roomCount} rooms. Auto-build remains a separate reviewed step.`
-      );
-      setMappingConfirmed(true);
-    } catch (error: any) {
-      setWizardStage(error?.message || "Mapping confirmation failed.");
-    } finally {
-      setWizardBusy(false);
-    }
-  }
-
-  async function buildFacilitySpaces() {
-    if (!wizardConnectionId || !facilityId) return;
-    setWizardBusy(true);
-    try {
-      const result = await autoBuildIntegrationSpaces(wizardConnectionId, {
-        mode: "facility",
-        targetRef: facilityId
-      });
-      setWizardStage(
-        `Built ${result.createdOrUpdated} read-only Facility spaces with devices, streams, draft alerts, and dashboard definitions.`
-      );
-      setMappingConfirmed(false);
-    } catch (error: any) {
-      setWizardStage(error?.message || "Facility auto-build failed.");
-    } finally {
-      setWizardBusy(false);
-    }
-  }
+  const selectedGrow = grows.find((row) => growId(row) === selectedGrowId);
 
   return (
     <ScreenBoundary
@@ -157,9 +120,9 @@ export default function FacilityIntegrationsRoute() {
             Connect rooms and sensor data
           </Text>
           <Text style={styles.subtitle}>
-            Start with Pulse or TrolMaster. GrowPath keeps connections read-only and uses
-            discovered devices to build room mappings, environment history, alerts, and AI
-            context.
+            Choose the destination grow before mapping devices or importing readings.
+            Supported connections stay read-only; provider structure, room names, zones,
+            and history remain review steps instead of automatic guesses.
           </Text>
         </View>
 
@@ -180,7 +143,9 @@ export default function FacilityIntegrationsRoute() {
                 {provider === "pulse" ? "Pulse" : "TrolMaster"}
               </Text>
               <Text style={styles.providerChoiceText}>
-                {provider === "pulse" ? "Available" : "Developer access required"}
+                {provider === "pulse"
+                  ? "Read-only setup available"
+                  : "Key storage only · API access required"}
               </Text>
             </Pressable>
           ))}
@@ -241,110 +206,99 @@ export default function FacilityIntegrationsRoute() {
           </View>
         )}
 
-        {connections.length ? (
-          <View style={styles.card}>
-            <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-              Connected sources
-            </Text>
-            {connections.map((connection) => (
-              <View key={connection.id} style={styles.connectionRow}>
-                <Text style={styles.connectionTitle}>{connection.label}</Text>
-                <Text style={styles.body}>
-                  Read only /{" "}
-                  {connection.capabilities.join(", ") || "No capabilities reported"}
-                </Text>
-                <Text style={styles.body}>
-                  Last sync: {connection.lastSync.at || "Never"} /{" "}
-                  {connection.lastSync.status}
-                </Text>
-                {connection.error ? (
-                  <Text style={styles.errorText}>
-                    {connection.error.code}: {connection.error.message}
-                  </Text>
-                ) : null}
-                {canConfigure ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Test and fetch structure for ${connection.label}`}
-                    accessibilityState={{ disabled: wizardBusy }}
-                    disabled={wizardBusy}
-                    style={[styles.secondaryAction, wizardBusy && styles.disabled]}
-                    onPress={() => void testAndFetch(connection)}
-                  >
-                    <Text style={styles.secondaryActionText}>Test + fetch structure</Text>
-                  </Pressable>
-                ) : null}
-                <Text style={styles.body}>
-                  {connection.provider} · {connection.status}
-                </Text>
-              </View>
-            ))}
-            {wizardConnectionId ? (
-              <View style={styles.wizardPanel}>
-                <Text accessibilityRole="header" aria-level={3} style={styles.cardTitle}>
-                  Import mapping preview
-                </Text>
-                <Text style={styles.body}>{wizardStage}</Text>
-                {wizardMappings.map((mapping, index) => (
-                  <View key={mapping.deviceId} style={styles.mappingRow}>
-                    <Text style={styles.connectionTitle}>{mapping.deviceName}</Text>
-                    <Text style={styles.body}>
-                      {mapping.metrics.join(", ") || "Metrics require manual mapping"}
-                    </Text>
-                    <TextInput
-                      accessibilityLabel={`Room mapping for ${mapping.deviceName}`}
-                      value={mapping.roomName}
-                      onChangeText={(value) => updateMapping(index, "roomName", value)}
-                      placeholder="Room"
-                      placeholderTextColor={palette.textMuted}
-                      style={styles.input}
-                    />
-                    <TextInput
-                      accessibilityLabel={`Optional zone mapping for ${mapping.deviceName}`}
-                      value={mapping.zoneName}
-                      onChangeText={(value) => updateMapping(index, "zoneName", value)}
-                      placeholder="Zone (optional)"
-                      placeholderTextColor={palette.textMuted}
-                      style={styles.input}
-                    />
-                  </View>
-                ))}
-                {wizardMappings.length ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Confirm reviewed Facility integration mappings"
-                    accessibilityState={{ disabled: wizardBusy }}
-                    disabled={wizardBusy}
-                    style={[styles.primaryAction, wizardBusy && styles.disabled]}
-                    onPress={() => void confirmMappings()}
-                  >
-                    <Text style={styles.primaryActionText}>Confirm mapping</Text>
-                  </Pressable>
-                ) : null}
-                {mappingConfirmed && facilityId ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Build confirmed Facility integration spaces"
-                    accessibilityState={{ disabled: wizardBusy }}
-                    disabled={wizardBusy}
-                    style={[styles.primaryAction, wizardBusy && styles.disabled]}
-                    onPress={() => void buildFacilitySpaces()}
-                  >
-                    <Text style={styles.primaryActionText}>Build Facility spaces</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            ) : null}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Review Facility room mappings"
-              style={styles.secondaryAction}
-              onPress={() => router.push("/home/facility/rooms" as any)}
+        <View style={styles.card}>
+          <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
+            Choose the destination grow
+          </Text>
+          <Text style={styles.body}>
+            A Facility is the ownership boundary, not a grow-history destination. Select
+            the exact grow before discovering mappings, creating spaces, or importing
+            readings.
+          </Text>
+          {loadingGrows ? (
+            <View
+              accessibilityLabel="Loading Facility grows for integrations"
+              accessibilityRole="progressbar"
+              style={styles.loadingRow}
             >
-              <Text style={styles.secondaryActionText}>Review room mappings</Text>
-            </Pressable>
+              <ActivityIndicator color={palette.accent} />
+              <Text style={styles.body}>Loading grows...</Text>
+            </View>
+          ) : null}
+          {growError ? (
+            <View accessibilityRole="alert" style={styles.errorPanel}>
+              <Text style={styles.errorText}>{growError}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Retry loading Facility grows for integrations"
+                disabled={loadingGrows}
+                onPress={() => void loadGrows()}
+                style={styles.secondaryAction}
+              >
+                <Text style={styles.secondaryActionText}>Retry</Text>
+              </Pressable>
+            </View>
+          ) : null}
+          <View style={styles.growChoices}>
+            {grows.map((grow) => {
+              const id = growId(grow);
+              const name = growName(grow);
+              return (
+                <Pressable
+                  accessibilityLabel={`Use ${name} for Facility integrations`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: selectedGrowId === id }}
+                  key={id}
+                  onPress={() => setSelectedGrowId(id)}
+                  style={[
+                    styles.growChoice,
+                    selectedGrowId === id && styles.growChoiceSelected
+                  ]}
+                >
+                  <Text style={styles.connectionTitle}>{name}</Text>
+                  <Text style={styles.body}>
+                    {grow.roomName || grow.stage || grow.status || "Facility grow"}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
-        ) : null}
+          {!loadingGrows && !growError && !grows.length ? (
+            <>
+              <Text style={styles.body}>
+                No Facility grows are available. Create a grow before building device
+                spaces or importing history.
+              </Text>
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="Open Facility grows"
+                onPress={() => router.push("/home/facility/grows" as any)}
+                style={styles.secondaryAction}
+              >
+                <Text style={styles.secondaryActionText}>Open Grows</Text>
+              </Pressable>
+            </>
+          ) : null}
+        </View>
+
+        {selectedGrowId ? (
+          <View style={styles.selectedGrowSection}>
+            <Text style={styles.status}>
+              Destination: {selectedGrow ? growName(selectedGrow) : "Selected grow"}
+            </Text>
+            <GrowIntegrationBuildPanel
+              mode="facility"
+              targetRef={selectedGrowId}
+              facilityId={facilityId}
+              canConfigure={canConfigure}
+            />
+          </View>
+        ) : (
+          <Text accessibilityRole="alert" style={styles.status}>
+            No grow selected. Connection setup may be opened above, but mapping, build,
+            and history actions stay unavailable until you choose a grow.
+          </Text>
+        )}
 
         <View style={styles.card}>
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
@@ -361,7 +315,21 @@ export default function FacilityIntegrationsRoute() {
             accessibilityLabel="Import Facility grow history"
             disabled={!canConfigure}
             style={[styles.primaryAction, !canConfigure && styles.disabled]}
-            onPress={() => router.push("/home/facility/tools/history-import" as any)}
+            onPress={() =>
+              router.push(
+                selectedGrowId
+                  ? ({
+                      pathname: "/home/facility/tools/history-import",
+                      params: {
+                        growId: selectedGrowId,
+                        growName: selectedGrow ? growName(selectedGrow) : "Facility grow",
+                        roomId: String(selectedGrow?.roomId || ""),
+                        roomName: String(selectedGrow?.roomName || "")
+                      }
+                    } as any)
+                  : ("/home/facility/tools/history-import" as any)
+              )
+            }
           >
             <Text style={styles.primaryActionText}>Import grow history</Text>
           </Pressable>
@@ -375,7 +343,7 @@ export default function FacilityIntegrationsRoute() {
           <View style={styles.providerGrid}>
             <View style={styles.importProvider}>
               <Text style={styles.importProviderText}>Controller CSV</Text>
-              <Text style={styles.importStatus}>Available · AC Infinity verified</Text>
+              <Text style={styles.importStatus}>Available · review required</Text>
             </View>
             <View style={styles.importProvider}>
               <Text style={styles.importProviderText}>PDF source document</Text>
@@ -491,6 +459,23 @@ export function createFacilityIntegrationsStyles(palette: ThemePalette) {
       fontWeight: "800",
       padding: 12
     },
+    selectedGrowSection: { gap: 10 },
+    growChoices: { gap: 8 },
+    growChoice: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 3,
+      padding: 12
+    },
+    growChoiceSelected: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderWidth: 2
+    },
+    loadingRow: { alignItems: "center", flexDirection: "row", gap: 8 },
+    errorPanel: { alignItems: "flex-start", gap: 8 },
     connectionRow: {
       borderBottomColor: palette.borderSoft,
       borderBottomWidth: 1,

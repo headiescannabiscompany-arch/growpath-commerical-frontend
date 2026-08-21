@@ -28,8 +28,13 @@ describe("integration data-use registry", () => {
     for (const field of [
       "connectionId",
       "workspaceMode",
+      "workspaceId",
       "targetRef",
+      "targetType",
       "roomId",
+      "sourceTimezone",
+      "sourceFileIdentity",
+      "importReview",
       "metricMap",
       "normalizedValue",
       "normalizedUnit",
