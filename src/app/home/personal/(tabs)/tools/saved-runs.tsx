@@ -59,6 +59,7 @@ import {
 } from "@/features/personal/tools/plantIdentificationCandidates";
 import PlantIdentificationResultDetails from "@/features/personal/tools/PlantIdentificationResultDetails";
 import EvidenceReviewPanel from "@/components/personal/EvidenceReviewPanel";
+import PrivateLocationPicker from "@/components/fieldStudies/PrivateLocationPicker";
 import { inferEvidenceReview } from "@/features/personal/evidence/evidenceReview";
 import {
   inspectedPhotoEstimateCounts,
@@ -1349,6 +1350,9 @@ export default function SavedToolRunsScreen() {
   const [fieldStudyLoading, setFieldStudyLoading] = useState(false);
   const [fieldStudyFeedback, setFieldStudyFeedback] = useState("");
   const [privateLocationFeedback, setPrivateLocationFeedback] = useState("");
+  const [showManualLocation, setShowManualLocation] = useState(false);
+  const [manualLocationDraft, setManualLocationDraft] =
+    useState<PublicCoordinates | null>(null);
   const [fieldCoordinates, setFieldCoordinates] = useState<PublicCoordinates | null>(
     null
   );
@@ -1432,6 +1436,8 @@ export default function SavedToolRunsScreen() {
     setFieldStudyLoading(false);
     setFieldStudyFeedback("");
     setPrivateLocationFeedback("");
+    setShowManualLocation(false);
+    setManualLocationDraft(null);
     setFieldCoordinates(null);
     setCapturingFieldLocation(false);
     setPhotoMetadataCandidate(null);
@@ -1509,6 +1515,8 @@ export default function SavedToolRunsScreen() {
   useEffect(() => {
     selectedRunIdRef.current = selectedRun ? idFor(selectedRun) : "";
     setFieldCoordinates(selectedRun ? coordinatesFromToolRun(selectedRun) : null);
+    setShowManualLocation(false);
+    setManualLocationDraft(null);
     setPhotoMetadataCandidate(null);
     setNatureDateDraft(
       selectedRun
@@ -1717,6 +1725,56 @@ export default function SavedToolRunsScreen() {
       if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
       setPrivateLocationFeedback(
         locationError?.message || "Current location could not be captured."
+      );
+    } finally {
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setCapturingFieldLocation(false);
+      }
+    }
+  }
+
+  async function saveManualPrivateFieldLocation() {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    const id = selectedRun ? idFor(selectedRun) : "";
+    if (!id || !selectedRun || !isSpeciesCropRun(selectedRun) || !manualLocationDraft)
+      return;
+    setCapturingFieldLocation(true);
+    setPrivateLocationFeedback("");
+    try {
+      const nextInputs = {
+        ...runInputs(selectedRun),
+        capturedLocation: {
+          ...manualLocationDraft,
+          privacy: "private",
+          userAuthorized: true,
+          source: "manual_map",
+          capturedAt: new Date().toISOString()
+        }
+      };
+      const locationPatch = { inputs: nextInputs, input: nextInputs, params: nextInputs };
+      const updated = toolRunScope.workspaceType
+        ? await updateToolRun(id, locationPatch, toolRunScope)
+        : await updateToolRun(id, locationPatch);
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      if (!updated) {
+        setPrivateLocationFeedback(
+          "The map pin was not saved, so this Plant ID was not changed."
+        );
+        return;
+      }
+      setRuns((current) => current.map((run) => (idFor(run) === id ? updated : run)));
+      if (selectedRunIdRef.current !== id) return;
+      setSelectedRun(updated);
+      setFieldCoordinates(manualLocationDraft);
+      setManualLocationDraft(null);
+      setShowManualLocation(false);
+      setPrivateLocationFeedback(
+        "Map pin saved privately to this Plant ID only. Nothing was published to Nature."
+      );
+    } catch (locationError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setPrivateLocationFeedback(
+        locationError?.message || "The private map pin could not be saved."
       );
     } finally {
       if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
@@ -2463,6 +2521,25 @@ export default function SavedToolRunsScreen() {
                         : "Use Photo Location"}
                     </Text>
                   </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ expanded: showManualLocation }}
+                    disabled={capturingFieldLocation || savingFieldObservation}
+                    onPress={() => {
+                      setShowManualLocation((value) => !value);
+                      setManualLocationDraft(null);
+                      setPrivateLocationFeedback("");
+                    }}
+                    style={[
+                      styles.secondary,
+                      (capturingFieldLocation || savingFieldObservation) &&
+                        styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.secondaryText}>
+                      {showManualLocation ? "Close Map" : "Place Pin on Map"}
+                    </Text>
+                  </Pressable>
                   {fieldCoordinates ? (
                     <Pressable
                       accessibilityRole="button"
@@ -2479,6 +2556,46 @@ export default function SavedToolRunsScreen() {
                     </Pressable>
                   ) : null}
                 </View>
+                {showManualLocation ? (
+                  <View style={styles.confirmationPanel}>
+                    <Text style={styles.cardText}>
+                      Tap the map to stage the observation point. Review it, then save it
+                      privately. A staged point does not change this Plant ID.
+                    </Text>
+                    <PrivateLocationPicker
+                      value={manualLocationDraft || fieldCoordinates}
+                      onChange={setManualLocationDraft}
+                    />
+                    {manualLocationDraft ? (
+                      <View style={styles.buttonRow}>
+                        <Pressable
+                          accessibilityRole="button"
+                          disabled={capturingFieldLocation}
+                          onPress={() => void saveManualPrivateFieldLocation()}
+                          style={[
+                            styles.primary,
+                            capturingFieldLocation && styles.disabled
+                          ]}
+                        >
+                          <Text style={styles.primaryText}>
+                            {capturingFieldLocation ? "Saving..." : "Save Private Pin"}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          disabled={capturingFieldLocation}
+                          onPress={() => setManualLocationDraft(null)}
+                          style={[
+                            styles.secondary,
+                            capturingFieldLocation && styles.disabled
+                          ]}
+                        >
+                          <Text style={styles.secondaryText}>Discard Staged Pin</Text>
+                        </Pressable>
+                      </View>
+                    ) : null}
+                  </View>
+                ) : null}
                 {photoMetadataCandidate ? (
                   <View style={styles.studyPanel}>
                     <Text style={styles.cardTitle}>Private photo location found</Text>
@@ -2867,6 +2984,14 @@ export const createSavedToolRunsStyles = (palette: ThemePalette) =>
       borderWidth: 1,
       gap: 10,
       padding: 12
+    },
+    confirmationPanel: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.borderSoft,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 10
     },
     buttonRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     statusText: { color: palette.textSoft, lineHeight: 20 },
