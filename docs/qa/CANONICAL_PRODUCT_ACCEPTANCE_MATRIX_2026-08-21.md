@@ -49,6 +49,9 @@ close a populated or mutating story.
 - Method documents in `docs/knowledge/methods` own durable domain behavior; matching
   registries in `src/knowledge` make those rules available to the app.
 - Production-evidence documents prove a named slice; they never create a second queue.
+- `CANONICAL_PARITY_LIVE_EVIDENCE_2026-08-21.md` records the exact-SHA production slices
+  exercised after the workspace/Nature parity merge, including the reproduced grow-link
+  defect and the positive-role acceptance that remains.
 - A new request must map to an existing row or add one new row here before implementation.
 - A regression reopens only the affected acceptance slice, not the entire product area.
 
