@@ -139,6 +139,25 @@ describe("API Configuration & Endpoints", () => {
       }
     });
 
+    it("lists archived Personal grows and uses explicit archive lifecycle routes", async () => {
+      await growsApi.listPersonalGrows({ archived: true });
+      let parsed = new URL(fetchCalls[0].url);
+      expect(parsed.pathname).toBe("/api/personal/grows");
+      expect(parsed.searchParams.get("archived")).toBe("true");
+
+      await growsApi.archivePersonalGrow("grow 1");
+      expect(fetchCalls[1].url.endsWith("/api/personal/grows/grow%201/archive")).toBe(
+        true
+      );
+      expect(fetchCalls[1].options.method).toBe("POST");
+
+      await growsApi.restorePersonalGrow("grow 1");
+      expect(fetchCalls[2].url.endsWith("/api/personal/grows/grow%201/unarchive")).toBe(
+        true
+      );
+      expect(fetchCalls[2].options.method).toBe("POST");
+    });
+
     it("getPersonalGrowTimeline accepts canonical timeline envelope", async () => {
       const originalFetch = global.fetch;
       global.fetch = async (url, options) => {

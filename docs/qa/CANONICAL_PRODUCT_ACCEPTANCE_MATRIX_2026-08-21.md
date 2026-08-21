@@ -55,6 +55,32 @@ close a populated or mutating story.
 - A new request must map to an existing row or add one new row here before implementation.
 - A regression reopens only the affected acceptance slice, not the entire product area.
 
+## Old-work closure queue
+
+No new product scope starts until these retained batches are reconciled. Each batch moves
+through `retained -> integrated -> locally verified -> deployed -> live accepted`. Reopen
+completed architecture only for a reproduced regression, a missing matrix requirement, or
+an integration break caused by a later batch.
+
+[x] Plant ID standalone/grow/Nature recovery is reconciled on frontend `main` through
+    `fa2e3f7c` / `4f64f910`; the older retained branch adds no missing product behavior.
+[x] Device-integration frontend/backend repairs and atomic Facility ownership transfer are
+    integrated through frontend `21387a82` and backend `c7b7674`.
+[x] Hosted-Live lifecycle and durable replay expiry are integrated through frontend
+    `21387a82` and backend `c7b7674`, preserving the accepted OBS/chat/overlay/player design.
+[x] Commercial grow/tool parity and Nature publication/privacy are reconciled on current
+    main through backend `d9adff2` and `504ba78` plus their current frontend surfaces.
+[~] Unified reporting and the Admin control center are deployed as frontend `00f36429` and
+    backend `ed85270`; signed-in Admin production acceptance remains open and must not cause
+    a rewrite.
+[ ] Reconcile every remaining `partial` or `open` row against merged code and retained
+   evidence, then implement only its exact missing acceptance behavior.
+[ ] Freeze candidate SHAs, run the final cross-role and professional presentation crawl,
+   pause for independent review, then complete hats and app-store releases in that order.
+
+Clean worktrees only after their retained commit is integrated or deliberately rejected and
+the worktree is clean. Branch deletion is separate from routine disk cleanup.
+
 ## Cross-cutting user-story rules
 
 Every applicable story must preserve these invariants without repeating them in every row:
