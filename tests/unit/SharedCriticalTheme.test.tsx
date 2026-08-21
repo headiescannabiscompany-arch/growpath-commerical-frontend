@@ -232,6 +232,7 @@ describe("shared critical Night theme", () => {
     expect(styles.error.color).toBe(palette.danger);
 
     fireEvent.changeText(reasonInput, "This video impersonates another grower.");
+    fireEvent.press(screen.getByText("Age/regulated content mislabeled"));
     expect(screen.getByLabelText("Submit").props.accessibilityState).toEqual({
       disabled: false
     });
@@ -242,6 +243,7 @@ describe("shared critical Night theme", () => {
         contentId: "video-1",
         contentTitle: "Night garden tour",
         contentType: "video",
+        category: "regulated_content_mislabeled",
         parentPostId: null,
         reason: "This video impersonates another grower.",
         targetUrl: "/videos/video-1",

@@ -19,6 +19,7 @@ const ReportModal = ({
   const { palette } = useAppTheme();
   const styles = useMemo(() => createReportModalStyles(palette), [palette]);
   const [reason, setReason] = useState("");
+  const [category, setCategory] = useState("other");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -32,10 +33,12 @@ const ReportModal = ({
         contentTitle,
         targetUrl,
         parentPostId: parentPostId || null,
+        category,
         reason,
         token
       });
       setReason("");
+      setCategory("other");
       onSuccess && onSuccess();
       onClose();
     } catch (e) {
@@ -79,6 +82,42 @@ const ReportModal = ({
             multiline
             accessibilityLabel="Report reason"
           />
+          <Text style={styles.label}>What best describes the problem?</Text>
+          <View style={styles.categoryRow}>
+            {[
+              ["spam", "Spam"],
+              ["harassment", "Harassment"],
+              ["danger", "Immediate danger"],
+              ["exploitation", "Exploitation"],
+              ["illegal_sales", "Illegal sales"],
+              ["regulated_content_mislabeled", "Age/regulated content mislabeled"],
+              ["privacy", "Privacy"],
+              ["copyright", "Copyright"],
+              ["misinformation", "Misinformation"],
+              ["other", "Other"]
+            ].map(([value, label]) => (
+              <Pressable
+                key={value}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: category === value }}
+                style={[
+                  styles.categoryButton,
+                  category === value && styles.categoryButtonSelected
+                ]}
+                onPress={() => setCategory(value)}
+                disabled={loading}
+              >
+                <Text style={styles.categoryText}>{label}</Text>
+              </Pressable>
+            ))}
+          </View>
+          {category === "danger" || category === "exploitation" ? (
+            <Text style={styles.urgentHelp}>
+              If someone is in immediate danger, contact local emergency services now.
+              This report preserves information for GrowPathAI review but is not an
+              emergency dispatch service.
+            </Text>
+          ) : null}
           {error ? (
             <Text
               accessibilityRole="alert"
@@ -165,6 +204,20 @@ export const createReportModalStyles = (palette) =>
       color: palette.danger,
       marginBottom: 10
     },
+    label: { color: palette.text, fontWeight: "700", marginBottom: 8 },
+    categoryRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
+    categoryButton: {
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 44,
+      justifyContent: "center",
+      paddingHorizontal: 10,
+      paddingVertical: 8
+    },
+    categoryButtonSelected: { borderColor: palette.accent, borderWidth: 2 },
+    categoryText: { color: palette.text, fontWeight: "600" },
+    urgentHelp: { color: palette.danger, fontWeight: "700", marginBottom: 12 },
     buttonRow: {
       flexDirection: "row",
       gap: 10,

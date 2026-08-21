@@ -10,6 +10,7 @@ export const submitReport = async ({
   contentTitle,
   targetUrl,
   parentPostId,
+  category,
   reason,
   token
 }: {
@@ -18,12 +19,21 @@ export const submitReport = async ({
   contentTitle?: string;
   targetUrl?: string;
   parentPostId?: string;
+  category?: string;
   reason: string;
 } & ReportTokenOptions) => {
   return apiRequest(apiRoutes.REPORTS.SUBMIT, {
     method: "POST",
     auth: true,
-    body: { contentType, contentId, contentTitle, targetUrl, parentPostId, reason },
+    body: {
+      contentType,
+      contentId,
+      contentTitle,
+      targetUrl,
+      parentPostId,
+      category,
+      reason
+    },
     ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {})
   });
 };

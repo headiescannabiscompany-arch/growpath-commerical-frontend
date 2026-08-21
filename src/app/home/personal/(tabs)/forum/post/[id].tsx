@@ -25,6 +25,7 @@ import {
 } from "@/api/communitySocial";
 import { createPersonalTask } from "@/api/tasks";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import ReportModal from "@/components/ReportModal";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
@@ -162,6 +163,7 @@ function ForumImage({ uri, style, label }: { uri: string; style: any; label: str
 }
 
 export default function ForumPostDetailRoute() {
+  const [reportedComment, setReportedComment] = useState<CommentRow | null>(null);
   const params = useLocalSearchParams();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createForumPostDetailStyles(palette), [palette]);
@@ -635,6 +637,14 @@ export default function ForumPostDetailRoute() {
                 {visibleCommentBody(comment) ? (
                   <Text style={styles.cardText}>{visibleCommentBody(comment)}</Text>
                 ) : null}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Report forum comment"
+                  onPress={() => setReportedComment(comment)}
+                  style={styles.secondaryBtn}
+                >
+                  <Text style={styles.secondaryText}>Report comment</Text>
+                </Pressable>
                 {commentPhotos(comment).length ? (
                   <View style={styles.photoGrid}>
                     {commentPhotos(comment).map((photo, index) => (
@@ -661,6 +671,16 @@ export default function ForumPostDetailRoute() {
           longContent
         />
       </ScrollView>
+      <ReportModal
+        visible={Boolean(reportedComment)}
+        onClose={() => setReportedComment(null)}
+        contentType="comment"
+        contentId={String(reportedComment?._id || reportedComment?.id || "")}
+        contentTitle="Forum comment"
+        parentPostId={String(loadedId || id || "")}
+        targetUrl={`/forum/post/${encodeURIComponent(String(loadedId || id || ""))}`}
+        onSuccess={() => setFeedback("Comment report sent for moderation review.")}
+      />
     </ScreenBoundary>
   );
 }
