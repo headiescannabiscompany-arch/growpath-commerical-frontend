@@ -130,9 +130,15 @@ describe("GrowIntegrationBuildPanel", () => {
         provider: "zentra",
         label: "METER Group / ZENTRA Cloud",
         credentials: { apiKey: "customer-token" },
+        workspaceType: "facility",
+        facilityId: "facility-1",
         config: { facilityId: "facility-1" }
       })
     );
+    expect(mockListConnections).toHaveBeenCalledWith({
+      workspaceType: "facility",
+      facilityId: "facility-1"
+    });
     expect(mockTestConnection).toHaveBeenCalledWith("connection-zentra");
   });
 
@@ -161,7 +167,8 @@ describe("GrowIntegrationBuildPanel", () => {
     await waitFor(() =>
       expect(mockAutoBuild).toHaveBeenCalledWith("connection-1", {
         mode: "commercial",
-        targetRef: "trial-1"
+        targetRef: "trial-1",
+        targetType: "grow"
       })
     );
     expect(mockConfirm).toHaveBeenCalledWith(
@@ -174,7 +181,8 @@ describe("GrowIntegrationBuildPanel", () => {
     render(
       <GrowIntegrationBuildPanel
         mode="facility"
-        targetRef="facility-1"
+        targetRef="facility-grow-1"
+        facilityId="facility-1"
         canConfigure={false}
       />
     );
@@ -220,6 +228,7 @@ describe("GrowIntegrationBuildPanel", () => {
     expect(mockImportHistory.mock.calls[0][1]).toMatchObject({
       mode: "personal",
       targetRef: "grow-1",
+      targetType: "grow",
       startIso: expect.any(String),
       endIso: expect.any(String),
       timezone: expect.any(String)

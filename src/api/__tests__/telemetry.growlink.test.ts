@@ -133,7 +133,7 @@ describe("telemetry Growlink API", () => {
         sources: [
           {
             id: "source_1",
-            growId: "grow_1",
+            targetRef: "grow_1",
             type: "growlink",
             name: "Growlink Flower A",
             timezone: "America/Denver",
@@ -156,6 +156,8 @@ describe("telemetry Growlink API", () => {
       expect.objectContaining({
         id: "source_1",
         type: "growlink",
+        growId: "grow_1",
+        targetRef: "grow_1",
         config: {
           growlink: {
             controllerId: "controller-1",
@@ -164,6 +166,10 @@ describe("telemetry Growlink API", () => {
         }
       })
     ]);
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/telemetry/sources?growId=grow_1&workspaceType=personal&targetType=grow&targetRef=grow_1",
+      { method: "GET" }
+    );
   });
 
   test("creates Growlink telemetry sources without changing the generic source contract", async () => {
@@ -204,6 +210,9 @@ describe("telemetry Growlink API", () => {
         name: "Growlink Flower A",
         timezone: "America/Denver",
         isActive: true,
+        workspaceType: "personal",
+        targetType: "grow",
+        targetRef: "grow_1",
         config: { growlink: { controllerId: "controller-1" } }
       }
     });

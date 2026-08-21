@@ -14,6 +14,7 @@ const mockRouter = { push: mockPush, replace: mockReplace };
 let mockParams: Record<string, string> = {};
 let mockFacilityRole = "OWNER";
 let mockFacilityId: string | null = "facility-1";
+const mockImporter = jest.fn();
 
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -36,7 +37,9 @@ jest.mock("@/components/ScreenBoundary", () => ({
 }));
 jest.mock("@/app/home/personal/(tabs)/tools/dew-point-guard", () => {
   const { Text } = require("react-native");
-  return function MockImporter({ historyImportMode }: any) {
+  return function MockImporter(props: any) {
+    mockImporter(props);
+    const { historyImportMode } = props;
     return <Text>{historyImportMode ? "History importer ready" : "Wrong mode"}</Text>;
   };
 });
@@ -87,7 +90,12 @@ describe("Facility history import route", () => {
     expect(mockApiRequest).toHaveBeenCalledWith("/api/facilities/facility-1/grows");
     expect(mockPush).toHaveBeenCalledWith({
       pathname: "/home/facility/tools/history-import",
-      params: { growId: "grow-1", growName: "Flower Cycle 12" }
+      params: {
+        growId: "grow-1",
+        growName: "Flower Cycle 12",
+        roomId: "",
+        roomName: "Flower A"
+      }
     });
     expect(
       screen.getByLabelText("Import history into Flower Cycle 12").props
@@ -120,12 +128,14 @@ describe("Facility history import route", () => {
 
   it("redirects to facility selection when no facility is active", async () => {
     mockFacilityId = null;
-    render(<FacilityHistoryImportRoute />);
+    const screen = render(<FacilityHistoryImportRoute />);
 
     await waitFor(() =>
       expect(mockReplace).toHaveBeenCalledWith("/home/facility/select")
     );
     expect(mockApiRequest).not.toHaveBeenCalled();
+    expect(screen.getByText("A Facility is required for history import.")).toBeTruthy();
+    expect(screen.queryByText("History importer ready")).toBeNull();
   });
 
   it("offers a working retry after grow loading fails", async () => {
@@ -143,9 +153,24 @@ describe("Facility history import route", () => {
   });
 
   it("opens the shared importer in history mode for the selected grow", () => {
-    mockParams = { growId: "grow-1", growName: "Flower Cycle 12" };
+    mockParams = {
+      growId: "grow-1",
+      growName: "Flower Cycle 12",
+      roomId: "room-1",
+      roomName: "Flower A"
+    };
     const screen = render(<FacilityHistoryImportRoute />);
     expect(screen.getByText("History importer ready")).toBeTruthy();
     expect(mockApiRequest).not.toHaveBeenCalled();
+    expect(mockImporter).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        historyImportMode: true,
+        workspaceType: "facility",
+        facilityId: "facility-1",
+        growLabel: "Flower Cycle 12",
+        initialRoomId: "room-1",
+        initialRoomName: "Flower A"
+      })
+    );
   });
 });

@@ -23,6 +23,10 @@ export type IntegrationConnection = {
   id: string;
   provider: string;
   label: string;
+  workspaceType?: IntegrationWorkspaceType;
+  workspaceId?: string | null;
+  facilityId?: string | null;
+  commercialAccountId?: string | null;
   config: Record<string, unknown>;
   status: "draft" | "configured" | "connected" | "error" | "access_requested";
   auth: {
@@ -43,6 +47,16 @@ export type IntegrationConnection = {
     summary?: Record<string, unknown> | null;
   };
 };
+
+export type IntegrationWorkspaceType = "personal" | "commercial" | "facility";
+
+export type IntegrationWorkspaceScope = {
+  workspaceType: IntegrationWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
+};
+
+export type IntegrationTargetType = "grow" | "productTrial";
 
 export type IntegrationDeviceMapping = {
   deviceId: string;
@@ -90,8 +104,13 @@ export async function listIntegrationProviders(): Promise<IntegrationProvider[]>
   return dataOf(response)?.providers ?? [];
 }
 
-export async function listIntegrationConnections(): Promise<IntegrationConnection[]> {
-  const response = await apiRequest("/api/integrations/connections");
+export async function listIntegrationConnections(
+  scope: IntegrationWorkspaceScope
+): Promise<IntegrationConnection[]> {
+  const query = new URLSearchParams({ workspaceType: scope.workspaceType });
+  if (scope.workspaceId) query.set("workspaceId", scope.workspaceId);
+  if (scope.facilityId) query.set("facilityId", scope.facilityId);
+  const response = await apiRequest(`/api/integrations/connections?${query.toString()}`);
   return dataOf(response)?.connections ?? [];
 }
 
@@ -100,6 +119,9 @@ export async function createIntegrationConnection(input: {
   label?: string;
   credentials?: Record<string, string>;
   config?: Record<string, string>;
+  workspaceType: IntegrationWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
 }): Promise<IntegrationConnection> {
   const response = await apiRequest("/api/integrations/connections", {
     method: "POST",
@@ -158,7 +180,11 @@ export async function confirmIntegrationMapping(
 
 export async function autoBuildIntegrationSpaces(
   id: string,
-  input: { mode: "personal" | "facility" | "commercial"; targetRef: string }
+  input: {
+    mode: IntegrationWorkspaceType;
+    targetRef: string;
+    targetType?: IntegrationTargetType;
+  }
 ): Promise<{ mode: string; targetRef: string; spaces: any[]; createdOrUpdated: number }> {
   const response = await apiRequest(`/api/integrations/connections/${id}/auto-build`, {
     method: "POST",
@@ -168,10 +194,12 @@ export async function autoBuildIntegrationSpaces(
 }
 
 export async function listIntegrationSpaces(input: {
-  mode: "personal" | "facility" | "commercial";
+  mode: IntegrationWorkspaceType;
   targetRef: string;
+  targetType?: IntegrationTargetType;
 }): Promise<IntegrationGrowSpace[]> {
   const query = new URLSearchParams({ mode: input.mode, targetRef: input.targetRef });
+  if (input.targetType) query.set("targetType", input.targetType);
   const response = await apiRequest(`/api/integrations/spaces?${query.toString()}`);
   return dataOf(response)?.spaces ?? [];
 }
@@ -190,8 +218,9 @@ export type IntegrationHistoryImportSummary = {
 export async function importIntegrationHistory(
   id: string,
   input: {
-    mode: "personal" | "facility" | "commercial";
+    mode: IntegrationWorkspaceType;
     targetRef: string;
+    targetType?: IntegrationTargetType;
     startIso: string;
     endIso: string;
     timezone?: string;

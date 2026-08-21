@@ -6,30 +6,42 @@ import FacilityIntegrationsRoute, {
 } from "@/app/home/facility/(tabs)/integrations";
 import { getThemePalette } from "@/theme/appTheme";
 
+jest.setTimeout(20000);
+
+const mockApiRequest = jest.fn();
 const mockPush = jest.fn();
-const mockList = jest.fn();
-const mockTest = jest.fn();
-const mockFetchStructure = jest.fn();
-const mockPreview = jest.fn();
-const mockConfirm = jest.fn();
-const mockAutoBuild = jest.fn();
+const mockBuildPanel = jest.fn();
 let mockFacilityRole = "OWNER";
+let mockSelectedFacilityId = "facility-1";
 
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock("@/api/apiRequest", () => ({
+  apiRequest: (...args: any[]) => mockApiRequest(...args)
+}));
+jest.mock("@/api/endpoints", () => ({
+  endpoints: { grows: (facilityId: string) => `/api/facilities/${facilityId}/grows` }
+}));
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => ({
     facilityRole: mockFacilityRole,
-    selectedFacilityId: "facility-1"
+    selectedFacilityId: mockSelectedFacilityId
   })
 }));
-jest.mock("@/api/integrations", () => ({
-  listIntegrationConnections: (...args: any[]) => mockList(...args),
-  testIntegrationConnection: (...args: any[]) => mockTest(...args),
-  fetchIntegrationStructure: (...args: any[]) => mockFetchStructure(...args),
-  previewIntegrationMapping: (...args: any[]) => mockPreview(...args),
-  confirmIntegrationMapping: (...args: any[]) => mockConfirm(...args),
-  autoBuildIntegrationSpaces: (...args: any[]) => mockAutoBuild(...args)
+jest.mock("@/state/useFacility", () => ({
+  useFacility: () => ({ selectedId: mockSelectedFacilityId })
 }));
+jest.mock("@/components/integrations/GrowIntegrationBuildPanel", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return function MockGrowIntegrationBuildPanel(props: any) {
+    mockBuildPanel(props);
+    return React.createElement(
+      Text,
+      { testID: "facility-grow-integration-panel" },
+      "Grow integration panel"
+    );
+  };
+});
 jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -39,6 +51,18 @@ jest.mock("@/components/ScreenBoundary", () => {
 });
 
 describe("FacilityIntegrationsRoute", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFacilityRole = "OWNER";
+    mockSelectedFacilityId = "facility-1";
+    mockApiRequest.mockResolvedValue({
+      grows: [
+        { id: "grow-1", name: "Flower Cycle 12", roomName: "Flower A" },
+        { id: "grow-2", name: "Mother Room" }
+      ]
+    });
+  });
+
   it("uses the active Night palette for its page, cards, and controls", () => {
     const palette = getThemePalette("night", "dark");
     const styles = createFacilityIntegrationsStyles(palette);
@@ -51,12 +75,6 @@ describe("FacilityIntegrationsRoute", () => {
     expect(styles.primaryAction.backgroundColor).toBe(palette.accent);
   });
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockFacilityRole = "OWNER";
-    mockList.mockResolvedValue([]);
-  });
-
   it("does not let a Viewer open either integration write flow", async () => {
     mockFacilityRole = "VIEWER";
     const screen = render(<FacilityIntegrationsRoute />);
@@ -67,133 +85,58 @@ describe("FacilityIntegrationsRoute", () => {
     expect(historyAction).toBeDisabled();
     fireEvent.press(historyAction);
     expect(mockPush).not.toHaveBeenCalled();
-    await waitFor(() => expect(mockList).toHaveBeenCalled());
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
   });
 
-  it("makes Pulse and TrolMaster selectable and marks planned providers clearly", async () => {
+  it("states provider readiness without claiming unfinished adapters are live", async () => {
     const screen = render(<FacilityIntegrationsRoute />);
 
-    expect(
-      screen.getByRole("header", { name: "Connect rooms and sensor data" }).props[
-        "aria-level"
-      ]
-    ).toBe(1);
-    expect(
-      screen.getByRole("header", { name: "Pulse read-only telemetry" }).props[
-        "aria-level"
-      ]
-    ).toBe(2);
-    expect(
-      screen.getByRole("header", { name: "Import controller and grow history" }).props[
-        "aria-level"
-      ]
-    ).toBe(2);
-    expect(
-      screen.getByRole("header", { name: "More providers" }).props["aria-level"]
-    ).toBe(2);
-    fireEvent.press(screen.getByLabelText("Select pulse integration"));
-    expect(
-      screen.getByLabelText("Select pulse integration").props.accessibilityState
-    ).toEqual({ selected: true });
-    expect(screen.getByText("Pulse read-only telemetry")).toBeTruthy();
-    fireEvent.press(screen.getByText("Connect Pulse"));
-    expect(mockPush).toHaveBeenCalledWith("/home/facility/tools/pulse");
-
+    expect(screen.getByText("Read-only setup available")).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Select trolmaster integration"));
-    expect(
-      screen.getByLabelText("Select trolmaster integration").props.accessibilityState
-    ).toEqual({ selected: true });
-    expect(screen.getByText("TrolMaster developer access")).toBeTruthy();
-    expect(screen.getByText("Developer access required")).toBeTruthy();
-    expect(
-      screen.getByRole("link", { name: "Open the TrolMaster developer portal" })
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("button", {
-        name: "Request the TrolMaster Facility integration"
-      })
-    ).toBeTruthy();
-    expect(screen.queryByLabelText("TrolMaster API key")).toBeNull();
-    expect(
-      screen.getByRole("button", { name: "Request the Growlink Facility integration" })
-    ).toBeTruthy();
-    await waitFor(() => expect(screen.queryByText("Connected sources")).toBeNull());
+    expect(screen.getByText("Key storage only · API access required")).toBeTruthy();
+    expect(screen.getByText(/after its read-only adapter is implemented/)).toBeTruthy();
+    expect(screen.getByText("Available · review required")).toBeTruthy();
+    expect(screen.queryByText("UbiBot")).toBeNull();
+    expect(screen.queryByText("ZENTRA Cloud")).toBeNull();
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
   });
 
-  it("tests, previews, edits, and confirms a discovered device mapping", async () => {
-    const connection = {
-      id: "connection-1",
-      provider: "pulse",
-      label: "Flower sensors",
-      status: "configured",
-      capabilities: ["telemetry", "devices"],
-      lastSync: { at: null, status: "never", summary: null },
-      error: null
-    };
-    const mapping = {
-      deviceId: "device-1",
-      deviceName: "Canopy sensor",
-      roomName: "Canopy sensor",
-      zoneName: "",
-      metrics: ["temperature", "humidity"]
-    };
-    mockList.mockResolvedValue([connection]);
-    mockTest.mockResolvedValue({ ...connection, status: "connected" });
-    mockFetchStructure.mockResolvedValue({ devices: [{}], suggestedMappings: [mapping] });
-    mockPreview.mockResolvedValue({
-      provider: "pulse",
-      permissionLevel: "read_only",
-      deviceCount: 1,
-      roomCount: 1,
-      zoneCount: 1,
-      mappings: [{ ...mapping, roomName: "Flower 1", zoneName: "Canopy" }]
-    });
-    mockConfirm.mockResolvedValue({ ...connection, status: "connected" });
-    mockAutoBuild.mockResolvedValue({ createdOrUpdated: 1, spaces: [] });
+  it("never uses a Facility id as the grow target and requires an explicit grow", async () => {
     const screen = render(<FacilityIntegrationsRoute />);
 
-    await waitFor(() => expect(screen.getByText("Flower sensors")).toBeTruthy());
+    expect(screen.queryByTestId("facility-grow-integration-panel")).toBeNull();
+    expect(screen.getByText(/No grow selected/)).toBeTruthy();
+    expect(mockBuildPanel).not.toHaveBeenCalled();
+
+    await waitFor(() => expect(screen.getByText("Flower Cycle 12")).toBeTruthy());
     fireEvent.press(
-      screen.getByRole("button", {
-        name: "Test and fetch structure for Flower sensors"
-      })
-    );
-    await waitFor(() => expect(screen.getByText("Canopy sensor")).toBeTruthy());
-    const roomInput = screen.getByLabelText("Room mapping for Canopy sensor");
-    const zoneInput = screen.getByLabelText("Optional zone mapping for Canopy sensor");
-    expect(roomInput.props.placeholderTextColor).toBeTruthy();
-    expect(zoneInput.props.placeholderTextColor).toBeTruthy();
-    fireEvent.changeText(roomInput, "Flower 1");
-    fireEvent.changeText(zoneInput, "Canopy");
-    fireEvent.press(
-      screen.getByRole("button", {
-        name: "Confirm reviewed Facility integration mappings"
-      })
+      screen.getByLabelText("Use Flower Cycle 12 for Facility integrations")
     );
 
     await waitFor(() =>
-      expect(mockConfirm).toHaveBeenCalledWith(
-        "connection-1",
-        expect.arrayContaining([
-          expect.objectContaining({ roomName: "Flower 1", zoneName: "Canopy" })
-        ])
+      expect(mockBuildPanel).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          mode: "facility",
+          targetRef: "grow-1",
+          facilityId: "facility-1",
+          canConfigure: true
+        })
       )
     );
-    expect(screen.getByText(/Auto-build remains a separate reviewed step/)).toBeTruthy();
-    const buildButton = screen.getByRole("button", {
-      name: "Build confirmed Facility integration spaces"
-    });
-    await waitFor(() => expect(buildButton.props.disabled).not.toBe(true));
-    fireEvent.press(buildButton);
-    await waitFor(() =>
-      expect(mockAutoBuild).toHaveBeenCalledWith("connection-1", {
-        mode: "facility",
-        targetRef: "facility-1"
-      })
+    expect(mockBuildPanel).not.toHaveBeenCalledWith(
+      expect.objectContaining({ targetRef: "facility-1" })
     );
-    expect(screen.getByText(/Built 1 read-only Facility spaces/)).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Review Facility room mappings" })
-    ).toBeTruthy();
+    expect(screen.getByText("Destination: Flower Cycle 12")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Import Facility grow history"));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/home/facility/tools/history-import",
+      params: {
+        growId: "grow-1",
+        growName: "Flower Cycle 12",
+        roomId: "",
+        roomName: "Flower A"
+      }
+    });
   });
 });

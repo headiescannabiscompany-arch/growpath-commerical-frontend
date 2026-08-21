@@ -51,13 +51,21 @@ export default function GrowIntegrationBuildPanel({
   const [status, setStatus] = useState("");
   const [selectedProviderId, setSelectedProviderId] = useState("");
   const [credential, setCredential] = useState("");
+  const workspaceScope = useMemo(
+    () => ({
+      workspaceType: mode,
+      ...(mode === "facility" && facilityId ? { facilityId } : {})
+    }),
+    [facilityId, mode]
+  );
+  const workspaceScopeReady = mode !== "facility" || Boolean(facilityId);
 
   const load = useCallback(async () => {
-    if (!targetRef) return;
+    if (!targetRef || !workspaceScopeReady) return;
     try {
       const [connectionRows, spaceRows, providerRows] = await Promise.all([
-        listIntegrationConnections(),
-        listIntegrationSpaces({ mode, targetRef }),
+        listIntegrationConnections(workspaceScope),
+        listIntegrationSpaces({ mode, targetRef, targetType: "grow" }),
         listIntegrationProviders()
       ]);
       setConnections(connectionRows);
@@ -75,7 +83,7 @@ export default function GrowIntegrationBuildPanel({
     } catch (error) {
       setStatus(errorMessage(error));
     }
-  }, [mode, targetRef]);
+  }, [mode, targetRef, workspaceScope, workspaceScopeReady]);
 
   useEffect(() => {
     void load();
@@ -89,14 +97,23 @@ export default function GrowIntegrationBuildPanel({
   );
 
   async function saveProviderConnection() {
-    if (!selectedProvider || !credential.trim() || !canConfigure || !targetRef) return;
+    if (
+      !selectedProvider ||
+      !credential.trim() ||
+      !canConfigure ||
+      !targetRef ||
+      !workspaceScopeReady
+    )
+      return;
     setBusy(true);
     try {
       const connection = await createIntegrationConnection({
         provider: selectedProvider.id,
         label: selectedProvider.name,
         credentials: { apiKey: credential.trim() },
-        config: mode === "facility" ? { facilityId: facilityId || targetRef } : undefined
+        workspaceType: mode,
+        ...(mode === "facility" && facilityId ? { facilityId } : {}),
+        config: mode === "facility" && facilityId ? { facilityId } : undefined
       });
       setCredential("");
       if (selectedProvider.contractStatus === "implemented") {
@@ -171,10 +188,14 @@ export default function GrowIntegrationBuildPanel({
   }
 
   async function build() {
-    if (!confirmed || !connectionId || !targetRef) return;
+    if (!confirmed || !connectionId || !targetRef || !workspaceScopeReady) return;
     setBusy(true);
     try {
-      const result = await autoBuildIntegrationSpaces(connectionId, { mode, targetRef });
+      const result = await autoBuildIntegrationSpaces(connectionId, {
+        mode,
+        targetRef,
+        targetType: "grow"
+      });
       setStatus(
         `Created or updated ${result.createdOrUpdated} read-only grow space${result.createdOrUpdated === 1 ? "" : "s"}. Running this again will update the same spaces instead of duplicating them.`
       );
@@ -188,7 +209,7 @@ export default function GrowIntegrationBuildPanel({
   }
 
   async function importHistory(connection: IntegrationConnection, days: number) {
-    if (!targetRef || !canConfigure) return;
+    if (!targetRef || !canConfigure || !workspaceScopeReady) return;
     const end = new Date();
     const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
     setBusy(true);
@@ -197,6 +218,7 @@ export default function GrowIntegrationBuildPanel({
       const summary = await importIntegrationHistory(connection.id, {
         mode,
         targetRef,
+        targetType: "grow",
         startIso: start.toISOString(),
         endIso: end.toISOString(),
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
@@ -229,8 +251,13 @@ export default function GrowIntegrationBuildPanel({
           Select or create a grow before connecting devices or importing history.
         </Text>
       ) : null}
+      {mode === "facility" && !facilityId ? (
+        <Text style={styles.warning}>
+          Select a Facility before loading connections or changing grow mappings.
+        </Text>
+      ) : null}
 
-      {canConfigure && targetRef && connectableProviders.length ? (
+      {canConfigure && targetRef && workspaceScopeReady && connectableProviders.length ? (
         <View style={styles.section}>
           <Text style={styles.subtitle}>Add a controller or monitor</Text>
           <Text style={styles.body}>

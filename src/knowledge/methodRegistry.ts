@@ -45,19 +45,39 @@ export const methodRegistry: GrowPathMethod[] = [
     "Integration Workflow",
     ["integration", "telemetry", "sensor", "controller"],
     "integration-workflow-method.md",
-    ["connect", "test", "discover", "map", "confirm", "auto-build"],
-    ["provider credentials", "target workspace", "reviewed mappings"],
+    [
+      "select workspace and grow",
+      "connect",
+      "test",
+      "discover",
+      "map",
+      "confirm",
+      "auto-build",
+      "review and import history"
+    ],
+    [
+      "provider credentials",
+      "active workspace",
+      "exact grow target",
+      "reviewed mappings",
+      "reviewed provider/file/timezone provenance"
+    ],
     [
       "spaces",
       "devices",
       "normalized streams",
       "raw metric evidence",
+      "workspace-isolated connections",
+      "file import review provenance",
       "tool input context",
       "field-use declarations",
       "draft alerts",
       "dashboard definitions"
     ],
-    ["Read-only first; never invent metrics, units, mappings, or control access."],
+    [
+      "Read-only first; never invent metrics, units, mappings, or control access.",
+      "Never use a Facility identifier as a grow target or mix a provider export into an unrelated source."
+    ],
     ["data-integrations", "facility-integrations", "telemetry"]
   ),
   method(

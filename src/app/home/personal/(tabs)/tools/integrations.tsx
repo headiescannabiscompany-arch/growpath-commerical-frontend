@@ -340,7 +340,7 @@ export default function DataIntegrationsScreen({
       if (!nextGrowId || workspaceType === "commercial") return;
       setLoadingGrowlinkSources(true);
       try {
-        const sources = await listTelemetrySources(nextGrowId);
+        const sources = await listTelemetrySources(nextGrowId, { workspaceType });
         setGrowlinkSources(sources.filter((source) => source.type === "growlink"));
       } catch (error) {
         if (showError) Alert.alert("Growlink sources unavailable", message(error));
@@ -351,12 +351,12 @@ export default function DataIntegrationsScreen({
     [growId, workspaceType]
   );
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [providerRows, connectionRows] = await Promise.all([
         listIntegrationProviders(),
-        listIntegrationConnections()
+        listIntegrationConnections({ workspaceType })
       ]);
       setProviders(providerRows);
       setConnections(connectionRows);
@@ -365,11 +365,11 @@ export default function DataIntegrationsScreen({
     } finally {
       setLoading(false);
     }
-  }
+  }, [workspaceType]);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   useEffect(() => {
     const nextGrowId = paramString(params.growId);
@@ -396,6 +396,7 @@ export default function DataIntegrationsScreen({
         provider: selected.id,
         label: selected.name,
         credentials: secret.trim() ? { apiKey: secret.trim() } : undefined,
+        workspaceType,
         config: baseUrl.trim() ? { baseUrl: baseUrl.trim() } : undefined
       });
       setConnections((rows) => [
@@ -519,6 +520,8 @@ export default function DataIntegrationsScreen({
         type: "growlink",
         name: growlinkSourceName.trim() || "Growlink Telemetry",
         timezone: selectedGrowlinkController?.timeZoneId || "America/New_York",
+        workspaceType,
+        targetType: "grow",
         config: {
           growlink: {
             userName,

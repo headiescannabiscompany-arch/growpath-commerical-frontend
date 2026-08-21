@@ -1,5 +1,15 @@
 export type TelemetrySourceType = "pulse" | "ubibot" | "growlink" | "upload" | "manual";
 
+export type TelemetryWorkspaceType = "personal" | "commercial" | "facility";
+
+export type TelemetryWorkspaceScope = {
+  workspaceType?: TelemetryWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
+  targetType?: "grow" | "productTrial";
+  targetRef?: string;
+};
+
 export type TelemetrySource = {
   id: string;
   growId: string;
@@ -7,6 +17,12 @@ export type TelemetrySource = {
   name: string;
   timezone: string;
   isActive: boolean;
+  workspaceType?: TelemetryWorkspaceType;
+  workspaceId?: string | null;
+  facilityId?: string | null;
+  roomId?: string | null;
+  targetType?: "grow" | "productTrial";
+  targetRef?: string | null;
   config: Record<string, any>;
   createdAt?: string;
   updatedAt?: string;
@@ -55,7 +71,8 @@ export type CreateTelemetrySourceInput = {
   timezone: string;
   config?: Record<string, any>;
   isActive?: boolean;
-};
+  roomId?: string;
+} & TelemetryWorkspaceScope;
 
 export type BulkIngestMode = "insert" | "upsert";
 
@@ -86,7 +103,7 @@ export type BulkIngestTelemetryPointsInput = {
       unit?: string | null;
     }>;
   }>;
-};
+} & TelemetryWorkspaceScope;
 
 export type BulkIngestTelemetryPointsResult = {
   ingested: number;
@@ -99,7 +116,7 @@ export type TelemetryPointsQuery = {
   startIso: string;
   endIso: string;
   limit?: number;
-};
+} & TelemetryWorkspaceScope;
 
 export type TelemetryPointsWindowResult = {
   sourceId: string;

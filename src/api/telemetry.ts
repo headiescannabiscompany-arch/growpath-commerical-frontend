@@ -13,6 +13,7 @@ import type {
   TelemetryPointsQuery,
   TelemetryPointsWindowResult,
   TelemetrySource,
+  TelemetryWorkspaceScope,
   UbiBotChannel,
   UbiBotMqttSettingsResult,
   UbiBotPullResult,
@@ -103,7 +104,7 @@ function unwrapCreated(res: any): any {
 
 function normalizeSource(raw: any): TelemetrySource {
   const id = normId(raw);
-  const growId = String(raw?.growId ?? raw?.growID ?? "");
+  const growId = String(raw?.growId ?? raw?.growID ?? raw?.targetRef ?? "");
   const type = String(raw?.type ?? "");
   const name = String(raw?.name ?? "");
   const timezone = String(raw?.timezone ?? "America/New_York");
@@ -147,6 +148,12 @@ function normalizeSource(raw: any): TelemetrySource {
     name,
     timezone,
     isActive,
+    workspaceType: raw?.workspaceType,
+    workspaceId: raw?.workspaceId ? String(raw.workspaceId) : null,
+    facilityId: raw?.facilityId ? String(raw.facilityId) : null,
+    roomId: raw?.roomId ? String(raw.roomId) : null,
+    targetType: raw?.targetType || "grow",
+    targetRef: raw?.targetRef ? String(raw.targetRef) : growId || null,
     config,
     createdAt: raw?.createdAt,
     updatedAt: raw?.updatedAt,
@@ -183,8 +190,16 @@ function normalizePoint(raw: any): TelemetryPoint {
   };
 }
 
-export async function listTelemetrySources(growId: string): Promise<TelemetrySource[]> {
-  const path = `${TELEMETRY_ROUTES.SOURCES}${qs({ growId })}`;
+export async function listTelemetrySources(
+  growId: string,
+  scope: TelemetryWorkspaceScope = { workspaceType: "personal" }
+): Promise<TelemetrySource[]> {
+  const path = `${TELEMETRY_ROUTES.SOURCES}${qs({
+    growId,
+    ...scope,
+    targetType: scope.targetType ?? "grow",
+    targetRef: scope.targetRef ?? growId
+  })}`;
   const res = await apiRequest(path, { method: "GET" });
   const list = unwrapList(res);
   return list.map(normalizeSource);
@@ -199,7 +214,13 @@ export async function createTelemetrySource(
     name: input.name,
     timezone: input.timezone,
     isActive: input.isActive !== false,
-    config: input.config ?? {}
+    config: input.config ?? {},
+    workspaceType: input.workspaceType ?? "personal",
+    targetType: input.targetType ?? "grow",
+    targetRef: input.targetRef ?? input.growId,
+    ...(input.roomId ? { roomId: input.roomId } : {}),
+    ...(input.workspaceId ? { workspaceId: input.workspaceId } : {}),
+    ...(input.facilityId ? { facilityId: input.facilityId } : {})
   };
 
   const res = await apiRequest(TELEMETRY_ROUTES.SOURCES, { method: "POST", body });
@@ -213,7 +234,11 @@ export async function bulkIngestTelemetryPoints(
   const body = {
     sourceId: input.sourceId,
     mode: input.mode ?? "upsert",
-    points: input.points
+    points: input.points,
+    workspaceType: input.workspaceType ?? "personal",
+    workspaceId: input.workspaceId,
+    facilityId: input.facilityId,
+    targetType: input.targetType ?? "grow"
   };
 
   const res = await apiRequest(TELEMETRY_ROUTES.POINTS_BULK, { method: "POST", body });
@@ -235,7 +260,11 @@ export async function getTelemetryPoints(
       sourceId: query.sourceId,
       startIso: query.startIso,
       endIso: query.endIso,
-      limit: query.limit ?? 5000
+      limit: query.limit ?? 5000,
+      workspaceType: query.workspaceType ?? "personal",
+      workspaceId: query.workspaceId,
+      facilityId: query.facilityId,
+      targetType: query.targetType ?? "grow"
     });
 
   const res = await apiRequest(path, { method: "GET" });
@@ -253,17 +282,24 @@ export async function getTelemetryPoints(
   };
 }
 
-export async function getImportedTelemetryToolContext(input: {
-  growId: string;
-  sourceId?: string;
-  startIso?: string;
-  endIso?: string;
-}): Promise<ImportedTelemetryToolContext> {
+export async function getImportedTelemetryToolContext(
+  input: {
+    growId: string;
+    sourceId?: string;
+    startIso?: string;
+    endIso?: string;
+  } & TelemetryWorkspaceScope
+): Promise<ImportedTelemetryToolContext> {
   const path = `${TELEMETRY_ROUTES.TOOL_CONTEXT}${qs({
     growId: input.growId,
     sourceId: input.sourceId,
     start: input.startIso,
-    end: input.endIso
+    end: input.endIso,
+    workspaceType: input.workspaceType ?? "personal",
+    workspaceId: input.workspaceId,
+    facilityId: input.facilityId,
+    targetType: input.targetType ?? "grow",
+    targetRef: input.targetRef ?? input.growId
   })}`;
   const response = await apiRequest(path, { method: "GET" });
   return unwrapData(response)?.context;

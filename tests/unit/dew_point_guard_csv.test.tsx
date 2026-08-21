@@ -1,12 +1,15 @@
 import fs from "fs";
 import path from "path";
 import React from "react";
+import { Alert } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import DewPointGuard, {
   createDewPointGuardStyles
 } from "@/app/home/personal/(tabs)/tools/dew-point-guard";
 import { getThemePalette } from "@/theme/appTheme";
+
+jest.setTimeout(20000);
 
 const mockSaveToolRunAndOpenJournal = jest.fn(async () => ({
   ok: true,
@@ -18,6 +21,8 @@ const mockSaveToolRunAndCreateTask = jest.fn(async () => ({
   taskId: "task-1"
 }));
 const mockListPersonalPlants = jest.fn();
+const mockGetDocumentAsync = jest.fn();
+const mockReadAsStringAsync = jest.fn();
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ growId: "g1", plantId: "plant-blueberry-1" }),
@@ -25,7 +30,11 @@ jest.mock("expo-router", () => ({
 }));
 
 jest.mock("expo-document-picker", () => ({
-  getDocumentAsync: jest.fn(async () => ({ canceled: true }))
+  getDocumentAsync: (...args: any[]) => mockGetDocumentAsync(...args)
+}));
+
+jest.mock("expo-file-system/legacy", () => ({
+  readAsStringAsync: (...args: any[]) => mockReadAsStringAsync(...args)
 }));
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
@@ -65,6 +74,8 @@ jest.mock("@/api/telemetry", () => ({
 describe("Dew Point Guard CSV flow", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockGetDocumentAsync.mockResolvedValue({ canceled: true });
+    mockReadAsStringAsync.mockResolvedValue("");
     mockSaveToolRunAndOpenJournal.mockResolvedValue({ ok: true, toolRunId: "tr1" });
     mockSaveToolRunAndCreateTask.mockResolvedValue({
       ok: true,
@@ -99,7 +110,19 @@ describe("Dew Point Guard CSV flow", () => {
         name: "Upload Telemetry",
         timezone: "America/New_York",
         isActive: true,
-        config: {}
+        workspaceType: "personal",
+        config: {
+          provider: "generic",
+          workspaceType: "personal",
+          importReview: {
+            provider: "generic",
+            growId: "g1",
+            workspaceType: "personal",
+            roomId: null,
+            roomName: "Tent 1",
+            timezone: "America/New_York"
+          }
+        }
       }
     ]);
 
@@ -124,16 +147,35 @@ describe("Dew Point Guard CSV flow", () => {
     });
     mockVerifyPulseApiKey.mockResolvedValue({ ok: true });
     mockListPulseDevices.mockResolvedValue([]);
-    mockCreateTelemetrySource.mockResolvedValue({
-      id: "s-pulse",
-      growId: "g1",
-      type: "pulse",
-      name: "Pulse Flower Room",
-      timezone: "America/New_York",
+    mockCreateTelemetrySource.mockImplementation(async (input: any) => ({
+      id: input.type === "pulse" ? "s-pulse" : "s-upload-created",
       isActive: true,
-      config: { pulse: { deviceId: "pulse-1" } }
-    });
+      ...input
+    }));
   });
+
+  async function prepareReviewedGenericCsv(screen: ReturnType<typeof render>) {
+    fireEvent.press(screen.getByTestId("dpg-mode-source"));
+    fireEvent.press(screen.getByTestId("dpg-load-sources"));
+    await waitFor(() => expect(mockListTelemetrySources).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByTestId("dpg-source-timezone"), "America/New_York");
+    fireEvent.changeText(
+      screen.getByTestId("dpg-csv-paste"),
+      [
+        "ts,tempF,rh",
+        "2026-02-27T05:00:00.000Z,70,60",
+        "2026-02-27T05:10:00.000Z,69,62"
+      ].join("\n")
+    );
+    fireEvent.press(screen.getByTestId("dpg-csv-parse"));
+    await waitFor(() => expect(screen.getByTestId("dpg-csv-preview-count")).toBeTruthy());
+    fireEvent.changeText(screen.getByTestId("dpg-csv-room-name"), "Tent 1");
+    fireEvent.press(screen.getByTestId("dpg-confirm-csv-review"));
+    await waitFor(() =>
+      expect(screen.getByTestId("dpg-csv-review-confirmed")).toBeTruthy()
+    );
+    await waitFor(() => expect(screen.getByTestId("dpg-csv-ingest")).not.toBeDisabled());
+  }
 
   it("themes every Dew Point Guard surface and input in Night and Day modes", () => {
     const nightPalette = getThemePalette("night", "dark");
@@ -182,7 +224,7 @@ describe("Dew Point Guard CSV flow", () => {
     );
     const inputs = source.match(/<TextInput\b/g) || [];
 
-    expect(inputs).toHaveLength(3);
+    expect(inputs).toHaveLength(4);
     expect(source.match(/placeholderTextColor={palette\.textMuted}/g) || []).toHaveLength(
       inputs.length
     );
@@ -221,6 +263,12 @@ describe("Dew Point Guard CSV flow", () => {
     fireEvent.press(getByTestId("dpg-map-rh"));
     fireEvent.press(getByTestId("dpg-col-2"));
 
+    fireEvent.changeText(getByTestId("dpg-source-timezone"), "America/New_York");
+    fireEvent.changeText(getByTestId("dpg-csv-room-name"), "Tent 1");
+    fireEvent.press(getByTestId("dpg-confirm-csv-review"));
+    await waitFor(() => expect(getByTestId("dpg-csv-review-confirmed")).toBeTruthy());
+    await waitFor(() => expect(getByTestId("dpg-csv-ingest")).not.toBeDisabled());
+
     fireEvent.press(getByTestId("dpg-csv-ingest"));
     await waitFor(() => expect(mockBulkIngestTelemetryPoints).toHaveBeenCalled());
 
@@ -235,17 +283,153 @@ describe("Dew Point Guard CSV flow", () => {
     await waitFor(() => expect(mockGetTelemetryPoints).toHaveBeenCalled());
   });
 
+  it("reads a native document URI through Expo FileSystem without retaining the URI", async () => {
+    mockGetDocumentAsync.mockResolvedValueOnce({
+      canceled: false,
+      assets: [
+        {
+          uri: "content://document/provider/private-history.csv",
+          name: "controller-history.csv",
+          size: 88,
+          mimeType: "text/csv"
+        }
+      ]
+    });
+    mockReadAsStringAsync.mockResolvedValueOnce(
+      "timestamp,tempF,rh\n2026-02-27T05:00:00.000Z,70,60"
+    );
+    const screen = render(<DewPointGuard />);
+    fireEvent.press(screen.getByTestId("dpg-mode-source"));
+    fireEvent.press(screen.getByTestId("dpg-pick-csv"));
+
+    await waitFor(() =>
+      expect(mockReadAsStringAsync).toHaveBeenCalledWith(
+        "content://document/provider/private-history.csv"
+      )
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("dpg-csv-review-file").props.children.join("")).toContain(
+        "controller-history.csv"
+      )
+    );
+    expect(screen.queryByText(/content:\/\/document\/provider/)).toBeNull();
+
+    fireEvent.changeText(screen.getByTestId("dpg-source-timezone"), "America/New_York");
+    fireEvent.changeText(screen.getByTestId("dpg-csv-room-name"), "Greenhouse A");
+    fireEvent.press(screen.getByTestId("dpg-confirm-csv-review"));
+    await waitFor(() =>
+      expect(screen.getByTestId("dpg-csv-review-confirmed")).toBeTruthy()
+    );
+    fireEvent.press(screen.getByTestId("dpg-create-source-from-csv"));
+    await waitFor(() => expect(mockCreateTelemetrySource).toHaveBeenCalled());
+    const createInput = mockCreateTelemetrySource.mock.calls[0][0];
+    expect(createInput.config.sourceFileIdentity).toMatchObject({
+      name: "controller-history.csv",
+      mimeType: "text/csv",
+      uriScheme: "content"
+    });
+    expect(JSON.stringify(createInput)).not.toContain("content://document/provider");
+  });
+
+  it("passes explicit Facility workspace scope when loading history sources", async () => {
+    const screen = render(
+      <DewPointGuard
+        historyImportMode
+        workspaceType="facility"
+        facilityId="facility-1"
+        growLabel="Flower Cycle 12"
+        initialRoomName="Flower A"
+      />
+    );
+    fireEvent.press(screen.getByTestId("dpg-load-sources"));
+
+    await waitFor(() =>
+      expect(mockListTelemetrySources).toHaveBeenCalledWith("g1", {
+        workspaceType: "facility",
+        facilityId: "facility-1",
+        targetType: "grow"
+      })
+    );
+  });
+
+  it("blocks an AC Infinity file from an unrelated generic upload source", async () => {
+    const screen = render(<DewPointGuard />);
+    fireEvent.press(screen.getByTestId("dpg-mode-source"));
+    fireEvent.press(screen.getByTestId("dpg-load-sources"));
+    await waitFor(() => expect(mockListTelemetrySources).toHaveBeenCalled());
+    fireEvent.changeText(screen.getByTestId("dpg-source-timezone"), "America/New_York");
+    fireEvent.changeText(
+      screen.getByTestId("dpg-csv-paste"),
+      [
+        '"Device ID","Test Controller","",""',
+        '"Sample Frequency","10 MIN","",""',
+        '"Start Time","03/18/2026 1:28:00 AM","",""',
+        '"End Time","03/18/2026 1:38:00 AM","",""',
+        '"Temperature Units","°F","",""',
+        '"Time","Inside Temperature","Inside Relative Humidity"',
+        '"03/18/2026 1:28 AM","64.7","41.2"'
+      ].join("\n")
+    );
+    fireEvent.press(screen.getByTestId("dpg-csv-parse"));
+    await waitFor(() => expect(screen.getByTestId("dpg-csv-preview-count")).toBeTruthy());
+    fireEvent.changeText(screen.getByTestId("dpg-csv-room-name"), "Tent 1");
+    fireEvent.press(screen.getByTestId("dpg-confirm-csv-review"));
+    await waitFor(() =>
+      expect(screen.getByTestId("dpg-csv-review-confirmed")).toBeTruthy()
+    );
+
+    expect(screen.getByTestId("dpg-csv-source-mismatch")).toBeTruthy();
+    expect(screen.getByTestId("dpg-csv-ingest")).toBeDisabled();
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    expect(mockBulkIngestTelemetryPoints).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid source timezone during review", async () => {
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
+    const screen = render(<DewPointGuard />);
+    fireEvent.press(screen.getByTestId("dpg-mode-source"));
+    fireEvent.changeText(
+      screen.getByTestId("dpg-csv-paste"),
+      "timestamp,tempF,rh\n2026-02-27T05:00:00.000Z,70,60"
+    );
+    fireEvent.press(screen.getByTestId("dpg-csv-parse"));
+    await waitFor(() => expect(screen.getByTestId("dpg-csv-preview-count")).toBeTruthy());
+    fireEvent.changeText(screen.getByTestId("dpg-csv-room-name"), "Tent 1");
+    fireEvent.changeText(screen.getByTestId("dpg-source-timezone"), "Moon/Sea");
+    fireEvent.press(screen.getByTestId("dpg-confirm-csv-review"));
+
+    expect(alertSpy).toHaveBeenCalledWith(
+      "Timezone not recognized",
+      expect.stringContaining("IANA timezone")
+    );
+    expect(screen.queryByTestId("dpg-csv-review-confirmed")).toBeNull();
+    expect(screen.getByTestId("dpg-csv-ingest")).toBeDisabled();
+  });
+
+  it("re-imports matching timestamps through duplicate-safe upsert", async () => {
+    const screen = render(<DewPointGuard />);
+    await prepareReviewedGenericCsv(screen);
+
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    await waitFor(() => expect(mockBulkIngestTelemetryPoints).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByTestId("dpg-csv-ingest")).not.toBeDisabled());
+    fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
+    await waitFor(() => expect(mockBulkIngestTelemetryPoints).toHaveBeenCalledTimes(2));
+
+    const [first, second] = mockBulkIngestTelemetryPoints.mock.calls.map(
+      ([input]) => input
+    );
+    expect(first.mode).toBe("upsert");
+    expect(second.mode).toBe("upsert");
+    expect(second.sourceId).toBe(first.sourceId);
+    expect(second.points.map((point: any) => point.ts)).toEqual(
+      first.points.map((point: any) => point.ts)
+    );
+    expect(mockCreateTelemetrySource).not.toHaveBeenCalled();
+  });
+
   it("detects an AC Infinity export, creates a sanitized source, and preserves optional channels", async () => {
     mockListTelemetrySources.mockResolvedValueOnce([]);
-    mockCreateTelemetrySource.mockResolvedValueOnce({
-      id: "s-ac-infinity",
-      growId: "g1",
-      type: "upload",
-      name: "AC Infinity CSV History",
-      timezone: "America/New_York",
-      isActive: true,
-      config: { provider: "ac_infinity", importMode: "csv" }
-    });
     const screen = render(<DewPointGuard />);
     fireEvent.press(screen.getByTestId("dpg-mode-source"));
     fireEvent.press(screen.getByTestId("dpg-load-sources"));
@@ -271,6 +455,11 @@ describe("Dew Point Guard CSV flow", () => {
     expect(screen.getByTestId("dpg-csv-warning").props.children).toContain(
       "one sample per day"
     );
+    fireEvent.changeText(screen.getByTestId("dpg-csv-room-name"), "Flower A");
+    fireEvent.press(screen.getByTestId("dpg-confirm-csv-review"));
+    await waitFor(() =>
+      expect(screen.getByTestId("dpg-csv-review-confirmed")).toBeTruthy()
+    );
     fireEvent.press(screen.getByTestId("dpg-create-source-from-csv"));
     await waitFor(() => expect(mockCreateTelemetrySource).toHaveBeenCalled());
     expect(mockCreateTelemetrySource).toHaveBeenCalledWith(
@@ -279,9 +468,18 @@ describe("Dew Point Guard CSV flow", () => {
         type: "upload",
         name: "AC Infinity CSV History",
         timezone: "America/New_York",
+        workspaceType: "personal",
+        targetType: "grow",
         config: expect.objectContaining({
           provider: "ac_infinity",
           importMode: "csv",
+          importReview: expect.objectContaining({
+            provider: "ac_infinity",
+            growId: "g1",
+            roomName: "Flower A",
+            workspaceType: "personal",
+            timezone: "America/New_York"
+          }),
           columns: expect.arrayContaining([
             "Inside Temperature",
             "Inside Relative Humidity"
@@ -289,6 +487,11 @@ describe("Dew Point Guard CSV flow", () => {
         })
       })
     );
+
+    await waitFor(() =>
+      expect(screen.queryByTestId("dpg-csv-source-mismatch")).toBeNull()
+    );
+    await waitFor(() => expect(screen.getByTestId("dpg-csv-ingest")).not.toBeDisabled());
 
     fireEvent.press(screen.getByTestId("dpg-csv-ingest"));
     await waitFor(() => expect(mockBulkIngestTelemetryPoints).toHaveBeenCalled());
@@ -332,6 +535,8 @@ describe("Dew Point Guard CSV flow", () => {
         type: "pulse",
         name: "Pulse Flower Room",
         timezone: "America/New_York",
+        workspaceType: "personal",
+        targetType: "grow",
         config: {
           pulse: {
             apiKey: "PULSE-SECRET",

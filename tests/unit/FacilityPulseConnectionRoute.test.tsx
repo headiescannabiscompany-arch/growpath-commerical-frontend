@@ -86,7 +86,9 @@ describe("FacilityPulseConnectionRoute", () => {
       expect.objectContaining({
         provider: "pulse",
         credentials: { apiKey: "pulse-secret" },
-        config: { facilityId: "facility-1" }
+        config: { facilityId: "facility-1" },
+        workspaceType: "facility",
+        facilityId: "facility-1"
       })
     );
 

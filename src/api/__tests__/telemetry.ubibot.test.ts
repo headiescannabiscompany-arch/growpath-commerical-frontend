@@ -185,6 +185,9 @@ describe("telemetry UbiBot API", () => {
         name: "UbiBot Room",
         timezone: "America/New_York",
         isActive: true,
+        workspaceType: "personal",
+        targetType: "grow",
+        targetRef: "grow_1",
         config: { ubibot: { channelId: "1419" } }
       }
     });
