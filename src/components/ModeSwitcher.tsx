@@ -47,6 +47,7 @@ export function ModeSwitcher({
   const availableModes = availableWorkspaceModes(entitlements);
   const commercialAccess = availableModes.includes("commercial");
   const facilityAccess = availableModes.includes("facility");
+  const isPlatformAdmin = String(auth.user?.role || "").toLowerCase() === "admin";
 
   const cards: WorkspaceCard[] = [
     showSingle
@@ -128,6 +129,25 @@ export function ModeSwitcher({
       </View>
 
       <View style={styles.cards}>
+        {isPlatformAdmin ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Platform Administration"
+            accessibilityHint="Open platform safety, moderation, account, and legal tools"
+            onPress={() => router.push("/admin")}
+            style={[styles.card, styles.adminCard]}
+          >
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Platform Administration</Text>
+              <Text style={[styles.badge, styles.adminBadge]}>Platform owner</Text>
+            </View>
+            <Text style={styles.cardText}>
+              Review accounts, reports, security, moderation, legal requests, and audited
+              platform actions.
+            </Text>
+            <Text style={styles.cardAction}>Open Admin Tools</Text>
+          </Pressable>
+        ) : null}
         {cards.map((card) => {
           const selected = mode === card.mode;
           return (
@@ -225,6 +245,9 @@ export function createModeSwitcherStyles(palette: ThemePalette) {
       borderColor: palette.accent,
       borderWidth: 2
     },
+    adminCard: {
+      borderColor: palette.info
+    },
     cardHeader: {
       alignItems: "center",
       flexDirection: "row",
@@ -251,6 +274,10 @@ export function createModeSwitcherStyles(palette: ThemePalette) {
     badgeActive: {
       backgroundColor: palette.accentSoft,
       color: palette.accent
+    },
+    adminBadge: {
+      backgroundColor: palette.accentSoft,
+      color: palette.info
     },
     cardText: {
       color: palette.textMuted,

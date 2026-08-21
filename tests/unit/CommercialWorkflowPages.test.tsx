@@ -32,6 +32,7 @@ const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+const mockUseAuth = jest.fn();
 
 jest.setTimeout(15000);
 
@@ -57,7 +58,7 @@ jest.mock("expo-router", () => {
 });
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { email: "brand@example.com" }, logout: jest.fn() })
+  useAuth: () => mockUseAuth()
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -100,6 +101,10 @@ describe("commercial workflow pages", () => {
     mockReplace.mockReset();
     mockPush.mockReset();
     mockBack.mockReset();
+    mockUseAuth.mockReturnValue({
+      user: { email: "brand@example.com", role: "user" },
+      logout: jest.fn()
+    });
     resetCommercialDashboardCacheForTests();
     mockApiRequest.mockImplementation((path: string, options?: any) => {
       if (path === "/api/commercial/dashboard") {
@@ -897,6 +902,7 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Commercial launch assistant")).toBeTruthy();
     expect(screen.getByText("Open Commercial Tasks")).toBeTruthy();
     expect(screen.getByText("Plan Campaign Work")).toBeTruthy();
+    expect(screen.queryByText("Platform Administration")).toBeNull();
     expect(screen.getAllByText("88").length).toBeGreaterThan(0);
     expect(screen.getAllByText("19").length).toBeGreaterThan(0);
 
@@ -1049,6 +1055,21 @@ describe("commercial workflow pages", () => {
         })
       )
     );
+  });
+
+  it("keeps platform governance reachable for an administrator in Commercial", async () => {
+    mockUseAuth.mockReturnValue({
+      user: { email: "admin@growpathai.com", role: "ADMIN" },
+      logout: jest.fn()
+    });
+
+    const screen = render(<CommercialHome />);
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/commercial/dashboard")
+    );
+    expect(screen.getByText("Platform Administration")).toBeTruthy();
+    expect(screen.UNSAFE_getAllByProps({ href: "/admin" }).length).toBeGreaterThan(0);
   });
 
   it("shows a draft shell when the commercial storefront is not configured yet", async () => {

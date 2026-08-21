@@ -640,6 +640,9 @@ export default function CommercialHome() {
           </Text>
         </View>
         <View style={styles.actions}>
+          {String(auth.user?.role || "").toLowerCase() === "admin" ? (
+            <ActionButton action={{ label: "Platform Administration", href: "/admin" }} />
+          ) : null}
           {SHARED_CORE_ACTIONS.map((action) => (
             <ActionButton key={`shared-${action.label}-${action.href}`} action={action} />
           ))}

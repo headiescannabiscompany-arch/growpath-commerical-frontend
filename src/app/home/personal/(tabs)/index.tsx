@@ -495,6 +495,9 @@ export default function PersonalHomeTab() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Single-user shortcuts</Text>
         <View style={styles.actions}>
+          {String(auth.user?.role || "").toLowerCase() === "admin" ? (
+            <ActionLink href="/admin" label="Platform Administration" />
+          ) : null}
           <ActionLink href="/videos?tab=library" label="My Videos" />
           <ActionLink href="/lives" label="Lives" />
           <ActionLink href="/live-studio" label="Live Studio" />
