@@ -12,6 +12,7 @@ const mockListPersonalTasks = jest.fn();
 const mockListToolRuns = jest.fn();
 const mockGetDiagnosisHistory = jest.fn();
 const mockListTelemetrySources = jest.fn();
+const mockUseAuth = jest.fn();
 
 jest.mock("@react-navigation/native", () => ({
   useFocusEffect: (callback: () => void) => {
@@ -28,7 +29,7 @@ jest.mock("expo-router", () => {
 });
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { email: "grower@example.com" } })
+  useAuth: () => mockUseAuth()
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -90,6 +91,9 @@ jest.mock("@/api/telemetry", () => ({
 describe("PersonalHomeRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockUseAuth.mockReturnValue({
+      user: { email: "grower@example.com", role: "user" }
+    });
     mockListPersonalGrows.mockResolvedValue([
       {
         id: "grow-1",
@@ -214,5 +218,17 @@ describe("PersonalHomeRoute", () => {
     expect(screen.getByRole("button", { name: "Discover" })).toBeTruthy();
     expect(screen.getByText("Grow Analytics")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Community" })).toBeNull();
+    expect(screen.queryByText("Platform Administration")).toBeNull();
+  });
+
+  it("keeps platform governance reachable for an administrator in Personal", async () => {
+    mockUseAuth.mockReturnValue({
+      user: { email: "admin@growpathai.com", role: "admin" }
+    });
+
+    const screen = render(<PersonalHomeRoute />);
+
+    await waitFor(() => expect(screen.getByText("Blue Dream Run")).toBeTruthy());
+    expect(screen.getByText("Platform Administration")).toBeTruthy();
   });
 });

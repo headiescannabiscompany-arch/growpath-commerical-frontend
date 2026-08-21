@@ -6,15 +6,14 @@ import { ModeSwitcher } from "@/components/ModeSwitcher";
 const mockPush = jest.fn();
 const mockSwitchTo = jest.fn();
 const mockUseEntitlements = jest.fn();
+const mockUseAuth = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush })
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({
-    user: { email: "owner@growpathai.com", name: "GrowPath Owner" }
-  })
+  useAuth: () => mockUseAuth()
 }));
 
 jest.mock("@/features/mode/useModeSwitcher", () => ({
@@ -34,6 +33,9 @@ describe("ModeSwitcher", () => {
     mockPush.mockReset();
     mockSwitchTo.mockReset();
     mockUseEntitlements.mockReset();
+    mockUseAuth.mockReturnValue({
+      user: { email: "owner@growpathai.com", name: "GrowPath Owner", role: "user" }
+    });
   });
 
   it("shows current identity and workspace boundaries", () => {
@@ -135,5 +137,37 @@ describe("ModeSwitcher", () => {
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockSwitchTo).toHaveBeenCalledWith("commercial");
     expect(mockSwitchTo).toHaveBeenCalledWith("facility");
+  });
+
+  it("gives platform administrators a direct governance destination", () => {
+    mockUseAuth.mockReturnValue({
+      user: { email: "admin@growpathai.com", name: "GrowPath Admin", role: "ADMIN" }
+    });
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      can: () => false,
+      facilityId: null,
+      facilityRole: null
+    });
+
+    const screen = render(<ModeSwitcher availableOnly />);
+
+    fireEvent.press(screen.getByLabelText("Platform Administration"));
+    expect(screen.getByText("Open Admin Tools")).toBeTruthy();
+    expect(mockPush).toHaveBeenCalledWith("/admin");
+    expect(mockSwitchTo).not.toHaveBeenCalled();
+  });
+
+  it("does not expose platform administration to ordinary accounts", () => {
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      can: () => false,
+      facilityId: null,
+      facilityRole: null
+    });
+
+    const screen = render(<ModeSwitcher />);
+
+    expect(screen.queryByLabelText("Platform Administration")).toBeNull();
   });
 });
