@@ -28,10 +28,10 @@ describe("personal tool ownership", () => {
     const growTools = read("src/app/home/personal/(tabs)/grows/[growId]/tools.tsx");
     const profile = read("src/app/home/personal/(tabs)/profile/index.tsx");
 
-    expect(grows).toContain("${basePath}/tools/integrations?growId=${id}");
-    expect(grows).toContain(
-      '${basePath}/tools/${workspace === "commercial" ? "report" : "pdf-export"}?growId=${id}'
-    );
+    expect(grows).toContain('`${basePath}/tools/integrations?growId=${growId}`');
+    expect(grows).toContain('`/home/personal/tools/integrations?growId=${growId}`');
+    expect(grows).toContain('`${basePath}/tools/report?growId=${growId}`');
+    expect(grows).toContain('`/home/personal/tools/pdf-export?growId=${growId}`');
     expect(growOverview).toContain(
       "`${basePath}/tools/integrations?growId=${encodeURIComponent(growId)}`"
     );
