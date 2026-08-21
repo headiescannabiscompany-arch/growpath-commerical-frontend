@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import {
   ActivityIndicator,
   Image,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -319,7 +320,7 @@ export default function PersonalGrowsRoute({
       testID="screen-personal-grows"
       style={[styles.page, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.pageContent}
-      refreshControl={
+      refreshControl={Platform.OS === "web" ? undefined : (
         <RefreshControl
           colors={[palette.accent]}
           progressBackgroundColor={palette.surface}
@@ -327,7 +328,7 @@ export default function PersonalGrowsRoute({
           onRefresh={onRefresh}
           tintColor={palette.accent}
         />
-      }
+      )}
     >
       <View style={styles.stack}>
         <BackButton fallbackHref={basePath} />
