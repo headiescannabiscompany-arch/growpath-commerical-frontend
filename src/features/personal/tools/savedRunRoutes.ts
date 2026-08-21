@@ -4,12 +4,14 @@ export function savedRunSourceHref({
   toolRunId,
   growId = "",
   sourceContext,
-  sourceTaskId = ""
+  sourceTaskId = "",
+  workspaceType = "personal"
 }: {
   toolRunId: string;
   growId?: string;
   sourceContext?: SavedRunSourceContext;
   sourceTaskId?: string;
+  workspaceType?: "personal" | "commercial";
 }) {
   if (!toolRunId) return "";
   const query = new URLSearchParams({ toolRunId });
@@ -18,29 +20,33 @@ export function savedRunSourceHref({
   if (sourceContext === "task" && sourceTaskId) {
     query.set("sourceTaskId", sourceTaskId);
   }
-  return `/home/personal/tools/saved-runs?${query.toString()}`;
+  const basePath = workspaceType === "commercial" ? "/home/commercial" : "/home/personal";
+  return `${basePath}/tools/saved-runs?${query.toString()}`;
 }
 
 export function savedRunBackTarget({
   growId = "",
   sourceContext = "",
-  sourceTaskId = ""
+  sourceTaskId = "",
+  workspaceType = "personal"
 }: {
   growId?: string;
   sourceContext?: string;
   sourceTaskId?: string;
+  workspaceType?: "personal" | "commercial";
 }) {
-  if (!growId) return "/home/personal/tools";
+  const basePath = workspaceType === "commercial" ? "/home/commercial" : "/home/personal";
+  if (!growId) return `${basePath}/tools`;
   const encodedGrowId = encodeURIComponent(growId);
   if (sourceContext === "journal") {
-    return `/home/personal/grows/${encodedGrowId}/journal`;
+    return `${basePath}/grows/${encodedGrowId}/journal`;
   }
   if (sourceContext === "timeline") {
-    return `/home/personal/grows/${encodedGrowId}/timeline`;
+    return `${basePath}/grows/${encodedGrowId}/timeline`;
   }
   if (sourceContext === "task") {
     const taskQuery = sourceTaskId ? `?taskId=${encodeURIComponent(sourceTaskId)}` : "";
-    return `/home/personal/grows/${encodedGrowId}/tasks${taskQuery}`;
+    return `${basePath}/grows/${encodedGrowId}/tasks${taskQuery}`;
   }
-  return "/home/personal/tools";
+  return `${basePath}/grows/${encodedGrowId}/tools`;
 }

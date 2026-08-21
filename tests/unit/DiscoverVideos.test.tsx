@@ -6,7 +6,7 @@ const mockPush = jest.fn();
 const mockSearchVideos = jest.fn();
 const mockListPublicFieldObservations = jest.fn();
 let mockThemeMode: "day" | "night" = "night";
-let mockWorkspaceMode: "personal" | "commercial" = "personal";
+let mockWorkspaceMode: "personal" | "commercial" | "facility" = "personal";
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush })
@@ -123,16 +123,20 @@ describe("Discover video search", () => {
     expect(isDiscoverableCourse({ title: "Living Soil Basics" })).toBe(true);
   });
 
-  it("routes non-personal workspaces through the workspace switcher for Plant ID", async () => {
-    mockWorkspaceMode = "commercial";
-    render(<DiscoverDirectory />);
+  it.each([
+    ["commercial", "/home/commercial/tools/species-crop-id?workspace=commercial"],
+    ["facility", "/home/facility/tools/species-crop-id?workspace=facility"]
+  ] as const)(
+    "keeps Plant ID inside the active %s workspace",
+    async (mode, expectedHref) => {
+      mockWorkspaceMode = mode;
+      render(<DiscoverDirectory />);
 
-    await waitFor(() =>
-      expect(screen.getByText("Switch to Personal for Plant ID")).toBeTruthy()
-    );
-    fireEvent.press(screen.getByLabelText("Open Switch to Personal for Plant ID"));
-    expect(mockPush).toHaveBeenCalledWith("/account/mode");
-  });
+      await waitFor(() => expect(screen.getByText("Identify a Plant")).toBeTruthy());
+      fireEvent.press(screen.getByLabelText("Open Identify a Plant"));
+      expect(mockPush).toHaveBeenCalledWith(expectedHref);
+    }
+  );
 
   it("shows accessible videos as a first-class Discover section", async () => {
     render(<DiscoverDirectory />);

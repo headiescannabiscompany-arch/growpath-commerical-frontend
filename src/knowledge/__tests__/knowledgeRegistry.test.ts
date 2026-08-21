@@ -283,11 +283,20 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredInputs).toContain(
       "optional separately authorized exact device location stored privately with the saved Plant ID ToolRun without requiring a Field Study"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredInputs).toContain(
+      "optional owner-requested GPS and capture date read from retained original photo EXIF, privately retained picker EXIF before image normalization, or MP4/QuickTime source-video metadata, previewed privately before a separate apply action"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not persist or publish retained-photo or source-video GPS merely because metadata was checked; require a separate private apply action, never treat extracted-frame generation time as capture time, and never auto-select among materially conflicting media locations."
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
+      "Do not expose private picker EXIF in ordinary evidence responses or public derivatives, and do not treat a recovered coordinate or camera clock as authenticated merely because it came from embedded metadata."
+    );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "standalone private Plant ID location that can be added, updated, or removed without creating a Field Study observation or publishing to Nature"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
-      "optional contributor-authored public Nature description stored as publicNotes and shown with the public photo pin without converting it into AI evidence"
+      "required user-reviewed contributor-authored public Nature description stored as publicNotes and shown with the public photo pin without converting it into AI evidence"
     );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not synthesize a public Nature description from AI output, fall back to a private note, or encourage personal names, exact addresses, private-property details, or sensitive-species directions."

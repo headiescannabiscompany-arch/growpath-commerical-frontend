@@ -56,6 +56,7 @@ describe("Public Field Study detail route", () => {
       observations: [
         {
           id: "observation-1",
+          observationDate: "2026-08-12T00:00:00.000Z",
           identity: { commonName: "Red maple", verificationStatus: "verified" },
           publication: {
             publicNotes: "Observed along the woodland trail after summer rain."
@@ -84,6 +85,7 @@ describe("Public Field Study detail route", () => {
     expect(
       screen.getByText("Observed along the woodland trail after summer rain.")
     ).toBeTruthy();
+    expect(screen.getByText("Observed August 12, 2026")).toBeTruthy();
   });
 
   it("uses the active palette for unavailable, privacy, and loaded cards", () => {

@@ -20,11 +20,13 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-1. **Active batch:** close matrix rows P-03 through P-06 and N-04. Frontend PRs `#701`
-   and `#702` are merged; exact production deployment and live acceptance remain open.
-   Publish only positively park-associated Cary/Maydale records after explicit owner
-   confirmation. The separate house crape myrtle and all potted-house records remain
-   private. Then continue matrix reconciliation without reopening accepted slices.
+1. **Active batch:** close matrix rows P-03 through P-06 and the populated N-01/N-03
+   acceptance slice with one new ordinary production observation. The source date/location
+   may come from retained-media metadata, separately authorized device GPS, or a reviewed
+   manual pin; all remain private until a distinct publish confirmation. Legacy Cary/Maydale
+   recovery is optional and nonblocking. The separate house crape myrtle and all
+   potted-house records remain private. Then continue matrix reconciliation without
+   reopening accepted slices.
 2. **Next product batches:** finish the still-open Personal/Commercial/Facility/public
    workflow and mutation items in sections B-F, including provider/device mapping where
    real credentials or imports are available. Do not reopen retained Hosted Live/OBS,
@@ -150,6 +152,20 @@ crawl.
       `SENTRY_ORG_SLUG`; `SENTRY_ADMIN_ENVIRONMENT` and `SENTRY_API_BASE_URL` remain optional
       overrides. No secret was revealed or changed. Connecting Sentry remains a protected
       credential action and must be retested here before its source can be called connected.
+- [~] A bounded Admin safety and session-isolation frontend slice is implemented locally on
+  2026-08-21 without removing any existing Admin tool. The Admin header now exposes
+  Switch workspace and confirmed logout; investigation links acknowledge and prioritize
+  returned support, moderation, account, security, and legal/evidence targets; completed
+  support can be reopened only with a typed reason; and legal/evidence records expose the
+  safe requester/authority/scope/date/notice/manifest fields already returned by the API.
+  Admin can create a scoped received request, place an orthogonal preservation hold,
+  advance only through identity/legal review, reject/close before approval, and load the
+  exact retained audit. Approval and disclosure are intentionally unavailable. Hard logout
+  and identity-to-identity login clear preferred mode plus global/legacy workspace state.
+  Focused Admin/auth tests, source lint, and TypeScript pass locally. This is not deployed
+  or live-accepted; backend transition enforcement, manifest/custody/recipient safeguards,
+  legal operating approval, assignment/notes, and final production role/session evidence
+  remain open. See `ADMIN_SAFETY_AND_LAWFUL_REQUEST_CONTRACT_2026-08-21.md`.
 - [x] The governed Diagnosis/IPM catalog assembly is complete at 252 reviewed cases and
       504 rights-reviewed images. Executing all cases against authorized staging remains a
       separate open action because it spends credits and writes records.

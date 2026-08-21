@@ -11,6 +11,7 @@ import { getThemePalette } from "@/theme/appTheme";
 const mockApiRequest = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
+const mockLogout = jest.fn();
 let mockRouteParams: Record<string, string> = {};
 let mockRole = "admin";
 let mockThemeMode: "day" | "night" = "night";
@@ -20,7 +21,7 @@ jest.mock("expo-router", () => ({
   useRouter: () => ({ replace: mockReplace, push: mockPush })
 }));
 jest.mock("@/auth/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "admin-1", role: mockRole } })
+  useAuth: () => ({ user: { id: "admin-1", role: mockRole }, logout: mockLogout })
 }));
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: (...args: any[]) => mockApiRequest(...args)
@@ -337,7 +338,23 @@ describe("PlatformAdminRoute", () => {
     mockRouteParams = {};
     mockPush.mockReset();
     mockReplace.mockReset();
+    mockLogout.mockResolvedValue(undefined);
     mockApiRequest.mockImplementation(defaultAdminApi);
+  });
+
+  it("offers workspace switching and a confirmed Admin logout", async () => {
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Online now");
+
+    fireEvent.press(screen.getByRole("button", { name: "Switch workspace" }));
+    expect(mockPush).toHaveBeenCalledWith("/account/workspace");
+
+    fireEvent.press(screen.getByRole("button", { name: "Log out" }));
+    expect(screen.getByText("Confirm platform Admin logout")).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Confirm log out" }));
+
+    await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
+    expect(mockReplace).toHaveBeenCalledWith("/login");
   });
 
   it("shows global presence and account controls to platform admins", async () => {
@@ -709,6 +726,195 @@ describe("PlatformAdminRoute", () => {
     );
   });
 
+  it("requires a typed reason before reopening completed support work", async () => {
+    const resolvedSupport = {
+      ...supportRequest,
+      _id: "support-resolved",
+      subject: "Resolved support history",
+      status: "resolved"
+    };
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/admin/support-requests") {
+        return Promise.resolve({ requests: [resolvedSupport] });
+      }
+      return defaultAdminApi(path);
+    });
+
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Admin work queue");
+    fireEvent.press(screen.getByRole("button", { name: "Show completed work" }));
+
+    const reopen = screen.getByRole("button", { name: "Reopen request" });
+    expect(reopen).toBeDisabled();
+    fireEvent.changeText(
+      screen.getByLabelText("Reason to reopen Resolved support history"),
+      "New owner evidence shows the issue is still reproducible."
+    );
+    fireEvent.press(reopen);
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/support-requests/support-resolved",
+        {
+          method: "PATCH",
+          body: {
+            status: "open",
+            reason: "New owner evidence shows the issue is still reproducible."
+          }
+        }
+      )
+    );
+  });
+
+  it("honors account deep links without silently changing the linked account", async () => {
+    mockRouteParams = { targetType: "user", targetId: "user-1" };
+    const screen = render(<PlatformAdminRoute />);
+
+    await screen.findByText("Opened from an account investigation link");
+    expect(screen.getByText("member@example.com · active")).toBeTruthy();
+    expect(screen.getByText("member@example.com · personal · pro")).toBeTruthy();
+  });
+
+  it("honors generic moderation and resolved-security target deep links", async () => {
+    mockRouteParams = { targetType: "moderationCase", targetId: "case-1" };
+    const moderationScreen = render(<PlatformAdminRoute />);
+    await moderationScreen.findByText("Opened from a moderation investigation link");
+    moderationScreen.unmount();
+
+    mockRouteParams = { targetType: "securityIssue", targetId: "audit:security-2" };
+    const securityScreen = render(<PlatformAdminRoute />);
+    await securityScreen.findByText("Opened from a security investigation link");
+    expect(securityScreen.getAllByText(/user suspended/).length).toBeGreaterThan(0);
+  });
+
+  it("keeps preservation separate, exposes safe review steps, and loads retained audit", async () => {
+    const evidenceRequest = {
+      _id: "legal-1",
+      requestType: "subpoena",
+      requesterName: "Officer Example",
+      requesterOrganization: "Example Agency",
+      requesterEmail: "officer@example.gov",
+      authorityDescription: "Signed subpoena received; authority not yet verified.",
+      jurisdiction: "Maryland",
+      targetUserId: "user-1",
+      scope: "Account activity from July 1 through July 2",
+      status: "received",
+      preservationHold: false,
+      userNoticeStatus: "not_reviewed",
+      dateFrom: "2026-07-01T00:00:00.000Z",
+      dateTo: "2026-07-02T00:00:00.000Z",
+      evidenceItems: [],
+      createdBy: "admin-1",
+      createdAt: "2026-08-20T12:00:00.000Z"
+    };
+    mockRouteParams = {
+      targetType: "legalEvidenceRequest",
+      targetId: "legal-1"
+    };
+    mockApiRequest.mockImplementation((path: string) => {
+      if (path === "/api/admin/evidence-requests") {
+        return Promise.resolve({ requests: [evidenceRequest] });
+      }
+      if (path === "/api/admin/audit?targetType=legalEvidenceRequest&targetId=legal-1") {
+        return Promise.resolve({
+          events: [
+            {
+              _id: "audit-1",
+              actorUserId: "admin-1",
+              action: "evidence_request_created",
+              targetType: "legalEvidenceRequest",
+              targetId: "legal-1",
+              reason: evidenceRequest.scope,
+              createdAt: "2026-08-20T12:00:00.000Z"
+            }
+          ]
+        });
+      }
+      return defaultAdminApi(path);
+    });
+
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Opened from a legal/evidence investigation link");
+    expect(screen.getByText(/Contact: officer@example.gov/)).toBeTruthy();
+    expect(screen.getByText(/Signed subpoena received/)).toBeTruthy();
+    expect(screen.getByText(/User notice: not_reviewed/)).toBeTruthy();
+    expect(screen.queryByText("Approve evidence request")).toBeNull();
+    expect(screen.queryByText("Disclose account data")).toBeNull();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Review reason for subpoena request"),
+      "Preserve the narrowly scoped records while identity review is pending."
+    );
+    fireEvent.press(screen.getByRole("button", { name: "Place preservation hold" }));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/evidence-requests/legal-1",
+        {
+          method: "PATCH",
+          body: {
+            preservationHold: true,
+            reason:
+              "Preserve the narrowly scoped records while identity review is pending."
+          }
+        }
+      )
+    );
+
+    fireEvent.press(screen.getByRole("button", { name: "Load retained audit" }));
+    expect(await screen.findByText(/evidence request created/)).toBeTruthy();
+  });
+
+  it("creates only a scoped received evidence-request record", async () => {
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Legal and evidence requests");
+    fireEvent.press(screen.getByRole("button", { name: "Open scoped request" }));
+
+    fireEvent.changeText(screen.getByLabelText("Evidence requester name"), "Agent Doe");
+    fireEvent.changeText(
+      screen.getByLabelText("Evidence requester email"),
+      "AGENT@EXAMPLE.GOV"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Evidence authority description"),
+      "Written preservation request pending legal review."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Evidence request scope"),
+      "Login audit events for account user-1 on August 20 only."
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Evidence target user ID"),
+      "000000000000000000000001"
+    );
+    fireEvent.press(
+      screen.getByRole("button", { name: "Create received request record" })
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/admin/evidence-requests", {
+        method: "POST",
+        body: {
+          requestType: "preservation",
+          requesterName: "Agent Doe",
+          requesterOrganization: "",
+          requesterEmail: "agent@example.gov",
+          authorityDescription: "Written preservation request pending legal review.",
+          jurisdiction: "",
+          targetUserId: "000000000000000000000001",
+          scope: "Login audit events for account user-1 on August 20 only.",
+          dateFrom: null,
+          dateTo: null
+        }
+      })
+    );
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([, options]) =>
+          options?.body?.status === "approved" || options?.body?.status === "disclosed"
+      )
+    ).toBe(false);
+  });
+
   it("keeps resolved support and actioned moderation out of the active work queue", async () => {
     const resolvedSupport = {
       ...supportRequest,
@@ -752,7 +958,7 @@ describe("PlatformAdminRoute", () => {
     const screen = render(<PlatformAdminRoute />);
 
     await waitFor(() =>
-      expect(screen.getByText("Opened from report email")).toBeTruthy()
+      expect(screen.getByText("Opened from a moderation investigation link")).toBeTruthy()
     );
     fireEvent.press(
       screen.getByRole("button", {

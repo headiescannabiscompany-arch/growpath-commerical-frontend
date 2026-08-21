@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-04T21:44:19.495Z",
+  "generatedAt": "2026-08-21T06:51:00.900Z",
   "requiredTools": [
     {
       "id": "tools_hub",
@@ -347,6 +347,10 @@
     {
       "file": "src/app/home/personal/(tabs)/tools/ppfd.tsx",
       "route": "/home/personal/tools/ppfd"
+    },
+    {
+      "file": "src/app/home/personal/(tabs)/tools/recipe-builder.tsx",
+      "route": "/home/personal/tools/recipe-builder"
     },
     {
       "file": "src/app/home/personal/(tabs)/tools/run-comparison.tsx",

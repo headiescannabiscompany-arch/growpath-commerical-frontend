@@ -113,6 +113,7 @@ function workspaceBody(scope: ToolRunWorkspaceScope = {}) {
 export type SavedGrowComparisonInput = {
   growIds: string[];
   referenceGrowId?: string;
+  workspaceType?: "personal" | "commercial";
   scope?: RunComparisonScope;
   objective?: RunComparisonObjective;
   title?: string;
@@ -284,6 +285,12 @@ export async function createTaskFromToolRun(
     sourceType?: string;
     sourceObjectId?: string;
     sourceToolRunId?: string;
+    endAt?: string | null;
+    allDay?: boolean;
+    calendarType?: string | null;
+    sourceStage?: string | null;
+    reminderPlan?: Record<string, any> | null;
+    recurrence?: Record<string, any> | null;
   } = {},
   scope: ToolRunWorkspaceScope = {}
 ) {
@@ -456,6 +463,7 @@ export async function updatePlantIdCorrection(
 
 export async function createToolRun(payload: {
   toolType: string;
+  workspaceType?: "personal" | "commercial" | "facility";
   growId?: string;
   plantId?: string;
   facilityId?: string;
@@ -500,6 +508,7 @@ export async function createToolRun(payload: {
       selectedPlantContext: payload.selectedPlantContext || null,
       plantGrowthProfile:
         payload.plantGrowthProfile || payload.selectedPlantContext?.growthProfile || null,
+      ...(payload.workspaceType ? { workspaceType: payload.workspaceType } : {}),
       // Frontend/backward compatibility aliases
       toolType: payload.toolType,
       input: payload.input,

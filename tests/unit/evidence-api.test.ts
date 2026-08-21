@@ -8,7 +8,7 @@ import {
   deleteEvidenceAsset,
   extractEvidenceVideoFrames,
   getEvidenceAssetsByIds,
-  getEvidencePhotoSourceMetadata,
+  getEvidenceSourceMetadata,
   getEvidenceVideoFrameExtraction,
   isTerminalEvidenceRegistrationError,
   loadAiInspectionView,
@@ -214,6 +214,7 @@ describe("providerEvidencePayload", () => {
   it("loads private GPS and capture date from one retained original", async () => {
     mockApiRequest.mockResolvedValue({
       sourceEvidenceAssetId: "photo/1",
+      sourceAssetType: "photo",
       metadata: {
         latitude: 35.78613,
         longitude: -78.78119,
@@ -224,14 +225,17 @@ describe("providerEvidencePayload", () => {
     });
 
     await expect(
-      getEvidencePhotoSourceMetadata("photo/1", {
+      getEvidenceSourceMetadata("photo/1", {
         workspaceType: "personal"
       })
     ).resolves.toEqual({
       sourceEvidenceAssetId: "photo/1",
+      sourceAssetType: "photo",
       latitude: 35.78613,
       longitude: -78.78119,
       capturedAt: "2026-07-27T14:20:00.000Z",
+      capturedLocalDate: "2026-07-27",
+      captureDatePrecision: "instant",
       hasLocation: true,
       hasCaptureDate: true
     });
@@ -240,6 +244,85 @@ describe("providerEvidencePayload", () => {
       expect.objectContaining({
         timeoutMs: 30000,
         params: { workspaceType: "personal" }
+      })
+    );
+  });
+
+  it("accepts the wrapped source-metadata response used by API envelopes", async () => {
+    mockApiRequest.mockResolvedValue({
+      data: {
+        sourceEvidenceAssetId: "video-1",
+        sourceAssetType: "video",
+        metadata: {
+          latitude: "39.1023",
+          longitude: "-77.0123",
+          capturedAt: "2026-08-20T14:15:16.000Z",
+          hasLocation: true,
+          hasCaptureDate: true
+        }
+      }
+    });
+
+    await expect(
+      getEvidenceSourceMetadata("video-1", { workspaceType: "commercial" })
+    ).resolves.toEqual({
+      sourceEvidenceAssetId: "video-1",
+      sourceAssetType: "video",
+      latitude: 39.1023,
+      longitude: -77.0123,
+      capturedAt: "2026-08-20T14:15:16.000Z",
+      capturedLocalDate: "2026-08-20",
+      captureDatePrecision: "instant",
+      hasLocation: true,
+      hasCaptureDate: true
+    });
+  });
+
+  it("never turns missing or invalid source metadata into a coordinate or date", async () => {
+    mockApiRequest.mockResolvedValue({
+      sourceEvidenceAssetId: "photo-2",
+      sourceAssetType: "photo",
+      metadata: {
+        latitude: null,
+        longitude: "",
+        capturedAt: "2026-02-31T10:00:00.000Z",
+        hasLocation: true,
+        hasCaptureDate: true
+      }
+    });
+
+    await expect(
+      getEvidenceSourceMetadata("photo-2", {
+        workspaceType: "facility",
+        facilityId: "f-1"
+      })
+    ).resolves.toEqual({
+      sourceEvidenceAssetId: "photo-2",
+      sourceAssetType: "photo",
+      latitude: null,
+      longitude: null,
+      capturedAt: null,
+      capturedLocalDate: null,
+      captureDatePrecision: null,
+      hasLocation: false,
+      hasCaptureDate: false
+    });
+
+    mockApiRequest.mockResolvedValue({
+      metadata: {
+        latitude: 91,
+        longitude: -181,
+        hasLocation: true,
+        hasCaptureDate: false
+      }
+    });
+    await expect(
+      getEvidenceSourceMetadata("photo-3", { workspaceType: "personal" })
+    ).resolves.toEqual(
+      expect.objectContaining({
+        latitude: null,
+        longitude: null,
+        hasLocation: false
       })
     );
   });

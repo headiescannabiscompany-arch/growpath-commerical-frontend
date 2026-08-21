@@ -178,6 +178,7 @@ export function CommercialSoilNutrientBatchToolRoute() {
       title="Soil & Nutrient Batch Planner"
       subtitle="Scale a purpose-built soil, dry amendment, or nutrient batch while checking guaranteed analysis, release timing, stage fit, cost, warnings, and tasks."
       growOptional
+      workspaceTypeOverride="commercial"
       noGrowContextMessage="A grow is optional. The reviewed result can be saved as a Commercial production batch without changing inventory."
       backFallbackHref="/home/commercial/tools"
       feedRouteKey="commercial_tool_soil_nutrient_batch"

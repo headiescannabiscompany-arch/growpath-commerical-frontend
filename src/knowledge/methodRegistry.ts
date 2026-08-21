@@ -89,7 +89,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "one optional private source video up to 9 minutes 59 seconds with up to 12 timestamped candidate still frames spanning the timeline",
       "structured crop-identification morphology and optional private place/context",
       "optional separately authorized exact device location stored privately with the saved Plant ID ToolRun without requiring a Field Study",
-      "optional owner-requested GPS and capture date read from retained original photo metadata, previewed privately before a separate apply action",
+      "optional owner-requested GPS and capture date read from retained original photo EXIF, privately retained picker EXIF before image normalization, or MP4/QuickTime source-video metadata, previewed privately before a separate apply action",
       "explicit user-entered crop-identification context preserved separately from AI visible-trait prefill",
       "whole-plant, leaf, stem/node, flower, fruit/seed, and habitat evidence when available",
       "optional Field Study with owner, editor, verifier, and viewer roles",
@@ -136,7 +136,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "standalone private Plant ID location that can be added, updated, or removed without creating a Field Study observation or publishing to Nature",
       "saved Plant ID manual map placement that stages a point for review and requires a separate private-save action before changing the ToolRun",
       "deliberately opted-in direct Plant ID publication to a privacy-safe approximate Discovery Nature photo pin without requiring the user to name or configure a Field Study",
-      "optional contributor-authored public Nature description stored as publicNotes and shown with the public photo pin without converting it into AI evidence",
+      "required user-reviewed contributor-authored public Nature description stored as publicNotes and shown with the public photo pin without converting it into AI evidence",
       "saved Plant ID direct Nature publication that reuses owned evidence without rerunning AI, requires date and approximate-pin consent, and updates the source ToolRun observation instead of duplicating it",
       "crop-identification prefill limited to image-visible traits while preserving explicit user context",
       "separate manual-input provenance for explicit identity, morphology, habitat, region, date, setting, and sensory context",
@@ -230,7 +230,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not truncate the crop-identification provider request before its output schema, final safety rules, or bounded user context.",
       "Do not attribute device coordinates to AI prefill; capture them through a separate user-authorized action and keep them private by default.",
       "Do not persist a Saved Run map click by itself; stage manual coordinates until the user explicitly saves the private pin, and discard the draft when the picker closes or the selected run changes.",
-      "Do not persist or publish retained-photo GPS merely because metadata was checked; require a separate private apply action, and never auto-select among materially conflicting photo locations.",
+      "Do not persist or publish retained-photo or source-video GPS merely because metadata was checked; require a separate private apply action, never treat extracted-frame generation time as capture time, and never auto-select among materially conflicting media locations.",
+      "Do not expose private picker EXIF in ordinary evidence responses or public derivatives, and do not treat a recovered coordinate or camera clock as authenticated merely because it came from embedded metadata.",
       "Do not replace a defensible broader crop candidate with a confirmation placeholder merely because exact species remains unresolved.",
       "Do not store a plain-language common-name phrase as a scientific name or possible species.",
       "Do not preserve medium or high identity confidence after a scientific-name conflict has been detected.",
@@ -790,6 +791,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "one level-one Product Trials heading with level-two workflow sections and level-three saved-trial headings",
       "one level-one Product Trial Evidence Runs heading with distinct level-two workflow sections and level-three saved-run headings",
       "ordinary crop-aware Commercial grows with exact crop identity, reviewed lifecycle planning, connected grow sections, and a separate Product Trial Evidence Runs destination",
+      "Commercial-local Plant/Crop Identification, Plant Diagnosis, IPM Scout, environment review, mix builders, and Saved AI Runs with Commercial scope, credits, history, and back navigation",
       "one level-one Commercial Inventory Support heading with level-two workflow sections and level-three saved-record headings",
       "capability-gated Commercial inventory creation exposed as a named actionable control",
       "readable owner-scoped Product Trial record pickers with an explicit advanced ID fallback",
@@ -905,7 +907,17 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never publish an incomplete or unsaved Commercial course, accept typed lifecycle state, mutate published course content in place, or silently coerce an invalid paid price to zero.",
       "Never hard-delete a Commercial course through routine cleanup or archive a published course without returning it to draft first."
     ],
-    ["commercial-batch-planner", "soil-nutrient-batch", "products", "trials", "forum-qna"]
+    [
+      "commercial-batch-planner",
+      "soil-nutrient-batch",
+      "species-crop-id",
+      "plant-diagnosis",
+      "ipm-scout",
+      "saved-runs",
+      "products",
+      "trials",
+      "forum-qna"
+    ]
   ),
   method(
     "facility-workflow",

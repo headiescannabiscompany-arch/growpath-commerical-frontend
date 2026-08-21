@@ -68,6 +68,13 @@ Hidden and soft-removed Forum posts must be removed from every shared feed proje
 
 Commercial is Pro grow workflow plus brand/storefront, products/lines, formulas/batches/lots, trials, inventory, courses, lives, campaigns, forum presence, orders and analytics. Commercial users still have grows: product, soil, nutrient, genetics, demo or education trials.
 
+The Commercial AI hub must keep crop-neutral Plant/Crop Identification, Plant Diagnosis,
+IPM Scout, environment review, mix builders, and Commercial-scoped Saved AI Runs reachable
+inside Commercial. Shared tool screens must use Commercial-local entry routes, retain the
+authenticated Commercial scope and credits, save into Commercial run history, and return to
+Commercial Tools. A Discover or public Nature entry must not force an eligible Commercial
+user into Personal merely to identify a plant.
+
 Commercial Harvest Readiness may run as a Commercial-workspace review without attaching a grow when structured account context or prior eligible Commercial workflow evidence establishes cannabis/hemp eligibility. Evidence, receipts, saved runs, and credits remain owner scoped. Selecting an authorized Commercial grow is optional and enables grow history and linked actions; standalone reviews must not invent or perform grow-linked writes.
 
 When one authenticated account is entitled to multiple workspaces, an explicit supported workspace preference controls routing and presentation even when the billing plan has another primary mode. Determine eligibility from the same effective active-plan capabilities used by the workspace selector; an active Facility plan that exposes Commercial capabilities must be allowed to enter Commercial. Reject unsupported or inactive-plan preferences, but do not silently force an eligible Facility account back to Facility after it deliberately selects Commercial or Personal. Treat a preference change as entitlement state that must be reapplied even when the server account response is otherwise unchanged, before any restricted workspace route decides whether to redirect.

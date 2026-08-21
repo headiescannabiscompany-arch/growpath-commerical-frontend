@@ -11,11 +11,7 @@ import {
   View
 } from "react-native";
 
-import {
-  createPersonalPlant,
-  listPersonalPlants,
-  type PersonalPlant
-} from "@/api/plants";
+import { type PersonalPlant } from "@/api/plants";
 import { createCropProfile, listCropProfiles } from "@/api/cropKnowledge";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, getRowId } from "@/features/grows/routeUtils";
@@ -24,8 +20,14 @@ import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import {
+  createWorkspacePlant,
+  growWorkspaceBasePath,
+  listWorkspacePlants,
+  type GrowWorkspace
+} from "@/features/grows/workspaceData";
 
-function GrowPlantsContent() {
+function GrowPlantsContent({ workspace }: { workspace: GrowWorkspace }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowPlantsStyles(palette), [palette]);
   const entitlements = useEntitlements();
@@ -56,7 +58,10 @@ function GrowPlantsContent() {
   const [phenoLabel, setPhenoLabel] = useState("");
   const [feedback, setFeedback] = useState("");
   const canWritePlants =
-    hasPlantWriteCapability || (!loading && maxPlants > plants.length);
+    workspace === "commercial" ||
+    hasPlantWriteCapability ||
+    (!loading && maxPlants > plants.length);
+  const basePath = growWorkspaceBasePath(workspace);
 
   const load = useCallback(async () => {
     if (!growId) {
@@ -66,14 +71,14 @@ function GrowPlantsContent() {
     }
     setLoading(true);
     try {
-      setPlants(await listPersonalPlants({ growId }));
+      setPlants(await listWorkspacePlants(workspace, growId));
     } catch {
       setPlants([]);
       setFeedback("Unable to load plants.");
     } finally {
       setLoading(false);
     }
-  }, [growId]);
+  }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
@@ -168,7 +173,7 @@ function GrowPlantsContent() {
     if (!growId || creating || !name.trim()) return;
     setCreating(true);
     setFeedback("");
-    const created = await createPersonalPlant({
+    const created = await createWorkspacePlant(workspace, {
       growId,
       name: name.trim(),
       cropCommonName: cropCommonName.trim() || undefined,
@@ -229,11 +234,12 @@ function GrowPlantsContent() {
     return parts.join(" - ");
   }
 
-  function withPlant(path: string, plant: PersonalPlant) {
+  function withPlant(path: string, plant: PersonalPlant, recommendedTool?: string) {
     const plantId = getRowId(plant);
     const params = new URLSearchParams();
     params.set("growId", growId);
     if (plantId) params.set("plantId", plantId);
+    if (recommendedTool) params.set("recommendedTool", recommendedTool);
     return `${path}?${params.toString()}`;
   }
 
@@ -477,7 +483,15 @@ function GrowPlantsContent() {
                 </Text>
               ) : null}
               <View style={styles.actions}>
-                <Link href={withPlant("/home/personal/diagnose", plant)} asChild>
+                <Link
+                  href={withPlant(
+                    workspace === "commercial"
+                      ? `${basePath}/tools/diagnose`
+                      : `${basePath}/diagnose`,
+                    plant
+                  )}
+                  asChild
+                >
                   <Pressable
                     style={styles.quickAction}
                     accessibilityRole="button"
@@ -486,7 +500,16 @@ function GrowPlantsContent() {
                     <Text style={styles.quickActionText}>Diagnose</Text>
                   </Pressable>
                 </Link>
-                <Link href={withPlant("/home/personal/tools/watering", plant)} asChild>
+                <Link
+                  href={withPlant(
+                    workspace === "commercial"
+                      ? `${basePath}/tools`
+                      : `${basePath}/tools/watering`,
+                    plant,
+                    workspace === "commercial" ? "watering" : undefined
+                  )}
+                  asChild
+                >
                   <Pressable
                     style={styles.quickAction}
                     accessibilityRole="button"
@@ -496,7 +519,13 @@ function GrowPlantsContent() {
                   </Pressable>
                 </Link>
                 <Link
-                  href={withPlant("/home/personal/tools/timeline-planner", plant)}
+                  href={withPlant(
+                    workspace === "commercial"
+                      ? `${basePath}/tools`
+                      : `${basePath}/tools/timeline-planner`,
+                    plant,
+                    workspace === "commercial" ? "timeline-planner" : undefined
+                  )}
                   asChild
                 >
                   <Pressable
@@ -522,22 +551,25 @@ function GrowPlantsContent() {
   );
 }
 
-export default function GrowPlantsScreen() {
+export default function GrowPlantsScreen({
+  workspace = "personal"
+}: {
+  workspace?: GrowWorkspace;
+} = {}) {
   const { growId: rawGrowId } = useLocalSearchParams<{
     growId?: string | string[];
   }>();
   const growId = coerceParam(rawGrowId);
+  const basePath = growWorkspaceBasePath(workspace);
   return (
     <ScreenBoundary
       title="Grow plants"
       showBack
       backFallbackHref={
-        growId
-          ? `/home/personal/grows/${encodeURIComponent(growId)}`
-          : "/home/personal/grows"
+        growId ? `${basePath}/grows/${encodeURIComponent(growId)}` : `${basePath}/grows`
       }
     >
-      <GrowPlantsContent />
+      <GrowPlantsContent workspace={workspace} />
     </ScreenBoundary>
   );
 }

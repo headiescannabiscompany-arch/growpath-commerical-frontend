@@ -267,7 +267,13 @@ function isValidHistoryWindow(startIso: string, endIso: string) {
   return Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs;
 }
 
-export default function DataIntegrationsScreen() {
+export type DataIntegrationsWorkspace = "personal" | "commercial";
+
+export default function DataIntegrationsScreen({
+  workspaceType = "personal"
+}: {
+  workspaceType?: DataIntegrationsWorkspace;
+} = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createDataIntegrationsStyles(palette), [palette]);
   const params = useLocalSearchParams<{ growId?: string }>();
@@ -331,7 +337,7 @@ export default function DataIntegrationsScreen() {
 
   const loadGrowlinkSources = useCallback(
     async (nextGrowId = growId.trim(), showError = true) => {
-      if (!nextGrowId) return;
+      if (!nextGrowId || workspaceType === "commercial") return;
       setLoadingGrowlinkSources(true);
       try {
         const sources = await listTelemetrySources(nextGrowId);
@@ -342,7 +348,7 @@ export default function DataIntegrationsScreen() {
         setLoadingGrowlinkSources(false);
       }
     },
-    [growId]
+    [growId, workspaceType]
   );
 
   async function load() {
@@ -371,8 +377,10 @@ export default function DataIntegrationsScreen() {
   }, [growId, params.growId]);
 
   useEffect(() => {
-    if (growId.trim()) void loadGrowlinkSources(growId.trim(), false);
-  }, [growId, loadGrowlinkSources]);
+    if (workspaceType === "personal" && growId.trim()) {
+      void loadGrowlinkSources(growId.trim(), false);
+    }
+  }, [growId, loadGrowlinkSources, workspaceType]);
 
   async function saveConnection() {
     if (!selected) return;
@@ -605,200 +613,211 @@ export default function DataIntegrationsScreen() {
       </Text>
       <PersonalFeedPlacement
         placement="top"
-        routeKey="personal_tools_integrations"
+        routeKey={`${workspaceType}_tools_integrations`}
         longContent
       />
 
-      <GrowIntegrationBuildPanel mode="personal" targetRef={growId.trim()} />
+      <GrowIntegrationBuildPanel mode={workspaceType} targetRef={growId.trim()} />
 
-      <View style={styles.growlinkPanel}>
-        <View style={styles.row}>
-          <View style={styles.titleBlock}>
-            <Text style={styles.sectionTitle}>Growlink read-only telemetry</Text>
-            <Text style={styles.meta}>
-              Imports controllers, sensors, devices, and current readings. No setpoint,
-              rule, or equipment control actions are exposed.
-            </Text>
+      {workspaceType === "commercial" ? (
+        <View style={styles.growlinkPanel}>
+          <Text style={styles.sectionTitle}>Commercial Growlink connection</Text>
+          <Text style={styles.meta}>
+            Use the Commercial workspace mapping panel above. The legacy Personal
+            quick-connect path is disabled here so a Commercial grow can never write to
+            Personal telemetry storage.
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.growlinkPanel}>
+          <View style={styles.row}>
+            <View style={styles.titleBlock}>
+              <Text style={styles.sectionTitle}>Growlink read-only telemetry</Text>
+              <Text style={styles.meta}>
+                Imports controllers, sensors, devices, and current readings. No setpoint,
+                rule, or equipment control actions are exposed.
+              </Text>
+            </View>
+            <Text style={styles.readOnlyBadge}>READ ONLY</Text>
           </View>
-          <Text style={styles.readOnlyBadge}>READ ONLY</Text>
-        </View>
-        <TextInput
-          style={styles.input}
-          value={growId}
-          onChangeText={setGrowId}
-          placeholder="Grow ID"
-          placeholderTextColor={palette.textMuted}
-          selectionColor={palette.accent}
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          value={growlinkSourceName}
-          onChangeText={setGrowlinkSourceName}
-          placeholder="Source name"
-          placeholderTextColor={palette.textMuted}
-          selectionColor={palette.accent}
-        />
-        <TextInput
-          style={styles.input}
-          value={growlinkUserName}
-          onChangeText={setGrowlinkUserName}
-          placeholder="Growlink email"
-          placeholderTextColor={palette.textMuted}
-          selectionColor={palette.accent}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
-        <TextInput
-          style={styles.input}
-          value={growlinkPassword}
-          onChangeText={setGrowlinkPassword}
-          placeholder="Growlink password"
-          placeholderTextColor={palette.textMuted}
-          selectionColor={palette.accent}
-          secureTextEntry
-          autoCapitalize="none"
-        />
-        <View style={styles.actions}>
-          <Pressable
-            style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
-            onPress={verifyGrowlinkAndLoadControllers}
-            disabled={growlinkBusy}
-          >
-            <Text style={styles.buttonText}>
-              {growlinkBusy ? "Working..." : "Verify + preview controllers"}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={[styles.primaryButton, growlinkBusy ? styles.disabledButton : null]}
-            onPress={createGrowlinkSource}
-            disabled={growlinkBusy}
-          >
-            <Text style={styles.primaryText}>Create read-only source</Text>
-          </Pressable>
-        </View>
+          <TextInput
+            style={styles.input}
+            value={growId}
+            onChangeText={setGrowId}
+            placeholder="Grow ID"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
+            autoCapitalize="none"
+          />
+          <TextInput
+            style={styles.input}
+            value={growlinkSourceName}
+            onChangeText={setGrowlinkSourceName}
+            placeholder="Source name"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
+          />
+          <TextInput
+            style={styles.input}
+            value={growlinkUserName}
+            onChangeText={setGrowlinkUserName}
+            placeholder="Growlink email"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+          <TextInput
+            style={styles.input}
+            value={growlinkPassword}
+            onChangeText={setGrowlinkPassword}
+            placeholder="Growlink password"
+            placeholderTextColor={palette.textMuted}
+            selectionColor={palette.accent}
+            secureTextEntry
+            autoCapitalize="none"
+          />
+          <View style={styles.actions}>
+            <Pressable
+              style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
+              onPress={verifyGrowlinkAndLoadControllers}
+              disabled={growlinkBusy}
+            >
+              <Text style={styles.buttonText}>
+                {growlinkBusy ? "Working..." : "Verify + preview controllers"}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[styles.primaryButton, growlinkBusy ? styles.disabledButton : null]}
+              onPress={createGrowlinkSource}
+              disabled={growlinkBusy}
+            >
+              <Text style={styles.primaryText}>Create read-only source</Text>
+            </Pressable>
+          </View>
 
-        {growlinkStatus ? <Text style={styles.notice}>{growlinkStatus}</Text> : null}
+          {growlinkStatus ? <Text style={styles.notice}>{growlinkStatus}</Text> : null}
 
-        {growlinkControllers.length ? (
-          <View style={styles.controllerList}>
-            {growlinkControllers.map((controller) => {
-              const selectedController = controller.id === selectedGrowlinkControllerId;
-              return (
-                <Pressable
-                  key={controller.id}
-                  style={[
-                    styles.controllerOption,
-                    selectedController ? styles.controllerSelected : null
-                  ]}
-                  onPress={() => setSelectedGrowlinkControllerId(controller.id)}
+          {growlinkControllers.length ? (
+            <View style={styles.controllerList}>
+              {growlinkControllers.map((controller) => {
+                const selectedController = controller.id === selectedGrowlinkControllerId;
+                return (
+                  <Pressable
+                    key={controller.id}
+                    style={[
+                      styles.controllerOption,
+                      selectedController ? styles.controllerSelected : null
+                    ]}
+                    onPress={() => setSelectedGrowlinkControllerId(controller.id)}
+                  >
+                    <Text style={styles.controllerName}>
+                      {controller.name || "Unnamed controller"}
+                    </Text>
+                    <Text style={styles.meta}>{controllerLabel(controller)}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : null}
+
+          {growlinkImportPreview.length ? (
+            <View style={styles.importPreview}>
+              <Text style={styles.sourceListTitle}>Room import preview</Text>
+              <Text style={styles.meta}>
+                Review this mapping before saving. GrowPath can use it to suggest personal
+                grow spaces now, tool/alert handoffs for VPD and dew point, and facility
+                rooms/devices/streams during onboarding. Read-only data sync stays
+                separate from write/control actions.
+              </Text>
+              <Text style={styles.meta}>
+                Permission: read-only / Detected rooms: {growlinkPreviewTotals.rooms} /
+                Detected devices: {growlinkPreviewTotals.devices} / Detected streams:{" "}
+                {growlinkPreviewTotals.streams || "manual mapping needed"}
+              </Text>
+              {growlinkImportPreview.map((room) => (
+                <View
+                  key={`${room.controllerName}-${room.name}`}
+                  style={styles.previewRoom}
                 >
-                  <Text style={styles.controllerName}>
-                    {controller.name || "Unnamed controller"}
-                  </Text>
-                  <Text style={styles.meta}>{controllerLabel(controller)}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
-
-        {growlinkImportPreview.length ? (
-          <View style={styles.importPreview}>
-            <Text style={styles.sourceListTitle}>Room import preview</Text>
-            <Text style={styles.meta}>
-              Review this mapping before saving. GrowPath can use it to suggest personal
-              grow spaces now, tool/alert handoffs for VPD and dew point, and facility
-              rooms/devices/streams during onboarding. Read-only data sync stays separate
-              from write/control actions.
-            </Text>
-            <Text style={styles.meta}>
-              Permission: read-only / Detected rooms: {growlinkPreviewTotals.rooms} /
-              Detected devices: {growlinkPreviewTotals.devices} / Detected streams:{" "}
-              {growlinkPreviewTotals.streams || "manual mapping needed"}
-            </Text>
-            {growlinkImportPreview.map((room) => (
-              <View
-                key={`${room.controllerName}-${room.name}`}
-                style={styles.previewRoom}
-              >
-                <Text style={styles.previewTitle}>Suggested room: {room.name}</Text>
-                <Text style={styles.meta}>
-                  Type: {room.type} / Controller: {room.controllerName}
-                </Text>
-                <Text style={styles.meta}>Devices: {room.devices.join(", ")}</Text>
-                <Text style={styles.meta}>
-                  Streams:{" "}
-                  {room.metrics.length
-                    ? room.metrics.join(", ")
-                    : "manual mapping needed"}
-                </Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
-
-        {growlinkSources.length || loadingGrowlinkSources ? (
-          <View style={styles.sourceList}>
-            <View style={styles.row}>
-              <Text style={styles.sourceListTitle}>Existing Growlink sources</Text>
-              {loadingGrowlinkSources ? (
-                <ActivityIndicator color={palette.accent} size="small" />
-              ) : null}
-            </View>
-            <View style={styles.historyWindow}>
-              <View style={styles.historyInput}>
-                <CalendarDateField
-                  accessibilityLabel="Growlink history start"
-                  label="History start"
-                  mode="datetime"
-                  onChange={setGrowlinkHistoryStartIso}
-                  optional={false}
-                  value={growlinkHistoryStartIso}
-                />
-              </View>
-              <View style={styles.historyInput}>
-                <CalendarDateField
-                  accessibilityLabel="Growlink history end"
-                  label="History end"
-                  mode="datetime"
-                  onChange={setGrowlinkHistoryEndIso}
-                  optional={false}
-                  value={growlinkHistoryEndIso}
-                />
-              </View>
-            </View>
-            {growlinkSources.map((source) => (
-              <View key={source.id} style={styles.sourceRow}>
-                <View style={styles.titleBlock}>
-                  <Text style={styles.sourceName}>{source.name}</Text>
+                  <Text style={styles.previewTitle}>Suggested room: {room.name}</Text>
                   <Text style={styles.meta}>
-                    {source.config?.growlink?.controllerId || "Controller configured"}
+                    Type: {room.type} / Controller: {room.controllerName}
+                  </Text>
+                  <Text style={styles.meta}>Devices: {room.devices.join(", ")}</Text>
+                  <Text style={styles.meta}>
+                    Streams:{" "}
+                    {room.metrics.length
+                      ? room.metrics.join(", ")
+                      : "manual mapping needed"}
                   </Text>
                 </View>
-                <Pressable
-                  style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
-                  onPress={() => pullGrowlinkNow(source)}
-                  disabled={growlinkBusy}
-                >
-                  <Text style={styles.buttonText}>Pull now</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
-                  onPress={() => pullGrowlinkHistory(source)}
-                  disabled={growlinkBusy}
-                >
-                  <Text style={styles.buttonText}>Pull history</Text>
-                </Pressable>
+              ))}
+            </View>
+          ) : null}
+
+          {growlinkSources.length || loadingGrowlinkSources ? (
+            <View style={styles.sourceList}>
+              <View style={styles.row}>
+                <Text style={styles.sourceListTitle}>Existing Growlink sources</Text>
+                {loadingGrowlinkSources ? (
+                  <ActivityIndicator color={palette.accent} size="small" />
+                ) : null}
               </View>
-            ))}
-          </View>
-        ) : null}
-      </View>
+              <View style={styles.historyWindow}>
+                <View style={styles.historyInput}>
+                  <CalendarDateField
+                    accessibilityLabel="Growlink history start"
+                    label="History start"
+                    mode="datetime"
+                    onChange={setGrowlinkHistoryStartIso}
+                    optional={false}
+                    value={growlinkHistoryStartIso}
+                  />
+                </View>
+                <View style={styles.historyInput}>
+                  <CalendarDateField
+                    accessibilityLabel="Growlink history end"
+                    label="History end"
+                    mode="datetime"
+                    onChange={setGrowlinkHistoryEndIso}
+                    optional={false}
+                    value={growlinkHistoryEndIso}
+                  />
+                </View>
+              </View>
+              {growlinkSources.map((source) => (
+                <View key={source.id} style={styles.sourceRow}>
+                  <View style={styles.titleBlock}>
+                    <Text style={styles.sourceName}>{source.name}</Text>
+                    <Text style={styles.meta}>
+                      {source.config?.growlink?.controllerId || "Controller configured"}
+                    </Text>
+                  </View>
+                  <Pressable
+                    style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
+                    onPress={() => pullGrowlinkNow(source)}
+                    disabled={growlinkBusy}
+                  >
+                    <Text style={styles.buttonText}>Pull now</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
+                    onPress={() => pullGrowlinkHistory(source)}
+                    disabled={growlinkBusy}
+                  >
+                    <Text style={styles.buttonText}>Pull history</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      )}
 
       <PersonalFeedPlacement
         placement="middle"
-        routeKey="personal_tools_integrations"
+        routeKey={`${workspaceType}_tools_integrations`}
         longContent
       />
 
@@ -888,7 +907,7 @@ export default function DataIntegrationsScreen() {
 
       <PersonalFeedPlacement
         placement="bottom"
-        routeKey="personal_tools_integrations"
+        routeKey={`${workspaceType}_tools_integrations`}
         longContent
       />
     </ScrollView>

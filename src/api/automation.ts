@@ -24,6 +24,13 @@ function normalizePolicy(raw: any): AutomationPolicy {
       : [];
   return {
     id: String(raw?.id || raw?._id || ""),
+    workspaceType: raw?.workspaceType || undefined,
+    workspaceId: raw?.workspaceId ? String(raw.workspaceId) : undefined,
+    commercialAccountId: raw?.commercialAccountId
+      ? String(raw.commercialAccountId)
+      : undefined,
+    growId: raw?.growId || null,
+    plantId: raw?.plantId || null,
     facilityId: String(raw?.facilityId || ""),
     type: String(raw?.type || trigger?.eventType || ""),
     name: String(raw?.name || raw?.type || ""),
@@ -64,6 +71,11 @@ function normalizeEvent(raw: any): AutomationEvent {
   return {
     id: String(raw?.id || raw?._id || ""),
     userId: raw?.userId ? String(raw.userId) : "",
+    workspaceType: raw?.workspaceType || undefined,
+    workspaceId: raw?.workspaceId ? String(raw.workspaceId) : undefined,
+    commercialAccountId: raw?.commercialAccountId
+      ? String(raw.commercialAccountId)
+      : undefined,
     growId: raw?.growId || null,
     plantId: raw?.plantId || null,
     facilityId: raw?.facilityId || null,
@@ -123,6 +135,81 @@ export async function listPersonalAutomationEvents(params: {
   const suffix = query.toString() ? `?${query.toString()}` : "";
   const res = await apiRequest(`/api/automation/events${suffix}`);
   return normalizeEventList(res);
+}
+
+type CommercialAutomationFilters = {
+  growId?: string;
+  plantId?: string;
+  source?: string;
+  eventType?: string;
+};
+
+function commercialAutomationQuery(params: CommercialAutomationFilters = {}) {
+  const query = new URLSearchParams({ workspaceType: "commercial" });
+  if (params.growId) query.set("growId", params.growId);
+  if (params.plantId) query.set("plantId", params.plantId);
+  if (params.source) query.set("source", params.source);
+  if (params.eventType) query.set("eventType", params.eventType);
+  return query.toString();
+}
+
+export async function listCommercialAutomationPolicies(
+  params: CommercialAutomationFilters = {}
+) {
+  const res = await apiRequest(
+    `/api/automation/policies?${commercialAutomationQuery(params)}`
+  );
+  return normalizePolicyList(res);
+}
+
+export async function listCommercialAutomationEvents(
+  params: CommercialAutomationFilters = {}
+) {
+  const res = await apiRequest(
+    `/api/automation/events?${commercialAutomationQuery(params)}`
+  );
+  return normalizeEventList(res);
+}
+
+export async function createCommercialAutomationPolicy(payload: AutomationPolicyPayload) {
+  const res = await apiRequest("/api/automation/policies", {
+    method: "POST",
+    body: { ...payload, workspaceType: "commercial" }
+  });
+  return normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res);
+}
+
+export async function updateCommercialAutomationPolicy(
+  policyId: string,
+  patch: Partial<AutomationPolicyPayload>
+) {
+  const res = await apiRequest(`/api/automation/policies/${policyId}`, {
+    method: "PATCH",
+    body: { ...patch, workspaceType: "commercial" }
+  });
+  return normalizePolicy(res?.policy || res?.automationPolicy || res?.data || res);
+}
+
+export async function deleteCommercialAutomationPolicy(policyId: string) {
+  return apiRequest(`/api/automation/policies/${policyId}?workspaceType=commercial`, {
+    method: "DELETE"
+  });
+}
+
+export async function testCommercialAutomationPolicy(
+  policyId: string,
+  params: {
+    growId?: string;
+    plantId?: string;
+    source?: string;
+    eventType?: string;
+    payload?: Record<string, any>;
+  } = {}
+) {
+  return apiRequest(`/api/automation/policies/${policyId}/test`, {
+    method: "POST",
+    body: { ...params, workspaceType: "commercial" }
+  });
 }
 
 export async function setAutomationPolicyEnabled(

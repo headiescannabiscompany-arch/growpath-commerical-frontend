@@ -605,22 +605,46 @@ public only as part of the same explicit direct-publish intent, contains no publ
 observation until the final publish action succeeds, and does not change the protected
 exact ToolRun location.
 
-Direct Nature publishing must offer an optional contributor-authored public description
-before the final publish action. Preserve that text as `publicNotes` and show it with the
-public pin and photo card. It is user context, not AI evidence and not an identity or
+Direct Nature publishing must require a nonblank, contributor-authored public description
+that the contributor reviews before the final publish action. Preserve that text as
+`publicNotes` and show it with the public pin and photo card. It is user context, not AI evidence and not an identity or
 invasive-status claim. Warn contributors not to include personal names, exact addresses,
 private-property details, or directions to sensitive species. Never synthesize this note
 from AI output or expose a private note as its fallback.
 
-For an owned retained original photo, the contributor may explicitly ask GrowPath to
-check embedded source metadata for GPS and capture date. Reading metadata is a private,
-owner-scoped preview action: it must not change the ToolRun, create an observation, or
-publish anything. Show the recovered date and the fact that GPS exists without exposing
-the exact coordinate in ordinary UI. Applying the recovered values requires a second
-explicit private-save action. When photos in one saved run contain materially different
-locations, do not choose one automatically; require the contributor to resolve the trip
-or place the observation manually. Missing or stripped metadata is not an error and must
-fall back to device or manual placement.
+For owned retained original media, the contributor may explicitly ask GrowPath to check
+embedded source metadata for GPS and capture date. This includes ordinary camera-photo
+EXIF and standards-based MP4 or QuickTime container metadata from phones, tablets,
+cameras, and other compatible recorders; it is not limited to one device brand. Reading
+metadata is a private, owner-scoped preview action: it must not change the ToolRun, create
+an observation, or publish anything. Show the recovered date and the fact that GPS exists
+without exposing the exact coordinate in ordinary UI. Applying the recovered values
+requires a second explicit private-save action. When source photos or video in one saved
+run contain materially different locations, do not choose one automatically; require the
+contributor to resolve the trip or place the observation manually. Missing, invalid, or
+stripped metadata is not an error and must fall back to separately authorized device GPS
+or later manual placement. Never infer a location or capture date from file names,
+upload time, visual landmarks, or an extracted frame's generation time.
+
+A timezone-free EXIF or container clock is not an absolute instant. Preserve its strict
+camera-local `YYYY-MM-DD` as `capturedLocalDate` with date precision, and leave
+`capturedAt` empty. Populate `capturedAt` only when the source includes a valid timezone
+or UTC offset; in that case also preserve the original local calendar day and label the
+precision as an instant. Nature uses the reviewed local calendar day so timezone
+normalization cannot move an observation to the prior or following date.
+
+Normalization fixtures must cover Android-style decimal GPS, iPhone/iOS and ordinary
+camera rational/DMS GPS with latitude/longitude references, strict capture timestamps,
+and the no-guess result when either half of a coordinate is absent or invalid. Embedded
+video GPS and capture time follow the same private review boundary. Separately authorized
+live device GPS and deliberate manual pin placement remain the device-neutral fallbacks.
+
+When the picker exposes ordinary photo EXIF, retain only its bounded GPS pair and capture
+date privately before HEIC conversion, resizing, or compression can remove those fields.
+Do not expose that private pre-normalization record in ordinary evidence responses or public
+derivatives. It is a recoverable owner-review candidate, not proof that the coordinate or
+camera clock is authentic, and it follows the same separate apply, conflict, and publication
+rules as metadata read from retained bytes.
 
 An existing saved Crop Identification ToolRun may be explicitly linked to an editable
 Field Study without rerunning AI or re-uploading its owned evidence. That link creates

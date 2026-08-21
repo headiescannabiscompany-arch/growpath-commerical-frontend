@@ -217,7 +217,10 @@ export function sourceObjectHref(source: SourceLike) {
 
   if (sourceType === "task") {
     if (!taskId) return "/home/schedule";
-    if (workspace === "commercial") return `/home/commercial/tasks/${taskId}`;
+    if (workspace === "commercial")
+      return growId
+        ? withQuery(`/home/commercial/grows/${encoded(growId)}/tasks`, { taskId })
+        : `/home/commercial/tasks/${taskId}`;
     if (workspace === "facility") return `/home/facility/tasks/${taskId}`;
     return growId
       ? withQuery(`/home/personal/grows/${encoded(growId)}/tasks`, {
@@ -235,8 +238,8 @@ export function sourceObjectHref(source: SourceLike) {
   ) {
     if (workspace === "commercial")
       return sourceId
-        ? `/home/commercial/evidence-runs/${sourceId}`
-        : "/home/commercial/evidence-runs";
+        ? `/home/commercial/grows/${encoded(sourceId)}`
+        : "/home/commercial/grows";
     if (workspace === "facility")
       return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
     return sourceId ? `/home/personal/grows/${sourceId}` : "/home/personal/grows";
@@ -250,12 +253,18 @@ export function sourceObjectHref(source: SourceLike) {
         : "/home/facility/plants";
     if (growId) {
       const plantQuery = targetPlantId ? `?plantId=${encoded(targetPlantId)}` : "";
-      return `/home/personal/grows/${encoded(growId)}/plants${plantQuery}`;
+      return `/home/${workspace === "commercial" ? "commercial" : "personal"}/grows/${encoded(growId)}/plants${plantQuery}`;
     }
-    return "/home/personal/grows";
+    return workspace === "commercial" ? "/home/commercial/grows" : "/home/personal/grows";
   }
 
   if (sourceType === "grow_log") {
+    if (workspace === "commercial")
+      return growId
+        ? withQuery(`/home/commercial/grows/${encoded(growId)}/journal`, {
+            logId
+          })
+        : "/home/commercial/grows";
     if (logId) return `/home/personal/logs/${encoded(logId)}`;
     return growId
       ? `/home/personal/grows/${encoded(growId)}/journal`
@@ -385,6 +394,10 @@ export function sourceObjectHref(source: SourceLike) {
     return sourceId ? `/home/facility/grows/${sourceId}` : "/home/facility/grows";
   }
   if (sourceType === "automation" || sourceType === "automation_policy") {
+    if (workspace === "commercial")
+      return growId
+        ? `/home/commercial/grows/${encoded(growId)}/automation`
+        : "/home/commercial/grows";
     return growId
       ? `/home/personal/grows/${encoded(growId)}/automation`
       : "/home/personal/grows";
@@ -408,10 +421,28 @@ export function sourceObjectHref(source: SourceLike) {
     if (growId) params.set("growId", growId);
     if (plantId) params.set("plantId", plantId);
     const query = params.toString();
-    return query ? `/home/personal/diagnose?${query}` : "/home/personal/diagnose";
+    const diagnosePath =
+      workspace === "commercial"
+        ? "/home/commercial/tools/diagnose"
+        : "/home/personal/diagnose";
+    return query ? `${diagnosePath}?${query}` : diagnosePath;
   }
 
-  if (sourceType === "toolrun" || sourceType === "tool_run" || sourceType === "recipe") {
+  if (sourceType === "toolrun" || sourceType === "tool_run") {
+    if (workspace === "commercial")
+      return `/home/commercial/tools/saved-runs${
+        toolRunId ? `?toolRunId=${encoded(toolRunId)}` : ""
+      }`;
+    if (workspace === "facility")
+      return `/home/facility/ai-tools${
+        toolRunId ? `?toolRunId=${encoded(toolRunId)}` : ""
+      }`;
+    return `/home/personal/tools/saved-runs${
+      toolRunId ? `?toolRunId=${encoded(toolRunId)}` : ""
+    }`;
+  }
+
+  if (sourceType === "recipe") {
     if (workspace === "commercial")
       return toolRunId
         ? `/home/commercial/batch-planner/${encoded(toolRunId)}`

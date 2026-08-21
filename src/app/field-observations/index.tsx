@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Image,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -20,6 +21,15 @@ import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { resolveImageUri } from "@/utils/photoUploads";
+import {
+  publicObservationCoordinates,
+  publicObservationDateLabel,
+  publicObservationNotes
+} from "@/features/fieldStudies/publicObservation";
+import {
+  plantIdentificationActionLabel as workspacePlantIdentificationActionLabel,
+  plantIdentificationDestination as workspacePlantIdentificationDestination
+} from "@/utils/workspaceToolRoutes";
 
 const VERIFICATION_FILTERS = [
   { value: "", label: "All review states" },
@@ -57,9 +67,11 @@ function observationImages(observation: FieldObservation) {
   ).map(resolveImageUri);
 }
 
-function observationPublicNotes(observation: FieldObservation) {
-  return String(observation.publication?.publicNotes || observation.notes || "").trim();
-}
+export {
+  publicObservationCoordinates,
+  publicObservationDateLabel,
+  publicObservationNotes
+} from "@/features/fieldStudies/publicObservation";
 
 function readableStatus(value = "") {
   return value.replaceAll("_", " ");
@@ -76,11 +88,11 @@ export function fieldStudiesActionLabel(mode: string) {
 }
 
 export function plantIdentificationDestination(mode: string) {
-  return mode === "personal" ? "/home/personal/tools/species-crop-id" : "/account/mode";
+  return workspacePlantIdentificationDestination(mode);
 }
 
 export function plantIdentificationActionLabel(mode: string) {
-  return mode === "personal" ? "Identify a Plant" : "Switch to Personal for Plant ID";
+  return workspacePlantIdentificationActionLabel(mode);
 }
 
 export default function PublicFieldObservationsScreen() {
@@ -146,10 +158,8 @@ export default function PublicFieldObservationsScreen() {
 
   const mappedCount = useMemo(
     () =>
-      observations.filter(
-        (observation) =>
-          Number.isFinite(Number(observation.location?.latitude)) &&
-          Number.isFinite(Number(observation.location?.longitude))
+      observations.filter((observation) =>
+        Boolean(publicObservationCoordinates(observation))
       ).length,
     [observations]
   );
@@ -296,13 +306,14 @@ export default function PublicFieldObservationsScreen() {
       <View style={styles.mapPanel}>
         <View style={styles.mapHeader}>
           <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
-            Discovery globe
+            {Platform.OS === "web" ? "Discovery globe" : "Mapped Nature observations"}
           </Text>
           <Text style={styles.mapCount}>{mappedCount} pins in view</Text>
         </View>
         <Text style={styles.mapHelp}>
-          Zoom, rotate, or select a cluster to explore. The globe starts near your
-          permitted location, or over the United States when location is not enabled.
+          {Platform.OS === "web"
+            ? "Zoom, rotate, or select a cluster to explore. The globe starts near your permitted location, or over the United States when location is not enabled."
+            : "Select a mapped finding to open its public photos, identity, and review details. Only contributor-approved public regions and precision are shown."}
         </Text>
         <FieldObservationGlobe
           observations={observations}
@@ -401,9 +412,12 @@ export default function PublicFieldObservationsScreen() {
                 )}{" "}
                 · {selectedObservation.identity?.confidence || "unknown"} confidence
               </Text>
-              {observationPublicNotes(selectedObservation) ? (
+              <Text style={styles.cardMeta}>
+                {publicObservationDateLabel(selectedObservation)}
+              </Text>
+              {publicObservationNotes(selectedObservation) ? (
                 <Text style={styles.cardBody}>
-                  {observationPublicNotes(selectedObservation)}
+                  {publicObservationNotes(selectedObservation)}
                 </Text>
               ) : null}
               {selectedObservation.study?.slug ? (
@@ -503,8 +517,11 @@ export default function PublicFieldObservationsScreen() {
                 )}
                 {precision ? ` · ${precision} map location` : ""}
               </Text>
-              {observationPublicNotes(observation) ? (
-                <Text style={styles.cardBody}>{observationPublicNotes(observation)}</Text>
+              <Text style={styles.cardMeta}>
+                {publicObservationDateLabel(observation)}
+              </Text>
+              {publicObservationNotes(observation) ? (
+                <Text style={styles.cardBody}>{publicObservationNotes(observation)}</Text>
               ) : null}
               {studySlug ? (
                 <Link href={`/field-observations/${studySlug}`} asChild>

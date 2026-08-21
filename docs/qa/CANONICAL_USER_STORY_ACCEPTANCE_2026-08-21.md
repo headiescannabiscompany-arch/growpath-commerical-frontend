@@ -164,8 +164,10 @@ responsive behavior, and no console/application error.
 - N-02: Discover contains a smaller preview that opens the full Discovery Nature experience.
 - N-03: exact private coordinates remain private, public precision is explicit, protected
   species and cannabis visibility rules hold, and user identity is not leaked.
-- N-04: legacy Cary/Maydale records use the newest nonduplicate defensible result and only
-  known-place coordinates. House records, duplicates and unresolved identities are excluded.
+- N-04: legacy Cary/Maydale records remain private unless the owner individually reviews and
+  republishes a defensible, nonduplicate result with a known place. Their recovery is optional
+  and does not block future Nature pins. House records, duplicates and unresolved identities
+  are excluded without inferring location from date, proximity or filenames.
 
 ### A-01 through A-05 — Admin and session isolation
 
@@ -178,8 +180,15 @@ responsive behavior, and no console/application error.
   secrets; resolved findings leave an audit trail.
 - A-04: emergency and lawful requests use documented preservation, identity/authority review,
   minimization, approval, disclosure and audit procedures—never an improvised direct release.
+- A-04: preservation is orthogonal to request status and never implies approval or disclosure.
+  Approve/Disclose controls stay unavailable until the backend enforces the state graph,
+  minimum-scope manifest, chain of custody, recipient/method record, dual review where
+  required, and retained audit defined in
+  `ADMIN_SAFETY_AND_LAWFUL_REQUEST_CONTRACT_2026-08-21.md`.
 - A-05: Free, Pro, Commercial, Facility roles and Admin remain isolated across login, expiry,
   reload, logout and workspace switching, including direct URLs and cached navigation.
+- A-05: hard logout and identity-to-identity login clear preferred mode, account-mode state,
+  Facility selection/list and dormant workspace-session keys before another identity renders.
 
 ### R-01 and R-02 — Money and notifications
 

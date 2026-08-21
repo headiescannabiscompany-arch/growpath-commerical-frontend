@@ -39,4 +39,26 @@ describe("ContextualWorkflowLinks accessibility", () => {
       "/home/personal/tools/harvest-readiness?source=grow+overview&growId=grow-1"
     );
   });
+
+  it("keeps direct and unsupported workflows inside Commercial", () => {
+    const screen = render(
+      <ContextualWorkflowLinks
+        title="Commercial workflow links"
+        workflows={["harvest-readiness", "watering"]}
+        source="commercial grow"
+        growId="grow-2"
+        workspace="commercial"
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText("Harvest Readiness from commercial grow"));
+    expect(mockPush).toHaveBeenLastCalledWith(
+      "/home/commercial/tools/harvest-readiness?source=commercial+grow&growId=grow-2"
+    );
+
+    fireEvent.press(screen.getByLabelText("Watering Planner from commercial grow"));
+    expect(mockPush).toHaveBeenLastCalledWith(
+      "/home/commercial/tools?source=commercial+grow&growId=grow-2&recommendedTool=watering"
+    );
+  });
 });

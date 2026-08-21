@@ -8,6 +8,8 @@ const mockPersistToken = jest.fn();
 const mockApiMe = jest.fn();
 const mockApiRequest = jest.fn();
 const mockSetOnUnauthorized = jest.fn();
+const mockApiLogin = jest.fn();
+const mockResetWorkspaceSessionState = jest.fn();
 
 jest.mock("expo-router", () => ({
   useGlobalSearchParams: () => ({}),
@@ -23,8 +25,12 @@ jest.mock("@/api/events", () => ({
 }));
 
 jest.mock("@/api/auth", () => ({
-  login: jest.fn(),
+  login: (...args: any[]) => mockApiLogin(...args),
   signup: jest.fn()
+}));
+
+jest.mock("@/auth/workspaceSessionReset", () => ({
+  resetWorkspaceSessionState: (...args: any[]) => mockResetWorkspaceSessionState(...args)
 }));
 
 jest.mock("@/api/apiRequest", () => ({
@@ -70,6 +76,15 @@ function AuthStateProbe() {
       <Pressable accessibilityLabel="Retry session" onPress={() => void auth.retryMe()}>
         <Text>Retry session</Text>
       </Pressable>
+      <Pressable accessibilityLabel="Log out session" onPress={() => void auth.logout()}>
+        <Text>Log out session</Text>
+      </Pressable>
+      <Pressable
+        accessibilityLabel="Log in second account"
+        onPress={() => void auth.login("second@example.com", "password")}
+      >
+        <Text>Log in second account</Text>
+      </Pressable>
     </>
   );
 }
@@ -102,6 +117,7 @@ describe("AuthProvider persisted-session transitions", () => {
   beforeEach(() => {
     mockReadToken.mockResolvedValue("session-token");
     mockPersistToken.mockResolvedValue(undefined);
+    mockResetWorkspaceSessionState.mockResolvedValue(undefined);
     mockApiRequest.mockResolvedValue({});
     jest.spyOn(console, "error").mockImplementation(() => undefined);
     jest.spyOn(console, "log").mockImplementation(() => undefined);
@@ -128,6 +144,7 @@ describe("AuthProvider persisted-session transitions", () => {
 
     expect(mockPersistToken).toHaveBeenCalledTimes(1);
     expect(mockPersistToken).toHaveBeenCalledWith(null);
+    expect(mockResetWorkspaceSessionState).toHaveBeenCalledTimes(1);
 
     fireEvent.press(screen.getByLabelText("Retry session"));
     expect(mockApiMe).toHaveBeenCalledTimes(1);
@@ -169,5 +186,71 @@ describe("AuthProvider persisted-session transitions", () => {
     );
     expect(mockApiMe).toHaveBeenNthCalledWith(2, { force: true });
     expect(mockPersistToken).not.toHaveBeenCalled();
+  });
+
+  it("clears account-scoped workspace state on explicit logout", async () => {
+    mockApiMe.mockResolvedValue(hydratedMe);
+    const screen = renderProvider();
+
+    await waitFor(() =>
+      expect(authState(screen)).toMatchObject({
+        user: hydratedMe.user,
+        ctx: hydratedMe.ctx,
+        isAuthed: true
+      })
+    );
+    fireEvent.press(screen.getByLabelText("Log out session"));
+
+    await waitFor(() =>
+      expect(authState(screen)).toMatchObject({
+        token: null,
+        user: null,
+        ctx: null,
+        isAuthed: false
+      })
+    );
+    expect(mockPersistToken).toHaveBeenCalledWith(null);
+    expect(mockResetWorkspaceSessionState).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears the first account workspace before applying a second account login", async () => {
+    const secondUser = {
+      ...hydratedMe.user,
+      id: "user-2",
+      email: "second@example.com",
+      displayName: "Second Grower"
+    };
+    mockApiMe.mockResolvedValueOnce(hydratedMe).mockResolvedValueOnce({
+      user: secondUser,
+      ctx: { mode: "commercial", plan: "commercial" }
+    });
+    mockApiLogin.mockResolvedValue({
+      token: "second-session-token",
+      user: secondUser
+    });
+    const screen = renderProvider();
+
+    await waitFor(() =>
+      expect(authState(screen)).toMatchObject({ user: hydratedMe.user, isAuthed: true })
+    );
+    fireEvent.press(screen.getByLabelText("Log in second account"));
+
+    await waitFor(() =>
+      expect(authState(screen)).toMatchObject({
+        token: "second-session-token",
+        user: secondUser,
+        ctx: { mode: "commercial", plan: "commercial" },
+        isAuthed: true
+      })
+    );
+    expect(mockResetWorkspaceSessionState).toHaveBeenCalledTimes(1);
+    expect(mockPersistToken).toHaveBeenNthCalledWith(1, null);
+    expect(mockPersistToken).toHaveBeenNthCalledWith(2, "second-session-token");
+    expect(mockPersistToken.mock.invocationCallOrder[0]).toBeLessThan(
+      mockResetWorkspaceSessionState.mock.invocationCallOrder[0]
+    );
+    expect(mockResetWorkspaceSessionState.mock.invocationCallOrder[0]).toBeLessThan(
+      mockPersistToken.mock.invocationCallOrder[1]
+    );
   });
 });

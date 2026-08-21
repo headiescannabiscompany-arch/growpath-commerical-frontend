@@ -12,7 +12,6 @@ import {
 } from "react-native";
 
 import { suggestLogInsights } from "@/api/logInsights";
-import { createPersonalLog } from "@/api/logs";
 import { listToolRuns } from "@/api/toolRuns";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
@@ -29,6 +28,7 @@ import {
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
+import { createWorkspaceLog } from "@/features/grows/workspaceData";
 
 type SelectedPhoto = {
   uri: string;
@@ -66,7 +66,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     (entitlements as any).mode === "commercial" ||
     !(entitlements as any).mode;
   const { plants, plantId, selectedPlant, setPlantId, toolRunContext } =
-    useToolPlantContext(growId, initialPlantId);
+    useToolPlantContext(growId, initialPlantId, true, workspace);
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -89,10 +89,10 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
 
   useEffect(() => {
     if (!growId) return;
-    listToolRuns({ growId })
+    listToolRuns({ growId, workspaceType: workspace })
       .then((rows) => setToolRuns(rows.slice(0, 8)))
       .catch(() => setToolRuns([]));
-  }, [growId]);
+  }, [growId, workspace]);
 
   const selectedToolRun = useMemo(
     () =>
@@ -169,7 +169,8 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
           growId,
           title: title.trim(),
           notes: notes.trim(),
-          logType
+          logType,
+          workspaceType: workspace
         })
       );
       setSuggestions(normalized);
@@ -183,7 +184,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     } finally {
       setAnalyzing(false);
     }
-  }, [analyzing, growId, logType, notes, title]);
+  }, [analyzing, growId, logType, notes, title, workspace]);
 
   const save = useCallback(async () => {
     if (!canSave) {
@@ -194,7 +195,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     setError("");
     try {
       const uploadedPhotos = await persistImageUris(photos.map((photo) => photo.uri));
-      const created = await createPersonalLog({
+      const created = await createWorkspaceLog(workspace, {
         growId,
         plantId: toolRunContext.plantId,
         title: title.trim(),
@@ -249,7 +250,8 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     selectedToolRunId,
     suggestions,
     toolRunContext.plantId,
-    title
+    title,
+    workspace
   ]);
 
   function reviewTag(tag: string, decision: "accept" | "reject") {

@@ -11,7 +11,7 @@ export default function CommercialDataIntegrationsRoute() {
       preferBackFallback
       backFallbackHref="/home/commercial/grows"
     >
-      <DataIntegrationsScreen />
+      <DataIntegrationsScreen workspaceType="commercial" />
     </ScreenBoundary>
   );
 }

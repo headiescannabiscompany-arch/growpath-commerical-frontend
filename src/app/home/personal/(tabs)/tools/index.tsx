@@ -370,7 +370,7 @@ export default function ToolsHubScreen() {
         >
           <Text style={[styles.contextText, { color: palette.text }]}>
             {isFreePlan
-              ? "Free plan: Ask AI and Plant Diagnose include a limited weekly AI-credit allowance."
+              ? "Free plan: Ask AI, Plant Diagnose, and Plant ID include a limited weekly AI-credit allowance."
               : "AI-credit balance and usage are managed from Profile."}
           </Text>
         </View>
@@ -506,6 +506,7 @@ export default function ToolsHubScreen() {
                     growId={growId}
                     enabled={
                       devPaidOverride ||
+                      (isFreePlan && tool.freePlanAccess === true) ||
                       (!(tool.status === PREVIEW_TOOL_STATUS && isFreePlan) &&
                         (!tool.capabilityKey || entitlements.can(tool.capabilityKey)))
                     }

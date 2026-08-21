@@ -157,10 +157,14 @@ describe("personal tools hub", () => {
 
     const screen = render(<ToolsHubScreen />);
 
-    expect(screen.getByText(/limited weekly AI-credit allowance/)).toBeTruthy();
+    expect(screen.getByText(/Ask AI, Plant Diagnose, and Plant ID/)).toBeTruthy();
     expect(screen.getByText("AI Credits 10 / 10")).toBeTruthy();
     expect(screen.getAllByText("Ask AI").length).toBeGreaterThan(0);
     expect(screen.getByText("Plant Issue Diagnosis")).toBeTruthy();
+    expect(screen.getByText("Species / Crop Identification")).toBeTruthy();
+    expect(
+      screen.getByLabelText("link-/home/personal/tools/species-crop-id")
+    ).toBeTruthy();
     expect(screen.getByText("Soil & Nutrient Mix Builders")).toBeTruthy();
     expect(screen.getAllByText("Open").length).toBeGreaterThanOrEqual(2);
     expect(screen.queryAllByText("Upgrade to unlock").length).toBeGreaterThan(0);

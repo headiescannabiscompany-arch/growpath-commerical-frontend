@@ -5,6 +5,7 @@ export function suggestLogInsights(payload: {
   title: string;
   notes: string;
   logType: string;
+  workspaceType?: "personal" | "commercial";
 }) {
   return apiRequest("/api/diagnose/analyze", {
     method: "POST",

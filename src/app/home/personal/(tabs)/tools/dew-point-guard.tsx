@@ -196,16 +196,23 @@ function dewPointInspectionTaskMetadata(riskBand: string) {
 }
 
 export default function DewPointGuardTool({
-  historyImportMode = false
+  historyImportMode = false,
+  workspaceType = "personal"
 }: {
   historyImportMode?: boolean;
+  workspaceType?: "personal" | "commercial";
 } = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createDewPointGuardStyles(palette), [palette]);
   const router = useRouter();
   const params = useLocalSearchParams();
   const growId = asString(params.growId);
-  const plantContext = useToolPlantContext(growId, asString(params.plantId) || "");
+  const plantContext = useToolPlantContext(
+    growId,
+    asString(params.plantId) || "",
+    true,
+    workspaceType
+  );
 
   const [mode, setMode] = useState<"manual" | "source">(
     historyImportMode ? "source" : "manual"
@@ -1025,6 +1032,7 @@ export default function DewPointGuardTool({
         const payload = dewPointToolRunPayload();
         const res = await saveToolRunAndOpenJournal({
           router,
+          workspaceType,
           growId,
           ...plantContext.toolRunContext,
           toolKey: "dew-point-guard",
@@ -1045,6 +1053,7 @@ export default function DewPointGuardTool({
       const payload = dewPointToolRunPayload();
       const res = await saveToolRunAndOpenJournal({
         router,
+        workspaceType,
         growId,
         ...plantContext.toolRunContext,
         toolKey: "dew-point-guard",
@@ -1075,6 +1084,7 @@ export default function DewPointGuardTool({
       const riskBand = String(summary.riskBand || "unknown");
       const highRisk = riskBand === "high";
       const result = await saveToolRunAndCreateTask({
+        workspaceType,
         growId,
         ...plantContext.toolRunContext,
         toolKey: "dew-point-guard",
@@ -1182,7 +1192,7 @@ export default function DewPointGuardTool({
       {!historyImportMode ? (
         <PersonalFeedPlacement
           placement="top"
-          routeKey="personal_tools_dew_point_guard"
+          routeKey={`${workspaceType}_tools_dew_point_guard`}
           longContent
         />
       ) : null}
@@ -1985,7 +1995,7 @@ export default function DewPointGuardTool({
 
       <PersonalFeedPlacement
         placement="middle"
-        routeKey="personal_tools_dew_point_guard"
+        routeKey={`${workspaceType}_tools_dew_point_guard`}
         longContent
       />
 
@@ -2067,7 +2077,7 @@ export default function DewPointGuardTool({
 
       <PersonalFeedPlacement
         placement="bottom"
-        routeKey="personal_tools_dew_point_guard"
+        routeKey={`${workspaceType}_tools_dew_point_guard`}
         longContent
       />
     </ScrollView>

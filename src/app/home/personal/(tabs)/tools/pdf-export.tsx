@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Platform, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 
-import { listPersonalLogs, type PersonalLog } from "@/api/logs";
-import { listPersonalPlants, type PersonalPlant } from "@/api/plants";
-import { listPersonalTasks, type PersonalTask } from "@/api/tasks";
+import { type PersonalLog } from "@/api/logs";
+import { type PersonalPlant } from "@/api/plants";
+import { type PersonalTask } from "@/api/tasks";
 import { listToolRuns, type ToolRun } from "@/api/toolRuns";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -12,15 +12,19 @@ import { buildExportRows } from "@/features/personal/tools/advancedPlanning";
 import LockedToolCard from "@/features/personal/tools/LockedToolCard";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { exportToCsv } from "@/utils/exportToCsv";
-import {
-  getPersonalGrowTimeline,
-  listPersonalGrows,
-  type PersonalGrowTimelineEvent
-} from "@/api/grows";
+import { type PersonalGrowTimelineEvent } from "@/api/grows";
 import { timelineEventPhotos } from "@/features/grows/timeline";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import {
+  getWorkspaceGrowTimeline,
+  listWorkspaceGrows,
+  listWorkspaceLogs,
+  listWorkspacePlants,
+  listWorkspaceTasks,
+  type GrowWorkspace
+} from "@/features/grows/workspaceData";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -29,9 +33,11 @@ function coerceParam(value?: string | string[]) {
 }
 
 export default function PdfExportScreen({
-  backFallbackHref
+  backFallbackHref,
+  workspaceType = "personal"
 }: {
   backFallbackHref?: string;
+  workspaceType?: GrowWorkspace;
 } = {}) {
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
@@ -53,13 +59,26 @@ export default function PdfExportScreen({
 
   useEffect(() => {
     if (!enabled) return;
+    const loadAcrossGrows = async <T,>(
+      loader: (workspace: GrowWorkspace, growId: string) => Promise<T[]>
+    ) => {
+      if (growId) return loader(workspaceType, growId);
+      const grows = await listWorkspaceGrows(workspaceType);
+      const rows = await Promise.all(
+        grows.map((grow: any) => loader(workspaceType, String(grow.id || grow._id || "")))
+      );
+      return rows.flat();
+    };
     Promise.all([
-      listPersonalLogs(growId ? { growId } : undefined),
-      listPersonalTasks(growId ? { growId } : undefined),
-      listPersonalPlants(growId ? { growId } : undefined),
-      listToolRuns(growId ? { growId } : undefined),
-      growId ? getPersonalGrowTimeline(growId) : Promise.resolve([]),
-      growId ? listPersonalGrows() : Promise.resolve([])
+      loadAcrossGrows(listWorkspaceLogs),
+      loadAcrossGrows(listWorkspaceTasks),
+      loadAcrossGrows(listWorkspacePlants),
+      listToolRuns({
+        ...(growId ? { growId } : {}),
+        workspaceType
+      }),
+      growId ? getWorkspaceGrowTimeline(workspaceType, growId) : Promise.resolve([]),
+      growId ? listWorkspaceGrows(workspaceType) : Promise.resolve([])
     ])
       .then(([nextLogs, nextTasks, nextPlants, nextToolRuns, nextTimeline, grows]) => {
         setLogs(nextLogs);
@@ -73,7 +92,7 @@ export default function PdfExportScreen({
         setGrowName(selectedGrow?.name || "Grow");
       })
       .catch(() => setFeedback("Unable to load export data."));
-  }, [enabled, growId]);
+  }, [enabled, growId, workspaceType]);
 
   const rows = useMemo(
     () => buildExportRows({ logs, tasks, plants, toolRuns }),
@@ -161,8 +180,10 @@ export default function PdfExportScreen({
       backFallbackHref={
         backFallbackHref ||
         (growId
-          ? `/home/personal/grows/${encodeURIComponent(growId)}/timeline`
-          : "/home/personal/profile")
+          ? `${workspaceType === "commercial" ? "/home/commercial" : "/home/personal"}/grows/${encodeURIComponent(growId)}/timeline`
+          : workspaceType === "commercial"
+            ? "/home/commercial/profile"
+            : "/home/personal/profile")
       }
     >
       <ScrollView contentContainerStyle={styles.container}>
@@ -174,7 +195,7 @@ export default function PdfExportScreen({
         </Text>
         <PersonalFeedPlacement
           placement="top"
-          routeKey="personal_tools_pdf_export"
+          routeKey={`${workspaceType}_tools_pdf_export`}
           longContent
         />
         {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
@@ -189,7 +210,7 @@ export default function PdfExportScreen({
           <>
             <PersonalFeedPlacement
               placement="middle"
-              routeKey="personal_tools_pdf_export"
+              routeKey={`${workspaceType}_tools_pdf_export`}
               longContent
             />
             <ToolResultSurface
@@ -251,7 +272,7 @@ export default function PdfExportScreen({
 
         <PersonalFeedPlacement
           placement="bottom"
-          routeKey="personal_tools_pdf_export"
+          routeKey={`${workspaceType}_tools_pdf_export`}
           longContent
         />
       </ScrollView>

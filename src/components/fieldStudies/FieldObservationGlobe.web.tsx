@@ -116,6 +116,7 @@ export function loadMapLibreModule() {
 }
 
 import type { FieldObservation } from "@/api/fieldStudies";
+import { publicObservationCoordinates } from "@/features/fieldStudies/publicObservation";
 import { useAppTheme } from "@/theme/appTheme";
 
 export type FieldObservationViewport = {
@@ -147,19 +148,21 @@ function observationId(observation: FieldObservation) {
   return String(observation.id || observation._id || "");
 }
 
-function observationsToGeoJson(observations: FieldObservation[]) {
+export function observationsToGeoJson(observations: FieldObservation[]) {
   return {
     type: "FeatureCollection",
     features: observations.flatMap((observation) => {
-      const latitude = Number(observation.location?.latitude);
-      const longitude = Number(observation.location?.longitude);
+      const coordinates = publicObservationCoordinates(observation);
       const id = observationId(observation);
-      if (!id || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return [];
+      if (!id || !coordinates) return [];
       return [
         {
           type: "Feature",
           id,
-          geometry: { type: "Point", coordinates: [longitude, latitude] },
+          geometry: {
+            type: "Point",
+            coordinates: [coordinates.longitude, coordinates.latitude]
+          },
           properties: {
             id,
             precision: observation.location?.precision || "approximate",

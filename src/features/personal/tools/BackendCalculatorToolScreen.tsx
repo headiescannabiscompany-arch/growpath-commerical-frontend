@@ -16,7 +16,13 @@ import {
   askPersonalAssistant,
   type PersonalAssistantResponse
 } from "@/api/personalAssistant";
-import { runCalculator, type CalculatorTool, type ToolRun } from "@/api/toolRuns";
+import {
+  createTaskFromToolRun,
+  runCalculator,
+  saveToolRunToLog,
+  type CalculatorTool,
+  type ToolRun
+} from "@/api/toolRuns";
 import { useEntitlements } from "@/entitlements";
 import { LockedScreen } from "@/entitlements/LockedScreen";
 import { personalToolFeatures, type FeatureDefinition } from "@/config/featureStatus";
@@ -94,6 +100,7 @@ type BackendCalculatorToolScreenProps = {
   growOptional?: boolean;
   noGrowContextMessage?: string;
   backFallbackHref?: string;
+  workspaceTypeOverride?: "personal" | "commercial" | "facility";
   feedRouteKey?: string;
   externalInputKey?: string;
   externalAiDraftScopeKey?: string;
@@ -340,6 +347,7 @@ export default function BackendCalculatorToolScreen({
   growOptional = false,
   noGrowContextMessage,
   backFallbackHref = "/home/personal/tools",
+  workspaceTypeOverride,
   feedRouteKey,
   externalInputKey = "",
   externalAiDraftScopeKey = "",
@@ -387,18 +395,23 @@ export default function BackendCalculatorToolScreen({
   const entitlements = useEntitlements();
   const requestedGrowId = coerceParam(params.growId);
   const routeFacilityId = coerceParam(params.facilityId);
-  const commercialAccountId = coerceParam(params.commercialAccountId);
+  const routeCommercialAccountId = coerceParam(params.commercialAccountId);
   const requestedWorkspaceType = (
     coerceParam(params.workspaceType) || coerceParam(params.workspace)
   )
     .trim()
     .toLowerCase();
-  const workspaceType = resolveToolWorkspaceType({
-    entitlementMode: entitlements.mode,
-    requestedWorkspaceType,
-    facilityId: routeFacilityId,
-    commercialAccountId
-  });
+  const workspaceType =
+    workspaceTypeOverride ||
+    resolveToolWorkspaceType({
+      entitlementMode: entitlements.mode,
+      requestedWorkspaceType,
+      facilityId: routeFacilityId,
+      commercialAccountId: routeCommercialAccountId
+    });
+  // Commercial ownership is derived from the authenticated account. A route account ID
+  // may select Commercial mode, but it must never become a read/write identity signal.
+  const commercialAccountId = "";
   const facilityId =
     workspaceType === "facility"
       ? entitlements.mode === "facility" && entitlements.facilityId
@@ -411,14 +424,15 @@ export default function BackendCalculatorToolScreen({
     commercialAccountId
   });
   const routeGrowId = requestedGrowId;
-  const routePlantId = workspaceType === "personal" ? coerceParam(params.plantId) : "";
+  const routePlantId = workspaceType === "facility" ? "" : coerceParam(params.plantId);
   const [availableGrows, setAvailableGrows] = useState<SelectableGrow[]>([]);
   const [growId, setGrowId] = useState(workspaceType === "personal" ? routeGrowId : "");
   const contextResetFieldKey = resetFieldsOnContextChange.join("|");
   const plantContext = useToolPlantContext(
     growId,
     routePlantId,
-    workspaceType === "personal"
+    workspaceType !== "facility",
+    workspaceType === "commercial" ? "commercial" : "personal"
   );
   const paidPreviewOverride = hasLocalPaidPreviewOverride();
   const plan = paidPreviewOverride ? "pro" : entitlements.plan || "free";
@@ -435,7 +449,7 @@ export default function BackendCalculatorToolScreen({
     !entitlements.can(String(requiredCapability));
   const locked = betaLockedForFree || capabilityLocked;
   const bannerPolicy = getFeedBannerPolicy({
-    routeKey: feedRouteKey || `personal_tool_${toolKey}`,
+    routeKey: feedRouteKey || `${workspaceType}_tool_${toolKey}`,
     plan,
     mode: entitlements.mode,
     longContent: true
@@ -1215,7 +1229,11 @@ export default function BackendCalculatorToolScreen({
         plantContext,
         userValues: userValuesRef.current
       }),
-      ...aiPrefillPayload
+      ...aiPrefillPayload,
+      growId: growId || undefined,
+      workspaceType,
+      ...(commercialAccountId ? { commercialAccountId } : {}),
+      ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
     }),
     [
       aiPrefillPayload,
@@ -1262,7 +1280,7 @@ export default function BackendCalculatorToolScreen({
       inputRevisionRef.current === expectedInputState.revision &&
       latestExternalInputKeyRef.current === expectedInputState.externalInputKey;
     try {
-      const submittedPayload = {
+      const submittedPayload: Record<string, any> = {
         ...buildPayload(submittedValues, {
           growId,
           facilityId,
@@ -1271,7 +1289,11 @@ export default function BackendCalculatorToolScreen({
           plantContext,
           userValues: userValuesRef.current
         }),
-        ...metadata
+        ...metadata,
+        growId: growId || undefined,
+        workspaceType,
+        ...(commercialAccountId ? { commercialAccountId } : {}),
+        ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
       };
       const response = await runCalculator<Record<string, any>>(tool, submittedPayload);
       if (!requestIsCurrent()) return;
@@ -1398,7 +1420,11 @@ export default function BackendCalculatorToolScreen({
     };
   }
   const actions: ToolResultAction[] = [];
-  if (outputs && workspaceType === "personal" && growId) {
+  if (
+    outputs &&
+    (workspaceType === "personal" || workspaceType === "commercial") &&
+    growId
+  ) {
     actions.push({
       key: "save-log",
       label: "Save to Grow Log",
@@ -1406,6 +1432,25 @@ export default function BackendCalculatorToolScreen({
       pendingLabel: "Saving...",
       successMessage: "Saved to grow log.",
       onPress: async () => {
+        if (workspaceType === "commercial") {
+          const toolRunId = String(toolRun?.id || toolRun?._id || "");
+          if (!toolRunId)
+            throw new Error("Save the Commercial result before linking it.");
+          await saveToolRunToLog(
+            toolRunId,
+            {
+              growId,
+              linkedGrowId: growId,
+              plantId: plantContext.plantId || undefined,
+              linkedPlantId: plantContext.plantId || undefined,
+              linkedToolRunId: toolRunId,
+              title: defaultLogTitle(outputs),
+              notes: outputSummary(outputs)
+            },
+            { workspaceType: "commercial" }
+          );
+          return;
+        }
         const result = await saveToolRunAndCreateLog({
           growId,
           ...plantContext.toolRunContext,
@@ -1429,6 +1474,36 @@ export default function BackendCalculatorToolScreen({
         pendingLabel: "Creating...",
         successMessage: "Created follow-up task in the selected workspace.",
         onPress: async () => {
+          if (workspaceType === "commercial") {
+            const toolRunId = String(toolRun?.id || toolRun?._id || "");
+            if (!toolRunId)
+              throw new Error("Save the Commercial result before linking it.");
+            await createTaskFromToolRun(
+              toolRunId,
+              {
+                growId,
+                linkedGrowId: growId,
+                plantId: plantContext.plantId || undefined,
+                linkedPlantId: plantContext.plantId || undefined,
+                title: task.title,
+                description: task.description,
+                priority: task.priority,
+                dueDate: task.dueDate,
+                endAt: task.endAt,
+                allDay: task.allDay,
+                calendarType: task.calendarType,
+                sourceStage: task.sourceStage,
+                reminderPlan: task.reminderPlan,
+                recurrence:
+                  typeof task.recurrence === "string"
+                    ? { rule: task.recurrence }
+                    : task.recurrence,
+                linkedToolRunId: toolRunId
+              },
+              { workspaceType: "commercial" }
+            );
+            return;
+          }
           const result = await saveToolRunAndCreateTask({
             growId,
             ...plantContext.toolRunContext,

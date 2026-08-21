@@ -31,6 +31,7 @@ import type {
   EvidenceSource
 } from "@/types/evidence";
 import { resolveImageUri } from "@/utils/photoUploads";
+import { parsePickerSourceCaptureMetadata } from "@/utils/sourceCaptureMetadata";
 
 type Props = {
   maxPhotos?: number;
@@ -126,6 +127,7 @@ function toLocalAsset(
     width: asset.width || undefined,
     height: asset.height || undefined,
     durationSeconds: assetType === "video" ? durationSeconds(asset) : undefined,
+    sourceCaptureMetadata: parsePickerSourceCaptureMetadata(asset.exif),
     source,
     purpose,
     uploadStatus: "local",
@@ -800,7 +802,8 @@ export default function MediaEvidencePicker({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: true,
         selectionLimit: remaining,
-        quality: 0.85
+        quality: 0.85,
+        exif: true
       });
       if (disposed.current || disabledRef.current || picked.canceled) return;
       const selected = (picked.assets || [])
@@ -834,7 +837,8 @@ export default function MediaEvidencePicker({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
         allowsMultipleSelection: false,
         videoMaxDuration: maxVideoSeconds,
-        quality: 0.8
+        quality: 0.8,
+        exif: true
       });
       if (
         disposed.current ||

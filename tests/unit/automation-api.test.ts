@@ -288,4 +288,111 @@ describe("automation API", () => {
       { method: "DELETE" }
     );
   });
+
+  it("keeps every Commercial grow automation operation explicitly scoped", async () => {
+    mockApiRequest
+      .mockResolvedValueOnce({ policies: [] })
+      .mockResolvedValueOnce({ events: [] })
+      .mockResolvedValueOnce({
+        policy: {
+          id: "commercial-policy-1",
+          workspaceType: "commercial",
+          workspaceId: "canonical-user-1",
+          commercialAccountId: "canonical-user-1",
+          growId: "commercial-grow-1",
+          name: "Dew Point High Risk Alert",
+          trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
+          actions: [{ type: "create_task" }]
+        }
+      })
+      .mockResolvedValueOnce({
+        policy: { id: "commercial-policy-1", enabled: false }
+      })
+      .mockResolvedValueOnce({ result: { matchedPolicyCount: 1 } })
+      .mockResolvedValueOnce({ success: true, deleted: true });
+
+    const {
+      listCommercialAutomationPolicies,
+      listCommercialAutomationEvents,
+      createCommercialAutomationPolicy,
+      updateCommercialAutomationPolicy,
+      testCommercialAutomationPolicy,
+      deleteCommercialAutomationPolicy
+    } = require("@/api/automation");
+
+    await expect(
+      listCommercialAutomationPolicies({ growId: "commercial grow 1" })
+    ).resolves.toEqual([]);
+    await expect(
+      listCommercialAutomationEvents({ growId: "commercial grow 1" })
+    ).resolves.toEqual([]);
+    await expect(
+      createCommercialAutomationPolicy({
+        growId: "commercial-grow-1",
+        scope: "grow",
+        name: "Dew Point High Risk Alert",
+        trigger: { source: "tool_run", eventType: "dew_point_high_risk" },
+        actions: [{ type: "create_task" }]
+      })
+    ).resolves.toMatchObject({
+      id: "commercial-policy-1",
+      workspaceType: "commercial",
+      workspaceId: "canonical-user-1",
+      commercialAccountId: "canonical-user-1"
+    });
+    await expect(
+      updateCommercialAutomationPolicy("commercial-policy-1", { enabled: false })
+    ).resolves.toMatchObject({ id: "commercial-policy-1", enabled: false });
+    await expect(
+      testCommercialAutomationPolicy("commercial-policy-1", {
+        growId: "commercial-grow-1",
+        payload: { risk: "high" }
+      })
+    ).resolves.toEqual({ result: { matchedPolicyCount: 1 } });
+    await expect(
+      deleteCommercialAutomationPolicy("commercial-policy-1")
+    ).resolves.toEqual({ success: true, deleted: true });
+
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/api/automation/policies?workspaceType=commercial&growId=commercial+grow+1"
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      2,
+      "/api/automation/events?workspaceType=commercial&growId=commercial+grow+1"
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(3, "/api/automation/policies", {
+      method: "POST",
+      body: expect.objectContaining({
+        workspaceType: "commercial",
+        growId: "commercial-grow-1",
+        scope: "grow"
+      })
+    });
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      4,
+      "/api/automation/policies/commercial-policy-1",
+      { method: "PATCH", body: { enabled: false, workspaceType: "commercial" } }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      5,
+      "/api/automation/policies/commercial-policy-1/test",
+      {
+        method: "POST",
+        body: {
+          growId: "commercial-grow-1",
+          payload: { risk: "high" },
+          workspaceType: "commercial"
+        }
+      }
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      6,
+      "/api/automation/policies/commercial-policy-1?workspaceType=commercial",
+      { method: "DELETE" }
+    );
+    expect(JSON.stringify(mockApiRequest.mock.calls)).not.toContain(
+      "commercialAccountId"
+    );
+  });
 });

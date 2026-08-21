@@ -128,20 +128,32 @@ describe("Field Studies API", () => {
 
   it("loads the signed-out public map without requesting auth", async () => {
     mockApiRequest.mockResolvedValueOnce({
-      observations: [{ id: "observation-1", title: "Public rose" }]
+      observations: [
+        {
+          id: "observation-1",
+          title: "Public rose",
+          notes: "Contributor-approved public trail description."
+        }
+      ]
     });
 
-    await expect(
-      listPublicFieldObservations({
-        q: " rose ",
-        bbox: [-80, 37, -74, 41],
-        verificationStatus: "user_confirmed",
-        invasiveStatus: "suspected",
-        limit: 250
+    const rows = await listPublicFieldObservations({
+      q: " rose ",
+      bbox: [-80, 37, -74, 41],
+      verificationStatus: "user_confirmed",
+      invasiveStatus: "suspected",
+      limit: 250
+    });
+    expect(rows).toEqual([
+      expect.objectContaining({
+        id: "observation-1",
+        _id: "observation-1",
+        publication: {
+          publicNotes: "Contributor-approved public trail description."
+        }
       })
-    ).resolves.toEqual([
-      expect.objectContaining({ id: "observation-1", _id: "observation-1" })
     ]);
+    expect(rows[0]).not.toHaveProperty("notes");
     expect(mockApiRequest).toHaveBeenCalledWith("/api/personal/field-studies/public", {
       auth: true,
       params: {
@@ -157,13 +169,23 @@ describe("Field Studies API", () => {
   it("loads public study detail from the deployed Field Studies route family", async () => {
     mockApiRequest.mockResolvedValueOnce({
       study: { id: "study-1", slug: "roadside-survey" },
-      observations: [{ id: "observation-1", title: "Public rose" }]
+      observations: [
+        {
+          id: "observation-1",
+          title: "Public rose",
+          notes: "Sanitized public description."
+        }
+      ]
     });
 
     await expect(getPublicFieldStudy("roadside-survey")).resolves.toEqual({
       study: expect.objectContaining({ id: "study-1", _id: "study-1" }),
       observations: [
-        expect.objectContaining({ id: "observation-1", _id: "observation-1" })
+        expect.objectContaining({
+          id: "observation-1",
+          _id: "observation-1",
+          publication: { publicNotes: "Sanitized public description." }
+        })
       ]
     });
     expect(mockApiRequest).toHaveBeenCalledWith(

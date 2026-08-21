@@ -14,9 +14,13 @@ const mockAskPersonalAssistant = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockListFacilityGrows = jest.fn();
 const mockFetchCommercialGrows = jest.fn();
+let mockSearchParams: Record<string, string> = {
+  growId: "grow-1",
+  plantId: "plant-1"
+};
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-1", plantId: "plant-1" }),
+  useLocalSearchParams: () => mockSearchParams,
   useRouter: () => ({ push: jest.fn() })
 }));
 
@@ -147,6 +151,7 @@ describe("BackendCalculatorToolScreen beta access", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSearchParams = { growId: "grow-1", plantId: "plant-1" };
     Object.defineProperty(window, "location", {
       configurable: true,
       value: { hostname: "localhost", search: "" }
@@ -240,6 +245,58 @@ describe("BackendCalculatorToolScreen beta access", () => {
     expect(
       await screen.findByText("Calculated and saved as a ToolRun and module record.")
     ).toBeTruthy();
+  });
+
+  it("uses the authenticated Commercial workspace without trusting a route account ID", async () => {
+    mockSearchParams = {
+      growId: "grow-1",
+      plantId: "personal-plant-secret",
+      commercialAccountId: "untrusted-commercial-route-id"
+    };
+    mockUseEntitlements.mockReturnValue({
+      mode: "commercial",
+      plan: "commercial",
+      can: jest.fn(() => true)
+    });
+    mockFetchCommercialGrows.mockResolvedValue([
+      { id: "grow-1", name: "Owned Commercial grow" }
+    ]);
+
+    render(
+      <BackendCalculatorToolScreen
+        tool="clone-rooting"
+        toolKey="clone-rooting"
+        title="Commercial calculator"
+        subtitle="Commercial scoped test."
+        workspaceTypeOverride="commercial"
+        fields={[{ key: "cloneCount", label: "Clone count", defaultValue: "8" }]}
+        buildPayload={(values, { commercialAccountId }) => ({
+          cloneCount: Number(values.cloneCount),
+          routeAccountId: commercialAccountId || undefined
+        })}
+        defaultLogTitle={() => "Commercial calculator result"}
+      />
+    );
+
+    await waitFor(() => expect(screen.getByText("Grow context: grow-1")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Run Commercial calculator"));
+
+    await waitFor(() => expect(mockRunCalculator).toHaveBeenCalledTimes(1));
+    expect(mockRunCalculator).toHaveBeenCalledWith(
+      "clone-rooting",
+      expect.objectContaining({
+        growId: "grow-1",
+        workspaceType: "commercial",
+        cloneCount: 8
+      })
+    );
+    const submitted = mockRunCalculator.mock.calls[0][1];
+    expect(submitted.commercialAccountId).toBeUndefined();
+    expect(submitted.routeAccountId).toBeUndefined();
+    expect(JSON.stringify(submitted)).not.toContain("untrusted-commercial-route-id");
+    expect(mockFetchCommercialGrows).toHaveBeenCalled();
+    expect(mockListPersonalGrows).not.toHaveBeenCalled();
+    expect(mockCreateGrowpathModuleRecord).not.toHaveBeenCalled();
   });
 
   it("reuses the backend-created module record instead of saving a duplicate", async () => {

@@ -10,7 +10,6 @@ import {
   saveToolRunToLog,
   type ToolRun
 } from "@/api/toolRuns";
-import { listPersonalGrows } from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, findGrowById, isCannabisGrow } from "@/features/grows/routeUtils";
 import { radius } from "@/theme/theme";
@@ -21,6 +20,13 @@ import ToolResultSurface, {
 } from "@/features/personal/tools/ToolResultSurface";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import {
+  createWorkspaceLog,
+  createWorkspaceTask,
+  growWorkspaceBasePath,
+  listWorkspaceGrows,
+  type GrowWorkspace
+} from "@/features/grows/workspaceData";
 
 export const createGrowToolsStyles = (palette: ThemePalette) =>
   StyleSheet.create({
@@ -76,6 +82,38 @@ export const createGrowToolsStyles = (palette: ThemePalette) =>
 
 function withGrow(path: string, growId: string) {
   return `${path}?growId=${encodeURIComponent(growId)}`;
+}
+
+export function workspaceGrowToolHref(
+  path: string,
+  growId: string,
+  workspace: GrowWorkspace
+) {
+  const basePath = growWorkspaceBasePath(workspace);
+  if (!path.startsWith("/")) {
+    return `${basePath}/grows/${encodeURIComponent(growId)}/${path}`;
+  }
+  if (workspace === "personal") return withGrow(path, growId);
+
+  const personalKey = path.split("/").filter(Boolean).at(-1) || "";
+  const directCommercialKey: Record<string, string> = {
+    "auto-grow-calendar": "auto-grow-calendar",
+    "recipe-builder": "recipe-builder",
+    "environment-analysis": "environment",
+    integrations: "integrations",
+    "pdf-export": "report",
+    "saved-runs": "saved-runs",
+    ai: "ask-ai",
+    diagnose: "diagnose",
+    "ipm-scout": "ipm-scout",
+    "harvest-readiness": "harvest-readiness"
+  };
+  const commercialKey = directCommercialKey[personalKey];
+  if (commercialKey) {
+    return withGrow(`${basePath}/tools/${commercialKey}`, growId);
+  }
+  const query = new URLSearchParams({ growId, recommendedTool: personalKey });
+  return `${basePath}/tools?${query.toString()}`;
 }
 
 type GrowWorkspaceItem = readonly [
@@ -194,11 +232,33 @@ function toolRunNotices(run: ToolRun | null): ToolResultNotice[] {
   }));
 }
 
-export default function GrowToolsScreen() {
+function toolRunDisplayName(run: ToolRun | null) {
+  const name = String(run?.toolType || run?.toolName || "AI tool").trim();
+  return labelize(name || "AI tool");
+}
+
+function toolRunSummary(run: ToolRun | null) {
+  const recommendations = Array.isArray(run?.recommendations)
+    ? run.recommendations.filter(Boolean)
+    : [];
+  if (run?.summary) return String(run.summary);
+  if (recommendations.length) return recommendations.join("\n");
+  const output = run?.outputs || run?.result || {};
+  return Object.keys(output).length
+    ? JSON.stringify(output, null, 2)
+    : "Review this saved grow intelligence result.";
+}
+
+export default function GrowToolsScreen({
+  workspace = "personal"
+}: {
+  workspace?: GrowWorkspace;
+} = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createGrowToolsStyles(palette), [palette]);
   const { growId: rawGrowId } = useLocalSearchParams<{ growId?: string | string[] }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
+  const basePath = growWorkspaceBasePath(workspace);
   const [recent, setRecent] = useState<ToolRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<ToolRun | null>(null);
   const [loadingRunId, setLoadingRunId] = useState("");
@@ -210,8 +270,8 @@ export default function GrowToolsScreen() {
       let mounted = true;
       (async () => {
         const [rows, grows] = await Promise.all([
-          listToolRuns({ growId }),
-          listPersonalGrows()
+          listToolRuns({ growId, workspaceType: workspace }),
+          listWorkspaceGrows(workspace)
         ]);
         if (!mounted) return;
         setRecent(Array.isArray(rows) ? rows.slice(0, 4) : []);
@@ -220,7 +280,7 @@ export default function GrowToolsScreen() {
       return () => {
         mounted = false;
       };
-    }, [growId])
+    }, [growId, workspace])
   );
 
   const selectedRunId = String(selectedRun?._id || selectedRun?.id || "");
@@ -232,7 +292,31 @@ export default function GrowToolsScreen() {
           pendingLabel: "Saving...",
           successMessage: "Saved to grow log.",
           onPress: async () => {
-            await saveToolRunToLog(selectedRunId);
+            if (workspace === "commercial") {
+              const created = await createWorkspaceLog(workspace, {
+                growId,
+                linkedGrowId: growId,
+                plantId: selectedRun?.plantId || undefined,
+                linkedPlantId: selectedRun?.plantId || undefined,
+                toolRunId: selectedRunId,
+                linkedToolRunId: selectedRunId,
+                type: "tool_run",
+                title: `Saved ${toolRunDisplayName(selectedRun)} result`,
+                notes: toolRunSummary(selectedRun),
+                tags: [
+                  String(selectedRun?.toolType || selectedRun?.toolName || "ai-tool"),
+                  "tool-result"
+                ]
+              });
+              if (!created)
+                throw new Error("Unable to save this result to the grow log.");
+              return;
+            }
+            await saveToolRunToLog(
+              selectedRunId,
+              { growId, linkedGrowId: growId },
+              { workspaceType: workspace }
+            );
           }
         },
         {
@@ -242,7 +326,28 @@ export default function GrowToolsScreen() {
           pendingLabel: "Creating...",
           successMessage: "Task created.",
           onPress: async () => {
-            await createTaskFromToolRun(selectedRunId);
+            if (workspace === "commercial") {
+              const created = await createWorkspaceTask(workspace, {
+                growId,
+                linkedGrowId: growId,
+                plantId: selectedRun?.plantId || undefined,
+                linkedPlantId: selectedRun?.plantId || undefined,
+                title: `Review ${toolRunDisplayName(selectedRun)} result`,
+                description: toolRunSummary(selectedRun),
+                priority: "medium",
+                sourceType: "tool_run",
+                sourceObjectId: selectedRunId,
+                sourceToolRunId: selectedRunId,
+                linkedToolRunId: selectedRunId
+              });
+              if (!created) throw new Error("Unable to create a grow task.");
+              return;
+            }
+            await createTaskFromToolRun(
+              selectedRunId,
+              { growId, linkedGrowId: growId },
+              { workspaceType: workspace }
+            );
           }
         }
       ]
@@ -253,7 +358,7 @@ export default function GrowToolsScreen() {
     if (!id) return;
     setLoadingRunId(id);
     setFeedback("");
-    const fullRun = await getToolRun(id);
+    const fullRun = await getToolRun(id, { workspaceType: workspace });
     setSelectedRun(fullRun || run);
     setFeedback(fullRun ? "" : "Unable to reload this run; showing cached list data.");
     setLoadingRunId("");
@@ -279,12 +384,12 @@ export default function GrowToolsScreen() {
           Open Ask AI, plant diagnosis, PPFD/DLI analysis, and the soil and nutrient mix
           builders with this grow selected.
         </Text>
-        <Link href={withGrow("/home/personal/tools", growId)} asChild>
+        <Link href={withGrow(`${basePath}/tools`, growId)} asChild>
           <Pressable style={styles.action}>
             <Text style={styles.actionText}>Open AI tools</Text>
           </Pressable>
         </Link>
-        <Link href={withGrow("/home/personal/tools/saved-runs", growId)} asChild>
+        <Link href={withGrow(`${basePath}/tools/saved-runs`, growId)} asChild>
           <Pressable style={styles.action}>
             <Text style={styles.actionText}>Saved runs</Text>
           </Pressable>
@@ -303,9 +408,7 @@ export default function GrowToolsScreen() {
               <Text style={styles.cardTitle}>{group.title}</Text>
               <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
                 {visibleItems.map(([label, path]) => {
-                  const href = path.startsWith("/")
-                    ? withGrow(path, growId)
-                    : `/home/personal/grows/${encodeURIComponent(growId)}/${path}`;
+                  const href = workspaceGrowToolHref(path, growId, workspace);
                   return (
                     <Link key={label} href={href as any} asChild>
                       <Pressable style={styles.action}>

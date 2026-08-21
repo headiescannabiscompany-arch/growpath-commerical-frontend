@@ -62,7 +62,8 @@ import type { EvidenceAsset } from "@/types/evidence";
 import { useEntitlements } from "@/entitlements";
 import {
   resolveToolWorkspaceType,
-  toolWorkspaceIdentity
+  toolWorkspaceIdentity,
+  type ToolWorkspaceType
 } from "@/features/personal/tools/toolWorkspaceScope";
 
 const PLANT_ID_REVIEW_POLICY_VERSION = "plant-id-night-light-detail-v2";
@@ -1144,9 +1145,11 @@ function speciesCropTaskPlan(outputs: Record<string, any>) {
 }
 
 export default function SpeciesCropIdToolRoute({
-  backFallbackHref = "/home/personal/tools"
+  backFallbackHref = "/home/personal/tools",
+  workspaceTypeOverride
 }: {
   backFallbackHref?: string;
+  workspaceTypeOverride?: ToolWorkspaceType;
 } = {}) {
   const { palette } = useAppTheme();
   const router = useRouter();
@@ -1164,7 +1167,9 @@ export default function SpeciesCropIdToolRoute({
   const commercialAccountId = routeParam(params.commercialAccountId);
   const retryToolRunId = routeParam(params.retryToolRunId);
   const requestedWorkspaceType = String(
-    routeParam(params.workspaceType) || routeParam(params.workspace)
+    workspaceTypeOverride ||
+      routeParam(params.workspaceType) ||
+      routeParam(params.workspace)
   )
     .trim()
     .toLowerCase();
@@ -2250,6 +2255,10 @@ export default function SpeciesCropIdToolRoute({
       label: "Observation date added"
     },
     {
+      ready: Boolean(naturePublicNotes.trim()),
+      label: "Public description added and reviewed"
+    },
+    {
       ready: uploadedEvidence.images.length > 0,
       label: "Uploaded photo evidence added"
     }
@@ -2836,7 +2845,7 @@ export default function SpeciesCropIdToolRoute({
                   </Text>
                   {wantsNatureMap ? (
                     <>
-                      <Text style={styles.fieldLabel}>Public description (optional)</Text>
+                      <Text style={styles.fieldLabel}>Public description (required)</Text>
                       <TextInput
                         accessibilityLabel="Public Nature description"
                         maxLength={500}
@@ -2848,9 +2857,10 @@ export default function SpeciesCropIdToolRoute({
                         value={naturePublicNotes}
                       />
                       <Text style={styles.evidenceGuidance}>
-                        This text is shown with the public pin. Do not include a
-                        person&apos;s name, exact address, private-property details, or
-                        sensitive-species directions.
+                        Review this text before publishing. It is shown with the public
+                        pin and photos. Do not include a person&apos;s name, exact
+                        address, private-property details, or sensitive-species
+                        directions.
                       </Text>
                     </>
                   ) : null}
@@ -3925,6 +3935,11 @@ export default function SpeciesCropIdToolRoute({
               if (wantsNatureMap && !observationLocation) {
                 throw new Error(
                   "Use Current Location before publishing an approximate Nature map pin."
+                );
+              }
+              if (wantsNatureMap && !naturePublicNotes.trim()) {
+                throw new Error(
+                  "Add and review a public Nature description before publishing this pin."
                 );
               }
               if (

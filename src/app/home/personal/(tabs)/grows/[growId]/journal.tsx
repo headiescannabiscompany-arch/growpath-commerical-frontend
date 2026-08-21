@@ -10,8 +10,6 @@ import {
   View
 } from "react-native";
 
-import { listPersonalLogs } from "@/api/logs";
-import { listPersonalTasks } from "@/api/tasks";
 import { listToolRuns } from "@/api/toolRuns";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
@@ -23,6 +21,7 @@ import {
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { listWorkspaceLogs, listWorkspaceTasks } from "@/features/grows/workspaceData";
 
 export const createGrowJournalStyles = (palette: ThemePalette) =>
   StyleSheet.create({
@@ -114,9 +113,9 @@ export default function GrowJournalScreen({
     setLoading(true);
     try {
       const [logs, runs, tasks] = await Promise.all([
-        listPersonalLogs({ growId }),
-        listToolRuns({ growId }),
-        listPersonalTasks({ growId })
+        listWorkspaceLogs(workspace, growId),
+        listToolRuns({ growId, workspaceType: workspace }),
+        listWorkspaceTasks(workspace, growId)
       ]);
       setItems(
         buildGrowTimeline({
@@ -130,7 +129,7 @@ export default function GrowJournalScreen({
     } finally {
       setLoading(false);
     }
-  }, [growId]);
+  }, [growId, workspace]);
 
   useFocusEffect(
     useCallback(() => {
@@ -225,7 +224,7 @@ export default function GrowJournalScreen({
           return (
             <Link
               key={`${item.kind}-${item.id}`}
-              href={growJournalItemHref(item, growId) as any}
+              href={growJournalItemHref(item, growId, workspace) as any}
               asChild
             >
               <Pressable

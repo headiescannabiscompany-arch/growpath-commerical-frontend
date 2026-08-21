@@ -261,13 +261,16 @@ function buildSoilAssistantBrief(payload: Record<string, any>) {
 }
 
 export default function SoilBuilderToolScreen({
-  backFallbackHref = "/home/personal/tools"
+  backFallbackHref = "/home/personal/tools",
+  workspaceType = "personal"
 }: {
   backFallbackHref?: string;
+  workspaceType?: "personal" | "commercial";
 } = {}) {
   return (
     <BackendCalculatorToolScreen
       backFallbackHref={backFallbackHref}
+      workspaceTypeOverride={workspaceType}
       tool="soil-builder"
       toolKey="soil-builder"
       title="Soil Mix Builder"
@@ -579,7 +582,7 @@ export default function SoilBuilderToolScreen({
         briefTitle: "AI soil mix brief",
         buildBrief: ({ payload }) => buildSoilAssistantBrief(payload)
       }}
-      buildActions={({ outputs, payload, toolRun }) => [
+      buildActions={({ outputs, payload, toolRun, workspaceType: activeWorkspace }) => [
         {
           key: "create-recipe-timeline",
           label: "Create Recipe Timeline Tasks",
@@ -589,6 +592,7 @@ export default function SoilBuilderToolScreen({
           disabled: !payload.growId,
           onPress: async () => {
             const result = await saveToolRunAndCreateTasks({
+              workspaceType: activeWorkspace,
               growId: payload.growId,
               toolKey: "soil-builder",
               toolRunId: toolRun?.id || toolRun?._id,
