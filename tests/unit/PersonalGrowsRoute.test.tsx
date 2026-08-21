@@ -97,10 +97,10 @@ describe("PersonalGrowsRoute", () => {
     expect(screen.queryByText("Featured feed mock")).toBeNull();
   });
 
-  it("shows a useful roadmap for the latest grow", async () => {
+  it("shows a useful roadmap and routes legacy _id grows correctly", async () => {
     mockListPersonalGrows.mockResolvedValue([
       {
-        id: "grow-1",
+        _id: "grow-1",
         name: "Front Yard",
         cropCommonName: "Cannabis",
         scientificName: "Cannabis sativa",

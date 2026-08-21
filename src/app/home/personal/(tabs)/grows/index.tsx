@@ -272,11 +272,11 @@ export default function PersonalGrowsRoute({
   ];
   const roadmapActions = latestGrow
     ? [
-        { href: growHref(basePath, latestGrow.id), label: "Open Grow", primary: true },
-        { href: growHref(basePath, latestGrow.id, "journal"), label: "Journal" },
-        { href: growHref(basePath, latestGrow.id, "tasks"), label: "Tasks" },
-        { href: growHref(basePath, latestGrow.id, "timeline"), label: "Timeline" },
-        { href: growHref(basePath, latestGrow.id, "tools"), label: "AI Tools" }
+        { href: growHref(basePath, id), label: "Open Grow", primary: true },
+        { href: growHref(basePath, id, "journal"), label: "Journal" },
+        { href: growHref(basePath, id, "tasks"), label: "Tasks" },
+        { href: growHref(basePath, id, "timeline"), label: "Timeline" },
+        { href: growHref(basePath, id, "tools"), label: "AI Tools" }
       ]
     : [
         { href: `${basePath}/grows/new`, label: "Create Grow", primary: true },
@@ -531,7 +531,7 @@ export default function PersonalGrowsRoute({
                   </Text>
                 </View>
                 <ActionButton
-                  href={growHref(basePath, latestGrow.id, "timeline")}
+                  href={growHref(basePath, id, "timeline")}
                   label="Explore Timeline"
                   primary
                 />
@@ -551,27 +551,14 @@ export default function PersonalGrowsRoute({
           ) : null}
           {latestGrow ? (
             <View style={styles.featuredActions}>
+              <ActionButton href={growHref(basePath, id)} label="Open Grow" primary />
+              <ActionButton href={growHref(basePath, id, "journal")} label="Journal" />
+              <ActionButton href={growHref(basePath, id, "tasks")} label="Tasks" />
               <ActionButton
-                href={growHref(basePath, latestGrow.id)}
-                label="Open Grow"
-                primary
-              />
-              <ActionButton
-                href={growHref(basePath, latestGrow.id, "journal")}
-                label="Journal"
-              />
-              <ActionButton
-                href={growHref(basePath, latestGrow.id, "tasks")}
-                label="Tasks"
-              />
-              <ActionButton
-                href={growHref(basePath, latestGrow.id, "timeline")}
+                href={growHref(basePath, id, "timeline")}
                 label="Visual Timeline"
               />
-              <ActionButton
-                href={growHref(basePath, latestGrow.id, "tools")}
-                label="AI Tools"
-              />
+              <ActionButton href={growHref(basePath, id, "tools")} label="AI Tools" />
             </View>
           ) : (
             <View style={styles.featuredActions}>
