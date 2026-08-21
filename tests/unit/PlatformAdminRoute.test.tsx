@@ -4,7 +4,8 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import PlatformAdminRoute, {
   createPlatformAdminStyles,
-  moderationTargetHref
+  moderationTargetHref,
+  supportsModerationActions
 } from "@/app/admin";
 import { getThemePalette } from "@/theme/appTheme";
 
@@ -262,6 +263,23 @@ function defaultAdminApi(path: string) {
 
 describe("PlatformAdminRoute", () => {
   it.each([
+    "video",
+    "videoComment",
+    "liveSession",
+    "liveChatMessage",
+    "course",
+    "forumPost",
+    "comment",
+    "commercialPost",
+    "storefrontProduct"
+  ])(
+    "offers the audited Admin moderation actions for reported %s content",
+    (targetType) => {
+      expect(supportsModerationActions(targetType)).toBe(true);
+    }
+  );
+
+  it.each([
     ["forumPost", "forum-1", "/forum/post/forum-1"],
     ["commercialPost", "campaign-1", "/feed?campaignId=campaign-1"],
     ["storefrontProduct", "product-1", "/store?q=product-1"],
@@ -313,6 +331,37 @@ describe("PlatformAdminRoute", () => {
       })
     ).toBe("/store/living-soil-labs/products/product-1");
   });
+
+  it.each([
+    [
+      "videoComment",
+      "comment-1",
+      "https://growpathai.com/videos/video-1?commentId=comment-1",
+      "/videos/video-1?commentId=comment-1"
+    ],
+    [
+      "liveChatMessage",
+      "message-1",
+      "https://growpathai.com/live-session?sessionId=live-1&messageId=message-1",
+      "/live-session?sessionId=live-1&messageId=message-1"
+    ]
+  ])(
+    "preserves the exact reported %s parent and message link",
+    (targetType, targetId, targetUrl, href) => {
+      expect(
+        moderationTargetHref({
+          _id: "case-1",
+          targetType,
+          targetId,
+          reason: "Reported",
+          severity: "medium",
+          status: "open",
+          action: "none",
+          evidenceSnapshot: { targetUrl }
+        })
+      ).toBe(href);
+    }
+  );
 
   it("keeps a submitted course URL and adds the focused moderation case", () => {
     expect(

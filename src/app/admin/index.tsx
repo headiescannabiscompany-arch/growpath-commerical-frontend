@@ -176,6 +176,10 @@ const MODERATABLE_TARGETS = new Set([
   "liveChatMessage"
 ]);
 
+export function supportsModerationActions(targetType: string) {
+  return MODERATABLE_TARGETS.has(targetType);
+}
+
 function matchesModerationTargetRoute(targetType: string, pathname: string) {
   if (targetType === "forumPost" || targetType === "comment") {
     return pathname.startsWith("/forum/post/") || pathname === "/forum/post";
@@ -183,7 +187,9 @@ function matchesModerationTargetRoute(targetType: string, pathname: string) {
   if (targetType === "course") {
     return pathname === "/courses" || /^\/store\/[^/]+\/courses\/[^/]+$/.test(pathname);
   }
-  if (targetType === "video") return pathname.startsWith("/videos/");
+  if (targetType === "video" || targetType === "videoComment") {
+    return pathname.startsWith("/videos/");
+  }
   if (targetType === "commercialPost") {
     return pathname === "/feed" || pathname.endsWith("/feed");
   }
@@ -191,7 +197,9 @@ function matchesModerationTargetRoute(targetType: string, pathname: string) {
   if (targetType === "storefrontProduct") {
     return pathname === "/store" || /^\/store\/[^/]+\/products\/[^/]+$/.test(pathname);
   }
-  if (targetType === "liveSession") return pathname === "/live-session";
+  if (targetType === "liveSession" || targetType === "liveChatMessage") {
+    return pathname === "/live-session";
+  }
   if (targetType === "user") return pathname === "/profile";
   return false;
 }
@@ -2559,7 +2567,7 @@ export default function PlatformAdminRoute() {
                 >
                   <Text style={styles.secondaryText}>Open reported content</Text>
                 </Pressable>
-                {MODERATABLE_TARGETS.has(item.targetType) ? (
+                {supportsModerationActions(item.targetType) ? (
                   <>
                     <Pressable
                       disabled={busyId === item._id}

@@ -191,6 +191,10 @@ see which entries are feed-ready, relayed, failed, or require identity connectio
 - Never let chat popularity or giveaway participation become scientific evidence, a diagnosis signal, or AI-training permission.
 - Cannabis/hemp sessions follow the cannabis visibility policy for directory, profile, notification, and direct-link delivery.
 - Store a report and moderation case before attempting administrator email delivery; email failure must not erase the report.
+- Live-session and live-chat reports retain the exact session/message link and use the
+  audited Admin content workflow for review, hide, restore, cannabis classification,
+  leave/close, and preservation/legal escalation. A chat-message action must not silently
+  change the parent session, and a session action must retain its chat and evidence history.
 
 ## Verification
 
