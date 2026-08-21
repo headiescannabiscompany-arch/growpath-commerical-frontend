@@ -32,7 +32,12 @@ import {
   pullPulseWindow,
   verifyPulseApiKey
 } from "@/api/telemetry";
-import type { PulseDevice, TelemetryPoint, TelemetrySource } from "@/types/telemetry";
+import type {
+  PulseDevice,
+  TelemetryCredentialWorkspaceScope,
+  TelemetryPoint,
+  TelemetrySource
+} from "@/types/telemetry";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import {
   cToF,
@@ -107,6 +112,7 @@ function Field(props: {
   onChangeText: (v: string) => void;
   placeholder?: string;
   keyboardType?: "default" | "numeric";
+  secureTextEntry?: boolean;
   testID?: string;
 }) {
   const { palette } = useAppTheme();
@@ -115,7 +121,14 @@ function Field(props: {
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{props.label}</Text>
       <TextInput
+        accessibilityLabel={props.label}
+        autoCapitalize={props.secureTextEntry ? "none" : undefined}
+        autoComplete={props.secureTextEntry ? "off" : undefined}
+        autoCorrect={props.secureTextEntry ? false : undefined}
+        importantForAutofill={props.secureTextEntry ? "noExcludeDescendants" : undefined}
+        secureTextEntry={props.secureTextEntry}
         testID={props.testID}
+        textContentType={props.secureTextEntry ? "none" : undefined}
         value={props.value}
         onChangeText={props.onChangeText}
         placeholder={props.placeholder}
@@ -312,6 +325,13 @@ export default function DewPointGuardTool({
   const [loadingPulseDevices, setLoadingPulseDevices] = useState(false);
   const [pulseDevices, setPulseDevices] = useState<PulseDevice[]>([]);
   const [selectedPulseDeviceId, setSelectedPulseDeviceId] = useState("");
+  const pulseCredentialScope = useMemo<TelemetryCredentialWorkspaceScope>(
+    () =>
+      workspaceType === "facility"
+        ? { workspaceType, facilityId: facilityId.trim() }
+        : { workspaceType },
+    [facilityId, workspaceType]
+  );
 
   const [windowMode, setWindowMode] = useState<"lastNight" | "last24h" | "custom">(
     "lastNight"
@@ -669,10 +689,16 @@ export default function DewPointGuardTool({
   async function verifyPulseAndLoadDevices() {
     const apiKey = String(pulseApiKey || "").trim();
     if (!apiKey) return Alert.alert("Missing API key", "Enter your Pulse API key.");
+    if (workspaceType === "facility" && !facilityId.trim()) {
+      return Alert.alert(
+        "Facility required",
+        "Select the Facility that owns this Pulse connection."
+      );
+    }
 
     setVerifyingPulse(true);
     try {
-      await verifyPulseApiKey(apiKey);
+      await verifyPulseApiKey({ ...pulseCredentialScope, apiKey });
       Alert.alert("Pulse verified", "API key verified successfully.");
     } catch (e: any) {
       const auth = telemetryAuthMessage(e);
@@ -684,7 +710,7 @@ export default function DewPointGuardTool({
 
     setLoadingPulseDevices(true);
     try {
-      const devices = await listPulseDevices(apiKey);
+      const devices = await listPulseDevices({ ...pulseCredentialScope, apiKey });
       setPulseDevices(devices);
       if (!selectedPulseDeviceId && devices.length) {
         setSelectedPulseDeviceId(String(devices[0].id || ""));
@@ -749,6 +775,7 @@ export default function DewPointGuardTool({
       });
       setSources((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
       setSelectedSourceId(created.id);
+      setPulseApiKey("");
       Alert.alert("Pulse source created", `${created.name} (${created.type})`);
     } catch (e: any) {
       const auth = telemetryAuthMessage(e);
@@ -1588,6 +1615,7 @@ export default function DewPointGuardTool({
               value={pulseApiKey}
               onChangeText={setPulseApiKey}
               keyboardType="default"
+              secureTextEntry
               testID="dpg-pulse-api-key"
             />
             <Pressable

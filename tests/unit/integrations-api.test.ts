@@ -6,7 +6,8 @@ jest.mock("@/api/apiRequest", () => ({
 
 const {
   createIntegrationConnection,
-  listIntegrationConnections
+  listIntegrationConnections,
+  listIntegrationSpaces
 } = require("@/api/integrations");
 
 describe("workspace-scoped integration connection API", () => {
@@ -14,7 +15,8 @@ describe("workspace-scoped integration connection API", () => {
     jest.clearAllMocks();
     mockApiRequest.mockResolvedValue({
       connections: [],
-      connection: { id: "connection-1" }
+      connection: { id: "connection-1" },
+      spaces: []
     });
   });
 
@@ -54,4 +56,26 @@ describe("workspace-scoped integration connection API", () => {
       expect(mockApiRequest.mock.calls[0][1].body.workspaceId).toBeUndefined();
     }
   );
+
+  it("keeps the same grow ID isolated between two selected Facilities", async () => {
+    await listIntegrationSpaces({
+      workspaceType: "facility",
+      facilityId: "facility-a",
+      targetRef: "shared-grow-id",
+      targetType: "grow"
+    });
+    await listIntegrationSpaces({
+      workspaceType: "facility",
+      facilityId: "facility-b",
+      targetRef: "shared-grow-id",
+      targetType: "grow"
+    });
+
+    expect(mockApiRequest.mock.calls.map(([path]) => path)).toEqual([
+      "/api/integrations/spaces?workspaceType=facility&targetRef=shared-grow-id&facilityId=facility-a&targetType=grow",
+      "/api/integrations/spaces?workspaceType=facility&targetRef=shared-grow-id&facilityId=facility-b&targetType=grow"
+    ]);
+    expect(mockApiRequest.mock.calls[0][0]).not.toContain("workspaceId");
+    expect(mockApiRequest.mock.calls[1][0]).not.toContain("workspaceId");
+  });
 });

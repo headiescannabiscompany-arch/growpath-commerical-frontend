@@ -27,6 +27,7 @@ describe("telemetry Growlink API", () => {
 
     await expect(
       verifyGrowlinkCredentials({
+        workspaceType: "personal",
         userName: "grower@example.com",
         password: "secret"
       })
@@ -34,7 +35,11 @@ describe("telemetry Growlink API", () => {
 
     expect(mockApiRequest).toHaveBeenCalledWith(TELEMETRY_ROUTES.GROWLINK_VERIFY, {
       method: "POST",
-      body: { userName: "grower@example.com", password: "secret" }
+      body: {
+        workspaceType: "personal",
+        userName: "grower@example.com",
+        password: "secret"
+      }
     });
   });
 
@@ -50,6 +55,8 @@ describe("telemetry Growlink API", () => {
 
     await expect(
       listGrowlinkControllers({
+        workspaceType: "facility",
+        facilityId: "facility-1",
         userName: "grower@example.com",
         password: "secret"
       })
@@ -60,7 +67,12 @@ describe("telemetry Growlink API", () => {
 
     expect(mockApiRequest).toHaveBeenCalledWith(TELEMETRY_ROUTES.GROWLINK_CONTROLLERS, {
       method: "POST",
-      body: { userName: "grower@example.com", password: "secret" }
+      body: {
+        workspaceType: "facility",
+        facilityId: "facility-1",
+        userName: "grower@example.com",
+        password: "secret"
+      }
     });
   });
 
@@ -167,7 +179,7 @@ describe("telemetry Growlink API", () => {
       })
     ]);
     expect(mockApiRequest).toHaveBeenCalledWith(
-      "/api/telemetry/sources?growId=grow_1&workspaceType=personal&targetType=grow&targetRef=grow_1",
+      `${TELEMETRY_ROUTES.SOURCES}?growId=grow_1&workspaceType=personal&targetType=grow&targetRef=grow_1`,
       { method: "GET" }
     );
   });

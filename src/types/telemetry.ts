@@ -10,6 +10,16 @@ export type TelemetryWorkspaceScope = {
   targetRef?: string;
 };
 
+export type TelemetryCredentialWorkspaceScope =
+  | {
+      workspaceType: "personal" | "commercial";
+      facilityId?: never;
+    }
+  | {
+      workspaceType: "facility";
+      facilityId: string;
+    };
+
 export type TelemetrySource = {
   id: string;
   growId: string;
@@ -138,38 +148,6 @@ export type PulseVerifyResult = {
 };
 
 export type PulsePullResult = {
-  sourceId: string;
-  pulled: number;
-  ingested?: number;
-  updated: number;
-  skipped?: number;
-  startIso: string;
-  endIso: string;
-  lastPointIso?: string;
-};
-
-export type UbiBotChannel = {
-  id: string;
-  name?: string;
-  [k: string]: any;
-};
-
-export type UbiBotVerifyResult = {
-  ok: boolean;
-  [k: string]: any;
-};
-
-export type UbiBotMqttSettingsResult = {
-  host: string;
-  port: number;
-  username: string;
-  password?: string;
-  topic: string;
-  heartbeatUrl?: string;
-  heartbeatIntervalMs?: number;
-};
-
-export type UbiBotPullResult = {
   sourceId: string;
   pulled: number;
   ingested?: number;

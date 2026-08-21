@@ -455,8 +455,12 @@ export default function DataIntegrationsScreen({
     setGrowlinkBusy(true);
     setGrowlinkStatus("");
     try {
-      await verifyGrowlinkCredentials({ userName, password });
-      const controllers = await listGrowlinkControllers({ userName, password });
+      await verifyGrowlinkCredentials({ workspaceType, userName, password });
+      const controllers = await listGrowlinkControllers({
+        workspaceType,
+        userName,
+        password
+      });
       setGrowlinkControllers(controllers);
       const firstControllerId = controllers[0]?.id || "";
       setSelectedGrowlinkControllerId((current) => current || firstControllerId);

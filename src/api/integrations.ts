@@ -194,11 +194,18 @@ export async function autoBuildIntegrationSpaces(
 }
 
 export async function listIntegrationSpaces(input: {
-  mode: IntegrationWorkspaceType;
+  workspaceType: IntegrationWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
   targetRef: string;
   targetType?: IntegrationTargetType;
 }): Promise<IntegrationGrowSpace[]> {
-  const query = new URLSearchParams({ mode: input.mode, targetRef: input.targetRef });
+  const query = new URLSearchParams({
+    workspaceType: input.workspaceType,
+    targetRef: input.targetRef
+  });
+  if (input.workspaceId) query.set("workspaceId", input.workspaceId);
+  if (input.facilityId) query.set("facilityId", input.facilityId);
   if (input.targetType) query.set("targetType", input.targetType);
   const response = await apiRequest(`/api/integrations/spaces?${query.toString()}`);
   return dataOf(response)?.spaces ?? [];

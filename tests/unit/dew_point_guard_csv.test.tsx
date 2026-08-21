@@ -516,13 +516,23 @@ describe("Dew Point Guard CSV flow", () => {
 
     fireEvent.press(getByTestId("dpg-mode-source"));
     fireEvent.changeText(getByTestId("dpg-pulse-api-key"), "PULSE-SECRET");
+    expect(getByTestId("dpg-pulse-api-key").props.accessibilityLabel).toBe(
+      "Pulse API key"
+    );
+    expect(getByTestId("dpg-pulse-api-key").props.secureTextEntry).toBe(true);
     fireEvent.press(getByTestId("dpg-pulse-verify-devices"));
 
     await waitFor(() =>
-      expect(mockVerifyPulseApiKey).toHaveBeenCalledWith("PULSE-SECRET")
+      expect(mockVerifyPulseApiKey).toHaveBeenCalledWith({
+        workspaceType: "personal",
+        apiKey: "PULSE-SECRET"
+      })
     );
     await waitFor(() =>
-      expect(mockListPulseDevices).toHaveBeenCalledWith("PULSE-SECRET")
+      expect(mockListPulseDevices).toHaveBeenCalledWith({
+        workspaceType: "personal",
+        apiKey: "PULSE-SECRET"
+      })
     );
     await waitFor(() => expect(getByText("Flower Room")).toBeTruthy());
 
@@ -560,6 +570,31 @@ describe("Dew Point Guard CSV flow", () => {
             })
           }
         }
+      })
+    );
+    await waitFor(() => expect(getByTestId("dpg-pulse-api-key").props.value).toBe(""));
+  });
+
+  it("passes the selected Facility scope when checking Pulse credentials", async () => {
+    const { getByTestId } = render(
+      <DewPointGuard historyImportMode workspaceType="facility" facilityId="facility-2" />
+    );
+
+    fireEvent.changeText(getByTestId("dpg-pulse-api-key"), "FACILITY-PULSE-SECRET");
+    fireEvent.press(getByTestId("dpg-pulse-verify-devices"));
+
+    await waitFor(() =>
+      expect(mockVerifyPulseApiKey).toHaveBeenCalledWith({
+        workspaceType: "facility",
+        facilityId: "facility-2",
+        apiKey: "FACILITY-PULSE-SECRET"
+      })
+    );
+    await waitFor(() =>
+      expect(mockListPulseDevices).toHaveBeenCalledWith({
+        workspaceType: "facility",
+        facilityId: "facility-2",
+        apiKey: "FACILITY-PULSE-SECRET"
       })
     );
   });

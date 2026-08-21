@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 import GrowIntegrationBuildPanel from "@/components/integrations/GrowIntegrationBuildPanel";
 
@@ -139,7 +139,78 @@ describe("GrowIntegrationBuildPanel", () => {
       workspaceType: "facility",
       facilityId: "facility-1"
     });
+    expect(mockListSpaces).toHaveBeenCalledWith({
+      workspaceType: "facility",
+      facilityId: "facility-1",
+      targetRef: "facility-grow-1",
+      targetType: "grow"
+    });
     expect(mockTestConnection).toHaveBeenCalledWith("connection-zentra");
+  });
+
+  it("does not show a stale Facility when two Facilities reuse the same grow ID", async () => {
+    let resolveFacilityOneSpaces: (spaces: any[]) => void = () => undefined;
+    const facilityOneSpaces = new Promise<any[]>((resolve) => {
+      resolveFacilityOneSpaces = resolve;
+    });
+    mockListSpaces.mockImplementation(({ facilityId }) => {
+      if (facilityId === "facility-1") return facilityOneSpaces;
+      return Promise.resolve([
+        {
+          id: "facility-2-space",
+          connectionId: "connection-1",
+          provider: "pulse",
+          name: "Facility Two Room",
+          zoneName: "Canopy",
+          devices: [],
+          permissionLevel: "read_only"
+        }
+      ]);
+    });
+
+    const view = render(
+      <GrowIntegrationBuildPanel
+        mode="facility"
+        facilityId="facility-1"
+        targetRef="duplicate-grow-id"
+      />
+    );
+    await waitFor(() =>
+      expect(mockListSpaces).toHaveBeenCalledWith({
+        workspaceType: "facility",
+        facilityId: "facility-1",
+        targetRef: "duplicate-grow-id",
+        targetType: "grow"
+      })
+    );
+
+    view.rerender(
+      <GrowIntegrationBuildPanel
+        mode="facility"
+        facilityId="facility-2"
+        targetRef="duplicate-grow-id"
+      />
+    );
+    expect(await screen.findByText("Facility Two Room / Canopy")).toBeTruthy();
+
+    await act(async () => {
+      resolveFacilityOneSpaces([
+        {
+          id: "facility-1-space",
+          connectionId: "connection-1",
+          provider: "pulse",
+          name: "Facility One Room",
+          zoneName: "Canopy",
+          devices: [],
+          permissionLevel: "read_only"
+        }
+      ]);
+    });
+
+    await waitFor(() =>
+      expect(screen.queryByText("Facility One Room / Canopy")).toBeNull()
+    );
+    expect(screen.getByText("Facility Two Room / Canopy")).toBeTruthy();
   });
 
   it("requires reviewed mapping before an idempotent workspace build", async () => {

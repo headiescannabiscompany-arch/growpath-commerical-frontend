@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
@@ -51,6 +51,7 @@ export default function GrowIntegrationBuildPanel({
   const [status, setStatus] = useState("");
   const [selectedProviderId, setSelectedProviderId] = useState("");
   const [credential, setCredential] = useState("");
+  const loadGenerationRef = useRef(0);
   const workspaceScope = useMemo(
     () => ({
       workspaceType: mode,
@@ -61,13 +62,15 @@ export default function GrowIntegrationBuildPanel({
   const workspaceScopeReady = mode !== "facility" || Boolean(facilityId);
 
   const load = useCallback(async () => {
+    const loadGeneration = ++loadGenerationRef.current;
     if (!targetRef || !workspaceScopeReady) return;
     try {
       const [connectionRows, spaceRows, providerRows] = await Promise.all([
         listIntegrationConnections(workspaceScope),
-        listIntegrationSpaces({ mode, targetRef, targetType: "grow" }),
+        listIntegrationSpaces({ ...workspaceScope, targetRef, targetType: "grow" }),
         listIntegrationProviders()
       ]);
+      if (loadGeneration !== loadGenerationRef.current) return;
       setConnections(connectionRows);
       setSpaces(spaceRows);
       setProviders(providerRows);
@@ -81,12 +84,24 @@ export default function GrowIntegrationBuildPanel({
           ""
       );
     } catch (error) {
+      if (loadGeneration !== loadGenerationRef.current) return;
       setStatus(errorMessage(error));
     }
-  }, [mode, targetRef, workspaceScope, workspaceScopeReady]);
+  }, [targetRef, workspaceScope, workspaceScopeReady]);
 
   useEffect(() => {
+    loadGenerationRef.current += 1;
+    setConnections([]);
+    setSpaces([]);
+    setConnectionId("");
+    setMappings([]);
+    setConfirmed(false);
+    setCredential("");
+    setStatus("");
     void load();
+    return () => {
+      loadGenerationRef.current += 1;
+    };
   }, [load]);
 
   const connectableProviders = providers.filter(

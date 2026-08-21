@@ -139,10 +139,16 @@ describe("Data Integrations Growlink flow", () => {
 
     await waitFor(() =>
       expect(mockVerifyGrowlinkCredentials).toHaveBeenCalledWith({
+        workspaceType: "personal",
         userName: "grower@example.com",
         password: "secret"
       })
     );
+    expect(mockListGrowlinkControllers).toHaveBeenCalledWith({
+      workspaceType: "personal",
+      userName: "grower@example.com",
+      password: "secret"
+    });
     await waitFor(() => expect(screen.getByText("Flower A")).toBeTruthy());
     expect(screen.getByText("Room import preview")).toBeTruthy();
     expect(screen.getByText("Suggested room: Flower A")).toBeTruthy();
