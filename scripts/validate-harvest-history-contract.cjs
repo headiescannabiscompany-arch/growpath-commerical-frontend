@@ -289,8 +289,8 @@ requireText(
 
 [
   [
-    "export screen loads records",
-    /listPersonalLogs[\s\S]*listPersonalTasks[\s\S]*listPersonalPlants[\s\S]*listToolRuns/
+    "workspace-aware export screen loads records",
+    /loadAcrossGrows[\s\S]*listWorkspaceLogs[\s\S]*listWorkspaceTasks[\s\S]*listWorkspacePlants[\s\S]*listToolRuns/
   ],
   ["export rows", /buildExportRows/],
   ["CSV export", /exportToCsv[\s\S]*Export CSV/],
