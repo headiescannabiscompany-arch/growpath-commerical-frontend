@@ -133,16 +133,16 @@ Every applicable story must preserve these invariants without repeating them in 
 See `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md` for the complete tool
 inventory, safety boundaries and mandatory production scenarios.
 
-| ID   | User story | Status |
-| ---- | ---------- | ------ |
-| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation | defined; not started |
-| B-02 | Core inventory and lot history with reviewed alerts, imports/exports and no automatic ordering | partial; business acceptance open |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness | defined; not started |
-| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control | partial; business acceptance open |
-| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation | partial; business acceptance open |
-| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open |
-| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result | defined; cross-cutting acceptance open |
-| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios | defined; final acceptance open |
+| ID   | User story                                                                                                    | Status                                 |
+| ---- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | defined; not started                   |
+| B-02 | Core inventory and lot history with reviewed alerts, imports/exports and no automatic ordering                | partial; business acceptance open      |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | defined; not started                   |
+| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | partial; business acceptance open      |
+| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | partial; business acceptance open      |
+| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open          |
+| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | defined; cross-cutting acceptance open |
+| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | defined; final acceptance open         |
 
 Full regulator/POS adapters, serialized recall workflows, forecasting, CRM/ERP/accounting,
 dynamic pricing, marketplace/payout/tax tooling, and cross-platform creator analytics are
@@ -181,11 +181,21 @@ Dipladenia/Mandevilla, are excluded from the Cary/Maydale publication batch.
 
 ## Immediate execution order
 
-1. Close P-03 through P-06 and N-01/N-03 with a new ordinary production observation
-   using retained-media metadata, authorized device GPS, or a reviewed manual pin. Legacy
+1. Preserve the completed integrated-candidate Personal, paid-Commercial and Platform-Admin
+   read-only evidence. Keep incomplete mutation/provider/role scenarios as explicit open
+   slices rather than repeating already-proven route checks.
+2. Close P-03 through P-06 and N-01/N-03 with a new ordinary production observation using
+   retained-media metadata, authorized device GPS, or a reviewed manual pin. Legacy
    Cary/Maydale recovery is optional and does not block the future workflow.
-2. Reconcile every `partial` row against retained evidence; close only live-accepted slices.
-3. Complete B-01 through B-09 before the final crawl.
-4. Implement remaining functional gaps.
-5. Run the final frozen-SHA crawl and professional visual/accessibility pass once.
-6. Resolve independent review, then hats, then app stores last.
+3. Reconcile every `partial` row against retained evidence; close only live-accepted slices.
+   P-10 remains explicitly open for persisted export plus share review/cancel/publish/
+   withdrawal even though the visual timeline and deep link are live.
+4. Complete only the lightweight business foundations and acceptance boundaries retained in
+   B-01 through B-09 for existing GrowPath workflows. Do not reintroduce the removed POS,
+   regulator, serialized-recall, forecasting, CRM/ERP/accounting, dynamic-pricing,
+   marketplace/payout/tax, or cross-platform analytics projects.
+5. Implement the remaining in-scope functional gaps, then run one final frozen-SHA
+   professional route/action, visual, accessibility, responsive-device and recovery crawl.
+6. Isolate and deliberately accept or reject independent reviewer suggestions.
+7. Pause for owner review, then complete hats.
+8. Complete App Store and Play Store work last.
