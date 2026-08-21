@@ -377,6 +377,18 @@ export default function CommercialTabsLayout() {
         name="tools/history-import"
         options={{ title: "Import Grow History", href: null }}
       />
+      <Tabs.Screen
+        name="tools/ipm-scout"
+        options={{ title: "IPM Scout", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="tools/saved-runs"
+        options={{ title: "Saved AI Runs", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="tools/species-crop-id"
+        options={{ title: "Plant & Crop Identification", href: null, headerShown: false }}
+      />
     </Tabs>
   );
 }

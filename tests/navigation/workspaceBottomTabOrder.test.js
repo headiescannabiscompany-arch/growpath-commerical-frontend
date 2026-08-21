@@ -68,7 +68,10 @@ describe("workspace bottom-tab order", () => {
       "analytics",
       "tasks",
       "social-tools",
-      "links"
+      "links",
+      "tools/ipm-scout",
+      "tools/saved-runs",
+      "tools/species-crop-id"
     ]) {
       expect(screenBlock(contents, name)).toContain("href: null");
     }
