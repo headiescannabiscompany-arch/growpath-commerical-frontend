@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import {
   ActivityIndicator,
   Image,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -36,6 +37,10 @@ export function formatGrowStartDate(value?: string) {
   const localDate = new Date(Number(year), Number(month) - 1, Number(day));
   if (Number.isNaN(localDate.getTime())) return String(value).slice(0, 10);
   return localDate.toLocaleDateString();
+}
+
+export function supportsPullToRefresh(platform = Platform.OS) {
+  return platform !== "web";
 }
 
 function safeText(value: unknown) {
@@ -320,13 +325,15 @@ export default function PersonalGrowsRoute({
       style={[styles.page, { backgroundColor: palette.page }]}
       contentContainerStyle={styles.pageContent}
       refreshControl={
-        <RefreshControl
-          colors={[palette.accent]}
-          progressBackgroundColor={palette.surface}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={palette.accent}
-        />
+        supportsPullToRefresh() ? (
+          <RefreshControl
+            colors={[palette.accent]}
+            progressBackgroundColor={palette.surface}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={palette.accent}
+          />
+        ) : undefined
       }
     >
       <View style={styles.stack}>
