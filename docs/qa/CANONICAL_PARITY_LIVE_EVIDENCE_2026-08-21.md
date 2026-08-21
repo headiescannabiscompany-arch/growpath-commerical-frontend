@@ -22,6 +22,159 @@ acceptance remains incomplete.
 - Available workspaces shown: Personal and Facility
 - Facility displayed: `Triple Bag Genetics, llc`
 
+## Integrated release-candidate continuation
+
+The repair batches were subsequently integrated and deployed on the following exact
+candidate. The earlier evidence in this document remains evidence for its named slices;
+the checks below identify the production behavior that was repeated after integration.
+
+- Frontend merge SHA: `2c5d7ccb14b9113a18dcb5d04027f9e031b215de`
+- Frontend Render deploy: `dep-da46rttckfvc738cfge0`
+- Render status observed in the signed-in dashboard: `Deploy succeeded`
+- Served web bundle observed from `https://growpathai.com`:
+  `index-6f583fc8542b51d41ea56270d7ffc5ba.js`
+- Frontend CI for the final Commercial navigation repair: run `32496746432`, success
+- Backend merge SHA and production fingerprint:
+  `growpath-backend|git=c7b7674c783414a02af4f0ab2ff7f59e8279e652|ts=2026-08-21T12:40:07.400Z`
+- `GET https://api.growpathai.com/api/health` returned `{"ok":true}` during the
+  continuation.
+
+The integrated frontend history includes Commercial grow/tool parity, scoped
+automation/tasks, future Nature metadata/GPS/manual-pin and withdrawal safeguards,
+Admin safety investigation surfaces, device connection/history-import scope, and the
+retained hosted OBS/live lifecycle. The backend candidate includes the matching Nature,
+Commercial/Facility automation and task isolation, device integration, hosted-live and
+account-cleanup repairs.
+
+### Personal production continuation
+
+- Account: retained signed-in `EtGU_Jay` Personal workspace.
+- `/home/personal/grows/?acceptance=legacy-id-live-5b20368` rendered two populated grows
+  without a runtime error.
+- The latest-grow dashboard actions resolved the legacy `_id`
+  `6a603a8fda5c5bfdc030ac1b` instead of linking back to the grows index.
+- Activating `Timeline` navigated to
+  `/home/personal/grows/6a603a8fda5c5bfdc030ac1b/timeline` and rendered the visual
+  timeline, workspace tabs, Lifecycle/Month/Week/Day detail controls, viewer-friendly
+  export, and review-before-share continuation without a runtime error.
+- This proves the repaired production navigation and preserves P-10 as `partial`.
+  Download persistence plus share review/cancel/publish/withdraw remain unexercised and
+  are not claimed.
+
+### Commercial production continuation
+
+- Account: `jcindc2012@gmail.com` in Chrome, Commercial workspace.
+- The Commercial dashboard, AI Tools, Saved AI Runs, device integrations, Commercial
+  Lives, and shared Live Studio loaded without browser runtime errors.
+- AI Tools truthfully reported `Commercial plan: FREE (inactive)` and `5 / 5` weekly
+  credits. Saved AI Runs truthfully rendered an empty Commercial-scoped history.
+- Device integrations required a selected or created grow before connection/import,
+  kept the legacy Personal Growlink path disabled, and distinguished implemented,
+  access-required, gateway-required and contract-pending providers.
+- Commercial Lives exposed private-draft creation, scheduling, visibility, replay,
+  Twitch readiness and links to the retained shared Live Studio. Live Studio exposed
+  outside destinations, GrowPath-hosted broadcast, OBS/Streamlabs guidance, GrowPath
+  chat, outside-picker export, premieres, Discord announcements and explicit
+  review-before-publish behavior.
+- `/home/commercial/grows` returned the honest backend error `Commercial plan required`.
+  Therefore positive paid-Commercial grow, task, automation, comparison, persistence and
+  role acceptance remains open; this account cannot close those slices.
+- The initial integrated candidate exposed undeclared alias routes `tools/ipm-scout`,
+  `tools/saved-runs`, and `tools/species-crop-id` as raw extra tabs after Profile. PR
+  `#712` explicitly excluded all three aliases and extended the six-destination navigation
+  regression. The exact deployed candidate above was then retested at
+  `/home/commercial/profile/?acceptance=nav-live-2c5d7cc`: the bottom bar contained only
+  Dashboard, Storefront, Feed / Campaigns, Forum, More, and Profile, with Profile selected
+  and no browser runtime error.
+
+#### Paid Commercial read-only continuation
+
+- Account: `jcindc2003@yahoo.com`, Commercial workspace for the `Living Soil Labs`
+  storefront, with a Facility-tier plan. This is distinct from the `Triple Bag Genetics`
+  Facility workspace.
+- Dashboard reported the correct signed-in identity, Facility-tier entitlement, Living
+  Soil Labs storefront slug, draft publication state, and zero-product state.
+- Commercial Grows loaded without an entitlement error and exposed Create Grow, AI Tools,
+  Diagnosis and Tasks. The create route exposed crop-aware common/scientific/alternate
+  names, lifespan, production/harvest pattern, dormancy, establishment and first-harvest
+  planning fields. No production grow was created during this read-only pass.
+- Commercial AI Tools reported `FACILITY (trialing)`, `2000 / 2000` weekly credits and
+  exposed Ask AI, Diagnose, Plant ID, IPM, Environment, formula/mix builders, Saved Runs,
+  evidence runs, Batch Planner, Commercial Tasks and the Tool Library. Saved Runs rendered
+  an honest empty Commercial-scoped state.
+- Commercial Tasks rendered the unified queue, schedule/reminder/recurrence controls,
+  source types and zero-task state without a browser runtime error. No task was created.
+- Device Integrations required selecting or creating a Commercial grow, kept the legacy
+  Personal Growlink path disabled, and truthfully distinguished implemented,
+  access-required, gateway-required and contract-pending providers.
+- Commercial Lives and the shared Live Studio loaded without runtime errors. They exposed
+  private-draft creation, explicit publication, outside destinations, GrowPath-hosted OBS
+  broadcast, GrowPath chat/overlay, premieres, viewer playback controls and Discord
+  announcements. No live session or external connection was created.
+- Storefront and Products rendered Living Soil Labs' truthful draft/empty readiness state,
+  product setup fields and regulated-cannabis checkout warning without a runtime error.
+- The additional read-only crawl loaded Feed / Campaigns, Brand Forum / Q&A, Commercial
+  Inventory Support, Commercial Analytics, Orders, Courses, Soil & Nutrient Batch Planner,
+  Product Lines, Product Trials and Profile. Every route retained the six-destination
+  Commercial bottom navigation and produced zero browser runtime errors.
+- This evidence proves route availability, scope/copy/empty-state behavior and the repaired
+  bottom navigation for the named production candidate. It does not prove mutation,
+  persistence, role collaboration, automation execution, populated comparison, provider
+  connection or recovery behavior; those acceptance slices remain open.
+
+### Platform Admin production continuation
+
+- Account: `admin@growpathai.com`; the control center identified the session as
+  `GROWPATHAI PLATFORM OWNER` and rendered Administration without a runtime error.
+- The overview rendered current presence and registered-user counts, Personal/Commercial/
+  Facility account totals, recent product activity and separate security, regulated-
+  commerce, calibration, knowledge-governance, user, work, support, moderation and legal/
+  evidence sections.
+- Security visibility reported zero open investigations, zero submitted security reports
+  and zero resolved security records across the connected GrowPath sources. Source coverage
+  truthfully marked submitted reports, high/critical safety reports, audited enforcement and
+  failed integration deliveries as connected, while marking Sentry Admin read access as not
+  configured. The page explicitly warned that disconnected, truncated or unconfigured
+  sources are not represented as complete.
+- The Admin work queue reported `Active: 3 · Completed: 9`. Active support was empty;
+  completed support history remained available behind `Show completed work`. Opening that
+  view displayed retained resolved records and required a reason before any reopen action.
+- Three active moderation cases were visible with target type, severity, status, reporter
+  reason, retained preview and exact action controls. The first course case opened
+  `/courses?courseId=6a663d0508a5c374af9abf28&moderationCaseId=6a68ef972ac7c03b43039160`,
+  loaded the exact reported QA course, and returning through the Admin deep link focused the
+  matching case with `Opened from a moderation investigation link`. No moderation action was
+  taken.
+- Legal/evidence intake stated that preservation is separate from disclosure and that
+  approval/disclosure remain unavailable until the backend enforces legal approval,
+  minimum-scope manifests, recipient/method recording and chain of custody. Opening the
+  Admin-only intake exposed typed authority, requester, jurisdiction, target, minimum-scope
+  and date fields and stated that creation alone does not preserve, approve, disclose or
+  notify. The untouched form was canceled; no request was created.
+- `Switch workspace` showed the Admin identity with separate Personal and Commercial modes.
+  Opening Commercial rendered `admin@growpathai.com | pro plan` and the Admin-owned draft
+  brand shell with one product; it did not expose Living Soil Labs or Triple Bag Genetics.
+- Admin logout required an explicit confirmation. Confirming navigated to `/login`, and a
+  subsequent direct `/admin` request returned `Platform owner access required`, proving that
+  the authenticated identity and saved workspace selection had been cleared. No browser
+  runtime errors occurred during the Admin pass.
+- This proves positive-role Admin discoverability, current read-only platform visibility,
+  moderation deep linking, completed-history presentation, fail-closed disclosure UI,
+  workspace isolation and confirmed logout for the exact candidate. A-01 through A-05 remain
+  `partial`: this pass intentionally did not mutate user/security/moderation/legal records,
+  exercise assignment/reopen/preservation persistence, or prove a backend disclosure and
+  chain-of-custody workflow that the UI itself marks unavailable.
+
+### Signed-out public-route continuation
+
+- After the confirmed Admin logout, the exact candidate was crawled without an authenticated
+  session at `/`, `/store`, `/courses`, `/videos`, `/lives`, `/field-observations`, `/forum`,
+  `/privacy`, `/terms` and `/support`.
+- Every route rendered its intended public heading, completed its loading state, avoided an
+  access-denied state and produced zero browser runtime errors. This proves signed-out route
+  availability only; it does not close populated filtering, enrollment/purchase, playback,
+  comment, RSVP/chat, Nature-pin or support-submission mutations.
+
 ## Accepted read-only slices
 
 ### Workspace boundary

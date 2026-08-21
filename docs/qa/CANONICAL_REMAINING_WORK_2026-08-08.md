@@ -20,20 +20,22 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-1. **Active batch:** close matrix rows P-03 through P-06 and the populated N-01/N-03
-   acceptance slice with one new ordinary production observation. The source date/location
-   may come from retained-media metadata, separately authorized device GPS, or a reviewed
-   manual pin; all remain private until a distinct publish confirmation. Legacy Cary/Maydale
-   recovery is optional and nonblocking. The separate house crape myrtle and all
-   potted-house records remain private. Then continue matrix reconciliation without
-   reopening accepted slices.
-2. **Next product batches:** finish the still-open Personal/Commercial/Facility/public
-   workflow and mutation items in sections B-F, including provider/device mapping where
-   real credentials or imports are available. Do not reopen retained Hosted Live/OBS,
-   crop-to-grow, Plant ID transport, or other checked implementation unless a current
-   regression is reproduced.
-3. **Release crawl:** after product/workflow items are closed, run the complete live
-   route, button, responsive, theme, accessibility, persistence, security, and visual
+1. **Completed current release-candidate slice:** exact-candidate Personal, paid Commercial
+   and Platform Admin read-only acceptance is recorded. Commercial mutation, provider,
+   populated-compare, role and recovery slices remain explicitly open. Admin mutation,
+   assignment/reopen/preservation and backend disclosure/chain-of-custody slices remain
+   explicitly open. Do not repeat the accepted routes without a reproduced regression.
+2. **Active next product batch:** close P-03 through P-06 and the populated N-01/N-03 acceptance
+   slice with one new ordinary production observation. Source date/location may come from
+   retained-media metadata, separately authorized device GPS, or a reviewed manual pin;
+   all remain private until a distinct publish confirmation. Legacy Cary/Maydale recovery
+   is optional and nonblocking. The separate house crape myrtle and all potted-house records
+   remain private. Then finish the still-open Personal/Commercial/Facility/public workflow
+   and mutation slices, including P-10 persisted export and share review/cancel/publish/
+   withdrawal. Do not reopen retained Hosted Live/OBS, crop-to-grow, Plant ID transport, or
+   another checked implementation unless a current regression is reproduced.
+3. **Release crawl:** after the in-scope product/workflow items are closed, run the complete
+   live route, button, responsive, theme, accessibility, persistence, security, and visual
    presentation crawl and repair the defects it finds. Include a route-to-visible-entry
    matrix for every user-facing feature so a working subsystem cannot remain buried like
    Hosted Lives was: record its intended workspace/role, visible entry, canonical URL,
