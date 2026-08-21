@@ -136,14 +136,18 @@ inventory, safety boundaries and mandatory production scenarios.
 | ID   | User story | Status |
 | ---- | ---------- | ------ |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation | defined; not started |
-| B-02 | Inventory, lots, movement, quality, reorder, holds and recall workbench | partial; business acceptance open |
-| B-03 | Lawful regulated-retail reconciliation, menu quality and staff tools | defined; provider/jurisdiction review open |
-| B-04 | Horticulture store/nursery seasonal, label-aware, fulfillment and care-help tools | defined; not started |
-| B-05 | Facility device, environment, crop/room/labor, quality, SOP and maintenance intelligence | partial; business acceptance open |
-| B-06 | Creator/educator content, live, community and partner operations tools | partial; business acceptance open |
-| B-07 | Truthful storefront, pricing analysis and lawful-commerce handoff | partial; regulated gates open |
+| B-02 | Core inventory and lot history with reviewed alerts, imports/exports and no automatic ordering | partial; business acceptance open |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness | defined; not started |
+| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control | partial; business acceptance open |
+| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation | partial; business acceptance open |
+| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open |
 | B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result | defined; cross-cutting acceptance open |
 | B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios | defined; final acceptance open |
+
+Full regulator/POS adapters, serialized recall workflows, forecasting, CRM/ERP/accounting,
+dynamic pricing, marketplace/payout/tax tooling, and cross-platform creator analytics are
+**removed from the active roadmap**. They are not completion blockers; the detailed
+reconsideration rule is owned by `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md`.
 
 ## Nature, Admin and release
 
