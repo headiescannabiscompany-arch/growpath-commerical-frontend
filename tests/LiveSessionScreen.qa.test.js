@@ -638,6 +638,191 @@ describe("LiveSessionScreen QA", () => {
     expect(getByText("End broadcast")).toBeTruthy();
   });
 
+  it("does not offer a manual start action for scheduled Twitch sessions", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      if (url === "/api/lives/twitch-scheduled" && options.method === "GET") {
+        return Promise.resolve({
+          _id: "twitch-scheduled",
+          owner: { id: "host-1", displayName: "Host" },
+          title: "Scheduled Twitch clinic",
+          status: "scheduled",
+          isPublished: true,
+          broadcastMode: "external",
+          streamPlatform: "twitch",
+          twitchChannel: "growpath",
+          chatEnabled: false
+        });
+      }
+      if (url === "/api/lives/twitch-scheduled/rsvp") {
+        return Promise.resolve({ rsvped: false });
+      }
+      return Promise.resolve({});
+    });
+
+    const { getByText, queryByText } = renderWithNav({
+      sessionId: "twitch-scheduled"
+    });
+
+    await waitFor(() => expect(getByText("End scheduled session")).toBeTruthy());
+    expect(queryByText("Start live session")).toBeNull();
+  });
+
+  it("serializes start and end actions so their responses cannot race", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    let resolveStart;
+    let endCalls = 0;
+    const startPromise = new Promise((resolve) => {
+      resolveStart = resolve;
+    });
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      if (url === "/api/lives/external-race" && options.method === "GET") {
+        return Promise.resolve({
+          _id: "external-race",
+          owner: { id: "host-1", displayName: "Host" },
+          title: "Outside stream race check",
+          status: "scheduled",
+          isPublished: true,
+          broadcastMode: "external",
+          streamPlatform: "youtube",
+          chatEnabled: false
+        });
+      }
+      if (url === "/api/lives/external-race/rsvp") {
+        return Promise.resolve({ rsvped: false });
+      }
+      if (url === "/api/lives/external-race/start" && options.method === "POST") {
+        return startPromise;
+      }
+      if (url === "/api/lives/external-race/end" && options.method === "POST") {
+        endCalls += 1;
+        return Promise.resolve({ session: { status: "ended" } });
+      }
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithNav({ sessionId: "external-race" });
+    fireEvent.press(await waitFor(() => getByText("Start live session")));
+    fireEvent.press(getByText("End scheduled session"));
+
+    expect(endCalls).toBe(0);
+    await act(async () => {
+      resolveStart({
+        session: {
+          _id: "external-race",
+          owner: { id: "host-1", displayName: "Host" },
+          title: "Outside stream race check",
+          status: "live",
+          isPublished: true,
+          broadcastMode: "external",
+          streamPlatform: "youtube",
+          chatEnabled: false
+        }
+      });
+    });
+    await waitFor(() => expect(getByText("live")).toBeTruthy());
+  });
+
+  it("ignores a hosted-status poll that began before provider-stop recovery", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    let resolveHostedStatus;
+    let hostedStatusRequested = false;
+    const hostedStatusPromise = new Promise((resolve) => {
+      resolveHostedStatus = resolve;
+    });
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      if (url === "/api/lives/hosted-stale" && options.method === "GET") {
+        return Promise.resolve({
+          _id: "hosted-stale",
+          owner: { id: "host-1", displayName: "Host" },
+          title: "Stale poll check",
+          status: "live",
+          isPublished: true,
+          broadcastMode: "growpath",
+          chatEnabled: false
+        });
+      }
+      if (url === "/api/lives/hosted-stale/rsvp") {
+        return Promise.resolve({ rsvped: false });
+      }
+      if (url === "/api/lives/hosted-stale/hosted-status") {
+        hostedStatusRequested = true;
+        return hostedStatusPromise;
+      }
+      if (url === "/api/lives/hosted-stale/end" && options.method === "POST") {
+        return Promise.resolve({
+          session: {
+            _id: "hosted-stale",
+            owner: { id: "host-1", displayName: "Host" },
+            title: "Stale poll check",
+            status: "ended",
+            isPublished: true,
+            broadcastMode: "growpath",
+            chatEnabled: false
+          },
+          providerStopPending: true
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithNav({ sessionId: "hosted-stale" });
+    await waitFor(() => expect(hostedStatusRequested).toBe(true));
+    fireEvent.press(getByText("End broadcast"));
+    await waitFor(() => expect(getByText("Retry provider stop")).toBeTruthy());
+
+    await act(async () => {
+      resolveHostedStatus({
+        lifecycle: "connected",
+        sessionStatus: "live",
+        providerStopPending: false
+      });
+    });
+
+    expect(getByText("Retry provider stop")).toBeTruthy();
+  });
+
+  it("uses hosted polling to refresh the canonical session status", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      if (url === "/api/lives/hosted-promoted" && options.method === "GET") {
+        return Promise.resolve({
+          _id: "hosted-promoted",
+          owner: { id: "host-1", displayName: "Host" },
+          title: "Hosted status promotion",
+          status: "scheduled",
+          isPublished: true,
+          broadcastMode: "growpath",
+          chatEnabled: false
+        });
+      }
+      if (url === "/api/lives/hosted-promoted/rsvp") {
+        return Promise.resolve({ rsvped: false });
+      }
+      if (url === "/api/lives/hosted-promoted/hosted-status") {
+        return Promise.resolve({
+          lifecycle: "connected",
+          sessionStatus: "live",
+          providerStopPending: false
+        });
+      }
+      if (url === "/api/lives/hosted-promoted/playback") return Promise.resolve({});
+      return Promise.resolve({});
+    });
+
+    const { getByText, queryByText } = renderWithNav({
+      sessionId: "hosted-promoted"
+    });
+
+    await waitFor(() => expect(getByText("live")).toBeTruthy());
+    expect(queryByText("scheduled")).toBeNull();
+    expect(getByText("End broadcast")).toBeTruthy();
+  });
+
   it("shows the public creator identity and follow control", async () => {
     mockUseAuth.mockReturnValue({ user: { _id: "viewer-1" }, isAuthed: true });
     mockUseEntitlements.mockReturnValue({ can: () => false });
