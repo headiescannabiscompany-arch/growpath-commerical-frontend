@@ -534,16 +534,26 @@ function legacyStorefrontScreenUsesCommercialOwnerScreen() {
 function facilityIntegrationsUsesRoomImport(routes) {
   const source = routeSource(routes, "/home/facility/integrations");
   if (!source) return false;
-  return (
+  const sharedBuildPanelFlow =
     /Connect rooms and sensor data/.test(source) &&
-    /\blistIntegrationConnections\b/.test(source) &&
-    /\bfetchIntegrationStructure\b/.test(source) &&
-    /\bpreviewIntegrationMapping\b/.test(source) &&
-    /\bconfirmIntegrationMapping\b/.test(source) &&
-    /\bautoBuildIntegrationSpaces\b/.test(source) &&
+    /GrowIntegrationBuildPanel/.test(source) &&
+    /mode="facility"/.test(source) &&
+    /targetRef=\{selectedGrowId\}/.test(source) &&
+    /facilityId=\{facilityId\}/.test(source) &&
+    /canConfigure=\{canConfigure\}/.test(source) &&
     /read-only/i.test(source) &&
-    source.includes('router.push("/home/facility/rooms"') &&
-    /role === "OWNER" \|\| role === "MANAGER"/.test(source)
+    /role === "OWNER" \|\| role === "MANAGER"/.test(source);
+  return (
+    sharedBuildPanelFlow ||
+    (/Connect rooms and sensor data/.test(source) &&
+      /\blistIntegrationConnections\b/.test(source) &&
+      /\bfetchIntegrationStructure\b/.test(source) &&
+      /\bpreviewIntegrationMapping\b/.test(source) &&
+      /\bconfirmIntegrationMapping\b/.test(source) &&
+      /\bautoBuildIntegrationSpaces\b/.test(source) &&
+      /read-only/i.test(source) &&
+      source.includes('router.push("/home/facility/rooms"') &&
+      /role === "OWNER" \|\| role === "MANAGER"/.test(source))
   );
 }
 
