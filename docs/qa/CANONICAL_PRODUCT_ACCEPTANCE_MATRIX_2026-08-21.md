@@ -71,6 +71,10 @@ Every applicable story must preserve these invariants without repeating them in 
    visible before the user commits an action.
 10. Completed behavior is not reopened without a reproduced regression, changed requirement
     or final-candidate cross-cutting failure.
+11. A requested capability is not removed merely because its current implementation is weak.
+    Repair its workflow, placement, evidence and results. Retire a route or component only when
+    it is a true duplicate or superseded implementation and the complete capability remains
+    discoverable through the canonical path with migration or redirect coverage.
 
 ## Personal and grow workflows
 
