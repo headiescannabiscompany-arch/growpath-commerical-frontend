@@ -39,6 +39,8 @@ close a populated or mutating story.
 ## Document ownership
 
 - This matrix owns product stories, status and execution order.
+- `CANONICAL_USER_STORY_ACCEPTANCE_2026-08-21.md` defines the acceptance scenarios for
+  each matrix ID; it contains no independent status or execution order.
 - `CANONICAL_REMAINING_WORK_2026-08-08.md` is the detailed evidence and remainder ledger.
 - `USER_REQUEST_LEDGER_2026-08-13.md` preserves request and completion history.
 - Method documents in `docs/knowledge/methods` own durable domain behavior; matching
