@@ -12,6 +12,8 @@ import {
 import { useRouter } from "expo-router";
 
 import { listLives } from "../api/lives";
+import { useAuth } from "../auth/AuthContext";
+import FollowButton from "../components/FollowButton";
 import { useAppTheme, type ThemePalette } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 
@@ -145,6 +147,15 @@ function sessionThumb(item: LiveSession) {
   );
 }
 
+function sessionOwner(item: LiveSession) {
+  const owner = item?.owner && typeof item.owner === "object" ? item.owner : {};
+  return {
+    id: text(owner?.id || owner?._id || item?.ownerId || item?.userId),
+    displayName: text(owner?.displayName || owner?.name || "GrowPath member"),
+    avatarUrl: text(owner?.avatarUrl || owner?.avatar || owner?.photoUrl)
+  };
+}
+
 function matchesQuery(item: LiveSession, query: string) {
   if (!query) return true;
   const haystack = [
@@ -193,6 +204,7 @@ function cardLabelFor(item: LiveSession) {
 
 export default function LiveSessionsListScreen() {
   const router = useRouter();
+  const auth = useAuth();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [sessions, setSessions] = useState<LiveSession[]>([]);
@@ -327,13 +339,13 @@ export default function LiveSessionsListScreen() {
     const sessionId = sessionIdOf(item);
     const campaign = campaignHref(item);
     const thumb = sessionThumb(item);
+    const owner = sessionOwner(item);
+    const signedInUserId = text(auth?.user?.id || auth?.user?._id);
 
     return (
-      <Pressable
-        accessibilityRole="button"
+      <View
         key={sessionId || titleOf(item)}
-        onPress={() => openSession(item)}
-        style={({ pressed }) => [styles.sessionCard, pressed && styles.pressed]}
+        style={styles.sessionCard}
       >
         {thumb ? (
           <Image
@@ -357,6 +369,21 @@ export default function LiveSessionsListScreen() {
           <Text style={styles.sessionTitle} numberOfLines={2}>
             {titleOf(item)}
           </Text>
+          {owner.id ? (
+            <View style={styles.ownerRow}>
+              {owner.avatarUrl ? (
+                <Image
+                  accessibilityLabel={`${owner.displayName} avatar`}
+                  source={{ uri: owner.avatarUrl }}
+                  style={styles.ownerAvatar}
+                />
+              ) : null}
+              <Text style={styles.ownerName}>Hosted by {owner.displayName}</Text>
+              {signedInUserId && signedInUserId !== owner.id ? (
+                <FollowButton userId={owner.id} />
+              ) : null}
+            </View>
+          ) : null}
           {summaryOf(item) ? (
             <Text style={styles.description} numberOfLines={3}>
               {summaryOf(item)}
@@ -387,7 +414,7 @@ export default function LiveSessionsListScreen() {
             ) : null}
           </View>
         </View>
-      </Pressable>
+      </View>
     );
   }
 
@@ -692,6 +719,14 @@ export function createStyles(palette: ThemePalette) {
     },
     badgeSecondaryText: { color: palette.info, fontSize: 12, fontWeight: "800" },
     sessionTitle: { color: palette.text, fontSize: 17, fontWeight: "900" },
+    ownerRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8
+    },
+    ownerAvatar: { borderRadius: 18, height: 36, width: 36 },
+    ownerName: { color: palette.textSoft, flexGrow: 1, fontWeight: "800" },
     description: { color: palette.textSoft, lineHeight: 20 },
     meta: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
     actionRow: {

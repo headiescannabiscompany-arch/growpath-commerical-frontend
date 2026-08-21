@@ -9,8 +9,13 @@ const mockGetHostedLiveStatus = jest.fn();
 const mockListHostedLiveChannels = jest.fn();
 const mockListLives = jest.fn();
 const mockDeleteLive = jest.fn();
+const mockGetLive = jest.fn();
+const mockPublishLive = jest.fn();
+const mockUpdateLive = jest.fn();
+let mockSearchParams: Record<string, string> = {};
 
 jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => mockSearchParams,
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() })
 }));
 
@@ -25,10 +30,13 @@ jest.mock("@/entitlements", () => ({
 jest.mock("@/api/lives", () => ({
   createLive: jest.fn(),
   deleteLive: (...args: any[]) => mockDeleteLive(...args),
+  getLive: (...args: any[]) => mockGetLive(...args),
   getHostedLiveStatus: (...args: any[]) => mockGetHostedLiveStatus(...args),
   listLives: (...args: any[]) => mockListLives(...args),
   listHostedLiveChannels: (...args: any[]) => mockListHostedLiveChannels(...args),
-  provisionHostedLiveInput: jest.fn()
+  publishLive: (...args: any[]) => mockPublishLive(...args),
+  provisionHostedLiveInput: jest.fn(),
+  updateLive: (...args: any[]) => mockUpdateLive(...args)
 }));
 jest.mock("@/api/videos", () => ({
   listVideoLibrary: (...args: any[]) => mockListVideoLibrary(...args)
@@ -45,6 +53,8 @@ jest.mock("@/components/schedule/SchedulePicker", () => () => null);
 
 describe("LiveStudioRoute", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
+    mockSearchParams = {};
     mockListVideoLibrary.mockResolvedValue({ videos: [] });
     mockGetDiscordLiveConnection.mockResolvedValue({
       configured: false,
@@ -58,6 +68,15 @@ describe("LiveStudioRoute", () => {
     mockListHostedLiveChannels.mockResolvedValue([]);
     mockListLives.mockResolvedValue([]);
     mockDeleteLive.mockResolvedValue({ success: true });
+    mockPublishLive.mockResolvedValue({
+      session: { id: "draft-1", status: "scheduled", isPublished: true }
+    });
+    mockUpdateLive.mockResolvedValue({
+      id: "draft-1",
+      title: "Updated draft",
+      status: "draft",
+      isPublished: false
+    });
   });
 
   it("offers all-account live and premiere creation without a GrowPath picker", async () => {
@@ -136,5 +155,67 @@ describe("LiveStudioRoute", () => {
 
     await waitFor(() => expect(mockDeleteLive).toHaveBeenCalledWith("draft-1"));
     await waitFor(() => expect(screen.queryByText("Spring garden Q&A")).toBeNull());
+  });
+
+  it("uses a separate reviewed publish action for a scheduled private draft", async () => {
+    mockListLives.mockResolvedValue([
+      {
+        id: "draft-1",
+        title: "Reviewed garden Q&A",
+        isPublished: false,
+        status: "scheduled",
+        startsAt: "2026-09-01T18:00:00Z",
+        sessionType: "live"
+      }
+    ]);
+
+    render(<LiveStudioRoute />);
+
+    fireEvent.press(
+      await screen.findByRole("button", {
+        name: "Publish scheduled session Reviewed garden Q&A"
+      })
+    );
+    await waitFor(() =>
+      expect(mockPublishLive).toHaveBeenCalledWith("draft-1", { goLiveNow: false })
+    );
+    expect(
+      screen.queryByRole("button", { name: "Delete Reviewed garden Q&A" })
+    ).toBeNull();
+    expect(await screen.findByText("The reviewed scheduled session is published."))
+      .toBeTruthy();
+  });
+
+  it("loads a private draft into the shared editor and saves without publishing", async () => {
+    mockSearchParams = { editSessionId: "draft-1" };
+    mockGetLive.mockResolvedValue({
+      id: "draft-1",
+      title: "Original draft",
+      description: "Review me",
+      status: "draft",
+      isPublished: false,
+      sessionType: "live",
+      broadcastMode: "external",
+      streamPlatform: "twitch",
+      twitchChannel: "growpath"
+    });
+
+    render(<LiveStudioRoute />);
+
+    const title = await screen.findByLabelText("Live session title");
+    fireEvent.changeText(title, "Updated draft");
+    fireEvent.press(screen.getByRole("button", { name: "Save private draft changes" }));
+
+    await waitFor(() =>
+      expect(mockUpdateLive).toHaveBeenCalledWith(
+        "draft-1",
+        expect.objectContaining({
+          title: "Updated draft",
+          status: "draft",
+          isPublished: false
+        })
+      )
+    );
+    expect(mockPublishLive).not.toHaveBeenCalled();
   });
 });

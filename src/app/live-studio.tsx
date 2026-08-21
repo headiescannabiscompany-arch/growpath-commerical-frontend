@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Pressable,
   Platform,
@@ -9,15 +9,18 @@ import {
   TextInput,
   View
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import {
   createLive,
   deleteLive,
+  getLive,
   getHostedLiveStatus,
   listLives,
   listHostedLiveChannels,
-  provisionHostedLiveInput
+  publishLive,
+  provisionHostedLiveInput,
+  updateLive
 } from "@/api/lives";
 import {
   connectDiscordLive,
@@ -31,6 +34,12 @@ import { useAuth } from "@/auth/AuthContext";
 import BackButton from "@/components/nav/BackButton";
 import SchedulePicker from "@/components/schedule/SchedulePicker";
 import { useEntitlements } from "@/entitlements";
+import {
+  isUnpublishedLive,
+  isUnpublishedLiveDraft,
+  livePublishIntent,
+  liveSessionId
+} from "@/features/lives/liveLifecycle";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -52,6 +61,12 @@ const STREAM_DESTINATIONS: Array<{ value: StreamPlatform; label: string }> = [
 
 export default function LiveStudioRoute() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ editSessionId?: string | string[] }>();
+  const editSessionId = String(
+    Array.isArray(params.editSessionId)
+      ? params.editSessionId[0] || ""
+      : params.editSessionId || ""
+  ).trim();
   const auth = useAuth();
   const entitlements = useEntitlements();
   const { palette } = useAppTheme();
@@ -70,7 +85,6 @@ export default function LiveStudioRoute() {
   const [videos, setVideos] = useState<GrowPathVideo[]>([]);
   const [chatEnabled, setChatEnabled] = useState(true);
   const [slowMode, setSlowMode] = useState("5");
-  const [isPublished, setIsPublished] = useState(false);
   const [giveawayEnabled, setGiveawayEnabled] = useState(false);
   const [giveawayKeyword, setGiveawayKeyword] = useState("#giveaway");
   const [saving, setSaving] = useState(false);
@@ -89,11 +103,28 @@ export default function LiveStudioRoute() {
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState("");
   const [deletingSessionId, setDeletingSessionId] = useState("");
+  const [publishingSessionId, setPublishingSessionId] = useState("");
+  const [editingSession, setEditingSession] = useState<any>(null);
+  const [editingLoading, setEditingLoading] = useState(false);
+  const [notice, setNotice] = useState("");
   const [hostedChannelLabel, setHostedChannelLabel] = useState("My OBS channel");
   const [hostedCredentials, setHostedCredentials] = useState<HostedCredentials | null>(
     null
   );
   const [savedSessionId, setSavedSessionId] = useState("");
+
+  const refreshSessions = useCallback(async () => {
+    if (!auth.isAuthed) return;
+    setSessionsLoading(true);
+    try {
+      const sessions = await listLives({ mine: true });
+      setMySessions(Array.isArray(sessions) ? sessions : []);
+    } catch {
+      setMySessions([]);
+    } finally {
+      setSessionsLoading(false);
+    }
+  }, [auth.isAuthed]);
 
   useEffect(() => {
     if (!auth.isAuthed) return;
@@ -120,12 +151,62 @@ export default function LiveStudioRoute() {
 
   useEffect(() => {
     if (!auth.isAuthed) return;
-    setSessionsLoading(true);
-    listLives({ mine: true })
-      .then((sessions) => setMySessions(Array.isArray(sessions) ? sessions : []))
-      .catch(() => setMySessions([]))
-      .finally(() => setSessionsLoading(false));
-  }, [auth.isAuthed]);
+    void refreshSessions();
+  }, [auth.isAuthed, refreshSessions]);
+
+  useEffect(() => {
+    if (!auth.isAuthed || !editSessionId) {
+      setEditingSession(null);
+      setEditingLoading(false);
+      return;
+    }
+    let alive = true;
+    setEditingLoading(true);
+    setError("");
+    getLive(editSessionId)
+      .then((session: any) => {
+        if (!alive) return;
+        const platform = STREAM_DESTINATIONS.some(
+          (destination) => destination.value === session?.streamPlatform
+        )
+          ? session.streamPlatform
+          : "twitch";
+        setEditingSession(session);
+        setSessionType(session?.sessionType === "premiere" ? "premiere" : "live");
+        setBroadcastMode(session?.broadcastMode === "growpath" ? "growpath" : "external");
+        setTitle(String(session?.title || ""));
+        setDescription(String(session?.description || ""));
+        setStreamPlatform(platform as StreamPlatform);
+        setTwitchChannel(String(session?.twitchChannel || session?.twitchChannelName || ""));
+        setExternalWatchUrl(String(session?.externalWatchUrl || ""));
+        setExternalPlatformLabel(String(session?.externalPlatformLabel || ""));
+        setStartsAt(String(session?.startsAt || session?.scheduledStart || ""));
+        setReminder(String(session?.reminderPreference || "24 hours before"));
+        setSourceVideoId(String(session?.sourceVideoId?.id || session?.sourceVideoId || ""));
+        setChatEnabled(session?.chatEnabled !== false);
+        setSlowMode(String(session?.chatSlowModeSeconds ?? 5));
+        setGiveawayEnabled(Boolean(session?.giveawayRelay?.enabled));
+        setGiveawayKeyword(String(session?.giveawayRelay?.keyword || "#giveaway"));
+        if (session?.hostedLive?.channelId) {
+          hostedChannelSelectionTouched.current = true;
+          setHostedChannelId(String(session.hostedLive.channelId));
+        }
+        setSavedSessionId(liveSessionId(session));
+        setHostedCredentials(null);
+      })
+      .catch((cause: any) => {
+        if (alive) {
+          setError(String(cause?.message || cause || "Unable to open this live session."));
+          setEditingSession(null);
+        }
+      })
+      .finally(() => {
+        if (alive) setEditingLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [auth.isAuthed, editSessionId]);
 
   useEffect(() => {
     if (!auth.isAuthed) return;
@@ -157,6 +238,36 @@ export default function LiveStudioRoute() {
       setError(String(cause?.message || cause || "Unable to delete this draft."));
     } finally {
       setDeletingSessionId("");
+    }
+  }
+
+  async function publishDraft(session: any) {
+    const sessionId = liveSessionId(session);
+    if (!sessionId || publishingSessionId) return;
+    const intent = livePublishIntent(session);
+    setPublishingSessionId(sessionId);
+    setError("");
+    setNotice("");
+    try {
+      const result: any = await publishLive(sessionId, {
+        goLiveNow: intent.goLiveNow
+      });
+      const published = result?.session || result;
+      setMySessions((current) =>
+        current.map((item) =>
+          liveSessionId(item) === sessionId ? { ...item, ...published } : item
+        )
+      );
+      if (liveSessionId(editingSession) === sessionId) setEditingSession(published);
+      setNotice(
+        intent.goLiveNow
+          ? "The reviewed session is published live."
+          : "The reviewed scheduled session is published."
+      );
+    } catch (cause: any) {
+      setError(String(cause?.message || cause || "Unable to publish this session."));
+    } finally {
+      setPublishingSessionId("");
     }
   }
 
@@ -248,8 +359,9 @@ export default function LiveStudioRoute() {
     }
     setSaving(true);
     setError("");
+    setNotice("");
     try {
-      const result: any = await createLive({
+      const payload = {
         title: title.trim(),
         description: description.trim(),
         sessionType,
@@ -278,9 +390,9 @@ export default function LiveStudioRoute() {
         startsAt: startsAt || null,
         scheduledStart: startsAt,
         reminderPreference: reminder,
-        status: startsAt ? "scheduled" : isPublished ? "live" : "draft",
-        isPublished,
-        visibility: "public",
+        status: "draft",
+        isPublished: false,
+        visibility: editingSession?.visibility || "public",
         chatEnabled,
         chatSlowModeSeconds: Math.max(0, Math.min(300, Number(slowMode) || 0)),
         overlaySettings: {
@@ -299,24 +411,30 @@ export default function LiveStudioRoute() {
           oneEntryPerUser: true,
           providers: []
         }
-      });
-      const id = String(result?.session?.id || result?.session?._id || "");
+      };
+      const result: any = editSessionId
+        ? await updateLive(editSessionId, payload)
+        : await createLive(payload);
+      const saved = result?.session || result;
+      const id = liveSessionId(saved) || editSessionId;
       if (!id) throw new Error("The session was saved but could not be opened.");
-      if (sessionType === "live" && broadcastMode === "growpath") {
+      setSavedSessionId(id);
+      setEditingSession(saved);
+      if (!editSessionId && sessionType === "live" && broadcastMode === "growpath") {
         const provisioned: any = await provisionHostedLiveInput(
           id,
           hostedChannelId
             ? { channelId: hostedChannelId }
             : { channelLabel: hostedChannelLabel.trim() || "My OBS channel" }
         );
-        setSavedSessionId(id);
         setHostedCredentials(provisioned?.credentials || null);
-        if (!provisioned?.credentials) {
-          router.replace(`/live-session?sessionId=${encodeURIComponent(id)}` as any);
-        }
-        return;
       }
-      router.replace(`/live-session?sessionId=${encodeURIComponent(id)}` as any);
+      await refreshSessions();
+      setNotice(
+        saved?.isPublished
+          ? "Session changes saved. Its published state was preserved."
+          : "Private draft saved. Review it below, then use the explicit Publish action when it is ready."
+      );
     } catch (cause: any) {
       setError(String(cause?.message || cause || "Unable to save this session."));
     } finally {
@@ -358,7 +476,7 @@ export default function LiveStudioRoute() {
       <View style={styles.hero}>
         <Text style={styles.kicker}>Live Studio</Text>
         <Text accessibilityRole="header" aria-level={1} style={styles.title}>
-          Create a live or video premiere
+          {editSessionId ? "Edit live session" : "Create a live or video premiere"}
         </Text>
         <Text style={styles.subtitle}>
           Available to Personal, Commercial, and Facility accounts. GrowPath chat can be
@@ -366,6 +484,12 @@ export default function LiveStudioRoute() {
           destinations; outside services remain responsible for giveaway selection.
         </Text>
       </View>
+
+      {notice ? (
+        <Text accessibilityLiveRegion="polite" style={styles.noticeText}>
+          {notice}
+        </Text>
+      ) : null}
 
       <View style={styles.card}>
         <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
@@ -382,8 +506,13 @@ export default function LiveStudioRoute() {
           <Text style={styles.muted}>You have not created a live or premiere yet.</Text>
         ) : null}
         {mySessions.map((session) => {
-          const sessionId = String(session?.id || session?._id || "");
-          const isDraft = !session?.isPublished;
+          const sessionId = liveSessionId(session);
+          const isUnpublished = isUnpublishedLive(session);
+          const mayDelete = isUnpublishedLiveDraft(session);
+          const publishIntent = livePublishIntent(session);
+          const mayEdit = ["draft", "scheduled"].includes(
+            String(session?.status || "draft")
+          );
           return (
             <View key={sessionId} style={styles.sessionRow}>
               <View style={styles.settingCopy}>
@@ -391,7 +520,9 @@ export default function LiveStudioRoute() {
                   {session.title || "Untitled session"}
                 </Text>
                 <Text style={styles.muted}>
-                  {isDraft ? "Private draft" : session.status || "Published"}
+                  {isUnpublished
+                    ? "Private draft"
+                    : session.status || "Published"}
                   {session.sessionType === "premiere"
                     ? " · Video premiere"
                     : " · Live stream"}
@@ -408,9 +539,38 @@ export default function LiveStudioRoute() {
                   }
                   style={styles.secondaryButton}
                 >
-                  <Text style={styles.secondaryButtonText}>Open</Text>
+                  <Text style={styles.secondaryButtonText}>Preview</Text>
                 </Pressable>
-                {isDraft ? (
+                {mayEdit ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Edit ${session.title || "untitled session"}`}
+                    onPress={() =>
+                      router.push(
+                        `/live-studio?editSessionId=${encodeURIComponent(sessionId)}` as any
+                      )
+                    }
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryButtonText}>Edit</Text>
+                  </Pressable>
+                ) : null}
+                {isUnpublished ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${publishIntent.label} ${session.title || "untitled session"}`}
+                    disabled={publishingSessionId === sessionId}
+                    onPress={() => void publishDraft(session)}
+                    style={styles.primaryButton}
+                  >
+                    <Text style={styles.primaryButtonText}>
+                      {publishingSessionId === sessionId
+                        ? "Publishing..."
+                        : publishIntent.label}
+                    </Text>
+                  </Pressable>
+                ) : null}
+                {mayDelete ? (
                   confirmDeleteId === sessionId ? (
                     <>
                       <Pressable
@@ -794,15 +954,14 @@ export default function LiveStudioRoute() {
             />
           </>
         ) : null}
-        <View style={styles.settingRow}>
-          <View style={styles.settingCopy}>
-            <Text style={styles.settingTitle}>Go live now</Text>
-            <Text style={styles.muted}>
-              Publishes this session now. Leave off to save a private draft or scheduled
-              session.
-            </Text>
-          </View>
-          <Switch value={isPublished} onValueChange={setIsPublished} />
+        <View style={styles.notice}>
+          <Text style={styles.settingTitle}>Review before publishing</Text>
+          <Text style={styles.muted}>
+            New sessions always save as private drafts. After reviewing the title,
+            schedule, destination, chat, and visibility, use the explicit Publish action
+            in Your live sessions. Editing a published scheduled session keeps it
+            published.
+          </Text>
         </View>
       </View>
 
@@ -945,15 +1104,21 @@ export default function LiveStudioRoute() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Pressable
         accessibilityRole="button"
-        disabled={saving || Boolean(hostedCredentials)}
+        disabled={saving || editingLoading || Boolean(hostedCredentials)}
         onPress={save}
         style={[
           styles.primaryButton,
-          (saving || Boolean(hostedCredentials)) && styles.disabled
+          (saving || editingLoading || Boolean(hostedCredentials)) && styles.disabled
         ]}
       >
         <Text style={styles.primaryButtonText}>
-          {saving ? "Saving..." : isPublished ? "Publish session" : "Save draft"}
+          {saving
+            ? "Saving..."
+            : editSessionId
+              ? editingSession?.isPublished
+                ? "Save published session changes"
+                : "Save private draft changes"
+              : "Save private draft"}
         </Text>
       </Pressable>
     </ScrollView>
@@ -1080,6 +1245,7 @@ function createStyles(palette: ThemePalette) {
     settingTitle: { color: palette.text, fontWeight: "900" },
     muted: { color: palette.textMuted, lineHeight: 20 },
     linkText: { color: palette.accent, fontWeight: "900" },
+    noticeText: { color: palette.info, fontWeight: "800", lineHeight: 20 },
     error: { color: palette.danger, fontWeight: "800" },
     primaryButton: {
       alignItems: "center",

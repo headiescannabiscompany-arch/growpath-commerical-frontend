@@ -35,6 +35,17 @@ export function updateLive(id, data) {
   });
 }
 
+export function publishLive(id, { goLiveNow = false } = {}) {
+  return apiRequest(apiRoutes.LIVES.PUBLISH(id), {
+    method: "POST",
+    body: { goLiveNow: Boolean(goLiveNow) }
+  });
+}
+
+export function endLive(id) {
+  return apiRequest(apiRoutes.LIVES.END(id), { method: "POST", body: {} });
+}
+
 export function deleteLive(id) {
   return apiRequest(apiRoutes.LIVES.DELETE(id), { method: "DELETE" });
 }

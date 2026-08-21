@@ -685,7 +685,11 @@ export const methodRegistry: GrowPathMethod[] = [
       "two explicit broadcast modes: outside provider URL with embed-or-handoff behavior, and first-party GrowPath encoder ingest with adaptive in-app playback",
       "private account-owned reusable encoder channel with revocable ingest secret, explicit saved-channel default or deliberate new-channel choice, draft/live control, stream health states, GrowPath chat, and reviewed replay retention",
       "provider-confirmed ready recording discovery after hosted encoder disconnect with newly authorized playback against the recording video identifier",
+      "server-enforced private draft creation and explicit reviewed publish action shared by Live Studio and Commercial Lives",
+      "worker-driven OBS connect, disconnect, ended, and idempotent replay transitions bounded to the exact session recording window",
+      "atomic retained session end before hosted-input shutdown with explicit provider-stop retry state",
       "host-owned session manager for opening drafts, scheduled sessions, active broadcasts, and replays with confirmed draft deletion",
+      "server-owned creator identity and follow control on public live directory and detail surfaces",
       "outside-picker JSON or CSV entry feed",
       "provider-confirmed linked-identity relay status",
       "replay, moderation, and deletion audit continuity"
@@ -700,6 +704,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never treat chat or giveaway engagement as scientific evidence or AI-training permission.",
       "Never use a bare Live format label beside a draft or disconnected session in a way that implies the session is broadcasting now.",
       "Never advertise or reserve viewer delivery for a hosted replay before the provider confirms the recording is ready, and never sign replay playback against the reusable live-input identifier.",
+      "Never publish through create or generic edit, auto-publish a Commercial schedule, delete a published or ended session or its chat, or disable and unbind hosted input before the retained end transition succeeds.",
       "Never label the OBS chat overlay as first-party live-video hosting or expose a GrowPath stream key before ingest, transcoding, playback, authorization, moderation, retention, quotas, abuse response, and observability are verified end to end."
     ],
     ["lives", "live-chat", "premieres", "obs-overlay", "external-picker-feed"]

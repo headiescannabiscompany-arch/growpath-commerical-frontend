@@ -24,17 +24,17 @@ import { useAppTheme } from "../theme/appTheme";
 import { radius } from "../theme/theme";
 import { recordCommercialAnalyticsEvent } from "../api/commercialAnalytics";
 import ReportModal from "../components/ReportModal";
+import FollowButton from "../components/FollowButton";
 import { currentPublicUrl, sharePublicLink } from "../utils/publicLinks";
 import {
   deleteLiveChatMessage,
+  endLive,
   getHostedLiveLifecycle,
   getHostedLivePlayback,
   listLiveChat,
-  releaseHostedLiveInput,
   rotateHostedLiveInput,
   rotateLiveOverlayToken,
-  sendLiveChat,
-  updateLive
+  sendLiveChat
 } from "../api/lives";
 
 export function buildLiveShareTargets(title, sessionId) {
@@ -145,7 +145,9 @@ export default function LiveSessionScreen({ route }) {
     };
   }, [sessionId]);
 
-  const twitchChannel = session?.twitchChannel ? String(session.twitchChannel) : "";
+  const twitchChannel = session?.twitchChannel || session?.twitchChannelName
+    ? String(session.twitchChannel || session.twitchChannelName)
+    : "";
   const streamPlatform = String(
     session?.streamPlatform || (twitchChannel ? "twitch" : "other")
   );
@@ -276,6 +278,15 @@ export default function LiveSessionScreen({ route }) {
   const ownerId = String(
     session?.owner?.id || session?.owner?._id || session?.ownerId || session?.userId || ""
   );
+  const ownerDisplayName = String(
+    session?.owner?.displayName || session?.owner?.name || "GrowPath member"
+  );
+  const ownerAvatarUrl = String(
+    session?.owner?.avatarUrl ||
+      session?.owner?.avatar ||
+      session?.owner?.photoUrl ||
+      ""
+  );
   const signedInUserId = String(auth?.user?.id || auth?.user?._id || "");
   const canReport = Boolean(signedInUserId) && (!ownerId || ownerId !== signedInUserId);
   const isHost = Boolean(signedInUserId && ownerId === signedInUserId);
@@ -368,8 +379,7 @@ export default function LiveSessionScreen({ route }) {
     if (endingLive) return;
     setEndingLive(true);
     try {
-      if (isGrowPathHosted) await releaseHostedLiveInput(sessionId);
-      const result = await updateLive(sessionId, { status: "ended" });
+      const result = await endLive(sessionId);
       setSession(result?.session || result || { ...session, status: "ended" });
       setHostedLifecycle("ended");
       setFeedback(
@@ -554,6 +564,21 @@ export default function LiveSessionScreen({ route }) {
           <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
             {String(session.title || "Untitled Session")}
           </Text>
+          {ownerId ? (
+            <View style={styles.hostRow}>
+              {ownerAvatarUrl ? (
+                <Image
+                  accessibilityLabel={`${ownerDisplayName} avatar`}
+                  source={{ uri: ownerAvatarUrl }}
+                  style={styles.hostAvatar}
+                />
+              ) : null}
+              <Text style={styles.hostName}>
+                Hosted by {ownerDisplayName}
+              </Text>
+              {signedInUserId && !isHost ? <FollowButton userId={ownerId} /> : null}
+            </View>
+          ) : null}
           {session.description ? (
             <Text style={styles.description}>{String(session.description)}</Text>
           ) : null}
@@ -1136,6 +1161,15 @@ export function createStyles(palette) {
       borderColor: palette.border
     },
     cardTitle: { color: palette.text, fontSize: 22, fontWeight: "900" },
+    hostRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+      marginTop: 10
+    },
+    hostAvatar: { borderRadius: 20, height: 40, width: 40 },
+    hostName: { color: palette.textSoft, flexGrow: 1, fontWeight: "800" },
     description: {
       color: palette.textSoft,
       fontSize: 14,

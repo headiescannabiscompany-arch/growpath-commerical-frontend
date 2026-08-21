@@ -6,6 +6,15 @@ import LiveSessionsListScreen, { createStyles } from "@/screens/LiveSessionsList
 const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({ isAuthed: true, user: { id: "viewer-1" } })
+}));
+jest.mock("@/components/FollowButton", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return ({ userId }: any) =>
+    React.createElement(Text, { accessibilityLabel: `Follow ${userId}` }, "Follow");
+});
 jest.mock("@/api/apiRequest", () => ({
   apiRequest: () =>
     Promise.resolve([
@@ -16,6 +25,11 @@ jest.mock("@/api/apiRequest", () => ({
         twitchChannel: "growpath",
         startsAt: "2026-08-02T18:00:00Z",
         accessLevel: "free",
+        owner: {
+          id: "creator-1",
+          displayName: "Living Soil Labs",
+          avatarUrl: "https://example.com/creator.jpg"
+        },
         isPublished: true,
         rsvpCount: 4,
         replayUrl: "https://twitch.tv/videos/1"
@@ -76,6 +90,8 @@ describe("LiveSessionsListScreen", () => {
     );
     expect(screen.getAllByText(/4 RSVPs/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/^Replay$/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Hosted by Living Soil Labs").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("Follow creator-1").length).toBeGreaterThan(0);
     expect(screen.getByRole("header", { name: "Lives" })).toHaveProp("aria-level", 1);
     fireEvent.press(screen.getAllByText("Open session")[0]);
     expect(mockPush).toHaveBeenCalledWith("/live-session?sessionId=live-1");

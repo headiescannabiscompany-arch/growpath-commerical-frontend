@@ -292,7 +292,7 @@ describe("CommercialLivesRoute", () => {
         name: "Set commercial live visibility to Followers only"
       }).props.accessibilityState?.checked
     ).toBe(true);
-    fireEvent.press(screen.getByLabelText("Schedule commercial live"));
+    fireEvent.press(screen.getByLabelText("Save commercial live private draft"));
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/lives", {
@@ -318,7 +318,8 @@ describe("CommercialLivesRoute", () => {
           growInterests: ["living soil", "dry amendments"],
           visibility: "followers",
           replayUrl: "https://twitch.tv/videos/veg",
-          status: "scheduled",
+          status: "draft",
+          isPublished: false,
           notificationPlan: expect.arrayContaining([
             "24h_before",
             "1h_before",
@@ -343,12 +344,66 @@ describe("CommercialLivesRoute", () => {
     chooseDateTime(screen, "Commercial live scheduled start", "2026-07-20T18:00");
 
     expect(
-      screen.getByLabelText("Schedule commercial live").props.accessibilityState?.disabled
+      screen.getByLabelText("Save commercial live private draft").props
+        .accessibilityState?.disabled
     ).toBe(true);
     expect(mockApiRequest).not.toHaveBeenCalledWith(
       "/api/lives",
       expect.objectContaining({ method: "POST" })
     );
+  });
+
+  it("keeps a commercial schedule private until its explicit reviewed publish action", async () => {
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/lives" && options?.params?.mine) {
+        return Promise.resolve({
+          lives: [
+            {
+              id: "live-draft",
+              title: "Reviewed product demo",
+              description: "Complete live setup",
+              thumbnailUrl: "https://example.com/live.jpg",
+              status: "scheduled",
+              isPublished: false,
+              visibility: "public",
+              scheduledStart: "2026-09-02T18:00:00Z",
+              twitchChannelName: "growpath",
+              twitchEmbedUrl: "https://player.twitch.tv/?channel=growpath",
+              eventSubStatus: "connected",
+              notificationPlan: ["24h_before", "1h_before"]
+            }
+          ]
+        });
+      }
+      if (path === "/api/twitch/status") {
+        return Promise.resolve({ configured: false, connection: null });
+      }
+      if (path === "/api/lives/live-draft/publish" && options?.method === "POST") {
+        return Promise.resolve({
+          session: {
+            id: "live-draft",
+            status: "scheduled",
+            isPublished: true
+          }
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const screen = render(<CommercialLivesRoute />);
+
+    expect(await screen.findByText("Preview Private Draft")).toBeTruthy();
+    expect(screen.getByText("Edit in Live Studio")).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText("Publish scheduled session Reviewed product demo")
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/lives/live-draft/publish",
+        { method: "POST", body: { goLiveNow: false } }
+      )
+    );
+    expect(screen.getByText("Reviewed commercial schedule published.")).toBeTruthy();
   });
 
   it("treats a missing Twitch status route as unavailable setup guidance", async () => {

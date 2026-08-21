@@ -51,6 +51,14 @@ jest.mock("../src/components/ReportModal", () => ({
   }
 }));
 
+jest.mock("../src/components/FollowButton", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return function MockFollowButton({ userId }) {
+    return React.createElement(Text, { accessibilityLabel: `Follow ${userId}` }, "Follow");
+  };
+});
+
 // Avoid rendering the real embed in tests
 jest.mock("../src/screens/LiveSessionTwitchEmbed", () => "LiveSessionTwitchEmbed");
 
@@ -459,6 +467,84 @@ describe("LiveSessionScreen QA", () => {
       else delete Platform.OS;
       globalThis.confirm = originalConfirm;
     }
+  });
+
+  it("ends a hosted broadcast through the atomic endpoint without unbinding first", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockImplementation((url, options = {}) => {
+      if (url === "/api/lives/hosted-end" && options.method === "GET") {
+        return Promise.resolve({
+          _id: "hosted-end",
+          owner: { id: "host-1", displayName: "Host" },
+          title: "Live garden walk",
+          status: "live",
+          isPublished: true,
+          broadcastMode: "growpath",
+          chatEnabled: false
+        });
+      }
+      if (url === "/api/lives/hosted-end/rsvp") {
+        return Promise.resolve({ rsvped: false });
+      }
+      if (url === "/api/lives/hosted-end/hosted-status") {
+        return Promise.resolve({ lifecycle: "connected" });
+      }
+      if (url === "/api/lives/hosted-end/playback") return Promise.resolve({});
+      if (url === "/api/lives/hosted-end/end" && options.method === "POST") {
+        return Promise.resolve({
+          ended: true,
+          session: {
+            _id: "hosted-end",
+            owner: { id: "host-1", displayName: "Host" },
+            title: "Live garden walk",
+            status: "ended",
+            isPublished: true,
+            broadcastMode: "growpath",
+            chatEnabled: false
+          }
+        });
+      }
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithNav({ sessionId: "hosted-end" });
+    fireEvent.press(await waitFor(() => getByText("End broadcast")));
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("/api/lives/hosted-end/end", {
+        method: "POST",
+        body: {}
+      })
+    );
+    expect(
+      mockApiRequest.mock.calls.some(
+        ([url, options]) =>
+          url === "/api/lives/hosted-end/hosted-input" || options?.method === "DELETE"
+      )
+    ).toBe(false);
+    expect(getByText("ended")).toBeTruthy();
+  });
+
+  it("shows the public creator identity and follow control", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "viewer-1" }, isAuthed: true });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockResolvedValueOnce({
+      _id: "creator-live",
+      owner: {
+        id: "creator-1",
+        displayName: "Living Soil Labs",
+        avatarUrl: "https://example.com/avatar.jpg"
+      },
+      title: "Soil clinic",
+      status: "scheduled",
+      isPublished: true
+    });
+
+    const { getByLabelText, getByText } = renderWithNav({ sessionId: "creator-live" });
+
+    await waitFor(() => expect(getByText("Hosted by Living Soil Labs")).toBeTruthy());
+    expect(getByLabelText("Follow creator-1")).toBeTruthy();
   });
 
   it("lets a signed-in non-owner open an exact live-session report", async () => {
