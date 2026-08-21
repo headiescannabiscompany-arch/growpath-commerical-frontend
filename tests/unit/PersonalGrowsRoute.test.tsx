@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import PersonalGrowsRoute, {
   formatGrowStartDate
@@ -10,8 +10,16 @@ const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
-    push: mockPush
-  })
+    back: jest.fn(),
+    canGoBack: () => true,
+    push: mockPush,
+    replace: jest.fn()
+  }),
+  Link: ({ children, href }: any) =>
+    require("react").cloneElement(children, {
+      href,
+      onPress: () => mockPush(href)
+    })
 }));
 
 jest.mock("@/entitlements", () => ({
@@ -31,18 +39,21 @@ jest.mock("@/api/grows", () => ({
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ children, style }: any) => React.createElement(View, { style }, children);
+  return function MockAppCard({ children, style }: any) {
+    return React.createElement(View, { style }, children);
+  };
 });
 
 jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   const React = require("react");
   const { Text } = require("react-native");
-  return ({ placement, routeKey }: any) =>
-    React.createElement(
+  return function MockPersonalFeedPlacement({ placement, routeKey }: any) {
+    return React.createElement(
       Text,
       { testID: `feed-${routeKey}-${placement}` },
       `${routeKey} ${placement} feed`
     );
+  };
 });
 
 describe("PersonalGrowsRoute", () => {
@@ -112,5 +123,8 @@ describe("PersonalGrowsRoute", () => {
     expect(screen.getAllByText("Open Grow").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Journal").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Timeline").length).toBeGreaterThan(0);
+
+    fireEvent.press(screen.getAllByText("Timeline")[0]);
+    expect(mockPush).toHaveBeenCalledWith("/home/personal/grows/grow-1/timeline");
   });
 });
