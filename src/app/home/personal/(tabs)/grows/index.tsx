@@ -223,6 +223,14 @@ export default function PersonalGrowsRoute({
   const activeGrows = useMemo(() => sortedGrows.filter(isActiveGrow), [sortedGrows]);
   const latestGrow = sortedGrows[0];
   const id = String(latestGrow?.id || (latestGrow as any)?._id || "").trim();
+  const integrationToolHref = (growId: string) =>
+    workspace === "commercial"
+      ? `${basePath}/tools/integrations?growId=${growId}`
+      : `/home/personal/tools/integrations?growId=${growId}`;
+  const exportToolHref = (growId: string) =>
+    workspace === "commercial"
+      ? `${basePath}/tools/report?growId=${growId}`
+      : `/home/personal/tools/pdf-export?growId=${growId}`;
   const totalPhotos = useMemo(
     () => sortedGrows.reduce((sum, grow) => sum + growPhotoCount(grow), 0),
     [sortedGrows]
@@ -282,21 +290,21 @@ export default function PersonalGrowsRoute({
     latestGrow
       ? [
           {
-            href: `${basePath}/tools/integrations?growId=${id}`,
+            href: integrationToolHref(id),
             label: "Integrations"
           },
           {
-            href: `${basePath}/tools/${workspace === "commercial" ? "report" : "pdf-export"}?growId=${id}`,
+            href: exportToolHref(id),
             label: "PDF Export"
           }
         ]
       : [
           {
-            href: `${basePath}/tools/integrations?growId=`,
+            href: integrationToolHref(""),
             label: "Integrations"
           },
           {
-            href: `${basePath}/tools/${workspace === "commercial" ? "report" : "pdf-export"}?growId=`,
+            href: exportToolHref(""),
             label: "PDF Export"
           }
         ];
