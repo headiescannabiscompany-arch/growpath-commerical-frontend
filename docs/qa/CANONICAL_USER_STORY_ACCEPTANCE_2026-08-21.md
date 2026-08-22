@@ -185,25 +185,147 @@ responsive behavior, and no console/application error.
 
 ### B-03 — Small Business Desk
 
-- Price & Margin shows deterministic markup, margin, gross-profit and break-even math with
-  visible inputs/formulas; GPT explains but never supplies a missing number.
-- Quote / Estimate calculates reviewed totals and drafts scope, assumptions and exclusions;
-  it never invents cost, tax or terms. The owner may export or hand off a reviewed quote to
-  an authorized invoice/payment provider.
-- Lead Follow-up stores a minimal voluntary opportunity record and drafts the next action
-  without fabricating communication, profiling people or contacting anyone automatically.
-- Job Notes turns recorded intake, meeting notes and attachments into proposed scope,
-  tasks, materials, updates and completion notes; review precedes assignment or commitment.
-- Expense / Receipt Helper extracts schema-validated draft facts from photo/PDF/manual
-  evidence with source and duplicate status; the owner reviews before save or export and
-  receives no tax-deductibility claim.
-- Vendor Compare deterministically compares landed/effective cost and recorded tradeoffs;
-  it may create a reviewed purchase request but never places an order. B-02 owns receiving.
-- Cash-Flow Snapshot separates recorded and expected amounts in user-selected 30/60/90-day
-  scenarios and never invents a balance, payment, expense or sale.
-- Business Ask AI answers only from authorized Desk and B-02 records, links sources/date
-  range, labels incomplete metrics and separates facts, calculations, assumptions,
-  forecasts and recommendations.
+These eight acceptance slices remain one matrix row and carry no independent status. The
+canonical roots are `/home/commercial/business-desk` and
+`/home/facility/business-desk`; each tool returns to the active root. Launch access is
+Commercial Owner and Platform Admin only in
+their own selected Commercial workspace, plus a selected Facility's `OWNER` or `MANAGER`.
+Personal, Commercial staff, Facility `STAFF`/`VIEWER`, QA/validation identities and an Admin
+outside the Admin-owned Commercial workspace are denied before private data loads.
+Commercial AI charges the Commercial account; Facility AI charges the selected Facility.
+Changing workspace, role or permission during a draft invalidates the action and requires a
+fresh review. Deterministic calculation alone consumes no AI credit; only a deliberately
+invoked provider-backed explanation, extraction or Ask request does.
+
+Local construction or focused tests for an individual slice do not satisfy this section.
+B-03 remains open until the combined role, persistence, failure/retry, provider/AI where
+applicable, deployment, and live evidence is recorded against the matrix row.
+
+Across every slice, money uses exact minor-unit/decimal math in one reviewed three-letter
+currency, visible formulas and half-away-from-zero component boundaries. No FX is inferred.
+Private contacts, locations, receipts, cash and costs remain field/record scoped; attachment
+sources are protected, validated, quarantined and disclosed for AI use; stored document text
+cannot instruct the model or tools. Saves, exports and provider handoffs are confirmed,
+idempotent and audited; a stateless unsaved calculation needs no artificial business record.
+
+#### B-03.1 — Price, margin and break-even (`/price-margin`)
+
+- Visible inputs and formulas evaluate one explicit sales scenario at the requested positive
+  `quantityMicros` and produce line totals, gross profit, markup and gross margin. Business
+  fees and fulfillment/shipping cost are whole-scenario costs; customer shipping is
+  whole-scenario revenue; and the fixed discount applies once to the scenario. None is
+  silently recast per unit.
+- Scenario `contributionMinor` is pre-tax customer revenue after discount and including
+  customer shipping, minus extended direct cost, business fees and fulfillment/shipping
+  cost. Break-even repeats that exact scenario with a BigInt-safe positive ceiling and
+  reports `salesScenarios`, total `quantityMicros`, `contributionMinor`, and `revenueMinor`.
+  Missing direct cost or missing/non-positive contribution stays explicitly incomplete;
+  zero revenue/cost keeps the applicable ratio undefined.
+- Break-even is a mode of this tool, not a ninth tool. GPT may explain the deterministic
+  result and assumptions but never supplies a missing amount, currency, quantity or rate.
+- Acceptance covers initial/valid/invalid/incomplete states, currency minor-unit rounding,
+  rejected cross-currency inputs, scenario reset and no persistence/audit side effect until
+  the eligible user explicitly saves a named scenario.
+
+#### B-03.2 — Quote / estimate (`/quotes`)
+
+- A user creates and reloads a reviewed customer/project quote with products/services,
+  labor/materials, known direct costs, discount, fees/shipping, explicit tax, requested
+  deposit, terms, expiry, assumptions and exclusions. The UI distinguishes markup/margin,
+  quote total, requested deposit and provider/user-confirmed prior payment.
+- The customer total is rounded customer-facing line subtotal minus reviewed discount plus
+  customer shipping and explicit user-entered or authorized-provider tax. Customer-facing
+  fees are priced lines; internal business/payment fees and fulfillment/shipping cost affect
+  estimated gross profit but are not silently billed to the customer.
+- Export/copy is always available after review. Editing after export or handoff creates an
+  immutable next revision. Draft, reviewed, exported, provider-draft, expired, superseded
+  and cancelled are distinct and never imply an accepted contract or payment.
+- Optional merchant-owned Stripe Connect uses provider-hosted onboarding and never the
+  GrowPath subscription merchant account. A separate confirmation may create only an
+  idempotent **draft** invoice/payment request pinned to the exact revision, amount and
+  currency. GrowPath does not send, finalize, apply automatic tax, collect, refund, create a
+  payment link or change stock.
+- Acceptance covers copy/export, `DISCONNECTED`/`TEST`/`LIVE`/`REVOKED` connections,
+  cancel/retry,
+  permission changes, provider failure, signature-verified duplicate/out-of-order webhooks
+  and reload. Only provider/user evidence may report later provider status.
+
+#### B-03.3 — Lead follow-up (`/leads`)
+
+- The eligible user creates, edits, archives and reloads a minimal voluntary opportunity
+  containing person/business, contact details, interest, estimated value, source, status,
+  last contact, next action/date, notes and related authorized records.
+- GPT may summarize recorded contact, identify a missing follow-up and draft the next message
+  for review. It never fabricates communication, infers protected/sensitive traits, scores a
+  person from those traits or contacts anyone.
+- Acceptance covers all named statuses, missing/overdue next action, sensitive-field denial,
+  archive/retention/export, duplicate submission and a malicious note treated only as data.
+
+#### B-03.4 — Job notes (`/jobs`)
+
+- The eligible user creates, edits, archives and reloads customer/request, relevant private
+  location, scope, schedule, status, assignee, notes, protected attachments, related quote,
+  external provider reference and completion notes.
+- GPT converts only recorded intake/meeting evidence into proposed scope, tasks, materials,
+  owners, dates, customer update or completion summary. Review precedes every assignment,
+  commitment or communication.
+- Acceptance covers named job states, date/time-zone behavior, attachment rejection and
+  retry, permission change, exact quote/provider link, draft retention after error and PII-
+  redacted export/audit presentation.
+
+#### B-03.5 — Expense / receipt helper (`/expenses`)
+
+- Photo/PDF/manual input enters private quarantine that expires within 24 hours after cancel
+  or abandonment, file safety review, workspace-
+  local digest duplicate review and schema-validated extraction. Vendor, date, amount,
+  readable items, explicitly shown tax, proposed category and optional related record remain
+  drafts until the user reviews and confirms them.
+- Search, date/category filter, totals and formula-safe export use only saved records. GPT may
+  explain spending patterns but never determines deductibility or presents bookkeeping/tax
+  advice.
+- Acceptance covers malformed/mislabeled/oversize/encrypted/malicious files, low confidence,
+  missing fields, prompt injection, cancel/expiry, duplicate isolation across two similarly
+  named workspaces, no save before confirmation and retention/delete/export.
+
+#### B-03.6 — Vendor compare (`/vendors`)
+
+- The user records comparable vendor, item, quantity, unit price, shipping, fees, explicit
+  tax/duty, minimum order, lead time, terms, availability, expiry and notes. Deterministic
+  output distinguishes complete landed cost from a known-cost subtotal with missing inputs.
+- GPT may explain cheapest, fastest, lowest-minimum and the user's stated tradeoffs. A
+  reviewed purchase request is an output of this tool, not a ninth tool, and can never place
+  an order.
+- B-02 is the only inventory writer. The request cannot change quantity/cost/location/lot or
+  receiving; `Received` requires a linked successful B-02 receipt/movement, otherwise an
+  external/manual state is explicitly unverified. Acceptance proves those non-mutation and
+  link boundaries through cancel/retry/reload.
+
+#### B-03.7 — Cash-flow snapshot (`/cash-flow`)
+
+- The eligible user selects explicit owner entries, authorized provider evidence, an owner-
+  selected quote expectation and reviewed expense/bill drafts with source time, expected
+  date, recorded/expected state and currency. A quote is never expected cash merely because
+  it exists; current cash is owner-only.
+- Deterministic 30/60/90-day views show recorded amounts, expected net movement, assumptions,
+  stale/missing sources and separate currencies. No FX, ML forecast, bank balance, payment,
+  expense or sale is invented.
+- Acceptance covers empty/incomplete/stale/conflicting inputs, overdue/upcoming boundaries in
+  the workspace time zone, source removal, permission denial and reload/export without
+  exposing cash to an unauthorized role.
+
+#### B-03.8 — Business Ask AI (`/ask-ai`)
+
+- Ask retrieves only permission-filtered Desk records and authorized read-only B-02 evidence,
+  links sources and date range, labels incomplete KPI output and separates facts,
+  calculations, assumptions, forecasts and recommendations. The KPI snapshot is a view here,
+  not a ninth product.
+- Notes and extracted documents are untrusted evidence rather than instructions. AI may
+  prepare a reviewed quote, follow-up, job update, purchase request or task draft but cannot
+  contact, assign, export, hand off, order or mutate B-02 without the separate authorized
+  confirmation for that destination.
+- Acceptance uses two similar Commercial workspaces and two Facilities to prove retrieval,
+  field-level cost/cash/PII filtering, Facility credit charging/refund, provider failure,
+  source freshness, prompt-injection resistance and no write from an answer alone.
 
 All eight tools reuse calculator, document-extraction, business-record assistant and
 reviewed draft/action engines. They do not expand into full CRM, accounting, ERP, payroll,

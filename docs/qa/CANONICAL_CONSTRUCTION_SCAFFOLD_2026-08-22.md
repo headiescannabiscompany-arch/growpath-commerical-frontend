@@ -131,36 +131,80 @@ claimed as outside giveaway entries. Sharing uses stable viewer URLs, copy/nativ
 reviewed provider targets without silently cross-posting or exposing private data. Course
 cover/banner/hero roles are deliberate and nonduplicated.
 
-### Batch 5 — Commercial and Facility completion
+### Batch 5 — shared business foundation, Commercial and Facility completion
 
-Primary rows: `C-01` through `C-04`, `F-01` through `F-07`.  
-Dependencies: Batches 2–4 and Batch 6 shared business foundation where applicable.  
-Construction boundary: Commercial retains applicable Personal capabilities; Facility roles
-remain authoritative at the backend. Storefront, courses, social and owner tools remain
-discoverable without polluting staff navigation. Facility records, credits, rooms, grows,
-plants, assignments, SOP evidence, inventory and imports remain facility-scoped. Provider
-keys stay server-side/encrypted and imports require preview, explicit mapping and idempotency.
+Primary rows: `B-01`, the remaining production gates of `B-02`, `C-01` through `C-04`, and
+`F-01` through `F-07`.
+Dependencies: Batches 2–4.
+Construction order is fixed inside this batch:
 
-### Batch 6 — lightweight business operations and AI
+1. **5A — B-01 foundation:** freeze workspace/organization/location identity, role and
+   field permissions, approval, AI-credit ownership, import provenance and audit contracts.
+2. **5B — B-02 production gate:** retain the locally accepted canonical ledger and complete
+   only its guarded migration, exact-SHA deployment and multi-role live acceptance. Do not
+   reopen its architecture without a reproduced defect.
+3. **5C — Commercial/Facility completion:** consume 5A/5B from the existing workspace
+   assemblies. Commercial retains applicable Personal capabilities; Facility roles remain
+   authoritative at the backend. Storefront, courses, social and owner tools remain
+   discoverable without polluting staff navigation. Facility records, credits, rooms, grows,
+   plants, assignments, SOP evidence, inventory and imports remain facility-scoped. Provider
+   keys stay server-side/encrypted and imports require preview, explicit mapping and
+   idempotency.
 
-Primary rows: `B-01` through `B-09`.
-Dependencies: Batch 2 identity/audit and existing Commercial/Facility/social assemblies.  
-Construction boundary: establish identity/audit/import provenance, complete B-02 as the one
-lot-aware inventory/receiving/movement/export engine, then build B-03's four reusable engines
-and eight Small Business Desk tools. B-04/B-05 consume B-02; they do not create parallel
-inventory. Continue with horticulture help, reviewed facility intelligence, creator
-essentials, truthful external commerce handoff and realistic acceptance. Do not reintroduce
-regulator/POS, serialized recall recipients, ML forecasting, full CRM/ERP/accounting,
-dynamic pricing, marketplace/payout/tax or cross-platform analytics without the documented
-paying-customer reconsideration gate. AI produces reviewable drafts/tasks, never autonomous
-contact, ordering, equipment control, compliance certification, pricing, publishing or
-legal decisions.
+B-02's exact implementation, test evidence and remaining gates are recorded in
+`B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. The detailed B-02 method is
+`docs/knowledge/methods/business-inventory-method.md`; Small Business Desk prompts receive
+only authorized B-02 references rather than the ledger's implementation contract.
 
-B-02 has completed its construct and local-verification states. Its exact implementation,
-test evidence and remaining guarded migration/deployment/live gates are recorded in
-`B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. Continue with the next contracted
-Batch 6 slice without reopening B-02 unless a reproduced defect or its named production gate
-requires it.
+### Batch 6 — Small Business Desk and retained domain acceptance
+
+Primary rows: `B-03` through `B-09`.
+Dependencies: Batch 5 foundation and existing Commercial/Facility/social assemblies.
+Construction boundary: build B-03's four reusable engines and exactly eight Small Business
+Desk tools, then use B-02 references for B-04/B-05 rather than creating parallel inventory.
+Continue with horticulture help, reviewed facility intelligence, creator essentials,
+truthful external commerce handoff and realistic acceptance. Do not reintroduce regulator/
+POS, serialized recall recipients, ML forecasting, full CRM/ERP/accounting, dynamic pricing,
+marketplace/payout/tax or cross-platform analytics without the documented paying-customer
+reconsideration gate. AI produces reviewable drafts/tasks, never autonomous contact,
+ordering, equipment control, compliance certification, pricing, publishing or legal
+decisions.
+
+#### B-03 construction and automated-acceptance contract
+
+The one B-03 matrix row is built as an engine foundation followed by eight independently
+verifiable slices. This table is a test contract, not a second status list. Both Desk roots
+use the same route suffix: `/home/commercial/business-desk` for a Commercial Owner or
+Platform Admin in the Admin-owned Commercial workspace, and
+`/home/facility/business-desk` for the selected Facility's `OWNER`/`MANAGER`. All other
+launch roles are denied. Commercial AI charges the account; Facility AI charges the
+selected Facility.
+
+Retained evidence checkpoint, 2026-08-22: the shared record/calculator foundation, guarded
+routes, and the seven non-provider tool screens (`/price-margin`, `/quotes`, `/leads`,
+`/jobs`, `/expenses`, `/vendors`, and `/cash-flow`) now have local implementation and
+focused automated evidence. That evidence narrows construction; it does not close B-03.
+Combined cross-role acceptance, any remaining deterministic-slice gaps, credential-backed
+document extraction, Business Ask AI, optional merchant provider handoff, exact-SHA
+deployment, and live acceptance remain open. The canonical matrix continues to own row
+status and must be reconciled only after the combined evidence packet is complete.
+
+| Slice                        | Route           | Required construction                                                                                                                                                                                    | Focused automated acceptance                                                                                                                                                                                                           |
+| ---------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Engine foundation            | Desk root       | Workspace/field authorization, exact money, protected staging/extraction, audited/idempotent drafts, Commercial/Facility credits                                                                         | Two Commercial/two Facility isolation; denied roles; permission change; credit debit/refund; duplicate/prompt-injection/file-safety/export guards                                                                                      |
+| Price, margin and break-even | `/price-margin` | Deterministic calculator; one positive-`quantityMicros` sales scenario with whole-scenario fees, fulfillment/shipping cost, customer shipping and fixed discount; break-even repeats that exact scenario | Formula tables/properties; BigInt-safe ceiling; `salesScenarios`, total `quantityMicros`, `contributionMinor` and `revenueMinor`; missing/non-positive contribution; currency rounding/cross-currency; stateless use creates no record |
+| Quote / estimate             | `/quotes`       | Immutable revisions, copy/export and optional merchant-owned Stripe Connect draft handoff                                                                                                                | Totals/order; save/reload/concurrency; exact revision/amount/currency; `DISCONNECTED`/`TEST`/`LIVE`/`REVOKED`; confirm/cancel/retry/idempotency; signed duplicate/out-of-order webhooks; no send/tax/payment/stock mutation            |
+| Lead follow-up               | `/leads`        | Minimal voluntary opportunity and reviewed follow-up draft                                                                                                                                               | Status/date lifecycle; PII field denial; archive/retention/export; no profiling, fabricated contact or automatic outreach                                                                                                              |
+| Job notes                    | `/jobs`         | Job/intake record, protected attachments and reviewed actions                                                                                                                                            | State/date/time-zone lifecycle; assignee permission; attachment rejection/retry; failed-draft retention; no assignment/communication before confirmation                                                                               |
+| Expense / receipt helper     | `/expenses`     | Private quarantine, workspace digest, schema draft, reviewed save/search/filter/export                                                                                                                   | Malformed/mislabeled/oversize/encrypted/malicious files; low confidence/missing fields; tenant-local duplicate; cancel/expiry/delete; no tax claim                                                                                     |
+| Vendor compare               | `/vendors`      | Exact cost comparison and embedded reviewed purchase request                                                                                                                                             | Complete landed versus known subtotal; missing inputs; no order; no inventory write; `Received` only from linked B-02 evidence                                                                                                         |
+| Cash-flow snapshot           | `/cash-flow`    | Source/freshness-labeled deterministic 30/60/90 views                                                                                                                                                    | Recorded/expected/stale/conflict/date-boundary cases; owner-only cash; separate currencies; no FX, bank or ML inference                                                                                                                |
+| Business Ask AI              | `/ask-ai`       | Permission-filtered Desk/B-02 retrieval, source-linked answer and embedded KPI view                                                                                                                      | Similar-workspace isolation; field filtering; source/date/incomplete output; stored prompt injection ignored; fact/calculation/assumption/forecast/recommendation split; no action without confirmation                                |
+
+Break-even remains a Price/Margin mode, a purchase request is a Vendor Compare output, a KPI
+snapshot is an Ask view, and an invoice/payment-request draft is a Quote handoff. Registry,
+documentation and navigation contract tests must require the exact eight ordered tool IDs so
+none can silently become a ninth launch product.
 
 ### Batch 7 — money, notifications and data rights
 
@@ -193,55 +237,55 @@ Order is fixed: `R-03` → `R-04` → `R-05` → `R-06`.
 This table guarantees every canonical row has a construction home. Paths are ownership
 surfaces to inspect, not proof that the story is complete.
 
-| IDs           | Primary assembly surfaces                                                                                    | Construction packet focus                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| `P-01`        | Personal home routes/screens, featured-feed services/components                                              | Eligible mixed feed, active-grow actions, sparse state, stable links               |
-| `P-02`        | Personal/Commercial grow routes, grow APIs/models, lifecycle registry, integrations, timeline/archive/export | Crop-aware create/import, attached history, reversible archive, ownership          |
-| `P-03`–`P-06` | Species/Crop ID, saved ToolRuns, Create Grow draft, field-observation draft/publish APIs                     | Three independent branches, evidence identity, explicit save/publish/withdrawal    |
-| `P-07`        | Shared result/evidence panels, media upload/crop manifests, ToolRun APIs, AI policy/registries               | Originals/derived views, export, provenance, uncertainty, retry/next action        |
-| `P-08`        | Harvest Readiness screens/services/calculators, trichome fixtures/evaluation                                 | Ordinary-phone range, glare/unreadable share, harvest/wait evidence, optional Grow |
-| `P-09`        | Diagnosis/IPM screens, ETGU/GPT verification, method/source registries                                       | Ranked differential, counter-evidence, decisive follow-up, safe treatment boundary |
-| `P-10`        | Grow timeline routes/components/export/share viewer and grow-history APIs                                    | Zoomable persisted events, revocable link, redacted viewer export                  |
-| `P-11`        | Profile, billing, credits/storage, preferences, data rights, auth/workspace session                          | Truthful plan/actions, category settings, export/delete/logout/isolation           |
-| `S-01`        | Forum/Q&A routes, comments/follows/media/reports/notifications                                               | Exact deep links, moderation/visibility consistency, owner/outside-user loop       |
-| `S-02`–`S-03` | Video directory/library/upload/editor/player/comments/storage/course links                                   | Public/following/library, persisted lifecycle, storage, discovery and permissions  |
-| `S-04`–`S-05` | Live directory/studio/session/player/chat/overlay, hosted-live backend/provider                              | State lifecycle, OBS credentials, volume/chat/share, isolation, replay/retention   |
-| `S-06`        | Shared action targets, viewer routes, preview metadata and platform handoffs                                 | Appropriate targets, review/cancel, privacy-safe stable links, no false cross-post |
-| `S-07`        | Course builder/detail/lessons/media/enrollment/checkout routes and APIs                                      | Media hierarchy, author lifecycle, access/payment return and progress              |
-| `S-08`        | Discover sections/search/filters/cards/deep links                                                            | Useful mixed discovery, correct records, empty/populated Nature preview            |
-| `C-01`        | Commercial shell/navigation and shared Personal route adapters                                               | Capability parity without duplicate navigation or wrong workspace writes           |
-| `C-02`        | Commercial profile/storefront editor/public brand route                                                      | Identity/media/slug/sections/contact/social/location/publication and roles         |
-| `C-03`        | Product/inventory/media/public cards and regulated-commerce gates                                            | Truthful availability plus independently authorized handoff/transaction levels     |
-| `C-04`        | Commercial courses/content/campaigns/analytics/navigation                                                    | Complete owner workflows and coherent entries                                      |
-| `C-05`        | Workspace selector/session plus Admin-brand Commercial context                                               | Explicit brand identity with retained Platform Admin authority                     |
-| `F-01`        | Facility onboarding/dashboard/rooms/grows/plants/team and backend ownership                                  | Create/import/invite/role/audit with two-facility isolation                        |
-| `F-02`        | Tasks/assignments/source links/evidence/completion and audit                                                 | Actionable links, permitted completion, Viewer denial, persisted evidence          |
-| `F-03`        | SOP library/uploads/approval/assignment/runs/compare/compliance/audit                                        | Versioned execution, exceptions/corrective action and immutable history            |
-| `F-04`        | Facility AI directory/shared tool adapters/credits/write gates                                               | Full applicable tools, Facility context/credits and role-safe writes               |
-| `F-05`        | Inventory/transfers/reports/logs/journals/export routes and APIs                                             | Canonical locations, populated states, scope, mutation and export                  |
-| `F-06`        | Integration center/provider adapters/import preview/mapping/history                                          | Customer keys, supported models, freshness, idempotency, no secret leakage         |
-| `F-07`        | Facility owner/admin “More” and contextual social/course/storefront entries                                  | Owner reachability without staff navigation pollution                              |
-| `B-01`        | Workspace/organization/location/role/audit/import provenance contracts                                       | Multi-tenant base shared by all retained business tools                            |
-| `B-02`        | Commercial/Facility inventory, product/SKU, lot/batch, movement/import/export                                | Core ledger, simple evidence-linked flags, reviewed task/draft only                |
-| `B-03`        | Small Business Desk calculator, extraction, record-assistant and reviewed draft/action engines               | Eight shipping tools; deterministic math and explicit save/export/handoff          |
-| `B-04`        | Plant/product intake, labels, nursery batch/hold/care/fulfillment records                                    | Evidence-aware help and operational history without invented advice                |
-| `B-05`        | Device/room/crop/SOP/task/maintenance/quality evidence assemblies                                            | Freshness/anomaly/review workflows; never autonomous control                       |
-| `B-06`        | Creator assets, Lives, community, sharing, reports/moderation                                                | Approved sources, transparent state and human-controlled publishing                |
-| `B-07`        | Storefront publication and external commerce handoff gates                                                   | Informational inventory by default; no native automation or assumed legality       |
-| `B-08`        | Shared AI result, approval, audit, redaction and idempotency contracts                                       | Evidence/uncertainty/confirmation boundary on every business result                |
-| `B-09`        | Cross-role business fixtures and live acceptance packs                                                       | Similar-name isolation, stale/conflict/import/error/share scenarios                |
-| `N-01`        | Discovery Nature globe/list/search/filter/cards and public observation APIs                                  | Honest zero state, clustering/search, photo/date/description identity cards        |
-| `N-02`        | Discover Nature preview                                                                                      | Preserve live-accepted zero/populated preview; regression-only work                |
-| `N-03`–`N-04` | Location privacy/precision/publication/withdrawal and legacy review                                          | Exact/private/sensitive boundaries, no inferred location, optional recovery        |
-| `A-01`–`A-03` | Admin control center, contextual controls, reports/security/account/content APIs                             | Tallies/deep links, case lifecycle, safe evidence, ownership and audit             |
-| `A-04`        | Lawful-request frontend/backend models/routes/audit/export and operating contract                            | Preservation separate from approval/disclosure; enforced state/custody gates       |
-| `A-05`        | Auth/profile/workspace contexts, storage reset, route guards, backend authorization                          | Identity-to-identity cleanup, expiry/reload/logout and direct-URL isolation        |
-| `R-01`        | Billing/checkout/webhooks/enrollment/entitlements/receipts/refunds                                           | Full money lifecycle, duplicate protection and truthful unsupported states         |
-| `R-02`        | Notification preferences, in-app/email/device delivery and deep links                                        | Independent categories, suppression, exact record, physical-device evidence        |
-| `R-03`        | Route inventories, automated suites, live crawl/evidence tooling                                             | One frozen candidate; complete professional acceptance, no new scope               |
-| `R-04`        | Reviewer identity, findings ledger, preview branch and owner decision record                                 | Isolated review with explicit accept/reject and production approval                |
-| `R-05`        | GrowPathAI brand assets, specification/rights records, research-trial/storefront presentation                | Owner stop gate, BLVNK approval, GrowPathAI-only art, zero stock/not for sale      |
-| `R-06`        | Store build/config/privacy/listing/submission/monitoring/rollback artifacts                                  | Stores last; physical devices and release gates remain mandatory                   |
+| IDs           | Primary assembly surfaces                                                                                      | Construction packet focus                                                                                                                       |
+| ------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `P-01`        | Personal home routes/screens, featured-feed services/components                                                | Eligible mixed feed, active-grow actions, sparse state, stable links                                                                            |
+| `P-02`        | Personal/Commercial grow routes, grow APIs/models, lifecycle registry, integrations, timeline/archive/export   | Crop-aware create/import, attached history, reversible archive, ownership                                                                       |
+| `P-03`–`P-06` | Species/Crop ID, saved ToolRuns, Create Grow draft, field-observation draft/publish APIs                       | Three independent branches, evidence identity, explicit save/publish/withdrawal                                                                 |
+| `P-07`        | Shared result/evidence panels, media upload/crop manifests, ToolRun APIs, AI policy/registries                 | Originals/derived views, export, provenance, uncertainty, retry/next action                                                                     |
+| `P-08`        | Harvest Readiness screens/services/calculators, trichome fixtures/evaluation                                   | Ordinary-phone range, glare/unreadable share, harvest/wait evidence, optional Grow                                                              |
+| `P-09`        | Diagnosis/IPM screens, ETGU/GPT verification, method/source registries                                         | Ranked differential, counter-evidence, decisive follow-up, safe treatment boundary                                                              |
+| `P-10`        | Grow timeline routes/components/export/share viewer and grow-history APIs                                      | Zoomable persisted events, revocable link, redacted viewer export                                                                               |
+| `P-11`        | Profile, billing, credits/storage, preferences, data rights, auth/workspace session                            | Truthful plan/actions, category settings, export/delete/logout/isolation                                                                        |
+| `S-01`        | Forum/Q&A routes, comments/follows/media/reports/notifications                                                 | Exact deep links, moderation/visibility consistency, owner/outside-user loop                                                                    |
+| `S-02`–`S-03` | Video directory/library/upload/editor/player/comments/storage/course links                                     | Public/following/library, persisted lifecycle, storage, discovery and permissions                                                               |
+| `S-04`–`S-05` | Live directory/studio/session/player/chat/overlay, hosted-live backend/provider                                | State lifecycle, OBS credentials, volume/chat/share, isolation, replay/retention                                                                |
+| `S-06`        | Shared action targets, viewer routes, preview metadata and platform handoffs                                   | Appropriate targets, review/cancel, privacy-safe stable links, no false cross-post                                                              |
+| `S-07`        | Course builder/detail/lessons/media/enrollment/checkout routes and APIs                                        | Media hierarchy, author lifecycle, access/payment return and progress                                                                           |
+| `S-08`        | Discover sections/search/filters/cards/deep links                                                              | Useful mixed discovery, correct records, empty/populated Nature preview                                                                         |
+| `C-01`        | Commercial shell/navigation and shared Personal route adapters                                                 | Capability parity without duplicate navigation or wrong workspace writes                                                                        |
+| `C-02`        | Commercial profile/storefront editor/public brand route                                                        | Identity/media/slug/sections/contact/social/location/publication and roles                                                                      |
+| `C-03`        | Product/inventory/media/public cards and regulated-commerce gates                                              | Truthful availability plus independently authorized handoff/transaction levels                                                                  |
+| `C-04`        | Commercial courses/content/campaigns/analytics/navigation                                                      | Complete owner workflows and coherent entries                                                                                                   |
+| `C-05`        | Workspace selector/session plus Admin-brand Commercial context                                                 | Explicit brand identity with retained Platform Admin authority                                                                                  |
+| `F-01`        | Facility onboarding/dashboard/rooms/grows/plants/team and backend ownership                                    | Create/import/invite/role/audit with two-facility isolation                                                                                     |
+| `F-02`        | Tasks/assignments/source links/evidence/completion and audit                                                   | Actionable links, permitted completion, Viewer denial, persisted evidence                                                                       |
+| `F-03`        | SOP library/uploads/approval/assignment/runs/compare/compliance/audit                                          | Versioned execution, exceptions/corrective action and immutable history                                                                         |
+| `F-04`        | Facility AI directory/shared tool adapters/credits/write gates                                                 | Full applicable tools, Facility context/credits and role-safe writes                                                                            |
+| `F-05`        | Inventory/transfers/reports/logs/journals/export routes and APIs                                               | Canonical locations, populated states, scope, mutation and export                                                                               |
+| `F-06`        | Integration center/provider adapters/import preview/mapping/history                                            | Customer keys, supported models, freshness, idempotency, no secret leakage                                                                      |
+| `F-07`        | Facility owner/admin “More” and contextual social/course/storefront entries                                    | Owner reachability without staff navigation pollution                                                                                           |
+| `B-01`        | Workspace/organization/location/role/audit/import provenance contracts                                         | Multi-tenant base shared by all retained business tools                                                                                         |
+| `B-02`        | Commercial/Facility inventory, product/SKU, lot/batch, movement/import/export                                  | Separate inventory method; core ledger, evidence-linked flags, reviewed task/draft only                                                         |
+| `B-03`        | Commercial/Facility Desk roots plus calculator, extraction, record-assistant and reviewed draft/action engines | Exact eight tools; role/field isolation, deterministic math, protected sources, explicit save/export and optional merchant Stripe draft handoff |
+| `B-04`        | Plant/product intake, labels, nursery batch/hold/care/fulfillment records                                      | Evidence-aware help and operational history without invented advice                                                                             |
+| `B-05`        | Device/room/crop/SOP/task/maintenance/quality evidence assemblies                                              | Freshness/anomaly/review workflows; never autonomous control                                                                                    |
+| `B-06`        | Creator assets, Lives, community, sharing, reports/moderation                                                  | Approved sources, transparent state and human-controlled publishing                                                                             |
+| `B-07`        | Storefront publication and external commerce handoff gates                                                     | Informational inventory by default; no native automation or assumed legality                                                                    |
+| `B-08`        | Shared AI result, approval, audit, redaction and idempotency contracts                                         | Evidence/uncertainty/confirmation boundary on every business result                                                                             |
+| `B-09`        | Cross-role business fixtures and live acceptance packs                                                         | Similar-name isolation, stale/conflict/import/error/share scenarios                                                                             |
+| `N-01`        | Discovery Nature globe/list/search/filter/cards and public observation APIs                                    | Honest zero state, clustering/search, photo/date/description identity cards                                                                     |
+| `N-02`        | Discover Nature preview                                                                                        | Preserve live-accepted zero/populated preview; regression-only work                                                                             |
+| `N-03`–`N-04` | Location privacy/precision/publication/withdrawal and legacy review                                            | Exact/private/sensitive boundaries, no inferred location, optional recovery                                                                     |
+| `A-01`–`A-03` | Admin control center, contextual controls, reports/security/account/content APIs                               | Tallies/deep links, case lifecycle, safe evidence, ownership and audit                                                                          |
+| `A-04`        | Lawful-request frontend/backend models/routes/audit/export and operating contract                              | Preservation separate from approval/disclosure; enforced state/custody gates                                                                    |
+| `A-05`        | Auth/profile/workspace contexts, storage reset, route guards, backend authorization                            | Identity-to-identity cleanup, expiry/reload/logout and direct-URL isolation                                                                     |
+| `R-01`        | Billing/checkout/webhooks/enrollment/entitlements/receipts/refunds                                             | Full money lifecycle, duplicate protection and truthful unsupported states                                                                      |
+| `R-02`        | Notification preferences, in-app/email/device delivery and deep links                                          | Independent categories, suppression, exact record, physical-device evidence                                                                     |
+| `R-03`        | Route inventories, automated suites, live crawl/evidence tooling                                               | One frozen candidate; complete professional acceptance, no new scope                                                                            |
+| `R-04`        | Reviewer identity, findings ledger, preview branch and owner decision record                                   | Isolated review with explicit accept/reject and production approval                                                                             |
+| `R-05`        | GrowPathAI brand assets, specification/rights records, research-trial/storefront presentation                  | Owner stop gate, BLVNK approval, GrowPathAI-only art, zero stock/not for sale                                                                   |
+| `R-06`        | Store build/config/privacy/listing/submission/monitoring/rollback artifacts                                    | Stores last; physical devices and release gates remain mandatory                                                                                |
 
 ## Packet execution record
 

@@ -6,24 +6,30 @@ Before changing a tool, read the relevant method plus `source-reliability-regist
 
 ## Routing
 
-| Work area                | Required method                                                                         |
-| ------------------------ | --------------------------------------------------------------------------------------- |
-| Diagnosis / IPM          | `methods/plant-diagnosis-etgu-method.md`                                                |
-| Pheno / selection        | `methods/pheno-hunting-method.md`, `methods/stress-testing-method.md`                   |
-| Crop steering            | `methods/crop-steering-method.md`                                                       |
-| Soil / nutrients / water | `methods/soil-and-nutrient-method.md`                                                   |
-| Clone / TC               | `methods/clone-rooting-method.md`, `methods/tissue-culture-method.md`                   |
-| Harvest / post-harvest   | `methods/harvest-dry-cure-method.md`                                                    |
-| Run comparison / history | `methods/run-comparison-method.md`                                                      |
-| Commercial / facility    | `methods/commercial-workflow-method.md`, `methods/facility-workflow-method.md`          |
-| Course media             | `methods/course-media-workflow-method.md`                                               |
-| Video sharing            | `methods/video-sharing-workflow-method.md`, `methods/course-media-workflow-method.md`   |
-| Live video / premieres   | `methods/live-streaming-workflow-method.md`, `methods/video-sharing-workflow-method.md` |
-| Sensor/controller import | `methods/integration-workflow-method.md`                                                |
-| Small Business Desk      | `methods/business-desk-method.md`                                                       |
-| Public copies / sharing  | `methods/public-copy-sharing-method.md`, plus the source workflow method                |
+| Work area                  | Required method                                                                         |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| Diagnosis / IPM            | `methods/plant-diagnosis-etgu-method.md`                                                |
+| Pheno / selection          | `methods/pheno-hunting-method.md`, `methods/stress-testing-method.md`                   |
+| Crop steering              | `methods/crop-steering-method.md`                                                       |
+| Soil / nutrients / water   | `methods/soil-and-nutrient-method.md`                                                   |
+| Clone / TC                 | `methods/clone-rooting-method.md`, `methods/tissue-culture-method.md`                   |
+| Harvest / post-harvest     | `methods/harvest-dry-cure-method.md`                                                    |
+| Run comparison / history   | `methods/run-comparison-method.md`                                                      |
+| Commercial / facility      | `methods/commercial-workflow-method.md`, `methods/facility-workflow-method.md`          |
+| Course media               | `methods/course-media-workflow-method.md`                                               |
+| Video sharing              | `methods/video-sharing-workflow-method.md`, `methods/course-media-workflow-method.md`   |
+| Live video / premieres     | `methods/live-streaming-workflow-method.md`, `methods/video-sharing-workflow-method.md` |
+| Sensor/controller import   | `methods/integration-workflow-method.md`                                                |
+| Business inventory (B-02)  | `methods/business-inventory-method.md`                                                  |
+| Small Business Desk (B-03) | `methods/business-desk-method.md`                                                       |
+| Public copies / sharing    | `methods/public-copy-sharing-method.md`, plus the source workflow method                |
 
 The runtime counterparts live in `src/knowledge`. Method IDs and source IDs are stable API values. Add named sites to the registry only after recording trusted uses, exclusions, cross-check requirements, and review date.
+
+For business work, B-02 is the sole inventory ledger and is upstream of B-03. Read the
+B-02 method before changing any Business Desk inventory reference, receiving evidence, or
+stock projection; B-03 may reference authorized B-02 records but never defines another
+inventory writer.
 
 ## Shared date-entry rule
 
