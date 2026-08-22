@@ -1,6 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
-import { BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES } from "../../src/navigation/businessDeskRoutes";
+import {
+  BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES,
+  BUSINESS_DESK_PROVIDER_ROUTE_SUFFIXES
+} from "../../src/navigation/businessDeskRoutes";
 import {
   canAccessRoute,
   getHomeForUser,
@@ -240,8 +243,6 @@ describe("route access policy", () => {
     ).toBe(false);
 
     for (const path of [
-      "/home/commercial/business-desk/ask-ai",
-      "/home/facility/business-desk/ask-ai",
       "/home/commercial/business-desk/not-a-tool",
       "/home/facility/business-desk/not-a-tool",
       "/home/commercial/business-desk/quotes/nested",
@@ -252,6 +253,30 @@ describe("route access policy", () => {
         : commercial(staleCapability);
       expect(getRoutePolicy(path)).toMatchObject({ denied: true });
       expect(canAccessRoute(path, snapshot)).toBe(false);
+    }
+  });
+
+  it("guards registered provider routes with the same workspace and Facility role rules", () => {
+    const capability = { [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true };
+    for (const suffix of BUSINESS_DESK_PROVIDER_ROUTE_SUFFIXES) {
+      expect(
+        canAccessRoute(`/home/commercial/business-desk/${suffix}`, commercial(capability))
+      ).toBe(true);
+      expect(
+        canAccessRoute(`/home/facility/business-desk/${suffix}`, {
+          ...facility(capability),
+          facilityRole: "MANAGER"
+        })
+      ).toBe(true);
+      expect(
+        canAccessRoute(`/home/facility/business-desk/${suffix}`, {
+          ...facility(capability),
+          facilityRole: "STAFF"
+        })
+      ).toBe(false);
+      expect(
+        canAccessRoute(`/home/commercial/business-desk/${suffix}`, personal(capability))
+      ).toBe(false);
     }
   });
 

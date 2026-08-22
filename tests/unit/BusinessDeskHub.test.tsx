@@ -19,10 +19,11 @@ jest.mock("expo-router", () => ({
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return (props: any) => {
+  function MockAppPage(props: any) {
     mockLastBackFallback = props.backFallbackHref;
     return React.createElement(View, null, props.header, props.children);
-  };
+  }
+  return MockAppPage;
 });
 
 describe("Business Desk hub", () => {
@@ -60,8 +61,17 @@ describe("Business Desk hub", () => {
     expect(screen.getByLabelText("Open Vendor Compare")).toBeTruthy();
     expect(screen.getByLabelText("Open Cash-Flow Snapshot")).toBeTruthy();
     expect(screen.getByLabelText("Open Business Ask AI")).toBeTruthy();
-    expect(screen.getAllByText("Open tool")).toHaveLength(8);
+    expect(screen.getAllByText("Open workspace")).toHaveLength(8);
     expect(screen.queryByText("In the current construction sequence")).toBeNull();
+    expect(
+      screen.getByText(/Provider handoff is shown only when configured/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Extraction appears only after provider and scanner checks/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/workspace capability check confirms availability/i)
+    ).toBeTruthy();
   });
 
   it("keeps every deterministic card path aligned to the registered route manifest", () => {

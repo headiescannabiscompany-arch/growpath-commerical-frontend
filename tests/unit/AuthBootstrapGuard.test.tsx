@@ -201,6 +201,41 @@ describe("auth bootstrap route guards", () => {
     expect(screen.getByLabelText("Contact support")).toBeTruthy();
   });
 
+  it("never mounts a direct Facility Business Desk route for a denied role", () => {
+    const mounted = jest.fn();
+    function BusinessDeskChild() {
+      React.useEffect(() => mounted(), []);
+      return <></>;
+    }
+    mockPathname = "/home/facility/business-desk/price-margin";
+    mockAuth = {
+      ...mockAuth,
+      user: { id: "facility-staff-1" },
+      meStatus: "ready",
+      meError: ""
+    };
+    mockEntitlements = {
+      ready: true,
+      bootstrapError: "",
+      mode: "facility",
+      capabilities: { "businessDesk.read": true },
+      facilityId: "facility-1",
+      facilityRole: "STAFF"
+    };
+
+    const screen = render(
+      <RouteAccessGuard>
+        <BusinessDeskChild />
+      </RouteAccessGuard>
+    );
+
+    expect(screen.getByRole("header", { name: "Access denied" })).toBeTruthy();
+    expect(
+      screen.getByText("Your account does not have access to this page.")
+    ).toBeTruthy();
+    expect(mounted).not.toHaveBeenCalled();
+  });
+
   it("shows the bootstrap error on protected deep routes instead of an infinite spinner", () => {
     const screen = render(
       <RouteAccessGuard>

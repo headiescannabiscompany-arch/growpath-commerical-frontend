@@ -40,7 +40,7 @@ export const BUSINESS_DESK_TOOLS: BusinessDeskToolDefinition[] = [
     id: "quote-estimate",
     title: "Quote / Estimate",
     description:
-      "Build a reviewed, revision-safe quote and prepare an export or optional payment-provider draft handoff.",
+      "Build a reviewed, revision-safe quote, then copy or export the exact revision. Provider handoff is shown only when configured.",
     engine: "money",
     path: "quotes",
     availability: "available"
@@ -67,7 +67,7 @@ export const BUSINESS_DESK_TOOLS: BusinessDeskToolDefinition[] = [
     id: "expense-receipt",
     title: "Expense / Receipt Helper",
     description:
-      "Extract a private draft from a receipt, then require human review before saving any business record.",
+      "Record manual expenses and review private receipt uploads. Extraction appears only after provider and scanner checks are available.",
     engine: "documents",
     path: "expenses",
     availability: "available"
@@ -94,7 +94,7 @@ export const BUSINESS_DESK_TOOLS: BusinessDeskToolDefinition[] = [
     id: "business-ask-ai",
     title: "Business Ask AI",
     description:
-      "Ask questions across selected, authorized Business Desk records with citations, limits, and draft-only actions.",
+      "Open cited, scoped business questions. Provider actions appear only after the workspace capability check confirms availability.",
     engine: "assistant",
     path: "ask-ai",
     availability: "available"
@@ -170,7 +170,7 @@ export default function BusinessDeskHub({
               </Text>
               <Text style={styles.toolDescription}>{tool.description}</Text>
               <Text style={available ? styles.openLabel : styles.constructionLabel}>
-                {available ? "Open tool" : "In the current construction sequence"}
+                {available ? "Open workspace" : "In the current construction sequence"}
               </Text>
             </View>
           );
