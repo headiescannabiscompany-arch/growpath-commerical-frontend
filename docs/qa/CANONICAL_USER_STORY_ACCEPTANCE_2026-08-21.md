@@ -245,6 +245,9 @@ idempotent and audited; a stateless unsaved calculation needs no artificial busi
   idempotent **draft** invoice/payment request pinned to the exact revision, amount and
   currency. GrowPath does not send, finalize, apply automatic tax, collect, refund, create a
   payment link or change stock.
+- A verified provider payment object atomically claims one payment-evidence chain per
+  workspace. A different provider event cannot bind that object to another manual payment
+  chain, and corrections/voids cannot cross provider objects or double-count value.
 - Acceptance covers copy/export, `DISCONNECTED`/`TEST`/`LIVE`/`REVOKED` connections,
   cancel/retry,
   permission changes, provider failure, signature-verified duplicate/out-of-order webhooks

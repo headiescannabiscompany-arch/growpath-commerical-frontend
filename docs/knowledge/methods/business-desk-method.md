@@ -358,6 +358,12 @@ states as provider-reported with observed time and freshness. A webhook may upda
 external-status projection and audit record only; it must not finalize local terms, consume
 stock, invent tax, or create a B-02 movement.
 
+One verified provider payment object may claim exactly one local payment-evidence chain in a
+workspace. Its first provider observation atomically claims that object whether it creates a
+provider root or explicitly correlates a previously user-confirmed root; later corrections
+and voids must stay on that same chain and object. A second event ID must never attach the
+same provider object to another manual chain or cause the amount to be counted twice.
+
 ## B-02 linkage boundary
 
 `business-inventory` is the only inventory, lot/batch, receiving, movement, adjustment,
