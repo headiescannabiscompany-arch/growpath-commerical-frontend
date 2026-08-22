@@ -129,6 +129,27 @@ export default function PriceMarginTool({
   const currentResult = resultFingerprint === inputFingerprint ? result : null;
   const inputsChanged = Boolean(result && !currentResult);
 
+  const resetScenario = () => {
+    setCurrency("USD");
+    setUnitPrice("");
+    setQuantity("1");
+    setUnitDirectCost("");
+    setTargetMarginPercent("");
+    setDiscountPercent("");
+    setDiscountFixed("");
+    setCustomerShipping("");
+    setBusinessFees("");
+    setShippingCost("");
+    setFixedCosts("");
+    setTaxType("none");
+    setTaxRate("");
+    setTaxAmount("");
+    setTaxShipping(false);
+    setResult(null);
+    setResultFingerprint("");
+    setError(null);
+  };
+
   const runCalculation = async () => {
     setError(null);
     setBusy(true);
@@ -440,19 +461,30 @@ export default function PriceMarginTool({
           </Text>
         </View>
       ) : null}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Calculate price and margin"
-        disabled={busy}
-        onPress={() => void runCalculation()}
-        style={[styles.primaryButton, busy && styles.disabled]}
-      >
-        {busy ? (
-          <ActivityIndicator color={palette.accentText} />
-        ) : (
-          <Text style={styles.primaryButtonText}>Calculate scenario</Text>
-        )}
-      </Pressable>
+      <View style={styles.actionRow}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Calculate price and margin"
+          disabled={busy}
+          onPress={() => void runCalculation()}
+          style={[styles.primaryButton, busy && styles.disabled]}
+        >
+          {busy ? (
+            <ActivityIndicator color={palette.accentText} />
+          ) : (
+            <Text style={styles.primaryButtonText}>Calculate scenario</Text>
+          )}
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Reset price and margin scenario"
+          disabled={busy}
+          onPress={resetScenario}
+          style={[styles.secondaryButton, busy && styles.disabled]}
+        >
+          <Text style={styles.secondaryButtonText}>Reset scenario</Text>
+        </Pressable>
+      </View>
 
       {currentResult && resultContext ? (
         <>
@@ -610,6 +642,7 @@ export default function PriceMarginTool({
 
 export function createStyles(palette: ThemePalette) {
   return StyleSheet.create({
+    actionRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
     bodyText: { color: palette.textMuted, fontSize: 13, lineHeight: 20, marginTop: 6 },
     checkbox: {
       borderColor: palette.border,
@@ -707,12 +740,27 @@ export function createStyles(palette: ThemePalette) {
       alignItems: "center",
       backgroundColor: palette.accent,
       borderRadius: radius.card,
+      flexGrow: 1,
       justifyContent: "center",
       minHeight: 48,
+      minWidth: 210,
       paddingHorizontal: 18,
       paddingVertical: 12
     },
     primaryButtonText: { color: palette.accentText, fontSize: 15, fontWeight: "900" },
+    secondaryButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 48,
+      minWidth: 150,
+      paddingHorizontal: 18,
+      paddingVertical: 12
+    },
+    secondaryButtonText: { color: palette.text, fontSize: 14, fontWeight: "900" },
     subtitle: { color: palette.textMuted, fontSize: 15, lineHeight: 22, maxWidth: 820 },
     title: { color: palette.text, fontSize: 30, fontWeight: "900" }
   });

@@ -244,4 +244,51 @@ describe("PriceMarginTool", () => {
     expect(mockCalculate.mock.calls[0][1]).not.toHaveProperty("targetMarginBasisPoints");
     expect(screen.queryByText("Target-margin unit price")).toBeNull();
   });
+
+  it("resets every scenario input and clears the prior result without persisting", async () => {
+    mockCalculate.mockResolvedValue(result());
+    const screen = render(
+      <PriceMarginTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+
+    fireEvent.changeText(screen.getByLabelText("Price and margin currency"), "CAD");
+    fireEvent.changeText(screen.getByLabelText("Price and margin selling price"), "25");
+    fireEvent.changeText(screen.getByLabelText("Price and margin quantity"), "4");
+    fireEvent.changeText(
+      screen.getByLabelText("Price and margin direct unit cost"),
+      "10"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Price and margin target margin percent"),
+      "25"
+    );
+    fireEvent.press(screen.getByLabelText("Tax type fixed"));
+    fireEvent.changeText(screen.getByLabelText("Price and margin tax amount"), "2");
+    fireEvent.press(screen.getByLabelText("Calculate price and margin"));
+
+    await waitFor(() => expect(mockCalculate).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText("Scenario result")).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Reset price and margin scenario"));
+
+    expect(screen.getByLabelText("Price and margin currency").props.value).toBe("USD");
+    expect(screen.getByLabelText("Price and margin selling price").props.value).toBe("");
+    expect(screen.getByLabelText("Price and margin quantity").props.value).toBe("1");
+    expect(screen.getByLabelText("Price and margin direct unit cost").props.value).toBe(
+      ""
+    );
+    expect(
+      screen.getByLabelText("Price and margin target margin percent").props.value
+    ).toBe("");
+    expect(screen.getByLabelText("Tax type none").props.accessibilityState.checked).toBe(
+      true
+    );
+    expect(screen.queryByLabelText("Price and margin tax amount")).toBeNull();
+    expect(screen.queryByText("Scenario result")).toBeNull();
+    expect(mockCalculate).toHaveBeenCalledTimes(1);
+  });
 });
