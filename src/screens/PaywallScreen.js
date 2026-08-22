@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 
-import { createCheckoutSession } from "../api/subscription";
+import { createCheckoutSession, getSubscription } from "../api/subscription";
+import { resolveSubscriptionSafety } from "../features/billing/subscriptionSafety";
 import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
 import { PRO_PLAN_PRICE_DISPLAY } from "../constants/pricing";
@@ -10,12 +11,36 @@ import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function PaywallScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [status, setStatus] = useState(null);
+  const access = useMemo(
+    () => resolveSubscriptionSafety(status, { loaded: !checking && status !== null }),
+    [checking, status]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    getSubscription()
+      .then((next) => {
+        if (mounted) setStatus(next || {});
+      })
+      .catch(() => {
+        if (mounted) setStatus(null);
+      })
+      .finally(() => {
+        if (mounted) setChecking(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   function goToStatus() {
     navigation.navigate("SubscriptionStatus");
   }
 
   const handleStartTrial = async () => {
+    if (!access.canOpenCheckout) return;
     setLoading(true);
     try {
       const result = await createCheckoutSession({ plan: "pro", interval: "monthly" });
@@ -41,6 +66,7 @@ export default function PaywallScreen({ navigation }) {
   };
 
   const handleSubscribe = async () => {
+    if (!access.canOpenCheckout) return;
     setLoading(true);
     try {
       const result = await createCheckoutSession();
@@ -85,8 +111,19 @@ export default function PaywallScreen({ navigation }) {
           <Text style={styles.benefit}>Advanced Training Guides</Text>
         </View>
 
-        {loading ? (
+        {loading || checking ? (
           <ActivityIndicator size="large" color="#28A745" style={styles.loader} />
+        ) : !access.canOpenCheckout ? (
+          <>
+            <Text style={styles.accessNote}>{access.message}</Text>
+            <PrimaryButton title="View Subscription Status" onPress={goToStatus} />
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.cancelText}>Go Back</Text>
+            </TouchableOpacity>
+          </>
         ) : (
           <>
             <TouchableOpacity
@@ -160,6 +197,14 @@ const styles = {
     color: "#555",
     marginBottom: 10,
     lineHeight: 24
+  },
+  accessNote: {
+    color: "#334155",
+    fontSize: 15,
+    fontWeight: "700",
+    lineHeight: 21,
+    marginBottom: 18,
+    textAlign: "center"
   },
   button: {
     paddingVertical: 16,

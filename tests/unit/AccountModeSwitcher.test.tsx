@@ -105,6 +105,32 @@ describe("ModeSwitcher", () => {
     expect(mockPush).toHaveBeenNthCalledWith(2, "/offers");
   });
 
+  it("routes active entitlements to billing review instead of another checkout", () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        email: "gifted@growpathai.com",
+        role: "user",
+        subscriptionStatus: "active",
+        source: "gift"
+      }
+    });
+    mockUseEntitlements.mockReturnValue({
+      mode: "personal",
+      plan: "pro",
+      can: () => false,
+      facilityId: null,
+      facilityRole: null
+    });
+
+    const screen = render(<ModeSwitcher />);
+    fireEvent.press(screen.getByLabelText("Create Commercial Account"));
+    fireEvent.press(screen.getByLabelText("Create Facility Account"));
+
+    expect(mockPush).toHaveBeenNthCalledWith(1, "/account/billing");
+    expect(mockPush).toHaveBeenNthCalledWith(2, "/account/billing");
+    expect(mockPush).not.toHaveBeenCalledWith("/offers");
+  });
+
   it("shows only workspaces the signed-in identity can actually enter at login", () => {
     mockUseEntitlements.mockReturnValue({
       mode: "personal",

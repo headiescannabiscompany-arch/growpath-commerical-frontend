@@ -7,6 +7,7 @@ import {
   createCheckoutSession,
   createGiftCheckoutQuote,
   getGiftCheckoutRecovery,
+  getSubscription,
   getSubscriptionSetupStatus
 } from "@/api/subscription";
 import { clearGiftCheckoutAttemptWhenAllowed } from "@/features/billing/giftCheckoutAttempt";
@@ -90,6 +91,7 @@ jest.mock("@/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
   createGiftCheckoutQuote: jest.fn(),
   getGiftCheckoutRecovery: jest.fn(),
+  getSubscription: jest.fn(),
   getSubscriptionSetupStatus: jest.fn(),
   isSafeStripeCheckoutUrl: (value: unknown) =>
     typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
@@ -137,6 +139,10 @@ describe("Offers billing safety", () => {
       mode: "live",
       giftCheckoutConfigured: false,
       trial: { enabled: true, days: 30 }
+    });
+    (getSubscription as jest.Mock).mockResolvedValue({
+      plan: "free",
+      subscriptionStatus: "inactive"
     });
     (createCheckoutSession as jest.Mock).mockResolvedValue({});
     (createGiftCheckoutQuote as jest.Mock).mockResolvedValue(giftQuote());
@@ -195,6 +201,25 @@ describe("Offers billing safety", () => {
       })
     );
     expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+  });
+
+  it("does not offer self checkout for active gift or cancel-scheduled access", async () => {
+    (getSubscription as jest.Mock).mockResolvedValueOnce({
+      plan: "pro",
+      subscriptionStatus: "active",
+      source: "gift",
+      giftEntitlementEndsAt: "2030-05-15T18:30:00.000Z"
+    });
+    const screen = render(<Offers />);
+
+    await waitFor(() =>
+      expect(screen.getAllByText(/prepaid gift does not renew/i).length).toBeGreaterThan(
+        0
+      )
+    );
+    expect(screen.queryByText("Review paid checkout")).toBeNull();
+    expect(screen.queryByText(/Start 30-day trial/)).toBeNull();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
   it("opens payment help and purchaser history without starting checkout", async () => {

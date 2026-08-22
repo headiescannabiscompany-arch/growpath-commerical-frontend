@@ -149,4 +149,20 @@ describe("BillingHome prepaid gift access", () => {
     ).toBeTruthy();
     expect(screen.queryByLabelText("Cancel subscription")).toBeNull();
   });
+
+  it("does not open a fresh checkout when status cannot be confirmed", async () => {
+    (getSubscription as jest.Mock).mockRejectedValueOnce(new Error("offline"));
+
+    const screen = render(<BillingHome />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Current subscription access could not be confirmed. Refresh status before starting another checkout."
+        )
+      ).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Upgrade to Pro")).toBeNull();
+    expect(screen.queryByLabelText("Cancel subscription")).toBeNull();
+  });
 });

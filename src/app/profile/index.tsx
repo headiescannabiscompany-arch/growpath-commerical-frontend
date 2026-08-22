@@ -309,7 +309,7 @@ export default function Profile() {
           </View>
           <Text style={styles.cardText}>{planNote}</Text>
           <Pressable
-            onPress={() => router.push("/offers")}
+            onPress={() => router.push("/account/billing")}
             accessibilityRole="button"
             accessibilityLabel="Manage plan"
             style={styles.primaryButton}

@@ -3,9 +3,15 @@ import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-na
 import { useFocusEffect } from "@react-navigation/native";
 
 import { useAuth } from "@/auth/AuthContext";
-import { cancelSubscription, getSubscriptionStatus } from "../api/subscribe";
+import { cancelSubscription } from "../api/subscribe";
+import { getSubscription } from "../api/subscription";
 import ScreenContainer from "../components/ScreenContainer";
+import {
+  formatSubscriptionDate,
+  resolveSubscriptionSafety
+} from "../features/billing/subscriptionSafety";
 import { radius } from "../theme/theme";
+import { openExternalUrl } from "../utils/openExternalUrl";
 
 function subscriptionState(status) {
   return status?.status || status?.subscriptionStatus || "free";
@@ -44,18 +50,21 @@ export default function SubscriptionStatusScreen({ navigation }) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState(null);
+  const [statusLoaded, setStatusLoaded] = useState(false);
 
   const loadStatus = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await getSubscriptionStatus(token);
+      const result = await getSubscription();
       setStatus(result?.data ?? result);
+      setStatusLoaded(true);
     } catch (error) {
+      setStatusLoaded(false);
       Alert.alert("Error", "Failed to load subscription status");
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     loadStatus();
@@ -101,14 +110,17 @@ export default function SubscriptionStatusScreen({ navigation }) {
     );
   }
 
-  const isPro = isConfirmedPro(status);
+  const access = resolveSubscriptionSafety(status, { loaded: statusLoaded });
+  const isPro = access.active || isConfirmedPro(status);
   const currentStatus = subscriptionState(status);
-  const planLabel = String(status?.plan || "pro")
+  const planLabel = String(status?.plan || access.plan || "pro")
     .toLowerCase()
     .replace(/(^|[_-])\w/g, (match) => match.replace(/[_-]/, " ").toUpperCase());
   const trialing = ["trial", "trialing"].includes(currentStatus);
-  const expiry = status?.expiry ? new Date(status.expiry).toLocaleDateString() : null;
-  const cancellationScheduled = status?.cancelAtPeriodEnd === true;
+  const expiry =
+    formatSubscriptionDate(access.paidThrough) ||
+    (status?.expiry ? new Date(status.expiry).toLocaleDateString() : null);
+  const cancellationScheduled = access.cancelScheduled;
   const remainingTrialPlans = remainingTrialPlanLabels(status);
 
   return (
@@ -156,9 +168,9 @@ export default function SubscriptionStatusScreen({ navigation }) {
           ) : null}
 
           <Text style={styles.confirmationText}>
-            {cancellationScheduled
+            {cancellationScheduled && expiry
               ? "Renewal is canceled. Paid features remain available through the date above."
-              : "Features unlock only from this backend-confirmed status."}
+              : access.message}
           </Text>
         </View>
 
@@ -166,13 +178,22 @@ export default function SubscriptionStatusScreen({ navigation }) {
           <Text style={styles.refreshButtonText}>Refresh Status</Text>
         </TouchableOpacity>
 
-        {isPro && !cancellationScheduled ? (
+        {access.canCancel ? (
           <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
             <Text style={styles.cancelButtonText}>Cancel Subscription</Text>
           </TouchableOpacity>
         ) : null}
 
-        {!isPro ? (
+        {access.managementUrl ? (
+          <TouchableOpacity
+            style={styles.refreshButton}
+            onPress={() => openExternalUrl(access.managementUrl)}
+          >
+            <Text style={styles.refreshButtonText}>Open Provider Management</Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {access.canOpenCheckout ? (
           <TouchableOpacity
             style={styles.upgradeButton}
             onPress={() => navigation.navigate("Paywall")}

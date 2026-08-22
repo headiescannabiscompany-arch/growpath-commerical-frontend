@@ -9,7 +9,11 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { createCheckoutSession, getSubscriptionStatus } from "../api/subscription";
+import { createCheckoutSession, getSubscription } from "../api/subscription";
+import {
+  formatSubscriptionDate,
+  resolveSubscriptionSafety
+} from "../features/billing/subscriptionSafety";
 import { openExternalUrl } from "../utils/openExternalUrl";
 import { radius } from "../theme/theme";
 
@@ -40,12 +44,16 @@ export default function PaymentsScreen() {
     () => normalizeSubscription(subscription || {}),
     [subscription]
   );
+  const access = useMemo(
+    () => resolveSubscriptionSafety(subscription, { loaded: !loading && !error }),
+    [error, loading, subscription]
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const next = await getSubscriptionStatus();
+      const next = await getSubscription();
       setSubscription(next || {});
     } catch (err) {
       setError(err?.message || "Unable to load subscription status.");
@@ -60,6 +68,7 @@ export default function PaymentsScreen() {
   }, [load]);
 
   const startCheckout = useCallback(async () => {
+    if (!access.canOpenCheckout) return;
     setStartingCheckout(true);
     try {
       const checkout = await createCheckoutSession();
@@ -74,7 +83,7 @@ export default function PaymentsScreen() {
     } finally {
       setStartingCheckout(false);
     }
-  }, []);
+  }, [access.canOpenCheckout]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -96,18 +105,26 @@ export default function PaymentsScreen() {
         <Text style={styles.sectionTitle}>Current Subscription</Text>
         <InfoRow label="Plan" value={current.plan} />
         <InfoRow label="Status" value={current.status} />
-        <InfoRow label="Renews" value={formatDate(current.renewsAt)} />
+        <InfoRow
+          label={access.cancelScheduled ? "Access through" : "Renews / ends"}
+          value={
+            formatSubscriptionDate(access.paidThrough) || formatDate(current.renewsAt)
+          }
+        />
         <InfoRow label="Billing email" value={current.customerEmail || "Account email"} />
-        <TouchableOpacity
-          accessibilityRole="button"
-          disabled={startingCheckout}
-          onPress={startCheckout}
-          style={[styles.upgradeBtn, startingCheckout && styles.disabledBtn]}
-        >
-          <Text style={styles.upgradeBtnText}>
-            {startingCheckout ? "Opening Checkout..." : "Upgrade Plan"}
-          </Text>
-        </TouchableOpacity>
+        {!loading ? <Text style={styles.accessNote}>{access.message}</Text> : null}
+        {access.canOpenCheckout ? (
+          <TouchableOpacity
+            accessibilityRole="button"
+            disabled={startingCheckout}
+            onPress={startCheckout}
+            style={[styles.upgradeBtn, startingCheckout && styles.disabledBtn]}
+          >
+            <Text style={styles.upgradeBtnText}>
+              {startingCheckout ? "Opening Checkout..." : "Upgrade Plan"}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <View style={styles.section}>
@@ -214,6 +231,12 @@ const styles = StyleSheet.create({
     color: "crimson",
     fontWeight: "700",
     marginBottom: 12
+  },
+  accessNote: {
+    color: "#475569",
+    fontWeight: "700",
+    lineHeight: 19,
+    marginTop: 12
   },
   upgradeBtn: {
     alignItems: "center",

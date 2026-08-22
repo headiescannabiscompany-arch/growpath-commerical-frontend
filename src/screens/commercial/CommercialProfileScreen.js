@@ -4,6 +4,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ScreenContainer from "../../components/ScreenContainer";
 import { useAuth } from "@/auth/AuthContext";
 import { radius } from "../../theme/theme";
+import { resolveSubscriptionSafety } from "../../features/billing/subscriptionSafety";
 
 export default function CommercialProfileScreen({ navigation }) {
   const { user } = useAuth();
@@ -11,6 +12,7 @@ export default function CommercialProfileScreen({ navigation }) {
     user?.business?.name || user?.businessName || user?.companyName || "Commercial brand";
   const email = user?.business?.contactEmail || user?.email || "No email";
   const phone = user?.business?.phone || "No phone";
+  const access = resolveSubscriptionSafety(user, { hasPaidCapability: true });
 
   return (
     <ScreenContainer>
@@ -31,14 +33,16 @@ export default function CommercialProfileScreen({ navigation }) {
         >
           <Text style={styles.buttonText}>Open Storefront</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.secondary]}
-          onPress={() => navigation.navigate("PricingMatrix")}
-        >
-          <Text style={[styles.buttonText, styles.secondaryText]}>
-            View Plans and Pricing
-          </Text>
-        </TouchableOpacity>
+        {access.canOpenCheckout ? (
+          <TouchableOpacity
+            style={[styles.button, styles.secondary]}
+            onPress={() => navigation.navigate("PricingMatrix")}
+          >
+            <Text style={[styles.buttonText, styles.secondaryText]}>
+              View Plans and Pricing
+            </Text>
+          </TouchableOpacity>
+        ) : null}
         <TouchableOpacity
           style={[styles.button, styles.secondary]}
           onPress={() => navigation.navigate("SubscriptionStatus")}

@@ -4,7 +4,7 @@ import { render, waitFor } from "@testing-library/react-native";
 import BillingSuccess from "@/features/billing/screens/BillingSuccess";
 import SubscriptionStatusScreen from "@/screens/SubscriptionStatusScreen";
 import { getSubscriptionStatus as getCanonicalStatus } from "@/api/subscription";
-import { getSubscriptionStatus as getLegacyStatus } from "@/api/subscribe";
+import { getSubscription } from "@/api/subscription";
 
 jest.mock("@react-navigation/native", () => ({
   useFocusEffect: jest.fn(),
@@ -16,12 +16,12 @@ jest.mock("@/auth/AuthContext", () => ({
 }));
 
 jest.mock("@/api/subscription", () => ({
-  getSubscriptionStatus: jest.fn()
+  getSubscriptionStatus: jest.fn(),
+  getSubscription: jest.fn()
 }));
 
 jest.mock("@/api/subscribe", () => ({
-  cancelSubscription: jest.fn(),
-  getSubscriptionStatus: jest.fn()
+  cancelSubscription: jest.fn()
 }));
 
 describe("trial subscription status", () => {
@@ -42,7 +42,7 @@ describe("trial subscription status", () => {
   });
 
   it("shows the correct plan and trial label instead of Free", async () => {
-    (getLegacyStatus as jest.Mock).mockResolvedValue({
+    (getSubscription as jest.Mock).mockResolvedValue({
       success: true,
       isPro: true,
       plan: "facility",
@@ -62,7 +62,7 @@ describe("trial subscription status", () => {
   });
 
   it("maps a legacy used trial to Pro and shows the other two trials", async () => {
-    (getLegacyStatus as jest.Mock).mockResolvedValue({
+    (getSubscription as jest.Mock).mockResolvedValue({
       success: true,
       isPro: false,
       plan: "free",

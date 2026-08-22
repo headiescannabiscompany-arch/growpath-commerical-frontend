@@ -1,5 +1,7 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
+import fs from "fs";
+import path from "path";
 
 import { createAcceptFacilityInviteStyles } from "@/app/accept-facility-invite";
 import CreateFacilityScreen, {
@@ -107,5 +109,16 @@ describe("Facility entry routes", () => {
     expect(create.input.backgroundColor).toBe(palette.surface);
     expect(create.input.color).toBe(palette.text);
     expect(create.secondaryButton.backgroundColor).toBe(palette.surface);
+  });
+
+  it("routes Facility billing management through status review instead of Offers checkout", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "src/app/home/facility/(tabs)/profile.tsx"),
+      "utf8"
+    );
+    expect(source).toContain('router.push("/account/billing" as any)');
+    expect(source).not.toContain(
+      'accessibilityLabel="Manage facility plan and billing"\n              onPress={() => router.push("/offers"'
+    );
   });
 });
