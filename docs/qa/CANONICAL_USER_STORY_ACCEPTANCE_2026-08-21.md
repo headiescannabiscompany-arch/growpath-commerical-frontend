@@ -390,15 +390,21 @@ tax, HR, legal, POS, procurement, dispatch or autonomous operations.
 
 - R-01: subscriptions, paid courses and authorized products cover success, cancel, failure,
   duplicate attempt, webhook reconciliation, entitlement, receipt, refund/return and account
-  management. Gift subscription stays disabled until its policy and lifecycle are complete.
+  management. Gift subscription is required for release, but stays disabled until purchaser
+  checkout, recipient email, signed-out/cross-device claim, entitlement, recovery/expiry,
+  refund/dispute, duplicate protection, migration/index, worker and live webhook acceptance
+  all pass. Admin access does not substitute for a real recipient claim.
 - R-02: email/device/in-app categories persist independently, suppress disabled delivery and
   open the exact record. Native receipt/tap behavior is accepted on real iOS and Android.
 
 ### R-03 and R-04 — Final acceptance and review
 
-- R-03: one frozen frontend/backend candidate passes the complete route/action, role,
-  populated/empty, persistence, responsive, theme, accessibility, security and visual crawl
-  with genuine screenshots/video tied to evidence.
+- R-03: an initial frozen frontend/backend candidate passes a complete route/action, role,
+  populated/empty, persistence, responsive, theme, accessibility, security and visual crawl.
+  Cleanup candidates are removed only after proving they are unreachable, superseded or
+  duplicate across routes, imports, deep links, providers, workers, webhooks, migrations,
+  fixtures and production-data compatibility. The resulting new frozen SHAs rerun affected
+  gates and the complete crawl; only that post-cleanup pass is final release evidence.
 - R-04: Roberto receives a separate reviewer identity, not owner credentials. Findings include
   route, role, evidence, expectation and proposed change; each is accepted/rejected explicitly,
   accepted work is previewed, and owner approval precedes production.

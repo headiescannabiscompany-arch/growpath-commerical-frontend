@@ -189,17 +189,17 @@ document extraction, Business Ask AI, optional merchant provider handoff, exact-
 deployment, and live acceptance remain open. The canonical matrix continues to own row
 status and must be reconciled only after the combined evidence packet is complete.
 
-| Slice                        | Route           | Required construction                                                                                                                                                                                    | Focused automated acceptance                                                                                                                                                                                                           |
-| ---------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Engine foundation            | Desk root       | Workspace/field authorization, exact money, protected staging/extraction, audited/idempotent drafts, Commercial/Facility credits, and account-deletion/legal-hold disposition                              | Two Commercial/two Facility isolation; denied roles; permission change; credit debit/refund; duplicate/prompt-injection/file-safety/export guards; Commercial erasure and Facility actor deidentification                              |
-| Price, margin and break-even | `/price-margin` | Deterministic calculator; one positive-`quantityMicros` sales scenario with whole-scenario fees, fulfillment/shipping cost, customer shipping and fixed discount; break-even repeats that exact scenario | Formula tables/properties; BigInt-safe ceiling; `salesScenarios`, total `quantityMicros`, `contributionMinor` and `revenueMinor`; missing/non-positive contribution; currency rounding/cross-currency; stateless use creates no record |
-| Quote / estimate             | `/quotes`       | Immutable revisions, copy/export and optional merchant-owned Stripe Connect draft handoff                                                                                                                | Totals/order; save/reload/concurrency; exact revision/amount/currency; `DISCONNECTED`/`TEST`/`LIVE`/`REVOKED`; confirm/cancel/retry/idempotency; signed duplicate/out-of-order webhooks; no send/tax/payment/stock mutation            |
-| Lead follow-up               | `/leads`        | Minimal voluntary opportunity and reviewed follow-up draft                                                                                                                                               | Status/date lifecycle; PII field denial; archive/retention/export; no profiling, fabricated contact or automatic outreach                                                                                                              |
-| Job notes                    | `/jobs`         | Job/intake record, protected attachments and reviewed actions                                                                                                                                            | State/date/time-zone lifecycle; assignee permission; attachment rejection/retry; failed-draft retention; no assignment/communication before confirmation                                                                               |
-| Expense / receipt helper     | `/expenses`     | Private quarantine, workspace digest, schema draft, reviewed save/search/filter/export                                                                                                                   | Malformed/mislabeled/oversize/encrypted/malicious files; low confidence/missing fields; tenant-local duplicate; cancel/expiry/delete; no tax claim                                                                                     |
-| Vendor compare               | `/vendors`      | Exact cost comparison and embedded reviewed purchase request                                                                                                                                             | Complete landed versus known subtotal; missing inputs; no order; no inventory write; `Received` only from linked B-02 evidence                                                                                                         |
-| Cash-flow snapshot           | `/cash-flow`    | Source/freshness-labeled deterministic 30/60/90 views                                                                                                                                                    | Recorded/expected/stale/conflict/date-boundary cases; owner-only cash; separate currencies; no FX, bank or ML inference                                                                                                                |
-| Business Ask AI              | `/ask-ai`       | Permission-filtered Desk/B-02 retrieval, operation-bound provider projections and separate record comparisons, source-linked answer, saved-draft history/review/archive, and embedded KPI view            | Similar-workspace isolation; field filtering; UTC source/date/incomplete output; stored prompt injection ignored; fact/calculation/assumption/forecast/recommendation split; exact citation/draft recovery; no action without confirmation |
+| Slice                        | Route           | Required construction                                                                                                                                                                                    | Focused automated acceptance                                                                                                                                                                                                               |
+| ---------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Engine foundation            | Desk root       | Workspace/field authorization, exact money, protected staging/extraction, audited/idempotent drafts, Commercial/Facility credits, and account-deletion/legal-hold disposition                            | Two Commercial/two Facility isolation; denied roles; permission change; credit debit/refund; duplicate/prompt-injection/file-safety/export guards; Commercial erasure and Facility actor deidentification                                  |
+| Price, margin and break-even | `/price-margin` | Deterministic calculator; one positive-`quantityMicros` sales scenario with whole-scenario fees, fulfillment/shipping cost, customer shipping and fixed discount; break-even repeats that exact scenario | Formula tables/properties; BigInt-safe ceiling; `salesScenarios`, total `quantityMicros`, `contributionMinor` and `revenueMinor`; missing/non-positive contribution; currency rounding/cross-currency; stateless use creates no record     |
+| Quote / estimate             | `/quotes`       | Immutable revisions, copy/export and optional merchant-owned Stripe Connect draft handoff                                                                                                                | Totals/order; save/reload/concurrency; exact revision/amount/currency; `DISCONNECTED`/`TEST`/`LIVE`/`REVOKED`; confirm/cancel/retry/idempotency; signed duplicate/out-of-order webhooks; no send/tax/payment/stock mutation                |
+| Lead follow-up               | `/leads`        | Minimal voluntary opportunity and reviewed follow-up draft                                                                                                                                               | Status/date lifecycle; PII field denial; archive/retention/export; no profiling, fabricated contact or automatic outreach                                                                                                                  |
+| Job notes                    | `/jobs`         | Job/intake record, protected attachments and reviewed actions                                                                                                                                            | State/date/time-zone lifecycle; assignee permission; attachment rejection/retry; failed-draft retention; no assignment/communication before confirmation                                                                                   |
+| Expense / receipt helper     | `/expenses`     | Private quarantine, workspace digest, schema draft, reviewed save/search/filter/export                                                                                                                   | Malformed/mislabeled/oversize/encrypted/malicious files; low confidence/missing fields; tenant-local duplicate; cancel/expiry/delete; no tax claim                                                                                         |
+| Vendor compare               | `/vendors`      | Exact cost comparison and embedded reviewed purchase request                                                                                                                                             | Complete landed versus known subtotal; missing inputs; no order; no inventory write; `Received` only from linked B-02 evidence                                                                                                             |
+| Cash-flow snapshot           | `/cash-flow`    | Source/freshness-labeled deterministic 30/60/90 views                                                                                                                                                    | Recorded/expected/stale/conflict/date-boundary cases; owner-only cash; separate currencies; no FX, bank or ML inference                                                                                                                    |
+| Business Ask AI              | `/ask-ai`       | Permission-filtered Desk/B-02 retrieval, operation-bound provider projections and separate record comparisons, source-linked answer, saved-draft history/review/archive, and embedded KPI view           | Similar-workspace isolation; field filtering; UTC source/date/incomplete output; stored prompt injection ignored; fact/calculation/assumption/forecast/recommendation split; exact citation/draft recovery; no action without confirmation |
 
 Break-even remains a Price/Margin mode, a purchase request is a Vendor Compare output, a KPI
 snapshot is an Ask view, and an invoice/payment-request draft is a Quote handoff. Registry,
@@ -211,9 +211,11 @@ none can silently become a ninth launch product.
 Primary rows: `R-01`, `R-02`.  
 Dependencies: relevant course/storefront/profile/session assemblies.  
 Construction boundary: prove success, cancellation, failure, duplicate attempt, webhook
-reconciliation, entitlement, receipt and refund/return boundaries. Gift subscription remains
-disabled until separately defined. Notification categories persist independently; real iOS
-and Android receipt/tap evidence is required.
+reconciliation, entitlement, receipt and refund/return boundaries. Gift subscription is an
+R-01 release requirement but remains disabled until its purchaser, recipient-email,
+signed-out/cross-device claim, entitlement, recovery/expiry, refund/dispute, duplicate,
+migration/index, worker and live-webhook gates pass. Notification categories persist
+independently; real iOS and Android receipt/tap evidence is required.
 
 ### Batch 8 — freeze, crawl, independent review, hats and stores
 
@@ -221,20 +223,27 @@ Order is fixed: `R-03` → `R-04` → `R-05` → `R-06`.
 
 1. Freeze exact frontend/backend SHAs only after all in-scope functional packets are closed
    or carry an owner-approved, time-bounded exception.
-2. Run one complete cross-role, route/action, populated/empty, persistence, recovery,
+2. Run an initial complete cross-role, route/action, populated/empty, persistence, recovery,
    security, visual, responsive, theme and accessibility crawl. A defect returns to its
    owning matrix packet; the crawl does not redefine behavior.
-3. Give Roberto a separate reviewer identity. Itemize and deliberately accept/reject every
+3. Classify cleanup candidates from the crawl and retained work. Remove only code proven
+   unreachable, superseded or duplicate after checking registered routes, navigation/deep
+   links, imports, providers, workers, webhooks, migrations, fixtures and production-data
+   compatibility. Name the superseding implementation, preserve evidence, and use small,
+   reversible commits; an unused-looking name alone is not proof.
+4. Freeze new frontend/backend SHAs after cleanup, rerun all affected automated gates and the
+   complete cross-role crawl, and retain this post-cleanup pass as final release evidence.
+5. Give Roberto a separate reviewer identity. Itemize and deliberately accept/reject every
    finding; owner approval precedes production.
-4. After the product and reviewer gates pass, rotate production credentials one service at
+6. After the product and reviewer gates pass, rotate production credentials one service at
    a time. Record the provider/key identifier without its secret value, revoke the replaced
    credential, run a bounded service-specific smoke and rollback check, and preserve the
    exact application SHAs. A single bulk rotation or an unverified secret change is not a
    completion gate.
-5. Pause for owner review and stop before hat execution. When the owner resumes it,
+7. Pause for owner review and stop before hat execution. When the owner resumes it,
    translate the selected Triple Bag-style directions into a GrowPathAI-only collection
    and complete its rights/specification/sample/non-sale work.
-6. Begin App Store and Play Store work last, including credentials, Sentry, builds,
+8. Begin App Store and Play Store work last, including credentials, Sentry, builds,
    physical-device smoke, privacy/data-rights, listing, submission, monitoring and rollback.
 
 ## Story-to-assembly index
@@ -287,7 +296,7 @@ surfaces to inspect, not proof that the story is complete.
 | `A-05`        | Auth/profile/workspace contexts, storage reset, route guards, backend authorization                            | Identity-to-identity cleanup, expiry/reload/logout and direct-URL isolation                                                                     |
 | `R-01`        | Billing/checkout/webhooks/enrollment/entitlements/receipts/refunds                                             | Full money lifecycle, duplicate protection and truthful unsupported states                                                                      |
 | `R-02`        | Notification preferences, in-app/email/device delivery and deep links                                          | Independent categories, suppression, exact record, physical-device evidence                                                                     |
-| `R-03`        | Route inventories, automated suites, live crawl/evidence tooling                                               | One frozen candidate; complete professional acceptance, no new scope                                                                            |
+| `R-03`        | Route inventories, automated suites, live crawl/evidence tooling                                               | Initial crawl, proven dead-code cleanup, new frozen SHAs, then full final acceptance                                                            |
 | `R-04`        | Reviewer identity, findings ledger, preview branch and owner decision record                                   | Isolated review with explicit accept/reject and production approval                                                                             |
 | `R-05`        | GrowPathAI brand assets, specification/rights records, research-trial/storefront presentation                  | Owner stop gate, BLVNK approval, GrowPathAI-only art, zero stock/not for sale                                                                   |
 | `R-06`        | Store build/config/privacy/listing/submission/monitoring/rollback artifacts                                    | Stores last; physical devices and release gates remain mandatory                                                                                |
@@ -329,6 +338,8 @@ a linked evidence document. Do not create another independent status list.
   batch deployments where risk permits without obscuring exact SHA evidence.
 - Never mark a row closed from chat, source inspection, a route load, an empty state, local
   tests or deployment alone.
+- Every started implementation reaches its packet acceptance gate or retains an exact named
+  blocker, dependency, evidence and next action. Do not leave anonymous partial code behind.
 
 ## Entry gate for construction completion
 

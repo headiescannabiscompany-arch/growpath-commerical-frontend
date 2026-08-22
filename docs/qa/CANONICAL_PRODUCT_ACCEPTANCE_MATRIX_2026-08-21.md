@@ -162,17 +162,17 @@ Every applicable story must preserve these invariants without repeating them in 
 See `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md` for the complete tool
 inventory, safety boundaries and mandatory production scenarios.
 
-| ID   | User story                                                                                                    | Status                                                                |
-| ---- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | defined; not started                                                  |
-| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | implemented; local acceptance passed; deployment/live acceptance open |
-| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | implementation in progress; combined acceptance open                 |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | defined; not started                                                  |
-| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | partial; business acceptance open                                     |
-| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | partial; business acceptance open                                     |
-| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open                                         |
-| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | defined; cross-cutting acceptance open                                |
-| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | defined; final acceptance open                                        |
+| ID   | User story                                                                                                    | Status                                                                                      |
+| ---- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | partially implemented/evidenced through B-02/B-03; dedicated acceptance and live gates open |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | implemented; local acceptance passed; deployment/live acceptance open                       |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | implementation in progress; combined acceptance open                                        |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | defined; not started                                                                        |
+| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | partial; business acceptance open                                                           |
+| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | partial; business acceptance open                                                           |
+| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open                                                               |
+| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | defined; cross-cutting acceptance open                                                      |
+| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | defined; final acceptance open                                                              |
 
 Full regulator/POS adapters, serialized recall workflows, advanced forecasting, full CRM/ERP/accounting,
 dynamic pricing, marketplace/payout/tax tooling, and cross-platform creator analytics are
@@ -182,6 +182,20 @@ reconsideration rule is owned by `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21
 B-02 local construction and verification evidence is retained in
 `B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. It does not close the guarded
 production migration, deployment or live multi-role workflow gate.
+
+B-01 is no longer unstarted. The locally accepted B-02 ledger (frontend `1d283450`,
+backend `f00d674`) implements authenticated Commercial/Facility workspace scope, role and
+field permissions, stable records, reviewed import provenance, idempotent writes and
+workspace-scoped audit/export. The active B-03 foundation (frontend authorization
+foundation `0539d29a`; backend record/workspace foundation `a364e7e` and durable
+provider/credit foundation `2d7a583`) adds own-workspace/selected-Facility authorization,
+solo calculators without fabricated Facility/location/approval records, stable
+revision/review controls, protected-source provenance, correct AI-credit ownership and
+audited/idempotent actions. This is partial implementation and feature-specific local
+evidence, not dedicated B-01 acceptance. A frozen B-01 evidence packet, combined
+two-organization/two-Facility multi-role acceptance, the B-02 production migration,
+exact-SHA deployment, and live isolation/reload/import/approval/credit/audit scenarios
+remain open.
 
 B-03 is no longer an unstarted row. Frontend `85253d5e` retains the reviewed Business Ask
 provider/evidence/citation/KPI/draft workflow, frontend `dc97e836` retains the explicit IANA
@@ -199,23 +213,23 @@ are restored before any B-03 local-acceptance claim.
 
 ## Nature, Admin and release
 
-| ID   | User story                                                                                                            | Status          |
-| ---- | --------------------------------------------------------------------------------------------------------------------- | --------------- |
-| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state         | partial         |
-| N-02 | Discover shows a compact Nature preview even with zero public pins                                                    | live accepted   |
-| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                              | implemented     |
-| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location | implemented     |
-| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links    | partial         |
-| A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                          | partial         |
-| A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                     | partial         |
-| A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                    | partial         |
-| A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated    | partial         |
-| R-01 | Subscriptions, paid courses/products, returns/webhooks/receipts and management work where authorized                  | open            |
-| R-02 | Email/device notifications respect preferences and deliver supported events                                           | partial         |
-| R-03 | Final production route/action and visual/accessibility/device crawl passes on frozen SHAs                             | open            |
-| R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                            | open            |
-| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete          | open; stop gate |
-| R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                      | open            |
+| ID   | User story                                                                                                             | Status          |
+| ---- | ---------------------------------------------------------------------------------------------------------------------- | --------------- |
+| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | partial         |
+| N-02 | Discover shows a compact Nature preview even with zero public pins                                                     | live accepted   |
+| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented     |
+| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented     |
+| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | partial         |
+| A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                           | partial         |
+| A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                      | partial         |
+| A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                     | partial         |
+| A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated     | partial         |
+| R-01 | Subscriptions (including gifts), paid courses/products, returns/webhooks/receipts and management work where authorized | open            |
+| R-02 | Email/device notifications respect preferences and deliver supported events                                            | partial         |
+| R-03 | Initial crawl, proof-based dead-code cleanup, and final full acceptance pass on new frozen SHAs                        | open            |
+| R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                             | open            |
+| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate |
+| R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                       | open            |
 
 ## Frozen Plant ID stories
 
@@ -318,9 +332,17 @@ second queue. `Production mutation`, `production read-only`, `final-candidate cr
    B-01 through B-09 for existing GrowPath workflows. Do not reintroduce the removed POS,
    regulator, serialized-recall, forecasting, CRM/ERP/accounting, dynamic-pricing,
    marketplace/payout/tax, or cross-platform analytics projects.
-5. Implement the remaining in-scope functional gaps, then run one final frozen-SHA
-   professional route/action, visual, accessibility, responsive-device and recovery crawl.
-6. Isolate and deliberately accept or reject independent reviewer suggestions.
-7. Pause for owner review and stop before hats; resume with the owner and complete only
+5. Implement and accept every remaining in-scope functional gap. A started item may remain
+   open only with its exact dependency, blocker, retained evidence and next action recorded;
+   an unfinished implementation is never silently abandoned or treated as complete.
+6. Run an initial frozen-SHA professional crawl, classify every defect and cleanup candidate,
+   then remove only code proven unreachable, superseded or duplicate. Name the superseding
+   path; check routes, imports, deep links, providers, workers, webhooks, migrations, fixtures
+   and production-data compatibility; use small reversible commits and preserve evidence.
+7. Freeze the resulting frontend/backend SHAs and rerun affected gates plus the complete
+   route/action, role, security, visual, accessibility, responsive-device and recovery crawl.
+   Only this post-cleanup pass is final release evidence.
+8. Isolate and deliberately accept or reject independent reviewer suggestions.
+9. Pause for owner review and stop before hats; resume with the owner and complete only
    the GrowPathAI collection.
-8. Complete App Store and Play Store work last.
+10. Complete App Store and Play Store work last.

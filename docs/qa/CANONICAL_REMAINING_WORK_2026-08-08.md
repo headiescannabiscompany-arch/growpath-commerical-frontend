@@ -36,13 +36,19 @@ starts or finishes; do not create another active todo document.
    and mutation slices, including P-10 persisted export and share review/cancel/publish/
    withdrawal. Do not reopen retained Hosted Live/OBS, crop-to-grow, Plant ID transport, or
    another checked implementation unless a current regression is reproduced.
-3. **Release crawl:** after the in-scope product/workflow items are closed, run the complete
+3. **Release crawl and cleanup:** after the in-scope product/workflow items are closed, run the complete
    live route, button, responsive, theme, accessibility, persistence, security, and visual
    presentation crawl and repair the defects it finds. Include a route-to-visible-entry
    matrix for every user-facing feature so a working subsystem cannot remain buried like
    Hosted Lives was: record its intended workspace/role, visible entry, canonical URL,
    Back path, empty and populated states, and whether it is intentionally internal or a
    legacy redirect. Route inventory and zero API orphans alone do not close this check.
+   Use that crawl to classify cleanup candidates, then remove only code proven unreachable,
+   superseded or duplicate after checking routes, imports, deep links, providers, workers,
+   webhooks, migrations, fixtures and production-data compatibility. Name the superseding
+   path and preserve evidence in small reversible commits. Freeze new frontend/backend SHAs,
+   rerun every affected gate and the full crawl, and treat only that post-cleanup pass as
+   final release evidence.
 4. **External review:** run the defined Roberto review gate after the final crawl and
    reconcile each accepted change through normal review/live evidence.
 5. **Merchandise:** hats remain second-to-last, after the product and final-crawl work.
@@ -84,6 +90,11 @@ crawl.
   independent-user acceptance.
 - Do not fabricate owner input, credentials, real-world outcomes, provider
   failures, payment events, screenshots, or populated production records.
+- Finish every started item through its packet acceptance gate. If a real dependency blocks
+  it, record the exact blocker, retained implementation/evidence and next action; do not leave
+  anonymous partial code or reopen accepted work merely because its history is unfamiliar.
+- Do not delete code because its name looks old or unused. Prove it unreachable, superseded
+  or duplicate and assess production data/schema compatibility before removal.
 - Commit and push each coherent tested section. Record deployment and live evidence
   separately.
 - Use one-way completion: reopen a decision only for a reproduced regression, missing
@@ -795,10 +806,13 @@ refund/dispute, or mutation-capable acceptance items below.
       entitlements. Record the scheduled Commercial expiry/downgrade when it occurs.
 - [ ] Verify commercial product Stripe and external-only purchase paths, including
       order/lead/analytics results and truthful unavailable setup.
-- [ ] Keep gift checkout disabled until cancellation/refund policy, signed-out and
+- [ ] Complete gift subscription for R-01 release, while keeping checkout disabled until
+      cancellation/refund policy, purchaser and recipient-email flow, signed-out and
       cross-device purchaser flow, pending-record migration review, production index,
       webhook/live-key evidence, safe single-worker processing, and sandbox plus
-      mutation-capable acceptance all pass.
+      mutation-capable acceptance all pass. Also prove recipient claim, entitlement,
+      recovery/expiry, refund/dispute and duplicate protection; Admin access is not a
+      substitute for a real recipient claim.
 - [~] Complete remaining delivered-email evidence. A read-only 2026-08-13 mailbox
   inventory retained genuine verification, password-reset, Personal/Course/Facility
   support bug-report, and billing-alias support delivery. It found no Facility
