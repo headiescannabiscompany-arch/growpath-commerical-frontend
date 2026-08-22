@@ -9,6 +9,28 @@ const mockCreate = jest.fn();
 const mockList = jest.fn();
 const mockUpdate = jest.fn();
 
+const reviewedQuote = {
+  _id: "64b000000000000000000301",
+  kind: "quote",
+  title: "Reviewed quote",
+  status: "reviewed",
+  version: 3,
+  createdAt: "2026-08-20T16:00:00.000Z",
+  updatedAt: "2026-08-21T16:00:00.000Z",
+  payload: {}
+};
+
+const draftQuote = {
+  _id: "64b000000000000000000302",
+  kind: "quote",
+  title: "Draft quote",
+  status: "draft",
+  version: 1,
+  createdAt: "2026-08-20T16:00:00.000Z",
+  updatedAt: "2026-08-21T16:00:00.000Z",
+  payload: {}
+};
+
 jest.mock("@/api/businessDesk", () => ({
   archiveBusinessDeskRecord: (...args: any[]) => mockArchive(...args),
   businessDeskWorkspaceKey: (workspace: any) =>
@@ -95,7 +117,10 @@ describe("CashFlowSnapshotTool", () => {
       .mockReset()
       .mockImplementation(async (_workspace, input) => cashResult(input));
     mockCreate.mockReset();
-    mockList.mockReset().mockResolvedValue([]);
+    mockList.mockReset().mockImplementation(async (_workspace, filters) => {
+      if (filters?.kind === "quote") return [reviewedQuote, draftQuote];
+      return [];
+    });
     mockUpdate.mockReset();
   });
 
@@ -139,18 +164,15 @@ describe("CashFlowSnapshotTool", () => {
     fireEvent.changeText(screen.getByLabelText("Cash-flow entry 1 amount"), "125.00");
     fireEvent.press(screen.getByLabelText("Cash-flow entry 1 due date and time"));
     fireEvent.press(
-      screen.getByLabelText("Cash-flow entry 1 source recorded date and time")
-    );
-    fireEvent.press(
-      screen.getByLabelText("Cash-flow entry 1 source freshness date and time")
-    );
-    fireEvent.press(
       screen.getByLabelText("Cash-flow entry 1 source type Reviewed quote expectation")
     );
-    fireEvent.changeText(
-      screen.getByLabelText("Cash-flow entry 1 source record id"),
-      "64b000000000000000000301"
+    fireEvent.press(
+      await screen.findByLabelText("Use cash-flow source Reviewed quote revision 3")
     );
+    expect(
+      screen.queryByLabelText("Use cash-flow source Draft quote revision 1")
+    ).toBeNull();
+    expect(screen.queryByLabelText("Cash-flow entry 1 source record id")).toBeNull();
     fireEvent.press(screen.getByLabelText("Calculate cash-flow snapshot"));
 
     await waitFor(() => expect(mockCalculate).toHaveBeenCalledTimes(1));
@@ -222,7 +244,7 @@ describe("CashFlowSnapshotTool", () => {
     ).toBeTruthy();
   });
 
-  it("requires evidence IDs, creates a draft, then reviews by transition only", async () => {
+  it("keeps manual evidence owner-entered, creates a draft, then reviews by transition only", async () => {
     const createdRecord = {
       _id: "64b000000000000000000202",
       kind: "cash_flow_snapshot",
@@ -258,7 +280,10 @@ describe("CashFlowSnapshotTool", () => {
     );
     fireEvent.press(screen.getByLabelText("Cash-flow snapshot as of date and time"));
     fireEvent.press(screen.getByLabelText("Add cash-flow entry"));
-    fireEvent.changeText(screen.getByLabelText("Cash-flow entry 1 label"), "Invoice");
+    fireEvent.changeText(
+      screen.getByLabelText("Cash-flow entry 1 label"),
+      "Owner-entered subscription"
+    );
     fireEvent.changeText(screen.getByLabelText("Cash-flow entry 1 amount"), "50");
     fireEvent.press(screen.getByLabelText("Cash-flow entry 1 due date and time"));
     fireEvent.press(
@@ -267,20 +292,10 @@ describe("CashFlowSnapshotTool", () => {
     fireEvent.press(
       screen.getByLabelText("Cash-flow entry 1 source freshness date and time")
     );
-    fireEvent.press(
-      screen.getByLabelText("Cash-flow entry 1 source type Payment provider evidence")
-    );
-    fireEvent.press(screen.getByLabelText("Save cash-flow draft"));
-
-    expect(
-      await screen.findByText(/needs the authorized source or evidence ID/i)
-    ).toBeTruthy();
-    expect(mockCreate).not.toHaveBeenCalled();
-
-    fireEvent.changeText(
-      screen.getByLabelText("Cash-flow entry 1 source record id"),
-      "provider-invoice-9"
-    );
+    fireEvent.press(screen.getByLabelText("Cash-flow entry 1 direction Outgoing"));
+    expect(screen.queryByText(/Payment provider evidence/i)).toBeNull();
+    expect(screen.queryByText(/Bank import/i)).toBeNull();
+    expect(screen.queryByLabelText("Cash-flow entry 1 source record id")).toBeNull();
     expect(
       screen.getByLabelText("Review saved cash-flow draft").props.accessibilityState
         .disabled
@@ -288,6 +303,14 @@ describe("CashFlowSnapshotTool", () => {
     fireEvent.press(screen.getByLabelText("Save cash-flow draft"));
     await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
     expect(mockCreate.mock.calls[0][1].status).toBe("draft");
+    expect(mockCreate.mock.calls[0][1].sourceLinks).toEqual([]);
+    expect(mockCreate.mock.calls[0][1].payload.cashFlowSnapshot.entries[0]).toEqual(
+      expect.objectContaining({
+        direction: "outflow",
+        sourceType: "manual",
+        sourceRecordId: ""
+      })
+    );
     await waitFor(() =>
       expect(
         screen.getByLabelText("Review saved cash-flow draft").props.accessibilityState
@@ -307,25 +330,26 @@ describe("CashFlowSnapshotTool", () => {
   });
 
   it("keeps owner current cash out of Manager state, inputs, and results", async () => {
-    mockList.mockResolvedValue([
-      {
-        _id: "cash-owner-1",
-        kind: "cash_flow_snapshot",
-        title: "Owner cash snapshot",
-        status: "draft",
-        version: 1,
-        payload: {
-          cashFlowSnapshot: {
-            asOf: "2026-08-22T16:00:00.000Z",
-            currency: "USD",
-            minorUnitDigits: 2,
-            currentCashMinor: 987654,
-            staleAfterDays: 30,
-            entries: []
-          }
+    const record = {
+      _id: "cash-owner-1",
+      kind: "cash_flow_snapshot",
+      title: "Owner cash snapshot",
+      status: "draft",
+      version: 1,
+      payload: {
+        cashFlowSnapshot: {
+          asOf: "2026-08-22T16:00:00.000Z",
+          currency: "USD",
+          minorUnitDigits: 2,
+          currentCashMinor: 987654,
+          staleAfterDays: 30,
+          entries: []
         }
       }
-    ]);
+    };
+    mockList.mockImplementation(async (_workspace, filters) =>
+      filters?.kind === "cash_flow_snapshot" ? [record] : []
+    );
     const screen = render(
       <CashFlowSnapshotTool
         workspace={{ workspaceType: "facility", facilityId: "facility-2" }}
@@ -350,7 +374,7 @@ describe("CashFlowSnapshotTool", () => {
     expect(screen.queryByText(/Projected cash:/)).toBeNull();
   });
 
-  it("reloads and archives a saved snapshot with its recorded evidence fields", async () => {
+  it("reloads and archives a saved snapshot with its owner-entered evidence fields", async () => {
     const record = {
       _id: "64b000000000000000000203",
       kind: "cash_flow_snapshot",
@@ -373,17 +397,19 @@ describe("CashFlowSnapshotTool", () => {
               amountMinor: 7500,
               currency: "USD",
               dueAt: "2026-08-25T16:00:00.000Z",
-              sourceType: "external_reference",
+              sourceType: "manual",
               sourceRecordedAt: "2026-08-20T16:00:00.000Z",
               sourceFreshnessAt: "2026-08-20T16:00:00.000Z",
-              sourceRecordId: "bill-22"
+              sourceRecordId: ""
             }
           ],
           assumptions: "No unrecorded sales included."
         }
       }
     };
-    mockList.mockResolvedValue([record]);
+    mockList.mockImplementation(async (_workspace, filters) =>
+      filters?.kind === "cash_flow_snapshot" ? [record] : []
+    );
     mockArchive.mockResolvedValue({ ...record, archivedAt: "2026-08-22T17:00:00.000Z" });
     const screen = render(
       <CashFlowSnapshotTool
@@ -399,9 +425,10 @@ describe("CashFlowSnapshotTool", () => {
       "-25.00"
     );
     expect(screen.getByLabelText("Cash-flow entry 1 amount").props.value).toBe("75.00");
-    expect(screen.getByLabelText("Cash-flow entry 1 source record id").props.value).toBe(
-      "bill-22"
-    );
+    expect(screen.queryByLabelText("Cash-flow entry 1 source record id")).toBeNull();
+    expect(
+      screen.getByLabelText("Cash-flow entry 1 source recorded date and time")
+    ).toBeTruthy();
     fireEvent.changeText(
       screen.getByLabelText("Business Desk archive reason"),
       "Snapshot superseded"

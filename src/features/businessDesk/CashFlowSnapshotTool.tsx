@@ -1,8 +1,9 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   calculateBusinessDesk,
+  listBusinessDeskRecords,
   type BusinessDeskRecord,
   type BusinessDeskWorkspace
 } from "@/api/businessDesk";
@@ -31,15 +32,7 @@ import { radius } from "@/theme/theme";
 
 type CashDirection = "inflow" | "outflow";
 type CashConfidence = "recorded" | "expected";
-type CashSourceType =
-  | "manual"
-  | "quote"
-  | "expense"
-  | "job"
-  | "invoice_provider"
-  | "bank_import"
-  | "inventory"
-  | "external_reference";
+type CashSourceType = "manual" | "quote" | "expense";
 
 type CashEntryDraft = {
   id: string;
@@ -104,22 +97,12 @@ const CONFIDENCE_OPTIONS: Array<{ value: CashConfidence; label: string }> = [
 const SOURCE_OPTIONS: Array<{ value: CashSourceType; label: string }> = [
   { value: "manual", label: "Owner-entered" },
   { value: "quote", label: "Reviewed quote expectation" },
-  { value: "expense", label: "Expense / bill" },
-  { value: "job", label: "Job record" },
-  { value: "invoice_provider", label: "Payment provider evidence" },
-  { value: "bank_import", label: "Authorized bank import" },
-  { value: "inventory", label: "B-02 inventory reference" },
-  { value: "external_reference", label: "External reference" }
+  { value: "expense", label: "Reviewed expense expectation" }
 ];
 
 const SOURCE_LINK_TYPES: Partial<Record<CashSourceType, string>> = {
   quote: "quote",
-  expense: "expense",
-  job: "job",
-  inventory: "inventory_item",
-  invoice_provider: "external_reference",
-  bank_import: "external_reference",
-  external_reference: "external_reference"
+  expense: "expense"
 };
 
 let entrySequence = 0;
@@ -148,6 +131,10 @@ function newEntry(overrides: Partial<CashEntryDraft> = {}): CashEntryDraft {
 
 function payloadOf(record: BusinessDeskRecord | null) {
   return (record?.payload?.cashFlowSnapshot || {}) as any;
+}
+
+function sourceRecordId(record: BusinessDeskRecord) {
+  return String(record.id || record._id || "");
 }
 
 function majorInput(value: unknown, digits: number) {
@@ -206,6 +193,15 @@ export default function CashFlowSnapshotTool({
   const collection = useBusinessDeskRecordCollection(workspace, "cash_flow_snapshot", {
     sanitizeRecord
   });
+  const workspaceType = workspace.workspaceType;
+  const facilityId = workspaceType === "facility" ? workspace.facilityId : "";
+  const stableWorkspace = useMemo<BusinessDeskWorkspace>(
+    () =>
+      workspaceType === "facility"
+        ? { workspaceType: "facility", facilityId }
+        : { workspaceType: "commercial" },
+    [facilityId, workspaceType]
+  );
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
   const [currency, setCurrency] = useState("USD");
@@ -221,6 +217,58 @@ export default function CashFlowSnapshotTool({
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [authorizedSources, setAuthorizedSources] = useState<BusinessDeskRecord[]>([]);
+  const [sourceLoading, setSourceLoading] = useState(true);
+  const [sourceError, setSourceError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    setSourceLoading(true);
+    setSourceError("");
+    Promise.all([
+      listBusinessDeskRecords(
+        stableWorkspace,
+        { kind: "quote" },
+        {
+          signal: controller.signal
+        }
+      ),
+      listBusinessDeskRecords(
+        stableWorkspace,
+        { kind: "expense" },
+        {
+          signal: controller.signal
+        }
+      )
+    ])
+      .then(([quotes, expenses]) => {
+        if (active) {
+          setAuthorizedSources(
+            [...quotes, ...expenses].filter(
+              (record) => record.status === "reviewed" && sourceRecordId(record)
+            )
+          );
+        }
+      })
+      .catch((error) => {
+        if (active && error?.name !== "AbortError") {
+          setAuthorizedSources([]);
+          setSourceError(
+            error instanceof Error
+              ? error.message
+              : "Authorized cash-flow sources could not be loaded."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setSourceLoading(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [stableWorkspace]);
 
   const contentFingerprint = JSON.stringify({
     title,
@@ -324,8 +372,39 @@ export default function CashFlowSnapshotTool({
         throw new Error("Cash-flow entry " + (index + 1) + " needs a label.");
       }
       const dueAt = localDateTimeToIso(entry.dueAt);
-      const sourceRecordedAt = localDateTimeToIso(entry.sourceRecordedAt);
-      const sourceFreshnessAt = localDateTimeToIso(entry.sourceFreshnessAt);
+      let sourceRecordedAt = localDateTimeToIso(entry.sourceRecordedAt);
+      let sourceFreshnessAt = localDateTimeToIso(entry.sourceFreshnessAt);
+      if (entry.sourceType !== "manual") {
+        const source = authorizedSources.find(
+          (record) =>
+            record.kind === entry.sourceType &&
+            record.status === "reviewed" &&
+            sourceRecordId(record) === entry.sourceRecordId
+        );
+        if (!source) {
+          throw new Error(
+            "Cash-flow entry " +
+              (index + 1) +
+              " must select a reviewed record from this workspace."
+          );
+        }
+        const observedAt = source.updatedAt || source.createdAt;
+        sourceRecordedAt = localDateTimeToIso(
+          isoToLocalDateTime(observedAt) || entry.sourceRecordedAt
+        );
+        sourceFreshnessAt = sourceRecordedAt;
+        if (entry.confidence !== "expected") {
+          throw new Error(
+            "Reviewed quote and expense records are expectations, not recorded cash evidence."
+          );
+        }
+        if (
+          (entry.sourceType === "quote" && entry.direction !== "inflow") ||
+          (entry.sourceType === "expense" && entry.direction !== "outflow")
+        ) {
+          throw new Error("The selected source has the wrong cash-flow direction.");
+        }
+      }
       if (!dueAt || !sourceRecordedAt || !sourceFreshnessAt) {
         throw new Error(
           "Cash-flow entry " +
@@ -631,18 +710,27 @@ export default function CashFlowSnapshotTool({
                     placeholder="0.00"
                   />
                 </View>
-                <StatusSelector
-                  label={"Cash-flow entry " + (index + 1) + " direction"}
-                  value={entry.direction}
-                  options={DIRECTION_OPTIONS}
-                  onChange={(value) => updateEntry(index, { direction: value })}
-                />
-                <StatusSelector
-                  label={"Cash-flow entry " + (index + 1) + " evidence state"}
-                  value={entry.confidence}
-                  options={CONFIDENCE_OPTIONS}
-                  onChange={(value) => updateEntry(index, { confidence: value })}
-                />
+                {entry.sourceType === "manual" ? (
+                  <>
+                    <StatusSelector
+                      label={"Cash-flow entry " + (index + 1) + " direction"}
+                      value={entry.direction}
+                      options={DIRECTION_OPTIONS}
+                      onChange={(value) => updateEntry(index, { direction: value })}
+                    />
+                    <StatusSelector
+                      label={"Cash-flow entry " + (index + 1) + " evidence state"}
+                      value={entry.confidence}
+                      options={CONFIDENCE_OPTIONS}
+                      onChange={(value) => updateEntry(index, { confidence: value })}
+                    />
+                  </>
+                ) : (
+                  <Text style={styles.bodyText}>
+                    {entry.sourceType === "quote" ? "Incoming" : "Outgoing"} · Expected. A
+                    reviewed business record is not proof that cash moved.
+                  </Text>
+                )}
                 <StatusSelector
                   label={"Cash-flow entry " + (index + 1) + " source type"}
                   value={entry.sourceType}
@@ -650,10 +738,97 @@ export default function CashFlowSnapshotTool({
                   onChange={(value) =>
                     updateEntry(index, {
                       sourceType: value,
-                      sourceRecordId: value === "manual" ? "" : entry.sourceRecordId
+                      sourceRecordId: "",
+                      direction:
+                        value === "quote"
+                          ? "inflow"
+                          : value === "expense"
+                            ? "outflow"
+                            : entry.direction,
+                      confidence: value === "manual" ? entry.confidence : "expected"
                     })
                   }
                 />
+                {entry.sourceType !== "manual" ? (
+                  <View style={styles.sourcePicker}>
+                    <Text style={styles.entryTitle}>
+                      Select a reviewed {entry.sourceType}
+                    </Text>
+                    {sourceLoading ? (
+                      <View style={styles.loadingRow}>
+                        <ActivityIndicator color={palette.accent} />
+                        <Text style={styles.bodyText}>Loading authorized records…</Text>
+                      </View>
+                    ) : sourceError ? (
+                      <Text style={styles.errorText}>{sourceError}</Text>
+                    ) : authorizedSources.filter(
+                        (record) => record.kind === entry.sourceType
+                      ).length ? (
+                      <View
+                        accessibilityRole="radiogroup"
+                        style={styles.sourceChoiceStack}
+                      >
+                        {authorizedSources
+                          .filter((record) => record.kind === entry.sourceType)
+                          .map((record) => {
+                            const id = sourceRecordId(record);
+                            const chosen = entry.sourceRecordId === id;
+                            const observedAt =
+                              isoToLocalDateTime(record.updatedAt || record.createdAt) ||
+                              entry.sourceRecordedAt;
+                            return (
+                              <Pressable
+                                key={id}
+                                accessibilityRole="radio"
+                                accessibilityLabel={
+                                  "Use cash-flow source " +
+                                  record.title +
+                                  " revision " +
+                                  record.version
+                                }
+                                accessibilityState={{ checked: chosen }}
+                                onPress={() =>
+                                  updateEntry(index, {
+                                    sourceRecordId: id,
+                                    sourceRecordedAt: observedAt,
+                                    sourceFreshnessAt: observedAt,
+                                    direction:
+                                      record.kind === "quote" ? "inflow" : "outflow",
+                                    confidence: "expected",
+                                    label: entry.label.trim() ? entry.label : record.title
+                                  })
+                                }
+                                style={[
+                                  styles.sourceChoice,
+                                  chosen && styles.sourceChoiceSelected
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.sourceChoiceTitle,
+                                    chosen && styles.sourceChoiceTitleSelected
+                                  ]}
+                                >
+                                  {record.title} · revision {record.version}
+                                </Text>
+                                <Text style={styles.sourceChoiceMeta}>
+                                  Reviewed ·{" "}
+                                  {record.updatedAt ||
+                                    record.createdAt ||
+                                    "date unavailable"}
+                                </Text>
+                              </Pressable>
+                            );
+                          })}
+                      </View>
+                    ) : (
+                      <Text style={styles.warningText}>
+                        No reviewed {entry.sourceType} records are available in this
+                        workspace. Review one first or use an honest owner-entered entry.
+                      </Text>
+                    )}
+                  </View>
+                ) : null}
                 <View style={styles.fieldGrid}>
                   <View style={styles.dateField}>
                     <CalendarDateField
@@ -666,52 +841,40 @@ export default function CashFlowSnapshotTool({
                       onChange={(value) => updateEntry(index, { dueAt: value })}
                     />
                   </View>
-                  <View style={styles.dateField}>
-                    <CalendarDateField
-                      label="Source recorded at"
-                      accessibilityLabel={
-                        "Cash-flow entry " +
-                        (index + 1) +
-                        " source recorded date and time"
-                      }
-                      mode="datetime"
-                      value={entry.sourceRecordedAt}
-                      onChange={(value) =>
-                        updateEntry(index, { sourceRecordedAt: value })
-                      }
-                    />
-                  </View>
-                  <View style={styles.dateField}>
-                    <CalendarDateField
-                      label="Source fresh as of"
-                      accessibilityLabel={
-                        "Cash-flow entry " +
-                        (index + 1) +
-                        " source freshness date and time"
-                      }
-                      mode="datetime"
-                      value={entry.sourceFreshnessAt}
-                      onChange={(value) =>
-                        updateEntry(index, { sourceFreshnessAt: value })
-                      }
-                    />
-                  </View>
-                  <LabeledInput
-                    label="Source / evidence ID"
-                    accessibilityLabel={
-                      "Cash-flow entry " + (index + 1) + " source record id"
-                    }
-                    value={entry.sourceRecordId}
-                    onChangeText={(value) =>
-                      updateEntry(index, { sourceRecordId: value })
-                    }
-                    placeholder={
-                      entry.sourceType === "manual"
-                        ? "Optional"
-                        : "Required authorized record or evidence ID"
-                    }
-                    hint="Internal record IDs are reauthorized in this workspace when saved."
-                  />
+                  {entry.sourceType === "manual" ? (
+                    <>
+                      <View style={styles.dateField}>
+                        <CalendarDateField
+                          label="Source recorded at"
+                          accessibilityLabel={
+                            "Cash-flow entry " +
+                            (index + 1) +
+                            " source recorded date and time"
+                          }
+                          mode="datetime"
+                          value={entry.sourceRecordedAt}
+                          onChange={(value) =>
+                            updateEntry(index, { sourceRecordedAt: value })
+                          }
+                        />
+                      </View>
+                      <View style={styles.dateField}>
+                        <CalendarDateField
+                          label="Source fresh as of"
+                          accessibilityLabel={
+                            "Cash-flow entry " +
+                            (index + 1) +
+                            " source freshness date and time"
+                          }
+                          mode="datetime"
+                          value={entry.sourceFreshnessAt}
+                          onChange={(value) =>
+                            updateEntry(index, { sourceFreshnessAt: value })
+                          }
+                        />
+                      </View>
+                    </>
+                  ) : null}
                 </View>
               </View>
             );
@@ -752,7 +915,7 @@ export default function CashFlowSnapshotTool({
       <AppCard
         title="Deterministic scenarios"
         titleLevel={2}
-        subtitle="Projected cash = owner-entered opening cash + recorded and expected incoming − recorded and expected outgoing through each horizon."
+        subtitle="Projected cash = owner-entered opening cash + expected incoming − expected outgoing. Recorded rows remain visible but are not added again."
       >
         {visibleResult ? (
           <View style={styles.resultStack}>
@@ -806,7 +969,8 @@ export default function CashFlowSnapshotTool({
                     </Text>
                   </View>
                   <Text style={styles.resultMetric}>
-                    Net movement: {formatMoneyMinor(horizon.netMovementMinor, context)}
+                    Expected net movement:{" "}
+                    {formatMoneyMinor(horizon.netMovementMinor, context)}
                   </Text>
                   {canViewCurrentCash ? (
                     <Text style={styles.resultMetric}>
@@ -957,6 +1121,7 @@ function createStyles(palette: ThemePalette) {
     resultMetric: { color: palette.text, fontSize: 14, fontWeight: "900" },
     resultStack: { gap: 10 },
     resultTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    loadingRow: { alignItems: "center", flexDirection: "row", gap: 9 },
     secondaryButton: {
       alignItems: "center",
       alignSelf: "flex-start",
@@ -970,6 +1135,32 @@ function createStyles(palette: ThemePalette) {
       paddingVertical: 9
     },
     secondaryButtonText: { color: palette.text, fontSize: 13, fontWeight: "900" },
+    sourceChoice: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 4,
+      minHeight: 48,
+      padding: 11
+    },
+    sourceChoiceMeta: { color: palette.textMuted, fontSize: 11, lineHeight: 16 },
+    sourceChoiceSelected: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.accent,
+      borderWidth: 2
+    },
+    sourceChoiceStack: { gap: 8 },
+    sourceChoiceTitle: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    sourceChoiceTitleSelected: { color: palette.accent },
+    sourcePicker: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 9,
+      padding: 12
+    },
     summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
     summaryText: { color: palette.text, fontSize: 13, fontWeight: "800" },
     warningBadge: {
