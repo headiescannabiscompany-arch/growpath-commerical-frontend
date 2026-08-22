@@ -1,0 +1,805 @@
+import React, { useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+
+import type { BusinessDeskRecord, BusinessDeskWorkspace } from "@/api/businessDesk";
+import CalendarDateField from "@/components/forms/CalendarDateField";
+import AppCard from "@/components/layout/AppCard";
+import {
+  LabeledInput,
+  RecordSaveArchiveActions
+} from "@/features/businessDesk/RecordFormControls";
+import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
+import {
+  formatMoneyMinor,
+  multiplyMoneyByQuantityMicros,
+  parseMoneyInput,
+  parseQuantityInput,
+  resolveCurrencyContext
+} from "@/features/businessDesk/money";
+import {
+  businessDeskRecordId,
+  isoToLocalDate,
+  localDateToIso,
+  useBusinessDeskRecordCollection
+} from "@/features/businessDesk/recordWorkflow";
+import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import { radius } from "@/theme/theme";
+import { exportToCsv } from "@/utils/exportToCsv";
+
+type ExpenseStatus = "draft" | "reviewed" | "rejected" | "correction_required";
+type ExpenseTransitionStatus = Exclude<ExpenseStatus, "draft">;
+
+type ExpenseLineDraft = {
+  id: string;
+  description: string;
+  quantity: string;
+  unitAmount: string;
+  category: string;
+};
+
+type ExpenseReceiptToolProps = {
+  workspace: BusinessDeskWorkspace;
+  workspaceLabel: "Commercial" | "Facility";
+  basePath: string;
+};
+
+let expenseLineSequence = 0;
+
+function newLine(overrides: Partial<ExpenseLineDraft> = {}): ExpenseLineDraft {
+  expenseLineSequence += 1;
+  return {
+    id: `expense-line-${expenseLineSequence}`,
+    description: "",
+    quantity: "1",
+    unitAmount: "",
+    category: "",
+    ...overrides
+  };
+}
+
+function payloadOf(record: BusinessDeskRecord | null) {
+  return (record?.payload?.expense || {}) as any;
+}
+
+function rawMajor(value: unknown, digits: number) {
+  if (!Number.isSafeInteger(value)) return "";
+  return (Number(value) / 10 ** digits).toFixed(digits);
+}
+
+function rawQuantity(value: unknown) {
+  return Number.isSafeInteger(value) ? String(Number(value) / 1_000_000) : "1";
+}
+
+export default function ExpenseReceiptTool({
+  workspace,
+  workspaceLabel,
+  basePath
+}: ExpenseReceiptToolProps) {
+  const { palette } = useAppTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const collection = useBusinessDeskRecordCollection(workspace, "expense");
+  const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
+  const [title, setTitle] = useState("");
+  const [merchant, setMerchant] = useState("");
+  const [occurredAt, setOccurredAt] = useState("");
+  const [amount, setAmount] = useState("");
+  const [tax, setTax] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [category, setCategory] = useState("uncategorized");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [lines, setLines] = useState<ExpenseLineDraft[]>([]);
+  const [notes, setNotes] = useState("");
+  const [archiveReason, setArchiveReason] = useState("");
+  const [savedContentFingerprint, setSavedContentFingerprint] = useState("");
+  const [formError, setFormError] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [throughDate, setThroughDate] = useState("");
+
+  const contentFingerprint = JSON.stringify({
+    title,
+    merchant,
+    occurredAt,
+    amount,
+    tax,
+    currency,
+    category,
+    paymentMethod,
+    lines: lines.map(({ id: _id, ...line }) => line),
+    notes
+  });
+  const exactSavedDraft = Boolean(
+    selected?.status === "draft" && contentFingerprint === savedContentFingerprint
+  );
+
+  const filteredRecords = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    const wantedCategory = categoryFilter.trim().toLowerCase();
+    return collection.records.filter((record) => {
+      const expense = payloadOf(record);
+      const date = String(expense.occurredAt || "").slice(0, 10);
+      const haystack = [record.title, expense.merchant, expense.category]
+        .join(" ")
+        .toLowerCase();
+      return (
+        (!query || haystack.includes(query)) &&
+        (!wantedCategory ||
+          String(expense.category || "").toLowerCase() === wantedCategory) &&
+        (!fromDate || date >= fromDate) &&
+        (!throughDate || date <= throughDate)
+      );
+    });
+  }, [categoryFilter, collection.records, fromDate, search, throughDate]);
+
+  const totalsByCurrency = useMemo(() => {
+    const totals = new Map<string, { amount: number; digits: number }>();
+    filteredRecords.forEach((record) => {
+      const expense = payloadOf(record);
+      if (!Number.isSafeInteger(expense.amountMinor) || !expense.currency) return;
+      const key = `${expense.currency}:${expense.minorUnitDigits}`;
+      const current = totals.get(key) || {
+        amount: 0,
+        digits: Number(expense.minorUnitDigits || 0)
+      };
+      const next = current.amount + Number(expense.amountMinor);
+      if (Number.isSafeInteger(next)) totals.set(key, { ...current, amount: next });
+    });
+    return [...totals.entries()].map(([key, value]) => ({
+      currency: key.split(":")[0],
+      ...value
+    }));
+  }, [filteredRecords]);
+
+  const reset = () => {
+    setSelected(null);
+    setTitle("");
+    setMerchant("");
+    setOccurredAt("");
+    setAmount("");
+    setTax("");
+    setCurrency("USD");
+    setCategory("uncategorized");
+    setPaymentMethod("");
+    setLines([]);
+    setNotes("");
+    setArchiveReason("");
+    setSavedContentFingerprint("");
+    setFormError("");
+    setFeedback("");
+  };
+
+  const open = (record: BusinessDeskRecord) => {
+    const expense = payloadOf(record);
+    const digits = Number.isInteger(expense.minorUnitDigits)
+      ? Number(expense.minorUnitDigits)
+      : 2;
+    const next = {
+      title: record.title || "",
+      merchant: String(expense.merchant || ""),
+      occurredAt: isoToLocalDate(expense.occurredAt),
+      amount: rawMajor(expense.amountMinor, digits),
+      tax: rawMajor(expense.taxMinor || 0, digits),
+      currency: String(expense.currency || "USD"),
+      category: String(expense.category || "uncategorized"),
+      paymentMethod: String(expense.paymentMethod || ""),
+      lines: (Array.isArray(expense.itemLines) ? expense.itemLines : []).map(
+        (line: any) =>
+          newLine({
+            description: String(line.description || ""),
+            quantity: rawQuantity(line.quantityMicros),
+            unitAmount: rawMajor(line.unitAmountMinor, digits),
+            category: String(line.category || "")
+          })
+      ),
+      notes: String(expense.notes || "")
+    };
+    setSelected(record);
+    setTitle(next.title);
+    setMerchant(next.merchant);
+    setOccurredAt(next.occurredAt);
+    setAmount(next.amount);
+    setTax(next.tax);
+    setCurrency(next.currency);
+    setCategory(next.category);
+    setPaymentMethod(next.paymentMethod);
+    setLines(next.lines);
+    setNotes(next.notes);
+    setArchiveReason("");
+    setSavedContentFingerprint(
+      JSON.stringify({
+        ...next,
+        lines: next.lines.map(({ id: _id, ...line }: ExpenseLineDraft) => line)
+      })
+    );
+    setFormError("");
+    setFeedback(`Loaded ${record.status} revision ${record.version}.`);
+  };
+
+  const buildExpense = () => {
+    if (!title.trim()) throw new Error("Give this expense a clear record title.");
+    const date = localDateToIso(occurredAt);
+    if (!date) throw new Error("Choose the date shown on the receipt or expense record.");
+    const context = resolveCurrencyContext(currency);
+    const amountMinor = parseMoneyInput(amount, context, { label: "Expense amount" });
+    if (amountMinor === null) throw new Error("Enter the expense amount.");
+    const taxMinor =
+      parseMoneyInput(tax, context, { label: "Shown tax", allowBlank: true }) || 0;
+    if (taxMinor > amountMinor) {
+      throw new Error("Shown tax cannot exceed the full expense amount.");
+    }
+    const itemLines = lines.map((line, index) => {
+      if (!line.description.trim())
+        throw new Error(`Item ${index + 1} needs a description.`);
+      const quantityMicros = parseQuantityInput(line.quantity, {
+        label: `Item ${index + 1} quantity`
+      });
+      if (!quantityMicros)
+        throw new Error(`Item ${index + 1} quantity must be positive.`);
+      const unitAmountMinor = parseMoneyInput(line.unitAmount, context, {
+        label: `Item ${index + 1} unit amount`
+      });
+      if (unitAmountMinor === null)
+        throw new Error(`Item ${index + 1} needs a unit amount.`);
+      return {
+        description: line.description.trim(),
+        quantityMicros,
+        unitAmountMinor,
+        lineTotalMinor: multiplyMoneyByQuantityMicros(
+          unitAmountMinor,
+          quantityMicros,
+          `Item ${index + 1}`
+        ),
+        category: line.category.trim()
+      };
+    });
+    const itemTotal = itemLines.reduce((sum, line) => sum + line.lineTotalMinor, 0);
+    if (!Number.isSafeInteger(itemTotal) || itemTotal > amountMinor) {
+      throw new Error("Item line totals cannot exceed the full expense amount.");
+    }
+    return {
+      merchant: merchant.trim(),
+      occurredAt: date,
+      amountMinor,
+      taxMinor,
+      ...context,
+      category: category.trim() || "uncategorized",
+      paymentMethod: paymentMethod.trim(),
+      receiptAssetId: "",
+      itemLines,
+      extractionProvenance: {
+        origin: "manual",
+        provider: "",
+        model: "",
+        sourceAssetId: "",
+        extractedAt: null,
+        confidenceBasisPoints: null
+      },
+      review: { status: "draft", reviewedByUserId: "", reviewedAt: null, notes: "" },
+      notes: notes.trim()
+    };
+  };
+
+  const saveDraft = async () => {
+    setFormError("");
+    setFeedback("");
+    try {
+      const expense = buildExpense();
+      const record = await collection.save(
+        {
+          title: title.trim(),
+          status: "draft",
+          payload: { expense }
+        },
+        selected
+      );
+      open(record);
+      setFeedback(
+        `Expense draft revision ${record.version} saved. Review the exact unchanged draft separately.`
+      );
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : "The expense could not be saved."
+      );
+    }
+  };
+
+  const transitionExpense = async (status: ExpenseTransitionStatus) => {
+    setFormError("");
+    setFeedback("");
+    try {
+      if (!selected || selected.status !== "draft") {
+        throw new Error("Save the expense as a draft before changing its review state.");
+      }
+      if (contentFingerprint !== savedContentFingerprint) {
+        throw new Error(
+          "Save this exact content as a draft before changing its review state."
+        );
+      }
+      const record = await collection.transition(selected, { status });
+      open(record);
+      setFeedback(
+        status === "reviewed"
+          ? `Exact expense revision ${record.version} reviewed. This is a business record, not tax or bookkeeping advice.`
+          : status === "correction_required"
+            ? `Exact expense revision ${record.version} marked as needing correction.`
+            : `Exact expense revision ${record.version} rejected.`
+      );
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "The expense review state could not be changed."
+      );
+    }
+  };
+
+  const archive = async () => {
+    setFormError("");
+    try {
+      if (!selected) return;
+      if (archiveReason.trim().length < 3) {
+        throw new Error("Enter an archive reason with at least three characters.");
+      }
+      await collection.archive(selected, archiveReason.trim());
+      reset();
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : "The expense could not be archived."
+      );
+    }
+  };
+
+  const exportFiltered = async () => {
+    setFormError("");
+    try {
+      const rows = filteredRecords.map((record) => {
+        const expense = payloadOf(record);
+        return {
+          recordId: businessDeskRecordId(record),
+          title: record.title,
+          status: record.status,
+          merchant: expense.merchant || "",
+          occurredAt: String(expense.occurredAt || "").slice(0, 10),
+          amountMinor: expense.amountMinor ?? "",
+          taxMinor: expense.taxMinor ?? "",
+          currency: expense.currency || "",
+          minorUnitDigits: expense.minorUnitDigits ?? "",
+          category: expense.category || "",
+          paymentMethod: expense.paymentMethod || "",
+          itemLinesJson: JSON.stringify(expense.itemLines || []),
+          notes: expense.notes || "",
+          version: record.version
+        };
+      });
+      const result = await exportToCsv("growpath-business-expenses", rows, [
+        { key: "recordId", label: "Record ID" },
+        { key: "title", label: "Title" },
+        { key: "status", label: "Status" },
+        { key: "merchant", label: "Merchant" },
+        { key: "occurredAt", label: "Occurred date" },
+        { key: "amountMinor", label: "Amount minor" },
+        { key: "taxMinor", label: "Shown tax minor" },
+        { key: "currency", label: "Currency" },
+        { key: "minorUnitDigits", label: "Minor-unit digits" },
+        { key: "category", label: "Category" },
+        { key: "paymentMethod", label: "Payment method" },
+        { key: "itemLinesJson", label: "Reviewed item lines JSON" },
+        { key: "notes", label: "Notes" },
+        { key: "version", label: "Revision" }
+      ]);
+      setFeedback(
+        result.ok
+          ? result.method === "web-download"
+            ? `Prepared a local CSV download containing ${result.rowCount} saved expense records. GrowPathAI has no backend export audit receipt for this action and does not claim delivery or canonical export completion.`
+            : `Prepared ${result.rowCount} saved expense records and opened the system share flow. GrowPathAI has no backend export audit receipt and did not observe delivery or canonical export completion.`
+          : "No saved expense records match these filters."
+      );
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "The expense export failed.");
+    }
+  };
+
+  return (
+    <RecordToolScaffold
+      title="Expense / Receipt Helper"
+      workspaceLabel={workspaceLabel}
+      basePath={basePath}
+      description="Record and review business expenses without turning GrowPathAI into bookkeeping or tax software. Only saved records appear in totals and exports."
+      records={filteredRecords}
+      selectedRecord={selected}
+      loading={collection.loading}
+      error={collection.error}
+      onRetry={() => void collection.reload()}
+      onNew={reset}
+      onSelect={open}
+      recordsToolbar={
+        <>
+          <View style={styles.fieldGrid}>
+            <LabeledInput
+              label="Search saved expenses"
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Title, merchant, or category"
+            />
+            <LabeledInput
+              label="Exact category filter"
+              value={categoryFilter}
+              onChangeText={setCategoryFilter}
+              placeholder="Leave blank for all"
+            />
+            <View style={styles.dateField}>
+              <CalendarDateField
+                label="From date"
+                accessibilityLabel="Expense filter from date"
+                value={fromDate}
+                onChange={setFromDate}
+                optional
+              />
+            </View>
+            <View style={styles.dateField}>
+              <CalendarDateField
+                label="Through date"
+                accessibilityLabel="Expense filter through date"
+                value={throughDate}
+                onChange={setThroughDate}
+                optional
+              />
+            </View>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryText}>
+              {filteredRecords.length} matching saved record
+              {filteredRecords.length === 1 ? "" : "s"}
+            </Text>
+            {totalsByCurrency.map((total) => (
+              <Text key={total.currency} style={styles.summaryText}>
+                {formatMoneyMinor(total.amount, {
+                  currency: total.currency,
+                  minorUnitDigits: total.digits
+                })}{" "}
+                total
+              </Text>
+            ))}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Export filtered saved expenses"
+              onPress={() => void exportFiltered()}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Export filtered CSV</Text>
+            </Pressable>
+          </View>
+        </>
+      }
+    >
+      <AppCard
+        title="Receipt intake"
+        titleLevel={2}
+        subtitle="Manual entry is ready. Photo/PDF extraction remains unavailable until private quarantine, byte-type validation, malware scanning, workspace-local duplicate review, and the 24-hour abandoned-upload cleanup are configured."
+      >
+        <Text style={styles.notice}>
+          No file is uploaded or sent to AI from this screen today. That prevents an
+          unsafe or misleading partial receipt workflow.
+        </Text>
+      </AppCard>
+
+      <AppCard
+        title={selected ? `Edit revision ${selected.version}` : "New manual expense"}
+        titleLevel={2}
+        subtitle="Tax is only the amount explicitly shown in your source. GrowPathAI does not decide deductibility."
+      >
+        <View style={styles.fieldGrid}>
+          <LabeledInput
+            label="Record title"
+            value={title}
+            onChangeText={setTitle}
+            placeholder="August supply receipt"
+          />
+          <LabeledInput
+            label="Merchant or vendor"
+            value={merchant}
+            onChangeText={setMerchant}
+            placeholder="As shown on the source"
+          />
+          <View style={styles.dateField}>
+            <CalendarDateField
+              label="Expense date"
+              accessibilityLabel="Expense date"
+              value={occurredAt}
+              onChange={setOccurredAt}
+            />
+          </View>
+          <LabeledInput
+            label="Currency"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={3}
+            value={currency}
+            onChangeText={setCurrency}
+            placeholder="USD"
+          />
+          <LabeledInput
+            label="Full amount"
+            keyboardType="decimal-pad"
+            value={amount}
+            onChangeText={setAmount}
+            placeholder="0.00"
+          />
+          <LabeledInput
+            label="Tax shown on source"
+            keyboardType="decimal-pad"
+            value={tax}
+            onChangeText={setTax}
+            placeholder="0.00"
+            hint="Do not estimate tax."
+          />
+          <LabeledInput
+            label="Category"
+            value={category}
+            onChangeText={setCategory}
+            placeholder="Supplies"
+          />
+          <LabeledInput
+            label="Payment method (optional)"
+            value={paymentMethod}
+            onChangeText={setPaymentMethod}
+            placeholder="Card, cash, provider…"
+          />
+        </View>
+        <Text style={styles.statusText}>
+          Saved state: {selected ? selected.status.replace(/_/g, " ") : "not saved"}.
+          Content saves always create a draft revision; review-state changes are separate.
+        </Text>
+      </AppCard>
+
+      <AppCard
+        title="Readable item lines"
+        titleLevel={2}
+        subtitle="Optional reviewed details. Line totals may be less than the full receipt, but never more."
+      >
+        <View style={styles.stack}>
+          {lines.map((line, index) => (
+            <View key={line.id} style={styles.lineCard}>
+              <View style={styles.lineHeader}>
+                <Text style={styles.lineTitle}>Item {index + 1}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove expense item ${index + 1}`}
+                  onPress={() =>
+                    setLines((current) =>
+                      current.filter((candidate) => candidate.id !== line.id)
+                    )
+                  }
+                >
+                  <Text style={styles.removeText}>Remove</Text>
+                </Pressable>
+              </View>
+              <View style={styles.fieldGrid}>
+                <LabeledInput
+                  label="Description"
+                  accessibilityLabel={`Expense item ${index + 1} description`}
+                  value={line.description}
+                  onChangeText={(value) =>
+                    setLines((current) =>
+                      current.map((candidate) =>
+                        candidate.id === line.id
+                          ? { ...candidate, description: value }
+                          : candidate
+                      )
+                    )
+                  }
+                />
+                <LabeledInput
+                  label="Quantity"
+                  accessibilityLabel={`Expense item ${index + 1} quantity`}
+                  keyboardType="decimal-pad"
+                  value={line.quantity}
+                  onChangeText={(value) =>
+                    setLines((current) =>
+                      current.map((candidate) =>
+                        candidate.id === line.id
+                          ? { ...candidate, quantity: value }
+                          : candidate
+                      )
+                    )
+                  }
+                />
+                <LabeledInput
+                  label="Unit amount"
+                  accessibilityLabel={`Expense item ${index + 1} unit amount`}
+                  keyboardType="decimal-pad"
+                  value={line.unitAmount}
+                  onChangeText={(value) =>
+                    setLines((current) =>
+                      current.map((candidate) =>
+                        candidate.id === line.id
+                          ? { ...candidate, unitAmount: value }
+                          : candidate
+                      )
+                    )
+                  }
+                />
+                <LabeledInput
+                  label="Item category"
+                  accessibilityLabel={`Expense item ${index + 1} category`}
+                  value={line.category}
+                  onChangeText={(value) =>
+                    setLines((current) =>
+                      current.map((candidate) =>
+                        candidate.id === line.id
+                          ? { ...candidate, category: value }
+                          : candidate
+                      )
+                    )
+                  }
+                />
+              </View>
+            </View>
+          ))}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Add expense item line"
+            onPress={() => setLines((current) => [...current, newLine()])}
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryButtonText}>Add item line</Text>
+          </Pressable>
+        </View>
+      </AppCard>
+
+      <AppCard title="Notes and confirmation" titleLevel={2}>
+        <LabeledInput
+          label="Expense notes"
+          multiline
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="Facts from the source or your reviewed context"
+        />
+        {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
+        {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
+        <View style={styles.transitionBox}>
+          <Text style={styles.statusText}>
+            Review actions apply only to the exact unchanged saved draft.
+          </Text>
+          <View style={styles.transitionRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Review saved expense draft"
+              accessibilityState={{
+                busy: collection.saving,
+                disabled: !exactSavedDraft || collection.saving
+              }}
+              disabled={!exactSavedDraft || collection.saving}
+              onPress={() => void transitionExpense("reviewed")}
+              style={[
+                styles.transitionButton,
+                (!exactSavedDraft || collection.saving) && styles.disabled
+              ]}
+            >
+              <Text style={styles.transitionButtonText}>Mark reviewed</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Mark saved expense needs correction"
+              accessibilityState={{
+                busy: collection.saving,
+                disabled: !exactSavedDraft || collection.saving
+              }}
+              disabled={!exactSavedDraft || collection.saving}
+              onPress={() => void transitionExpense("correction_required")}
+              style={[
+                styles.transitionButton,
+                (!exactSavedDraft || collection.saving) && styles.disabled
+              ]}
+            >
+              <Text style={styles.transitionButtonText}>Needs correction</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Reject saved expense draft"
+              accessibilityState={{
+                busy: collection.saving,
+                disabled: !exactSavedDraft || collection.saving
+              }}
+              disabled={!exactSavedDraft || collection.saving}
+              onPress={() => void transitionExpense("rejected")}
+              style={[
+                styles.rejectButton,
+                (!exactSavedDraft || collection.saving) && styles.disabled
+              ]}
+            >
+              <Text style={styles.rejectButtonText}>Reject</Text>
+            </Pressable>
+          </View>
+        </View>
+        <RecordSaveArchiveActions
+          saving={collection.saving}
+          hasRecord={Boolean(businessDeskRecordId(selected))}
+          saveLabel="Save expense draft"
+          archiveReason={archiveReason}
+          onArchiveReasonChange={setArchiveReason}
+          onSave={() => void saveDraft()}
+          onArchive={() => void archive()}
+        />
+      </AppCard>
+    </RecordToolScaffold>
+  );
+}
+
+function createStyles(palette: ThemePalette) {
+  return StyleSheet.create({
+    dateField: { flexBasis: 230, flexGrow: 1, minWidth: 210 },
+    disabled: { opacity: 0.55 },
+    errorText: { color: palette.danger, fontSize: 13, fontWeight: "800" },
+    feedbackText: { color: palette.success, fontSize: 13, fontWeight: "800" },
+    fieldGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+    lineCard: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12
+    },
+    lineHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    lineTitle: { color: palette.text, fontSize: 14, fontWeight: "900" },
+    notice: { color: palette.textMuted, fontSize: 13, lineHeight: 19 },
+    removeText: { color: palette.danger, fontSize: 12, fontWeight: "900" },
+    rejectButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 13,
+      paddingVertical: 9
+    },
+    rejectButtonText: { color: palette.danger, fontSize: 13, fontWeight: "900" },
+    secondaryButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      minHeight: 44,
+      justifyContent: "center",
+      paddingHorizontal: 13,
+      paddingVertical: 9
+    },
+    secondaryButtonText: { color: palette.text, fontSize: 13, fontWeight: "900" },
+    stack: { gap: 10 },
+    statusText: { color: palette.textMuted, fontSize: 13, lineHeight: 19 },
+    summaryRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    summaryText: { color: palette.text, fontSize: 13, fontWeight: "800" },
+    transitionBox: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      padding: 12
+    },
+    transitionButton: {
+      alignItems: "center",
+      backgroundColor: palette.surface,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 13,
+      paddingVertical: 9
+    },
+    transitionButtonText: { color: palette.text, fontSize: 13, fontWeight: "900" },
+    transitionRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 }
+  });
+}
