@@ -65,20 +65,20 @@ completed architecture only for a reproduced regression, a missing matrix requir
 an integration break caused by a later batch.
 
 [x] Plant ID standalone/grow/Nature recovery is reconciled on frontend `main` through
-    `fa2e3f7c` / `4f64f910`; the older retained branch adds no missing product behavior.
+`fa2e3f7c` / `4f64f910`; the older retained branch adds no missing product behavior.
 [x] Device-integration frontend/backend repairs and atomic Facility ownership transfer are
-    integrated through frontend `21387a82` and backend `c7b7674`.
+integrated through frontend `21387a82` and backend `c7b7674`.
 [x] Hosted-Live lifecycle and durable replay expiry are integrated through frontend
-    `21387a82` and backend `c7b7674`, preserving the accepted OBS/chat/overlay/player design.
+`21387a82` and backend `c7b7674`, preserving the accepted OBS/chat/overlay/player design.
 [x] Commercial grow/tool parity and Nature publication/privacy are reconciled on current
-    main through backend `d9adff2` and `504ba78` plus their current frontend surfaces.
+main through backend `d9adff2` and `504ba78` plus their current frontend surfaces.
 [~] Unified reporting and the Admin control center are deployed as frontend `00f36429` and
-    backend `ed85270`; signed-in Admin production acceptance remains open and must not cause
-    a rewrite.
+backend `ed85270`; signed-in Admin production acceptance remains open and must not cause
+a rewrite.
 [ ] Reconcile every remaining `partial` or `open` row against merged code and retained
-   evidence, then implement only its exact missing acceptance behavior.
+evidence, then implement only its exact missing acceptance behavior.
 [ ] Freeze candidate SHAs, run the final cross-role and professional presentation crawl,
-   pause for independent review, then complete hats and app-store releases in that order.
+pause for independent review, then complete hats and app-store releases in that order.
 
 Clean worktrees only after their retained commit is integrated or deliberately rejected and
 the worktree is clean. Branch deletion is separate from routine disk cleanup.
@@ -161,18 +161,19 @@ Every applicable story must preserve these invariants without repeating them in 
 See `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md` for the complete tool
 inventory, safety boundaries and mandatory production scenarios.
 
-| ID   | User story                                                                                                    | Status                                 |
-| ---- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | defined; not started                   |
-| B-02 | Core inventory and lot history with reviewed alerts, imports/exports and no automatic ordering                | partial; business acceptance open      |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | defined; not started                   |
-| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | partial; business acceptance open      |
-| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | partial; business acceptance open      |
-| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open          |
-| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | defined; cross-cutting acceptance open |
-| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | defined; final acceptance open         |
+| ID   | User story                                                                                                    | Status                                  |
+| ---- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | defined; not started                    |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | partial; coherent build/acceptance open |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | defined; not started                    |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | defined; not started                    |
+| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | partial; business acceptance open       |
+| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | partial; business acceptance open       |
+| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open           |
+| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | defined; cross-cutting acceptance open  |
+| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | defined; final acceptance open          |
 
-Full regulator/POS adapters, serialized recall workflows, forecasting, CRM/ERP/accounting,
+Full regulator/POS adapters, serialized recall workflows, advanced forecasting, full CRM/ERP/accounting,
 dynamic pricing, marketplace/payout/tax tooling, and cross-platform creator analytics are
 **removed from the active roadmap**. They are not completion blockers; the detailed
 reconsideration rule is owned by `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md`.

@@ -159,6 +159,53 @@ responsive behavior, and no console/application error.
 - F-07: Owner/Admin can reach social, course and storefront capabilities through an explicit
   owner surface; operational staff navigation stays focused.
 
+## Business operations
+
+### B-01 and B-02 — Foundation and one inventory engine
+
+- B-01: business records use only the organization, location, role, approval and audit
+  scope required for the selected action. A solo owner may use a calculator without fake
+  Facility/location setup. Similar names never cross account boundaries.
+- B-02: one coherent engine owns product/SKU, lot/batch, unit, location, quantity, status,
+  authorized cost, receiving, movement, adjustment, transfer, hold, consumption, source
+  freshness, duplicate/conflict review, simple alerts and export. Nursery/store B-04 and
+  Facility B-05 consume this engine instead of building parallel inventories.
+
+### B-03 — Small Business Desk
+
+- Price & Margin shows deterministic markup, margin, gross-profit and break-even math with
+  visible inputs/formulas; GPT explains but never supplies a missing number.
+- Quote / Estimate calculates reviewed totals and drafts scope, assumptions and exclusions;
+  it never invents cost, tax or terms. The owner may export or hand off a reviewed quote to
+  an authorized invoice/payment provider.
+- Lead Follow-up stores a minimal voluntary opportunity record and drafts the next action
+  without fabricating communication, profiling people or contacting anyone automatically.
+- Job Notes turns recorded intake, meeting notes and attachments into proposed scope,
+  tasks, materials, updates and completion notes; review precedes assignment or commitment.
+- Expense / Receipt Helper extracts schema-validated draft facts from photo/PDF/manual
+  evidence with source and duplicate status; the owner reviews before save or export and
+  receives no tax-deductibility claim.
+- Vendor Compare deterministically compares landed/effective cost and recorded tradeoffs;
+  it may create a reviewed purchase request but never places an order. B-02 owns receiving.
+- Cash-Flow Snapshot separates recorded and expected amounts in user-selected 30/60/90-day
+  scenarios and never invents a balance, payment, expense or sale.
+- Business Ask AI answers only from authorized Desk and B-02 records, links sources/date
+  range, labels incomplete metrics and separates facts, calculations, assumptions,
+  forecasts and recommendations.
+
+All eight tools reuse calculator, document-extraction, business-record assistant and
+reviewed draft/action engines. They do not expand into full CRM, accounting, ERP, payroll,
+tax, HR, legal, POS, procurement, dispatch or autonomous operations.
+
+### B-04 through B-09 — Domain extensions and acceptance
+
+- B-04 horticulture intake/care/fulfillment and B-05 Facility operations extend shared
+  records and B-02 inventory rather than duplicating them.
+- B-06 creator essentials, B-07 truthful external commerce handoff and B-08 evidence/
+  approval/redaction/audit rules keep every business action human-controlled.
+- B-09 acceptance covers cross-organization roles, stale/conflicting/duplicate imports,
+  evidence gaps, retries, permission changes and public-sharing privacy.
+
 ## Nature, Admin, payments and release
 
 ### N-01 through N-04 — Discovery Nature

@@ -29,7 +29,7 @@ durable decision record.
 | Branch                                          | Matrix rows      | Assigned batch | Decision                                                                                                        |
 | ----------------------------------------------- | ---------------- | -------------: | --------------------------------------------------------------------------------------------------------------- |
 | `codex/plant-id-reviewed-evidence-consolidated` | P03–P06, N01–N04 |              1 | Reconciled: superseded by the newer 73-record catalog and pre-polish gates already on `main`; no patch applied. |
-| `codex/admin-report-actions-frontend`           | A03–A05          |              2 | Reconcile comment deep links and admin live-acceptance evidence with the current unified reporting UI.          |
+| `codex/admin-report-actions-frontend`           | A03–A05          |              2 | Reconciled: functional patch is on `main`; unique historical acceptance prose is evidence only.                 |
 | `codex/device-integration-frontend-p0`          | P10, F05–F06     |            3/5 | Reuse scoped integrations/history-import implementation; accept in the first batch that owns each surface.      |
 | `codex/finish-old-work-integration`             | P02              |              3 | Reuse reversible grow archive implementation and tests.                                                         |
 | `codex/archive-live-evidence`                   | P02              |              3 | Evidence-only follow-up to the grow archive implementation; do not accept without a current check.              |

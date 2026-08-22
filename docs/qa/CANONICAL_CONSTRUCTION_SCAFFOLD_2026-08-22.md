@@ -143,15 +143,18 @@ keys stay server-side/encrypted and imports require preview, explicit mapping an
 
 ### Batch 6 — lightweight business operations and AI
 
-Primary rows: `B-01`, `B-02`, `B-04`, `B-05`, `B-06`, `B-07`, `B-08`, `B-09`.  
+Primary rows: `B-01` through `B-09`.
 Dependencies: Batch 2 identity/audit and existing Commercial/Facility/social assemblies.  
-Construction boundary: build only the retained launch core—identity/audit/import provenance,
-lot-aware inventory, horticulture help, reviewed facility intelligence, creator essentials,
-truthful external commerce handoff and realistic acceptance. Do not reintroduce regulator/POS,
-serialized recall recipients, advanced forecasting, CRM/ERP/accounting, dynamic pricing,
-marketplace/payout/tax or cross-platform analytics without the documented paying-customer
-reconsideration gate. AI produces reviewable drafts/tasks, never autonomous ordering,
-equipment control, compliance certification, pricing, publishing or legal decisions.
+Construction boundary: establish identity/audit/import provenance, complete B-02 as the one
+lot-aware inventory/receiving/movement/export engine, then build B-03's four reusable engines
+and eight Small Business Desk tools. B-04/B-05 consume B-02; they do not create parallel
+inventory. Continue with horticulture help, reviewed facility intelligence, creator
+essentials, truthful external commerce handoff and realistic acceptance. Do not reintroduce
+regulator/POS, serialized recall recipients, ML forecasting, full CRM/ERP/accounting,
+dynamic pricing, marketplace/payout/tax or cross-platform analytics without the documented
+paying-customer reconsideration gate. AI produces reviewable drafts/tasks, never autonomous
+contact, ordering, equipment control, compliance certification, pricing, publishing or
+legal decisions.
 
 ### Batch 7 — money, notifications and data rights
 
@@ -212,6 +215,7 @@ surfaces to inspect, not proof that the story is complete.
 | `F-07`        | Facility owner/admin “More” and contextual social/course/storefront entries                                  | Owner reachability without staff navigation pollution                              |
 | `B-01`        | Workspace/organization/location/role/audit/import provenance contracts                                       | Multi-tenant base shared by all retained business tools                            |
 | `B-02`        | Commercial/Facility inventory, product/SKU, lot/batch, movement/import/export                                | Core ledger, simple evidence-linked flags, reviewed task/draft only                |
+| `B-03`        | Small Business Desk calculator, extraction, record-assistant and reviewed draft/action engines               | Eight shipping tools; deterministic math and explicit save/export/handoff          |
 | `B-04`        | Plant/product intake, labels, nursery batch/hold/care/fulfillment records                                    | Evidence-aware help and operational history without invented advice                |
 | `B-05`        | Device/room/crop/SOP/task/maintenance/quality evidence assemblies                                            | Freshness/anomaly/review workflows; never autonomous control                       |
 | `B-06`        | Creator assets, Lives, community, sharing, reports/moderation                                                | Approved sources, transparent state and human-controlled publishing                |

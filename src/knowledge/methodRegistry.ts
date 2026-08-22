@@ -41,6 +41,48 @@ function method(
 
 export const methodRegistry: GrowPathMethod[] = [
   method(
+    "business-desk",
+    "Small Business Desk",
+    ["business", "pricing", "quote", "lead", "job", "expense", "vendor", "cash_flow"],
+    "business-desk-method.md",
+    [
+      "select authorized records",
+      "calculate or extract",
+      "explain or draft",
+      "review",
+      "save, export, or hand off"
+    ],
+    [
+      "active workspace and authorized source records",
+      "explicit deterministic calculator inputs",
+      "source documents with extraction and duplicate status when used",
+      "user-reviewed assumptions, dates, amounts, terms, and intended action"
+    ],
+    [
+      "visible deterministic calculations and formulas",
+      "schema-validated extracted drafts with source provenance",
+      "facts, calculations, assumptions, forecasts, and recommendations kept separate",
+      "reviewable quote, follow-up, job, expense, vendor, purchase, cash-flow, or assistant artifact",
+      "audit-safe save, export, or external-provider handoff state"
+    ],
+    [
+      "Never invent costs, taxes, balances, payments, terms, conversations, inventory, or future sales.",
+      "Never contact, purchase, assign, publish, adjust inventory, or write to an external provider without explicit review and confirmation.",
+      "B-02 is the only inventory engine; nursery and Facility workflows reference it instead of creating parallel ledgers.",
+      "Do not present GrowPathAI as a CRM, accounting ledger, ERP, payroll, tax, HR, legal, POS, procurement, or autonomous operations system."
+    ],
+    [
+      "price-margin-break-even",
+      "quote-estimate",
+      "lead-follow-up",
+      "job-notes",
+      "expense-receipt",
+      "vendor-compare",
+      "cash-flow-snapshot",
+      "business-ask-ai"
+    ]
+  ),
+  method(
     "integration-workflow",
     "Integration Workflow",
     ["integration", "telemetry", "sensor", "controller"],

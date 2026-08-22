@@ -19,6 +19,32 @@ describe("GrowPath knowledge registries", () => {
     );
   });
 
+  it("keeps the Small Business Desk bounded to reviewed deterministic and draft workflows", () => {
+    const desk = getMethod("business-desk");
+
+    expect(desk?.relatedTools).toEqual(
+      expect.arrayContaining([
+        "price-margin-break-even",
+        "quote-estimate",
+        "lead-follow-up",
+        "job-notes",
+        "expense-receipt",
+        "vendor-compare",
+        "cash-flow-snapshot",
+        "business-ask-ai"
+      ])
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "visible deterministic calculations and formulas"
+    );
+    expect(desk?.warnings).toContain(
+      "B-02 is the only inventory engine; nursery and Facility workflows reference it instead of creating parallel ledgers."
+    );
+    expect(desk?.warnings).toContain(
+      "Never contact, purchase, assign, publish, adjust inventory, or write to an external provider without explicit review and confirmation."
+    );
+  });
+
   it("limits context-specific sources to supported decisions", () => {
     expect(evaluateSourceForDecision("uc-ipm", "ipm")).toBe("allow");
     expect(evaluateSourceForDecision("breeder-site", "cultivar_parentage")).toBe(

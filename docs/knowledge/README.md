@@ -20,6 +20,7 @@ Before changing a tool, read the relevant method plus `source-reliability-regist
 | Video sharing            | `methods/video-sharing-workflow-method.md`, `methods/course-media-workflow-method.md`   |
 | Live video / premieres   | `methods/live-streaming-workflow-method.md`, `methods/video-sharing-workflow-method.md` |
 | Sensor/controller import | `methods/integration-workflow-method.md`                                                |
+| Small Business Desk      | `methods/business-desk-method.md`                                                       |
 
 The runtime counterparts live in `src/knowledge`. Method IDs and source IDs are stable API values. Add named sites to the registry only after recording trusted uses, exclusions, cross-check requirements, and review date.
 
