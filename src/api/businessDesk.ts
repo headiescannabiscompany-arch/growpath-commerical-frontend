@@ -380,6 +380,132 @@ export type QuotePreparedArtifact = {
   deliveryStatus: "not_observed";
 };
 
+export type QuotePaymentSummary = {
+  quoteRecordId: string;
+  quoteRevisionNumber: number;
+  currency: string;
+  minorUnitDigits: number;
+  quoteTotalMinor: number;
+  requestedDepositMinor: number;
+  requestedDepositIsPaymentEvidence: false;
+  paidMinor: number;
+  userConfirmedPaidMinor: number;
+  outstandingMinor: number;
+  overpaymentMinor: number;
+  depositOutstandingMinor: number;
+  depositSatisfied: boolean;
+  evidenceSource: "none" | "user_confirmed";
+  evidenceScope: "user_confirmed_only";
+  evidenceEventCount: number;
+  paymentChainCount: number;
+  activePaymentCount: number;
+  voidedPaymentCount: number;
+  providerObservation: {
+    supported: false;
+    code: "BUSINESS_DESK_PAYMENT_PROVIDER_OBSERVATION_NOT_CONFIGURED";
+  };
+};
+
+export type QuotePaymentEvidenceChain = {
+  rootPaymentEvidenceId: string;
+  latestEvidenceId: string;
+  latestEventType: "payment" | "correction" | "void";
+  source: "user_confirmed";
+  amountMinor: number;
+  occurredAt: string;
+  reference: string;
+  reason: string;
+  sequence: number;
+  active: boolean;
+  canCorrect: boolean;
+  canVoid: boolean;
+  createdAt: string | null;
+};
+
+export type QuotePaymentEvidenceChains = {
+  quoteRecordId: string;
+  quoteRevisionNumber: number;
+  currency: string;
+  minorUnitDigits: number;
+  evidenceScope: "user_confirmed_only";
+  chains: QuotePaymentEvidenceChain[];
+};
+
+export type QuoteLifecycle = {
+  quoteRecordId: string;
+  quoteRevisionNumber: number;
+  derivedAt: string;
+  facets: {
+    content: "draft" | "reviewed" | "cancelled";
+    artifact: "none" | "copy_prepared" | "export_prepared";
+    provider: "none";
+    time: "no_expiration" | "current" | "expired";
+    revision: "current" | "superseded";
+  };
+  displayStatus:
+    | "draft"
+    | "reviewed"
+    | "cancelled"
+    | "superseded"
+    | "expired"
+    | "exported";
+  evidence: {
+    verifiedArtifactCount: number;
+    verifiedProviderEventCount: 0;
+  };
+  providerHandoff: {
+    supported: false;
+    code: "BUSINESS_DESK_PAYMENT_HANDOFF_NOT_CONFIGURED";
+  };
+};
+
+export type QuotePaymentEvidence = {
+  id: string;
+  quoteRecordId: string;
+  quoteRevisionNumber: number;
+  eventType: "payment" | "correction" | "void";
+  source: "user_confirmed";
+  amountMinor: number;
+  currency: string;
+  minorUnitDigits: number;
+  occurredAt: string;
+  reference: string;
+  reason: string;
+  rootPaymentEvidenceId: string;
+  supersedesEvidenceId: string | null;
+  sequence: number;
+  confirmation: { confirmed: true; confirmedAt: string };
+  createdAt: string | null;
+};
+
+export type QuotePaymentMutationResult = {
+  evidence: QuotePaymentEvidence;
+  idempotentReplay: boolean;
+};
+
+type QuotePaymentMutationCommon = {
+  expectedVersion: number;
+  currency: string;
+  minorUnitDigits: number;
+  occurredAt: string;
+  confirmed: true;
+  idempotencyKey: string;
+};
+
+export type RecordQuotePaymentInput = QuotePaymentMutationCommon & {
+  amountMinor: number;
+  reference?: string;
+};
+
+export type CorrectQuotePaymentInput = QuotePaymentMutationCommon & {
+  amountMinor: number;
+  reason: string;
+};
+
+export type VoidQuotePaymentInput = QuotePaymentMutationCommon & {
+  reason: string;
+};
+
 export type ExpenseBatchSelection = {
   recordId: string;
   expectedVersion: number;
@@ -579,6 +705,455 @@ export async function patchBusinessDeskWorkspaceTimeZone(
 
 function envelope(response: any) {
   return response?.data && typeof response.data === "object" ? response.data : response;
+}
+
+const OBJECT_ID_PATTERN = /^[a-f0-9]{24}$/i;
+const SHA_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
+
+function quoteEvidenceRoute(
+  workspace: BusinessDeskWorkspace,
+  recordId: string,
+  revisionNumber: number
+) {
+  const normalizedRecordId = String(recordId || "")
+    .trim()
+    .toLowerCase();
+  if (
+    !OBJECT_ID_PATTERN.test(normalizedRecordId) ||
+    !Number.isSafeInteger(revisionNumber) ||
+    revisionNumber < 1
+  ) {
+    throw new Error(
+      "Choose an exact saved Quote revision before loading payment evidence."
+    );
+  }
+  return {
+    recordId: normalizedRecordId,
+    revisionNumber,
+    url: `${businessDeskBase(workspace)}/quotes/${encodeURIComponent(
+      normalizedRecordId
+    )}/revisions/${revisionNumber}`
+  };
+}
+
+function isIsoDate(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    SHA_DATE_PATTERN.test(value) &&
+    Number.isFinite(new Date(value).getTime())
+  );
+}
+
+function safeNonNegativeInteger(value: unknown) {
+  return Number.isSafeInteger(value) && Number(value) >= 0;
+}
+
+function validMoneyContext(currency: unknown, minorUnitDigits: unknown) {
+  return (
+    typeof currency === "string" &&
+    /^[A-Z]{3}$/.test(currency) &&
+    Number.isSafeInteger(minorUnitDigits) &&
+    Number(minorUnitDigits) >= 0 &&
+    Number(minorUnitDigits) <= 4
+  );
+}
+
+function quotePaymentSummaryFrom(
+  response: unknown,
+  expectedRecordId: string,
+  expectedRevisionNumber: number
+): QuotePaymentSummary {
+  const value = envelope(response)?.paymentSummary;
+  const integerFields = [
+    "quoteTotalMinor",
+    "requestedDepositMinor",
+    "paidMinor",
+    "userConfirmedPaidMinor",
+    "outstandingMinor",
+    "overpaymentMinor",
+    "depositOutstandingMinor",
+    "evidenceEventCount",
+    "paymentChainCount",
+    "activePaymentCount",
+    "voidedPaymentCount"
+  ] as const;
+  const quoteTotalMinor = Number(value?.quoteTotalMinor);
+  const requestedDepositMinor = Number(value?.requestedDepositMinor);
+  const paidMinor = Number(value?.paidMinor);
+  const expectedOutstanding =
+    paidMinor >= quoteTotalMinor ? 0 : quoteTotalMinor - paidMinor;
+  const expectedOverpayment =
+    paidMinor > quoteTotalMinor ? paidMinor - quoteTotalMinor : 0;
+  const expectedDepositOutstanding =
+    paidMinor >= requestedDepositMinor ? 0 : requestedDepositMinor - paidMinor;
+  const countsAgree =
+    Number(value?.activePaymentCount) + Number(value?.voidedPaymentCount) ===
+      Number(value?.paymentChainCount) &&
+    Number(value?.paymentChainCount) <= Number(value?.evidenceEventCount);
+  if (
+    !value ||
+    typeof value !== "object" ||
+    String(value.quoteRecordId || "").toLowerCase() !== expectedRecordId ||
+    value.quoteRevisionNumber !== expectedRevisionNumber ||
+    !validMoneyContext(value.currency, value.minorUnitDigits) ||
+    integerFields.some((field) => !safeNonNegativeInteger(value[field])) ||
+    requestedDepositMinor > quoteTotalMinor ||
+    value.requestedDepositIsPaymentEvidence !== false ||
+    value.paidMinor !== value.userConfirmedPaidMinor ||
+    value.outstandingMinor !== expectedOutstanding ||
+    value.overpaymentMinor !== expectedOverpayment ||
+    value.depositOutstandingMinor !== expectedDepositOutstanding ||
+    value.depositSatisfied !==
+      (requestedDepositMinor === 0 || paidMinor >= requestedDepositMinor) ||
+    !new Set(["none", "user_confirmed"]).has(value.evidenceSource) ||
+    value.evidenceSource !==
+      (value.activePaymentCount === 0 ? "none" : "user_confirmed") ||
+    value.evidenceScope !== "user_confirmed_only" ||
+    !countsAgree ||
+    value.providerObservation?.supported !== false ||
+    value.providerObservation?.code !==
+      "BUSINESS_DESK_PAYMENT_PROVIDER_OBSERVATION_NOT_CONFIGURED"
+  ) {
+    throw new Error("The exact Quote payment summary response was invalid.");
+  }
+  return value as QuotePaymentSummary;
+}
+
+function quoteLifecycleFrom(
+  response: unknown,
+  expectedRecordId: string,
+  expectedRevisionNumber: number
+): QuoteLifecycle {
+  const value = envelope(response)?.lifecycle;
+  const facets = value?.facets;
+  if (
+    !value ||
+    typeof value !== "object" ||
+    String(value.quoteRecordId || "").toLowerCase() !== expectedRecordId ||
+    value.quoteRevisionNumber !== expectedRevisionNumber ||
+    !isIsoDate(value.derivedAt) ||
+    !new Set(["draft", "reviewed", "cancelled"]).has(facets?.content) ||
+    !new Set(["none", "copy_prepared", "export_prepared"]).has(facets?.artifact) ||
+    facets?.provider !== "none" ||
+    !new Set(["no_expiration", "current", "expired"]).has(facets?.time) ||
+    !new Set(["current", "superseded"]).has(facets?.revision) ||
+    !new Set(["draft", "reviewed", "cancelled", "superseded", "expired", "exported"]).has(
+      value.displayStatus
+    ) ||
+    !safeNonNegativeInteger(value.evidence?.verifiedArtifactCount) ||
+    value.evidence?.verifiedProviderEventCount !== 0 ||
+    value.providerHandoff?.supported !== false ||
+    value.providerHandoff?.code !== "BUSINESS_DESK_PAYMENT_HANDOFF_NOT_CONFIGURED"
+  ) {
+    throw new Error("The exact Quote lifecycle response was invalid.");
+  }
+  return value as QuoteLifecycle;
+}
+
+function quotePaymentEvidenceChainsFrom(
+  response: unknown,
+  expectedRecordId: string,
+  expectedRevisionNumber: number
+): QuotePaymentEvidenceChains {
+  const value = envelope(response)?.paymentEvidenceChains;
+  const chains = value?.chains;
+  const rootIds = new Set<string>();
+  const latestIds = new Set<string>();
+  if (
+    !value ||
+    typeof value !== "object" ||
+    String(value.quoteRecordId || "").toLowerCase() !== expectedRecordId ||
+    value.quoteRevisionNumber !== expectedRevisionNumber ||
+    !validMoneyContext(value.currency, value.minorUnitDigits) ||
+    value.evidenceScope !== "user_confirmed_only" ||
+    !Array.isArray(chains) ||
+    chains.length > 5_000 ||
+    chains.some((chain: any) => {
+      const rootId = String(chain?.rootPaymentEvidenceId || "").toLowerCase();
+      const latestId = String(chain?.latestEvidenceId || "").toLowerCase();
+      const active = chain?.latestEventType !== "void";
+      const invalid =
+        !OBJECT_ID_PATTERN.test(rootId) ||
+        !OBJECT_ID_PATTERN.test(latestId) ||
+        rootIds.has(rootId) ||
+        latestIds.has(latestId) ||
+        !new Set(["payment", "correction", "void"]).has(chain?.latestEventType) ||
+        chain?.source !== "user_confirmed" ||
+        !safeNonNegativeInteger(chain?.amountMinor) ||
+        (active ? chain.amountMinor < 1 : chain.amountMinor !== 0) ||
+        !isIsoDate(chain?.occurredAt) ||
+        typeof chain?.reference !== "string" ||
+        chain.reference.length > 300 ||
+        typeof chain?.reason !== "string" ||
+        chain.reason.length > 2_000 ||
+        !Number.isSafeInteger(chain?.sequence) ||
+        chain.sequence < 1 ||
+        chain?.active !== active ||
+        chain?.canCorrect !== active ||
+        chain?.canVoid !== active ||
+        !(chain?.createdAt === null || isIsoDate(chain?.createdAt)) ||
+        (chain?.latestEventType === "payment" &&
+          (rootId !== latestId || chain.sequence !== 1)) ||
+        (chain?.latestEventType !== "payment" &&
+          (rootId === latestId || chain.sequence < 2));
+      rootIds.add(rootId);
+      latestIds.add(latestId);
+      return invalid;
+    })
+  ) {
+    throw new Error("The exact Quote payment evidence-chain response was invalid.");
+  }
+  return {
+    ...value,
+    quoteRecordId: expectedRecordId,
+    chains: chains.map((chain: QuotePaymentEvidenceChain) => ({
+      ...chain,
+      rootPaymentEvidenceId: chain.rootPaymentEvidenceId.toLowerCase(),
+      latestEvidenceId: chain.latestEvidenceId.toLowerCase()
+    }))
+  } as QuotePaymentEvidenceChains;
+}
+
+function normalizedQuotePaymentInput<T extends QuotePaymentMutationCommon>(input: T) {
+  const idempotencyKey = String(input?.idempotencyKey || "").trim();
+  const occurredAt = new Date(input?.occurredAt || "");
+  if (
+    !Number.isSafeInteger(input?.expectedVersion) ||
+    input.expectedVersion < 1 ||
+    !validMoneyContext(input?.currency, input?.minorUnitDigits) ||
+    !Number.isFinite(occurredAt.getTime()) ||
+    input?.confirmed !== true ||
+    idempotencyKey.length < 8 ||
+    idempotencyKey.length > 200 ||
+    Array.from(idempotencyKey).some((character) => {
+      const codePoint = character.charCodeAt(0);
+      return codePoint < 33 || codePoint > 126;
+    })
+  ) {
+    throw new Error(
+      "Quote payment evidence requires the exact revision, currency, date, confirmation, and stable retry key."
+    );
+  }
+  return {
+    ...input,
+    currency: input.currency.trim().toUpperCase(),
+    occurredAt: occurredAt.toISOString(),
+    idempotencyKey
+  };
+}
+
+function quotePaymentResultFrom(
+  response: unknown,
+  expected: {
+    recordId: string;
+    revisionNumber: number;
+    eventType: QuotePaymentEvidence["eventType"];
+    currency: string;
+    minorUnitDigits: number;
+    amountMinor: number;
+    supersedesEvidenceId: string | null;
+  }
+): QuotePaymentMutationResult {
+  const value = envelope(response);
+  const evidence = value?.evidence;
+  const evidenceId = String(evidence?.id || "").toLowerCase();
+  const rootId = String(evidence?.rootPaymentEvidenceId || "").toLowerCase();
+  const supersedesId = evidence?.supersedesEvidenceId
+    ? String(evidence.supersedesEvidenceId).toLowerCase()
+    : null;
+  if (
+    !value ||
+    typeof value !== "object" ||
+    typeof value.idempotentReplay !== "boolean" ||
+    !OBJECT_ID_PATTERN.test(evidenceId) ||
+    String(evidence?.quoteRecordId || "").toLowerCase() !== expected.recordId ||
+    evidence?.quoteRevisionNumber !== expected.revisionNumber ||
+    evidence?.eventType !== expected.eventType ||
+    evidence?.source !== "user_confirmed" ||
+    evidence?.amountMinor !== expected.amountMinor ||
+    evidence?.currency !== expected.currency ||
+    evidence?.minorUnitDigits !== expected.minorUnitDigits ||
+    !isIsoDate(evidence?.occurredAt) ||
+    typeof evidence?.reference !== "string" ||
+    typeof evidence?.reason !== "string" ||
+    !OBJECT_ID_PATTERN.test(rootId) ||
+    supersedesId !== expected.supersedesEvidenceId ||
+    !Number.isSafeInteger(evidence?.sequence) ||
+    evidence.sequence < 1 ||
+    evidence?.confirmation?.confirmed !== true ||
+    !isIsoDate(evidence?.confirmation?.confirmedAt) ||
+    !(evidence?.createdAt === null || isIsoDate(evidence?.createdAt)) ||
+    (expected.eventType === "payment" &&
+      (rootId !== evidenceId || supersedesId !== null || evidence.sequence !== 1)) ||
+    (expected.eventType !== "payment" &&
+      (!supersedesId || evidence.sequence < 2 || rootId === evidenceId))
+  ) {
+    throw new Error("The Quote payment evidence response was invalid.");
+  }
+  return {
+    evidence: {
+      ...evidence,
+      id: evidenceId,
+      quoteRecordId: expected.recordId,
+      rootPaymentEvidenceId: rootId,
+      supersedesEvidenceId: supersedesId,
+      createdAt: evidence.createdAt || null
+    },
+    idempotentReplay: value.idempotentReplay
+  } as QuotePaymentMutationResult;
+}
+
+export async function getBusinessDeskQuotePaymentSummary(
+  workspace: BusinessDeskWorkspace,
+  recordId: string,
+  revisionNumber: number,
+  request: BusinessDeskRequestOptions = {}
+) {
+  const route = quoteEvidenceRoute(workspace, recordId, revisionNumber);
+  const response = await apiRequest(`${route.url}/payment-summary`, {
+    ...(request.signal ? { signal: request.signal } : {})
+  });
+  return quotePaymentSummaryFrom(response, route.recordId, route.revisionNumber);
+}
+
+export async function getBusinessDeskQuoteLifecycle(
+  workspace: BusinessDeskWorkspace,
+  recordId: string,
+  revisionNumber: number,
+  request: BusinessDeskRequestOptions = {}
+) {
+  const route = quoteEvidenceRoute(workspace, recordId, revisionNumber);
+  const response = await apiRequest(`${route.url}/lifecycle`, {
+    ...(request.signal ? { signal: request.signal } : {})
+  });
+  return quoteLifecycleFrom(response, route.recordId, route.revisionNumber);
+}
+
+export async function getBusinessDeskQuotePaymentEvidenceChains(
+  workspace: BusinessDeskWorkspace,
+  recordId: string,
+  revisionNumber: number,
+  request: BusinessDeskRequestOptions = {}
+) {
+  const route = quoteEvidenceRoute(workspace, recordId, revisionNumber);
+  const response = await apiRequest(`${route.url}/payment-evidence`, {
+    ...(request.signal ? { signal: request.signal } : {})
+  });
+  return quotePaymentEvidenceChainsFrom(response, route.recordId, route.revisionNumber);
+}
+
+export async function recordBusinessDeskQuotePayment(
+  workspace: BusinessDeskWorkspace,
+  recordId: string,
+  input: RecordQuotePaymentInput,
+  request: BusinessDeskRequestOptions = {}
+) {
+  const route = quoteEvidenceRoute(workspace, recordId, input.expectedVersion);
+  const normalized = normalizedQuotePaymentInput(input);
+  if (!Number.isSafeInteger(normalized.amountMinor) || normalized.amountMinor < 1) {
+    throw new Error("Confirmed Quote payment evidence requires a positive amount.");
+  }
+  const reference = String(normalized.reference || "").trim();
+  if (reference.length > 300) {
+    throw new Error("The Quote payment reference cannot exceed 300 characters.");
+  }
+  const body = { ...normalized, reference };
+  const response = await apiRequest(`${route.url}/payments`, {
+    method: "POST",
+    body,
+    ...(request.signal ? { signal: request.signal } : {})
+  });
+  return quotePaymentResultFrom(response, {
+    recordId: route.recordId,
+    revisionNumber: route.revisionNumber,
+    eventType: "payment",
+    currency: normalized.currency,
+    minorUnitDigits: normalized.minorUnitDigits,
+    amountMinor: normalized.amountMinor,
+    supersedesEvidenceId: null
+  });
+}
+
+export async function correctBusinessDeskQuotePayment(
+  workspace: BusinessDeskWorkspace,
+  recordId: string,
+  evidenceId: string,
+  input: CorrectQuotePaymentInput,
+  request: BusinessDeskRequestOptions = {}
+) {
+  const route = quoteEvidenceRoute(workspace, recordId, input.expectedVersion);
+  const normalizedEvidenceId = String(evidenceId || "")
+    .trim()
+    .toLowerCase();
+  const normalized = normalizedQuotePaymentInput(input);
+  const reason = String(normalized.reason || "").trim();
+  if (
+    !OBJECT_ID_PATTERN.test(normalizedEvidenceId) ||
+    !Number.isSafeInteger(normalized.amountMinor) ||
+    normalized.amountMinor < 1 ||
+    !reason ||
+    reason.length > 2_000
+  ) {
+    throw new Error(
+      "A Quote payment correction requires an exact active evidence event, positive amount, and reason."
+    );
+  }
+  const body = { ...normalized, reason };
+  const response = await apiRequest(
+    `${route.url}/payments/${encodeURIComponent(normalizedEvidenceId)}/corrections`,
+    {
+      method: "POST",
+      body,
+      ...(request.signal ? { signal: request.signal } : {})
+    }
+  );
+  return quotePaymentResultFrom(response, {
+    recordId: route.recordId,
+    revisionNumber: route.revisionNumber,
+    eventType: "correction",
+    currency: normalized.currency,
+    minorUnitDigits: normalized.minorUnitDigits,
+    amountMinor: normalized.amountMinor,
+    supersedesEvidenceId: normalizedEvidenceId
+  });
+}
+
+export async function voidBusinessDeskQuotePayment(
+  workspace: BusinessDeskWorkspace,
+  recordId: string,
+  evidenceId: string,
+  input: VoidQuotePaymentInput,
+  request: BusinessDeskRequestOptions = {}
+) {
+  const route = quoteEvidenceRoute(workspace, recordId, input.expectedVersion);
+  const normalizedEvidenceId = String(evidenceId || "")
+    .trim()
+    .toLowerCase();
+  const normalized = normalizedQuotePaymentInput(input);
+  const reason = String(normalized.reason || "").trim();
+  if (!OBJECT_ID_PATTERN.test(normalizedEvidenceId) || !reason || reason.length > 2_000) {
+    throw new Error(
+      "Voiding Quote payment evidence requires an exact active evidence event and reason."
+    );
+  }
+  const body = { ...normalized, reason };
+  const response = await apiRequest(
+    `${route.url}/payments/${encodeURIComponent(normalizedEvidenceId)}/void`,
+    {
+      method: "POST",
+      body,
+      ...(request.signal ? { signal: request.signal } : {})
+    }
+  );
+  return quotePaymentResultFrom(response, {
+    recordId: route.recordId,
+    revisionNumber: route.revisionNumber,
+    eventType: "void",
+    currency: normalized.currency,
+    minorUnitDigits: normalized.minorUnitDigits,
+    amountMinor: 0,
+    supersedesEvidenceId: normalizedEvidenceId
+  });
 }
 
 function recordFrom(response: any): BusinessDeskRecord {

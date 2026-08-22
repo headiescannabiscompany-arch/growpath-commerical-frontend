@@ -12,10 +12,16 @@ import {
 import {
   archiveBusinessDeskRecord,
   calculateBusinessDesk,
+  correctBusinessDeskQuotePayment,
   createBusinessDeskRecord,
+  getBusinessDeskQuoteLifecycle,
+  getBusinessDeskQuotePaymentEvidenceChains,
+  getBusinessDeskQuotePaymentSummary,
   listBusinessDeskRecords,
   listBusinessDeskRevisions,
+  recordBusinessDeskQuotePayment,
   updateBusinessDeskRecord,
+  voidBusinessDeskQuotePayment,
   type BusinessDeskRecord,
   type BusinessDeskRevision,
   type BusinessDeskTax,
@@ -23,7 +29,12 @@ import {
   type QuoteCalculationInput,
   type QuoteCalculationResult,
   type QuoteDeposit,
+  type QuoteLifecycle,
   type QuoteLineCategory,
+  type QuotePaymentEvidence,
+  type QuotePaymentEvidenceChain,
+  type QuotePaymentEvidenceChains,
+  type QuotePaymentSummary,
   type QuoteRecordPayload
 } from "@/api/businessDesk";
 import { BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES } from "@/api/businessDeskArtifacts";
@@ -48,6 +59,7 @@ import type { CsvExportResult } from "@/utils/exportToCsv";
 
 type TaxType = "none" | "percent" | "fixed";
 type DepositType = "none" | "percent" | "fixed";
+type PaymentAdjustmentType = "correction" | "void";
 
 type QuoteCalculationResultWithMetadata = QuoteCalculationResult & {
   resultMetadata: {
@@ -308,6 +320,29 @@ export default function QuoteEstimateTool({
   const [error, setError] = useState<Error | null>(null);
   const [feedback, setFeedback] = useState("");
   const [archiveReason, setArchiveReason] = useState("");
+  const [paymentSummary, setPaymentSummary] = useState<QuotePaymentSummary | null>(null);
+  const [quoteLifecycle, setQuoteLifecycle] = useState<QuoteLifecycle | null>(null);
+  const [paymentChains, setPaymentChains] = useState<QuotePaymentEvidenceChains | null>(
+    null
+  );
+  const [paymentEvidence, setPaymentEvidence] = useState<QuotePaymentEvidence | null>(
+    null
+  );
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentReference, setPaymentReference] = useState("");
+  const [paymentOccurredAt, setPaymentOccurredAt] = useState("");
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [paymentAdjustmentType, setPaymentAdjustmentType] =
+    useState<PaymentAdjustmentType | null>(null);
+  const [paymentAdjustmentEvidenceId, setPaymentAdjustmentEvidenceId] = useState("");
+  const [paymentCorrectionAmount, setPaymentCorrectionAmount] = useState("");
+  const [paymentAdjustmentReason, setPaymentAdjustmentReason] = useState("");
+  const [paymentAdjustmentOccurredAt, setPaymentAdjustmentOccurredAt] = useState("");
+  const [paymentAdjustmentConfirmed, setPaymentAdjustmentConfirmed] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentBusy, setPaymentBusy] = useState(false);
+  const [paymentError, setPaymentError] = useState<Error | null>(null);
+  const [paymentFeedback, setPaymentFeedback] = useState("");
   const workspaceType = workspace.workspaceType;
   const workspaceFacilityId = workspaceType === "facility" ? workspace.facilityId : "";
   const workspaceKey =
@@ -326,6 +361,14 @@ export default function QuoteEstimateTool({
   });
   activeWorkspaceKey.current = workspaceKey;
   const retryIdentity = useRef<{
+    signature: string;
+    key: string;
+  } | null>(null);
+  const paymentLoadRequest = useRef<{
+    epoch: number;
+    controller: AbortController | null;
+  }>({ epoch: 0, controller: null });
+  const paymentRetryIdentity = useRef<{
     signature: string;
     key: string;
   } | null>(null);
@@ -362,6 +405,89 @@ export default function QuoteEstimateTool({
   });
   const dirty = inputFingerprint !== savedFingerprint;
   const currentResult = resultFingerprint === inputFingerprint ? result : null;
+
+  const clearPaymentEvidence = useCallback(() => {
+    paymentLoadRequest.current.controller?.abort();
+    paymentLoadRequest.current = {
+      epoch: paymentLoadRequest.current.epoch + 1,
+      controller: null
+    };
+    setPaymentSummary(null);
+    setQuoteLifecycle(null);
+    setPaymentChains(null);
+    setPaymentEvidence(null);
+    setPaymentLoading(false);
+    setPaymentError(null);
+    setPaymentFeedback("");
+    paymentRetryIdentity.current = null;
+  }, []);
+
+  const loadQuoteEvidence = useCallback(
+    async (record: BusinessDeskRecord) => {
+      const id = recordId(record).trim();
+      if (!id || record.status !== "reviewed" || record.version < 1) {
+        clearPaymentEvidence();
+        return;
+      }
+      const requestWorkspaceKey = workspaceKey;
+      const epoch = paymentLoadRequest.current.epoch + 1;
+      paymentLoadRequest.current.controller?.abort();
+      const controller =
+        typeof AbortController === "undefined" ? null : new AbortController();
+      paymentLoadRequest.current = { epoch, controller };
+      setPaymentLoading(true);
+      setPaymentError(null);
+      try {
+        const [summary, lifecycle, chains] = await Promise.all([
+          getBusinessDeskQuotePaymentSummary(requestWorkspace, id, record.version, {
+            signal: controller?.signal
+          }),
+          getBusinessDeskQuoteLifecycle(requestWorkspace, id, record.version, {
+            signal: controller?.signal
+          }),
+          getBusinessDeskQuotePaymentEvidenceChains(
+            requestWorkspace,
+            id,
+            record.version,
+            { signal: controller?.signal }
+          )
+        ]);
+        if (
+          activeWorkspaceKey.current !== requestWorkspaceKey ||
+          paymentLoadRequest.current.epoch !== epoch ||
+          controller?.signal.aborted
+        ) {
+          return;
+        }
+        setPaymentSummary(summary);
+        setQuoteLifecycle(lifecycle);
+        setPaymentChains(chains);
+      } catch (caught) {
+        if (
+          activeWorkspaceKey.current === requestWorkspaceKey &&
+          paymentLoadRequest.current.epoch === epoch &&
+          !controller?.signal.aborted
+        ) {
+          setPaymentSummary(null);
+          setQuoteLifecycle(null);
+          setPaymentChains(null);
+          setPaymentError(
+            caught instanceof Error
+              ? caught
+              : new Error("The exact Quote payment evidence could not be loaded.")
+          );
+        }
+      } finally {
+        if (
+          activeWorkspaceKey.current === requestWorkspaceKey &&
+          paymentLoadRequest.current.epoch === epoch
+        ) {
+          setPaymentLoading(false);
+        }
+      }
+    },
+    [clearPaymentEvidence, requestWorkspace, workspaceKey]
+  );
 
   const loadRecords = useCallback(async () => {
     const requestWorkspaceKey = workspaceKey;
@@ -447,10 +573,25 @@ export default function QuoteEstimateTool({
     setError(null);
     setFeedback("");
     setArchiveReason("");
+    setPaymentAmount("");
+    setPaymentReference("");
+    setPaymentOccurredAt("");
+    setPaymentConfirmed(false);
+    setPaymentAdjustmentType(null);
+    setPaymentAdjustmentEvidenceId("");
+    setPaymentCorrectionAmount("");
+    setPaymentAdjustmentReason("");
+    setPaymentAdjustmentOccurredAt("");
+    setPaymentAdjustmentConfirmed(false);
+    setPaymentBusy(false);
     retryIdentity.current = null;
+    clearPaymentEvidence();
     void loadRecords();
-    return () => loadRequest.current.controller?.abort();
-  }, [loadRecords, workspaceKey]);
+    return () => {
+      loadRequest.current.controller?.abort();
+      paymentLoadRequest.current.controller?.abort();
+    };
+  }, [clearPaymentEvidence, loadRecords, workspaceKey]);
 
   function updateLine(localId: string, patch: Partial<QuoteLineDraft>) {
     setLines((current) =>
@@ -683,6 +824,7 @@ export default function QuoteEstimateTool({
         saved,
         ...current.filter((record) => recordId(record) !== recordId(saved))
       ]);
+      clearPaymentEvidence();
       setFeedback(
         `Draft revision ${saved.version} saved. Review the exact saved revision before export or handoff.`
       );
@@ -749,6 +891,7 @@ export default function QuoteEstimateTool({
       ]);
       setFeedback(`Revision ${reviewed.version} reviewed. Nothing was sent or charged.`);
       await loadRevisions(reviewed);
+      await loadQuoteEvidence(reviewed);
     } catch (caught) {
       if (activeWorkspaceKey.current === requestWorkspaceKey) {
         setError(
@@ -805,6 +948,17 @@ export default function QuoteEstimateTool({
       setResult(null);
       setResultFingerprint("");
       setArchiveReason("");
+      setPaymentAmount("");
+      setPaymentReference("");
+      setPaymentOccurredAt("");
+      setPaymentConfirmed(false);
+      setPaymentAdjustmentType(null);
+      setPaymentAdjustmentEvidenceId("");
+      setPaymentCorrectionAmount("");
+      setPaymentAdjustmentReason("");
+      setPaymentAdjustmentOccurredAt("");
+      setPaymentAdjustmentConfirmed(false);
+      clearPaymentEvidence();
       setFeedback(
         `Archived ${selectedRecord.title} revision ${selectedRecord.version}. Its immutable history was preserved; the fields above remain an unsaved copy you can edit or save as a new draft.`
       );
@@ -816,6 +970,341 @@ export default function QuoteEstimateTool({
       }
     } finally {
       if (activeWorkspaceKey.current === requestWorkspaceKey) setBusy(false);
+    }
+  }
+
+  async function confirmManualPayment() {
+    if (busy || paymentBusy) return;
+    const record = selectedRecord;
+    const id = recordId(record);
+    if (
+      !record ||
+      !id ||
+      record.status !== "reviewed" ||
+      dirty ||
+      !paymentSummary ||
+      !quoteLifecycle ||
+      paymentSummary.quoteRecordId !== id ||
+      paymentSummary.quoteRevisionNumber !== record.version ||
+      quoteLifecycle.quoteRecordId !== id ||
+      quoteLifecycle.quoteRevisionNumber !== record.version ||
+      quoteLifecycle.facets.content !== "reviewed" ||
+      quoteLifecycle.facets.revision !== "current"
+    ) {
+      setPaymentError(
+        new Error(
+          "Reload a current, exact reviewed Quote revision before recording payment evidence. Unsaved, cancelled, or superseded Quotes are blocked."
+        )
+      );
+      return;
+    }
+    const context = {
+      currency: paymentSummary.currency,
+      minorUnitDigits: paymentSummary.minorUnitDigits
+    };
+    let amountMinor: number | null;
+    try {
+      amountMinor = quoteMoney(paymentAmount, context, {
+        label: "Confirmed payment amount"
+      });
+    } catch (caught) {
+      setPaymentError(
+        caught instanceof Error
+          ? caught
+          : new Error("Enter the confirmed payment amount in exact minor units.")
+      );
+      return;
+    }
+    if (amountMinor === null || amountMinor < 1) {
+      setPaymentError(new Error("Confirmed payment amount must be greater than zero."));
+      return;
+    }
+    const occurredAt = paymentOccurredAt.trim();
+    if (!occurredAt || !Number.isFinite(new Date(occurredAt).getTime())) {
+      setPaymentError(new Error("Choose the date the confirmed payment occurred."));
+      return;
+    }
+    const reference = paymentReference.trim();
+    if (reference.length > 300) {
+      setPaymentError(new Error("Payment reference cannot exceed 300 characters."));
+      return;
+    }
+    if (!paymentConfirmed) {
+      setPaymentError(
+        new Error(
+          "Confirm that this is user-reported payment evidence before recording it."
+        )
+      );
+      return;
+    }
+
+    const requestWorkspaceKey = workspaceKey;
+    const signature = JSON.stringify({
+      operation: "payment",
+      id,
+      expectedVersion: record.version,
+      amountMinor,
+      currency: context.currency,
+      minorUnitDigits: context.minorUnitDigits,
+      occurredAt,
+      reference
+    });
+    if (
+      !paymentRetryIdentity.current ||
+      paymentRetryIdentity.current.signature !== signature
+    ) {
+      paymentRetryIdentity.current = {
+        signature,
+        key: uniqueKey("payment", `${id}:revision-${record.version}`)
+      };
+    }
+
+    setBusy(true);
+    setPaymentBusy(true);
+    setPaymentError(null);
+    setPaymentFeedback("");
+    try {
+      const result = await recordBusinessDeskQuotePayment(requestWorkspace, id, {
+        expectedVersion: record.version,
+        amountMinor,
+        currency: context.currency,
+        minorUnitDigits: context.minorUnitDigits,
+        occurredAt,
+        reference,
+        confirmed: true,
+        idempotencyKey: paymentRetryIdentity.current.key
+      });
+      if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
+      paymentRetryIdentity.current = null;
+      setPaymentEvidence(result.evidence);
+      setPaymentConfirmed(false);
+      setPaymentFeedback(
+        `${result.idempotentReplay ? "Recovered" : "Recorded"} ${formatMoneyMinor(
+          result.evidence.amountMinor,
+          context
+        )} as user-confirmed evidence for reviewed revision ${record.version}. No customer was charged and no inventory changed.`
+      );
+      await loadQuoteEvidence(record);
+    } catch (caught) {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setPaymentError(
+          caught instanceof Error
+            ? caught
+            : new Error(
+                "Payment evidence could not be recorded. The form and retry identity were preserved."
+              )
+        );
+      }
+    } finally {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setPaymentBusy(false);
+        setBusy(false);
+      }
+    }
+  }
+
+  function beginPaymentAdjustment(
+    chain: QuotePaymentEvidenceChain,
+    adjustmentType: PaymentAdjustmentType
+  ) {
+    if (busy || paymentBusy || dirty || !chain.active) return;
+    if (
+      (adjustmentType === "correction" && !chain.canCorrect) ||
+      (adjustmentType === "void" && !chain.canVoid)
+    ) {
+      setPaymentError(
+        new Error("This payment evidence chain is no longer eligible for that action.")
+      );
+      return;
+    }
+    setPaymentAdjustmentType(adjustmentType);
+    setPaymentAdjustmentEvidenceId(chain.latestEvidenceId);
+    setPaymentCorrectionAmount(
+      paymentChains ? rawMajor(chain.amountMinor, paymentChains.minorUnitDigits) : ""
+    );
+    setPaymentAdjustmentReason("");
+    setPaymentAdjustmentOccurredAt(
+      adjustmentType === "correction" ? chain.occurredAt.slice(0, 10) : ""
+    );
+    setPaymentAdjustmentConfirmed(false);
+    setPaymentError(null);
+    setPaymentFeedback("");
+    paymentRetryIdentity.current = null;
+  }
+
+  async function confirmPaymentAdjustment() {
+    if (busy || paymentBusy) return;
+    const record = selectedRecord;
+    const id = recordId(record);
+    const chain = paymentChains?.chains.find(
+      (candidate) => candidate.latestEvidenceId === paymentAdjustmentEvidenceId
+    );
+    if (
+      !record ||
+      !id ||
+      record.status !== "reviewed" ||
+      dirty ||
+      !paymentSummary ||
+      !quoteLifecycle ||
+      !paymentChains ||
+      paymentSummary.quoteRecordId !== id ||
+      paymentChains.quoteRecordId !== id ||
+      paymentSummary.quoteRevisionNumber !== record.version ||
+      paymentChains.quoteRevisionNumber !== record.version ||
+      quoteLifecycle.quoteRecordId !== id ||
+      quoteLifecycle.quoteRevisionNumber !== record.version ||
+      quoteLifecycle.facets.content !== "reviewed" ||
+      quoteLifecycle.facets.revision !== "current" ||
+      !paymentAdjustmentType ||
+      !chain ||
+      !chain.active ||
+      (paymentAdjustmentType === "correction" && !chain.canCorrect) ||
+      (paymentAdjustmentType === "void" && !chain.canVoid)
+    ) {
+      setPaymentError(
+        new Error(
+          "Reload the current reviewed Quote and choose its latest active payment evidence before correcting or voiding it."
+        )
+      );
+      return;
+    }
+    const reason = paymentAdjustmentReason.trim();
+    if (!reason || reason.length > 2_000) {
+      setPaymentError(
+        new Error("Enter a correction or void reason of no more than 2,000 characters.")
+      );
+      return;
+    }
+    const occurredAt = paymentAdjustmentOccurredAt.trim();
+    if (!occurredAt || !Number.isFinite(new Date(occurredAt).getTime())) {
+      setPaymentError(new Error("Choose the date for this correction or void."));
+      return;
+    }
+    if (!paymentAdjustmentConfirmed) {
+      setPaymentError(
+        new Error(
+          `Explicitly confirm this ${paymentAdjustmentType} before it is appended to the payment evidence history.`
+        )
+      );
+      return;
+    }
+    const context = {
+      currency: paymentChains.currency,
+      minorUnitDigits: paymentChains.minorUnitDigits
+    };
+    let amountMinor = 0;
+    if (paymentAdjustmentType === "correction") {
+      try {
+        amountMinor =
+          quoteMoney(paymentCorrectionAmount, context, {
+            label: "Corrected payment amount"
+          }) ?? 0;
+      } catch (caught) {
+        setPaymentError(
+          caught instanceof Error
+            ? caught
+            : new Error("Enter the corrected payment amount.")
+        );
+        return;
+      }
+      if (amountMinor < 1) {
+        setPaymentError(new Error("Corrected payment amount must be greater than zero."));
+        return;
+      }
+    }
+
+    const requestWorkspaceKey = workspaceKey;
+    const signature = JSON.stringify({
+      operation: paymentAdjustmentType,
+      id,
+      expectedVersion: record.version,
+      evidenceId: chain.latestEvidenceId,
+      amountMinor,
+      currency: context.currency,
+      minorUnitDigits: context.minorUnitDigits,
+      occurredAt,
+      reason
+    });
+    if (
+      !paymentRetryIdentity.current ||
+      paymentRetryIdentity.current.signature !== signature
+    ) {
+      paymentRetryIdentity.current = {
+        signature,
+        key: uniqueKey(
+          `payment-${paymentAdjustmentType}`,
+          `${id}:revision-${record.version}:${chain.latestEvidenceId}`
+        )
+      };
+    }
+
+    setBusy(true);
+    setPaymentBusy(true);
+    setPaymentError(null);
+    setPaymentFeedback("");
+    try {
+      const retryKey = paymentRetryIdentity.current.key;
+      const result =
+        paymentAdjustmentType === "correction"
+          ? await correctBusinessDeskQuotePayment(
+              requestWorkspace,
+              id,
+              chain.latestEvidenceId,
+              {
+                expectedVersion: record.version,
+                amountMinor,
+                currency: context.currency,
+                minorUnitDigits: context.minorUnitDigits,
+                occurredAt,
+                reason,
+                confirmed: true,
+                idempotencyKey: retryKey
+              }
+            )
+          : await voidBusinessDeskQuotePayment(
+              requestWorkspace,
+              id,
+              chain.latestEvidenceId,
+              {
+                expectedVersion: record.version,
+                currency: context.currency,
+                minorUnitDigits: context.minorUnitDigits,
+                occurredAt,
+                reason,
+                confirmed: true,
+                idempotencyKey: retryKey
+              }
+            );
+      if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
+      paymentRetryIdentity.current = null;
+      setPaymentEvidence(result.evidence);
+      setPaymentAdjustmentType(null);
+      setPaymentAdjustmentEvidenceId("");
+      setPaymentCorrectionAmount("");
+      setPaymentAdjustmentReason("");
+      setPaymentAdjustmentOccurredAt("");
+      setPaymentAdjustmentConfirmed(false);
+      setPaymentFeedback(
+        `${result.idempotentReplay ? "Recovered" : "Recorded"} a user-confirmed ${
+          result.evidence.eventType
+        } for reviewed revision ${record.version}. The prior evidence remains in immutable history; no customer was charged and no inventory changed.`
+      );
+      await loadQuoteEvidence(record);
+    } catch (caught) {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setPaymentError(
+          caught instanceof Error
+            ? caught
+            : new Error(
+                "The payment evidence change failed. The form and stable retry identity were preserved."
+              )
+        );
+      }
+    } finally {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setPaymentBusy(false);
+        setBusy(false);
+      }
     }
   }
 
@@ -915,7 +1404,19 @@ export default function QuoteEstimateTool({
     setFeedback(`Loaded saved ${record.status} revision ${record.version}.`);
     setError(null);
     retryIdentity.current = null;
+    setPaymentAmount("");
+    setPaymentReference("");
+    setPaymentOccurredAt("");
+    setPaymentConfirmed(false);
+    setPaymentAdjustmentType(null);
+    setPaymentAdjustmentEvidenceId("");
+    setPaymentCorrectionAmount("");
+    setPaymentAdjustmentReason("");
+    setPaymentAdjustmentOccurredAt("");
+    setPaymentAdjustmentConfirmed(false);
+    clearPaymentEvidence();
     void loadRevisions(record);
+    if (record.status === "reviewed") void loadQuoteEvidence(record);
   }
 
   const resultContext = currentResult
@@ -929,6 +1430,30 @@ export default function QuoteEstimateTool({
   );
   const exactReviewedRevision = Boolean(
     selectedRecord && selectedRecord.status === "reviewed"
+  );
+  const selectedQuoteId = recordId(selectedRecord);
+  const paymentEvidenceReady = Boolean(
+    selectedRecord &&
+    selectedQuoteId &&
+    selectedRecord.status === "reviewed" &&
+    !dirty &&
+    paymentSummary?.quoteRecordId === selectedQuoteId &&
+    paymentSummary.quoteRevisionNumber === selectedRecord.version &&
+    paymentChains?.quoteRecordId === selectedQuoteId &&
+    paymentChains.quoteRevisionNumber === selectedRecord.version &&
+    quoteLifecycle?.quoteRecordId === selectedQuoteId &&
+    quoteLifecycle.quoteRevisionNumber === selectedRecord.version &&
+    quoteLifecycle.facets.content === "reviewed" &&
+    quoteLifecycle.facets.revision === "current"
+  );
+  const paymentContext = paymentSummary
+    ? {
+        currency: paymentSummary.currency,
+        minorUnitDigits: paymentSummary.minorUnitDigits
+      }
+    : null;
+  const selectedPaymentChain = paymentChains?.chains.find(
+    (chain) => chain.latestEvidenceId === paymentAdjustmentEvidenceId
   );
   const taxSourceLabel = currentResult
     ? currentResult.totals.tax.type === "percent"
@@ -1651,6 +2176,416 @@ export default function QuoteEstimateTool({
         previewButtonLabel="Preview reviewed quote CSV"
         prepareButtonLabel="Confirm and export reviewed quote CSV"
       />
+
+      <AppCard
+        title="Reviewed quote lifecycle and payment evidence"
+        titleLevel={2}
+        subtitle="Payment evidence is pinned to one exact reviewed revision. It records what an authorized user confirms; it does not charge a customer, send an invoice, accept terms, or move B‑02 inventory."
+      >
+        {!exactReviewedRevision || !selectedRecord ? (
+          <Text style={styles.bodyText}>
+            Select and review an exact saved quote revision to load its lifecycle and
+            payment evidence.
+          </Text>
+        ) : null}
+
+        {paymentLoading ? (
+          <View accessibilityLiveRegion="polite" style={styles.actionRow}>
+            <ActivityIndicator color={palette.accent} />
+            <Text style={styles.bodyText}>
+              Loading exact revision {selectedRecord?.version} evidence…
+            </Text>
+          </View>
+        ) : null}
+        {paymentError ? <InlineError error={paymentError} /> : null}
+        {paymentFeedback ? (
+          <View accessibilityLiveRegion="polite" style={styles.notice}>
+            <Text style={styles.noticeText}>{paymentFeedback}</Text>
+          </View>
+        ) : null}
+
+        {exactReviewedRevision && selectedRecord ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Reload exact quote lifecycle and payment evidence"
+            accessibilityState={{ disabled: paymentLoading || busy }}
+            disabled={paymentLoading || busy}
+            onPress={() => void loadQuoteEvidence(selectedRecord)}
+            style={[styles.secondaryButton, (paymentLoading || busy) && styles.disabled]}
+          >
+            <Text style={styles.secondaryButtonText}>Reload exact revision evidence</Text>
+          </Pressable>
+        ) : null}
+
+        {paymentSummary && quoteLifecycle && paymentChains && paymentContext ? (
+          <View style={styles.stack}>
+            <View style={styles.metricGrid}>
+              <View style={styles.metric}>
+                <Text style={styles.metricLabel}>Lifecycle</Text>
+                <Text style={styles.metricValue}>
+                  {quoteLifecycle.displayStatus.replace(/_/g, " ")}
+                </Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricLabel}>Quote total</Text>
+                <Text style={styles.metricValue}>
+                  {formatMoneyMinor(paymentSummary.quoteTotalMinor, paymentContext)}
+                </Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricLabel}>Deposit requested</Text>
+                <Text style={styles.metricValue}>
+                  {formatMoneyMinor(paymentSummary.requestedDepositMinor, paymentContext)}
+                </Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricLabel}>User-confirmed payments</Text>
+                <Text style={styles.metricValue}>
+                  {formatMoneyMinor(paymentSummary.paidMinor, paymentContext)}
+                </Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricLabel}>Outstanding quote balance</Text>
+                <Text style={styles.metricValue}>
+                  {formatMoneyMinor(paymentSummary.outstandingMinor, paymentContext)}
+                </Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricLabel}>Deposit still outstanding</Text>
+                <Text style={styles.metricValue}>
+                  {formatMoneyMinor(
+                    paymentSummary.depositOutstandingMinor,
+                    paymentContext
+                  )}
+                </Text>
+              </View>
+              {paymentSummary.overpaymentMinor > 0 ? (
+                <View style={styles.metric}>
+                  <Text style={styles.metricLabel}>Reported overpayment</Text>
+                  <Text style={styles.metricValue}>
+                    {formatMoneyMinor(paymentSummary.overpaymentMinor, paymentContext)}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+
+            <Text style={styles.boundaryText}>
+              Revision {paymentSummary.quoteRevisionNumber} · content:{" "}
+              {quoteLifecycle.facets.content} · artifact:{" "}
+              {quoteLifecycle.facets.artifact.replace(/_/g, " ")} · time:{" "}
+              {quoteLifecycle.facets.time.replace(/_/g, " ")} · revision:{" "}
+              {quoteLifecycle.facets.revision} · derived{" "}
+              {readableDate(quoteLifecycle.derivedAt)}.
+            </Text>
+            <Text style={styles.boundaryText}>
+              The requested deposit is a quote term, not payment evidence.{" "}
+              {paymentSummary.depositSatisfied
+                ? "User-confirmed evidence currently meets the requested deposit."
+                : "User-confirmed evidence does not yet meet the requested deposit."}{" "}
+              Provider observations and provider draft handoff are not configured, so no
+              Stripe or other provider payment is claimed here.
+            </Text>
+
+            {!paymentEvidenceReady ? (
+              <View style={styles.warning}>
+                <Text style={styles.warningTitle}>Payment changes are locked</Text>
+                <Text style={styles.warningText}>
+                  {dirty
+                    ? `The editor differs from reviewed revision ${selectedRecord?.version}. Payment evidence remains visible for that revision, but recording or changing it is blocked until you reload or save and review a new exact revision.`
+                    : "This Quote is cancelled, superseded, stale, or no longer matches the exact evidence response. Reload before taking action."}
+                </Text>
+              </View>
+            ) : null}
+
+            <View style={styles.lineCard}>
+              <Text accessibilityRole="header" aria-level={3} style={styles.lineTitle}>
+                Record a manual payment
+              </Text>
+              <Text style={styles.bodyText}>
+                Use this only when an authorized person has evidence that a payment
+                occurred. GrowPathAI records a user-confirmed claim; it does not verify a
+                bank or payment provider.
+              </Text>
+              <View style={styles.fieldGrid}>
+                <Field
+                  label={`Confirmed payment amount (${paymentSummary.currency})`}
+                  accessibilityLabel="Confirmed quote payment amount"
+                  keyboardType="decimal-pad"
+                  value={paymentAmount}
+                  onChangeText={(value) => {
+                    setPaymentAmount(value);
+                    setPaymentFeedback("");
+                  }}
+                  editable={paymentEvidenceReady && !busy}
+                  styles={styles}
+                />
+                <Field
+                  label="Payment reference (optional)"
+                  accessibilityLabel="Confirmed quote payment reference"
+                  value={paymentReference}
+                  onChangeText={(value) => {
+                    setPaymentReference(value);
+                    setPaymentFeedback("");
+                  }}
+                  maxLength={300}
+                  editable={paymentEvidenceReady && !busy}
+                  hint="Receipt, transfer, check, or other operator-reviewed reference."
+                  styles={styles}
+                />
+              </View>
+              <CalendarDateField
+                label="Payment occurred on"
+                accessibilityLabel="Confirmed quote payment date"
+                value={paymentOccurredAt}
+                onChange={(value) => {
+                  setPaymentOccurredAt(value);
+                  setPaymentFeedback("");
+                }}
+                disabled={!paymentEvidenceReady || busy}
+              />
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityLabel="Confirm user-reported quote payment evidence"
+                accessibilityState={{
+                  checked: paymentConfirmed,
+                  disabled: !paymentEvidenceReady || busy
+                }}
+                disabled={!paymentEvidenceReady || busy}
+                onPress={() => setPaymentConfirmed((current) => !current)}
+                style={styles.checkboxRow}
+              >
+                <View
+                  style={[styles.checkbox, paymentConfirmed && styles.checkboxChecked]}
+                />
+                <Text style={styles.checkboxLabel}>
+                  I confirm this payment evidence is based on records I reviewed and is
+                  not a provider-verified charge.
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Record confirmed manual quote payment"
+                accessibilityState={{
+                  disabled: !paymentEvidenceReady || busy || !paymentConfirmed
+                }}
+                disabled={!paymentEvidenceReady || busy || !paymentConfirmed}
+                onPress={() => void confirmManualPayment()}
+                style={[
+                  styles.primaryButton,
+                  (!paymentEvidenceReady || busy || !paymentConfirmed) && styles.disabled
+                ]}
+              >
+                {paymentBusy ? (
+                  <ActivityIndicator color={palette.accentText} />
+                ) : (
+                  <Text style={styles.primaryButtonText}>
+                    Record user-confirmed payment
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+
+            <View style={styles.stack}>
+              <Text accessibilityRole="header" aria-level={3} style={styles.lineTitle}>
+                User-confirmed payment evidence history
+              </Text>
+              {paymentChains.chains.length === 0 ? (
+                <Text style={styles.bodyText}>
+                  No user-confirmed payment evidence has been recorded for this exact
+                  revision.
+                </Text>
+              ) : null}
+              {paymentChains.chains.map((chain, index) => (
+                <View key={chain.rootPaymentEvidenceId} style={styles.lineCard}>
+                  <Text style={styles.revisionTitle}>Payment {index + 1}</Text>
+                  <Text style={styles.savedMeta}>
+                    {chain.active
+                      ? formatMoneyMinor(chain.amountMinor, paymentContext)
+                      : "Voided"}{" "}
+                    · latest event {chain.latestEventType} · sequence {chain.sequence} ·{" "}
+                    {readableDate(chain.occurredAt)}
+                  </Text>
+                  {chain.reference ? (
+                    <Text style={styles.bodyText}>Reference: {chain.reference}</Text>
+                  ) : null}
+                  {chain.reason ? (
+                    <Text style={styles.bodyText}>Reason: {chain.reason}</Text>
+                  ) : null}
+                  <Text style={styles.boundaryText}>
+                    User-confirmed evidence only. Provider observations are excluded.
+                  </Text>
+                  {chain.active ? (
+                    <View style={styles.actionRow}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Correct user-confirmed payment ${index + 1}`}
+                        accessibilityState={{
+                          disabled: !paymentEvidenceReady || busy || !chain.canCorrect
+                        }}
+                        disabled={!paymentEvidenceReady || busy || !chain.canCorrect}
+                        onPress={() => beginPaymentAdjustment(chain, "correction")}
+                        style={[
+                          styles.secondaryButton,
+                          (!paymentEvidenceReady || busy || !chain.canCorrect) &&
+                            styles.disabled
+                        ]}
+                      >
+                        <Text style={styles.secondaryButtonText}>Correct payment</Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Void user-confirmed payment ${index + 1}`}
+                        accessibilityState={{
+                          disabled: !paymentEvidenceReady || busy || !chain.canVoid
+                        }}
+                        disabled={!paymentEvidenceReady || busy || !chain.canVoid}
+                        onPress={() => beginPaymentAdjustment(chain, "void")}
+                        style={[
+                          styles.secondaryButton,
+                          (!paymentEvidenceReady || busy || !chain.canVoid) &&
+                            styles.disabled
+                        ]}
+                      >
+                        <Text style={styles.secondaryButtonText}>Void payment</Text>
+                      </Pressable>
+                    </View>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+
+            {paymentAdjustmentType && selectedPaymentChain ? (
+              <View style={styles.lineCard}>
+                <Text accessibilityRole="header" aria-level={3} style={styles.lineTitle}>
+                  {paymentAdjustmentType === "correction"
+                    ? "Correct selected payment"
+                    : "Void selected payment"}
+                </Text>
+                <Text style={styles.bodyText}>
+                  Selected latest evidence:{" "}
+                  {formatMoneyMinor(selectedPaymentChain.amountMinor, paymentContext)} on{" "}
+                  {readableDate(selectedPaymentChain.occurredAt)}
+                  {selectedPaymentChain.reference
+                    ? ` · reference ${selectedPaymentChain.reference}`
+                    : ""}
+                  . The prior event remains in immutable history.
+                </Text>
+                {paymentAdjustmentType === "correction" ? (
+                  <Field
+                    label={`Corrected payment amount (${paymentSummary.currency})`}
+                    accessibilityLabel="Corrected quote payment amount"
+                    keyboardType="decimal-pad"
+                    value={paymentCorrectionAmount}
+                    onChangeText={setPaymentCorrectionAmount}
+                    editable={paymentEvidenceReady && !busy}
+                    styles={styles}
+                  />
+                ) : null}
+                <Field
+                  label={
+                    paymentAdjustmentType === "correction"
+                      ? "Correction reason"
+                      : "Void reason"
+                  }
+                  accessibilityLabel={
+                    paymentAdjustmentType === "correction"
+                      ? "Quote payment correction reason"
+                      : "Quote payment void reason"
+                  }
+                  value={paymentAdjustmentReason}
+                  onChangeText={setPaymentAdjustmentReason}
+                  multiline
+                  maxLength={2_000}
+                  editable={paymentEvidenceReady && !busy}
+                  styles={styles}
+                />
+                <CalendarDateField
+                  label={
+                    paymentAdjustmentType === "correction"
+                      ? "Corrected payment occurred on"
+                      : "Payment void recorded on"
+                  }
+                  accessibilityLabel={
+                    paymentAdjustmentType === "correction"
+                      ? "Quote payment correction date"
+                      : "Quote payment void date"
+                  }
+                  value={paymentAdjustmentOccurredAt}
+                  onChange={setPaymentAdjustmentOccurredAt}
+                  disabled={!paymentEvidenceReady || busy}
+                />
+                <Pressable
+                  accessibilityRole="checkbox"
+                  accessibilityLabel={`Confirm quote payment ${paymentAdjustmentType}`}
+                  accessibilityState={{
+                    checked: paymentAdjustmentConfirmed,
+                    disabled: !paymentEvidenceReady || busy
+                  }}
+                  disabled={!paymentEvidenceReady || busy}
+                  onPress={() => setPaymentAdjustmentConfirmed((current) => !current)}
+                  style={styles.checkboxRow}
+                >
+                  <View
+                    style={[
+                      styles.checkbox,
+                      paymentAdjustmentConfirmed && styles.checkboxChecked
+                    ]}
+                  />
+                  <Text style={styles.checkboxLabel}>
+                    I confirm this {paymentAdjustmentType} and understand it appends
+                    evidence rather than rewriting the prior event.
+                  </Text>
+                </Pressable>
+                <View style={styles.actionRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Save quote payment ${paymentAdjustmentType}`}
+                    accessibilityState={{
+                      disabled:
+                        !paymentEvidenceReady || busy || !paymentAdjustmentConfirmed
+                    }}
+                    disabled={
+                      !paymentEvidenceReady || busy || !paymentAdjustmentConfirmed
+                    }
+                    onPress={() => void confirmPaymentAdjustment()}
+                    style={[
+                      styles.primaryButton,
+                      (!paymentEvidenceReady || busy || !paymentAdjustmentConfirmed) &&
+                        styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.primaryButtonText}>
+                      Save confirmed {paymentAdjustmentType}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel quote payment evidence change"
+                    disabled={busy}
+                    onPress={() => {
+                      setPaymentAdjustmentType(null);
+                      setPaymentAdjustmentEvidenceId("");
+                      setPaymentAdjustmentConfirmed(false);
+                      paymentRetryIdentity.current = null;
+                    }}
+                    style={[styles.secondaryButton, busy && styles.disabled]}
+                  >
+                    <Text style={styles.secondaryButtonText}>Cancel</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : null}
+
+            {paymentEvidence ? (
+              <Text style={styles.boundaryText}>
+                Last acknowledged evidence event: {paymentEvidence.eventType} · sequence{" "}
+                {paymentEvidence.sequence} · confirmed{" "}
+                {readableDate(paymentEvidence.confirmation.confirmedAt)}.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+      </AppCard>
 
       <AppCard
         title="Optional payment-provider draft handoff"
