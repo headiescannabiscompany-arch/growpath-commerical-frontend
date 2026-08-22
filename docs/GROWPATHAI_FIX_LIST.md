@@ -99,8 +99,8 @@ Scope: Frontend repo plus cross-repo contract alignment items
 11. Matrix quality cleanup and state labeling - DONE 2026-07-09
 
 - Problem: malformed paths, duplicate rows, unknown-mode rows, and mixed canonical/alias/planned entries.
-- Action completed: added explicit `rowStatus` labels (`canonical`, `compat_alias`, `deprecated`, `planned`) across `docs/product/V1_FEATURE_BACKEND_MATRIX.json`, then hardened `scripts/validate-v1-feature-matrix.cjs` to reject invalid labels, malformed modes, unexplained duplicate routes, duplicate feature IDs, and user-visible unknown-mode rows.
-- Evidence: `npm run validate:v1-matrix` passes with 226 checked rows; `v1.release.matrix.test.js` passes. Current row status distribution is 39 canonical, 121 compatibility/internal, 65 planned, and 1 deprecated.
+- Action completed: added explicit `rowStatus` labels (`canonical`, `compat_alias`, `supporting_operation`, `deprecated`, `planned`) across `docs/product/V1_FEATURE_BACKEND_MATRIX.json`, then hardened `scripts/validate-v1-feature-matrix.cjs` to reject invalid labels, malformed modes, unexplained duplicate routes, duplicate feature IDs, user-visible unknown-mode rows, and internal operations without canonical owners.
+- Evidence: `npm run validate:v1-matrix` passes with 226 checked rows; `v1.release.matrix.test.js` passes. Current row status distribution is 39 canonical, 121 compatibility/internal, 65 supporting operations, zero planned, and 1 deprecated. All 65 supporting operations exist in the backend route inventory and are mapped to canonical product rows rather than treated as separate hidden products.
 - Guardrail: `unknown` mode is only allowed for non-visible internal `auto.*` inventory rows; duplicate UI routes must have one canonical row plus compatibility/deprecated companion rows.
 
 12. ID format policy clarification - DONE 2026-07-09

@@ -20,6 +20,7 @@ const VALID_RELEASE_DECISIONS = new Set([
 const VALID_ROW_STATUSES = new Set([
   "canonical",
   "compat_alias",
+  "supporting_operation",
   "deprecated",
   "planned"
 ]);
@@ -181,6 +182,24 @@ function main() {
     }
     if (rowStatus === "compat_alias" && userVisible) {
       failures.push(`[${id}] rowStatus=compat_alias rows must not be userVisible`);
+    }
+    if (rowStatus === "supporting_operation") {
+      const owners = Array.isArray(feature?.canonicalMatrixRows)
+        ? feature.canonicalMatrixRows.filter(Boolean)
+        : [];
+      if (
+        status !== "Functional" ||
+        releaseScope !== "internal" ||
+        releaseDecision !== "complete" ||
+        userVisible ||
+        uiMode !== "unknown" ||
+        uiRoute ||
+        owners.length === 0
+      ) {
+        failures.push(
+          `[${id}] supporting_operation requires Functional/internal/complete, no UI, and canonicalMatrixRows`
+        );
+      }
     }
     if (userVisible && releaseScope !== "v1") {
       failures.push(`[${id}] userVisible rows must use releaseScope=v1`);
