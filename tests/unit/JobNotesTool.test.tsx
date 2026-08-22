@@ -60,6 +60,35 @@ jest.mock("@/components/forms/CalendarDateField", () => {
     );
 });
 
+jest.mock("@/features/businessDesk/ProtectedAttachmentField", () => {
+  const React = require("react");
+  const { Pressable, Text, View } = require("react-native");
+  return ({ attachmentIds, onChange, onUserEdit, purpose, title }: any) => {
+    const id = "507f191e810c19729de86201";
+    return React.createElement(
+      View,
+      null,
+      React.createElement(Text, null, title),
+      React.createElement(
+        Text,
+        null,
+        `Protected attachment IDs: ${attachmentIds.join(",")}`
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: `Test add ${purpose} attachment`,
+          onPress: () => {
+            onChange([...attachmentIds, id]);
+            onUserEdit?.();
+          }
+        },
+        React.createElement(Text, null, "Test add ready attachment")
+      )
+    );
+  };
+});
+
 const workspace = {
   workspaceType: "facility" as const,
   facilityId: "facility-2"
@@ -232,12 +261,66 @@ describe("JobNotesTool", () => {
     const job = mockCreate.mock.calls[0][1].payload.job;
     expect(job).not.toHaveProperty("stage");
     expect(job).not.toHaveProperty("assigneeUserId");
-    expect(job).not.toHaveProperty("attachmentRefs");
+    expect(job.attachmentRefs).toEqual([]);
     expect(job.externalProviderRef).not.toHaveProperty("verificationStatus");
     expect(screen.queryByLabelText(/assignee user ID/i)).toBeNull();
     expect(screen.queryByLabelText(/attachment references/i)).toBeNull();
     expect(screen.queryByLabelText(/related quote ID/i)).toBeNull();
     expect(screen.getByText(/does not verify provider ownership/i)).toBeTruthy();
+  });
+
+  it("binds ready job attachments and replaces them when another record opens", async () => {
+    const firstId = "507f191e810c19729de86211";
+    const secondId = "507f191e810c19729de86212";
+    const first = jobRecord({
+      _id: "64b000000000000000000211",
+      title: "First attachment job",
+      payload: {
+        job: {
+          ...(jobRecord().payload as any).job,
+          attachmentRefs: [{ assetId: firstId }]
+        }
+      }
+    });
+    const second = jobRecord({
+      _id: "64b000000000000000000212",
+      title: "Second attachment job",
+      payload: {
+        job: {
+          ...(jobRecord().payload as any).job,
+          attachmentRefs: [{ assetId: secondId }]
+        }
+      }
+    });
+    mockList.mockImplementation(async (_workspace, options) =>
+      options?.kind === "job" ? [first, second] : [quote]
+    );
+    mockUpdate.mockImplementation(async (_workspace, _id, input) => ({
+      ...second,
+      title: input.title,
+      version: 8,
+      payload: input.payload,
+      sourceLinks: input.sourceLinks
+    }));
+    const screen = render(
+      <JobNotesTool
+        workspace={workspace}
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    fireEvent.press(await screen.findByLabelText("Open job notes First attachment job"));
+    expect(screen.getByText(`Protected attachment IDs: ${firstId}`)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Open job notes Second attachment job"));
+    expect(screen.getByText(`Protected attachment IDs: ${secondId}`)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Test add job_attachment attachment"));
+    fireEvent.press(screen.getByLabelText("Save job record"));
+
+    await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
+    expect(mockUpdate.mock.calls[0][2].payload.job.attachmentRefs).toEqual([
+      { assetId: secondId },
+      { assetId: "507f191e810c19729de86201" }
+    ]);
   });
 
   it("requires saved completion evidence, then transitions the exact revision only", async () => {

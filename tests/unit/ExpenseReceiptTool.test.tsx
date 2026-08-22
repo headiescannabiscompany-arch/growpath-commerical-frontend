@@ -27,6 +27,35 @@ jest.mock("@/utils/exportToCsv", () => ({
   exportCsvContent: (...args: any[]) => mockExport(...args)
 }));
 
+jest.mock("@/features/businessDesk/ProtectedAttachmentField", () => {
+  const React = require("react");
+  const { Pressable, Text, View } = require("react-native");
+  return ({ attachmentIds, onChange, onUserEdit, purpose, title }: any) => {
+    const id = "507f191e810c19729de86101";
+    return React.createElement(
+      View,
+      null,
+      React.createElement(Text, null, title),
+      React.createElement(
+        Text,
+        null,
+        `Protected attachment IDs: ${attachmentIds.join(",")}`
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: `Test add ${purpose} attachment`,
+          onPress: () => {
+            onChange([...attachmentIds, id]);
+            onUserEdit?.();
+          }
+        },
+        React.createElement(Text, null, "Test add ready attachment")
+      )
+    );
+  };
+});
+
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -216,7 +245,78 @@ describe("ExpenseReceiptTool", () => {
         .disabled
     ).toBe(true);
     expect(mockCreate).not.toHaveBeenCalled();
-    expect(screen.getByText(/No file is uploaded or sent to AI/i)).toBeTruthy();
+    expect(screen.getByText(/Uploading a source does not send it to AI/i)).toBeTruthy();
+  });
+
+  it("binds only the protected receipt ID supplied by the attachment field", async () => {
+    mockCreate.mockImplementation(async (_workspace, input) => ({
+      _id: "expense-with-receipt",
+      kind: "expense",
+      title: input.title,
+      status: input.status,
+      version: 1,
+      payload: input.payload
+    }));
+    const screen = render(
+      <ExpenseReceiptTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+    await waitFor(() => expect(mockList).toHaveBeenCalled());
+    fireEvent.press(screen.getByLabelText("Test add expense_receipt attachment"));
+    fireEvent.changeText(screen.getByLabelText("Record title"), "Protected receipt");
+    fireEvent.press(screen.getByLabelText("Expense date"));
+    fireEvent.changeText(screen.getByLabelText("Full amount"), "10.00");
+    fireEvent.press(screen.getByLabelText("Save expense draft"));
+
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
+    expect(mockCreate.mock.calls[0][1].payload.expense.receiptAssetId).toBe(
+      "507f191e810c19729de86101"
+    );
+  });
+
+  it("clears the saved receipt reference when the operator starts a new record", async () => {
+    const savedReceiptId = "507f191e810c19729de86102";
+    mockList.mockResolvedValue([
+      {
+        _id: "expense-saved-receipt",
+        kind: "expense",
+        title: "Saved protected receipt",
+        status: "draft",
+        version: 2,
+        payload: {
+          expense: {
+            merchant: "Garden Supply",
+            occurredAt: "2026-08-22T16:00:00.000Z",
+            amountMinor: 1000,
+            taxMinor: 0,
+            currency: "USD",
+            minorUnitDigits: 2,
+            category: "supplies",
+            receiptAssetId: savedReceiptId,
+            itemLines: [],
+            notes: ""
+          }
+        }
+      }
+    ]);
+    const screen = render(
+      <ExpenseReceiptTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+    fireEvent.press(
+      await screen.findByLabelText(
+        "Open expense / receipt helper Saved protected receipt"
+      )
+    );
+    expect(screen.getByText(`Protected attachment IDs: ${savedReceiptId}`)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Start new expense / receipt helper record"));
+    expect(screen.getByText("Protected attachment IDs: ")).toBeTruthy();
   });
 
   it("prepares only reviewed filtered revisions through the audited batch contract", async () => {

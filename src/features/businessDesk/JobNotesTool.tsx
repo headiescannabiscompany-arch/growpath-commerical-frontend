@@ -1,7 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import type { BusinessDeskRecord, BusinessDeskWorkspace } from "@/api/businessDesk";
+import {
+  businessDeskWorkspaceKey,
+  type BusinessDeskRecord,
+  type BusinessDeskWorkspace
+} from "@/api/businessDesk";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import {
@@ -13,6 +17,7 @@ import {
   RecordSaveArchiveActions,
   StatusSelector
 } from "@/features/businessDesk/RecordFormControls";
+import ProtectedAttachmentField from "@/features/businessDesk/ProtectedAttachmentField";
 import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
 import {
   businessDeskRecordId,
@@ -129,6 +134,7 @@ export default function JobNotesTool({
   const styles = useMemo(() => createStyles(palette), [palette]);
   const collection = useBusinessDeskRecordCollection(workspace, "job");
   const relatedQuotes = useAuthorizedBusinessDeskRecords(workspace, JOB_RELATED_KINDS);
+  const workspaceKey = businessDeskWorkspaceKey(workspace);
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<JobStatus>("requested");
@@ -154,6 +160,21 @@ export default function JobNotesTool({
   const [formError, setFormError] = useState("");
   const [feedback, setFeedback] = useState("");
   const [contentDirty, setContentDirty] = useState(false);
+  const [attachmentDraft, setAttachmentDraft] = useState({
+    workspaceKey,
+    ids: [] as string[],
+    session: 0,
+    blocking: false
+  });
+  const activeAttachmentDraft =
+    attachmentDraft.workspaceKey === workspaceKey
+      ? attachmentDraft
+      : {
+          workspaceKey,
+          ids: [] as string[],
+          session: attachmentDraft.session,
+          blocking: false
+        };
 
   const reset = () => {
     setSelected(null);
@@ -181,6 +202,12 @@ export default function JobNotesTool({
     setFormError("");
     setFeedback("");
     setContentDirty(false);
+    setAttachmentDraft((current) => ({
+      workspaceKey,
+      ids: [],
+      session: current.session + 1,
+      blocking: false
+    }));
   };
 
   const open = (record: BusinessDeskRecord) => {
@@ -208,6 +235,19 @@ export default function JobNotesTool({
     setProviderVerificationStatus(
       String(job.externalProviderRef?.verificationStatus || "")
     );
+    const attachmentIds = Array.isArray(job.attachmentRefs)
+      ? job.attachmentRefs.reduce((result: string[], reference: any) => {
+          const id = String(reference?.assetId || "").trim();
+          if (id && !result.includes(id)) result.push(id);
+          return result;
+        }, [] as string[])
+      : [];
+    setAttachmentDraft((current) => ({
+      workspaceKey,
+      ids: attachmentIds,
+      session: current.session + 1,
+      blocking: false
+    }));
     setNextStatus("");
     setArchiveReason("");
     setFormError("");
@@ -219,6 +259,11 @@ export default function JobNotesTool({
     setFormError("");
     setFeedback("");
     try {
+      if (activeAttachmentDraft.blocking) {
+        throw new Error(
+          "Finish, cancel, or remove pending protected job attachments before saving."
+        );
+      }
       if (!title.trim()) throw new Error("Give this job a clear record title.");
       if (!projectName.trim() && !scope.trim() && !notes.trim()) {
         throw new Error("Enter a request, scope, or factual job note before saving.");
@@ -268,6 +313,9 @@ export default function JobNotesTool({
               scheduledEndAt: end,
               privateLocation: privateLocation.trim(),
               scope: scope.trim(),
+              attachmentRefs: activeAttachmentDraft.ids.map((assetId) => ({
+                assetId
+              })),
               relatedQuoteId: selectedQuoteId,
               ...(externalProviderRef ? { externalProviderRef } : {}),
               completionNotes: completionNotes.trim(),
@@ -564,15 +612,37 @@ export default function JobNotesTool({
           }}
           onRetry={() => void relatedQuotes.reload()}
         />
-        <View style={styles.safetyNotice}>
-          <Text style={styles.safetyTitle}>
-            Protected attachments are not available yet
-          </Text>
-          <Text style={styles.safetyText}>
-            GrowPathAI does not accept pasted asset IDs or URLs. Uploads will appear only
-            after quarantine, malware scanning, workspace authorization, and signed reads
-            are connected.
-          </Text>
+        <View style={styles.attachmentBox}>
+          <ProtectedAttachmentField
+            key={`${workspaceKey}:${activeAttachmentDraft.session}`}
+            workspace={workspace}
+            purpose="job_attachment"
+            maxCount={10}
+            attachmentIds={activeAttachmentDraft.ids}
+            title="Protected job photos and documents"
+            hint="Attach up to ten workspace-private photos or PDFs. GrowPathAI does not accept pasted asset IDs or file URLs."
+            onChange={(ids) => {
+              setAttachmentDraft((current) => ({
+                ...(current.workspaceKey === workspaceKey
+                  ? current
+                  : {
+                      workspaceKey,
+                      ids: [] as string[],
+                      session: current.session,
+                      blocking: false
+                    }),
+                workspaceKey,
+                ids
+              }));
+              setContentDirty(true);
+            }}
+            onUserEdit={() => setContentDirty(true)}
+            onBlockingChange={(blocking) =>
+              setAttachmentDraft((current) =>
+                current.workspaceKey === workspaceKey ? { ...current, blocking } : current
+              )
+            }
+          />
         </View>
         <View style={styles.providerBox}>
           <Text style={styles.safetyTitle}>Unverified manual external reference</Text>
@@ -645,6 +715,7 @@ export default function JobNotesTool({
 
 function createStyles(palette: ThemePalette) {
   return StyleSheet.create({
+    attachmentBox: { marginTop: 12 },
     dateField: { flexBasis: 250, flexGrow: 1, minWidth: 220 },
     disabled: { opacity: 0.6 },
     errorText: { color: palette.danger, fontSize: 13, fontWeight: "800" },

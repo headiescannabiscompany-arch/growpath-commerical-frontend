@@ -13,6 +13,7 @@ import {
   LabeledInput,
   RecordSaveArchiveActions
 } from "@/features/businessDesk/RecordFormControls";
+import ProtectedAttachmentField from "@/features/businessDesk/ProtectedAttachmentField";
 import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
 import {
   formatMoneyMinor,
@@ -99,6 +100,13 @@ export default function ExpenseReceiptTool({
   const [paymentMethod, setPaymentMethod] = useState("");
   const [lines, setLines] = useState<ExpenseLineDraft[]>([]);
   const [notes, setNotes] = useState("");
+  const [attachmentDraft, setAttachmentDraft] = useState({
+    workspaceKey,
+    ids: [] as string[],
+    editVersion: 0,
+    session: 0,
+    blocking: false
+  });
   const [archiveReason, setArchiveReason] = useState("");
   const [savedContentFingerprint, setSavedContentFingerprint] = useState("");
   const [formError, setFormError] = useState("");
@@ -113,6 +121,16 @@ export default function ExpenseReceiptTool({
   });
   const exportBusy =
     exportBusyState.workspaceKey === workspaceKey ? exportBusyState.value : false;
+  const activeAttachmentDraft =
+    attachmentDraft.workspaceKey === workspaceKey
+      ? attachmentDraft
+      : {
+          workspaceKey,
+          ids: [] as string[],
+          editVersion: 0,
+          session: attachmentDraft.session,
+          blocking: false
+        };
 
   const contentFingerprint = JSON.stringify({
     title,
@@ -124,7 +142,9 @@ export default function ExpenseReceiptTool({
     category,
     paymentMethod,
     lines: lines.map(({ id: _id, ...line }) => line),
-    notes
+    notes,
+    receiptAttachmentIds: activeAttachmentDraft.ids,
+    attachmentEditVersion: activeAttachmentDraft.editVersion
   });
   const exactSavedDraft = Boolean(
     selected?.status === "draft" && contentFingerprint === savedContentFingerprint
@@ -195,6 +215,13 @@ export default function ExpenseReceiptTool({
     setPaymentMethod("");
     setLines([]);
     setNotes("");
+    setAttachmentDraft((current) => ({
+      workspaceKey,
+      ids: [],
+      editVersion: 0,
+      session: current.session + 1,
+      blocking: false
+    }));
     setArchiveReason("");
     setSavedContentFingerprint("");
     setFormError("");
@@ -226,6 +253,8 @@ export default function ExpenseReceiptTool({
       ),
       notes: String(expense.notes || "")
     };
+    const receiptAssetId = String(expense.receiptAssetId || "").trim();
+    const receiptAttachmentIds = receiptAssetId ? [receiptAssetId] : [];
     setSelected(record);
     setTitle(next.title);
     setMerchant(next.merchant);
@@ -237,11 +266,20 @@ export default function ExpenseReceiptTool({
     setPaymentMethod(next.paymentMethod);
     setLines(next.lines);
     setNotes(next.notes);
+    setAttachmentDraft((current) => ({
+      workspaceKey,
+      ids: receiptAttachmentIds,
+      editVersion: 0,
+      session: current.session + 1,
+      blocking: false
+    }));
     setArchiveReason("");
     setSavedContentFingerprint(
       JSON.stringify({
         ...next,
-        lines: next.lines.map(({ id: _id, ...line }: ExpenseLineDraft) => line)
+        lines: next.lines.map(({ id: _id, ...line }: ExpenseLineDraft) => line),
+        receiptAttachmentIds,
+        attachmentEditVersion: 0
       })
     );
     setFormError("");
@@ -249,6 +287,11 @@ export default function ExpenseReceiptTool({
   };
 
   const buildExpense = () => {
+    if (activeAttachmentDraft.blocking) {
+      throw new Error(
+        "Finish, cancel, or remove the pending protected receipt before saving."
+      );
+    }
     if (!title.trim()) throw new Error("Give this expense a clear record title.");
     const date = localDateToIso(occurredAt);
     if (!date) throw new Error("Choose the date shown on the receipt or expense record.");
@@ -297,7 +340,7 @@ export default function ExpenseReceiptTool({
       ...context,
       category: category.trim() || "uncategorized",
       paymentMethod: paymentMethod.trim(),
-      receiptAssetId: "",
+      receiptAssetId: activeAttachmentDraft.ids[0] || "",
       itemLines,
       extractionProvenance: {
         origin: "manual",
@@ -552,12 +595,57 @@ export default function ExpenseReceiptTool({
       <AppCard
         title="Receipt intake"
         titleLevel={2}
-        subtitle="Manual entry is ready. Photo/PDF extraction remains unavailable until private quarantine, byte-type validation, malware scanning, workspace-local duplicate review, and the 24-hour abandoned-upload cleanup are configured."
+        subtitle="Secure photo and PDF upload is available. Automatic field extraction remains unavailable, so review and enter the receipt facts yourself."
       >
         <Text style={styles.notice}>
-          No file is uploaded or sent to AI from this screen today. That prevents an
-          unsafe or misleading partial receipt workflow.
+          Uploading a source does not send it to AI or fill business fields. Only a file
+          that passes the protected server checks can be attached to this expense.
         </Text>
+        <ProtectedAttachmentField
+          key={`${workspaceKey}:${activeAttachmentDraft.session}`}
+          workspace={workspace}
+          purpose="expense_receipt"
+          maxCount={1}
+          attachmentIds={activeAttachmentDraft.ids}
+          title="Protected receipt source"
+          hint="Attach one receipt photo, invoice image, or PDF. It remains private to this workspace."
+          onChange={(ids) =>
+            setAttachmentDraft((current) => ({
+              ...(current.workspaceKey === workspaceKey
+                ? current
+                : {
+                    workspaceKey,
+                    ids: [] as string[],
+                    editVersion: 0,
+                    session: current.session,
+                    blocking: false
+                  }),
+              workspaceKey,
+              ids
+            }))
+          }
+          onUserEdit={() =>
+            setAttachmentDraft((current) => ({
+              ...(current.workspaceKey === workspaceKey
+                ? current
+                : {
+                    workspaceKey,
+                    ids: [] as string[],
+                    editVersion: 0,
+                    session: current.session,
+                    blocking: false
+                  }),
+              workspaceKey,
+              editVersion:
+                (current.workspaceKey === workspaceKey ? current.editVersion : 0) + 1
+            }))
+          }
+          onBlockingChange={(blocking) =>
+            setAttachmentDraft((current) =>
+              current.workspaceKey === workspaceKey ? { ...current, blocking } : current
+            )
+          }
+        />
       </AppCard>
 
       <AppCard
