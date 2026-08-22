@@ -151,6 +151,70 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
 - [~] **A-03 Sentry investigation:** Sentry issue reading is implemented but requires Admin
   provider access. Configure and live-accept the Admin tally/detail/deep-link workflow or
   retain the exact credential dependency without claiming that Sentry is visible in Admin.
+- [~] **P-07/P-08/P-09 AI-provider and media-processing readiness:** the core Diagnosis,
+  Harvest, Plant ID, form-assistant, Forum-assistant and protected-video paths contain real
+  provider integrations, but several deliberately fail closed or fall back to deterministic
+  guidance when OpenAI credentials/model selection, FFmpeg, protected source storage or
+  generated-frame leases are unavailable. The final candidate must expose the degraded state,
+  prove that unavailable providers do not consume credits or invent evidence, and live-accept
+  the configured launch models plus photo/video extraction. This is configuration acceptance,
+  not permission to replace the already implemented tools.
+- [~] **R-02 notification delivery:** in-app notification records and preferences exist, while
+  email delivery depends on the reviewed email provider/from-address and asynchronous delivery
+  depends on the notification worker. Prove supported events from creation through preference,
+  delivery/failure, Admin visibility and retry; do not count an in-app record as proof that an
+  email or device notification was delivered.
+- [~] **F-06 device-provider adapters and provider catalog:** the provider catalog contains
+  implemented read-only adapters for Pulse, UbiBot and ZENTRA, an access-required Growlink
+  adapter, customer-key TrolMaster setup, and additional contract-pending/access-required/
+  gateway/file-import candidates (SensorPush, Aranet, HOBOlink, Monnit, Tempest, WeatherLink,
+  Ecowitt, Rachio, Shelly, Particle, Home Assistant, Bluelab, OpenSprinkler and Agrowtek).
+  The UI must not present a catalog entry as connected merely because it is listed. For every
+  launch provider, prove credential storage, discovery, reviewed space mapping, bounded history
+  import, partial-failure receipts, disconnect/deletion and no equipment control; visibly label
+  all other entries by their exact access/contract status.
+- [~] **B-03 protected business-document runtime:** receipt/document extraction and Business
+  Desk attachments have implemented coordination, retention and fail-closed policy, but launch
+  use additionally depends on protected object bytes, malware-scanner health/attestation, PDF
+  parser workers and reviewed AI-provider configuration. Storefront PDF catalog extraction is
+  a separate AI-backed importer with the same truthful availability requirement. Live-accept
+  clean/infected/unavailable/parser-failure/expiry paths before advertising automated import.
+- [~] **B-07/C-04 creator and marketplace payment rails:** Stripe Connect onboarding,
+  signatures, payouts, marketplace/course checkout and webhook code exists behind provider,
+  account-state and capability gates. Reconcile it with the lawful-commerce policy and B-02
+  inventory ownership, then live-accept only the exact non-regulated or specifically authorized
+  routes. Never infer that a visible storefront, payout screen or Connect route means money can
+  legally move in production.
+- [~] **S-04/S-05 Live lifecycle and announcements:** hosted streaming is separately dependent
+  on the Cloudflare provider, lifecycle/limit worker, signed playback and recording retention.
+  Discord announcements are an optional connected publication target with per-event enablement,
+  not the Live host and not a substitute for in-app chat. Prove start/stop/replay/expiry,
+  concurrency and delivery/failure receipts for every launch target.
+- [~] **A-02/A-04 destructive Admin operations:** synthetic-account anonymization is present
+  but intentionally disabled until the exact production allowlist is configured. Keep it
+  unavailable until scoped target preview, typed confirmation, preservation/legal conflicts,
+  immutable audit and recovery limits are accepted. Law-enforcement disclosure remains a
+  reviewed legal workflow, never a one-click automatic report or data handoff.
+- [~] **A-03/R-06 client crash capture:** Admin Sentry issue reading and native/web crash
+  emission are separate integrations. The release candidate still needs protected
+  `EXPO_PUBLIC_SENTRY_DSN`/release configuration and a redacted test event proven in the
+  correct project/environment; configuring Admin read access alone does not enable client
+  crash capture.
+- [~] **F-03 compliance sync workers:** METRC retry/sync code is runtime-disabled without a
+  reviewed interval and provider credentials. Treat this as regulated integration work: prove
+  jurisdiction/account authorization, read/write scope, retry/idempotency, reconciliation and
+  audit before enabling it; otherwise label it unavailable rather than implying compliance.
+- [ ] **Two explicitly disabled Facility calculator cards:** generated tool-surface inventory
+      still reports `Compute VPD` (`climate-vpd`) and `EC Recommendation` (`ec-recommend`) as
+      disabled even though screen code exists. Reconcile each with the current canonical
+      nutrient/environment tools: enable and accept the real action, merge it into the newer
+      canonical tool as a compatibility route, or record an explicit owner rejection. Do not
+      leave a silent disabled card.
+- [x] **Compatibility routes are not secret products:** the current system audit proves the
+      old Logs, Orders, Campaigns, Storefront, Create Post, Social Tools and legacy native
+      Tools/Storefront paths are redirects or compatibility guards into canonical workflows,
+      not separate unfinished products. Preserve their stale-link behavior until final
+      crawl/dead-code evidence proves a redirect is no longer required.
 - [ ] **Complete buried-feature inventory:** before construction closes, compare registered
       frontend routes, visible navigation/deep links, backend route inventory, release matrix,
       provider/environment gates, workers/webhooks and production configuration. Add every
