@@ -205,12 +205,37 @@ an ML forecast without a separately approved contract and sufficient consented h
 
 ### 8. Business Ask AI (`business-ask-ai`)
 
-Answer questions across authorized quotes, leads, jobs, expenses, purchase requests, and
-read-only B-02 inventory projections. It may produce reviewed drafts. Every response cites
-source records and date range, marks incomplete metrics, and respects record- and field-level
-permissions. Its KPI view may show only source-backed quotes, conversion, open leads, jobs,
-provider-reported payments, outstanding drafts, B-02 warnings, purchases, expenses, and
-estimated gross margin. A failed or partial query is not rendered as a real zero.
+Answer questions across an explicit selection of the seven saved B-03 record kinds—Price &
+Margin scenarios, Quotes, Leads, Jobs, Expenses, Vendor Comparisons/Purchase Requests, and
+Cash-Flow Snapshots—and an independent explicit opt-in to read-only B-02 inventory items and
+lots. The date range selects records by their last-updated time; the interface must say that
+instead of implying that it filters an invoice, job, harvest, or transaction date.
+
+The server builds one bounded, redacted source manifest inside the active workspace, freezes
+the exact provider input and full selected manifest before dispatch, and retains SHA-256
+attestations for the provider input, manifest, provider output, and normalized result. The
+answer may cite a subset of the selected manifest, but every material answer, fact,
+calculation, assumption, scenario, and recommendation must cite one or more exact selected
+source IDs. The client withholds all material result text until the server attestation matches
+the result digest, selected-source count, and citation metadata.
+
+A B-03 citation opens the exact immutable saved revision used by the answer. A B-02 item or
+lot citation opens the same exact identity's current authorized projection and discloses that
+inventory is mutable and may have changed since the cited source date; a lot remains bound to
+its attested parent item. No nearby, current, or similarly named record may be substituted.
+
+Business Ask creates only a workspace-scoped assistant draft. It never performs the proposed
+action. A Facility answer and its draft are shared Facility workspace records visible to
+authorized `OWNER` and `MANAGER` roles, so the interface must disclose that boundary. Facility
+Business Ask never sends or returns owner-only `currentCashMinor` or `projectedCashMinor`, even
+when the requester is the Facility owner; those values remain in the deterministic authorized
+Cash-Flow view. Commercial owner-only Business Ask may use its own authorized values.
+
+Every response marks incomplete metrics, limitations, missing information, and truncated
+source selection. Its KPI view may show only source-backed quotes, conversion, open leads,
+jobs, provider-reported payments, outstanding drafts, B-02 warnings, purchases, expenses, and
+estimated gross margin. A failed, unattested, insufficient, or partial query is never rendered
+as a real zero or usable answer.
 
 ## Artifact lifecycle, revisions, and idempotency
 
@@ -228,6 +253,17 @@ estimated gross margin. A failed or partial query is not rendered as a real zero
 - Background extraction and handoff jobs expose `QUEUED`, `PROCESSING`, `SUCCEEDED`,
   `FAILED`, and `CANCELLED` where cancellation is still safe. Retry creates or reuses the
   same operation according to its idempotency contract rather than duplicating an artifact.
+- Provider-backed receipt extraction and Business Ask use a durable server operation. Before
+  dispatch, reauthorize the same actor, workspace, and role; bind one exact credit reservation,
+  provider model, prompt/schema versions, redacted provider input, and full source manifest.
+  Recheck the authorization scope immediately before the credit claim and again before
+  provider dispatch. A role downgrade, revoked membership, changed provider configuration,
+  corrupt snapshot, or ambiguous prior dispatch fails closed and refunds a reserved credit
+  where safe; it never silently redispatches.
+- Client recovery stores only account-and-workspace-scoped opaque operation metadata and
+  SHA-256 signatures. It never stores a raw Business Ask question, receipt content, extracted
+  fields, source record, contact, or financial value. Server history remains the recovery
+  source when local metadata is absent.
 
 ## Attachments, privacy, and hostile-document handling
 
@@ -250,6 +286,16 @@ estimated gross margin. A failed or partial query is not rendered as a real zero
   confidence, missing fields, validation errors, duplicate status, and reviewer changes.
   Model output remains staged until reviewed. Do not place secrets or unnecessary personal
   data in prompts, logs, analytics, filenames, or audit summaries.
+- Provider requests disable provider-side response storage, use a non-PII hashed safety
+  identifier, disable provider retries for the durable dispatch, accept no model-selected
+  tools, and require the approved strict structured-output schema. Images and PDFs are loaded
+  only from the byte-verified `READY` attachment bound to this workspace and purpose. The
+  provider receives the source bytes only after the explicit extraction action, never merely
+  because the user uploaded or saved the attachment.
+- Applying an extraction rechecks the exact normalized result digest, source content digest,
+  `READY` lifecycle, saved Expense draft version, and retained attachment binding. It records
+  the current human reviewer, reviewed values, confidence, validation issues, missing fields,
+  duplicate status, and reviewer-change digests in one new immutable Expense revision.
 - Workspace export and deletion requests cover B-03 records and attachments subject to the
   published retention/legal-hold policy. Deletion of a local draft does not delete an
   external provider object; disclose the separation and retain the minimum audit tombstone
