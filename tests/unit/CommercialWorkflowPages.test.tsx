@@ -752,6 +752,7 @@ describe("commercial workflow pages", () => {
           item: {
             id: "inventory-1",
             name: "Kelp Meal",
+            sku: "KELP-001",
             itemType: "ingredient",
             category: "dry_amendment",
             quantity: 4,
@@ -2859,15 +2860,14 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Batch Planner")).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
     expect(screen.getByText("Storefront")).toBeTruthy();
-    expect(screen.getByLabelText("Commercial detail item type").props.value).toBe(
-      "ingredient"
-    );
+    expect(screen.getByText("ingredient | Dry room shelf A")).toBeTruthy();
+    expect(screen.queryByLabelText("Commercial detail item type")).toBeNull();
+    expect(screen.queryByLabelText("Commercial detail location")).toBeNull();
     expect(screen.queryByText("Inventory Support Item")).toBeNull();
-
+    expect(screen.getByLabelText("Open linked commercial product")).toBeTruthy();
     expect(
-      screen.getByLabelText("Commercial detail linked product trial evidence run").props
-        .value
-    ).toBe("trial-1");
+      screen.getByLabelText("Open linked commercial product trial evidence run")
+    ).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial detail notes"),
@@ -2880,15 +2880,19 @@ describe("commercial workflow pages", () => {
         "/api/business-inventory/inventory-1",
         expect.objectContaining({
           method: "PATCH",
-          data: expect.objectContaining({
-            notes: "Restocked for trial batches.",
-            linkedProductId: "product-1",
-            linkedTrialId: "trial-1",
-            linkedGrowId: "trial-1"
-          })
+          data: expect.objectContaining({ notes: "Restocked for trial batches." })
         })
       )
     );
+    const savedPayload = mockApiRequest.mock.calls.find(
+      ([path, options]) =>
+        path === "/api/business-inventory/inventory-1" && options?.method === "PATCH"
+    )?.[1]?.data;
+    expect(savedPayload).not.toHaveProperty("itemType");
+    expect(savedPayload).not.toHaveProperty("location");
+    expect(savedPayload).not.toHaveProperty("linkedProductId");
+    expect(savedPayload).not.toHaveProperty("linkedTrialId");
+    expect(savedPayload).not.toHaveProperty("linkedGrowId");
   });
 
   it("manages commercial batches as formula-to-product-to-trial workflow", async () => {
