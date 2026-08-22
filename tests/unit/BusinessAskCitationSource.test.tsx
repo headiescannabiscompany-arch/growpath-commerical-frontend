@@ -361,8 +361,13 @@ describe("Business Ask citation source inspector", () => {
     );
 
     expect(await screen.findByText("Projection used by Business Ask")).toBeTruthy();
-    const projection = screen.getByText(/"kind": "cash_flow_snapshot"/i);
-    expect(projection.props.children).not.toContain("currentCashMinor");
+    const cashFlowSnapshots = screen.getAllByText(/"kind": "cash_flow_snapshot"/i);
+    expect(cashFlowSnapshots).toHaveLength(2);
+    const projection = cashFlowSnapshots.find(
+      (candidate) => !String(candidate.props.children).includes("currentCashMinor")
+    );
+    expect(projection).toBeTruthy();
+    expect(projection?.props.children).not.toContain("currentCashMinor");
     expect(screen.getByText("Authorized record comparison — not AI input")).toBeTruthy();
     expect(screen.getByText(/"currentCashMinor": 987654/)).toBeTruthy();
     expect(
