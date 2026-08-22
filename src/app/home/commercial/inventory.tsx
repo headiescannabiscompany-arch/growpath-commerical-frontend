@@ -6,6 +6,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View
 } from "react-native";
@@ -20,6 +21,11 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import { BusinessInventoryImportPanel } from "@/components/inventory/BusinessInventoryImportPanel";
+import { BusinessInventoryAlerts } from "@/components/inventory/BusinessInventoryAlerts";
+import { getBusinessInventoryAuditCsv } from "@/api/businessInventory";
+import { exportCsvContent, exportToCsv } from "@/utils/exportToCsv";
+import { groupInventoryQuantities } from "@/utils/inventoryQuantityGroups";
 
 type AnyRec = Record<string, any>;
 
@@ -46,15 +52,17 @@ function pickSubtitle(x: AnyRec): string {
   const cat = x?.category ?? "";
   const type = x?.itemType ?? x?.type ?? "";
   const location = x?.location ?? x?.storageLocation ?? "";
+  const vendor = x?.vendor ?? "";
   const a = `On hand: ${String(qty)}${unit ? ` ${unit}` : ""}`;
   const b = cat ? `Category: ${String(cat)}` : "";
   const c = type ? `Type: ${String(type)}` : "";
   const d = location ? `Location: ${String(location)}` : "";
-  return [a, b, c, d].filter(Boolean).join(" -  ");
+  const e = vendor ? `Vendor: ${String(vendor)}` : "";
+  return [a, b, c, d, e].filter(Boolean).join(" -  ");
 }
 
 function quantityOf(x: AnyRec): number {
-  const value = x?.qty ?? x?.quantity ?? x?.onHand ?? x?.count ?? 0;
+  const value = x?.qty ?? x?.quantity ?? x?.quantityOnHand ?? x?.onHand ?? x?.count ?? 0;
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
 }
@@ -65,6 +73,8 @@ function reorderPointOf(x: AnyRec): number {
 }
 
 function stockStatus(x: AnyRec): "out" | "low" | "ok" {
+  if (x?.alerts?.outOfStock) return "out";
+  if (x?.alerts?.lowStock) return "low";
   const explicit = String(x?.status || "").toLowerCase();
   if (explicit === "out_of_stock") return "out";
   if (explicit === "low_stock") return "low";
@@ -74,6 +84,23 @@ function stockStatus(x: AnyRec): "out" | "low" | "ok" {
   if (quantity <= 0) return "out";
   if (reorderPoint > 0 && quantity <= reorderPoint) return "low";
   return "ok";
+}
+
+function matchesInventorySearch(item: AnyRec, normalizedQuery: string) {
+  if (!normalizedQuery) return true;
+  return [
+    item?.sku,
+    item?.name,
+    item?.category,
+    item?.vendor,
+    item?.location,
+    item?.storageLocation,
+    item?.locationId
+  ].some((value) =>
+    String(value ?? "")
+      .toLowerCase()
+      .includes(normalizedQuery)
+  );
 }
 
 export default function CommercialInventoryRoute() {
@@ -86,9 +113,12 @@ export default function CommercialInventoryRoute() {
   const mapApiError = useApiErrorHandler();
 
   const [items, setItems] = useState<AnyRec[]>([]);
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [exportingAudit, setExportingAudit] = useState(false);
+  const [auditFeedback, setAuditFeedback] = useState("");
   const loadInFlightRef = useRef(false);
 
   const load = useCallback(
@@ -137,13 +167,50 @@ export default function CommercialInventoryRoute() {
     }, [ent?.ready, ent?.mode, load])
   );
 
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredItems = useMemo(
+    () => items.filter((item) => matchesInventorySearch(item, normalizedQuery)),
+    [items, normalizedQuery]
+  );
   const sorted = useMemo(() => {
     const rank = { out: 0, low: 1, ok: 2 } as const;
-    return [...items].sort((a, b) => rank[stockStatus(a)] - rank[stockStatus(b)]);
-  }, [items]);
+    return [...filteredItems].sort((a, b) => rank[stockStatus(a)] - rank[stockStatus(b)]);
+  }, [filteredItems]);
   const outOfStock = items.filter((item) => stockStatus(item) === "out").length;
   const lowStock = items.filter((item) => stockStatus(item) === "low").length;
-  const totalQuantity = items.reduce((sum, item) => sum + quantityOf(item), 0);
+  const quantityGroups = useMemo(() => groupInventoryQuantities(items), [items]);
+
+  const exportCurrent = useCallback(async () => {
+    try {
+      await exportToCsv("growpath-commercial-inventory", items, [
+        { key: "sku", label: "SKU" },
+        { key: "name", label: "Name" },
+        { key: "quantity", label: "Quantity" },
+        { key: "unit", label: "Unit" },
+        { key: "status", label: "Status" },
+        { key: "location", label: "Location" },
+        { key: "reorderPoint", label: "Reorder point" },
+        { key: "updatedAt", label: "Updated at" }
+      ]);
+    } catch (caught) {
+      setError(caught);
+    }
+  }, [items]);
+
+  const exportFullAudit = useCallback(async () => {
+    if (exportingAudit) return;
+    setExportingAudit(true);
+    setAuditFeedback("");
+    try {
+      const csv = await getBusinessInventoryAuditCsv({});
+      await exportCsvContent("growpath-inventory-audit", csv);
+      setAuditFeedback("Full inventory audit CSV is ready.");
+    } catch (caught) {
+      setError(mapApiError(caught) ?? caught);
+    } finally {
+      setExportingAudit(false);
+    }
+  }, [exportingAudit, mapApiError]);
 
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") return null;
@@ -172,6 +239,28 @@ export default function CommercialInventoryRoute() {
           </Text>
           <View style={styles.headerActions}>
             <Text style={styles.muted}>{items.length} items</Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Export commercial inventory full audit CSV"
+              accessibilityState={{ disabled: exportingAudit, busy: exportingAudit }}
+              disabled={exportingAudit}
+              onPress={exportFullAudit}
+              style={[styles.createBtn, exportingAudit && styles.disabled]}
+            >
+              <Text style={styles.createBtnText}>
+                {exportingAudit ? "Preparing…" : "Full Audit CSV"}
+              </Text>
+            </TouchableOpacity>
+            {items.length ? (
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Export commercial inventory CSV"
+                onPress={exportCurrent}
+                style={styles.createBtn}
+              >
+                <Text style={styles.createBtnText}>Export CSV</Text>
+              </TouchableOpacity>
+            ) : null}
             {canCreate ? (
               <TouchableOpacity
                 accessibilityRole="button"
@@ -185,6 +274,12 @@ export default function CommercialInventoryRoute() {
             ) : null}
           </View>
         </View>
+
+        {auditFeedback ? (
+          <Text accessibilityLiveRegion="polite" style={styles.auditFeedback}>
+            {auditFeedback}
+          </Text>
+        ) : null}
 
         {loading ? (
           <View
@@ -214,10 +309,12 @@ export default function CommercialInventoryRoute() {
             </Text>
             <Text style={styles.summaryLabel}>low stock</Text>
           </View>
-          <View>
-            <Text style={styles.summaryValue}>{totalQuantity}</Text>
-            <Text style={styles.summaryLabel}>units on hand</Text>
-          </View>
+          {quantityGroups.map((group) => (
+            <View key={group.unit.toLocaleLowerCase()}>
+              <Text style={styles.summaryValue}>{group.quantity}</Text>
+              <Text style={styles.summaryLabel}>{group.unit} on hand</Text>
+            </View>
+          ))}
         </View>
 
         <View style={styles.guideCard}>
@@ -234,6 +331,27 @@ export default function CommercialInventoryRoute() {
         <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Inventory records
         </Text>
+        <TextInput
+          accessibilityLabel="Search commercial inventory"
+          autoCapitalize="none"
+          autoCorrect={false}
+          onChangeText={setQuery}
+          placeholder="Search SKU, name, category, vendor, or location"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
+          style={styles.searchInput}
+          value={query}
+        />
+        {normalizedQuery && items.length ? (
+          <Text accessibilityLiveRegion="polite" style={styles.muted}>
+            Showing {sorted.length} of {items.length} inventory records.
+          </Text>
+        ) : null}
+        <BusinessInventoryImportPanel
+          canWrite={canCreate}
+          onApplied={() => load({ refresh: true })}
+          workspace={{}}
+        />
         <FlatList
           data={sorted}
           keyExtractor={(it, idx) => pickId(it) || String(idx)}
@@ -250,11 +368,26 @@ export default function CommercialInventoryRoute() {
           ListEmptyComponent={
             !loading && !error ? (
               <View style={styles.empty}>
-                <Text style={styles.emptyTitle}>No inventory support records yet</Text>
-                <Text style={styles.muted}>
-                  Create a stock support record to track quantities, reorder points,
-                  suppliers, and product links.
-                </Text>
+                {normalizedQuery && items.length ? (
+                  <>
+                    <Text style={styles.emptyTitle}>
+                      No inventory records match “{query.trim()}”
+                    </Text>
+                    <Text style={styles.muted}>
+                      Try another SKU, name, category, vendor, or location.
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.emptyTitle}>
+                      No inventory support records yet
+                    </Text>
+                    <Text style={styles.muted}>
+                      Create a stock support record to track quantities, reorder points,
+                      suppliers, and product links.
+                    </Text>
+                  </>
+                )}
               </View>
             ) : null
           }
@@ -297,6 +430,16 @@ export default function CommercialInventoryRoute() {
                       {subtitle}
                     </Text>
                   ) : null}
+                  {item.authorizedUnitCost !== null &&
+                  item.authorizedUnitCost !== undefined &&
+                  Number.isFinite(Number(item.authorizedUnitCost)) ? (
+                    <Text style={styles.privateCost}>
+                      Authorized unit cost: {item.currency ? `${item.currency} ` : ""}
+                      {Number(item.authorizedUnitCost)}
+                    </Text>
+                  ) : item.currency ? (
+                    <Text style={styles.privateCost}>Currency: {item.currency}</Text>
+                  ) : null}
                   <View style={styles.badgeRow}>
                     <Text
                       style={[
@@ -313,6 +456,7 @@ export default function CommercialInventoryRoute() {
                           : "out of stock"}
                     </Text>
                   </View>
+                  <BusinessInventoryAlerts compact item={item} />
                 </View>
                 <Text style={styles.chev}>{">"}</Text>
               </Pressable>
@@ -331,6 +475,8 @@ export function createCommercialInventoryStyles(palette: ThemePalette) {
     h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
     sectionTitle: { color: palette.text, fontSize: 18, fontWeight: "900" },
     muted: { color: palette.textMuted },
+    auditFeedback: { color: palette.success, fontWeight: "800" },
+    privateCost: { color: palette.text, fontSize: 12, fontWeight: "800" },
 
     headerActions: {
       alignItems: "center",
@@ -380,6 +526,16 @@ export function createCommercialInventoryStyles(palette: ThemePalette) {
       fontSize: 13,
       fontWeight: "700",
       lineHeight: 19
+    },
+    searchInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 10
     },
 
     list: { gap: 10, paddingVertical: 6 },

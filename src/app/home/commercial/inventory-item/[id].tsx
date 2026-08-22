@@ -19,6 +19,15 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import {
+  BusinessInventoryLot,
+  BusinessInventoryMovement,
+  BusinessInventoryMovementPage,
+  mergeBusinessInventoryMovements
+} from "@/api/businessInventory";
+import { BusinessInventoryOperations } from "@/components/inventory/BusinessInventoryOperations";
+import { BusinessInventoryAlerts } from "@/components/inventory/BusinessInventoryAlerts";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 
 type AnyRec = Record<string, any>;
 
@@ -51,10 +60,6 @@ function draftFromItem(item: AnyRec | null) {
   return {
     name: String(item?.name ?? ""),
     sku: String(item?.sku ?? ""),
-    quantity:
-      item?.quantity === undefined || item?.quantity === null
-        ? ""
-        : String(item.quantity),
     unit: String(item?.unit ?? ""),
     reorderPoint:
       item?.reorderPoint === undefined || item?.reorderPoint === null
@@ -62,13 +67,14 @@ function draftFromItem(item: AnyRec | null) {
         : String(item.reorderPoint),
     vendor: String(item?.vendor ?? ""),
     category: String(item?.category ?? ""),
-    itemType: String(item?.itemType ?? item?.type ?? ""),
-    location: String(item?.location ?? item?.storageLocation ?? ""),
-    linkedProductId: String(item?.linkedProductId ?? ""),
-    linkedIngredientId: String(item?.linkedIngredientId ?? ""),
-    linkedGeneticsId: String(item?.linkedGeneticsId ?? ""),
-    linkedGrowId: String(item?.linkedTrialId ?? item?.linkedGrowId ?? ""),
-    status: String(item?.status ?? "active"),
+    authorizedUnitCost:
+      item?.authorizedUnitCost === undefined || item?.authorizedUnitCost === null
+        ? ""
+        : String(item.authorizedUnitCost),
+    currency: String(item?.currency ?? ""),
+    sourceFreshnessAt: /^\d{4}-\d{2}-\d{2}/.test(String(item?.sourceFreshnessAt ?? ""))
+      ? String(item?.sourceFreshnessAt).slice(0, 10)
+      : "",
     notes: String(item?.notes ?? "")
   };
 }
@@ -87,6 +93,12 @@ export default function CommercialInventoryItemDetailRoute() {
   const mapApiError = useApiErrorHandler();
 
   const [item, setItem] = useState<AnyRec | null>(null);
+  const [lots, setLots] = useState<BusinessInventoryLot[]>([]);
+  const [movements, setMovements] = useState<BusinessInventoryMovement[]>([]);
+  const [movementPage, setMovementPage] = useState<BusinessInventoryMovementPage | null>(
+    null
+  );
+  const [loadingOlderMovements, setLoadingOlderMovements] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -121,6 +133,19 @@ export default function CommercialInventoryItemDetailRoute() {
         const res = await apiRequest(path, { method: "GET" });
         const nextItem = res?.item ?? res ?? null;
         setItem(nextItem);
+        setLots(Array.isArray(res?.lots) ? res.lots : []);
+        setMovements(Array.isArray(res?.movements) ? res.movements : []);
+        setMovementPage(
+          res?.movementPage
+            ? {
+                limit: Number(res.movementPage.limit || 0),
+                hasMore: Boolean(res.movementPage.hasMore),
+                nextCursor: res.movementPage.nextCursor
+                  ? String(res.movementPage.nextCursor)
+                  : null
+              }
+            : null
+        );
         setDraft(draftFromItem(nextItem));
       } catch (e) {
         setLoadError(mapApiError(e) ?? e);
@@ -132,6 +157,41 @@ export default function CommercialInventoryItemDetailRoute() {
     },
     [id, mapApiError]
   );
+
+  const loadOlderMovements = useCallback(async () => {
+    const cursor = String(movementPage?.nextCursor || "").trim();
+    if (!id || !movementPage?.hasMore || !cursor || loadingOlderMovements) return;
+
+    setLoadingOlderMovements(true);
+    setLoadError(null);
+    try {
+      const basePath =
+        (endpoints as any)?.commercial?.inventoryItem?.(id) ??
+        (endpoints as any)?.inventoryItemGlobal?.(id) ??
+        `/api/inventory/${encodeURIComponent(id)}`;
+      const res = await apiRequest(
+        `${basePath}?movementLimit=50&movementCursor=${encodeURIComponent(cursor)}`,
+        { method: "GET" }
+      );
+      const older = Array.isArray(res?.movements) ? res.movements : [];
+      setMovements((current) => mergeBusinessInventoryMovements(current, older));
+      setMovementPage(
+        res?.movementPage
+          ? {
+              limit: Number(res.movementPage.limit || 0),
+              hasMore: Boolean(res.movementPage.hasMore),
+              nextCursor: res.movementPage.nextCursor
+                ? String(res.movementPage.nextCursor)
+                : null
+            }
+          : null
+      );
+    } catch (caught) {
+      setLoadError(mapApiError(caught) ?? caught);
+    } finally {
+      setLoadingOlderMovements(false);
+    }
+  }, [id, loadingOlderMovements, mapApiError, movementPage]);
 
   useEffect(() => {
     if (!ent?.ready) return;
@@ -148,20 +208,33 @@ export default function CommercialInventoryItemDetailRoute() {
 
   const save = useCallback(async () => {
     if (!id || !item || !canEdit || saveInFlightRef.current) return;
-    const quantityText = draft.quantity.trim();
-    const quantity = quantityText === "" ? undefined : Number(quantityText);
-    if (quantity !== undefined && (!Number.isFinite(quantity) || quantity < 0)) {
-      setSaveError(new Error("Quantity must be a number that is zero or greater."));
+    if (!draft.name.trim() || !draft.sku.trim() || !draft.unit.trim()) {
+      setSaveError(new Error("Name, SKU, and stock-counting unit are required."));
       setFeedback("");
       return;
     }
     const reorderText = draft.reorderPoint.trim();
-    const reorderPoint = reorderText === "" ? undefined : Number(reorderText);
-    if (
-      reorderPoint !== undefined &&
-      (!Number.isFinite(reorderPoint) || reorderPoint < 0)
-    ) {
+    const reorderPoint = reorderText === "" ? null : Number(reorderText);
+    if (reorderPoint !== null && (!Number.isFinite(reorderPoint) || reorderPoint < 0)) {
       setSaveError(new Error("Reorder point must be a number that is zero or greater."));
+      setFeedback("");
+      return;
+    }
+    const costText = draft.authorizedUnitCost.trim();
+    const authorizedUnitCost = costText === "" ? null : Number(costText);
+    if (
+      authorizedUnitCost !== null &&
+      (!Number.isFinite(authorizedUnitCost) || authorizedUnitCost < 0)
+    ) {
+      setSaveError(
+        new Error("Authorized unit cost must be a number that is zero or greater.")
+      );
+      setFeedback("");
+      return;
+    }
+    const currency = draft.currency.trim().toLowerCase();
+    if (currency && !/^[a-z]{3}$/.test(currency)) {
+      setSaveError(new Error("Currency must be a three-letter code such as USD."));
       setFeedback("");
       return;
     }
@@ -176,24 +249,17 @@ export default function CommercialInventoryItemDetailRoute() {
         `/api/inventory/${encodeURIComponent(id)}`;
 
       const payload: AnyRec = {
-        name: draft.name.trim() || undefined,
-        sku: draft.sku.trim() || undefined,
-        unit: draft.unit.trim() || undefined,
-        vendor: draft.vendor.trim() || undefined,
-        category: draft.category.trim() || undefined,
-        itemType: draft.itemType.trim() || undefined,
-        location: draft.location.trim() || undefined,
-        linkedProductId: draft.linkedProductId.trim() || undefined,
-        linkedIngredientId: draft.linkedIngredientId.trim() || undefined,
-        linkedGeneticsId: draft.linkedGeneticsId.trim() || undefined,
-        linkedTrialId: draft.linkedGrowId.trim() || undefined,
-        linkedGrowId: draft.linkedGrowId.trim() || undefined,
-        status: draft.status.trim() || "active",
-        notes: draft.notes.trim() || undefined
+        name: draft.name.trim(),
+        sku: draft.sku.trim(),
+        unit: draft.unit.trim(),
+        reorderPoint,
+        vendor: draft.vendor.trim(),
+        category: draft.category.trim(),
+        authorizedUnitCost,
+        currency,
+        sourceFreshnessAt: draft.sourceFreshnessAt || null,
+        notes: draft.notes.trim()
       };
-
-      if (quantity !== undefined) payload.quantity = quantity;
-      if (reorderPoint !== undefined) payload.reorderPoint = reorderPoint;
 
       const res = await apiRequest(path, {
         method: "PATCH",
@@ -215,7 +281,9 @@ export default function CommercialInventoryItemDetailRoute() {
   if (!ent?.ready) return null;
   if (ent.mode !== "commercial") return null;
 
-  const quantity = Number(item?.quantity ?? item?.qty ?? item?.onHand ?? 0);
+  const quantity = Number(
+    item?.quantity ?? item?.quantityOnHand ?? item?.qty ?? item?.onHand ?? 0
+  );
   const reorderPoint = Number(item?.reorderPoint ?? 0);
   const stockLabel =
     String(item?.status || "").toLowerCase() === "out_of_stock" || quantity <= 0
@@ -304,8 +372,20 @@ export default function CommercialInventoryItemDetailRoute() {
             </Text>
             {item.vendor || item.category ? (
               <Text style={styles.muted}>
-                {[item.vendor, item.category].filter(Boolean).join(" | ")}
+                {[item.vendor ? `Vendor: ${item.vendor}` : "", item.category]
+                  .filter(Boolean)
+                  .join(" | ")}
               </Text>
+            ) : null}
+            {item.authorizedUnitCost !== null &&
+            item.authorizedUnitCost !== undefined &&
+            Number.isFinite(Number(item.authorizedUnitCost)) ? (
+              <Text style={styles.privateCost}>
+                Authorized unit cost: {item.currency ? `${item.currency} ` : ""}
+                {Number(item.authorizedUnitCost)}
+              </Text>
+            ) : item.currency ? (
+              <Text style={styles.privateCost}>Currency: {item.currency}</Text>
             ) : null}
             {item.itemType || item.location || item.storageLocation ? (
               <Text style={styles.muted}>
@@ -315,6 +395,23 @@ export default function CommercialInventoryItemDetailRoute() {
               </Text>
             ) : null}
           </View>
+        ) : null}
+
+        {item ? <BusinessInventoryAlerts item={item} /> : null}
+
+        {item ? (
+          <BusinessInventoryOperations
+            canWrite={canEdit}
+            itemId={id}
+            itemQuantity={Number.isFinite(quantity) ? quantity : 0}
+            lots={lots}
+            loadingOlderMovements={loadingOlderMovements}
+            movements={movements}
+            hasMoreMovements={Boolean(movementPage?.hasMore)}
+            onLoadOlderMovements={loadOlderMovements}
+            onReload={() => load({ refresh: true })}
+            workspace={{}}
+          />
         ) : null}
 
         {item ? (
@@ -411,6 +508,10 @@ export default function CommercialInventoryItemDetailRoute() {
                   </Text>
                 ) : (
                   <View style={styles.form}>
+                    <Text style={styles.auditOnlyHelp}>
+                      Quantity changes use Inventory movement above so each stock change
+                      keeps its reason and audit history.
+                    </Text>
                     <Text style={styles.label}>Name</Text>
                     <TextInput
                       value={draft.name}
@@ -431,18 +532,6 @@ export default function CommercialInventoryItemDetailRoute() {
                       placeholder="SKU"
                       placeholderTextColor={palette.textMuted}
                       accessibilityLabel="Commercial detail item SKU"
-                    />
-
-                    <Text style={styles.label}>Quantity</Text>
-                    <TextInput
-                      value={draft.quantity}
-                      editable={!saving}
-                      onChangeText={(v) => setDraft((d) => ({ ...d, quantity: v }))}
-                      style={styles.input}
-                      placeholder="0"
-                      placeholderTextColor={palette.textMuted}
-                      keyboardType="numeric"
-                      accessibilityLabel="Commercial detail item quantity"
                     />
 
                     <Text style={styles.label}>Unit</Text>
@@ -490,85 +579,46 @@ export default function CommercialInventoryItemDetailRoute() {
                       accessibilityLabel="Commercial detail category"
                     />
 
-                    <Text style={styles.label}>Item type</Text>
+                    <Text style={styles.label}>Authorized unit cost</Text>
                     <TextInput
-                      value={draft.itemType}
-                      editable={!saving}
-                      onChangeText={(v) => setDraft((d) => ({ ...d, itemType: v }))}
-                      style={styles.input}
-                      placeholder="product, ingredient, packaging, plant, genetics..."
-                      placeholderTextColor={palette.textMuted}
-                      accessibilityLabel="Commercial detail item type"
-                    />
-
-                    <Text style={styles.label}>Storage location</Text>
-                    <TextInput
-                      value={draft.location}
-                      editable={!saving}
-                      onChangeText={(v) => setDraft((d) => ({ ...d, location: v }))}
-                      style={styles.input}
-                      placeholder="Storage location"
-                      placeholderTextColor={palette.textMuted}
-                      accessibilityLabel="Commercial detail location"
-                    />
-
-                    <Text style={styles.sectionLabel}>Optional links</Text>
-                    <TextInput
-                      value={draft.linkedProductId}
+                      value={draft.authorizedUnitCost}
                       editable={!saving}
                       onChangeText={(v) =>
-                        setDraft((d) => ({ ...d, linkedProductId: v }))
+                        setDraft((d) => ({ ...d, authorizedUnitCost: v }))
                       }
                       style={styles.input}
-                      placeholder="Linked product ID"
+                      placeholder="Known reviewed unit cost"
                       placeholderTextColor={palette.textMuted}
-                      autoCapitalize="none"
-                      accessibilityLabel="Commercial detail linked product"
-                    />
-                    <TextInput
-                      value={draft.linkedIngredientId}
-                      editable={!saving}
-                      onChangeText={(v) =>
-                        setDraft((d) => ({ ...d, linkedIngredientId: v }))
-                      }
-                      style={styles.input}
-                      placeholder="Linked ingredient ID"
-                      placeholderTextColor={palette.textMuted}
-                      autoCapitalize="none"
-                      accessibilityLabel="Commercial detail linked ingredient"
-                    />
-                    <TextInput
-                      value={draft.linkedGeneticsId}
-                      editable={!saving}
-                      onChangeText={(v) =>
-                        setDraft((d) => ({ ...d, linkedGeneticsId: v }))
-                      }
-                      style={styles.input}
-                      placeholder="Linked genetics ID"
-                      placeholderTextColor={palette.textMuted}
-                      autoCapitalize="none"
-                      accessibilityLabel="Commercial detail linked genetics"
-                    />
-                    <TextInput
-                      value={draft.linkedGrowId}
-                      editable={!saving}
-                      onChangeText={(v) => setDraft((d) => ({ ...d, linkedGrowId: v }))}
-                      style={styles.input}
-                      placeholder="Linked product trial evidence run ID"
-                      placeholderTextColor={palette.textMuted}
-                      autoCapitalize="none"
-                      accessibilityLabel="Commercial detail linked product trial evidence run"
+                      keyboardType="decimal-pad"
+                      accessibilityLabel="Commercial detail authorized unit cost"
                     />
 
-                    <Text style={styles.label}>Status</Text>
+                    <Text style={styles.label}>Currency</Text>
                     <TextInput
-                      value={draft.status}
+                      value={draft.currency}
                       editable={!saving}
-                      onChangeText={(v) => setDraft((d) => ({ ...d, status: v }))}
+                      onChangeText={(v) => setDraft((d) => ({ ...d, currency: v }))}
                       style={styles.input}
-                      placeholder="active, low_stock, out_of_stock, archived"
+                      placeholder="e.g., USD"
                       placeholderTextColor={palette.textMuted}
-                      accessibilityLabel="Commercial detail status"
+                      autoCapitalize="none"
+                      accessibilityLabel="Commercial detail currency"
+                    />
+
+                    <CalendarDateField
+                      accessibilityLabel="Commercial detail source freshness date"
+                      disabled={saving}
+                      label="Source freshness date"
+                      maximumDate={new Date().toISOString().slice(0, 10)}
+                      onChange={(value) =>
+                        setDraft((current) => ({
+                          ...current,
+                          sourceFreshnessAt: value
+                        }))
+                      }
+                      optional
+                      placeholder="When this source or cost was last verified"
+                      value={draft.sourceFreshnessAt}
                     />
 
                     <Text style={styles.label}>Notes</Text>
@@ -659,6 +709,13 @@ export function createCommercialInventoryItemDetailStyles(palette: ThemePalette)
     headerRow: { gap: 4 },
     h1: { color: palette.text, fontSize: 22, fontWeight: "900" },
     muted: { color: palette.textMuted },
+    privateCost: { color: palette.text, fontWeight: "800" },
+    auditOnlyHelp: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 17
+    },
     workflowText: {
       color: palette.textMuted,
       fontSize: 13,

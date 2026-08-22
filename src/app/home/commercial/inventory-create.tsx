@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,132 +7,15 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 
 import { apiRequest } from "@/api/apiRequest";
-import {
-  fetchProducts,
-  fetchProductTrialEvidenceRuns,
-  type CommercialProduct,
-  type ProductTrialEvidenceRun
-} from "@/api/commercialWorkflows";
 import { endpoints } from "@/api/endpoints";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-
-type RecordChoice = {
-  id: string;
-  label: string;
-};
-
-const ITEM_TYPE_OPTIONS = [
-  ["product", "Product"],
-  ["ingredient", "Ingredient"],
-  ["packaging", "Packaging"],
-  ["plant", "Plant"],
-  ["genetics", "Genetics"],
-  ["equipment", "Equipment"],
-  ["course", "Course"],
-  ["service", "Service"],
-  ["retail", "Retail item"]
-] as const;
-
-function recordChoice(
-  record: Record<string, any>,
-  index: number,
-  labelKeys: string[],
-  fallback: string
-): RecordChoice | null {
-  const id = String(record.id ?? record._id ?? "").trim();
-  if (!id) return null;
-  const label =
-    labelKeys.map((key) => String(record[key] ?? "").trim()).find(Boolean) ||
-    `${fallback} ${index + 1}`;
-  return { id, label };
-}
-
-function RecordPicker({
-  choices,
-  createHref,
-  createLabel,
-  disabled = false,
-  label,
-  onChange,
-  selectedId
-}: {
-  choices: RecordChoice[];
-  createHref: string;
-  createLabel: string;
-  disabled?: boolean;
-  label: string;
-  onChange: (id: string) => void;
-  selectedId: string;
-}) {
-  const { palette } = useAppTheme();
-  const styles = useMemo(() => createCommercialInventoryCreateStyles(palette), [palette]);
-
-  return (
-    <View style={styles.recordPicker}>
-      <Text style={styles.sectionLabel}>{label}</Text>
-      {choices.length ? (
-        <View
-          accessibilityRole="radiogroup"
-          accessibilityLabel={`${label} choices`}
-          style={styles.choiceRow}
-        >
-          <Pressable
-            accessibilityRole="radio"
-            accessibilityLabel={`${label}: Not linked yet`}
-            accessibilityState={{ checked: !selectedId, disabled }}
-            disabled={disabled}
-            onPress={() => onChange("")}
-            style={[
-              styles.choice,
-              !selectedId && styles.choiceSelected,
-              disabled && styles.disabled
-            ]}
-          >
-            <Text style={styles.choiceText}>Not linked yet</Text>
-          </Pressable>
-          {choices.slice(0, 8).map((item) => (
-            <Pressable
-              key={`${label}-${item.id}`}
-              accessibilityRole="radio"
-              accessibilityLabel={`${label}: ${item.label}`}
-              accessibilityState={{ checked: selectedId === item.id, disabled }}
-              disabled={disabled}
-              onPress={() => onChange(item.id)}
-              style={[
-                styles.choice,
-                selectedId === item.id && styles.choiceSelected,
-                disabled && styles.disabled
-              ]}
-            >
-              <Text style={styles.choiceText}>{item.label}</Text>
-            </Pressable>
-          ))}
-        </View>
-      ) : (
-        <View style={styles.emptyPicker}>
-          <Text style={styles.helpText}>No saved {label.toLowerCase()} records yet.</Text>
-          <Link href={createHref as any} asChild>
-            <Pressable
-              accessibilityRole="link"
-              accessibilityLabel={createLabel}
-              accessibilityState={{ disabled }}
-              disabled={disabled}
-              style={[styles.choice, disabled && styles.disabled]}
-            >
-              <Text style={styles.choiceText}>{createLabel}</Text>
-            </Pressable>
-          </Link>
-        </View>
-      )}
-    </View>
-  );
-}
 
 export default function CommercialInventoryCreateRoute() {
   const { palette } = useAppTheme();
@@ -145,21 +28,13 @@ export default function CommercialInventoryCreateRoute() {
   const [reorderPoint, setReorderPoint] = useState("");
   const [vendor, setVendor] = useState("");
   const [category, setCategory] = useState("");
-  const [itemType, setItemType] = useState("");
   const [location, setLocation] = useState("");
-  const [linkedProductId, setLinkedProductId] = useState("");
-  const [linkedIngredientId, setLinkedIngredientId] = useState("");
-  const [linkedGeneticsId, setLinkedGeneticsId] = useState("");
-  const [linkedGrowId, setLinkedGrowId] = useState("");
+  const [authorizedUnitCost, setAuthorizedUnitCost] = useState("");
+  const [currency, setCurrency] = useState("");
+  const [sourceFreshnessAt, setSourceFreshnessAt] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
-  const [products, setProducts] = useState<CommercialProduct[]>([]);
-  const [evidenceRuns, setEvidenceRuns] = useState<ProductTrialEvidenceRun[]>([]);
-  const [linkOptionsLoading, setLinkOptionsLoading] = useState(true);
-  const [linkOptionsError, setLinkOptionsError] = useState("");
-  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const loadInFlightRef = useRef(false);
   const saveInFlightRef = useRef(false);
 
   const path = useMemo(
@@ -172,47 +47,12 @@ export default function CommercialInventoryCreateRoute() {
 
   const canSave = name.trim().length > 1 && unit.trim().length > 0 && !saving;
 
-  const loadLinkOptions = useCallback(async () => {
-    if (loadInFlightRef.current) return;
-    loadInFlightRef.current = true;
-    setLinkOptionsLoading(true);
-    setLinkOptionsError("");
-    try {
-      const [nextProducts, nextEvidenceRuns] = await Promise.all([
-        fetchProducts(),
-        fetchProductTrialEvidenceRuns()
-      ]);
-      setProducts(nextProducts);
-      setEvidenceRuns(nextEvidenceRuns);
-    } catch (error: any) {
-      setProducts([]);
-      setEvidenceRuns([]);
-      setLinkOptionsError(
-        String(error?.message || "Saved record choices could not be loaded.")
-      );
-    } finally {
-      loadInFlightRef.current = false;
-      setLinkOptionsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadLinkOptions();
-  }, [loadLinkOptions]);
-
-  const productChoices = products
-    .map((record, index) => recordChoice(record, index, ["name"], "Product"))
-    .filter((item): item is RecordChoice => !!item);
-  const evidenceRunChoices = evidenceRuns
-    .map((record, index) =>
-      recordChoice(record, index, ["name", "growName", "cultivar"], "Evidence run")
-    )
-    .filter((item): item is RecordChoice => !!item);
-
   const create = async () => {
     if (!canSave || saveInFlightRef.current) return;
     const quantityNumber = Number(qty);
     const reorderPointNumber = Number(reorderPoint);
+    const costNumber = Number(authorizedUnitCost);
+    const normalizedCurrency = currency.trim().toLowerCase();
 
     if (!qty.trim() || !Number.isFinite(quantityNumber) || quantityNumber < 0) {
       setSaveError("Quantity must be a number that is zero or greater.");
@@ -223,6 +63,18 @@ export default function CommercialInventoryCreateRoute() {
       (!Number.isFinite(reorderPointNumber) || reorderPointNumber < 0)
     ) {
       setSaveError("Reorder point must be a number that is zero or greater.");
+      return;
+    }
+    if (authorizedUnitCost.trim() && (!Number.isFinite(costNumber) || costNumber < 0)) {
+      setSaveError("Authorized unit cost must be a number that is zero or greater.");
+      return;
+    }
+    if (normalizedCurrency && !/^[a-z]{3}$/.test(normalizedCurrency)) {
+      setSaveError("Currency must be a three-letter code such as USD.");
+      return;
+    }
+    if (authorizedUnitCost.trim() && !normalizedCurrency) {
+      setSaveError("Choose a currency when recording an authorized unit cost.");
       return;
     }
 
@@ -240,13 +92,10 @@ export default function CommercialInventoryCreateRoute() {
           reorderPoint: reorderPoint.trim() ? reorderPointNumber : 0,
           vendor: vendor.trim() || undefined,
           category: category.trim() || undefined,
-          itemType: itemType.trim() || undefined,
-          location: location.trim() || undefined,
-          linkedProductId: linkedProductId.trim() || undefined,
-          linkedIngredientId: linkedIngredientId.trim() || undefined,
-          linkedGeneticsId: linkedGeneticsId.trim() || undefined,
-          linkedTrialId: linkedGrowId.trim() || undefined,
-          linkedGrowId: linkedGrowId.trim() || undefined,
+          locationId: location.trim() || undefined,
+          authorizedUnitCost: authorizedUnitCost.trim() ? costNumber : null,
+          currency: normalizedCurrency || undefined,
+          sourceFreshnessAt: sourceFreshnessAt || null,
           notes: notes.trim() || undefined
         }
       });
@@ -269,10 +118,10 @@ export default function CommercialInventoryCreateRoute() {
           <Text style={styles.kicker}>Commercial workspace</Text>
           <Text style={styles.h1}>Create Inventory Support Record</Text>
           <Text style={styles.helpText}>
-            Commercial inventory support tracks stock behind products, batches/lots,
-            plants, ingredients, packaging, genetics, equipment, courses, services, and
-            retail items. Product records still explain and sell the item; inventory
-            support tracks quantity, cost, supplier, and location.
+            Track a real stock record by name, SKU, quantity, counting unit, reorder
+            point, supplier, category, and storage location. Public product and evidence
+            links stay in their own workflows until a verified inventory-link contract is
+            available.
           </Text>
         </View>
       }
@@ -343,171 +192,50 @@ export default function CommercialInventoryCreateRoute() {
           placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
-        <Text style={styles.sectionLabel}>Item type</Text>
-        <View
-          accessibilityRole="radiogroup"
-          accessibilityLabel="Commercial inventory item type choices"
-          style={styles.choiceRow}
-        >
-          <Pressable
-            accessibilityRole="radio"
-            accessibilityLabel="Commercial inventory item type: Not selected"
-            accessibilityState={{ checked: !itemType, disabled: saving }}
-            disabled={saving}
-            onPress={() => setItemType("")}
-            style={[
-              styles.choice,
-              !itemType && styles.choiceSelected,
-              saving && styles.disabled
-            ]}
-          >
-            <Text style={styles.choiceText}>Not selected</Text>
-          </Pressable>
-          {ITEM_TYPE_OPTIONS.map(([value, label]) => (
-            <Pressable
-              key={value}
-              accessibilityRole="radio"
-              accessibilityLabel={`Commercial inventory item type: ${label}`}
-              accessibilityState={{ checked: itemType === value, disabled: saving }}
-              disabled={saving}
-              onPress={() => setItemType(value)}
-              style={[
-                styles.choice,
-                itemType === value && styles.choiceSelected,
-                saving && styles.disabled
-              ]}
-            >
-              <Text style={styles.choiceText}>{label}</Text>
-            </Pressable>
-          ))}
-        </View>
         <TextInput
           value={location}
           onChangeText={setLocation}
           accessibilityLabel="Commercial inventory item location"
           editable={!saving}
-          placeholder="Storage location"
+          placeholder="Storage location ID"
           placeholderTextColor={palette.textMuted}
           style={styles.input}
         />
-        <Text style={styles.sectionLabel}>Optional links</Text>
-        {linkOptionsLoading ? (
-          <View
-            accessibilityLabel="Loading Commercial inventory saved record choices"
-            accessibilityLiveRegion="polite"
-            accessibilityRole="progressbar"
-            style={styles.progressRow}
-          >
-            <ActivityIndicator color={palette.accent} />
-            <Text style={styles.helpText}>Loading saved record choices...</Text>
-          </View>
-        ) : null}
-        {linkOptionsError ? (
-          <View accessibilityLiveRegion="assertive" style={styles.loadError}>
-            <Text style={styles.errorText}>{linkOptionsError}</Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Retry inventory saved record choices"
-              onPress={loadLinkOptions}
-              style={styles.choice}
-            >
-              <Text style={styles.choiceText}>Retry</Text>
-            </Pressable>
-          </View>
-        ) : null}
-        {!linkOptionsLoading && !linkOptionsError ? (
-          <>
-            <RecordPicker
-              label="Linked product"
-              disabled={saving}
-              choices={productChoices}
-              selectedId={linkedProductId}
-              onChange={setLinkedProductId}
-              createHref="/home/commercial/products/new"
-              createLabel="Create Product"
-            />
-            <RecordPicker
-              label="Linked product trial evidence run"
-              disabled={saving}
-              choices={evidenceRunChoices}
-              selectedId={linkedGrowId}
-              onChange={setLinkedGrowId}
-              createHref="/home/commercial/evidence-runs/new"
-              createLabel="Create Evidence Run"
-            />
-          </>
-        ) : null}
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={
-            showAdvancedFields
-              ? "Hide advanced inventory record fields"
-              : "Show advanced inventory record fields"
-          }
-          accessibilityState={{ expanded: showAdvancedFields }}
+        <Text style={styles.helpText}>
+          Vendor and authorized cost are private workspace records and are not published
+          to Storefront or discovery.
+        </Text>
+        <TextInput
+          value={authorizedUnitCost}
+          onChangeText={setAuthorizedUnitCost}
+          accessibilityLabel="Commercial inventory item authorized unit cost"
+          editable={!saving}
+          placeholder="Authorized unit cost (private, optional)"
+          placeholderTextColor={palette.textMuted}
+          keyboardType="decimal-pad"
+          style={styles.input}
+        />
+        <TextInput
+          value={currency}
+          onChangeText={setCurrency}
+          accessibilityLabel="Commercial inventory item currency"
+          editable={!saving}
+          placeholder="Currency, e.g. USD"
+          placeholderTextColor={palette.textMuted}
+          autoCapitalize="characters"
+          maxLength={3}
+          style={styles.input}
+        />
+        <CalendarDateField
+          accessibilityLabel="Commercial inventory item source freshness date"
           disabled={saving}
-          onPress={() => setShowAdvancedFields((current) => !current)}
-          style={[styles.advancedToggle, saving && styles.disabled]}
-        >
-          <Text style={styles.advancedToggleText}>
-            {showAdvancedFields
-              ? "Hide advanced record fields"
-              : "Use advanced record fields"}
-          </Text>
-        </Pressable>
-        {showAdvancedFields ? (
-          <View style={styles.advancedFields}>
-            <TextInput
-              value={itemType}
-              onChangeText={setItemType}
-              accessibilityLabel="Commercial inventory custom item type"
-              editable={!saving}
-              placeholder="Custom item type"
-              placeholderTextColor={palette.textMuted}
-              style={styles.input}
-            />
-            <TextInput
-              value={linkedProductId}
-              onChangeText={setLinkedProductId}
-              accessibilityLabel="Commercial inventory linked product"
-              editable={!saving}
-              placeholder="Linked product ID"
-              placeholderTextColor={palette.textMuted}
-              autoCapitalize="none"
-              style={styles.input}
-            />
-            <TextInput
-              value={linkedIngredientId}
-              onChangeText={setLinkedIngredientId}
-              accessibilityLabel="Commercial inventory linked ingredient"
-              editable={!saving}
-              placeholder="Linked ingredient ID"
-              placeholderTextColor={palette.textMuted}
-              autoCapitalize="none"
-              style={styles.input}
-            />
-            <TextInput
-              value={linkedGeneticsId}
-              onChangeText={setLinkedGeneticsId}
-              accessibilityLabel="Commercial inventory linked genetics"
-              editable={!saving}
-              placeholder="Linked genetics ID"
-              placeholderTextColor={palette.textMuted}
-              autoCapitalize="none"
-              style={styles.input}
-            />
-            <TextInput
-              value={linkedGrowId}
-              onChangeText={setLinkedGrowId}
-              accessibilityLabel="Commercial inventory linked product trial evidence run"
-              editable={!saving}
-              placeholder="Linked product trial evidence run ID"
-              placeholderTextColor={palette.textMuted}
-              autoCapitalize="none"
-              style={styles.input}
-            />
-          </View>
-        ) : null}
+          label="Source freshness date"
+          maximumDate={new Date().toISOString().slice(0, 10)}
+          onChange={setSourceFreshnessAt}
+          optional
+          placeholder="When this source or cost was last verified"
+          value={sourceFreshnessAt}
+        />
         <TextInput
           value={notes}
           onChangeText={setNotes}

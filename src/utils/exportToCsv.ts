@@ -33,8 +33,9 @@ type CsvExportDeps = {
 
 function optionalExpoFileSystem(): CsvExportDeps["fileSystem"] {
   try {
-    // expo-file-system is available in native Expo apps but is optional for web/unit tests.
-    return typeof require === "function" ? require("expo-file-system") : null;
+    // Expo 54 keeps the imperative cache/write APIs in its supported legacy entrypoint.
+    // Keep the optional require so web builds and unit tests do not need a native module.
+    return typeof require === "function" ? require("expo-file-system/legacy") : null;
   } catch {
     return null;
   }
@@ -47,8 +48,14 @@ function sanitizeFilename(filename: string) {
 
 function csvEscape(value: unknown) {
   if (value === undefined || value === null) return '""';
-  return `"${String(value).replace(/"/g, '""')}"`;
+  let text = String(value);
+  // Spreadsheet apps can execute formula-like string cells. Prefix only strings (not
+  // typed numbers) whose first non-space character is a formula trigger.
+  if (typeof value === "string" && /^\s*[=+\-@]/.test(text)) text = `'${text}`;
+  return `"${text.replace(/"/g, '""')}"`;
 }
+
+const MAX_NATIVE_TEXT_SHARE_CHARACTERS = 64 * 1024;
 
 export function buildCsvContent(rows: any[], columns: CsvColumn[]) {
   const csvRows = [];
@@ -81,6 +88,12 @@ async function shareNativeCsv(
       UTI: "public.comma-separated-values-text"
     });
     return { ok: true, filename, rowCount, method: "native-share-file", uri };
+  }
+
+  if (csvContent.length > MAX_NATIVE_TEXT_SHARE_CHARACTERS) {
+    throw new Error(
+      "File sharing is unavailable on this device, and this CSV is too large to share safely as message text. Try again after enabling the system share service or export from the web app."
+    );
   }
 
   await share.share({
@@ -127,4 +140,41 @@ export async function exportToCsv(
   }
 
   return shareNativeCsv(safeFilename, csvContent, rows.length, deps);
+}
+
+export async function exportCsvContent(
+  filename: string,
+  csvContent: string,
+  deps: CsvExportDeps = {}
+): Promise<CsvExportResult> {
+  const safeFilename = sanitizeFilename(filename);
+  if (!String(csvContent || "").trim()) {
+    return { ok: false, filename: safeFilename, rowCount: 0, method: "empty" };
+  }
+
+  const platformOS = deps.platformOS ?? Platform.OS;
+  const documentRef =
+    deps.document ?? (typeof document !== "undefined" ? document : undefined);
+  const urlRef = deps.url ?? (typeof URL !== "undefined" ? URL : undefined);
+  const blobRef = deps.blob ?? (typeof Blob !== "undefined" ? Blob : undefined);
+
+  if (platformOS === "web" && documentRef && urlRef && blobRef) {
+    const blob = new blobRef([csvContent], { type: "text/csv;charset=utf-8" });
+    const url = urlRef.createObjectURL(blob);
+    const a = documentRef.createElement("a");
+    a.href = url;
+    a.download = `${safeFilename}.csv`;
+    documentRef.body?.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => urlRef.revokeObjectURL(url), 1000);
+    return {
+      ok: true,
+      filename: safeFilename,
+      rowCount: 0,
+      method: "web-download"
+    };
+  }
+
+  return shareNativeCsv(safeFilename, csvContent, 0, deps);
 }

@@ -129,6 +129,75 @@ cost authorization, vendor/receiving, movement, adjustment reason, transfer, hol
 consumption, source freshness, duplicate/conflict review, low-stock/expiry/discrepancy
 flags, search and export. Partial competing ledgers are not acceptable.
 
+Authorized cost, currency and vendor fields are private workspace records. An absent cost
+remains unknown; it is never inferred or coerced to zero, and it is never exposed through
+public inventory, Storefront, sharing or discovery. Currency also remains unknown until an
+authorized cost is recorded; cost requires an explicit three-letter currency code, including
+for migrated legacy records. The current near-expiry alert means a stocked lot expires within
+30 days; expired, held, low-stock, unallocated and lot-total discrepancy flags are
+deterministic record checks, not AI conclusions.
+
+Every quantity change is an append-only, actor-attributed movement inside the same
+transaction as its item/lot balance. Active lot balances may not exceed the parent item
+balance. An item-level decrement cannot undercut its active lots, and an item-level move
+cannot bypass populated lots. Archived or consumed lots cannot receive or adjust stock;
+new stock requires a new lot. A linked Storefront payment reconciles stock exactly once by
+provider event and order, while a reconciliation failure leaves displayed inventory
+unchanged and visible for retry rather than pretending the balance is zero.
+
+The immutable movement quantity must describe the exact balance effect. Adjustment history
+stores the absolute value of its signed delta, and Hold/Release apply to the selected item or
+lot's full on-hand balance. A stocked or historically used item cannot change units; create a
+new reviewed SKU instead. User-entered historical dates are retained as reported metadata,
+while the verified occurrence timestamp is server-recorded. Item detail pages keyset-paginate
+movement history and disclose/offer the next page rather than silently presenting a capped
+suffix as the complete ledger.
+
+The current B-02 record model stores one location per item or lot. A move or transfer must
+therefore relocate the selected item or lot's entire on-hand balance, preserve that balance,
+derive the audited source location from the stored record, and record the reviewed
+destination, reason and idempotency key. Reject a partial relocation with an explicit
+conflict. Supporting partial quantities across simultaneous locations requires a separately
+reviewed allocation-model extension to this same ledger, not an inferred or parallel ledger.
+
+An import is a reviewed workflow, never a direct write: digest source → preview → choose
+detected columns and quantity meaning → inspect invalid, duplicate, unit, location and
+closed-lot conflicts → explicitly confirm → apply. Clearing an optional column disables
+that field. Applied rows commit independently with their movement, before/after audit
+snapshot and durable checkpoint in one transaction. If an apply pauses, completed rows are
+not repeated; the user must review current inventory again, while mappings, conflict policy
+and quantity meaning are frozen once any row has committed. Inventory versions captured at
+review prevent a stale preview from overwriting intervening work. Withdrawal remains
+available until apply begins.
+
+One reviewed file is limited to 1,000 rows, 100 simple scalar columns per row, 100-character
+column names and 2,000-character cells. Preview samples and audit summaries are separately
+bounded. Every apply attempt has a server-generated correlation identifier carried by row
+checkpoints, provenance and movements so a partial retry can be investigated without
+guessing which attempt wrote a record.
+
+The full audit export includes items (including archived history), lots, append-only
+movements, import lifecycle/provenance and scoped import-row before/after events. It uses a
+fixed membership high-water mark and bounded pages so record count does not become server
+memory use; spreadsheet formulas from text are neutralized while numeric quantities remain
+numeric. This is a live mutable-state export plus immutable history, not a database
+point-in-time snapshot. The manifest records start/cutoff/read times and flags a mutable row
+whose saved timestamp is later than export start. A terminal summary row records completion
+time and emitted counts; private/no-store response headers prevent a browser or intermediary
+from caching the workspace audit file.
+
+Audit events carry explicit workspace identity and immutable origin so a similarly named or
+shared actor cannot cross workspace boundaries or make a manual note appear to be a verified
+system event. Client-created notes always use the server-owned `audit.manual.note` action.
+Historical inventory events without provable origin are labeled `legacy_unverified`; a
+migration must never promote them to `system` provenance.
+
+Commercial owners and Facility Owners/Managers mutate this ledger. Facility Staff remain
+read-only; full-audit access follows the Facility audit-read permission rather than inventory
+write permission. The retained legacy Facility endpoints must delegate to the same ledger,
+transaction, unit/history, archive, provenance and audit rules and may not become a second
+write path.
+
 ## Safety and exclusions
 
 All records are workspace-scoped and audited. Consequential writes are idempotent and

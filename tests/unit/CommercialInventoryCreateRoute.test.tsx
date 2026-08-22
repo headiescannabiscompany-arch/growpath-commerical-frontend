@@ -70,13 +70,13 @@ describe("CommercialInventoryCreateRoute", () => {
     });
   });
 
-  it("creates commercial inventory with item type, location, and linked records", async () => {
+  it("creates commercial inventory with only supported canonical fields", async () => {
     const screen = render(<CommercialInventoryCreateRoute />);
 
     expect(screen.getByText("Shared Back /home/commercial/inventory")).toBeTruthy();
     expect(screen.getByText("Create Inventory Support Record")).toBeTruthy();
     expect(screen.getByText("Create Inventory Record")).toBeTruthy();
-    expect(screen.getByText(/Commercial inventory support tracks stock/)).toBeTruthy();
+    expect(screen.getByText(/Track a real stock record/)).toBeTruthy();
     expect(screen.queryByText("Create Support Item")).toBeNull();
 
     fireEvent.changeText(
@@ -104,28 +104,19 @@ describe("CommercialInventoryCreateRoute", () => {
       screen.getByLabelText("Commercial inventory item category"),
       "soil"
     );
-    fireEvent.press(screen.getByLabelText("Commercial inventory item type: Product"));
     fireEvent.changeText(
       screen.getByLabelText("Commercial inventory item location"),
       "Rack A"
     );
-    await waitFor(() =>
-      expect(screen.getByLabelText("Linked product: Living Soil Base")).toBeTruthy()
-    );
-    fireEvent.press(screen.getByLabelText("Linked product: Living Soil Base"));
-    fireEvent.press(
-      screen.getByLabelText("Linked product trial evidence run: Bloom Formula Trial")
-    );
-    expect(screen.queryByLabelText("Commercial inventory linked product")).toBeNull();
-    fireEvent.press(screen.getByLabelText("Show advanced inventory record fields"));
     fireEvent.changeText(
-      screen.getByLabelText("Commercial inventory linked ingredient"),
-      "ingredient-1"
+      screen.getByLabelText("Commercial inventory item authorized unit cost"),
+      "18.25"
     );
     fireEvent.changeText(
-      screen.getByLabelText("Commercial inventory linked genetics"),
-      "genetics-1"
+      screen.getByLabelText("Commercial inventory item currency"),
+      "USD"
     );
+    fireEvent.changeText(screen.getByLabelText("Commercial inventory item notes"), "Dry");
 
     fireEvent.press(screen.getByLabelText("Create commercial inventory item"));
 
@@ -140,24 +131,46 @@ describe("CommercialInventoryCreateRoute", () => {
           reorderPoint: 4,
           vendor: "Living Soil Labs",
           category: "soil",
-          itemType: "product",
-          location: "Rack A",
-          linkedProductId: "product-1",
-          linkedIngredientId: "ingredient-1",
-          linkedGeneticsId: "genetics-1",
-          linkedTrialId: "grow-1",
-          linkedGrowId: "grow-1"
+          locationId: "Rack A",
+          authorizedUnitCost: 18.25,
+          currency: "usd",
+          notes: "Dry"
         })
       });
+      const payload = mockApiRequest.mock.calls.find(
+        ([path, options]) =>
+          path === "/api/commercial/inventory" && options?.method === "POST"
+      )?.[1]?.body;
+      expect(payload).not.toHaveProperty("itemType");
+      expect(payload).not.toHaveProperty("linkedProductId");
       expect(mockReplace).toHaveBeenCalledWith("/home/commercial/inventory");
     });
   });
 
+  it("requires an explicit currency when authorized cost is recorded", () => {
+    const screen = render(<CommercialInventoryCreateRoute />);
+
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial inventory item name"),
+      "Private Cost"
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("Commercial inventory item authorized unit cost"),
+      "12"
+    );
+    fireEvent.press(screen.getByLabelText("Create commercial inventory item"));
+
+    expect(
+      screen.getByText("Choose a currency when recording an authorized unit cost.")
+    ).toBeTruthy();
+    expect(mockApiRequest).not.toHaveBeenCalledWith(
+      "/api/commercial/inventory",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
   it("rejects invalid negative stock values without silently changing them to zero", async () => {
     const screen = render(<CommercialInventoryCreateRoute />);
-    await waitFor(() =>
-      expect(screen.queryByText("Loading saved record choices...")).toBeNull()
-    );
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial inventory item name"),
@@ -187,9 +200,6 @@ describe("CommercialInventoryCreateRoute", () => {
       return Promise.resolve({});
     });
     const screen = render(<CommercialInventoryCreateRoute />);
-    await waitFor(() =>
-      expect(screen.queryByText("Loading saved record choices...")).toBeNull()
-    );
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial inventory item name"),
@@ -218,9 +228,6 @@ describe("CommercialInventoryCreateRoute", () => {
       return Promise.resolve({});
     });
     const screen = render(<CommercialInventoryCreateRoute />);
-    await waitFor(() =>
-      expect(screen.queryByText("Loading saved record choices...")).toBeNull()
-    );
     fireEvent.changeText(
       screen.getByLabelText("Commercial inventory item name"),
       "Single Flight"

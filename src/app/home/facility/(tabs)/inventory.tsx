@@ -6,6 +6,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
@@ -20,6 +21,14 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { useFacility } from "@/state/useFacility";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import { BusinessInventoryImportPanel } from "@/components/inventory/BusinessInventoryImportPanel";
+import { BusinessInventoryAlerts } from "@/components/inventory/BusinessInventoryAlerts";
+import {
+  BusinessInventoryAlerts as BusinessInventoryAlertFlags,
+  getBusinessInventoryAuditCsv
+} from "@/api/businessInventory";
+import { exportCsvContent, exportToCsv } from "@/utils/exportToCsv";
+import { inventoryQuantitySummary } from "@/utils/inventoryQuantityGroups";
 
 type InventoryItem = {
   _id?: string;
@@ -30,6 +39,14 @@ type InventoryItem = {
   quantityOnHand?: number;
   reorderPoint?: number;
   unit?: string;
+  category?: string;
+  vendor?: string;
+  location?: string;
+  locationId?: string;
+  storageLocation?: string;
+  authorizedUnitCost?: number | null;
+  currency?: string;
+  alerts?: BusinessInventoryAlertFlags;
   updatedAt?: string;
   createdAt?: string;
 };
@@ -59,11 +76,30 @@ function reorderPointOf(item: InventoryItem) {
 }
 
 function stockStatus(item: InventoryItem) {
+  if (item.alerts?.outOfStock) return "out";
+  if (item.alerts?.lowStock) return "low";
   const quantity = quantityOf(item);
   const reorderPoint = reorderPointOf(item);
   if (quantity <= 0) return "out";
   if (reorderPoint > 0 && quantity <= reorderPoint) return "low";
   return "ok";
+}
+
+function matchesInventorySearch(item: InventoryItem, normalizedQuery: string) {
+  if (!normalizedQuery) return true;
+  return [
+    item.sku,
+    item.name,
+    item.category,
+    item.vendor,
+    item.location,
+    item.storageLocation,
+    item.locationId
+  ].some((value) =>
+    String(value ?? "")
+      .toLowerCase()
+      .includes(normalizedQuery)
+  );
 }
 
 export default function FacilityInventoryTab() {
@@ -72,18 +108,17 @@ export default function FacilityInventoryTab() {
   const styles = useMemo(() => createStyles(palette), [palette]);
   const { selectedId: facilityId } = useFacility();
   const ent = useEntitlements();
-  const apiErr: any = useApiErrorHandler();
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
-  );
+  const handleApiError = useApiErrorHandler();
 
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const [query, setQuery] = useState("");
   const itemCountRef = useRef(0);
   const loadedFacilityRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [exportingAudit, setExportingAudit] = useState(false);
+  const [auditFeedback, setAuditFeedback] = useState("");
 
   const fetchItems = useCallback(async () => {
     if (!facilityId) return;
@@ -143,8 +178,13 @@ export default function FacilityInventoryTab() {
     }, [facilityId, fetchItems, handleApiError, load])
   );
 
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredItems = useMemo(
+    () => items.filter((item) => matchesInventorySearch(item, normalizedQuery)),
+    [items, normalizedQuery]
+  );
   const sorted = useMemo(() => {
-    const copy = [...items];
+    const copy = [...filteredItems];
     copy.sort((a, b) => {
       const statusRank = { out: 0, low: 1, ok: 2 } as const;
       const riskDelta = statusRank[stockStatus(a)] - statusRank[stockStatus(b)];
@@ -154,13 +194,46 @@ export default function FacilityInventoryTab() {
       return (Number.isFinite(tb) ? tb : 0) - (Number.isFinite(ta) ? ta : 0);
     });
     return copy;
-  }, [items]);
+  }, [filteredItems]);
 
   const canWriteInventory = Boolean(ent?.can?.(CAPABILITY_KEYS.INVENTORY_WRITE));
+  const canReadAudit = Boolean(ent?.can?.(CAPABILITY_KEYS.AUDIT_READ));
   const outOfStock = items.filter((item) => stockStatus(item) === "out").length;
   const lowStock = items.filter((item) => stockStatus(item) === "low").length;
   const missingSku = items.filter((item) => !item.sku).length;
-  const totalQuantity = items.reduce((sum, item) => sum + quantityOf(item), 0);
+  const quantitySummary = useMemo(() => inventoryQuantitySummary(items), [items]);
+
+  const exportCurrent = useCallback(async () => {
+    try {
+      await exportToCsv("growpath-facility-inventory", items, [
+        { key: "sku", label: "SKU" },
+        { key: "name", label: "Name" },
+        { key: "quantity", label: "Quantity" },
+        { key: "unit", label: "Unit" },
+        { key: "itemStatus", label: "Status" },
+        { key: "locationId", label: "Location" },
+        { key: "reorderPoint", label: "Reorder point" },
+        { key: "updatedAt", label: "Updated at" }
+      ]);
+    } catch (caught) {
+      setError(handleApiError(caught));
+    }
+  }, [handleApiError, items]);
+
+  const exportFullAudit = useCallback(async () => {
+    if (!facilityId || exportingAudit || !canReadAudit) return;
+    setExportingAudit(true);
+    setAuditFeedback("");
+    try {
+      const csv = await getBusinessInventoryAuditCsv({ facilityId });
+      await exportCsvContent("growpath-inventory-audit", csv);
+      setAuditFeedback("Full inventory audit CSV is ready.");
+    } catch (caught) {
+      setError(handleApiError(caught));
+    } finally {
+      setExportingAudit(false);
+    }
+  }, [canReadAudit, exportingAudit, facilityId, handleApiError]);
 
   if (loading) {
     return (
@@ -187,7 +260,7 @@ export default function FacilityInventoryTab() {
               Facility Inventory
             </Text>
             <Text style={styles.muted}>
-              {items.length} items | {totalQuantity} units on hand
+              {items.length} items{quantitySummary ? ` | ${quantitySummary}` : ""}
             </Text>
           </View>
           <View style={styles.actions}>
@@ -199,6 +272,30 @@ export default function FacilityInventoryTab() {
             >
               <Text style={styles.ghostText}>Reload</Text>
             </Pressable>
+            {canReadAudit ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Export facility inventory full audit CSV"
+                accessibilityState={{ disabled: exportingAudit, busy: exportingAudit }}
+                disabled={exportingAudit}
+                onPress={exportFullAudit}
+                style={[styles.ghostButton, exportingAudit && styles.disabled]}
+              >
+                <Text style={styles.ghostText}>
+                  {exportingAudit ? "Preparing…" : "Full Audit CSV"}
+                </Text>
+              </Pressable>
+            ) : null}
+            {items.length ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Export facility inventory CSV"
+                onPress={exportCurrent}
+                style={styles.ghostButton}
+              >
+                <Text style={styles.ghostText}>Export CSV</Text>
+              </Pressable>
+            ) : null}
             {items.length ? (
               <Pressable
                 accessibilityRole="button"
@@ -214,6 +311,12 @@ export default function FacilityInventoryTab() {
           </View>
         </View>
 
+        {auditFeedback ? (
+          <Text accessibilityLiveRegion="polite" style={styles.auditFeedback}>
+            {auditFeedback}
+          </Text>
+        ) : null}
+
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Open sales and transfers"
@@ -223,7 +326,7 @@ export default function FacilityInventoryTab() {
           <Text style={styles.ghostText}>Sales & licensed transfers</Text>
         </Pressable>
 
-        {sorted.length ? (
+        {items.length ? (
           <View style={styles.summaryCard}>
             <View>
               <Text style={[styles.summaryValue, outOfStock ? styles.dangerText : null]}>
@@ -263,14 +366,40 @@ export default function FacilityInventoryTab() {
           </Pressable>
         )}
 
+        <BusinessInventoryImportPanel
+          canWrite={canWriteInventory}
+          onApplied={onRefresh}
+          workspace={{ facilityId }}
+        />
+
+        <TextInput
+          accessibilityLabel="Search facility inventory"
+          autoCapitalize="none"
+          autoCorrect={false}
+          onChangeText={setQuery}
+          placeholder="Search SKU, name, category, vendor, or location"
+          placeholderTextColor={palette.textMuted}
+          selectionColor={palette.accent}
+          style={styles.searchInput}
+          value={query}
+        />
+        {normalizedQuery && items.length ? (
+          <Text accessibilityLiveRegion="polite" style={styles.searchStatus}>
+            Showing {sorted.length} of {items.length} inventory items.
+          </Text>
+        ) : null}
+
         {sorted.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
-              No inventory items yet.
+              {normalizedQuery && items.length
+                ? `No inventory items match “${query.trim()}”.`
+                : "No inventory items yet."}
             </Text>
             <Text style={styles.empty}>
-              Add real inputs, products, packaging, tools, or facility supplies before
-              running AI reorder or stock-risk review.
+              {normalizedQuery && items.length
+                ? "Try another SKU, name, category, vendor, or location."
+                : "Add real inputs, products, packaging, tools, or facility supplies before running AI reorder or stock-risk review."}
             </Text>
           </View>
         ) : (
@@ -313,6 +442,19 @@ export default function FacilityInventoryTab() {
                       SKU: {item.sku || "missing"} | Qty: {qty}
                       {unit}
                     </Text>
+                    {item.vendor ? (
+                      <Text style={styles.rowSub}>Vendor: {item.vendor}</Text>
+                    ) : null}
+                    {item.authorizedUnitCost !== null &&
+                    item.authorizedUnitCost !== undefined &&
+                    Number.isFinite(Number(item.authorizedUnitCost)) ? (
+                      <Text style={styles.privateCost}>
+                        Authorized unit cost: {item.currency ? `${item.currency} ` : ""}
+                        {Number(item.authorizedUnitCost)}
+                      </Text>
+                    ) : item.currency ? (
+                      <Text style={styles.privateCost}>Currency: {item.currency}</Text>
+                    ) : null}
                     <View style={styles.badgeRow}>
                       <Text
                         style={[
@@ -332,6 +474,7 @@ export default function FacilityInventoryTab() {
                         <Text style={[styles.badge, styles.badgeWarn]}>missing SKU</Text>
                       ) : null}
                     </View>
+                    <BusinessInventoryAlerts compact item={item} />
                   </View>
                   <Text style={styles.chev}>{">"}</Text>
                 </Pressable>
@@ -356,6 +499,8 @@ const createStyles = (palette: ThemePalette) =>
     },
     h1: { color: palette.text, fontSize: 22, fontWeight: "900", marginBottom: 4 },
     muted: { color: palette.textMuted, fontWeight: "700" },
+    auditFeedback: { color: palette.success, fontWeight: "800", marginBottom: 8 },
+    privateCost: { color: palette.text, fontSize: 12, fontWeight: "800" },
     actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     ghostButton: {
       borderWidth: 1,
@@ -365,6 +510,7 @@ const createStyles = (palette: ThemePalette) =>
       paddingVertical: 8
     },
     ghostText: { color: palette.text, fontWeight: "900" },
+    disabled: { opacity: 0.5 },
     summaryCard: {
       borderWidth: 1,
       borderColor: palette.border,
@@ -404,6 +550,23 @@ const createStyles = (palette: ThemePalette) =>
     },
     primaryText: { color: palette.accentText, fontWeight: "900" },
     empty: { color: palette.textMuted, fontWeight: "700" },
+    searchInput: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.text,
+      marginBottom: 8,
+      marginTop: 12,
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    searchStatus: {
+      color: palette.textMuted,
+      fontWeight: "700",
+      marginBottom: 8
+    },
     list: { paddingBottom: 24 },
     row: {
       flexDirection: "row",

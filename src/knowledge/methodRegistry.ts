@@ -91,12 +91,23 @@ export const methodRegistry: GrowPathMethod[] = [
       "content-digest duplicate review before an extracted record is saved",
       "facts, calculations, assumptions, forecasts, and recommendations kept separate",
       "reviewable quote, follow-up, job, expense, vendor, purchase, cash-flow, or assistant artifact",
-      "audit-safe save, export, or external-provider handoff state"
+      "audit-safe save, export, or external-provider handoff state",
+      "full-balance-only item and lot relocations that preserve quantity and audit the stored source location",
+      "movement history whose adjustment quantity matches its signed delta, whose hold or release covers the selected balance, and whose older pages remain explicitly reachable",
+      "explicitly reviewed inventory imports with detected-column mapping, conflict evidence, version fences, atomic row checkpoints, and withdrawal",
+      "workspace-scoped full audit export covering items, lots, movements, imports, provenance, and import-row before/after evidence",
+      "audit export manifest with fixed membership cutoffs, read timestamps, changed-after-start flags, terminal counts, and explicit system, user, or legacy-unverified origin",
+      "explicit unknown currency until an authorized cost is paired with a reviewed three-letter currency code"
     ],
     [
       "Never invent costs, taxes, balances, payments, terms, conversations, inventory, or future sales.",
       "Never contact, purchase, assign, publish, adjust inventory, or write to an external provider without explicit review and confirmation.",
       "B-02 is the only inventory engine; nursery and Facility workflows reference it instead of creating parallel ledgers.",
+      "Never represent a partial move or transfer as a location change while an item or lot stores only one location; reject it until the canonical ledger has a reviewed allocation model.",
+      "Never expose authorized inventory cost, currency, vendor, or internal balance history through Storefront, public sharing, or discovery.",
+      "Never change the unit of stocked or historically used inventory, silently cap movement history, trust a user-reported movement date as a verified server occurrence, or let a legacy route bypass the canonical ledger.",
+      "Never apply an inventory import without explicit review, repeat a committed row after retry, change its reviewed meaning after a partial commit, or write into an archived or consumed lot.",
+      "Never call a live mutable-state inventory export a database point-in-time snapshot, let a client choose a system audit action, or promote unverified legacy evidence to system origin.",
       "Do not present GrowPathAI as a CRM, accounting ledger, ERP, payroll, tax, HR, legal, POS, procurement, or autonomous operations system.",
       "Treat commercial and open-source examples as research leads only; verify source, revision, license, attribution, dependencies, and security before adapting code."
     ],

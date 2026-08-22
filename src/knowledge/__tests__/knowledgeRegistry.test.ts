@@ -43,9 +43,42 @@ describe("GrowPath knowledge registries", () => {
     expect(desk?.requiredOutputs).toContain(
       "content-digest duplicate review before an extracted record is saved"
     );
+    expect(desk?.requiredOutputs).toContain(
+      "full-balance-only item and lot relocations that preserve quantity and audit the stored source location"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "movement history whose adjustment quantity matches its signed delta, whose hold or release covers the selected balance, and whose older pages remain explicitly reachable"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "explicitly reviewed inventory imports with detected-column mapping, conflict evidence, version fences, atomic row checkpoints, and withdrawal"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "workspace-scoped full audit export covering items, lots, movements, imports, provenance, and import-row before/after evidence"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "audit export manifest with fixed membership cutoffs, read timestamps, changed-after-start flags, terminal counts, and explicit system, user, or legacy-unverified origin"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "explicit unknown currency until an authorized cost is paired with a reviewed three-letter currency code"
+    );
     expect(desk?.warnings.join(" ")).toContain("license");
     expect(desk?.warnings).toContain(
+      "Never represent a partial move or transfer as a location change while an item or lot stores only one location; reject it until the canonical ledger has a reviewed allocation model."
+    );
+    expect(desk?.warnings).toContain(
       "Never contact, purchase, assign, publish, adjust inventory, or write to an external provider without explicit review and confirmation."
+    );
+    expect(desk?.warnings).toContain(
+      "Never expose authorized inventory cost, currency, vendor, or internal balance history through Storefront, public sharing, or discovery."
+    );
+    expect(desk?.warnings).toContain(
+      "Never change the unit of stocked or historically used inventory, silently cap movement history, trust a user-reported movement date as a verified server occurrence, or let a legacy route bypass the canonical ledger."
+    );
+    expect(desk?.warnings).toContain(
+      "Never apply an inventory import without explicit review, repeat a committed row after retry, change its reviewed meaning after a partial commit, or write into an archived or consumed lot."
+    );
+    expect(desk?.warnings).toContain(
+      "Never call a live mutable-state inventory export a database point-in-time snapshot, let a client choose a system audit action, or promote unverified legacy evidence to system origin."
     );
   });
 
