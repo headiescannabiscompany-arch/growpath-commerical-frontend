@@ -156,6 +156,12 @@ paying-customer reconsideration gate. AI produces reviewable drafts/tasks, never
 contact, ordering, equipment control, compliance certification, pricing, publishing or
 legal decisions.
 
+B-02 has completed its construct and local-verification states. Its exact implementation,
+test evidence and remaining guarded migration/deployment/live gates are recorded in
+`B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. Continue with the next contracted
+Batch 6 slice without reopening B-02 unless a reproduced defect or its named production gate
+requires it.
+
 ### Batch 7 — money, notifications and data rights
 
 Primary rows: `R-01`, `R-02`.  
@@ -234,7 +240,7 @@ surfaces to inspect, not proof that the story is complete.
 | `R-02`        | Notification preferences, in-app/email/device delivery and deep links                                        | Independent categories, suppression, exact record, physical-device evidence        |
 | `R-03`        | Route inventories, automated suites, live crawl/evidence tooling                                             | One frozen candidate; complete professional acceptance, no new scope               |
 | `R-04`        | Reviewer identity, findings ledger, preview branch and owner decision record                                 | Isolated review with explicit accept/reject and production approval                |
-| `R-05`        | GrowPathAI brand assets, specification/rights records, research-trial/storefront presentation                | Owner stop gate, BLVNK approval, GrowPathAI-only art, zero stock/not for sale       |
+| `R-05`        | GrowPathAI brand assets, specification/rights records, research-trial/storefront presentation                | Owner stop gate, BLVNK approval, GrowPathAI-only art, zero stock/not for sale      |
 | `R-06`        | Store build/config/privacy/listing/submission/monitoring/rollback artifacts                                  | Stores last; physical devices and release gates remain mandatory                   |
 
 ## Packet execution record

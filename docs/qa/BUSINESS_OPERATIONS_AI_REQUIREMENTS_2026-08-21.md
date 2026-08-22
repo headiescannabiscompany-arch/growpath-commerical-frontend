@@ -32,6 +32,11 @@ inspection fields. B-05 Facility input inventory references B-02 and may add gro
 consumption context. Neither may create a parallel inventory ledger. B-02 is delivered and
 accepted as one coherent unit rather than a series of competing partial inventories.
 
+The current implementation/local-verification record is
+`B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. Production migration, exact-SHA
+deployment and live multi-role acceptance remain named gates rather than reasons to rebuild
+the locally accepted engine.
+
 ## B-03 Small Business Desk
 
 The shipping Small Business Desk is intentionally lightweight. It uses four shared engines:

@@ -170,6 +170,18 @@ responsive behavior, and no console/application error.
   authorized cost, receiving, movement, adjustment, transfer, hold, consumption, source
   freshness, duplicate/conflict review, simple alerts and export. Nursery/store B-04 and
   Facility B-05 consume this engine instead of building parallel inventories.
+- B-02 writes are workspace-scoped, transactional, idempotent and append-only. Commercial
+  owners and Facility Owners/Managers mutate; Facility Staff remain read-only and full-audit
+  access follows the separate audit-read permission. Retained Facility compatibility routes
+  enforce the same ledger instead of becoming a bypass.
+- Missing private cost/currency remain unknown. Movement quantity agrees with its signed
+  balance effect; relocation and status actions cover the selected full balance; used units
+  cannot be rewritten; user-reported history dates remain distinct from server occurrence.
+- Reviewed CSV imports retain mapping, conflict, version, attempt and row-checkpoint evidence.
+  Item history has an explicit older-page path, and full audit export is bounded, formula-safe,
+  origin-labeled and terminally complete. Local evidence is retained in
+  `B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`; production migration/deployment/live
+  acceptance remain separate.
 
 ### B-03 — Small Business Desk
 
@@ -265,7 +277,7 @@ tax, HR, legal, POS, procurement, dispatch or autonomous operations.
   Every owner-selected Triple Bag-style direction is translated into GrowPathAI-only
   multi-view art with correct emblem placement, scale and rights. No TBG product or mark
   is listed or trialed. Approved GrowPathAI concepts may appear as zero-stock `Not for
-  sale` research trials; third-party marks remain excluded until separately cleared.
+sale` research trials; third-party marks remain excluded until separately cleared.
 - R-06: App Store and Play Store work starts only after R-05. Credentials, Sentry, builds,
   physical-device smoke, privacy/data rights, listing metadata, submission and monitoring all
   pass without weakening release gates.
