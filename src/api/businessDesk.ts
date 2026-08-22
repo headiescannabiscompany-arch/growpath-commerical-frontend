@@ -316,6 +316,29 @@ export type QuoteCalculationResult = {
   };
 };
 
+export type CashFlowCalculationInput = {
+  calculator: "cash_flow";
+  currency: string;
+  minorUnitDigits: number;
+  currentCashMinor: number | null;
+  asOf: string;
+  timeZone: string;
+  staleAfterDays: number;
+  horizonsDays: number[];
+  entries: Array<{
+    label: string;
+    direction: "inflow" | "outflow";
+    confidence: "recorded" | "expected";
+    amountMinor: number;
+    currency: string;
+    dueAt: string;
+    sourceType: "manual" | "quote" | "expense";
+    sourceRecordedAt: string;
+    sourceFreshnessAt: string;
+    sourceRecordId: string;
+  }>;
+};
+
 export type QuoteRecordPayload = Omit<QuoteCalculationInput, "calculator"> & {
   customer: {
     name: string;
@@ -413,12 +436,26 @@ export const BUSINESS_DESK_MAX_LOAD_ALL_RECORDS = 5_000;
 export type BusinessDeskCalculationInput =
   | PriceMarginCalculationInput
   | QuoteCalculationInput
+  | CashFlowCalculationInput
   | {
-      calculator: "vendor" | "cash_flow";
+      calculator: "vendor";
       currency: string;
       minorUnitDigits: number;
       [key: string]: unknown;
     };
+
+export function normalizeIanaTimeZone(value: unknown): string | null {
+  const candidate = typeof value === "string" ? value.trim() : "";
+  if (!candidate || candidate.length > 100) return null;
+  try {
+    const normalized = new Intl.DateTimeFormat("en-US", {
+      timeZone: candidate
+    }).resolvedOptions().timeZone;
+    return typeof normalized === "string" && normalized.trim() ? normalized.trim() : null;
+  } catch {
+    return null;
+  }
+}
 
 export function businessDeskBase(workspace: BusinessDeskWorkspace) {
   const resolved = requireBusinessDeskWorkspace(workspace);
@@ -444,6 +481,9 @@ export async function calculateBusinessDesk<TResult>(
   input: BusinessDeskCalculationInput,
   request: BusinessDeskRequestOptions = {}
 ): Promise<TResult> {
+  if (input.calculator === "cash_flow" && !normalizeIanaTimeZone(input.timeZone)) {
+    throw new Error("Cash-flow calculations require a valid IANA time zone.");
+  }
   const response = await apiRequest(`${businessDeskBase(workspace)}/calculate`, {
     method: "POST",
     body: input,

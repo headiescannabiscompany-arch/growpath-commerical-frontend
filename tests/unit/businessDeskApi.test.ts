@@ -65,6 +65,43 @@ describe("Business Desk API", () => {
     });
   });
 
+  it("sends an explicit valid IANA time zone in the real cash-flow request body", async () => {
+    const input = {
+      calculator: "cash_flow" as const,
+      currency: "USD",
+      minorUnitDigits: 2,
+      currentCashMinor: null,
+      asOf: "2026-08-22T16:00:00.000Z",
+      timeZone: "America/New_York",
+      staleAfterDays: 30,
+      horizonsDays: [30, 60, 90],
+      entries: []
+    };
+    const result = { ...input, horizons: [], complete: false };
+    mockApiRequest.mockResolvedValue({ success: true, data: result });
+
+    await expect(
+      calculateBusinessDesk(COMMERCIAL_BUSINESS_DESK_WORKSPACE, input)
+    ).resolves.toBe(result);
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/business-desk/calculate", {
+      method: "POST",
+      body: expect.objectContaining({
+        calculator: "cash_flow",
+        timeZone: "America/New_York",
+        horizonsDays: [30, 60, 90]
+      })
+    });
+
+    mockApiRequest.mockClear();
+    await expect(
+      calculateBusinessDesk(COMMERCIAL_BUSINESS_DESK_WORKSPACE, {
+        ...input,
+        timeZone: "Moon/Sea"
+      })
+    ).rejects.toThrow("valid IANA time zone");
+    expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
   it("keeps create, compare-and-swap update, archive, and revisions scoped", async () => {
     const record = {
       id: "quote/1",

@@ -1,13 +1,16 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
-import CashFlowSnapshotTool from "@/features/businessDesk/CashFlowSnapshotTool";
+import CashFlowSnapshotTool, {
+  resolveCashFlowDefaultTimeZone
+} from "@/features/businessDesk/CashFlowSnapshotTool";
 
 const mockArchive = jest.fn();
 const mockCalculate = jest.fn();
 const mockCreate = jest.fn();
 const mockList = jest.fn();
 const mockUpdate = jest.fn();
+let mockActiveFacility: any = null;
 
 const reviewedQuote = {
   _id: "64b000000000000000000301",
@@ -44,29 +47,36 @@ jest.mock("@/api/businessDesk", () => ({
   updateBusinessDeskRecord: (...args: any[]) => mockUpdate(...args)
 }));
 
+jest.mock("@/state/useFacility", () => ({
+  useFacility: () => ({ selected: mockActiveFacility })
+}));
+
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ header, children }: any) => React.createElement(View, null, header, children);
+  return function MockAppPage({ header, children }: any) {
+    return React.createElement(View, null, header, children);
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
-  return ({ title, subtitle, children }: any) =>
-    React.createElement(
+  return function MockAppCard({ title, subtitle, children }: any) {
+    return React.createElement(
       View,
       null,
       title ? React.createElement(Text, null, title) : null,
       subtitle ? React.createElement(Text, null, subtitle) : null,
       children
     );
+  };
 });
 
 jest.mock("@/components/forms/CalendarDateField", () => {
   const React = require("react");
   const { Pressable, Text } = require("react-native");
-  return ({ accessibilityLabel, label, onChange }: any) => {
+  return function MockCalendarDateField({ accessibilityLabel, label, onChange }: any) {
     const name = String(accessibilityLabel || label);
     let value = "2026-08-01T09:00";
     if (name.includes("snapshot as of")) value = "2026-08-22T12:00";
@@ -85,6 +95,7 @@ function cashResult(input: any) {
     currency: input.currency,
     minorUnitDigits: input.minorUnitDigits,
     asOf: input.asOf,
+    timeZone: input.timeZone,
     staleAfterDays: input.staleAfterDays,
     currentCashMinor: input.currentCashMinor,
     evidenceSummary: {
@@ -112,6 +123,7 @@ function cashResult(input: any) {
 
 describe("CashFlowSnapshotTool", () => {
   beforeEach(() => {
+    mockActiveFacility = null;
     mockArchive.mockReset();
     mockCalculate
       .mockReset()
@@ -125,6 +137,11 @@ describe("CashFlowSnapshotTool", () => {
   });
 
   it("calculates and saves explicit source-labeled 30/60/90 scenarios without inventing cash", async () => {
+    mockActiveFacility = {
+      id: "facility-2",
+      name: "North house",
+      timezone: "America/Denver"
+    };
     mockCreate.mockImplementation(async (_workspace, input) => ({
       _id: "64b000000000000000000201",
       kind: "cash_flow_snapshot",
@@ -155,6 +172,9 @@ describe("CashFlowSnapshotTool", () => {
       "Fall snapshot"
     );
     fireEvent.press(screen.getByLabelText("Cash-flow snapshot as of date and time"));
+    expect(screen.getByLabelText("Cash-flow planning time zone").props.value).toBe(
+      "America/Denver"
+    );
     fireEvent.changeText(screen.getByLabelText("Cash-flow freshness days"), "10");
     fireEvent.press(screen.getByLabelText("Add cash-flow entry"));
     fireEvent.changeText(
@@ -183,6 +203,7 @@ describe("CashFlowSnapshotTool", () => {
         currency: "USD",
         minorUnitDigits: 2,
         currentCashMinor: null,
+        timeZone: "America/Denver",
         staleAfterDays: 10,
         horizonsDays: [30, 60, 90],
         entries: [
@@ -228,6 +249,7 @@ describe("CashFlowSnapshotTool", () => {
         payload: {
           cashFlowSnapshot: expect.objectContaining({
             currentCashMinor: null,
+            timeZone: "America/Denver",
             currency: "USD",
             minorUnitDigits: 2,
             horizonsDays: [30, 60, 90],
@@ -242,6 +264,116 @@ describe("CashFlowSnapshotTool", () => {
     expect(
       screen.getByText(/not bookkeeping, a bank balance, tax advice, or an ML forecast/i)
     ).toBeTruthy();
+  });
+
+  it("uses only a valid Facility/device/UTC default and sends a reviewed time-zone change", async () => {
+    expect(resolveCashFlowDefaultTimeZone("America/Los_Angeles", "Europe/London")).toBe(
+      "America/Los_Angeles"
+    );
+    expect(resolveCashFlowDefaultTimeZone("Moon/Sea", "Europe/London")).toBe(
+      "Europe/London"
+    );
+    expect(resolveCashFlowDefaultTimeZone(undefined, "Moon/Sea")).toBe("UTC");
+
+    mockActiveFacility = {
+      id: "facility-2",
+      name: "North house",
+      timezone: "America/Denver"
+    };
+    mockCreate.mockImplementation(async (_workspace, input) => ({
+      _id: "64b000000000000000000204",
+      kind: "cash_flow_snapshot",
+      title: input.title,
+      status: input.status,
+      version: 1,
+      payload: input.payload,
+      sourceLinks: input.sourceLinks
+    }));
+    const screen = render(
+      <CashFlowSnapshotTool
+        workspace={{ workspaceType: "facility", facilityId: "facility-2" }}
+        canViewCurrentCash
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    await waitFor(() => expect(mockList).toHaveBeenCalled());
+    const zoneField = screen.getByLabelText("Cash-flow planning time zone");
+    expect(zoneField.props.value).toBe("America/Denver");
+
+    fireEvent.changeText(zoneField, "Moon/Sea");
+    fireEvent.press(screen.getByLabelText("Calculate cash-flow snapshot"));
+    await screen.findByText(/Enter a valid IANA time zone/i);
+    expect(mockCalculate).not.toHaveBeenCalled();
+
+    fireEvent.changeText(zoneField, "America/Chicago");
+    fireEvent.press(screen.getByLabelText("Calculate cash-flow snapshot"));
+    await waitFor(() => expect(mockCalculate).toHaveBeenCalledTimes(1));
+    expect(mockCalculate.mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        timeZone: "America/Chicago",
+        horizonsDays: [30, 60, 90]
+      })
+    );
+    expect(screen.getByText("Planning time zone: America/Chicago")).toBeTruthy();
+
+    fireEvent.changeText(screen.getByLabelText("Cash-flow record title"), "Zone plan");
+    fireEvent.press(screen.getByLabelText("Save cash-flow draft"));
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
+    expect(mockCreate.mock.calls[0][1].payload.cashFlowSnapshot.timeZone).toBe(
+      "America/Chicago"
+    );
+  });
+
+  it("resets edited time-zone and draft state when the workspace changes", async () => {
+    mockActiveFacility = {
+      id: "facility-a",
+      name: "East",
+      timezone: "America/Denver"
+    };
+    const screen = render(
+      <CashFlowSnapshotTool
+        workspace={{ workspaceType: "facility", facilityId: "facility-a" }}
+        canViewCurrentCash
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    await waitFor(() => expect(mockList).toHaveBeenCalled());
+    fireEvent.changeText(
+      screen.getByLabelText("Cash-flow planning time zone"),
+      "Asia/Tokyo"
+    );
+    fireEvent.changeText(screen.getByLabelText("Cash-flow record title"), "Do not leak");
+    fireEvent.press(screen.getByLabelText("Calculate cash-flow snapshot"));
+    await screen.findByText("Planning time zone: Asia/Tokyo");
+
+    mockActiveFacility = {
+      id: "facility-b",
+      name: "West",
+      timezone: "America/Los_Angeles"
+    };
+    screen.rerender(
+      <CashFlowSnapshotTool
+        workspace={{ workspaceType: "facility", facilityId: "facility-b" }}
+        canViewCurrentCash
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Cash-flow planning time zone").props.value).toBe(
+        "America/Los_Angeles"
+      )
+    );
+    expect(screen.getByLabelText("Cash-flow record title").props.value).toBe("");
+    expect(screen.queryByText("Planning time zone: Asia/Tokyo")).toBeNull();
+    expect(mockList).toHaveBeenCalledWith(
+      { workspaceType: "facility", facilityId: "facility-b" },
+      { kind: "cash_flow_snapshot" },
+      { signal: expect.anything() }
+    );
   });
 
   it("keeps manual evidence owner-entered, creates a draft, then reviews by transition only", async () => {
@@ -339,6 +471,7 @@ describe("CashFlowSnapshotTool", () => {
       payload: {
         cashFlowSnapshot: {
           asOf: "2026-08-22T16:00:00.000Z",
+          timeZone: "America/Los_Angeles",
           currency: "USD",
           minorUnitDigits: 2,
           currentCashMinor: 987654,
@@ -384,6 +517,7 @@ describe("CashFlowSnapshotTool", () => {
       payload: {
         cashFlowSnapshot: {
           asOf: "2026-08-22T16:00:00.000Z",
+          timeZone: "America/Los_Angeles",
           currency: "USD",
           minorUnitDigits: 2,
           currentCashMinor: -2500,
@@ -424,11 +558,22 @@ describe("CashFlowSnapshotTool", () => {
     expect(screen.getByLabelText("Owner-entered current cash").props.value).toBe(
       "-25.00"
     );
+    expect(screen.getByLabelText("Cash-flow planning time zone").props.value).toBe(
+      "America/Los_Angeles"
+    );
     expect(screen.getByLabelText("Cash-flow entry 1 amount").props.value).toBe("75.00");
     expect(screen.queryByLabelText("Cash-flow entry 1 source record id")).toBeNull();
     expect(
       screen.getByLabelText("Cash-flow entry 1 source recorded date and time")
     ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Calculate cash-flow snapshot"));
+    await waitFor(() => expect(mockCalculate).toHaveBeenCalledTimes(1));
+    expect(mockCalculate.mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        timeZone: "America/Los_Angeles",
+        horizonsDays: [30, 60, 90]
+      })
+    );
     fireEvent.changeText(
       screen.getByLabelText("Business Desk archive reason"),
       "Snapshot superseded"

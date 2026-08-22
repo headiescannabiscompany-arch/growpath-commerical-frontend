@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   calculateBusinessDesk,
   listBusinessDeskRecords,
+  normalizeIanaTimeZone,
   type BusinessDeskRecord,
   type BusinessDeskWorkspace
 } from "@/api/businessDesk";
@@ -27,6 +28,7 @@ import {
   localDateTimeToIso,
   useBusinessDeskRecordCollection
 } from "@/features/businessDesk/recordWorkflow";
+import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -64,6 +66,7 @@ type CashFlowCalculationResult = {
   currency: string;
   minorUnitDigits: number;
   asOf: string;
+  timeZone: string;
   staleAfterDays: number;
   currentCashMinor: number | null;
   evidenceSummary: {
@@ -109,6 +112,33 @@ let entrySequence = 0;
 
 function nowLocalDateTime() {
   return isoToLocalDateTime(new Date().toISOString());
+}
+
+export function detectedCashFlowDeviceTimeZone() {
+  try {
+    return normalizeIanaTimeZone(new Intl.DateTimeFormat().resolvedOptions().timeZone);
+  } catch {
+    return null;
+  }
+}
+
+export function resolveCashFlowDefaultTimeZone(
+  facilityTimeZone: unknown,
+  deviceTimeZone: unknown = detectedCashFlowDeviceTimeZone()
+) {
+  return (
+    normalizeIanaTimeZone(facilityTimeZone) ||
+    normalizeIanaTimeZone(deviceTimeZone) ||
+    "UTC"
+  );
+}
+
+function formatInstantInTimeZone(value: string, timeZone: string) {
+  try {
+    return new Date(value).toLocaleString(undefined, { timeZone });
+  } catch {
+    return value;
+  }
 }
 
 function newEntry(overrides: Partial<CashEntryDraft> = {}): CashEntryDraft {
@@ -173,6 +203,7 @@ export default function CashFlowSnapshotTool({
   canViewCurrentCash
 }: CashFlowSnapshotToolProps) {
   const { palette } = useAppTheme();
+  const { selected: activeFacility } = useFacility();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const sanitizeRecord = useCallback(
     (record: BusinessDeskRecord) => {
@@ -202,11 +233,27 @@ export default function CashFlowSnapshotTool({
         : { workspaceType: "commercial" },
     [facilityId, workspaceType]
   );
+  const workspaceKey =
+    workspaceType === "facility" ? `facility:${facilityId}` : "commercial";
+  const activeFacilityTimeZone =
+    workspaceType === "facility" &&
+    activeFacility?.id === facilityId &&
+    typeof activeFacility.timezone === "string"
+      ? activeFacility.timezone
+      : null;
+  const preferredTimeZone = useMemo(
+    () => resolveCashFlowDefaultTimeZone(activeFacilityTimeZone),
+    [activeFacilityTimeZone]
+  );
+  const currentWorkspaceKey = useRef(workspaceKey);
+  const calculationEpoch = useRef(0);
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [currentCash, setCurrentCash] = useState("");
   const [asOf, setAsOf] = useState(nowLocalDateTime);
+  const [timeZone, setTimeZone] = useState(preferredTimeZone);
+  const [timeZoneTouched, setTimeZoneTouched] = useState(false);
   const [staleAfterDays, setStaleAfterDays] = useState("30");
   const [entries, setEntries] = useState<CashEntryDraft[]>([]);
   const [assumptions, setAssumptions] = useState("");
@@ -275,6 +322,7 @@ export default function CashFlowSnapshotTool({
     currency,
     currentCash,
     asOf,
+    timeZone,
     staleAfterDays,
     entries: entries.map(cleanEntryForFingerprint),
     assumptions
@@ -284,22 +332,39 @@ export default function CashFlowSnapshotTool({
   );
   const visibleResult = resultFingerprint === contentFingerprint ? result : null;
 
-  const reset = () => {
-    setSelected(null);
-    setTitle("");
-    setCurrency("USD");
-    setCurrentCash("");
-    setAsOf(nowLocalDateTime());
-    setStaleAfterDays("30");
-    setEntries([]);
-    setAssumptions("");
-    setArchiveReason("");
-    setSavedContentFingerprint("");
-    setResult(null);
-    setResultFingerprint("");
-    setFormError("");
-    setFeedback("");
-  };
+  const reset = useCallback(
+    (nextTimeZone = preferredTimeZone) => {
+      calculationEpoch.current += 1;
+      setSelected(null);
+      setTitle("");
+      setCurrency("USD");
+      setCurrentCash("");
+      setAsOf(nowLocalDateTime());
+      setTimeZone(nextTimeZone);
+      setTimeZoneTouched(false);
+      setStaleAfterDays("30");
+      setEntries([]);
+      setAssumptions("");
+      setArchiveReason("");
+      setSavedContentFingerprint("");
+      setResult(null);
+      setResultFingerprint("");
+      setFormError("");
+      setFeedback("");
+      setBusy(false);
+    },
+    [preferredTimeZone]
+  );
+
+  useEffect(() => {
+    if (currentWorkspaceKey.current === workspaceKey) return;
+    currentWorkspaceKey.current = workspaceKey;
+    reset(preferredTimeZone);
+  }, [preferredTimeZone, reset, workspaceKey]);
+
+  useEffect(() => {
+    if (!selected && !timeZoneTouched) setTimeZone(preferredTimeZone);
+  }, [preferredTimeZone, selected, timeZoneTouched]);
 
   const open = (record: BusinessDeskRecord) => {
     const payload = payloadOf(record);
@@ -326,6 +391,7 @@ export default function CashFlowSnapshotTool({
       currency: String(payload.currency || "USD"),
       currentCash: canViewCurrentCash ? majorInput(payload.currentCashMinor, digits) : "",
       asOf: isoToLocalDateTime(payload.asOf) || nowLocalDateTime(),
+      timeZone: normalizeIanaTimeZone(payload.timeZone) || preferredTimeZone,
       staleAfterDays: String(payload.staleAfterDays || 30),
       entries: nextEntries,
       assumptions: String(payload.assumptions || "")
@@ -335,6 +401,8 @@ export default function CashFlowSnapshotTool({
     setCurrency(next.currency);
     setCurrentCash(next.currentCash);
     setAsOf(next.asOf);
+    setTimeZone(next.timeZone);
+    setTimeZoneTouched(false);
     setStaleAfterDays(next.staleAfterDays);
     setEntries(next.entries);
     setAssumptions(next.assumptions);
@@ -361,6 +429,12 @@ export default function CashFlowSnapshotTool({
 
   const buildCalculationInput = () => {
     const context = resolveCurrencyContext(currency);
+    const normalizedTimeZone = normalizeIanaTimeZone(timeZone);
+    if (!normalizedTimeZone) {
+      throw new Error(
+        "Enter a valid IANA time zone such as America/New_York or Europe/London."
+      );
+    }
     const normalizedAsOf = localDateTimeToIso(asOf);
     if (!normalizedAsOf) throw new Error("Choose the snapshot date and time.");
     const staleDays = Number(staleAfterDays.trim());
@@ -457,6 +531,7 @@ export default function CashFlowSnapshotTool({
           })
         : null,
       asOf: normalizedAsOf,
+      timeZone: normalizedTimeZone,
       staleAfterDays: staleDays,
       horizonsDays: [30, 60, 90],
       entries: normalizedEntries
@@ -465,24 +540,49 @@ export default function CashFlowSnapshotTool({
 
   const calculate = async () => {
     if (busy) return;
+    const epoch = calculationEpoch.current + 1;
+    calculationEpoch.current = epoch;
+    const requestWorkspaceKey = workspaceKey;
     setBusy(true);
     setFormError("");
     setFeedback("");
     try {
+      const input = buildCalculationInput();
       const calculated = await calculateBusinessDesk<CashFlowCalculationResult>(
-        workspace,
-        buildCalculationInput()
+        stableWorkspace,
+        input
       );
+      if (
+        calculationEpoch.current !== epoch ||
+        currentWorkspaceKey.current !== requestWorkspaceKey
+      ) {
+        return;
+      }
+      if (normalizeIanaTimeZone(calculated.timeZone) !== input.timeZone) {
+        throw new Error(
+          "The cash-flow result did not match the requested planning time zone."
+        );
+      }
       setResult(calculated);
       setResultFingerprint(contentFingerprint);
     } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : "The cash-flow snapshot could not be calculated."
-      );
+      if (
+        calculationEpoch.current === epoch &&
+        currentWorkspaceKey.current === requestWorkspaceKey
+      ) {
+        setFormError(
+          error instanceof Error
+            ? error.message
+            : "The cash-flow snapshot could not be calculated."
+        );
+      }
     } finally {
-      setBusy(false);
+      if (
+        calculationEpoch.current === epoch &&
+        currentWorkspaceKey.current === requestWorkspaceKey
+      ) {
+        setBusy(false);
+      }
     }
   };
 
@@ -500,6 +600,7 @@ export default function CashFlowSnapshotTool({
           payload: {
             cashFlowSnapshot: {
               asOf: input.asOf,
+              timeZone: input.timeZone,
               currency: input.currency,
               minorUnitDigits: input.minorUnitDigits,
               ...(canViewCurrentCash ? { currentCashMinor: input.currentCashMinor } : {}),
@@ -581,7 +682,7 @@ export default function CashFlowSnapshotTool({
       loading={collection.loading}
       error={collection.error}
       onRetry={() => void collection.reload()}
-      onNew={reset}
+      onNew={() => reset()}
       onSelect={open}
     >
       <AppCard
@@ -648,6 +749,20 @@ export default function CashFlowSnapshotTool({
               onChange={setAsOf}
             />
           </View>
+          <LabeledInput
+            label="Planning time zone (IANA)"
+            accessibilityLabel="Cash-flow planning time zone"
+            autoCapitalize="none"
+            autoCorrect={false}
+            maxLength={100}
+            value={timeZone}
+            onChangeText={(value) => {
+              setTimeZoneTouched(true);
+              setTimeZone(value);
+            }}
+            placeholder="America/New_York"
+            hint="30, 60, and 90-day cutoffs use this zone. The active Facility zone is preferred when available; otherwise the device zone is used. UTC is only the final fallback."
+          />
         </View>
         <Text style={styles.bodyText}>
           Saved state: {selected ? selected.status.replace(/_/g, " ") : "not saved"}.
@@ -921,6 +1036,9 @@ export default function CashFlowSnapshotTool({
           <View style={styles.resultStack}>
             <View style={styles.summaryGrid}>
               <Text style={styles.summaryText}>
+                Planning time zone: {visibleResult.timeZone}
+              </Text>
+              <Text style={styles.summaryText}>
                 Fresh sources: {visibleResult.evidenceSummary.freshCount}
               </Text>
               <Text style={styles.summaryText}>
@@ -948,7 +1066,10 @@ export default function CashFlowSnapshotTool({
                 <View key={horizon.days} style={styles.resultCard}>
                   <Text style={styles.resultTitle}>{horizon.days}-day scenario</Text>
                   <Text style={styles.bodyText}>
-                    Through {new Date(horizon.through).toLocaleString()}
+                    Through{" "}
+                    {formatInstantInTimeZone(horizon.through, visibleResult.timeZone)}
+                    {" · "}
+                    {visibleResult.timeZone}
                   </Text>
                   <View style={styles.summaryGrid}>
                     <Text style={styles.summaryText}>
