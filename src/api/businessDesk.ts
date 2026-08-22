@@ -62,6 +62,7 @@ export function businessDeskWorkspaceKey(
 }
 
 export type BusinessDeskRecordKind =
+  | "price_margin_scenario"
   | "quote"
   | "lead"
   | "job"
@@ -123,8 +124,31 @@ export type BusinessDeskRecordTotals = {
   grossProfitMinor?: number | null;
   marginBasisPoints?: number | null;
   markupBasisPoints?: number | null;
+  scenarioQuantityMicros?: number | null;
+  unitPriceMinor?: number | null;
+  unitDirectCostMinor?: number | null;
+  lineRevenueMinor?: number | null;
+  discountPercentMinor?: number | null;
+  discountFixedAppliedMinor?: number | null;
+  discountedSubtotalMinor?: number | null;
+  customerRevenueBeforeTaxMinor?: number | null;
+  fixedCostsMinor?: number | null;
+  contributionMinor?: number | null;
+  breakEvenSalesScenarios?: number | null;
+  breakEvenQuantityMicros?: number | null;
+  breakEvenRevenueMinor?: number | null;
+  breakEvenReason?: string;
+  targetMarginBasisPoints?: number | null;
+  desiredUnitPriceMinor?: number | null;
+  desiredMarginReason?: string;
   complete?: boolean;
   incompleteReasons?: string[];
+  formulaVersion?: string;
+  roundingRule?: string;
+  calculatedAt?: string;
+  inputDigestSha256?: string;
+  inputSnapshotJson?: string;
+  missingInputs?: string[];
 };
 
 export type BusinessDeskDiscount = {
@@ -157,6 +181,20 @@ export type PriceMarginCalculationInput = {
   targetMarginBasisPoints?: number;
   discount?: BusinessDeskDiscount;
   tax?: BusinessDeskTax;
+};
+
+export type PriceMarginScenarioPayload = Omit<
+  PriceMarginCalculationInput,
+  "calculator" | "targetMarginBasisPoints"
+> & {
+  discount: BusinessDeskDiscount;
+  tax: BusinessDeskTax;
+  businessFeesMinor: number;
+  shippingCostMinor: number;
+  customerShippingMinor: number;
+  fixedCostsMinor: number;
+  targetMarginBasisPoints: number | null;
+  notes: string;
 };
 
 export type PriceMarginTotals = {
