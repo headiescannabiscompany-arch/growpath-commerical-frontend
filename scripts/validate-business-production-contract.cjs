@@ -170,7 +170,7 @@ const tests = {
   ["facility create inventory API", /apiRequest\(endpoints\.inventory\(facilityId\),[\s\S]*method: "POST"/],
   ["commercial inventory support list", /Commercial Inventory Support/],
   ["commercial inventory create route", /\/home\/commercial\/inventory\/new/],
-  ["commercial inventory support copy", /inventory support tracks stock/i],
+  ["commercial inventory support copy", /Track a real stock record/],
   ["commercial inventory create API", /apiRequest\(path,[\s\S]*method: "POST"/]
 ].forEach(([description, pattern]) => {
   const contents = description.startsWith("facility create")
@@ -189,8 +189,14 @@ const tests = {
   ["inventory API create", /createInventoryItem/],
   ["inventory API update", /updateInventoryItem/],
   ["inventory API delete", /deleteInventoryItem/],
-  ["facility inventory endpoint", /inventory: \(facilityId: string\) => facilityPath\(facilityId, "\/inventory"\)/],
-  ["commercial inventory endpoint", /commercial:[\s\S]*inventory: `\$\{BASE\}\/commercial\/inventory`/]
+  [
+    "facility canonical B-02 inventory endpoint",
+    /inventory: \(facilityId: string\) => facilityPath\(facilityId, "\/business-inventory"\)/
+  ],
+  [
+    "commercial canonical B-02 inventory endpoint",
+    /commercial:[\s\S]*inventory: `\$\{BASE\}\/business-inventory`/
+  ]
 ].forEach(([description, pattern]) => {
   requireText("inventory API/endpoints", `${inventoryApi}\n${endpoints}`, pattern, description);
 });
@@ -208,7 +214,11 @@ const tests = {
   ["commercial soil batch UI route test", tests.soilBatch, /\/home\/commercial\/tools\/soil-nutrient-batch/],
   ["facility inventory tests", tests.facilityInventory, /does not show AI stock-risk review before inventory exists[\s\S]*uses canonical facility inventory routes/],
   ["facility inventory create tests", tests.facilityCreate, /Create Inventory Item[\s\S]*Inventory item name/],
-  ["commercial inventory create tests", tests.commercialCreate, /creates commercial inventory with item type, location, and linked records/],
+  [
+    "commercial inventory create tests",
+    tests.commercialCreate,
+    /creates commercial inventory with only supported canonical fields/
+  ],
   ["commercial inventory detail tests", tests.commercialWorkflow, /Inventory Support Record[\s\S]*linked inventory|inventory support/i]
 ].forEach(([description, contents, pattern]) => {
   requireText("Phase 7 tests", contents, pattern, description);
