@@ -155,8 +155,7 @@ export const endpoints = {
 
   commercial: {
     inventory: `${BASE}/business-inventory`,
-    inventoryItem: (id: string) =>
-      `${BASE}/business-inventory/${encodeURIComponent(id)}`,
+    inventoryItem: (id: string) => `${BASE}/business-inventory/${encodeURIComponent(id)}`,
     orders: `${BASE}/commercial/orders`,
     order: (id: string) => `${BASE}/commercial/orders/${encodeURIComponent(id)}`,
     campaigns: `${BASE}/commercial/campaigns`,
