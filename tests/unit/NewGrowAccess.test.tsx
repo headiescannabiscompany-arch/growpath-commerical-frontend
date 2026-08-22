@@ -86,12 +86,16 @@ jest.mock("@/components/ScreenBoundary", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
   return {
-    ScreenBoundary: ({ children, showBack, backFallbackHref }: any) =>
+    ScreenBoundary: ({ children, showBack, backFallbackHref, preferBackFallback }: any) =>
       React.createElement(
         View,
         null,
         showBack
-          ? React.createElement(Text, null, `Shared Back ${backFallbackHref}`)
+          ? React.createElement(
+              Text,
+              null,
+              `Shared Back ${backFallbackHref} ${preferBackFallback ? "preferred" : "history"}`
+            )
           : null,
         children
       )
@@ -124,7 +128,7 @@ describe("NewGrowScreen access", () => {
     render(<NewGrowScreen />);
 
     await waitFor(() => expect(screen.getByText("Free grow limit reached")).toBeTruthy());
-    expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/personal/grows history")).toBeTruthy();
     expect(
       screen.getByText(
         "Free includes one active grow. Upgrade to Pro to create up to 10 active grows."
@@ -132,7 +136,9 @@ describe("NewGrowScreen access", () => {
     ).toBeTruthy();
     expect(mockListPersonalGrows).toHaveBeenCalled();
     expect(screen.queryByText("Back to grows")).toBeNull();
-    expect(screen.getAllByText("Shared Back /home/personal/grows")).toHaveLength(1);
+    expect(screen.getAllByText("Shared Back /home/personal/grows history")).toHaveLength(
+      1
+    );
     expect(mockReplace).not.toHaveBeenCalled();
     expect(mockApiRequest).not.toHaveBeenCalled();
   });
@@ -145,7 +151,7 @@ describe("NewGrowScreen access", () => {
     render(<NewGrowScreen />);
 
     await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
-    expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/personal/grows history")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "First Free Grow");
     chooseDate(screen, "Anchor date", "2026-01-01");
     fireEvent.press(screen.getByLabelText("Create grow"));
@@ -171,7 +177,7 @@ describe("NewGrowScreen access", () => {
     };
     render(<NewGrowScreen />);
 
-    expect(screen.getByText("Shared Back /home/personal/grows")).toBeTruthy();
+    expect(screen.getByText("Shared Back /home/personal/grows history")).toBeTruthy();
     await waitFor(() =>
       expect(screen.getByText("Grow Planner / Auto Calendar")).toBeTruthy()
     );
@@ -261,6 +267,11 @@ describe("NewGrowScreen access", () => {
     render(<NewGrowScreen />);
 
     await waitFor(() => expect(screen.getByDisplayValue("Tomato grow")).toBeTruthy());
+    expect(
+      screen.getByText(
+        "Shared Back /home/personal/tools/saved-runs?toolRunId=plant-id-run-1 preferred"
+      )
+    ).toBeTruthy();
     expect(screen.getByDisplayValue("Tomato")).toBeTruthy();
     expect(screen.getByDisplayValue("Solanum lycopersicum")).toBeTruthy();
     expect(screen.getByLabelText("Establishment weeks")).toBeTruthy();
