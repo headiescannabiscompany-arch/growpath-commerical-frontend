@@ -191,6 +191,11 @@ privacy/deletion and legal-hold serialization. Their permitted local static gate
 focused CI, deterministic artifact/quote/job/cash closure, deployment and combined live
 Commercial/Facility acceptance remain open. These commits are retained inputs, not a reason
 to rebuild their engines and not evidence that the B-03 row is complete.
+Backend draft PR `headiescannabiscompany-arch/growpath-commerical#206` pins provider/security
+candidate `2d7a583`; its 2026-08-22 Actions attempt ran zero steps because GitHub reported a
+failed account payment or insufficient Actions spending limit. That is an external CI runner
+block, not passing or failing code evidence. Rerun both required jobs after billing/minutes
+are restored before any B-03 local-acceptance claim.
 
 ## Nature, Admin and release
 
