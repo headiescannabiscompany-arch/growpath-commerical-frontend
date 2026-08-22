@@ -213,6 +213,82 @@ Declining either branch leaves the standalone Plant ID intact. Same-day proximit
 location evidence. The separate house crape myrtle and all potted-house records, including
 Dipladenia/Mandevilla, are excluded from the Cary/Maydale publication batch.
 
+## Reconciled evidence and no-rebuild boundaries
+
+These row annotations name what is retained and the one exact gate that remains. They do
+not change the statuses above, treat an unrun production action as complete, or create a
+second queue. `Production mutation`, `production read-only`, `final-candidate crawl`, and
+`optional owner recovery` are action types, not completion states.
+
+- **P-03 — retained evidence:** frontend `4829d2ff`, backend `1144dadc`, and ToolRun
+  `6a77f67895931a1ea2ab10d9` already prove multi-photo/private-video analysis, server-frame
+  extraction, an uncertain saved result, exact-evidence reload, correction provenance, and
+  no-grow operation. **Remaining gate:** on the frozen candidate, complete one authorized
+  ordinary upload/analyze/save/reload plus back/error/retry path and prove that no Grow,
+  Field Study, or public pin is created. **Next action:** production mutation. **Do not
+  rebuild:** upload transport, frame extraction, evidence receipts, Saved Runs, or correction.
+- **P-04 — retained evidence:** frontend `dbedf296` and Render deploy
+  `dep-d9vrbmh42hec739hkcug` prove the reviewed-draft safety boundary; the crop-aware Tomato
+  and unmatched-crop setup paths are also live. **Remaining gate:** use an eligible confirmed
+  Plant ID to inspect its prefilled source/provenance/lifecycle fields, cancel once with no
+  creation, then save, reload, and archive one disposable Grow. **Next action:** production
+  mutation and cleanup. **Do not rebuild:** the crop registry, manual crop setup, draft
+  navigation, or lifecycle model.
+- **P-05 — retained evidence:** the separate Nature draft, required photo, date, description,
+  and private-source-location inputs, explicit approximate-pin consent, sensitive-species and
+  cannabis boundaries, and withdrawal path are implemented; production already proves the
+  disabled-until-complete state and the honest empty globe. **Remaining gate:** publish one
+  non-sensitive ordinary observation, reload its Saved Run and public photo/card/pin, then
+  withdraw it and verify disappearance after reload. **Next action:** production mutation,
+  public read, withdrawal, and cleanup. **Do not rebuild:** direct publication, approximate
+  projection, withdrawal, or the optional Field Study boundary.
+- **P-06 — retained evidence:** Grow creation and Nature publication are separate, proximity
+  inference is forbidden, and the house crape myrtle plus every potted-house record remain
+  excluded. **Remaining gate:** before and after the P-05 publication, prove that only the
+  explicitly selected observation becomes public and that Grow save, house records, and
+  nearby/same-date records remain private. **Next action:** production privacy assertion
+  coupled to P-05. **Do not rebuild:** private-by-default storage or the no-inference rules.
+- **P-10 — retained evidence:** frontend `e699e5fe` and the current populated 60-event Grow
+  prove the visual timeline, Lifecycle/Month/Week/Day views, source links, and export/share
+  entry points. **Remaining gate:** persist an export and exercise share review/cancel,
+  publish a revocable privacy-safe viewer link, open it as a viewer, withdraw it, and reload
+  every state. **Next action:** production mutation, public/private read, and cleanup. **Do
+  not rebuild:** event aggregation, visual/zoom controls, source links, or existing export
+  and share entry points.
+- **N-01 — retained evidence:** the production globe, controls, search/review filters, broad
+  fallback viewport, compact/public entry points, and honest zero-pin list are accepted.
+  **Remaining gate:** reuse the P-05 observation to verify the populated map and list,
+  photo/date/description/identity card, search/filter, public viewport, and applicable
+  responsive/accessibility states; test clustering only with legitimate density, never
+  fabricated records. **Next action:** populated production read plus final-candidate crawl.
+  **Do not rebuild:** the globe, map/list runtime, filters, or zero-pin state.
+- **N-02 — retained evidence:** the current candidate renders the compact Discover Nature
+  globe with zero pins and opens the canonical Nature experience. **Remaining gate:** none;
+  its status stays `live accepted`, with only ordinary final-crawl regression coverage.
+  **Next action:** final-candidate regression check. **Do not rebuild:** the preview or its
+  canonical link; the older duplicate-preview removal is superseded history.
+- **N-03 — retained evidence:** exact/private projection, selected public precision,
+  sensitive-species handling, cannabis interest/consent, and identity-redaction rules are
+  implemented and their pre-publish boundary is live. **Remaining gate:** during P-05 prove
+  the exact source point never appears in the public response/card/viewport, the selected
+  approximation is honored, and the relevant consent/visibility views do not expose private
+  cannabis data. **Next action:** production privacy/security acceptance. **Do not rebuild:**
+  the projection or visibility policy.
+- **N-04 — retained evidence:** current production has not guessed, merged, or published the
+  legacy Cary, Maydale, house, duplicate, or unresolved records. **Remaining gate:** a
+  final-candidate read-only privacy regression; individual legacy recovery is an optional,
+  owner-triggered action and does not block P-03 through P-06 or future Nature pins. If used,
+  each result requires a newest defensible nonduplicate identity and a known place. **Next
+  action:** final-candidate read-only check or optional owner recovery. **Do not rebuild:**
+  legacy selection, deduplication, uncertainty, or no-location-inference rules.
+- **S-05 — retained evidence:** reusable private RTMPS, OBS ingest, signed playback and
+  viewer volume, GrowPath chat/overlay, stop, recording-ready replay, retention, and key
+  rotation have production evidence and remain accepted. **Remaining gate:** one bounded
+  two-account concurrent run proving inputs, keys, chat, playback, stop/replay, limits, and
+  cleanup never cross accounts, followed by the final role/load isolation check. **Next
+  action:** production concurrency/security acceptance. **Do not rebuild or replace:** the
+  Cloudflare/OBS channel, player, chat overlay, lifecycle, stop, or replay architecture.
+
 ## Immediate execution order
 
 1. Preserve the completed integrated-candidate Personal, paid-Commercial and Platform-Admin
