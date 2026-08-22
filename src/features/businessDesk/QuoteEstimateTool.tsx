@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import {
+  archiveBusinessDeskRecord,
   calculateBusinessDesk,
   createBusinessDeskRecord,
   listBusinessDeskRecords,
@@ -48,6 +49,17 @@ import { exportCsvContent, type CsvExportResult } from "@/utils/exportToCsv";
 
 type TaxType = "none" | "percent" | "fixed";
 type DepositType = "none" | "percent" | "fixed";
+
+type QuoteCalculationResultWithMetadata = QuoteCalculationResult & {
+  resultMetadata: {
+    formulaVersion: string;
+    roundingRule: "half_away_from_zero_at_conversion_boundaries";
+    calculatedAt: string;
+    inputSnapshot: Record<string, unknown>;
+    inputDigestSha256: string;
+    missingInputs: string[];
+  };
+};
 
 export type QuoteArtifactLocalOutcome =
   | { method: "clipboard" }
@@ -181,7 +193,11 @@ function quotePercent(value: string, label: string, allowBlank = false) {
   if (match?.[1] && match[1].length > 2) {
     throw new Error(`${label} supports at most 2 decimal places.`);
   }
-  return parsePercentInput(raw, { label, allowBlank });
+  const basisPoints = parsePercentInput(raw, { label, allowBlank });
+  if (basisPoints !== null && basisPoints > 10_000) {
+    throw new Error(`${label} cannot exceed 100%.`);
+  }
+  return basisPoints;
 }
 
 function rawMajor(amount: unknown, minorUnitDigits: number) {
@@ -211,6 +227,35 @@ function readableDate(value: string | undefined) {
   return Number.isFinite(parsed.getTime())
     ? parsed.toLocaleString()
     : "Recorded date unavailable";
+}
+
+function verifiedQuoteResult(
+  value: QuoteCalculationResultWithMetadata,
+  input: QuoteCalculationInput
+) {
+  const metadata = value?.resultMetadata;
+  if (
+    value?.calculator !== "quote" ||
+    value.currency !== input.currency ||
+    value.minorUnitDigits !== input.minorUnitDigits ||
+    !Array.isArray(value.lineItems) ||
+    value.lineItems.length !== input.lineItems.length ||
+    !metadata ||
+    typeof metadata.formulaVersion !== "string" ||
+    !metadata.formulaVersion.trim() ||
+    metadata.roundingRule !== "half_away_from_zero_at_conversion_boundaries" ||
+    !Number.isFinite(new Date(metadata.calculatedAt).getTime()) ||
+    !/^[a-f0-9]{64}$/.test(String(metadata.inputDigestSha256 || "")) ||
+    !metadata.inputSnapshot ||
+    typeof metadata.inputSnapshot !== "object" ||
+    Array.isArray(metadata.inputSnapshot) ||
+    !Array.isArray(metadata.missingInputs)
+  ) {
+    throw new Error(
+      "The quote calculation response was incomplete or did not match the requested inputs."
+    );
+  }
+  return value;
 }
 
 function payloadFrom(record: BusinessDeskRecord): QuoteRecordPayload | null {
@@ -257,12 +302,13 @@ export default function QuoteEstimateTool({
   const [selectedRecord, setSelectedRecord] = useState<BusinessDeskRecord | null>(null);
   const [revisions, setRevisions] = useState<BusinessDeskRevision[]>([]);
   const [savedFingerprint, setSavedFingerprint] = useState("");
-  const [result, setResult] = useState<QuoteCalculationResult | null>(null);
+  const [result, setResult] = useState<QuoteCalculationResultWithMetadata | null>(null);
   const [resultFingerprint, setResultFingerprint] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [archiveReason, setArchiveReason] = useState("");
   const workspaceType = workspace.workspaceType;
   const workspaceFacilityId = workspaceType === "facility" ? workspace.facilityId : "";
   const workspaceKey =
@@ -401,6 +447,7 @@ export default function QuoteEstimateTool({
     setBusy(false);
     setError(null);
     setFeedback("");
+    setArchiveReason("");
     retryIdentity.current = null;
     void loadRecords();
     return () => loadRequest.current.controller?.abort();
@@ -530,8 +577,11 @@ export default function QuoteEstimateTool({
     setFeedback("");
     try {
       const input = buildCalculationInput();
-      const next = await calculateBusinessDesk<QuoteCalculationResult>(
-        requestWorkspace,
+      const next = verifiedQuoteResult(
+        await calculateBusinessDesk<QuoteCalculationResultWithMetadata>(
+          requestWorkspace,
+          input
+        ),
         input
       );
       if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
@@ -584,8 +634,11 @@ export default function QuoteEstimateTool({
     setBusy(true);
     try {
       const calculation = buildCalculationInput();
-      const nextResult = await calculateBusinessDesk<QuoteCalculationResult>(
-        requestWorkspace,
+      const nextResult = verifiedQuoteResult(
+        await calculateBusinessDesk<QuoteCalculationResultWithMetadata>(
+          requestWorkspace,
+          calculation
+        ),
         calculation
       );
       if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
@@ -710,6 +763,63 @@ export default function QuoteEstimateTool({
     }
   }
 
+  async function archiveQuote() {
+    if (!selectedRecord || busy) return;
+    const requestWorkspaceKey = workspaceKey;
+    const id = recordId(selectedRecord);
+    const reason = archiveReason.trim();
+    if (!id) {
+      setError(new Error("The selected quote has no identifier."));
+      return;
+    }
+    if (reason.length < 3) {
+      setError(new Error("Enter an archive reason with at least three characters."));
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setFeedback("");
+    try {
+      const signature = JSON.stringify({
+        operation: "archive",
+        id,
+        expectedVersion: selectedRecord.version,
+        reason
+      });
+      if (!retryIdentity.current || retryIdentity.current.signature !== signature) {
+        retryIdentity.current = {
+          signature,
+          key: uniqueKey("archive", id)
+        };
+      }
+      await archiveBusinessDeskRecord(requestWorkspace, id, {
+        expectedVersion: selectedRecord.version,
+        reason,
+        idempotencyKey: retryIdentity.current.key
+      });
+      if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
+      retryIdentity.current = null;
+      setRecords((current) => current.filter((record) => recordId(record) !== id));
+      setSelectedRecord(null);
+      setRevisions([]);
+      setSavedFingerprint("");
+      setResult(null);
+      setResultFingerprint("");
+      setArchiveReason("");
+      setFeedback(
+        `Archived ${selectedRecord.title} revision ${selectedRecord.version}. Its immutable history was preserved; the fields above remain an unsaved copy you can edit or save as a new draft.`
+      );
+    } catch (caught) {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setError(
+          caught instanceof Error ? caught : new Error("The quote could not be archived.")
+        );
+      }
+    } finally {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) setBusy(false);
+    }
+  }
+
   async function prepareArtifact(mode: "copy" | "csv") {
     if (!exactReviewedRevision || !selectedRecord || busy) return;
     const requestWorkspaceKey = workspaceKey;
@@ -793,6 +903,7 @@ export default function QuoteEstimateTool({
   }
 
   function selectRecord(record: BusinessDeskRecord) {
+    if (busy) return;
     const payload = payloadFrom(record);
     if (!payload) {
       setError(new Error("The selected saved quote payload is invalid."));
@@ -901,6 +1012,40 @@ export default function QuoteEstimateTool({
   );
   const exactReviewedRevision = Boolean(
     selectedRecord && selectedRecord.status === "reviewed"
+  );
+  const taxSourceLabel = currentResult
+    ? currentResult.totals.tax.type === "percent"
+      ? `${formatBasisPoints(currentResult.totals.tax.basisPoints ?? null)} entered by the operator; base: ${
+          currentResult.totals.tax.base === "discounted_subtotal_plus_shipping"
+            ? "discounted line subtotal plus customer shipping"
+            : "discounted line subtotal"
+        }.`
+      : currentResult.totals.tax.type === "fixed"
+        ? "Fixed amount entered by the operator."
+        : "No tax entered."
+    : "";
+  const requestedFixedDiscountMinor =
+    currentResult && resultContext
+      ? (quoteMoney(discountFixed, resultContext, {
+          label: "Fixed discount",
+          allowBlank: true
+        }) ?? 0)
+      : 0;
+  const fixedDiscountWasCapped = Boolean(
+    currentResult &&
+    requestedFixedDiscountMinor > currentResult.totals.discount.fixedMinor
+  );
+  const requestedFixedDepositMinor =
+    currentResult && resultContext && depositType === "fixed"
+      ? (quoteMoney(depositAmount, resultContext, {
+          label: "Deposit amount",
+          allowBlank: true
+        }) ?? 0)
+      : 0;
+  const fixedDepositWasCapped = Boolean(
+    currentResult &&
+    depositType === "fixed" &&
+    requestedFixedDepositMinor > currentResult.totals.depositDueMinor
   );
 
   return (
@@ -1404,6 +1549,15 @@ export default function QuoteEstimateTool({
               </Text>
             </View>
             <View style={styles.metric}>
+              <Text style={styles.metricLabel}>Customer shipping</Text>
+              <Text style={styles.metricValue}>
+                {formatMoneyMinor(
+                  currentResult.totals.customerShippingMinor,
+                  resultContext
+                )}
+              </Text>
+            </View>
+            <View style={styles.metric}>
               <Text style={styles.metricLabel}>Customer total</Text>
               <Text style={styles.metricValue}>
                 {formatMoneyMinor(currentResult.totals.totalMinor, resultContext)}
@@ -1428,6 +1582,18 @@ export default function QuoteEstimateTool({
               <Text style={styles.metricLabel}>Known costs</Text>
               <Text style={styles.metricValue}>
                 {formatMoneyMinor(currentResult.totals.knownCostMinor, resultContext)}
+              </Text>
+            </View>
+            <View style={styles.metric}>
+              <Text style={styles.metricLabel}>Business / payment fees</Text>
+              <Text style={styles.metricValue}>
+                {formatMoneyMinor(currentResult.totals.businessFeesMinor, resultContext)}
+              </Text>
+            </View>
+            <View style={styles.metric}>
+              <Text style={styles.metricLabel}>Fulfillment / shipping cost</Text>
+              <Text style={styles.metricValue}>
+                {formatMoneyMinor(currentResult.totals.shippingCostMinor, resultContext)}
               </Text>
             </View>
             <View style={styles.metric}>
@@ -1458,6 +1624,26 @@ export default function QuoteEstimateTool({
               </Text>
             </View>
           ) : null}
+          {fixedDiscountWasCapped ? (
+            <View style={styles.warning}>
+              <Text style={styles.warningTitle}>Fixed discount limited to subtotal</Text>
+              <Text style={styles.warningText}>
+                The entered fixed discount was larger than the amount remaining after the
+                percentage discount. The applied discount shown above was capped at that
+                remaining subtotal.
+              </Text>
+            </View>
+          ) : null}
+          {fixedDepositWasCapped ? (
+            <View style={styles.warning}>
+              <Text style={styles.warningTitle}>Deposit limited to customer total</Text>
+              <Text style={styles.warningText}>
+                The entered fixed deposit was larger than the customer total. The
+                requested deposit shown above was capped at the customer total; no charge
+                or payment occurred.
+              </Text>
+            </View>
+          ) : null}
           <View style={styles.lineTotals}>
             {currentResult.lineItems.map((line, index) => (
               <Text key={index} style={styles.bodyText}>
@@ -1468,10 +1654,19 @@ export default function QuoteEstimateTool({
             ))}
           </View>
           <Text style={styles.boundaryText}>
+            Customer total = discounted line subtotal + customer shipping + tax entered by
+            the operator. Tax source: {taxSourceLabel} Known costs = completed line direct
+            costs + business/payment fees + fulfillment/shipping cost. Tax is not treated
+            as revenue or cost for the estimated gross-profit calculation.
+          </Text>
+          <Text style={styles.boundaryText}>
             Currency: {currentResult.currency} · minor-unit digits:{" "}
             {currentResult.minorUnitDigits} · quantity scale:{" "}
             {currentResult.quantityScale.toLocaleString()} · rates: basis points ·
-            rounding: half away from zero.
+            rounding: half away from zero. Formula:{" "}
+            {currentResult.resultMetadata.formulaVersion}
+            {" · "}calculated {readableDate(currentResult.resultMetadata.calculatedAt)}
+            {" · "}input fingerprint: {currentResult.resultMetadata.inputDigestSha256}.
           </Text>
         </AppCard>
       ) : null}
@@ -1535,6 +1730,16 @@ export default function QuoteEstimateTool({
         titleLevel={2}
         subtitle="Opening a saved quote loads its current version; revision history remains append-only."
       >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Refresh saved quote list"
+          accessibilityState={{ disabled: loading || busy }}
+          disabled={loading || busy}
+          onPress={() => void loadRecords()}
+          style={[styles.secondaryButton, (loading || busy) && styles.disabled]}
+        >
+          <Text style={styles.secondaryButtonText}>Refresh saved quotes</Text>
+        </Pressable>
         {loading ? <ActivityIndicator color={palette.accent} /> : null}
         {!loading && records.length === 0 ? (
           <Text style={styles.bodyText}>
@@ -1547,6 +1752,8 @@ export default function QuoteEstimateTool({
               key={recordId(record)}
               accessibilityRole="button"
               accessibilityLabel={`Open saved quote ${record.title}`}
+              accessibilityState={{ disabled: busy }}
+              disabled={busy}
               onPress={() => selectRecord(record)}
               style={[
                 styles.savedCard,
@@ -1564,33 +1771,59 @@ export default function QuoteEstimateTool({
       </AppCard>
 
       {selectedRecord ? (
-        <AppCard
-          title="Immutable revision history"
-          titleLevel={2}
-          subtitle={`Current record version ${selectedRecord.version}. A stale save is rejected and this on-screen draft is retained.`}
-        >
-          {revisions.length === 0 ? (
-            <Text style={styles.bodyText}>No revision entries were returned yet.</Text>
-          ) : (
-            <View style={styles.stack}>
-              {revisions.map((revision, index) => (
-                <View
-                  key={String(
-                    revision._id || revision.id || `${revision.revisionNumber}-${index}`
-                  )}
-                  style={styles.revisionRow}
-                >
-                  <Text style={styles.revisionTitle}>
-                    Revision {revision.revisionNumber || revision.version || "?"}
-                  </Text>
-                  <Text style={styles.savedMeta}>
-                    {revision.operation || "saved"} · {readableDate(revision.createdAt)}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </AppCard>
+        <>
+          <AppCard
+            title="Immutable revision history"
+            titleLevel={2}
+            subtitle={`Current record version ${selectedRecord.version}. A stale save is rejected and this on-screen draft is retained.`}
+          >
+            {revisions.length === 0 ? (
+              <Text style={styles.bodyText}>No revision entries were returned yet.</Text>
+            ) : (
+              <View style={styles.stack}>
+                {revisions.map((revision, index) => (
+                  <View
+                    key={String(
+                      revision._id || revision.id || `${revision.revisionNumber}-${index}`
+                    )}
+                    style={styles.revisionRow}
+                  >
+                    <Text style={styles.revisionTitle}>
+                      Revision {revision.revisionNumber || revision.version || "?"}
+                    </Text>
+                    <Text style={styles.savedMeta}>
+                      {revision.operation || "saved"} · {readableDate(revision.createdAt)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </AppCard>
+          <AppCard
+            title="Archive selected quote"
+            titleLevel={2}
+            subtitle="Archiving removes this quote from the active list but preserves its immutable revisions and audit history."
+          >
+            <Field
+              label="Archive reason"
+              accessibilityLabel="Quote archive reason"
+              value={archiveReason}
+              onChangeText={setArchiveReason}
+              placeholder="Why is this quote being archived?"
+              styles={styles}
+            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Archive selected quote"
+              accessibilityState={{ disabled: busy }}
+              disabled={busy}
+              onPress={() => void archiveQuote()}
+              style={[styles.secondaryButton, busy && styles.disabled]}
+            >
+              <Text style={styles.secondaryButtonText}>Archive quote</Text>
+            </Pressable>
+          </AppCard>
+        </>
       ) : null}
     </AppPage>
   );
