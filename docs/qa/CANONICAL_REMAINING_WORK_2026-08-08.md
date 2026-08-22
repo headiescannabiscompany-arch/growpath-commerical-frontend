@@ -133,6 +133,11 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   Finish the canonical eight-tool acceptance and enable only the operations whose provider,
   malware/privacy, idempotency, audit and confirmation gates pass; show any unavailable
   operation visibly instead of hiding the tool.
+  Frontend `9c55b6bca924cded23d8f7d0d09700d8b509c3d4` is deployed and the live
+  Triple Bag Genetics `STAFF` denial is accepted. Owner/Manager mutation, Viewer denial,
+  provider operation, reload/isolation, Facility credit/refund and audit remain the exact
+  live gates; they require the corresponding authorized account sessions and must not cause
+  an eight-tool rebuild.
 - [~] **S-05 hosted Lives/OBS:** the retained hosted-live architecture and production evidence
   are accepted and must not be rebuilt. `EXPO_PUBLIC_USE_LIVE_BACKEND` and Cloudflare
   provider readiness can bury the entry; the final route-to-entry and two-account
