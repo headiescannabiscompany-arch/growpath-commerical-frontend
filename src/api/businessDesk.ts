@@ -12,6 +12,18 @@ export type BusinessDeskWorkspace =
 
 export type BusinessDeskRequestOptions = { signal?: AbortSignal };
 
+export type BusinessDeskWorkspaceTimeZone = {
+  configured: boolean;
+  workspaceType: "commercial" | "facility";
+  workspaceId: string;
+  timeZone: string | null;
+  version: number;
+  selectedByUserId?: string;
+  selectedByRole?: string;
+  selectedAt?: string;
+  idempotentReplay?: boolean;
+};
+
 export const COMMERCIAL_BUSINESS_DESK_WORKSPACE = {
   workspaceType: "commercial"
 } as const satisfies BusinessDeskWorkspace;
@@ -323,6 +335,7 @@ export type CashFlowCalculationInput = {
   currentCashMinor: number | null;
   asOf: string;
   timeZone: string;
+  timeZoneVersion: number;
   staleAfterDays: number;
   horizonsDays: number[];
   entries: Array<{
@@ -464,6 +477,106 @@ export function businessDeskBase(workspace: BusinessDeskWorkspace) {
     : "/api/business-desk";
 }
 
+function workspaceTimeZoneFrom(
+  response: unknown,
+  workspace: BusinessDeskWorkspace
+): BusinessDeskWorkspaceTimeZone {
+  const resolvedWorkspace = requireBusinessDeskWorkspace(workspace);
+  const value = envelope(response)?.workspaceTimeZone;
+  const configured = value?.configured === true;
+  const version = Number(value?.version);
+  const workspaceId =
+    typeof value?.workspaceId === "string" ? value.workspaceId.trim() : "";
+  const timeZone = configured ? normalizeIanaTimeZone(value?.timeZone) : null;
+  const selectedByUserId =
+    typeof value?.selectedByUserId === "string" ? value.selectedByUserId.trim() : "";
+  const selectedByRole =
+    typeof value?.selectedByRole === "string" ? value.selectedByRole.trim() : "";
+  const selectedAt = typeof value?.selectedAt === "string" ? value.selectedAt.trim() : "";
+  const expectedWorkspaceType = resolvedWorkspace.workspaceType;
+  const workspaceMatches =
+    value?.workspaceType === expectedWorkspaceType &&
+    Boolean(workspaceId) &&
+    (expectedWorkspaceType === "commercial" ||
+      workspaceId === resolvedWorkspace.facilityId);
+  const versionMatches =
+    Number.isSafeInteger(version) &&
+    ((configured && version >= 1) || (!configured && version === 0));
+  if (
+    !value ||
+    typeof value !== "object" ||
+    !workspaceMatches ||
+    !versionMatches ||
+    (configured && !timeZone) ||
+    (!configured && value.timeZone !== null) ||
+    (configured &&
+      (!selectedByUserId ||
+        !selectedByRole ||
+        !selectedAt ||
+        !Number.isFinite(new Date(selectedAt).getTime())))
+  ) {
+    throw new Error("The Business Desk workspace time-zone response was invalid.");
+  }
+  return {
+    configured,
+    workspaceType: expectedWorkspaceType,
+    workspaceId,
+    timeZone,
+    version,
+    ...(configured ? { selectedByUserId, selectedByRole, selectedAt } : {}),
+    ...(typeof value.idempotentReplay === "boolean"
+      ? { idempotentReplay: value.idempotentReplay }
+      : {})
+  };
+}
+
+export async function getBusinessDeskWorkspaceTimeZone(
+  workspace: BusinessDeskWorkspace,
+  request: BusinessDeskRequestOptions = {}
+) {
+  const response = await apiRequest(
+    `${businessDeskBase(workspace)}/workspace-time-zone`,
+    {
+      ...(request.signal ? { signal: request.signal } : {})
+    }
+  );
+  return workspaceTimeZoneFrom(response, workspace);
+}
+
+export async function patchBusinessDeskWorkspaceTimeZone(
+  workspace: BusinessDeskWorkspace,
+  input: { timeZone: string; expectedVersion: number; idempotencyKey: string },
+  request: BusinessDeskRequestOptions = {}
+) {
+  const timeZone = normalizeIanaTimeZone(input.timeZone);
+  const idempotencyKey = String(input.idempotencyKey || "").trim();
+  if (!timeZone) {
+    throw new Error("Choose a valid IANA workspace time zone.");
+  }
+  if (!Number.isSafeInteger(input.expectedVersion) || input.expectedVersion < 0) {
+    throw new Error("The workspace time-zone version must be reloaded before saving.");
+  }
+  if (
+    idempotencyKey.length < 8 ||
+    idempotencyKey.length > 200 ||
+    Array.from(idempotencyKey).some((character) => {
+      const codePoint = character.charCodeAt(0);
+      return codePoint < 33 || codePoint > 126;
+    })
+  ) {
+    throw new Error("A stable workspace time-zone retry key is required.");
+  }
+  const response = await apiRequest(
+    `${businessDeskBase(workspace)}/workspace-time-zone`,
+    {
+      method: "PATCH",
+      body: { timeZone, expectedVersion: input.expectedVersion, idempotencyKey },
+      ...(request.signal ? { signal: request.signal } : {})
+    }
+  );
+  return workspaceTimeZoneFrom(response, workspace);
+}
+
 function envelope(response: any) {
   return response?.data && typeof response.data === "object" ? response.data : response;
 }
@@ -483,6 +596,14 @@ export async function calculateBusinessDesk<TResult>(
 ): Promise<TResult> {
   if (input.calculator === "cash_flow" && !normalizeIanaTimeZone(input.timeZone)) {
     throw new Error("Cash-flow calculations require a valid IANA time zone.");
+  }
+  if (
+    input.calculator === "cash_flow" &&
+    (!Number.isSafeInteger(input.timeZoneVersion) || input.timeZoneVersion < 1)
+  ) {
+    throw new Error(
+      "Cash-flow calculations require the authoritative workspace time-zone version."
+    );
   }
   const response = await apiRequest(`${businessDeskBase(workspace)}/calculate`, {
     method: "POST",

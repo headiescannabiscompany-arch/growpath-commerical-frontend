@@ -19,6 +19,11 @@ import {
 import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
 import ReviewedArtifactPanel from "@/features/businessDesk/ReviewedArtifactPanel";
 import {
+  useBusinessDeskWorkspaceTimeZone,
+  WorkspaceTimeZoneControl,
+  workspaceTimeZoneReady
+} from "@/features/businessDesk/WorkspaceTimeZoneControl";
+import {
   formatMoneyMinor,
   parseMoneyInput,
   resolveCurrencyContext,
@@ -32,7 +37,6 @@ import {
   isoInstantToZonedLocalDateTime,
   zonedLocalDateTimeToIsoStrict
 } from "@/features/businessDesk/zonedDateTime";
-import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -74,6 +78,7 @@ type CashFlowCalculationResult = {
   minorUnitDigits: number;
   asOf: string;
   timeZone: string;
+  workspaceTimeZoneVersion: number;
   staleAfterDays: number;
   currentCashMinor: number | null;
   evidenceSummary: {
@@ -116,25 +121,6 @@ const SOURCE_LINK_TYPES: Partial<Record<CashSourceType, string>> = {
 };
 
 let entrySequence = 0;
-
-export function detectedCashFlowDeviceTimeZone() {
-  try {
-    return normalizeIanaTimeZone(new Intl.DateTimeFormat().resolvedOptions().timeZone);
-  } catch {
-    return null;
-  }
-}
-
-export function resolveCashFlowDefaultTimeZone(
-  facilityTimeZone: unknown,
-  deviceTimeZone: unknown = detectedCashFlowDeviceTimeZone()
-) {
-  return (
-    normalizeIanaTimeZone(facilityTimeZone) ||
-    normalizeIanaTimeZone(deviceTimeZone) ||
-    "UTC"
-  );
-}
 
 function formatInstantInTimeZone(value: string, timeZone: string) {
   try {
@@ -251,7 +237,6 @@ export default function CashFlowSnapshotTool({
   canViewCurrentCash
 }: CashFlowSnapshotToolProps) {
   const { palette } = useAppTheme();
-  const { selected: activeFacility } = useFacility();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const sanitizeRecord = useCallback(
     (record: BusinessDeskRecord) => {
@@ -262,9 +247,27 @@ export default function CashFlowSnapshotTool({
       >;
       const { currentCashMinor: _privateCurrentCash, ...visibleSnapshot } =
         cashFlowSnapshot;
+      const totals = record.totals
+        ? ({ ...record.totals } as Record<string, any>)
+        : undefined;
+      if (totals) {
+        delete totals.currentCashMinor;
+        delete totals.inputSnapshotJson;
+        if (Array.isArray(totals.horizons)) {
+          totals.horizons = totals.horizons.map((horizon: unknown) => {
+            const source =
+              horizon && typeof horizon === "object"
+                ? (horizon as Record<string, unknown>)
+                : {};
+            const { projectedCashMinor: _projectedCash, ...visibleHorizon } = source;
+            return visibleHorizon;
+          });
+        }
+      }
       return {
         ...record,
-        payload: { ...record.payload, cashFlowSnapshot: visibleSnapshot }
+        payload: { ...record.payload, cashFlowSnapshot: visibleSnapshot },
+        ...(totals ? { totals: totals as unknown as BusinessDeskRecord["totals"] } : {})
       };
     },
     [canViewCurrentCash]
@@ -283,30 +286,31 @@ export default function CashFlowSnapshotTool({
   );
   const workspaceKey =
     workspaceType === "facility" ? `facility:${facilityId}` : "commercial";
-  const activeFacilityTimeZone =
-    workspaceType === "facility" &&
-    activeFacility?.id === facilityId &&
-    typeof activeFacility.timezone === "string"
-      ? activeFacility.timezone
-      : null;
-  const preferredTimeZone = useMemo(
-    () => resolveCashFlowDefaultTimeZone(activeFacilityTimeZone),
-    [activeFacilityTimeZone]
-  );
+  const workspaceTimeZoneState = useBusinessDeskWorkspaceTimeZone(stableWorkspace);
+  const authoritativeTimeZone = workspaceTimeZoneState.value?.configured
+    ? workspaceTimeZoneState.value.timeZone
+    : null;
+  const authoritativeTimeZoneVersion = workspaceTimeZoneState.value?.configured
+    ? workspaceTimeZoneState.value.version
+    : 0;
   const currentWorkspaceKey = useRef(workspaceKey);
+  const resetWorkspaceKey = useRef(workspaceKey);
+  currentWorkspaceKey.current = workspaceKey;
   const calculationEpoch = useRef(0);
-  const initialAsOfRef = useRef<ReturnType<typeof zonedNow> | null>(null);
-  if (!initialAsOfRef.current) initialAsOfRef.current = zonedNow(preferredTimeZone);
-  const initialAsOf = initialAsOfRef.current;
+  const appliedTimeZone = useRef<{
+    workspaceKey: string;
+    timeZone: string;
+    version: number;
+  } | null>(null);
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [currentCash, setCurrentCash] = useState("");
-  const [asOf, setAsOf] = useState(initialAsOf.wall);
-  const [asOfIsoHint, setAsOfIsoHint] = useState(initialAsOf.iso);
+  const [asOf, setAsOf] = useState("");
+  const [asOfIsoHint, setAsOfIsoHint] = useState("");
   const [asOfTouched, setAsOfTouched] = useState(false);
-  const [timeZone, setTimeZone] = useState(preferredTimeZone);
-  const [timeZoneTouched, setTimeZoneTouched] = useState(false);
+  const [timeZone, setTimeZone] = useState("");
+  const [timeZoneVersion, setTimeZoneVersion] = useState(0);
   const [staleAfterDays, setStaleAfterDays] = useState("30");
   const [entries, setEntries] = useState<CashEntryDraft[]>([]);
   const [assumptions, setAssumptions] = useState("");
@@ -377,6 +381,7 @@ export default function CashFlowSnapshotTool({
     asOf,
     asOfIsoHint,
     timeZone,
+    timeZoneVersion,
     staleAfterDays,
     entries: entries.map(cleanEntryForFingerprint),
     assumptions
@@ -388,55 +393,120 @@ export default function CashFlowSnapshotTool({
     selected?.status === "reviewed" && contentFingerprint === savedContentFingerprint
   );
   const visibleResult = resultFingerprint === contentFingerprint ? result : null;
+  const timeSensitiveBlocked =
+    !workspaceTimeZoneReady(workspaceTimeZoneState) ||
+    timeZone !== authoritativeTimeZone ||
+    timeZoneVersion !== authoritativeTimeZoneVersion;
 
-  const reset = useCallback(
-    (nextTimeZone = preferredTimeZone) => {
-      const nextAsOf = zonedNow(nextTimeZone);
-      calculationEpoch.current += 1;
-      setSelected(null);
-      setTitle("");
-      setCurrency("USD");
-      setCurrentCash("");
-      setAsOf(nextAsOf.wall);
-      setAsOfIsoHint(nextAsOf.iso);
-      setAsOfTouched(false);
-      setTimeZone(nextTimeZone);
-      setTimeZoneTouched(false);
-      setStaleAfterDays("30");
-      setEntries([]);
-      setAssumptions("");
-      setArchiveReason("");
-      setSavedContentFingerprint("");
-      setResult(null);
-      setResultFingerprint("");
-      setFormError("");
-      setFeedback("");
-      setBusy(false);
-    },
-    [preferredTimeZone]
+  const reset = useCallback((nextTimeZone = "", nextTimeZoneVersion = 0) => {
+    const nextAsOf = nextTimeZone ? zonedNow(nextTimeZone) : null;
+    calculationEpoch.current += 1;
+    setSelected(null);
+    setTitle("");
+    setCurrency("USD");
+    setCurrentCash("");
+    setAsOf(nextAsOf?.wall || "");
+    setAsOfIsoHint(nextAsOf?.iso || "");
+    setAsOfTouched(false);
+    setTimeZone(nextTimeZone);
+    setTimeZoneVersion(nextTimeZoneVersion);
+    setStaleAfterDays("30");
+    setEntries([]);
+    setAssumptions("");
+    setArchiveReason("");
+    setSavedContentFingerprint("");
+    setResult(null);
+    setResultFingerprint("");
+    setFormError("");
+    setFeedback("");
+    setBusy(false);
+  }, []);
+
+  const startNew = useCallback(
+    () => reset(authoritativeTimeZone || "", authoritativeTimeZoneVersion),
+    [authoritativeTimeZone, authoritativeTimeZoneVersion, reset]
   );
 
   useEffect(() => {
-    if (currentWorkspaceKey.current === workspaceKey) return;
-    currentWorkspaceKey.current = workspaceKey;
-    reset(preferredTimeZone);
-  }, [preferredTimeZone, reset, workspaceKey]);
+    if (resetWorkspaceKey.current === workspaceKey) return;
+    resetWorkspaceKey.current = workspaceKey;
+    appliedTimeZone.current = null;
+    reset();
+  }, [reset, workspaceKey]);
 
   useEffect(() => {
-    if (selected || timeZoneTouched) return;
-    setTimeZone(preferredTimeZone);
-    if (!asOfTouched) {
-      const nextAsOf = zonedNow(preferredTimeZone);
+    if (!authoritativeTimeZone || authoritativeTimeZoneVersion < 1) return;
+    const prior = appliedTimeZone.current;
+    if (
+      prior?.workspaceKey === workspaceKey &&
+      prior.timeZone === authoritativeTimeZone &&
+      prior.version === authoritativeTimeZoneVersion
+    ) {
+      return;
+    }
+    appliedTimeZone.current = {
+      workspaceKey,
+      timeZone: authoritativeTimeZone,
+      version: authoritativeTimeZoneVersion
+    };
+    setTimeZone(authoritativeTimeZone);
+    setTimeZoneVersion(authoritativeTimeZoneVersion);
+    const priorTimeZone =
+      prior?.workspaceKey === workspaceKey ? prior.timeZone : timeZone;
+    if (priorTimeZone && priorTimeZone !== authoritativeTimeZone) {
+      const exactAsOf = validIsoInstant(asOfIsoHint);
+      setAsOf(
+        exactAsOf ? isoInstantToZonedLocalDateTime(exactAsOf, authoritativeTimeZone) : ""
+      );
+      setEntries((current) =>
+        current.map((entry) => {
+          const dueAt = validIsoInstant(entry.dueAtIsoHint);
+          const sourceRecordedAt = validIsoInstant(entry.sourceRecordedAtIsoHint);
+          const sourceFreshnessAt = validIsoInstant(entry.sourceFreshnessAtIsoHint);
+          return {
+            ...entry,
+            dueAt: dueAt
+              ? isoInstantToZonedLocalDateTime(dueAt, authoritativeTimeZone)
+              : "",
+            sourceRecordedAt: sourceRecordedAt
+              ? isoInstantToZonedLocalDateTime(sourceRecordedAt, authoritativeTimeZone)
+              : "",
+            sourceFreshnessAt: sourceFreshnessAt
+              ? isoInstantToZonedLocalDateTime(sourceFreshnessAt, authoritativeTimeZone)
+              : ""
+          };
+        })
+      );
+      setFormError(
+        "The authoritative workspace time zone changed. Exact saved instants were converted; enter every cleared local date and review the scenario before calculating or saving."
+      );
+    } else if (!selected && !asOfTouched) {
+      const nextAsOf = zonedNow(authoritativeTimeZone);
       setAsOf(nextAsOf.wall);
       setAsOfIsoHint(nextAsOf.iso);
     }
-  }, [asOfTouched, preferredTimeZone, selected, timeZoneTouched]);
+  }, [
+    asOfIsoHint,
+    asOfTouched,
+    authoritativeTimeZone,
+    authoritativeTimeZoneVersion,
+    selected,
+    timeZone,
+    workspaceKey
+  ]);
 
   const open = (record: BusinessDeskRecord) => {
     const payload = payloadOf(record);
-    const savedTimeZone = normalizeIanaTimeZone(payload.timeZone) || preferredTimeZone;
+    const savedTimeZone = normalizeIanaTimeZone(payload.timeZone);
+    const displayTimeZone = authoritativeTimeZone || savedTimeZone;
+    if (!displayTimeZone) {
+      setFormError(
+        "This saved snapshot has no valid pinned time zone and the workspace setting is unset."
+      );
+      return;
+    }
     const savedAsOfIso = validIsoInstant(payload.asOf);
-    const fallbackAsOf = zonedNow(savedTimeZone);
+    const fallbackAsOf = zonedNow(displayTimeZone);
     const digits = Number.isInteger(payload.minorUnitDigits)
       ? Number(payload.minorUnitDigits)
       : 2;
@@ -445,22 +515,22 @@ export default function CashFlowSnapshotTool({
           const dueAtIso = validIsoInstant(entry.dueAt);
           const sourceRecordedAtIso = validIsoInstant(entry.sourceRecordedAt);
           const sourceFreshnessAtIso = validIsoInstant(entry.sourceFreshnessAt);
-          return newEntry(savedTimeZone, {
+          return newEntry(displayTimeZone, {
             label: String(entry.label || ""),
             direction: (entry.direction || "inflow") as CashDirection,
             confidence: (entry.confidence || "expected") as CashConfidence,
             amount: majorInput(entry.amountMinor, digits),
             dueAt: dueAtIso
-              ? isoInstantToZonedLocalDateTime(dueAtIso, savedTimeZone)
+              ? isoInstantToZonedLocalDateTime(dueAtIso, displayTimeZone)
               : "",
             dueAtIsoHint: dueAtIso || "",
             sourceType: (entry.sourceType || "manual") as CashSourceType,
             sourceRecordedAt: sourceRecordedAtIso
-              ? isoInstantToZonedLocalDateTime(sourceRecordedAtIso, savedTimeZone)
+              ? isoInstantToZonedLocalDateTime(sourceRecordedAtIso, displayTimeZone)
               : "",
             sourceRecordedAtIsoHint: sourceRecordedAtIso || "",
             sourceFreshnessAt: sourceFreshnessAtIso
-              ? isoInstantToZonedLocalDateTime(sourceFreshnessAtIso, savedTimeZone)
+              ? isoInstantToZonedLocalDateTime(sourceFreshnessAtIso, displayTimeZone)
               : "",
             sourceFreshnessAtIsoHint: sourceFreshnessAtIso || "",
             sourceRecordId: String(entry.sourceRecordId || "")
@@ -472,10 +542,13 @@ export default function CashFlowSnapshotTool({
       currency: String(payload.currency || "USD"),
       currentCash: canViewCurrentCash ? majorInput(payload.currentCashMinor, digits) : "",
       asOf: savedAsOfIso
-        ? isoInstantToZonedLocalDateTime(savedAsOfIso, savedTimeZone)
+        ? isoInstantToZonedLocalDateTime(savedAsOfIso, displayTimeZone)
         : fallbackAsOf.wall,
       asOfIsoHint: savedAsOfIso || fallbackAsOf.iso,
-      timeZone: savedTimeZone,
+      timeZone: displayTimeZone,
+      timeZoneVersion:
+        authoritativeTimeZoneVersion ||
+        (Number.isSafeInteger(payload.timeZoneVersion) ? payload.timeZoneVersion : 0),
       staleAfterDays: String(payload.staleAfterDays || 30),
       entries: nextEntries,
       assumptions: String(payload.assumptions || "")
@@ -488,7 +561,7 @@ export default function CashFlowSnapshotTool({
     setAsOfIsoHint(next.asOfIsoHint);
     setAsOfTouched(false);
     setTimeZone(next.timeZone);
-    setTimeZoneTouched(false);
+    setTimeZoneVersion(next.timeZoneVersion);
     setStaleAfterDays(next.staleAfterDays);
     setEntries(next.entries);
     setAssumptions(next.assumptions);
@@ -513,44 +586,22 @@ export default function CashFlowSnapshotTool({
     );
   };
 
-  const changeTimeZone = (value: string) => {
-    const normalized = normalizeIanaTimeZone(value);
-    setTimeZoneTouched(true);
-    setTimeZone(value);
-    setAsOfIsoHint("");
-    setAsOfTouched(true);
-    setEntries((current) =>
-      current.map((entry) => {
-        const next = { ...entry, dueAtIsoHint: "" };
-        if (entry.sourceType === "manual") {
-          return {
-            ...next,
-            sourceRecordedAtIsoHint: "",
-            sourceFreshnessAtIsoHint: ""
-          };
-        }
-        if (!normalized) return next;
-        const sourceRecordedAt = validIsoInstant(entry.sourceRecordedAtIsoHint);
-        const sourceFreshnessAt = validIsoInstant(entry.sourceFreshnessAtIsoHint);
-        return {
-          ...next,
-          sourceRecordedAt: sourceRecordedAt
-            ? isoInstantToZonedLocalDateTime(sourceRecordedAt, normalized)
-            : entry.sourceRecordedAt,
-          sourceFreshnessAt: sourceFreshnessAt
-            ? isoInstantToZonedLocalDateTime(sourceFreshnessAt, normalized)
-            : entry.sourceFreshnessAt
-        };
-      })
-    );
-  };
-
   const buildCalculationInput = () => {
     const context = resolveCurrencyContext(currency);
-    const normalizedTimeZone = normalizeIanaTimeZone(timeZone);
-    if (!normalizedTimeZone) {
+    const authoritative = workspaceTimeZoneState.value;
+    if (!workspaceTimeZoneReady(workspaceTimeZoneState) || !authoritative?.timeZone) {
       throw new Error(
-        "Enter a valid IANA time zone such as America/New_York or Europe/London."
+        "The workspace owner must configure and reload the authoritative time zone before calculating or saving local date boundaries."
+      );
+    }
+    const normalizedTimeZone = normalizeIanaTimeZone(authoritative.timeZone);
+    if (
+      !normalizedTimeZone ||
+      normalizedTimeZone !== timeZone ||
+      authoritative.version !== timeZoneVersion
+    ) {
+      throw new Error(
+        "The workspace time-zone version changed. Reload it and review every local date before continuing."
       );
     }
     const normalizedAsOf = cashFlowWallTimeToIso(
@@ -676,6 +727,7 @@ export default function CashFlowSnapshotTool({
         : null,
       asOf: normalizedAsOf,
       timeZone: normalizedTimeZone,
+      timeZoneVersion: authoritative.version,
       staleAfterDays: staleDays,
       horizonsDays: [30, 60, 90],
       entries: normalizedEntries
@@ -707,7 +759,27 @@ export default function CashFlowSnapshotTool({
           "The cash-flow result did not match the requested planning time zone."
         );
       }
-      setResult(calculated);
+      if (calculated.workspaceTimeZoneVersion !== authoritativeTimeZoneVersion) {
+        await workspaceTimeZoneState.reload();
+        throw new Error(
+          "The workspace time-zone version changed during calculation. Reload before using the result."
+        );
+      }
+      const visibleCalculated = canViewCurrentCash
+        ? calculated
+        : {
+            ...calculated,
+            currentCashMinor: null,
+            horizons: calculated.horizons.map((horizon) => ({
+              ...horizon,
+              projectedCashMinor: null
+            })),
+            complete: false,
+            incompleteReasons: [
+              ...new Set([...calculated.incompleteReasons, "CURRENT_CASH_UNKNOWN"])
+            ]
+          };
+      setResult(visibleCalculated);
       setResultFingerprint(contentFingerprint);
     } catch (error) {
       if (
@@ -745,6 +817,7 @@ export default function CashFlowSnapshotTool({
             cashFlowSnapshot: {
               asOf: input.asOf,
               timeZone: input.timeZone,
+              timeZoneVersion: authoritativeTimeZoneVersion,
               currency: input.currency,
               minorUnitDigits: input.minorUnitDigits,
               ...(canViewCurrentCash ? { currentCashMinor: input.currentCashMinor } : {}),
@@ -758,7 +831,22 @@ export default function CashFlowSnapshotTool({
         },
         selected
       );
+      const pinnedPayload = payloadOf(saved);
+      const pinnedTimeZone = normalizeIanaTimeZone(pinnedPayload.timeZone);
+      const pinnedTimeZoneVersion = Number(pinnedPayload.timeZoneVersion);
       open(saved);
+      if (
+        pinnedTimeZone !== input.timeZone ||
+        pinnedTimeZoneVersion !== input.timeZoneVersion
+      ) {
+        setSavedContentFingerprint("");
+        await workspaceTimeZoneState.reload();
+        setFormError(
+          "The workspace time zone changed while this draft was saving. The server-pinned revision was retained; reload the setting and review every local date before calculating, saving, or reviewing it."
+        );
+        setFeedback(`Cash-flow draft revision ${saved.version} was saved.`);
+        return;
+      }
       setFeedback(
         "Cash-flow draft revision " +
           saved.version +
@@ -807,7 +895,7 @@ export default function CashFlowSnapshotTool({
         throw new Error("Enter an archive reason with at least three characters.");
       }
       await collection.archive(selected, archiveReason.trim());
-      reset();
+      startNew();
     } catch (error) {
       setFormError(
         error instanceof Error ? error.message : "The snapshot could not be archived."
@@ -826,9 +914,14 @@ export default function CashFlowSnapshotTool({
       loading={collection.loading}
       error={collection.error}
       onRetry={() => void collection.reload()}
-      onNew={() => reset()}
+      onNew={startNew}
       onSelect={open}
     >
+      <WorkspaceTimeZoneControl
+        state={workspaceTimeZoneState}
+        workspaceLabel={workspaceLabel}
+        canConfigure={workspaceType === "commercial" || canViewCurrentCash}
+      />
       <AppCard
         title={
           selected
@@ -895,19 +988,22 @@ export default function CashFlowSnapshotTool({
                 setAsOfIsoHint("");
                 setAsOfTouched(true);
               }}
+              disabled={timeSensitiveBlocked}
+              timeZoneLabel={timeZone || undefined}
             />
           </View>
-          <LabeledInput
-            label="Planning time zone (IANA)"
-            accessibilityLabel="Cash-flow planning time zone"
-            autoCapitalize="none"
-            autoCorrect={false}
-            maxLength={100}
-            value={timeZone}
-            onChangeText={changeTimeZone}
-            placeholder="America/New_York"
-            hint="All entered wall times and 30, 60, and 90-day cutoffs use this zone. Times skipped or repeated by a clock change require an unambiguous choice. The active Facility zone is preferred when available; otherwise the device zone is used. UTC is only the final fallback."
-          />
+          <View style={styles.restrictedField}>
+            <Text style={styles.fieldAccessLabel}>Authoritative planning time zone</Text>
+            <Text style={styles.bodyText}>
+              {timeZone && timeZoneVersion > 0
+                ? `${timeZone} · workspace setting version ${timeZoneVersion}`
+                : "Unset. The owner must configure the workspace setting above."}
+            </Text>
+            <Text style={styles.bodyText}>
+              All wall times and 30, 60, and 90-day cutoffs use this exact setting.
+              Skipped or repeated clock-change times are rejected rather than guessed.
+            </Text>
+          </View>
         </View>
         <Text style={styles.bodyText}>
           Saved state: {selected ? selected.status.replace(/_/g, " ") : "not saved"}.
@@ -1120,6 +1216,8 @@ export default function CashFlowSnapshotTool({
                       onChange={(value) =>
                         updateEntry(index, { dueAt: value, dueAtIsoHint: "" })
                       }
+                      disabled={timeSensitiveBlocked}
+                      timeZoneLabel={timeZone || undefined}
                     />
                   </View>
                   {entry.sourceType === "manual" ? (
@@ -1140,6 +1238,8 @@ export default function CashFlowSnapshotTool({
                               sourceRecordedAtIsoHint: ""
                             })
                           }
+                          disabled={timeSensitiveBlocked}
+                          timeZoneLabel={timeZone || undefined}
                         />
                       </View>
                       <View style={styles.dateField}>
@@ -1158,6 +1258,8 @@ export default function CashFlowSnapshotTool({
                               sourceFreshnessAtIsoHint: ""
                             })
                           }
+                          disabled={timeSensitiveBlocked}
+                          timeZoneLabel={timeZone || undefined}
                         />
                       </View>
                     </>
@@ -1170,13 +1272,10 @@ export default function CashFlowSnapshotTool({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Add cash-flow entry"
-          onPress={() =>
-            setEntries((current) => [
-              ...current,
-              newEntry(normalizeIanaTimeZone(timeZone) || preferredTimeZone)
-            ])
-          }
-          style={styles.secondaryButton}
+          accessibilityState={{ disabled: timeSensitiveBlocked }}
+          disabled={timeSensitiveBlocked}
+          onPress={() => setEntries((current) => [...current, newEntry(timeZone)])}
+          style={[styles.secondaryButton, timeSensitiveBlocked && styles.disabled]}
         >
           <Text style={styles.secondaryButtonText}>Add cash-flow entry</Text>
         </Pressable>
@@ -1191,10 +1290,13 @@ export default function CashFlowSnapshotTool({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Calculate cash-flow snapshot"
-          accessibilityState={{ busy, disabled: busy }}
-          disabled={busy}
+          accessibilityState={{ busy, disabled: busy || timeSensitiveBlocked }}
+          disabled={busy || timeSensitiveBlocked}
           onPress={() => void calculate()}
-          style={[styles.primaryButton, busy && styles.disabled]}
+          style={[
+            styles.primaryButton,
+            (busy || timeSensitiveBlocked) && styles.disabled
+          ]}
         >
           {busy ? (
             <ActivityIndicator color={palette.accentText} />
@@ -1324,6 +1426,7 @@ export default function CashFlowSnapshotTool({
         </Pressable>
         <RecordSaveArchiveActions
           saving={collection.saving || busy}
+          saveDisabled={timeSensitiveBlocked}
           hasRecord={Boolean(businessDeskRecordId(selected))}
           saveLabel="Save cash-flow draft"
           archiveReason={archiveReason}

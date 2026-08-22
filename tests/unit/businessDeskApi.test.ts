@@ -6,9 +6,11 @@ import {
   COMMERCIAL_BUSINESS_DESK_WORKSPACE,
   createBusinessDeskRecord,
   getBusinessDeskRevision,
+  getBusinessDeskWorkspaceTimeZone,
   listBusinessDeskRecordPage,
   listBusinessDeskRecords,
   listBusinessDeskRevisions,
+  patchBusinessDeskWorkspaceTimeZone,
   prepareBusinessDeskExpenseBatchCsv,
   resolveFacilityBusinessDeskWorkspace,
   updateBusinessDeskRecord
@@ -44,6 +46,109 @@ describe("Business Desk API", () => {
     expect(mockApiRequest).not.toHaveBeenCalled();
   });
 
+  it("uses the exact GET/PATCH workspace-time-zone contract and preserves CAS input", async () => {
+    const workspace = { workspaceType: "facility" as const, facilityId: "facility-2" };
+    const configured = {
+      configured: true,
+      workspaceType: "facility",
+      workspaceId: "facility-2",
+      timeZone: "America/New_York",
+      version: 4,
+      selectedByUserId: "owner-1",
+      selectedByRole: "OWNER",
+      selectedAt: "2026-08-22T12:00:00.000Z"
+    };
+    mockApiRequest
+      .mockResolvedValueOnce({ success: true, data: { workspaceTimeZone: configured } })
+      .mockResolvedValueOnce({
+        success: true,
+        data: {
+          workspaceTimeZone: {
+            ...configured,
+            timeZone: "America/Chicago",
+            version: 5,
+            idempotentReplay: false
+          }
+        }
+      });
+
+    await expect(getBusinessDeskWorkspaceTimeZone(workspace)).resolves.toMatchObject(
+      configured
+    );
+    await expect(
+      patchBusinessDeskWorkspaceTimeZone(workspace, {
+        timeZone: "America/Chicago",
+        expectedVersion: 4,
+        idempotencyKey: "workspace-zone-retry-1"
+      })
+    ).resolves.toMatchObject({ timeZone: "America/Chicago", version: 5 });
+
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/api/facility/facility-2/business-desk/workspace-time-zone",
+      {}
+    );
+    expect(mockApiRequest).toHaveBeenNthCalledWith(
+      2,
+      "/api/facility/facility-2/business-desk/workspace-time-zone",
+      {
+        method: "PATCH",
+        body: {
+          timeZone: "America/Chicago",
+          expectedVersion: 4,
+          idempotencyKey: "workspace-zone-retry-1"
+        }
+      }
+    );
+  });
+
+  it("accepts only the canonical unset workspace-time-zone response", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      data: {
+        workspaceTimeZone: {
+          configured: false,
+          workspaceType: "commercial",
+          workspaceId: "owner-1",
+          timeZone: null,
+          version: 0
+        }
+      }
+    });
+    await expect(
+      getBusinessDeskWorkspaceTimeZone(COMMERCIAL_BUSINESS_DESK_WORKSPACE)
+    ).resolves.toMatchObject({ configured: false, timeZone: null, version: 0 });
+
+    mockApiRequest.mockResolvedValueOnce({
+      data: {
+        workspaceTimeZone: {
+          configured: false,
+          workspaceType: "commercial",
+          workspaceId: "owner-1",
+          timeZone: "UTC",
+          version: 0
+        }
+      }
+    });
+    await expect(
+      getBusinessDeskWorkspaceTimeZone(COMMERCIAL_BUSINESS_DESK_WORKSPACE)
+    ).rejects.toThrow("response was invalid");
+
+    mockApiRequest.mockResolvedValueOnce({
+      data: {
+        workspaceTimeZone: {
+          configured: true,
+          workspaceType: "commercial",
+          workspaceId: "owner-1",
+          timeZone: "America/New_York",
+          version: 1
+        }
+      }
+    });
+    await expect(
+      getBusinessDeskWorkspaceTimeZone(COMMERCIAL_BUSINESS_DESK_WORKSPACE)
+    ).rejects.toThrow("response was invalid");
+  });
+
   it("sends exact integer calculation inputs and unwraps data", async () => {
     const input = {
       calculator: "price_margin" as const,
@@ -73,6 +178,7 @@ describe("Business Desk API", () => {
       currentCashMinor: null,
       asOf: "2026-08-22T16:00:00.000Z",
       timeZone: "America/New_York",
+      timeZoneVersion: 3,
       staleAfterDays: 30,
       horizonsDays: [30, 60, 90],
       entries: []
@@ -88,6 +194,7 @@ describe("Business Desk API", () => {
       body: expect.objectContaining({
         calculator: "cash_flow",
         timeZone: "America/New_York",
+        timeZoneVersion: 3,
         horizonsDays: [30, 60, 90]
       })
     });
@@ -99,6 +206,14 @@ describe("Business Desk API", () => {
         timeZone: "Moon/Sea"
       })
     ).rejects.toThrow("valid IANA time zone");
+    expect(mockApiRequest).not.toHaveBeenCalled();
+
+    await expect(
+      calculateBusinessDesk(COMMERCIAL_BUSINESS_DESK_WORKSPACE, {
+        ...input,
+        timeZoneVersion: 0
+      })
+    ).rejects.toThrow("authoritative workspace time-zone version");
     expect(mockApiRequest).not.toHaveBeenCalled();
   });
 

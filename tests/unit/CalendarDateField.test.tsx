@@ -48,10 +48,12 @@ describe("CalendarDateField", () => {
         value="2026-07-19T09:00"
         onChange={onChange}
         mode="datetime"
+        timeZoneLabel="America/New_York"
       />
     );
 
     fireEvent.press(screen.getByLabelText("Live start"));
+    expect(screen.getByText(/Timezone: America\/New_York/i)).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Live start day 2026-07-23"));
     fireEvent(screen.getByLabelText("Live start hour"), "valueChange", 18, 18);
     fireEvent(screen.getByLabelText("Live start minute"), "valueChange", 30, 30);

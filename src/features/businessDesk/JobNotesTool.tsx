@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   businessDeskWorkspaceKey,
@@ -7,6 +7,7 @@ import {
   type BusinessDeskWorkspace
 } from "@/api/businessDesk";
 import { BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES } from "@/api/businessDeskArtifacts";
+import { listTeamMembers, type TeamMember } from "@/api/team";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import {
@@ -23,10 +24,17 @@ import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
 import ReviewedArtifactPanel from "@/features/businessDesk/ReviewedArtifactPanel";
 import {
   businessDeskRecordId,
-  isoToLocalDateTime,
-  localDateTimeToIso,
   useBusinessDeskRecordCollection
 } from "@/features/businessDesk/recordWorkflow";
+import {
+  useBusinessDeskWorkspaceTimeZone,
+  WorkspaceTimeZoneControl,
+  workspaceTimeZoneReady
+} from "@/features/businessDesk/WorkspaceTimeZoneControl";
+import {
+  isoInstantToZonedLocalDateTime,
+  zonedLocalDateTimeToIsoStrict
+} from "@/features/businessDesk/zonedDateTime";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 
 type JobStatus =
@@ -75,6 +83,8 @@ type JobNotesToolProps = {
   workspace: BusinessDeskWorkspace;
   workspaceLabel: "Commercial" | "Facility";
   basePath: string;
+  canConfigureTimeZone?: boolean;
+  currentUser?: { userId: string; label: string } | null;
 };
 
 function jobPayload(record: BusinessDeskRecord | null) {
@@ -127,16 +137,98 @@ function manualProviderReference(
   };
 }
 
+const ACTIVE_JOB_ASSIGNEE_ROLES = new Set(["OWNER", "MANAGER", "STAFF", "VIEWER"]);
+
+type JobAssigneeOption = {
+  userId: string;
+  role: string;
+  label: string;
+};
+
+function activeFacilityAssigneeOptions(members: TeamMember[]): JobAssigneeOption[] {
+  const seen = new Set<string>();
+  return members.flatMap((member, index) => {
+    const userId = String(member?.userId || "").trim();
+    const role = String(member?.role || "")
+      .trim()
+      .toUpperCase();
+    if (
+      !userId ||
+      seen.has(userId) ||
+      !ACTIVE_JOB_ASSIGNEE_ROLES.has(role) ||
+      member.invited === true ||
+      String(member.invited || "").toLowerCase() === "true" ||
+      Boolean(member.deletedAt)
+    ) {
+      return [];
+    }
+    seen.add(userId);
+    const name = String(member.name || "").trim();
+    const email = String(member.email || "").trim();
+    const identity = name && email ? `${name} (${email})` : name || email;
+    return [
+      {
+        userId,
+        role,
+        label: identity || `Current Facility member ${index + 1}`
+      }
+    ];
+  });
+}
+
+function validIsoInstant(value: unknown) {
+  const candidate = typeof value === "string" ? value.trim() : "";
+  return candidate && Number.isFinite(new Date(candidate).getTime()) ? candidate : "";
+}
+
+function jobWallTimeToIso(
+  label: string,
+  value: string,
+  timeZone: string,
+  exactIsoHint = ""
+) {
+  try {
+    return zonedLocalDateTimeToIsoStrict(value, timeZone, exactIsoHint);
+  } catch (error) {
+    throw new Error(
+      `${label}: ${error instanceof Error ? error.message : "choose a valid date and time."}`
+    );
+  }
+}
+
+function businessDeskErrorCode(error: unknown) {
+  return typeof (error as any)?.code === "string" ? String((error as any).code) : "";
+}
+
 export default function JobNotesTool({
   workspace,
   workspaceLabel,
-  basePath
+  basePath,
+  canConfigureTimeZone = workspace.workspaceType === "commercial",
+  currentUser = null
 }: JobNotesToolProps) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const collection = useBusinessDeskRecordCollection(workspace, "job");
   const relatedQuotes = useAuthorizedBusinessDeskRecords(workspace, JOB_RELATED_KINDS);
   const workspaceKey = businessDeskWorkspaceKey(workspace);
+  const workspaceType = workspace.workspaceType;
+  const facilityId = workspaceType === "facility" ? workspace.facilityId : "";
+  const workspaceTimeZoneState = useBusinessDeskWorkspaceTimeZone(workspace);
+  const authoritativeTimeZone = workspaceTimeZoneState.value?.configured
+    ? workspaceTimeZoneState.value.timeZone
+    : null;
+  const authoritativeTimeZoneVersion = workspaceTimeZoneState.value?.configured
+    ? workspaceTimeZoneState.value.version
+    : 0;
+  const currentWorkspaceKey = useRef(workspaceKey);
+  const resetWorkspaceKey = useRef(workspaceKey);
+  currentWorkspaceKey.current = workspaceKey;
+  const appliedTimeZone = useRef<{
+    workspaceKey: string;
+    timeZone: string;
+    version: number;
+  } | null>(null);
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<JobStatus>("requested");
@@ -149,6 +241,20 @@ export default function JobNotesTool({
   const [scope, setScope] = useState("");
   const [scheduledStartAt, setScheduledStartAt] = useState("");
   const [scheduledEndAt, setScheduledEndAt] = useState("");
+  const [scheduledStartAtIsoHint, setScheduledStartAtIsoHint] = useState("");
+  const [scheduledEndAtIsoHint, setScheduledEndAtIsoHint] = useState("");
+  const [scheduleTimeZone, setScheduleTimeZone] = useState("");
+  const [scheduleTimeZoneVersion, setScheduleTimeZoneVersion] = useState(0);
+  const [scheduleReviewRequired, setScheduleReviewRequired] = useState(false);
+  const [assigneeUserId, setAssigneeUserId] = useState("");
+  const [assigneeEvidence, setAssigneeEvidence] = useState<Record<string, any> | null>(
+    null
+  );
+  const [facilityAssignees, setFacilityAssignees] = useState<JobAssigneeOption[]>([]);
+  const [assigneeLoading, setAssigneeLoading] = useState(
+    workspace.workspaceType === "facility"
+  );
+  const [assigneeLoadError, setAssigneeLoadError] = useState("");
   const [notes, setNotes] = useState("");
   const [nextAction, setNextAction] = useState("");
   const [completionNotes, setCompletionNotes] = useState("");
@@ -160,6 +266,7 @@ export default function JobNotesTool({
   const [nextStatus, setNextStatus] = useState<JobStatus | "">("");
   const [archiveReason, setArchiveReason] = useState("");
   const [formError, setFormError] = useState("");
+  const [formErrorCode, setFormErrorCode] = useState("");
   const [feedback, setFeedback] = useState("");
   const [contentDirty, setContentDirty] = useState(false);
   const [attachmentDraft, setAttachmentDraft] = useState({
@@ -178,7 +285,40 @@ export default function JobNotesTool({
           blocking: false
         };
 
-  const reset = () => {
+  const loadFacilityAssignees = useCallback(async () => {
+    if (workspaceType !== "facility") {
+      setFacilityAssignees([]);
+      setAssigneeLoading(false);
+      setAssigneeLoadError("");
+      return;
+    }
+    const requestWorkspaceKey = workspaceKey;
+    setAssigneeLoading(true);
+    setAssigneeLoadError("");
+    try {
+      const members = await listTeamMembers(facilityId);
+      if (currentWorkspaceKey.current !== requestWorkspaceKey) return;
+      setFacilityAssignees(activeFacilityAssigneeOptions(members));
+    } catch (error) {
+      if (currentWorkspaceKey.current !== requestWorkspaceKey) return;
+      setFacilityAssignees([]);
+      setAssigneeLoadError(
+        error instanceof Error
+          ? error.message
+          : "Current Facility members could not be loaded."
+      );
+    } finally {
+      if (currentWorkspaceKey.current === requestWorkspaceKey) {
+        setAssigneeLoading(false);
+      }
+    }
+  }, [facilityId, workspaceKey, workspaceType]);
+
+  useEffect(() => {
+    void loadFacilityAssignees();
+  }, [loadFacilityAssignees]);
+
+  const reset = useCallback(() => {
     setSelected(null);
     setTitle("");
     setStatus("requested");
@@ -191,6 +331,13 @@ export default function JobNotesTool({
     setScope("");
     setScheduledStartAt("");
     setScheduledEndAt("");
+    setScheduledStartAtIsoHint("");
+    setScheduledEndAtIsoHint("");
+    setScheduleTimeZone(authoritativeTimeZone || "");
+    setScheduleTimeZoneVersion(authoritativeTimeZoneVersion);
+    setScheduleReviewRequired(false);
+    setAssigneeUserId("");
+    setAssigneeEvidence(null);
     setNotes("");
     setNextAction("");
     setCompletionNotes("");
@@ -202,6 +349,7 @@ export default function JobNotesTool({
     setNextStatus("");
     setArchiveReason("");
     setFormError("");
+    setFormErrorCode("");
     setFeedback("");
     setContentDirty(false);
     setAttachmentDraft((current) => ({
@@ -210,10 +358,70 @@ export default function JobNotesTool({
       session: current.session + 1,
       blocking: false
     }));
-  };
+  }, [authoritativeTimeZone, authoritativeTimeZoneVersion, workspaceKey]);
+
+  useEffect(() => {
+    if (resetWorkspaceKey.current === workspaceKey) return;
+    resetWorkspaceKey.current = workspaceKey;
+    appliedTimeZone.current = null;
+    reset();
+  }, [reset, workspaceKey]);
+
+  useEffect(() => {
+    if (!authoritativeTimeZone || authoritativeTimeZoneVersion < 1) return;
+    const prior = appliedTimeZone.current;
+    if (
+      prior?.workspaceKey === workspaceKey &&
+      prior.timeZone === authoritativeTimeZone &&
+      prior.version === authoritativeTimeZoneVersion
+    ) {
+      return;
+    }
+    appliedTimeZone.current = {
+      workspaceKey,
+      timeZone: authoritativeTimeZone,
+      version: authoritativeTimeZoneVersion
+    };
+    setScheduleTimeZone(authoritativeTimeZone);
+    setScheduleTimeZoneVersion(authoritativeTimeZoneVersion);
+    const priorTimeZone =
+      prior?.workspaceKey === workspaceKey ? prior.timeZone : scheduleTimeZone;
+    if (priorTimeZone && priorTimeZone !== authoritativeTimeZone) {
+      const startHint = validIsoInstant(scheduledStartAtIsoHint);
+      const endHint = validIsoInstant(scheduledEndAtIsoHint);
+      setScheduleReviewRequired(
+        Boolean((scheduledStartAt && !startHint) || (scheduledEndAt && !endHint))
+      );
+      setScheduledStartAt(
+        startHint ? isoInstantToZonedLocalDateTime(startHint, authoritativeTimeZone) : ""
+      );
+      setScheduledEndAt(
+        endHint ? isoInstantToZonedLocalDateTime(endHint, authoritativeTimeZone) : ""
+      );
+      if (selected) setContentDirty(true);
+      setFormError(
+        "The authoritative workspace time zone changed. Exact saved instants were converted; enter every cleared schedule time and review the job before saving."
+      );
+      setFormErrorCode("BUSINESS_DESK_WORKSPACE_TIME_ZONE_CHANGED");
+    }
+  }, [
+    authoritativeTimeZone,
+    authoritativeTimeZoneVersion,
+    scheduledEndAt,
+    scheduledEndAtIsoHint,
+    scheduledStartAt,
+    scheduledStartAtIsoHint,
+    scheduleTimeZone,
+    selected,
+    workspaceKey
+  ]);
 
   const open = (record: BusinessDeskRecord) => {
     const job = jobPayload(record);
+    const savedTimeZone = String(job.scheduleTimeZone || "").trim();
+    const displayTimeZone = authoritativeTimeZone || savedTimeZone;
+    const startHint = validIsoInstant(job.scheduledStartAt);
+    const endHint = validIsoInstant(job.scheduledEndAt);
     setSelected(record);
     setTitle(record.title || "");
     setStatus((record.status || job.stage || "requested") as JobStatus);
@@ -224,8 +432,32 @@ export default function JobNotesTool({
     setProjectName(String(job.projectName || ""));
     setPrivateLocation(String(job.privateLocation || ""));
     setScope(String(job.scope || ""));
-    setScheduledStartAt(isoToLocalDateTime(job.scheduledStartAt));
-    setScheduledEndAt(isoToLocalDateTime(job.scheduledEndAt));
+    setScheduledStartAt(
+      startHint && displayTimeZone
+        ? isoInstantToZonedLocalDateTime(startHint, displayTimeZone)
+        : ""
+    );
+    setScheduledEndAt(
+      endHint && displayTimeZone
+        ? isoInstantToZonedLocalDateTime(endHint, displayTimeZone)
+        : ""
+    );
+    setScheduledStartAtIsoHint(startHint);
+    setScheduledEndAtIsoHint(endHint);
+    setScheduleTimeZone(displayTimeZone);
+    setScheduleTimeZoneVersion(
+      authoritativeTimeZoneVersion ||
+        (Number.isSafeInteger(job.scheduleTimeZoneVersion)
+          ? job.scheduleTimeZoneVersion
+          : 0)
+    );
+    setScheduleReviewRequired(false);
+    setAssigneeUserId(String(job.assigneeUserId || "").trim());
+    setAssigneeEvidence(
+      job.assigneeProposalEvidence && typeof job.assigneeProposalEvidence === "object"
+        ? job.assigneeProposalEvidence
+        : null
+    );
     setNotes(String(job.notes || ""));
     setNextAction(String(job.nextAction || ""));
     setCompletionNotes(String(job.completionNotes || ""));
@@ -253,12 +485,34 @@ export default function JobNotesTool({
     setNextStatus("");
     setArchiveReason("");
     setFormError("");
+    setFormErrorCode("");
     setFeedback("");
     setContentDirty(false);
   };
 
+  const assigneeOptions = useMemo<JobAssigneeOption[]>(() => {
+    if (workspace.workspaceType === "facility") return facilityAssignees;
+    const userId = String(currentUser?.userId || "").trim();
+    if (!userId) return [];
+    return [
+      {
+        userId,
+        role: "SELF",
+        label: String(currentUser?.label || "Commercial workspace owner").trim()
+      }
+    ];
+  }, [currentUser, facilityAssignees, workspace.workspaceType]);
+
+  const scheduleWriteBlocked =
+    scheduleReviewRequired ||
+    (Boolean(scheduledStartAt || scheduledEndAt) &&
+      (!workspaceTimeZoneReady(workspaceTimeZoneState) ||
+        scheduleTimeZone !== authoritativeTimeZone ||
+        scheduleTimeZoneVersion !== authoritativeTimeZoneVersion));
+
   const save = async () => {
     setFormError("");
+    setFormErrorCode("");
     setFeedback("");
     try {
       if (activeAttachmentDraft.blocking) {
@@ -273,8 +527,35 @@ export default function JobNotesTool({
       if (!validEmail(customerEmail.trim())) {
         throw new Error("Enter a valid customer email or leave it blank.");
       }
-      const start = localDateTimeToIso(scheduledStartAt);
-      const end = localDateTimeToIso(scheduledEndAt);
+      if (scheduledEndAt && !scheduledStartAt) {
+        throw new Error("Choose a scheduled start before an end time.");
+      }
+      let start: string | null = null;
+      let end: string | null = null;
+      if (scheduledStartAt || scheduledEndAt) {
+        if (
+          !workspaceTimeZoneReady(workspaceTimeZoneState) ||
+          !authoritativeTimeZone ||
+          scheduleTimeZone !== authoritativeTimeZone ||
+          scheduleTimeZoneVersion !== authoritativeTimeZoneVersion
+        ) {
+          throw new Error(
+            "The workspace owner must configure and reload the authoritative time zone before a schedule can be saved."
+          );
+        }
+        start = jobWallTimeToIso(
+          "Scheduled start",
+          scheduledStartAt,
+          authoritativeTimeZone,
+          scheduledStartAtIsoHint
+        );
+        end = jobWallTimeToIso(
+          "Scheduled end",
+          scheduledEndAt,
+          authoritativeTimeZone,
+          scheduledEndAtIsoHint
+        );
+      }
       if (end && !start) throw new Error("Choose a scheduled start before an end time.");
       if (start && end && new Date(end).getTime() < new Date(start).getTime()) {
         throw new Error("Scheduled end cannot be before scheduled start.");
@@ -297,6 +578,15 @@ export default function JobNotesTool({
         );
       }
       const savedStatus = selected ? status : "requested";
+      const proposedAssigneeUserId = selected ? assigneeUserId.trim() : "";
+      if (
+        proposedAssigneeUserId &&
+        !assigneeOptions.some((option) => option.userId === proposedAssigneeUserId)
+      ) {
+        throw new Error(
+          "The proposed assignee is not in the current authorized workspace-member list. Reload members or clear the proposal before saving."
+        );
+      }
 
       const record = await collection.save(
         {
@@ -313,6 +603,9 @@ export default function JobNotesTool({
               projectName: projectName.trim(),
               scheduledStartAt: start,
               scheduledEndAt: end,
+              scheduleTimeZone: start || end ? authoritativeTimeZone : "",
+              scheduleTimeZoneVersion: start || end ? authoritativeTimeZoneVersion : null,
+              ...(selected ? { assigneeUserId: proposedAssigneeUserId } : {}),
               privateLocation: privateLocation.trim(),
               scope: scope.trim(),
               attachmentRefs: activeAttachmentDraft.ids.map((assetId) => ({
@@ -337,15 +630,39 @@ export default function JobNotesTool({
         },
         selected
       );
+      const savedJob = jobPayload(record);
+      const scheduleWasSaved = Boolean(start || end);
+      const pinnedTimeZone = String(savedJob.scheduleTimeZone || "").trim();
+      const pinnedTimeZoneVersion = Number(savedJob.scheduleTimeZoneVersion);
       open(record);
+      if (
+        scheduleWasSaved &&
+        (pinnedTimeZone !== authoritativeTimeZone ||
+          pinnedTimeZoneVersion !== authoritativeTimeZoneVersion)
+      ) {
+        setContentDirty(true);
+        await workspaceTimeZoneState.reload();
+        setFormErrorCode("BUSINESS_DESK_WORKSPACE_TIME_ZONE_CHANGED");
+        setFormError(
+          "The workspace time zone changed while this job was saving. The server-pinned revision was retained; reload the setting and review the displayed schedule before another write."
+        );
+        setFeedback(`Job content was saved as revision ${record.version}.`);
+        return;
+      }
+      const proposalEvidence = jobPayload(record).assigneeProposalEvidence;
+      const proposalMessage =
+        proposalEvidence?.authorizationStatus === "authorized_proposal"
+          ? " The assignee proposal was reauthorized for this revision; no notification, task, contact, or assignment side effect was performed."
+          : "";
       setFeedback(
-        selected
+        (selected
           ? `Job content saved as revision ${record.version}; status stayed ${jobStatusLabel(
               record.status as JobStatus
             )}.`
-          : `Job created as Requested, revision ${record.version}.`
+          : `Job created as Requested, revision ${record.version}.`) + proposalMessage
       );
     } catch (error) {
+      setFormErrorCode(businessDeskErrorCode(error));
       setFormError(
         error instanceof Error ? error.message : "The job could not be saved."
       );
@@ -354,6 +671,7 @@ export default function JobNotesTool({
 
   const transitionStatus = async () => {
     setFormError("");
+    setFormErrorCode("");
     setFeedback("");
     try {
       if (!selected)
@@ -383,6 +701,7 @@ export default function JobNotesTool({
         )} at revision ${transitioned.version}.`
       );
     } catch (error) {
+      setFormErrorCode(businessDeskErrorCode(error));
       setFormError(
         error instanceof Error ? error.message : "The job status could not be changed."
       );
@@ -391,6 +710,7 @@ export default function JobNotesTool({
 
   const archive = async () => {
     setFormError("");
+    setFormErrorCode("");
     try {
       if (!selected) return;
       if (archiveReason.trim().length < 3) {
@@ -399,6 +719,7 @@ export default function JobNotesTool({
       await collection.archive(selected, archiveReason.trim());
       reset();
     } catch (error) {
+      setFormErrorCode(businessDeskErrorCode(error));
       setFormError(
         error instanceof Error ? error.message : "The job could not be archived."
       );
@@ -419,6 +740,11 @@ export default function JobNotesTool({
       onNew={reset}
       onSelect={open}
     >
+      <WorkspaceTimeZoneControl
+        state={workspaceTimeZoneState}
+        workspaceLabel={workspaceLabel}
+        canConfigure={canConfigureTimeZone}
+      />
       <AppCard
         title={selected ? `Edit revision ${selected.version}` : "New job note"}
         titleLevel={2}
@@ -548,8 +874,15 @@ export default function JobNotesTool({
               accessibilityLabel="Job scheduled start date and time"
               mode="datetime"
               value={scheduledStartAt}
-              onChange={dirtySetter(setScheduledStartAt, () => setContentDirty(true))}
+              onChange={(value) => {
+                setScheduledStartAt(value);
+                setScheduledStartAtIsoHint("");
+                setScheduleReviewRequired(false);
+                setContentDirty(true);
+              }}
               placeholder="Not scheduled"
+              disabled={!workspaceTimeZoneReady(workspaceTimeZoneState)}
+              timeZoneLabel={scheduleTimeZone || undefined}
             />
           </View>
           <View style={styles.dateField}>
@@ -558,8 +891,15 @@ export default function JobNotesTool({
               accessibilityLabel="Job scheduled end date and time"
               mode="datetime"
               value={scheduledEndAt}
-              onChange={dirtySetter(setScheduledEndAt, () => setContentDirty(true))}
+              onChange={(value) => {
+                setScheduledEndAt(value);
+                setScheduledEndAtIsoHint("");
+                setScheduleReviewRequired(false);
+                setContentDirty(true);
+              }}
               placeholder="No end time"
+              disabled={!workspaceTimeZoneReady(workspaceTimeZoneState)}
+              timeZoneLabel={scheduleTimeZone || undefined}
             />
           </View>
           <LabeledInput
@@ -570,6 +910,43 @@ export default function JobNotesTool({
             placeholder="Review scope, confirm date, gather materials…"
           />
         </View>
+        <Text style={styles.lifecycleHint}>
+          Schedule display and editing use {scheduleTimeZone || "no configured zone"}
+          {scheduleTimeZoneVersion > 0
+            ? `, workspace setting version ${scheduleTimeZoneVersion}`
+            : ""}
+          . Nonexistent or ambiguous clock-change times are rejected rather than guessed.
+        </Text>
+        {!workspaceTimeZoneReady(workspaceTimeZoneState) ? (
+          <Text style={styles.lifecycleWarning}>
+            Scheduling is disabled until the workspace owner configures the authoritative
+            IANA time zone. An unscheduled job can still be saved.
+          </Text>
+        ) : null}
+        {scheduleReviewRequired ? (
+          <View style={styles.choiceStack}>
+            <Text style={styles.lifecycleWarning}>
+              A wall time without an exact instant was cleared after the workspace time
+              zone changed. Choose the schedule again, or explicitly keep this job
+              unscheduled before saving.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Keep job unscheduled after time zone change"
+              onPress={() => {
+                setScheduledStartAt("");
+                setScheduledEndAt("");
+                setScheduledStartAtIsoHint("");
+                setScheduledEndAtIsoHint("");
+                setScheduleReviewRequired(false);
+                setContentDirty(true);
+              }}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Keep job unscheduled</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <LabeledInput
           label="Factual notes"
           accessibilityLabel="Job notes"
@@ -587,11 +964,116 @@ export default function JobNotesTool({
           placeholder="Save these before moving an In progress job to Complete"
         />
         <View style={styles.safetyNotice}>
-          <Text style={styles.safetyTitle}>Assignment is not configured</Text>
+          <Text style={styles.safetyTitle}>Proposed assignee · review only</Text>
           <Text style={styles.safetyText}>
-            Free-text user IDs are not accepted. GrowPathAI will show an authorized
-            workspace-member picker here only after the assignment service is connected.
+            Free-text IDs are never accepted. Saving a proposal rechecks the exact current
+            workspace member and record version. It performs no notification, task,
+            customer contact, or assignment side effect.
           </Text>
+          {!selected ? (
+            <Text style={styles.lifecycleHint}>
+              Save the job first. The backend requires a persisted record and exact
+              version before an assignee proposal can be reviewed.
+            </Text>
+          ) : assigneeLoading ? (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator color={palette.accent} />
+              <Text style={styles.safetyText}>Loading current workspace members…</Text>
+            </View>
+          ) : assigneeLoadError ? (
+            <View style={styles.choiceStack}>
+              <Text style={styles.errorText}>{assigneeLoadError}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Retry current Facility members"
+                onPress={() => void loadFacilityAssignees()}
+                style={styles.secondaryButton}
+              >
+                <Text style={styles.secondaryButtonText}>Retry members</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View accessibilityRole="radiogroup" style={styles.choiceStack}>
+              <Pressable
+                accessibilityRole="radio"
+                accessibilityLabel="No proposed job assignee"
+                accessibilityState={{ checked: !assigneeUserId }}
+                onPress={() => {
+                  setAssigneeUserId("");
+                  setAssigneeEvidence(null);
+                  setContentDirty(true);
+                }}
+                style={[
+                  styles.assigneeChoice,
+                  !assigneeUserId && styles.assigneeChoiceSelected
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.assigneeChoiceText,
+                    !assigneeUserId && styles.assigneeChoiceTextSelected
+                  ]}
+                >
+                  No proposed assignee
+                </Text>
+              </Pressable>
+              {assigneeOptions.map((option) => {
+                const chosen = assigneeUserId === option.userId;
+                return (
+                  <Pressable
+                    key={option.userId}
+                    accessibilityRole="radio"
+                    accessibilityLabel={`Propose job assignee ${option.label}`}
+                    accessibilityState={{ checked: chosen }}
+                    onPress={() => {
+                      setAssigneeUserId(option.userId);
+                      setAssigneeEvidence(null);
+                      setContentDirty(true);
+                    }}
+                    style={[
+                      styles.assigneeChoice,
+                      chosen && styles.assigneeChoiceSelected
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.assigneeChoiceText,
+                        chosen && styles.assigneeChoiceTextSelected
+                      ]}
+                    >
+                      {option.label} · {option.role}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+              {assigneeUserId &&
+              !assigneeOptions.some((option) => option.userId === assigneeUserId) ? (
+                <Text style={styles.lifecycleWarning}>
+                  The saved proposal is not in the current authorized member list. Reload
+                  members or clear it; GrowPathAI will not substitute a nearby identity.
+                </Text>
+              ) : null}
+              {workspace.workspaceType === "commercial" && !assigneeOptions.length ? (
+                <Text style={styles.lifecycleWarning}>
+                  The current Commercial identity is unavailable, so a self proposal
+                  cannot be offered yet.
+                </Text>
+              ) : null}
+            </View>
+          )}
+          {assigneeEvidence?.authorizationStatus ? (
+            <Text style={styles.providerStatus}>
+              Saved proposal evidence:{" "}
+              {String(assigneeEvidence.authorizationStatus).replace(/_/g, " ")}
+              {assigneeEvidence.assigneeRole
+                ? ` · member role ${assigneeEvidence.assigneeRole}`
+                : ""}
+              {assigneeEvidence.authorizationCheckedAt
+                ? ` · checked ${assigneeEvidence.authorizationCheckedAt}`
+                : ""}
+              . Side effects performed: none.
+            </Text>
+          ) : null}
         </View>
       </AppCard>
 
@@ -701,8 +1183,35 @@ export default function JobNotesTool({
           </Text>
         ) : null}
         {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
+        {new Set([
+          "BUSINESS_DESK_WORKSPACE_ACCESS_CHANGED",
+          "BUSINESS_DESK_JOB_ASSIGNEE_INVALID",
+          "BUSINESS_DESK_VERSION_CONFLICT",
+          "BUSINESS_DESK_WORKSPACE_TIME_ZONE_REQUIRED",
+          "BUSINESS_DESK_WORKSPACE_TIME_ZONE_CHANGED"
+        ]).has(formErrorCode) ? (
+          <View style={styles.choiceStack}>
+            <Text style={styles.lifecycleWarning}>
+              Your unsaved job draft remains on screen. Reload current permissions,
+              members, records, and the workspace time zone before comparing or retrying.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Reload job authorization data"
+              onPress={() => {
+                void collection.reload();
+                void loadFacilityAssignees();
+                void workspaceTimeZoneState.reload();
+              }}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Reload authorization data</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <RecordSaveArchiveActions
           saving={collection.saving}
+          saveDisabled={scheduleWriteBlocked}
           hasRecord={Boolean(businessDeskRecordId(selected))}
           saveLabel="Save job record"
           archiveReason={archiveReason}
@@ -753,7 +1262,22 @@ export default function JobNotesTool({
 
 function createStyles(palette: ThemePalette) {
   return StyleSheet.create({
+    assigneeChoice: {
+      borderColor: palette.border,
+      borderRadius: 10,
+      borderWidth: 1,
+      minHeight: 42,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    assigneeChoiceSelected: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    assigneeChoiceText: { color: palette.text, fontSize: 12, fontWeight: "800" },
+    assigneeChoiceTextSelected: { color: palette.accentText },
     attachmentBox: { marginTop: 12 },
+    choiceStack: { gap: 8 },
     dateField: { flexBasis: 250, flexGrow: 1, minWidth: 220 },
     disabled: { opacity: 0.6 },
     errorText: { color: palette.danger, fontSize: 13, fontWeight: "800" },
@@ -771,6 +1295,7 @@ function createStyles(palette: ThemePalette) {
     lifecycleHint: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
     lifecycleTitle: { color: palette.text, fontSize: 13, fontWeight: "900" },
     lifecycleWarning: { color: palette.warning, fontSize: 12, fontWeight: "800" },
+    loadingRow: { alignItems: "center", flexDirection: "row", gap: 8 },
     providerBox: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.border,
@@ -797,6 +1322,17 @@ function createStyles(palette: ThemePalette) {
     },
     safetyText: { color: palette.textMuted, fontSize: 12, lineHeight: 17 },
     safetyTitle: { color: palette.text, fontSize: 13, fontWeight: "900" },
+    secondaryButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      borderColor: palette.border,
+      borderRadius: 10,
+      borderWidth: 1,
+      minHeight: 42,
+      paddingHorizontal: 14,
+      paddingVertical: 10
+    },
+    secondaryButtonText: { color: palette.text, fontSize: 12, fontWeight: "900" },
     transitionButton: {
       alignItems: "center",
       alignSelf: "flex-start",

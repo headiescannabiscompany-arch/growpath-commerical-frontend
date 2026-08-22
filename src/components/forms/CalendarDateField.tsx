@@ -22,6 +22,7 @@ type CalendarDateFieldProps = {
   disabled?: boolean;
   optional?: boolean;
   testID?: string;
+  timeZoneLabel?: string;
 };
 
 type DateParts = {
@@ -137,7 +138,8 @@ export default function CalendarDateField({
   initialYear,
   disabled = false,
   optional = true,
-  testID
+  testID,
+  timeZoneLabel
 }: CalendarDateFieldProps) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createCalendarDateFieldStyles(palette), [palette]);
@@ -148,7 +150,9 @@ export default function CalendarDateField({
   const resolvedMaxYear = maxYear ?? Math.max(currentYear + 30, storedYear);
   const timezone =
     mode === "datetime"
-      ? Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || "device local time"
+      ? String(timeZoneLabel || "").trim() ||
+        Intl.DateTimeFormat?.().resolvedOptions?.().timeZone ||
+        "device local time"
       : "";
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<DateParts>(() => parseParts(value, initialYear));

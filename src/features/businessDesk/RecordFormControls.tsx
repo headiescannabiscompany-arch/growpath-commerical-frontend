@@ -75,6 +75,7 @@ export function StatusSelector<TStatus extends string>({
 
 export function RecordSaveArchiveActions({
   saving,
+  saveDisabled = false,
   hasRecord,
   saveLabel = "Save record",
   archiveReason,
@@ -83,6 +84,7 @@ export function RecordSaveArchiveActions({
   onArchive
 }: {
   saving: boolean;
+  saveDisabled?: boolean;
   hasRecord: boolean;
   saveLabel?: string;
   archiveReason: string;
@@ -97,10 +99,10 @@ export function RecordSaveArchiveActions({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={saveLabel}
-        accessibilityState={{ busy: saving, disabled: saving }}
-        disabled={saving}
+        accessibilityState={{ busy: saving, disabled: saving || saveDisabled }}
+        disabled={saving || saveDisabled}
         onPress={onSave}
-        style={[styles.primaryButton, saving && styles.disabled]}
+        style={[styles.primaryButton, (saving || saveDisabled) && styles.disabled]}
       >
         {saving ? (
           <ActivityIndicator color={palette.accentText} />

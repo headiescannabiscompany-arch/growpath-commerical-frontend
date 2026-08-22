@@ -28,6 +28,16 @@ jest.mock("@/api/businessDesk", () => ({
   COMMERCIAL_BUSINESS_DESK_WORKSPACE: { workspaceType: "commercial" }
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({
+    user: {
+      id: "commercial-owner-1",
+      displayName: "Commercial Owner",
+      email: "owner@example.test"
+    }
+  })
+}));
+
 jest.mock("@/features/businessDesk/PriceMarginTool", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -234,5 +244,28 @@ describe("Business Desk route registrations", () => {
     expect(tool.props.workspaceType).toBe("facility");
     expect(tool.props.basePath).toBe("/home/facility/business-desk");
     expect(tool.props.canViewCurrentCash).toBe(false);
+  });
+
+  it("passes exact job time-zone authority and Commercial self identity", () => {
+    const commercial = render(<CommercialJobRoute />);
+    const commercialJob = commercial.getByTestId("business-desk-tool-jobs");
+    expect(commercialJob.props.canConfigureTimeZone).toBe(true);
+    expect(commercialJob.props.currentUser).toEqual({
+      userId: "commercial-owner-1",
+      label: "Commercial Owner"
+    });
+    commercial.unmount();
+
+    const owner = render(<FacilityJobRoute />);
+    expect(owner.getByTestId("business-desk-tool-jobs").props.canConfigureTimeZone).toBe(
+      true
+    );
+    owner.unmount();
+
+    mockFacilityRole = "MANAGER";
+    const manager = render(<FacilityJobRoute />);
+    expect(
+      manager.getByTestId("business-desk-tool-jobs").props.canConfigureTimeZone
+    ).toBe(false);
   });
 });

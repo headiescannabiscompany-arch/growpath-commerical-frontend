@@ -7,8 +7,13 @@ import JobNotesTool, {
 
 const mockArchive = jest.fn();
 const mockCreate = jest.fn();
+const mockGetWorkspaceTimeZone = jest.fn();
 const mockList = jest.fn();
+const mockListTeamMembers = jest.fn();
+const mockPatchWorkspaceTimeZone = jest.fn();
 const mockUpdate = jest.fn();
+let mockJobStart = "2026-08-24T09:00";
+let mockJobEnd = "2026-08-24T12:30";
 
 jest.mock("@/api/businessDesk", () => ({
   archiveBusinessDeskRecord: (...args: any[]) => mockArchive(...args),
@@ -17,9 +22,26 @@ jest.mock("@/api/businessDesk", () => ({
       ? `facility:${workspace.facilityId}`
       : "commercial",
   createBusinessDeskRecord: (...args: any[]) => mockCreate(...args),
+  getBusinessDeskWorkspaceTimeZone: (...args: any[]) => mockGetWorkspaceTimeZone(...args),
   listBusinessDeskRecords: (...args: any[]) => mockList(...args),
+  normalizeIanaTimeZone: (value: unknown) => {
+    const candidate = typeof value === "string" ? value.trim() : "";
+    if (!candidate) return null;
+    try {
+      return new Intl.DateTimeFormat("en-US", { timeZone: candidate }).resolvedOptions()
+        .timeZone;
+    } catch {
+      return null;
+    }
+  },
+  patchBusinessDeskWorkspaceTimeZone: (...args: any[]) =>
+    mockPatchWorkspaceTimeZone(...args),
   requireBusinessDeskWorkspace: (workspace: any) => workspace,
   updateBusinessDeskRecord: (...args: any[]) => mockUpdate(...args)
+}));
+
+jest.mock("@/api/team", () => ({
+  listTeamMembers: (...args: any[]) => mockListTeamMembers(...args)
 }));
 
 jest.mock("@/components/layout/AppPage", () => {
@@ -44,16 +66,18 @@ jest.mock("@/components/layout/AppCard", () => {
 jest.mock("@/components/forms/CalendarDateField", () => {
   const React = require("react");
   const { Pressable, Text } = require("react-native");
-  return ({ accessibilityLabel, onChange }: any) =>
+  return ({ accessibilityLabel, disabled, onChange, timeZoneLabel, value }: any) =>
     React.createElement(
       Pressable,
       {
         accessibilityLabel,
+        accessibilityState: { disabled },
+        disabled,
+        testTimeZoneLabel: timeZoneLabel,
+        testValue: value,
         onPress: () =>
           onChange(
-            String(accessibilityLabel).includes("start")
-              ? "2026-08-24T09:00"
-              : "2026-08-24T12:30"
+            String(accessibilityLabel).includes("start") ? mockJobStart : mockJobEnd
           )
       },
       React.createElement(Text, null, "Choose date and time")
@@ -131,13 +155,30 @@ function jobRecord(overrides: Record<string, unknown> = {}) {
 
 describe("JobNotesTool", () => {
   beforeEach(() => {
+    mockJobStart = "2026-08-24T09:00";
+    mockJobEnd = "2026-08-24T12:30";
     mockArchive.mockReset();
     mockCreate.mockReset();
+    mockGetWorkspaceTimeZone.mockReset().mockImplementation(async (requestWorkspace) => ({
+      configured: true,
+      workspaceType: requestWorkspace.workspaceType,
+      workspaceId:
+        requestWorkspace.workspaceType === "facility"
+          ? requestWorkspace.facilityId
+          : "owner-1",
+      timeZone: "America/New_York",
+      version: 4,
+      selectedByUserId: "owner-1",
+      selectedByRole: "OWNER",
+      selectedAt: "2026-08-22T12:00:00.000Z"
+    }));
     mockList
       .mockReset()
       .mockImplementation(async (_workspace, options) =>
         options?.kind === "job" ? [] : [quote]
       );
+    mockListTeamMembers.mockReset().mockResolvedValue([]);
+    mockPatchWorkspaceTimeZone.mockReset();
     mockUpdate.mockReset();
   });
 
@@ -185,6 +226,7 @@ describe("JobNotesTool", () => {
       />
     );
     await screen.findByLabelText("Related quote Pump quote");
+    await screen.findByText(/Authoritative setting: America\/New_York · version 4/i);
 
     fireEvent.changeText(screen.getByLabelText("Job record title"), "Pump replacement");
     fireEvent.changeText(screen.getByLabelText("Job project name"), "Greenhouse pump");
@@ -243,8 +285,10 @@ describe("JobNotesTool", () => {
               phone: ""
             },
             projectName: "Greenhouse pump",
-            scheduledStartAt: expect.any(String),
-            scheduledEndAt: expect.any(String),
+            scheduledStartAt: "2026-08-24T13:00:00.000Z",
+            scheduledEndAt: "2026-08-24T16:30:00.000Z",
+            scheduleTimeZone: "America/New_York",
+            scheduleTimeZoneVersion: 4,
             privateLocation: "Room 4",
             scope: "Replace failed circulation pump",
             relatedQuoteId: "64b000000000000000000201",
@@ -429,6 +473,283 @@ describe("JobNotesTool", () => {
       await screen.findByText(/related quote is no longer available in this workspace/i)
     ).toBeTruthy();
     expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it("rejects nonexistent and ambiguous job wall times in the authoritative zone", async () => {
+    mockJobStart = "2026-03-08T02:30";
+    const gapScreen = render(
+      <JobNotesTool
+        workspace={workspace}
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    await gapScreen.findByText(/Authoritative setting: America\/New_York · version 4/i);
+    fireEvent.changeText(gapScreen.getByLabelText("Job record title"), "DST gap");
+    fireEvent.changeText(gapScreen.getByLabelText("Job notes"), "Review schedule");
+    fireEvent.press(gapScreen.getByLabelText("Job scheduled start date and time"));
+    fireEvent.press(gapScreen.getByLabelText("Save job record"));
+    await gapScreen.findByText(/does not exist in America\/New_York/i);
+    gapScreen.unmount();
+
+    mockJobStart = "2026-11-01T01:30";
+    const overlapScreen = render(
+      <JobNotesTool
+        workspace={workspace}
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    await overlapScreen.findByText(
+      /Authoritative setting: America\/New_York · version 4/i
+    );
+    fireEvent.changeText(overlapScreen.getByLabelText("Job record title"), "DST overlap");
+    fireEvent.changeText(overlapScreen.getByLabelText("Job notes"), "Review schedule");
+    fireEvent.press(overlapScreen.getByLabelText("Job scheduled start date and time"));
+    fireEvent.press(overlapScreen.getByLabelText("Save job record"));
+    await overlapScreen.findByText(/occurs twice in America\/New_York/i);
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("keeps a Facility Manager read-only and blocks scheduling, while allowing an unscheduled note", async () => {
+    mockGetWorkspaceTimeZone.mockResolvedValue({
+      configured: false,
+      workspaceType: "facility",
+      workspaceId: "facility-2",
+      timeZone: null,
+      version: 0
+    });
+    mockCreate.mockImplementation(async (_workspace, input) => ({
+      _id: "64b000000000000000000222",
+      kind: "job",
+      title: input.title,
+      status: input.status,
+      version: 1,
+      payload: input.payload,
+      sourceLinks: input.sourceLinks
+    }));
+    const screen = render(
+      <JobNotesTool
+        workspace={workspace}
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+        canConfigureTimeZone={false}
+      />
+    );
+    await screen.findByText(
+      /No workspace time zone is configured\. Time-sensitive calculations and writes are blocked/i
+    );
+    expect(screen.queryByLabelText("IANA workspace time zone")).toBeNull();
+    expect(
+      screen.getByLabelText("Job scheduled start date and time").props.accessibilityState
+        .disabled
+    ).toBe(true);
+    fireEvent.changeText(screen.getByLabelText("Job record title"), "Unscheduled note");
+    fireEvent.changeText(screen.getByLabelText("Job notes"), "Call before scheduling");
+    fireEvent.press(screen.getByLabelText("Save job record"));
+
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
+    expect(mockCreate.mock.calls[0][1].payload.job).toEqual(
+      expect.objectContaining({
+        scheduledStartAt: null,
+        scheduledEndAt: null,
+        scheduleTimeZone: "",
+        scheduleTimeZoneVersion: null
+      })
+    );
+  });
+
+  it("requires an explicit schedule decision when an owner changes zones after entering a wall time", async () => {
+    mockPatchWorkspaceTimeZone.mockResolvedValue({
+      configured: true,
+      workspaceType: "facility",
+      workspaceId: "facility-2",
+      timeZone: "America/Chicago",
+      version: 5,
+      selectedByUserId: "owner-1",
+      selectedByRole: "OWNER",
+      selectedAt: "2026-08-22T14:00:00.000Z"
+    });
+    const screen = render(
+      <JobNotesTool
+        workspace={workspace}
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+        canConfigureTimeZone
+      />
+    );
+    await screen.findByText(/Authoritative setting: America\/New_York · version 4/i);
+    fireEvent.press(screen.getByLabelText("Job scheduled start date and time"));
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Job scheduled start date and time").props.testValue
+      ).toBe("2026-08-24T09:00")
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("IANA workspace time zone"),
+      "America/Chicago"
+    );
+    fireEvent.press(screen.getByLabelText("Save workspace time zone"));
+
+    await screen.findByText(/Authoritative setting: America\/Chicago · version 5/i);
+    expect(
+      screen.getByText(/wall time without an exact instant was cleared/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Save job record").props.accessibilityState.disabled
+    ).toBe(true);
+    fireEvent.press(screen.getByLabelText("Keep job unscheduled after time zone change"));
+    expect(
+      screen.getByLabelText("Save job record").props.accessibilityState.disabled
+    ).toBe(false);
+  });
+
+  it("offers only active current Facility members and saves a reauthorized proposal without side-effect claims", async () => {
+    const existing = jobRecord();
+    mockList.mockImplementation(async (_workspace, options) =>
+      options?.kind === "job" ? [existing] : [quote]
+    );
+    mockListTeamMembers.mockResolvedValue([
+      {
+        id: "member-alice",
+        userId: "user-alice",
+        role: "STAFF",
+        name: "Alice Active"
+      },
+      {
+        id: "member-bob",
+        userId: "user-bob",
+        role: "STAFF",
+        name: "Bob Invited",
+        invited: true
+      },
+      {
+        id: "member-carol",
+        userId: "user-carol",
+        role: "MANAGER",
+        name: "Carol Removed",
+        deletedAt: "2026-08-20T12:00:00.000Z"
+      },
+      {
+        id: "member-admin",
+        userId: "user-admin",
+        role: "ADMIN",
+        name: "Legacy Admin"
+      }
+    ]);
+    mockUpdate.mockImplementation(async (_workspace, _id, input) => ({
+      ...existing,
+      title: input.title,
+      version: 8,
+      payload: {
+        job: {
+          ...input.payload.job,
+          assigneeProposalEvidence: {
+            authorizationStatus: "authorized_proposal",
+            assigneeRole: "STAFF",
+            authorizationCheckedAt: "2026-08-22T13:00:00.000Z",
+            sideEffectsPerformed: false
+          }
+        }
+      },
+      sourceLinks: input.sourceLinks
+    }));
+    const screen = render(
+      <JobNotesTool
+        workspace={workspace}
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    fireEvent.press(await screen.findByLabelText("Open job notes Existing pump job"));
+    fireEvent.press(await screen.findByLabelText("Propose job assignee Alice Active"));
+    expect(screen.queryByLabelText(/Bob Invited/i)).toBeNull();
+    expect(screen.queryByLabelText(/Carol Removed/i)).toBeNull();
+    expect(screen.queryByLabelText(/Legacy Admin/i)).toBeNull();
+    expect(screen.queryByLabelText(/assignee user ID/i)).toBeNull();
+    fireEvent.press(screen.getByLabelText("Save job record"));
+
+    await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
+    expect(mockUpdate.mock.calls[0][2].payload.job.assigneeUserId).toBe("user-alice");
+    expect(
+      await screen.findByText(/assignee proposal was reauthorized for this revision/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/Side effects performed: none/i)).toBeTruthy();
+    expect(
+      screen.queryByText(/notification sent|task created|customer contacted/i)
+    ).toBeNull();
+  });
+
+  it("offers only the authenticated Commercial self identity", async () => {
+    const existing = jobRecord();
+    mockList.mockImplementation(async (_workspace, options) =>
+      options?.kind === "job" ? [existing] : [quote]
+    );
+    mockUpdate.mockImplementation(async (_workspace, _id, input) => ({
+      ...existing,
+      title: input.title,
+      version: 8,
+      payload: input.payload,
+      sourceLinks: input.sourceLinks
+    }));
+    const screen = render(
+      <JobNotesTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+        currentUser={{ userId: "owner-1", label: "Commercial Owner" }}
+      />
+    );
+    fireEvent.press(await screen.findByLabelText("Open job notes Existing pump job"));
+    fireEvent.press(screen.getByLabelText("Propose job assignee Commercial Owner"));
+    fireEvent.press(screen.getByLabelText("Save job record"));
+
+    await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
+    expect(mockUpdate.mock.calls[0][2].payload.job.assigneeUserId).toBe("owner-1");
+    expect(screen.queryByLabelText(/assignee user ID/i)).toBeNull();
+    expect(mockListTeamMembers).not.toHaveBeenCalled();
+  });
+
+  it("retains the draft and requires authorization reload after role drift", async () => {
+    const existing = jobRecord();
+    const accessChanged = Object.assign(
+      new Error("Workspace access changed. Reload before retrying."),
+      { code: "BUSINESS_DESK_WORKSPACE_ACCESS_CHANGED", status: 403 }
+    );
+    mockList.mockImplementation(async (_workspace, options) =>
+      options?.kind === "job" ? [existing] : [quote]
+    );
+    mockUpdate.mockRejectedValue(accessChanged);
+    const screen = render(
+      <JobNotesTool
+        workspace={workspace}
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    fireEvent.press(await screen.findByLabelText("Open job notes Existing pump job"));
+    fireEvent.changeText(
+      screen.getByLabelText("Job record title"),
+      "Draft retained after drift"
+    );
+    fireEvent.press(screen.getByLabelText("Save job record"));
+
+    expect(
+      await screen.findAllByText(/Workspace access changed\. Reload before retrying/i)
+    ).not.toHaveLength(0);
+    expect(screen.getByLabelText("Job record title").props.value).toBe(
+      "Draft retained after drift"
+    );
+    expect(screen.getByLabelText("Reload job authorization data")).toBeTruthy();
+    const listCallsBeforeReload = mockList.mock.calls.length;
+    fireEvent.press(screen.getByLabelText("Reload job authorization data"));
+    await screen.findByText(/Loading authoritative workspace time zone/i);
+    await waitFor(() =>
+      expect(mockList.mock.calls.length).toBeGreaterThan(listCallsBeforeReload)
+    );
+    await screen.findByText(/Authoritative setting: America\/New_York · version 4/i);
+    expect(mockGetWorkspaceTimeZone.mock.calls.length).toBeGreaterThan(1);
+    expect(mockListTeamMembers.mock.calls.length).toBeGreaterThan(1);
   });
 
   it("rejects incomplete or non-http manual provider references", async () => {
