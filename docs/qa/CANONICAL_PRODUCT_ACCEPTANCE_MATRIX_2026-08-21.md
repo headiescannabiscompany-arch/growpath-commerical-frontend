@@ -236,16 +236,20 @@ Owner/Manager mutation, Viewer denial, provider operation, reload/isolation, cre
 audit evidence remain open and require the corresponding authorized sessions. Do not use the
 account-level `User` label on Profile as a substitute for the Facility membership role.
 
-The same live pass found that the Facility Profile's billing action still opened Personal
-Account billing: live evidence showed `Plan: pro` / `Status: active` and a Personal
-cancellation action while the Facility Profile separately showed Triple Bag Genetics as
-`FACILITY (trialing)`. This contradicted exact-Facility ownership and remains open until the
-corrected route is deployed and live-accepted. The follow-up candidate introduces
-`/home/facility/billing`, reads only the selected Facility billing record, keeps non-billing
-members read-only, and treats a confirmed authorized Stripe-backed trial as cancellable before
-renewal. Local evidence passes TypeScript, lint, the delivery guard, 12 focused route/safety
-tests, and the broader 20-suite / 255-test subscription and gift packet. No live cancellation
-or checkout was performed.
+The same live pass found that the Facility Profile's billing action opened Personal Account
+billing while Triple Bag Genetics separately reported `FACILITY (trialing)`. The ownership
+correction is now deployed: frontend `8d397f648f1399e10f92e6dec64de20ce67b81ba`
+(`dep-da519qvavr4c73eobbcg`) adds `/home/facility/billing`; backend
+`fbdd874ceadf27a4d0b950b5f1fad5ecc702ed0d` (`dep-da515heq1p3s73at9ln0`) limits status to
+a safe Facility projection; and backend `687d635a49a5f9ec68dbe2a6674745f4bf9c6b7f`
+(`dep-da51e53l550s73fvcud0`) authorizes canonical Facility memberships without allowing a
+revoked member to regain access through a stale legacy role. Production acceptance on
+2026-08-22 showed Triple Bag Genetics, `trialing`, and an explicit read-only `STAFF` message,
+with no Personal plan, checkout or cancellation controls. Local evidence includes TypeScript,
+lint, delivery guard, the 20-suite / 255-test subscription-and-gift packet, and the exact
+canonical authorization suite (8/8). Read-only Facility billing is live accepted. Owner
+checkout/cancellation visibility still requires an OWNER session; no financial action was
+performed.
 
 ## Nature, Admin and release
 
