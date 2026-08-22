@@ -154,6 +154,7 @@ export type PriceMarginCalculationInput = {
   shippingCostMinor?: number;
   customerShippingMinor?: number;
   fixedCostsMinor?: number;
+  targetMarginBasisPoints?: number;
   discount?: BusinessDeskDiscount;
   tax?: BusinessDeskTax;
 };
@@ -195,6 +196,11 @@ export type PriceMarginCalculationResult = {
     quantityMicros: number | null;
     revenueMinor: number | null;
     contributionMinor?: number | null;
+    reason: string | null;
+  };
+  desiredMargin: {
+    targetMarginBasisPoints: number | null;
+    desiredUnitPriceMinor: number | null;
     reason: string | null;
   };
 };
