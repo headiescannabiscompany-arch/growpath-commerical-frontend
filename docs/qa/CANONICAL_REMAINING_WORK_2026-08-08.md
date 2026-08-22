@@ -231,20 +231,20 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       not separate unfinished products. Preserve their stale-link behavior until final
       crawl/dead-code evidence proves a redirect is no longer required.
 - [~] **Complete buried-feature inventory:** source reconciliation on 2026-08-22 now compares
-      315 frontend routes, 319 inventoried backend routes, 226 legacy feature rows, 32 system
-      foundations, provider/environment gates, workers and webhooks. The full-surface audit
-      reports 315 frontend routes, 225 directly parsed backend declarations and zero static
-      errors/warnings. Runtime-gated user capabilities are individually named above, and the
-      65 misleading legacy `planned` rows are classified as internal supporting operations
-      under canonical matrix owners rather than hidden products. The remaining gate is the
-      final-candidate route-to-visible-entry crawl: for every user-facing feature record its
-      workspace/role, visible entry, canonical URL, Back path, empty/populated states and
-      intentional internal/redirect status. Before construction closes, compare registered
-      frontend routes, visible navigation/deep links, backend route inventory, release matrix,
-      provider/environment gates, workers/webhooks and production configuration. Add every
-      additional user-facing orphan or runtime-gated feature to its owning matrix row, then
-      make it reachable and accepted or record an explicit owner rejection. Access-control,
-      privacy and safety-hidden data are not buried features and must remain protected.
+  315 frontend routes, 319 inventoried backend routes, 226 legacy feature rows, 32 system
+  foundations, provider/environment gates, workers and webhooks. The full-surface audit
+  reports 315 frontend routes, 225 directly parsed backend declarations and zero static
+  errors/warnings. Runtime-gated user capabilities are individually named above, and the
+  65 misleading legacy `planned` rows are classified as internal supporting operations
+  under canonical matrix owners rather than hidden products. The remaining gate is the
+  final-candidate route-to-visible-entry crawl: for every user-facing feature record its
+  workspace/role, visible entry, canonical URL, Back path, empty/populated states and
+  intentional internal/redirect status. Before construction closes, compare registered
+  frontend routes, visible navigation/deep links, backend route inventory, release matrix,
+  provider/environment gates, workers/webhooks and production configuration. Add every
+  additional user-facing orphan or runtime-gated feature to its owning matrix row, then
+  make it reachable and accepted or record an explicit owner rejection. Access-control,
+  privacy and safety-hidden data are not buried features and must remain protected.
 - [x] **Reconcile the legacy V1 feature matrix:** all 65 formerly `planned`/`internal` rows are
       live backend routes, not 65 missing products. They are now `supporting_operation` rows
       with explicit canonical owners across `P-02`, `P-11`, `S-01`, `S-02`, `S-07`, `C-02`,
@@ -559,10 +559,21 @@ grow`, private current location without a Field Study, and an optional approxima
     upload/analyze/save/reload plus back/error/retry proof with no Grow, Field Study, or public
     pin. Do not rebuild transport, extraction, receipts, Saved Runs, or correction.
   - **P-04 (`implemented`):** retain the deployed reviewed-draft safety boundary and live
-    known/unknown crop setup. The exact remaining action is an eligible confirmed Plant ID:
-    inspect prefill/provenance/lifecycle, cancel once with no creation, then save, reload, and
-    archive one disposable Grow. Do not rebuild the crop registry, manual setup, navigation,
-    or lifecycle model.
+    known/unknown crop setup. On 2026-08-22, retained Plant ID
+    `6a77f67895931a1ea2ab10d9` opened a reviewed Personal Grow draft with the corrected common
+    identity, aliases, source-run provenance, blank unverified scientific name, and unknown
+    lifecycle facts. Cancel created no `cannabis grow` record. Frontend merge
+    `8be0c2f3bc45e67e96ad45ad5ecc87002c6ad9df` passed the full gate, deployed successfully on
+    Render, and a fresh production session returned from the draft to that exact Saved Run.
+    Production then saved and reloaded the empty disposable Grow
+    `6a8a27ee0ad1a2c8f9e57fa6`, preserving common identity, aliases, blank unverified
+    scientific name, unknown lifecycle facts, soil system, start date, zero journal entries,
+    zero tasks, zero Tool Runs, and its creation timeline event. A second empty disposable
+    record, `6a8a27d80ad1a2c8f9e57f95`, was created when the successful modal-based first save was
+    mistaken for a non-navigation failure; both exact IDs are retained here so cleanup cannot
+    be missed or silently repeated. The only remaining action is archive both disposable
+    records and verify their absence from the active list. Do not rebuild the crop registry,
+    manual setup, navigation, lifecycle model, or accepted cancel/return/save/reload behavior.
   - **P-05 (`implemented`):** retain the separate explicit Nature draft, required inputs,
     approximate projection, consent, sensitive/cannabis gates, and withdrawal path. The exact
     remaining action is one non-sensitive publication, Saved Run/public card-photo-pin reload,
