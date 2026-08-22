@@ -207,7 +207,7 @@ function artifactPreview(kind: "quote_copy" | "quote_csv", version = 4) {
     recordPins: [
       { recordId: "quote-1", revisionId: "revision-4", recordKind: "quote", version }
     ],
-    previewChecksumSha256: artifact.checksumSha256
+    previewConfirmationSha256: "b".repeat(64)
   };
 }
 
@@ -594,7 +594,7 @@ describe("QuoteEstimateTool", () => {
       expect.objectContaining({
         artifactKind: "quote_csv",
         revisionSelections: [{ recordId: "quote-1", revisionNumber: 4 }],
-        previewChecksumSha256: "a".repeat(64),
+        previewConfirmationSha256: "b".repeat(64),
         confirmed: true,
         expectedPreview: preview
       })

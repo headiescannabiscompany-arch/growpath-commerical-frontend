@@ -174,7 +174,7 @@ function expenseArtifactPreview() {
         version: 4
       }
     ],
-    previewChecksumSha256: artifact.checksumSha256
+    previewConfirmationSha256: "b".repeat(64)
   };
 }
 
@@ -509,7 +509,7 @@ describe("ExpenseReceiptTool", () => {
         artifactKind: "expense_csv_batch",
         revisionSelections: [{ recordId: "507f191e810c19729de86020", revisionNumber: 4 }],
         confirmed: true,
-        previewChecksumSha256: "a".repeat(64)
+        previewConfirmationSha256: "b".repeat(64)
       })
     );
     expect(mockExport).toHaveBeenCalledWith(

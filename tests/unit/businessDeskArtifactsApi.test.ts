@@ -15,6 +15,10 @@ jest.mock("@/api/apiRequest", () => ({ apiRequest: jest.fn() }));
 const mockApiRequest = apiRequest as jest.MockedFunction<typeof apiRequest>;
 const RECORD_ID = "507f191e810c19729de86020";
 const REVISION_ID = "507f191e810c19729de86021";
+const OTHER_RECORD_ID = "507f191e810c19729de86023";
+const OTHER_REVISION_ID = "507f191e810c19729de86024";
+const PREVIEW_CONFIRMATION = "c".repeat(64);
+const OTHER_PREVIEW_CONFIRMATION = "d".repeat(64);
 
 const fixtureSpec: Record<
   BusinessDeskArtifactKind,
@@ -97,14 +101,15 @@ function pins(artifactKind: BusinessDeskArtifactKind, version = 4) {
 
 function previewFixture(
   artifactKind: BusinessDeskArtifactKind,
-  content?: string
+  content?: string,
+  previewConfirmationSha256 = PREVIEW_CONFIRMATION
 ): BusinessDeskArtifactPreview {
   const value = artifact(artifactKind, content);
   return {
     artifactKind,
     artifact: value,
     recordPins: pins(artifactKind) as BusinessDeskArtifactPreview["recordPins"],
-    previewChecksumSha256: value.checksumSha256
+    previewConfirmationSha256
   };
 }
 
@@ -156,6 +161,7 @@ describe("generic reviewed Business Desk artifact API", () => {
         }
       )
     ).resolves.toEqual(preview);
+    expect(preview.previewConfirmationSha256).not.toBe(preview.artifact.checksumSha256);
     expect(mockApiRequest).toHaveBeenCalledWith(
       "/api/facility/facility%2F1/business-desk/artifacts/preview",
       {
@@ -166,6 +172,91 @@ describe("generic reviewed Business Desk artifact API", () => {
         }
       }
     );
+  });
+
+  it("requires public pins in canonical record-ID order", async () => {
+    const preview = previewFixture("expense_csv_batch");
+    const firstPin = preview.recordPins[0];
+    const secondPin = {
+      ...firstPin,
+      recordId: OTHER_RECORD_ID,
+      revisionId: OTHER_REVISION_ID
+    };
+    mockApiRequest.mockResolvedValue({
+      data: {
+        ...preview,
+        artifact: { ...preview.artifact, recordCount: 2 },
+        recordPins: [secondPin, firstPin]
+      }
+    });
+
+    await expect(
+      previewBusinessDeskArtifact(
+        { workspaceType: "commercial" },
+        {
+          artifactKind: "expense_csv_batch",
+          revisionSelections: [
+            { recordId: RECORD_ID, revisionNumber: 4 },
+            { recordId: OTHER_RECORD_ID, revisionNumber: 4 }
+          ]
+        }
+      )
+    ).rejects.toThrow(/pin the requested revisions/i);
+  });
+
+  it("canonicalizes batch selections before preview and confirmation binding", async () => {
+    const preview = previewFixture("expense_csv_batch");
+    const secondPin = {
+      ...preview.recordPins[0],
+      recordId: OTHER_RECORD_ID,
+      revisionId: OTHER_REVISION_ID
+    };
+    const canonicalPreview: BusinessDeskArtifactPreview = {
+      ...preview,
+      artifact: { ...preview.artifact, recordCount: 2 },
+      recordPins: [preview.recordPins[0], secondPin]
+    };
+    mockApiRequest.mockResolvedValue({ data: canonicalPreview });
+
+    await expect(
+      previewBusinessDeskArtifact(
+        { workspaceType: "commercial" },
+        {
+          artifactKind: "expense_csv_batch",
+          revisionSelections: [
+            { recordId: OTHER_RECORD_ID, revisionNumber: 4 },
+            { recordId: RECORD_ID, revisionNumber: 4 }
+          ]
+        }
+      )
+    ).resolves.toEqual(canonicalPreview);
+    expect(mockApiRequest).toHaveBeenCalledWith("/api/business-desk/artifacts/preview", {
+      method: "POST",
+      body: {
+        artifactKind: "expense_csv_batch",
+        revisionSelections: [
+          { recordId: RECORD_ID, revisionNumber: 4 },
+          { recordId: OTHER_RECORD_ID, revisionNumber: 4 }
+        ]
+      }
+    });
+  });
+
+  it("rejects a malformed server preview confirmation", async () => {
+    const preview = previewFixture("quote_csv");
+    mockApiRequest.mockResolvedValue({
+      data: { ...preview, previewConfirmationSha256: "not-a-sha256" }
+    });
+
+    await expect(
+      previewBusinessDeskArtifact(
+        { workspaceType: "commercial" },
+        {
+          artifactKind: "quote_csv",
+          revisionSelections: [{ recordId: RECORD_ID, revisionNumber: 4 }]
+        }
+      )
+    ).rejects.toThrow(/preview confirmation was invalid/i);
   });
 
   it("rejects a cross-revision pin", async () => {
@@ -283,7 +374,7 @@ describe("generic reviewed Business Desk artifact API", () => {
         data: {
           ...preview,
           artifact: nextArtifact,
-          previewChecksumSha256: nextArtifact.checksumSha256
+          previewConfirmationSha256: preview.previewConfirmationSha256
         }
       });
 
@@ -354,7 +445,7 @@ describe("generic reviewed Business Desk artifact API", () => {
         {
           artifactKind: "cash_flow_csv",
           revisionSelections: [{ recordId: RECORD_ID, revisionNumber: 4 }],
-          previewChecksumSha256: preview.previewChecksumSha256,
+          previewConfirmationSha256: preview.previewConfirmationSha256,
           confirmed: true,
           idempotencyKey: " artifact-cash-flow-0001 ",
           expectedRedactionProfile:
@@ -368,12 +459,75 @@ describe("generic reviewed Business Desk artifact API", () => {
       body: {
         artifactKind: "cash_flow_csv",
         revisionSelections: [{ recordId: RECORD_ID, revisionNumber: 4 }],
-        previewChecksumSha256: preview.previewChecksumSha256,
+        previewConfirmationSha256: preview.previewConfirmationSha256,
         confirmed: true,
         idempotencyKey: "artifact-cash-flow-0001"
       }
     });
     expect(prepared.receipt.preparedArtifact).not.toHaveProperty("content");
+  });
+
+  it("cannot substitute a confirmation from an identical artifact pinned to another revision", async () => {
+    const firstPreview = previewFixture("quote_csv");
+    const secondPreview: BusinessDeskArtifactPreview = {
+      ...firstPreview,
+      recordPins: [
+        {
+          ...firstPreview.recordPins[0],
+          recordId: OTHER_RECORD_ID,
+          revisionId: OTHER_REVISION_ID
+        }
+      ],
+      previewConfirmationSha256: OTHER_PREVIEW_CONFIRMATION
+    };
+
+    expect(secondPreview.artifact).toEqual(firstPreview.artifact);
+    expect(secondPreview.artifact.checksumSha256).toBe(
+      firstPreview.artifact.checksumSha256
+    );
+
+    await expect(
+      prepareBusinessDeskArtifact(
+        { workspaceType: "commercial" },
+        {
+          artifactKind: "quote_csv",
+          revisionSelections: [{ recordId: OTHER_RECORD_ID, revisionNumber: 4 }],
+          previewConfirmationSha256: firstPreview.previewConfirmationSha256,
+          confirmed: true,
+          idempotencyKey: "quote-csv-substitution-0001",
+          expectedPreview: secondPreview
+        }
+      )
+    ).rejects.toThrow(/did not match the confirmed preview/i);
+    expect(mockApiRequest).not.toHaveBeenCalled();
+  });
+
+  it("independently rejects tampered UTF-8 content in a prepared response", async () => {
+    const preview = previewFixture("quote_csv");
+    const prepared = prepareFixture(preview);
+    mockApiRequest.mockResolvedValue({
+      data: {
+        ...prepared,
+        artifact: {
+          ...prepared.artifact,
+          content: `${prepared.artifact.content},tampered`
+        }
+      }
+    });
+
+    await expect(
+      prepareBusinessDeskArtifact(
+        { workspaceType: "commercial" },
+        {
+          artifactKind: "quote_csv",
+          revisionSelections: [{ recordId: RECORD_ID, revisionNumber: 4 }],
+          previewConfirmationSha256: preview.previewConfirmationSha256,
+          confirmed: true,
+          idempotencyKey: "quote-csv-tamper-0001",
+          expectedPreview: preview
+        }
+      )
+    ).rejects.toThrow(/transient reviewed artifact response was invalid/i);
   });
 
   it("rejects plaintext inside the audited receipt", async () => {
@@ -398,7 +552,7 @@ describe("generic reviewed Business Desk artifact API", () => {
         {
           artifactKind: "quote_copy",
           revisionSelections: [{ recordId: RECORD_ID, revisionNumber: 4 }],
-          previewChecksumSha256: preview.previewChecksumSha256,
+          previewConfirmationSha256: preview.previewConfirmationSha256,
           confirmed: true,
           idempotencyKey: "quote-copy-0001",
           expectedPreview: preview
@@ -429,7 +583,7 @@ describe("generic reviewed Business Desk artifact API", () => {
         {
           artifactKind: "quote_csv",
           revisionSelections: [{ recordId: RECORD_ID, revisionNumber: 4 }],
-          previewChecksumSha256: preview.previewChecksumSha256,
+          previewConfirmationSha256: preview.previewConfirmationSha256,
           confirmed: true,
           idempotencyKey: "quote-csv-0001",
           expectedPreview: preview
@@ -457,7 +611,7 @@ describe("generic reviewed Business Desk artifact API", () => {
         {
           artifactKind: "quote_csv",
           revisionSelections: [{ recordId: RECORD_ID, revisionNumber: 4 }],
-          previewChecksumSha256: preview.previewChecksumSha256,
+          previewConfirmationSha256: preview.previewConfirmationSha256,
           confirmed: true,
           idempotencyKey: "quote-csv-0001",
           expectedPreview: preview
@@ -476,7 +630,7 @@ describe("generic reviewed Business Desk artifact API", () => {
           {
             artifactKind: "quote_csv",
             revisionSelections: [{ recordId: RECORD_ID, revisionNumber: 4 }],
-            previewChecksumSha256: preview.previewChecksumSha256,
+            previewConfirmationSha256: preview.previewConfirmationSha256,
             confirmed: true,
             idempotencyKey,
             expectedPreview: preview

@@ -207,7 +207,7 @@ export default function ReviewedArtifactPanel({
           workspaceKey,
           artifactKind,
           revisionSelections,
-          previewChecksumSha256: preview.previewChecksumSha256,
+          previewConfirmationSha256: preview.previewConfirmationSha256,
           confirmed: true
         },
         () => newBusinessDeskOperationKey(`artifact-${artifactKind}`)
@@ -217,7 +217,7 @@ export default function ReviewedArtifactPanel({
         artifactKind,
         revisionSelections,
         expectedRedactionProfile,
-        previewChecksumSha256: preview.previewChecksumSha256,
+        previewConfirmationSha256: preview.previewConfirmationSha256,
         confirmed: true,
         idempotencyKey: retry.key,
         expectedPreview: preview
@@ -257,7 +257,7 @@ export default function ReviewedArtifactPanel({
     <AppCard
       title={title}
       titleLevel={2}
-      subtitle="Preview first, then explicitly confirm the checksum-bound preparation and local device handoff."
+      subtitle="Preview first, then explicitly confirm the exact revision-bound preparation and local device handoff."
       accessibilityLabel={`${title} reviewed artifact workflow`}
     >
       <Text style={styles.selectionText}>{selectionLabel}</Text>
@@ -306,7 +306,10 @@ export default function ReviewedArtifactPanel({
               </Text>
             ))}
             <Text selectable style={styles.checksumText}>
-              Preview checksum: {activePreview.previewChecksumSha256}
+              Content checksum: {activePreview.artifact.checksumSha256}
+            </Text>
+            <Text selectable style={styles.checksumText}>
+              Preview confirmation: {activePreview.previewConfirmationSha256}
             </Text>
             <Text style={styles.manifestText}>
               Included fields: {activePreview.artifact.fieldManifest.join(", ")}
@@ -323,9 +326,11 @@ export default function ReviewedArtifactPanel({
             </Text>
           </View>
           <Text style={styles.confirmBoundary}>
-            Confirming records an audited preparation receipt. It does not prove a file
-            was saved or shared, a message was delivered, terms were accepted, or money
-            was paid.
+            The server-issued preview confirmation binds this artifact kind, the ordered
+            saved-revision pins, projection and redaction metadata, and the independently
+            verified content checksum. Confirming records an audited preparation receipt.
+            It does not prove a file was saved or shared, a message was delivered, terms
+            were accepted, or money was paid.
           </Text>
           <View style={styles.actionRow}>
             <Pressable

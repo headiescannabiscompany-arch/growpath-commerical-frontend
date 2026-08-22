@@ -67,7 +67,7 @@ export type BusinessDeskArtifactPreview = {
   artifactKind: BusinessDeskArtifactKind;
   artifact: BusinessDeskTransientArtifact;
   recordPins: BusinessDeskArtifactRecordPin[];
-  previewChecksumSha256: string;
+  previewConfirmationSha256: string;
 };
 
 export type BusinessDeskArtifactReceipt = {
@@ -95,10 +95,10 @@ export type PreviewBusinessDeskArtifactInput = {
 };
 
 export type PrepareBusinessDeskArtifactInput = PreviewBusinessDeskArtifactInput & {
-  previewChecksumSha256: string;
+  previewConfirmationSha256: string;
   confirmed: true;
   idempotencyKey: string;
-  expectedPreview?: BusinessDeskArtifactPreview;
+  expectedPreview: BusinessDeskArtifactPreview;
 };
 
 const SHA_256 = /^[a-f0-9]{64}$/;
@@ -226,7 +226,7 @@ function normalizedRevisionSelections(
       "Every artifact selection must name one unique exact saved revision."
     );
   }
-  return normalized;
+  return normalized.sort((left, right) => left.recordId.localeCompare(right.recordId));
 }
 
 function recordPinsFrom(
@@ -243,10 +243,11 @@ function recordPinsFrom(
     value.length !== selections.length ||
     new Set(value.map((pin) => String(pin?.recordId || ""))).size !== selections.length ||
     value.some(
-      (pin) =>
+      (pin, index) =>
         !ownKeysExactly(pin, ["recordId", "revisionId", "recordKind", "version"]) ||
         typeof pin.recordId !== "string" ||
         !/^[a-f0-9]{24}$/.test(pin.recordId) ||
+        pin.recordId !== selections[index].recordId ||
         expected.get(pin.recordId) !== pin.version ||
         typeof pin.revisionId !== "string" ||
         !/^[a-f0-9]{24}$/.test(pin.revisionId) ||
@@ -347,7 +348,7 @@ function previewFrom(
       "artifactKind",
       "artifact",
       "recordPins",
-      "previewChecksumSha256"
+      "previewConfirmationSha256"
     ]) ||
     value.artifactKind !== input.artifactKind
   ) {
@@ -360,11 +361,8 @@ function previewFrom(
     pins.length,
     input.expectedRedactionProfile
   );
-  if (
-    !SHA_256.test(String(value.previewChecksumSha256 || "")) ||
-    value.previewChecksumSha256 !== artifact.checksumSha256
-  ) {
-    throw new Error("The reviewed artifact preview checksum was invalid.");
+  if (!SHA_256.test(String(value.previewConfirmationSha256 || ""))) {
+    throw new Error("The reviewed artifact preview confirmation was invalid.");
   }
   return { ...value, artifact, recordPins: pins } as BusinessDeskArtifactPreview;
 }
@@ -397,12 +395,6 @@ function preparedPacketFrom(
     pins.length,
     expectedProfile
   );
-  if (artifact.checksumSha256 !== input.previewChecksumSha256) {
-    throw new Error(
-      "The prepared artifact did not match the confirmed preview checksum."
-    );
-  }
-
   const receipt = value.receipt as any;
   if (
     !ownKeysExactly(receipt, [
@@ -441,15 +433,13 @@ function preparedPacketFrom(
     throw new Error("The audited reviewed artifact receipt was invalid.");
   }
 
-  if (input.expectedPreview) {
-    if (
-      input.expectedPreview.artifactKind !== input.artifactKind ||
-      input.expectedPreview.previewChecksumSha256 !== input.previewChecksumSha256 ||
-      !equalJson(input.expectedPreview.recordPins, pins) ||
-      !equalJson(input.expectedPreview.artifact, artifact)
-    ) {
-      throw new Error("The prepared artifact did not match the exact confirmed preview.");
-    }
+  if (
+    input.expectedPreview.artifactKind !== input.artifactKind ||
+    input.expectedPreview.previewConfirmationSha256 !== input.previewConfirmationSha256 ||
+    !equalJson(input.expectedPreview.recordPins, pins) ||
+    !equalJson(input.expectedPreview.artifact, artifact)
+  ) {
+    throw new Error("The prepared artifact did not match the exact confirmed preview.");
   }
 
   return {
@@ -493,18 +483,15 @@ export async function prepareBusinessDeskArtifact(
     typeof input.idempotencyKey === "string" ? input.idempotencyKey.trim() : "";
   if (
     input.confirmed !== true ||
-    !SHA_256.test(String(input.previewChecksumSha256 || "")) ||
+    !SHA_256.test(String(input.previewConfirmationSha256 || "")) ||
     idempotencyKey.length < 8 ||
     idempotencyKey.length > 200 ||
     hasControlCharacter(idempotencyKey)
   ) {
     throw new Error("Confirm one exact reviewed artifact preview before preparing it.");
   }
-  if (
-    input.expectedPreview &&
-    (input.expectedPreview.artifactKind !== input.artifactKind ||
-      input.expectedPreview.previewChecksumSha256 !== input.previewChecksumSha256)
-  ) {
+  const expectedPreview = previewFrom(input.expectedPreview, input, selections);
+  if (expectedPreview.previewConfirmationSha256 !== input.previewConfirmationSha256) {
     throw new Error("The preparation request did not match the confirmed preview.");
   }
   const response = await apiRequest(`${businessDeskBase(workspace)}/artifacts/prepare`, {
@@ -512,11 +499,11 @@ export async function prepareBusinessDeskArtifact(
     body: {
       artifactKind: input.artifactKind,
       revisionSelections: selections,
-      previewChecksumSha256: input.previewChecksumSha256,
+      previewConfirmationSha256: input.previewConfirmationSha256,
       confirmed: true,
       idempotencyKey
     },
     ...(request.signal ? { signal: request.signal } : {})
   });
-  return preparedPacketFrom(response, input, selections);
+  return preparedPacketFrom(response, { ...input, expectedPreview }, selections);
 }

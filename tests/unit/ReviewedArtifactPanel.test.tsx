@@ -45,6 +45,7 @@ jest.mock("@/components/layout/AppCard", () => {
 const RECORD_ID = "507f191e810c19729de86020";
 const REVISION_ID = "507f191e810c19729de86021";
 const CHECKSUM = "a".repeat(64);
+const PREVIEW_CONFIRMATION = "b".repeat(64);
 
 function previewFixture(version = 4, content = '"name","value"\r\n"safe","=1+1"') {
   return {
@@ -71,7 +72,7 @@ function previewFixture(version = 4, content = '"name","value"\r\n"safe","=1+1"'
         version
       }
     ],
-    previewChecksumSha256: CHECKSUM
+    previewConfirmationSha256: PREVIEW_CONFIRMATION
   };
 }
 
@@ -132,6 +133,10 @@ describe("ReviewedArtifactPanel", () => {
       (await screen.findByLabelText("PII-redacted job CSV preview content")).props
         .children
     ).toContain('"safe","=1+1"');
+    expect(screen.getByText(`Content checksum: ${CHECKSUM}`)).toBeTruthy();
+    expect(
+      screen.getByText(`Preview confirmation: ${PREVIEW_CONFIRMATION}`)
+    ).toBeTruthy();
     expect(mockPrepare).not.toHaveBeenCalled();
 
     fireEvent.press(screen.getByLabelText("Cancel PII-redacted job CSV preview"));
@@ -179,7 +184,7 @@ describe("ReviewedArtifactPanel", () => {
     );
     expect(mockPrepare.mock.calls[0][1]).toEqual(
       expect.objectContaining({
-        previewChecksumSha256: CHECKSUM,
+        previewConfirmationSha256: PREVIEW_CONFIRMATION,
         confirmed: true,
         expectedPreview: previewFixture()
       })
