@@ -176,7 +176,9 @@ Order is fixed: `R-03` → `R-04` → `R-05` → `R-06`.
    owning matrix packet; the crawl does not redefine behavior.
 3. Give Roberto a separate reviewer identity. Itemize and deliberately accept/reject every
    finding; owner approval precedes production.
-4. Pause for owner review, then complete the rights/specification/sample/non-sale hat work.
+4. Pause for owner review and stop before hat execution. When the owner resumes it,
+   translate the selected Triple Bag-style directions into a GrowPathAI-only collection
+   and complete its rights/specification/sample/non-sale work.
 5. Begin App Store and Play Store work last, including credentials, Sentry, builds,
    physical-device smoke, privacy/data-rights, listing, submission, monitoring and rollback.
 
@@ -232,7 +234,7 @@ surfaces to inspect, not proof that the story is complete.
 | `R-02`        | Notification preferences, in-app/email/device delivery and deep links                                        | Independent categories, suppression, exact record, physical-device evidence        |
 | `R-03`        | Route inventories, automated suites, live crawl/evidence tooling                                             | One frozen candidate; complete professional acceptance, no new scope               |
 | `R-04`        | Reviewer identity, findings ledger, preview branch and owner decision record                                 | Isolated review with explicit accept/reject and production approval                |
-| `R-05`        | Brand assets, specification/rights records, research-trial/storefront presentation                           | BLVNK approval, correct art, zero stock/not for sale, rights boundaries            |
+| `R-05`        | GrowPathAI brand assets, specification/rights records, research-trial/storefront presentation                | Owner stop gate, BLVNK approval, GrowPathAI-only art, zero stock/not for sale       |
 | `R-06`        | Store build/config/privacy/listing/submission/monitoring/rollback artifacts                                  | Stores last; physical devices and release gates remain mandatory                   |
 
 ## Packet execution record

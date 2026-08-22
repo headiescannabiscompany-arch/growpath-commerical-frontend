@@ -20,7 +20,9 @@ durable decision record.
   reconciled. No useful dirty worktree is deleted.
 - Old acceptance text is evidence input, not permission to mark a current row
   live-accepted without a new production check.
-- Hat work remains preserved but is not integrated before R05.
+- Hat work remains preserved but is not integrated before R05. At R05, stop for the
+  owner; retained TBG concepts are design references for GrowPathAI-only derivatives,
+  not TBG product authorization.
 - Nested worktree folders and a missing external temporary checkout are
   registration noise, not product features.
 
@@ -46,7 +48,7 @@ durable decision record.
 | `tmp/frontend-run-comparison` / `codex/run-comparison-evidence`                            | P07           |              3 | Reconciled: preserved as commit `32d20127`, then found superseded by newer equivalent/current code on `main`; focused tests and history validator pass. |
 | `frontend-trichome-coverage-policy` / `codex/trichome-coverage-policy`                     | P08           |              3 | Reconciled: the worktree has no semantic diff (line-ending metadata only); its coverage, glare and uncertainty rules are already in the current method and app-readable registry. |
 | `frontend-social-video-live-experience` / `codex/app-wide-canonical-sharing`               | S05–S08       |              4 | Reconciled: preserved private-draft sharing fix as `83aa8f7e`; cherry-pick was empty because the exact behavior and regression test already exist on current `main`. |
-| `commercial-trials-batches-state-a11y-batch89` / `codex/commercial-hat-placeholder-assets` | R05           |              8 | Hat manifests, trial UI, research-copy rules, images, and tests. Preserve until after crawl and independent review.              |
+| `commercial-trials-batches-state-a11y-batch89` / `codex/commercial-hat-placeholder-assets` | R05           |              8 | Hat manifests, trial UI, research-copy rules, images, and tests. Preserve until after crawl; stop for owner review and reuse only GrowPathAI-safe material. |
 | `trichome-counter-adjudication-next` / `codex/workspace-contextual-tools-accessibility`    | none directly |              0 | Only an untracked nested backend-commercial-profile checkout; inspect its registered backend worktree separately before cleanup. |
 
 ## Registration and workspace noise

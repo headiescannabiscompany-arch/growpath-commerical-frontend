@@ -261,9 +261,11 @@ tax, HR, legal, POS, procurement, dispatch or autonomous operations.
 ### R-05 and R-06 — Hats, then stores
 
 - R-05: after product acceptance and reviewer work, exact BLVNK blank/fabric/color/sample/cost
-  and decoration are approved; GrowPathAI and TBG multi-view art has correct emblem placement,
-  scale and rights. Approved concepts may appear as zero-stock `Not for sale` research trials;
-  third-party marks remain private until cleared.
+  and decoration are approved. Execution stops at this gate until the owner resumes it.
+  Every owner-selected Triple Bag-style direction is translated into GrowPathAI-only
+  multi-view art with correct emblem placement, scale and rights. No TBG product or mark
+  is listed or trialed. Approved GrowPathAI concepts may appear as zero-stock `Not for
+  sale` research trials; third-party marks remain excluded until separately cleared.
 - R-06: App Store and Play Store work starts only after R-05. Credentials, Sentry, builds,
   physical-device smoke, privacy/data rights, listing metadata, submission and monitoring all
   pass without weakening release gates.

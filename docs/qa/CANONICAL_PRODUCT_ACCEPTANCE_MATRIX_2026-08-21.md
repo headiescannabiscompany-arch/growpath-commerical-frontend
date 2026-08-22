@@ -78,7 +78,8 @@ a rewrite.
 [ ] Reconcile every remaining `partial` or `open` row against merged code and retained
 evidence, then implement only its exact missing acceptance behavior.
 [ ] Freeze candidate SHAs, run the final cross-role and professional presentation crawl,
-pause for independent review, then complete hats and app-store releases in that order.
+pause for independent review, then stop at the owner-directed GrowPathAI-only hat gate;
+app-store releases remain last.
 
 Clean worktrees only after their retained commit is integrated or deliberately rejected and
 the worktree is clean. Branch deletion is separate from routine disk cleanup.
@@ -195,7 +196,7 @@ reconsideration rule is owned by `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21
 | R-02 | Email/device notifications respect preferences and deliver supported events                                           | partial       |
 | R-03 | Final production route/action and visual/accessibility/device crawl passes on frozen SHAs                             | open          |
 | R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                            | open          |
-| R-05 | Hat designs/specifications/rights/BLVNK approval and non-sale trials complete                                         | open          |
+| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate |
 | R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                      | open          |
 
 ## Frozen Plant ID stories
@@ -226,5 +227,6 @@ Dipladenia/Mandevilla, are excluded from the Cary/Maydale publication batch.
 5. Implement the remaining in-scope functional gaps, then run one final frozen-SHA
    professional route/action, visual, accessibility, responsive-device and recovery crawl.
 6. Isolate and deliberately accept or reject independent reviewer suggestions.
-7. Pause for owner review, then complete hats.
+7. Pause for owner review and stop before hats; resume with the owner and complete only
+   the GrowPathAI collection.
 8. Complete App Store and Play Store work last.

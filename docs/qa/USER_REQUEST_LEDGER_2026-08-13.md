@@ -274,8 +274,16 @@ Legend:
 
 ## Hats and pre-launch product research
 
-- [x] GrowPathAI and Triple Bag Genetics concept images, exact hashes, brand manifests,
-      approved emblems, and a production brief are retained.
+Owner decision, 2026-08-22: finish all pre-hat product work and the final crawl, then
+stop before beginning hat execution. Hat work resumes only with the owner present. All
+previous Triple Bag Genetics-style design directions are to be translated into a
+GrowPathAI-branded collection. Triple Bag Genetics has no hat product, listing, research
+trial, public advertisement, inventory or checkout scope unless the owner later confirms
+that a separate company and its rights/ownership requirements exist.
+
+- [x] Historical GrowPathAI and Triple Bag Genetics concept images, exact hashes, brand
+      manifests, approved emblems, and a production brief are retained as design input;
+      retained TBG material is not approval to make or publish a TBG product.
 - [x] The owner approved the black Circuit Leaf GrowPathAI concept and the revised
       tonal-sage concept with a longer structured brim and small rear `GROWPATHAI` mark.
 - [x] BLVNK HEADWEAR is recorded as the candidate blank-body source based on the retained
@@ -288,8 +296,9 @@ Legend:
       and local embroidery/decoration approval. This is the prerequisite for final hat
       mockups, meaningful price research, product records, inventory, checkout,
       production, or shipping.
-- [ ] Finish the complete GrowPathAI and Triple Bag Genetics hat design sets against the
-      approved BLVNK blank. Produce accurate front, left, right, and rear views; correct
+- [ ] Translate every owner-selected Triple Bag-style concept into the complete
+      GrowPathAI hat design set against the approved BLVNK blank. Produce accurate front,
+      left, right, and rear views; use GrowPathAI-owned marks only; correct
       emblem placement, scale, colors, brim proportions, embroidery feasibility, and
       small rear wordmarks; retain approved source files and final review images.
 - [x] Give the `admin@growpathai.com` Admin identity the governed Commercial toolset and
@@ -301,14 +310,13 @@ Legend:
       empty separate Admin storefront (`Storefront not configured yet`, Draft,
       0 products), proving it is not Living Soil Labs or Triple Bag Genetics. Brand
       records, storefront content, trials, and analytics remain separated.
-- [ ] Add all owner-approved, rights-cleared GrowPathAI and Triple Bag Genetics hat
-      concepts to their correct website brand presentation as zero-stock, non-sale
+- [ ] Add all owner-approved, rights-cleared GrowPathAI hat concepts to the Admin-brand
+      GrowPathAI website presentation as zero-stock, non-sale
       research listings. Show `Not for sale` prominently and provide no checkout,
       inventory claim, production promise, or shipping promise.
-- [blocked] Triple Bag Genetics designs containing third-party marks may be completed as
-            private internal design studies but cannot be publicly listed or trialed
-            until rights review clears each mark. Rights-cleared TBG designs may proceed
-            to the non-sale research presentation above.
+- [x] Remove Triple Bag Genetics hats from active product scope. Historical concepts stay
+      private as design references; no TBG mark or third-party mark is carried into the
+      GrowPathAI collection without separate verified rights.
 - [ ] After the exact blank, final designs, brand ownership, and rights-cleared non-sale
       listings are complete, run owner-priced purchase-intent trials for every approved
       hat concept. Verify response, revision, aggregation, and close behavior while
@@ -319,9 +327,9 @@ Legend:
 - [~] Release scripts, store graphics contracts, privacy/data-rights contracts, live URL
       checks, and dry-run build/go-no-go gates are implemented. Strict preflight correctly
       stops when protected native Sentry configuration is absent.
-- [ ] Finish the approved GrowPathAI hat research presentation above before the final
-      App Store/app-wide tightening pass, as requested; this does not block technical
-      build preparation.
+- [ ] Stop at the hat gate after the final crawl. Complete the owner-directed GrowPathAI
+      hat collection before beginning App Store/Play Store release work; technical build
+      preparation may remain preserved but release execution does not begin.
 - [blocked] Obtain owner/legal decisions for final name, cannabis language, age rating,
             privacy/support/deep-link records, and listing copy.
 - [blocked] Configure protected Apple, Google, and production Sentry credentials outside

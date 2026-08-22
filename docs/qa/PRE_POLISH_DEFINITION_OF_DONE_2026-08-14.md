@@ -162,8 +162,11 @@ SHAs, and deployment.
 
 ## Work after crawl/polish
 
-1. Complete the exact BLVNK specification, rights-cleared GrowPathAI and Triple Bag
-   Genetics hat sets, owner approval, non-sale website presentation, and zero-stock
-   purchase-intent trials. Third-party marks stay private until rights are cleared.
-2. Only then begin App Store/Play Store builds, protected credentials, metadata, policy
+1. Stop before hat execution and wait for the owner. Then complete the exact BLVNK
+   specification and the GrowPathAI-only collection, translating owner-selected
+   Triple Bag-style directions without using Triple Bag Genetics or third-party marks.
+   Obtain owner approval and complete the non-sale website presentation and zero-stock
+   purchase-intent trials.
+2. Only after that owner-directed GrowPathAI hat work may App Store/Play Store builds,
+   protected credentials, metadata, policy
    decisions, physical-device smoke, submission, monitoring, rollback, and go/no-go.
