@@ -230,19 +230,30 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       Tools/Storefront paths are redirects or compatibility guards into canonical workflows,
       not separate unfinished products. Preserve their stale-link behavior until final
       crawl/dead-code evidence proves a redirect is no longer required.
-- [ ] **Complete buried-feature inventory:** before construction closes, compare registered
+- [~] **Complete buried-feature inventory:** source reconciliation on 2026-08-22 now compares
+      315 frontend routes, 319 inventoried backend routes, 226 legacy feature rows, 32 system
+      foundations, provider/environment gates, workers and webhooks. The full-surface audit
+      reports 315 frontend routes, 225 directly parsed backend declarations and zero static
+      errors/warnings. Runtime-gated user capabilities are individually named above, and the
+      65 misleading legacy `planned` rows are classified as internal supporting operations
+      under canonical matrix owners rather than hidden products. The remaining gate is the
+      final-candidate route-to-visible-entry crawl: for every user-facing feature record its
+      workspace/role, visible entry, canonical URL, Back path, empty/populated states and
+      intentional internal/redirect status. Before construction closes, compare registered
       frontend routes, visible navigation/deep links, backend route inventory, release matrix,
       provider/environment gates, workers/webhooks and production configuration. Add every
       additional user-facing orphan or runtime-gated feature to its owning matrix row, then
       make it reachable and accepted or record an explicit owner rejection. Access-control,
       privacy and safety-hidden data are not buried features and must remain protected.
-- [ ] **Reconcile the legacy V1 feature matrix:** source inspection currently finds 65
-      auto-generated `planned`/`internal` backend rows and one deprecated hidden Personal Logs
-      route (`/home/personal/logs`). These names are not 66 automatically approved products:
-      map each to its current canonical workflow, prove it is a compatibility alias or
-      superseded duplicate, or identify a real missing user action and complete that owning
-      matrix row. Do not blindly implement generated endpoint names and do not silently leave
-      a real requested workflow in `backlog` or `hide`.
+- [x] **Reconcile the legacy V1 feature matrix:** all 65 formerly `planned`/`internal` rows are
+      live backend routes, not 65 missing products. They are now `supporting_operation` rows
+      with explicit canonical owners across `P-02`, `P-11`, `S-01`, `S-02`, `S-07`, `C-02`,
+      `C-03`, `C-04`, `F-01`, `F-03`, `F-05`, `F-06`, `A-03`, `A-05` and `B-02`.
+      Validation rejects a supporting operation unless it is functional, internal,
+      non-user-visible, complete, UI-less and mapped to at least one canonical row; new
+      planned endpoints are disallowed. The one deprecated hidden Personal Logs route remains
+      an intentional compatibility boundary, not a hidden product. This classification does
+      not close the owning product row's separate live acceptance.
 - [ ] **Close retained worktrees without losing work:** the 2026-08-22 read-only Git audit
       found 19 patches not patch-equivalent to the current construction candidate across 12
       retained frontend branches, alongside already patch-equivalent branches and several

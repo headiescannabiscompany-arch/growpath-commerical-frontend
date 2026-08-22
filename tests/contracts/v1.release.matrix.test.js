@@ -53,6 +53,27 @@ describe("v1 release matrix scope", () => {
     }
   });
 
+  test("internal backend operations are classified under canonical product rows", () => {
+    const matrix = readJson(MATRIX_PATH);
+    const rows = matrix.features || [];
+    const planned = rows.filter((row) => row.rowStatus === "planned");
+    const supporting = rows.filter((row) => row.rowStatus === "supporting_operation");
+
+    expect(matrix.policy.plannedEndpointsAllowed).toBe(false);
+    expect(planned).toHaveLength(0);
+    expect(supporting.length).toBeGreaterThan(0);
+    for (const row of supporting) {
+      expect(row.status).toBe("Functional");
+      expect(row.releaseScope).toBe("internal");
+      expect(row.releaseDecision).toBe("complete");
+      expect(row.userVisible).toBe(false);
+      expect(row.ui?.mode).toBe("unknown");
+      expect(row.ui?.route).toBeNull();
+      expect(Array.isArray(row.canonicalMatrixRows)).toBe(true);
+      expect(row.canonicalMatrixRows.length).toBeGreaterThan(0);
+    }
+  });
+
   test("personal logs stay grow-scoped while tasks use the out-of-nav Task Center", () => {
     const matrix = readJson(MATRIX_PATH);
     const surface = readJson(UI_SURFACE_PATH);
