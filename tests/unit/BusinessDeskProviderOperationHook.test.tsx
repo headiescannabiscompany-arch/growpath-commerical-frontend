@@ -13,13 +13,13 @@ import {
 } from "@/features/businessDesk/providerOperationPersistence";
 import { useBusinessDeskProviderOperation } from "@/features/businessDesk/useBusinessDeskProviderOperation";
 
-let accountSubject = "account-one";
-let facilityRole = "OWNER";
+let mockAccountSubject = "account-one";
+let mockFacilityRole = "OWNER";
 
 jest.mock("@/auth/AuthContext", () => ({
   useOptionalAuth: () => ({
-    user: { id: accountSubject },
-    ctx: { facilityRole }
+    user: { id: mockAccountSubject },
+    ctx: { facilityRole: mockFacilityRole }
   })
 }));
 
@@ -120,8 +120,8 @@ function Probe({
 
 describe("Business Desk provider operation recovery", () => {
   beforeEach(() => {
-    accountSubject = "account-one";
-    facilityRole = "OWNER";
+    mockAccountSubject = "account-one";
+    mockFacilityRole = "OWNER";
     mockGetOperation.mockReset();
     mockLoadLatest.mockReset();
     mockForget.mockReset();
@@ -171,7 +171,7 @@ describe("Business Desk provider operation recovery", () => {
     );
     expect(await screen.findByText(/owner-operation/i)).toBeTruthy();
 
-    facilityRole = "MANAGER";
+    mockFacilityRole = "MANAGER";
     screen.rerender(
       <Probe workspace={{ workspaceType: "facility", facilityId: "facility-2" }} />
     );

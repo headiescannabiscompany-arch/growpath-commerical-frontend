@@ -15,9 +15,31 @@ const OPERATION_ONE = "507f191e810c19729de86001";
 const OPERATION_TWO = "507f191e810c19729de86002";
 const OPERATION_THREE = "507f191e810c19729de86003";
 const OPERATION_FOUR = "507f191e810c19729de86004";
+let mockStorage: Record<string, string> = {};
 
 describe("Business Desk provider retry metadata", () => {
   beforeEach(async () => {
+    mockStorage = {};
+    (AsyncStorage.getItem as jest.Mock).mockImplementation(
+      async (key: string) => mockStorage[key] ?? null
+    );
+    (AsyncStorage.setItem as jest.Mock).mockImplementation(
+      async (key: string, value: string) => {
+        mockStorage[key] = String(value);
+      }
+    );
+    (AsyncStorage.removeItem as jest.Mock).mockImplementation(async (key: string) => {
+      delete mockStorage[key];
+    });
+    (AsyncStorage.clear as jest.Mock).mockImplementation(async () => {
+      mockStorage = {};
+    });
+    (AsyncStorage.getAllKeys as jest.Mock).mockImplementation(async () =>
+      Object.keys(mockStorage)
+    );
+    (AsyncStorage.multiGet as jest.Mock).mockImplementation(async (keys: string[]) =>
+      keys.map((key) => [key, mockStorage[key] ?? null])
+    );
     await AsyncStorage.clear();
   });
 
