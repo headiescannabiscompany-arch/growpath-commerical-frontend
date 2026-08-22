@@ -30,6 +30,7 @@ import ReceiptExtractionReview from "@/features/businessDesk/ReceiptExtractionRe
 import {
   formatMoneyMinor,
   formatScaledIntegerInput,
+  isSupportedCurrencyCode,
   multiplyMoneyByQuantityMicros,
   parseMoneyInput,
   parseQuantityInput,
@@ -139,7 +140,7 @@ export default function ExpenseReceiptTool({
   const [occurredAt, setOccurredAt] = useState("");
   const [amount, setAmount] = useState("");
   const [tax, setTax] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("");
   const [category, setCategory] = useState("uncategorized");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [lines, setLines] = useState<ExpenseLineDraft[]>([]);
@@ -196,8 +197,11 @@ export default function ExpenseReceiptTool({
     receiptAttachmentIds: activeAttachmentDraft.ids,
     attachmentEditVersion: activeAttachmentDraft.editVersion
   });
+  const currencyReady = isSupportedCurrencyCode(currency);
   const exactSavedDraft = Boolean(
-    selected?.status === "draft" && contentFingerprint === savedContentFingerprint
+    selected?.status === "draft" &&
+    contentFingerprint === savedContentFingerprint &&
+    currencyReady
   );
   const formMatchesSelectedRevision = Boolean(
     selected && contentFingerprint === savedContentFingerprint
@@ -252,6 +256,13 @@ export default function ExpenseReceiptTool({
       }),
     [filteredRecords]
   );
+  const reviewedRecordsWithUnknownCurrency = useMemo(
+    () =>
+      reviewedFilteredRecords.filter(
+        (record) => !isSupportedCurrencyCode(String(payloadOf(record).currency || ""))
+      ),
+    [reviewedFilteredRecords]
+  );
   const artifactRevisionSelections = useMemo(
     () =>
       reviewedFilteredRecords.length <= 100
@@ -291,7 +302,7 @@ export default function ExpenseReceiptTool({
     setOccurredAt("");
     setAmount("");
     setTax("");
-    setCurrency("USD");
+    setCurrency("");
     setCategory("uncategorized");
     setPaymentMethod("");
     setLines([]);
@@ -321,7 +332,7 @@ export default function ExpenseReceiptTool({
       occurredAt: isoToLocalDate(expense.occurredAt),
       amount: rawMajor(expense.amountMinor, digits),
       tax: rawMajor(expense.taxMinor, digits),
-      currency: String(expense.currency || "USD"),
+      currency: String(expense.currency || ""),
       category: String(expense.category || "uncategorized"),
       paymentMethod: String(expense.paymentMethod || ""),
       lines: (Array.isArray(expense.itemLines) ? expense.itemLines : []).map(
@@ -708,6 +719,14 @@ export default function ExpenseReceiptTool({
                 silently export a partial set.
               </Text>
             ) : null}
+            {reviewedRecordsWithUnknownCurrency.length ? (
+              <Text style={styles.errorText}>
+                {reviewedRecordsWithUnknownCurrency.length} reviewed Expense revision
+                {reviewedRecordsWithUnknownCurrency.length === 1 ? " has" : "s have"} an
+                unknown currency. Open each legacy revision, choose a valid ISO currency,
+                save, and review it before exporting this filtered set.
+              </Text>
+            ) : null}
           </View>
           <ReviewedArtifactPanel
             workspace={workspace}
@@ -731,7 +750,8 @@ export default function ExpenseReceiptTool({
             disabled={
               collection.loading ||
               reviewedFilteredRecords.length < 1 ||
-              reviewedFilteredRecords.length > 100
+              reviewedFilteredRecords.length > 100 ||
+              reviewedRecordsWithUnknownCurrency.length > 0
             }
             disabledReason="Only 1–100 exact saved Expense revisions whose record and field review states are both reviewed can be previewed. Narrow the filters when needed."
             previewButtonLabel="Preview filtered reviewed Expense CSV"
@@ -950,7 +970,8 @@ export default function ExpenseReceiptTool({
             maxLength={3}
             value={currency}
             onChangeText={setCurrency}
-            placeholder="USD"
+            placeholder="Three-letter ISO code"
+            hint="Required for calculation, save, review, and export. No currency is assumed."
           />
           <LabeledInput
             label="Full amount"
@@ -1148,6 +1169,7 @@ export default function ExpenseReceiptTool({
         </View>
         <RecordSaveArchiveActions
           saving={collection.saving}
+          saveDisabled={!currencyReady}
           hasRecord={Boolean(businessDeskRecordId(selected))}
           saveLabel="Save expense draft"
           archiveReason={archiveReason}

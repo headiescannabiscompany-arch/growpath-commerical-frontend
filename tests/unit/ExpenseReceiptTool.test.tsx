@@ -1,7 +1,13 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render as baseRender, waitFor } from "@testing-library/react-native";
 
 import ExpenseReceiptTool from "@/features/businessDesk/ExpenseReceiptTool";
+
+function render(...args: Parameters<typeof baseRender>) {
+  const screen = baseRender(...args);
+  fireEvent.changeText(screen.getByLabelText("Currency"), "USD");
+  return screen;
+}
 
 const mockArchive = jest.fn();
 const mockCreate = jest.fn();
@@ -496,6 +502,72 @@ describe("ExpenseReceiptTool", () => {
     expect(screen.getByText(`Protected attachment IDs: ${savedReceiptId}`)).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Start new expense / receipt helper record"));
     expect(screen.getByText("Protected attachment IDs: ")).toBeTruthy();
+    expect(screen.getByLabelText("Currency").props.value).toBe("");
+  });
+
+  it("fails closed for new and legacy-blank Expense currency through review and export", async () => {
+    const legacyExpense = (status: "draft" | "reviewed", id: string) => ({
+      _id: id,
+      kind: "expense",
+      title: `Legacy ${status} expense`,
+      status,
+      version: 2,
+      payload: {
+        expense: {
+          merchant: "Legacy merchant",
+          occurredAt: "2026-08-22T16:00:00.000Z",
+          amountMinor: 1000,
+          taxMinor: null,
+          currency: "",
+          minorUnitDigits: 2,
+          category: "supplies",
+          itemLines: [],
+          review: { status }
+        }
+      }
+    });
+    mockList.mockResolvedValue([
+      legacyExpense("draft", "expense-legacy-draft"),
+      legacyExpense("reviewed", "expense-legacy-reviewed")
+    ]);
+    const screen = baseRender(
+      <ExpenseReceiptTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+
+    expect(screen.getByLabelText("Currency").props.value).toBe("");
+    expect(
+      screen.getByLabelText("Save expense draft").props.accessibilityState.disabled
+    ).toBe(true);
+    expect(screen.getByText(/No currency is assumed/i)).toBeTruthy();
+
+    expect(await screen.findByText("Legacy reviewed expense")).toBeTruthy();
+    expect(
+      screen.getByText(/1 reviewed Expense revision has an unknown currency/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Preview filtered reviewed Expense CSV").props
+        .accessibilityState.disabled
+    ).toBe(true);
+
+    fireEvent.press(
+      screen.getByLabelText("Open expense / receipt helper Legacy draft expense")
+    );
+    expect(screen.getByLabelText("Currency").props.value).toBe("");
+    expect(
+      screen.getByLabelText("Review saved expense draft").props.accessibilityState
+        .disabled
+    ).toBe(true);
+
+    fireEvent.changeText(screen.getByLabelText("Currency"), "CAD");
+    expect(
+      screen.getByLabelText("Save expense draft").props.accessibilityState.disabled
+    ).toBe(false);
+    fireEvent.press(screen.getByLabelText("Start new expense / receipt helper record"));
+    expect(screen.getByLabelText("Currency").props.value).toBe("");
   });
 
   it("prepares only reviewed filtered revisions through the audited batch contract", async () => {
