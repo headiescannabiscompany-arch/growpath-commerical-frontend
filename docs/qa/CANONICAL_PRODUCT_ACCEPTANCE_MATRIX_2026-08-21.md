@@ -166,7 +166,7 @@ inventory, safety boundaries and mandatory production scenarios.
 | ---- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | defined; not started                                                  |
 | B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | implemented; local acceptance passed; deployment/live acceptance open |
-| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | defined; not started                                                  |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | implementation in progress; combined acceptance open                 |
 | B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | defined; not started                                                  |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | partial; business acceptance open                                     |
 | B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | partial; business acceptance open                                     |
@@ -182,6 +182,15 @@ reconsideration rule is owned by `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21
 B-02 local construction and verification evidence is retained in
 `B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. It does not close the guarded
 production migration, deployment or live multi-role workflow gate.
+
+B-03 is no longer an unstarted row. Frontend `85253d5e` retains the reviewed Business Ask
+provider/evidence/citation/KPI/draft workflow, frontend `dc97e836` retains the explicit IANA
+cash-flow contract, and backend `2d7a583` retains durable provider operations, exact source
+binding, credit settlement, protected receipt loading, fail-closed scanner health,
+privacy/deletion and legal-hold serialization. Their permitted local static gates passed;
+focused CI, deterministic artifact/quote/job/cash closure, deployment and combined live
+Commercial/Facility acceptance remain open. These commits are retained inputs, not a reason
+to rebuild their engines and not evidence that the B-03 row is complete.
 
 ## Nature, Admin and release
 
