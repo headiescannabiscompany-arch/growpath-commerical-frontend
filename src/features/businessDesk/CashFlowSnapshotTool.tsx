@@ -24,10 +24,12 @@ import {
 } from "@/features/businessDesk/money";
 import {
   businessDeskRecordId,
-  isoToLocalDateTime,
-  localDateTimeToIso,
   useBusinessDeskRecordCollection
 } from "@/features/businessDesk/recordWorkflow";
+import {
+  isoInstantToZonedLocalDateTime,
+  zonedLocalDateTimeToIsoStrict
+} from "@/features/businessDesk/zonedDateTime";
 import { useFacility } from "@/state/useFacility";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -43,9 +45,12 @@ type CashEntryDraft = {
   confidence: CashConfidence;
   amount: string;
   dueAt: string;
+  dueAtIsoHint: string;
   sourceType: CashSourceType;
   sourceRecordedAt: string;
+  sourceRecordedAtIsoHint: string;
   sourceFreshnessAt: string;
+  sourceFreshnessAtIsoHint: string;
   sourceRecordId: string;
 };
 
@@ -110,10 +115,6 @@ const SOURCE_LINK_TYPES: Partial<Record<CashSourceType, string>> = {
 
 let entrySequence = 0;
 
-function nowLocalDateTime() {
-  return isoToLocalDateTime(new Date().toISOString());
-}
-
 export function detectedCashFlowDeviceTimeZone() {
   try {
     return normalizeIanaTimeZone(new Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -141,9 +142,21 @@ function formatInstantInTimeZone(value: string, timeZone: string) {
   }
 }
 
-function newEntry(overrides: Partial<CashEntryDraft> = {}): CashEntryDraft {
+function zonedNow(timeZone: string) {
+  const iso = new Date().toISOString();
+  return {
+    iso,
+    wall: isoInstantToZonedLocalDateTime(iso, timeZone)
+  };
+}
+
+function newEntry(
+  timeZone: string,
+  overrides: Partial<CashEntryDraft> = {}
+): CashEntryDraft {
   entrySequence += 1;
-  const capturedAt = nowLocalDateTime();
+  const capturedAtIso = new Date().toISOString();
+  const capturedAt = isoInstantToZonedLocalDateTime(capturedAtIso, timeZone);
   return {
     id: "cash-entry-" + entrySequence,
     label: "",
@@ -151,9 +164,12 @@ function newEntry(overrides: Partial<CashEntryDraft> = {}): CashEntryDraft {
     confidence: "expected",
     amount: "",
     dueAt: "",
+    dueAtIsoHint: "",
     sourceType: "manual",
     sourceRecordedAt: capturedAt,
+    sourceRecordedAtIsoHint: capturedAtIso,
     sourceFreshnessAt: capturedAt,
+    sourceFreshnessAtIsoHint: capturedAtIso,
     sourceRecordId: "",
     ...overrides
   };
@@ -165,6 +181,36 @@ function payloadOf(record: BusinessDeskRecord | null) {
 
 function sourceRecordId(record: BusinessDeskRecord) {
   return String(record.id || record._id || "");
+}
+
+function validIsoInstant(value: unknown) {
+  const raw = typeof value === "string" ? value.trim() : "";
+  return raw && Number.isFinite(new Date(raw).getTime()) ? raw : null;
+}
+
+function cashFlowWallTimeToIso(
+  label: string,
+  value: string,
+  timeZone: string,
+  exactIsoHint = ""
+) {
+  try {
+    return zonedLocalDateTimeToIsoStrict(value, timeZone, exactIsoHint);
+  } catch (error) {
+    throw new Error(
+      `${label}: ${error instanceof Error ? error.message : "choose a valid date and time."}`
+    );
+  }
+}
+
+function previewEpoch(value: string, timeZone: string | null, exactIsoHint = "") {
+  if (!timeZone) return Number.NaN;
+  try {
+    const iso = zonedLocalDateTimeToIsoStrict(value, timeZone, exactIsoHint);
+    return iso ? new Date(iso).getTime() : Number.NaN;
+  } catch {
+    return Number.NaN;
+  }
 }
 
 function majorInput(value: unknown, digits: number) {
@@ -247,11 +293,16 @@ export default function CashFlowSnapshotTool({
   );
   const currentWorkspaceKey = useRef(workspaceKey);
   const calculationEpoch = useRef(0);
+  const initialAsOfRef = useRef<ReturnType<typeof zonedNow> | null>(null);
+  if (!initialAsOfRef.current) initialAsOfRef.current = zonedNow(preferredTimeZone);
+  const initialAsOf = initialAsOfRef.current;
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [currentCash, setCurrentCash] = useState("");
-  const [asOf, setAsOf] = useState(nowLocalDateTime);
+  const [asOf, setAsOf] = useState(initialAsOf.wall);
+  const [asOfIsoHint, setAsOfIsoHint] = useState(initialAsOf.iso);
+  const [asOfTouched, setAsOfTouched] = useState(false);
   const [timeZone, setTimeZone] = useState(preferredTimeZone);
   const [timeZoneTouched, setTimeZoneTouched] = useState(false);
   const [staleAfterDays, setStaleAfterDays] = useState("30");
@@ -322,6 +373,7 @@ export default function CashFlowSnapshotTool({
     currency,
     currentCash,
     asOf,
+    asOfIsoHint,
     timeZone,
     staleAfterDays,
     entries: entries.map(cleanEntryForFingerprint),
@@ -334,12 +386,15 @@ export default function CashFlowSnapshotTool({
 
   const reset = useCallback(
     (nextTimeZone = preferredTimeZone) => {
+      const nextAsOf = zonedNow(nextTimeZone);
       calculationEpoch.current += 1;
       setSelected(null);
       setTitle("");
       setCurrency("USD");
       setCurrentCash("");
-      setAsOf(nowLocalDateTime());
+      setAsOf(nextAsOf.wall);
+      setAsOfIsoHint(nextAsOf.iso);
+      setAsOfTouched(false);
       setTimeZone(nextTimeZone);
       setTimeZoneTouched(false);
       setStaleAfterDays("30");
@@ -363,35 +418,59 @@ export default function CashFlowSnapshotTool({
   }, [preferredTimeZone, reset, workspaceKey]);
 
   useEffect(() => {
-    if (!selected && !timeZoneTouched) setTimeZone(preferredTimeZone);
-  }, [preferredTimeZone, selected, timeZoneTouched]);
+    if (selected || timeZoneTouched) return;
+    setTimeZone(preferredTimeZone);
+    if (!asOfTouched) {
+      const nextAsOf = zonedNow(preferredTimeZone);
+      setAsOf(nextAsOf.wall);
+      setAsOfIsoHint(nextAsOf.iso);
+    }
+  }, [asOfTouched, preferredTimeZone, selected, timeZoneTouched]);
 
   const open = (record: BusinessDeskRecord) => {
     const payload = payloadOf(record);
+    const savedTimeZone = normalizeIanaTimeZone(payload.timeZone) || preferredTimeZone;
+    const savedAsOfIso = validIsoInstant(payload.asOf);
+    const fallbackAsOf = zonedNow(savedTimeZone);
     const digits = Number.isInteger(payload.minorUnitDigits)
       ? Number(payload.minorUnitDigits)
       : 2;
     const nextEntries = Array.isArray(payload.entries)
-      ? payload.entries.map((entry: any) =>
-          newEntry({
+      ? payload.entries.map((entry: any) => {
+          const dueAtIso = validIsoInstant(entry.dueAt);
+          const sourceRecordedAtIso = validIsoInstant(entry.sourceRecordedAt);
+          const sourceFreshnessAtIso = validIsoInstant(entry.sourceFreshnessAt);
+          return newEntry(savedTimeZone, {
             label: String(entry.label || ""),
             direction: (entry.direction || "inflow") as CashDirection,
             confidence: (entry.confidence || "expected") as CashConfidence,
             amount: majorInput(entry.amountMinor, digits),
-            dueAt: isoToLocalDateTime(entry.dueAt),
+            dueAt: dueAtIso
+              ? isoInstantToZonedLocalDateTime(dueAtIso, savedTimeZone)
+              : "",
+            dueAtIsoHint: dueAtIso || "",
             sourceType: (entry.sourceType || "manual") as CashSourceType,
-            sourceRecordedAt: isoToLocalDateTime(entry.sourceRecordedAt),
-            sourceFreshnessAt: isoToLocalDateTime(entry.sourceFreshnessAt),
+            sourceRecordedAt: sourceRecordedAtIso
+              ? isoInstantToZonedLocalDateTime(sourceRecordedAtIso, savedTimeZone)
+              : "",
+            sourceRecordedAtIsoHint: sourceRecordedAtIso || "",
+            sourceFreshnessAt: sourceFreshnessAtIso
+              ? isoInstantToZonedLocalDateTime(sourceFreshnessAtIso, savedTimeZone)
+              : "",
+            sourceFreshnessAtIsoHint: sourceFreshnessAtIso || "",
             sourceRecordId: String(entry.sourceRecordId || "")
-          })
-        )
+          });
+        })
       : [];
     const next = {
       title: record.title || "",
       currency: String(payload.currency || "USD"),
       currentCash: canViewCurrentCash ? majorInput(payload.currentCashMinor, digits) : "",
-      asOf: isoToLocalDateTime(payload.asOf) || nowLocalDateTime(),
-      timeZone: normalizeIanaTimeZone(payload.timeZone) || preferredTimeZone,
+      asOf: savedAsOfIso
+        ? isoInstantToZonedLocalDateTime(savedAsOfIso, savedTimeZone)
+        : fallbackAsOf.wall,
+      asOfIsoHint: savedAsOfIso || fallbackAsOf.iso,
+      timeZone: savedTimeZone,
       staleAfterDays: String(payload.staleAfterDays || 30),
       entries: nextEntries,
       assumptions: String(payload.assumptions || "")
@@ -401,6 +480,8 @@ export default function CashFlowSnapshotTool({
     setCurrency(next.currency);
     setCurrentCash(next.currentCash);
     setAsOf(next.asOf);
+    setAsOfIsoHint(next.asOfIsoHint);
+    setAsOfTouched(false);
     setTimeZone(next.timeZone);
     setTimeZoneTouched(false);
     setStaleAfterDays(next.staleAfterDays);
@@ -427,6 +508,38 @@ export default function CashFlowSnapshotTool({
     );
   };
 
+  const changeTimeZone = (value: string) => {
+    const normalized = normalizeIanaTimeZone(value);
+    setTimeZoneTouched(true);
+    setTimeZone(value);
+    setAsOfIsoHint("");
+    setAsOfTouched(true);
+    setEntries((current) =>
+      current.map((entry) => {
+        const next = { ...entry, dueAtIsoHint: "" };
+        if (entry.sourceType === "manual") {
+          return {
+            ...next,
+            sourceRecordedAtIsoHint: "",
+            sourceFreshnessAtIsoHint: ""
+          };
+        }
+        if (!normalized) return next;
+        const sourceRecordedAt = validIsoInstant(entry.sourceRecordedAtIsoHint);
+        const sourceFreshnessAt = validIsoInstant(entry.sourceFreshnessAtIsoHint);
+        return {
+          ...next,
+          sourceRecordedAt: sourceRecordedAt
+            ? isoInstantToZonedLocalDateTime(sourceRecordedAt, normalized)
+            : entry.sourceRecordedAt,
+          sourceFreshnessAt: sourceFreshnessAt
+            ? isoInstantToZonedLocalDateTime(sourceFreshnessAt, normalized)
+            : entry.sourceFreshnessAt
+        };
+      })
+    );
+  };
+
   const buildCalculationInput = () => {
     const context = resolveCurrencyContext(currency);
     const normalizedTimeZone = normalizeIanaTimeZone(timeZone);
@@ -435,7 +548,12 @@ export default function CashFlowSnapshotTool({
         "Enter a valid IANA time zone such as America/New_York or Europe/London."
       );
     }
-    const normalizedAsOf = localDateTimeToIso(asOf);
+    const normalizedAsOf = cashFlowWallTimeToIso(
+      "Snapshot date and time",
+      asOf,
+      normalizedTimeZone,
+      asOfIsoHint
+    );
     if (!normalizedAsOf) throw new Error("Choose the snapshot date and time.");
     const staleDays = Number(staleAfterDays.trim());
     if (!Number.isInteger(staleDays) || staleDays < 1 || staleDays > 3_650) {
@@ -445,9 +563,24 @@ export default function CashFlowSnapshotTool({
       if (!entry.label.trim()) {
         throw new Error("Cash-flow entry " + (index + 1) + " needs a label.");
       }
-      const dueAt = localDateTimeToIso(entry.dueAt);
-      let sourceRecordedAt = localDateTimeToIso(entry.sourceRecordedAt);
-      let sourceFreshnessAt = localDateTimeToIso(entry.sourceFreshnessAt);
+      const dueAt = cashFlowWallTimeToIso(
+        "Cash-flow entry " + (index + 1) + " due date and time",
+        entry.dueAt,
+        normalizedTimeZone,
+        entry.dueAtIsoHint
+      );
+      let sourceRecordedAt = cashFlowWallTimeToIso(
+        "Cash-flow entry " + (index + 1) + " source-recorded date and time",
+        entry.sourceRecordedAt,
+        normalizedTimeZone,
+        entry.sourceRecordedAtIsoHint
+      );
+      let sourceFreshnessAt = cashFlowWallTimeToIso(
+        "Cash-flow entry " + (index + 1) + " freshness date and time",
+        entry.sourceFreshnessAt,
+        normalizedTimeZone,
+        entry.sourceFreshnessAtIsoHint
+      );
       if (entry.sourceType !== "manual") {
         const source = authorizedSources.find(
           (record) =>
@@ -462,11 +595,17 @@ export default function CashFlowSnapshotTool({
               " must select a reviewed record from this workspace."
           );
         }
-        const observedAt = source.updatedAt || source.createdAt;
-        sourceRecordedAt = localDateTimeToIso(
-          isoToLocalDateTime(observedAt) || entry.sourceRecordedAt
-        );
-        sourceFreshnessAt = sourceRecordedAt;
+        const observedAt = validIsoInstant(source.updatedAt || source.createdAt);
+        sourceRecordedAt = validIsoInstant(entry.sourceRecordedAtIsoHint) || observedAt;
+        sourceFreshnessAt =
+          validIsoInstant(entry.sourceFreshnessAtIsoHint) || sourceRecordedAt;
+        if (!sourceRecordedAt || !sourceFreshnessAt) {
+          throw new Error(
+            "Cash-flow entry " +
+              (index + 1) +
+              " selected source does not have a valid recorded instant."
+          );
+        }
         if (entry.confidence !== "expected") {
           throw new Error(
             "Reviewed quote and expense records are expectations, not recorded cash evidence."
@@ -746,7 +885,11 @@ export default function CashFlowSnapshotTool({
               accessibilityLabel="Cash-flow snapshot as of date and time"
               mode="datetime"
               value={asOf}
-              onChange={setAsOf}
+              onChange={(value) => {
+                setAsOf(value);
+                setAsOfIsoHint("");
+                setAsOfTouched(true);
+              }}
             />
           </View>
           <LabeledInput
@@ -756,12 +899,9 @@ export default function CashFlowSnapshotTool({
             autoCorrect={false}
             maxLength={100}
             value={timeZone}
-            onChangeText={(value) => {
-              setTimeZoneTouched(true);
-              setTimeZone(value);
-            }}
+            onChangeText={changeTimeZone}
             placeholder="America/New_York"
-            hint="30, 60, and 90-day cutoffs use this zone. The active Facility zone is preferred when available; otherwise the device zone is used. UTC is only the final fallback."
+            hint="All entered wall times and 30, 60, and 90-day cutoffs use this zone. Times skipped or repeated by a clock change require an unambiguous choice. The active Facility zone is preferred when available; otherwise the device zone is used. UTC is only the final fallback."
           />
         </View>
         <Text style={styles.bodyText}>
@@ -777,17 +917,24 @@ export default function CashFlowSnapshotTool({
 
         <View style={styles.entryStack}>
           {entries.map((entry, index) => {
-            const asOfTime = new Date(localDateTimeToIso(asOf) || 0).getTime();
-            const freshnessTime = new Date(
-              localDateTimeToIso(entry.sourceFreshnessAt) || 0
-            ).getTime();
+            const previewTimeZone = normalizeIanaTimeZone(timeZone);
+            const asOfTime = previewEpoch(asOf, previewTimeZone, asOfIsoHint);
+            const freshnessTime = previewEpoch(
+              entry.sourceFreshnessAt,
+              previewTimeZone,
+              entry.sourceFreshnessAtIsoHint
+            );
             const staleDays = Number(staleAfterDays);
             const stale =
               Number.isFinite(asOfTime) &&
               Number.isFinite(freshnessTime) &&
               Number.isFinite(staleDays) &&
               asOfTime - freshnessTime > staleDays * 86_400_000;
-            const dueTime = new Date(localDateTimeToIso(entry.dueAt) || 0).getTime();
+            const dueTime = previewEpoch(
+              entry.dueAt,
+              previewTimeZone,
+              entry.dueAtIsoHint
+            );
             const overdue = Number.isFinite(dueTime) && dueTime < asOfTime;
             return (
               <View key={entry.id} style={styles.entryCard}>
@@ -854,6 +1001,8 @@ export default function CashFlowSnapshotTool({
                     updateEntry(index, {
                       sourceType: value,
                       sourceRecordId: "",
+                      sourceRecordedAtIsoHint: "",
+                      sourceFreshnessAtIsoHint: "",
                       direction:
                         value === "quote"
                           ? "inflow"
@@ -888,9 +1037,17 @@ export default function CashFlowSnapshotTool({
                           .map((record) => {
                             const id = sourceRecordId(record);
                             const chosen = entry.sourceRecordId === id;
+                            const observedAtIso = validIsoInstant(
+                              record.updatedAt || record.createdAt
+                            );
+                            const selectedTimeZone = normalizeIanaTimeZone(timeZone);
                             const observedAt =
-                              isoToLocalDateTime(record.updatedAt || record.createdAt) ||
-                              entry.sourceRecordedAt;
+                              observedAtIso && selectedTimeZone
+                                ? isoInstantToZonedLocalDateTime(
+                                    observedAtIso,
+                                    selectedTimeZone
+                                  )
+                                : entry.sourceRecordedAt;
                             return (
                               <Pressable
                                 key={id}
@@ -906,7 +1063,9 @@ export default function CashFlowSnapshotTool({
                                   updateEntry(index, {
                                     sourceRecordId: id,
                                     sourceRecordedAt: observedAt,
+                                    sourceRecordedAtIsoHint: observedAtIso || "",
                                     sourceFreshnessAt: observedAt,
+                                    sourceFreshnessAtIsoHint: observedAtIso || "",
                                     direction:
                                       record.kind === "quote" ? "inflow" : "outflow",
                                     confidence: "expected",
@@ -928,9 +1087,9 @@ export default function CashFlowSnapshotTool({
                                 </Text>
                                 <Text style={styles.sourceChoiceMeta}>
                                   Reviewed ·{" "}
-                                  {record.updatedAt ||
-                                    record.createdAt ||
-                                    "date unavailable"}
+                                  {observedAtIso && selectedTimeZone
+                                    ? `${observedAt} (${selectedTimeZone})`
+                                    : "date unavailable"}
                                 </Text>
                               </Pressable>
                             );
@@ -953,7 +1112,9 @@ export default function CashFlowSnapshotTool({
                       }
                       mode="datetime"
                       value={entry.dueAt}
-                      onChange={(value) => updateEntry(index, { dueAt: value })}
+                      onChange={(value) =>
+                        updateEntry(index, { dueAt: value, dueAtIsoHint: "" })
+                      }
                     />
                   </View>
                   {entry.sourceType === "manual" ? (
@@ -969,7 +1130,10 @@ export default function CashFlowSnapshotTool({
                           mode="datetime"
                           value={entry.sourceRecordedAt}
                           onChange={(value) =>
-                            updateEntry(index, { sourceRecordedAt: value })
+                            updateEntry(index, {
+                              sourceRecordedAt: value,
+                              sourceRecordedAtIsoHint: ""
+                            })
                           }
                         />
                       </View>
@@ -984,7 +1148,10 @@ export default function CashFlowSnapshotTool({
                           mode="datetime"
                           value={entry.sourceFreshnessAt}
                           onChange={(value) =>
-                            updateEntry(index, { sourceFreshnessAt: value })
+                            updateEntry(index, {
+                              sourceFreshnessAt: value,
+                              sourceFreshnessAtIsoHint: ""
+                            })
                           }
                         />
                       </View>
@@ -998,7 +1165,12 @@ export default function CashFlowSnapshotTool({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Add cash-flow entry"
-          onPress={() => setEntries((current) => [...current, newEntry()])}
+          onPress={() =>
+            setEntries((current) => [
+              ...current,
+              newEntry(normalizeIanaTimeZone(timeZone) || preferredTimeZone)
+            ])
+          }
           style={styles.secondaryButton}
         >
           <Text style={styles.secondaryButtonText}>Add cash-flow entry</Text>

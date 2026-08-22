@@ -11,6 +11,9 @@ const mockCreate = jest.fn();
 const mockList = jest.fn();
 const mockUpdate = jest.fn();
 let mockActiveFacility: any = null;
+let mockSnapshotDateTime = "2026-08-22T12:00";
+let mockDueDateTime = "2026-09-01T12:00";
+let mockSourceDateTime = "2026-08-01T09:00";
 
 const reviewedQuote = {
   _id: "64b000000000000000000301",
@@ -76,14 +79,23 @@ jest.mock("@/components/layout/AppCard", () => {
 jest.mock("@/components/forms/CalendarDateField", () => {
   const React = require("react");
   const { Pressable, Text } = require("react-native");
-  return function MockCalendarDateField({ accessibilityLabel, label, onChange }: any) {
+  return function MockCalendarDateField({
+    accessibilityLabel,
+    label,
+    onChange,
+    value: fieldValue
+  }: any) {
     const name = String(accessibilityLabel || label);
-    let value = "2026-08-01T09:00";
-    if (name.includes("snapshot as of")) value = "2026-08-22T12:00";
-    if (name.includes("due date")) value = "2026-09-01T12:00";
+    let value = mockSourceDateTime;
+    if (name.includes("snapshot as of")) value = mockSnapshotDateTime;
+    if (name.includes("due date")) value = mockDueDateTime;
     return React.createElement(
       Pressable,
-      { accessibilityLabel: name, onPress: () => onChange(value) },
+      {
+        accessibilityLabel: name,
+        onPress: () => onChange(value),
+        testValue: fieldValue
+      },
       React.createElement(Text, null, label)
     );
   };
@@ -124,6 +136,9 @@ function cashResult(input: any) {
 describe("CashFlowSnapshotTool", () => {
   beforeEach(() => {
     mockActiveFacility = null;
+    mockSnapshotDateTime = "2026-08-22T12:00";
+    mockDueDateTime = "2026-09-01T12:00";
+    mockSourceDateTime = "2026-08-01T09:00";
     mockArchive.mockReset();
     mockCalculate
       .mockReset()
@@ -203,6 +218,7 @@ describe("CashFlowSnapshotTool", () => {
         currency: "USD",
         minorUnitDigits: 2,
         currentCashMinor: null,
+        asOf: "2026-08-22T18:00:00.000Z",
         timeZone: "America/Denver",
         staleAfterDays: 10,
         horizonsDays: [30, 60, 90],
@@ -215,8 +231,9 @@ describe("CashFlowSnapshotTool", () => {
             currency: "USD",
             sourceType: "quote",
             sourceRecordId: "64b000000000000000000301",
-            sourceRecordedAt: expect.any(String),
-            sourceFreshnessAt: expect.any(String)
+            sourceRecordedAt: "2026-08-21T16:00:00.000Z",
+            sourceFreshnessAt: "2026-08-21T16:00:00.000Z",
+            dueAt: "2026-09-01T18:00:00.000Z"
           })
         ]
       })
@@ -323,6 +340,44 @@ describe("CashFlowSnapshotTool", () => {
     expect(mockCreate.mock.calls[0][1].payload.cashFlowSnapshot.timeZone).toBe(
       "America/Chicago"
     );
+  });
+
+  it("blocks nonexistent and ambiguous workspace wall times before any API request", async () => {
+    mockActiveFacility = {
+      id: "facility-2",
+      name: "North house",
+      timezone: "America/New_York"
+    };
+    mockSnapshotDateTime = "2026-03-08T02:30";
+    const gapScreen = render(
+      <CashFlowSnapshotTool
+        workspace={{ workspaceType: "facility", facilityId: "facility-2" }}
+        canViewCurrentCash
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    await waitFor(() => expect(mockList).toHaveBeenCalled());
+    fireEvent.press(gapScreen.getByLabelText("Cash-flow snapshot as of date and time"));
+    fireEvent.press(gapScreen.getByLabelText("Calculate cash-flow snapshot"));
+    await gapScreen.findByText(/does not exist in America\/New_York/i);
+    gapScreen.unmount();
+
+    mockSnapshotDateTime = "2026-11-01T01:30";
+    const overlapScreen = render(
+      <CashFlowSnapshotTool
+        workspace={{ workspaceType: "facility", facilityId: "facility-2" }}
+        canViewCurrentCash
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    fireEvent.press(
+      overlapScreen.getByLabelText("Cash-flow snapshot as of date and time")
+    );
+    fireEvent.press(overlapScreen.getByLabelText("Calculate cash-flow snapshot"));
+    await overlapScreen.findByText(/occurs twice in America\/New_York/i);
+    expect(mockCalculate).not.toHaveBeenCalled();
   });
 
   it("resets edited time-zone and draft state when the workspace changes", async () => {
@@ -516,7 +571,7 @@ describe("CashFlowSnapshotTool", () => {
       version: 3,
       payload: {
         cashFlowSnapshot: {
-          asOf: "2026-08-22T16:00:00.000Z",
+          asOf: "2026-08-22T16:00:45.123Z",
           timeZone: "America/Los_Angeles",
           currency: "USD",
           minorUnitDigits: 2,
@@ -530,10 +585,10 @@ describe("CashFlowSnapshotTool", () => {
               confidence: "recorded",
               amountMinor: 7500,
               currency: "USD",
-              dueAt: "2026-08-25T16:00:00.000Z",
+              dueAt: "2026-08-25T16:00:30.456Z",
               sourceType: "manual",
-              sourceRecordedAt: "2026-08-20T16:00:00.000Z",
-              sourceFreshnessAt: "2026-08-20T16:00:00.000Z",
+              sourceRecordedAt: "2026-08-20T16:00:15.789Z",
+              sourceFreshnessAt: "2026-08-20T16:00:15.789Z",
               sourceRecordId: ""
             }
           ],
@@ -561,6 +616,16 @@ describe("CashFlowSnapshotTool", () => {
     expect(screen.getByLabelText("Cash-flow planning time zone").props.value).toBe(
       "America/Los_Angeles"
     );
+    expect(
+      screen.getByLabelText("Cash-flow snapshot as of date and time").props.testValue
+    ).toBe("2026-08-22T09:00");
+    expect(
+      screen.getByLabelText("Cash-flow entry 1 due date and time").props.testValue
+    ).toBe("2026-08-25T09:00");
+    expect(
+      screen.getByLabelText("Cash-flow entry 1 source recorded date and time").props
+        .testValue
+    ).toBe("2026-08-20T09:00");
     expect(screen.getByLabelText("Cash-flow entry 1 amount").props.value).toBe("75.00");
     expect(screen.queryByLabelText("Cash-flow entry 1 source record id")).toBeNull();
     expect(
@@ -570,8 +635,16 @@ describe("CashFlowSnapshotTool", () => {
     await waitFor(() => expect(mockCalculate).toHaveBeenCalledTimes(1));
     expect(mockCalculate.mock.calls[0][1]).toEqual(
       expect.objectContaining({
+        asOf: "2026-08-22T16:00:45.123Z",
         timeZone: "America/Los_Angeles",
-        horizonsDays: [30, 60, 90]
+        horizonsDays: [30, 60, 90],
+        entries: [
+          expect.objectContaining({
+            dueAt: "2026-08-25T16:00:30.456Z",
+            sourceRecordedAt: "2026-08-20T16:00:15.789Z",
+            sourceFreshnessAt: "2026-08-20T16:00:15.789Z"
+          })
+        ]
       })
     );
     fireEvent.changeText(
