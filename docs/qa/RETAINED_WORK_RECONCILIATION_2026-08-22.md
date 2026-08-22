@@ -34,9 +34,9 @@ durable decision record.
 | `codex/finish-old-work-integration`             | P02              |              3 | Reconciled: reversible archive behavior and tests are already on `main`; no patch applied.                       |
 | `codex/archive-live-evidence`                   | P02              |              3 | Reconciled as historical evidence only; current archive tests pass, but production acceptance remains separate. |
 | `codex/standalone-harvest-readiness`            | P08              |              3 | Reconciled: standalone/optional-grow access, retained-result sharing and the current knowledge contract are already on `main`; 70 focused assertions and the harvest-history validator pass. |
-| `codex/live-lifecycle-p0-frontend`              | S05–S06          |              4 | Reuse the OBS/hosted-live draft, review, publish, viewer, and chat lifecycle implementation.                    |
-| `codex/discover-media-exact-links`              | S01–S02, S08     |              4 | Reuse exact-record discovery links and tests.                                                                   |
-| `codex/live-studio-closure-doc-20260815`        | S05              |              4 | Evidence input only; credential state must be rechecked when live acceptance is run.                            |
+| `codex/live-lifecycle-p0-frontend`              | S05–S06          |              4 | Reconciled: its draft/review/publish lifecycle is already on newer `main`; applying the old branch would remove newer safeguards. |
+| `codex/discover-media-exact-links`              | S01–S02, S08     |              4 | Reconciled: exact-record discovery links and regression tests are already on current `main`; no patch applied.   |
+| `codex/live-studio-closure-doc-20260815`        | S05              |              4 | Reconciled as historical evidence only; current credential/deployment state remains a final-candidate check.     |
 | `codex/release-acceptance-evidence`             | C01–C05, R03     |            5/8 | Reuse the commercial tab fix if still missing. Treat the older acceptance report as historical evidence only.   |
 
 ## Meaningful dirty work to preserve and reconcile
@@ -45,7 +45,7 @@ durable decision record.
 | ------------------------------------------------------------------------------------------ | ------------- | -------------: | -------------------------------------------------------------------------------------------------------------------------------- |
 | `tmp/frontend-run-comparison` / `codex/run-comparison-evidence`                            | P07           |              3 | Reconciled: preserved as commit `32d20127`, then found superseded by newer equivalent/current code on `main`; focused tests and history validator pass. |
 | `frontend-trichome-coverage-policy` / `codex/trichome-coverage-policy`                     | P08           |              3 | Reconciled: the worktree has no semantic diff (line-ending metadata only); its coverage, glare and uncertainty rules are already in the current method and app-readable registry. |
-| `frontend-social-video-live-experience` / `codex/app-wide-canonical-sharing`               | S05–S08       |              4 | Live-session sharing/player changes and tests.                                                                                   |
+| `frontend-social-video-live-experience` / `codex/app-wide-canonical-sharing`               | S05–S08       |              4 | Reconciled: preserved private-draft sharing fix as `83aa8f7e`; cherry-pick was empty because the exact behavior and regression test already exist on current `main`. |
 | `commercial-trials-batches-state-a11y-batch89` / `codex/commercial-hat-placeholder-assets` | R05           |              8 | Hat manifests, trial UI, research-copy rules, images, and tests. Preserve until after crawl and independent review.              |
 | `trichome-counter-adjudication-next` / `codex/workspace-contextual-tools-accessibility`    | none directly |              0 | Only an untracked nested backend-commercial-profile checkout; inspect its registered backend worktree separately before cleanup. |
 

@@ -41,6 +41,33 @@ function method(
 
 export const methodRegistry: GrowPathMethod[] = [
   method(
+    "public-copy-sharing",
+    "Reviewed Public Copies",
+    ["sharing", "grow_timeline", "journal", "ai_result", "public_copy"],
+    "public-copy-sharing-method.md",
+    ["select", "review", "publish snapshot", "open or share", "withdraw"],
+    [
+      "authorized private source record",
+      "owner-selected bounded text and event range",
+      "owner-selected evidence assets",
+      "explicit publication confirmation"
+    ],
+    [
+      "frozen sanitized snapshot",
+      "unguessable canonical viewer URL",
+      "safe public photo derivatives",
+      "reloadable publication state",
+      "audited withdrawal that never reactivates the old token"
+    ],
+    [
+      "Never publish private data merely because Share was pressed.",
+      "Never expose protected upload URLs, exact locations, operational payloads, AI receipts, credentials, or evidence permissions.",
+      "Later private edits must not silently change an already-published snapshot.",
+      "Cannabis-specific public copies require the cannabis visibility and reporting gates before public release."
+    ],
+    ["grow-timeline", "public-share-review"]
+  ),
+  method(
     "business-desk",
     "Small Business Desk",
     ["business", "pricing", "quote", "lead", "job", "expense", "vendor", "cash_flow"],

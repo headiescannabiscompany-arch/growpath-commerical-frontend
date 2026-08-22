@@ -45,6 +45,24 @@ describe("GrowPath knowledge registries", () => {
     );
   });
 
+  it("keeps public copies separate, frozen, sanitized and revocable", () => {
+    const sharing = getMethod("public-copy-sharing");
+    expect(sharing?.primaryWorkflow).toEqual([
+      "select",
+      "review",
+      "publish snapshot",
+      "open or share",
+      "withdraw"
+    ]);
+    expect(sharing?.requiredOutputs).toContain("safe public photo derivatives");
+    expect(sharing?.warnings).toContain(
+      "Never publish private data merely because Share was pressed."
+    );
+    expect(sharing?.warnings).toContain(
+      "Later private edits must not silently change an already-published snapshot."
+    );
+  });
+
   it("limits context-specific sources to supported decisions", () => {
     expect(evaluateSourceForDecision("uc-ipm", "ipm")).toBe("allow");
     expect(evaluateSourceForDecision("breeder-site", "cultivar_parentage")).toBe(
