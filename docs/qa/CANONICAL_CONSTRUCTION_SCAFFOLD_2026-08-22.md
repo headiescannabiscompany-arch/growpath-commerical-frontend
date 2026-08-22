@@ -3,6 +3,9 @@
 Updated: 2026-08-22  
 Baseline frontend: `689474493cd82a866e6c8b20df781950c37fb378`
 
+Batch 0 retained work is tracked in
+[`RETAINED_WORK_RECONCILIATION_2026-08-22.md`](./RETAINED_WORK_RECONCILIATION_2026-08-22.md).
+
 ## Purpose and authority
 
 This is the construction view of
