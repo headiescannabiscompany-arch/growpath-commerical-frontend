@@ -127,6 +127,13 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   cancellation, duplicate prevention and exact-Facility entitlement across multiple
   Facilities before live acceptance. Apple IAP is a separate provider path and must not
   be presented as configured until production verification is accepted.
+  Live candidate `9c55b6b` exposed a remaining ownership mismatch: the Facility Profile
+  opened Personal Account billing. The active follow-up candidate routes Facility billing to
+  `/home/facility/billing`, reads the selected Facility status, keeps non-billing members
+  read-only and permits a confirmed authorized Stripe-backed trial to cancel before renewal.
+  Local billing/gift evidence is 20 suites / 255 tests plus TypeScript, lint and delivery
+  guards; deployment and live owner/read-only acceptance remain open. No checkout or
+  cancellation was executed during diagnosis.
 - [~] **B-03 provider-backed Business Desk actions:** deterministic tools and reviewed record
   workflows exist. Receipt extraction, Business Ask, provider operations, workspace export
   and Quote payment-provider handoff have independent configuration/confirmation gates.

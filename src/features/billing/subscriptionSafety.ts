@@ -70,7 +70,6 @@ function validManagementUrl(value: unknown) {
 }
 
 function sourceKind(record: Record<string, any>, trialing: boolean) {
-  if (trialing) return "trial" as const;
   const source = normalized(
     record.source || record.subscriptionSource || record.billingSource || record.provider
   );
@@ -79,6 +78,7 @@ function sourceKind(record: Record<string, any>, trialing: boolean) {
   if (IAP_SOURCES.has(source)) return "iap" as const;
   if (ADMIN_SOURCES.has(source)) return "admin" as const;
   if (source === "stripe") return "stripe" as const;
+  if (trialing) return "trial" as const;
   return "unknown" as const;
 }
 
@@ -138,7 +138,6 @@ export function resolveSubscriptionSafety(
   );
   const canCancel = Boolean(
     active &&
-    !trialing &&
     !cancelScheduled &&
     source === "stripe" &&
     record.canManageBilling === true &&

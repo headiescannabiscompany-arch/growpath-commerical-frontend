@@ -236,6 +236,17 @@ Owner/Manager mutation, Viewer denial, provider operation, reload/isolation, cre
 audit evidence remain open and require the corresponding authorized sessions. Do not use the
 account-level `User` label on Profile as a substitute for the Facility membership role.
 
+The same live pass found that the Facility Profile's billing action still opened Personal
+Account billing: live evidence showed `Plan: pro` / `Status: active` and a Personal
+cancellation action while the Facility Profile separately showed Triple Bag Genetics as
+`FACILITY (trialing)`. This contradicted exact-Facility ownership and remains open until the
+corrected route is deployed and live-accepted. The follow-up candidate introduces
+`/home/facility/billing`, reads only the selected Facility billing record, keeps non-billing
+members read-only, and treats a confirmed authorized Stripe-backed trial as cancellable before
+renewal. Local evidence passes TypeScript, lint, the delivery guard, 12 focused route/safety
+tests, and the broader 20-suite / 255-test subscription and gift packet. No live cancellation
+or checkout was performed.
+
 ## Nature, Admin and release
 
 | ID   | User story                                                                                                             | Status          |
