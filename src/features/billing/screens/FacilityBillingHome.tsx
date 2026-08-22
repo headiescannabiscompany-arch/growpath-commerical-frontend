@@ -24,7 +24,7 @@ export default function FacilityBillingHome() {
   const facilityId = facility.selectedId || entitlementFacilityId || null;
   const facilityName = facility.selected?.name || "Selected Facility";
   const normalizedRole = String(facilityRole || "").toUpperCase();
-  const canManageBilling = FACILITY_BILLING_ROLES.has(normalizedRole);
+  const roleCanManageBilling = FACILITY_BILLING_ROLES.has(normalizedRole);
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly");
@@ -40,17 +40,8 @@ export default function FacilityBillingHome() {
   } = useFacilityBilling(facilityId);
 
   const loaded = Boolean(facilityId) && !isLoading && !error && billing != null;
-  const access = resolveSubscriptionSafety(
-    billing
-      ? {
-          ...billing,
-          billingSource: billing.stripeSubscriptionId ? "stripe" : billing.billingSource,
-          canManageBilling,
-          canCancelSubscription: Boolean(billing.stripeSubscriptionId)
-        }
-      : billing,
-    { loaded }
-  );
+  const canManageBilling = roleCanManageBilling && billing?.canManageBilling === true;
+  const access = resolveSubscriptionSafety(billing, { loaded });
   const status = String(billing?.status || "none").toLowerCase();
   const periodEnd = displayDate(billing?.currentPeriodEnd);
   const graceUntil = displayDate(billing?.graceUntil);

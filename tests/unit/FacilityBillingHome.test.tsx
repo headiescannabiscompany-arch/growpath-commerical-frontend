@@ -34,7 +34,6 @@ describe("FacilityBillingHome", () => {
         billingSource: "stripe",
         canManageBilling: true,
         canCancelSubscription: true,
-        stripeSubscriptionId: "sub_facility",
         cancelAtPeriodEnd: false,
         currentPeriodEnd: "2026-09-22T00:00:00.000Z"
       },
