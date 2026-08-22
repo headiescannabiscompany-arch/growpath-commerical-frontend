@@ -2,6 +2,7 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { RequireAuth } from "@/auth/RequireAuth";
+import { CAPABILITY_KEYS } from "@/entitlements/capabilityKeys";
 import { RouteAccessGuard } from "@/navigation/RouteAccessGuard";
 
 const mockReplace = jest.fn();
@@ -218,7 +219,7 @@ describe("auth bootstrap route guards", () => {
       ready: true,
       bootstrapError: "",
       mode: "facility",
-      capabilities: { "businessDesk.read": true },
+      capabilities: { [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true },
       facilityId: "facility-1",
       facilityRole: "STAFF"
     };
