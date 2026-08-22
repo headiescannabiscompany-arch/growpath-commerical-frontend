@@ -7,6 +7,7 @@ const mockArchive = jest.fn();
 const mockCreate = jest.fn();
 const mockExport = jest.fn();
 const mockList = jest.fn();
+const mockPrepareBatch = jest.fn();
 const mockUpdate = jest.fn();
 
 jest.mock("@/api/businessDesk", () => ({
@@ -17,12 +18,13 @@ jest.mock("@/api/businessDesk", () => ({
       : "commercial",
   createBusinessDeskRecord: (...args: any[]) => mockCreate(...args),
   listBusinessDeskRecords: (...args: any[]) => mockList(...args),
+  prepareBusinessDeskExpenseBatchCsv: (...args: any[]) => mockPrepareBatch(...args),
   requireBusinessDeskWorkspace: (workspace: any) => workspace,
   updateBusinessDeskRecord: (...args: any[]) => mockUpdate(...args)
 }));
 
 jest.mock("@/utils/exportToCsv", () => ({
-  exportToCsv: (...args: any[]) => mockExport(...args)
+  exportCsvContent: (...args: any[]) => mockExport(...args)
 }));
 
 jest.mock("@/components/layout/AppPage", () => {
@@ -65,10 +67,11 @@ describe("ExpenseReceiptTool", () => {
     mockExport.mockReset().mockResolvedValue({
       ok: true,
       filename: "growpath-business-expenses",
-      rowCount: 1,
+      rowCount: 0,
       method: "web-download"
     });
     mockList.mockReset().mockResolvedValue([]);
+    mockPrepareBatch.mockReset();
     mockUpdate.mockReset();
   });
 
@@ -175,9 +178,9 @@ describe("ExpenseReceiptTool", () => {
         basePath="/home/commercial/business-desk"
       />
     );
-      fireEvent.press(
-        await screen.findByLabelText("Open expense / receipt helper Receipt")
-      );
+    fireEvent.press(
+      await screen.findByLabelText("Open expense / receipt helper Receipt")
+    );
     fireEvent.press(screen.getByLabelText(actionLabel));
 
     await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
@@ -216,10 +219,10 @@ describe("ExpenseReceiptTool", () => {
     expect(screen.getByText(/No file is uploaded or sent to AI/i)).toBeTruthy();
   });
 
-  it("labels client-only share preparation without claiming an audited export", async () => {
+  it("prepares only reviewed filtered revisions through the audited batch contract", async () => {
     mockList.mockResolvedValue([
       {
-        _id: "expense-1",
+        _id: "507f191e810c19729de86020",
         kind: "expense",
         title: "Receipt",
         status: "reviewed",
@@ -235,15 +238,50 @@ describe("ExpenseReceiptTool", () => {
             category: "supplies",
             paymentMethod: "",
             itemLines: [],
+            review: { status: "reviewed" },
             notes: ""
+          }
+        }
+      },
+      {
+        _id: "507f191e810c19729de86021",
+        kind: "expense",
+        title: "Draft receipt",
+        status: "draft",
+        version: 2,
+        payload: {
+          expense: {
+            merchant: "Unreviewed merchant",
+            occurredAt: "2026-08-21T16:00:00.000Z",
+            amountMinor: 500,
+            taxMinor: 0,
+            currency: "USD",
+            minorUnitDigits: 2,
+            category: "supplies",
+            review: { status: "draft" }
           }
         }
       }
     ]);
+    mockPrepareBatch.mockResolvedValue({
+      artifact: {
+        mode: "csv",
+        contentType: "text/csv; charset=utf-8",
+        filename: "expenses-1-reviewed.csv",
+        content: '"section","field"\r\n',
+        checksumSha256: "a".repeat(64),
+        rowCount: 11,
+        recordCount: 1,
+        deliveryStatus: "not_observed"
+      },
+      recordPins: [],
+      receipt: { _id: "receipt-1" },
+      idempotentReplay: false
+    });
     mockExport.mockResolvedValue({
       ok: true,
       filename: "growpath-business-expenses",
-      rowCount: 1,
+      rowCount: 0,
       method: "native-share-text"
     });
     const screen = render(
@@ -254,11 +292,80 @@ describe("ExpenseReceiptTool", () => {
       />
     );
     await screen.findByText("Receipt");
+    expect(screen.getByText(/2 matching saved records/i)).toBeTruthy();
+    expect(screen.getByText(/1 reviewed revision eligible/i)).toBeTruthy();
     fireEvent.press(screen.getByLabelText("Export filtered saved expenses"));
 
+    await waitFor(() => expect(mockPrepareBatch).toHaveBeenCalledTimes(1));
+    expect(mockPrepareBatch).toHaveBeenCalledWith(
+      { workspaceType: "commercial" },
+      {
+        records: [{ recordId: "507f191e810c19729de86020", expectedVersion: 4 }],
+        idempotencyKey: expect.stringMatching(/^expense-batch-export-/)
+      }
+    );
+    expect(mockExport).toHaveBeenCalledWith(
+      "expenses-1-reviewed.csv",
+      '"section","field"\r\n'
+    );
     expect(
-      await screen.findByText(/opened the system share flow.*no backend export audit/i)
+      await screen.findByText(
+        /audited CSV receipt pinned to 1 reviewed Expense revision.*opened the system share flow.*did not observe file delivery/i
+      )
     ).toBeTruthy();
-    expect(screen.queryByText(/^Exported /i)).toBeNull();
+  });
+
+  it("reuses the same export identity after an ambiguous failure", async () => {
+    mockList.mockResolvedValue([
+      {
+        _id: "507f191e810c19729de86020",
+        kind: "expense",
+        title: "Receipt",
+        status: "reviewed",
+        version: 4,
+        payload: {
+          expense: {
+            merchant: "Garden Supply",
+            occurredAt: "2026-08-22T16:00:00.000Z",
+            amountMinor: 1000,
+            taxMinor: 0,
+            currency: "USD",
+            minorUnitDigits: 2,
+            category: "supplies",
+            review: { status: "reviewed" }
+          }
+        }
+      }
+    ]);
+    mockPrepareBatch
+      .mockRejectedValueOnce(new Error("Connection interrupted"))
+      .mockResolvedValueOnce({
+        artifact: {
+          filename: "expenses-1-reviewed.csv",
+          content: '"section","field"\r\n',
+          recordCount: 1
+        },
+        idempotentReplay: true
+      });
+    const screen = render(
+      <ExpenseReceiptTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+    await screen.findByText("Receipt");
+
+    fireEvent.press(screen.getByLabelText("Export filtered saved expenses"));
+    expect(await screen.findByText("Connection interrupted")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Export filtered saved expenses"));
+    await waitFor(() => expect(mockPrepareBatch).toHaveBeenCalledTimes(2));
+
+    expect(mockPrepareBatch.mock.calls[0][1].idempotencyKey).toBe(
+      mockPrepareBatch.mock.calls[1][1].idempotencyKey
+    );
+    expect(
+      await screen.findByText(/Recovered the same audited CSV receipt/i)
+    ).toBeTruthy();
   });
 });

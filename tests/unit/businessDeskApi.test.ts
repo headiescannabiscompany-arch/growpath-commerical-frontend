@@ -5,10 +5,10 @@ import {
   calculateBusinessDesk,
   COMMERCIAL_BUSINESS_DESK_WORKSPACE,
   createBusinessDeskRecord,
-  getBusinessDeskRecordsCsv,
   listBusinessDeskRecordPage,
   listBusinessDeskRecords,
   listBusinessDeskRevisions,
+  prepareBusinessDeskExpenseBatchCsv,
   resolveFacilityBusinessDeskWorkspace,
   updateBusinessDeskRecord
 } from "@/api/businessDesk";
@@ -126,7 +126,7 @@ describe("Business Desk API", () => {
     );
   });
 
-  it("loads every record page and validates raw CSV exports", async () => {
+  it("loads every record page without exposing the disabled implicit export", async () => {
     mockApiRequest
       .mockResolvedValueOnce({
         data: {
@@ -157,9 +157,7 @@ describe("Business Desk API", () => {
           ],
           page: { limit: 100, hasMore: false, nextCursor: null }
         }
-      })
-      .mockResolvedValueOnce('"kind","title"\r\n"quote","Spring"')
-      .mockResolvedValueOnce({ csv: "invalid" });
+      });
 
     await expect(
       listBusinessDeskRecords(COMMERCIAL_BUSINESS_DESK_WORKSPACE, {
@@ -178,12 +176,89 @@ describe("Business Desk API", () => {
       2,
       "/api/business-desk?kind=quote&includeArchived=true&limit=100&cursor=page-2"
     );
+  });
+
+  it("prepares one exact reviewed Expense batch and validates its audit receipt", async () => {
+    const first = { recordId: "507f191e810c19729de86020", expectedVersion: 3 };
+    const second = { recordId: "507f191e810c19729de86021", expectedVersion: 5 };
+    const recordPins = [first, second].map((record) => ({
+      recordId: record.recordId,
+      recordKind: "expense" as const,
+      version: record.expectedVersion,
+      snapshotDigest: "a".repeat(64)
+    }));
+    const artifact = {
+      mode: "csv" as const,
+      contentType: "text/csv; charset=utf-8" as const,
+      filename: "expenses-2-reviewed.csv",
+      content: '"section","field"\r\n',
+      checksumSha256: "b".repeat(64),
+      rowCount: 22,
+      recordCount: 2,
+      deliveryStatus: "not_observed" as const
+    };
+    const packet = {
+      artifact,
+      recordPins,
+      receipt: {
+        _id: "export-receipt-1",
+        exportKind: "expense_csv_batch" as const,
+        recordPins,
+        preparedArtifact: artifact
+      },
+      idempotentReplay: false
+    };
+    mockApiRequest.mockResolvedValue({ success: true, data: packet });
+
     await expect(
-      getBusinessDeskRecordsCsv(COMMERCIAL_BUSINESS_DESK_WORKSPACE)
-    ).resolves.toContain("Spring");
+      prepareBusinessDeskExpenseBatchCsv(
+        { workspaceType: "facility", facilityId: "facility/1" },
+        {
+          records: [second, first],
+          idempotencyKey: "expense-batch-operation-1"
+        }
+      )
+    ).resolves.toEqual(packet);
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/facility/facility%2F1/business-desk/exports/expenses/prepare-csv",
+      {
+        method: "POST",
+        body: {
+          records: [first, second],
+          idempotencyKey: "expense-batch-operation-1"
+        }
+      }
+    );
+
+    mockApiRequest.mockResolvedValueOnce({
+      data: {
+        ...packet,
+        artifact: { ...artifact, deliveryStatus: "delivered" }
+      }
+    });
     await expect(
-      getBusinessDeskRecordsCsv(COMMERCIAL_BUSINESS_DESK_WORKSPACE)
-    ).rejects.toThrow("empty or invalid");
+      prepareBusinessDeskExpenseBatchCsv(COMMERCIAL_BUSINESS_DESK_WORKSPACE, {
+        records: [first, second],
+        idempotencyKey: "expense-batch-operation-2"
+      })
+    ).rejects.toThrow("prepared Expense export response was invalid");
+  });
+
+  it("rejects duplicate or malformed Expense batch selections before the API call", async () => {
+    const record = { recordId: "507f191e810c19729de86020", expectedVersion: 3 };
+    await expect(
+      prepareBusinessDeskExpenseBatchCsv(COMMERCIAL_BUSINESS_DESK_WORKSPACE, {
+        records: [record, record],
+        idempotencyKey: "duplicate-expense-batch"
+      })
+    ).rejects.toThrow("unique saved revision");
+    await expect(
+      prepareBusinessDeskExpenseBatchCsv(COMMERCIAL_BUSINESS_DESK_WORKSPACE, {
+        records: [{ recordId: "not-an-object-id", expectedVersion: 0 }],
+        idempotencyKey: "malformed-expense-batch"
+      })
+    ).rejects.toThrow("unique saved revision");
+    expect(mockApiRequest).not.toHaveBeenCalled();
   });
 
   it("forwards cancellation without changing the resolved workspace", async () => {

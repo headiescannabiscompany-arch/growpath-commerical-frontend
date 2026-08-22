@@ -306,6 +306,42 @@ export type QuotePreparedArtifact = {
   deliveryStatus: "not_observed";
 };
 
+export type ExpenseBatchSelection = {
+  recordId: string;
+  expectedVersion: number;
+};
+
+export type ExpenseBatchRecordPin = {
+  recordId: string;
+  recordKind: "expense";
+  version: number;
+  snapshotDigest: string;
+};
+
+export type ExpenseBatchPreparedArtifact = {
+  mode: "csv";
+  contentType: "text/csv; charset=utf-8";
+  filename: string;
+  content: string;
+  checksumSha256: string;
+  rowCount: number;
+  recordCount: number;
+  deliveryStatus: "not_observed";
+};
+
+export type ExpenseBatchPreparedPacket = {
+  artifact: ExpenseBatchPreparedArtifact;
+  recordPins: ExpenseBatchRecordPin[];
+  receipt: {
+    id?: string;
+    _id?: string;
+    exportKind: "expense_csv_batch";
+    recordPins: ExpenseBatchRecordPin[];
+    preparedArtifact: ExpenseBatchPreparedArtifact;
+  };
+  idempotentReplay: boolean;
+};
+
 export type BusinessDeskRecordListOptions = {
   kind?: BusinessDeskRecordKind;
   status?: string;
@@ -545,22 +581,106 @@ export async function listBusinessDeskRevisions(
   return (Array.isArray(revisions) ? revisions : []) as BusinessDeskRevision[];
 }
 
-export async function getBusinessDeskRecordsCsv(
+function normalizedExpenseBatchSelection(records: ExpenseBatchSelection[]) {
+  if (!Array.isArray(records) || records.length < 1 || records.length > 100) {
+    throw new Error("Choose between 1 and 100 reviewed Expense revisions to export.");
+  }
+  const normalized = records
+    .map((record) => ({
+      recordId: String(record?.recordId || "")
+        .trim()
+        .toLowerCase(),
+      expectedVersion: Number(record?.expectedVersion)
+    }))
+    .sort((left, right) => left.recordId.localeCompare(right.recordId));
+  if (
+    normalized.some(
+      (record) =>
+        !/^[a-f0-9]{24}$/.test(record.recordId) ||
+        !Number.isSafeInteger(record.expectedVersion) ||
+        record.expectedVersion < 1
+    ) ||
+    new Set(normalized.map((record) => record.recordId)).size !== normalized.length
+  ) {
+    throw new Error("Every Expense export selection must be a unique saved revision.");
+  }
+  return normalized;
+}
+
+function expenseBatchPacketFrom(
+  response: unknown,
+  selected: ExpenseBatchSelection[]
+): ExpenseBatchPreparedPacket {
+  const value = envelope(response);
+  const artifact = value?.artifact;
+  const pins = value?.recordPins;
+  const receipt = value?.receipt;
+  const expected = new Map(
+    selected.map((record) => [record.recordId, record.expectedVersion])
+  );
+  const validRecordPins = (candidate: unknown) =>
+    Array.isArray(candidate) &&
+    candidate.length === selected.length &&
+    new Set(candidate.map((pin) => String(pin?.recordId || "").toLowerCase())).size ===
+      selected.length &&
+    candidate.every(
+      (pin) =>
+        pin &&
+        typeof pin === "object" &&
+        expected.get(String(pin.recordId || "").toLowerCase()) === pin.version &&
+        pin.recordKind === "expense" &&
+        /^[a-f0-9]{64}$/.test(String(pin.snapshotDigest || ""))
+    );
+  if (
+    !artifact ||
+    typeof artifact !== "object" ||
+    artifact.mode !== "csv" ||
+    artifact.contentType !== "text/csv; charset=utf-8" ||
+    typeof artifact.filename !== "string" ||
+    !artifact.filename.toLowerCase().endsWith(".csv") ||
+    typeof artifact.content !== "string" ||
+    artifact.content.length < 1 ||
+    artifact.content.length > 150_000 ||
+    !/^[a-f0-9]{64}$/.test(String(artifact.checksumSha256 || "")) ||
+    !Number.isSafeInteger(artifact.rowCount) ||
+    artifact.rowCount < 1 ||
+    artifact.rowCount > 30_000 ||
+    artifact.recordCount !== selected.length ||
+    artifact.deliveryStatus !== "not_observed" ||
+    !validRecordPins(pins) ||
+    !receipt ||
+    typeof receipt !== "object" ||
+    !String(receipt.id || receipt._id || "").trim() ||
+    receipt.exportKind !== "expense_csv_batch" ||
+    !validRecordPins(receipt.recordPins) ||
+    receipt.preparedArtifact?.checksumSha256 !== artifact.checksumSha256 ||
+    receipt.preparedArtifact?.recordCount !== selected.length ||
+    receipt.preparedArtifact?.deliveryStatus !== "not_observed" ||
+    typeof value?.idempotentReplay !== "boolean"
+  ) {
+    throw new Error("The prepared Expense export response was invalid.");
+  }
+  return value as ExpenseBatchPreparedPacket;
+}
+
+export async function prepareBusinessDeskExpenseBatchCsv(
   workspace: BusinessDeskWorkspace,
+  input: {
+    records: ExpenseBatchSelection[];
+    idempotencyKey: string;
+  },
   request: BusinessDeskRequestOptions = {}
-) {
+): Promise<ExpenseBatchPreparedPacket> {
+  const records = normalizedExpenseBatchSelection(input.records);
   const response = await apiRequest(
-    `${businessDeskBase(workspace)}/exports/records.csv`,
+    `${businessDeskBase(workspace)}/exports/expenses/prepare-csv`,
     {
-      method: "GET",
-      responseType: "text",
+      method: "POST",
+      body: { records, idempotencyKey: input.idempotencyKey },
       ...(request.signal ? { signal: request.signal } : {})
     }
   );
-  if (typeof response !== "string" || !response.trim()) {
-    throw new Error("The Business Desk export was empty or invalid.");
-  }
-  return response;
+  return expenseBatchPacketFrom(response, records);
 }
 
 export async function prepareBusinessDeskQuoteArtifact(

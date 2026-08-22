@@ -1,7 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import type { BusinessDeskRecord, BusinessDeskWorkspace } from "@/api/businessDesk";
+import {
+  businessDeskWorkspaceKey,
+  prepareBusinessDeskExpenseBatchCsv,
+  type BusinessDeskRecord,
+  type BusinessDeskWorkspace
+} from "@/api/businessDesk";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import {
@@ -20,11 +25,12 @@ import {
   businessDeskRecordId,
   isoToLocalDate,
   localDateToIso,
+  newBusinessDeskOperationKey,
   useBusinessDeskRecordCollection
 } from "@/features/businessDesk/recordWorkflow";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { exportToCsv } from "@/utils/exportToCsv";
+import { exportCsvContent } from "@/utils/exportToCsv";
 
 type ExpenseStatus = "draft" | "reviewed" | "rejected" | "correction_required";
 type ExpenseTransitionStatus = Exclude<ExpenseStatus, "draft">;
@@ -78,6 +84,10 @@ export default function ExpenseReceiptTool({
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const collection = useBusinessDeskRecordCollection(workspace, "expense");
+  const workspaceKey = businessDeskWorkspaceKey(workspace);
+  const activeWorkspaceKey = useRef(workspaceKey);
+  activeWorkspaceKey.current = workspaceKey;
+  const exportRetryIdentity = useRef<{ signature: string; key: string } | null>(null);
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
   const [merchant, setMerchant] = useState("");
@@ -97,6 +107,12 @@ export default function ExpenseReceiptTool({
   const [categoryFilter, setCategoryFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [throughDate, setThroughDate] = useState("");
+  const [exportBusyState, setExportBusyState] = useState({
+    workspaceKey,
+    value: false
+  });
+  const exportBusy =
+    exportBusyState.workspaceKey === workspaceKey ? exportBusyState.value : false;
 
   const contentFingerprint = JSON.stringify({
     title,
@@ -132,6 +148,21 @@ export default function ExpenseReceiptTool({
       );
     });
   }, [categoryFilter, collection.records, fromDate, search, throughDate]);
+
+  const reviewedFilteredRecords = useMemo(
+    () =>
+      filteredRecords.filter((record) => {
+        const expense = payloadOf(record);
+        return (
+          record.status === "reviewed" &&
+          expense.review?.status === "reviewed" &&
+          Boolean(businessDeskRecordId(record)) &&
+          Number.isSafeInteger(record.version) &&
+          record.version > 0
+        );
+      }),
+    [filteredRecords]
+  );
 
   const totalsByCurrency = useMemo(() => {
     const totals = new Map<string, { amount: number; digits: number }>();
@@ -352,52 +383,63 @@ export default function ExpenseReceiptTool({
   };
 
   const exportFiltered = async () => {
+    if (exportBusy) return;
+    const requestWorkspaceKey = workspaceKey;
     setFormError("");
+    setFeedback("");
+    setExportBusyState({ workspaceKey: requestWorkspaceKey, value: true });
     try {
-      const rows = filteredRecords.map((record) => {
-        const expense = payloadOf(record);
-        return {
+      if (!reviewedFilteredRecords.length) {
+        throw new Error(
+          "No reviewed saved Expense revisions match these filters. Drafts and rejected records cannot be exported."
+        );
+      }
+      if (reviewedFilteredRecords.length > 100) {
+        throw new Error(
+          "More than 100 reviewed Expense revisions match. Narrow the filters before preparing one exact audited export."
+        );
+      }
+      const records = reviewedFilteredRecords
+        .map((record) => ({
           recordId: businessDeskRecordId(record),
-          title: record.title,
-          status: record.status,
-          merchant: expense.merchant || "",
-          occurredAt: String(expense.occurredAt || "").slice(0, 10),
-          amountMinor: expense.amountMinor ?? "",
-          taxMinor: expense.taxMinor ?? "",
-          currency: expense.currency || "",
-          minorUnitDigits: expense.minorUnitDigits ?? "",
-          category: expense.category || "",
-          paymentMethod: expense.paymentMethod || "",
-          itemLinesJson: JSON.stringify(expense.itemLines || []),
-          notes: expense.notes || "",
-          version: record.version
+          expectedVersion: record.version
+        }))
+        .sort((left, right) => left.recordId.localeCompare(right.recordId));
+      const signature = JSON.stringify({ workspaceKey: requestWorkspaceKey, records });
+      if (
+        !exportRetryIdentity.current ||
+        exportRetryIdentity.current.signature !== signature
+      ) {
+        exportRetryIdentity.current = {
+          signature,
+          key: newBusinessDeskOperationKey("expense-batch-export")
         };
+      }
+      const packet = await prepareBusinessDeskExpenseBatchCsv(workspace, {
+        records,
+        idempotencyKey: exportRetryIdentity.current.key
       });
-      const result = await exportToCsv("growpath-business-expenses", rows, [
-        { key: "recordId", label: "Record ID" },
-        { key: "title", label: "Title" },
-        { key: "status", label: "Status" },
-        { key: "merchant", label: "Merchant" },
-        { key: "occurredAt", label: "Occurred date" },
-        { key: "amountMinor", label: "Amount minor" },
-        { key: "taxMinor", label: "Shown tax minor" },
-        { key: "currency", label: "Currency" },
-        { key: "minorUnitDigits", label: "Minor-unit digits" },
-        { key: "category", label: "Category" },
-        { key: "paymentMethod", label: "Payment method" },
-        { key: "itemLinesJson", label: "Reviewed item lines JSON" },
-        { key: "notes", label: "Notes" },
-        { key: "version", label: "Revision" }
-      ]);
+      if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
+      const result = await exportCsvContent(
+        packet.artifact.filename,
+        packet.artifact.content
+      );
+      if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
+      if (!result.ok) throw new Error("The prepared Expense CSV was empty.");
+      exportRetryIdentity.current = null;
       setFeedback(
-        result.ok
-          ? result.method === "web-download"
-            ? `Prepared a local CSV download containing ${result.rowCount} saved expense records. GrowPathAI has no backend export audit receipt for this action and does not claim delivery or canonical export completion.`
-            : `Prepared ${result.rowCount} saved expense records and opened the system share flow. GrowPathAI has no backend export audit receipt and did not observe delivery or canonical export completion.`
-          : "No saved expense records match these filters."
+        `${packet.idempotentReplay ? "Recovered the same" : "Prepared an"} audited CSV receipt pinned to ${packet.artifact.recordCount} reviewed Expense revision${packet.artifact.recordCount === 1 ? "" : "s"} and ${result.method === "web-download" ? "started a local download" : "opened the system share flow"}. GrowPathAI did not observe file delivery.`
       );
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : "The expense export failed.");
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setFormError(
+          error instanceof Error ? error.message : "The expense export failed."
+        );
+      }
+    } finally {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setExportBusyState({ workspaceKey: requestWorkspaceKey, value: false });
+      }
     }
   };
 
@@ -453,6 +495,10 @@ export default function ExpenseReceiptTool({
               {filteredRecords.length} matching saved record
               {filteredRecords.length === 1 ? "" : "s"}
             </Text>
+            <Text style={styles.summaryText}>
+              {reviewedFilteredRecords.length} reviewed revision
+              {reviewedFilteredRecords.length === 1 ? "" : "s"} eligible for this export
+            </Text>
             {totalsByCurrency.map((total) => (
               <Text key={total.currency} style={styles.summaryText}>
                 {formatMoneyMinor(total.amount, {
@@ -465,11 +511,40 @@ export default function ExpenseReceiptTool({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Export filtered saved expenses"
+              accessibilityState={{
+                busy: exportBusy,
+                disabled:
+                  exportBusy ||
+                  collection.loading ||
+                  reviewedFilteredRecords.length < 1 ||
+                  reviewedFilteredRecords.length > 100
+              }}
+              disabled={
+                exportBusy ||
+                collection.loading ||
+                reviewedFilteredRecords.length < 1 ||
+                reviewedFilteredRecords.length > 100
+              }
               onPress={() => void exportFiltered()}
-              style={styles.secondaryButton}
+              style={[
+                styles.secondaryButton,
+                (exportBusy ||
+                  collection.loading ||
+                  reviewedFilteredRecords.length < 1 ||
+                  reviewedFilteredRecords.length > 100) &&
+                  styles.disabled
+              ]}
             >
-              <Text style={styles.secondaryButtonText}>Export filtered CSV</Text>
+              <Text style={styles.secondaryButtonText}>
+                {exportBusy ? "Preparing audited CSV…" : "Prepare audited filtered CSV"}
+              </Text>
             </Pressable>
+            {reviewedFilteredRecords.length > 100 ? (
+              <Text style={styles.errorText}>
+                Narrow the filters to 100 or fewer reviewed revisions. GrowPathAI will not
+                silently export a partial set.
+              </Text>
+            ) : null}
           </View>
         </>
       }
