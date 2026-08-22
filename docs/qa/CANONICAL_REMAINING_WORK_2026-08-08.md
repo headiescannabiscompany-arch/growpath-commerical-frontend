@@ -157,6 +157,13 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       additional user-facing orphan or runtime-gated feature to its owning matrix row, then
       make it reachable and accepted or record an explicit owner rejection. Access-control,
       privacy and safety-hidden data are not buried features and must remain protected.
+- [ ] **Reconcile the legacy V1 feature matrix:** source inspection currently finds 65
+      auto-generated `planned`/`internal` backend rows and one deprecated hidden Personal Logs
+      route (`/home/personal/logs`). These names are not 66 automatically approved products:
+      map each to its current canonical workflow, prove it is a compatibility alias or
+      superseded duplicate, or identify a real missing user action and complete that owning
+      matrix row. Do not blindly implement generated endpoint names and do not silently leave
+      a real requested workflow in `backlog` or `hide`.
 
 - [x] Auto theme no longer requests device location on startup. Production frontend
       `d84b0c80` resolves Auto from saved sunrise/sunset coordinates when the user has
