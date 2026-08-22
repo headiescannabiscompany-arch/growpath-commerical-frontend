@@ -153,7 +153,7 @@ export default function ReceiptExtractionReview({
     if (!/^\d{4}-\d{2}-\d{2}$/.test(occurredAt)) {
       throw new Error("Review and choose the expense date.");
     }
-    if ((taxMinor || 0) > amountMinor) {
+    if (taxMinor !== null && taxMinor > amountMinor) {
       throw new Error("Reviewed tax cannot exceed the full expense amount.");
     }
     const itemLines = draft.itemLines.map((line, index) => {
@@ -190,7 +190,7 @@ export default function ReceiptExtractionReview({
       merchant: draft.merchant.trim(),
       occurredAt,
       amountMinor,
-      taxMinor: taxMinor || 0,
+      taxMinor,
       ...context,
       category: draft.category.trim() || "uncategorized",
       paymentMethod: draft.paymentMethod.trim(),

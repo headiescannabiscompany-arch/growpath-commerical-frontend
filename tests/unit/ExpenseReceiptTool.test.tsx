@@ -277,6 +277,75 @@ describe("ExpenseReceiptTool", () => {
     );
   });
 
+  it("preserves blank manual tax as unknown when saving and reopening", async () => {
+    mockCreate.mockImplementation(async (_workspace, input) => ({
+      _id: "expense-unknown-tax",
+      kind: "expense",
+      title: input.title,
+      status: input.status,
+      version: 1,
+      payload: input.payload
+    }));
+    const screen = render(
+      <ExpenseReceiptTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+    await waitFor(() => expect(mockList).toHaveBeenCalled());
+
+    fireEvent.changeText(screen.getByLabelText("Record title"), "Unknown-tax receipt");
+    fireEvent.press(screen.getByLabelText("Expense date"));
+    fireEvent.changeText(screen.getByLabelText("Currency"), "USD");
+    fireEvent.changeText(screen.getByLabelText("Full amount"), "10.00");
+    fireEvent.press(screen.getByLabelText("Save expense draft"));
+
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(1));
+    expect(mockCreate.mock.calls[0][1].payload.expense.taxMinor).toBeNull();
+    expect(screen.getByLabelText("Tax shown on source").props.value).toBe("");
+  });
+
+  it.each([
+    [null, ""],
+    [0, "0.00"]
+  ])("reloads saved tax %p as %p", async (taxMinor, expectedInput) => {
+    mockList.mockResolvedValue([
+      {
+        _id: `expense-tax-${String(taxMinor)}`,
+        kind: "expense",
+        title: `Saved tax ${String(taxMinor)}`,
+        status: "draft",
+        version: 1,
+        payload: {
+          expense: {
+            occurredAt: "2026-08-22T00:00:00.000Z",
+            amountMinor: 1000,
+            taxMinor,
+            currency: "USD",
+            minorUnitDigits: 2,
+            category: "supplies",
+            itemLines: []
+          }
+        }
+      }
+    ]);
+    const screen = render(
+      <ExpenseReceiptTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+
+    fireEvent.press(
+      await screen.findByLabelText(
+        `Open expense / receipt helper Saved tax ${String(taxMinor)}`
+      )
+    );
+    expect(screen.getByLabelText("Tax shown on source").props.value).toBe(expectedInput);
+  });
+
   it.each([
     ["Review saved expense draft", "reviewed"],
     ["Mark saved expense needs correction", "correction_required"],

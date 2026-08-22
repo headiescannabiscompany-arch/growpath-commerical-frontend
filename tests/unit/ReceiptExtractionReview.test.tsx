@@ -141,6 +141,34 @@ describe("Receipt extraction review", () => {
     );
   });
 
+  it("keeps missing extracted tax unknown unless the reviewer explicitly enters zero", () => {
+    const onApply = jest.fn();
+    const screen = render(
+      <ReceiptExtractionReview
+        result={result({
+          taxMinor: { value: null, confidenceBasisPoints: 0 }
+        })}
+        selectedRecordVersion={4}
+        initialRecordTitle="Tax not shown"
+        applicable
+        applying={false}
+        onApply={onApply}
+      />
+    );
+
+    expect(screen.getByLabelText("Extracted tax shown").props.value).toBe("");
+    fireEvent.press(
+      screen.getByLabelText("Apply reviewed receipt extraction as a new expense revision")
+    );
+    expect(onApply).toHaveBeenLastCalledWith(expect.objectContaining({ taxMinor: null }));
+
+    fireEvent.changeText(screen.getByLabelText("Extracted tax shown"), "0");
+    fireEvent.press(
+      screen.getByLabelText("Apply reviewed receipt extraction as a new expense revision")
+    );
+    expect(onApply).toHaveBeenLastCalledWith(expect.objectContaining({ taxMinor: 0 }));
+  });
+
   it("keeps a missing provider date staged until the reviewer supplies it", () => {
     const onApply = jest.fn();
     const screen = render(

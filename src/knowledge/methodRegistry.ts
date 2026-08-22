@@ -93,6 +93,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "visible deterministic calculations and formulas",
       "single-currency integer-minor-unit calculations with half-away-from-zero line rounding and explicit missing inputs",
       "quote customer total from discounted customer-facing line subtotal plus customer shipping plus explicit operator-entered tax, with internal business and fulfillment costs excluded from customer charges",
+      "Expense and Receipt tax that preserves blank or missing source tax as unknown through manual entry, extraction review, saved revisions, reload, projections, totals, and exports while retaining an explicitly supplied zero",
       "Price and Margin break-even that repeats one explicit positive-quantityMicros sales scenario and reports salesScenarios, total quantityMicros, contributionMinor, and revenueMinor using a BigInt-safe ceiling or an explicit incomplete reason",
       "schema-validated extracted drafts with source provenance",
       "content-digest duplicate review before an extracted record is saved",
@@ -115,6 +116,7 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Never invent costs, taxes, balances, payments, terms, conversations, or future sales.",
+      "Never coerce blank or missing Expense and Receipt tax to zero; zero requires an explicit operator or reviewed-source value.",
       "Never contact, purchase, assign, publish, or write to an external provider without explicit review and confirmation.",
       "B-02 is the only inventory engine; nursery and Facility workflows reference it instead of creating parallel ledgers.",
       "Never let Commercial or Platform Admin identity cross tenant boundaries, let Personal or Facility STAFF, VIEWER, or QA use B-03, or trust a client-supplied role or workspace.",

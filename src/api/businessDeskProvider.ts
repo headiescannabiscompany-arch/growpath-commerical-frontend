@@ -250,7 +250,7 @@ export type ReviewedExpenseExtraction = {
   merchant: string;
   occurredAt: string;
   amountMinor: number;
-  taxMinor: number;
+  taxMinor: number | null;
   currency: string;
   minorUnitDigits: number;
   category: string;

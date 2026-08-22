@@ -184,6 +184,11 @@ Facility, job, project, asset, or B-02 receiving reference. The authorized user 
 field before save. Provide search, totals, date/category filtering, and export. Do not
 determine tax deductibility or replace bookkeeping.
 
+A blank tax field means the source tax is unknown, not zero. Preserve that unknown state
+through manual drafts, extraction review and apply, saved revisions, reload, calculations,
+Business Ask projections, and exports. Store zero only when the operator or reviewed source
+explicitly supplies zero; never infer tax from the total, item lines, category, or locale.
+
 ### 6. Vendor comparison (`vendor-compare`)
 
 Capture vendor, item, quantity, unit price, shipping, fees, discount, explicitly supplied

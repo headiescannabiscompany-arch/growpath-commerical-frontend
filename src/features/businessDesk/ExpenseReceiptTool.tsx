@@ -320,7 +320,7 @@ export default function ExpenseReceiptTool({
       merchant: String(expense.merchant || ""),
       occurredAt: isoToLocalDate(expense.occurredAt),
       amount: rawMajor(expense.amountMinor, digits),
-      tax: rawMajor(expense.taxMinor || 0, digits),
+      tax: rawMajor(expense.taxMinor, digits),
       currency: String(expense.currency || "USD"),
       category: String(expense.category || "uncategorized"),
       paymentMethod: String(expense.paymentMethod || ""),
@@ -381,9 +381,11 @@ export default function ExpenseReceiptTool({
     const context = resolveCurrencyContext(currency);
     const amountMinor = parseMoneyInput(amount, context, { label: "Expense amount" });
     if (amountMinor === null) throw new Error("Enter the expense amount.");
-    const taxMinor =
-      parseMoneyInput(tax, context, { label: "Shown tax", allowBlank: true }) || 0;
-    if (taxMinor > amountMinor) {
+    const taxMinor = parseMoneyInput(tax, context, {
+      label: "Shown tax",
+      allowBlank: true
+    });
+    if (taxMinor !== null && taxMinor > amountMinor) {
       throw new Error("Shown tax cannot exceed the full expense amount.");
     }
     const itemLines = lines.map((line, index) => {
@@ -962,8 +964,8 @@ export default function ExpenseReceiptTool({
             keyboardType="decimal-pad"
             value={tax}
             onChangeText={setTax}
-            placeholder="0.00"
-            hint="Do not estimate tax."
+            placeholder="Leave blank if not shown"
+            hint="Blank means unknown. Enter 0 only when the source explicitly shows zero tax."
           />
           <LabeledInput
             label="Category"
