@@ -36,4 +36,21 @@ describe("SubscribeScreen pricing", () => {
     expect(screen.getByText("Growers Forum/Q&A access")).toBeTruthy();
     expect(screen.queryByText("Growers Forum access and community")).toBeNull();
   });
+
+  it("keeps trialing IAP access out of every purchase path", async () => {
+    getSubscription.mockResolvedValueOnce({
+      status: "trialing",
+      plan: "pro",
+      source: "iap",
+      managementUrl: "https://apps.apple.com/account/subscriptions"
+    });
+    const screen = render(<SubscribeScreen navigation={{ navigate: jest.fn() }} />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Subscription confirmed by backend")).toBeTruthy()
+    );
+    expect(screen.queryByText("Unlock Premium")).toBeNull();
+    expect(screen.queryByText("View Plans & Pricing")).toBeNull();
+    expect(screen.getByText("Open Provider Subscription Management")).toBeTruthy();
+  });
 });

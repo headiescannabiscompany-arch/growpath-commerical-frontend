@@ -1,6 +1,10 @@
 import { describe, expect, it } from "@jest/globals";
 import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import {
+  BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES,
+  BUSINESS_DESK_PROVIDER_ROUTE_SUFFIXES
+} from "../../src/navigation/businessDeskRoutes";
+import {
   canAccessRoute,
   getHomeForUser,
   getRoutePolicy,
@@ -17,7 +21,8 @@ const facility = (capabilities: Record<string, boolean>) => ({
   ready: true,
   mode: "facility" as const,
   capabilities,
-  selectedFacilityId: "facility-1"
+  selectedFacilityId: "facility-1",
+  facilityRole: "OWNER"
 });
 
 const personal = (capabilities: Record<string, boolean> = {}) => ({
@@ -60,6 +65,15 @@ const COMMERCIAL_ONLY_ROUTES = [
   "/home/commercial/inventory/item-1",
   "/home/commercial/inventory-create",
   "/home/commercial/inventory-item/item-1",
+  "/home/commercial/business-desk",
+  "/home/commercial/business-desk/price-margin",
+  "/home/commercial/business-desk/quotes",
+  "/home/commercial/business-desk/leads",
+  "/home/commercial/business-desk/jobs",
+  "/home/commercial/business-desk/expenses",
+  "/home/commercial/business-desk/vendors",
+  "/home/commercial/business-desk/cash-flow",
+  "/home/commercial/business-desk/ask-ai",
   "/alerts",
   "/tasks",
   "/storefront",
@@ -123,6 +137,19 @@ describe("route access policy", () => {
     expect(canAccessRoute("/home/facility/select", unselectedFacility)).toBe(true);
     expect(canAccessRoute("/home/facility/dashboard", unselectedFacility)).toBe(false);
     expect(canAccessRoute("/home/facility/feed", unselectedFacility)).toBe(false);
+    expect(
+      canAccessRoute("/home/facility/business-desk", {
+        ...unselectedFacility,
+        selectedFacilityId: "   "
+      })
+    ).toBe(false);
+    expect(
+      getHomeForUser({
+        ready: true,
+        mode: "facility",
+        selectedFacilityId: "bad\u0000facility"
+      })
+    ).toBe("/home/facility/select");
     expect(canAccessRoute("/home/facility/dashboard", facility({}))).toBe(true);
     expect(canAccessRoute("/home/facility/feed", facility({}))).toBe(true);
   });
@@ -150,14 +177,121 @@ describe("route access policy", () => {
 
   it("blocks direct entry when the required capability is absent", () => {
     expect(canAccessRoute("/storefront", commercial({}))).toBe(false);
+    expect(canAccessRoute("/home/commercial/business-desk", commercial({}))).toBe(false);
+    expect(canAccessRoute("/home/facility/business-desk", facility({}))).toBe(false);
   });
 
-  it("allows direct entry when mode and capability match", () => {
+  it("allows all seven registered tools for an eligible Commercial workspace", () => {
     expect(
       canAccessRoute(
         "/storefront",
         commercial({ [CAPABILITY_KEYS.STORE_FRONT_VIEW]: true })
       )
+    ).toBe(true);
+    expect(
+      canAccessRoute(
+        "/home/commercial/business-desk/price-margin",
+        commercial({ [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true })
+      )
+    ).toBe(true);
+    for (const suffix of BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES) {
+      expect(
+        canAccessRoute(
+          `/home/commercial/business-desk/${suffix}`,
+          commercial({ [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true })
+        )
+      ).toBe(true);
+    }
+  });
+
+  it("allows all seven registered Facility tools only to OWNER and MANAGER", () => {
+    for (const role of ["OWNER", "MANAGER"]) {
+      for (const suffix of BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES) {
+        expect(
+          canAccessRoute(`/home/facility/business-desk/${suffix}`, {
+            ...facility({ [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true }),
+            facilityRole: role
+          })
+        ).toBe(true);
+      }
+    }
+
+    for (const role of ["STAFF", "VIEWER", "QA", null]) {
+      expect(
+        canAccessRoute("/home/facility/business-desk/price-margin", {
+          ...facility({ [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true }),
+          facilityRole: role
+        })
+      ).toBe(false);
+    }
+  });
+
+  it("denies Personal mode and unregistered Desk paths even with stale capability bits", () => {
+    const staleCapability = { [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true };
+
+    expect(
+      canAccessRoute(
+        "/home/commercial/business-desk/price-margin",
+        personal(staleCapability)
+      )
+    ).toBe(false);
+    expect(
+      canAccessRoute(
+        "/home/facility/business-desk/price-margin",
+        personal(staleCapability)
+      )
+    ).toBe(false);
+
+    for (const path of [
+      "/home/commercial/business-desk/not-a-tool",
+      "/home/facility/business-desk/not-a-tool",
+      "/home/commercial/business-desk/quotes/nested",
+      "/home/facility/business-desk/quotes/nested"
+    ]) {
+      const snapshot = path.includes("/facility/")
+        ? facility(staleCapability)
+        : commercial(staleCapability);
+      expect(getRoutePolicy(path)).toMatchObject({ denied: true });
+      expect(canAccessRoute(path, snapshot)).toBe(false);
+    }
+  });
+
+  it("guards registered provider routes with the same workspace and Facility role rules", () => {
+    const capability = { [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true };
+    for (const suffix of BUSINESS_DESK_PROVIDER_ROUTE_SUFFIXES) {
+      expect(
+        canAccessRoute(`/home/commercial/business-desk/${suffix}`, commercial(capability))
+      ).toBe(true);
+      expect(
+        canAccessRoute(`/home/facility/business-desk/${suffix}`, {
+          ...facility(capability),
+          facilityRole: "MANAGER"
+        })
+      ).toBe(true);
+      expect(
+        canAccessRoute(`/home/facility/business-desk/${suffix}`, {
+          ...facility(capability),
+          facilityRole: "STAFF"
+        })
+      ).toBe(false);
+      expect(
+        canAccessRoute(`/home/commercial/business-desk/${suffix}`, personal(capability))
+      ).toBe(false);
+    }
+  });
+
+  it("accepts a harmless trailing slash on each registered Desk route", () => {
+    expect(
+      canAccessRoute(
+        "/home/commercial/business-desk/quotes/",
+        commercial({ [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true })
+      )
+    ).toBe(true);
+    expect(
+      canAccessRoute("/home/facility/business-desk/vendors/", {
+        ...facility({ [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true }),
+        facilityRole: "MANAGER"
+      })
     ).toBe(true);
   });
 

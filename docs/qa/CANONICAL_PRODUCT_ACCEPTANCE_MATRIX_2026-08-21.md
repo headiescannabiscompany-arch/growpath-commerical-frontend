@@ -39,6 +39,8 @@ close a populated or mutating story.
 ## Document ownership
 
 - This matrix owns product stories, status and execution order.
+- `CANONICAL_CONSTRUCTION_SCAFFOLD_2026-08-22.md` is the derived build-packet and
+  dependency view. It cannot add, reorder, reopen or close a matrix row.
 - `CANONICAL_USER_STORY_ACCEPTANCE_2026-08-21.md` defines the acceptance scenarios for
   each matrix ID; it contains no independent status or execution order.
 - `CANONICAL_REMAINING_WORK_2026-08-08.md` is the detailed evidence and remainder ledger.
@@ -63,20 +65,21 @@ completed architecture only for a reproduced regression, a missing matrix requir
 an integration break caused by a later batch.
 
 [x] Plant ID standalone/grow/Nature recovery is reconciled on frontend `main` through
-    `fa2e3f7c` / `4f64f910`; the older retained branch adds no missing product behavior.
+`fa2e3f7c` / `4f64f910`; the older retained branch adds no missing product behavior.
 [x] Device-integration frontend/backend repairs and atomic Facility ownership transfer are
-    integrated through frontend `21387a82` and backend `c7b7674`.
+integrated through frontend `21387a82` and backend `c7b7674`.
 [x] Hosted-Live lifecycle and durable replay expiry are integrated through frontend
-    `21387a82` and backend `c7b7674`, preserving the accepted OBS/chat/overlay/player design.
+`21387a82` and backend `c7b7674`, preserving the accepted OBS/chat/overlay/player design.
 [x] Commercial grow/tool parity and Nature publication/privacy are reconciled on current
-    main through backend `d9adff2` and `504ba78` plus their current frontend surfaces.
+main through backend `d9adff2` and `504ba78` plus their current frontend surfaces.
 [~] Unified reporting and the Admin control center are deployed as frontend `00f36429` and
-    backend `ed85270`; signed-in Admin production acceptance remains open and must not cause
-    a rewrite.
+backend `ed85270`; signed-in Admin production acceptance remains open and must not cause
+a rewrite.
 [ ] Reconcile every remaining `partial` or `open` row against merged code and retained
-   evidence, then implement only its exact missing acceptance behavior.
+evidence, then implement only its exact missing acceptance behavior.
 [ ] Freeze candidate SHAs, run the final cross-role and professional presentation crawl,
-   pause for independent review, then complete hats and app-store releases in that order.
+pause for independent review, then stop at the owner-directed GrowPathAI-only hat gate;
+app-store releases remain last.
 
 Clean worktrees only after their retained commit is integrated or deliberately rejected and
 the worktree is clean. Branch deletion is separate from routine disk cleanup.
@@ -159,41 +162,87 @@ Every applicable story must preserve these invariants without repeating them in 
 See `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md` for the complete tool
 inventory, safety boundaries and mandatory production scenarios.
 
-| ID   | User story                                                                                                    | Status                                 |
-| ---- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | defined; not started                   |
-| B-02 | Core inventory and lot history with reviewed alerts, imports/exports and no automatic ordering                | partial; business acceptance open      |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | defined; not started                   |
-| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | partial; business acceptance open      |
-| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | partial; business acceptance open      |
-| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open          |
-| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | defined; cross-cutting acceptance open |
-| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | defined; final acceptance open         |
+| ID   | User story                                                                                                    | Status                                                                                      |
+| ---- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | partially implemented/evidenced through B-02/B-03; dedicated acceptance and live gates open |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | implemented; local acceptance passed; deployment/live acceptance open                       |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | implemented; local acceptance passed; deployment/live acceptance open                       |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | defined; not started                                                                        |
+| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | partial; business acceptance open                                                           |
+| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | partial; business acceptance open                                                           |
+| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open                                                               |
+| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | defined; cross-cutting acceptance open                                                      |
+| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | defined; final acceptance open                                                              |
 
-Full regulator/POS adapters, serialized recall workflows, forecasting, CRM/ERP/accounting,
+Full regulator/POS adapters, serialized recall workflows, advanced forecasting, full CRM/ERP/accounting,
 dynamic pricing, marketplace/payout/tax tooling, and cross-platform creator analytics are
 **removed from the active roadmap**. They are not completion blockers; the detailed
 reconsideration rule is owned by `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md`.
 
+B-02 local construction and verification evidence is retained in
+`B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. It does not close the guarded
+production migration, deployment or live multi-role workflow gate.
+
+B-01 is no longer unstarted. The locally accepted B-02 ledger (frontend `1d283450`,
+backend `f00d674`) implements authenticated Commercial/Facility workspace scope, role and
+field permissions, stable records, reviewed import provenance, idempotent writes and
+workspace-scoped audit/export. The active B-03 foundation (frontend authorization
+foundation `0539d29a`; backend record/workspace foundation `a364e7e` and durable
+provider/credit foundation `2d7a583`) adds own-workspace/selected-Facility authorization,
+solo calculators without fabricated Facility/location/approval records, stable
+revision/review controls, protected-source provenance, correct AI-credit ownership and
+audited/idempotent actions. This is partial implementation and feature-specific local
+evidence, not dedicated B-01 acceptance. A frozen B-01 evidence packet, combined
+two-organization/two-Facility multi-role acceptance, the B-02 production migration,
+exact-SHA deployment, and live isolation/reload/import/approval/credit/audit scenarios
+remain open.
+
+B-03 is no longer an unstarted row. Frontend `85253d5e` retains the reviewed Business Ask
+provider/evidence/citation/KPI/draft workflow, frontend `dc97e836` retains the explicit IANA
+cash-flow contract, and backend `2d7a583` retains durable provider operations, exact source
+binding, credit settlement, protected receipt loading, fail-closed scanner health,
+privacy/deletion and legal-hold serialization. These commits are retained inputs, not a
+reason to rebuild their engines; the later acceptance paragraph records their completed local
+integration and exact remaining live gates.
+Backend draft PR `headiescannabiscompany-arch/growpath-commerical#206` pins provider/security
+candidate `2d7a583`; its 2026-08-22 Actions attempt ran zero steps because GitHub reported a
+failed account payment or insufficient Actions spending limit. That is an external CI runner
+block, not passing or failing code evidence. The later focused local acceptance supersedes
+that missing runner evidence for construction, but required release CI must still run once on
+the final integrated candidate after billing/minutes are restored.
+
+B-03 local construction acceptance is now closed. Frontend `181ea060` and backend
+`9166c66` pass the combined own-Commercial/Admin-Commercial/two-Facility role, isolation,
+scope-change, credit/refund/retry, prompt-injection, protected-field and no-external-action
+packet. Explicit-currency and unknown-tax packets retain separate currency and preserve blank
+tax as unknown rather than zero. Subscription ownership corrections frontend `862ae85b` and
+backend `dcc0209c` prevent duplicate purchase actions, source-mismatched cancellation and
+cross-Facility entitlement leakage before live money testing. Focused evidence includes 5
+frontend plus 3 backend combined-acceptance tests, 58 explicit-currency tests, 18 frontend plus
+91 backend unknown-tax tests, and 67 frontend plus 127 backend subscription-safety tests;
+TypeScript/lint/format/source checks passed where applicable. Exact-SHA deployment, real
+provider operations, production reload/isolation/credit/audit, and role-specific live mutation
+remain open and are the only B-03 completion gates; do not rebuild the eight tools.
+
 ## Nature, Admin and release
 
-| ID   | User story                                                                                                            | Status        |
-| ---- | --------------------------------------------------------------------------------------------------------------------- | ------------- |
-| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state         | partial       |
-| N-02 | Discover shows a compact Nature preview even with zero public pins                                                    | live accepted |
-| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                              | implemented   |
-| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location | implemented   |
-| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links    | partial       |
-| A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                          | partial       |
-| A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                     | partial       |
-| A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                    | partial       |
-| A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated    | partial       |
-| R-01 | Subscriptions, paid courses/products, returns/webhooks/receipts and management work where authorized                  | open          |
-| R-02 | Email/device notifications respect preferences and deliver supported events                                           | partial       |
-| R-03 | Final production route/action and visual/accessibility/device crawl passes on frozen SHAs                             | open          |
-| R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                            | open          |
-| R-05 | Hat designs/specifications/rights/BLVNK approval and non-sale trials complete                                         | open          |
-| R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                      | open          |
+| ID   | User story                                                                                                             | Status          |
+| ---- | ---------------------------------------------------------------------------------------------------------------------- | --------------- |
+| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | partial         |
+| N-02 | Discover shows a compact Nature preview even with zero public pins                                                     | live accepted   |
+| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented     |
+| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented     |
+| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | partial         |
+| A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                           | partial         |
+| A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                      | partial         |
+| A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                     | partial         |
+| A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated     | partial         |
+| R-01 | Subscriptions (including gifts), paid courses/products, returns/webhooks/receipts and management work where authorized | open            |
+| R-02 | Email/device notifications respect preferences and deliver supported events                                            | partial         |
+| R-03 | Initial crawl, proof-based dead-code cleanup, and final full acceptance pass on new frozen SHAs                        | open            |
+| R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                             | open            |
+| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate |
+| R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                       | open            |
 
 ## Frozen Plant ID stories
 
@@ -204,6 +253,82 @@ reconsideration rule is owned by `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21
 Declining either branch leaves the standalone Plant ID intact. Same-day proximity is not
 location evidence. The separate house crape myrtle and all potted-house records, including
 Dipladenia/Mandevilla, are excluded from the Cary/Maydale publication batch.
+
+## Reconciled evidence and no-rebuild boundaries
+
+These row annotations name what is retained and the one exact gate that remains. They do
+not change the statuses above, treat an unrun production action as complete, or create a
+second queue. `Production mutation`, `production read-only`, `final-candidate crawl`, and
+`optional owner recovery` are action types, not completion states.
+
+- **P-03 — retained evidence:** frontend `4829d2ff`, backend `1144dadc`, and ToolRun
+  `6a77f67895931a1ea2ab10d9` already prove multi-photo/private-video analysis, server-frame
+  extraction, an uncertain saved result, exact-evidence reload, correction provenance, and
+  no-grow operation. **Remaining gate:** on the frozen candidate, complete one authorized
+  ordinary upload/analyze/save/reload plus back/error/retry path and prove that no Grow,
+  Field Study, or public pin is created. **Next action:** production mutation. **Do not
+  rebuild:** upload transport, frame extraction, evidence receipts, Saved Runs, or correction.
+- **P-04 — retained evidence:** frontend `dbedf296` and Render deploy
+  `dep-d9vrbmh42hec739hkcug` prove the reviewed-draft safety boundary; the crop-aware Tomato
+  and unmatched-crop setup paths are also live. **Remaining gate:** use an eligible confirmed
+  Plant ID to inspect its prefilled source/provenance/lifecycle fields, cancel once with no
+  creation, then save, reload, and archive one disposable Grow. **Next action:** production
+  mutation and cleanup. **Do not rebuild:** the crop registry, manual crop setup, draft
+  navigation, or lifecycle model.
+- **P-05 — retained evidence:** the separate Nature draft, required photo, date, description,
+  and private-source-location inputs, explicit approximate-pin consent, sensitive-species and
+  cannabis boundaries, and withdrawal path are implemented; production already proves the
+  disabled-until-complete state and the honest empty globe. **Remaining gate:** publish one
+  non-sensitive ordinary observation, reload its Saved Run and public photo/card/pin, then
+  withdraw it and verify disappearance after reload. **Next action:** production mutation,
+  public read, withdrawal, and cleanup. **Do not rebuild:** direct publication, approximate
+  projection, withdrawal, or the optional Field Study boundary.
+- **P-06 — retained evidence:** Grow creation and Nature publication are separate, proximity
+  inference is forbidden, and the house crape myrtle plus every potted-house record remain
+  excluded. **Remaining gate:** before and after the P-05 publication, prove that only the
+  explicitly selected observation becomes public and that Grow save, house records, and
+  nearby/same-date records remain private. **Next action:** production privacy assertion
+  coupled to P-05. **Do not rebuild:** private-by-default storage or the no-inference rules.
+- **P-10 — retained evidence:** frontend `e699e5fe` and the current populated 60-event Grow
+  prove the visual timeline, Lifecycle/Month/Week/Day views, source links, and export/share
+  entry points. **Remaining gate:** persist an export and exercise share review/cancel,
+  publish a revocable privacy-safe viewer link, open it as a viewer, withdraw it, and reload
+  every state. **Next action:** production mutation, public/private read, and cleanup. **Do
+  not rebuild:** event aggregation, visual/zoom controls, source links, or existing export
+  and share entry points.
+- **N-01 — retained evidence:** the production globe, controls, search/review filters, broad
+  fallback viewport, compact/public entry points, and honest zero-pin list are accepted.
+  **Remaining gate:** reuse the P-05 observation to verify the populated map and list,
+  photo/date/description/identity card, search/filter, public viewport, and applicable
+  responsive/accessibility states; test clustering only with legitimate density, never
+  fabricated records. **Next action:** populated production read plus final-candidate crawl.
+  **Do not rebuild:** the globe, map/list runtime, filters, or zero-pin state.
+- **N-02 — retained evidence:** the current candidate renders the compact Discover Nature
+  globe with zero pins and opens the canonical Nature experience. **Remaining gate:** none;
+  its status stays `live accepted`, with only ordinary final-crawl regression coverage.
+  **Next action:** final-candidate regression check. **Do not rebuild:** the preview or its
+  canonical link; the older duplicate-preview removal is superseded history.
+- **N-03 — retained evidence:** exact/private projection, selected public precision,
+  sensitive-species handling, cannabis interest/consent, and identity-redaction rules are
+  implemented and their pre-publish boundary is live. **Remaining gate:** during P-05 prove
+  the exact source point never appears in the public response/card/viewport, the selected
+  approximation is honored, and the relevant consent/visibility views do not expose private
+  cannabis data. **Next action:** production privacy/security acceptance. **Do not rebuild:**
+  the projection or visibility policy.
+- **N-04 — retained evidence:** current production has not guessed, merged, or published the
+  legacy Cary, Maydale, house, duplicate, or unresolved records. **Remaining gate:** a
+  final-candidate read-only privacy regression; individual legacy recovery is an optional,
+  owner-triggered action and does not block P-03 through P-06 or future Nature pins. If used,
+  each result requires a newest defensible nonduplicate identity and a known place. **Next
+  action:** final-candidate read-only check or optional owner recovery. **Do not rebuild:**
+  legacy selection, deduplication, uncertainty, or no-location-inference rules.
+- **S-05 — retained evidence:** reusable private RTMPS, OBS ingest, signed playback and
+  viewer volume, GrowPath chat/overlay, stop, recording-ready replay, retention, and key
+  rotation have production evidence and remain accepted. **Remaining gate:** one bounded
+  two-account concurrent run proving inputs, keys, chat, playback, stop/replay, limits, and
+  cleanup never cross accounts, followed by the final role/load isolation check. **Next
+  action:** production concurrency/security acceptance. **Do not rebuild or replace:** the
+  Cloudflare/OBS channel, player, chat overlay, lifecycle, stop, or replay architecture.
 
 ## Immediate execution order
 
@@ -220,8 +345,17 @@ Dipladenia/Mandevilla, are excluded from the Cary/Maydale publication batch.
    B-01 through B-09 for existing GrowPath workflows. Do not reintroduce the removed POS,
    regulator, serialized-recall, forecasting, CRM/ERP/accounting, dynamic-pricing,
    marketplace/payout/tax, or cross-platform analytics projects.
-5. Implement the remaining in-scope functional gaps, then run one final frozen-SHA
-   professional route/action, visual, accessibility, responsive-device and recovery crawl.
-6. Isolate and deliberately accept or reject independent reviewer suggestions.
-7. Pause for owner review, then complete hats.
-8. Complete App Store and Play Store work last.
+5. Implement and accept every remaining in-scope functional gap. A started item may remain
+   open only with its exact dependency, blocker, retained evidence and next action recorded;
+   an unfinished implementation is never silently abandoned or treated as complete.
+6. Run an initial frozen-SHA professional crawl, classify every defect and cleanup candidate,
+   then remove only code proven unreachable, superseded or duplicate. Name the superseding
+   path; check routes, imports, deep links, providers, workers, webhooks, migrations, fixtures
+   and production-data compatibility; use small reversible commits and preserve evidence.
+7. Freeze the resulting frontend/backend SHAs and rerun affected gates plus the complete
+   route/action, role, security, visual, accessibility, responsive-device and recovery crawl.
+   Only this post-cleanup pass is final release evidence.
+8. Isolate and deliberately accept or reject independent reviewer suggestions.
+9. Pause for owner review and stop before hats; resume with the owner and complete only
+   the GrowPathAI collection.
+10. Complete App Store and Play Store work last.

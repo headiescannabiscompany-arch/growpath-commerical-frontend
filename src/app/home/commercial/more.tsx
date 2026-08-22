@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -93,6 +94,12 @@ const workspaceGroups: Array<{
         href: "/home/commercial/analytics",
         description:
           "Review event-backed storefront, campaign, course, live, and order activity."
+      },
+      {
+        label: "Business Desk",
+        href: "/home/commercial/business-desk",
+        description:
+          "Price, quote, follow up, capture expenses, compare vendors, and review cash-flow work."
       }
     ]
   },
@@ -167,6 +174,7 @@ function WorkspaceLink({ description, href, label }: WorkspaceDestination) {
 
 export default function CommercialMoreRoute() {
   const { palette } = useAppTheme();
+  const entitlements = useEntitlements();
   const styles = useMemo(() => createCommercialMoreStyles(palette), [palette]);
 
   return (
@@ -191,9 +199,15 @@ export default function CommercialMoreRoute() {
             {group.title}
           </Text>
           <View style={styles.destinationGrid}>
-            {group.destinations.map((destination) => (
-              <WorkspaceLink key={destination.href} {...destination} />
-            ))}
+            {group.destinations
+              .filter(
+                (destination) =>
+                  destination.label !== "Business Desk" ||
+                  entitlements.can(CAPABILITY_KEYS.BUSINESS_DESK_READ)
+              )
+              .map((destination) => (
+                <WorkspaceLink key={destination.href} {...destination} />
+              ))}
           </View>
         </AppCard>
       ))}

@@ -9,6 +9,7 @@ import { useModeSwitcher } from "@/features/mode/useModeSwitcher";
 import { availableWorkspaceModes } from "@/features/mode/workspaceOptions";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
+import { resolveSubscriptionSafety } from "@/features/billing/subscriptionSafety";
 
 type Props = {
   showFacility?: boolean;
@@ -48,6 +49,10 @@ export function ModeSwitcher({
   const commercialAccess = availableModes.includes("commercial");
   const facilityAccess = availableModes.includes("facility");
   const isPlatformAdmin = String(auth.user?.role || "").toLowerCase() === "admin";
+  const subscriptionAccess = resolveSubscriptionSafety(auth.user, {
+    effectivePlan: entitlements.plan,
+    hasPaidCapability: commercialAccess || facilityAccess
+  });
 
   const cards: WorkspaceCard[] = [
     showSingle
@@ -68,9 +73,13 @@ export function ModeSwitcher({
             : "Create Commercial Account",
           description:
             "Storefront, products, courses, lives, Feed/Campaigns, orders, analytics, and Stripe.",
-          actionLabel: commercialAccess ? "Open Commercial" : "Start Commercial",
+          actionLabel: commercialAccess
+            ? "Open Commercial"
+            : subscriptionAccess.active
+              ? "Review Commercial access"
+              : "Start Commercial",
           access: commercialAccess,
-          createHref: "/offers"
+          createHref: subscriptionAccess.active ? "/account/billing" : "/offers"
         }
       : null,
     showFacility
@@ -79,9 +88,13 @@ export function ModeSwitcher({
           title: facilityAccess ? "Manage Facility" : "Create Facility Account",
           description:
             "Rooms, operational runs, tasks, staff, compliance, inventory, sensors, and audit logs.",
-          actionLabel: facilityAccess ? "Open Facility" : "Start Facility",
+          actionLabel: facilityAccess
+            ? "Open Facility"
+            : subscriptionAccess.active
+              ? "Review Facility access"
+              : "Start Facility",
           access: facilityAccess,
-          createHref: "/offers"
+          createHref: subscriptionAccess.active ? "/account/billing" : "/offers"
         }
       : null
   ].filter((card): card is WorkspaceCard =>

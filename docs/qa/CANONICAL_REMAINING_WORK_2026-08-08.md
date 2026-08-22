@@ -36,13 +36,19 @@ starts or finishes; do not create another active todo document.
    and mutation slices, including P-10 persisted export and share review/cancel/publish/
    withdrawal. Do not reopen retained Hosted Live/OBS, crop-to-grow, Plant ID transport, or
    another checked implementation unless a current regression is reproduced.
-3. **Release crawl:** after the in-scope product/workflow items are closed, run the complete
+3. **Release crawl and cleanup:** after the in-scope product/workflow items are closed, run the complete
    live route, button, responsive, theme, accessibility, persistence, security, and visual
    presentation crawl and repair the defects it finds. Include a route-to-visible-entry
    matrix for every user-facing feature so a working subsystem cannot remain buried like
    Hosted Lives was: record its intended workspace/role, visible entry, canonical URL,
    Back path, empty and populated states, and whether it is intentionally internal or a
    legacy redirect. Route inventory and zero API orphans alone do not close this check.
+   Use that crawl to classify cleanup candidates, then remove only code proven unreachable,
+   superseded or duplicate after checking routes, imports, deep links, providers, workers,
+   webhooks, migrations, fixtures and production-data compatibility. Name the superseding
+   path and preserve evidence in small reversible commits. Freeze new frontend/backend SHAs,
+   rerun every affected gate and the full crawl, and treat only that post-cleanup pass as
+   final release evidence.
 4. **External review:** run the defined Roberto review gate after the final crawl and
    reconcile each accepted change through normal review/live evidence.
 5. **Merchandise:** hats remain second-to-last, after the product and final-crawl work.
@@ -52,6 +58,8 @@ Document roles are fixed:
 
 - `CANONICAL_PRODUCT_ACCEPTANCE_MATRIX_2026-08-21.md` is the **only product contract and
   execution order**;
+- `CANONICAL_CONSTRUCTION_SCAFFOLD_2026-08-22.md` is the **derived construction-packet
+  map** for implementing matrix rows; it cannot add, reorder, reopen or close them;
 - this file is the **detailed evidence and remainder ledger** for those matrix rows;
 - `USER_REQUEST_LEDGER_2026-08-13.md` is the **request/completion history**;
 - `GROWPATHAI_FULL_SYSTEM_TODO.md` and the numbered connected-workflows todo are
@@ -82,6 +90,11 @@ crawl.
   independent-user acceptance.
 - Do not fabricate owner input, credentials, real-world outcomes, provider
   failures, payment events, screenshots, or populated production records.
+- Finish every started item through its packet acceptance gate. If a real dependency blocks
+  it, record the exact blocker, retained implementation/evidence and next action; do not leave
+  anonymous partial code or reopen accepted work merely because its history is unfamiliar.
+- Do not delete code because its name looks old or unused. Prove it unreachable, superseded
+  or duplicate and assess production data/schema compatibility before removal.
 - Commit and push each coherent tested section. Record deployment and live evidence
   separately.
 - Use one-way completion: reopen a decision only for a reproduced regression, missing
@@ -96,6 +109,134 @@ crawl.
   alone is not consent to inspect unrelated private media.
 
 ## Verified closures retained by this audit
+
+## Runtime-gated and buried-feature audit
+
+This is the canonical disclosure of implemented or partially implemented work that can be
+absent from ordinary navigation or disabled by runtime/provider configuration. It is not a
+permission to leave owner-requested work unfinished. Each launch feature must be enabled and
+accepted, or retain its exact blocker and next action in its owning matrix row.
+
+- [ ] **R-01 gift subscriptions:** substantial checkout, recovery, purchaser history,
+      recipient claim, entitlement, refund/dispute and worker code exists, but production
+      checkout is gated by `GIFT_SUBSCRIPTION_ENABLED`, refund-worker readiness, email,
+      Stripe/webhook capability, secrets and index readiness. Complete and live-accept the
+      entire lifecycle, then enable it; do not leave it as a dormant foundation.
+- [~] **R-01 account and Facility billing:** Stripe checkout/webhooks exist and cancellation
+  retains paid-through access, but the active safety correction must prove source-aware
+  cancellation, duplicate prevention and exact-Facility entitlement across multiple
+  Facilities before live acceptance. Apple IAP is a separate provider path and must not
+  be presented as configured until production verification is accepted.
+- [~] **B-03 provider-backed Business Desk actions:** deterministic tools and reviewed record
+  workflows exist. Receipt extraction, Business Ask, provider operations, workspace export
+  and Quote payment-provider handoff have independent configuration/confirmation gates.
+  Finish the canonical eight-tool acceptance and enable only the operations whose provider,
+  malware/privacy, idempotency, audit and confirmation gates pass; show any unavailable
+  operation visibly instead of hiding the tool.
+- [~] **S-05 hosted Lives/OBS:** the retained hosted-live architecture and production evidence
+  are accepted and must not be rebuilt. `EXPO_PUBLIC_USE_LIVE_BACKEND` and Cloudflare
+  provider readiness can bury the entry; the final route-to-entry and two-account
+  concurrency regression must prove it remains visible, configured and isolated.
+- [~] **S-02/S-03 video uploads:** production upload depends on configured R2/object storage.
+  Verify the visible upload/library/following/comment/premiere paths and configured storage
+  in the final candidate; a local route without production storage is not completion.
+- [~] **C-04/S-06 Twitch connection:** draft-safe OAuth UI and backend callback routes exist,
+  but credentials are optional and may be unconfigured. Decide from the canonical sharing
+  contract whether Twitch connection is a launch integration, then either configure and
+  live-accept it or label it visibly as an optional unavailable provider; do not imply a
+  connected channel.
+- [~] **P-07 protected evidence storage:** evidence routes contain a fail-closed provider gate.
+  Prove originals/derived views, authorized access, retention/export and production storage
+  configuration for each launch AI-media workflow.
+- [~] **A-03 Sentry investigation:** Sentry issue reading is implemented but requires Admin
+  provider access. Configure and live-accept the Admin tally/detail/deep-link workflow or
+  retain the exact credential dependency without claiming that Sentry is visible in Admin.
+- [~] **P-07/P-08/P-09 AI-provider and media-processing readiness:** the core Diagnosis,
+  Harvest, Plant ID, form-assistant, Forum-assistant and protected-video paths contain real
+  provider integrations, but several deliberately fail closed or fall back to deterministic
+  guidance when OpenAI credentials/model selection, FFmpeg, protected source storage or
+  generated-frame leases are unavailable. The final candidate must expose the degraded state,
+  prove that unavailable providers do not consume credits or invent evidence, and live-accept
+  the configured launch models plus photo/video extraction. This is configuration acceptance,
+  not permission to replace the already implemented tools.
+- [~] **R-02 notification delivery:** in-app notification records and preferences exist, while
+  email delivery depends on the reviewed email provider/from-address and asynchronous delivery
+  depends on the notification worker. Prove supported events from creation through preference,
+  delivery/failure, Admin visibility and retry; do not count an in-app record as proof that an
+  email or device notification was delivered.
+- [~] **F-06 device-provider adapters and provider catalog:** the provider catalog contains
+  implemented read-only adapters for Pulse, UbiBot and ZENTRA, an access-required Growlink
+  adapter, customer-key TrolMaster setup, and additional contract-pending/access-required/
+  gateway/file-import candidates (SensorPush, Aranet, HOBOlink, Monnit, Tempest, WeatherLink,
+  Ecowitt, Rachio, Shelly, Particle, Home Assistant, Bluelab, OpenSprinkler and Agrowtek).
+  The UI must not present a catalog entry as connected merely because it is listed. For every
+  launch provider, prove credential storage, discovery, reviewed space mapping, bounded history
+  import, partial-failure receipts, disconnect/deletion and no equipment control; visibly label
+  all other entries by their exact access/contract status.
+- [~] **B-03 protected business-document runtime:** receipt/document extraction and Business
+  Desk attachments have implemented coordination, retention and fail-closed policy, but launch
+  use additionally depends on protected object bytes, malware-scanner health/attestation, PDF
+  parser workers and reviewed AI-provider configuration. Storefront PDF catalog extraction is
+  a separate AI-backed importer with the same truthful availability requirement. Live-accept
+  clean/infected/unavailable/parser-failure/expiry paths before advertising automated import.
+- [~] **B-07/C-04 creator and marketplace payment rails:** Stripe Connect onboarding,
+  signatures, payouts, marketplace/course checkout and webhook code exists behind provider,
+  account-state and capability gates. Reconcile it with the lawful-commerce policy and B-02
+  inventory ownership, then live-accept only the exact non-regulated or specifically authorized
+  routes. Never infer that a visible storefront, payout screen or Connect route means money can
+  legally move in production.
+- [~] **S-04/S-05 Live lifecycle and announcements:** hosted streaming is separately dependent
+  on the Cloudflare provider, lifecycle/limit worker, signed playback and recording retention.
+  Discord announcements are an optional connected publication target with per-event enablement,
+  not the Live host and not a substitute for in-app chat. Prove start/stop/replay/expiry,
+  concurrency and delivery/failure receipts for every launch target.
+- [~] **A-02/A-04 destructive Admin operations:** synthetic-account anonymization is present
+  but intentionally disabled until the exact production allowlist is configured. Keep it
+  unavailable until scoped target preview, typed confirmation, preservation/legal conflicts,
+  immutable audit and recovery limits are accepted. Law-enforcement disclosure remains a
+  reviewed legal workflow, never a one-click automatic report or data handoff.
+- [~] **A-03/R-06 client crash capture:** Admin Sentry issue reading and native/web crash
+  emission are separate integrations. The release candidate still needs protected
+  `EXPO_PUBLIC_SENTRY_DSN`/release configuration and a redacted test event proven in the
+  correct project/environment; configuring Admin read access alone does not enable client
+  crash capture.
+- [~] **F-03 compliance sync workers:** METRC retry/sync code is runtime-disabled without a
+  reviewed interval and provider credentials. Treat this as regulated integration work: prove
+  jurisdiction/account authorization, read/write scope, retry/idempotency, reconciliation and
+  audit before enabling it; otherwise label it unavailable rather than implying compliance.
+- [ ] **Two explicitly disabled Facility calculator cards:** generated tool-surface inventory
+      still reports `Compute VPD` (`climate-vpd`) and `EC Recommendation` (`ec-recommend`) as
+      disabled even though screen code exists. Reconcile each with the current canonical
+      nutrient/environment tools: enable and accept the real action, merge it into the newer
+      canonical tool as a compatibility route, or record an explicit owner rejection. Do not
+      leave a silent disabled card.
+- [x] **Compatibility routes are not secret products:** the current system audit proves the
+      old Logs, Orders, Campaigns, Storefront, Create Post, Social Tools and legacy native
+      Tools/Storefront paths are redirects or compatibility guards into canonical workflows,
+      not separate unfinished products. Preserve their stale-link behavior until final
+      crawl/dead-code evidence proves a redirect is no longer required.
+- [ ] **Complete buried-feature inventory:** before construction closes, compare registered
+      frontend routes, visible navigation/deep links, backend route inventory, release matrix,
+      provider/environment gates, workers/webhooks and production configuration. Add every
+      additional user-facing orphan or runtime-gated feature to its owning matrix row, then
+      make it reachable and accepted or record an explicit owner rejection. Access-control,
+      privacy and safety-hidden data are not buried features and must remain protected.
+- [ ] **Reconcile the legacy V1 feature matrix:** source inspection currently finds 65
+      auto-generated `planned`/`internal` backend rows and one deprecated hidden Personal Logs
+      route (`/home/personal/logs`). These names are not 66 automatically approved products:
+      map each to its current canonical workflow, prove it is a compatibility alias or
+      superseded duplicate, or identify a real missing user action and complete that owning
+      matrix row. Do not blindly implement generated endpoint names and do not silently leave
+      a real requested workflow in `backlog` or `hide`.
+- [ ] **Close retained worktrees without losing work:** the 2026-08-22 read-only Git audit
+      found 19 patches not patch-equivalent to the current construction candidate across 12
+      retained frontend branches, alongside already patch-equivalent branches and several
+      dirty directories. Classify each unique commit/diff against the canonical matrix and
+      newer implementation, integrate and accept the useful current behavior, or record a
+      deliberate rejection with its superseding path. Commit or preserve any legitimate dirty
+      diff first; then remove only clean integrated/rejected worktrees. Worktree count is not a
+      product-completion metric, and deleting a directory is never a substitute for resolving
+      its work.
 
 - [x] Auto theme no longer requests device location on startup. Production frontend
       `d84b0c80` resolves Auto from saved sunrise/sunset coordinates when the user has
@@ -383,6 +524,48 @@ grow`, private current location without a Field Study, and an optional approxima
   production, and dormancy as `Not sure`, and offered optional crop-setup help. This
   closes the known/unknown crop-selection behavior, not the remaining confirmed
   Plant-ID handoff.
+
+  The combined history above is reconciled to the canonical rows as follows. These are
+  the only open gates; the named retained implementations are one-way completed work:
+  - **P-03 (`partial`):** retain the verified photo/video transport, ten server-extracted
+    frames, uncertain result, evidence receipt, Saved Run reload, correction, refund, and
+    no-grow behavior. The exact remaining action is one ordinary frozen-candidate production
+    upload/analyze/save/reload plus back/error/retry proof with no Grow, Field Study, or public
+    pin. Do not rebuild transport, extraction, receipts, Saved Runs, or correction.
+  - **P-04 (`implemented`):** retain the deployed reviewed-draft safety boundary and live
+    known/unknown crop setup. The exact remaining action is an eligible confirmed Plant ID:
+    inspect prefill/provenance/lifecycle, cancel once with no creation, then save, reload, and
+    archive one disposable Grow. Do not rebuild the crop registry, manual setup, navigation,
+    or lifecycle model.
+  - **P-05 (`implemented`):** retain the separate explicit Nature draft, required inputs,
+    approximate projection, consent, sensitive/cannabis gates, and withdrawal path. The exact
+    remaining action is one non-sensitive publication, Saved Run/public card-photo-pin reload,
+    withdrawal, absence-after-reload, and cleanup. Do not make Field Study or Grow mandatory
+    and do not replace the publication/projection/withdrawal path.
+  - **P-06 (`implemented`):** retain private-by-default storage, Grow/Nature separation,
+    no-proximity inference, and the house/potted exclusions. During P-05, compare before/after
+    and prove only the selected record is public and Grow save publishes nothing. This is a
+    production privacy assertion, not a privacy-model rebuild.
+  - **N-01 (`partial`):** retain the live globe/map-list runtime, search/review filters,
+    location fallback, and honest zero-pin state. Reuse P-05 to verify the populated card,
+    photo/date/description/identity, search/filter, viewport, and responsive/accessibility
+    states; clustering waits for legitimate density. Do not fabricate pins or rebuild the map.
+  - **N-02 (`live accepted`):** retain the current-candidate compact zero-pin Discover globe
+    and canonical link. No action remains beyond final-candidate regression checking. The
+    older duplicate-preview removal is superseded history, not a request to remove this
+    accepted preview again.
+  - **N-03 (`implemented`):** retain exact/private projection, selected precision,
+    sensitive-species, cannabis consent/interest, and identity-redaction rules. During P-05,
+    prove the source point is absent from the public response/card/viewport, approximation is
+    honored, and relevant consent views reveal no private cannabis data. This is production
+    privacy/security acceptance, not a projection/policy rewrite.
+  - **N-04 (`implemented`; legacy recovery is nonblocking):** retain the current safe default: no legacy Cary,
+    Maydale, house, duplicate, or unresolved record was inferred or published. The remaining
+    required action is only a final-candidate read-only privacy regression. Individual legacy
+    recovery is optional and owner-triggered; if chosen, require the newest defensible
+    nonduplicate identity and a known place. Do not rebuild deduplication, uncertainty, or
+    no-location-inference rules, and do not block future pins on old media.
+
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
   inference warnings, pistil/bud-development context, top/middle/lower/context
@@ -500,8 +683,8 @@ grow`, private current location without a Field Study, and an optional approxima
 
 ## B. Personal, Commercial, Facility, and public user loops
 
-- [x] Complete and production-accept the first-class Visual Grow Timeline for Personal
-      and Commercial grow workspaces. Personal now has Lifecycle/Month/Week/Day detail,
+- [x] Complete and production-accept the visual timeline and export/share entry-point slice
+      for Personal and Commercial grow workspaces. Personal now has Lifecycle/Month/Week/Day detail,
       saved-event photos and important notes, viewer-friendly HTML/native-share export, and
       a review-first Forum draft that keeps the source grow private. Commercial evidence
       runs now use stored plan, notes, quality observations, summaries, lifecycle dates, and
@@ -516,7 +699,13 @@ grow`, private current location without a Field Study, and an optional approxima
       also contained the Commercial `Export Visual Timeline` and `Review & Share Timeline`
       controls. Populated-photo behavior remains covered by automated timeline tests; a
       later genuine populated production grow can strengthen final media evidence without
-      reopening this delivered feature.
+      reopening this delivered feature. **Superseded completion boundary:** this checked
+      historical slice proves the visual timeline and the entry points, but it does not close
+      canonical P-10. P-10 still requires a persisted export plus share review/cancel,
+      revocable viewer-link publish/open/withdraw, privacy review, state reload, and cleanup.
+      That is a production mutation/public-private read action, not permission to rebuild the
+      accepted event aggregation, Lifecycle/Month/Week/Day views, source links, or existing
+      export/share controls.
 
 - [~] Complete and record the independent outside-user session. Preserve the completed
   Public, Personal Free/Pro, Commercial, Facility Owner/Manager/Staff/Viewer, and
@@ -745,10 +934,13 @@ refund/dispute, or mutation-capable acceptance items below.
       entitlements. Record the scheduled Commercial expiry/downgrade when it occurs.
 - [ ] Verify commercial product Stripe and external-only purchase paths, including
       order/lead/analytics results and truthful unavailable setup.
-- [ ] Keep gift checkout disabled until cancellation/refund policy, signed-out and
+- [ ] Complete gift subscription for R-01 release, while keeping checkout disabled until
+      cancellation/refund policy, purchaser and recipient-email flow, signed-out and
       cross-device purchaser flow, pending-record migration review, production index,
       webhook/live-key evidence, safe single-worker processing, and sandbox plus
-      mutation-capable acceptance all pass.
+      mutation-capable acceptance all pass. Also prove recipient claim, entitlement,
+      recovery/expiry, refund/dispute and duplicate protection; Admin access is not a
+      substitute for a real recipient claim.
 - [~] Complete remaining delivered-email evidence. A read-only 2026-08-13 mailbox
   inventory retained genuine verification, password-reset, Personal/Course/Facility
   support bug-report, and billing-alias support delivery. It found no Facility
@@ -881,7 +1073,8 @@ public visibility, or screenshot/video acceptance still called out below.
   returned to zero. This closes course-media behavior and cleanup; hosted lesson
   video, paid enrollment, Live/Forum linkage, and published-storefront visibility
   remain in the broader course item.
-- [~] Complete populated Storefront, Forum/Feed, Videos, Lives, Orders, Analytics,
+- [~] Complete populated Storefront, Forum/Feed, Videos, external-provider Live
+  connections/discovery, Orders, Analytics,
   Product Lines, Batches/Lots, Trials, Inventory, dispensary search/external handoff,
   navigation hierarchy, and persistence checks. Orders and Analytics state,
   single-flight, retained-error, confirmation, and accessibility hardening shipped
@@ -910,6 +1103,10 @@ public visibility, or screenshot/video acceptance still called out below.
   recovery is complete; owner-controlled Twitch app credentials, real broadcaster
   authorization, EventSub challenge/events, and disconnect/reconnect acceptance remain.
   See `docs/qa/TWITCH_BACKEND_RECOVERY_PRODUCTION_EVIDENCE_2026-08-14.md`.
+  **Superseded broad remainder:** the former unqualified `Lives` wording in this Commercial
+  item included GrowPath-hosted Live even after that core path had passed. Hosted OBS ingest,
+  player/chat/overlay, stop, and replay are retained under S-05 below; only outside-provider
+  authorization/delivery and the separately named S-05 concurrency/isolation gate remain.
   The existing GrowPath-hosted Live implementation has also been recovered and retained;
   it was not rebuilt or replaced. Production backend configuration exposes the masked
   Cloudflare Stream account/token/customer-code settings and the hosted-Live feature
@@ -939,8 +1136,11 @@ public visibility, or screenshot/video acceptance still called out below.
   play, volume, settings, picture-in-picture, fullscreen, and replay-seeking-capable
   controls, while the retained chat/overlay evidence reloaded beside it. Hosted-Live
   ingest, lifecycle, playback, chat overlay, stop, and replay acceptance are complete.
-  Do not reopen or replace this architecture; future concurrency evidence belongs to
-  the final load/role matrix rather than product reconstruction.
+  Do not reopen or replace this architecture. Canonical S-05 stays `partial` only until one
+  bounded two-account concurrent production run proves that inputs, private keys, chat,
+  playback, stop/replay, limits, and cleanup never cross accounts and the final role/load
+  isolation check passes. That is a production concurrency/security action, not product
+  reconstruction.
   A non-mutating 2026-08-20 Admin Commercial production pass also verified the public
   Lives browser and complete Studio entry surface. `/lives` truthfully reported zero
   published sessions while exposing search plus All, Campaign-linked, Upcoming, Live
@@ -954,9 +1154,12 @@ public visibility, or screenshot/video acceptance still called out below.
   Viewer copy explicitly assigns play, pause, volume, mute, fullscreen, captions, and
   replay seeking to the GrowPath player while OBS/Streamlabs controls broadcast cameras,
   microphones, scenes, bitrate, and outgoing audio. No draft was changed or deleted,
-  no destination connected, and no session published. This closes the retained
-  zero-data Lives-browser and Studio-form rendering slice, not credentialed ingest,
-  published discovery, viewer playback/chat, replay, or external-destination delivery.
+  no destination connected, and no session published. This closes the retained zero-data
+  Lives-browser and Studio-form rendering slice. **Superseded boundary:** the original
+  read-only record could not claim credentialed ingest, viewer playback/chat, or replay, but
+  the later OBS acceptance immediately above now proves those hosted capabilities. Published
+  public discovery remains S-04, outside-provider delivery remains the provider slice, and
+  only two-account concurrency/final role-load isolation remains for S-05.
   On 2026-08-14, the governed nutrient-recipe handoff slice completed production
   acceptance. Backend merge `38e2dc87f40420de5711f90ee0a1e36f52b9fc21`
   deployed as `dep-d9vfmf3bc2fs73cd3iig`; frontend merge
@@ -973,6 +1176,16 @@ public visibility, or screenshot/video acceptance still called out below.
   populated product, storefront, public visibility, checkout, or production-inventory
   workflows. See
   `docs/qa/GOVERNED_RECIPE_HANDOFF_PRODUCTION_EVIDENCE_2026-08-14.md`.
+- [~] B-02 now has one coherent Commercial/Facility inventory engine locally implemented and
+  accepted. It covers scoped items/lots, private cost/currency/vendor, deterministic alerts,
+  transactional append-only movements, full-balance relocation/status actions, reviewed
+  resumable CSV import, paged history, bounded terminal audit export, retained Facility-route
+  compatibility and exactly-once paid Storefront reconciliation. The focused frontend lane
+  passed 12 suites/81 tests plus TypeScript and 8 knowledge-registry tests; the backend lane
+  passed 12 suites/185 tests; the guarded migration lane passed 2 suites/20 tests. Do not
+  rebuild this engine. Guarded production dry-run/apply, exact-SHA deployment and live
+  Commercial/Facility role/import/export/reconciliation acceptance remain open. See
+  `docs/qa/B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`.
 - [~] Seed Penny Saver Soil, Living Soil, and No-Till drafts only from owner-approved
   facts. Keep inventory zero and claims unpublished until labels, guaranteed analyses,
   sizes, prices, directions, shipping, and images are supplied and verified. The
@@ -1133,43 +1346,48 @@ public visibility, or screenshot/video acceptance still called out below.
 
 ## F. Release-quality product presentation and inspection evidence
 
-- [~] Complete Live Studio's two-mode broadcast contract. Keep `Use an outside live URL`
-  for Facebook, Instagram, YouTube, Twitch, Kick, and other reviewed providers, with
-  in-app embedding where allowed and a named provider handoff where embedding is not
-  supported. Add `Broadcast live in GrowPath`: session-scoped revocable RTMP or SRT
-  ingest credentials for OBS/encoders, explicit draft/live control, adaptive in-app
-  playback with viewer controls, health/interruption states, GrowPath chat, recording
-  and replay-retention choices, access enforcement, quotas, moderation/abuse response,
-  production observability, and secret rotation. Backend merges `571e60d7` and
-  `230df1bf4bc3e83f2fefff320a2cc71ed4050db8` now implement owner-isolated reusable
-  channels, per-plan and global concurrency limits, one-time credentials, provider
-  lifecycle/playback/retention, release/removal, and rotation. Route tests prove
-  separate users never share inputs or keys and one account can reuse its OBS
-  connection across sequential sessions. Frontend merges `8ce1b5f97` and
-  `4b364c9fcb16edc7d79ef5cb216a92abf329d40f` expose the two modes, hosted player,
-  chat/premiere/share flow, reusable-channel copy, and host-only confirmed key
-  rotation with one-time replacement credentials; both complete gates passed and
-  Render deploy `dep-d9vrf5bncjis7388me20` served the exact rotation SHA.
-  Cloudflare Stream was activated on 2026-08-14 with 1,000 stored minutes for
-  `$5/month` and documented delivery overage of `$1 per 1,000 delivered minutes`;
-  no larger bundle was purchased. The production account ID, Stream-write token,
-  customer code, and hosted-live switch are protected Render environment values,
-  not source-controlled values. Backend merge
-  `b9ed176ba31679d6d9e48c3be6769204b1e52a57` passed both full gates and deployed as
-  `dep-d9vs0pu7bikc73bi52eg`; a signed-in host then opened the real private draft
-  while unrelated/signed-out isolation remains test-covered. Frontend merge
-  `48d6b288a82e7b7da89ba73e23bf7fa752705b2c` passed the full gate and deployed as
-  `dep-d9vs5ku7bikc73bi7q7g`; a fresh production navigation selected the saved
-  `GrowPathAI production OBS` channel and did not expose the new-channel form.
-  Frontend merge `499290a28ee890f8f999cba7f8851bafc2bf0343` passed 36 focused
-  tests plus the full gate and deployed as `dep-d9vsac5g1s2s73b4ij0g`; production
-  then listed, opened, confirmed deletion of, and removed both private QA drafts.
-  A fresh private `QA OBS ingest acceptance` draft now retains the reusable channel;
-  production GrowPath chat accepted a real message and created its host-only OBS
-  overlay path. Replacement of the setup-time Cloudflare API token and OBS key,
-  real OBS ingest, simultaneous two-account
-  proof, in-app playback/volume, overlay rendering in OBS, replay/retention,
-  cost-limit observation, and final QA-session cleanup remain before `[x]`.
+- [x] Complete the GrowPath-hosted core of Live Studio's two-mode broadcast contract.
+      Keep `Use an outside live URL`
+      for Facebook, Instagram, YouTube, Twitch, Kick, and other reviewed providers, with
+      in-app embedding where allowed and a named provider handoff where embedding is not
+      supported. Add `Broadcast live in GrowPath`: session-scoped revocable RTMP or SRT
+      ingest credentials for OBS/encoders, explicit draft/live control, adaptive in-app
+      playback with viewer controls, health/interruption states, GrowPath chat, recording
+      and replay-retention choices, access enforcement, quotas, moderation/abuse response,
+      production observability, and secret rotation. Backend merges `571e60d7` and
+      `230df1bf4bc3e83f2fefff320a2cc71ed4050db8` now implement owner-isolated reusable
+      channels, per-plan and global concurrency limits, one-time credentials, provider
+      lifecycle/playback/retention, release/removal, and rotation. Route tests prove
+      separate users never share inputs or keys and one account can reuse its OBS
+      connection across sequential sessions. Frontend merges `8ce1b5f97` and
+      `4b364c9fcb16edc7d79ef5cb216a92abf329d40f` expose the two modes, hosted player,
+      chat/premiere/share flow, reusable-channel copy, and host-only confirmed key
+      rotation with one-time replacement credentials; both complete gates passed and
+      Render deploy `dep-d9vrf5bncjis7388me20` served the exact rotation SHA.
+      Cloudflare Stream was activated on 2026-08-14 with 1,000 stored minutes for
+      `$5/month` and documented delivery overage of `$1 per 1,000 delivered minutes`;
+      no larger bundle was purchased. The production account ID, Stream-write token,
+      customer code, and hosted-live switch are protected Render environment values,
+      not source-controlled values. Backend merge
+      `b9ed176ba31679d6d9e48c3be6769204b1e52a57` passed both full gates and deployed as
+      `dep-d9vs0pu7bikc73bi52eg`; a signed-in host then opened the real private draft
+      while unrelated/signed-out isolation remains test-covered. Frontend merge
+      `48d6b288a82e7b7da89ba73e23bf7fa752705b2c` passed the full gate and deployed as
+      `dep-d9vs5ku7bikc73bi7q7g`; a fresh production navigation selected the saved
+      `GrowPathAI production OBS` channel and did not expose the new-channel form.
+      Frontend merge `499290a28ee890f8f999cba7f8851bafc2bf0343` passed 36 focused
+      tests plus the full gate and deployed as `dep-d9vsac5g1s2s73b4ij0g`; production
+      then listed, opened, confirmed deletion of, and removed both private QA drafts.
+      A fresh private `QA OBS ingest acceptance` draft now retains the reusable channel;
+      production GrowPath chat accepted a real message and created its host-only OBS
+      overlay path. **Superseded remainder:** this item formerly listed replacement of the
+      setup-time Cloudflare token/OBS key, real OBS ingest, in-app playback/volume, overlay
+      rendering in OBS, replay/retention, cost observation, and QA cleanup as all still open.
+      The later retained evidence above proves the core ingest, lifecycle, playback, chat
+      overlay, stop, and replay path, so those items must not trigger another implementation.
+      Only S-05's bounded two-account concurrent isolation and final role/load check remain;
+      outside-provider authorization and delivery remain in their separately named Commercial
+      provider slice.
 
 - [x] Persist the exact source-bound AI diagnostic crops/zoom views that were actually
       inspected, without treating them as additional photos or independent evidence.
@@ -1285,7 +1503,9 @@ public visibility, or screenshot/video acceptance still called out below.
   visibility, tags, and Grow Interests. It did not mutate or delete retained
   content. The owner Following filter worked but truthfully had no accessible
   followed-creator videos. Owner video mutations, course attach/detach, populated
-  Following/storefront/Nature data, and real hosted ingest/playback remain. See
+  Following/storefront/Nature data remain. The original 2026-08-15 record also listed real
+  hosted ingest/playback as open; that statement is superseded by the later S-05 OBS/player
+  evidence above and must not reopen the hosted architecture. See
   `docs/qa/PERSONAL_SOCIAL_AND_DYNAMIC_LINK_PRODUCTION_EVIDENCE_2026-08-15.md`.
 - [ ] Consolidate headers, cards, media aspect ratios, spacing, text hierarchy,
       buttons, loading/error/empty states, Back behavior, bottom navigation, Day/Night/

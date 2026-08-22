@@ -27,6 +27,7 @@ export default function CommercialTabsLayout() {
     pathname.includes("/batch-planner/") ||
     pathname.includes("/product-lines/") ||
     pathname.includes("/trials/") ||
+    pathname.includes("/business-desk") ||
     pathname.includes("/tools/");
 
   if (!ent?.ready) {
@@ -171,6 +172,38 @@ export default function CommercialTabsLayout() {
           href: null,
           headerShown: false
         }}
+      />
+      <Tabs.Screen
+        name="business-desk/index"
+        options={{ title: "Business Desk", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="business-desk/price-margin"
+        options={{ title: "Price & Margin", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="business-desk/quotes"
+        options={{ title: "Quote / Estimate", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="business-desk/leads"
+        options={{ title: "Lead Follow-up", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="business-desk/jobs"
+        options={{ title: "Job Notes", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="business-desk/expenses"
+        options={{ title: "Expense / Receipt Helper", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="business-desk/vendors"
+        options={{ title: "Vendor Compare", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="business-desk/cash-flow"
+        options={{ title: "Cash-Flow Snapshot", href: null, headerShown: false }}
       />
       <Tabs.Screen
         name="more"

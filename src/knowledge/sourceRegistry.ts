@@ -264,6 +264,25 @@ export const sourceRegistry: SourceRegistryEntry[] = [
     lastReviewedAt: "2026-08-20"
   },
   {
+    id: "openai-responses-structured-outputs-documentation",
+    name: "OpenAI Responses API and Structured Outputs documentation",
+    domain: "developers.openai.com",
+    sourceType: "provider_documentation",
+    reliabilityTier: "B",
+    trustedFor: ["platform_data_access", "qa_evaluation"],
+    notTrustedFor: [
+      "diagnosis",
+      "ipm",
+      "lab_result",
+      "legal_regulatory",
+      "commercial_product"
+    ],
+    notes:
+      "Provider authority for Responses request fields, image/PDF inputs, store:false, safety_identifier, and strict JSON-Schema Structured Outputs. It defines transport and response-shape controls only; it does not authorize a source, prove a model result true, replace GrowPath workspace authorization or deterministic calculations, or establish legal, accounting, tax, agronomic, or safety evidence.",
+    requiresCrossCheck: false,
+    lastReviewedAt: "2026-08-22"
+  },
+  {
     id: "meta-automated-data-collection-terms",
     name: "Meta Automated Data Collection Terms and Facebook Terms",
     domain: "facebook.com",

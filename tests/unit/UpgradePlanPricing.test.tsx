@@ -5,6 +5,7 @@ import {
   createCheckoutSession,
   createGiftCheckoutQuote,
   getGiftCheckoutRecovery,
+  getSubscription,
   getSubscriptionSetupStatus
 } from "../../src/api/subscription";
 import {
@@ -63,6 +64,7 @@ jest.mock("../../src/api/subscription", () => ({
   createCheckoutSession: jest.fn(),
   createGiftCheckoutQuote: jest.fn(),
   getGiftCheckoutRecovery: jest.fn(),
+  getSubscription: jest.fn(),
   getSubscriptionSetupStatus: jest.fn(),
   isSafeStripeCheckoutUrl: (value: unknown) =>
     typeof value === "string" && value.startsWith("https://checkout.stripe.com/c/pay/")
@@ -109,6 +111,10 @@ describe("UpgradePlan pricing", () => {
       mode: "test",
       giftCheckoutConfigured: false
     });
+    (getSubscription as jest.Mock).mockResolvedValue({
+      plan: "free",
+      subscriptionStatus: "inactive"
+    });
     (openExternalUrl as jest.Mock).mockResolvedValue(undefined);
   });
 
@@ -145,6 +151,25 @@ describe("UpgradePlan pricing", () => {
       "https://checkout.stripe.com/c/pay/cs_test_session"
     );
     expect(createGiftCheckoutQuote).not.toHaveBeenCalled();
+  });
+
+  it("keeps active and cancel-scheduled access out of self checkout", async () => {
+    (getSubscription as jest.Mock).mockResolvedValueOnce({
+      plan: "commercial",
+      subscriptionStatus: "active",
+      source: "stripe",
+      cancelAtPeriodEnd: true,
+      currentPeriodEnd: "2030-05-15T18:30:00.000Z"
+    });
+    const screen = render(<UpgradePlan />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Paid access already active")).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Choose Pro monthly checkout")).toBeNull();
+    expect(screen.queryByLabelText("Choose Commercial monthly checkout")).toBeNull();
+    expect(screen.queryByLabelText("Choose Facility monthly checkout")).toBeNull();
+    expect(createCheckoutSession).not.toHaveBeenCalled();
   });
 
   it("keeps gift mode disabled and ignores a spoofed gift query", async () => {

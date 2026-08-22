@@ -132,7 +132,7 @@ describe("FacilityProfileRoute", () => {
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
     expect(mockPush).toHaveBeenCalledWith("/profile");
-    expect(mockPush).toHaveBeenCalledWith("/offers");
+    expect(mockPush).toHaveBeenCalledWith("/account/billing");
     expect(mockPush).toHaveBeenCalledWith("/account/sent-gifts");
     await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
     expect(mockReplace).toHaveBeenCalledWith("/login");

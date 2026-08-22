@@ -99,6 +99,35 @@ describe("BillingHome prepaid gift access", () => {
     expect(screen.queryByText("Access type: Prepaid gift")).toBeNull();
   });
 
+  it("shows paid-through access and removes repeat cancellation after renewal is canceled", async () => {
+    const currentPeriodEnd = "2030-05-15T18:30:00.000Z";
+    (getSubscription as jest.Mock).mockResolvedValue({
+      plan: "commercial",
+      subscriptionStatus: "active",
+      source: "stripe",
+      currentPeriodEnd,
+      cancelAtPeriodEnd: true,
+      billingOwner: "account",
+      canManageBilling: true,
+      canCancelSubscription: false
+    });
+
+    const screen = render(<BillingHome />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          `Renewal is canceled. Your paid access remains available through ${formatGiftEntitlementEnd(currentPeriodEnd)}.`
+        )
+      ).toBeTruthy()
+    );
+    expect(
+      screen.getByText(`Access through: ${formatGiftEntitlementEnd(currentPeriodEnd)}`)
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Cancel subscription")).toBeNull();
+    expect(screen.getByText("Status: active")).toBeTruthy();
+  });
+
   it("offers self-purchase only after an expired gift loses paid access", async () => {
     (getSubscription as jest.Mock).mockResolvedValue({
       plan: "free",
@@ -118,6 +147,22 @@ describe("BillingHome prepaid gift access", () => {
         "This prepaid gift has ended. You can choose a personal subscription if you want to continue Pro access."
       )
     ).toBeTruthy();
+    expect(screen.queryByLabelText("Cancel subscription")).toBeNull();
+  });
+
+  it("does not open a fresh checkout when status cannot be confirmed", async () => {
+    (getSubscription as jest.Mock).mockRejectedValueOnce(new Error("offline"));
+
+    const screen = render(<BillingHome />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Current subscription access could not be confirmed. Refresh status before starting another checkout."
+        )
+      ).toBeTruthy()
+    );
+    expect(screen.queryByLabelText("Upgrade to Pro")).toBeNull();
     expect(screen.queryByLabelText("Cancel subscription")).toBeNull();
   });
 });

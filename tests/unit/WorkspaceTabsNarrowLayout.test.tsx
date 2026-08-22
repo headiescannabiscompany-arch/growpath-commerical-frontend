@@ -136,6 +136,25 @@ describe("workspace bottom tabs at narrow widths", () => {
     const { children, screenOptions } = mockTabs.mock.calls[0][0];
     const allScreens = React.Children.toArray(children) as React.ReactElement<any>[];
     expect(
+      allScreens
+        .filter((child) => child.props.name.startsWith("business-desk/"))
+        .map((child) => child.props.name)
+    ).toEqual([
+      "business-desk/index",
+      "business-desk/price-margin",
+      "business-desk/quotes",
+      "business-desk/leads",
+      "business-desk/jobs",
+      "business-desk/expenses",
+      "business-desk/vendors",
+      "business-desk/cash-flow"
+    ]);
+    expect(
+      allScreens
+        .filter((child) => child.props.name.startsWith("business-desk/"))
+        .every((child) => child.props.options?.href === null)
+    ).toBe(true);
+    expect(
       allScreens.find((child) => child.props.name === "regulated-commerce")?.props.options
         ?.href
     ).toBeNull();

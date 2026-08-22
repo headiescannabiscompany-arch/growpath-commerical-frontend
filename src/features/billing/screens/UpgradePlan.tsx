@@ -13,8 +13,10 @@ import { useLocalSearchParams } from "expo-router";
 import AppCard from "../../../components/layout/AppCard";
 import {
   createCheckoutSession,
+  getSubscription,
   getSubscriptionSetupStatus
 } from "../../../api/subscription";
+import { useAuth } from "../../../auth/AuthContext";
 import {
   formatPlanBillingNote,
   formatPlanPrice,
@@ -25,6 +27,7 @@ import GiftCheckoutReviewAction from "../GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "../GiftCheckoutRecoveryAction";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
 import { useAppTheme, type ThemePalette } from "../../../theme/appTheme";
+import { resolveSubscriptionSafety } from "../subscriptionSafety";
 
 type BillingInterval = "monthly" | "yearly";
 type CheckoutMode = "live" | "test" | "unknown";
@@ -51,6 +54,7 @@ function checkoutUrlFromResponse(response: any) {
 }
 
 export default function UpgradePlan() {
+  const auth = useAuth();
   const { width } = useWindowDimensions();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createUpgradePlanStyles(palette), [palette]);
@@ -80,6 +84,18 @@ export default function UpgradePlan() {
   const [giftRecipientEmail, setGiftRecipientEmail] = useState("");
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
+  const [subscription, setSubscription] = useState<any>(null);
+  const [subscriptionLoaded, setSubscriptionLoaded] = useState(false);
+  const access = useMemo(
+    () =>
+      resolveSubscriptionSafety(
+        { ...(auth.user || {}), ...(subscription || {}) },
+        {
+          loaded: subscriptionLoaded
+        }
+      ),
+    [auth.user, subscription, subscriptionLoaded]
+  );
 
   const giftRecipientValue = giftRecipientEmail.trim().toLowerCase();
   const giftRecipientValid = isLikelyEmail(giftRecipientValue);
@@ -103,19 +119,24 @@ export default function UpgradePlan() {
   useEffect(() => {
     let mounted = true;
 
-    getSubscriptionSetupStatus()
-      .then((status) => {
+    Promise.allSettled([getSubscriptionSetupStatus(), getSubscription()]).then(
+      ([setupResult, subscriptionResult]) => {
+        const status = setupResult.status === "fulfilled" ? setupResult.value : null;
         const mode = String(status?.mode || "unknown").toLowerCase();
         if (mounted && ["live", "test", "unknown"].includes(mode)) {
           setCheckoutMode(mode as CheckoutMode);
         }
         if (mounted) {
           setGiftCheckoutConfigured(status?.giftCheckoutConfigured === true);
+          setSubscription(
+            subscriptionResult.status === "fulfilled"
+              ? subscriptionResult.value || {}
+              : null
+          );
+          setSubscriptionLoaded(subscriptionResult.status === "fulfilled");
         }
-      })
-      .catch(() => {
-        if (mounted) setCheckoutMode("unknown");
-      });
+      }
+    );
 
     return () => {
       mounted = false;
@@ -124,7 +145,7 @@ export default function UpgradePlan() {
 
   async function startCheckout(plan: BillingPlanKey) {
     const selected = BILLING_PLANS.find((item) => item.key === plan);
-    if (giftMode) {
+    if (giftMode || !access.canOpenCheckout) {
       return;
     }
 
@@ -205,6 +226,13 @@ export default function UpgradePlan() {
           })}
         </View>
       </View>
+
+      {subscriptionLoaded && access.active && !giftMode ? (
+        <View style={styles.accessBanner} accessibilityLiveRegion="polite">
+          <Text style={styles.accessBannerTitle}>Paid access already active</Text>
+          <Text style={styles.accessBannerText}>{access.message}</Text>
+        </View>
+      ) : null}
 
       <View
         style={[
@@ -425,7 +453,7 @@ export default function UpgradePlan() {
                   onFeedback={handleGiftFeedback}
                   openCheckoutUrl={openExternalUrl}
                 />
-              ) : (
+              ) : access.canOpenCheckout ? (
                 <Pressable
                   onPress={() => void startCheckout(plan.key)}
                   disabled={loading}
@@ -442,6 +470,12 @@ export default function UpgradePlan() {
                         }`}
                   </Text>
                 </Pressable>
+              ) : (
+                <Text style={styles.sectionText}>
+                  {subscriptionLoaded
+                    ? "Self checkout is unavailable while this account has paid access. Open Billing to review how this access is managed."
+                    : "Checking current access before enabling checkout."}
+                </Text>
               )}
             </AppCard>
           );
@@ -454,6 +488,16 @@ export default function UpgradePlan() {
 export const createUpgradePlanStyles = (palette: ThemePalette) =>
   StyleSheet.create({
     container: { backgroundColor: palette.page, gap: 12, padding: 24 },
+    accessBanner: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.accent,
+      borderRadius: 8,
+      borderWidth: 1,
+      gap: 4,
+      padding: 12
+    },
+    accessBannerTitle: { color: palette.text, fontWeight: "900" },
+    accessBannerText: { color: palette.textMuted, fontWeight: "700", lineHeight: 19 },
     header: { gap: 8 },
     title: { color: palette.text, fontSize: 20, fontWeight: "bold" },
     subtitle: { color: palette.textMuted, fontSize: 14, fontWeight: "700" },

@@ -4,7 +4,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
-import { useEntitlements } from "@/entitlements";
+import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
+import { hasBusinessDeskFacilityRole } from "@/navigation/businessDeskRoutes";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -95,6 +96,12 @@ const workspaceGroups: Array<{
         label: "AI Tools",
         href: "/home/facility/ai-tools",
         description: "Open facility intelligence, prompts, review, and helper workflows."
+      },
+      {
+        label: "Business Desk",
+        href: "/home/facility/business-desk",
+        description:
+          "Open the owner/manager business tools for pricing, quotes, vendors, expenses, and cash flow."
       }
     ]
   },
@@ -226,17 +233,24 @@ export default function FacilityMoreRoute() {
             {group.title}
           </Text>
           <View style={styles.destinationGrid}>
-            {group.destinations.map((destination) => (
-              <WorkspaceLink
-                key={destination.href}
-                {...destination}
-                description={
-                  isViewer
-                    ? VIEWER_DESCRIPTIONS[destination.label] || destination.description
-                    : destination.description
-                }
-              />
-            ))}
+            {group.destinations
+              .filter(
+                (destination) =>
+                  destination.label !== "Business Desk" ||
+                  (hasBusinessDeskFacilityRole(entitlements.facilityRole) &&
+                    entitlements.can(CAPABILITY_KEYS.BUSINESS_DESK_READ))
+              )
+              .map((destination) => (
+                <WorkspaceLink
+                  key={destination.href}
+                  {...destination}
+                  description={
+                    isViewer
+                      ? VIEWER_DESCRIPTIONS[destination.label] || destination.description
+                      : destination.description
+                  }
+                />
+              ))}
           </View>
         </AppCard>
       ))}

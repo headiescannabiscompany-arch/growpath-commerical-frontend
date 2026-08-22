@@ -22,6 +22,15 @@ import { useApiErrorHandler } from "@/hooks/useApiErrorHandler";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import {
+  BusinessInventoryLot,
+  BusinessInventoryMovement,
+  BusinessInventoryMovementPage,
+  mergeBusinessInventoryMovements
+} from "@/api/businessInventory";
+import { BusinessInventoryOperations } from "@/components/inventory/BusinessInventoryOperations";
+import { BusinessInventoryAlerts } from "@/components/inventory/BusinessInventoryAlerts";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 
 type AnyRec = Record<string, any>;
 
@@ -41,29 +50,31 @@ export default function InventoryItemDetailScreen() {
 
   const itemId = String(params?.id ?? params?.itemId ?? "");
 
-  const apiErr: any = useApiErrorHandler();
-  const error = apiErr?.error ?? apiErr?.[0] ?? null;
-
-  const handleApiError = useMemo(
-    () => apiErr?.handleApiError ?? apiErr?.[1] ?? ((_: any) => {}),
-    [apiErr]
+  const mapApiError = useApiErrorHandler();
+  const [error, setError] = useState<any>(null);
+  const handleApiError = useCallback(
+    (caught: any) => setError(mapApiError(caught) ?? caught),
+    [mapApiError]
   );
-
-  const clearError = useMemo(
-    () => apiErr?.clearError ?? apiErr?.[2] ?? (() => {}),
-    [apiErr]
-  );
+  const clearError = useCallback(() => setError(null), []);
 
   const [item, setItem] = useState<AnyRec | null>(null);
+  const [lots, setLots] = useState<BusinessInventoryLot[]>([]);
+  const [movements, setMovements] = useState<BusinessInventoryMovement[]>([]);
+  const [movementPage, setMovementPage] =
+    useState<BusinessInventoryMovementPage | null>(null);
+  const [loadingOlderMovements, setLoadingOlderMovements] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const [delta, setDelta] = useState("");
-  const [reason, setReason] = useState("");
-  const [saving, setSaving] = useState(false);
   const [editName, setEditName] = useState("");
   const [editUnit, setEditUnit] = useState("");
   const [editReorderPoint, setEditReorderPoint] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editVendor, setEditVendor] = useState("");
+  const [editAuthorizedUnitCost, setEditAuthorizedUnitCost] = useState("");
+  const [editCurrency, setEditCurrency] = useState("");
+  const [editSourceFreshnessAt, setEditSourceFreshnessAt] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -72,7 +83,11 @@ export default function InventoryItemDetailScreen() {
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
       if (!facilityId) return;
-      if (!itemId) return;
+      if (!itemId) {
+        setLoading(false);
+        setError(new Error("This inventory link is missing its record ID."));
+        return;
+      }
 
       if (opts?.refresh) setRefreshing(true);
       else setLoading(true);
@@ -81,6 +96,21 @@ export default function InventoryItemDetailScreen() {
         clearError();
         const res = await apiRequest(endpoints.inventoryItem(facilityId, itemId));
         setItem((res as AnyRec)?.item ?? (res as AnyRec)?.updated ?? res ?? null);
+        setLots(Array.isArray((res as AnyRec)?.lots) ? (res as AnyRec).lots : []);
+        setMovements(
+          Array.isArray((res as AnyRec)?.movements) ? (res as AnyRec).movements : []
+        );
+        setMovementPage(
+          (res as AnyRec)?.movementPage
+            ? {
+                limit: Number((res as AnyRec).movementPage.limit || 0),
+                hasMore: Boolean((res as AnyRec).movementPage.hasMore),
+                nextCursor: (res as AnyRec).movementPage.nextCursor
+                  ? String((res as AnyRec).movementPage.nextCursor)
+                  : null
+              }
+            : null
+        );
       } catch (e) {
         handleApiError(e);
       } finally {
@@ -91,71 +121,104 @@ export default function InventoryItemDetailScreen() {
     [facilityId, itemId, clearError, handleApiError]
   );
 
-  const adjust = useCallback(async () => {
-    if (!facilityId || !itemId || !item || !canWriteInventory) return;
-
-    const n = Number(delta);
-    if (!Number.isFinite(n) || n === 0) return;
-
-    const sku = String(item?.sku ?? "");
-    if (!sku) return;
-
-    const current = Number(item?.quantity ?? item?.quantityOnHand ?? 0);
-    const nextQuantity = (Number.isFinite(current) ? current : 0) + n;
-
-    setSaving(true);
+  const loadOlderMovements = useCallback(async () => {
+    const cursor = String(movementPage?.nextCursor || "").trim();
+    if (
+      !facilityId ||
+      !itemId ||
+      !movementPage?.hasMore ||
+      !cursor ||
+      loadingOlderMovements
+    ) {
+      return;
+    }
+    setLoadingOlderMovements(true);
     try {
       clearError();
-      setFeedback("");
-      await apiRequest(endpoints.inventoryItem(facilityId, sku), {
-        method: "PATCH",
-        body: {
-          quantity: nextQuantity,
-          adjustmentReason: reason.trim() || undefined
-        }
-      });
-      setDelta("");
-      setReason("");
-      await load({ refresh: true });
-      setFeedback("Quantity updated.");
-    } catch (e) {
-      handleApiError(e);
+      const path = `${endpoints.inventoryItem(facilityId, itemId)}?movementLimit=50&movementCursor=${encodeURIComponent(cursor)}`;
+      const res = (await apiRequest(path)) as AnyRec;
+      const older = Array.isArray(res?.movements) ? res.movements : [];
+      setMovements((current) => mergeBusinessInventoryMovements(current, older));
+      setMovementPage(
+        res?.movementPage
+          ? {
+              limit: Number(res.movementPage.limit || 0),
+              hasMore: Boolean(res.movementPage.hasMore),
+              nextCursor: res.movementPage.nextCursor
+                ? String(res.movementPage.nextCursor)
+                : null
+            }
+          : null
+      );
+    } catch (caught) {
+      handleApiError(caught);
     } finally {
-      setSaving(false);
+      setLoadingOlderMovements(false);
     }
   }, [
-    facilityId,
-    itemId,
-    item,
-    canWriteInventory,
-    delta,
-    reason,
     clearError,
+    facilityId,
     handleApiError,
-    load
+    itemId,
+    loadingOlderMovements,
+    movementPage
   ]);
 
   const saveDetails = useCallback(async () => {
     if (!facilityId || !itemId || !item || !canWriteInventory) return;
 
-    const sku = String(item?.sku ?? "");
-    if (!sku) return;
-
-    const reorderPointNumber = Number(editReorderPoint);
+    if (!editName.trim() || !editUnit.trim()) {
+      setError(new Error("Item name and stock-counting unit are required."));
+      setFeedback("");
+      return;
+    }
+    const reorderPointNumber = editReorderPoint.trim()
+      ? Number(editReorderPoint)
+      : 0;
+    if (!Number.isFinite(reorderPointNumber) || reorderPointNumber < 0) {
+      setError(new Error("Reorder point must be a number that is zero or greater."));
+      setFeedback("");
+      return;
+    }
+    const costText = editAuthorizedUnitCost.trim();
+    const authorizedUnitCost = costText ? Number(costText) : null;
+    if (
+      authorizedUnitCost !== null &&
+      (!Number.isFinite(authorizedUnitCost) || authorizedUnitCost < 0)
+    ) {
+      setError(
+        new Error("Authorized unit cost must be a number that is zero or greater.")
+      );
+      setFeedback("");
+      return;
+    }
+    const currency = editCurrency.trim().toLowerCase();
+    if (currency && !/^[a-z]{3}$/.test(currency)) {
+      setError(new Error("Currency must be a three-letter code such as USD."));
+      setFeedback("");
+      return;
+    }
+    if (authorizedUnitCost !== null && !currency) {
+      setError(new Error("Choose a currency when recording an authorized unit cost."));
+      setFeedback("");
+      return;
+    }
     const body = {
-      name: editName.trim() || item.name,
-      unit: editUnit.trim() || undefined,
-      reorderPoint:
-        editReorderPoint.trim() && Number.isFinite(reorderPointNumber)
-          ? reorderPointNumber
-          : 0
+      name: editName.trim(),
+      unit: editUnit.trim(),
+      reorderPoint: reorderPointNumber,
+      category: editCategory.trim(),
+      vendor: editVendor.trim(),
+      authorizedUnitCost,
+      currency,
+      sourceFreshnessAt: editSourceFreshnessAt || null
     };
 
     setSavingDetails(true);
     try {
       clearError();
       setFeedback("");
-      await apiRequest(endpoints.inventoryItem(facilityId, sku), {
+      await apiRequest(endpoints.inventoryItem(facilityId, itemId), {
         method: "PATCH",
         body
       });
@@ -174,6 +237,11 @@ export default function InventoryItemDetailScreen() {
     editName,
     editUnit,
     editReorderPoint,
+    editCategory,
+    editVendor,
+    editAuthorizedUnitCost,
+    editCurrency,
+    editSourceFreshnessAt,
     clearError,
     handleApiError,
     load
@@ -222,7 +290,6 @@ export default function InventoryItemDetailScreen() {
       router.replace("/home/facility/select");
       return;
     }
-    if (!itemId) return;
     load();
   }, [facilityId, itemId, load, router]);
 
@@ -231,6 +298,19 @@ export default function InventoryItemDetailScreen() {
     setEditName(String(item.name ?? ""));
     setEditUnit(String(item.unit ?? ""));
     setEditReorderPoint(String(item.reorderPoint ?? 0));
+    setEditCategory(String(item.category ?? ""));
+    setEditVendor(String(item.vendor ?? ""));
+    setEditAuthorizedUnitCost(
+      item.authorizedUnitCost === null || item.authorizedUnitCost === undefined
+        ? ""
+        : String(item.authorizedUnitCost)
+    );
+    setEditCurrency(String(item.currency ?? ""));
+    setEditSourceFreshnessAt(
+      /^\d{4}-\d{2}-\d{2}/.test(String(item.sourceFreshnessAt ?? ""))
+        ? String(item.sourceFreshnessAt).slice(0, 10)
+        : ""
+    );
   }, [item]);
 
   const quantity = Number(item?.quantity ?? item?.quantityOnHand ?? 0);
@@ -315,12 +395,15 @@ export default function InventoryItemDetailScreen() {
               </Text>
             </View>
 
+            <BusinessInventoryAlerts item={item} />
+
             <View style={styles.card}>
               <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
                 Item details
               </Text>
               <Text style={styles.muted}>
-                Keep the item name, stock-counting unit, and reorder point current.
+                Keep the identity, stock-counting unit, reorder settings, source, and
+                reviewed cost context current.
               </Text>
               {!canWriteInventory ? (
                 <Text style={styles.lockedText}>
@@ -333,7 +416,7 @@ export default function InventoryItemDetailScreen() {
                 onChangeText={setEditName}
                 placeholder="Item name"
                 placeholderTextColor={palette.textMuted}
-                editable={canWriteInventory}
+                editable={canWriteInventory && !savingDetails}
                 style={styles.input}
               />
               <TextInput
@@ -342,7 +425,7 @@ export default function InventoryItemDetailScreen() {
                 onChangeText={setEditUnit}
                 placeholder="Unit"
                 placeholderTextColor={palette.textMuted}
-                editable={canWriteInventory}
+                editable={canWriteInventory && !savingDetails}
                 style={styles.input}
               />
               <TextInput
@@ -352,8 +435,61 @@ export default function InventoryItemDetailScreen() {
                 placeholder="Reorder point"
                 placeholderTextColor={palette.textMuted}
                 keyboardType="numeric"
-                editable={canWriteInventory}
+                editable={canWriteInventory && !savingDetails}
                 style={styles.input}
+              />
+              <TextInput
+                accessibilityLabel="Inventory detail category"
+                value={editCategory}
+                onChangeText={setEditCategory}
+                placeholder="Category (optional)"
+                placeholderTextColor={palette.textMuted}
+                editable={canWriteInventory && !savingDetails}
+                style={styles.input}
+              />
+              <Text style={styles.privateHelp}>
+                Private workspace fields — vendor and authorized cost are not published
+                to Storefront or discovery.
+              </Text>
+              <TextInput
+                accessibilityLabel="Inventory detail vendor"
+                value={editVendor}
+                onChangeText={setEditVendor}
+                placeholder="Vendor (private, optional)"
+                placeholderTextColor={palette.textMuted}
+                editable={canWriteInventory && !savingDetails}
+                style={styles.input}
+              />
+              <TextInput
+                accessibilityLabel="Inventory detail authorized unit cost"
+                value={editAuthorizedUnitCost}
+                onChangeText={setEditAuthorizedUnitCost}
+                placeholder="Authorized unit cost (private, optional)"
+                placeholderTextColor={palette.textMuted}
+                keyboardType="decimal-pad"
+                editable={canWriteInventory && !savingDetails}
+                style={styles.input}
+              />
+              <TextInput
+                accessibilityLabel="Inventory detail currency"
+                value={editCurrency}
+                onChangeText={setEditCurrency}
+                placeholder="Currency, e.g. USD"
+                placeholderTextColor={palette.textMuted}
+                autoCapitalize="characters"
+                maxLength={3}
+                editable={canWriteInventory && !savingDetails}
+                style={styles.input}
+              />
+              <CalendarDateField
+                accessibilityLabel="Inventory detail source freshness date"
+                disabled={!canWriteInventory || savingDetails}
+                label="Source freshness date"
+                maximumDate={new Date().toISOString().slice(0, 10)}
+                onChange={setEditSourceFreshnessAt}
+                optional
+                placeholder="When this source or cost was last verified"
+                value={editSourceFreshnessAt}
               />
               <Pressable
                 accessibilityRole="button"
@@ -377,64 +513,42 @@ export default function InventoryItemDetailScreen() {
 
             <View style={styles.card}>
               <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
-                Adjust quantity
-              </Text>
-              <Text style={styles.muted}>
-                Enter a positive amount for received stock or a negative amount for stock
-                used, transferred, or corrected.
-              </Text>
-              {!canWriteInventory ? (
-                <Text style={styles.lockedText}>
-                  Your facility role or plan does not allow inventory changes.
-                </Text>
-              ) : null}
-
-              <TextInput
-                accessibilityLabel="Inventory adjustment quantity"
-                value={delta}
-                onChangeText={setDelta}
-                placeholder="e.g. 10 or -2"
-                placeholderTextColor={palette.textMuted}
-                keyboardType="numeric"
-                editable={canWriteInventory}
-                style={styles.input}
-              />
-              <TextInput
-                accessibilityLabel="Inventory adjustment reason"
-                value={reason}
-                onChangeText={setReason}
-                placeholder="Reason (optional)"
-                placeholderTextColor={palette.textMuted}
-                editable={canWriteInventory}
-                style={styles.input}
-              />
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Save inventory adjustment"
-                accessibilityState={{ disabled: saving || !canWriteInventory }}
-                onPress={adjust}
-                disabled={saving || !canWriteInventory}
-                style={({ pressed }) => [
-                  styles.btn,
-                  (saving || !canWriteInventory) && styles.btnDisabled,
-                  pressed && styles.pressed
-                ]}
-              >
-                <Text style={styles.btnText}>
-                  {saving ? "Saving..." : "Save adjustment"}
-                </Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.card}>
-              <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
                 Record information
               </Text>
               <View style={styles.recordList}>
                 <View style={styles.recordRow}>
                   <Text style={styles.recordLabel}>SKU</Text>
                   <Text style={styles.recordValue}>{item.sku || "Not set"}</Text>
+                </View>
+                <View style={styles.recordRow}>
+                  <Text style={styles.recordLabel}>Category</Text>
+                  <Text style={styles.recordValue}>{item.category || "Not set"}</Text>
+                </View>
+                <View style={styles.recordRow}>
+                  <Text style={styles.recordLabel}>Vendor</Text>
+                  <Text style={styles.recordValue}>{item.vendor || "Not set"}</Text>
+                </View>
+                {item.authorizedUnitCost !== null &&
+                item.authorizedUnitCost !== undefined &&
+                Number.isFinite(Number(item.authorizedUnitCost)) ? (
+                  <View style={styles.recordRow}>
+                    <Text style={styles.recordLabel}>Authorized unit cost</Text>
+                    <Text style={styles.recordValue}>
+                      {item.currency ? `${item.currency} ` : ""}
+                      {Number(item.authorizedUnitCost)}
+                    </Text>
+                  </View>
+                ) : item.currency ? (
+                  <View style={styles.recordRow}>
+                    <Text style={styles.recordLabel}>Currency</Text>
+                    <Text style={styles.recordValue}>{item.currency}</Text>
+                  </View>
+                ) : null}
+                <View style={styles.recordRow}>
+                  <Text style={styles.recordLabel}>Source last verified</Text>
+                  <Text style={styles.recordValue}>
+                    {formatTimestamp(item.sourceFreshnessAt)}
+                  </Text>
                 </View>
                 <View style={styles.recordRow}>
                   <Text style={styles.recordLabel}>Added</Text>
@@ -451,6 +565,19 @@ export default function InventoryItemDetailScreen() {
               </View>
             </View>
 
+            <BusinessInventoryOperations
+              canWrite={canWriteInventory}
+              itemId={itemId}
+              itemQuantity={Number.isFinite(quantity) ? quantity : 0}
+              lots={lots}
+              loadingOlderMovements={loadingOlderMovements}
+              movements={movements}
+              hasMoreMovements={Boolean(movementPage?.hasMore)}
+              onLoadOlderMovements={loadOlderMovements}
+              onReload={() => load({ refresh: true })}
+              workspace={{ facilityId }}
+            />
+
             {canWriteInventory ? (
               <View style={[styles.card, styles.dangerCard]}>
                 <Text accessibilityRole="header" aria-level={2} style={styles.cardTitle}>
@@ -458,7 +585,7 @@ export default function InventoryItemDetailScreen() {
                 </Text>
                 <Text style={styles.muted}>
                   Use this only for a duplicate, test, or mistakenly created item.
-                  Quantity changes belong in Adjust quantity above.
+                  Quantity changes belong in Inventory movement above.
                 </Text>
                 <Pressable
                   accessibilityRole="button"
@@ -555,6 +682,13 @@ export const createFacilityInventoryDetailStyles = (palette: ThemePalette) =>
     btnDisabled: { opacity: 0.5 },
     btnText: { color: palette.text, fontWeight: "900" },
     lockedText: { color: palette.warning, fontWeight: "800", marginBottom: 8 },
+    privateHelp: {
+      color: palette.textMuted,
+      fontSize: 12,
+      fontWeight: "800",
+      lineHeight: 18,
+      marginTop: 10
+    },
     pressed: { opacity: 0.85 },
     feedback: {
       color: palette.success,

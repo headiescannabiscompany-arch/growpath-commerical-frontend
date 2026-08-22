@@ -19,6 +19,165 @@ describe("GrowPath knowledge registries", () => {
     );
   });
 
+  it("keeps the Small Business Desk bounded to reviewed deterministic and draft workflows", () => {
+    const desk = getMethod("business-desk");
+
+    expect(desk?.relatedTools).toEqual([
+      "price-margin-break-even",
+      "quote-estimate",
+      "lead-follow-up",
+      "job-notes",
+      "expense-receipt",
+      "vendor-compare",
+      "cash-flow-snapshot",
+      "business-ask-ai"
+    ]);
+    expect(desk?.requiredOutputs).toContain(
+      "visible deterministic calculations and formulas"
+    );
+    expect(desk?.warnings).toContain(
+      "B-02 is the only inventory engine; nursery and Facility workflows reference it instead of creating parallel ledgers."
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "content-digest duplicate review before an extracted record is saved"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "Commercial-owner or own-workspace Platform-Admin access and selected-Facility OWNER/MANAGER access with Personal, STAFF, VIEWER, and QA denial"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "zero AI-credit use for deterministic calculation alone and Commercial-account or selected-Facility charging only for an invoked provider-backed explanation, extraction, draft, summary, or Ask request"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "canonical /home/commercial/business-desk and /home/facility/business-desk roots with /price-margin, /quotes, /leads, /jobs, /expenses, /vendors, /cash-flow, and /ask-ai tool subpaths"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "single-currency integer-minor-unit calculations with half-away-from-zero line rounding and explicit missing inputs"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "quote customer total from discounted customer-facing line subtotal plus customer shipping plus explicit operator-entered tax, with internal business and fulfillment costs excluded from customer charges"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "Price and Margin break-even that repeats one explicit positive-quantityMicros sales scenario and reports salesScenarios, total quantityMicros, contributionMinor, and revenueMinor using a BigInt-safe ceiling or an explicit incomplete reason"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "break-even as a Price and Margin mode, Purchase Request as a Vendor Compare output, KPI snapshot as a Business Ask AI view, and provider draft as a Quote handoff"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "private attachment quarantine with 24-hour cancelled-or-abandoned expiry, cross-workspace digest isolation, byte-verified media, bounded extraction, and saved-record retention after confirmation"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "copy and export for every reviewed quote plus optional merchant-owned Stripe Connect DRAFT handoff"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "explicit DISCONNECTED, TEST, LIVE, and REVOKED merchant connection states with strict test/live isolation"
+    );
+    expect(desk?.requiredOutputs).toContain(
+      "signature-verified, deduplicated, order-tolerant webhook truth for provider-side status"
+    );
+    expect(desk?.warnings).toContain(
+      "Never fabricate a Facility, location, membership, approval, customer, vendor, or saved record merely to run an eligible calculator."
+    );
+    expect(desk?.warnings).toContain(
+      "Never auto-send, finalize, accept, calculate tax, charge, mark paid, create stock movement, or use GrowPathAI subscription billing for a merchant provider handoff."
+    );
+    expect(desk?.warnings).toContain(
+      "Never mark a B-03 Purchase Request verified Received without a linked successful B-02 receipt or movement; an outside or manual report remains unverified."
+    );
+    expect(desk?.warnings).toContain(
+      "Never recast whole-scenario business fees, fulfillment shipping cost, customer shipping, or fixed discount as per-unit amounts in a break-even calculation."
+    );
+    expect(desk?.warnings).toContain(
+      "Never turn an internal business or fulfillment cost into a customer quote charge unless the operator explicitly adds it as a reviewed priced line."
+    );
+    expect(desk?.warnings.join(" ")).toContain("license");
+    expect(desk?.requiredOutputs).not.toContain(
+      "full-balance-only item and lot relocations that preserve quantity and audit the stored source location"
+    );
+  });
+
+  it("keeps B-02 inventory in its own canonical method", () => {
+    const desk = getMethod("business-desk");
+    const inventory = getMethod("business-inventory");
+
+    expect(inventory?.documentPath).toBe(
+      "docs/knowledge/methods/business-inventory-method.md"
+    );
+    expect(inventory?.primaryWorkflow).toEqual([
+      "select authorized workspace",
+      "load current ledger evidence",
+      "stage and review operation",
+      "confirm idempotent transaction",
+      "verify balances, movement, and audit"
+    ]);
+    expect(inventory?.relatedTools).toEqual([
+      "business-inventory",
+      "commercial-inventory",
+      "facility-inventory",
+      "inventory-import",
+      "inventory-audit-export"
+    ]);
+    expect(inventory?.requiredOutputs).toContain(
+      "full-balance-only item and lot relocations that preserve quantity and audit the stored source location"
+    );
+    expect(inventory?.requiredOutputs).toContain(
+      "movement history whose adjustment quantity matches its signed delta, whose hold or release covers the selected balance, and whose older pages remain explicitly reachable"
+    );
+    expect(inventory?.requiredOutputs).toContain(
+      "explicitly reviewed inventory imports with detected-column mapping, conflict evidence, version fences, atomic row checkpoints, and withdrawal"
+    );
+    expect(inventory?.requiredOutputs).toContain(
+      "workspace-scoped full audit export covering items, lots, movements, imports, provenance, and import-row before/after evidence"
+    );
+    expect(inventory?.requiredOutputs).toContain(
+      "audit export manifest with fixed membership cutoffs, read timestamps, changed-after-start flags, terminal counts, and explicit system, user, or legacy-unverified origin"
+    );
+    expect(inventory?.requiredOutputs).toContain(
+      "explicit unknown currency until an authorized cost is paired with a reviewed three-letter currency code"
+    );
+    expect(inventory?.warnings).toContain(
+      "Never expose authorized inventory cost, currency, vendor, or internal balance history through Storefront, public sharing, or discovery."
+    );
+    expect(inventory?.warnings).toContain(
+      "Never represent a partial move or transfer as a location change while an item or lot stores only one location; reject it until the canonical ledger has a reviewed allocation model."
+    );
+    expect(desk?.warnings).toContain(
+      "B-02 is the only inventory engine; nursery and Facility workflows reference it instead of creating parallel ledgers."
+    );
+    expect(inventory?.warnings).toContain(
+      "Never change the unit of stocked or historically used inventory, silently cap movement history, trust a user-reported movement date as a verified server occurrence, or let a legacy route bypass the canonical ledger."
+    );
+    expect(inventory?.warnings).toContain(
+      "Never apply an inventory import without explicit review, repeat a committed row after retry, change its reviewed meaning after a partial commit, or write into an archived or consumed lot."
+    );
+    expect(inventory?.warnings).toContain(
+      "Never call a live mutable-state inventory export a database point-in-time snapshot, let a client choose a system audit action, or promote unverified legacy evidence to system origin."
+    );
+    expect(methodsForTool("commercial-inventory").map((entry) => entry.id)).toEqual([
+      "business-inventory"
+    ]);
+    expect(methodsForTool("facility-inventory").map((entry) => entry.id)).toEqual(
+      expect.arrayContaining(["business-inventory", "facility-workflow"])
+    );
+  });
+
+  it("keeps public copies separate, frozen, sanitized and revocable", () => {
+    const sharing = getMethod("public-copy-sharing");
+    expect(sharing?.primaryWorkflow).toEqual([
+      "select",
+      "review",
+      "publish snapshot",
+      "open or share",
+      "withdraw"
+    ]);
+    expect(sharing?.requiredOutputs).toContain("safe public photo derivatives");
+    expect(sharing?.warnings).toContain(
+      "Never publish private data merely because Share was pressed."
+    );
+    expect(sharing?.warnings).toContain(
+      "Later private edits must not silently change an already-published snapshot."
+    );
+  });
+
   it("limits context-specific sources to supported decisions", () => {
     expect(evaluateSourceForDecision("uc-ipm", "ipm")).toBe("allow");
     expect(evaluateSourceForDecision("breeder-site", "cultivar_parentage")).toBe(

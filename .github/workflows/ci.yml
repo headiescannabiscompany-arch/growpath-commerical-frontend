@@ -52,6 +52,9 @@ jobs:
       - name: Run lint
         run: npm run lint:ci
 
+      - name: Run TypeScript typecheck
+        run: npm run typecheck
+
       - name: Guard sensitive copy
         run: npm run check:sensitive-copy
 

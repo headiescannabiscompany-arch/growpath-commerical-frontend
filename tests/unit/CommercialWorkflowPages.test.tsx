@@ -33,6 +33,7 @@ const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 const mockUseAuth = jest.fn();
+const mockCan = jest.fn((_capability?: string) => true);
 
 jest.setTimeout(15000);
 
@@ -70,12 +71,15 @@ jest.mock("@/components/InlineError", () => ({
 }));
 
 jest.mock("@/entitlements", () => ({
-  CAPABILITY_KEYS: { COMMERCIAL_INVENTORY_WRITE: "commercial_inventory_write" },
+  CAPABILITY_KEYS: {
+    COMMERCIAL_INVENTORY_WRITE: "commercial_inventory_write",
+    BUSINESS_DESK_READ: "business_desk_read"
+  },
   useEntitlements: () => ({
     ready: true,
     plan: "commercial",
     mode: "commercial",
-    can: () => true
+    can: mockCan
   })
 }));
 
@@ -101,6 +105,8 @@ describe("commercial workflow pages", () => {
     mockReplace.mockReset();
     mockPush.mockReset();
     mockBack.mockReset();
+    mockCan.mockReset();
+    mockCan.mockReturnValue(true);
     mockUseAuth.mockReturnValue({
       user: { email: "brand@example.com", role: "user" },
       logout: jest.fn()
@@ -739,13 +745,14 @@ describe("commercial workflow pages", () => {
         });
       }
       if (
-        path === "/api/commercial/inventory/inventory-1" &&
+        path === "/api/business-inventory/inventory-1" &&
         (!options || options?.method === "GET")
       ) {
         return Promise.resolve({
           item: {
             id: "inventory-1",
             name: "Kelp Meal",
+            sku: "KELP-001",
             itemType: "ingredient",
             category: "dry_amendment",
             quantity: 4,
@@ -762,7 +769,7 @@ describe("commercial workflow pages", () => {
         });
       }
       if (
-        path === "/api/commercial/inventory/inventory-1" &&
+        path === "/api/business-inventory/inventory-1" &&
         options?.method === "PATCH"
       ) {
         return Promise.resolve({
@@ -2853,15 +2860,14 @@ describe("commercial workflow pages", () => {
     expect(screen.getByText("Batch Planner")).toBeTruthy();
     expect(screen.getByText("Product Trials")).toBeTruthy();
     expect(screen.getByText("Storefront")).toBeTruthy();
-    expect(screen.getByLabelText("Commercial detail item type").props.value).toBe(
-      "ingredient"
-    );
+    expect(screen.getByText("ingredient | Dry room shelf A")).toBeTruthy();
+    expect(screen.queryByLabelText("Commercial detail item type")).toBeNull();
+    expect(screen.queryByLabelText("Commercial detail location")).toBeNull();
     expect(screen.queryByText("Inventory Support Item")).toBeNull();
-
+    expect(screen.getByLabelText("Open linked commercial product")).toBeTruthy();
     expect(
-      screen.getByLabelText("Commercial detail linked product trial evidence run").props
-        .value
-    ).toBe("trial-1");
+      screen.getByLabelText("Open linked commercial product trial evidence run")
+    ).toBeTruthy();
 
     fireEvent.changeText(
       screen.getByLabelText("Commercial detail notes"),
@@ -2871,18 +2877,22 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/commercial/inventory/inventory-1",
+        "/api/business-inventory/inventory-1",
         expect.objectContaining({
           method: "PATCH",
-          data: expect.objectContaining({
-            notes: "Restocked for trial batches.",
-            linkedProductId: "product-1",
-            linkedTrialId: "trial-1",
-            linkedGrowId: "trial-1"
-          })
+          data: expect.objectContaining({ notes: "Restocked for trial batches." })
         })
       )
     );
+    const savedPayload = mockApiRequest.mock.calls.find(
+      ([path, options]) =>
+        path === "/api/business-inventory/inventory-1" && options?.method === "PATCH"
+    )?.[1]?.data;
+    expect(savedPayload).not.toHaveProperty("itemType");
+    expect(savedPayload).not.toHaveProperty("location");
+    expect(savedPayload).not.toHaveProperty("linkedProductId");
+    expect(savedPayload).not.toHaveProperty("linkedTrialId");
+    expect(savedPayload).not.toHaveProperty("linkedGrowId");
   });
 
   it("manages commercial batches as formula-to-product-to-trial workflow", async () => {
@@ -3419,6 +3429,7 @@ describe("commercial workflow pages", () => {
       "External Channels",
       "Orders",
       "Analytics",
+      "Business Desk",
       "Product Lines",
       "Product Batches",
       "Product Trials",
@@ -3429,6 +3440,9 @@ describe("commercial workflow pages", () => {
     ].forEach((destination) => {
       expect(screen.getByRole("link", { name: `Open ${destination}` })).toBeTruthy();
     });
+    expect(screen.getByRole("link", { name: "Open Business Desk" }).props.href).toBe(
+      "/home/commercial/business-desk"
+    );
     expect(
       StyleSheet.flatten(screen.getByRole("link", { name: "Open Courses" }).props.style)
     ).toEqual(
@@ -3438,6 +3452,15 @@ describe("commercial workflow pages", () => {
         maxWidth: "100%"
       })
     );
+  });
+
+  it("does not advertise Business Desk without own-workspace access", () => {
+    mockCan.mockImplementation((capability) => capability !== "business_desk_read");
+
+    const screen = render(<CommercialMoreRoute />);
+
+    expect(screen.queryByRole("link", { name: "Open Business Desk" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Open Analytics" })).toBeTruthy();
   });
 
   it("loads commercial analytics overview including ad clicks", async () => {

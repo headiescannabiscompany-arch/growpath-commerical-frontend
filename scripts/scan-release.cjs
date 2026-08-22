@@ -25,7 +25,7 @@ const allowedLocalUrlFiles = new Map([
 const checks = [
   {
     name: "OpenAI secret key",
-    pattern: /sk-[A-Za-z0-9_-]{20,}/g
+    pattern: /(?<![A-Za-z0-9_-])sk-[A-Za-z0-9_-]{20,}/g
   },
   {
     name: "Google API key",

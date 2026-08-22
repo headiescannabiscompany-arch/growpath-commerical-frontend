@@ -22,6 +22,7 @@ import {
   formatPlanPrice
 } from "../../constants/pricing";
 import { radius } from "../../theme/theme";
+import { resolveSubscriptionSafety } from "../../features/billing/subscriptionSafety";
 
 async function openCheckoutUrl(url) {
   if (Platform.OS === "web" && typeof window !== "undefined" && window.location) {
@@ -150,6 +151,10 @@ export default function BillingAndReportingScreen() {
   const renewDate = billing?.currentPeriodEnd
     ? new Date(billing.currentPeriodEnd).toLocaleDateString()
     : null;
+  const cancellationScheduled = billing?.cancelAtPeriodEnd === true;
+  const access = resolveSubscriptionSafety(billing, {
+    loaded: !billingLoading && !billingError && billing != null
+  });
 
   const handleDownloadReport = async () => {
     try {
@@ -206,8 +211,16 @@ export default function BillingAndReportingScreen() {
             <View style={styles.billingInfo}>
               {renewDate && (
                 <View style={styles.infoBit}>
-                  <Text style={styles.infoLabel}>Renews on</Text>
+                  <Text style={styles.infoLabel}>
+                    {cancellationScheduled ? "Access through" : "Renews on"}
+                  </Text>
                   <Text style={styles.infoValue}>{renewDate}</Text>
+                  {cancellationScheduled ? (
+                    <Text style={styles.billingNote}>
+                      Renewal is canceled. Facility access remains active through this
+                      billing period.
+                    </Text>
+                  ) : null}
                 </View>
               )}
               {graceDate && (
@@ -223,7 +236,7 @@ export default function BillingAndReportingScreen() {
                   {formatPlanBillingNote("facility", "yearly")}
                 </Text>
               </View>
-              {!(["active", "trialing"].includes(statusText)) ? (
+              {access.canOpenCheckout ? (
                 <View style={styles.intervalRow}>
                   {["monthly", "yearly"].map((interval) => (
                     <TouchableOpacity
@@ -246,21 +259,25 @@ export default function BillingAndReportingScreen() {
               ) : null}
             </View>
 
-            {statusText === "active" || statusText === "trialing" ? (
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  styles.cancelButton,
-                  (submitting || !canInteract) && styles.disabled
-                ]}
-                onPress={handleCancel}
-                disabled={submitting || !canInteract}
-              >
-                <Text style={styles.cancelButtonText}>
-                  {submitting ? "Processing..." : "Cancel at Period End"}
-                </Text>
-              </TouchableOpacity>
-            ) : (
+            {access.active ? (
+              access.canCancel ? (
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.cancelButton,
+                    (submitting || !canInteract) && styles.disabled
+                  ]}
+                  onPress={handleCancel}
+                  disabled={submitting || !canInteract}
+                >
+                  <Text style={styles.cancelButtonText}>
+                    {submitting ? "Processing..." : "Cancel at Period End"}
+                  </Text>
+                </TouchableOpacity>
+              ) : cancellationScheduled ? null : (
+                <Text style={styles.billingNote}>{access.message}</Text>
+              )
+            ) : access.canOpenCheckout ? (
               <TouchableOpacity
                 style={[
                   styles.button,
@@ -274,6 +291,8 @@ export default function BillingAndReportingScreen() {
                   {submitting ? "Processing..." : "Subscribe Now"}
                 </Text>
               </TouchableOpacity>
+            ) : (
+              <Text style={styles.billingNote}>{access.message}</Text>
             )}
           </>
         )}

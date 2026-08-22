@@ -11,7 +11,11 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { createCheckoutSession, getSubscriptionSetupStatus } from "@/api/subscription";
+import {
+  createCheckoutSession,
+  getSubscription,
+  getSubscriptionSetupStatus
+} from "@/api/subscription";
 import { useAuth } from "@/auth/AuthContext";
 import PaymentHelpDialog from "@/components/PaymentHelpDialog";
 import AppCard from "@/components/layout/AppCard";
@@ -20,6 +24,7 @@ import { formatPlanBillingNote, formatPlanPrice } from "@/constants/pricing";
 import { BILLING_PLANS, type BillingPlanKey } from "@/features/billing/planCopy";
 import GiftCheckoutReviewAction from "@/features/billing/GiftCheckoutReviewAction";
 import GiftCheckoutRecoveryAction from "@/features/billing/GiftCheckoutRecoveryAction";
+import { resolveSubscriptionSafety } from "@/features/billing/subscriptionSafety";
 import { useEntitlements } from "@/entitlements";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -102,10 +107,23 @@ export default function Offers() {
   const [giftRecipientName, setGiftRecipientName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
   const [showPaymentHelp, setShowPaymentHelp] = useState(false);
+  const [subscription, setSubscription] = useState<any>(null);
+  const [subscriptionLoaded, setSubscriptionLoaded] = useState(!authenticated);
 
   const activePlan = useMemo(() => String(ent.plan || "free"), [ent.plan]);
   const subscriptionActive = ["active", "trial", "trialing"].includes(
     String(auth.user?.subscriptionStatus || "").toLowerCase()
+  );
+  const access = useMemo(
+    () =>
+      resolveSubscriptionSafety(
+        { ...(auth.user || {}), ...(subscription || {}) },
+        {
+          effectivePlan: ent.plan,
+          loaded: subscriptionLoaded
+        }
+      ),
+    [auth.user, ent.plan, subscription, subscriptionLoaded]
   );
   const reportedTrialPlans = Array.isArray(auth.user?.trialPlansUsed)
     ? auth.user.trialPlansUsed
@@ -192,6 +210,34 @@ export default function Offers() {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
+    if (!authenticated) {
+      setSubscription(null);
+      setSubscriptionLoaded(true);
+      return () => {
+        mounted = false;
+      };
+    }
+    setSubscriptionLoaded(false);
+    getSubscription()
+      .then((next) => {
+        if (mounted) {
+          setSubscription(next || {});
+          setSubscriptionLoaded(true);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setSubscription(null);
+          setSubscriptionLoaded(false);
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [authenticated]);
+
+  useEffect(() => {
     if (!authenticated || (giftSetupLoaded && !giftCheckoutConfigured)) {
       if (giftModeRef.current) setGiftMode(false);
       return;
@@ -224,7 +270,7 @@ export default function Offers() {
   }, [auth, subscriptionResult]);
 
   async function startCheckout(plan: BillingPlanKey, confirmedImmediateBilling = false) {
-    if (giftMode) {
+    if (giftMode || !access.canOpenCheckout) {
       return;
     }
 
@@ -538,7 +584,7 @@ export default function Offers() {
           const confirmingImmediateBilling = pendingImmediatePlan === plan.key;
           const planTrialEligible =
             trialEligibleForPlan(plan.key) && !(subscriptionActive && current);
-          const buttonDisabled = loading || current;
+          const buttonDisabled = loading || current || !access.canOpenCheckout;
           return (
             <AppCard key={plan.key} style={[styles.planCard, current && styles.current]}>
               <Text style={styles.eyebrow}>{plan.eyebrow}</Text>
@@ -583,7 +629,7 @@ export default function Offers() {
                   onFeedback={handleGiftFeedback}
                   openCheckoutUrl={openCheckoutUrl}
                 />
-              ) : (
+              ) : access.canOpenCheckout ? (
                 <Pressable
                   onPress={() => startCheckout(plan.key, confirmingImmediateBilling)}
                   disabled={buttonDisabled}
@@ -610,6 +656,12 @@ export default function Offers() {
                             : "Review paid checkout"}
                   </Text>
                 </Pressable>
+              ) : (
+                <Text style={styles.helper}>
+                  {subscriptionLoaded
+                    ? access.message
+                    : "Checking current access before enabling another checkout."}
+                </Text>
               )}
             </AppCard>
           );

@@ -9,6 +9,8 @@ export type TeamMember = {
   role: FacilityRole;
   email?: string;
   name?: string;
+  invited?: boolean;
+  deletedAt?: string | null;
 };
 
 function normalizeMembers(res: any): TeamMember[] {

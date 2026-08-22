@@ -137,6 +137,30 @@ describe("release scan", () => {
     expect(result.stderr).toMatch(/legacy privacy API endpoint/);
   });
 
+  it("rejects standalone OpenAI secret keys without flagging embedded protocol names", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "growpath-release-scan-"));
+    copyReleaseFixture(tempRoot);
+
+    const sourcePath = path.join(tempRoot, "src", "utils", "releaseSecret.ts");
+    fs.writeFileSync(
+      sourcePath,
+      "export const leaked = 'sk-proj-thisisalongfakekeyforreleasecheck123';\n"
+    );
+
+    const result = spawnSync(
+      process.execPath,
+      [path.join(tempRoot, "scripts", "scan-release.cjs")],
+      {
+        cwd: tempRoot,
+        encoding: "utf8",
+        env: process.env
+      }
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/OpenAI secret key/);
+  });
+
   it("scans all source folders for hardcoded local URLs", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "growpath-release-scan-"));
     copyReleaseFixture(tempRoot);

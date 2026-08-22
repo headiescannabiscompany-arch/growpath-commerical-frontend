@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Linking, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-import { createCheckoutSession } from "../api/subscription";
+import { createCheckoutSession, getSubscription } from "../api/subscription";
+import { resolveSubscriptionSafety } from "../features/billing/subscriptionSafety";
 import ScreenContainer from "../components/ScreenContainer";
 import { PRO_PLAN_PRICE_DISPLAY, formatPlanBillingNote } from "../constants/pricing";
 import { radius, spacing } from "../theme/theme";
@@ -9,6 +10,12 @@ import { openExternalUrl } from "../utils/openExternalUrl";
 
 export default function SubscriptionScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [status, setStatus] = useState(null);
+  const access = useMemo(
+    () => resolveSubscriptionSafety(status, { loaded: !checking && status !== null }),
+    [checking, status]
+  );
 
   useEffect(() => {
     navigation.setOptions({
@@ -21,7 +28,25 @@ export default function SubscriptionScreen({ navigation }) {
     });
   }, [navigation]);
 
+  useEffect(() => {
+    let mounted = true;
+    getSubscription()
+      .then((next) => {
+        if (mounted) setStatus(next || {});
+      })
+      .catch(() => {
+        if (mounted) setStatus(null);
+      })
+      .finally(() => {
+        if (mounted) setChecking(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const handleSubscribe = async () => {
+    if (!access.canOpenCheckout) return;
     setLoading(true);
     try {
       const data = await createCheckoutSession();
@@ -118,27 +143,34 @@ export default function SubscriptionScreen({ navigation }) {
           />
         </View>
 
-        <TouchableOpacity
-          style={[styles.subscribeBtn, loading && styles.subscribeBtnDisabled]}
-          onPress={handleSubscribe}
-          disabled={loading}
-        >
-          <Text style={styles.subscribeBtnText}>
-            {loading ? "Processing..." : "Subscribe Now"}
-          </Text>
-        </TouchableOpacity>
+        {!checking ? <Text style={styles.accessNote}>{access.message}</Text> : null}
+        {access.canOpenCheckout ? (
+          <TouchableOpacity
+            style={[styles.subscribeBtn, loading && styles.subscribeBtnDisabled]}
+            onPress={handleSubscribe}
+            disabled={loading}
+          >
+            <Text style={styles.subscribeBtnText}>
+              {loading ? "Processing..." : "Subscribe Now"}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
 
         <TouchableOpacity
           style={[styles.subscribeBtn, { backgroundColor: "#10B981" }]}
-          onPress={() => navigation.navigate("PricingMatrix")}
+          onPress={() =>
+            navigation.navigate(access.active ? "SubscriptionStatus" : "PricingMatrix")
+          }
         >
-          <Text style={styles.subscribeBtnText}>View Plans & Pricing</Text>
+          <Text style={styles.subscribeBtnText}>
+            {access.active ? "Manage Subscription" : "View Plans & Pricing"}
+          </Text>
         </TouchableOpacity>
 
         <Text style={styles.footer}>
           By subscribing, you agree to our Terms of Service and Privacy Policy. Your
-          subscription will auto-renew based on the billing interval you choose unless canceled. Features unlock only after
-          backend confirmation.
+          subscription will auto-renew based on the billing interval you choose unless
+          canceled. Features unlock only after backend confirmation.
         </Text>
       </ScrollView>
     </ScreenContainer>
@@ -272,6 +304,14 @@ const styles = {
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700"
+  },
+  accessNote: {
+    color: "#475569",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 20,
+    marginBottom: spacing(3),
+    textAlign: "center"
   },
   footer: {
     fontSize: 12,

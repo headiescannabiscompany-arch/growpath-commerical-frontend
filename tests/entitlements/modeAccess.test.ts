@@ -9,6 +9,7 @@ import { CAPABILITY_KEYS } from "../../src/entitlements/capabilityKeys";
 import { availableWorkspaceModes } from "../../src/features/mode/workspaceOptions";
 import {
   applyDefaultCourseLimits,
+  applyCommercialBusinessDeskCapabilities,
   applyFacilityRoleCapabilities,
   applyPlanCapabilities,
   applyUniversalCapabilities,
@@ -154,6 +155,8 @@ describe("entitlement mode access", () => {
     expect(preview?.ctx.mode).toBe("commercial");
     expect(preview?.ctx.plan).toBe("commercial");
     expect(preview?.ctx.capabilities[CAPABILITY_KEYS.COMMERCIAL_HOME]).toBe(true);
+    expect(preview?.ctx.capabilities[CAPABILITY_KEYS.BUSINESS_DESK_READ]).toBe(true);
+    expect(preview?.ctx.capabilities[CAPABILITY_KEYS.BUSINESS_DESK_WRITE]).toBe(true);
   });
 
   it("lets commercial routes win over stale facility preview query params", () => {
@@ -190,6 +193,21 @@ describe("entitlement mode access", () => {
     expect(preview?.ctx.facilityRole).toBe("MANAGER");
     expect(preview?.ctx.capabilities[CAPABILITY_KEYS.FACILITY_ACCESS]).toBe(true);
     expect(preview?.ctx.capabilities[CAPABILITY_KEYS.COMPLIANCE_WRITE]).toBe(true);
+    expect(preview?.ctx.capabilities[CAPABILITY_KEYS.BUSINESS_DESK_READ]).toBe(true);
+    expect(preview?.ctx.capabilities[CAPABILITY_KEYS.BUSINESS_DESK_WRITE]).toBe(true);
+  });
+
+  it("does not give a local facility staff preview Business Desk access", () => {
+    const preview = resolveLocalFacilityPreviewSession({
+      hostname: "127.0.0.1",
+      pathname: "/home/facility/dashboard",
+      search:
+        "?facilityEmail=staff@example.test&facilityId=facility-preview-1&facilityRole=STAFF"
+    });
+
+    expect(preview?.ctx.facilityRole).toBe("STAFF");
+    expect(preview?.ctx.capabilities[CAPABILITY_KEYS.BUSINESS_DESK_READ]).toBe(false);
+    expect(preview?.ctx.capabilities[CAPABILITY_KEYS.BUSINESS_DESK_WRITE]).toBe(false);
   });
 
   it("lets facility routes win over stale commercial preview query params", () => {
@@ -414,6 +432,69 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.VIDEOS_MANAGE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_READ]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_WRITE]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_EXPORT]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_AI]).toBe(true);
+    expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_HANDOFF]).toBe(true);
+  });
+
+  it("revokes stale Business Desk grants for staff, viewers, and unknown roles", () => {
+    for (const role of ["STAFF", "VIEWER", "QA", null] as const) {
+      const normalized: Record<string, boolean> = {
+        [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true,
+        [CAPABILITY_KEYS.BUSINESS_DESK_WRITE]: true,
+        [CAPABILITY_KEYS.BUSINESS_DESK_EXPORT]: true,
+        [CAPABILITY_KEYS.BUSINESS_DESK_AI]: true,
+        [CAPABILITY_KEYS.BUSINESS_DESK_HANDOFF]: true
+      };
+
+      applyFacilityRoleCapabilities(normalized, role);
+
+      expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_READ]).toBe(false);
+      expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_WRITE]).toBe(false);
+      expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_EXPORT]).toBe(false);
+      expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_AI]).toBe(false);
+      expect(normalized[CAPABILITY_KEYS.BUSINESS_DESK_HANDOFF]).toBe(false);
+    }
+  });
+
+  it("grants Business Desk only inside an eligible commercial workspace", () => {
+    const eligible: Record<string, boolean> = {};
+    const personalMode: Record<string, boolean> = {};
+    const ineligible: Record<string, boolean> = {};
+
+    applyCommercialBusinessDeskCapabilities(eligible, "commercial", true);
+    applyCommercialBusinessDeskCapabilities(personalMode, "personal", true);
+    applyCommercialBusinessDeskCapabilities(ineligible, "commercial", false);
+
+    for (const capability of [
+      CAPABILITY_KEYS.BUSINESS_DESK_READ,
+      CAPABILITY_KEYS.BUSINESS_DESK_WRITE,
+      CAPABILITY_KEYS.BUSINESS_DESK_EXPORT,
+      CAPABILITY_KEYS.BUSINESS_DESK_AI,
+      CAPABILITY_KEYS.BUSINESS_DESK_HANDOFF
+    ]) {
+      expect(eligible[capability]).toBe(true);
+      expect(personalMode[capability]).not.toBe(true);
+      expect(ineligible[capability]).not.toBe(true);
+    }
+  });
+
+  it("removes stale Business Desk grants outside an eligible commercial workspace", () => {
+    const personalMode: Record<string, boolean> = {
+      [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true,
+      [CAPABILITY_KEYS.BUSINESS_DESK_WRITE]: true,
+      [CAPABILITY_KEYS.BUSINESS_DESK_EXPORT]: true,
+      [CAPABILITY_KEYS.BUSINESS_DESK_AI]: true,
+      [CAPABILITY_KEYS.BUSINESS_DESK_HANDOFF]: true
+    };
+
+    applyCommercialBusinessDeskCapabilities(personalMode, "personal", true);
+
+    for (const capability of Object.keys(personalMode)) {
+      expect(personalMode[capability]).toBe(false);
+    }
   });
 
   it("grants commercial inventory write to active commercial workspaces", () => {

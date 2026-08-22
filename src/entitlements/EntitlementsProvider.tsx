@@ -230,10 +230,30 @@ export function shouldBlockEntitlementBootstrap(
   return (meStatus === "idle" || meStatus === "loading") && !hasResolvedEntitlements;
 }
 
+const BUSINESS_DESK_CAPABILITIES = [
+  CAPABILITY_KEYS.BUSINESS_DESK_READ,
+  CAPABILITY_KEYS.BUSINESS_DESK_WRITE,
+  CAPABILITY_KEYS.BUSINESS_DESK_EXPORT,
+  CAPABILITY_KEYS.BUSINESS_DESK_AI,
+  CAPABILITY_KEYS.BUSINESS_DESK_HANDOFF
+] as const;
+
+function setBusinessDeskCapabilities(
+  normalized: Record<string, boolean>,
+  allowed: boolean
+) {
+  for (const capability of BUSINESS_DESK_CAPABILITIES) {
+    normalized[capability] = allowed;
+  }
+}
+
 export function applyFacilityRoleCapabilities(
   normalized: Record<string, boolean>,
   facilityRole: string | null
 ) {
+  // Server capability objects can lag a membership-role change. Revoke every
+  // Desk grant before applying the current normalized Facility role.
+  setBusinessDeskCapabilities(normalized, false);
   if (!facilityRole) return;
 
   normalized[CAPABILITY_KEYS.FACILITY_ACCESS] = true;
@@ -260,6 +280,7 @@ export function applyFacilityRoleCapabilities(
     normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD] = true;
     normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH] = true;
     normalized[CAPABILITY_KEYS.VIDEOS_MANAGE] = true;
+    setBusinessDeskCapabilities(normalized, true);
   }
 
   if (
@@ -283,6 +304,15 @@ export function applyFacilityRoleCapabilities(
     normalized[CAPABILITY_KEYS.COMPLIANCE_WRITE] = true;
     normalized[CAPABILITY_KEYS.EXPORT_COMPLIANCE] = true;
   }
+}
+
+export function applyCommercialBusinessDeskCapabilities(
+  normalized: Record<string, boolean>,
+  mode: EntitlementsMode,
+  commercialWorkspaceAccess: boolean
+) {
+  const allowed = mode === "commercial" && commercialWorkspaceAccess;
+  setBusinessDeskCapabilities(normalized, allowed);
 }
 
 export function applyUniversalCapabilities(
@@ -513,6 +543,7 @@ function applyServerCtx(
   warnUnknownCapsOnce(unknownKeys);
   applyUniversalCapabilities(normalized, plan);
   applyPlanCapabilities(normalized, plan, mode);
+  applyCommercialBusinessDeskCapabilities(normalized, mode, commercialWorkspaceAccess);
   if (shouldApplyFacilityRoleCapabilities(mode, plan)) {
     applyFacilityRoleCapabilities(normalized, facilityRole);
   }

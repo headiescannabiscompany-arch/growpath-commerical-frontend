@@ -89,7 +89,8 @@ export function RouteAccessGuard({ children }: { children: React.ReactNode }) {
     ready: entitlements.ready,
     mode: entitlements.mode,
     capabilities: entitlements.capabilities,
-    selectedFacilityId: entitlements.facilityId || null
+    selectedFacilityId: entitlements.facilityId || null,
+    facilityRole: entitlements.facilityRole || null
   });
 
   if (!allowed) {

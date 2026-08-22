@@ -11,15 +11,12 @@ import PrimaryButton from "../components/PrimaryButton";
 import ScreenContainer from "../components/ScreenContainer";
 import { PRO_PLAN_PRICE_DISPLAY } from "../constants/pricing";
 import { colors, spacing } from "../theme/theme";
+import { resolveSubscriptionSafety } from "../features/billing/subscriptionSafety";
 import { buySubscription, initIAP } from "../utils/iap";
 import { openExternalUrl } from "../utils/openExternalUrl";
 
 function isNativePurchasePlatform() {
   return Platform.OS === "ios" || Platform.OS === "android";
-}
-
-function isActiveSubscription(status) {
-  return status?.subscriptionStatus === "active" || status?.status === "active";
 }
 
 export default function SubscribeScreen({ navigation }) {
@@ -97,6 +94,7 @@ export default function SubscribeScreen({ navigation }) {
   }
 
   if (!status) return null;
+  const access = resolveSubscriptionSafety(status);
 
   return (
     <ScreenContainer scroll>
@@ -118,8 +116,23 @@ export default function SubscribeScreen({ navigation }) {
 
         <Text style={styles.price}>{PRO_PLAN_PRICE_DISPLAY}</Text>
 
-        {isActiveSubscription(status) ? (
-          <Text style={styles.active}>Subscription confirmed by backend</Text>
+        {access.active ? (
+          <>
+            <Text style={styles.active}>Subscription confirmed by backend</Text>
+            <Text style={styles.note}>{access.message}</Text>
+            {access.managementUrl ? (
+              <PrimaryButton
+                title="Open Provider Subscription Management"
+                onPress={() => openExternalUrl(access.managementUrl)}
+                style={{ marginTop: 10 }}
+              />
+            ) : null}
+            <PrimaryButton
+              title="View Subscription Status"
+              onPress={() => navigation.navigate("SubscriptionStatus")}
+              style={{ marginTop: 10 }}
+            />
+          </>
         ) : (
           <>
             <PrimaryButton

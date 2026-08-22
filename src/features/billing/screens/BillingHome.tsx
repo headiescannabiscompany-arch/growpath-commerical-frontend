@@ -13,6 +13,7 @@ import {
   type SentGift
 } from "../../../api/subscription";
 import { openExternalUrl } from "../../../utils/openExternalUrl";
+import { resolveSubscriptionSafety } from "../subscriptionSafety";
 
 function subscriptionStatus(plan: any) {
   return String(plan?.subscriptionStatus || plan?.status || "").toLowerCase();
@@ -20,28 +21,6 @@ function subscriptionStatus(plan: any) {
 
 function planLabel(plan: any) {
   return String(plan?.plan || "free").toLowerCase();
-}
-
-function hasPaidAccess(plan: any) {
-  const status = subscriptionStatus(plan);
-  const label = planLabel(plan);
-  return (
-    ["active", "trial", "trialing", "past_due", "unpaid"].includes(status) ||
-    label !== "free"
-  );
-}
-
-function isGiftEntitlement(plan: any) {
-  return String(plan?.source || "").toLowerCase() === "gift";
-}
-
-function canCancelPaidSubscription(plan: any) {
-  if (!hasPaidAccess(plan) || isGiftEntitlement(plan)) return false;
-  if (String(plan?.billingOwner || "").toLowerCase() === "purchaser") return false;
-  if (plan?.canManageBilling === false || plan?.canCancelSubscription === false) {
-    return false;
-  }
-  return true;
 }
 
 const SENT_GIFT_STATE_LABELS: Record<SentGift["state"], string> = {
@@ -225,6 +204,7 @@ export default function BillingHome({
   const { palette } = useAppTheme();
   const styles = useMemo(() => createBillingHomeStyles(palette), [palette]);
   const [plan, setPlan] = useState<any>(null);
+  const [planLoaded, setPlanLoaded] = useState(false);
   const [loading, setLoading] = useState(!purchaserHistoryOnly);
   const [busy, setBusy] = useState<"upgrade" | "cancel" | null>(null);
   const [sentGifts, setSentGifts] = useState<SentGift[]>([]);
@@ -250,8 +230,10 @@ export default function BillingHome({
     try {
       const next = await getSubscription();
       setPlan(next?.data ?? next ?? null);
+      setPlanLoaded(true);
     } catch {
       setPlan(null);
+      setPlanLoaded(false);
     } finally {
       setLoading(false);
     }
@@ -337,7 +319,10 @@ export default function BillingHome({
     setBusy("cancel");
     try {
       await cancelSubscription(token);
-      Alert.alert("Cancellation submitted", "Status updates after backend confirmation.");
+      Alert.alert(
+        "Renewal canceled",
+        "Your paid access remains active through the end of the current billing period."
+      );
       await loadPlan();
     } catch (error: any) {
       Alert.alert("Cancel failed", error?.message || "Unable to cancel subscription.");
@@ -392,12 +377,15 @@ export default function BillingHome({
     void performGiftResend(gift);
   }
 
-  const paid = hasPaidAccess(plan);
-  const giftEntitlement = isGiftEntitlement(plan);
-  const canCancel = canCancelPaidSubscription(plan);
+  const access = resolveSubscriptionSafety(plan, { loaded: !loading && planLoaded });
+  const paid = access.active;
+  const giftEntitlement = access.source === "gift";
+  const canCancel = access.canCancel;
   const currentPlan = planLabel(plan);
   const currentStatus = subscriptionStatus(plan) || "unknown";
   const giftEndsAt = formatGiftEntitlementEnd(plan?.giftEntitlementEndsAt);
+  const cancellationScheduled = access.cancelScheduled;
+  const paidThrough = formatGiftEntitlementEnd(access.paidThrough);
 
   const showSentGiftsSection =
     purchaserHistoryOnly ||
@@ -420,14 +408,17 @@ export default function BillingHome({
               <Text style={styles.meta}>Access ends: {giftEndsAt}</Text>
             </>
           ) : null}
+          {!giftEntitlement && cancellationScheduled ? (
+            <Text style={styles.meta}>Access through: {paidThrough}</Text>
+          ) : null}
           <Text style={styles.note}>
             {giftEntitlement
               ? paid
                 ? "Your prepaid access does not renew. Billing belongs to the gift purchaser, so there is no subscription to cancel from this account."
                 : "This prepaid gift has ended. You can choose a personal subscription if you want to continue Pro access."
-              : paid
-                ? "Your paid subscription is confirmed here. Cancel from this screen when you are ready. "
-                : "You are not on a paid plan yet. Use this screen to open the upgrade checkout."}
+              : cancellationScheduled
+                ? `Renewal is canceled. Your paid access remains available through ${paidThrough}.`
+                : access.message}
           </Text>
           <Pressable
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -451,7 +442,7 @@ export default function BillingHome({
                 {busy === "cancel" ? "Canceling..." : "Cancel Subscription"}
               </Text>
             </Pressable>
-          ) : !loading && !paid ? (
+          ) : !loading && access.canOpenCheckout ? (
             <Pressable
               accessibilityLabel="Upgrade to Pro"
               accessibilityRole="button"
@@ -463,6 +454,16 @@ export default function BillingHome({
               <Text style={styles.buttonText}>
                 {busy === "upgrade" ? "Opening..." : "Upgrade to Pro"}
               </Text>
+            </Pressable>
+          ) : null}
+          {!loading && access.managementUrl ? (
+            <Pressable
+              accessibilityLabel="Open provider subscription management"
+              accessibilityRole="button"
+              style={styles.button}
+              onPress={() => void openExternalUrl(access.managementUrl!)}
+            >
+              <Text style={styles.buttonText}>Open Provider Management</Text>
             </Pressable>
           ) : null}
         </>
