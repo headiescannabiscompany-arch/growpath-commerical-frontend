@@ -316,16 +316,24 @@ idempotent and audited; a stateless unsaved calculation needs no artificial busi
 #### B-03.8 — Business Ask AI (`/ask-ai`)
 
 - Ask retrieves only permission-filtered Desk records and authorized read-only B-02 evidence,
-  links sources and date range, labels incomplete KPI output and separates facts,
-  calculations, assumptions, forecasts and recommendations. The KPI snapshot is a view here,
-  not a ninth product.
+  links sources and a clearly labeled UTC last-updated date range, labels incomplete KPI
+  output and separates facts, calculations, assumptions, forecasts and recommendations. The
+  KPI snapshot is a view here, not a ninth product.
+- Each citation first opens the operation-bound redacted projection actually supplied to AI.
+  Any exact B-03 revision or current same-identity B-02 comparison is separately labeled and
+  states that additional fields were not AI input. A saved assistant-draft history keeps older
+  drafts reachable with exact operation/citation linkage and explicit review, rejection and
+  archive actions; lifecycle review never rewrites AI content.
 - Notes and extracted documents are untrusted evidence rather than instructions. AI may
   prepare a reviewed quote, follow-up, job update, purchase request or task draft but cannot
   contact, assign, export, hand off, order or mutate B-02 without the separate authorized
   confirmation for that destination.
 - Acceptance uses two similar Commercial workspaces and two Facilities to prove retrieval,
   field-level cost/cash/PII filtering, Facility credit charging/refund, provider failure,
-  source freshness, prompt-injection resistance and no write from an answer alone.
+  source freshness, prompt-injection resistance, citation/draft recovery and no write from an
+  answer alone. It also proves confirmed Commercial deletion erases account-owned B-03 content
+  after protected-storage cleanup while Facility-owned evidence remains with deleted actor and
+  reviewer references deidentified, unless a preservation hold blocks the action.
 
 All eight tools reuse calculator, document-extraction, business-record assistant and
 reviewed draft/action engines. They do not expand into full CRM, accounting, ERP, payroll,

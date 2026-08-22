@@ -219,17 +219,26 @@ calculation, assumption, scenario, and recommendation must cite one or more exac
 source IDs. The client withholds all material result text until the server attestation matches
 the result digest, selected-source count, and citation metadata.
 
-A B-03 citation opens the exact immutable saved revision used by the answer. A B-02 item or
-lot citation opens the same exact identity's current authorized projection and discloses that
-inventory is mutable and may have changed since the cited source date; a lot remains bound to
-its attested parent item. No nearby, current, or similarly named record may be substituted.
+A citation first opens the operation-bound, redacted provider projection that the server
+actually supplied to Business Ask. The citation endpoint verifies the result, provider-input,
+and source-manifest snapshots and digests, requires that the cited ID belongs to the normalized
+answer, and returns only that one projection. A separate authorized comparison may open the
+exact immutable B-03 revision used by the answer, or the same B-02 item/lot identity in its
+current mutable state. The comparison must say that fields outside the provider projection
+were not used by AI; B-02 inventory may have changed since the cited source date, and a lot
+remains bound to its attested parent item. No nearby, current, or similarly named record may
+be substituted for the cited evidence.
 
 Business Ask creates only a workspace-scoped assistant draft. It never performs the proposed
-action. A Facility answer and its draft are shared Facility workspace records visible to
-authorized `OWNER` and `MANAGER` roles, so the interface must disclose that boundary. Facility
-Business Ask never sends or returns owner-only `currentCashMinor` or `projectedCashMinor`, even
-when the requester is the Facility owner; those values remain in the deterministic authorized
-Cash-Flow view. Commercial owner-only Business Ask may use its own authorized values.
+action. Saved drafts remain reachable through a paged history, retain their exact provider
+operation and citation linkage, and support explicit review, rejection, and archive with
+version-conflict and retry handling. Reviewing or rejecting a provider draft changes only its
+lifecycle evidence; it never silently rewrites the AI content or cited projection. A Facility
+answer and its draft are shared Facility workspace records visible to authorized `OWNER` and
+`MANAGER` roles, so the interface must disclose that boundary. Facility Business Ask never
+sends or returns owner-only `currentCashMinor` or `projectedCashMinor`, even when the requester
+is the Facility owner; those values remain in the deterministic authorized Cash-Flow view.
+Commercial owner-only Business Ask may use its own authorized values.
 
 Every response marks incomplete metrics, limitations, missing information, and truncated
 source selection. Its KPI view may show only source-backed quotes, conversion, open leads,
@@ -296,10 +305,18 @@ as a real zero or usable answer.
   `READY` lifecycle, saved Expense draft version, and retained attachment binding. It records
   the current human reviewer, reviewed values, confidence, validation issues, missing fields,
   duplicate status, and reviewer-change digests in one new immutable Expense revision.
-- Workspace export and deletion requests cover B-03 records and attachments subject to the
-  published retention/legal-hold policy. Deletion of a local draft does not delete an
-  external provider object; disclose the separation and retain the minimum audit tombstone
-  required by policy.
+- Workspace export and account-deletion requests cover B-03 records, provider operations,
+  revisions, exports, and attachments. Absent an active preservation/legal hold, confirmed
+  Commercial-account deletion releases protected storage and erases account-owned B-03
+  content; only deidentified minimum security, billing, and deletion tombstones remain.
+  Facility content remains owned by the Facility when an individual account is deleted, but
+  that person's creator, updater, archiver, reviewer, requester, applier, and revision-actor
+  references are deidentified. Active provider work is cancelled only before dispatch or is
+  allowed to settle before deletion continues. These guarded privacy operations are the
+  explicit exception to routine append-only history: they are lease-protected, transactional,
+  idempotently retryable, and fail closed on storage uncertainty or preservation hold.
+  Deletion of a local draft does not delete an external provider object; disclose the
+  separation and retain only the minimum tombstone required by policy.
 - Private quarantine for an upload cancelled or abandoned before confirmation expires and is
   deleted within 24 hours. Once the user confirms the source into a saved record, that source
   follows the saved record's retention, authorized deletion, legal-hold, and account-export
