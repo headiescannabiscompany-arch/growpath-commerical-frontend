@@ -73,6 +73,28 @@ export function parseDecimalToScaledInteger(
   return match[1] === "-" ? -scaled : scaled;
 }
 
+/**
+ * Formats a safe scaled integer as an exact plain-decimal form input without
+ * passing through IEEE-754 division. This is deliberately not locale-formatted.
+ */
+export function formatScaledIntegerInput(
+  value: number | null | undefined,
+  scaleDigits: number,
+  options: { trimTrailingZeros?: boolean } = {}
+) {
+  if (value === null || value === undefined) return "";
+  if (!Number.isSafeInteger(value)) return "";
+  if (!Number.isInteger(scaleDigits) || scaleDigits < 0 || scaleDigits > 6) return "";
+  const negative = value < 0;
+  const absolute = BigInt(negative ? -value : value);
+  const scale = 10n ** BigInt(scaleDigits);
+  const whole = absolute / scale;
+  let fraction = (absolute % scale).toString().padStart(scaleDigits, "0");
+  if (options.trimTrailingZeros) fraction = fraction.replace(/0+$/, "");
+  const decimal = fraction ? `.${fraction}` : "";
+  return `${negative ? "-" : ""}${whole.toString()}${decimal}`;
+}
+
 export function parseMoneyInput(
   rawValue: string,
   context: CurrencyContext,
@@ -174,9 +196,7 @@ export function formatMoneyMinor(
 
 export function formatQuantityMicros(quantityMicros: number | null | undefined) {
   if (quantityMicros === null || quantityMicros === undefined) return "Unknown";
-  return (quantityMicros / BUSINESS_DESK_QUANTITY_SCALE).toLocaleString(undefined, {
-    maximumFractionDigits: 6
-  });
+  return formatScaledIntegerInput(quantityMicros, 6, { trimTrailingZeros: true });
 }
 
 export function formatBasisPoints(basisPoints: number | null | undefined) {

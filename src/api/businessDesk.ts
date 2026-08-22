@@ -619,6 +619,39 @@ export async function listBusinessDeskRevisions(
   return (Array.isArray(revisions) ? revisions : []) as BusinessDeskRevision[];
 }
 
+export async function getBusinessDeskRevision(
+  workspace: BusinessDeskWorkspace,
+  recordId: string,
+  revisionNumber: number,
+  request: BusinessDeskRequestOptions = {}
+) {
+  const normalizedRecordId = String(recordId || "").trim();
+  if (
+    !normalizedRecordId ||
+    !Number.isSafeInteger(revisionNumber) ||
+    revisionNumber < 1
+  ) {
+    throw new Error("Choose an exact Business Desk record revision.");
+  }
+  const url = `${businessDeskBase(workspace)}/${encodeURIComponent(
+    normalizedRecordId
+  )}/revisions/${revisionNumber}`;
+  const response = request.signal
+    ? await apiRequest(url, { signal: request.signal })
+    : await apiRequest(url);
+  const revision = envelope(response)?.revision;
+  const returnedVersion = Number(revision?.revisionNumber ?? revision?.version);
+  if (
+    !revision ||
+    typeof revision !== "object" ||
+    String(revision.recordId || "") !== normalizedRecordId ||
+    returnedVersion !== revisionNumber
+  ) {
+    throw new Error("The exact Business Desk revision response was invalid.");
+  }
+  return revision as BusinessDeskRevision;
+}
+
 function normalizedExpenseBatchSelection(records: ExpenseBatchSelection[]) {
   if (!Array.isArray(records) || records.length < 1 || records.length > 100) {
     throw new Error("Choose between 1 and 100 reviewed Expense revisions to export.");

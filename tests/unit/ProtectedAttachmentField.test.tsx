@@ -273,7 +273,7 @@ describe("ProtectedAttachmentField", () => {
   it("preserves an existing saved ID when status loading fails, then allows retry", async () => {
     mockGet.mockRejectedValueOnce(new Error("Status unavailable"));
     const onChange = jest.fn();
-    const { screen } = renderExpenseField({
+    const { screen, onBlockingChange } = renderExpenseField({
       attachmentIds: [expenseId],
       onChange
     });
@@ -281,11 +281,13 @@ describe("ProtectedAttachmentField", () => {
       await screen.findByText(/saved reference remains in this draft/i)
     ).toBeTruthy();
     expect(onChange).not.toHaveBeenCalled();
+    expect(onBlockingChange).toHaveBeenLastCalledWith(true);
 
     mockGet.mockResolvedValueOnce(packet("ready"));
     fireEvent.press(screen.getByLabelText("Refresh status Saved attachment"));
     expect(await screen.findByText(/Security checks passed/i)).toBeTruthy();
     expect(onChange).not.toHaveBeenCalled();
+    expect(onBlockingChange).toHaveBeenLastCalledWith(false);
   });
 
   it("opens only the prepared five-minute download for a READY attachment", async () => {

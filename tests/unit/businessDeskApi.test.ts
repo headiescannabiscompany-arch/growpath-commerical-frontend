@@ -5,6 +5,7 @@ import {
   calculateBusinessDesk,
   COMMERCIAL_BUSINESS_DESK_WORKSPACE,
   createBusinessDeskRecord,
+  getBusinessDeskRevision,
   listBusinessDeskRecordPage,
   listBusinessDeskRecords,
   listBusinessDeskRevisions,
@@ -124,6 +125,41 @@ describe("Business Desk API", () => {
       4,
       "/api/business-desk/quote%2F1/revisions"
     );
+  });
+
+  it("reads one exact authorized revision without searching or substituting", async () => {
+    mockApiRequest.mockResolvedValue({
+      data: {
+        revision: {
+          recordId: "quote/1",
+          revisionNumber: 17,
+          snapshot: { title: "Exact historical quote" }
+        }
+      }
+    });
+
+    await expect(
+      getBusinessDeskRevision(COMMERCIAL_BUSINESS_DESK_WORKSPACE, "quote/1", 17)
+    ).resolves.toMatchObject({ revisionNumber: 17 });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/business-desk/quote%2F1/revisions/17"
+    );
+  });
+
+  it("rejects a mismatched exact-revision response instead of substituting it", async () => {
+    mockApiRequest.mockResolvedValue({
+      data: {
+        revision: {
+          recordId: "quote/1",
+          revisionNumber: 16,
+          snapshot: { title: "Wrong revision" }
+        }
+      }
+    });
+
+    await expect(
+      getBusinessDeskRevision(COMMERCIAL_BUSINESS_DESK_WORKSPACE, "quote/1", 17)
+    ).rejects.toThrow("exact Business Desk revision response was invalid");
   });
 
   it("loads every record page without exposing the disabled implicit export", async () => {

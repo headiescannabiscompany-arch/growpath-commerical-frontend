@@ -97,7 +97,7 @@ export const BUSINESS_DESK_TOOLS: BusinessDeskToolDefinition[] = [
       "Ask questions across selected, authorized Business Desk records with citations, limits, and draft-only actions.",
     engine: "assistant",
     path: "ask-ai",
-    availability: "construction"
+    availability: "available"
   }
 ];
 

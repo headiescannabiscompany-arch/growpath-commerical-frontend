@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -7,16 +7,29 @@ import {
   type BusinessDeskRecord,
   type BusinessDeskWorkspace
 } from "@/api/businessDesk";
+import {
+  applyExpenseReceiptExtraction,
+  startExpenseReceiptExtraction,
+  type ExpenseReceiptExtractionResult,
+  type ReviewedExpenseExtraction
+} from "@/api/businessDeskProvider";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
+import { useOptionalAuth } from "@/auth/AuthContext";
 import {
   LabeledInput,
   RecordSaveArchiveActions
 } from "@/features/businessDesk/RecordFormControls";
 import ProtectedAttachmentField from "@/features/businessDesk/ProtectedAttachmentField";
+import ProviderOperationStatus, {
+  businessDeskCapabilityCopy,
+  businessDeskProviderErrorMessage
+} from "@/features/businessDesk/ProviderOperationStatus";
 import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
+import ReceiptExtractionReview from "@/features/businessDesk/ReceiptExtractionReview";
 import {
   formatMoneyMinor,
+  formatScaledIntegerInput,
   multiplyMoneyByQuantityMicros,
   parseMoneyInput,
   parseQuantityInput,
@@ -29,6 +42,15 @@ import {
   newBusinessDeskOperationKey,
   useBusinessDeskRecordCollection
 } from "@/features/businessDesk/recordWorkflow";
+import {
+  businessDeskProviderPersistenceScopeKey,
+  getOrCreatePersistedProviderIdentity,
+  rememberPersistedProviderOperation
+} from "@/features/businessDesk/providerOperationPersistence";
+import {
+  useBusinessDeskProviderCapabilities,
+  useBusinessDeskProviderOperation
+} from "@/features/businessDesk/useBusinessDeskProviderOperation";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { exportCsvContent } from "@/utils/exportToCsv";
@@ -70,11 +92,13 @@ function payloadOf(record: BusinessDeskRecord | null) {
 
 function rawMajor(value: unknown, digits: number) {
   if (!Number.isSafeInteger(value)) return "";
-  return (Number(value) / 10 ** digits).toFixed(digits);
+  return formatScaledIntegerInput(Number(value), digits);
 }
 
 function rawQuantity(value: unknown) {
-  return Number.isSafeInteger(value) ? String(Number(value) / 1_000_000) : "1";
+  return Number.isSafeInteger(value)
+    ? formatScaledIntegerInput(Number(value), 6, { trimTrailingZeros: true })
+    : "1";
 }
 
 export default function ExpenseReceiptTool({
@@ -84,10 +108,32 @@ export default function ExpenseReceiptTool({
 }: ExpenseReceiptToolProps) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
+  const auth = useOptionalAuth();
   const collection = useBusinessDeskRecordCollection(workspace, "expense");
   const workspaceKey = businessDeskWorkspaceKey(workspace);
+  const providerAccountId = String(auth?.user?.id || auth?.user?._id || "");
+  const providerFacilityRole =
+    workspace.workspaceType === "facility"
+      ? String(auth?.ctx?.facilityRole || "UNKNOWN").toUpperCase()
+      : "";
+  const providerPersistenceScopeKey = businessDeskProviderPersistenceScopeKey(
+    providerFacilityRole
+      ? `${providerAccountId}:facility-role:${providerFacilityRole}`
+      : providerAccountId,
+    workspaceKey
+  );
+  const providerCapabilities = useBusinessDeskProviderCapabilities(workspace);
+  const extractionOperation =
+    useBusinessDeskProviderOperation<ExpenseReceiptExtractionResult>({
+      workspace,
+      kind: "expense_receipt_extraction",
+      slot: "expense_receipt_extraction",
+      keyPrefix: "expense-receipt-extract"
+    });
   const activeWorkspaceKey = useRef(workspaceKey);
-  activeWorkspaceKey.current = workspaceKey;
+  useLayoutEffect(() => {
+    activeWorkspaceKey.current = workspaceKey;
+  }, [workspaceKey]);
   const exportRetryIdentity = useRef<{ signature: string; key: string } | null>(null);
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
@@ -107,6 +153,14 @@ export default function ExpenseReceiptTool({
     session: 0,
     blocking: false
   });
+  const [readyAttachmentState, setReadyAttachmentState] = useState({
+    workspaceKey,
+    ids: [] as string[]
+  });
+  const [applyBusyState, setApplyBusyState] = useState({
+    workspaceKey,
+    value: false
+  });
   const [archiveReason, setArchiveReason] = useState("");
   const [savedContentFingerprint, setSavedContentFingerprint] = useState("");
   const [formError, setFormError] = useState("");
@@ -121,6 +175,10 @@ export default function ExpenseReceiptTool({
   });
   const exportBusy =
     exportBusyState.workspaceKey === workspaceKey ? exportBusyState.value : false;
+  const applyBusy =
+    applyBusyState.workspaceKey === workspaceKey ? applyBusyState.value : false;
+  const readyAttachmentIds =
+    readyAttachmentState.workspaceKey === workspaceKey ? readyAttachmentState.ids : [];
   const activeAttachmentDraft =
     attachmentDraft.workspaceKey === workspaceKey
       ? attachmentDraft
@@ -148,6 +206,25 @@ export default function ExpenseReceiptTool({
   });
   const exactSavedDraft = Boolean(
     selected?.status === "draft" && contentFingerprint === savedContentFingerprint
+  );
+  const formMatchesSelectedRevision = Boolean(
+    selected && contentFingerprint === savedContentFingerprint
+  );
+  const selectedSavedReceiptId = String(payloadOf(selected).receiptAssetId || "").trim();
+  const readyReceiptId = readyAttachmentIds[0] || "";
+  const extractionCapability =
+    providerCapabilities.capabilities?.expenseReceiptExtraction || null;
+  const extractionResult =
+    extractionOperation.operation?.state === "succeeded" &&
+    extractionOperation.operation.result?.type === "expense_receipt_extraction"
+      ? extractionOperation.operation.result
+      : null;
+  const extractionAppliesToCurrentReceipt = Boolean(
+    extractionResult &&
+    readyReceiptId &&
+    extractionResult.provenance.sourceAttachmentId === readyReceiptId &&
+    selectedSavedReceiptId === readyReceiptId &&
+    formMatchesSelectedRevision
   );
 
   const filteredRecords = useMemo(() => {
@@ -222,6 +299,7 @@ export default function ExpenseReceiptTool({
       session: current.session + 1,
       blocking: false
     }));
+    setReadyAttachmentState({ workspaceKey, ids: [] });
     setArchiveReason("");
     setSavedContentFingerprint("");
     setFormError("");
@@ -273,6 +351,7 @@ export default function ExpenseReceiptTool({
       session: current.session + 1,
       blocking: false
     }));
+    setReadyAttachmentState({ workspaceKey, ids: [] });
     setArchiveReason("");
     setSavedContentFingerprint(
       JSON.stringify({
@@ -406,6 +485,133 @@ export default function ExpenseReceiptTool({
           ? error.message
           : "The expense review state could not be changed."
       );
+    }
+  };
+
+  const startExtraction = async () => {
+    const requestWorkspaceKey = workspaceKey;
+    setFormError("");
+    setFeedback("");
+    try {
+      if (providerCapabilities.loading) {
+        throw new Error("Wait while GrowPathAI checks provider availability.");
+      }
+      if (!extractionCapability?.enabled) {
+        throw new Error(businessDeskCapabilityCopy(extractionCapability?.code));
+      }
+      if (!selected || !businessDeskRecordId(selected)) {
+        throw new Error(
+          "Save this receipt as a draft first. Extraction can only apply through an exact saved revision."
+        );
+      }
+      if (!formMatchesSelectedRevision) {
+        throw new Error(
+          "Save or discard the current edits before starting extraction for this exact revision."
+        );
+      }
+      if (!readyReceiptId || selectedSavedReceiptId !== readyReceiptId) {
+        throw new Error(
+          "The saved receipt source must finish protected checks and show READY before extraction."
+        );
+      }
+      const signature = JSON.stringify({
+        workspaceKey,
+        operation: "expense_receipt_extraction",
+        attachmentId: readyReceiptId
+      });
+      await extractionOperation.start(signature, (clientOperationKey, signal) =>
+        startExpenseReceiptExtraction(
+          workspace,
+          { clientOperationKey, attachmentId: readyReceiptId },
+          { signal }
+        )
+      );
+    } catch (error) {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setFormError(
+          businessDeskProviderErrorMessage(
+            error instanceof Error
+              ? error
+              : new Error("Receipt extraction could not start.")
+          )
+        );
+      }
+    }
+  };
+
+  const applyReviewedExtraction = async (reviewedExpense: ReviewedExpenseExtraction) => {
+    if (applyBusy) return;
+    const requestWorkspaceKey = workspaceKey;
+    setFormError("");
+    setFeedback("");
+    setApplyBusyState({ workspaceKey: requestWorkspaceKey, value: true });
+    try {
+      const operation = extractionOperation.operation;
+      const recordId = businessDeskRecordId(selected);
+      if (
+        !operation ||
+        operation.state !== "succeeded" ||
+        !extractionResult ||
+        !recordId ||
+        !selected ||
+        !extractionAppliesToCurrentReceipt
+      ) {
+        throw new Error(
+          "Reload the exact saved expense revision and matching READY receipt before applying this staged result."
+        );
+      }
+      const signature = JSON.stringify({
+        workspaceKey: requestWorkspaceKey,
+        operation: "expense_receipt_apply",
+        operationId: operation.id,
+        resultDigestSha256: extractionResult.resultDigestSha256,
+        recordId,
+        expectedVersion: selected.version,
+        reviewedExpense
+      });
+      const identity = await getOrCreatePersistedProviderIdentity({
+        scopeKey: providerPersistenceScopeKey,
+        slot: "expense_receipt_apply",
+        signature,
+        keyPrefix: "expense-receipt-apply"
+      });
+      const packet = await applyExpenseReceiptExtraction(workspace, operation.id, {
+        recordId,
+        expectedVersion: selected.version,
+        idempotencyKey: identity.clientOperationKey,
+        reviewedExpense
+      });
+      if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
+      let metadataWarning = "";
+      try {
+        await rememberPersistedProviderOperation(identity, packet.operation.id);
+      } catch {
+        metadataWarning =
+          " Safe retry metadata could not be retained on this device; do not repeat Apply without refreshing the saved record.";
+      }
+      open(packet.record);
+      void collection.reload();
+      setFeedback(
+        `${
+          packet.idempotentReplay
+            ? "Recovered the same reviewed apply"
+            : "Applied the reviewed extraction"
+        } as expense revision ${packet.record.version}. The source, provider provenance, field confidence, validation, and reviewer-change digests remain server-attested.${metadataWarning}`
+      );
+    } catch (error) {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setFormError(
+          businessDeskProviderErrorMessage(
+            error instanceof Error
+              ? error
+              : new Error("The reviewed receipt extraction could not be applied.")
+          )
+        );
+      }
+    } finally {
+      if (activeWorkspaceKey.current === requestWorkspaceKey) {
+        setApplyBusyState({ workspaceKey: requestWorkspaceKey, value: false });
+      }
     }
   };
 
@@ -595,11 +801,18 @@ export default function ExpenseReceiptTool({
       <AppCard
         title="Receipt intake"
         titleLevel={2}
-        subtitle="Secure photo and PDF upload is available. Automatic field extraction remains unavailable, so review and enter the receipt facts yourself."
+        subtitle={
+          providerCapabilities.loading
+            ? "Secure upload is available while GrowPathAI checks whether review-gated extraction is configured."
+            : extractionCapability?.enabled
+              ? "Secure upload and review-gated receipt extraction are available. AI output remains staged until you explicitly apply it to an exact saved revision."
+              : "Secure photo and PDF upload is available. Provider extraction is unavailable, so review and enter the receipt facts yourself."
+        }
       >
         <Text style={styles.notice}>
-          Uploading a source does not send it to AI or fill business fields. Only a file
-          that passes the protected server checks can be attached to this expense.
+          Uploading alone does not send a source to AI or fill business fields. Only an
+          explicit extraction request can send the selected READY source, and only an
+          explicit reviewed Apply can create a new saved revision.
         </Text>
         <ProtectedAttachmentField
           key={`${workspaceKey}:${activeAttachmentDraft.session}`}
@@ -609,6 +822,9 @@ export default function ExpenseReceiptTool({
           attachmentIds={activeAttachmentDraft.ids}
           title="Protected receipt source"
           hint="Attach one receipt photo, invoice image, or PDF. It remains private to this workspace."
+          onReadyAttachmentIdsChange={(ids) =>
+            setReadyAttachmentState({ workspaceKey, ids })
+          }
           onChange={(ids) =>
             setAttachmentDraft((current) => ({
               ...(current.workspaceKey === workspaceKey
@@ -646,7 +862,115 @@ export default function ExpenseReceiptTool({
             )
           }
         />
+        {providerCapabilities.error ? (
+          <View style={styles.providerNotice}>
+            <Text style={styles.errorText}>
+              Provider availability could not be verified. No receipt will be sent.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry receipt extraction availability check"
+              onPress={() => void providerCapabilities.reload()}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Retry availability check</Text>
+            </Pressable>
+          </View>
+        ) : !providerCapabilities.loading && !extractionCapability?.enabled ? (
+          <Text accessibilityLiveRegion="polite" style={styles.notice}>
+            {businessDeskCapabilityCopy(extractionCapability?.code)}
+          </Text>
+        ) : null}
+        <View style={styles.providerNotice}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Extract a review draft from the saved READY receipt"
+            accessibilityState={{
+              busy: extractionOperation.busy === "starting",
+              disabled:
+                providerCapabilities.loading ||
+                !extractionCapability?.enabled ||
+                Boolean(extractionOperation.busy) ||
+                !selected ||
+                !formMatchesSelectedRevision ||
+                !readyReceiptId ||
+                selectedSavedReceiptId !== readyReceiptId
+            }}
+            disabled={
+              providerCapabilities.loading ||
+              !extractionCapability?.enabled ||
+              Boolean(extractionOperation.busy) ||
+              !selected ||
+              !formMatchesSelectedRevision ||
+              !readyReceiptId ||
+              selectedSavedReceiptId !== readyReceiptId
+            }
+            onPress={() => void startExtraction()}
+            style={[
+              styles.primaryProviderButton,
+              (providerCapabilities.loading ||
+                !extractionCapability?.enabled ||
+                Boolean(extractionOperation.busy) ||
+                !selected ||
+                !formMatchesSelectedRevision ||
+                !readyReceiptId ||
+                selectedSavedReceiptId !== readyReceiptId) &&
+                styles.disabled
+            ]}
+          >
+            <Text style={styles.primaryProviderButtonText}>
+              {extractionOperation.busy === "starting"
+                ? "Starting extraction…"
+                : `Extract review draft${
+                    extractionCapability?.creditCost
+                      ? ` · ${extractionCapability.creditCost} AI credit${
+                          extractionCapability.creditCost === 1 ? "" : "s"
+                        }`
+                      : ""
+                  }`}
+            </Text>
+          </Pressable>
+          <Text style={styles.notice}>
+            First save the READY receipt on this expense. Extraction never decides tax
+            deductibility, changes inventory, sends a document, or approves its own
+            result.
+          </Text>
+        </View>
+        <ProviderOperationStatus
+          operation={extractionOperation.operation}
+          busy={extractionOperation.busy}
+          error={extractionOperation.error}
+          notice={extractionOperation.notice}
+          onRefresh={() => void extractionOperation.refresh().catch(() => undefined)}
+          onCancel={() => void extractionOperation.cancel().catch(() => undefined)}
+          onRecoverRecent={() =>
+            void extractionOperation.recoverRecent().catch(() => undefined)
+          }
+          onStartNewAttempt={() =>
+            void extractionOperation.startNewAttempt().catch((error) => {
+              if (activeWorkspaceKey.current === workspaceKey) {
+                setFormError(
+                  error instanceof Error
+                    ? error.message
+                    : "A new extraction attempt could not be prepared."
+                );
+              }
+            })
+          }
+        />
       </AppCard>
+
+      {extractionResult ? (
+        <ReceiptExtractionReview
+          key={`${extractionOperation.operation?.id}:${extractionResult.resultDigestSha256}`}
+          result={extractionResult}
+          selectedRecordVersion={selected?.version || null}
+          initialRecordTitle={selected?.title || ""}
+          applicable={extractionAppliesToCurrentReceipt}
+          applying={applyBusy}
+          onApply={(reviewedExpense) => void applyReviewedExtraction(reviewedExpense)}
+        />
+      ) : null}
 
       <AppCard
         title={selected ? `Edit revision ${selected.version}` : "New manual expense"}
@@ -913,6 +1237,22 @@ function createStyles(palette: ThemePalette) {
     },
     lineTitle: { color: palette.text, fontSize: 14, fontWeight: "900" },
     notice: { color: palette.textMuted, fontSize: 13, lineHeight: 19 },
+    primaryProviderButton: {
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: palette.accent,
+      borderRadius: radius.card,
+      justifyContent: "center",
+      minHeight: 48,
+      paddingHorizontal: 16,
+      paddingVertical: 12
+    },
+    primaryProviderButtonText: {
+      color: palette.accentText,
+      fontSize: 13,
+      fontWeight: "900"
+    },
+    providerNotice: { gap: 8 },
     removeText: { color: palette.danger, fontSize: 12, fontWeight: "900" },
     rejectButton: {
       alignItems: "center",

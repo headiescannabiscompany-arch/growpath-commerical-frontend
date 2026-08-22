@@ -3,6 +3,7 @@ import { describe, expect, it } from "@jest/globals";
 import {
   formatBasisPoints,
   formatMoneyMinor,
+  formatScaledIntegerInput,
   multiplyMoneyByQuantityMicros,
   parseDecimalToScaledInteger,
   parseMoneyInput,
@@ -92,6 +93,21 @@ describe("Business Desk money input", () => {
       })
     ).toBe("$90,071,992,547,409.91");
     expect(formatMoneyMinor(-1, { currency: "USD", minorUnitDigits: 2 })).toBe("-$0.01");
+  });
+
+  it("formats review inputs exactly at safe-integer money and quantity boundaries", () => {
+    expect(formatScaledIntegerInput(Number.MAX_SAFE_INTEGER, 2)).toBe(
+      "90071992547409.91"
+    );
+    expect(
+      formatScaledIntegerInput(Number.MAX_SAFE_INTEGER, 6, {
+        trimTrailingZeros: true
+      })
+    ).toBe("9007199254.740991");
+    expect(formatScaledIntegerInput(1, 6, { trimTrailingZeros: true })).toBe("0.000001");
+    expect(formatScaledIntegerInput(1_500_000, 6, { trimTrailingZeros: true })).toBe(
+      "1.5"
+    );
   });
 
   it("extends money by micro-quantity with half-away component rounding", () => {

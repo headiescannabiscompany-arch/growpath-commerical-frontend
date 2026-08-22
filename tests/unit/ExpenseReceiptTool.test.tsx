@@ -27,10 +27,61 @@ jest.mock("@/utils/exportToCsv", () => ({
   exportCsvContent: (...args: any[]) => mockExport(...args)
 }));
 
+jest.mock("@/features/businessDesk/useBusinessDeskProviderOperation", () => ({
+  useBusinessDeskProviderCapabilities: () => ({
+    capabilities: {
+      expenseReceiptExtraction: {
+        enabled: false,
+        requiresReview: true,
+        creditCost: 1,
+        code: "capability_unavailable"
+      },
+      businessAsk: {
+        enabled: false,
+        createsDraftOnly: true,
+        creditCost: 1,
+        code: "capability_unavailable"
+      },
+      maxAskRecords: 50,
+      maxAskDateRangeDays: 366,
+      askRecordKinds: [
+        "price_margin_scenario",
+        "quote",
+        "lead",
+        "job",
+        "expense",
+        "vendor_comparison",
+        "cash_flow_snapshot"
+      ],
+      inventorySelection: "explicit_boolean"
+    },
+    loading: false,
+    error: null,
+    reload: jest.fn()
+  }),
+  useBusinessDeskProviderOperation: () => ({
+    operation: null,
+    busy: null,
+    error: null,
+    notice: "",
+    start: jest.fn(),
+    refresh: jest.fn(),
+    cancel: jest.fn(),
+    startNewAttempt: jest.fn()
+  })
+}));
+
 jest.mock("@/features/businessDesk/ProtectedAttachmentField", () => {
   const React = require("react");
   const { Pressable, Text, View } = require("react-native");
-  return ({ attachmentIds, onChange, onUserEdit, purpose, title }: any) => {
+  return ({
+    attachmentIds,
+    onChange,
+    onReadyAttachmentIdsChange,
+    onUserEdit,
+    purpose,
+    title
+  }: any) => {
     const id = "507f191e810c19729de86101";
     return React.createElement(
       View,
@@ -47,6 +98,7 @@ jest.mock("@/features/businessDesk/ProtectedAttachmentField", () => {
           accessibilityLabel: `Test add ${purpose} attachment`,
           onPress: () => {
             onChange([...attachmentIds, id]);
+            onReadyAttachmentIdsChange?.([...attachmentIds, id]);
             onUserEdit?.();
           }
         },
@@ -245,7 +297,7 @@ describe("ExpenseReceiptTool", () => {
         .disabled
     ).toBe(true);
     expect(mockCreate).not.toHaveBeenCalled();
-    expect(screen.getByText(/Uploading a source does not send it to AI/i)).toBeTruthy();
+    expect(screen.getByText(/Secure photo and PDF upload is available/i)).toBeTruthy();
   });
 
   it("binds only the protected receipt ID supplied by the attachment field", async () => {

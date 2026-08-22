@@ -2,6 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 
 import CommercialBusinessDeskRoute from "@/app/home/commercial/business-desk";
+import CommercialBusinessAskRoute from "@/app/home/commercial/business-desk/ask-ai";
 import CommercialCashFlowRoute from "@/app/home/commercial/business-desk/cash-flow";
 import CommercialExpenseRoute from "@/app/home/commercial/business-desk/expenses";
 import CommercialJobRoute from "@/app/home/commercial/business-desk/jobs";
@@ -9,7 +10,9 @@ import CommercialLeadRoute from "@/app/home/commercial/business-desk/leads";
 import CommercialPriceMarginRoute from "@/app/home/commercial/business-desk/price-margin";
 import CommercialQuoteRoute from "@/app/home/commercial/business-desk/quotes";
 import CommercialVendorRoute from "@/app/home/commercial/business-desk/vendors";
+import CommercialBusinessAskSourceRoute from "@/app/home/commercial/business-desk/source";
 import FacilityBusinessDeskRoute from "@/app/home/facility/business-desk";
+import FacilityBusinessAskRoute from "@/app/home/facility/business-desk/ask-ai";
 import FacilityCashFlowRoute from "@/app/home/facility/business-desk/cash-flow";
 import FacilityExpenseRoute from "@/app/home/facility/business-desk/expenses";
 import FacilityJobRoute from "@/app/home/facility/business-desk/jobs";
@@ -17,6 +20,7 @@ import FacilityLeadRoute from "@/app/home/facility/business-desk/leads";
 import FacilityPriceMarginRoute from "@/app/home/facility/business-desk/price-margin";
 import FacilityQuoteRoute from "@/app/home/facility/business-desk/quotes";
 import FacilityVendorRoute from "@/app/home/facility/business-desk/vendors";
+import FacilityBusinessAskSourceRoute from "@/app/home/facility/business-desk/source";
 
 let mockFacilityRole = "OWNER";
 
@@ -101,6 +105,28 @@ jest.mock("@/features/businessDesk/CashFlowSnapshotTool", () => {
       testID: "business-desk-tool-cash-flow"
     });
 });
+jest.mock("@/features/businessDesk/BusinessAskTool", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return (props: any) =>
+    React.createElement(View, {
+      ...props,
+      workspaceType: props.workspace?.workspaceType,
+      facilityId: props.workspace?.facilityId,
+      testID: "business-desk-tool-ask-ai"
+    });
+});
+jest.mock("@/features/businessDesk/BusinessAskCitationSource", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return (props: any) =>
+    React.createElement(View, {
+      ...props,
+      workspaceType: props.workspace?.workspaceType,
+      facilityId: props.workspace?.facilityId,
+      testID: "business-desk-tool-source"
+    });
+});
 jest.mock("@/features/businessDesk/BusinessDeskHub", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -128,6 +154,11 @@ const deterministicRoutes = [
   ["cash-flow", CommercialCashFlowRoute, FacilityCashFlowRoute]
 ] as const;
 
+const providerRoutes = [
+  ["ask-ai", CommercialBusinessAskRoute, FacilityBusinessAskRoute],
+  ["source", CommercialBusinessAskSourceRoute, FacilityBusinessAskSourceRoute]
+] as const;
+
 describe("Business Desk route registrations", () => {
   beforeEach(() => {
     mockFacilityRole = "OWNER";
@@ -142,6 +173,29 @@ describe("Business Desk route registrations", () => {
       expect(tool.props.workspaceType).toBe("commercial");
       expect(tool.props.workspaceLabel).toBe("Commercial");
       expect(tool.props.basePath).toBe("/home/commercial/business-desk");
+    }
+  );
+
+  it.each(providerRoutes)(
+    "registers provider route %s in Commercial with its own-workspace scope",
+    (toolId, CommercialRoute) => {
+      const screen = render(<CommercialRoute />);
+      const tool = screen.getByTestId(`business-desk-tool-${toolId}`);
+      expect(tool.props.workspaceType).toBe("commercial");
+      expect(tool.props.workspaceLabel).toBe("Commercial");
+      expect(tool.props.basePath).toBe("/home/commercial/business-desk");
+    }
+  );
+
+  it.each(providerRoutes)(
+    "registers provider route %s inside the selected Facility boundary",
+    (toolId, _CommercialRoute, FacilityRoute) => {
+      const screen = render(<FacilityRoute />);
+      const tool = screen.getByTestId(`business-desk-tool-${toolId}`);
+      expect(tool.props.workspaceType).toBe("facility");
+      expect(tool.props.facilityId).toBe("facility-1");
+      expect(tool.props.workspaceLabel).toBe("Facility");
+      expect(tool.props.basePath).toBe("/home/facility/business-desk");
     }
   );
 

@@ -64,6 +64,7 @@ type ProtectedAttachmentFieldProps = {
   title: string;
   hint: string;
   onChange: (attachmentIds: string[]) => void;
+  onReadyAttachmentIdsChange?: (attachmentIds: string[]) => void;
   onUserEdit?: () => void;
   onBlockingChange?: (blocked: boolean) => void;
 };
@@ -202,6 +203,7 @@ export default function ProtectedAttachmentField({
   title,
   hint,
   onChange,
+  onReadyAttachmentIdsChange,
   onUserEdit,
   onBlockingChange
 }: ProtectedAttachmentFieldProps) {
@@ -217,8 +219,18 @@ export default function ProtectedAttachmentField({
   );
   const initialIds = useRef(uniqueIds(attachmentIds));
   const boundIds = useRef(initialIds.current);
-  const callbacks = useRef({ onChange, onUserEdit, onBlockingChange });
-  callbacks.current = { onChange, onUserEdit, onBlockingChange };
+  const callbacks = useRef({
+    onChange,
+    onReadyAttachmentIdsChange,
+    onUserEdit,
+    onBlockingChange
+  });
+  callbacks.current = {
+    onChange,
+    onReadyAttachmentIdsChange,
+    onUserEdit,
+    onBlockingChange
+  };
   const [entries, setEntriesState] = useState<AttachmentEntry[]>(() =>
     initialIds.current.map(savedEntry)
   );
@@ -362,13 +374,28 @@ export default function ProtectedAttachmentField({
 
   const blocked = entries.some(
     (entry) =>
-      entry.source === "new" &&
-      entry.included &&
-      (!entry.attachment || entry.attachment.lifecycle !== "ready")
+      entry.included && (!entry.attachment || entry.attachment.lifecycle !== "ready")
   );
   useEffect(() => {
     callbacks.current.onBlockingChange?.(blocked);
   }, [blocked]);
+
+  const readyAttachmentIds = entries
+    .filter(
+      (entry) =>
+        entry.included && entry.attachment?.lifecycle === "ready" && Boolean(entry.id)
+    )
+    .map((entry) => String(entry.id));
+  const readyAttachmentSignature = readyAttachmentIds.join(":");
+  useEffect(() => {
+    const currentReadyIds = entriesRef.current
+      .filter(
+        (entry) =>
+          entry.included && entry.attachment?.lifecycle === "ready" && Boolean(entry.id)
+      )
+      .map((entry) => String(entry.id));
+    callbacks.current.onReadyAttachmentIdsChange?.(currentReadyIds);
+  }, [readyAttachmentSignature]);
 
   const activeCount = entries.filter(
     (entry) => entry.included && entry.attachment?.lifecycle !== "deleted"

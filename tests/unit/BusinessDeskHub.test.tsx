@@ -4,7 +4,10 @@ import { render } from "@testing-library/react-native";
 import BusinessDeskHub, {
   BUSINESS_DESK_TOOLS
 } from "@/features/businessDesk/BusinessDeskHub";
-import { BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES } from "@/navigation/businessDeskRoutes";
+import {
+  BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES,
+  BUSINESS_DESK_PROVIDER_ROUTE_SUFFIXES
+} from "@/navigation/businessDeskRoutes";
 
 let mockLastBackFallback: string | undefined;
 
@@ -40,7 +43,7 @@ describe("Business Desk hub", () => {
     ]);
   });
 
-  it("links all seven deterministic tools and keeps provider-backed Ask AI in construction", () => {
+  it("links all seven deterministic tools and the capability-gated provider tool", () => {
     const screen = render(
       <BusinessDeskHub
         basePath="/home/commercial/business-desk"
@@ -56,23 +59,22 @@ describe("Business Desk hub", () => {
     expect(screen.getByLabelText("Open Expense / Receipt Helper")).toBeTruthy();
     expect(screen.getByLabelText("Open Vendor Compare")).toBeTruthy();
     expect(screen.getByLabelText("Open Cash-Flow Snapshot")).toBeTruthy();
-    expect(screen.queryByLabelText("Open Business Ask AI")).toBeNull();
-    expect(screen.getAllByText("Open tool")).toHaveLength(7);
-    expect(screen.getAllByText("In the current construction sequence")).toHaveLength(1);
+    expect(screen.getByLabelText("Open Business Ask AI")).toBeTruthy();
+    expect(screen.getAllByText("Open tool")).toHaveLength(8);
+    expect(screen.queryByText("In the current construction sequence")).toBeNull();
   });
 
   it("keeps every deterministic card path aligned to the registered route manifest", () => {
     expect(
-      BUSINESS_DESK_TOOLS.filter((tool) => tool.availability === "available").map(
-        (tool) => tool.path
-      )
+      BUSINESS_DESK_TOOLS.filter((tool) => tool.availability === "available")
+        .filter((tool) => tool.engine !== "assistant")
+        .map((tool) => tool.path)
     ).toEqual([...BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES]);
-
     expect(
-      BUSINESS_DESK_TOOLS.filter((tool) => tool.availability === "construction").map(
+      BUSINESS_DESK_TOOLS.filter((tool) => tool.engine === "assistant").map(
         (tool) => tool.path
       )
-    ).toEqual(["ask-ai"]);
+    ).toEqual([BUSINESS_DESK_PROVIDER_ROUTE_SUFFIXES[0]]);
   });
 
   it("returns each hub to the active workspace's narrow-navigation More page", () => {

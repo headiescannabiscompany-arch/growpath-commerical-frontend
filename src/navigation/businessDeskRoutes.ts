@@ -16,6 +16,16 @@ export const BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES = Object.freeze([
 export type BusinessDeskDeterministicRouteSuffix =
   (typeof BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES)[number];
 
+export const BUSINESS_DESK_PROVIDER_ROUTE_SUFFIXES = Object.freeze([
+  "ask-ai",
+  "source"
+] as const);
+
+export const BUSINESS_DESK_ROUTE_SUFFIXES = Object.freeze([
+  ...BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES,
+  ...BUSINESS_DESK_PROVIDER_ROUTE_SUFFIXES
+] as const);
+
 export function hasBusinessDeskFacilityRole(value: unknown) {
   const role = String(value || "")
     .trim()
@@ -34,7 +44,7 @@ export function isRegisteredBusinessDeskRoute(
 ) {
   const normalized = withoutTrailingSlash(pathname || "/");
   if (normalized === root) return true;
-  return BUSINESS_DESK_DETERMINISTIC_ROUTE_SUFFIXES.some(
+  return BUSINESS_DESK_ROUTE_SUFFIXES.some(
     (suffix) => normalized === `${root}/${suffix}`
   );
 }
