@@ -224,6 +224,29 @@ TypeScript/lint/format/source checks passed where applicable. Exact-SHA deployme
 provider operations, production reload/isolation/credit/audit, and role-specific live mutation
 remain open and are the only B-03 completion gates; do not rebuild the eight tools.
 
+Frontend merge `9c55b6bca924cded23d8f7d0d09700d8b509c3d4` passed the complete Frontend
+CI gate and Render deployment `dep-da50siuq1p3s73at3cpg` succeeded on 2026-08-22.
+Production loaded that candidate at `https://growpathai.com/`. In the selected Triple Bag
+Genetics Facility, `headiescannabiscompany@gmail.com` was visibly identified as `STAFF` and a
+direct request for `/home/facility/business-desk` failed closed before Desk data loaded. The
+same live team surface identified `jcindc2003@yahoo.com` as `OWNER`,
+`exploringthegrowinguniverse@gmail.com` as `MANAGER`, and
+`john.collins15@alumni.morgan.edu` as `VIEWER`. This closes the live `STAFF` denial slice;
+Owner/Manager mutation, Viewer denial, provider operation, reload/isolation, credit/refund and
+audit evidence remain open and require the corresponding authorized sessions. Do not use the
+account-level `User` label on Profile as a substitute for the Facility membership role.
+
+The same live pass found that the Facility Profile's billing action still opened Personal
+Account billing: live evidence showed `Plan: pro` / `Status: active` and a Personal
+cancellation action while the Facility Profile separately showed Triple Bag Genetics as
+`FACILITY (trialing)`. This contradicted exact-Facility ownership and remains open until the
+corrected route is deployed and live-accepted. The follow-up candidate introduces
+`/home/facility/billing`, reads only the selected Facility billing record, keeps non-billing
+members read-only, and treats a confirmed authorized Stripe-backed trial as cancellable before
+renewal. Local evidence passes TypeScript, lint, the delivery guard, 12 focused route/safety
+tests, and the broader 20-suite / 255-test subscription and gift packet. No live cancellation
+or checkout was performed.
+
 ## Nature, Admin and release
 
 | ID   | User story                                                                                                             | Status          |

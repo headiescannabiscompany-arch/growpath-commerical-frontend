@@ -116,9 +116,9 @@ describe("Facility entry routes", () => {
       path.join(process.cwd(), "src/app/home/facility/(tabs)/profile.tsx"),
       "utf8"
     );
-    expect(source).toContain('router.push("/account/billing" as any)');
+    expect(source).toContain('router.push("/home/facility/billing" as any)');
     expect(source).not.toContain(
-      'accessibilityLabel="Manage facility plan and billing"\n              onPress={() => router.push("/offers"'
+      'accessibilityLabel="View facility plan and billing"\n              onPress={() => router.push("/offers"'
     );
   });
 });

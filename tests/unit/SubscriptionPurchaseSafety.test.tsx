@@ -23,7 +23,7 @@ describe("subscription purchase safety", () => {
     ["gift", { source: "gift" }],
     ["IAP", { source: "iap" }],
     ["admin", { source: "admin" }],
-    ["trial", { source: "stripe", status: "trialing" }],
+    ["unverified trial", { source: null, status: "trialing" }],
     ["unknown", { source: null, stripeSubscriptionId: "sub_stale" }]
   ])("treats active %s access as non-cancellable", (_label, extra) => {
     const state = resolveSubscriptionSafety({
@@ -44,6 +44,15 @@ describe("subscription purchase safety", () => {
       resolveSubscriptionSafety({
         plan: "pro",
         status: "active",
+        source: "stripe",
+        canManageBilling: true,
+        canCancelSubscription: true
+      }).canCancel
+    ).toBe(true);
+    expect(
+      resolveSubscriptionSafety({
+        plan: "pro",
+        status: "trialing",
         source: "stripe",
         canManageBilling: true,
         canCancelSubscription: true

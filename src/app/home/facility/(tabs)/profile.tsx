@@ -301,8 +301,8 @@ export default function FacilityProfileRoute() {
             />
             <ProfileAction
               label="Plans & billing"
-              accessibilityLabel="Manage facility plan and billing"
-              onPress={() => router.push("/account/billing" as any)}
+              accessibilityLabel="View facility plan and billing"
+              onPress={() => router.push("/home/facility/billing" as any)}
             />
             <ProfileAction
               label="Gifts you sent"
