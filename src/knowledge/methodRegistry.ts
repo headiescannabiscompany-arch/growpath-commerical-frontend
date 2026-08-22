@@ -351,6 +351,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "user confirmed, uncertain, or rejected identification decision with timestamp",
       "explicitly confirmed crop identity persisted to the selected grow/plant",
       "confirmed standalone Plant ID offered as a reviewed create-grow draft with common name, scientific name when known, aliases, user-supplied cultivar, crop-profile reference, and source ToolRun provenance",
+      "Plant-ID-sourced create-grow draft cancellation returning to the exact Saved Plant ID without creating a Grow or losing the standalone finding",
       "standalone wild or incidental Plant ID retained without requiring a grow, with grow creation and Nature publication kept as separate optional user decisions",
       "manual crop selection matched to reviewed crop guidance so non-cannabis crops receive crop-appropriate setup labels and help",
       "separate user-reviewed lifespan, production, and dormancy paths for annual, biennial, perennial, woody, continuously productive, repeated-harvest, seasonal, and observation-only grows",

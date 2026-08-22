@@ -126,6 +126,12 @@ export default function NewGrowScreen({
     cropProfileId?: string | string[];
     sourceToolRunId?: string | string[];
   }>();
+  const sourceToolRunId = firstParam(params.sourceToolRunId);
+  const returnsToPersonalPlantId = workspace === "personal" && Boolean(sourceToolRunId);
+  const backTarget = returnsToPersonalPlantId
+    ? `/home/personal/tools/saved-runs?toolRunId=${encodeURIComponent(sourceToolRunId)}`
+    : `${basePath}/grows`;
+  const preferSourceBack = returnsToPersonalPlantId;
   const auth = useAuth();
   const entitlements = useEntitlements();
   const hasCreateCapability =
@@ -638,7 +644,12 @@ export default function NewGrowScreen({
 
   if (checkingLimit && hasCreateCapability) {
     return (
-      <ScreenBoundary title="New Grow" showBack backFallbackHref={`${basePath}/grows`}>
+      <ScreenBoundary
+        title="New Grow"
+        showBack
+        backFallbackHref={backTarget}
+        preferBackFallback={preferSourceBack}
+      >
         <ScrollView
           style={{ flex: 1, backgroundColor: palette.page }}
           contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
@@ -655,7 +666,12 @@ export default function NewGrowScreen({
 
   if (!canCreateGrow) {
     return (
-      <ScreenBoundary title="New Grow" showBack backFallbackHref={`${basePath}/grows`}>
+      <ScreenBoundary
+        title="New Grow"
+        showBack
+        backFallbackHref={backTarget}
+        preferBackFallback={preferSourceBack}
+      >
         <LockedScreen
           title={maxGrows === 1 ? "Free grow limit reached" : "Grow limit reached"}
           message={
@@ -669,7 +685,12 @@ export default function NewGrowScreen({
   }
 
   return (
-    <ScreenBoundary title="New Grow" showBack backFallbackHref={`${basePath}/grows`}>
+    <ScreenBoundary
+      title="New Grow"
+      showBack
+      backFallbackHref={backTarget}
+      preferBackFallback={preferSourceBack}
+    >
       <ScrollView
         style={{ flex: 1, backgroundColor: palette.page }}
         contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}

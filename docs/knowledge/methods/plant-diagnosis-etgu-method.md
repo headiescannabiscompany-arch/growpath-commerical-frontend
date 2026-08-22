@@ -362,6 +362,8 @@ open a reviewable create-grow draft carrying the common name, supported scientif
 candidate, aliases, cultivar when supplied, crop-profile reference, and source ToolRun.
 The user must still review and save the grow. Unresolved identities cannot start a
 crop-specific grow, and creating or declining a grow never publishes a Nature observation.
+Declining or backing out of a Plant-ID-sourced grow draft must return to that exact Saved
+Plant ID result without creating a Grow or losing the standalone finding.
 
 When device geolocation is unavailable, denied, or unsupported by the browser host, Plant
 ID must offer a deliberate manual-location fallback. On web this should be an interactive

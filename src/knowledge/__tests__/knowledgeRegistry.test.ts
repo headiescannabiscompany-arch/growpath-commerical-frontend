@@ -455,6 +455,9 @@ describe("GrowPath knowledge registries", () => {
       "standalone private Plant ID location that can be added, updated, or removed without creating a Field Study observation or publishing to Nature"
     );
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "Plant-ID-sourced create-grow draft cancellation returning to the exact Saved Plant ID without creating a Grow or losing the standalone finding"
+    );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "required user-reviewed contributor-authored public Nature description stored as publicNotes and shown with the public photo pin without converting it into AI evidence"
     );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
