@@ -26,18 +26,18 @@ durable decision record.
 
 ## Unique clean work to reconcile
 
-| Branch                                          | Matrix rows      | Assigned batch | Decision                                                                                                      |
-| ----------------------------------------------- | ---------------- | -------------: | ------------------------------------------------------------------------------------------------------------- |
-| `codex/plant-id-reviewed-evidence-consolidated` | P03–P06, N01–N04 |              1 | Reuse fixtures and method evidence after checking them against the current Plant ID/Nature contract.          |
-| `codex/admin-report-actions-frontend`           | A03–A05          |              2 | Reconcile comment deep links and admin live-acceptance evidence with the current unified reporting UI.        |
-| `codex/device-integration-frontend-p0`          | P10, F05–F06     |            3/5 | Reuse scoped integrations/history-import implementation; accept in the first batch that owns each surface.    |
-| `codex/finish-old-work-integration`             | P02              |              3 | Reuse reversible grow archive implementation and tests.                                                       |
-| `codex/archive-live-evidence`                   | P02              |              3 | Evidence-only follow-up to the grow archive implementation; do not accept without a current check.            |
-| `codex/standalone-harvest-readiness`            | P09              |              3 | Reuse standalone harvest readiness and readable-result sharing work after current knowledge-contract review.  |
-| `codex/live-lifecycle-p0-frontend`              | S05–S06          |              4 | Reuse the OBS/hosted-live draft, review, publish, viewer, and chat lifecycle implementation.                  |
-| `codex/discover-media-exact-links`              | S01–S02, S08     |              4 | Reuse exact-record discovery links and tests.                                                                 |
-| `codex/live-studio-closure-doc-20260815`        | S05              |              4 | Evidence input only; credential state must be rechecked when live acceptance is run.                          |
-| `codex/release-acceptance-evidence`             | C01–C05, R03     |            5/8 | Reuse the commercial tab fix if still missing. Treat the older acceptance report as historical evidence only. |
+| Branch                                          | Matrix rows      | Assigned batch | Decision                                                                                                        |
+| ----------------------------------------------- | ---------------- | -------------: | --------------------------------------------------------------------------------------------------------------- |
+| `codex/plant-id-reviewed-evidence-consolidated` | P03–P06, N01–N04 |              1 | Reconciled: superseded by the newer 73-record catalog and pre-polish gates already on `main`; no patch applied. |
+| `codex/admin-report-actions-frontend`           | A03–A05          |              2 | Reconcile comment deep links and admin live-acceptance evidence with the current unified reporting UI.          |
+| `codex/device-integration-frontend-p0`          | P10, F05–F06     |            3/5 | Reuse scoped integrations/history-import implementation; accept in the first batch that owns each surface.      |
+| `codex/finish-old-work-integration`             | P02              |              3 | Reuse reversible grow archive implementation and tests.                                                         |
+| `codex/archive-live-evidence`                   | P02              |              3 | Evidence-only follow-up to the grow archive implementation; do not accept without a current check.              |
+| `codex/standalone-harvest-readiness`            | P09              |              3 | Reuse standalone harvest readiness and readable-result sharing work after current knowledge-contract review.    |
+| `codex/live-lifecycle-p0-frontend`              | S05–S06          |              4 | Reuse the OBS/hosted-live draft, review, publish, viewer, and chat lifecycle implementation.                    |
+| `codex/discover-media-exact-links`              | S01–S02, S08     |              4 | Reuse exact-record discovery links and tests.                                                                   |
+| `codex/live-studio-closure-doc-20260815`        | S05              |              4 | Evidence input only; credential state must be rechecked when live acceptance is run.                            |
+| `codex/release-acceptance-evidence`             | C01–C05, R03     |            5/8 | Reuse the commercial tab fix if still missing. Treat the older acceptance report as historical evidence only.   |
 
 ## Meaningful dirty work to preserve and reconcile
 
