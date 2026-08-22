@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Platform,
   Pressable,
-  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -17,7 +15,6 @@ import {
   createBusinessDeskRecord,
   listBusinessDeskRecords,
   listBusinessDeskRevisions,
-  prepareBusinessDeskQuoteArtifact,
   updateBusinessDeskRecord,
   type BusinessDeskRecord,
   type BusinessDeskRevision,
@@ -29,10 +26,12 @@ import {
   type QuoteLineCategory,
   type QuoteRecordPayload
 } from "@/api/businessDesk";
+import { BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES } from "@/api/businessDeskArtifacts";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import InlineError from "@/components/InlineError";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import ReviewedArtifactPanel from "@/features/businessDesk/ReviewedArtifactPanel";
 import {
   formatBasisPoints,
   formatMoneyMinor,
@@ -45,7 +44,7 @@ import {
 } from "@/features/businessDesk/money";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { exportCsvContent, type CsvExportResult } from "@/utils/exportToCsv";
+import type { CsvExportResult } from "@/utils/exportToCsv";
 
 type TaxType = "none" | "percent" | "fixed";
 type DepositType = "none" | "percent" | "fixed";
@@ -813,88 +812,6 @@ export default function QuoteEstimateTool({
       if (activeWorkspaceKey.current === requestWorkspaceKey) {
         setError(
           caught instanceof Error ? caught : new Error("The quote could not be archived.")
-        );
-      }
-    } finally {
-      if (activeWorkspaceKey.current === requestWorkspaceKey) setBusy(false);
-    }
-  }
-
-  async function prepareArtifact(mode: "copy" | "csv") {
-    if (!exactReviewedRevision || !selectedRecord || busy) return;
-    const requestWorkspaceKey = workspaceKey;
-    const id = recordId(selectedRecord);
-    const reviewedPayload = payloadFrom(selectedRecord);
-    const reviewedQuoteNumber = String(reviewedPayload?.quoteNumber || "").trim();
-    setBusy(true);
-    setError(null);
-    setFeedback("");
-    try {
-      const signature = JSON.stringify({
-        operation: `prepare-${mode}`,
-        id,
-        version: selectedRecord.version
-      });
-      if (!retryIdentity.current || retryIdentity.current.signature !== signature) {
-        retryIdentity.current = {
-          signature,
-          key: uniqueKey(`prepare-${mode}`, id)
-        };
-      }
-      const artifact = await prepareBusinessDeskQuoteArtifact(requestWorkspace, id, {
-        expectedVersion: selectedRecord.version,
-        mode,
-        idempotencyKey: retryIdentity.current.key
-      });
-      if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
-      if (artifact.deliveryStatus !== "not_observed") {
-        throw new Error(
-          "The prepared quote artifact did not include a truthful delivery status."
-        );
-      }
-      let outcome: QuoteArtifactLocalOutcome;
-      if (mode === "copy") {
-        if (
-          Platform.OS === "web" &&
-          typeof navigator !== "undefined" &&
-          navigator.clipboard?.writeText
-        ) {
-          await navigator.clipboard.writeText(artifact.content);
-          outcome = { method: "clipboard" };
-        } else {
-          const shareResult = await Share.share({
-            title: `Quote ${reviewedQuoteNumber || selectedRecord.title}`,
-            message: artifact.content
-          });
-          outcome = {
-            method: "native-share",
-            action:
-              shareResult.action === Share.dismissedAction
-                ? "dismissed"
-                : shareResult.action === Share.sharedAction
-                  ? "shared"
-                  : "unknown"
-          };
-        }
-      } else {
-        const exportResult = await exportCsvContent(
-          artifact.filename || `quote-${reviewedQuoteNumber || selectedRecord.version}`,
-          artifact.content
-        );
-        if (!exportResult.ok || exportResult.method === "empty") {
-          throw new Error("The reviewed quote artifact was empty and was not exported.");
-        }
-        outcome = { method: exportResult.method };
-      }
-      retryIdentity.current = null;
-      setFeedback(quoteArtifactOutcomeMessage(artifact.preparedFromVersion, outcome));
-      await loadRevisions(selectedRecord);
-    } catch (caught) {
-      if (activeWorkspaceKey.current === requestWorkspaceKey) {
-        setError(
-          caught instanceof Error
-            ? caught
-            : new Error("The reviewed quote artifact could not be prepared.")
         );
       }
     } finally {
@@ -1671,53 +1588,84 @@ export default function QuoteEstimateTool({
         </AppCard>
       ) : null}
 
+      <ReviewedArtifactPanel
+        workspace={requestWorkspace}
+        artifactKind="quote_copy"
+        revisionSelections={
+          exactReviewedRevision && selectedRecord
+            ? [
+                {
+                  recordId: recordId(selectedRecord),
+                  revisionNumber: selectedRecord.version
+                }
+              ]
+            : []
+        }
+        expectedRedactionProfile={BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES.quote_copy}
+        title="Reviewed quote copy"
+        selectionLabel={
+          exactReviewedRevision && selectedRecord
+            ? `Pinned to reviewed quote revision ${selectedRecord.version}.`
+            : "No reviewed quote revision is selected."
+        }
+        disclosure="The customer copy excludes internal notes, known direct costs, business/payment fees, fulfillment cost, and internal gross-profit fields. Review every included customer-facing field before confirming."
+        contextNotice={
+          dirty && exactReviewedRevision && selectedRecord
+            ? `The editor contains unsaved changes. This copy remains pinned to reviewed revision ${selectedRecord.version}; the edits are not included.`
+            : undefined
+        }
+        disabled={!exactReviewedRevision || busy}
+        disabledReason="Save and review an exact quote revision before previewing its customer copy."
+        previewButtonLabel="Preview reviewed quote copy"
+        prepareButtonLabel="Confirm and copy reviewed quote"
+      />
+
+      <ReviewedArtifactPanel
+        workspace={requestWorkspace}
+        artifactKind="quote_csv"
+        revisionSelections={
+          exactReviewedRevision && selectedRecord
+            ? [
+                {
+                  recordId: recordId(selectedRecord),
+                  revisionNumber: selectedRecord.version
+                }
+              ]
+            : []
+        }
+        expectedRedactionProfile={BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES.quote_csv}
+        title="Reviewed quote CSV"
+        selectionLabel={
+          exactReviewedRevision && selectedRecord
+            ? `Pinned to reviewed quote revision ${selectedRecord.version}.`
+            : "No reviewed quote revision is selected."
+        }
+        disclosure="The customer CSV excludes internal notes, known direct costs, business/payment fees, fulfillment cost, and internal gross-profit fields. The server projection is formula-safe and the client hands off those exact reviewed bytes without rebuilding the CSV."
+        contextNotice={
+          dirty && exactReviewedRevision && selectedRecord
+            ? `The editor contains unsaved changes. This CSV remains pinned to reviewed revision ${selectedRecord.version}; the edits are not included.`
+            : undefined
+        }
+        disabled={!exactReviewedRevision || busy}
+        disabledReason="Save and review an exact quote revision before previewing its CSV."
+        previewButtonLabel="Preview reviewed quote CSV"
+        prepareButtonLabel="Confirm and export reviewed quote CSV"
+      />
+
       <AppCard
-        title="Copy, export, and payment-provider handoff"
+        title="Optional payment-provider draft handoff"
         titleLevel={2}
-        subtitle="These actions must be tied to the exact reviewed revision and recorded in its audit history."
+        subtitle="Provider handoff is a separate consequential action and is not part of copy or CSV preparation."
       >
-        <Text style={styles.bodyText}>
-          {exactReviewedRevision
-            ? `Revision ${selectedRecord?.version} is reviewed. Copy or export prepares that exact revision and records the preparation in its audit history.`
-            : "Save and review an exact revision before copy or export can become available."}
-        </Text>
-        <View style={styles.actionRow}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Copy reviewed quote"
-            accessibilityState={{ disabled: !exactReviewedRevision || busy }}
-            disabled={!exactReviewedRevision || busy}
-            onPress={() => void prepareArtifact("copy")}
-            style={[
-              styles.secondaryButton,
-              (!exactReviewedRevision || busy) && styles.disabled
-            ]}
-          >
-            <Text style={styles.secondaryButtonText}>Copy reviewed quote</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Export reviewed quote"
-            accessibilityState={{ disabled: !exactReviewedRevision || busy }}
-            disabled={!exactReviewedRevision || busy}
-            onPress={() => void prepareArtifact("csv")}
-            style={[
-              styles.secondaryButton,
-              (!exactReviewedRevision || busy) && styles.disabled
-            ]}
-          >
-            <Text style={styles.secondaryButtonText}>Export reviewed quote</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Payment provider draft handoff unavailable"
-            accessibilityState={{ disabled: true }}
-            disabled
-            style={[styles.secondaryButton, styles.disabled]}
-          >
-            <Text style={styles.secondaryButtonText}>Provider draft handoff</Text>
-          </Pressable>
-        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Payment provider draft handoff unavailable"
+          accessibilityState={{ disabled: true }}
+          disabled
+          style={[styles.secondaryButton, styles.disabled]}
+        >
+          <Text style={styles.secondaryButtonText}>Provider draft handoff</Text>
+        </Pressable>
         <Text style={styles.boundaryText}>
           Provider handoff is not configured. No Stripe object, invoice, payment link,
           customer charge, acceptance, payment state, or B‑02 inventory movement is

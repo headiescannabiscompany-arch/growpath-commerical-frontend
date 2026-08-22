@@ -8,6 +8,7 @@ import {
   type BusinessDeskRecord,
   type BusinessDeskWorkspace
 } from "@/api/businessDesk";
+import { BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES } from "@/api/businessDeskArtifacts";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import {
@@ -16,6 +17,7 @@ import {
   StatusSelector
 } from "@/features/businessDesk/RecordFormControls";
 import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
+import ReviewedArtifactPanel from "@/features/businessDesk/ReviewedArtifactPanel";
 import {
   formatMoneyMinor,
   parseMoneyInput,
@@ -381,6 +383,9 @@ export default function CashFlowSnapshotTool({
   });
   const exactSavedDraft = Boolean(
     selected?.status === "draft" && contentFingerprint === savedContentFingerprint
+  );
+  const exactReviewedRevision = Boolean(
+    selected?.status === "reviewed" && contentFingerprint === savedContentFingerprint
   );
   const visibleResult = resultFingerprint === contentFingerprint ? result : null;
 
@@ -1327,6 +1332,50 @@ export default function CashFlowSnapshotTool({
           onArchive={() => void archive()}
         />
       </AppCard>
+
+      <ReviewedArtifactPanel
+        workspace={stableWorkspace}
+        artifactKind="cash_flow_csv"
+        revisionSelections={
+          exactReviewedRevision && selected
+            ? [
+                {
+                  recordId: businessDeskRecordId(selected),
+                  revisionNumber: selected.version
+                }
+              ]
+            : []
+        }
+        expectedRedactionProfile={
+          canViewCurrentCash
+            ? BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES.cash_flow_full
+            : BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES.cash_flow_facility_manager
+        }
+        title={
+          canViewCurrentCash
+            ? "Owner full cash-flow CSV"
+            : "Facility Manager cash-redacted CSV"
+        }
+        selectionLabel={
+          exactReviewedRevision && selected
+            ? `Pinned to reviewed cash-flow revision ${selected.version}.`
+            : "No unchanged reviewed cash-flow revision is selected."
+        }
+        disclosure={
+          canViewCurrentCash
+            ? "This owner-authorized private export includes the reviewed current-cash input and projected-cash scenarios when present, along with recorded and expected movement. It is not a bank statement, bookkeeping record, payment evidence, or ML forecast. Confirm the private destination before export."
+            : "Facility Manager export omits owner-only current cash and projected cash. It includes only the authorized cash-movement scenario fields in the exact preview. The redacted export is not a bank statement, bookkeeping record, payment evidence, or ML forecast."
+        }
+        disabled={!exactReviewedRevision || collection.saving || busy}
+        disabledReason="Save and explicitly review an unchanged cash-flow revision before previewing its role-filtered CSV."
+        previewButtonLabel={
+          canViewCurrentCash
+            ? "Preview owner full cash-flow CSV"
+            : "Preview Manager cash-redacted CSV"
+        }
+        prepareButtonLabel="Confirm and export cash-flow CSV"
+        stalenessKey={`${businessDeskRecordId(selected)}:${selected?.version || 0}:${exactReviewedRevision ? "reviewed" : "changed"}:${canViewCurrentCash ? "full" : "manager"}`}
+      />
     </RecordToolScaffold>
   );
 }

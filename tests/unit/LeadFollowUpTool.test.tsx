@@ -219,6 +219,10 @@ describe("LeadFollowUpTool", () => {
     expect(lead).not.toHaveProperty("stage");
     expect(lead).not.toHaveProperty("relatedRecordId");
     expect(screen.queryByLabelText(/related.* ID/i)).toBeNull();
+    expect(screen.getByText(/private workspace export.*email, phone/i)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Preview private lead CSV").props.accessibilityState
+    ).toEqual({ busy: false, disabled: false });
   });
 
   it("uses an exact-version transition request with no content fields", async () => {

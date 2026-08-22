@@ -3,10 +3,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   businessDeskWorkspaceKey,
-  prepareBusinessDeskExpenseBatchCsv,
   type BusinessDeskRecord,
   type BusinessDeskWorkspace
 } from "@/api/businessDesk";
+import { BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES } from "@/api/businessDeskArtifacts";
 import {
   applyExpenseReceiptExtraction,
   startExpenseReceiptExtraction,
@@ -39,9 +39,9 @@ import {
   businessDeskRecordId,
   isoToLocalDate,
   localDateToIso,
-  newBusinessDeskOperationKey,
   useBusinessDeskRecordCollection
 } from "@/features/businessDesk/recordWorkflow";
+import ReviewedArtifactPanel from "@/features/businessDesk/ReviewedArtifactPanel";
 import {
   businessDeskProviderPersistenceScopeKey,
   getOrCreatePersistedProviderIdentity,
@@ -53,7 +53,6 @@ import {
 } from "@/features/businessDesk/useBusinessDeskProviderOperation";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
-import { exportCsvContent } from "@/utils/exportToCsv";
 
 type ExpenseStatus = "draft" | "reviewed" | "rejected" | "correction_required";
 type ExpenseTransitionStatus = Exclude<ExpenseStatus, "draft">;
@@ -134,7 +133,6 @@ export default function ExpenseReceiptTool({
   useLayoutEffect(() => {
     activeWorkspaceKey.current = workspaceKey;
   }, [workspaceKey]);
-  const exportRetryIdentity = useRef<{ signature: string; key: string } | null>(null);
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
   const [merchant, setMerchant] = useState("");
@@ -169,12 +167,6 @@ export default function ExpenseReceiptTool({
   const [categoryFilter, setCategoryFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [throughDate, setThroughDate] = useState("");
-  const [exportBusyState, setExportBusyState] = useState({
-    workspaceKey,
-    value: false
-  });
-  const exportBusy =
-    exportBusyState.workspaceKey === workspaceKey ? exportBusyState.value : false;
   const applyBusy =
     applyBusyState.workspaceKey === workspaceKey ? applyBusyState.value : false;
   const readyAttachmentIds =
@@ -259,6 +251,18 @@ export default function ExpenseReceiptTool({
         );
       }),
     [filteredRecords]
+  );
+  const artifactRevisionSelections = useMemo(
+    () =>
+      reviewedFilteredRecords.length <= 100
+        ? reviewedFilteredRecords
+            .map((record) => ({
+              recordId: businessDeskRecordId(record),
+              revisionNumber: record.version
+            }))
+            .sort((left, right) => left.recordId.localeCompare(right.recordId))
+        : [],
+    [reviewedFilteredRecords]
   );
 
   const totalsByCurrency = useMemo(() => {
@@ -631,67 +635,6 @@ export default function ExpenseReceiptTool({
     }
   };
 
-  const exportFiltered = async () => {
-    if (exportBusy) return;
-    const requestWorkspaceKey = workspaceKey;
-    setFormError("");
-    setFeedback("");
-    setExportBusyState({ workspaceKey: requestWorkspaceKey, value: true });
-    try {
-      if (!reviewedFilteredRecords.length) {
-        throw new Error(
-          "No reviewed saved Expense revisions match these filters. Drafts and rejected records cannot be exported."
-        );
-      }
-      if (reviewedFilteredRecords.length > 100) {
-        throw new Error(
-          "More than 100 reviewed Expense revisions match. Narrow the filters before preparing one exact audited export."
-        );
-      }
-      const records = reviewedFilteredRecords
-        .map((record) => ({
-          recordId: businessDeskRecordId(record),
-          expectedVersion: record.version
-        }))
-        .sort((left, right) => left.recordId.localeCompare(right.recordId));
-      const signature = JSON.stringify({ workspaceKey: requestWorkspaceKey, records });
-      if (
-        !exportRetryIdentity.current ||
-        exportRetryIdentity.current.signature !== signature
-      ) {
-        exportRetryIdentity.current = {
-          signature,
-          key: newBusinessDeskOperationKey("expense-batch-export")
-        };
-      }
-      const packet = await prepareBusinessDeskExpenseBatchCsv(workspace, {
-        records,
-        idempotencyKey: exportRetryIdentity.current.key
-      });
-      if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
-      const result = await exportCsvContent(
-        packet.artifact.filename,
-        packet.artifact.content
-      );
-      if (activeWorkspaceKey.current !== requestWorkspaceKey) return;
-      if (!result.ok) throw new Error("The prepared Expense CSV was empty.");
-      exportRetryIdentity.current = null;
-      setFeedback(
-        `${packet.idempotentReplay ? "Recovered the same" : "Prepared an"} audited CSV receipt pinned to ${packet.artifact.recordCount} reviewed Expense revision${packet.artifact.recordCount === 1 ? "" : "s"} and ${result.method === "web-download" ? "started a local download" : "opened the system share flow"}. GrowPathAI did not observe file delivery.`
-      );
-    } catch (error) {
-      if (activeWorkspaceKey.current === requestWorkspaceKey) {
-        setFormError(
-          error instanceof Error ? error.message : "The expense export failed."
-        );
-      }
-    } finally {
-      if (activeWorkspaceKey.current === requestWorkspaceKey) {
-        setExportBusyState({ workspaceKey: requestWorkspaceKey, value: false });
-      }
-    }
-  };
-
   return (
     <RecordToolScaffold
       title="Expense / Receipt Helper"
@@ -757,37 +700,6 @@ export default function ExpenseReceiptTool({
                 total
               </Text>
             ))}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Export filtered saved expenses"
-              accessibilityState={{
-                busy: exportBusy,
-                disabled:
-                  exportBusy ||
-                  collection.loading ||
-                  reviewedFilteredRecords.length < 1 ||
-                  reviewedFilteredRecords.length > 100
-              }}
-              disabled={
-                exportBusy ||
-                collection.loading ||
-                reviewedFilteredRecords.length < 1 ||
-                reviewedFilteredRecords.length > 100
-              }
-              onPress={() => void exportFiltered()}
-              style={[
-                styles.secondaryButton,
-                (exportBusy ||
-                  collection.loading ||
-                  reviewedFilteredRecords.length < 1 ||
-                  reviewedFilteredRecords.length > 100) &&
-                  styles.disabled
-              ]}
-            >
-              <Text style={styles.secondaryButtonText}>
-                {exportBusy ? "Preparing audited CSV…" : "Prepare audited filtered CSV"}
-              </Text>
-            </Pressable>
             {reviewedFilteredRecords.length > 100 ? (
               <Text style={styles.errorText}>
                 Narrow the filters to 100 or fewer reviewed revisions. GrowPathAI will not
@@ -795,6 +707,37 @@ export default function ExpenseReceiptTool({
               </Text>
             ) : null}
           </View>
+          <ReviewedArtifactPanel
+            workspace={workspace}
+            artifactKind="expense_csv_batch"
+            revisionSelections={artifactRevisionSelections}
+            expectedRedactionProfile={
+              BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES.expense_csv_batch
+            }
+            title="Reviewed filtered Expense CSV"
+            selectionLabel={
+              reviewedFilteredRecords.length >= 1 && reviewedFilteredRecords.length <= 100
+                ? `Pinned to ${reviewedFilteredRecords.length} exact reviewed Expense revision${reviewedFilteredRecords.length === 1 ? "" : "s"} matching the current filters.`
+                : "Choose filters that match between 1 and 100 reviewed Expense revisions."
+            }
+            disclosure="This private workspace CSV can include merchant, date, amount, explicitly recorded tax, readable line items, category, payment method, related-record references, and reviewed notes. Receipt source files are not embedded. It is formula-safe but is not bookkeeping, a tax-deductibility decision, payment evidence, or a public copy."
+            contextNotice={
+              selected && !formMatchesSelectedRevision
+                ? "The selected Expense editor contains unsaved changes. This batch remains pinned to the exact saved reviewed revisions matching the filters; those edits are not included."
+                : undefined
+            }
+            disabled={
+              collection.loading ||
+              reviewedFilteredRecords.length < 1 ||
+              reviewedFilteredRecords.length > 100
+            }
+            disabledReason="Only 1–100 exact saved Expense revisions whose record and field review states are both reviewed can be previewed. Narrow the filters when needed."
+            previewButtonLabel="Preview filtered reviewed Expense CSV"
+            prepareButtonLabel="Confirm and export reviewed Expense CSV"
+            stalenessKey={artifactRevisionSelections
+              .map((selection) => `${selection.recordId}:${selection.revisionNumber}`)
+              .join("|")}
+          />
         </>
       }
     >

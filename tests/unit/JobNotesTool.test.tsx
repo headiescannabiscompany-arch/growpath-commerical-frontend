@@ -267,6 +267,12 @@ describe("JobNotesTool", () => {
     expect(screen.queryByLabelText(/attachment references/i)).toBeNull();
     expect(screen.queryByLabelText(/related quote ID/i)).toBeNull();
     expect(screen.getByText(/does not verify provider ownership/i)).toBeTruthy();
+    expect(
+      screen.getByText(/intentionally omits direct customer contact PII/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText("Preview PII-redacted job CSV").props.accessibilityState
+    ).toEqual({ busy: false, disabled: false });
   });
 
   it("binds ready job attachments and replaces them when another record opens", async () => {

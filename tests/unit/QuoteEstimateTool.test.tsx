@@ -10,18 +10,28 @@ const mockArchive = jest.fn();
 const mockCreate = jest.fn();
 const mockExport = jest.fn();
 const mockList = jest.fn();
+const mockPreview = jest.fn();
 const mockPrepare = jest.fn();
 const mockRevisions = jest.fn();
 const mockUpdate = jest.fn();
 
 jest.mock("@/api/businessDesk", () => ({
   archiveBusinessDeskRecord: (...args: any[]) => mockArchive(...args),
+  businessDeskWorkspaceKey: (workspace: any) =>
+    workspace.workspaceType === "facility"
+      ? `facility:${workspace.facilityId}`
+      : "commercial",
   calculateBusinessDesk: (...args: any[]) => mockCalculate(...args),
   createBusinessDeskRecord: (...args: any[]) => mockCreate(...args),
   listBusinessDeskRecords: (...args: any[]) => mockList(...args),
   listBusinessDeskRevisions: (...args: any[]) => mockRevisions(...args),
-  prepareBusinessDeskQuoteArtifact: (...args: any[]) => mockPrepare(...args),
   updateBusinessDeskRecord: (...args: any[]) => mockUpdate(...args)
+}));
+
+jest.mock("@/api/businessDeskArtifacts", () => ({
+  ...jest.requireActual("@/api/businessDeskArtifacts"),
+  previewBusinessDeskArtifact: (...args: any[]) => mockPreview(...args),
+  prepareBusinessDeskArtifact: (...args: any[]) => mockPrepare(...args)
 }));
 
 jest.mock("@/utils/exportToCsv", () => ({
@@ -171,6 +181,55 @@ function savedQuotePayload() {
   };
 }
 
+function artifactPreview(kind: "quote_copy" | "quote_csv", version = 4) {
+  const content = kind === "quote_csv" ? '"section","field"\r\n' : "Quote Q-100";
+  const artifact = {
+    mode: kind === "quote_csv" ? ("csv" as const) : ("copy" as const),
+    contentType:
+      kind === "quote_csv"
+        ? ("text/csv; charset=utf-8" as const)
+        : ("text/plain; charset=utf-8" as const),
+    filename: kind === "quote_csv" ? "Q-100.csv" : "Q-100.txt",
+    content,
+    projectionVersion: "business-desk-artifact-projection-v1" as const,
+    redactionProfile:
+      kind === "quote_csv" ? "quote_customer_csv_v1" : "quote_customer_copy_v1",
+    fieldManifest: ["section", "field"],
+    checksumSha256: "a".repeat(64),
+    bytes: content.length,
+    rowCount: 1,
+    recordCount: 1,
+    deliveryStatus: "not_observed" as const
+  };
+  return {
+    artifactKind: kind,
+    artifact,
+    recordPins: [
+      { recordId: "quote-1", revisionId: "revision-4", recordKind: "quote", version }
+    ],
+    previewChecksumSha256: artifact.checksumSha256
+  };
+}
+
+function preparedArtifact(preview: ReturnType<typeof artifactPreview>, replay = false) {
+  const { content: _content, ...metadata } = preview.artifact;
+  return {
+    artifactKind: preview.artifactKind,
+    receipt: {
+      id: "receipt-1",
+      artifactKind: preview.artifactKind,
+      exportKind: preview.artifactKind,
+      recordPins: preview.recordPins,
+      preparedArtifact: metadata,
+      actorRelationship: { prepared: true },
+      createdAt: "2026-08-22T18:00:00.000Z"
+    },
+    artifact: preview.artifact,
+    recordPins: preview.recordPins,
+    idempotentReplay: replay
+  };
+}
+
 describe("QuoteEstimateTool", () => {
   beforeEach(() => {
     mockArchive.mockReset();
@@ -183,6 +242,7 @@ describe("QuoteEstimateTool", () => {
       method: "web-download"
     });
     mockList.mockReset().mockResolvedValue([]);
+    mockPreview.mockReset();
     mockPrepare.mockReset();
     mockRevisions.mockReset().mockResolvedValue([]);
     mockUpdate.mockReset();
@@ -447,9 +507,9 @@ describe("QuoteEstimateTool", () => {
     expect(
       await screen.findByText(/Revision 2 reviewed. Nothing was sent or charged/i)
     ).toBeTruthy();
-    expect(screen.getByLabelText("Copy reviewed quote").props.accessibilityState).toEqual(
-      { disabled: false }
-    );
+    expect(
+      screen.getByLabelText("Preview reviewed quote copy").props.accessibilityState
+    ).toEqual({ busy: false, disabled: false });
     expect(
       screen.getByLabelText("Payment provider draft handoff unavailable").props
         .accessibilityState
@@ -504,15 +564,9 @@ describe("QuoteEstimateTool", () => {
         payload
       }
     ]);
-    mockPrepare.mockResolvedValue({
-      mode: "csv",
-      contentType: "text/csv; charset=utf-8",
-      filename: "Q-100.csv",
-      content: '"section","field"\r\n',
-      preparedFromVersion: 4,
-      checksumSha256: "a".repeat(64),
-      deliveryStatus: "not_observed"
-    });
+    const preview = artifactPreview("quote_csv");
+    mockPreview.mockResolvedValue(preview);
+    mockPrepare.mockResolvedValue(preparedArtifact(preview));
     const screen = render(
       <QuoteEstimateTool
         workspace={{ workspaceType: "facility", facilityId: "facility-1" }}
@@ -523,23 +577,31 @@ describe("QuoteEstimateTool", () => {
     fireEvent.press(
       await screen.findByLabelText("Open saved quote Greenhouse irrigation")
     );
-    fireEvent.press(screen.getByLabelText("Export reviewed quote"));
+    fireEvent.press(screen.getByLabelText("Preview reviewed quote CSV"));
+    await screen.findByLabelText("Reviewed quote CSV preview content");
+    fireEvent.press(screen.getByLabelText("Confirm and export reviewed quote CSV"));
 
     await waitFor(() => expect(mockPrepare).toHaveBeenCalledTimes(1));
-    expect(mockPrepare).toHaveBeenCalledWith(
+    expect(mockPreview).toHaveBeenCalledWith(
       { workspaceType: "facility", facilityId: "facility-1" },
-      "quote-1",
       expect.objectContaining({
-        expectedVersion: 4,
-        mode: "csv",
-        idempotencyKey: expect.stringMatching(/^business-desk:prepare-csv:quote-1:/)
+        artifactKind: "quote_csv",
+        revisionSelections: [{ recordId: "quote-1", revisionNumber: 4 }]
+      }),
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+    expect(mockPrepare.mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        artifactKind: "quote_csv",
+        revisionSelections: [{ recordId: "quote-1", revisionNumber: 4 }],
+        previewChecksumSha256: "a".repeat(64),
+        confirmed: true,
+        expectedPreview: preview
       })
     );
     expect(mockExport).toHaveBeenCalledWith("Q-100.csv", '"section","field"\r\n');
     expect(
-      await screen.findByText(
-        /Reviewed revision 4 was prepared.*local CSV download was started/i
-      )
+      await screen.findByText(/audited preparation.*local file download was started/i)
     ).toBeTruthy();
   });
 
@@ -554,17 +616,11 @@ describe("QuoteEstimateTool", () => {
         payload: savedQuotePayload()
       }
     ]);
+    const preview = artifactPreview("quote_csv");
+    mockPreview.mockResolvedValue(preview);
     mockPrepare
       .mockRejectedValueOnce(new Error("Connection closed after request"))
-      .mockResolvedValueOnce({
-        mode: "csv",
-        contentType: "text/csv; charset=utf-8",
-        filename: "Q-100.csv",
-        content: '"section","field"\r\n',
-        preparedFromVersion: 4,
-        checksumSha256: "a".repeat(64),
-        deliveryStatus: "not_observed"
-      });
+      .mockResolvedValueOnce(preparedArtifact(preview, true));
     const screen = render(
       <QuoteEstimateTool
         workspace={{ workspaceType: "commercial" }}
@@ -573,18 +629,21 @@ describe("QuoteEstimateTool", () => {
       />
     );
     fireEvent.press(await screen.findByLabelText("Open saved quote Retry quote"));
-    fireEvent.press(screen.getByLabelText("Export reviewed quote"));
+    fireEvent.press(screen.getByLabelText("Preview reviewed quote CSV"));
+    await screen.findByLabelText("Reviewed quote CSV preview content");
+    fireEvent.press(screen.getByLabelText("Confirm and export reviewed quote CSV"));
     expect(await screen.findByText(/Connection closed after request/i)).toBeTruthy();
     await waitFor(() =>
       expect(
-        screen.getByLabelText("Export reviewed quote").props.accessibilityState
-      ).toEqual({ disabled: false })
+        screen.getByLabelText("Confirm and export reviewed quote CSV").props
+          .accessibilityState
+      ).toEqual({ busy: false, disabled: false })
     );
 
-    fireEvent.press(screen.getByLabelText("Export reviewed quote"));
+    fireEvent.press(screen.getByLabelText("Confirm and export reviewed quote CSV"));
     await waitFor(() => expect(mockPrepare).toHaveBeenCalledTimes(2));
-    expect(mockPrepare.mock.calls[1][2].idempotencyKey).toBe(
-      mockPrepare.mock.calls[0][2].idempotencyKey
+    expect(mockPrepare.mock.calls[1][1].idempotencyKey).toBe(
+      mockPrepare.mock.calls[0][1].idempotencyKey
     );
     expect(mockExport).toHaveBeenCalledTimes(1);
   });
@@ -649,15 +708,9 @@ describe("QuoteEstimateTool", () => {
     };
     mockList.mockResolvedValue([reviewedRecord]);
     mockCalculate.mockResolvedValue(quoteResult());
-    mockPrepare.mockResolvedValue({
-      mode: "csv",
-      contentType: "text/csv; charset=utf-8",
-      filename: "Q-100.csv",
-      content: '"section","field"\r\n',
-      preparedFromVersion: 4,
-      checksumSha256: "a".repeat(64),
-      deliveryStatus: "not_observed"
-    });
+    const preview = artifactPreview("quote_csv");
+    mockPreview.mockResolvedValue(preview);
+    mockPrepare.mockResolvedValue(preparedArtifact(preview));
     mockUpdate.mockImplementation(async (_workspace, id, input) => ({
       _id: id,
       kind: "quote",
@@ -679,12 +732,20 @@ describe("QuoteEstimateTool", () => {
     fireEvent.changeText(screen.getByLabelText("Quote title"), "Edited irrigation");
 
     expect(
-      screen.getByLabelText("Export reviewed quote").props.accessibilityState
-    ).toEqual({ disabled: false });
-    fireEvent.press(screen.getByLabelText("Export reviewed quote"));
+      screen.getByLabelText("Preview reviewed quote CSV").props.accessibilityState
+    ).toEqual({ busy: false, disabled: false });
+    expect(
+      screen.getAllByText(/editor contains unsaved changes.*revision 4/i)
+    ).toHaveLength(2);
+    fireEvent.press(screen.getByLabelText("Preview reviewed quote CSV"));
+    await screen.findByLabelText("Reviewed quote CSV preview content");
+    fireEvent.press(screen.getByLabelText("Confirm and export reviewed quote CSV"));
     await waitFor(() => expect(mockPrepare).toHaveBeenCalledTimes(1));
-    expect(mockPrepare.mock.calls[0][2]).toEqual(
-      expect.objectContaining({ expectedVersion: 4, mode: "csv" })
+    expect(mockPrepare.mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        artifactKind: "quote_csv",
+        revisionSelections: [{ recordId: "quote-1", revisionNumber: 4 }]
+      })
     );
 
     await waitFor(() => expect(mockExport).toHaveBeenCalledTimes(1));
@@ -702,7 +763,8 @@ describe("QuoteEstimateTool", () => {
       })
     );
     expect(
-      screen.getByLabelText("Export reviewed quote").props.accessibilityState.disabled
+      screen.getByLabelText("Preview reviewed quote CSV").props.accessibilityState
+        .disabled
     ).toBe(true);
   });
 });

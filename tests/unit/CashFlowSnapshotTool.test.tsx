@@ -46,6 +46,16 @@ jest.mock("@/api/businessDesk", () => ({
   calculateBusinessDesk: (...args: any[]) => mockCalculate(...args),
   createBusinessDeskRecord: (...args: any[]) => mockCreate(...args),
   listBusinessDeskRecords: (...args: any[]) => mockList(...args),
+  normalizeIanaTimeZone: (value: unknown) => {
+    const candidate = typeof value === "string" ? value.trim() : "";
+    if (!candidate) return null;
+    try {
+      return new Intl.DateTimeFormat("en-US", { timeZone: candidate }).resolvedOptions()
+        .timeZone;
+    } catch {
+      return null;
+    }
+  },
   requireBusinessDeskWorkspace: (workspace: any) => workspace,
   updateBusinessDeskRecord: (...args: any[]) => mockUpdate(...args)
 }));
@@ -514,6 +524,10 @@ describe("CashFlowSnapshotTool", () => {
     expect(mockUpdate.mock.calls[0][2]).not.toHaveProperty("title");
     expect(mockUpdate.mock.calls[0][2]).not.toHaveProperty("payload");
     expect(mockUpdate.mock.calls[0][2]).not.toHaveProperty("sourceLinks");
+    expect(screen.getByText("Owner full cash-flow CSV")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Preview owner full cash-flow CSV").props.accessibilityState
+    ).toEqual({ busy: false, disabled: false });
   });
 
   it("keeps owner current cash out of Manager state, inputs, and results", async () => {
@@ -560,6 +574,10 @@ describe("CashFlowSnapshotTool", () => {
       expect.objectContaining({ currentCashMinor: null })
     );
     expect(screen.queryByText(/Projected cash:/)).toBeNull();
+    expect(screen.getByText("Facility Manager cash-redacted CSV")).toBeTruthy();
+    expect(
+      screen.getByText(/Facility Manager export omits owner-only current cash/i)
+    ).toBeTruthy();
   });
 
   it("reloads and archives a saved snapshot with its owner-entered evidence fields", async () => {

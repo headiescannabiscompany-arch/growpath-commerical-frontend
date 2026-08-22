@@ -7,6 +7,7 @@ const mockArchive = jest.fn();
 const mockCreate = jest.fn();
 const mockExport = jest.fn();
 const mockList = jest.fn();
+const mockPreviewBatch = jest.fn();
 const mockPrepareBatch = jest.fn();
 const mockUpdate = jest.fn();
 
@@ -18,9 +19,14 @@ jest.mock("@/api/businessDesk", () => ({
       : "commercial",
   createBusinessDeskRecord: (...args: any[]) => mockCreate(...args),
   listBusinessDeskRecords: (...args: any[]) => mockList(...args),
-  prepareBusinessDeskExpenseBatchCsv: (...args: any[]) => mockPrepareBatch(...args),
   requireBusinessDeskWorkspace: (workspace: any) => workspace,
   updateBusinessDeskRecord: (...args: any[]) => mockUpdate(...args)
+}));
+
+jest.mock("@/api/businessDeskArtifacts", () => ({
+  ...jest.requireActual("@/api/businessDeskArtifacts"),
+  previewBusinessDeskArtifact: (...args: any[]) => mockPreviewBatch(...args),
+  prepareBusinessDeskArtifact: (...args: any[]) => mockPrepareBatch(...args)
 }));
 
 jest.mock("@/utils/exportToCsv", () => ({
@@ -141,6 +147,57 @@ jest.mock("@/components/forms/CalendarDateField", () => {
     );
 });
 
+function expenseArtifactPreview() {
+  const content = '"section","field"\r\n';
+  const artifact = {
+    mode: "csv" as const,
+    contentType: "text/csv; charset=utf-8" as const,
+    filename: "expenses-1-reviewed.csv",
+    content,
+    projectionVersion: "business-desk-artifact-projection-v1" as const,
+    redactionProfile: "expense_private_csv_v1" as const,
+    fieldManifest: ["section", "field"],
+    checksumSha256: "a".repeat(64),
+    bytes: content.length,
+    rowCount: 1,
+    recordCount: 1,
+    deliveryStatus: "not_observed" as const
+  };
+  return {
+    artifactKind: "expense_csv_batch" as const,
+    artifact,
+    recordPins: [
+      {
+        recordId: "507f191e810c19729de86020",
+        revisionId: "507f191e810c19729de86022",
+        recordKind: "expense" as const,
+        version: 4
+      }
+    ],
+    previewChecksumSha256: artifact.checksumSha256
+  };
+}
+
+function expensePreparedArtifact(replay = false) {
+  const preview = expenseArtifactPreview();
+  const { content: _content, ...metadata } = preview.artifact;
+  return {
+    artifactKind: preview.artifactKind,
+    receipt: {
+      id: "507f191e810c19729de86023",
+      artifactKind: preview.artifactKind,
+      exportKind: preview.artifactKind,
+      recordPins: preview.recordPins,
+      preparedArtifact: metadata,
+      actorRelationship: { prepared: true },
+      createdAt: "2026-08-22T18:00:00.000Z"
+    },
+    artifact: preview.artifact,
+    recordPins: preview.recordPins,
+    idempotentReplay: replay
+  };
+}
+
 describe("ExpenseReceiptTool", () => {
   beforeEach(() => {
     mockArchive.mockReset();
@@ -152,6 +209,7 @@ describe("ExpenseReceiptTool", () => {
       method: "web-download"
     });
     mockList.mockReset().mockResolvedValue([]);
+    mockPreviewBatch.mockReset();
     mockPrepareBatch.mockReset();
     mockUpdate.mockReset();
   });
@@ -415,21 +473,8 @@ describe("ExpenseReceiptTool", () => {
         }
       }
     ]);
-    mockPrepareBatch.mockResolvedValue({
-      artifact: {
-        mode: "csv",
-        contentType: "text/csv; charset=utf-8",
-        filename: "expenses-1-reviewed.csv",
-        content: '"section","field"\r\n',
-        checksumSha256: "a".repeat(64),
-        rowCount: 11,
-        recordCount: 1,
-        deliveryStatus: "not_observed"
-      },
-      recordPins: [],
-      receipt: { _id: "receipt-1" },
-      idempotentReplay: false
-    });
+    mockPreviewBatch.mockResolvedValue(expenseArtifactPreview());
+    mockPrepareBatch.mockResolvedValue(expensePreparedArtifact());
     mockExport.mockResolvedValue({
       ok: true,
       filename: "growpath-business-expenses",
@@ -446,15 +491,26 @@ describe("ExpenseReceiptTool", () => {
     await screen.findByText("Receipt");
     expect(screen.getByText(/2 matching saved records/i)).toBeTruthy();
     expect(screen.getByText(/1 reviewed revision eligible/i)).toBeTruthy();
-    fireEvent.press(screen.getByLabelText("Export filtered saved expenses"));
+    fireEvent.press(screen.getByLabelText("Preview filtered reviewed Expense CSV"));
+    await screen.findByLabelText("Reviewed filtered Expense CSV preview content");
+    fireEvent.press(screen.getByLabelText("Confirm and export reviewed Expense CSV"));
 
     await waitFor(() => expect(mockPrepareBatch).toHaveBeenCalledTimes(1));
-    expect(mockPrepareBatch).toHaveBeenCalledWith(
+    expect(mockPreviewBatch).toHaveBeenCalledWith(
       { workspaceType: "commercial" },
-      {
-        records: [{ recordId: "507f191e810c19729de86020", expectedVersion: 4 }],
-        idempotencyKey: expect.stringMatching(/^expense-batch-export-/)
-      }
+      expect.objectContaining({
+        artifactKind: "expense_csv_batch",
+        revisionSelections: [{ recordId: "507f191e810c19729de86020", revisionNumber: 4 }]
+      }),
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+    expect(mockPrepareBatch.mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        artifactKind: "expense_csv_batch",
+        revisionSelections: [{ recordId: "507f191e810c19729de86020", revisionNumber: 4 }],
+        confirmed: true,
+        previewChecksumSha256: "a".repeat(64)
+      })
     );
     expect(mockExport).toHaveBeenCalledWith(
       "expenses-1-reviewed.csv",
@@ -462,7 +518,7 @@ describe("ExpenseReceiptTool", () => {
     );
     expect(
       await screen.findByText(
-        /audited CSV receipt pinned to 1 reviewed Expense revision.*opened the system share flow.*did not observe file delivery/i
+        /audited preparation for 1 exact saved revision.*system export\/share flow closed.*did not observe whether the file was saved, shared, or delivered/i
       )
     ).toBeTruthy();
   });
@@ -489,16 +545,10 @@ describe("ExpenseReceiptTool", () => {
         }
       }
     ]);
+    mockPreviewBatch.mockResolvedValue(expenseArtifactPreview());
     mockPrepareBatch
       .mockRejectedValueOnce(new Error("Connection interrupted"))
-      .mockResolvedValueOnce({
-        artifact: {
-          filename: "expenses-1-reviewed.csv",
-          content: '"section","field"\r\n',
-          recordCount: 1
-        },
-        idempotentReplay: true
-      });
+      .mockResolvedValueOnce(expensePreparedArtifact(true));
     const screen = render(
       <ExpenseReceiptTool
         workspace={{ workspaceType: "commercial" }}
@@ -508,16 +558,18 @@ describe("ExpenseReceiptTool", () => {
     );
     await screen.findByText("Receipt");
 
-    fireEvent.press(screen.getByLabelText("Export filtered saved expenses"));
+    fireEvent.press(screen.getByLabelText("Preview filtered reviewed Expense CSV"));
+    await screen.findByLabelText("Reviewed filtered Expense CSV preview content");
+    fireEvent.press(screen.getByLabelText("Confirm and export reviewed Expense CSV"));
     expect(await screen.findByText("Connection interrupted")).toBeTruthy();
-    fireEvent.press(screen.getByLabelText("Export filtered saved expenses"));
+    fireEvent.press(screen.getByLabelText("Confirm and export reviewed Expense CSV"));
     await waitFor(() => expect(mockPrepareBatch).toHaveBeenCalledTimes(2));
 
     expect(mockPrepareBatch.mock.calls[0][1].idempotencyKey).toBe(
       mockPrepareBatch.mock.calls[1][1].idempotencyKey
     );
     expect(
-      await screen.findByText(/Recovered the same audited CSV receipt/i)
+      await screen.findByText(/Recovered the same audited preparation/i)
     ).toBeTruthy();
   });
 });

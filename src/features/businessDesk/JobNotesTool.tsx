@@ -6,6 +6,7 @@ import {
   type BusinessDeskRecord,
   type BusinessDeskWorkspace
 } from "@/api/businessDesk";
+import { BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES } from "@/api/businessDeskArtifacts";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import {
@@ -19,6 +20,7 @@ import {
 } from "@/features/businessDesk/RecordFormControls";
 import ProtectedAttachmentField from "@/features/businessDesk/ProtectedAttachmentField";
 import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
+import ReviewedArtifactPanel from "@/features/businessDesk/ReviewedArtifactPanel";
 import {
   businessDeskRecordId,
   isoToLocalDateTime,
@@ -709,6 +711,42 @@ export default function JobNotesTool({
           onArchive={() => void archive()}
         />
       </AppCard>
+
+      <ReviewedArtifactPanel
+        workspace={workspace}
+        artifactKind="job_redacted_csv"
+        revisionSelections={
+          selected && !contentDirty
+            ? [
+                {
+                  recordId: businessDeskRecordId(selected),
+                  revisionNumber: selected.version
+                }
+              ]
+            : []
+        }
+        expectedRedactionProfile={
+          BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES.job_redacted_csv
+        }
+        title="PII-redacted job CSV"
+        selectionLabel={
+          selected && !contentDirty
+            ? `Pinned to unchanged saved job revision ${selected.version}.`
+            : "Select an unchanged saved job revision to preview."
+        }
+        disclosure="This redacted operational CSV intentionally omits direct customer contact PII and the private job location. Protected attachments are not embedded. Review the returned field manifest and exact preview because redaction does not make every remaining business detail public. No customer update, assignment, completion, delivery, or payment is implied."
+        disabled={
+          !selected || contentDirty || activeAttachmentDraft.blocking || collection.saving
+        }
+        disabledReason={
+          contentDirty || activeAttachmentDraft.blocking
+            ? "Unsaved or pending job changes are distinct from the saved revision. Finish, save, or discard them before previewing a redacted export."
+            : "Save and select one exact job revision before previewing its redacted CSV."
+        }
+        previewButtonLabel="Preview PII-redacted job CSV"
+        prepareButtonLabel="Confirm and export redacted job CSV"
+        stalenessKey={`${businessDeskRecordId(selected)}:${selected?.version || 0}:${contentDirty || activeAttachmentDraft.blocking ? "changed" : "saved"}`}
+      />
     </RecordToolScaffold>
   );
 }

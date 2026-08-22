@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { BusinessDeskRecord, BusinessDeskWorkspace } from "@/api/businessDesk";
+import { BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES } from "@/api/businessDeskArtifacts";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import {
@@ -14,6 +15,7 @@ import {
   StatusSelector
 } from "@/features/businessDesk/RecordFormControls";
 import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
+import ReviewedArtifactPanel from "@/features/businessDesk/ReviewedArtifactPanel";
 import { parseMoneyInput, resolveCurrencyContext } from "@/features/businessDesk/money";
 import {
   businessDeskRecordId,
@@ -663,6 +665,40 @@ export default function LeadFollowUpTool({
           onArchive={() => void archive()}
         />
       </AppCard>
+
+      <ReviewedArtifactPanel
+        workspace={workspace}
+        artifactKind="lead_private_csv"
+        revisionSelections={
+          selected && !contentDirty
+            ? [
+                {
+                  recordId: businessDeskRecordId(selected),
+                  revisionNumber: selected.version
+                }
+              ]
+            : []
+        }
+        expectedRedactionProfile={
+          BUSINESS_DESK_ARTIFACT_REDACTION_PROFILES.lead_private_csv
+        }
+        title="Private lead CSV"
+        selectionLabel={
+          selected && !contentDirty
+            ? `Pinned to unchanged saved lead revision ${selected.version}.`
+            : "Select an unchanged saved lead revision to preview."
+        }
+        disclosure="This is a private workspace export and can include voluntarily supplied person/business names, email, phone, opportunity value, follow-up dates, and notes. It is not a public or Storefront-safe copy. Verify the destination and minimum necessary fields before confirming. GrowPathAI does not contact the lead."
+        disabled={!selected || contentDirty || collection.saving}
+        disabledReason={
+          contentDirty
+            ? "Unsaved lead edits are distinct from the saved revision. Save or discard them before previewing an export."
+            : "Save and select one exact lead revision before previewing its private CSV."
+        }
+        previewButtonLabel="Preview private lead CSV"
+        prepareButtonLabel="Confirm and export private lead CSV"
+        stalenessKey={`${businessDeskRecordId(selected)}:${selected?.version || 0}:${contentDirty ? "dirty" : "saved"}`}
+      />
     </RecordToolScaffold>
   );
 }
