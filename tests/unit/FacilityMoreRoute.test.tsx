@@ -3,8 +3,14 @@ import { render } from "@testing-library/react-native";
 
 import FacilityMoreRoute from "@/app/home/facility/(tabs)/more";
 
+let mockFacilityRole = "VIEWER";
+const mockCan = jest.fn(() => false);
+
 jest.mock("expo-router", () => ({
-  Link: ({ children }: any) => children
+  Link: ({ children, href }: any) => {
+    const React = require("react");
+    return React.cloneElement(React.Children.only(children), { href });
+  }
 }));
 
 jest.mock("@/components/layout/AppPage", () => {
@@ -24,7 +30,8 @@ jest.mock("@/components/layout/AppCard", () => {
 });
 
 jest.mock("@/entitlements", () => ({
-  useEntitlements: () => ({ facilityRole: "VIEWER" })
+  CAPABILITY_KEYS: { BUSINESS_DESK_READ: "business_desk_read" },
+  useEntitlements: () => ({ facilityRole: mockFacilityRole, can: mockCan })
 }));
 
 jest.mock("@/theme/appTheme", () => ({
@@ -40,6 +47,12 @@ jest.mock("@/theme/appTheme", () => ({
 }));
 
 describe("FacilityMoreRoute", () => {
+  beforeEach(() => {
+    mockFacilityRole = "VIEWER";
+    mockCan.mockReset();
+    mockCan.mockReturnValue(false);
+  });
+
   it("uses viewer-safe descriptions for restricted Facility actions", () => {
     const screen = render(<FacilityMoreRoute />);
 
@@ -66,5 +79,42 @@ describe("FacilityMoreRoute", () => {
         "Browse public videos, courses, storefronts, and shared field findings."
       )
     ).toBeTruthy();
+    expect(screen.queryByLabelText("Open Business Desk")).toBeNull();
+  });
+
+  it.each(["OWNER", "MANAGER"])(
+    "shows Business Desk to an eligible Facility %s",
+    (role) => {
+      mockFacilityRole = role;
+      mockCan.mockReturnValue(true);
+
+      const screen = render(<FacilityMoreRoute />);
+
+      expect(screen.getByLabelText("Open Business Desk")).toBeTruthy();
+      expect(screen.getByLabelText("Open Business Desk").props.href).toBe(
+        "/home/facility/business-desk"
+      );
+    }
+  );
+
+  it.each(["STAFF", "VIEWER", "QA"])(
+    "hides Business Desk from Facility %s even if a stale capability says yes",
+    (role) => {
+      mockFacilityRole = role;
+      mockCan.mockReturnValue(true);
+
+      const screen = render(<FacilityMoreRoute />);
+
+      expect(screen.queryByLabelText("Open Business Desk")).toBeNull();
+    }
+  );
+
+  it("hides Business Desk when an eligible role lacks the live capability", () => {
+    mockFacilityRole = "OWNER";
+    mockCan.mockReturnValue(false);
+
+    const screen = render(<FacilityMoreRoute />);
+
+    expect(screen.queryByLabelText("Open Business Desk")).toBeNull();
   });
 });

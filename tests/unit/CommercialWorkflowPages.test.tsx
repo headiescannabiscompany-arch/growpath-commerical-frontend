@@ -33,6 +33,7 @@ const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 const mockUseAuth = jest.fn();
+const mockCan = jest.fn((_capability?: string) => true);
 
 jest.setTimeout(15000);
 
@@ -70,12 +71,15 @@ jest.mock("@/components/InlineError", () => ({
 }));
 
 jest.mock("@/entitlements", () => ({
-  CAPABILITY_KEYS: { COMMERCIAL_INVENTORY_WRITE: "commercial_inventory_write" },
+  CAPABILITY_KEYS: {
+    COMMERCIAL_INVENTORY_WRITE: "commercial_inventory_write",
+    BUSINESS_DESK_READ: "business_desk_read"
+  },
   useEntitlements: () => ({
     ready: true,
     plan: "commercial",
     mode: "commercial",
-    can: () => true
+    can: mockCan
   })
 }));
 
@@ -101,6 +105,8 @@ describe("commercial workflow pages", () => {
     mockReplace.mockReset();
     mockPush.mockReset();
     mockBack.mockReset();
+    mockCan.mockReset();
+    mockCan.mockReturnValue(true);
     mockUseAuth.mockReturnValue({
       user: { email: "brand@example.com", role: "user" },
       logout: jest.fn()
@@ -3419,6 +3425,7 @@ describe("commercial workflow pages", () => {
       "External Channels",
       "Orders",
       "Analytics",
+      "Business Desk",
       "Product Lines",
       "Product Batches",
       "Product Trials",
@@ -3429,6 +3436,9 @@ describe("commercial workflow pages", () => {
     ].forEach((destination) => {
       expect(screen.getByRole("link", { name: `Open ${destination}` })).toBeTruthy();
     });
+    expect(screen.getByRole("link", { name: "Open Business Desk" }).props.href).toBe(
+      "/home/commercial/business-desk"
+    );
     expect(
       StyleSheet.flatten(screen.getByRole("link", { name: "Open Courses" }).props.style)
     ).toEqual(
@@ -3438,6 +3448,15 @@ describe("commercial workflow pages", () => {
         maxWidth: "100%"
       })
     );
+  });
+
+  it("does not advertise Business Desk without own-workspace access", () => {
+    mockCan.mockImplementation((capability) => capability !== "business_desk_read");
+
+    const screen = render(<CommercialMoreRoute />);
+
+    expect(screen.queryByRole("link", { name: "Open Business Desk" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Open Analytics" })).toBeTruthy();
   });
 
   it("loads commercial analytics overview including ad clicks", async () => {
