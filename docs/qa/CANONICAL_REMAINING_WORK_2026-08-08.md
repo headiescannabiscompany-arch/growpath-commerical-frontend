@@ -110,6 +110,54 @@ crawl.
 
 ## Verified closures retained by this audit
 
+## Runtime-gated and buried-feature audit
+
+This is the canonical disclosure of implemented or partially implemented work that can be
+absent from ordinary navigation or disabled by runtime/provider configuration. It is not a
+permission to leave owner-requested work unfinished. Each launch feature must be enabled and
+accepted, or retain its exact blocker and next action in its owning matrix row.
+
+- [ ] **R-01 gift subscriptions:** substantial checkout, recovery, purchaser history,
+      recipient claim, entitlement, refund/dispute and worker code exists, but production
+      checkout is gated by `GIFT_SUBSCRIPTION_ENABLED`, refund-worker readiness, email,
+      Stripe/webhook capability, secrets and index readiness. Complete and live-accept the
+      entire lifecycle, then enable it; do not leave it as a dormant foundation.
+- [~] **R-01 account and Facility billing:** Stripe checkout/webhooks exist and cancellation
+  retains paid-through access, but the active safety correction must prove source-aware
+  cancellation, duplicate prevention and exact-Facility entitlement across multiple
+  Facilities before live acceptance. Apple IAP is a separate provider path and must not
+  be presented as configured until production verification is accepted.
+- [~] **B-03 provider-backed Business Desk actions:** deterministic tools and reviewed record
+  workflows exist. Receipt extraction, Business Ask, provider operations, workspace export
+  and Quote payment-provider handoff have independent configuration/confirmation gates.
+  Finish the canonical eight-tool acceptance and enable only the operations whose provider,
+  malware/privacy, idempotency, audit and confirmation gates pass; show any unavailable
+  operation visibly instead of hiding the tool.
+- [~] **S-05 hosted Lives/OBS:** the retained hosted-live architecture and production evidence
+  are accepted and must not be rebuilt. `EXPO_PUBLIC_USE_LIVE_BACKEND` and Cloudflare
+  provider readiness can bury the entry; the final route-to-entry and two-account
+  concurrency regression must prove it remains visible, configured and isolated.
+- [~] **S-02/S-03 video uploads:** production upload depends on configured R2/object storage.
+  Verify the visible upload/library/following/comment/premiere paths and configured storage
+  in the final candidate; a local route without production storage is not completion.
+- [~] **C-04/S-06 Twitch connection:** draft-safe OAuth UI and backend callback routes exist,
+  but credentials are optional and may be unconfigured. Decide from the canonical sharing
+  contract whether Twitch connection is a launch integration, then either configure and
+  live-accept it or label it visibly as an optional unavailable provider; do not imply a
+  connected channel.
+- [~] **P-07 protected evidence storage:** evidence routes contain a fail-closed provider gate.
+  Prove originals/derived views, authorized access, retention/export and production storage
+  configuration for each launch AI-media workflow.
+- [~] **A-03 Sentry investigation:** Sentry issue reading is implemented but requires Admin
+  provider access. Configure and live-accept the Admin tally/detail/deep-link workflow or
+  retain the exact credential dependency without claiming that Sentry is visible in Admin.
+- [ ] **Complete buried-feature inventory:** before construction closes, compare registered
+      frontend routes, visible navigation/deep links, backend route inventory, release matrix,
+      provider/environment gates, workers/webhooks and production configuration. Add every
+      additional user-facing orphan or runtime-gated feature to its owning matrix row, then
+      make it reachable and accepted or record an explicit owner rejection. Access-control,
+      privacy and safety-hidden data are not buried features and must remain protected.
+
 - [x] Auto theme no longer requests device location on startup. Production frontend
       `d84b0c80` resolves Auto from saved sunrise/sunset coordinates when the user has
       deliberately saved them, otherwise from local clock time; signed-in production
