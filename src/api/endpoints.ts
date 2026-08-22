@@ -23,9 +23,9 @@ export const endpoints = {
   task: (facilityId: string, id: string) => facilityPath(facilityId, `/tasks/${id}`),
 
   // inventory
-  inventory: (facilityId: string) => facilityPath(facilityId, "/inventory"),
+  inventory: (facilityId: string) => facilityPath(facilityId, "/business-inventory"),
   inventoryItem: (facilityId: string, id: string) =>
-    facilityPath(facilityId, `/inventory/${id}`),
+    facilityPath(facilityId, `/business-inventory/${encodeURIComponent(id)}`),
   inventoryAdjust: (facilityId: string, id: string) =>
     facilityPath(facilityId, `/inventory/${id}/adjust`),
   facilityTransfers: (facilityId: string) => facilityPath(facilityId, "/transfers"),
@@ -154,9 +154,9 @@ export const endpoints = {
   },
 
   commercial: {
-    inventory: `${BASE}/commercial/inventory`,
+    inventory: `${BASE}/business-inventory`,
     inventoryItem: (id: string) =>
-      `${BASE}/commercial/inventory/${encodeURIComponent(id)}`,
+      `${BASE}/business-inventory/${encodeURIComponent(id)}`,
     orders: `${BASE}/commercial/orders`,
     order: (id: string) => `${BASE}/commercial/orders/${encodeURIComponent(id)}`,
     campaigns: `${BASE}/commercial/campaigns`,

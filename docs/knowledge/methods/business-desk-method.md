@@ -30,6 +30,17 @@ them.
    request or payment-provider handoff. Nothing is sent, assigned, purchased, published or
    written to an external system until the user reviews and confirms it.
 
+These are shared engines, not eight unrelated AI implementations. Each shipping tool is a
+bounded schema and screen over one or more of them. The implementation pattern is:
+
+**source input → structured draft → schema validation → deterministic calculation where
+applicable → human review → audited save, export or provider handoff**
+
+Document extraction preserves the original source, a content digest, normalized fields,
+validation failures and duplicate state. Model output is never the saved business record.
+Price, margin, break-even, quote totals, landed cost and cash position remain ordinary
+code even when an assistant explains them.
+
 ## Shipping tools
 
 ### Price, margin and break-even
@@ -134,3 +145,9 @@ Named commercial products and open-source projects are architecture research lea
 Do not copy their code, screenshots, claims or workflows until the exact source, current
 behavior, license compatibility, security posture and required attribution are reviewed
 and recorded in the source registry.
+
+Reference implementations may inform only the reusable pattern above. Before adapting
+open-source code, record the repository URL, immutable revision, license text, dependency
+and vulnerability review, copied or modified files, attribution obligations and a
+GrowPath-specific security review. Until that record exists, implement the contract from
+GrowPath requirements rather than copying source.

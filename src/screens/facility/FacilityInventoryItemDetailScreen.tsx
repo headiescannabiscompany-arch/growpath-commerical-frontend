@@ -97,9 +97,6 @@ export default function InventoryItemDetailScreen() {
     const n = Number(delta);
     if (!Number.isFinite(n) || n === 0) return;
 
-    const sku = String(item?.sku ?? "");
-    if (!sku) return;
-
     const current = Number(item?.quantity ?? item?.quantityOnHand ?? 0);
     const nextQuantity = (Number.isFinite(current) ? current : 0) + n;
 
@@ -107,7 +104,7 @@ export default function InventoryItemDetailScreen() {
     try {
       clearError();
       setFeedback("");
-      await apiRequest(endpoints.inventoryItem(facilityId, sku), {
+      await apiRequest(endpoints.inventoryItem(facilityId, itemId), {
         method: "PATCH",
         body: {
           quantity: nextQuantity,
@@ -138,9 +135,6 @@ export default function InventoryItemDetailScreen() {
   const saveDetails = useCallback(async () => {
     if (!facilityId || !itemId || !item || !canWriteInventory) return;
 
-    const sku = String(item?.sku ?? "");
-    if (!sku) return;
-
     const reorderPointNumber = Number(editReorderPoint);
     const body = {
       name: editName.trim() || item.name,
@@ -155,7 +149,7 @@ export default function InventoryItemDetailScreen() {
     try {
       clearError();
       setFeedback("");
-      await apiRequest(endpoints.inventoryItem(facilityId, sku), {
+      await apiRequest(endpoints.inventoryItem(facilityId, itemId), {
         method: "PATCH",
         body
       });

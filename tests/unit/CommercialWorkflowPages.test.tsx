@@ -739,7 +739,7 @@ describe("commercial workflow pages", () => {
         });
       }
       if (
-        path === "/api/commercial/inventory/inventory-1" &&
+        path === "/api/business-inventory/inventory-1" &&
         (!options || options?.method === "GET")
       ) {
         return Promise.resolve({
@@ -762,7 +762,7 @@ describe("commercial workflow pages", () => {
         });
       }
       if (
-        path === "/api/commercial/inventory/inventory-1" &&
+        path === "/api/business-inventory/inventory-1" &&
         options?.method === "PATCH"
       ) {
         return Promise.resolve({
@@ -2871,7 +2871,7 @@ describe("commercial workflow pages", () => {
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
-        "/api/commercial/inventory/inventory-1",
+        "/api/business-inventory/inventory-1",
         expect.objectContaining({
           method: "PATCH",
           data: expect.objectContaining({

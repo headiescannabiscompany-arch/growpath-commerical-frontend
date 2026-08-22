@@ -44,6 +44,17 @@ The shipping Small Business Desk is intentionally lightweight. It uses four shar
 The full behavior and safety contract is owned by
 `docs/knowledge/methods/business-desk-method.md`.
 
+All eight tools reuse four engines rather than creating eight model pipelines. Their
+common acceptance path is source input → structured draft → validation → deterministic
+math where applicable → owner review → audited save/export/provider handoff. Model output
+is never persisted as a verified business fact without that review. Receipt and quote
+imports use a content digest and duplicate/conflict review before save.
+
+Commercial and open-source products are comparison leads, not dependencies or permission
+to copy. Any code adaptation requires an immutable source revision, verified license and
+attribution, dependency/security review and a file-level adoption record before code is
+introduced. Product behavior claims also require current primary-source verification.
+
 | Shipping tool                | Required launch behavior                                                                                                                                      | AI boundary                                                                                      |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Price, margin and break-even | Visible cost/price/quantity/discount/fee/shipping/margin math plus contribution and break-even scenarios                                                      | Deterministic math; GPT explains only and never supplies missing figures                         |

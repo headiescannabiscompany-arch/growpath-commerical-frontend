@@ -40,6 +40,10 @@ describe("GrowPath knowledge registries", () => {
     expect(desk?.warnings).toContain(
       "B-02 is the only inventory engine; nursery and Facility workflows reference it instead of creating parallel ledgers."
     );
+    expect(desk?.requiredOutputs).toContain(
+      "content-digest duplicate review before an extracted record is saved"
+    );
+    expect(desk?.warnings.join(" ")).toContain("license");
     expect(desk?.warnings).toContain(
       "Never contact, purchase, assign, publish, adjust inventory, or write to an external provider without explicit review and confirmation."
     );

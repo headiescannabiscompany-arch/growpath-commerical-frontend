@@ -88,6 +88,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "visible deterministic calculations and formulas",
       "schema-validated extracted drafts with source provenance",
+      "content-digest duplicate review before an extracted record is saved",
       "facts, calculations, assumptions, forecasts, and recommendations kept separate",
       "reviewable quote, follow-up, job, expense, vendor, purchase, cash-flow, or assistant artifact",
       "audit-safe save, export, or external-provider handoff state"
@@ -96,7 +97,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never invent costs, taxes, balances, payments, terms, conversations, inventory, or future sales.",
       "Never contact, purchase, assign, publish, adjust inventory, or write to an external provider without explicit review and confirmation.",
       "B-02 is the only inventory engine; nursery and Facility workflows reference it instead of creating parallel ledgers.",
-      "Do not present GrowPathAI as a CRM, accounting ledger, ERP, payroll, tax, HR, legal, POS, procurement, or autonomous operations system."
+      "Do not present GrowPathAI as a CRM, accounting ledger, ERP, payroll, tax, HR, legal, POS, procurement, or autonomous operations system.",
+      "Treat commercial and open-source examples as research leads only; verify source, revision, license, attribution, dependencies, and security before adapting code."
     ],
     [
       "price-margin-break-even",
