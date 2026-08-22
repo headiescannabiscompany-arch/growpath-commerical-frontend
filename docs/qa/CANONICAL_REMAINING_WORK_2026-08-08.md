@@ -52,6 +52,8 @@ Document roles are fixed:
 
 - `CANONICAL_PRODUCT_ACCEPTANCE_MATRIX_2026-08-21.md` is the **only product contract and
   execution order**;
+- `CANONICAL_CONSTRUCTION_SCAFFOLD_2026-08-22.md` is the **derived construction-packet
+  map** for implementing matrix rows; it cannot add, reorder, reopen or close them;
 - this file is the **detailed evidence and remainder ledger** for those matrix rows;
 - `USER_REQUEST_LEDGER_2026-08-13.md` is the **request/completion history**;
 - `GROWPATHAI_FULL_SYSTEM_TODO.md` and the numbered connected-workflows todo are

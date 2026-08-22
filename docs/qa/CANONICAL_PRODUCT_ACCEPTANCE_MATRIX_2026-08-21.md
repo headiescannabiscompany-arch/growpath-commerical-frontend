@@ -39,6 +39,8 @@ close a populated or mutating story.
 ## Document ownership
 
 - This matrix owns product stories, status and execution order.
+- `CANONICAL_CONSTRUCTION_SCAFFOLD_2026-08-22.md` is the derived build-packet and
+  dependency view. It cannot add, reorder, reopen or close a matrix row.
 - `CANONICAL_USER_STORY_ACCEPTANCE_2026-08-21.md` defines the acceptance scenarios for
   each matrix ID; it contains no independent status or execution order.
 - `CANONICAL_REMAINING_WORK_2026-08-08.md` is the detailed evidence and remainder ledger.
