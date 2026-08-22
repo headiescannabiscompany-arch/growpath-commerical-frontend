@@ -41,4 +41,22 @@ describe("facility role write policy", () => {
     expect(can("MANAGER", "PLANTS_CREATE")).toBe(true);
     expect(can("MANAGER", "INVENTORY_CREATE")).toBe(true);
   });
+
+  it("limits the Business Desk launch to facility owners and managers", () => {
+    const businessDeskCapabilities = [
+      CAPABILITY_KEYS.BUSINESS_DESK_READ,
+      CAPABILITY_KEYS.BUSINESS_DESK_WRITE,
+      CAPABILITY_KEYS.BUSINESS_DESK_EXPORT,
+      CAPABILITY_KEYS.BUSINESS_DESK_AI,
+      CAPABILITY_KEYS.BUSINESS_DESK_HANDOFF
+    ];
+
+    for (const capability of businessDeskCapabilities) {
+      expect(new Set(roleCapabilities("OWNER")).has(capability)).toBe(true);
+      expect(new Set(roleCapabilities("MANAGER")).has(capability)).toBe(true);
+      expect(new Set(roleCapabilities("STAFF")).has(capability)).toBe(false);
+      expect(new Set(roleCapabilities("VIEWER")).has(capability)).toBe(false);
+      expect(new Set(roleCapabilities("QA")).has(capability)).toBe(false);
+    }
+  });
 });

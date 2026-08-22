@@ -136,6 +136,11 @@ export function resolveLocalCommercialPreviewSession(location?: LocalPreviewLoca
         COMMERCIAL_FEED_VIEW: true,
         COMMERCIAL_ALERTS_VIEW: true,
         COMMERCIAL_TASKS_VIEW: true,
+        BUSINESS_DESK_READ: true,
+        BUSINESS_DESK_WRITE: true,
+        BUSINESS_DESK_EXPORT: true,
+        BUSINESS_DESK_AI: true,
+        BUSINESS_DESK_HANDOFF: true,
         STORE_FRONT_VIEW: true,
         STORE_FRONT_WRITE: true,
         COURSES_VIEW: true,
@@ -181,6 +186,7 @@ export function resolveLocalFacilityPreviewSession(location?: LocalPreviewLocati
       .trim()
       .toLowerCase() || LOCAL_FACILITY_PREVIEW_ID;
   const facilityRole = String(params.get("facilityRole") || "OWNER").toUpperCase();
+  const canUseBusinessDesk = facilityRole === "OWNER" || facilityRole === "MANAGER";
 
   return {
     token: LOCAL_FACILITY_PREVIEW_TOKEN,
@@ -212,6 +218,11 @@ export function resolveLocalFacilityPreviewSession(location?: LocalPreviewLocati
         GROWLOGS_WRITE: true,
         INVENTORY_READ: true,
         INVENTORY_WRITE: true,
+        BUSINESS_DESK_READ: canUseBusinessDesk,
+        BUSINESS_DESK_WRITE: canUseBusinessDesk,
+        BUSINESS_DESK_EXPORT: canUseBusinessDesk,
+        BUSINESS_DESK_AI: canUseBusinessDesk,
+        BUSINESS_DESK_HANDOFF: canUseBusinessDesk,
         COMPLIANCE_READ: true,
         COMPLIANCE_WRITE: true,
         AUDIT_READ: true,
