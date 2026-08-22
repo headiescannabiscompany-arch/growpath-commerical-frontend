@@ -127,13 +127,16 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   cancellation, duplicate prevention and exact-Facility entitlement across multiple
   Facilities before live acceptance. Apple IAP is a separate provider path and must not
   be presented as configured until production verification is accepted.
-  Live candidate `9c55b6b` exposed a remaining ownership mismatch: the Facility Profile
-  opened Personal Account billing. The active follow-up candidate routes Facility billing to
-  `/home/facility/billing`, reads the selected Facility status, keeps non-billing members
-  read-only and permits a confirmed authorized Stripe-backed trial to cancel before renewal.
-  Local billing/gift evidence is 20 suites / 255 tests plus TypeScript, lint and delivery
-  guards; deployment and live owner/read-only acceptance remain open. No checkout or
-  cancellation was executed during diagnosis.
+  The Personal-versus-Facility ownership mismatch is corrected in production by frontend
+  `8d397f648f1399e10f92e6dec64de20ce67b81ba` and backend
+  `fbdd874ceadf27a4d0b950b5f1fad5ecc702ed0d` plus canonical-membership correction
+  `687d635a49a5f9ec68dbe2a6674745f4bf9c6b7f`. Live `STAFF` acceptance shows only Triple Bag
+  Genetics status (`trialing`) with explicit read-only authority and no Personal billing or
+  financial actions. Local billing/gift evidence is 20 suites / 255 tests plus TypeScript,
+  lint and delivery guards; the exact canonical authorization suite passes 8/8. Owner
+  checkout/cancellation visibility and source-aware financial-action acceptance remain open
+  and require an OWNER session plus action-time confirmation. No checkout or cancellation was
+  executed during diagnosis.
 - [~] **B-03 provider-backed Business Desk actions:** deterministic tools and reviewed record
   workflows exist. Receipt extraction, Business Ask, provider operations, workspace export
   and Quote payment-provider handoff have independent configuration/confirmation gates.
