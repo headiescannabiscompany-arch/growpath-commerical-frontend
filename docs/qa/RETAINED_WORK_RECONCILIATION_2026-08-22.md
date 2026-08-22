@@ -37,7 +37,7 @@ durable decision record.
 | `codex/live-lifecycle-p0-frontend`              | S05–S06          |              4 | Reconciled: its draft/review/publish lifecycle is already on newer `main`; applying the old branch would remove newer safeguards. |
 | `codex/discover-media-exact-links`              | S01–S02, S08     |              4 | Reconciled: exact-record discovery links and regression tests are already on current `main`; no patch applied.   |
 | `codex/live-studio-closure-doc-20260815`        | S05              |              4 | Reconciled as historical evidence only; current credential/deployment state remains a final-candidate check.     |
-| `codex/release-acceptance-evidence`             | C01–C05, R03     |            5/8 | Reuse the commercial tab fix if still missing. Treat the older acceptance report as historical evidence only.   |
+| `codex/release-acceptance-evidence`             | C01–C05, R03     |            5/8 | Reconciled: the Commercial tab fix is already on current `main`; the older report remains historical evidence only and is not replayed. |
 
 ## Meaningful dirty work to preserve and reconcile
 
