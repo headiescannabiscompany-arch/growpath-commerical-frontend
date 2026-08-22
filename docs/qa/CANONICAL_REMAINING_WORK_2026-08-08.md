@@ -164,6 +164,15 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       superseded duplicate, or identify a real missing user action and complete that owning
       matrix row. Do not blindly implement generated endpoint names and do not silently leave
       a real requested workflow in `backlog` or `hide`.
+- [ ] **Close retained worktrees without losing work:** the 2026-08-22 read-only Git audit
+      found 19 patches not patch-equivalent to the current construction candidate across 12
+      retained frontend branches, alongside already patch-equivalent branches and several
+      dirty directories. Classify each unique commit/diff against the canonical matrix and
+      newer implementation, integrate and accept the useful current behavior, or record a
+      deliberate rejection with its superseding path. Commit or preserve any legitimate dirty
+      diff first; then remove only clean integrated/rejected worktrees. Worktree count is not a
+      product-completion metric, and deleting a directory is never a substitute for resolving
+      its work.
 
 - [x] Auto theme no longer requests device location on startup. Production frontend
       `d84b0c80` resolves Auto from saved sunrise/sunset coordinates when the user has
