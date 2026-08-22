@@ -128,6 +128,42 @@ export type BusinessAskAttestation = {
   }>;
 };
 
+export type BusinessAskCitationEvidence = {
+  operationId: string;
+  citation: BusinessAskCitation;
+  providerSourceProjection: unknown;
+  evidence: {
+    providerSourceProjectionDigestSha256: string;
+    providerInputDigestSha256: string;
+    sourceManifestDigestSha256: string;
+    resultDigestSha256: string;
+    schemaVersion: string;
+    promptVersion: string;
+  };
+};
+
+export type BusinessAskKpiMetricKey =
+  | "open_quotes"
+  | "open_leads"
+  | "active_jobs"
+  | "reviewed_expenses"
+  | "low_stock_items"
+  | "held_inventory_warnings";
+
+export type BusinessAskKpiSnapshot = {
+  scope: "in_selected_sources";
+  dateRange: { from: string; to: string };
+  selectedSourceCount: number;
+  truncated: boolean;
+  omittedSourceCount: number;
+  metrics: Array<{
+    key: BusinessAskKpiMetricKey;
+    count: number;
+    complete: boolean;
+    sourceIds: string[];
+  }>;
+};
+
 export type BusinessAskResult = {
   type: "business_ask";
   schemaVersion: "business-desk-business-ask-v1";
@@ -155,6 +191,7 @@ export type BusinessAskResult = {
   limitations: string[];
   missingInformation: string[];
   citations: BusinessAskCitation[];
+  kpiSnapshot: BusinessAskKpiSnapshot;
   dateRange: { from: string; to: string };
   selectedRecordCount: number;
   truncated: boolean;
@@ -267,6 +304,8 @@ const CREDIT_STATES = new Set<BusinessDeskProviderCredit["status"]>([
 ]);
 const ASK_RECORD_KIND_SET = new Set<string>(BUSINESS_ASK_RECORD_KINDS);
 const DIGEST_PATTERN = /^[a-f0-9]{64}$/;
+const OBJECT_ID_PATTERN = /^[a-f0-9]{24}$/i;
+const ASK_CITATION_ID_PATTERN = /^S\d{3}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_RESULT_ARRAY = 250;
 const MAX_RESULT_TEXT = 20_000;
@@ -294,6 +333,14 @@ function validRequiredString(value: unknown, max = MAX_RESULT_TEXT) {
 
 function validDigest(value: unknown) {
   return typeof value === "string" && DIGEST_PATTERN.test(value);
+}
+
+function validObjectId(value: unknown) {
+  return typeof value === "string" && OBJECT_ID_PATTERN.test(value);
+}
+
+function validAskCitationId(value: unknown) {
+  return typeof value === "string" && ASK_CITATION_ID_PATTERN.test(value);
 }
 
 function validIsoTimestamp(value: unknown) {
@@ -476,6 +523,61 @@ function validStatementWithCitations(value: unknown) {
   );
 }
 
+function validBusinessAskCitation(value: unknown): value is BusinessAskCitation {
+  return (
+    isPlainObject(value) &&
+    hasExactKeys(value, [
+      "id",
+      "sourceType",
+      "recordId",
+      "parentRecordId",
+      "recordKind",
+      "title",
+      "version",
+      "sourceDate",
+      "dateRange"
+    ]) &&
+    validAskCitationId(value.id) &&
+    [
+      "business_desk_record",
+      "business_inventory_item",
+      "business_inventory_lot"
+    ].includes(value.sourceType) &&
+    validObjectId(value.recordId) &&
+    (value.sourceType === "business_inventory_lot"
+      ? validObjectId(value.parentRecordId)
+      : value.parentRecordId === null) &&
+    validRequiredString(value.recordKind, 200) &&
+    validRequiredString(value.title, 500) &&
+    (value.sourceType === "business_desk_record"
+      ? validSafeInteger(value.version, 1)
+      : value.version === null) &&
+    validIsoTimestamp(value.sourceDate) &&
+    isPlainObject(value.dateRange) &&
+    hasExactKeys(value.dateRange, ["from", "to"]) &&
+    validDate(value.dateRange.from) &&
+    validDate(value.dateRange.to)
+  );
+}
+
+function validJsonProjection(value: unknown, depth = 0, budget = { nodes: 0 }): boolean {
+  budget.nodes += 1;
+  if (budget.nodes > 20_000 || depth > 32) return false;
+  if (value === null || typeof value === "boolean") return true;
+  if (typeof value === "string") return value.length <= 250_000;
+  if (typeof value === "number") return Number.isFinite(value);
+  if (Array.isArray(value)) {
+    return (
+      value.length <= 20_000 &&
+      value.every((entry) => validJsonProjection(entry, depth + 1, budget))
+    );
+  }
+  if (!isPlainObject(value) || Object.keys(value).length > 20_000) return false;
+  return Object.entries(value).every(
+    ([key, entry]) => key.length <= 2_000 && validJsonProjection(entry, depth + 1, budget)
+  );
+}
+
 function validBusinessAskResult(value: unknown): value is BusinessAskResult {
   if (
     !isPlainObject(value) ||
@@ -494,6 +596,7 @@ function validBusinessAskResult(value: unknown): value is BusinessAskResult {
       "limitations",
       "missingInformation",
       "citations",
+      "kpiSnapshot",
       "dateRange",
       "selectedRecordCount",
       "truncated",
@@ -563,53 +666,69 @@ function validBusinessAskResult(value: unknown): value is BusinessAskResult {
     value.citations.length > MAX_RESULT_ARRAY ||
     new Set(value.citations.map((citation: unknown) => (citation as any)?.id)).size !==
       value.citations.length ||
-    !value.citations.every(
-      (citation: unknown) =>
-        isPlainObject(citation) &&
-        hasExactKeys(citation, [
-          "id",
-          "sourceType",
-          "recordId",
-          "parentRecordId",
-          "recordKind",
-          "title",
-          "version",
-          "sourceDate",
-          "dateRange"
-        ]) &&
-        validRequiredString(citation.id, 256) &&
-        [
-          "business_desk_record",
-          "business_inventory_item",
-          "business_inventory_lot"
-        ].includes(citation.sourceType) &&
-        validRequiredString(citation.recordId, 256) &&
-        (citation.sourceType === "business_inventory_lot"
-          ? validRequiredString(citation.parentRecordId, 256)
-          : citation.parentRecordId === null) &&
-        validRequiredString(citation.recordKind, 200) &&
-        validRequiredString(citation.title, 500) &&
-        (citation.sourceType === "business_desk_record"
-          ? validSafeInteger(citation.version, 1)
-          : citation.version === null) &&
-        validIsoTimestamp(citation.sourceDate) &&
-        isPlainObject(citation.dateRange) &&
-        hasExactKeys(citation.dateRange, ["from", "to"]) &&
-        validDate(citation.dateRange.from) &&
-        validDate(citation.dateRange.to)
-    ) ||
+    !value.citations.every(validBusinessAskCitation) ||
     !isPlainObject(value.dateRange) ||
     !hasExactKeys(value.dateRange, ["from", "to"]) ||
     !validDate(value.dateRange.from) ||
     !validDate(value.dateRange.to) ||
     !validSafeInteger(value.selectedRecordCount) ||
     typeof value.truncated !== "boolean" ||
-    !validRequiredString(value.assistantDraftRecordId, 256) ||
+    !validObjectId(value.assistantDraftRecordId) ||
     !validSafeInteger(value.assistantDraftVersion, 1)
   ) {
     return false;
   }
   const citationIds = new Set(value.citations.map((citation: any) => citation.id));
+  const kpi = value.kpiSnapshot;
+  const kpiKeys = new Set([
+    "open_quotes",
+    "open_leads",
+    "active_jobs",
+    "reviewed_expenses",
+    "low_stock_items",
+    "held_inventory_warnings"
+  ]);
+  if (
+    !isPlainObject(kpi) ||
+    !hasExactKeys(kpi, [
+      "scope",
+      "dateRange",
+      "selectedSourceCount",
+      "truncated",
+      "omittedSourceCount",
+      "metrics"
+    ]) ||
+    kpi.scope !== "in_selected_sources" ||
+    !isPlainObject(kpi.dateRange) ||
+    !hasExactKeys(kpi.dateRange, ["from", "to"]) ||
+    !validDate(kpi.dateRange.from) ||
+    !validDate(kpi.dateRange.to) ||
+    kpi.dateRange.from !== value.dateRange.from ||
+    kpi.dateRange.to !== value.dateRange.to ||
+    kpi.selectedSourceCount !== value.selectedRecordCount ||
+    kpi.truncated !== value.truncated ||
+    !validSafeInteger(kpi.omittedSourceCount) ||
+    (!kpi.truncated && kpi.omittedSourceCount !== 0) ||
+    !Array.isArray(kpi.metrics) ||
+    kpi.metrics.length > kpiKeys.size ||
+    new Set(kpi.metrics.map((metric: any) => metric?.key)).size !== kpi.metrics.length ||
+    !kpi.metrics.every(
+      (metric: unknown) =>
+        isPlainObject(metric) &&
+        hasExactKeys(metric, ["key", "count", "complete", "sourceIds"]) &&
+        kpiKeys.has(metric.key) &&
+        validSafeInteger(metric.count) &&
+        metric.complete === !kpi.truncated &&
+        validBoundedStringArray(metric.sourceIds, MAX_RESULT_ARRAY) &&
+        new Set(metric.sourceIds).size === metric.sourceIds.length &&
+        metric.sourceIds.every(
+          (id: string) => validAskCitationId(id) && citationIds.has(id)
+        ) &&
+        metric.count === metric.sourceIds.length
+    )
+  ) {
+    return false;
+  }
   const citedSections = [
     ...value.facts,
     ...value.calculations,
@@ -649,6 +768,35 @@ function validBusinessAskResult(value: unknown): value is BusinessAskResult {
   );
 }
 
+export function businessAskAttestationMatchesResult(
+  attestation: BusinessAskAttestation,
+  result: BusinessAskResult
+) {
+  if (
+    attestation.resultDigestSha256 !== result.resultDigestSha256 ||
+    attestation.sources.length !== result.selectedRecordCount ||
+    new Set(attestation.sources.map((source) => source.id)).size !==
+      attestation.sources.length ||
+    new Set(result.citations.map((citation) => citation.id)).size !==
+      result.citations.length
+  ) {
+    return false;
+  }
+  const sources = new Map(attestation.sources.map((source) => [source.id, source]));
+  return result.citations.every((citation) => {
+    const source = sources.get(citation.id);
+    return Boolean(
+      source &&
+      source.sourceType === citation.sourceType &&
+      source.recordId === citation.recordId &&
+      source.parentRecordId === citation.parentRecordId &&
+      source.recordKind === citation.recordKind &&
+      source.version === citation.version &&
+      source.sourceDate === citation.sourceDate
+    );
+  });
+}
+
 function operationFrom<TResult extends BusinessDeskProviderResult>(
   value: unknown,
   expectedKind?: BusinessDeskProviderOperationKind
@@ -668,7 +816,7 @@ function operationFrom<TResult extends BusinessDeskProviderResult>(
       "credit",
       "result"
     ]) ||
-    !validRequiredString(value.id, 256) ||
+    !validObjectId(value.id) ||
     !OPERATION_KINDS.has(value.kind) ||
     (expectedKind && value.kind !== expectedKind) ||
     !OPERATION_STATES.has(value.state) ||
@@ -943,7 +1091,9 @@ export async function startExpenseReceiptExtraction(
   request: BusinessDeskRequestOptions = {}
 ): Promise<BusinessDeskProviderOperationPacket<ExpenseReceiptExtractionResult>> {
   const attachmentId = String(input.attachmentId || "").trim();
-  if (!attachmentId) throw new Error("Choose a READY protected receipt first.");
+  if (!validObjectId(attachmentId)) {
+    throw new Error("Choose a READY protected receipt first.");
+  }
   const response = await apiRequest(
     `${businessDeskBase(workspace)}/provider-operations/extract-receipt`,
     {
@@ -979,8 +1129,10 @@ export async function startBusinessAsk(
   if (!validDate(input.dateRange?.from) || !validDate(input.dateRange?.to)) {
     throw new Error("Choose a valid Business Ask date range.");
   }
-  const recordKinds = [...new Set(input.recordKinds || [])];
+  const inputRecordKinds = Array.isArray(input.recordKinds) ? input.recordKinds : [];
+  const recordKinds = [...inputRecordKinds].sort();
   if (
+    new Set(recordKinds).size !== recordKinds.length ||
     recordKinds.length > BUSINESS_ASK_RECORD_KINDS.length ||
     recordKinds.some((kind) => !ASK_RECORD_KIND_SET.has(kind))
   ) {
@@ -1015,7 +1167,9 @@ export async function getBusinessDeskProviderOperation<
   request: BusinessDeskRequestOptions = {}
 ): Promise<BusinessDeskProviderOperationPacket<TResult>> {
   const id = String(operationId || "").trim();
-  if (!id) throw new Error("The Business Desk provider operation is missing.");
+  if (!validObjectId(id)) {
+    throw new Error("The Business Desk provider operation is invalid.");
+  }
   const response = await apiRequest(
     `${businessDeskBase(workspace)}/provider-operations/${encodeURIComponent(id)}`,
     request.signal ? { signal: request.signal } : {}
@@ -1087,7 +1241,7 @@ export async function getBusinessAskAttestation(
   request: BusinessDeskRequestOptions = {}
 ): Promise<BusinessAskAttestation> {
   const id = String(operationId || "").trim();
-  if (!id) throw new Error("The Business Ask operation is missing.");
+  if (!validObjectId(id)) throw new Error("The Business Ask operation is invalid.");
   const response = await apiRequest(
     `${businessDeskBase(workspace)}/provider-operations/${encodeURIComponent(
       id
@@ -1138,15 +1292,15 @@ export async function getBusinessAskAttestation(
           "version",
           "sourceDate"
         ]) &&
-        validRequiredString(source.id, 256) &&
+        validAskCitationId(source.id) &&
         [
           "business_desk_record",
           "business_inventory_item",
           "business_inventory_lot"
         ].includes(source.sourceType) &&
-        validRequiredString(source.recordId, 256) &&
+        validObjectId(source.recordId) &&
         (source.sourceType === "business_inventory_lot"
-          ? validRequiredString(source.parentRecordId, 256)
+          ? validObjectId(source.parentRecordId)
           : source.parentRecordId === null) &&
         validRequiredString(source.recordKind, 200) &&
         (source.sourceType === "business_desk_record"
@@ -1160,6 +1314,68 @@ export async function getBusinessAskAttestation(
   return value as BusinessAskAttestation;
 }
 
+export async function getBusinessAskCitationEvidence(
+  workspace: BusinessDeskWorkspace,
+  operationId: string,
+  citationId: string,
+  request: BusinessDeskRequestOptions = {}
+): Promise<BusinessAskCitationEvidence> {
+  const operation = String(operationId || "").trim();
+  const citation = String(citationId || "").trim();
+  if (!validObjectId(operation) || !validAskCitationId(citation)) {
+    throw new Error("The Business Ask citation evidence link is invalid.");
+  }
+  const response = await apiRequest(
+    `${businessDeskBase(workspace)}/provider-operations/${encodeURIComponent(
+      operation
+    )}/citations/${encodeURIComponent(citation)}`,
+    request.signal ? { signal: request.signal } : {}
+  );
+  const value = envelope(response);
+  const evidence = isPlainObject(value) ? value.evidence : null;
+  let projectionLength = Number.POSITIVE_INFINITY;
+  try {
+    const serialized = JSON.stringify(
+      isPlainObject(value) ? value.providerSourceProjection : undefined
+    );
+    projectionLength = typeof serialized === "string" ? serialized.length : Infinity;
+  } catch {
+    projectionLength = Number.POSITIVE_INFINITY;
+  }
+  if (
+    !isPlainObject(value) ||
+    !hasExactKeys(value, [
+      "operationId",
+      "citation",
+      "providerSourceProjection",
+      "evidence"
+    ]) ||
+    value.operationId !== operation ||
+    !validBusinessAskCitation(value.citation) ||
+    value.citation.id !== citation ||
+    projectionLength > 260_000 ||
+    !validJsonProjection(value.providerSourceProjection) ||
+    !isPlainObject(evidence) ||
+    !hasExactKeys(evidence, [
+      "providerSourceProjectionDigestSha256",
+      "providerInputDigestSha256",
+      "sourceManifestDigestSha256",
+      "resultDigestSha256",
+      "schemaVersion",
+      "promptVersion"
+    ]) ||
+    !validDigest(evidence.providerSourceProjectionDigestSha256) ||
+    !validDigest(evidence.providerInputDigestSha256) ||
+    !validDigest(evidence.sourceManifestDigestSha256) ||
+    !validDigest(evidence.resultDigestSha256) ||
+    !validRequiredString(evidence.schemaVersion, 200) ||
+    !validRequiredString(evidence.promptVersion, 200)
+  ) {
+    throw new Error("The Business Ask citation evidence response was invalid.");
+  }
+  return value as BusinessAskCitationEvidence;
+}
+
 export async function cancelBusinessDeskProviderOperation<
   TResult extends BusinessDeskProviderResult = BusinessDeskProviderResult
 >(
@@ -1169,6 +1385,9 @@ export async function cancelBusinessDeskProviderOperation<
   expectedKind?: BusinessDeskProviderOperationKind,
   request: BusinessDeskRequestOptions = {}
 ): Promise<BusinessDeskProviderOperationPacket<TResult>> {
+  if (!validObjectId(operationId)) {
+    throw new Error("The Business Desk provider operation is invalid.");
+  }
   if (!validSafeInteger(input.expectedVersion, 1)) {
     throw new Error("Reload the provider operation before canceling it.");
   }
@@ -1196,6 +1415,9 @@ export async function applyExpenseReceiptExtraction(
   },
   request: BusinessDeskRequestOptions = {}
 ): Promise<AppliedExpenseExtractionPacket> {
+  if (!validObjectId(operationId) || !validObjectId(input.recordId)) {
+    throw new Error("Choose an exact saved Expense and provider operation.");
+  }
   const response = await apiRequest(
     `${businessDeskBase(workspace)}/provider-operations/${encodeURIComponent(
       operationId
@@ -1215,7 +1437,7 @@ export async function applyExpenseReceiptExtraction(
   if (
     !isPlainObject(value) ||
     !isPlainObject(value.record) ||
-    !validRequiredString(value.record.id || value.record._id, 256) ||
+    !validObjectId(value.record.id || value.record._id) ||
     value.record.kind !== "expense" ||
     !validSafeInteger(value.record.version, 1) ||
     !isPlainObject(value.revision) ||

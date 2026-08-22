@@ -11,6 +11,10 @@ import {
 
 const ACCOUNT_ONE = businessDeskProviderPersistenceScopeKey("account-one", "commercial");
 const ACCOUNT_TWO = businessDeskProviderPersistenceScopeKey("account-two", "commercial");
+const OPERATION_ONE = "507f191e810c19729de86001";
+const OPERATION_TWO = "507f191e810c19729de86002";
+const OPERATION_THREE = "507f191e810c19729de86003";
+const OPERATION_FOUR = "507f191e810c19729de86004";
 
 describe("Business Desk provider retry metadata", () => {
   beforeEach(async () => {
@@ -68,7 +72,7 @@ describe("Business Desk provider retry metadata", () => {
       }),
       keyPrefix: "business-ask"
     });
-    await rememberPersistedProviderOperation(identity, "operation-1");
+    await rememberPersistedProviderOperation(identity, OPERATION_ONE);
 
     const keys = await AsyncStorage.getAllKeys();
     const values = await AsyncStorage.multiGet(keys);
@@ -77,7 +81,7 @@ describe("Business Desk provider retry metadata", () => {
     expect(serialized).not.toContain(sensitiveMerchant);
     expect(serialized).not.toContain("private-account-id");
     expect(serialized).toContain(identity.signatureSha256);
-    expect(serialized).toContain("operation-1");
+    expect(serialized).toContain(OPERATION_ONE);
   });
 
   it("serializes simultaneous metadata mutations so neither slot is lost", async () => {
@@ -96,15 +100,15 @@ describe("Business Desk provider retry metadata", () => {
       })
     ]);
     await Promise.all([
-      rememberPersistedProviderOperation(receipt, "receipt-operation"),
-      rememberPersistedProviderOperation(ask, "ask-operation")
+      rememberPersistedProviderOperation(receipt, OPERATION_ONE),
+      rememberPersistedProviderOperation(ask, OPERATION_TWO)
     ]);
 
     const keys = await AsyncStorage.getAllKeys();
     const values = await AsyncStorage.multiGet(keys);
     const serialized = JSON.stringify(values);
-    expect(serialized).toContain("receipt-operation");
-    expect(serialized).toContain("ask-operation");
+    expect(serialized).toContain(OPERATION_ONE);
+    expect(serialized).toContain(OPERATION_TWO);
   });
 
   it("isolates two commercial accounts on one device and restores only their latest operation", async () => {
@@ -120,15 +124,15 @@ describe("Business Desk provider retry metadata", () => {
       signature: "second-account-question",
       keyPrefix: "ask"
     });
-    await rememberPersistedProviderOperation(firstAccount, "first-operation");
-    await rememberPersistedProviderOperation(secondAccount, "second-operation");
+    await rememberPersistedProviderOperation(firstAccount, OPERATION_ONE);
+    await rememberPersistedProviderOperation(secondAccount, OPERATION_TWO);
 
     await expect(
       loadLatestPersistedProviderOperation(ACCOUNT_ONE, "business_ask")
-    ).resolves.toMatchObject({ operationId: "first-operation", scopeKey: ACCOUNT_ONE });
+    ).resolves.toMatchObject({ operationId: OPERATION_ONE, scopeKey: ACCOUNT_ONE });
     await expect(
       loadLatestPersistedProviderOperation(ACCOUNT_TWO, "business_ask")
-    ).resolves.toMatchObject({ operationId: "second-operation", scopeKey: ACCOUNT_TWO });
+    ).resolves.toMatchObject({ operationId: OPERATION_TWO, scopeKey: ACCOUNT_TWO });
   });
 
   it("removes revoked or stale restore metadata without affecting another account", async () => {
@@ -144,8 +148,8 @@ describe("Business Desk provider retry metadata", () => {
       signature: "retained-question",
       keyPrefix: "ask"
     });
-    await rememberPersistedProviderOperation(revoked, "revoked-operation");
-    await rememberPersistedProviderOperation(retained, "retained-operation");
+    await rememberPersistedProviderOperation(revoked, OPERATION_THREE);
+    await rememberPersistedProviderOperation(retained, OPERATION_FOUR);
     await forgetPersistedProviderIdentity(
       revoked.scopeKey,
       revoked.slot,
@@ -157,6 +161,21 @@ describe("Business Desk provider retry metadata", () => {
     ).resolves.toBeNull();
     await expect(
       loadLatestPersistedProviderOperation(ACCOUNT_TWO, "business_ask")
-    ).resolves.toMatchObject({ operationId: "retained-operation" });
+    ).resolves.toMatchObject({ operationId: OPERATION_FOUR });
+  });
+
+  it("refuses to persist or restore a legacy non-ObjectId operation identifier", async () => {
+    const identity = await getOrCreatePersistedProviderIdentity({
+      scopeKey: ACCOUNT_ONE,
+      slot: "business_ask",
+      signature: "legacy-id",
+      keyPrefix: "ask"
+    });
+    await expect(
+      rememberPersistedProviderOperation(identity, "legacy-operation-id")
+    ).rejects.toThrow("identifier was invalid");
+    await expect(
+      loadLatestPersistedProviderOperation(ACCOUNT_ONE, "business_ask")
+    ).resolves.toBeNull();
   });
 });

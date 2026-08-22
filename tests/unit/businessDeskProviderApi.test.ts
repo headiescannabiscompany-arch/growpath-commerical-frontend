@@ -1,6 +1,7 @@
 import { apiRequest } from "@/api/apiRequest";
 import {
   applyExpenseReceiptExtraction,
+  getBusinessAskCitationEvidence,
   getBusinessAskAttestation,
   getBusinessDeskProviderOperation,
   getBusinessDeskProviderCapabilities,
@@ -14,10 +15,12 @@ jest.mock("@/api/apiRequest", () => ({ apiRequest: jest.fn() }));
 
 const mockApiRequest = apiRequest as jest.MockedFunction<typeof apiRequest>;
 const digest = "a".repeat(64);
+const operationId = "507f191e810c19729de86001";
+const citationId = "S001";
 
 function operation(kind: "business_ask" | "expense_receipt_extraction", result: any) {
   return {
-    id: "provider-operation-1",
+    id: operationId,
     kind,
     state: result ? "succeeded" : "processing",
     version: 2,
@@ -45,15 +48,15 @@ function askResult(overrides: Record<string, unknown> = {}): any {
     resultDigestSha256: digest,
     answer: "The open quote needs a reviewed next step.",
     incomplete: false,
-    answerCitationIds: ["citation-1"],
-    facts: [{ statement: "One quote is open.", citationIds: ["citation-1"] }],
+    answerCitationIds: [citationId],
+    facts: [{ statement: "One quote is open.", citationIds: [citationId] }],
     calculations: [],
     assumptions: [],
     scenarios: [],
     recommendations: [
       {
         statement: "Review the quote with its owner.",
-        citationIds: ["citation-1"],
+        citationIds: [citationId],
         requiresReview: true
       }
     ],
@@ -61,7 +64,7 @@ function askResult(overrides: Record<string, unknown> = {}): any {
     missingInformation: [],
     citations: [
       {
-        id: "citation-1",
+        id: citationId,
         sourceType: "business_desk_record",
         recordId: "507f191e810c19729de86010",
         parentRecordId: null,
@@ -72,6 +75,21 @@ function askResult(overrides: Record<string, unknown> = {}): any {
         dateRange: { from: "2026-07-01", to: "2026-08-22" }
       }
     ],
+    kpiSnapshot: {
+      scope: "in_selected_sources",
+      dateRange: { from: "2026-07-01", to: "2026-08-22" },
+      selectedSourceCount: 1,
+      truncated: false,
+      omittedSourceCount: 0,
+      metrics: [
+        {
+          key: "open_quotes",
+          count: 1,
+          complete: true,
+          sourceIds: [citationId]
+        }
+      ]
+    },
     dateRange: { from: "2026-07-01", to: "2026-08-22" },
     selectedRecordCount: 1,
     truncated: false,
@@ -250,6 +268,35 @@ describe("Business Desk provider API", () => {
     );
   });
 
+  it("canonicalizes Ask record kinds and rejects duplicates before sending", async () => {
+    mockApiRequest.mockResolvedValue({
+      data: { operation: operation("business_ask", null), idempotentReplay: false }
+    });
+    await startBusinessAsk(COMMERCIAL_BUSINESS_DESK_WORKSPACE, {
+      clientOperationKey: "business-ask-sorted-1",
+      question: "What needs attention?",
+      dateRange: { from: "2026-07-01", to: "2026-08-22" },
+      recordKinds: ["quote", "expense"],
+      includeInventory: false
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/business-desk/provider-operations/business-ask",
+      expect.objectContaining({
+        body: expect.objectContaining({ recordKinds: ["expense", "quote"] })
+      })
+    );
+    await expect(
+      startBusinessAsk(COMMERCIAL_BUSINESS_DESK_WORKSPACE, {
+        clientOperationKey: "business-ask-duplicate-1",
+        question: "What needs attention?",
+        dateRange: { from: "2026-07-01", to: "2026-08-22" },
+        recordKinds: ["quote", "quote"],
+        includeInventory: false
+      })
+    ).rejects.toThrow("supported Business Desk source types");
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+  });
+
   it("rejects impossible operation state, credit, result, and timestamp combinations", async () => {
     mockApiRequest.mockResolvedValue({
       data: {
@@ -322,7 +369,7 @@ describe("Business Desk provider API", () => {
     await expect(
       getBusinessDeskProviderOperation(
         COMMERCIAL_BUSINESS_DESK_WORKSPACE,
-        "provider-operation-1",
+        operationId,
         "business_ask"
       )
     ).resolves.toMatchObject({ operation: expect.objectContaining(overrides) });
@@ -350,7 +397,15 @@ describe("Business Desk provider API", () => {
               scenarios: [],
               recommendations: [],
               citations: [],
-              selectedRecordCount: 0
+              selectedRecordCount: 0,
+              kpiSnapshot: {
+                scope: "in_selected_sources",
+                dateRange: { from: "2026-07-01", to: "2026-08-22" },
+                selectedSourceCount: 0,
+                truncated: false,
+                omittedSourceCount: 0,
+                metrics: []
+              }
             })
           )
         }
@@ -430,7 +485,7 @@ describe("Business Desk provider API", () => {
                 statement: "A margin was calculated.",
                 formula: "revenue - cost",
                 inputs: ["revenue", "cost"],
-                citationIds: ["citation-1"],
+                citationIds: [citationId],
                 incomplete: false
               }
             ]
@@ -446,6 +501,49 @@ describe("Business Desk provider API", () => {
         recordKinds: ["quote"],
         includeInventory: false
       })
+    ).rejects.toThrow("provider result was invalid");
+  });
+
+  it("rejects inconsistent deterministic KPI counts and noncanonical citation IDs", async () => {
+    const mismatchedKpi = askResult();
+    mismatchedKpi.kpiSnapshot.metrics[0].count = 2;
+    mockApiRequest
+      .mockResolvedValueOnce({
+        data: { operation: operation("business_ask", mismatchedKpi) }
+      })
+      .mockResolvedValueOnce({
+        data: {
+          operation: operation(
+            "business_ask",
+            askResult({
+              answerCitationIds: ["citation-1"],
+              facts: [{ statement: "One quote is open.", citationIds: ["citation-1"] }],
+              citations: [{ ...askResult().citations[0], id: "citation-1" }],
+              kpiSnapshot: {
+                ...askResult().kpiSnapshot,
+                metrics: [
+                  {
+                    ...askResult().kpiSnapshot.metrics[0],
+                    sourceIds: ["citation-1"]
+                  }
+                ]
+              }
+            })
+          )
+        }
+      });
+    const input = {
+      clientOperationKey: "business-ask-kpi-contract",
+      question: "What needs attention?",
+      dateRange: { from: "2026-07-01", to: "2026-08-22" },
+      recordKinds: ["quote" as const],
+      includeInventory: false
+    };
+    await expect(
+      startBusinessAsk(COMMERCIAL_BUSINESS_DESK_WORKSPACE, input)
+    ).rejects.toThrow("provider result was invalid");
+    await expect(
+      startBusinessAsk(COMMERCIAL_BUSINESS_DESK_WORKSPACE, input)
     ).rejects.toThrow("provider result was invalid");
   });
 
@@ -502,7 +600,7 @@ describe("Business Desk provider API", () => {
     mockApiRequest.mockResolvedValue({
       data: {
         attestation: {
-          operationId: "provider-operation-1",
+          operationId,
           kind: "business_ask",
           state: "succeeded",
           providerInputDigestSha256: "1".repeat(64),
@@ -515,7 +613,7 @@ describe("Business Desk provider API", () => {
           completedAt: "2026-08-22T12:00:02.000Z",
           sources: [
             {
-              id: "citation-1",
+              id: citationId,
               sourceType: "business_desk_record",
               recordId: "507f191e810c19729de86010",
               parentRecordId: null,
@@ -529,16 +627,13 @@ describe("Business Desk provider API", () => {
     });
 
     await expect(
-      getBusinessAskAttestation(
-        COMMERCIAL_BUSINESS_DESK_WORKSPACE,
-        "provider-operation-1"
-      )
+      getBusinessAskAttestation(COMMERCIAL_BUSINESS_DESK_WORKSPACE, operationId)
     ).resolves.toMatchObject({
-      operationId: "provider-operation-1",
+      operationId,
       sourceManifestDigestSha256: "2".repeat(64)
     });
     expect(mockApiRequest).toHaveBeenCalledWith(
-      "/api/business-desk/provider-operations/provider-operation-1/attestation",
+      `/api/business-desk/provider-operations/${operationId}/attestation`,
       {}
     );
   });
@@ -547,7 +642,7 @@ describe("Business Desk provider API", () => {
     mockApiRequest.mockResolvedValue({
       data: {
         attestation: {
-          operationId: "provider-operation-1",
+          operationId,
           kind: "business_ask",
           state: "succeeded",
           providerInputDigestSha256: "not-a-digest",
@@ -564,11 +659,72 @@ describe("Business Desk provider API", () => {
     });
 
     await expect(
-      getBusinessAskAttestation(
-        COMMERCIAL_BUSINESS_DESK_WORKSPACE,
-        "provider-operation-1"
-      )
+      getBusinessAskAttestation(COMMERCIAL_BUSINESS_DESK_WORKSPACE, operationId)
     ).rejects.toThrow("attestation response was invalid");
+  });
+
+  it("loads one exact operation-bound provider source projection", async () => {
+    mockApiRequest.mockResolvedValue({
+      data: {
+        operationId,
+        citation: askResult().citations[0],
+        providerSourceProjection: {
+          kind: "quote",
+          title: "Spring quote",
+          totals: { customerTotalMinor: 12500 }
+        },
+        evidence: {
+          providerSourceProjectionDigestSha256: "3".repeat(64),
+          providerInputDigestSha256: "1".repeat(64),
+          sourceManifestDigestSha256: "2".repeat(64),
+          resultDigestSha256: digest,
+          schemaVersion: "business-desk-business-ask-v1",
+          promptVersion: "business-ask-v1"
+        }
+      }
+    });
+
+    await expect(
+      getBusinessAskCitationEvidence(
+        COMMERCIAL_BUSINESS_DESK_WORKSPACE,
+        operationId,
+        citationId
+      )
+    ).resolves.toMatchObject({
+      operationId,
+      citation: { id: citationId, recordId: "507f191e810c19729de86010" },
+      providerSourceProjection: { title: "Spring quote" }
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      `/api/business-desk/provider-operations/${operationId}/citations/${citationId}`,
+      {}
+    );
+  });
+
+  it("rejects malformed, cross-bound, or non-JSON citation evidence", async () => {
+    mockApiRequest.mockResolvedValue({
+      data: {
+        operationId: "507f191e810c19729de86099",
+        citation: askResult().citations[0],
+        providerSourceProjection: { unsafe: undefined },
+        evidence: {
+          providerSourceProjectionDigestSha256: "3".repeat(64),
+          providerInputDigestSha256: "1".repeat(64),
+          sourceManifestDigestSha256: "2".repeat(64),
+          resultDigestSha256: digest,
+          schemaVersion: "business-desk-business-ask-v1",
+          promptVersion: "business-ask-v1"
+        }
+      }
+    });
+
+    await expect(
+      getBusinessAskCitationEvidence(
+        COMMERCIAL_BUSINESS_DESK_WORKSPACE,
+        operationId,
+        citationId
+      )
+    ).rejects.toThrow("citation evidence response was invalid");
   });
 
   it("applies only an explicitly reviewed expense to an exact saved version", async () => {
@@ -606,18 +762,14 @@ describe("Business Desk provider API", () => {
       }
     });
 
-    await applyExpenseReceiptExtraction(
-      COMMERCIAL_BUSINESS_DESK_WORKSPACE,
-      "provider-operation-1",
-      {
-        recordId: "507f191e810c19729de86013",
-        expectedVersion: 4,
-        idempotencyKey: "expense-apply-stable-1",
-        reviewedExpense
-      }
-    );
+    await applyExpenseReceiptExtraction(COMMERCIAL_BUSINESS_DESK_WORKSPACE, operationId, {
+      recordId: "507f191e810c19729de86013",
+      expectedVersion: 4,
+      idempotencyKey: "expense-apply-stable-1",
+      reviewedExpense
+    });
     expect(mockApiRequest).toHaveBeenCalledWith(
-      "/api/business-desk/provider-operations/provider-operation-1/apply",
+      `/api/business-desk/provider-operations/${operationId}/apply`,
       {
         method: "POST",
         body: {
@@ -659,7 +811,7 @@ describe("Business Desk provider API", () => {
         limit: 10
       })
     ).resolves.toMatchObject({
-      operations: [{ id: "provider-operation-1", kind: "business_ask" }],
+      operations: [{ id: operationId, kind: "business_ask" }],
       nextCursor: "next-page"
     });
     expect(mockApiRequest).toHaveBeenCalledWith(
@@ -709,7 +861,7 @@ describe("Business Desk provider API", () => {
     await expect(
       getBusinessDeskProviderOperation(
         COMMERCIAL_BUSINESS_DESK_WORKSPACE,
-        "provider-operation-1",
+        operationId,
         "expense_receipt_extraction"
       )
     ).resolves.toMatchObject({

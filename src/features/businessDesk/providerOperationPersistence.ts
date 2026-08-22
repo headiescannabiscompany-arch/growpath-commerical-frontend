@@ -20,6 +20,7 @@ const STORAGE_KEY = "growpath.businessDesk.providerOperationMetadata.v2";
 const MAX_ENTRIES = 24;
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1_000;
 const DIGEST_PATTERN = /^[a-f0-9]{64}$/;
+const OBJECT_ID_PATTERN = /^[a-f0-9]{24}$/i;
 let mutationQueue: Promise<void> = Promise.resolve();
 
 function serializedMutation<TResult>(run: () => Promise<TResult>) {
@@ -171,7 +172,8 @@ function validEntry(value: unknown): value is PersistedBusinessDeskOperation {
     entry.clientOperationKey.length > 0 &&
     entry.clientOperationKey.length <= 256 &&
     (entry.operationId === null ||
-      (typeof entry.operationId === "string" && entry.operationId.length <= 256)) &&
+      (typeof entry.operationId === "string" &&
+        OBJECT_ID_PATTERN.test(entry.operationId))) &&
     Number.isFinite(new Date(entry.updatedAt).getTime())
   );
 }
@@ -233,10 +235,14 @@ export async function rememberPersistedProviderOperation(
   operationId: string
 ) {
   return serializedMutation(async () => {
+    const normalizedOperationId = String(operationId || "").trim();
+    if (!OBJECT_ID_PATTERN.test(normalizedOperationId)) {
+      throw new Error("The provider operation identifier was invalid and was not saved.");
+    }
     const entries = await loadEntries();
     const updated = {
       ...identity,
-      operationId: String(operationId || "").trim() || null,
+      operationId: normalizedOperationId,
       updatedAt: new Date().toISOString()
     } satisfies PersistedBusinessDeskOperation;
     await saveEntries([

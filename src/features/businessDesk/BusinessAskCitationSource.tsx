@@ -3,7 +3,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import {
+  getBusinessAskAttestation,
+  getBusinessAskCitationEvidence,
   getBusinessDeskProviderOperation,
+  type BusinessAskCitationEvidence,
   type BusinessAskCitation,
   type BusinessAskResult
 } from "@/api/businessDeskProvider";
@@ -18,6 +21,7 @@ import {
 import { getBusinessInventoryItem } from "@/api/businessInventory";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { businessAskCitationEvidenceMatches } from "@/features/businessDesk/businessAskEvidence";
 import { businessDeskProviderErrorMessage } from "@/features/businessDesk/ProviderOperationStatus";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -27,8 +31,10 @@ type SourceState = {
   loading: boolean;
   error: string;
   citation: BusinessAskCitation | null;
-  source: unknown;
-  sourceNotice: string;
+  providerProjection: unknown;
+  evidence: BusinessAskCitationEvidence["evidence"] | null;
+  comparison: unknown;
+  comparisonNotice: string;
 };
 
 function firstParam(value: string | string[] | undefined) {
@@ -60,7 +66,8 @@ async function exactBusinessDeskSource(
     const record = await getBusinessDeskRecord(workspace, citation.recordId, { signal });
     return {
       source: record,
-      notice: "The provider cited the current authorized record without a revision pin."
+      notice:
+        "Showing the current authorized record for comparison only. Fields outside the provider projection were not used by Business Ask."
     };
   }
   const exact = await getBusinessDeskRevision(
@@ -73,12 +80,12 @@ async function exactBusinessDeskSource(
   if (!snapshot) {
     return {
       source: null,
-      notice: `Exact cited revision ${citation.version} has no displayable snapshot. The current record was not substituted.`
+      notice: `Exact cited revision ${citation.version} has no displayable comparison. The current record was not substituted; the provider projection above remains the AI evidence.`
     };
   }
   return {
     source: snapshot,
-    notice: `Showing the authorized immutable snapshot for cited revision ${citation.version}.`
+    notice: `Showing authorized revision ${citation.version} for comparison only. Fields outside the provider projection were not used by Business Ask.`
   };
 }
 
@@ -105,7 +112,7 @@ async function exactInventoryItemSource(
   }
   return {
     source: detail.item,
-    notice: `Showing the current authorized projection for the exact cited item identity. The answer used the source-dated projection from ${new Date(citation.sourceDate).toLocaleString()}; inventory is mutable, so this current view may have changed.`
+    notice: `Showing the current authorized item for comparison only. Business Ask used the bounded provider projection above from ${new Date(citation.sourceDate).toLocaleString()}; inventory is mutable and fields outside that projection were not used by AI.`
   };
 }
 
@@ -143,7 +150,7 @@ async function exactInventoryLotSource(
   }
   return {
     source: lot,
-    notice: `Showing the current authorized projection for the exact cited lot identity. The answer used the source-dated projection from ${new Date(citation.sourceDate).toLocaleString()}; inventory is mutable, so this current view may have changed.`
+    notice: `Showing the current authorized lot for comparison only. Business Ask used the bounded provider projection above from ${new Date(citation.sourceDate).toLocaleString()}; inventory is mutable and fields outside that projection were not used by AI.`
   };
 }
 
@@ -181,8 +188,10 @@ export default function BusinessAskCitationSource({
     loading: true,
     error: "",
     citation: null,
-    source: null,
-    sourceNotice: ""
+    providerProjection: null,
+    evidence: null,
+    comparison: null,
+    comparisonNotice: ""
   });
 
   useEffect(() => {
@@ -193,8 +202,10 @@ export default function BusinessAskCitationSource({
       loading: true,
       error: "",
       citation: null,
-      source: null,
-      sourceNotice: ""
+      providerProjection: null,
+      evidence: null,
+      comparison: null,
+      comparisonNotice: ""
     });
     void (async () => {
       try {
@@ -220,17 +231,49 @@ export default function BusinessAskCitationSource({
         if (!citation) {
           throw new Error("That citation does not belong to this authorized answer.");
         }
-        let exact: { source: unknown; notice: string };
-        if (citation.sourceType === "business_desk_record") {
-          exact = await exactBusinessDeskSource(
-            stableWorkspace,
+        const attestation = await getBusinessAskAttestation(
+          stableWorkspace,
+          operationId,
+          { signal: controller.signal }
+        );
+        const providerEvidence = await getBusinessAskCitationEvidence(
+          stableWorkspace,
+          operationId,
+          citationId,
+          { signal: controller.signal }
+        );
+        if (
+          !businessAskCitationEvidenceMatches(
+            operationId,
+            result,
             citation,
-            controller.signal
+            attestation,
+            providerEvidence
+          )
+        ) {
+          throw new Error(
+            "The cited provider projection did not match the verified Business Ask evidence. Nothing was displayed."
           );
-        } else if (citation.sourceType === "business_inventory_item") {
-          exact = await exactInventoryItemSource(stableWorkspace, citation);
-        } else {
-          exact = await exactInventoryLotSource(stableWorkspace, citation);
+        }
+        let exact: { source: unknown; notice: string };
+        try {
+          if (citation.sourceType === "business_desk_record") {
+            exact = await exactBusinessDeskSource(
+              stableWorkspace,
+              citation,
+              controller.signal
+            );
+          } else if (citation.sourceType === "business_inventory_item") {
+            exact = await exactInventoryItemSource(stableWorkspace, citation);
+          } else {
+            exact = await exactInventoryLotSource(stableWorkspace, citation);
+          }
+        } catch {
+          exact = {
+            source: null,
+            notice:
+              "The authorized current-record comparison is unavailable. The verified provider projection remains unchanged and no substitute was shown."
+          };
         }
         if (!controller.signal.aborted && activeKey.current === key) {
           setState({
@@ -238,8 +281,10 @@ export default function BusinessAskCitationSource({
             loading: false,
             error: "",
             citation,
-            source: exact.source,
-            sourceNotice: exact.notice
+            providerProjection: providerEvidence.providerSourceProjection,
+            evidence: providerEvidence.evidence,
+            comparison: exact.source,
+            comparisonNotice: exact.notice
           });
         }
       } catch (error) {
@@ -253,8 +298,10 @@ export default function BusinessAskCitationSource({
                 : new Error("The cited source could not be opened.")
             ),
             citation: null,
-            source: null,
-            sourceNotice: ""
+            providerProjection: null,
+            evidence: null,
+            comparison: null,
+            comparisonNotice: ""
           });
         }
       }
@@ -276,8 +323,9 @@ export default function BusinessAskCitationSource({
             Cited source
           </Text>
           <Text style={styles.subtitle}>
-            Read-only inspection of the exact authorized source referenced by a Business
-            Ask draft. No source can be selected by URL alone.
+            Read-only inspection of the exact redacted projection used by a Business Ask
+            draft. No source can be selected by URL alone, and current record fields are
+            never substituted for AI evidence.
           </Text>
         </View>
       }
@@ -309,18 +357,44 @@ export default function BusinessAskCitationSource({
             <Text selectable style={styles.identifier}>
               Source ID: {active.citation.recordId}
             </Text>
-            <Text style={styles.notice}>{active.sourceNotice}</Text>
-            {active.source ? (
+            <View style={styles.snapshotBox}>
+              <Text
+                accessibilityRole="header"
+                aria-level={3}
+                style={styles.snapshotTitle}
+              >
+                Projection used by Business Ask
+              </Text>
+              <Text style={styles.meta}>
+                This is the exact bounded, redacted source projection supplied to the AI.
+                It is not the full business record.
+              </Text>
+              <Text selectable style={styles.snapshotText}>
+                {safeDisplay(active.providerProjection)}
+              </Text>
+              {active.evidence ? (
+                <Text selectable style={styles.identifier}>
+                  Projection SHA-256:{" "}
+                  {active.evidence.providerSourceProjectionDigestSha256}
+                </Text>
+              ) : null}
+            </View>
+            <Text style={styles.notice}>{active.comparisonNotice}</Text>
+            {active.comparison ? (
               <View style={styles.snapshotBox}>
                 <Text
                   accessibilityRole="header"
                   aria-level={3}
                   style={styles.snapshotTitle}
                 >
-                  Authorized source snapshot
+                  Authorized record comparison — not AI input
+                </Text>
+                <Text style={styles.meta}>
+                  This separate authorized view may contain fields that were not supplied
+                  to Business Ask. Only the projection above is attributed to the AI.
                 </Text>
                 <Text selectable style={styles.snapshotText}>
-                  {safeDisplay(active.source)}
+                  {safeDisplay(active.comparison)}
                 </Text>
               </View>
             ) : null}

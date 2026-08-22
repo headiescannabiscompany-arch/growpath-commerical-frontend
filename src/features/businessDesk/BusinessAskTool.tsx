@@ -1,13 +1,12 @@
-import { Link } from "expo-router";
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   BUSINESS_ASK_RECORD_KINDS,
+  businessAskAttestationMatchesResult,
   getBusinessAskAttestation,
   startBusinessAsk,
   type BusinessAskAttestation,
-  type BusinessAskCitation,
   type BusinessAskRecordKind,
   type BusinessAskResult
 } from "@/api/businessDeskProvider";
@@ -16,6 +15,8 @@ import CalendarDateField from "@/components/forms/CalendarDateField";
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
 import { LabeledInput } from "@/features/businessDesk/RecordFormControls";
+import BusinessAskDraftHistory from "@/features/businessDesk/BusinessAskDraftHistory";
+import BusinessAskResultContent from "@/features/businessDesk/BusinessAskResultContent";
 import ProviderOperationStatus, {
   businessDeskCapabilityCopy,
   businessDeskProviderErrorMessage
@@ -43,45 +44,17 @@ const SOURCE_LABELS: Record<BusinessAskRecordKind, string> = {
   cash_flow_snapshot: "Cash-flow snapshots"
 };
 
-function localDateValue(date: Date) {
+function utcDateValue(date: Date) {
   const pad = (value: number) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(
+    date.getUTCDate()
+  )}`;
 }
 
-function defaultDateRange() {
-  const through = new Date();
-  const from = new Date(through);
-  from.setDate(from.getDate() - 89);
-  return { from: localDateValue(from), to: localDateValue(through) };
-}
-
-function attestationMatchesResult(
-  attestation: BusinessAskAttestation,
-  result: BusinessAskResult
-) {
-  if (
-    attestation.resultDigestSha256 !== result.resultDigestSha256 ||
-    attestation.sources.length !== result.selectedRecordCount ||
-    new Set(attestation.sources.map((source) => source.id)).size !==
-      attestation.sources.length ||
-    new Set(result.citations.map((citation) => citation.id)).size !==
-      result.citations.length
-  ) {
-    return false;
-  }
-  const sources = new Map(attestation.sources.map((source) => [source.id, source]));
-  return result.citations.every((citation) => {
-    const source = sources.get(citation.id);
-    return Boolean(
-      source &&
-      source.sourceType === citation.sourceType &&
-      source.recordId === citation.recordId &&
-      source.parentRecordId === citation.parentRecordId &&
-      source.recordKind === citation.recordKind &&
-      source.version === citation.version &&
-      source.sourceDate === citation.sourceDate
-    );
-  });
+export function defaultBusinessAskUtcDateRange(through = new Date()) {
+  const from = new Date(through.getTime());
+  from.setUTCDate(from.getUTCDate() - 89);
+  return { from: utcDateValue(from), to: utcDateValue(through) };
 }
 
 function dateAsUtc(value: string) {
@@ -97,98 +70,6 @@ function dateAsUtc(value: string) {
     return null;
   }
   return milliseconds;
-}
-
-function CitationLinks({
-  ids,
-  citations,
-  basePath,
-  operationId,
-  styles
-}: {
-  ids: string[];
-  citations: Map<string, BusinessAskCitation>;
-  basePath: string;
-  operationId: string;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  if (!ids.length) return null;
-  return (
-    <View style={styles.citationRow}>
-      {ids.map((id) => {
-        const citation = citations.get(id);
-        if (!citation) return null;
-        const revision = citation.version ? ` · revision ${citation.version}` : "";
-        return (
-          <Link
-            key={id}
-            href={
-              `${basePath}/source?operationId=${encodeURIComponent(
-                operationId
-              )}&citationId=${encodeURIComponent(id)}` as any
-            }
-            asChild
-          >
-            <Pressable
-              accessibilityRole="link"
-              accessibilityLabel={`Inspect cited source ${citation.title}${revision}`}
-              style={styles.citationChip}
-            >
-              <Text style={styles.citationText}>
-                {citation.title}
-                {revision}
-              </Text>
-            </Pressable>
-          </Link>
-        );
-      })}
-    </View>
-  );
-}
-
-function ResultSection({
-  title,
-  empty,
-  entries,
-  citations,
-  basePath,
-  operationId,
-  styles
-}: {
-  title: string;
-  empty: string;
-  entries: Array<{ statement: string; citationIds: string[]; detail?: string }>;
-  citations: Map<string, BusinessAskCitation>;
-  basePath: string;
-  operationId: string;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  return (
-    <View style={styles.resultSection}>
-      <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
-        {title}
-      </Text>
-      {entries.length ? (
-        entries.map((entry, index) => (
-          <View key={`${title}-${index}`} style={styles.resultEntry}>
-            <Text style={styles.resultText}>{entry.statement}</Text>
-            {entry.detail ? (
-              <Text style={styles.resultDetail}>{entry.detail}</Text>
-            ) : null}
-            <CitationLinks
-              ids={entry.citationIds}
-              citations={citations}
-              basePath={basePath}
-              operationId={operationId}
-              styles={styles}
-            />
-          </View>
-        ))
-      ) : (
-        <Text style={styles.emptyText}>{empty}</Text>
-      )}
-    </View>
-  );
 }
 
 export default function BusinessAskTool({
@@ -215,7 +96,7 @@ export default function BusinessAskTool({
     slot: "business_ask",
     keyPrefix: "business-ask"
   });
-  const initialDates = useMemo(defaultDateRange, [workspaceKey]);
+  const initialDates = useMemo(defaultBusinessAskUtcDateRange, [workspaceKey]);
   const [question, setQuestion] = useState("");
   const [fromDate, setFromDate] = useState(initialDates.from);
   const [throughDate, setThroughDate] = useState(initialDates.to);
@@ -223,7 +104,10 @@ export default function BusinessAskTool({
     ...BUSINESS_ASK_RECORD_KINDS
   ]);
   const [includeInventory, setIncludeInventory] = useState(true);
-  const [submittedSignature, setSubmittedSignature] = useState("");
+  const [submittedRequest, setSubmittedRequest] = useState({
+    signature: "",
+    operationId: ""
+  });
   const [formError, setFormError] = useState("");
   const [attestationReloadToken, setAttestationReloadToken] = useState(0);
   const [attestationState, setAttestationState] = useState<{
@@ -238,13 +122,13 @@ export default function BusinessAskTool({
   );
 
   useEffect(() => {
-    const dates = defaultDateRange();
+    const dates = defaultBusinessAskUtcDateRange();
     setQuestion("");
     setFromDate(dates.from);
     setThroughDate(dates.to);
     setRecordKinds([...BUSINESS_ASK_RECORD_KINDS]);
     setIncludeInventory(true);
-    setSubmittedSignature("");
+    setSubmittedRequest({ signature: "", operationId: "" });
     setFormError("");
   }, [workspaceKey]);
 
@@ -285,7 +169,7 @@ export default function BusinessAskTool({
       signal: controller.signal
     })
       .then((value) => {
-        if (!attestationMatchesResult(value, result)) {
+        if (!businessAskAttestationMatchesResult(value, result)) {
           throw new Error(
             "The server audit attestation does not match this answer and its cited sources. The evidence was not accepted."
           );
@@ -336,7 +220,10 @@ export default function BusinessAskTool({
   );
   const currentSignature = JSON.stringify(requestDraft);
   const resultMatchesCurrentDraft = Boolean(
-    result && submittedSignature && submittedSignature === currentSignature
+    result &&
+    submittedRequest.signature &&
+    submittedRequest.signature === currentSignature &&
+    submittedRequest.operationId === providerOperation.operation?.id
   );
 
   const toggleKind = (kind: BusinessAskRecordKind) => {
@@ -376,20 +263,25 @@ export default function BusinessAskTool({
       if (days > maxDays) {
         throw new Error(`Choose a date range of ${maxDays} days or fewer.`);
       }
-      setSubmittedSignature(currentSignature);
-      await providerOperation.start(currentSignature, (clientOperationKey, signal) =>
-        startBusinessAsk(
-          workspace,
-          {
-            clientOperationKey,
-            question: requestDraft.question,
-            dateRange: requestDraft.dateRange,
-            recordKinds,
-            includeInventory
-          },
-          { signal }
-        )
+      setSubmittedRequest({ signature: currentSignature, operationId: "" });
+      const started = await providerOperation.start(
+        currentSignature,
+        (clientOperationKey, signal) =>
+          startBusinessAsk(
+            workspace,
+            {
+              clientOperationKey,
+              question: requestDraft.question,
+              dateRange: requestDraft.dateRange,
+              recordKinds: requestDraft.recordKinds,
+              includeInventory
+            },
+            { signal }
+          )
       );
+      if (started && activeWorkspaceKey.current === requestWorkspaceKey) {
+        setSubmittedRequest({ signature: currentSignature, operationId: started.id });
+      }
     } catch (error) {
       if (activeWorkspaceKey.current === requestWorkspaceKey) {
         setFormError(
@@ -400,11 +292,6 @@ export default function BusinessAskTool({
       }
     }
   };
-
-  const citationMap = useMemo(
-    () => new Map((result?.citations || []).map((citation) => [citation.id, citation])),
-    [result]
-  );
 
   return (
     <AppPage
@@ -449,16 +336,16 @@ export default function BusinessAskTool({
         <View style={styles.dateGrid}>
           <View style={styles.dateField}>
             <CalendarDateField
-              label="Source updated from"
-              accessibilityLabel="Business Ask source updated from date"
+              label="Source updated from (UTC)"
+              accessibilityLabel="Business Ask source updated from UTC date"
               value={fromDate}
               onChange={setFromDate}
             />
           </View>
           <View style={styles.dateField}>
             <CalendarDateField
-              label="Source updated through"
-              accessibilityLabel="Business Ask source updated through date"
+              label="Source updated through (UTC)"
+              accessibilityLabel="Business Ask source updated through UTC date"
               value={throughDate}
               onChange={setThroughDate}
             />
@@ -512,6 +399,13 @@ export default function BusinessAskTool({
           applies the active role boundary; Facility Business Ask answers never expose
           owner-only current or projected cash.
         </Text>
+        {workspace.workspaceType === "facility" ? (
+          <Text style={styles.warningText}>
+            This question and its saved assistant draft become shared Facility workspace
+            content visible to authorized Owners and Managers. Owner-only current and
+            projected cash is never sent to Facility Business Ask.
+          </Text>
+        ) : null}
         {capabilities.error ? (
           <View style={styles.noticeBox}>
             <Text style={styles.errorText}>
@@ -605,9 +499,9 @@ export default function BusinessAskTool({
         >
           {!resultMatchesCurrentDraft ? (
             <Text style={styles.warningText}>
-              The form has changed since this answer was requested. The answer still
-              belongs to its submitted date and source boundary; submit again for the new
-              draft.
+              This is a recovered or historical answer, or the form has changed since it
+              was requested. It is not marked as matching the current question and UTC
+              source boundary. Submit the current form for a newly bound answer.
             </Text>
           ) : null}
           <View style={styles.attestationBox}>
@@ -661,134 +555,11 @@ export default function BusinessAskTool({
           </View>
           {attestation?.value ? (
             <>
-              <View style={styles.answerBox}>
-                <Text
-                  accessibilityRole="header"
-                  aria-level={3}
-                  style={styles.sectionTitle}
-                >
-                  Cited answer
-                </Text>
-                <Text style={styles.answerText}>{result.answer}</Text>
-                <CitationLinks
-                  ids={result.answerCitationIds}
-                  citations={citationMap}
-                  basePath={basePath}
-                  operationId={providerOperation.operation?.id || ""}
-                  styles={styles}
-                />
-                {result.incomplete ? (
-                  <Text style={styles.warningText}>
-                    The authorized records were insufficient for a sourced answer. This is
-                    an explicit incomplete result, not a zero or a complete business
-                    summary.
-                  </Text>
-                ) : null}
-              </View>
-              <Text style={styles.boundaryText}>
-                Server-selected {result.selectedRecordCount} authorized record
-                {result.selectedRecordCount === 1 ? "" : "s"} from {result.dateRange.from}{" "}
-                through {result.dateRange.to}, using each source last-updated timestamp.
-              </Text>
-              {result.truncated ? (
-                <Text style={styles.warningText}>
-                  The authorized source limit was reached. This is a partial answer, not a
-                  zero or complete workspace summary.
-                </Text>
-              ) : null}
-              <ResultSection
-                title="Facts"
-                empty="No additional source-backed facts were returned."
-                entries={result.facts}
-                citations={citationMap}
+              <BusinessAskResultContent
+                result={result}
                 basePath={basePath}
                 operationId={providerOperation.operation?.id || ""}
-                styles={styles}
               />
-              <ResultSection
-                title="Calculations"
-                empty="No source-backed calculations were returned."
-                entries={result.calculations.map((entry) => ({
-                  statement: entry.statement,
-                  citationIds: entry.citationIds,
-                  detail: `${entry.incomplete ? "Incomplete" : "Provider-unverified"} calculation · review required · ${entry.formula}${entry.inputs.length ? ` · inputs: ${entry.inputs.join(", ")}` : ""}`
-                }))}
-                citations={citationMap}
-                basePath={basePath}
-                operationId={providerOperation.operation?.id || ""}
-                styles={styles}
-              />
-              <ResultSection
-                title="Assumptions"
-                empty="No assumptions were returned."
-                entries={result.assumptions}
-                citations={citationMap}
-                basePath={basePath}
-                operationId={providerOperation.operation?.id || ""}
-                styles={styles}
-              />
-              <ResultSection
-                title="Scenarios"
-                empty="No scenarios were returned."
-                entries={result.scenarios}
-                citations={citationMap}
-                basePath={basePath}
-                operationId={providerOperation.operation?.id || ""}
-                styles={styles}
-              />
-              <ResultSection
-                title="Recommendations requiring review"
-                empty="No source-backed recommendations were returned."
-                entries={result.recommendations.map((entry) => ({
-                  statement: entry.statement,
-                  citationIds: entry.citationIds,
-                  detail: "Review required · no action was performed"
-                }))}
-                citations={citationMap}
-                basePath={basePath}
-                operationId={providerOperation.operation?.id || ""}
-                styles={styles}
-              />
-              <View style={styles.resultSection}>
-                <Text
-                  accessibilityRole="header"
-                  aria-level={3}
-                  style={styles.sectionTitle}
-                >
-                  Limitations
-                </Text>
-                {result.limitations.length ? (
-                  result.limitations.map((entry, index) => (
-                    <Text key={`limitation-${index}`} style={styles.resultText}>
-                      {entry}
-                    </Text>
-                  ))
-                ) : (
-                  <Text style={styles.emptyText}>
-                    No additional limitations were returned.
-                  </Text>
-                )}
-              </View>
-              <View style={styles.resultSection}>
-                <Text
-                  accessibilityRole="header"
-                  aria-level={3}
-                  style={styles.sectionTitle}
-                >
-                  Missing information
-                </Text>
-                {result.missingInformation.length ? (
-                  result.missingInformation.map((entry, index) => (
-                    <Text key={`missing-${index}`} style={styles.resultText}>
-                      {entry}
-                    </Text>
-                  ))
-                ) : (
-                  <Text style={styles.emptyText}>
-                    No additional missing information was returned.
-                  </Text>
-                )}
-              </View>
               <Text style={styles.draftBoundary}>
                 Saved as an assistant draft revision for audit and later review.
                 GrowPathAI did not contact anyone, change a record, create a task, alter
@@ -803,21 +574,18 @@ export default function BusinessAskTool({
           )}
         </AppCard>
       ) : null}
+      <BusinessAskDraftHistory
+        workspace={stableWorkspace}
+        workspaceLabel={workspaceLabel}
+        basePath={basePath}
+        refreshToken={result?.assistantDraftRecordId || ""}
+      />
     </AppPage>
   );
 }
 
 function createStyles(palette: ThemePalette) {
   return StyleSheet.create({
-    answerBox: {
-      backgroundColor: palette.surfaceMuted,
-      borderColor: palette.border,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      gap: 10,
-      padding: 14
-    },
-    answerText: { color: palette.text, fontSize: 15, lineHeight: 23 },
     attestationBox: {
       backgroundColor: palette.surfaceMuted,
       borderColor: palette.border,
@@ -827,18 +595,6 @@ function createStyles(palette: ThemePalette) {
       padding: 12
     },
     boundaryText: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
-    citationChip: {
-      backgroundColor: palette.surface,
-      borderColor: palette.accent,
-      borderRadius: 999,
-      borderWidth: 1,
-      minHeight: 38,
-      justifyContent: "center",
-      paddingHorizontal: 11,
-      paddingVertical: 7
-    },
-    citationRow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-    citationText: { color: palette.link, fontSize: 11, fontWeight: "900" },
     dateField: { flexBasis: 230, flexGrow: 1, minWidth: 210 },
     dateGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
     disabled: { opacity: 0.55 },
@@ -859,7 +615,6 @@ function createStyles(palette: ThemePalette) {
       lineHeight: 20,
       padding: 12
     },
-    emptyText: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
     errorText: { color: palette.danger, fontSize: 13, fontWeight: "800", lineHeight: 19 },
     header: { gap: 6 },
     kicker: {
@@ -881,17 +636,6 @@ function createStyles(palette: ThemePalette) {
       paddingVertical: 12
     },
     primaryButtonText: { color: palette.accentText, fontSize: 13, fontWeight: "900" },
-    resultDetail: { color: palette.textMuted, fontSize: 11, lineHeight: 17 },
-    resultEntry: {
-      backgroundColor: palette.surfaceMuted,
-      borderColor: palette.borderSoft,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      gap: 8,
-      padding: 11
-    },
-    resultSection: { gap: 9 },
-    resultText: { color: palette.text, fontSize: 13, lineHeight: 20 },
     secondaryButton: {
       alignItems: "center",
       alignSelf: "flex-start",

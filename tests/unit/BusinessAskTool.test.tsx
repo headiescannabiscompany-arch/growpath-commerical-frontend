@@ -2,7 +2,9 @@ import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import { getBusinessAskAttestation, startBusinessAsk } from "@/api/businessDeskProvider";
-import BusinessAskTool from "@/features/businessDesk/BusinessAskTool";
+import BusinessAskTool, {
+  defaultBusinessAskUtcDateRange
+} from "@/features/businessDesk/BusinessAskTool";
 import {
   useBusinessDeskProviderCapabilities,
   useBusinessDeskProviderOperation
@@ -22,41 +24,60 @@ jest.mock("@/features/businessDesk/useBusinessDeskProviderOperation", () => ({
   useBusinessDeskProviderOperation: jest.fn()
 }));
 
+jest.mock("@/features/businessDesk/BusinessAskDraftHistory", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return function MockBusinessAskDraftHistory() {
+    return React.createElement(Text, null, "Saved assistant drafts");
+  };
+});
+
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    Link: ({ children, href }: any) => React.cloneElement(children, { testHref: href })
+    Link: function MockLink({ children, href }: any) {
+      return React.cloneElement(children, { testHref: href });
+    }
   };
 });
 
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
-  return ({ header, children }: any) => React.createElement(View, null, header, children);
+  return function MockAppPage({ header, children }: any) {
+    return React.createElement(View, null, header, children);
+  };
 });
 
 jest.mock("@/components/layout/AppCard", () => {
   const React = require("react");
   const { Text, View } = require("react-native");
-  return ({ title, subtitle, children }: any) =>
-    React.createElement(
+  return function MockAppCard({ title, subtitle, children }: any) {
+    return React.createElement(
       View,
       null,
       React.createElement(Text, null, title),
       React.createElement(Text, null, subtitle),
       children
     );
+  };
 });
 
 jest.mock("@/components/forms/CalendarDateField", () => {
   const React = require("react");
   const { TextInput } = require("react-native");
-  return ({ accessibilityLabel, label, onChange, value }: any) =>
-    React.createElement(TextInput, {
+  return function MockCalendarDateField({
+    accessibilityLabel,
+    label,
+    onChange,
+    value
+  }: any) {
+    return React.createElement(TextInput, {
       accessibilityLabel: accessibilityLabel || label,
       onChangeText: onChange,
       value
     });
+  };
 });
 
 const mockStartBusinessAsk = startBusinessAsk as jest.MockedFunction<
@@ -69,6 +90,8 @@ const mockCapabilities = useBusinessDeskProviderCapabilities as jest.Mock;
 const mockProviderOperation = useBusinessDeskProviderOperation as jest.Mock;
 
 const digest = "a".repeat(64);
+const operationId = "507f191e810c19729de86001";
+const citationId = "S001";
 const timestamps = {
   createdAt: "2026-08-22T12:00:00.000Z",
   updatedAt: "2026-08-22T12:00:02.000Z",
@@ -87,10 +110,10 @@ function resultOperation(incomplete = false) {
       ? "The authorized records are insufficient to answer this question."
       : "The Spring quote needs a reviewed next step.",
     incomplete,
-    answerCitationIds: incomplete ? [] : ["citation-1"],
+    answerCitationIds: incomplete ? [] : [citationId],
     facts: incomplete
       ? []
-      : [{ statement: "One quote is open.", citationIds: ["citation-1"] }],
+      : [{ statement: "One quote is open.", citationIds: [citationId] }],
     calculations: incomplete
       ? []
       : [
@@ -98,7 +121,7 @@ function resultOperation(incomplete = false) {
             statement: "The quote is 25% above the recorded cost.",
             formula: "(quote - cost) / cost",
             inputs: ["quote", "cost"],
-            citationIds: ["citation-1"],
+            citationIds: [citationId],
             incomplete: false,
             verification: "provider_unverified" as const,
             requiresReview: true as const
@@ -111,7 +134,7 @@ function resultOperation(incomplete = false) {
       : [
           {
             statement: "Review the quote with its owner.",
-            citationIds: ["citation-1"],
+            citationIds: [citationId],
             requiresReview: true as const
           }
         ],
@@ -121,7 +144,7 @@ function resultOperation(incomplete = false) {
       ? []
       : [
           {
-            id: "citation-1",
+            id: citationId,
             sourceType: "business_desk_record" as const,
             recordId: "507f191e810c19729de86010",
             parentRecordId: null,
@@ -132,6 +155,23 @@ function resultOperation(incomplete = false) {
             dateRange: { from: "2026-07-01", to: "2026-08-22" }
           }
         ],
+    kpiSnapshot: {
+      scope: "in_selected_sources" as const,
+      dateRange: { from: "2026-07-01", to: "2026-08-22" },
+      selectedSourceCount: incomplete ? 0 : 1,
+      truncated: false,
+      omittedSourceCount: 0,
+      metrics: incomplete
+        ? []
+        : [
+            {
+              key: "open_quotes" as const,
+              count: 1,
+              complete: true,
+              sourceIds: [citationId]
+            }
+          ]
+    },
     dateRange: { from: "2026-07-01", to: "2026-08-22" },
     selectedRecordCount: incomplete ? 0 : 1,
     truncated: false,
@@ -139,7 +179,7 @@ function resultOperation(incomplete = false) {
     assistantDraftVersion: 1
   };
   return {
-    id: "operation-1",
+    id: operationId,
     kind: "business_ask" as const,
     state: "succeeded" as const,
     version: 2,
@@ -204,7 +244,7 @@ function operationValue(operation: ReturnType<typeof resultOperation> | null = n
 
 function attestationValue() {
   return {
-    operationId: "operation-1",
+    operationId,
     kind: "business_ask" as const,
     state: "succeeded" as const,
     providerInputDigestSha256: "1".repeat(64),
@@ -217,7 +257,7 @@ function attestationValue() {
     completedAt: "2026-08-22T12:00:02.000Z",
     sources: [
       {
-        id: "citation-1",
+        id: citationId,
         sourceType: "business_desk_record" as const,
         recordId: "507f191e810c19729de86010",
         parentRecordId: null,
@@ -253,6 +293,8 @@ describe("Business Ask UI", () => {
       screen.getByLabelText("Business Ask question"),
       "Which work needs attention?"
     );
+    fireEvent.press(screen.getByLabelText("Include Quotes"));
+    fireEvent.press(screen.getByLabelText("Include Quotes"));
     fireEvent.press(screen.getByLabelText("Ask Business Desk AI"));
 
     await waitFor(() => expect(mockStartBusinessAsk).toHaveBeenCalledTimes(1));
@@ -262,13 +304,13 @@ describe("Business Ask UI", () => {
         clientOperationKey: "stable-business-ask-key",
         question: "Which work needs attention?",
         recordKinds: [
+          "cash_flow_snapshot",
+          "expense",
+          "job",
+          "lead",
           "price_margin_scenario",
           "quote",
-          "lead",
-          "job",
-          "expense",
-          "vendor_comparison",
-          "cash_flow_snapshot"
+          "vendor_comparison"
         ],
         includeInventory: true
       }),
@@ -276,6 +318,9 @@ describe("Business Ask UI", () => {
     );
     expect(screen.getByText(/never perform actions/i)).toBeTruthy();
     expect(screen.getByText(/selects sources by their last-updated time/i)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Business Ask source updated from UTC date")
+    ).toBeTruthy();
   });
 
   it("renders cited sections, audit digests, and authorized source-inspector links", async () => {
@@ -302,7 +347,7 @@ describe("Business Ask UI", () => {
       "Inspect cited source Spring quote · revision 3"
     )[0];
     expect(source.props.testHref).toBe(
-      "/home/commercial/business-desk/source?operationId=operation-1&citationId=citation-1"
+      `/home/commercial/business-desk/source?operationId=${operationId}&citationId=${citationId}`
     );
     expect(await screen.findByText(/Provider input SHA-256: 1111/i)).toBeTruthy();
     expect(screen.getByText(/Source manifest SHA-256: 2222/i)).toBeTruthy();
@@ -345,6 +390,7 @@ describe("Business Ask UI", () => {
     ).toBeTruthy();
     expect(screen.queryByText(/Provider input SHA-256:/i)).toBeNull();
     expect(screen.queryByText("The Spring quote needs a reviewed next step.")).toBeNull();
+    expect(screen.queryByText(/KPI snapshot/i)).toBeNull();
   });
 
   it("accepts cited sources as a verified subset of a larger selected manifest", async () => {
@@ -356,7 +402,7 @@ describe("Business Ask UI", () => {
       sources: [
         ...attestationValue().sources,
         {
-          id: "inventory-item-1",
+          id: "S002",
           sourceType: "business_inventory_item",
           recordId: "507f191e810c19729de86020",
           parentRecordId: null,
@@ -365,7 +411,7 @@ describe("Business Ask UI", () => {
           sourceDate: "2026-08-21T13:00:00.000Z"
         },
         {
-          id: "inventory-lot-1",
+          id: "S003",
           sourceType: "business_inventory_lot",
           recordId: "507f191e810c19729de86021",
           parentRecordId: "507f191e810c19729de86020",
@@ -441,6 +487,25 @@ describe("Business Ask UI", () => {
     );
     expect(screen.getByLabelText("Include Quotes").props.accessibilityState.checked).toBe(
       true
+    );
+  });
+
+  it("discloses Facility question and draft sharing before submit", () => {
+    const screen = render(
+      <BusinessAskTool
+        workspace={{ workspaceType: "facility", facilityId: "facility-a" }}
+        workspaceLabel="Facility"
+        basePath="/home/facility/business-desk"
+      />
+    );
+    expect(
+      screen.getByText(/question and its saved assistant draft become shared Facility/i)
+    ).toBeTruthy();
+  });
+
+  it("derives the default source window from UTC rather than the device-local day", () => {
+    expect(defaultBusinessAskUtcDateRange(new Date("2026-08-23T00:30:00+14:00"))).toEqual(
+      { from: "2026-05-25", to: "2026-08-22" }
     );
   });
 });
