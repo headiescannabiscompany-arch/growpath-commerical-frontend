@@ -30,6 +30,7 @@ import {
 import {
   formatBasisPoints,
   formatMoneyMinor,
+  isSupportedCurrencyCode,
   formatQuantityMicros,
   parseMoneyInput,
   parsePercentInput,
@@ -168,7 +169,9 @@ function sanitizePriceMarginRecord(record: BusinessDeskRecord) {
     record.version < 1 ||
     !payload ||
     !totals ||
-    !/^[A-Z]{3}$/.test(String(payload.currency || "")) ||
+    !(
+      String(payload.currency || "") === "" || /^[A-Z]{3}$/.test(String(payload.currency))
+    ) ||
     !Number.isSafeInteger(payload.minorUnitDigits) ||
     payload.minorUnitDigits < 0 ||
     payload.minorUnitDigits > 4 ||
@@ -231,7 +234,7 @@ export default function PriceMarginTool({
   }>({ workspaceKey, recordIds: [] });
   const [scenarioName, setScenarioName] = useState("");
   const [scenarioNotes, setScenarioNotes] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [unitDirectCost, setUnitDirectCost] = useState("");
@@ -293,12 +296,13 @@ export default function PriceMarginTool({
   ]);
   const currentResult = resultFingerprint === inputFingerprint ? result : null;
   const inputsChanged = Boolean(result && !currentResult);
+  const currencyReady = isSupportedCurrencyCode(currency);
 
   const resetScenario = () => {
     setSelectedState(null);
     setScenarioName("");
     setScenarioNotes("");
-    setCurrency("USD");
+    setCurrency("");
     setUnitPrice("");
     setQuantity("1");
     setUnitDirectCost("");
@@ -328,7 +332,7 @@ export default function PriceMarginTool({
     setComparisonState({ workspaceKey, recordIds: [] });
     setScenarioName("");
     setScenarioNotes("");
-    setCurrency("USD");
+    setCurrency("");
     setUnitPrice("");
     setQuantity("1");
     setUnitDirectCost("");
@@ -989,6 +993,15 @@ export default function PriceMarginTool({
         </View>
       </AppCard>
 
+      {!currencyReady ? (
+        <View style={styles.notice}>
+          <Text style={styles.noticeText}>
+            Choose and review a valid three-letter ISO currency before calculating,
+            saving, or reviewing this scenario. No currency is assumed.
+          </Text>
+        </View>
+      ) : null}
+
       <AppCard
         title="Scenario adjustments"
         titleLevel={2}
@@ -1156,9 +1169,10 @@ export default function PriceMarginTool({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Calculate price and margin"
-          disabled={busy}
+          accessibilityState={{ disabled: busy || !currencyReady }}
+          disabled={busy || !currencyReady}
           onPress={() => void runCalculation()}
-          style={[styles.primaryButton, busy && styles.disabled]}
+          style={[styles.primaryButton, (busy || !currencyReady) && styles.disabled]}
         >
           {busy ? (
             <ActivityIndicator color={palette.accentText} />
@@ -1203,11 +1217,12 @@ export default function PriceMarginTool({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Save named price and margin scenario"
-            disabled={busy || collection.saving || selectionStale}
+            disabled={busy || collection.saving || selectionStale || !currencyReady}
             onPress={() => void saveScenario()}
             style={[
               styles.primaryButton,
-              (busy || collection.saving || selectionStale) && styles.disabled
+              (busy || collection.saving || selectionStale || !currencyReady) &&
+                styles.disabled
             ]}
           >
             {collection.saving ? (
@@ -1222,11 +1237,21 @@ export default function PriceMarginTool({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Review exact saved price and margin scenario"
-              disabled={busy || collection.saving || contentDirty || selectionStale}
+              disabled={
+                busy ||
+                collection.saving ||
+                contentDirty ||
+                selectionStale ||
+                !currencyReady
+              }
               onPress={() => void reviewScenario()}
               style={[
                 styles.secondaryButton,
-                (busy || collection.saving || contentDirty || selectionStale) &&
+                (busy ||
+                  collection.saving ||
+                  contentDirty ||
+                  selectionStale ||
+                  !currencyReady) &&
                   styles.disabled
               ]}
             >

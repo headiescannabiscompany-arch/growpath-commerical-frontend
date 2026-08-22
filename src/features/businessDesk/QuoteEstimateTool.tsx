@@ -46,6 +46,7 @@ import ReviewedArtifactPanel from "@/features/businessDesk/ReviewedArtifactPanel
 import {
   formatBasisPoints,
   formatMoneyMinor,
+  isSupportedCurrencyCode,
   formatQuantityMicros,
   parseMoneyInput,
   parsePercentInput,
@@ -289,7 +290,7 @@ export default function QuoteEstimateTool({
   const [customerCompany, setCustomerCompany] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("");
   const [lines, setLines] = useState<QuoteLineDraft[]>(() => [newLine()]);
   const [discountPercent, setDiscountPercent] = useState("");
   const [discountFixed, setDiscountFixed] = useState("");
@@ -405,6 +406,7 @@ export default function QuoteEstimateTool({
   });
   const dirty = inputFingerprint !== savedFingerprint;
   const currentResult = resultFingerprint === inputFingerprint ? result : null;
+  const currencyReady = isSupportedCurrencyCode(currency);
 
   const clearPaymentEvidence = useCallback(() => {
     paymentLoadRequest.current.controller?.abort();
@@ -543,7 +545,7 @@ export default function QuoteEstimateTool({
     setCustomerCompany("");
     setCustomerEmail("");
     setCustomerPhone("");
-    setCurrency("USD");
+    setCurrency("");
     setLines([newLine()]);
     setDiscountPercent("");
     setDiscountFixed("");
@@ -1341,7 +1343,7 @@ export default function QuoteEstimateTool({
       customerCompany: payload.customer?.company || "",
       customerEmail: payload.customer?.email || "",
       customerPhone: payload.customer?.phone || "",
-      currency: payload.currency || "USD",
+      currency: payload.currency || "",
       lines: nextLines.length ? nextLines : [newLine()],
       discountPercent: String((payload.discount?.percentBasisPoints || 0) / 100),
       discountFixed: rawMajor(payload.discount?.fixedMinor || 0, digits),
@@ -1416,7 +1418,9 @@ export default function QuoteEstimateTool({
     setPaymentAdjustmentConfirmed(false);
     clearPaymentEvidence();
     void loadRevisions(record);
-    if (record.status === "reviewed") void loadQuoteEvidence(record);
+    if (record.status === "reviewed" && isSupportedCurrencyCode(nextState.currency)) {
+      void loadQuoteEvidence(record);
+    }
   }
 
   const resultContext = currentResult
@@ -1426,10 +1430,14 @@ export default function QuoteEstimateTool({
       }
     : null;
   const canReview = Boolean(
-    selectedRecord && selectedRecord.status === "draft" && !dirty && !busy
+    selectedRecord &&
+    selectedRecord.status === "draft" &&
+    !dirty &&
+    !busy &&
+    currencyReady
   );
   const exactReviewedRevision = Boolean(
-    selectedRecord && selectedRecord.status === "reviewed"
+    selectedRecord && selectedRecord.status === "reviewed" && currencyReady
   );
   const selectedQuoteId = recordId(selectedRecord);
   const paymentEvidenceReady = Boolean(
@@ -1524,6 +1532,12 @@ export default function QuoteEstimateTool({
             placeholder="Spring installation estimate"
             styles={styles}
           />
+          {!currencyReady ? (
+            <Text style={styles.warningText}>
+              Choose and review a valid three-letter ISO currency before calculating,
+              saving, exporting, or recording payment evidence. No currency is assumed.
+            </Text>
+          ) : null}
           <Field
             label="Project"
             accessibilityLabel="Quote project"
@@ -1929,18 +1943,20 @@ export default function QuoteEstimateTool({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Calculate quote"
-          disabled={busy}
+          accessibilityState={{ disabled: busy || !currencyReady }}
+          disabled={busy || !currencyReady}
           onPress={() => void calculate()}
-          style={[styles.secondaryButton, busy && styles.disabled]}
+          style={[styles.secondaryButton, (busy || !currencyReady) && styles.disabled]}
         >
           <Text style={styles.secondaryButtonText}>Calculate totals</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Save quote draft"
-          disabled={busy}
+          accessibilityState={{ disabled: busy || !currencyReady }}
+          disabled={busy || !currencyReady}
           onPress={() => void saveDraft()}
-          style={[styles.primaryButton, busy && styles.disabled]}
+          style={[styles.primaryButton, (busy || !currencyReady) && styles.disabled]}
         >
           {busy ? (
             <ActivityIndicator color={palette.accentText} />

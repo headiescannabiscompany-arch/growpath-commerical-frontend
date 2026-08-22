@@ -1,7 +1,13 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render as baseRender, waitFor } from "@testing-library/react-native";
 
 import CashFlowSnapshotTool from "@/features/businessDesk/CashFlowSnapshotTool";
+
+function render(...args: Parameters<typeof baseRender>) {
+  const screen = baseRender(...args);
+  fireEvent.changeText(screen.getByLabelText("Cash-flow currency"), "USD");
+  return screen;
+}
 
 const mockArchive = jest.fn();
 const mockCalculate = jest.fn();
@@ -778,5 +784,69 @@ describe("CashFlowSnapshotTool", () => {
         })
       )
     );
+  });
+
+  it("keeps new, reset, and legacy-blank snapshots currency-unknown", async () => {
+    mockList.mockImplementation(async (_workspace, filters) => {
+      if (filters?.kind !== "cash_flow_snapshot") return [];
+      return [
+        {
+          _id: "64b000000000000000000255",
+          kind: "cash_flow_snapshot",
+          title: "Legacy cash snapshot",
+          status: "reviewed",
+          version: 2,
+          payload: {
+            cashFlowSnapshot: {
+              currency: "",
+              minorUnitDigits: 2,
+              asOf: "2026-08-22T16:00:00.000Z",
+              timeZone: "America/New_York",
+              timeZoneVersion: 3,
+              staleAfterDays: 30,
+              horizonsDays: [30, 60, 90],
+              entries: []
+            }
+          }
+        }
+      ];
+    });
+    const screen = baseRender(
+      <CashFlowSnapshotTool
+        workspace={{ workspaceType: "commercial" }}
+        canViewCurrentCash
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+
+    expect(screen.getByLabelText("Cash-flow currency").props.value).toBe("");
+    expect(
+      screen.getByLabelText("Calculate cash-flow snapshot").props.accessibilityState
+        .disabled
+    ).toBe(true);
+    expect(
+      screen.getByLabelText("Save cash-flow draft").props.accessibilityState.disabled
+    ).toBe(true);
+
+    expect(await screen.findByText("Legacy cash snapshot")).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText("Open cash-flow snapshot Legacy cash snapshot")
+    );
+    expect(screen.getByLabelText("Cash-flow currency").props.value).toBe("");
+    expect(
+      screen.getByLabelText("Preview owner full cash-flow CSV").props.accessibilityState
+        .disabled
+    ).toBe(true);
+
+    fireEvent.changeText(screen.getByLabelText("Cash-flow currency"), "CAD");
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Calculate cash-flow snapshot").props.accessibilityState
+          .disabled
+      ).toBe(false)
+    );
+    fireEvent.press(screen.getByLabelText("Start new cash-flow snapshot record"));
+    expect(screen.getByLabelText("Cash-flow currency").props.value).toBe("");
   });
 });

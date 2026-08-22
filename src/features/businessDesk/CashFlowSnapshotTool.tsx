@@ -25,6 +25,7 @@ import {
 } from "@/features/businessDesk/WorkspaceTimeZoneControl";
 import {
   formatMoneyMinor,
+  isSupportedCurrencyCode,
   parseMoneyInput,
   resolveCurrencyContext,
   type CurrencyContext
@@ -304,7 +305,7 @@ export default function CashFlowSnapshotTool({
   } | null>(null);
   const [selected, setSelected] = useState<BusinessDeskRecord | null>(null);
   const [title, setTitle] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("");
   const [currentCash, setCurrentCash] = useState("");
   const [asOf, setAsOf] = useState("");
   const [asOfIsoHint, setAsOfIsoHint] = useState("");
@@ -386,11 +387,16 @@ export default function CashFlowSnapshotTool({
     entries: entries.map(cleanEntryForFingerprint),
     assumptions
   });
+  const currencyReady = isSupportedCurrencyCode(currency);
   const exactSavedDraft = Boolean(
-    selected?.status === "draft" && contentFingerprint === savedContentFingerprint
+    selected?.status === "draft" &&
+    contentFingerprint === savedContentFingerprint &&
+    currencyReady
   );
   const exactReviewedRevision = Boolean(
-    selected?.status === "reviewed" && contentFingerprint === savedContentFingerprint
+    selected?.status === "reviewed" &&
+    contentFingerprint === savedContentFingerprint &&
+    currencyReady
   );
   const visibleResult = resultFingerprint === contentFingerprint ? result : null;
   const timeSensitiveBlocked =
@@ -403,7 +409,7 @@ export default function CashFlowSnapshotTool({
     calculationEpoch.current += 1;
     setSelected(null);
     setTitle("");
-    setCurrency("USD");
+    setCurrency("");
     setCurrentCash("");
     setAsOf(nextAsOf?.wall || "");
     setAsOfIsoHint(nextAsOf?.iso || "");
@@ -539,7 +545,7 @@ export default function CashFlowSnapshotTool({
       : [];
     const next = {
       title: record.title || "",
-      currency: String(payload.currency || "USD"),
+      currency: String(payload.currency || ""),
       currentCash: canViewCurrentCash ? majorInput(payload.currentCashMinor, digits) : "",
       asOf: savedAsOfIso
         ? isoInstantToZonedLocalDateTime(savedAsOfIso, displayTimeZone)
@@ -947,8 +953,8 @@ export default function CashFlowSnapshotTool({
             maxLength={3}
             value={currency}
             onChangeText={setCurrency}
-            placeholder="USD"
-            hint="All entries use this currency. No conversion or FX is inferred."
+            placeholder="Three-letter ISO code"
+            hint="Required for calculation, save, review, and export. No conversion or currency is inferred."
           />
           {canViewCurrentCash ? (
             <LabeledInput
@@ -1290,12 +1296,15 @@ export default function CashFlowSnapshotTool({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Calculate cash-flow snapshot"
-          accessibilityState={{ busy, disabled: busy || timeSensitiveBlocked }}
-          disabled={busy || timeSensitiveBlocked}
+          accessibilityState={{
+            busy,
+            disabled: busy || timeSensitiveBlocked || !currencyReady
+          }}
+          disabled={busy || timeSensitiveBlocked || !currencyReady}
           onPress={() => void calculate()}
           style={[
             styles.primaryButton,
-            (busy || timeSensitiveBlocked) && styles.disabled
+            (busy || timeSensitiveBlocked || !currencyReady) && styles.disabled
           ]}
         >
           {busy ? (
@@ -1426,7 +1435,7 @@ export default function CashFlowSnapshotTool({
         </Pressable>
         <RecordSaveArchiveActions
           saving={collection.saving || busy}
-          saveDisabled={timeSensitiveBlocked}
+          saveDisabled={timeSensitiveBlocked || !currencyReady}
           hasRecord={Boolean(businessDeskRecordId(selected))}
           saveLabel="Save cash-flow draft"
           archiveReason={archiveReason}

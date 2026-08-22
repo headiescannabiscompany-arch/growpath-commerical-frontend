@@ -1,7 +1,13 @@
 import React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render as baseRender, waitFor } from "@testing-library/react-native";
 
 import PriceMarginTool from "@/features/businessDesk/PriceMarginTool";
+
+function render(...args: Parameters<typeof baseRender>) {
+  const screen = baseRender(...args);
+  fireEvent.changeText(screen.getByLabelText("Price and margin currency"), "USD");
+  return screen;
+}
 
 const mockCalculate = jest.fn();
 const mockListRecords = jest.fn();
@@ -111,7 +117,7 @@ function savedScenario(
     calculatedAt: string;
   }> = {}
 ) {
-  const currency = overrides.currency || "USD";
+  const currency = overrides.currency ?? "USD";
   const minorUnitDigits = overrides.minorUnitDigits ?? 2;
   const unitPriceMinor = overrides.unitPriceMinor ?? 2500;
   const totalMinor = overrides.totalMinor ?? unitPriceMinor;
@@ -391,7 +397,7 @@ describe("PriceMarginTool", () => {
 
     fireEvent.press(screen.getByLabelText("Reset price and margin scenario"));
 
-    expect(screen.getByLabelText("Price and margin currency").props.value).toBe("USD");
+    expect(screen.getByLabelText("Price and margin currency").props.value).toBe("");
     expect(screen.getByLabelText("Price and margin selling price").props.value).toBe("");
     expect(screen.getByLabelText("Price and margin quantity").props.value).toBe("1");
     expect(screen.getByLabelText("Price and margin direct unit cost").props.value).toBe(
@@ -763,5 +769,44 @@ describe("PriceMarginTool", () => {
     expect(screen.getByLabelText("Price and margin scenario name").props.value).toBe("");
     expect(mockUpdateRecord).not.toHaveBeenCalled();
     expect(mockArchiveRecord).not.toHaveBeenCalled();
+  });
+
+  it("keeps new and legacy-blank scenarios currency-unknown until explicit selection", async () => {
+    const legacy = savedScenario({ currency: "", status: "draft" });
+    mockListRecords.mockResolvedValue([legacy]);
+    const screen = baseRender(
+      <PriceMarginTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+
+    expect(screen.getByLabelText("Price and margin currency").props.value).toBe("");
+    expect(
+      screen.getByLabelText("Calculate price and margin").props.accessibilityState
+        .disabled
+    ).toBe(true);
+    expect(
+      screen.getByLabelText("Save named price and margin scenario").props
+        .accessibilityState.disabled
+    ).toBe(true);
+    expect(screen.getByText(/No currency is assumed/i)).toBeTruthy();
+
+    expect(await screen.findByText("Current retail case")).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText("Open price and margin scenario Current retail case")
+    );
+    expect(screen.getByLabelText("Price and margin currency").props.value).toBe("");
+    expect(
+      screen.getByLabelText("Review exact saved price and margin scenario").props
+        .accessibilityState.disabled
+    ).toBe(true);
+
+    fireEvent.changeText(screen.getByLabelText("Price and margin currency"), "CAD");
+    expect(
+      screen.getByLabelText("Calculate price and margin").props.accessibilityState
+        .disabled
+    ).toBe(false);
   });
 });

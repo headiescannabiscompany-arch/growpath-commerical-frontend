@@ -1,7 +1,18 @@
 import React from "react";
-import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render as baseRender,
+  waitFor
+} from "@testing-library/react-native";
 
 import VendorCompareTool from "@/features/businessDesk/VendorCompareTool";
+
+function render(...args: Parameters<typeof baseRender>) {
+  const screen = baseRender(...args);
+  fireEvent.changeText(screen.getByLabelText("Vendor comparison currency"), "USD");
+  return screen;
+}
 
 const mockArchive = jest.fn();
 const mockCalculate = jest.fn();
@@ -515,5 +526,62 @@ describe("VendorCompareTool", () => {
         })
       )
     );
+  });
+
+  it("keeps new, reset, and legacy-blank comparisons currency-unknown", async () => {
+    mockList.mockResolvedValue([
+      {
+        _id: "64b000000000000000000155",
+        kind: "vendor_comparison",
+        title: "Legacy vendor comparison",
+        status: "needed",
+        version: 1,
+        payload: {
+          vendorComparison: {
+            itemName: "Pots",
+            requestedQuantityMicros: 1_000_000,
+            currency: "",
+            minorUnitDigits: 2,
+            asOf: "2026-08-22T16:00:00.000Z",
+            offers: [],
+            purchaseRequest: { status: "needed" }
+          }
+        }
+      }
+    ]);
+    const screen = baseRender(
+      <VendorCompareTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+
+    expect(screen.getByLabelText("Vendor comparison currency").props.value).toBe("");
+    expect(
+      screen.getByLabelText("Calculate vendor comparison").props.accessibilityState
+        .disabled
+    ).toBe(true);
+    expect(
+      screen.getByLabelText("Save vendor comparison").props.accessibilityState.disabled
+    ).toBe(true);
+
+    expect(await screen.findByText("Legacy vendor comparison")).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText("Open vendor compare Legacy vendor comparison")
+    );
+    expect(screen.getByLabelText("Vendor comparison currency").props.value).toBe("");
+    expect(
+      screen.getByLabelText("Move purchase request to reviewing").props.accessibilityState
+        .disabled
+    ).toBe(true);
+
+    fireEvent.changeText(screen.getByLabelText("Vendor comparison currency"), "CAD");
+    expect(
+      screen.getByLabelText("Calculate vendor comparison").props.accessibilityState
+        .disabled
+    ).toBe(false);
+    fireEvent.press(screen.getByLabelText("Start new vendor compare record"));
+    expect(screen.getByLabelText("Vendor comparison currency").props.value).toBe("");
   });
 });

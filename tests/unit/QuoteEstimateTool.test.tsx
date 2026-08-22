@@ -144,6 +144,7 @@ function quoteResult(overrides: Record<string, unknown> = {}) {
 }
 
 function fillMinimum(screen: ReturnType<typeof render>) {
+  fireEvent.changeText(screen.getByLabelText("Quote currency"), "USD");
   fireEvent.changeText(screen.getByLabelText("Quote title"), "Spring install");
   fireEvent.changeText(screen.getByLabelText("Quote project"), "North greenhouse");
   fireEvent.changeText(
@@ -1166,5 +1167,60 @@ describe("quote artifact local outcome wording", () => {
 
     expect(message).toMatch(/device reported a completed local share action/i);
     expect(message).toMatch(/did not observe recipient delivery or acceptance/i);
+  });
+});
+describe("QuoteEstimateTool explicit currency", () => {
+  beforeEach(() => {
+    mockList.mockReset().mockResolvedValue([]);
+    mockPaymentSummary.mockReset();
+    mockPaymentChains.mockReset();
+    mockLifecycle.mockReset();
+    mockRevisions.mockReset().mockResolvedValue([]);
+  });
+
+  it("fails closed with friendly unknown-currency UX for new and legacy quotes", async () => {
+    const legacy = {
+      _id: "64b000000000000000000055",
+      kind: "quote",
+      title: "Legacy quote",
+      status: "reviewed",
+      version: 2,
+      payload: {
+        ...savedQuotePayload(),
+        quote: { ...savedQuotePayload().quote, currency: "" }
+      }
+    };
+    mockList.mockResolvedValue([legacy]);
+    const screen = render(
+      <QuoteEstimateTool
+        workspace={{ workspaceType: "commercial" }}
+        workspaceLabel="Commercial"
+        basePath="/home/commercial/business-desk"
+      />
+    );
+
+    expect(screen.getByLabelText("Quote currency").props.value).toBe("");
+    expect(
+      screen.getByLabelText("Calculate quote").props.accessibilityState.disabled
+    ).toBe(true);
+    expect(
+      screen.getByLabelText("Save quote draft").props.accessibilityState.disabled
+    ).toBe(true);
+    expect(screen.getByText(/No currency is assumed/i)).toBeTruthy();
+
+    expect(await screen.findByText("Legacy quote")).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Open saved quote Legacy quote"));
+    await waitFor(() => expect(mockRevisions).toHaveBeenCalled());
+    expect(screen.getByLabelText("Quote currency").props.value).toBe("");
+    expect(mockPaymentSummary).not.toHaveBeenCalled();
+    expect(
+      screen.getByLabelText("Preview reviewed quote copy").props.accessibilityState
+        .disabled
+    ).toBe(true);
+
+    fireEvent.changeText(screen.getByLabelText("Quote currency"), "CAD");
+    expect(
+      screen.getByLabelText("Calculate quote").props.accessibilityState.disabled
+    ).toBe(false);
   });
 });

@@ -24,6 +24,7 @@ import RecordToolScaffold from "@/features/businessDesk/RecordToolScaffold";
 import {
   formatMoneyMinor,
   formatQuantityMicros,
+  isSupportedCurrencyCode,
   parseMoneyInput,
   parsePercentInput,
   parseQuantityInput,
@@ -221,7 +222,7 @@ export default function VendorCompareTool({
   const [itemName, setItemName] = useState("");
   const [inventoryItemId, setInventoryItemId] = useState("");
   const [requestedQuantity, setRequestedQuantity] = useState("1");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("");
   const [asOf, setAsOf] = useState(nowLocalDateTime);
   const [offers, setOffers] = useState<OfferDraft[]>([newOffer()]);
   const [notes, setNotes] = useState("");
@@ -266,6 +267,7 @@ export default function VendorCompareTool({
     offers: offers.map(cleanOfferForFingerprint)
   });
   const visibleResult = resultFingerprint === calculationFingerprint ? result : null;
+  const currencyReady = isSupportedCurrencyCode(currency);
   const contentDirty =
     Boolean(selected) && contentFingerprint !== savedContentFingerprint;
 
@@ -349,7 +351,7 @@ export default function VendorCompareTool({
     setItemName("");
     setInventoryItemId("");
     setRequestedQuantity("1");
-    setCurrency("USD");
+    setCurrency("");
     setAsOf(nowLocalDateTime());
     setOffers([newOffer()]);
     setNotes("");
@@ -405,7 +407,7 @@ export default function VendorCompareTool({
       itemName: String(payload.itemName || ""),
       inventoryItemId: recordSourceInventoryId(record),
       requestedQuantity: quantityInput(payload.requestedQuantityMicros, "1"),
-      currency: String(payload.currency || "USD"),
+      currency: String(payload.currency || ""),
       asOf: isoToLocalDateTime(payload.asOf) || nowLocalDateTime(),
       offers: nextOffers.length ? nextOffers : [newOffer()],
       notes: String(payload.notes || ""),
@@ -788,8 +790,8 @@ export default function VendorCompareTool({
             maxLength={3}
             value={currency}
             onChangeText={setCurrency}
-            placeholder="USD"
-            hint="Every offer must use this one currency. GrowPathAI does not perform FX."
+            placeholder="Three-letter ISO code"
+            hint="Required for comparison and save. GrowPathAI assumes no currency and performs no FX."
           />
           <View style={styles.dateField}>
             <CalendarDateField
@@ -1065,10 +1067,10 @@ export default function VendorCompareTool({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Calculate vendor comparison"
-          accessibilityState={{ busy, disabled: busy }}
-          disabled={busy}
+          accessibilityState={{ busy, disabled: busy || !currencyReady }}
+          disabled={busy || !currencyReady}
           onPress={() => void calculate()}
-          style={[styles.primaryButton, busy && styles.disabled]}
+          style={[styles.primaryButton, (busy || !currencyReady) && styles.disabled]}
         >
           {busy ? (
             <ActivityIndicator color={palette.accentText} />
@@ -1288,11 +1290,12 @@ export default function VendorCompareTool({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Move purchase request to reviewing"
-              disabled={contentDirty || busy || collection.saving}
+              disabled={contentDirty || busy || collection.saving || !currencyReady}
               onPress={() => void transitionPurchaseRequest("reviewing")}
               style={[
                 styles.primaryButton,
-                (contentDirty || busy || collection.saving) && styles.disabled
+                (contentDirty || busy || collection.saving || !currencyReady) &&
+                  styles.disabled
               ]}
             >
               <Text style={styles.primaryButtonText}>Start exact-revision review</Text>
@@ -1302,11 +1305,12 @@ export default function VendorCompareTool({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Approve purchase request"
-              disabled={contentDirty || busy || collection.saving}
+              disabled={contentDirty || busy || collection.saving || !currencyReady}
               onPress={() => void transitionPurchaseRequest("approved")}
               style={[
                 styles.primaryButton,
-                (contentDirty || busy || collection.saving) && styles.disabled
+                (contentDirty || busy || collection.saving || !currencyReady) &&
+                  styles.disabled
               ]}
             >
               <Text style={styles.primaryButtonText}>Approve exact revision</Text>
@@ -1316,11 +1320,12 @@ export default function VendorCompareTool({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Record off-platform order"
-              disabled={contentDirty || busy || collection.saving}
+              disabled={contentDirty || busy || collection.saving || !currencyReady}
               onPress={() => void transitionPurchaseRequest("ordered")}
               style={[
                 styles.primaryButton,
-                (contentDirty || busy || collection.saving) && styles.disabled
+                (contentDirty || busy || collection.saving || !currencyReady) &&
+                  styles.disabled
               ]}
             >
               <Text style={styles.primaryButtonText}>Record off-platform order</Text>
@@ -1331,7 +1336,11 @@ export default function VendorCompareTool({
               accessibilityRole="button"
               accessibilityLabel="Verify received from B-02 receipt"
               disabled={
-                contentDirty || !inventoryReceiptMovementId || busy || collection.saving
+                contentDirty ||
+                !inventoryReceiptMovementId ||
+                busy ||
+                collection.saving ||
+                !currencyReady
               }
               onPress={() => void transitionPurchaseRequest("received")}
               style={[
@@ -1339,7 +1348,8 @@ export default function VendorCompareTool({
                 (contentDirty ||
                   !inventoryReceiptMovementId ||
                   busy ||
-                  collection.saving) &&
+                  collection.saving ||
+                  !currencyReady) &&
                   styles.disabled
               ]}
             >
@@ -1352,11 +1362,12 @@ export default function VendorCompareTool({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Cancel purchase request"
-              disabled={contentDirty || busy || collection.saving}
+              disabled={contentDirty || busy || collection.saving || !currencyReady}
               onPress={() => void transitionPurchaseRequest("cancelled")}
               style={[
                 styles.secondaryButton,
-                (contentDirty || busy || collection.saving) && styles.disabled
+                (contentDirty || busy || collection.saving || !currencyReady) &&
+                  styles.disabled
               ]}
             >
               <Text style={styles.removeText}>Cancel purchase request</Text>
@@ -1372,6 +1383,7 @@ export default function VendorCompareTool({
         {feedback ? <Text style={styles.feedbackText}>{feedback}</Text> : null}
         <RecordSaveArchiveActions
           saving={collection.saving || busy}
+          saveDisabled={!currencyReady}
           hasRecord={Boolean(businessDeskRecordId(selected))}
           saveLabel={
             selected && selected.status !== "needed"

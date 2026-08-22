@@ -18,6 +18,13 @@ export function resolveCurrencyContext(rawCurrency: string): CurrencyContext {
     throw inputError("Enter a three-letter currency code, such as USD or CAD.");
   }
 
+  const supportedValuesOf = (
+    Intl as typeof Intl & { supportedValuesOf?: (key: "currency") => string[] }
+  ).supportedValuesOf;
+  if (supportedValuesOf && !supportedValuesOf("currency").includes(currency)) {
+    throw inputError(`${currency} is not a supported ISO 4217 currency code.`);
+  }
+
   try {
     const minorUnitDigits = Number(
       new Intl.NumberFormat("en-US", {
@@ -35,6 +42,15 @@ export function resolveCurrencyContext(rawCurrency: string): CurrencyContext {
     return { currency, minorUnitDigits };
   } catch (_error) {
     throw inputError(`${currency} is not supported by this device.`);
+  }
+}
+
+export function isSupportedCurrencyCode(rawCurrency: string) {
+  try {
+    resolveCurrencyContext(rawCurrency);
+    return true;
+  } catch (_error) {
+    return false;
   }
 }
 
