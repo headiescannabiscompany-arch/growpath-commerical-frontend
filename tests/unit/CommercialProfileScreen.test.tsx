@@ -33,6 +33,6 @@ describe("CommercialProfileScreen", () => {
 
     expect(navigate).toHaveBeenCalledWith("Storefront");
     expect(navigate).toHaveBeenCalledWith("PricingMatrix");
-    expect(navigate).toHaveBeenCalledWith("Subscription");
+    expect(navigate).toHaveBeenCalledWith("SubscriptionStatus");
   });
 });

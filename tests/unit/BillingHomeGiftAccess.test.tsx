@@ -99,6 +99,35 @@ describe("BillingHome prepaid gift access", () => {
     expect(screen.queryByText("Access type: Prepaid gift")).toBeNull();
   });
 
+  it("shows paid-through access and removes repeat cancellation after renewal is canceled", async () => {
+    const currentPeriodEnd = "2030-05-15T18:30:00.000Z";
+    (getSubscription as jest.Mock).mockResolvedValue({
+      plan: "commercial",
+      subscriptionStatus: "active",
+      source: "stripe",
+      currentPeriodEnd,
+      cancelAtPeriodEnd: true,
+      billingOwner: "account",
+      canManageBilling: true,
+      canCancelSubscription: false
+    });
+
+    const screen = render(<BillingHome />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          `Renewal is canceled. Your paid access remains available through ${formatGiftEntitlementEnd(currentPeriodEnd)}.`
+        )
+      ).toBeTruthy()
+    );
+    expect(
+      screen.getByText(`Access through: ${formatGiftEntitlementEnd(currentPeriodEnd)}`)
+    ).toBeTruthy();
+    expect(screen.queryByLabelText("Cancel subscription")).toBeNull();
+    expect(screen.getByText("Status: active")).toBeTruthy();
+  });
+
   it("offers self-purchase only after an expired gift loses paid access", async () => {
     (getSubscription as jest.Mock).mockResolvedValue({
       plan: "free",

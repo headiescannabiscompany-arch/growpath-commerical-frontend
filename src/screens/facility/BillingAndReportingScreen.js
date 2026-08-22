@@ -150,6 +150,7 @@ export default function BillingAndReportingScreen() {
   const renewDate = billing?.currentPeriodEnd
     ? new Date(billing.currentPeriodEnd).toLocaleDateString()
     : null;
+  const cancellationScheduled = billing?.cancelAtPeriodEnd === true;
 
   const handleDownloadReport = async () => {
     try {
@@ -206,8 +207,16 @@ export default function BillingAndReportingScreen() {
             <View style={styles.billingInfo}>
               {renewDate && (
                 <View style={styles.infoBit}>
-                  <Text style={styles.infoLabel}>Renews on</Text>
+                  <Text style={styles.infoLabel}>
+                    {cancellationScheduled ? "Access through" : "Renews on"}
+                  </Text>
                   <Text style={styles.infoValue}>{renewDate}</Text>
+                  {cancellationScheduled ? (
+                    <Text style={styles.billingNote}>
+                      Renewal is canceled. Facility access remains active through this
+                      billing period.
+                    </Text>
+                  ) : null}
                 </View>
               )}
               {graceDate && (
@@ -223,7 +232,7 @@ export default function BillingAndReportingScreen() {
                   {formatPlanBillingNote("facility", "yearly")}
                 </Text>
               </View>
-              {!(["active", "trialing"].includes(statusText)) ? (
+              {!["active", "trialing"].includes(statusText) ? (
                 <View style={styles.intervalRow}>
                   {["monthly", "yearly"].map((interval) => (
                     <TouchableOpacity
@@ -247,19 +256,21 @@ export default function BillingAndReportingScreen() {
             </View>
 
             {statusText === "active" || statusText === "trialing" ? (
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  styles.cancelButton,
-                  (submitting || !canInteract) && styles.disabled
-                ]}
-                onPress={handleCancel}
-                disabled={submitting || !canInteract}
-              >
-                <Text style={styles.cancelButtonText}>
-                  {submitting ? "Processing..." : "Cancel at Period End"}
-                </Text>
-              </TouchableOpacity>
+              cancellationScheduled ? null : (
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.cancelButton,
+                    (submitting || !canInteract) && styles.disabled
+                  ]}
+                  onPress={handleCancel}
+                  disabled={submitting || !canInteract}
+                >
+                  <Text style={styles.cancelButtonText}>
+                    {submitting ? "Processing..." : "Cancel at Period End"}
+                  </Text>
+                </TouchableOpacity>
+              )
             ) : (
               <TouchableOpacity
                 style={[

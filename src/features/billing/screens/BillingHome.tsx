@@ -37,6 +37,7 @@ function isGiftEntitlement(plan: any) {
 
 function canCancelPaidSubscription(plan: any) {
   if (!hasPaidAccess(plan) || isGiftEntitlement(plan)) return false;
+  if (plan?.cancelAtPeriodEnd === true) return false;
   if (String(plan?.billingOwner || "").toLowerCase() === "purchaser") return false;
   if (plan?.canManageBilling === false || plan?.canCancelSubscription === false) {
     return false;
@@ -337,7 +338,10 @@ export default function BillingHome({
     setBusy("cancel");
     try {
       await cancelSubscription(token);
-      Alert.alert("Cancellation submitted", "Status updates after backend confirmation.");
+      Alert.alert(
+        "Renewal canceled",
+        "Your paid access remains active through the end of the current billing period."
+      );
       await loadPlan();
     } catch (error: any) {
       Alert.alert("Cancel failed", error?.message || "Unable to cancel subscription.");
@@ -398,6 +402,8 @@ export default function BillingHome({
   const currentPlan = planLabel(plan);
   const currentStatus = subscriptionStatus(plan) || "unknown";
   const giftEndsAt = formatGiftEntitlementEnd(plan?.giftEntitlementEndsAt);
+  const cancellationScheduled = plan?.cancelAtPeriodEnd === true;
+  const paidThrough = formatGiftEntitlementEnd(plan?.currentPeriodEnd);
 
   const showSentGiftsSection =
     purchaserHistoryOnly ||
@@ -420,14 +426,19 @@ export default function BillingHome({
               <Text style={styles.meta}>Access ends: {giftEndsAt}</Text>
             </>
           ) : null}
+          {!giftEntitlement && cancellationScheduled ? (
+            <Text style={styles.meta}>Access through: {paidThrough}</Text>
+          ) : null}
           <Text style={styles.note}>
             {giftEntitlement
               ? paid
                 ? "Your prepaid access does not renew. Billing belongs to the gift purchaser, so there is no subscription to cancel from this account."
                 : "This prepaid gift has ended. You can choose a personal subscription if you want to continue Pro access."
-              : paid
-                ? "Your paid subscription is confirmed here. Cancel from this screen when you are ready. "
-                : "You are not on a paid plan yet. Use this screen to open the upgrade checkout."}
+              : cancellationScheduled
+                ? `Renewal is canceled. Your paid access remains available through ${paidThrough}.`
+                : paid
+                  ? "Your paid subscription is confirmed here. Canceling stops renewal and preserves access through the current billing period."
+                  : "You are not on a paid plan yet. Use this screen to open the upgrade checkout."}
           </Text>
           <Pressable
             style={[styles.button, loading && styles.buttonDisabled]}

@@ -70,7 +70,7 @@ export default function SubscriptionStatusScreen({ navigation }) {
   const handleCancel = async () => {
     Alert.alert(
       "Cancel Subscription",
-      "Are you sure you want to cancel your PRO subscription?",
+      "Cancel renewal at the end of the current billing period? Your paid access stays active until then.",
       [
         { text: "No", style: "cancel" },
         {
@@ -80,8 +80,8 @@ export default function SubscriptionStatusScreen({ navigation }) {
             try {
               await cancelSubscription(token);
               Alert.alert(
-                "Cancellation submitted",
-                "Status updates after backend confirmation."
+                "Renewal canceled",
+                "Your paid access remains active through the current billing period."
               );
               loadStatus();
             } catch (error) {
@@ -108,6 +108,7 @@ export default function SubscriptionStatusScreen({ navigation }) {
     .replace(/(^|[_-])\w/g, (match) => match.replace(/[_-]/, " ").toUpperCase());
   const trialing = ["trial", "trialing"].includes(currentStatus);
   const expiry = status?.expiry ? new Date(status.expiry).toLocaleDateString() : null;
+  const cancellationScheduled = status?.cancelAtPeriodEnd === true;
   const remainingTrialPlans = remainingTrialPlanLabels(status);
 
   return (
@@ -138,7 +139,9 @@ export default function SubscriptionStatusScreen({ navigation }) {
 
           {expiry ? (
             <View style={styles.statusRow}>
-              <Text style={styles.label}>Expires:</Text>
+              <Text style={styles.label}>
+                {cancellationScheduled ? "Access through:" : "Renews / ends:"}
+              </Text>
               <Text style={styles.value}>{expiry}</Text>
             </View>
           ) : null}
@@ -153,7 +156,9 @@ export default function SubscriptionStatusScreen({ navigation }) {
           ) : null}
 
           <Text style={styles.confirmationText}>
-            Features unlock only from this backend-confirmed status.
+            {cancellationScheduled
+              ? "Renewal is canceled. Paid features remain available through the date above."
+              : "Features unlock only from this backend-confirmed status."}
           </Text>
         </View>
 
@@ -161,7 +166,7 @@ export default function SubscriptionStatusScreen({ navigation }) {
           <Text style={styles.refreshButtonText}>Refresh Status</Text>
         </TouchableOpacity>
 
-        {isPro ? (
+        {isPro && !cancellationScheduled ? (
           <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
             <Text style={styles.cancelButtonText}>Cancel Subscription</Text>
           </TouchableOpacity>

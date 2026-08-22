@@ -41,7 +41,7 @@ export default function CommercialProfileScreen({ navigation }) {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.secondary]}
-          onPress={() => navigation.navigate("Subscription")}
+          onPress={() => navigation.navigate("SubscriptionStatus")}
         >
           <Text style={[styles.buttonText, styles.secondaryText]}>
             Manage Subscription
