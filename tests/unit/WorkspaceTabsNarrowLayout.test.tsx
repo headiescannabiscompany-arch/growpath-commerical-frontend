@@ -201,6 +201,8 @@ describe("workspace bottom tabs at narrow widths", () => {
     expect(screen.queryByTestId("rendered-tab-logs")).toBeNull();
     expect(screen.queryByTestId("rendered-tab-ai-tools")).toBeNull();
     expect(screen.queryByTestId("rendered-tab-tools/harvest-readiness")).toBeNull();
+    expect(screen.queryByTestId("rendered-tab-tools/ph-ec")).toBeNull();
+    expect(screen.queryByTestId("rendered-tab-tools/auto-grow-calendar")).toBeNull();
     expect(screen.queryByTestId("redirect")).toBeNull();
 
     const { children, screenOptions } = mockTabs.mock.calls[0][0];
@@ -213,6 +215,11 @@ describe("workspace bottom tabs at narrow widths", () => {
       allScreens.find((child) => child.props.name === "audit-logs")?.props.options
         ?.headerShown
     ).toBe(false);
+    for (const name of ["tools/ph-ec", "tools/auto-grow-calendar"]) {
+      expect(
+        allScreens.find((child) => child.props.name === name)?.props.options?.href
+      ).toBeNull();
+    }
     expect(screenOptions.tabBarActiveTintColor).toBe("#166534");
     expect(screenOptions.tabBarInactiveTintColor).toBe("#5F6F5F");
     expect(screenOptions.tabBarLabelStyle.fontSize).toBe(9);
