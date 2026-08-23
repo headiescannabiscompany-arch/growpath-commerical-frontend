@@ -6,19 +6,38 @@ describe("batched Jest CI runner", () => {
     path.join(__dirname, "../../scripts/run-jest-batched.cjs"),
     "utf8"
   );
-  const frontendConfig = fs.readFileSync(
-    path.join(__dirname, "../../jest.config.cjs"),
-    "utf8"
-  );
-  const backendConfig = fs.readFileSync(
-    path.join(__dirname, "../../jest.backend.config.cjs"),
-    "utf8"
-  );
+  const frontendConfig = require("../../jest.config.cjs");
+  const backendConfig = require("../../jest.backend.config.cjs");
 
   it("excludes archived and tool-owned worktrees from both Jest projects", () => {
+    const repositoryRoot = path.resolve(__dirname, "../..");
+
     for (const config of [frontendConfig, backendConfig]) {
-      expect(config).toContain('"<rootDir>/.artifacts/"');
-      expect(config).toContain('"<rootDir>/.tools/"');
+      const patterns = [
+        ...(config.testPathIgnorePatterns || []),
+        ...(config.modulePathIgnorePatterns || [])
+      ];
+
+      for (const directory of [".artifacts", ".tools"]) {
+        const candidate = path.join(
+          repositoryRoot,
+          directory,
+          "nested",
+          "example.test.js"
+        );
+        expect(
+          patterns.some((pattern) => {
+            if (pattern.startsWith("<rootDir>")) {
+              return candidate
+                .replace(/\\/g, "/")
+                .startsWith(
+                  pattern.replace("<rootDir>", repositoryRoot.replace(/\\/g, "/"))
+                );
+            }
+            return new RegExp(pattern).test(candidate);
+          })
+        ).toBe(true);
+      }
     }
   });
 
