@@ -109,7 +109,8 @@ describe("Personal integrations and saved runs active palette", () => {
     const sources = SOURCE_FILES.map((file) =>
       fs.readFileSync(path.join(process.cwd(), file), "utf8")
     );
-    expect(sources[0].match(/<TextInput\b/g) || []).toHaveLength(6);
+    expect(sources[0].match(/<TextInput\b/g) || []).toHaveLength(5);
+    expect(sources[0]).not.toMatch(/placeholder=["']Grow ID["']/);
     expect(sources[1].match(/<TextInput\b/g) || []).toHaveLength(3);
     expect(sources[1].match(/<CalendarDateField\b/g) || []).toHaveLength(1);
     for (const source of sources) {
