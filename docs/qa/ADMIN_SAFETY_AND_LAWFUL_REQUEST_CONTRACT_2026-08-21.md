@@ -26,10 +26,11 @@ The Admin frontend may currently:
 - render retained evidence-manifest metadata already returned by the API; and
 - load the retained platform audit history for the exact request.
 
-The frontend must not expose Approve or Disclose actions until the backend enforces the
-transition, approval, manifest, custody, recipient, and delivery safeguards below.
+The frontend must not expose Approve or Disclose actions until the reviewed operating procedure
+and production acceptance prove the backend safeguards below. Backend merge
+`2000d69dd0af5744b3d46eb398aa949c97997cb9` now enforces them locally.
 
-## Required backend transition contract
+## Enforced backend transition contract
 
 The backend must reject every transition outside this graph:
 
@@ -53,9 +54,19 @@ records, recipient identity, delivery method, time, disclosing actor, and reason
 rejection, close, reopen, approval, hold change, and disclosure must retain an audit event.
 Closed requests must not retain a misleading `closedAt` after a valid reopen.
 
-Until those gates exist, a stored `approved` or `disclosed` record is read-only in this
-frontend and must be escalated through the reviewed operating procedure rather than acted
-on from the page.
+The backend now enforces those requirements. Preserved evidence can be attached only while a
+hold is active, every item requires a SHA-256 digest, and an existing source reference cannot be
+replaced with different bytes. Disclosure requires a verified recipient and completed reviewed
+delivery receipt; the server then seals a deterministic immutable manifest and hash. Embedded
+lifecycle history persists with the request in addition to the Platform Admin audit event.
+
+The backend records that an independently completed delivery occurred; it does not automatically
+export or transmit account data, contact an authority, or turn a content report into a legal
+request.
+
+Until the reviewed operating procedure and production fail-closed gates pass, a stored
+`approved` or `disclosed` record is read-only in this frontend and must be escalated through
+that procedure rather than acted on from the page.
 
 ## Admin deep links and account isolation
 
@@ -71,8 +82,8 @@ workspace is not logout and remains an explicit action.
 
 ## Acceptance still open
 
-Focused automated tests are implementation evidence only. A-01 through A-05 remain open or
-partial until the exact frontend/backend SHAs pass production role, direct-link, populated,
-reload, expiry, logout, cross-account, error-recovery, theme, mobile, accessibility, and
-retained-audit checks. Approval and disclosure remain blocked on the backend safeguards and
-legal operating review above.
+Focused automated tests locally accept the A-01 through A-05 implementation; they are not
+production evidence. The exact frontend/backend SHAs must still pass production role,
+direct-link, populated, reload, expiry, logout, cross-account, error-recovery, theme, mobile,
+accessibility, provider and retained-audit checks. Approval and disclosure remain unavailable in
+the frontend pending the reviewed legal operating procedure and production fail-closed evidence.

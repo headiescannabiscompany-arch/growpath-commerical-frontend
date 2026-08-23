@@ -77,6 +77,13 @@ starts or finishes; do not create another active todo document.
    Continue only with the exact production Stripe/webhook, gift enablement, email-worker,
    physical-device notification and disposable-account data-rights gates recorded in
    `R01_R02_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`; do not rebuild the accepted assembly.
+   The A-01 through A-05 Admin, safety, lawful-request and session assembly is locally accepted:
+   eight frontend suites pass 83 assertions and twelve backend suites pass 128 assertions.
+   Backend merge `2000d69dd0af5744b3d46eb398aa949c97997cb9` replaces arbitrary lawful-request status
+   updates with the required transition graph, review/minimization gates, hashed custody,
+   delivery receipt, sealed manifest and embedded lifecycle history. Continue only with the
+   populated Admin, Sentry, authenticated mutation, operating-procedure and multi-account live
+   gates in `A01_A05_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`; do not rebuild these assemblies.
    Batch 5's consolidated local reconciliation passes 465 frontend assertions: 115 for
    the shared B-01/B-02 scope, role, inventory, import, integration and navigation foundation;
    161 for Commercial products/lines/batches/trials/evidence, inventory, storefront, orders,
