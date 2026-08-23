@@ -99,6 +99,18 @@ no inventory write. The implementation and live evidence are recorded in
 
 ## Exact remaining production gates
 
+These are evidence gaps, not permission to rebuild the accepted ledger. The local behavior
+that each live check exercises is already named below so later work resumes at acceptance:
+
+| Gate | Retained automated evidence | Exact live evidence still needed |
+| --- | --- | --- |
+| Facility roles | `tests/facility/rolePolicy.test.ts` keeps inventory writes at Manager-or-higher; `BusinessInventoryImportPanel.test.tsx` proves the read-only import state; `FacilityInventoryRoute.test.tsx` proves separate `AUDIT_READ` visibility | Existing Manager makes and reloads one reversible audited change; existing Staff and Viewer see read-only inventory and receive backend `403` for a forced write; each role's audit-export visibility matches its permission |
+| Workspace isolation | Business-inventory API/screen suites pin explicit Commercial or Facility scope; backend B-02 route suites cover workspace authorization | Two similarly named Commercial workspaces and two Facilities load distinct items/private fields/audit after navigation and reload |
+| Older history | `BusinessInventoryOperations.test.tsx` and `FacilityInventoryItemDetailRoute.test.tsx` prove explicit older-page loading, append and de-duplication | A naturally populated item with more than one server page loads the older page without manufacturing meaningless production movements |
+| Import failure/retry | `BusinessInventoryImportPanel.test.tsx` covers failed apply refetch/re-review, interrupted-response recovery, duplicate reviewed resume/withdrawal, audited conflicts, raw duplicate rejection, applied-duplicate preservation, single-flight preview, malformed headers/rows and semantic locking after partial apply | Safe production fixtures visibly exercise rejected, duplicate/conflicting and resumable partial states without bypassing review or replaying a committed row |
+| Paid reconciliation | Backend B-02 Storefront reconciliation tests cover idempotent ledger use and failure behavior | One owner-authorized paid Storefront operation proves visible failure, retry and exactly-once decrement without an unapproved real charge |
+| Cleanup | Ledger/archive tests preserve immutable movements and audit | Owner confirms cleanup; only the named synthetic records are zeroed/archived and then reloaded while immutable history remains |
+
 1. Facility Manager mutation plus Staff/Viewer denial and forced backend `403` evidence;
    full-audit access must follow audit-read permission independently of inventory write.
 2. Two similarly named Commercial workspaces and two Facility workspaces must prove record,
