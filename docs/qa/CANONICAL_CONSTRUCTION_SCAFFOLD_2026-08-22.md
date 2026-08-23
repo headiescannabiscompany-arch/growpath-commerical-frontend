@@ -180,6 +180,14 @@ B-02's exact implementation, test evidence and remaining gates are recorded in
 `docs/knowledge/methods/business-inventory-method.md`; Small Business Desk prompts receive
 only authorized B-02 references rather than the ledger's implementation contract.
 
+Production checkpoint, 2026-08-23: the existing Manager completed a reversible audited
+hold/release on the accepted owner item, verified both states after reopening, and left the
+balance unchanged at `11 each`. Do not repeat this slice. Continue 5B with Staff/Viewer
+forced-write denial and audit-read boundaries, two-Commercial/two-Facility isolation,
+naturally paginated history, controlled partial-import resume, signed Stripe reconciliation
+and confirmed synthetic cleanup. Retain the generic Audit Detail actor/omitted-role finding
+for the final-crawl presentation fix.
+
 ### Batch 6 — Small Business Desk and retained domain acceptance
 
 Primary rows: `B-03` through `B-09`.

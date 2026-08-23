@@ -186,7 +186,7 @@ inventory, safety boundaries and mandatory production scenarios.
 | ID   | User story                                                                                                    | Status                                                                                                                                          |
 | ---- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                                                                      |
-| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; migration, owner ledger, Inventory AI, reviewed import and terminal exports accepted; remaining role/import-retry/reconciliation open |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; owner ledger, Manager mutation, Inventory AI, reviewed import and terminal exports accepted; Staff/Viewer, isolation, history, import-retry/reconciliation open |
 | B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF denial accepted; authorized-role/provider/live acceptance open                                                                  |
 | B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF denial and Facility OWNER care/blocked-readiness/archive/audit accepted; Manager/Commercial/link/passing-readiness live gates open |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; authenticated device/provider live acceptance open                                                                                    |
@@ -298,6 +298,17 @@ offered no create or AI-review mutation; the transfer route resolved after its a
 load and showed zero records, zero drafts, `$0.00` shipped sales and the bounded STAFF
 fulfillment role. This extends the accepted STAFF denial/read-only slice without closing the
 OWNER/MANAGER mutation, import, audit, isolation or provider gates.
+
+The 2026-08-23 Manager pass separately authenticated
+`exploringthegrowinguniverse@gmail.com`, verified its explicit Triple Bag Genetics
+`MANAGER` membership, and used the existing B-02 owner item for one reversible hold/release
+cycle. Both states survived reopening, both immutable audit events were present, and the
+item returned to `11 each`. This closes the Manager mutation/reload/audit slice without
+rebuilding the ledger. Staff/Viewer forced-write denial, permission-specific audit export,
+workspace isolation, naturally paginated history, interrupted import resume, paid
+reconciliation and cleanup remain open. Audit Detail still presents the actor as
+`Recorded facility member` instead of the available readable name/role and remains a final-
+crawl presentation defect.
 
 The 2026-08-23 B-04 owner pass is retained in
 `B04_HORTICULTURE_PRODUCTION_EVIDENCE_2026-08-23.md`. Backend main `7442cf8a` fixes the
