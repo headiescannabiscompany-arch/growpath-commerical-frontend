@@ -186,9 +186,9 @@ inventory, safety boundaries and mandatory production scenarios.
 | ID   | User story                                                                                                    | Status                                                                                                                                          |
 | ---- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                                                                      |
-| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; owner ledger, Manager mutation, Inventory AI, reviewed import and terminal exports accepted; Staff/Viewer, isolation, history, import-retry/reconciliation open |
-| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF/VIEWER denial and Facility MANAGER create/reload/archive/audit accepted; provider/Commercial/isolation live gates open           |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; Facility role, item/lot link, blocked/passing-readiness, reload/archive/audit accepted; Commercial/protected-evidence/cross-workspace/actor-display open |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; owner/Manager, Inventory AI, reviewed import, exports and Commercial/Facility cross-mode isolation accepted; forced-role, same-type isolation, history, retry/reconciliation open |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF/VIEWER denial plus Facility MANAGER and Commercial OWNER create/reload/archive accepted; provider/isolation live gates open       |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; Facility roles and Commercial OWNER lifecycle/item/lot/readiness accepted; protected-evidence/cross-workspace/actor-display open       |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; Manager setup boundary accepted; Pulse credential/provider and TrolMaster adapter live acceptance open                                |
 | B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | implemented; local acceptance passed; provider/live acceptance open                                                                             |
 | B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | implemented; local acceptance passed; regulated provider/live gates open                                                                        |
@@ -345,8 +345,16 @@ current-candidate defects rather than bypassing them: backend main `23d0bf97` pr
 inventory links across partial updates, and frontend main `20e423c1` hydrates a persisted
 linked lot after reload. The accepted result remained explicitly for human confirmation and
 did not reserve or decrement the item (`11 each`) or lot (`3 each`). B-04 now remains open
-only for Commercial owner, protected-evidence/cross-workspace denial and Audit Detail actor-
-name/role presentation.
+only for protected-evidence/cross-workspace denial and Audit Detail actor-name/role
+presentation: the subsequent Living Soil Labs Commercial owner pass linked its isolated B-02
+item/lot, retained passing readiness and care history after full hydration without changing
+the `5 each`/`2 each` balances, and confirmed archive cleanup.
+
+The same Commercial owner created a bounded no-contact-data Lead Follow-up record, reloaded
+revision 1, and archived it with a reason; the active list returned to empty. Commercial
+Business Ask loaded the correct workspace but truthfully disabled asking because provider-
+backed help is not configured. This closes the B-03 Commercial owner record lifecycle while
+retaining provider/credit/refund and remaining isolation as exact gates.
 
 The B-05 Manager setup boundary also loaded correctly. Pulse presented encrypted grow-scoped
 API-key verification/discovery and made no connection without a key. TrolMaster truthfully

@@ -225,6 +225,23 @@ Apply eligibility intact. The Owner withdrew it instead of applying; status beca
 `QA-B02-0823-863080` remained 11 each with its original name. This closes safe
 existing-SKU-conflict review, reviewed-state reload/recovery and no-write withdrawal.
 
+## Same-identity Commercial/Facility isolation checkpoint
+
+The authenticated `jcindc2003@yahoo.com` account first selected its Living Soil Labs
+Commercial mode. That ledger began at zero even though the same login could also enter the
+Triple Bag Genetics Facility. The owner created bounded Commercial item
+`QA B02 COMMERCIAL 0823` (`6a8b6262a096d5b7b0f04b9a`) and lot
+`LOT-COM-0823-001`; hard reload retained only that Commercial item at `5 each` with its lot
+at `2 each`. Switching the same authenticated account to Facility mode loaded exactly the
+two pre-existing Triple Bag Genetics items (`11 each` and `5 each`) and did not expose the
+Commercial item or its private vendor/category fields. Switching back to Commercial again
+loaded only the one Commercial item at `5 each`.
+
+This closes same-identity Commercial-versus-Facility record and private-field isolation
+after mode navigation and reload. The additional similarly named Commercial-to-Commercial
+and Facility-to-Facility comparisons remain open; do not repeat this accepted cross-mode
+slice.
+
 ## Exact remaining production gates
 
 These are evidence gaps, not permission to rebuild the accepted ledger. The local behavior
@@ -233,7 +250,7 @@ that each live check exercises is already named below so later work resumes at a
 | Gate                 | Retained automated evidence                                                                                                                                                                                                                                                                                            | Exact live evidence still needed                                                                                                                                                                                                                                                                                 |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Facility roles       | `tests/facility/rolePolicy.test.ts` keeps inventory writes at Manager-or-higher; `BusinessInventoryImportPanel.test.tsx` proves the read-only import state; `FacilityInventoryRoute.test.tsx` proves separate `AUDIT_READ` visibility. Existing Manager hold/release/reload/audit plus populated Staff and Viewer read-only/audit-read UI are live accepted. | Staff and Viewer authenticated forced backend `403` probes                                                                                                                                                                                                            |
-| Workspace isolation  | Business-inventory API/screen suites pin explicit Commercial or Facility scope; backend B-02 route suites cover workspace authorization                                                                                                                                                                                | Two similarly named Commercial workspaces and two Facilities load distinct items/private fields/audit after navigation and reload                                                                                                                                                                                |
+| Workspace isolation  | Business-inventory API/screen suites pin explicit Commercial or Facility scope; backend B-02 route suites cover workspace authorization. One multi-mode production identity now proves Commercial/Facility record and private-field separation after switching and reload.                                             | Two similarly named Commercial workspaces and two Facilities load distinct items/private fields/audit after navigation and reload; do not repeat the accepted same-identity Commercial/Facility slice.                                                                                                           |
 | Older history        | `BusinessInventoryOperations.test.tsx` and `FacilityInventoryItemDetailRoute.test.tsx` prove explicit older-page loading, append and de-duplication                                                                                                                                                                    | A naturally populated item with more than one server page loads the older page without manufacturing meaningless production movements                                                                                                                                                                            |
 | Import failure/retry | `BusinessInventoryImportPanel.test.tsx` covers failed apply refetch/re-review, interrupted-response recovery, duplicate reviewed resume/withdrawal, audited conflicts, raw duplicate rejection, applied-duplicate preservation, single-flight preview, malformed headers/rows and semantic locking after partial apply | Rejected malformed row, existing-SKU conflict review, exact-source duplicate/review recovery, withdrawal, rejected-state reload and zero application are live accepted. A safe interrupted partial-apply fixture still must prove resume without bypassing review or replaying a committed row.                  |
 | Paid reconciliation  | `tests/routes/payments.webhook.test.js` proves signed paid-event fulfillment, idempotent ledger retry, duplicate delivery with one sales-accounting write, inventory exception visibility and no ledger call for an unlinked product                                                                                   | One owner-authorized Stripe test/live Storefront operation in the correct environment proves the provider round trip and exactly-once decrement; production exposes no unsigned admin/synthetic webhook bypass, so this cannot be manufactured without weakening the boundary or initiating an unapproved charge |
@@ -241,8 +258,9 @@ that each live check exercises is already named below so later work resumes at a
 
 1. Staff and Viewer authenticated forced backend `403` probes. Manager mutation and the
    populated Staff/Viewer UI plus audit-read boundaries must not be repeated.
-2. Two similarly named Commercial workspaces and two Facility workspaces must prove record,
-   private-field and audit isolation after reload.
+2. Two similarly named Commercial workspaces and two Facility workspaces must still prove
+   record, private-field and audit isolation after reload. Same-identity Commercial/Facility
+   record and private-field isolation is already accepted and must not be repeated.
 3. Older-movement pagination needs a safe populated history; do not manufacture dozens of
    meaningless production movements merely to cross the page boundary.
 4. Interrupted resumable partial CSV apply still needs a safe live fixture; rejected,
