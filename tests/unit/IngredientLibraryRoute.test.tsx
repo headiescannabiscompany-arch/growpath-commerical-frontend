@@ -123,6 +123,18 @@ describe("IngredientLibraryRoute", () => {
         productName: "Extracted Bloom",
         brand: "Label Brand",
         labelNPK: { N: 2, P: 6, K: 4 }
+      },
+      analysisReceipt: {
+        analysisId: "ingredient-label-analysis-1",
+        requested: true,
+        performed: true,
+        photoCount: 1,
+        photosAnalyzed: 1,
+        quality: "unknown",
+        confidence: "unknown",
+        providerLabel: "GrowPath protected ingredient-label review",
+        evidenceUsed: ["One user-selected protected label photo"],
+        limitations: ["Verify every value against the retained original."]
       }
     });
   });
@@ -222,5 +234,29 @@ describe("IngredientLibraryRoute", () => {
     expect(screen.getByLabelText("P2O5").props.value).toBe("6");
     expect(screen.getByLabelText("K2O").props.value).toBe("4");
     expect(screen.getByLabelText("Confirm extracted label values")).toBeTruthy();
+    expect(screen.getByText("Evidence review")).toBeTruthy();
+    expect(screen.getByText("1 photo inspected")).toBeTruthy();
+    expect(screen.getByText(/One user-selected protected label photo/)).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Confirm extracted label values"));
+    fireEvent.press(screen.getByText("Save Ingredient"));
+
+    await waitFor(() =>
+      expect(mockCreateProductIngredient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          evidenceAssetIds: ["evidence-label-1"],
+          photoUrls: ["https://example.com/durable-label.jpg"],
+          labelVerifiedByUser: true,
+          labelExtraction: expect.objectContaining({
+            productName: "Extracted Bloom"
+          }),
+          labelAnalysisReceipt: expect.objectContaining({
+            analysisId: "ingredient-label-analysis-1",
+            performed: true,
+            photosAnalyzed: 1
+          })
+        })
+      )
+    );
   });
 });

@@ -22,6 +22,11 @@ import {
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import EvidenceReviewPanel from "@/components/personal/EvidenceReviewPanel";
+import {
+  normalizeEvidenceReview,
+  type EvidenceReview
+} from "@/features/personal/evidence/evidenceReview";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import type { EvidenceAsset } from "@/types/evidence";
@@ -223,6 +228,9 @@ export default function IngredientLibraryRoute({
   const [labelExtraction, setLabelExtraction] = useState<Record<string, any> | null>(
     null
   );
+  const [labelAnalysisReceipt, setLabelAnalysisReceipt] = useState<EvidenceReview | null>(
+    null
+  );
   const [labelVerifiedByUser, setLabelVerifiedByUser] = useState(false);
 
   const selected = useMemo(
@@ -253,6 +261,7 @@ export default function IngredientLibraryRoute({
     setDraft(EMPTY_DRAFT);
     setLabelEvidence([]);
     setLabelExtraction(null);
+    setLabelAnalysisReceipt(null);
     setLabelVerifiedByUser(false);
     setFeedback("");
   }
@@ -261,6 +270,11 @@ export default function IngredientLibraryRoute({
     setSelectedId(idFor(item));
     setDraft(fromItem(item));
     setLabelExtraction(item.labelExtraction || null);
+    setLabelAnalysisReceipt(
+      item.labelAnalysisReceipt
+        ? normalizeEvidenceReview(item.labelAnalysisReceipt)
+        : null
+    );
     setLabelVerifiedByUser(Boolean(item.labelVerifiedByUser));
     setFeedback("");
   }
@@ -282,6 +296,7 @@ export default function IngredientLibraryRoute({
           .map((asset) => asset.durableUrl)
           .filter((url): url is string => Boolean(url)),
         labelExtraction,
+        labelAnalysisReceipt,
         labelVerifiedByUser,
         labelVerifiedAt: labelVerifiedByUser ? new Date().toISOString() : null
       };
@@ -313,6 +328,12 @@ export default function IngredientLibraryRoute({
       const response = await extractIngredientLabel(evidenceAssetId);
       const data = response?.nutrientData || {};
       setLabelExtraction(data);
+      setLabelAnalysisReceipt(
+        normalizeEvidenceReview(response?.analysisReceipt, {
+          requested: true,
+          photoCount: 1
+        })
+      );
       setLabelVerifiedByUser(false);
       setDraft((current) => ({
         ...current,
@@ -542,6 +563,9 @@ export default function IngredientLibraryRoute({
                   : "Confirm values against label"}
               </Text>
             </Pressable>
+          ) : null}
+          {labelAnalysisReceipt ? (
+            <EvidenceReviewPanel review={labelAnalysisReceipt} />
           ) : null}
 
           <Field
