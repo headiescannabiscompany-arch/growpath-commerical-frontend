@@ -17,6 +17,16 @@ remaining multi-role, import retry and paid reconciliation gates stay open
   all completed successfully. The only annotation was GitHub's action-runtime notice that
   `actions/checkout@v4` and `actions/setup-node@v4` were being forced from Node 20 to Node 24;
   it did not fail the gate.
+- At `2026-08-23T17:19:04Z`, production `/health`, `/ready` and `/api/health` all returned
+  HTTP 200; readiness reported the database connected. Backend uptime placed the current
+  process start at approximately `2026-08-23T16:10:38Z`, about one minute after backend
+  merge `be00d33f` at `16:09:32Z`. The public endpoint no longer publishes its Git
+  fingerprint, so this timing correlation is deployment evidence but is not mislabeled as a
+  direct SHA header.
+- The production frontend response was last modified at `2026-08-23T17:01:14Z`, about two
+  minutes after frontend merge `67912689` at `16:59:08Z`, and served bundle
+  `index-b00e54ff415ca6b258ada3205c0e36fb.js`. Exact Render-deploy identity remains a separate
+  dashboard record; the public response does not expose a commit header.
 - Facility workspace: Triple Bag Genetics, signed-in Facility Owner.
 
 The production profile identified account `jcindc2003@yahoo.com`, plan `Facility`, Facility
