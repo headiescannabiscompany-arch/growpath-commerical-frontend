@@ -133,3 +133,14 @@ export async function evaluateHorticultureFulfillment(
   );
   return response.record as HorticultureRecord;
 }
+
+export async function archiveHorticultureRecord(
+  workspace: BusinessDeskWorkspace,
+  record: HorticultureRecord
+) {
+  const response = await apiRequest(
+    `${horticultureBase(workspace)}/${encodeURIComponent(record._id)}/archive`,
+    { method: "POST", body: { version: record.__v } }
+  );
+  return response.record as HorticultureRecord;
+}

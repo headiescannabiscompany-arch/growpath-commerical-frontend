@@ -1,6 +1,7 @@
 import { apiRequest } from "@/api/apiRequest";
 import {
   addHorticultureCareEvent,
+  archiveHorticultureRecord,
   createHorticultureRecord,
   evaluateHorticultureFulfillment,
   horticultureBase,
@@ -21,9 +22,10 @@ test("builds only canonical Commercial and selected Facility horticulture roots"
   );
 });
 
-test("lists, creates, appends care, and evaluates through version-fenced routes", async () => {
+test("lists, creates, appends care, evaluates, and archives through version-fenced routes", async () => {
   request
     .mockResolvedValueOnce({ records: [record] })
+    .mockResolvedValueOnce({ record })
     .mockResolvedValueOnce({ record })
     .mockResolvedValueOnce({ record })
     .mockResolvedValueOnce({ record });
@@ -36,6 +38,7 @@ test("lists, creates, appends care, and evaluates through version-fenced routes"
     notes: "Reviewed"
   });
   await evaluateHorticultureFulfillment(workspace, record);
+  await archiveHorticultureRecord(workspace, record);
   expect(request).toHaveBeenNthCalledWith(2, "/api/horticulture", {
     method: "POST",
     body: { title: "Tomatoes" }
@@ -50,4 +53,8 @@ test("lists, creates, appends care, and evaluates through version-fenced routes"
     "/api/horticulture/record-1/evaluate-fulfillment",
     { method: "POST", body: { version: 4 } }
   );
+  expect(request).toHaveBeenNthCalledWith(5, "/api/horticulture/record-1/archive", {
+    method: "POST",
+    body: { version: 4 }
+  });
 });
