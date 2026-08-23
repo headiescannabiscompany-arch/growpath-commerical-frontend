@@ -263,7 +263,13 @@ export function applyFacilityRoleCapabilities(
   normalized[CAPABILITY_KEYS.GROWLOGS_READ] = true;
   normalized[CAPABILITY_KEYS.INVENTORY_READ] = true;
   normalized[CAPABILITY_KEYS.COMPLIANCE_READ] = true;
-  normalized[CAPABILITY_KEYS.AUDIT_READ] = true;
+  // The canonical backend audit export permits OWNER, MANAGER, and VIEWER,
+  // while STAFF remains operationally read-only without full-audit access.
+  // Replace any stale server capability with the current membership role so
+  // the UI never offers an export that the scoped backend will deny.
+  normalized[CAPABILITY_KEYS.AUDIT_READ] = ["OWNER", "MANAGER", "VIEWER"].includes(
+    facilityRole
+  );
   normalized[CAPABILITY_KEYS.SOP_RUNS_READ] = true;
   normalized[CAPABILITY_KEYS.TEAM_VIEW] = true;
   normalized[CAPABILITY_KEYS.ROOMS_EQUIPMENT_STAFF] = true;

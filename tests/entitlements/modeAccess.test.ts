@@ -404,6 +404,7 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.GROWS_WRITE]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.PLANTS_WRITE]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.INVENTORY_WRITE]).not.toBe(true);
+    expect(normalized[CAPABILITY_KEYS.AUDIT_READ]).toBe(false);
     expect(normalized[CAPABILITY_KEYS.SOP_RUNS_WRITE]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.COMPLIANCE_WRITE]).not.toBe(true);
     expect(normalized[CAPABILITY_KEYS.TEAM_INVITE]).not.toBe(true);
@@ -412,6 +413,20 @@ describe("entitlement mode access", () => {
     expect(normalized[CAPABILITY_KEYS.VIDEOS_UPLOAD]).toBe(true);
     expect(normalized[CAPABILITY_KEYS.VIDEOS_PUBLISH]).toBe(false);
     expect(normalized[CAPABILITY_KEYS.VIDEOS_MANAGE]).toBe(false);
+  });
+
+  it("matches the Facility full-audit role boundary used by the backend", () => {
+    for (const role of ["OWNER", "MANAGER", "VIEWER"] as const) {
+      const normalized: Record<string, boolean> = {};
+      applyFacilityRoleCapabilities(normalized, role);
+      expect(normalized[CAPABILITY_KEYS.AUDIT_READ]).toBe(true);
+    }
+
+    const staleStaffGrant: Record<string, boolean> = {
+      [CAPABILITY_KEYS.AUDIT_READ]: true
+    };
+    applyFacilityRoleCapabilities(staleStaffGrant, "STAFF");
+    expect(staleStaffGrant[CAPABILITY_KEYS.AUDIT_READ]).toBe(false);
   });
 
   it("grants managers operational writes without owner account controls", () => {
