@@ -72,6 +72,22 @@ integrated through frontend `21387a82` and backend `c7b7674`.
 `21387a82` and backend `c7b7674`, preserving the accepted OBS/chat/overlay/player design.
 [x] Commercial grow/tool parity and Nature publication/privacy are reconciled on current
 main through backend `d9adff2` and `504ba78` plus their current frontend surfaces.
+[x] Historical backend PR `#26` is closed without deleting its branch after the retained
+file-by-file reconciliation proved that PRs `#210` and `#211` recovered its only material
+gaps and current services supersede or deliberately reject every other draft path. The clean
+patch-equivalent `r03-integration-grow-selection` and merged `forum-owner-controls`
+worktrees, plus the merged PR `#756` worktree, were removed without deleting their branches
+or Git history. Three more clean temporary worktrees—`batch5-local-closure`,
+`matrix-construction-scaffold` and `p11-profile-storage-frontend`—were removed only after
+their exact HEAD commits were proven ancestors of current `main`. Dirty hat, trichome and
+root evidence directories remain untouched. Backend pruning removed six already-broken
+registrations whose gitdir targets did not exist. Three further clean registrations
+(`backend-shared-public-copy`, patch-equivalent `p07-label-evidence-backend`, and
+`backend-admin-cleanup`) were removed only after ancestor/patch-equivalence proof; Windows
+reported long-path deletion errors for the first two directories, so any resulting disk
+remnants are non-product cleanup residue rather than hidden implementation. The open
+`s02-video-creator-filter` worktree and dirty trichome evidence remain registered and
+untouched.
 [~] Unified reporting and the Admin control center are deployed as frontend `00f36429` and
 backend `ed85270`; signed-in Admin production acceptance remains open and must not cause
 a rewrite.
@@ -399,13 +415,20 @@ populated, provider, authenticated or multi-account evidence.
   and populated `All Discussions` loaded the retained three-photo QA thread
   `6a5ba41e6459013643be5c24`, its tags, share actions, media, like, report and comment
   composer. The detail comments endpoint returned three visible comments while the feed card
-  initially reported four, proving a stale legacy `commentCount`. The owner detail also
-  exposed self-report controls and no post edit/delete action; comment deletion exists in the
-  API and frontend but was not visible on these non-owner comments. **Remaining gates:**
-  reconcile stale counts, hide self-report, add a safe owner post lifecycle, then use an
-  outside account for follow/comment/reply/edit/delete/report and prove Admin/email delivery.
-  **Do not rebuild:** feed separation, thread detail, media, sharing, comment composer or the
-  existing author-only comment-delete contract.
+  initially reported four, proving a stale legacy `commentCount`. Production acceptance then
+  reproduced self-report controls on the actual Expo Router detail while the first correction
+  had reached only the legacy screen. Frontend PR `#756` corrected the canonical route,
+  passed full Frontend CI run `32633299388` in 11m22s, and merged as
+  `bd2925bf9eb0d4d5f2894c93450fe175fc814d24`; Render deploy
+  `dep-da5cmb3l550s738651gg` published that SHA in 2m06s. The retained owner thread now says
+  `Your post`, exposes no post self-report, gives each of its three owner comments the
+  confirmed `Delete your comment` action, and logs no browser error. Focused route tests 7/7,
+  TypeScript and lint also passed locally. No retained comment was deleted during live
+  read-only acceptance. **Remaining gates:** reconcile stale counts, add a safe owner post
+  edit/delete lifecycle, then use an outside account for follow/comment/reply/edit/delete/report
+  and prove Admin/email delivery. **Do not rebuild:** feed separation, thread detail, media,
+  sharing, comment composer, owner detection or the accepted author-only comment-delete
+  contract.
 - **S-01 through S-08 — local acceptance:** these rows now carry `implemented; local
   acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 143 frontend
   and 154 backend assertions covering Forum/comments, video upload/library/detail, Lives and
