@@ -6,7 +6,7 @@ Accepted actor: `jcindc2003@yahoo.com`, selected Facility `OWNER`
 Backend main: `7442cf8aa3a755504c3c7d00c4c48474cc74b466`  
 Frontend main: `f4cbb5c0351fb7ab4313d3e7d79fcc93d0d9a890`
 
-Manager/link follow-up backend main: `23d0bf97f8104050a6d8e075313b73afad23562d`  
+Manager/link follow-up backend main: `23d0bf97f8104050a6d8e075313b73afad23562d`
 Manager/link follow-up frontend main: `20e423c1d922fb6942e8565204104febc5514103`
 
 ## Defect closed instead of bypassed
