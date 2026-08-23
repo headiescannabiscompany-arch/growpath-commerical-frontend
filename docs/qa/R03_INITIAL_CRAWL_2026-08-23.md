@@ -294,10 +294,26 @@ harvest_readiness. Detailed evidence remains in the private GrowPath record.` an
   Empty named-choice lists remain truthful optional-link states. The raw fields and their
   existing payload behavior remain available to authorized advanced users rather than being
   removed.
-- Local acceptance is complete: `StorefrontRoute.test.tsx` proves the raw controls are absent
+- Local and live acceptance are complete on frontend `ee1e90f3`: `StorefrontRoute.test.tsx` proves the raw controls are absent
   initially, become available after expansion and still submit the exact links; all 10
-  focused tests pass and `tsc --noEmit` passes. Deployment and live visual verification of
-  this change remain open and must be recorded against the merged frontend SHA.
+  focused tests pass and `tsc --noEmit` passes. Production showed the named B-02 Inventory
+  choice while raw Stripe and database fields were absent, restored every field through the
+  explicit Advanced control, and hid them again without a record mutation.
+- The next Commercial Grows crawl found a real empty-state defect: when no grow existed, the
+  page linked Integrations and PDF Export to URLs ending in an empty `growId=`. The candidate
+  replaces those unusable links with a direct Create Grow prerequisite action while retaining
+  the exact grow-scoped links once a grow exists. Local and live acceptance of this repair
+  remain open.
+- A read-only Commercial route pass also loaded Discover, Notifications, Tasks, Courses,
+  Lives, External Channels, Orders, Analytics, Product Lines, Product Batches, Product Trials,
+  Inventory Support, Horticulture Operations, Public Links and AI Tools without authentication,
+  transport-code or failed-load presentation. Truthful empty states remained distinct from
+  failures. Lives retained the existing direct Live Studio entry for GrowPath/OBS streaming,
+  chat overlays and premieres while separately reporting that Twitch OAuth is not configured.
+- One lower-priority Commercial Lives usability item remains open from that pass: related
+  course, product, campaign and Forum records still use raw ID inputs instead of readable
+  owner-scoped choices with an advanced-ID fallback. This is recorded for repair before the
+  final candidate rather than being mistaken for completed live-authoring polish.
 
 ## Exact remaining R-03 work
 

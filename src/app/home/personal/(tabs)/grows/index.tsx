@@ -318,12 +318,9 @@ export default function PersonalGrowsRoute({
         ]
       : [
           {
-            href: integrationToolHref(""),
-            label: "Integrations"
-          },
-          {
-            href: exportToolHref(""),
-            label: "PDF Export"
+            href: `${basePath}/grows/new`,
+            label: "Create Grow",
+            primary: true
           }
         ];
 
