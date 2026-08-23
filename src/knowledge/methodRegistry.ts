@@ -291,7 +291,8 @@ export const methodRegistry: GrowPathMethod[] = [
     ],
     [
       "Read-only first; never invent metrics, units, mappings, or control access.",
-      "Never use a Facility identifier as a grow target or mix a provider export into an unrelated source."
+      "Never use a Facility identifier as a grow target or mix a provider export into an unrelated source.",
+      "Validate deep-linked grow targets against the active workspace and use named owned-grow choices instead of user-entered internal IDs."
     ],
     ["data-integrations", "facility-integrations", "telemetry"]
   ),

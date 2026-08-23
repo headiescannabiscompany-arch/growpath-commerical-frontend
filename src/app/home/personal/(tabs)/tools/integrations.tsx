@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
@@ -32,6 +32,8 @@ import type { GrowlinkController, TelemetrySource } from "@/types/telemetry";
 import CalendarDateField from "@/components/forms/CalendarDateField";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import GrowIntegrationBuildPanel from "@/components/integrations/GrowIntegrationBuildPanel";
+import { listWorkspaceGrows } from "@/features/grows/workspaceData";
+import type { PersonalGrow } from "@/api/grows";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -60,6 +62,17 @@ export function integrationEvidenceLines(connection?: IntegrationConnection | nu
 
 function paramString(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value || "";
+}
+
+function entityId(value: { id?: unknown; _id?: unknown } | null | undefined) {
+  return String(value?.id || value?._id || "").trim();
+}
+
+function growLabel(grow: PersonalGrow) {
+  const crop = String(grow.cropCommonName || grow.strain || grow.cultivar || "").trim();
+  return crop && crop !== grow.name
+    ? `${grow.name || "Unnamed grow"} · ${crop}`
+    : grow.name || crop || "Unnamed grow";
 }
 
 function controllerLabel(controller: GrowlinkController) {
@@ -289,9 +302,11 @@ function isValidHistoryWindow(startIso: string, endIso: string) {
 export type DataIntegrationsWorkspace = "personal" | "commercial";
 
 export default function DataIntegrationsScreen({
-  workspaceType = "personal"
+  workspaceType = "personal",
+  showHeading = true
 }: {
   workspaceType?: DataIntegrationsWorkspace;
+  showHeading?: boolean;
 } = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createDataIntegrationsStyles(palette), [palette]);
@@ -304,7 +319,11 @@ export default function DataIntegrationsScreen({
   const [requestDraft, setRequestDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [growId, setGrowId] = useState(() => paramString(params.growId));
+  const requestedGrowId = paramString(params.growId).trim();
+  const [grows, setGrows] = useState<PersonalGrow[]>([]);
+  const [growsLoading, setGrowsLoading] = useState(true);
+  const [growSelectionError, setGrowSelectionError] = useState("");
+  const [growId, setGrowId] = useState("");
   const [growlinkUserName, setGrowlinkUserName] = useState("");
   const [growlinkPassword, setGrowlinkPassword] = useState("");
   const [growlinkControllers, setGrowlinkControllers] = useState<GrowlinkController[]>(
@@ -391,9 +410,42 @@ export default function DataIntegrationsScreen({
   }, [load]);
 
   useEffect(() => {
-    const nextGrowId = paramString(params.growId);
-    if (nextGrowId && nextGrowId !== growId) setGrowId(nextGrowId);
-  }, [growId, params.growId]);
+    let active = true;
+    setGrowsLoading(true);
+    setGrowSelectionError("");
+    setGrowId("");
+    setGrowlinkSources([]);
+    listWorkspaceGrows(workspaceType)
+      .then((rows) => {
+        if (!active) return;
+        setGrows(rows);
+        if (requestedGrowId) {
+          const requested = rows.find((grow) => entityId(grow) === requestedGrowId);
+          setGrowId(requested ? requestedGrowId : "");
+          if (!requested) {
+            setGrowSelectionError(
+              "That grow is not available in this workspace. Choose one of your grows below."
+            );
+          }
+        } else {
+          setGrowId((current) =>
+            rows.some((grow) => entityId(grow) === current) ? current : ""
+          );
+        }
+      })
+      .catch((error) => {
+        if (!active) return;
+        setGrows([]);
+        setGrowId("");
+        setGrowSelectionError(`Your grows could not be loaded: ${message(error)}`);
+      })
+      .finally(() => {
+        if (active) setGrowsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [requestedGrowId, workspaceType]);
 
   useEffect(() => {
     if (workspaceType === "personal" && growId.trim()) {
@@ -505,7 +557,12 @@ export default function DataIntegrationsScreen({
     const userName = growlinkUserName.trim();
     const password = growlinkPassword.trim();
     const controllerId = selectedGrowlinkControllerId.trim();
-    if (!nextGrowId) return Alert.alert("Grow ID required", "Enter the grow ID.");
+    if (!nextGrowId) {
+      return Alert.alert(
+        "Grow required",
+        "Choose one of your grows before creating a telemetry source."
+      );
+    }
     if (!userName || !password) {
       return Alert.alert(
         "Growlink credentials required",
@@ -629,9 +686,16 @@ export default function DataIntegrationsScreen({
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
-        Data Integrations
-      </Text>
+      {showHeading ? (
+        <Text
+          accessibilityLabel="Data Integrations"
+          accessibilityRole="header"
+          aria-level={1}
+          style={styles.title}
+        >
+          Data Integrations
+        </Text>
+      ) : null}
       <Text style={styles.subtitle}>
         Connect grow sensors, controllers, irrigation, and environmental data. Imported
         account structure can suggest tents, rooms, devices, and streams before any data
@@ -643,7 +707,63 @@ export default function DataIntegrationsScreen({
         longContent
       />
 
-      <GrowIntegrationBuildPanel mode={workspaceType} targetRef={growId.trim()} />
+      <View style={styles.growPicker}>
+        <Text style={styles.sectionTitle}>Choose a grow</Text>
+        <Text style={styles.meta}>
+          Imported structure and history are scoped to the grow you select. Provider
+          credentials stay in this {workspaceType} workspace, and GrowPath only shows
+          grows you can access here.
+        </Text>
+        {growsLoading ? <ActivityIndicator color={palette.accent} size="small" /> : null}
+        {growSelectionError ? (
+          <Text accessibilityRole="alert" style={styles.warningNotice}>
+            {growSelectionError}
+          </Text>
+        ) : null}
+        {!growsLoading && !grows.length ? (
+          <View style={styles.emptyGrowState}>
+            <Text style={styles.meta}>No grows are available in this workspace yet.</Text>
+            <Link href={`/home/${workspaceType}/grows`} style={styles.linkText}>
+              Open Grows
+            </Link>
+          </View>
+        ) : null}
+        <View style={styles.growChoices}>
+          {grows.map((grow) => {
+            const id = entityId(grow);
+            const isSelected = id === growId;
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                key={id}
+                onPress={() => {
+                  setGrowId(id);
+                  setGrowSelectionError("");
+                  setGrowlinkSources([]);
+                }}
+                style={[styles.growChoice, isSelected ? styles.growChoiceSelected : null]}
+              >
+                <Text
+                  style={
+                    isSelected ? styles.growChoiceTextSelected : styles.growChoiceText
+                  }
+                >
+                  {growLabel(grow)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      {growId ? (
+        <GrowIntegrationBuildPanel mode={workspaceType} targetRef={growId} />
+      ) : (
+        <Text style={styles.selectionPrompt}>
+          Choose a grow to review provider mapping and import telemetry.
+        </Text>
+      )}
 
       {workspaceType === "commercial" ? (
         <View style={styles.growlinkPanel}>
@@ -666,15 +786,11 @@ export default function DataIntegrationsScreen({
             </View>
             <Text style={styles.readOnlyBadge}>READ ONLY</Text>
           </View>
-          <TextInput
-            style={styles.input}
-            value={growId}
-            onChangeText={setGrowId}
-            placeholder="Grow ID"
-            placeholderTextColor={palette.textMuted}
-            selectionColor={palette.accent}
-            autoCapitalize="none"
-          />
+          {!growId ? (
+            <Text style={styles.selectionPrompt}>
+              Choose a grow above before connecting Growlink.
+            </Text>
+          ) : null}
           <TextInput
             style={styles.input}
             value={growlinkSourceName}
@@ -705,18 +821,24 @@ export default function DataIntegrationsScreen({
           />
           <View style={styles.actions}>
             <Pressable
-              style={[styles.button, growlinkBusy ? styles.disabledButton : null]}
+              style={[
+                styles.button,
+                growlinkBusy || !growId ? styles.disabledButton : null
+              ]}
               onPress={verifyGrowlinkAndLoadControllers}
-              disabled={growlinkBusy}
+              disabled={growlinkBusy || !growId}
             >
               <Text style={styles.buttonText}>
                 {growlinkBusy ? "Working..." : "Verify + preview controllers"}
               </Text>
             </Pressable>
             <Pressable
-              style={[styles.primaryButton, growlinkBusy ? styles.disabledButton : null]}
+              style={[
+                styles.primaryButton,
+                growlinkBusy || !growId ? styles.disabledButton : null
+              ]}
               onPress={createGrowlinkSource}
-              disabled={growlinkBusy}
+              disabled={growlinkBusy || !growId}
             >
               <Text style={styles.primaryText}>Create read-only source</Text>
             </Pressable>
@@ -985,6 +1107,44 @@ export const createDataIntegrationsStyles = (palette: ThemePalette) =>
       padding: 14,
       marginBottom: 16,
       backgroundColor: palette.surfaceMuted
+    },
+    growPicker: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 10,
+      marginBottom: 16,
+      padding: 14
+    },
+    growChoices: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    growChoice: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    growChoiceSelected: {
+      backgroundColor: palette.accent,
+      borderColor: palette.accent
+    },
+    growChoiceText: { color: palette.text, fontWeight: "700" },
+    growChoiceTextSelected: { color: palette.accentText, fontWeight: "800" },
+    emptyGrowState: { alignItems: "flex-start", gap: 8 },
+    linkText: { color: palette.link, fontWeight: "800" },
+    selectionPrompt: {
+      color: palette.textMuted,
+      marginBottom: 16
+    },
+    warningNotice: {
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.warning,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      color: palette.warning,
+      padding: 10
     },
     readOnlyBadge: {
       alignSelf: "flex-start",

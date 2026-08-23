@@ -153,6 +153,9 @@ function buildAlerts({
   const growPath = activeGrowId
     ? `/home/personal/grows/${encodeURIComponent(activeGrowId)}`
     : "/home/personal/grows";
+  const integrationsHref = activeGrowId
+    ? `/home/personal/tools/integrations?growId=${encodeURIComponent(activeGrowId)}`
+    : "/home/personal/tools/integrations";
 
   const overdueTasks = openTasks.filter((task) => {
     const dueAt = timestamp(task.dueDate);
@@ -220,7 +223,7 @@ function buildAlerts({
         severity: "warning",
         title: "Telemetry unavailable",
         message: "Telemetry sources could not be refreshed for this grow.",
-        href: "/home/personal/tools/integrations"
+        href: integrationsHref
       });
     } else if (!telemetrySources.length) {
       alerts.push({
@@ -228,7 +231,7 @@ function buildAlerts({
         severity: "info",
         title: "No telemetry source",
         message: "Connect read-only telemetry to surface environment warnings here.",
-        href: "/home/personal/tools/integrations"
+        href: integrationsHref
       });
     } else if (!activeSources.length) {
       alerts.push({
@@ -236,7 +239,7 @@ function buildAlerts({
         severity: "warning",
         title: "Telemetry source disabled",
         message: "All telemetry sources for this grow are inactive.",
-        href: "/home/personal/tools/integrations"
+        href: integrationsHref
       });
     } else {
       const staleSource = activeSources.find((source) => {
@@ -249,7 +252,7 @@ function buildAlerts({
           severity: "warning",
           title: "Telemetry stale",
           message: `${telemetrySourceName(staleSource)} has not updated in more than 24 hours.`,
-          href: "/home/personal/tools/integrations"
+          href: integrationsHref
         });
       }
     }

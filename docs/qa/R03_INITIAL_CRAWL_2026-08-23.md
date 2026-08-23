@@ -122,12 +122,37 @@ the retained implementations:
 - Direct Commercial and Platform Admin URLs failed closed for this non-authorized identity;
   the session then returned to Personal.
 
-The notification defect is repaired locally on
-`codex/r03-personal-task-deep-links`: Personal task sources now carry their task ID, the Task
-Center opens only that authorized task with an explicit return to the full queue, inaccessible
-or removed IDs produce an honest state, and task-origin notifications do not offer a duplicate
-Create Task action. Three focused suites pass 15 assertions, TypeScript passes and touched
-source lint passes. Merge, deployment and live notification-to-task acceptance remain open.
+The notification defect is live accepted at frontend merge
+`5cb107aa2ecb63e4d94d28bbc02edbe22c3971a5`, Render deploy
+`dep-da590nrl550s7383paq0`. Personal task sources carry their exact task ID and task-origin
+notifications no longer offer a duplicate Create Task action. The retained notification used
+for production acceptance referenced a task that had already been removed; the exact link
+therefore opened the required authorized "not found or no longer available" state with a
+`View all tasks` escape instead of fabricating a task or silently opening the general queue.
+The complete CI job passed before merge. Do not rebuild this notification handoff.
+
+## Nature and integration continuation evidence
+
+- Personal Field Studies retained separate `Maydale Nature Classroom` and `Raleigh park`
+  studies. Maydale is public but contains zero observations. Raleigh contains one private
+  Magnolia draft with attached photo evidence; the product correctly states that device
+  coordinates, public Field Study state, approximate-location consent and explicit
+  observation publication are still required. Therefore the public globe's zero-pin state is
+  a truthful data state, not evidence of a missing map implementation.
+- The current Plant ID/Nature entry already supports up to 12 photos, video with frame
+  extraction, retained source photo/video metadata, authorized current-device GPS, reviewed
+  manual pin placement, observation date, optional Field Study linkage and a separate
+  approximate-public-location opt-in. Nothing is published by default. Fresh non-sensitive
+  Maydale media plus owner confirmation at publication time remains the exact P-05/N-01 live
+  mutation gate; legacy recovery is optional. Do not rebuild the location/date/pin pipeline.
+- Personal Data Integrations loaded its implemented provider catalog, encrypted credential
+  entry, test/connect states, review-gated provider structure mapping, Growlink read-only
+  flow and exact-grow history import. The live crawl found three bounded presentation defects:
+  duplicate route/screen headings, a Home telemetry link that dropped its active-grow context,
+  and a raw internal Grow ID field. The current branch preserves the provider engine while
+  hiding the duplicate header, carrying `growId` from Home, validating deep links against the
+  active workspace and presenting only named owned-grow choices. Focused tests and TypeScript
+  pass; merge, deployment and live acceptance remain open.
 
 ## Exact remaining R-03 work
 

@@ -192,7 +192,8 @@ describe("buildPersonalHomeModel", () => {
       }),
       expect.objectContaining({
         id: "telemetry-stale",
-        message: "Tent controller has not updated in more than 24 hours."
+        message: "Tent controller has not updated in more than 24 hours.",
+        href: "/home/personal/tools/integrations?growId=active"
       })
     ]);
     expect(model.recentPhotos).toEqual([

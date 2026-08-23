@@ -4,8 +4,11 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import DataIntegrationsScreen from "@/app/home/personal/(tabs)/tools/integrations";
 
+let mockSearchParams: { growId?: string } = { growId: "grow-1" };
+
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ growId: "grow-1" })
+  useLocalSearchParams: () => mockSearchParams,
+  Link: ({ children }: any) => children
 }));
 
 const mockListIntegrationProviders = jest.fn();
@@ -14,10 +17,15 @@ const mockCreateIntegrationConnection = jest.fn();
 const mockTestIntegrationConnection = jest.fn();
 const mockCreateIntegrationAccessRequest = jest.fn();
 const mockGrowIntegrationBuildPanel = jest.fn((_props: any) => null);
+const mockListWorkspaceGrows = jest.fn();
 
 jest.mock("@/components/integrations/GrowIntegrationBuildPanel", () => ({
   __esModule: true,
   default: (props: any) => mockGrowIntegrationBuildPanel(props)
+}));
+
+jest.mock("@/features/grows/workspaceData", () => ({
+  listWorkspaceGrows: (...args: any[]) => mockListWorkspaceGrows(...args)
 }));
 
 jest.mock("@/api/integrations", () => ({
@@ -52,9 +60,17 @@ describe("Data Integrations Growlink flow", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
+    mockSearchParams = { growId: "grow-1" };
 
     mockListIntegrationProviders.mockResolvedValue([]);
     mockListIntegrationConnections.mockResolvedValue([]);
+    mockListWorkspaceGrows.mockResolvedValue([
+      {
+        id: "grow-1",
+        name: "Tomato Patio Grow",
+        cropCommonName: "Tomato"
+      }
+    ]);
     mockListTelemetrySources.mockResolvedValue([
       {
         id: "source-existing",
@@ -105,10 +121,12 @@ describe("Data Integrations Growlink flow", () => {
     const screen = render(<DataIntegrationsScreen workspaceType="commercial" />);
 
     expect(await screen.findByRole("header", { name: "Data Integrations" })).toBeTruthy();
-    expect(mockGrowIntegrationBuildPanel).toHaveBeenCalledWith({
-      mode: "commercial",
-      targetRef: "grow-1"
-    });
+    await waitFor(() =>
+      expect(mockGrowIntegrationBuildPanel).toHaveBeenCalledWith({
+        mode: "commercial",
+        targetRef: "grow-1"
+      })
+    );
     expect(screen.getByText("Commercial Growlink connection")).toBeTruthy();
     expect(screen.queryByText("Growlink read-only telemetry")).toBeNull();
     expect(mockListTelemetrySources).not.toHaveBeenCalled();
@@ -119,6 +137,8 @@ describe("Data Integrations Growlink flow", () => {
     const screen = render(<DataIntegrationsScreen />);
 
     expect(await screen.findByRole("header", { name: "Data Integrations" })).toBeTruthy();
+    expect(screen.queryByPlaceholderText("Grow ID")).toBeNull();
+    expect(await screen.findByText("Tomato Patio Grow · Tomato")).toBeTruthy();
     await waitFor(() =>
       expect(screen.getByText("Growlink read-only telemetry")).toBeTruthy()
     );
@@ -343,5 +363,28 @@ describe("Data Integrations Growlink flow", () => {
     expect(
       screen.queryByText("Suggested room: TrolMaster Hydro-X Pro Flower Room 2")
     ).toBeNull();
+  });
+
+  it("uses an owned-grow picker and never forwards an unknown URL grow ID", async () => {
+    mockSearchParams = { growId: "not-owned" };
+
+    const screen = render(<DataIntegrationsScreen />);
+
+    expect(
+      await screen.findByText(
+        "That grow is not available in this workspace. Choose one of your grows below."
+      )
+    ).toBeTruthy();
+    expect(screen.queryByPlaceholderText("Grow ID")).toBeNull();
+    expect(mockGrowIntegrationBuildPanel).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByText("Tomato Patio Grow · Tomato"));
+
+    await waitFor(() =>
+      expect(mockGrowIntegrationBuildPanel).toHaveBeenCalledWith({
+        mode: "personal",
+        targetRef: "grow-1"
+      })
+    );
   });
 });
