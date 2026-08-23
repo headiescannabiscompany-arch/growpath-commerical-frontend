@@ -125,7 +125,7 @@ Every applicable story must preserve these invariants without repeating them in 
 | P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | implemented; local acceptance passed; ordinary-phone provider/live acceptance open |
 | P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open |
 | P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | implemented; local acceptance passed; deployment/authenticated public-live acceptance open |
-| P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | partial     |
+| P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | implemented; local acceptance passed; provider/multi-account/live acceptance open |
 
 ## Community, media, courses and discovery
 

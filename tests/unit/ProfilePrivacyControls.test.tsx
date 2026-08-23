@@ -12,6 +12,7 @@ const mockRetryMe = jest.fn();
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockUpdateContentControls = jest.fn();
+const mockGetVideoQuota = jest.fn();
 let mockEntitlementsPlan = "free";
 const mockUser = {
   id: "user-1",
@@ -36,6 +37,10 @@ jest.mock("@/api/users", () => ({
 jest.mock("@/api/auth", () => ({
   requestEmailVerification: jest.fn(),
   updateContentControls: (...args: any[]) => mockUpdateContentControls(...args)
+}));
+
+jest.mock("@/api/videos", () => ({
+  getVideoQuota: (...args: any[]) => mockGetVideoQuota(...args)
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
@@ -113,6 +118,7 @@ describe("Profile privacy controls", () => {
     mockReplace.mockReset();
     mockPush.mockReset();
     mockUpdateContentControls.mockReset();
+    mockGetVideoQuota.mockReset();
     mockEntitlementsPlan = "free";
     mockDeleteAccount.mockResolvedValue({ ok: true, deleted: true });
     mockLogout.mockResolvedValue(undefined);
@@ -124,6 +130,7 @@ describe("Profile privacy controls", () => {
         cannabisEligible: true
       }
     });
+    mockGetVideoQuota.mockReturnValue(new Promise(() => {}));
   });
 
   it("requires typed confirmation before initiating account deletion", async () => {
@@ -209,6 +216,27 @@ describe("Profile privacy controls", () => {
     fireEvent.press(screen.getByLabelText("Switch workspace mode"));
 
     expect(mockPush).toHaveBeenCalledWith("/account/mode");
+  });
+
+  it("shows the real Personal workspace video-storage allowance", async () => {
+    mockGetVideoQuota.mockResolvedValue({
+      plan: "free",
+      limitBytes: 500 * 1024 * 1024,
+      usedBytes: 25 * 1024 * 1024,
+      remainingBytes: 475 * 1024 * 1024,
+      externalSourcesConsumeStorage: false,
+      growPathUploadsConsumeStorage: true
+    });
+    const screen = render(<Profile />);
+
+    await waitFor(() => {
+      expect(mockGetVideoQuota).toHaveBeenCalledWith("personal");
+      expect(screen.getByText("25.0 MB used of 500.0 MB")).toBeTruthy();
+      expect(screen.getByText(/475.0 MB remains/)).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByLabelText("Open video storage library"));
+    expect(mockPush).toHaveBeenCalledWith("/videos?tab=library");
   });
 
   it("logs out through an in-page confirmation that can be cancelled", async () => {

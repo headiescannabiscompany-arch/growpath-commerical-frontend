@@ -211,6 +211,19 @@ export async function listVideoLibrary(
   };
 }
 
+export async function getVideoQuota(
+  workspaceType?: VideoWorkspaceType,
+  workspaceId?: string
+): Promise<VideoQuota> {
+  const result: any = await apiRequest("/api/videos/quota", {
+    params: {
+      workspaceType: workspaceType || undefined,
+      workspaceId: workspaceId || undefined
+    }
+  });
+  return result?.quota;
+}
+
 export async function getVideo(id: string): Promise<GrowPathVideo> {
   const result: any = await apiRequest(`/api/videos/${encodeURIComponent(id)}`, {
     invalidateOn401: false
