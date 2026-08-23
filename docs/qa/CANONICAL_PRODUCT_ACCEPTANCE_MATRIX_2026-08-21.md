@@ -134,66 +134,66 @@ Every applicable story must preserve these invariants without repeating them in 
 
 ## Personal and grow workflows
 
-| ID   | User story                                                                                                           | Status      |
-| ---- | -------------------------------------------------------------------------------------------------------------------- | ----------- |
-| P-01 | Home provides a useful mixed feed, active-grow context and frequent actions                                          | live accepted; final-candidate regression only |
-| P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | implemented; local acceptance passed; full-loop/live acceptance open |
-| P-03 | Identify a plant and save its photos/result without requiring a grow, Field Study or public pin                      | implemented; local acceptance passed; ordinary-media live acceptance open |
-| P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | live create accepted; owner archive cleanup/final regression open |
-| P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented; local acceptance passed; publish/withdraw live acceptance open |
-| P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | implemented; local acceptance passed; public/private live regression open |
-| P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | implemented; local acceptance passed; storage/provider/live acceptance open |
+| ID   | User story                                                                                                           | Status                                                                             |
+| ---- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| P-01 | Home provides a useful mixed feed, active-grow context and frequent actions                                          | live accepted; final-candidate regression only                                     |
+| P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | implemented; local acceptance passed; full-loop/live acceptance open               |
+| P-03 | Identify a plant and save its photos/result without requiring a grow, Field Study or public pin                      | implemented; local acceptance passed; ordinary-media live acceptance open          |
+| P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | live create accepted; owner archive cleanup/final regression open                  |
+| P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented; local acceptance passed; publish/withdraw live acceptance open        |
+| P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | implemented; local acceptance passed; public/private live regression open          |
+| P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | implemented; local acceptance passed; storage/provider/live acceptance open        |
 | P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | implemented; local acceptance passed; ordinary-phone provider/live acceptance open |
-| P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open |
-| P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | live accepted; final-candidate regression only |
-| P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | implemented; local acceptance passed; provider/multi-account/live acceptance open |
+| P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open                |
+| P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | live accepted; final-candidate regression only                                     |
+| P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | implemented; local acceptance passed; provider/multi-account/live acceptance open  |
 
 ## Community, media, courses and discovery
 
-| ID   | User story                                                                                                         | Status  |
-| ---- | ------------------------------------------------------------------------------------------------------------------ | ------- |
-| S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | owner lifecycle live accepted; outside-user/report-notification loop open |
-| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | creator scoping live accepted; outside-user discovery/comment loop open |
-| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | live owner lifecycle and course reuse accepted; archive/outside-user acceptance open |
+| ID   | User story                                                                                                         | Status                                                                                        |
+| ---- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | owner lifecycle live accepted; outside-user/report-notification loop open                     |
+| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | creator scoping live accepted; outside-user discovery/comment loop open                       |
+| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | live owner lifecycle and course reuse accepted; archive/outside-user acceptance open          |
 | S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | live private-premiere lifecycle and empty directory accepted; public/provider acceptance open |
-| S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | implemented; local acceptance passed; two-account provider/live acceptance open |
-| S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | saved AI-result sharing/export live accepted; remaining stable-public-link acceptance open |
+| S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | implemented; local acceptance passed; two-account provider/live acceptance open               |
+| S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | saved AI-result sharing/export live accepted; remaining stable-public-link acceptance open    |
 | S-07 | Courses support deliberate cover/banner hierarchy, lessons/media, edit/publish/archive and paid enrollment returns | provider and GrowPath-video reuse live accepted; publish/payment/outside-user acceptance open |
-| S-08 | Discover provides useful storefront/course/video/forum/live/Nature previews, filters, links and empty states       | implemented; local acceptance passed; populated/live acceptance open |
+| S-08 | Discover provides useful storefront/course/video/forum/live/Nature previews, filters, links and empty states       | implemented; local acceptance passed; populated/live acceptance open                          |
 
 ## Commercial and Facility
 
-| ID   | User story                                                                                                        | Status  |
-| ---- | ----------------------------------------------------------------------------------------------------------------- | ------- |
-| C-01 | Commercial retains Personal capabilities plus brand tools                                                         | implemented; local acceptance passed; multi-capability/live acceptance open |
-| C-02 | Brand owner manages storefront identity/media/slug/sections/contact/social/location/publication                   | implemented; local acceptance passed; populated/live acceptance open |
+| ID   | User story                                                                                                        | Status                                                                        |
+| ---- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| C-01 | Commercial retains Personal capabilities plus brand tools                                                         | implemented; local acceptance passed; multi-capability/live acceptance open   |
+| C-02 | Brand owner manages storefront identity/media/slug/sections/contact/social/location/publication                   | implemented; local acceptance passed; populated/live acceptance open          |
 | C-03 | Products expose media/inventory/pricing and only lawfully authorized transaction or external-handoff capabilities | implemented; local acceptance passed; migration/provider/live acceptance open |
-| C-04 | Commercial courses/content/campaigns and analytics work without duplicate navigation                              | implemented; local acceptance passed; provider/live acceptance open |
-| C-05 | Admin brand can explicitly use Commercial tools while retaining Platform Admin                                    | implemented; local acceptance passed; Admin-brand/live acceptance open |
-| F-01 | Facility Owner sets up rooms/grows/plants/team with role-aware create/edit/import/assignment/audit                | implemented; local acceptance passed; multi-role/live acceptance open |
-| F-02 | Assigned staff work links to the required record/action and persists evidence/completion                          | implemented; local acceptance passed; assigned-role/live acceptance open |
-| F-03 | SOP/compliance supports approve/assign/run/compare/evidence/exceptions and audit history                          | implemented; local acceptance passed; populated/live acceptance open |
-| F-04 | Facility has the full applicable AI toolset, correct credits/context and role/write gates                         | implemented; local acceptance passed; provider/credit/live acceptance open |
-| F-05 | Inventory/transfers/reports/logs have correct routes, populated states and exports                                | deployed; guarded migration accepted; populated/live acceptance open |
-| F-06 | Reviewed sensor/controller imports map rooms/history safely and protect API keys                                  | implemented; local acceptance passed; device-provider/live acceptance open |
-| F-07 | Owner/admin can reach social/course/storefront tools without polluting staff navigation                           | implemented; local acceptance passed; owner-role/live acceptance open |
+| C-04 | Commercial courses/content/campaigns and analytics work without duplicate navigation                              | implemented; local acceptance passed; provider/live acceptance open           |
+| C-05 | Admin brand can explicitly use Commercial tools while retaining Platform Admin                                    | implemented; local acceptance passed; Admin-brand/live acceptance open        |
+| F-01 | Facility Owner sets up rooms/grows/plants/team with role-aware create/edit/import/assignment/audit                | implemented; local acceptance passed; multi-role/live acceptance open         |
+| F-02 | Assigned staff work links to the required record/action and persists evidence/completion                          | implemented; local acceptance passed; assigned-role/live acceptance open      |
+| F-03 | SOP/compliance supports approve/assign/run/compare/evidence/exceptions and audit history                          | implemented; local acceptance passed; populated/live acceptance open          |
+| F-04 | Facility has the full applicable AI toolset, correct credits/context and role/write gates                         | Inventory Risk live accepted; remaining provider/credit/tool acceptance open  |
+| F-05 | Inventory/transfers/reports/logs have correct routes, populated states and exports                                | deployed; guarded migration accepted; populated/live acceptance open          |
+| F-06 | Reviewed sensor/controller imports map rooms/history safely and protect API keys                                  | implemented; local acceptance passed; device-provider/live acceptance open    |
+| F-07 | Owner/admin can reach social/course/storefront tools without polluting staff navigation                           | implemented; local acceptance passed; owner-role/live acceptance open         |
 
 ## Business operations and AI
 
 See `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md` for the complete tool
 inventory, safety boundaries and mandatory production scenarios.
 
-| ID   | User story                                                                                                    | Status                                                                                       |
-| ---- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                    |
-| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; guarded migration accepted; live role/workflow acceptance open                      |
-| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF denial accepted; authorized-role/provider/live acceptance open                |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF denial accepted; authorized-role/live acceptance open                         |
-| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; authenticated device/provider live acceptance open                                  |
-| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | implemented; local acceptance passed; provider/live acceptance open                          |
-| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | implemented; local acceptance passed; regulated provider/live gates open                     |
-| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | implemented; cross-cutting local acceptance passed; provider/live acceptance open            |
-| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | implemented; local acceptance passed; final multi-account/live acceptance open               |
+| ID   | User story                                                                                                    | Status                                                                                                             |
+| ---- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                                         |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; migration, owner core ledger and Inventory AI accepted; remaining role/import/export/reconciliation open |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF denial accepted; authorized-role/provider/live acceptance open                                     |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF denial accepted; authorized-role/live acceptance open                                              |
+| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; authenticated device/provider live acceptance open                                                       |
+| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | implemented; local acceptance passed; provider/live acceptance open                                                |
+| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | implemented; local acceptance passed; regulated provider/live gates open                                           |
+| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | implemented; cross-cutting local acceptance passed; provider/live acceptance open                                  |
+| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | implemented; local acceptance passed; final multi-account/live acceptance open                                     |
 
 Full regulator/POS adapters, serialized recall workflows, advanced forecasting, full CRM/ERP/accounting,
 dynamic pricing, marketplace/payout/tax tooling, and cross-platform creator analytics are
@@ -294,25 +294,34 @@ integration `c7b7674c` are ancestors of exact deployed backend `324d4025`. The r
 remain open only for their named authorized-role, provider, device, credit, audit, persistence
 and isolation acceptance slices; deployment is not a reason to rebuild them.
 
+Facility Inventory Risk is live accepted on frontend `88699a82` and backend `be00d33f`.
+Production loaded one server-authorized Triple Bag Genetics B-02 item, displayed the correct
+stock/evidence counts without a grow selector, and returned an inventory-specific answer with
+unknown supplier timing, use rate, par level and unrecorded counts. It did not combine unlike
+units, propose a stock write or fall back to the Facility grow summary. The final response
+used the cross-record heading `Referenced records` and referenced the exact QA inventory item.
+Provider presentation remained `Limited context answer`, so the broader real-provider gates
+stay open. See `FACILITY_INVENTORY_AI_PRODUCTION_EVIDENCE_2026-08-23.md`.
+
 ## Nature, Admin and release
 
-| ID   | User story                                                                                                             | Status                                                                            |
-| ---- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | implemented; local acceptance passed; populated/live acceptance open             |
-| N-02 | Discover shows a compact Nature preview even with zero public pins                                                     | live accepted                                                                     |
-| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented; local acceptance passed; public/private live regression open         |
-| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented; local acceptance passed; final-candidate privacy regression open     |
-| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | implemented; local acceptance passed; populated/live acceptance open              |
-| A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                           | implemented; local acceptance passed; authenticated mutation/live acceptance open |
-| A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                      | implemented; local acceptance passed; Sentry/live acceptance open                 |
-| A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                     | implemented; local safety acceptance passed; legal operating/live acceptance open |
-| A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated     | implemented; local acceptance passed; multi-account/live acceptance open          |
-| R-01 | Subscriptions (including gifts), paid courses/products, returns/webhooks/receipts and management work where authorized | implemented; local acceptance passed; production provider/live acceptance open    |
-| R-02 | Email/device notifications respect preferences and deliver supported events                                            | implemented; local acceptance passed; email/device live acceptance open           |
+| ID   | User story                                                                                                             | Status                                                                                                                                                                                                                                         |
+| ---- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | implemented; local acceptance passed; populated/live acceptance open                                                                                                                                                                           |
+| N-02 | Discover shows a compact Nature preview even with zero public pins                                                     | live accepted                                                                                                                                                                                                                                  |
+| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented; local acceptance passed; public/private live regression open                                                                                                                                                                      |
+| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented; local acceptance passed; final-candidate privacy regression open                                                                                                                                                                  |
+| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | implemented; local acceptance passed; populated/live acceptance open                                                                                                                                                                           |
+| A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                           | implemented; local acceptance passed; authenticated mutation/live acceptance open                                                                                                                                                              |
+| A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                      | implemented; local acceptance passed; Sentry/live acceptance open                                                                                                                                                                              |
+| A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                     | implemented; local safety acceptance passed; legal operating/live acceptance open                                                                                                                                                              |
+| A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated     | implemented; local acceptance passed; multi-account/live acceptance open                                                                                                                                                                       |
+| R-01 | Subscriptions (including gifts), paid courses/products, returns/webhooks/receipts and management work where authorized | implemented; local acceptance passed; production provider/live acceptance open                                                                                                                                                                 |
+| R-02 | Email/device notifications respect preferences and deliver supported events                                            | implemented; local acceptance passed; email/device live acceptance open                                                                                                                                                                        |
 | R-03 | Initial crawl, proof-based dead-code cleanup, and final full acceptance pass on new frozen SHAs                        | partial; automated, signed-in Personal and Facility-member slices passed; Facility and Personal task-link repairs live accepted; Data Integrations grow-selection repair local; remaining roles, proven cleanup and final frozen-SHA pass open |
-| R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                             | open                                                                              |
-| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate                                                                   |
-| R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                       | open                                                                              |
+| R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                             | open                                                                                                                                                                                                                                           |
+| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate                                                                                                                                                                                                                                |
+| R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                       | open                                                                                                                                                                                                                                           |
 
 ## Frozen Plant ID stories
 
@@ -448,7 +457,7 @@ populated, provider, authenticated or multi-account evidence.
   **Do not rebuild:** feed separation, thread detail, media, sharing, comment composer, owner
   detection or the accepted owner lifecycle.
 - **S-01 through S-08 — local acceptance:** these rows now carry `implemented; local
-  acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 143 frontend
+acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 143 frontend
   and 154 backend assertions covering Forum/comments, video upload/library/detail, Lives and
   Studio, hosted publication/lifecycle/limits, OBS, GrowPath chat/overlay, signed playback and
   replay, Commercial Lives, courses and ownership, enrollment/payment lifecycle, stable share
