@@ -720,16 +720,8 @@ export default function AiScreen({
         const failedSources = settledContext.flatMap((result, index) =>
           result.status === "rejected" ? [sourceLabels[index]] : []
         );
-        const [
-          grows,
-          plants,
-          logs,
-          tasks,
-          toolRuns,
-          diagnoses,
-          recipes,
-          inventoryItems
-        ] = settledContext.map((result) =>
+        const [grows, plants, logs, tasks, toolRuns, diagnoses, recipes, inventoryItems] =
+          settledContext.map((result) =>
             result.status === "fulfilled" && Array.isArray(result.value)
               ? result.value
               : []
@@ -891,8 +883,7 @@ export default function AiScreen({
         locationId: item.locationId || item.location || "",
         sourceFreshnessAt: item.sourceFreshnessAt || null,
         updatedAt: item.updatedAt || null,
-        alerts:
-          item.alerts && typeof item.alerts === "object" ? item.alerts : null
+        alerts: item.alerts && typeof item.alerts === "object" ? item.alerts : null
       }))
     };
   }
@@ -1211,26 +1202,34 @@ export default function AiScreen({
                   }
                 </Text>
                 <Text style={styles.contextText}>
-                  At or below reorder point: {context.inventoryItems.filter((item) => {
-                    const quantity = Number(item.quantityOnHand ?? item.quantity ?? 0);
-                    const reorderPoint = Number(item.reorderPoint ?? 0);
-                    return quantity > 0 && reorderPoint > 0 && quantity <= reorderPoint;
-                  }).length}
+                  At or below reorder point:{" "}
+                  {
+                    context.inventoryItems.filter((item) => {
+                      const quantity = Number(
+                        item.quantityOnHand ?? item.quantity ?? 0
+                      );
+                      const reorderPoint = Number(item.reorderPoint ?? 0);
+                      return quantity > 0 && reorderPoint > 0 && quantity <= reorderPoint;
+                    }).length
+                  }
                 </Text>
                 <Text style={styles.contextText}>
-                  Evidence alerts: {context.inventoryItems.filter((item) => {
-                    const alerts = item.alerts || {};
-                    return Boolean(
-                      alerts.lowStock ||
-                        alerts.outOfStock ||
-                        alerts.held ||
-                        Number(alerts.expiredLots || 0) > 0 ||
-                        Number(alerts.expiringSoonLots || 0) > 0 ||
-                        alerts.lotQuantityExceedsItem ||
-                        Number(alerts.unallocatedQuantity || 0) > 0 ||
-                        alerts.sourceAgeDays === null
-                    );
-                  }).length}
+                  Evidence alerts:{" "}
+                  {
+                    context.inventoryItems.filter((item) => {
+                      const alerts = item.alerts || {};
+                      return Boolean(
+                        alerts.lowStock ||
+                          alerts.outOfStock ||
+                          alerts.held ||
+                          Number(alerts.expiredLots || 0) > 0 ||
+                          Number(alerts.expiringSoonLots || 0) > 0 ||
+                          alerts.lotQuantityExceedsItem ||
+                          Number(alerts.unallocatedQuantity || 0) > 0 ||
+                          alerts.sourceAgeDays === null
+                      );
+                    }).length
+                  }
                 </Text>
                 <Text style={styles.contextText}>
                   Counts with different stock units are never combined into one total.
