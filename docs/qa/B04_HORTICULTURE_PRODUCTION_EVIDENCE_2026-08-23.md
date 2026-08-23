@@ -6,6 +6,9 @@ Accepted actor: `jcindc2003@yahoo.com`, selected Facility `OWNER`
 Backend main: `7442cf8aa3a755504c3c7d00c4c48474cc74b466`  
 Frontend main: `f4cbb5c0351fb7ab4313d3e7d79fcc93d0d9a890`
 
+Manager/link follow-up backend main: `23d0bf97f8104050a6d8e075313b73afad23562d`  
+Manager/link follow-up frontend main: `20e423c1d922fb6942e8565204104febc5514103`
+
 ## Defect closed instead of bypassed
 
 The first owner create returned a server error but the record appeared after reload. Source
@@ -55,16 +58,47 @@ Operations route. It failed closed with `Access denied` before loading any Horti
 record or control. No record or audit event changed. Together with the retained Staff denial,
 the denied Facility-role UI slice is accepted and must not be repeated.
 
+## Live Manager, B-02 link and passing-readiness acceptance
+
+The authenticated production Manager `exploringthegrowinguniverse@gmail.com`, explicitly
+shown as `MANAGER` in the Triple Bag Genetics roster, created one bounded synthetic tomato-
+starts record. The first live B-02 lot-link attempt exposed a real partial-update defect:
+omitted `inventoryItemId` and `inventoryLotId` fields were normalized to `null`, so an
+unrelated reviewed-field PATCH silently cleared an existing item link and a later lot-only
+PATCH failed with a false item/lot mismatch.
+
+Backend PR `#229` corrected the partial normalizer so omitted links remain untouched while an
+explicit null/empty value still unlinks. Fourteen focused service/route tests passed; exact-
+main Backend CI run `32665071473` passed on `23d0bf97`. Production then linked existing B-02
+item `QA B02 OWNER 0823-863080` and its `LOT-0823-863080`, and every subsequent label,
+quarantine, fulfillment and care-history update preserved both links.
+
+The first reload retained the links and readiness but exposed a UI hydration gap: a persisted
+lot remained hidden until the item button was pressed again. Frontend PR `#775` now hydrates
+lots for persisted item links on load. Five focused Horticulture assertions and TypeScript
+passed; the complete PR gate passed in `11m8s`, and exact-main Frontend CI plus Production
+Build Preflight passed on `20e423c1`. The live reload then displayed the linked item at
+`11 each` and linked lot at `3 each` without another action.
+
+After reviewed label, clear quarantine, media, care-card and packing flags plus one bounded
+inspection, evaluation returned `Ready for human fulfillment confirmation` with no reasons.
+The screen continued to state that this does not reserve inventory, promise availability,
+choose a substitute or complete an order. Reload retained that result and both links without
+changing the B-02 item or lot balance. The Manager then archived the synthetic record; reload
+returned the active list to empty. Audit IDs retained care, updates, evaluation and archive;
+archive audit `6a8b5f10a096d5b7b0f04a5e` points to archived entity
+`6a8b58be6fc138a825ba7eda` and Manager user `6a56c0eb670cd965167adbc0`.
+
+This closes Facility Manager mutation/reload/audit, same-workspace B-02 item/lot linking and
+the safe passing-readiness result. Neither defect nor this acceptance slice should be rebuilt
+or repeated.
+
 ## Exact remaining B-04 gates
 
 Do not rebuild the Horticulture engine. The row remains partially open only for:
 
-1. selected Facility `MANAGER` mutation/reload/audit acceptance;
-2. Commercial owner create/link/reload/care/readiness/archive acceptance;
-3. same-workspace B-02 item/lot and protected evidence linking, including cross-workspace
-   denial;
-4. one safely prepared `ready_for_human_confirmation` result proving it remains a review
-   result rather than a reservation, order or availability promise; and
-5. final-crawl improvement of Facility Audit Detail when a resolvable member name/role is
+1. Commercial owner create/link/reload/care/readiness/archive acceptance;
+2. protected evidence linking and cross-workspace item/lot/evidence denial;
+3. final-crawl improvement of Facility Audit Detail when a resolvable member name/role is
    available. The current event is immutable and scoped, but the primary detail displayed
    `Recorded facility member` instead of a readable actor and did not surface its role.

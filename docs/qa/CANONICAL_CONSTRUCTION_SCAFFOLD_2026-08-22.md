@@ -291,6 +291,13 @@ archive cancel/confirm/reload and audit-list retention are accepted. See
 `B04_HORTICULTURE_PRODUCTION_EVIDENCE_2026-08-23.md` for exact evidence and the remaining
 Manager, Commercial, B-02/evidence-link, passing-readiness and actor-name presentation gates.
 
+Follow-up checkpoint: backend `23d0bf97` and frontend `20e423c1` close the two defects found
+during Manager item/lot-link acceptance: omitted PATCH fields no longer clear persisted links,
+and saved lots hydrate visibly on reload. Facility Manager mutation/care/reload/archive/audit,
+same-workspace B-02 item/lot linking and `ready_for_human_confirmation` are accepted with
+unchanged stock. Continue only with Commercial owner, protected-evidence/cross-workspace
+denial and Audit Detail actor-name/role presentation.
+
 ### Batch 7 — money, notifications and data rights
 
 Primary rows: `R-01`, `R-02`.  
