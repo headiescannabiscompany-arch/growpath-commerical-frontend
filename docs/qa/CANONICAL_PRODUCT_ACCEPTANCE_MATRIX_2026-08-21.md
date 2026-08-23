@@ -434,8 +434,9 @@ populated, provider, authenticated or multi-account evidence.
   workspace/context/visibility changes, re-runs moderation and feed projection after edits,
   validates replies against a visible parent in the same discussion, supports owner-only
   comment edits with re-moderation, and performs an audited soft delete plus feed removal.
-  Frontend exposes reply context, owner comment editing, explicit confirmed post Edit/Delete
-  controls and returns to Forum after post deletion. Backend focused/controller and
+  Frontend exposes the retained author Follow control, reply context, owner comment editing,
+  explicit confirmed post Edit/Delete controls and returns to Forum after post deletion.
+  Backend focused/controller and
   Mongo-backed contract packets pass 40/40; frontend route/API tests pass 17/17 with
   TypeScript and focused lint clean. Exact evidence is retained in
   `FORUM_OWNER_LIFECYCLE_LOCAL_EVIDENCE_2026-08-23.md`. **Remaining gates:** merge/deploy the

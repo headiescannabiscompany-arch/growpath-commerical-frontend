@@ -55,6 +55,17 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
   return () => React.createElement(View, { testID: "personal-feed-placement" });
 });
 
+jest.mock("@/components/FollowButton", () => {
+  const React = require("react");
+  const { Text } = require("react-native");
+  return ({ userId }: any) =>
+    React.createElement(
+      Text,
+      { accessibilityLabel: `Follow author ${userId}` },
+      "Follow"
+    );
+});
+
 jest.mock("@/utils/photoUploads", () => ({
   resolveImageUri: (uri: string) => uri
 }));
@@ -108,7 +119,7 @@ describe("ForumPostDetailRoute", () => {
       title: "Leaf spot follow-up",
       body: "Check underside of leaves after lights on.",
       createdAt: "2026-07-07T12:00:00Z",
-      author: { name: "Grow Mentor" },
+      author: { id: "author-1", name: "Grow Mentor" },
       likeCount: 2,
       media: [{ storageUrl: "/uploads/forum-detail.jpg" }]
     });
@@ -339,6 +350,7 @@ describe("ForumPostDetailRoute", () => {
     await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
 
     expect(screen.getByLabelText("Report forum post")).toBeTruthy();
+    expect(screen.getByLabelText("Follow author author-1")).toBeTruthy();
     expect(screen.getByLabelText("Report forum comment")).toBeTruthy();
     expect(screen.queryByLabelText("Delete your comment")).toBeNull();
   });

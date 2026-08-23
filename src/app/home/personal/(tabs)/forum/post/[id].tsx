@@ -35,6 +35,7 @@ import ReportModal from "@/components/ReportModal";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import ExpandableForumImage from "@/components/forum/ExpandableForumImage";
+import FollowButton from "@/components/FollowButton";
 import PublicShareActions from "@/components/sharing/PublicShareActions";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -69,6 +70,11 @@ function param(value: unknown): string {
 function authorName(row: any) {
   const author = row?.author || row?.user;
   return String(author?.name || author?.username || row?.authorName || "Forum member");
+}
+
+function authorId(row: any) {
+  const author = row?.author || row?.user;
+  return String(author?._id || author?.id || row?.authorId || row?.userId || "");
 }
 
 function identityValues(value: any): string[] {
@@ -638,6 +644,11 @@ export default function ForumPostDetailRoute() {
                     ? ` | ${new Date(post.createdAt).toLocaleString()}`
                     : ""}
                 </Text>
+                {!isPostOwner && authorId(post) ? (
+                  <View style={styles.authorActions}>
+                    <FollowButton userId={authorId(post)} />
+                  </View>
+                ) : null}
                 {editingPost ? (
                   <View style={styles.editComposer}>
                     <TextInput
@@ -1100,6 +1111,7 @@ export function createForumPostDetailStyles(palette: ThemePalette) {
       gap: 10,
       marginTop: 6
     },
+    authorActions: { alignItems: "flex-start", marginTop: 4 },
     editComposer: { gap: 8, marginTop: 10 },
     editBodyInput: { minHeight: 130, textAlignVertical: "top" },
     commentComposer: { gap: 8 },

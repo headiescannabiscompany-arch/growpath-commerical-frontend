@@ -28,7 +28,8 @@ Rebuilding the Forum, sharing, media or reporting architecture was explicitly ou
 - The canonical Expo Router detail gives the owner explicit Edit and confirmed Delete
   controls, explains the immutable privacy boundary, and returns to Forum after deletion.
   Every visible comment exposes Reply; owners receive Edit/Delete while other users retain
-  Report.
+  Report. A non-owner thread also exposes the existing shared Follow control for the post
+  author, which feeds the already-retained Following forum/video discovery behavior.
 
 ## Local verification
 
