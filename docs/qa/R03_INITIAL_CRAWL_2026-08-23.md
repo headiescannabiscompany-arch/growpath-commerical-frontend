@@ -305,8 +305,8 @@ harvest_readiness. Detailed evidence remains in the private GrowPath record.` an
   the exact grow-scoped links once a grow exists. Local and live acceptance are complete on
   frontend `8ccfb6e7`: all five focused route tests and `tsc --noEmit` passed; production showed
   three Create Grow paths and no Integrations or PDF Export link while the Commercial workspace
-  remained empty. Exact-main release gates remain open until their workflow conclusions are
-  recorded.
+  remained empty. Exact-main Frontend CI `32669924033` and Production Build Preflight
+  `32669924029` both passed.
 - A read-only Commercial route pass also loaded Discover, Notifications, Tasks, Courses,
   Lives, External Channels, Orders, Analytics, Product Lines, Product Batches, Product Trials,
   Inventory Support, Horticulture Operations, Public Links and AI Tools without authentication,
@@ -316,7 +316,13 @@ harvest_readiness. Detailed evidence remains in the private GrowPath record.` an
 - The Commercial Lives candidate now loads readable owner-authorized Course, Product, Feed
   campaign and accessible Forum-thread choices, provides direct creation/review paths for
   empty lists, and retains raw IDs only behind an explicitly opened advanced control. Focused,
-  full, deployment and live acceptance of this candidate remain open.
+  full PR and initial live acceptance passed on frontend `13767c0d`: the saved course rendered
+  as a named choice, empty Product and Feed lists linked to their workspaces, raw IDs were
+  absent until Advanced was opened, and Advanced restored all four exact inputs. The live
+  Forum response exposed its readable content under a different field than the local fixture;
+  the follow-up candidate normalizes that field instead of accepting a generic `Forum thread`
+  label. Exact-main gates, the follow-up deployment and final live label verification remain
+  open.
 
 ## Exact remaining R-03 work
 

@@ -120,7 +120,7 @@ describe("CommercialLivesRoute", () => {
       }
       if (path === "/api/forum/feed/latest") {
         return Promise.resolve({
-          posts: [{ id: "thread-1", title: "Friday Questions" }]
+          posts: [{ id: "thread-1", text: "Friday Questions" }]
         });
       }
       if (path === "/api/twitch/connect" && options?.method === "POST") {
