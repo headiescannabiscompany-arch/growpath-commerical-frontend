@@ -4,13 +4,17 @@ import { render, waitFor } from "@testing-library/react-native";
 import PersonalFeaturedFeed, {
   campaignHref,
   createPersonalFeaturedFeedStyles,
-  isPublicTestContent
+  isEligibleHomeDiscoveryRecord,
+  isPublicTestContent,
+  selectRotatedRecords,
+  viewerAllowsCannabisDiscovery
 } from "@/components/home/PersonalFeaturedFeed";
 import { getThemePalette } from "@/theme/appTheme";
 
 const mockListCampaigns = jest.fn();
 const mockListForumPosts = jest.fn();
 const mockListCourses = jest.fn();
+const mockUseAuth = jest.fn();
 
 jest.mock("expo-router", () => {
   const React = require("react");
@@ -31,9 +35,16 @@ jest.mock("@/api/courses", () => ({
   listCourses: (...args: any[]) => mockListCourses(...args)
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => mockUseAuth()
+}));
+
 describe("PersonalFeaturedFeed", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockUseAuth.mockReturnValue({
+      user: { growInterests: { crops: ["Vegetables"] }, cannabisVisibility: "hide" }
+    });
     mockListCampaigns.mockResolvedValue({
       items: [
         { id: "qa-campaign", title: "QA ONLY campaign", body: "test" },
@@ -111,6 +122,126 @@ describe("PersonalFeaturedFeed", () => {
       "/feed?campaignId=facility-education-1"
     );
     expect(campaignHref({}, true)).toBe("/feed");
+  });
+
+  it("rejects private, inactive, and cannabis-specific discovery for a general viewer", () => {
+    expect(isEligibleHomeDiscoveryRecord({ title: "General soil" }, false)).toBe(true);
+    expect(
+      isEligibleHomeDiscoveryRecord({ title: "Private", visibility: "private" }, false)
+    ).toBe(false);
+    expect(
+      isEligibleHomeDiscoveryRecord({ title: "Paused", status: "paused" }, false)
+    ).toBe(false);
+    expect(
+      isEligibleHomeDiscoveryRecord(
+        { title: "Structured crop", growInterests: ["Cannabis"] },
+        false
+      )
+    ).toBe(false);
+    expect(
+      isEligibleHomeDiscoveryRecord(
+        { title: "Structured crop", growInterests: ["Cannabis"] },
+        true
+      )
+    ).toBe(true);
+    expect(
+      viewerAllowsCannabisDiscovery({
+        cannabisVisibility: "hide",
+        growInterests: { crops: ["Vegetables"] }
+      })
+    ).toBe(false);
+    expect(
+      viewerAllowsCannabisDiscovery({
+        cannabisVisibility: "show",
+        growInterests: { crops: ["Vegetables"] }
+      })
+    ).toBe(true);
+  });
+
+  it("rotates eligible records without dropping or duplicating the candidate inventory", () => {
+    const candidates = ["one", "two", "three", "four"];
+    const first = selectRotatedRecords(candidates, 3, "2026-08-23");
+    const second = selectRotatedRecords(candidates, 3, "2026-08-24");
+
+    expect(first).toHaveLength(3);
+    expect(new Set(first).size).toBe(3);
+    expect(second).toHaveLength(3);
+    expect(new Set(second).size).toBe(3);
+    expect(second).not.toEqual(first);
+    expect([...first, ...second].every((value) => candidates.includes(value))).toBe(true);
+  });
+
+  it("renders the exact eligible three-commercial, one-facility, one-course, one-forum mix", async () => {
+    mockListCampaigns.mockResolvedValue({
+      items: [
+        { id: "c1", title: "Commercial one", body: "One", status: "active" },
+        { id: "c2", title: "Commercial two", body: "Two", status: "active" },
+        { id: "c3", title: "Commercial three", body: "Three", status: "active" },
+        { id: "c4", title: "Commercial four", body: "Four", status: "active" },
+        {
+          id: "facility-1",
+          ownerType: "facility",
+          type: "education",
+          title: "Facility education",
+          body: "Operator learning",
+          status: "active"
+        },
+        {
+          id: "private",
+          title: "Private campaign",
+          body: "Do not show",
+          visibility: "private"
+        },
+        {
+          id: "cannabis",
+          title: "Cannabis campaign",
+          body: "Do not show",
+          growInterests: ["Cannabis"]
+        }
+      ]
+    });
+    mockListForumPosts.mockResolvedValue([
+      {
+        id: "forum-live",
+        title: "Popular garden question",
+        body: "Useful discussion",
+        likeCount: 4
+      },
+      {
+        id: "forum-private",
+        title: "Private forum question",
+        visibility: "private",
+        likeCount: 100
+      }
+    ]);
+    mockListCourses.mockResolvedValue({
+      courses: [
+        {
+          id: "course-live",
+          title: "Public crop course",
+          description: "Useful lessons",
+          status: "published"
+        },
+        {
+          id: "course-draft",
+          title: "Draft crop course",
+          status: "draft"
+        }
+      ]
+    });
+
+    const screen = render(<PersonalFeaturedFeed rotationKey="2026-08-23" />);
+    await waitFor(() => expect(screen.getByText("Facility education")).toBeTruthy());
+
+    expect(screen.getAllByText("Commercial ad")).toHaveLength(3);
+    expect(screen.getAllByText("Facility post")).toHaveLength(1);
+    expect(screen.getByLabelText("Course: Public crop course")).toBeTruthy();
+    expect(screen.getAllByText("Forum post")).toHaveLength(1);
+    expect(screen.getByText("Public crop course")).toBeTruthy();
+    expect(screen.getByText("Popular garden question")).toBeTruthy();
+    expect(screen.queryByText("Private campaign")).toBeNull();
+    expect(screen.queryByText("Cannabis campaign")).toBeNull();
+    expect(screen.queryByText("Draft crop course")).toBeNull();
   });
 
   it("keeps QA records out of the public home highlights", async () => {

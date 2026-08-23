@@ -127,6 +127,15 @@ views, exposes uncertainty/counter-evidence, and requires confirmation before wr
 Timeline sharing/export is separate from the private editor. Harvest Readiness and
 Diagnosis/IPM are repaired against their existing architectures rather than replaced.
 
+P-01 local closure: the retained Personal command center, sparse state and frequent actions
+remain intact. The six-card discovery assembly now requests the Home placement, excludes
+test/private/inactive records, honors structured cannabis visibility, rotates eligible
+Commercial/Facility/course inventory on a stable daily key, preserves the highest-engagement
+eligible Forum item, and uses clearly labeled GrowPath shortcuts only for unavailable slots.
+Thirty-one focused assertions plus TypeScript and touched-source lint pass. Populated production
+inventory, every named deep link/back path and the general-versus-cannabis account comparison
+remain the exact live gate; do not reopen the Home architecture without a reproduced defect.
+
 ### Batch 4 — community, media, Lives, courses and sharing
 
 Primary rows: `S-01` through `S-08`.  
