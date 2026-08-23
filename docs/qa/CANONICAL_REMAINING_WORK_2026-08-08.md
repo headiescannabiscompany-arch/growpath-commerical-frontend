@@ -1319,16 +1319,16 @@ public visibility, or screenshot/video acceptance still called out below.
   populated product, storefront, public visibility, checkout, or production-inventory
   workflows. See
   `docs/qa/GOVERNED_RECIPE_HANDOFF_PRODUCTION_EVIDENCE_2026-08-14.md`.
-- [~] B-02 now has one coherent Commercial/Facility inventory engine locally implemented and
-  accepted. It covers scoped items/lots, private cost/currency/vendor, deterministic alerts,
-  transactional append-only movements, full-balance relocation/status actions, reviewed
-  resumable CSV import, paged history, bounded terminal audit export, retained Facility-route
-  compatibility and exactly-once paid Storefront reconciliation. The focused frontend lane
-  passed 12 suites/81 tests plus TypeScript and 8 knowledge-registry tests; the backend lane
-  passed 12 suites/185 tests; the guarded migration lane passed 2 suites/20 tests. Do not
-  rebuild this engine. Guarded production dry-run/apply, exact-SHA deployment and live
-  Commercial/Facility role/import/export/reconciliation acceptance remain open. See
-  `docs/qa/B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`.
+- [~] B-02 has one coherent Commercial/Facility inventory engine; do not rebuild it. Guarded
+  production dry-run/apply and exact-SHA deployment are accepted. The Facility owner live
+  lane accepted create/cancel, receive, hold/release, consume, move/transfer, signed adjust,
+  persistence, the unit-change guard and private-field clearing. Facility Inventory Risk is
+  also live accepted against a server-authorized B-02 projection with no grow fallback or
+  inventory write. Remaining gates are valid CSV apply/retry/idempotency/export, movement
+  pagination, terminal audit export, paid Storefront reconciliation, archive cleanup,
+  Manager/Staff/Viewer permissions and two-Commercial/two-Facility isolation. See
+  `docs/qa/B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md` and
+  `docs/qa/FACILITY_INVENTORY_AI_PRODUCTION_EVIDENCE_2026-08-23.md`.
 - [~] Seed Penny Saver Soil, Living Soil, and No-Till drafts only from owner-approved
   facts. Keep inventory zero and claims unpublished until labels, guaranteed analyses,
   sizes, prices, directions, shipping, and images are supplied and verified. The
