@@ -934,6 +934,9 @@ export default function ForumPostDetailRoute() {
                         onChangeText={setEditCommentText}
                         editable={!saving}
                         multiline
+                        placeholder="Comment text"
+                        placeholderTextColor={palette.textMuted}
+                        selectionColor={palette.accent}
                         style={[styles.input, styles.commentInput]}
                         accessibilityLabel="Edit forum comment"
                       />
