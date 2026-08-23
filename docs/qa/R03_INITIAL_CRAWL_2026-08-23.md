@@ -302,18 +302,21 @@ harvest_readiness. Detailed evidence remains in the private GrowPath record.` an
 - The next Commercial Grows crawl found a real empty-state defect: when no grow existed, the
   page linked Integrations and PDF Export to URLs ending in an empty `growId=`. The candidate
   replaces those unusable links with a direct Create Grow prerequisite action while retaining
-  the exact grow-scoped links once a grow exists. Local and live acceptance of this repair
-  remain open.
+  the exact grow-scoped links once a grow exists. Local and live acceptance are complete on
+  frontend `8ccfb6e7`: all five focused route tests and `tsc --noEmit` passed; production showed
+  three Create Grow paths and no Integrations or PDF Export link while the Commercial workspace
+  remained empty. Exact-main release gates remain open until their workflow conclusions are
+  recorded.
 - A read-only Commercial route pass also loaded Discover, Notifications, Tasks, Courses,
   Lives, External Channels, Orders, Analytics, Product Lines, Product Batches, Product Trials,
   Inventory Support, Horticulture Operations, Public Links and AI Tools without authentication,
   transport-code or failed-load presentation. Truthful empty states remained distinct from
   failures. Lives retained the existing direct Live Studio entry for GrowPath/OBS streaming,
   chat overlays and premieres while separately reporting that Twitch OAuth is not configured.
-- One lower-priority Commercial Lives usability item remains open from that pass: related
-  course, product, campaign and Forum records still use raw ID inputs instead of readable
-  owner-scoped choices with an advanced-ID fallback. This is recorded for repair before the
-  final candidate rather than being mistaken for completed live-authoring polish.
+- The Commercial Lives candidate now loads readable owner-authorized Course, Product, Feed
+  campaign and accessible Forum-thread choices, provides direct creation/review paths for
+  empty lists, and retains raw IDs only behind an explicitly opened advanced control. Focused,
+  full, deployment and live acceptance of this candidate remain open.
 
 ## Exact remaining R-03 work
 

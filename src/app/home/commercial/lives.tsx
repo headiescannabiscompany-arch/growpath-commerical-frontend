@@ -17,6 +17,8 @@ import {
   CommercialLiveEvent,
   createCommercialLive,
   fetchCommercialLives,
+  fetchCommercialCourses,
+  fetchProducts,
   publishCommercialLive
 } from "@/api/commercialWorkflows";
 import { InlineError } from "@/components/InlineError";
@@ -160,6 +162,23 @@ function splitList(value: string) {
     .filter(Boolean);
 }
 
+function recordsFrom(value: any, keys: string[]) {
+  if (Array.isArray(value)) return value;
+  for (const key of keys) {
+    if (Array.isArray(value?.[key])) return value[key];
+    if (Array.isArray(value?.data?.[key])) return value.data[key];
+  }
+  return [];
+}
+
+function recordId(record: any) {
+  return String(record?.id || record?._id || "").trim();
+}
+
+function recordLabel(record: any, fallback: string) {
+  return String(record?.title || record?.name || record?.label || fallback).trim();
+}
+
 function liveFeedCampaignId(live: CommercialLiveEvent) {
   return String(
     (live as any).relatedFeedCampaignId ||
@@ -210,6 +229,11 @@ export default function CommercialLivesRoute() {
     null
   );
   const [connectingTwitch, setConnectingTwitch] = useState(false);
+  const [relatedCourses, setRelatedCourses] = useState<any[]>([]);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  const [relatedCampaigns, setRelatedCampaigns] = useState<any[]>([]);
+  const [relatedForumThreads, setRelatedForumThreads] = useState<any[]>([]);
+  const [showAdvancedRelatedLinks, setShowAdvancedRelatedLinks] = useState(false);
 
   const counts = useMemo(() => splitStatus(lives), [lives]);
   const formWarnings = liveSetupWarnings({
@@ -234,7 +258,30 @@ export default function CommercialLivesRoute() {
   useEffect(() => {
     void loadLives();
     void loadTwitchConnection();
+    void loadRelatedRecords();
   }, []);
+
+  async function loadRelatedRecords() {
+    const [coursesResult, productsResult, campaignsResult, forumResult] =
+      await Promise.allSettled([
+        fetchCommercialCourses(),
+        fetchProducts(),
+        apiRequest("/api/commercial/feed"),
+        apiRequest("/api/forum/feed/latest")
+      ]);
+    if (coursesResult.status === "fulfilled") setRelatedCourses(coursesResult.value);
+    if (productsResult.status === "fulfilled") setRelatedProducts(productsResult.value);
+    if (campaignsResult.status === "fulfilled") {
+      setRelatedCampaigns(
+        recordsFrom(campaignsResult.value, ["campaigns", "posts", "feed"])
+      );
+    }
+    if (forumResult.status === "fulfilled") {
+      setRelatedForumThreads(
+        recordsFrom(forumResult.value, ["posts", "threads", "items"])
+      );
+    }
+  }
 
   async function loadTwitchConnection() {
     try {
@@ -728,42 +775,228 @@ export default function CommercialLivesRoute() {
             placeholder="Timezone"
             style={styles.input}
           />
-          <TextInput
-            value={form.relatedCourseId}
-            onChangeText={(relatedCourseId) =>
-              setForm((prev) => ({ ...prev, relatedCourseId }))
+          <Text style={styles.label}>Related course</Text>
+          {relatedCourses.length ? (
+            <View style={styles.actions}>
+              {relatedCourses
+                .filter(recordId)
+                .slice(0, 6)
+                .map((course) => {
+                  const id = recordId(course);
+                  const label = recordLabel(course, "Course");
+                  return (
+                    <Pressable
+                      key={`live-course-${id}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use related course ${label}`}
+                      accessibilityState={{ selected: form.relatedCourseId === id }}
+                      onPress={() =>
+                        setForm((prev) => ({ ...prev, relatedCourseId: id }))
+                      }
+                      style={[
+                        styles.action,
+                        form.relatedCourseId === id ? styles.actionSelected : null
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.actionText,
+                          form.relatedCourseId === id ? styles.actionTextSelected : null
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+            </View>
+          ) : (
+            <ActionLink
+              href="/home/commercial/courses"
+              label="Create or review courses"
+            />
+          )}
+          <Text style={styles.label}>Related product</Text>
+          {relatedProducts.length ? (
+            <View style={styles.actions}>
+              {relatedProducts
+                .filter(recordId)
+                .slice(0, 6)
+                .map((product) => {
+                  const id = recordId(product);
+                  const label = recordLabel(product, "Product");
+                  return (
+                    <Pressable
+                      key={`live-product-${id}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use related product ${label}`}
+                      accessibilityState={{ selected: form.relatedProductId === id }}
+                      onPress={() =>
+                        setForm((prev) => ({ ...prev, relatedProductId: id }))
+                      }
+                      style={[
+                        styles.action,
+                        form.relatedProductId === id ? styles.actionSelected : null
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.actionText,
+                          form.relatedProductId === id ? styles.actionTextSelected : null
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+            </View>
+          ) : (
+            <ActionLink
+              href="/home/commercial/products"
+              label="Create or review products"
+            />
+          )}
+          <Text style={styles.label}>Related Feed campaign</Text>
+          {relatedCampaigns.length ? (
+            <View style={styles.actions}>
+              {relatedCampaigns
+                .filter(recordId)
+                .slice(0, 6)
+                .map((campaign) => {
+                  const id = recordId(campaign);
+                  const label = recordLabel(campaign, "Campaign");
+                  return (
+                    <Pressable
+                      key={`live-campaign-${id}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use related Feed campaign ${label}`}
+                      accessibilityState={{ selected: form.relatedFeedCampaignId === id }}
+                      onPress={() =>
+                        setForm((prev) => ({ ...prev, relatedFeedCampaignId: id }))
+                      }
+                      style={[
+                        styles.action,
+                        form.relatedFeedCampaignId === id ? styles.actionSelected : null
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.actionText,
+                          form.relatedFeedCampaignId === id
+                            ? styles.actionTextSelected
+                            : null
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+            </View>
+          ) : (
+            <ActionLink href="/home/commercial/feed" label="Create or review campaigns" />
+          )}
+          <Text style={styles.label}>Related Forum / Q&amp;A thread</Text>
+          {relatedForumThreads.length ? (
+            <View style={styles.actions}>
+              {relatedForumThreads
+                .filter(recordId)
+                .slice(0, 6)
+                .map((thread) => {
+                  const id = recordId(thread);
+                  const label = recordLabel(thread, "Forum thread");
+                  return (
+                    <Pressable
+                      key={`live-forum-${id}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use related Forum thread ${label}`}
+                      accessibilityState={{ selected: form.forumThreadId === id }}
+                      onPress={() => setForm((prev) => ({ ...prev, forumThreadId: id }))}
+                      style={[
+                        styles.action,
+                        form.forumThreadId === id ? styles.actionSelected : null
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.actionText,
+                          form.forumThreadId === id ? styles.actionTextSelected : null
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+            </View>
+          ) : (
+            <ActionLink
+              href="/home/commercial/community"
+              label="Open Forum / Q&A threads"
+            />
+          )}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              showAdvancedRelatedLinks
+                ? "Hide advanced live record links"
+                : "Show advanced live record links"
             }
-            accessibilityLabel="Commercial live related course"
-            placeholder="Related course ID"
-            style={styles.input}
-          />
-          <TextInput
-            value={form.relatedProductId}
-            onChangeText={(relatedProductId) =>
-              setForm((prev) => ({ ...prev, relatedProductId }))
-            }
-            accessibilityLabel="Commercial live related product"
-            placeholder="Related product ID"
-            style={styles.input}
-          />
-          <TextInput
-            value={form.relatedFeedCampaignId}
-            onChangeText={(relatedFeedCampaignId) =>
-              setForm((prev) => ({ ...prev, relatedFeedCampaignId }))
-            }
-            accessibilityLabel="Commercial live related feed campaign"
-            placeholder="Related feed campaign ID"
-            style={styles.input}
-          />
-          <TextInput
-            value={form.forumThreadId}
-            onChangeText={(forumThreadId) =>
-              setForm((prev) => ({ ...prev, forumThreadId }))
-            }
-            accessibilityLabel="Commercial live Forum Q&A thread"
-            placeholder="Forum/Q&A thread ID"
-            style={styles.input}
-          />
+            accessibilityState={{ expanded: showAdvancedRelatedLinks }}
+            onPress={() => setShowAdvancedRelatedLinks((shown) => !shown)}
+            style={styles.action}
+          >
+            <Text style={styles.actionText}>
+              {showAdvancedRelatedLinks
+                ? "Hide advanced record links"
+                : "Advanced record links"}
+            </Text>
+          </Pressable>
+          {showAdvancedRelatedLinks ? (
+            <View>
+              <Text style={styles.notice}>
+                Use direct IDs only for an existing GrowPath record. Named choices above
+                are the normal linking workflow.
+              </Text>
+              <TextInput
+                value={form.relatedCourseId}
+                onChangeText={(relatedCourseId) =>
+                  setForm((prev) => ({ ...prev, relatedCourseId }))
+                }
+                accessibilityLabel="Commercial live related course"
+                placeholder="Related course ID"
+                style={styles.input}
+              />
+              <TextInput
+                value={form.relatedProductId}
+                onChangeText={(relatedProductId) =>
+                  setForm((prev) => ({ ...prev, relatedProductId }))
+                }
+                accessibilityLabel="Commercial live related product"
+                placeholder="Related product ID"
+                style={styles.input}
+              />
+              <TextInput
+                value={form.relatedFeedCampaignId}
+                onChangeText={(relatedFeedCampaignId) =>
+                  setForm((prev) => ({ ...prev, relatedFeedCampaignId }))
+                }
+                accessibilityLabel="Commercial live related feed campaign"
+                placeholder="Related feed campaign ID"
+                style={styles.input}
+              />
+              <TextInput
+                value={form.forumThreadId}
+                onChangeText={(forumThreadId) =>
+                  setForm((prev) => ({ ...prev, forumThreadId }))
+                }
+                accessibilityLabel="Commercial live Forum Q&A thread"
+                placeholder="Forum/Q&A thread ID"
+                style={styles.input}
+              />
+            </View>
+          ) : null}
           <TextInput
             value={form.growInterests}
             onChangeText={(growInterests) =>

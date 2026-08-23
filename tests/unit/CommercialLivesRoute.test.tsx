@@ -103,6 +103,26 @@ describe("CommercialLivesRoute", () => {
           }
         });
       }
+      if (path === "/api/commercial/courses") {
+        return Promise.resolve({
+          courses: [{ id: "course-1", title: "Living Soil 101" }]
+        });
+      }
+      if (path === "/api/commercial/products") {
+        return Promise.resolve({
+          products: [{ id: "product-1", name: "Living Soil Mix" }]
+        });
+      }
+      if (path === "/api/commercial/feed") {
+        return Promise.resolve({
+          campaigns: [{ id: "campaign-1", title: "Friday Demo" }]
+        });
+      }
+      if (path === "/api/forum/feed/latest") {
+        return Promise.resolve({
+          posts: [{ id: "thread-1", title: "Friday Questions" }]
+        });
+      }
       if (path === "/api/twitch/connect" && options?.method === "POST") {
         return Promise.resolve({
           configured: true,
@@ -128,6 +148,17 @@ describe("CommercialLivesRoute", () => {
     const screen = render(<CommercialLivesRoute />);
 
     await waitFor(() => expect(screen.getByText("Lives / Streaming")).toBeTruthy());
+
+    expect(screen.queryByLabelText("Commercial live related course")).toBeNull();
+    expect(
+      await screen.findByLabelText("Use related course Living Soil 101")
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Use related product Living Soil Mix")).toBeTruthy();
+    expect(screen.getByLabelText("Use related Feed campaign Friday Demo")).toBeTruthy();
+    expect(
+      screen.getByLabelText("Use related Forum thread Friday Questions")
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Show advanced live record links"));
 
     [
       "Commercial live title",
