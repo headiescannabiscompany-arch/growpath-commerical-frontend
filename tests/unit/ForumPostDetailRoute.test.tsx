@@ -138,7 +138,7 @@ describe("ForumPostDetailRoute", () => {
       id: "post-1",
       title: data.title,
       body: data.body,
-      author: { username: "EtGU_Jay" }
+      author: "viewer-1"
     }));
     mockUpdateForumComment.mockImplementation(async (_id, text) => ({
       id: "comment-owner",
@@ -273,13 +273,6 @@ describe("ForumPostDetailRoute", () => {
         user: { id: "viewer-1", username: "EtGU_Jay" }
       }
     ]);
-    const alert = jest
-      .spyOn(require("react-native").Alert, "alert")
-      .mockImplementation((...args: unknown[]) => {
-        const buttons = args[2] as any[];
-        buttons.find((button) => button.text === "Delete")?.onPress();
-      });
-
     const screen = render(<ForumPostDetailRoute />);
     await waitFor(() => expect(screen.getByText("Owner post")).toBeTruthy());
 
@@ -289,12 +282,16 @@ describe("ForumPostDetailRoute", () => {
     expect(screen.queryByLabelText("Report forum post")).toBeNull();
     expect(screen.queryByLabelText("Report forum comment")).toBeNull();
     fireEvent.press(screen.getByLabelText("Delete your comment"));
+    expect(mockDeleteForumComment).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("Permanently remove this comment from the discussion?")
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Confirm delete forum comment"));
 
     await waitFor(() =>
       expect(mockDeleteForumComment).toHaveBeenCalledWith("comment-owner")
     );
     expect(screen.getByText("Comment deleted.")).toBeTruthy();
-    alert.mockRestore();
   });
 
   it("edits an owned post without exposing workspace or visibility controls", async () => {
@@ -321,6 +318,7 @@ describe("ForumPostDetailRoute", () => {
       })
     );
     expect(screen.getByText("Post updated.")).toBeTruthy();
+    expect(screen.getByText(/EtGU_Jay/)).toBeTruthy();
   });
 
   it("confirms owner post deletion before returning to Forum", async () => {
@@ -329,20 +327,18 @@ describe("ForumPostDetailRoute", () => {
       title: "Owner post",
       author: { username: "EtGU_Jay" }
     });
-    const alert = jest
-      .spyOn(require("react-native").Alert, "alert")
-      .mockImplementation((...args: unknown[]) => {
-        const buttons = args[2] as any[];
-        buttons.find((button) => button.text === "Delete")?.onPress();
-      });
     const screen = render(<ForumPostDetailRoute />);
     await waitFor(() => expect(screen.getByText("Owner post")).toBeTruthy());
 
     fireEvent.press(screen.getByLabelText("Delete your forum post"));
+    expect(mockDeleteForumPost).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(/Delete this discussion from Forum and public feeds/)
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Confirm delete forum post"));
 
     await waitFor(() => expect(mockDeleteForumPost).toHaveBeenCalledWith("post-1"));
     expect(mockRouterReplace).toHaveBeenCalledWith("/forum");
-    alert.mockRestore();
   });
 
   it("keeps report controls for content owned by another member", async () => {
@@ -384,7 +380,7 @@ describe("ForumPostDetailRoute", () => {
       {
         id: "comment-owner",
         body: "Original comment",
-        user: { id: "viewer-1" }
+        user: { id: "viewer-1", username: "EtGU_Jay" }
       }
     ]);
     const screen = render(<ForumPostDetailRoute />);
@@ -401,6 +397,7 @@ describe("ForumPostDetailRoute", () => {
       )
     );
     expect(screen.getByText("Comment updated.")).toBeTruthy();
+    expect(screen.getAllByText("EtGU_Jay").length).toBeGreaterThanOrEqual(2);
     expect(screen.getByLabelText("Delete your comment")).toBeTruthy();
   });
 });
