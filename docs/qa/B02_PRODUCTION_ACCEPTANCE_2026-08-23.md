@@ -141,6 +141,23 @@ that use rate, par level, supplier lead time and unrecorded counts were unknown.
 no inventory write. The implementation and live evidence are recorded in
 `FACILITY_INVENTORY_AI_PRODUCTION_EVIDENCE_2026-08-23.md`.
 
+## Rejected, duplicate and withdrawn import recovery accepted
+
+The Owner prepared `qa-b02-rejected-0823.csv` with one row and deliberately omitted the SKU
+column. Production reported one row, zero existing-SKU conflicts, `Import status: conflict`
+and `Row 1: needs sku`. Confirming review failed with `Choose a detected CSV column for sku`;
+Apply remained disabled and Facility inventory stayed at two items / 16 each.
+
+After a full route reload, entering the identical filename and CSV content resumed the exact
+existing conflict review instead of creating a second draft. The Owner then withdrew it.
+Production reported `Import status: rejected`, disabled all review/apply controls, stated that
+no inventory rows were applied and retained the audit record. After another full reload, the
+same source recovered that rejected record and explicitly required a changed source before a
+new preview. This closes malformed-row rejection, exact-source duplicate recovery,
+withdrawal, rejected-state reload and zero-application evidence. It does not manufacture or
+close interrupted partial-apply recovery, which still requires a safe fixture that stops
+after at least one committed row.
+
 ## Exact remaining production gates
 
 These are evidence gaps, not permission to rebuild the accepted ledger. The local behavior
@@ -151,7 +168,7 @@ that each live check exercises is already named below so later work resumes at a
 | Facility roles       | `tests/facility/rolePolicy.test.ts` keeps inventory writes at Manager-or-higher; `BusinessInventoryImportPanel.test.tsx` proves the read-only import state; `FacilityInventoryRoute.test.tsx` proves separate `AUDIT_READ` visibility                                                                                  | Existing Manager makes and reloads one reversible audited change; existing Staff and Viewer see read-only inventory and receive backend `403` for a forced write; each role's audit-export visibility matches its permission                                                                                     |
 | Workspace isolation  | Business-inventory API/screen suites pin explicit Commercial or Facility scope; backend B-02 route suites cover workspace authorization                                                                                                                                                                                | Two similarly named Commercial workspaces and two Facilities load distinct items/private fields/audit after navigation and reload                                                                                                                                                                                |
 | Older history        | `BusinessInventoryOperations.test.tsx` and `FacilityInventoryItemDetailRoute.test.tsx` prove explicit older-page loading, append and de-duplication                                                                                                                                                                    | A naturally populated item with more than one server page loads the older page without manufacturing meaningless production movements                                                                                                                                                                            |
-| Import failure/retry | `BusinessInventoryImportPanel.test.tsx` covers failed apply refetch/re-review, interrupted-response recovery, duplicate reviewed resume/withdrawal, audited conflicts, raw duplicate rejection, applied-duplicate preservation, single-flight preview, malformed headers/rows and semantic locking after partial apply | Safe production fixtures visibly exercise rejected, duplicate/conflicting and resumable partial states without bypassing review or replaying a committed row                                                                                                                                                     |
+| Import failure/retry | `BusinessInventoryImportPanel.test.tsx` covers failed apply refetch/re-review, interrupted-response recovery, duplicate reviewed resume/withdrawal, audited conflicts, raw duplicate rejection, applied-duplicate preservation, single-flight preview, malformed headers/rows and semantic locking after partial apply | Rejected malformed row, exact-source duplicate recovery, withdrawal, rejected-state reload and zero application are live accepted. A safe interrupted partial-apply fixture still must prove resume without bypassing review or replaying a committed row.                                                       |
 | Paid reconciliation  | `tests/routes/payments.webhook.test.js` proves signed paid-event fulfillment, idempotent ledger retry, duplicate delivery with one sales-accounting write, inventory exception visibility and no ledger call for an unlinked product                                                                                   | One owner-authorized Stripe test/live Storefront operation in the correct environment proves the provider round trip and exactly-once decrement; production exposes no unsigned admin/synthetic webhook bypass, so this cannot be manufactured without weakening the boundary or initiating an unapproved charge |
 | Cleanup              | Ledger/archive tests preserve immutable movements and audit                                                                                                                                                                                                                                                            | Owner confirms cleanup; only the named synthetic records are zeroed/archived and then reloaded while immutable history remains                                                                                                                                                                                   |
 
@@ -161,8 +178,9 @@ that each live check exercises is already named below so later work resumes at a
    private-field and audit isolation after reload.
 3. Older-movement pagination needs a safe populated history; do not manufacture dozens of
    meaningless production movements merely to cross the page boundary.
-4. Rejected, duplicate/conflicting and resumable partial CSV imports need safe live fixtures;
-   do not bypass the reviewed UI to force an already-applied draft.
+4. Interrupted resumable partial CSV apply still needs a safe live fixture; rejected,
+   duplicate recovery and withdrawal are accepted. Do not bypass the reviewed UI or replay
+   an already-applied row.
 5. One authorized paid Storefront reconciliation must prove failure visibility, retry and
    exactly-once decrement without initiating an unapproved real charge.
 6. After those checks, zero/archive only the named synthetic balances and records through
