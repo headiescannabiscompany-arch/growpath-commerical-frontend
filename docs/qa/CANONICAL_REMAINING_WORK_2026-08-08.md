@@ -69,6 +69,14 @@ starts or finishes; do not create another active todo document.
    after two test-order defects were removed. The remaining B-06 through B-09 work is only
    the named production/provider, regulated-capability and multi-account live acceptance in
    `B06_B09_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`; do not rebuild those products.
+   Batch 7's money, gift, entitlement, notification and data-rights assembly is also locally
+   accepted. The frontend gate passes 27 suites and 324 assertions. The backend gate covers
+   43 suites and 622 assertions: 41 unaffected suites passed 576 assertions, then the two
+   corrected suites passed 72 assertions including all 46 expectations that had been stale.
+   Backend merge `3d58e7b568e526f203bbe87bfd9a3beb705adbc3` records those corrections.
+   Continue only with the exact production Stripe/webhook, gift enablement, email-worker,
+   physical-device notification and disposable-account data-rights gates recorded in
+   `R01_R02_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`; do not rebuild the accepted assembly.
    Batch 5's consolidated local reconciliation passes 465 frontend assertions: 115 for
    the shared B-01/B-02 scope, role, inventory, import, integration and navigation foundation;
    161 for Commercial products/lines/batches/trials/evidence, inventory, storefront, orders,
@@ -1023,11 +1031,13 @@ grow`, private current location without a Field Study, and an optional approxima
 
 ## C. Payments, email, delivery, and entitlements
 
-Automated contract status on 2026-08-12: the billing, entitlement, trial, pricing,
-gift-attempt/review/return/recovery, sent-gift, subscription-gift API, and webhook API
-batch passed **14 suites and 253 assertions**. This verifies the retained application
-contracts but does not substitute for the production Stripe, webhook-delivery, email,
-refund/dispute, or mutation-capable acceptance items below.
+Current local contract status on 2026-08-22: the frontend money, gift, notification and
+data-rights gate passes **27 suites and 324 assertions**. The backend gate covers **43 suites
+and 622 assertions**: 41 unaffected suites passed 576 assertions, and the two corrected
+suites passed 72 assertions including all 46 formerly stale expectations. This locally accepts
+the retained application contracts but does not substitute for the production Stripe,
+webhook-delivery, email, refund/dispute, device or mutation-capable acceptance items below.
+See `docs/qa/R01_R02_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`.
 
 - [ ] Verify paid-course Checkout, cancel/success return, webhook enrollment,
       unlock, refund, and dispute state.
