@@ -47,6 +47,14 @@ The existing synthetic `QA B04 OWNER 0823` record was reused; no duplicate was c
 
 The synthetic record is archived and no longer clutters the active Horticulture list.
 
+## Live Viewer denial
+
+The authenticated production Viewer `john.collins15@alumni.morgan.edu`, explicitly shown as
+`VIEWER` in the Triple Bag Genetics Team roster, opened the direct Facility Horticulture
+Operations route. It failed closed with `Access denied` before loading any Horticulture
+record or control. No record or audit event changed. Together with the retained Staff denial,
+the denied Facility-role UI slice is accepted and must not be repeated.
+
 ## Exact remaining B-04 gates
 
 Do not rebuild the Horticulture engine. The row remains partially open only for:
