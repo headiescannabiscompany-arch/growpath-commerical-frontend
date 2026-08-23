@@ -143,6 +143,11 @@ Commercial course cleanup is a soft archive, not an ordinary hard delete. Only a
 
 An unavailable or unconfigured third-party integration status must appear as clear setup guidance. Do not expose raw transport codes such as `NOT_FOUND` as workflow content, and do not describe Twitch, EventSub, Stripe, email, or another integration as connected without verified configuration state. Commercial Live authoring treats EventSub status as connection-derived, read-only state; an author cannot type a connected status. Live visibility uses a named single-choice group with readable labels and an exposed checked state.
 
+Commercial Live authoring must load readable, owner-authorized Course, Product, Feed campaign
+and accessible Forum-thread choices for related records. Empty lists provide direct creation
+or review paths. Direct record-ID entry remains available only behind an explicitly opened
+advanced control and must never be the ordinary scheduling workflow.
+
 The Soil & Nutrient Batch Planner is a Commercial production tool. Surface its cost, bag-count, pull-sheet, labor, packaging, margin, inventory, formula, batch/lot, product, and trial workflow only inside the Commercial workspace; do not list it in Personal tools.
 
 A batch calculation is not an inventory transaction. Save the reviewed calculation as an owner-scoped Commercial batch linked to its ToolRun, then create source-linked Commercial production tasks. Preserve missing costs, analyses, shrinkage, lots, and availability as unknown. Do not decrement inventory, assign lots, publish a product claim, or authorize batch release without a separate explicit reviewed action.
