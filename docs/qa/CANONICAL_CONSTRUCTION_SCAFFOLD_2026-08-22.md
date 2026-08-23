@@ -188,6 +188,12 @@ naturally paginated history, controlled partial-import resume, signed Stripe rec
 and confirmed synthetic cleanup. Retain the generic Audit Detail actor/omitted-role finding
 for the final-crawl presentation fix.
 
+The existing Staff subsequently loaded the populated inventory read-only, retained ordinary
+CSV export and Inventory AI access, saw reviewed import disabled, and opened Facility Audit
+Logs while full-audit export and every stock mutation remained absent. Do not repeat this UI
+slice. Continue with the Staff forced backend `403` and the Viewer boundary before moving to
+workspace isolation.
+
 ### Batch 6 — Small Business Desk and retained domain acceptance
 
 Primary rows: `B-03` through `B-09`.

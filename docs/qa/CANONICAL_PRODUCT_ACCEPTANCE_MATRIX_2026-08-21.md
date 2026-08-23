@@ -310,6 +310,14 @@ reconciliation and cleanup remain open. Audit Detail still presents the actor as
 `Recorded facility member` instead of the available readable name/role and remains a final-
 crawl presentation defect.
 
+The subsequent authenticated `headiescannabiscompany@gmail.com` Staff pass loaded the
+populated two-item inventory, retained the correct `11 each` and `5 each` balances, exposed
+no create/full-audit/movement controls, disabled reviewed import with truthful role copy and
+allowed Facility Audit Logs independently of inventory write permission. This closes the
+populated Staff UI and audit-read slice. Staff forced backend `403` remains open because the
+available Browser execution surface could not use the app transport without inspecting or
+duplicating stored credentials; no unauthenticated response was mislabeled as role evidence.
+
 The 2026-08-23 B-04 owner pass is retained in
 `B04_HORTICULTURE_PRODUCTION_EVIDENCE_2026-08-23.md`. Backend main `7442cf8a` fixes the
 observed write-then-audit-error defect by committing every Horticulture mutation and audit

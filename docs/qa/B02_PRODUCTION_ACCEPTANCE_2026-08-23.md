@@ -166,6 +166,23 @@ The release detail retained user ID `6a56c0eb670cd965167adbc0`, entity ID
 existing final-crawl Audit Detail presentation defect; it does not invalidate the signed-in
 Team-role evidence or the audited Manager mutation.
 
+## Facility Staff populated read-only and audit-read acceptance
+
+The separate production identity `headiescannabiscompany@gmail.com` entered Facility mode,
+opened Triple Bag Genetics and was explicitly identified by the Team roster as `STAFF`.
+Unlike the earlier empty/loading regression, the populated inventory route loaded both
+canonical acceptance items and their true `11 each` plus `5 each` balances. It exposed no
+create control, no full-audit export and no stock-movement control; reviewed CSV import was
+disabled with an explicit read-only explanation. Ordinary inventory CSV export and Inventory
+AI navigation remained available.
+
+The same Staff session opened Facility Audit Logs and read the retained inventory import,
+movement and export history. This accepts the populated Staff UI boundary and independently
+confirms Staff `AUDIT_READ`; it does not claim the still-required forced backend `403` probe.
+The Browser execution surface could not issue an authenticated app-transport request without
+extracting or duplicating stored credentials, so no unsafe credential inspection or synthetic
+claim was made.
+
 ## Rejected, duplicate and withdrawn import recovery accepted
 
 The Owner prepared `qa-b02-rejected-0823.csv` with one row and deliberately omitted the SKU
@@ -200,16 +217,15 @@ that each live check exercises is already named below so later work resumes at a
 
 | Gate                 | Retained automated evidence                                                                                                                                                                                                                                                                                            | Exact live evidence still needed                                                                                                                                                                                                                                                                                 |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Facility roles       | `tests/facility/rolePolicy.test.ts` keeps inventory writes at Manager-or-higher; `BusinessInventoryImportPanel.test.tsx` proves the read-only import state; `FacilityInventoryRoute.test.tsx` proves separate `AUDIT_READ` visibility. Existing Manager hold/release/reload/audit is live accepted.                                  | Existing Staff and Viewer see read-only inventory and receive backend `403` for a forced write; each role's audit-export visibility matches its permission                                                                                                                                                |
+| Facility roles       | `tests/facility/rolePolicy.test.ts` keeps inventory writes at Manager-or-higher; `BusinessInventoryImportPanel.test.tsx` proves the read-only import state; `FacilityInventoryRoute.test.tsx` proves separate `AUDIT_READ` visibility. Existing Manager hold/release/reload/audit and populated Staff read-only plus audit-read UI are live accepted. | Staff forced backend `403`; existing Viewer populated read-only inventory, forced backend `403` and audit-access boundary                                                                                                                                            |
 | Workspace isolation  | Business-inventory API/screen suites pin explicit Commercial or Facility scope; backend B-02 route suites cover workspace authorization                                                                                                                                                                                | Two similarly named Commercial workspaces and two Facilities load distinct items/private fields/audit after navigation and reload                                                                                                                                                                                |
 | Older history        | `BusinessInventoryOperations.test.tsx` and `FacilityInventoryItemDetailRoute.test.tsx` prove explicit older-page loading, append and de-duplication                                                                                                                                                                    | A naturally populated item with more than one server page loads the older page without manufacturing meaningless production movements                                                                                                                                                                            |
 | Import failure/retry | `BusinessInventoryImportPanel.test.tsx` covers failed apply refetch/re-review, interrupted-response recovery, duplicate reviewed resume/withdrawal, audited conflicts, raw duplicate rejection, applied-duplicate preservation, single-flight preview, malformed headers/rows and semantic locking after partial apply | Rejected malformed row, existing-SKU conflict review, exact-source duplicate/review recovery, withdrawal, rejected-state reload and zero application are live accepted. A safe interrupted partial-apply fixture still must prove resume without bypassing review or replaying a committed row.                  |
 | Paid reconciliation  | `tests/routes/payments.webhook.test.js` proves signed paid-event fulfillment, idempotent ledger retry, duplicate delivery with one sales-accounting write, inventory exception visibility and no ledger call for an unlinked product                                                                                   | One owner-authorized Stripe test/live Storefront operation in the correct environment proves the provider round trip and exactly-once decrement; production exposes no unsigned admin/synthetic webhook bypass, so this cannot be manufactured without weakening the boundary or initiating an unapproved charge |
 | Cleanup              | Ledger/archive tests preserve immutable movements and audit                                                                                                                                                                                                                                                            | Owner confirms cleanup; only the named synthetic records are zeroed/archived and then reloaded while immutable history remains                                                                                                                                                                                   |
 
-1. Staff/Viewer denial and forced backend `403` evidence; full-audit access must follow
-   audit-read permission independently of inventory write. Manager mutation is accepted and
-   must not be repeated.
+1. Staff forced backend `403`, plus Viewer read-only/forced backend `403`/audit boundary.
+   Manager mutation and populated Staff UI/audit-read acceptance must not be repeated.
 2. Two similarly named Commercial workspaces and two Facility workspaces must prove record,
    private-field and audit isolation after reload.
 3. Older-movement pagination needs a safe populated history; do not manufacture dozens of
