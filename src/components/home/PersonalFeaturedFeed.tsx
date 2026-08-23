@@ -12,8 +12,14 @@ import { Link } from "expo-router";
 import { listCommercialFeedCampaigns } from "@/api/commercialFeed";
 import { listForumPosts } from "@/api/communitySocial";
 import { listCourses } from "@/api/courses";
+import { useAuth } from "@/auth/AuthContext";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
+import {
+  canonicalGrowInterestTag,
+  flattenGrowInterests,
+  normalizeInterestList
+} from "@/utils/growInterests";
 import { resolveImageUri } from "@/utils/photoUploads";
 
 type HighlightCard = {
@@ -53,6 +59,89 @@ export function isPublicTestContent(row: any) {
     PUBLIC_TEST_TITLE_PATTERNS.some((pattern) => pattern.test(detail)) ||
     /\bqa[- ]only\b/i.test(detail)
   );
+}
+
+function structuredDiscoveryTags(row: any) {
+  const growInterests = Array.isArray(row?.growInterests)
+    ? row.growInterests
+    : flattenGrowInterests(row?.growInterests || {});
+  return [
+    ...normalizeInterestList(growInterests),
+    ...normalizeInterestList(row?.growTags),
+    ...normalizeInterestList(row?.tags)
+  ];
+}
+
+export function isCannabisDiscoveryRecord(row: any) {
+  return structuredDiscoveryTags(row).some((value: unknown) => {
+    const canonical = canonicalGrowInterestTag(value);
+    return canonical === "Cannabis" || /\bhemp\b/i.test(String(value || ""));
+  });
+}
+
+export function viewerAllowsCannabisDiscovery(user: any) {
+  if (String(user?.cannabisVisibility || "").toLowerCase() === "show") return true;
+  return flattenGrowInterests(user?.growInterests || {}).some((value: unknown) => {
+    const canonical = canonicalGrowInterestTag(value);
+    return canonical === "Cannabis" || /\bhemp\b/i.test(String(value || ""));
+  });
+}
+
+export function isEligibleHomeDiscoveryRecord(row: any, allowCannabis: boolean) {
+  if (!row || isPublicTestContent(row)) return false;
+  if (row.deletedAt || row.isDeleted || row.hidden || row.isHidden) return false;
+
+  const visibility = String(row.visibility || "")
+    .trim()
+    .toLowerCase();
+  if (["private", "draft", "unlisted", "hidden", "removed"].includes(visibility)) {
+    return false;
+  }
+
+  const status = String(row.status || "")
+    .trim()
+    .toLowerCase();
+  if (
+    [
+      "draft",
+      "scheduled",
+      "paused",
+      "ended",
+      "cancelled",
+      "canceled",
+      "archived",
+      "deleted",
+      "hidden",
+      "removed"
+    ].includes(status)
+  ) {
+    return false;
+  }
+
+  return allowCannabis || !isCannabisDiscoveryRecord(row);
+}
+
+function homePlacementEligible(row: any) {
+  const placements = normalizeInterestList(row?.placements).map((value: unknown) =>
+    String(value).trim().toLowerCase()
+  );
+  if (!placements.length || placements.includes("feed")) return true;
+  return placements.includes("home_hero") || placements.includes("home_top");
+}
+
+function stableHash(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+export function selectRotatedRecords<T>(rows: T[], count: number, rotationKey: string) {
+  if (!rows.length || count <= 0) return [];
+  const start = stableHash(rotationKey) % rows.length;
+  const rotated = [...rows.slice(start), ...rows.slice(0, start)];
+  return rotated.slice(0, Math.min(count, rotated.length));
 }
 
 function clipText(value: unknown, max = 150) {
@@ -178,11 +267,14 @@ function forumImage(post: any) {
   return resolveImageUri(String(image || ""));
 }
 
-export default function PersonalFeaturedFeed() {
+export default function PersonalFeaturedFeed({ rotationKey }: { rotationKey?: string }) {
   const { palette } = useAppTheme();
+  const auth = useAuth();
   const styles = useMemo(() => createPersonalFeaturedFeedStyles(palette), [palette]);
   const [cards, setCards] = useState<HighlightCard[]>(FALLBACK_CARDS);
   const [loading, setLoading] = useState(true);
+  const effectiveRotationKey = rotationKey || new Date().toISOString().slice(0, 10);
+  const allowCannabis = viewerAllowsCannabisDiscovery(auth.user);
 
   useEffect(() => {
     let alive = true;
@@ -191,55 +283,73 @@ export default function PersonalFeaturedFeed() {
       setLoading(true);
       try {
         const [campaignResult, forumResult, courseResult] = await Promise.allSettled([
-          listCommercialFeedCampaigns({ sort: "top", limit: 12 }),
+          listCommercialFeedCampaigns({
+            sort: "top",
+            limit: 30,
+            placement: "home_hero"
+          }),
           listForumPosts(1),
           listCourses(1)
         ]);
 
         const campaigns = (
           campaignResult.status === "fulfilled" ? campaignResult.value.items : []
-        ).filter((campaign) => !isPublicTestContent(campaign));
+        ).filter(
+          (campaign) =>
+            isEligibleHomeDiscoveryRecord(campaign, allowCannabis) &&
+            homePlacementEligible(campaign)
+        );
         const forumPosts = (
           forumResult.status === "fulfilled" ? forumResult.value : []
-        ).filter((post) => !isPublicTestContent(post));
-        const courseItems =
+        ).filter((post) => isEligibleHomeDiscoveryRecord(post, allowCannabis));
+        const courseItems: any[] =
           courseResult.status === "fulfilled"
             ? rows(courseResult.value, ["courses", "results", "items"]).filter(
-                (course: any) => !isPublicTestContent(course)
+                (course: any) => isEligibleHomeDiscoveryRecord(course, allowCannabis)
               )
             : [];
 
-        const commercialCards = campaigns
-          .filter(
-            (campaign) => String(campaign?.ownerType || "commercial") !== "facility"
-          )
-          .slice(0, 3)
-          .map((campaign, index) => ({
-            key: "commercial-" + (entityId(campaign) || String(index)),
-            label: "Commercial ad",
-            title: cleanText(
-              campaign?.title || campaign?.campaignKind || "Commercial campaign"
-            ),
-            summary:
-              clipText(campaign?.body || "Open this commercial campaign.") ||
-              "Open this commercial campaign.",
-            href: campaignHref(campaign, false),
-            meta: cleanText(campaign?.campaignType || campaign?.type || "Commercial"),
-            imageUrl: campaignImage(campaign)
-          }));
+        const commercialCampaigns = campaigns.filter(
+          (campaign) =>
+            ![campaign?.ownerType, campaign?.authorType, campaign?.workspaceType]
+              .map((value) => String(value || "").toLowerCase())
+              .includes("facility")
+        );
+        const commercialCards = selectRotatedRecords(
+          commercialCampaigns,
+          3,
+          `commercial:${effectiveRotationKey}`
+        ).map((campaign, index) => ({
+          key: "commercial-" + (entityId(campaign) || String(index)),
+          label: "Commercial ad",
+          title: cleanText(
+            campaign?.title || campaign?.campaignKind || "Commercial campaign"
+          ),
+          summary:
+            clipText(campaign?.body || "Open this commercial campaign.") ||
+            "Open this commercial campaign.",
+          href: campaignHref(campaign, false),
+          meta: cleanText(campaign?.campaignType || campaign?.type || "Commercial"),
+          imageUrl: campaignImage(campaign)
+        }));
 
-        const facilityCampaign =
-          campaigns.find(
+        const facilityCampaign = selectRotatedRecords(
+          campaigns.filter(
             (campaign) =>
-              String(campaign?.ownerType || "") === "facility" &&
-              String(campaign?.type || "") === "education"
-          ) ||
-          campaigns.find(
-            (campaign) => String(campaign?.ownerType || "") === "facility"
-          ) ||
-          campaigns.find((campaign) => String(campaign?.type || "") === "education");
+              [campaign?.ownerType, campaign?.authorType, campaign?.workspaceType]
+                .map((value) => String(value || "").toLowerCase())
+                .includes("facility") &&
+              String(campaign?.type || "").toLowerCase() === "education"
+          ),
+          1,
+          `facility:${effectiveRotationKey}`
+        )[0];
 
-        const topCourse = courseItems[0];
+        const topCourse: any = selectRotatedRecords(
+          courseItems,
+          1,
+          `course:${effectiveRotationKey}`
+        )[0];
         const popularPost = [...forumPosts].sort(
           (left, right) => forumScore(right) - forumScore(left)
         )[0];
@@ -313,7 +423,7 @@ export default function PersonalFeaturedFeed() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [allowCannabis, effectiveRotationKey]);
 
   return (
     <View style={styles.section}>

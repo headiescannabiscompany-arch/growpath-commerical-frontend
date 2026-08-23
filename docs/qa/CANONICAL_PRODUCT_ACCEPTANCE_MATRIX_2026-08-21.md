@@ -115,7 +115,7 @@ Every applicable story must preserve these invariants without repeating them in 
 
 | ID   | User story                                                                                                           | Status      |
 | ---- | -------------------------------------------------------------------------------------------------------------------- | ----------- |
-| P-01 | Home provides a useful mixed feed, active-grow context and frequent actions                                          | partial     |
+| P-01 | Home provides a useful mixed feed, active-grow context and frequent actions                                          | implemented; local acceptance passed; populated/live navigation acceptance open |
 | P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | partial     |
 | P-03 | Identify a plant and save its photos/result without requiring a grow, Field Study or public pin                      | partial     |
 | P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | implemented |

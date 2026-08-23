@@ -42,5 +42,6 @@ foundation without importing older regressions.
 The matrix rows remain `partial` until the exact production acceptance scenarios are run.
 In particular, P-10 still needs a persisted public viewer lifecycle (review, publish,
 reload, copy/native share and withdrawal) rather than only an editor export and a drafted
-Forum/Q&A copy. P-01 and the cross-tool breadth of P-07/P-09 also remain for construction
-or final-candidate acceptance as routed by the canonical scaffold.
+Forum/Q&A copy. P-01 subsequently passed its focused local acceptance packet; its populated
+production inventory/navigation gate remains open. The cross-tool breadth of P-07/P-09
+remains for construction or final-candidate acceptance as routed by the canonical scaffold.
