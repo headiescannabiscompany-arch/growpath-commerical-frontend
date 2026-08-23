@@ -73,8 +73,26 @@ export default function HorticultureOperationsScreen({
             : { workspaceType: "commercial" }
         )
       ]);
+      const linkedItemIds = [
+        ...new Set(
+          nextRecords
+            .map((record) => String(record.inventoryItemId || "").trim())
+            .filter(Boolean)
+        )
+      ];
+      const linkedLotEntries = await Promise.all(
+        linkedItemIds.map(async (id) => {
+          try {
+            const detail = await getBusinessInventoryItem(inventoryWorkspace, id);
+            return [id, detail.lots || []] as const;
+          } catch {
+            return [id, []] as const;
+          }
+        })
+      );
       setRecords(nextRecords);
       setInventoryItems(nextInventory);
+      setInventoryLots(Object.fromEntries(linkedLotEntries));
       setEvidenceAssets(
         nextEvidence.filter((asset: EvidenceAsset) =>
           ["photo", "video"].includes(String(asset.assetType))
