@@ -226,7 +226,7 @@ export function sourceObjectHref(source: SourceLike) {
       ? withQuery(`/home/personal/grows/${encoded(growId)}/tasks`, {
           taskId
         })
-      : "/home/personal/tasks";
+      : withQuery("/home/personal/tasks", { taskId });
   }
 
   if (

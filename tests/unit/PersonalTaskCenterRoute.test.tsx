@@ -6,6 +6,7 @@ import PersonalTaskCenterRoute from "@/app/home/personal/(tabs)/tasks";
 const mockListPersonalTasks = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 const mockUpdatePersonalTask = jest.fn();
+let mockFocusedTaskId: string | undefined;
 
 function addDaysKey(days: number) {
   const date = new Date();
@@ -43,7 +44,8 @@ jest.mock("expo-router", () => {
       back: jest.fn(),
       canGoBack: jest.fn(() => false),
       replace: jest.fn()
-    })
+    }),
+    useLocalSearchParams: () => ({ taskId: mockFocusedTaskId })
   };
 });
 
@@ -56,6 +58,7 @@ jest.mock("@/components/feed/PersonalFeedPlacement", () => {
 describe("PersonalTaskCenterRoute", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    mockFocusedTaskId = undefined;
     mockListPersonalTasks.mockResolvedValue([
       {
         id: "task-overdue",
@@ -211,6 +214,22 @@ describe("PersonalTaskCenterRoute", () => {
     fireEvent.press(screen.getByLabelText("Personal task source filter ai_diagnosis"));
     expect(screen.getByText("Review AI diagnosis")).toBeTruthy();
     expect(screen.queryByText(/Mixed soil/)).toBeNull();
+  });
+
+  it("opens only the exact task linked from a notification", async () => {
+    mockFocusedTaskId = "task-complete";
+    const screen = render(<PersonalTaskCenterRoute />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Focused personal task task-complete")).toBeTruthy()
+    );
+    expect(
+      screen.getByText("Showing the task linked from your notification.")
+    ).toBeTruthy();
+    expect(screen.getByText(/Done: Mixed soil/)).toBeTruthy();
+    expect(screen.queryByText("Inspect IPM issue")).toBeNull();
+    expect(screen.getByLabelText("Personal task link /home/personal/tasks")).toBeTruthy();
+    expect(screen.queryByLabelText("Personal task queue filter all")).toBeNull();
   });
 
   it("groups existing tasks and creates source-linked schedule tasks", async () => {

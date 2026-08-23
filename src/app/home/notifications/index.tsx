@@ -676,15 +676,17 @@ export default function NotificationCenterRoute() {
                     <Text style={styles.linkButtonText}>Watch on Twitch</Text>
                   </Pressable>
                 ) : null}
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Create task from notification"
-                  disabled={saving}
-                  onPress={() => createTaskFromNotification(row)}
-                  style={styles.linkButton}
-                >
-                  <Text style={styles.linkButtonText}>Create Task</Text>
-                </Pressable>
+                {String(row.sourceType || "").toLowerCase() !== "task" ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Create task from notification"
+                    disabled={saving}
+                    onPress={() => createTaskFromNotification(row)}
+                    style={styles.linkButton}
+                  >
+                    <Text style={styles.linkButtonText}>Create Task</Text>
+                  </Pressable>
+                ) : null}
               </View>
             </View>
           );

@@ -294,6 +294,16 @@ describe("NotificationCenterRoute", () => {
               data: { event: "assigned", taskId: "task-nested", facilityId: "fac-1" },
               channel: "in_app",
               readAt: "2026-07-07T12:00:00.000Z"
+            },
+            {
+              id: "notification-task-personal",
+              title: "Personal task assigned",
+              body: "Assigned: Review the personal grow notes",
+              sourceType: "task",
+              sourceId: "task-personal-1",
+              workspaceType: "personal",
+              channel: "in_app",
+              readAt: "2026-07-07T12:00:00.000Z"
             }
           ]
         });
@@ -436,6 +446,11 @@ describe("NotificationCenterRoute", () => {
       screen.getByLabelText("Notification link /home/facility/tasks/task-nested")
     ).toBeTruthy();
     expect(
+      screen.getByLabelText(
+        "Notification link /home/personal/tasks?taskId=task-personal-1"
+      )
+    ).toBeTruthy();
+    expect(
       screen.getByLabelText("Notification link /home/personal/courses?courseId=course-1")
     ).toBeTruthy();
     expect(screen.getByLabelText("Notification link /home/facility/rooms")).toBeTruthy();
@@ -525,9 +540,9 @@ describe("NotificationCenterRoute", () => {
     expect(screen.getByText("Task created from notification.")).toBeTruthy();
 
     const createButtons = screen.getAllByLabelText("Create task from notification");
-    expect(createButtons).toHaveLength(22);
-    await waitFor(() => expect(createButtons[7].props.disabled).toBeFalsy());
-    fireEvent.press(createButtons[7]);
+    expect(createButtons).toHaveLength(20);
+    await waitFor(() => expect(createButtons[6].props.disabled).toBeFalsy());
+    fireEvent.press(createButtons[6]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
         "/api/tasks",
@@ -543,8 +558,8 @@ describe("NotificationCenterRoute", () => {
         })
       )
     );
-    await waitFor(() => expect(createButtons[15].props.disabled).toBeFalsy());
-    fireEvent.press(createButtons[15]);
+    await waitFor(() => expect(createButtons[14].props.disabled).toBeFalsy());
+    fireEvent.press(createButtons[14]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
         "/api/tasks",
@@ -567,10 +582,10 @@ describe("NotificationCenterRoute", () => {
     );
     await waitFor(() =>
       expect(
-        screen.getAllByLabelText("Create task from notification")[16].props.disabled
+        screen.getAllByLabelText("Create task from notification")[15].props.disabled
       ).toBeFalsy()
     );
-    fireEvent.press(screen.getAllByLabelText("Create task from notification")[16]);
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[15]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
         "/api/tasks",
@@ -597,10 +612,10 @@ describe("NotificationCenterRoute", () => {
     );
     await waitFor(() =>
       expect(
-        screen.getAllByLabelText("Create task from notification")[17].props.disabled
+        screen.getAllByLabelText("Create task from notification")[16].props.disabled
       ).toBeFalsy()
     );
-    fireEvent.press(screen.getAllByLabelText("Create task from notification")[17]);
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[16]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
         "/api/tasks",
@@ -624,10 +639,10 @@ describe("NotificationCenterRoute", () => {
     );
     await waitFor(() =>
       expect(
-        screen.getAllByLabelText("Create task from notification")[18].props.disabled
+        screen.getAllByLabelText("Create task from notification")[17].props.disabled
       ).toBeFalsy()
     );
-    fireEvent.press(screen.getAllByLabelText("Create task from notification")[18]);
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[17]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
         "/api/tasks",
@@ -655,10 +670,10 @@ describe("NotificationCenterRoute", () => {
     );
     await waitFor(() =>
       expect(
-        screen.getAllByLabelText("Create task from notification")[19].props.disabled
+        screen.getAllByLabelText("Create task from notification")[18].props.disabled
       ).toBeFalsy()
     );
-    fireEvent.press(screen.getAllByLabelText("Create task from notification")[19]);
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[18]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
         "/api/tasks",
@@ -687,10 +702,10 @@ describe("NotificationCenterRoute", () => {
     );
     await waitFor(() =>
       expect(
-        screen.getAllByLabelText("Create task from notification")[20].props.disabled
+        screen.getAllByLabelText("Create task from notification")[19].props.disabled
       ).toBeFalsy()
     );
-    fireEvent.press(screen.getAllByLabelText("Create task from notification")[20]);
+    fireEvent.press(screen.getAllByLabelText("Create task from notification")[19]);
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenLastCalledWith(
         "/api/tasks",
