@@ -263,6 +263,10 @@ export default function FacilityTabsLayout() {
           href: null
         }}
       />
+      <Tabs.Screen
+        name="tools/ph-ec"
+        options={{ title: "pH / EC Range Check", href: null }}
+      />
       <Tabs.Screen name="tools/pulse" options={{ title: "Connect Pulse", href: null }} />
       <Tabs.Screen
         name="tools/history-import"
@@ -314,6 +318,10 @@ export default function FacilityTabsLayout() {
       <Tabs.Screen
         name="tools/species-crop-id"
         options={{ title: "Plant & Crop Identification", href: null }}
+      />
+      <Tabs.Screen
+        name="tools/auto-grow-calendar"
+        options={{ title: "Auto Grow Calendar", href: null }}
       />
       <Tabs.Screen name="tools/ipm-scout" options={{ title: "IPM Scout", href: null }} />
       <Tabs.Screen

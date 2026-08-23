@@ -149,7 +149,16 @@ describe("workspace bottom-tab order", () => {
       "more",
       "profile"
     ]);
-    for (const name of ["rooms", "plants", "sop-runs", "logs", "ai-tools", "ai-ask"]) {
+    for (const name of [
+      "rooms",
+      "plants",
+      "sop-runs",
+      "logs",
+      "ai-tools",
+      "ai-ask",
+      "tools/ph-ec",
+      "tools/auto-grow-calendar"
+    ]) {
       expect(screenBlock(contents, name)).toContain("href: null");
     }
     for (const name of ["dashboard", "grows", "tasks", "compliance", "more", "profile"]) {
