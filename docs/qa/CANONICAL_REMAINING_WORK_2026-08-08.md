@@ -100,9 +100,17 @@ starts or finishes; do not create another active todo document.
    item archive rules. Backend PR 215 (`972069b9ae5eac0fa982f2bb340e1fb523452d77`)
    then retired two older contract assumptions that allowed Staff inventory writes and denied
    Manager archival, assigned those transactional contracts to the replica set, and passed the
-   corrected 19/19 lane. Batch 5 remains in progress for the rest of its bounded local lanes and
-   the already named guarded B-02 migration, exact-SHA deployment and multi-workspace/multi-role
-   production acceptance; do not rebuild the accepted ledger or these passing assemblies.
+   corrected 19/19 lane. Together with the 25-suite / 175-assertion focused UI
+   reconciliation in `COMMERCIAL_FACILITY_BATCH5_VERIFICATION_2026-08-22.md`, these gates
+   close local construction of C-01 through C-05 and F-01 through F-07. Batch 5 remains open
+   only for the named guarded B-02 migration, exact-SHA deployment, provider-backed actions
+   and multi-workspace/multi-role populated production acceptance; do not rebuild the
+   accepted ledger or these passing assemblies.
+   B-01's dedicated evidence synthesis is now recorded in
+   `B01_CANONICAL_FOUNDATION_LOCAL_EVIDENCE_2026-08-22.md`: its local construction is closed
+   by the already passing scope/role/stable-record/import-provenance/approval/credit/audit
+   assemblies. Only its combined live isolation, permission-change, reload, import,
+   approval, credit and audit scenarios remain; do not create another business foundation.
 3. **Release crawl and cleanup:** after the in-scope product/workflow items are closed, run the complete
    live route, button, responsive, theme, accessibility, persistence, security, and visual
    presentation crawl and repair the defects it finds. Include a route-to-visible-entry
@@ -292,12 +300,15 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   reviewed interval and provider credentials. Treat this as regulated integration work: prove
   jurisdiction/account authorization, read/write scope, retry/idempotency, reconciliation and
   audit before enabling it; otherwise label it unavailable rather than implying compliance.
-- [ ] **Two explicitly disabled Facility calculator cards:** generated tool-surface inventory
-      still reports `Compute VPD` (`climate-vpd`) and `EC Recommendation` (`ec-recommend`) as
-      disabled even though screen code exists. Reconcile each with the current canonical
-      nutrient/environment tools: enable and accept the real action, merge it into the newer
-      canonical tool as a compatibility route, or record an explicit owner rejection. Do not
-      leave a silent disabled card.
+- [x] **Legacy Facility calculator-card reconciliation:** the February feature flags for
+      `climate-vpd` and `ec-recommend` were already enabled, but that legacy matrix and its
+      screens are not mounted by the current Expo Facility hub. The user-facing Facility hub
+      now keeps VPD/dew-point work in the canonical Environment Review and exposes the shared
+      pH/EC Range Check directly from its Tool Library. The shared routes retain Facility
+      scope through analysis, ToolRun, log, and task-plan writes; the unsafe legacy
+      "EC correction" wording is not revived as a dosing authority. Focused local acceptance
+      passed 5 suites / 37 tests on 2026-08-23. The unreachable legacy components remain only
+      as named final-crawl dead-code candidates, not as hidden or unfinished products.
 - [x] **Compatibility routes are not secret products:** the current system audit proves the
       old Logs, Orders, Campaigns, Storefront, Create Post, Social Tools and legacy native
       Tools/Storefront paths are redirects or compatibility guards into canonical workflows,

@@ -479,4 +479,68 @@ describe("saveToolRunAndOpenJournal", () => {
       { workspaceType: "commercial" }
     );
   });
+
+  it("creates Facility task plans through the shared scoped endpoint", async () => {
+    mockedCreateTaskFromToolRun.mockResolvedValue({
+      task: { id: "facility-task-1" }
+    } as any);
+
+    const result = await saveToolRunAndCreateTasks({
+      workspaceType: "facility",
+      facilityId: "facility-1",
+      growId: "facility-grow",
+      toolKey: "ph-ec-check",
+      toolRunId: "facility-run",
+      input: {},
+      output: {},
+      tasks: [{ title: "Retest pH / EC" }]
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      toolRunId: "facility-run",
+      taskIds: ["facility-task-1"]
+    });
+    expect(mockedCreatePersonalTask).not.toHaveBeenCalled();
+    expect(mockedCreateTaskFromToolRun).toHaveBeenCalledWith(
+      "facility-run",
+      expect.objectContaining({
+        growId: "facility-grow",
+        linkedGrowId: "facility-grow",
+        title: "Retest pH / EC"
+      }),
+      { workspaceType: "facility", facilityId: "facility-1" }
+    );
+  });
+
+  it("saves Facility logs through the shared scoped endpoint", async () => {
+    mockedSaveToolRunToLog.mockResolvedValue({ log: { id: "facility-log" } } as any);
+
+    const result = await saveToolRunAndCreateLog({
+      workspaceType: "facility",
+      facilityId: "facility-1",
+      growId: "facility-grow",
+      toolKey: "environment-analysis",
+      toolRunId: "facility-run",
+      input: {},
+      output: {},
+      title: "Environment review",
+      notes: "High humidity"
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      toolRunId: "facility-run",
+      logId: "facility-log"
+    });
+    expect(mockedCreatePersonalLog).not.toHaveBeenCalled();
+    expect(mockedSaveToolRunToLog).toHaveBeenCalledWith(
+      "facility-run",
+      expect.objectContaining({
+        growId: "facility-grow",
+        linkedGrowId: "facility-grow"
+      }),
+      { workspaceType: "facility", facilityId: "facility-1" }
+    );
+  });
 });

@@ -145,7 +145,11 @@ export async function saveToolRunAndCreateTask(
   const ensured = await ensureToolRun(args);
   if (!ensured.ok) return ensured;
 
-  if (args.workspaceType === "commercial") {
+  if (args.workspaceType === "commercial" || args.workspaceType === "facility") {
+    const sharedScope =
+      args.workspaceType === "facility"
+        ? { workspaceType: "facility" as const, facilityId: args.facilityId }
+        : { workspaceType: "commercial" as const };
     const response: any = await createTaskFromToolRun(
       ensured.toolRunId,
       {
@@ -181,7 +185,7 @@ export async function saveToolRunAndCreateTask(
           : {}),
         linkedToolRunId: ensured.toolRunId
       },
-      { workspaceType: "commercial" }
+      sharedScope
     );
     const taskId = String(
       response?.task?._id ||
@@ -244,7 +248,11 @@ export async function saveToolRunAndCreateTasks(
 
   const taskIds: string[] = [];
   for (const draft of args.tasks) {
-    if (args.workspaceType === "commercial") {
+    if (args.workspaceType === "commercial" || args.workspaceType === "facility") {
+      const sharedScope =
+        args.workspaceType === "facility"
+          ? { workspaceType: "facility" as const, facilityId: args.facilityId }
+          : { workspaceType: "commercial" as const };
       const response: any = await createTaskFromToolRun(
         ensured.toolRunId,
         {
@@ -266,7 +274,7 @@ export async function saveToolRunAndCreateTasks(
           sourceStage: draft.sourceStage,
           linkedToolRunId: ensured.toolRunId
         },
-        { workspaceType: "commercial" }
+        sharedScope
       );
       const taskId = String(
         response?.task?._id ||
@@ -316,7 +324,11 @@ export async function saveToolRunAndCreateLog(
   const ensured = await ensureToolRun(args);
   if (!ensured.ok) return ensured;
 
-  if (args.workspaceType === "commercial") {
+  if (args.workspaceType === "commercial" || args.workspaceType === "facility") {
+    const sharedScope =
+      args.workspaceType === "facility"
+        ? { workspaceType: "facility" as const, facilityId: args.facilityId }
+        : { workspaceType: "commercial" as const };
     const response: any = await saveToolRunToLog(
       ensured.toolRunId,
       {
@@ -328,7 +340,7 @@ export async function saveToolRunAndCreateLog(
         title: args.title,
         notes: args.notes
       },
-      { workspaceType: "commercial" }
+      sharedScope
     );
     const logId = String(
       response?.log?._id ||

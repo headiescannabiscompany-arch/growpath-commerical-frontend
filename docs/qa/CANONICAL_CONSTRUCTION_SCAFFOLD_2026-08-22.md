@@ -158,6 +158,14 @@ Construction order is fixed inside this batch:
    keys stay server-side/encrypted and imports require preview, explicit mapping and
    idempotency.
 
+5A is locally accepted by `B01_CANONICAL_FOUNDATION_LOCAL_EVIDENCE_2026-08-22.md`.
+It reuses the canonical workspace, membership, entitlement, inventory, Business Desk,
+provider-operation and audit assemblies; no parallel foundation was created. Continue 5B's
+guarded production migration/deployment/live gate. The consolidated 5C evidence in
+`COMMERCIAL_FACILITY_BATCH5_VERIFICATION_2026-08-22.md` closes C-01 through C-05 and F-01
+through F-07 local construction; continue only their exact populated, provider, migration,
+multi-role and production recovery/presentation gates.
+
 B-02's exact implementation, test evidence and remaining gates are recorded in
 `B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. The detailed B-02 method is
 `docs/knowledge/methods/business-inventory-method.md`; Small Business Desk prompts receive
