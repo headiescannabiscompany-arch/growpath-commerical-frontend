@@ -86,8 +86,13 @@ registrations whose gitdir targets did not exist. Three further clean registrati
 `backend-admin-cleanup`) were removed only after ancestor/patch-equivalence proof; Windows
 reported long-path deletion errors for the first two directories, so any resulting disk
 remnants are non-product cleanup residue rather than hidden implementation. The open
-`s02-video-creator-filter` worktree and dirty trichome evidence remain registered and
-untouched.
+`s02-video-creator-filter` backend worktree and the three dedicated backend trichome evidence
+worktrees remain registered and untouched. The merged frontend
+`workspace-contextual-tools-accessibility` worktree was also retired after its only dirty
+item proved to be a redundant 411 MB untracked backend snapshot: all 623 non-dependency
+files (608 unique blobs) were reachable from backend Git refs, `node_modules` was generated,
+and `uploads` was empty. The redundant snapshot and the now-clean merged worktree were
+removed without deleting either repository's branches or history.
 [~] Unified reporting and the Admin control center are deployed as frontend `00f36429` and
 backend `ed85270`; signed-in Admin production acceptance remains open and must not cause
 a rewrite.
