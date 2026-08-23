@@ -1,0 +1,115 @@
+{
+  "default": {
+    "title": "GrowPath",
+    "description": "GrowPath helps growers plan, track, diagnose, and improve gardens, commercial storefronts, courses, communities, and facility workflows.",
+    "index": true
+  },
+  "routes": {
+    "": {
+      "title": "GrowPath | Grow planning, tracking, and facility tools",
+      "description": "Plan grows, track plants, diagnose issues, use cultivation calculators, run courses, and manage commercial or facility workflows with GrowPath."
+    },
+    "features": {
+      "title": "GrowPathAI Features | Connected cultivation workflows",
+      "description": "Explore connected planning, grow journals, plant diagnosis, scheduling, recipes, environment, courses, community, commercial, and facility workflows."
+    },
+    "pricing": {
+      "title": "GrowPathAI Pricing and Plans",
+      "description": "Compare GrowPathAI Free, paid Creator, Commercial, and Facility access. Every plan can create and publish free or paid courses."
+    },
+    "personal-grower": {
+      "title": "GrowPathAI for Personal Growers",
+      "description": "Plan indoor and outdoor grows, manage plants and tasks, keep a journal, analyze photos, and use contextual cultivation tools."
+    },
+    "commercial-cultivation": {
+      "title": "Commercial Cultivation Software | GrowPathAI",
+      "description": "Connect commercial grows, trials, recipes, batches, product lines, eligible storefront items, courses, live sessions, and analytics."
+    },
+    "facility-management": {
+      "title": "Cultivation Facility Management Software | GrowPathAI",
+      "description": "Manage rooms, grows, plants, tasks, SOPs, inventory, environmental imports, reports, and role-based facility teams."
+    },
+    "nurseries-breeders": {
+      "title": "Nursery and Breeding Software | GrowPathAI",
+      "description": "Connect mother plants, clones, tissue culture, genetics notes, phenotype scores, stress tests, and harvest outcomes."
+    },
+    "grow-stores": {
+      "title": "Grow Store Storefronts and Education | GrowPathAI",
+      "description": "Publish eligible grow products, product education, courses, live sessions, community content, and a public commercial profile."
+    },
+    "creators-educators": {
+      "title": "Course Platform for Grow Creators | GrowPathAI",
+      "description": "Create free or paid grow courses on any GrowPathAI plan with higher limits and advanced tools on paid plans."
+    },
+    "about": {
+      "title": "About GrowPathAI",
+      "description": "Learn why GrowPathAI connects planning, observation, analysis, work, learning, and documentation in shared cultivation workflows."
+    },
+    "contact": {
+      "title": "Contact GrowPathAI",
+      "description": "Contact GrowPathAI for account support, billing, facility onboarding, partnerships, or bug reports."
+    },
+    "ai-cultivation-disclaimer": {
+      "title": "AI and Cultivation Disclaimer | GrowPathAI",
+      "description": "Understand the limits of AI cultivation assistance, user review responsibilities, safety, compliance, and privacy expectations."
+    },
+    "login": {
+      "title": "Log in to GrowPath",
+      "description": "Log in to your GrowPath account to manage grows, plants, tools, courses, and facility workflows.",
+      "index": false
+    },
+    "register": {
+      "title": "Create a GrowPath account",
+      "description": "Create a GrowPath account for personal grow tracking, grow tools, community, commercial profiles, and facility workflows."
+    },
+    "store": {
+      "title": "GrowPath Store",
+      "description": "Discover grow products, genetics, soil lines, nutrient lines, and commercial profiles published through GrowPath."
+    },
+    "courses": {
+      "title": "GrowPath Courses",
+      "description": "Browse grow education, live sessions, documents, videos, and structured courses from GrowPath creators."
+    },
+    "field-observations": {
+      "title": "GrowPath Field Observations",
+      "description": "Explore opted-in plant identifications on an interactive globe, review field-study evidence, and contribute observations without exposing personal information."
+    },
+    "discover": {
+      "title": "Discover GrowPath Videos, Courses, Products, and Communities",
+      "description": "Search accessible grow videos, accounts, courses, products, storefronts, lives, and community resources across GrowPath."
+    },
+    "videos": {
+      "title": "GrowPath Videos",
+      "description": "Watch and search public grow videos, follow GrowPath members, and manage reusable Personal, Commercial, or Facility video libraries."
+    },
+    "feed": {
+      "title": "GrowPath Feed",
+      "description": "Explore commercial and facility outreach campaigns for products, courses, lives, storefronts, and professional cultivation services."
+    },
+    "forum": {
+      "title": "GrowPath Forum",
+      "description": "Join GrowPath community discussions about growing, diagnostics, tools, genetics, soil, nutrients, and facility workflows."
+    },
+    "communities": {
+      "title": "GrowPath Forum Directory",
+      "description": "Browse GrowPath Forum/Q&A groups by crop, category, and workflow."
+    },
+    "privacy": {
+      "title": "Privacy Policy | GrowPath",
+      "description": "Read the GrowPath privacy policy, including account data, grow data, uploads, subscriptions, and data rights."
+    },
+    "terms": {
+      "title": "Terms of Service | GrowPath",
+      "description": "Read the GrowPath terms of service for accounts, subscriptions, user content, commerce, courses, and app usage."
+    },
+    "support": {
+      "title": "Support | GrowPath",
+      "description": "Get GrowPath support for accounts, billing, subscriptions, privacy, grows, courses, commercial profiles, and facilities."
+    },
+    "account/delete": {
+      "title": "Delete Account | GrowPath",
+      "description": "Request GrowPath account deletion and data rights support.",
+      "index": false
+    }
+  }
+}

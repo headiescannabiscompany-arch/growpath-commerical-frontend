@@ -57,6 +57,23 @@ the owner or role implementation was removed. Do not treat a retained pre-logout
 current authenticated session, and do not repeat or rebuild the accepted owner ledger until
 the owner login is restored.
 
+### Owner session restored and workspace identity reconfirmed — 2026-08-23
+
+After the owner signed in again, `/account/workspace` identified the current identity as
+`Triple Bag Genetics`, acting in Facility workspace mode, with Personal, Commercial and
+Facility modes available. Opening Facility loaded `Triple Bag Genetics, llc` with its
+existing live state (15 rooms, 2 inventory items and 109 audit events). The Team route then
+reconfirmed the exact four-member authorization roster:
+
+- `jcindc2003@yahoo.com` — Owner;
+- `exploringthegrowinguniverse@gmail.com` — Manager;
+- `headiescannabiscompany@gmail.com` — Staff;
+- `john.collins15@alumni.morgan.edu` — Viewer.
+
+This closes the restored-owner authentication and workspace-identity checkpoint. It does not
+substitute the Manager reversible-mutation or Staff/Viewer denial checks, which require those
+separate authenticated identities. The accepted owner ledger was not repeated or rewritten.
+
 ## Owner ledger lifecycle accepted
 
 The Owner created `QA B02 OWNER 0823-863080` (`QA-B02-0823-863080`) and verified after
@@ -129,14 +146,14 @@ no inventory write. The implementation and live evidence are recorded in
 These are evidence gaps, not permission to rebuild the accepted ledger. The local behavior
 that each live check exercises is already named below so later work resumes at acceptance:
 
-| Gate | Retained automated evidence | Exact live evidence still needed |
-| --- | --- | --- |
-| Facility roles | `tests/facility/rolePolicy.test.ts` keeps inventory writes at Manager-or-higher; `BusinessInventoryImportPanel.test.tsx` proves the read-only import state; `FacilityInventoryRoute.test.tsx` proves separate `AUDIT_READ` visibility | Existing Manager makes and reloads one reversible audited change; existing Staff and Viewer see read-only inventory and receive backend `403` for a forced write; each role's audit-export visibility matches its permission |
-| Workspace isolation | Business-inventory API/screen suites pin explicit Commercial or Facility scope; backend B-02 route suites cover workspace authorization | Two similarly named Commercial workspaces and two Facilities load distinct items/private fields/audit after navigation and reload |
-| Older history | `BusinessInventoryOperations.test.tsx` and `FacilityInventoryItemDetailRoute.test.tsx` prove explicit older-page loading, append and de-duplication | A naturally populated item with more than one server page loads the older page without manufacturing meaningless production movements |
-| Import failure/retry | `BusinessInventoryImportPanel.test.tsx` covers failed apply refetch/re-review, interrupted-response recovery, duplicate reviewed resume/withdrawal, audited conflicts, raw duplicate rejection, applied-duplicate preservation, single-flight preview, malformed headers/rows and semantic locking after partial apply | Safe production fixtures visibly exercise rejected, duplicate/conflicting and resumable partial states without bypassing review or replaying a committed row |
-| Paid reconciliation | `tests/routes/payments.webhook.test.js` proves signed paid-event fulfillment, idempotent ledger retry, duplicate delivery with one sales-accounting write, inventory exception visibility and no ledger call for an unlinked product | One owner-authorized Stripe test/live Storefront operation in the correct environment proves the provider round trip and exactly-once decrement; production exposes no unsigned admin/synthetic webhook bypass, so this cannot be manufactured without weakening the boundary or initiating an unapproved charge |
-| Cleanup | Ledger/archive tests preserve immutable movements and audit | Owner confirms cleanup; only the named synthetic records are zeroed/archived and then reloaded while immutable history remains |
+| Gate                 | Retained automated evidence                                                                                                                                                                                                                                                                                            | Exact live evidence still needed                                                                                                                                                                                                                                                                                 |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Facility roles       | `tests/facility/rolePolicy.test.ts` keeps inventory writes at Manager-or-higher; `BusinessInventoryImportPanel.test.tsx` proves the read-only import state; `FacilityInventoryRoute.test.tsx` proves separate `AUDIT_READ` visibility                                                                                  | Existing Manager makes and reloads one reversible audited change; existing Staff and Viewer see read-only inventory and receive backend `403` for a forced write; each role's audit-export visibility matches its permission                                                                                     |
+| Workspace isolation  | Business-inventory API/screen suites pin explicit Commercial or Facility scope; backend B-02 route suites cover workspace authorization                                                                                                                                                                                | Two similarly named Commercial workspaces and two Facilities load distinct items/private fields/audit after navigation and reload                                                                                                                                                                                |
+| Older history        | `BusinessInventoryOperations.test.tsx` and `FacilityInventoryItemDetailRoute.test.tsx` prove explicit older-page loading, append and de-duplication                                                                                                                                                                    | A naturally populated item with more than one server page loads the older page without manufacturing meaningless production movements                                                                                                                                                                            |
+| Import failure/retry | `BusinessInventoryImportPanel.test.tsx` covers failed apply refetch/re-review, interrupted-response recovery, duplicate reviewed resume/withdrawal, audited conflicts, raw duplicate rejection, applied-duplicate preservation, single-flight preview, malformed headers/rows and semantic locking after partial apply | Safe production fixtures visibly exercise rejected, duplicate/conflicting and resumable partial states without bypassing review or replaying a committed row                                                                                                                                                     |
+| Paid reconciliation  | `tests/routes/payments.webhook.test.js` proves signed paid-event fulfillment, idempotent ledger retry, duplicate delivery with one sales-accounting write, inventory exception visibility and no ledger call for an unlinked product                                                                                   | One owner-authorized Stripe test/live Storefront operation in the correct environment proves the provider round trip and exactly-once decrement; production exposes no unsigned admin/synthetic webhook bypass, so this cannot be manufactured without weakening the boundary or initiating an unapproved charge |
+| Cleanup              | Ledger/archive tests preserve immutable movements and audit                                                                                                                                                                                                                                                            | Owner confirms cleanup; only the named synthetic records are zeroed/archived and then reloaded while immutable history remains                                                                                                                                                                                   |
 
 1. Facility Manager mutation plus Staff/Viewer denial and forced backend `403` evidence;
    full-audit access must follow audit-read permission independently of inventory write.
