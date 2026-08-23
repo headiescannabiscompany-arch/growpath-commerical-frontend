@@ -133,11 +133,11 @@ Every applicable story must preserve these invariants without repeating them in 
 | ---- | ------------------------------------------------------------------------------------------------------------------ | ------- |
 | S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | implemented; local acceptance passed; authenticated/live acceptance open |
 | S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | frontend live; backend creator scoping and outside-user acceptance open |
-| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | live owner lifecycle accepted; course reuse/archive and outside-user acceptance open |
-| S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | implemented; local acceptance passed; provider/live acceptance open |
+| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | live owner lifecycle and course reuse accepted; archive/outside-user acceptance open |
+| S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | live private-premiere lifecycle and empty directory accepted; public/provider acceptance open |
 | S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | implemented; local acceptance passed; two-account provider/live acceptance open |
-| S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | implemented; local acceptance passed; stable-public-link/live acceptance open |
-| S-07 | Courses support deliberate cover/banner hierarchy, lessons/media, edit/publish/archive and paid enrollment returns | implemented; local acceptance passed; payment/provider/live acceptance open |
+| S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | saved AI-result sharing/export live accepted; remaining stable-public-link acceptance open |
+| S-07 | Courses support deliberate cover/banner hierarchy, lessons/media, edit/publish/archive and paid enrollment returns | provider and GrowPath-video reuse live accepted; publish/payment/outside-user acceptance open |
 | S-08 | Discover provides useful storefront/course/video/forum/live/Nature previews, filters, links and empty states       | implemented; local acceptance passed; populated/live acceptance open |
 
 ## Commercial and Facility
@@ -255,6 +255,14 @@ lint, delivery guard, the 20-suite / 255-test subscription-and-gift packet, and 
 canonical authorization suite (8/8). Read-only Facility billing is live accepted. Owner
 checkout/cancellation visibility still requires an OWNER session; no financial action was
 performed.
+
+The 2026-08-23 STAFF regression on the same Facility proved that B-02 inventory and licensed
+transfer history remain readable while inventory mutation/import, Business Desk and
+Horticulture Operations fail closed. The empty inventory route identified zero items and
+offered no create or AI-review mutation; the transfer route resolved after its authenticated
+load and showed zero records, zero drafts, `$0.00` shipped sales and the bounded STAFF
+fulfillment role. This extends the accepted STAFF denial/read-only slice without closing the
+OWNER/MANAGER mutation, import, audit, isolation or provider gates.
 
 ## Nature, Admin and release
 
@@ -377,6 +385,27 @@ populated, provider, authenticated or multi-account evidence.
   cleanup never cross accounts, followed by the final role/load isolation check. **Next
   action:** production concurrency/security acceptance. **Do not rebuild or replace:** the
   Cloudflare/OBS channel, player, chat overlay, lifecycle, stop, or replay architecture.
+- **S-05 — preserved historical credential evidence:** on 2026-08-15 the running Render
+  process, not merely a masked dashboard field, matched the expected Cloudflare Stream
+  credential class and account; a direct create/delete probe succeeded. Production then
+  provisioned and cleaned a reusable private OBS channel without consuming ingest minutes,
+  and a separate signed-in account failed closed at the exact private-session URL. Frontend
+  merge `5c3f9201` and Render deploy `dep-da03lou7bikc73bmgf9g` corrected private-draft
+  labeling and kept public sharing hidden until publication after the focused 16/16 Live
+  Session packet and full gate passed. This evidence was recovered from superseded PR `#666`
+  before that stale PR was retired; it supplements, but does not replace, the remaining
+  concurrent two-account isolation gate above.
+- **S-01 — 2026-08-23 production read-only increment:** Forum's honest `For You` empty state
+  and populated `All Discussions` loaded the retained three-photo QA thread
+  `6a5ba41e6459013643be5c24`, its tags, share actions, media, like, report and comment
+  composer. The detail comments endpoint returned three visible comments while the feed card
+  initially reported four, proving a stale legacy `commentCount`. The owner detail also
+  exposed self-report controls and no post edit/delete action; comment deletion exists in the
+  API and frontend but was not visible on these non-owner comments. **Remaining gates:**
+  reconcile stale counts, hide self-report, add a safe owner post lifecycle, then use an
+  outside account for follow/comment/reply/edit/delete/report and prove Admin/email delivery.
+  **Do not rebuild:** feed separation, thread detail, media, sharing, comment composer or the
+  existing author-only comment-delete contract.
 - **S-01 through S-08 — local acceptance:** these rows now carry `implemented; local
   acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 143 frontend
   and 154 backend assertions covering Forum/comments, video upload/library/detail, Lives and
@@ -405,6 +434,35 @@ populated, provider, authenticated or multi-account evidence.
   non-owner account for Follow/Following/comment/reply/edit/delete/report plus course
   attach/detach and archive/reopen. **Do not rebuild:** the merged creator route, retained
   video library/editor/player/comments/share surfaces, or storage contract.
+- **S-03/S-04/S-07 — 2026-08-23 production increment:** the retained draft course
+  `QA Provider Media 4d4520bd` proved a privacy-aware YouTube lesson embed, then attached a
+  published GrowPath video, loaded its protected playback, detached it without deleting the
+  library asset, and was restored to its original provider URL, thumbnail, summary, rights,
+  embed, caption and transcript state. A private premiere draft proved create, reload,
+  preview, attached-video playback destination, GrowPath chat/OBS-overlay presentation and
+  cleanup. Those runs reproduced two truthful-workflow defects: the premiere preview claimed
+  no destination beside an attached video, and asynchronous library loading could reset
+  unsaved lesson edits. Frontend PR `#753` fixed both defects plus the misleading unfiltered
+  zero-session directory message, passed full frontend CI run `32630651823` in 11m38s, and
+  merged as `54908d5f0e3203847aac4de113139ee6f19a4b8c`. Render deploy
+  `dep-da5brgid0e5s73bh8hd0` published that SHA in 2m14s;
+  production `/lives` now correctly states that no sessions are published and directs a
+  creator to Live Studio. **Remaining gates:** one state-changing production regression for
+  attached-video premiere copy and unsaved course-edit preservation; public publish/replay,
+  outside-user course enrollment, payment return and archive/reopen. **Do not rebuild:** the
+  accepted provider embed, GrowPath video reuse, protected playback, private premiere or
+  empty-directory surfaces.
+- **S-06/P-07 — 2026-08-23 production increment:** Saved Tool Runs reopened the newest
+  retained four-photo Plant ID result and displayed its low-confidence/unusable-image
+  decision, explicit limitations, missing evidence, suggested retakes, source-verification
+  boundary, exact evidence asset IDs and eight retained AI inspection views. The live surface
+  exposed focused Ask AI, save-to-grow-log, task, archive, forum/share, readable-summary copy,
+  rerun-with-saved-evidence, private/device/media/manual location choices, Nature publication,
+  notes, map access and per-view View/Save actions. `Copy Summary` reported success and
+  `Export inspection evidence` completed the retained-view package without a console error.
+  **Remaining gates:** public-link reload/privacy for each public content family and the
+  state-changing save/task/share/publish actions under their owning rows. **Do not rebuild:**
+  the accepted saved-result, evidence review, inspection-view or export surfaces.
 
 ## Immediate execution order
 
