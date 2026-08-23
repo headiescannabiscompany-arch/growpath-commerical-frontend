@@ -453,7 +453,7 @@ export const createStyles = (palette: ThemePalette) =>
     },
     ownerCopy: { flex: 1 },
     owner: {
-      color: palette.link,
+      color: palette.text,
       fontSize: 17,
       fontWeight: "800",
       textDecorationLine: "underline"
