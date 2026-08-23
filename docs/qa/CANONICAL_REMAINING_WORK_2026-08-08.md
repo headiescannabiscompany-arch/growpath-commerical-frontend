@@ -553,6 +553,13 @@ grow`, private current location without a Field Study, and an optional approxima
 
   The combined history above is reconciled to the canonical rows as follows. These are
   the only open gates; the named retained implementations are one-way completed work:
+  On 2026-08-22, the retained Batch 1 assembly passed 65 focused frontend assertions across
+  Saved Plant ID recovery, reviewed Grow drafts, private/source-media/map-pin location,
+  explicit Nature publication, required contributor description, Discover globe entry,
+  public card loading, and Grow cancellation/save behavior. The matching backend passed 32
+  assertions across Plant ID result integrity, publication projection and the complete
+  Field Study/public-observation route contract. These local results narrow the remainder to
+  the production actions below; they do not replace live write/reload/withdrawal evidence.
   - **P-03 (`partial`):** retain the verified photo/video transport, ten server-extracted
     frames, uncertain result, evidence receipt, Saved Run reload, correction, refund, and
     no-grow behavior. The exact remaining action is one ordinary frozen-candidate production
