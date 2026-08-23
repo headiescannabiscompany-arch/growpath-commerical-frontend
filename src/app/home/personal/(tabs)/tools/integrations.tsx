@@ -39,6 +39,25 @@ function message(error: any) {
   return String(error?.message || error?.error?.message || "Request failed");
 }
 
+export function integrationEvidenceLines(connection?: IntegrationConnection | null) {
+  if (!connection) return [];
+  const lines = ["Read-only connection; GrowPath cannot change controller settings."];
+  lines.push(
+    connection.lastTestAt
+      ? `Last connection test: ${new Date(connection.lastTestAt).toLocaleString()}.`
+      : "Connection has not been tested yet."
+  );
+  const syncAt = connection.lastSync?.at;
+  lines.push(
+    syncAt
+      ? `Last data sync: ${new Date(syncAt).toLocaleString()} (${connection.lastSync.status}). Review its age against the provider's actual reporting cadence.`
+      : `Data sync: ${connection.lastSync?.status || "never"}; freshness is not established.`
+  );
+  const error = connection.error?.message || connection.lastError;
+  if (error) lines.push(`Latest provider issue: ${error}`);
+  return lines;
+}
+
 function paramString(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value || "";
 }
@@ -846,6 +865,13 @@ export default function DataIntegrationsScreen({
               </Text>
             </View>
             <Text style={styles.meta}>{provider.capabilities.join(" / ")}</Text>
+            {connection
+              ? integrationEvidenceLines(connection).map((line) => (
+                  <Text key={line} style={styles.meta}>
+                    {line}
+                  </Text>
+                ))
+              : null}
             <View style={styles.actions}>
               {connection && provider.contractStatus === "implemented" ? (
                 <Pressable

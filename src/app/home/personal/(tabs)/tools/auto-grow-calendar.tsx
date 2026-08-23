@@ -116,7 +116,7 @@ export default function AutoGrowCalendarToolRoute({
   workspaceType = "personal"
 }: {
   backFallbackHref?: string;
-  workspaceType?: "personal" | "commercial";
+  workspaceType?: "personal" | "commercial" | "facility";
 } = {}) {
   return (
     <BackendCalculatorToolScreen

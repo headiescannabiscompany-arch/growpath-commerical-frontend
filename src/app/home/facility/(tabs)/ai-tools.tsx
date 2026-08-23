@@ -79,6 +79,17 @@ export const FACILITY_CORE_TOOLS: readonly FacilityToolHubItem[] = [
     actionLabel: "Open Environment Review"
   },
   {
+    title: "Crop & Room Plan",
+    description:
+      "Build a reviewed crop lifecycle calendar from the selected Facility grow, then confirm tasks and room work instead of inventing dates.",
+    href: "/home/facility/tools/auto-grow-calendar",
+    credit:
+      "The deterministic calendar is free; optional evidence-backed AI prefill uses Facility credits.",
+    output:
+      "Editable milestones, dependency gaps, room-aware task drafts, timing uncertainty, and crop-specific review points.",
+    actionLabel: "Build Crop & Room Plan"
+  },
+  {
     title: "Soil & Nutrient Mix Builders",
     description:
       "Choose the science-based soil or nutrient mix workflow from the shared calculation engine.",
