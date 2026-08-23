@@ -148,6 +148,16 @@ invent a SKU, unit, cost, currency, balance, lot, source, movement, date, approv
 completed action. Model output never mutates the ledger and requires the same review as any
 other draft.
 
+Facility Inventory Risk loads a bounded, server-authorized projection of the current B-02
+items and their deterministic alerts before a provider request is allowed. The projection
+includes record identity, SKU/name, stock-counting unit, on-hand count, reorder point,
+status, location, freshness timestamps, and alert evidence. It excludes vendor and
+authorized cost/currency because those fields are not needed for stock-risk triage. The
+deterministic answer and provider context must count out-of-stock, recorded reorder, and
+evidence-alert records without combining unlike units. Missing use rate, par level,
+supplier timing, counts, or records remain explicitly unknown and never fall back to a grow
+summary.
+
 B-03 may retain stable B-02 record references and read authorized projections for Vendor
 Compare, Expense/Receipt, Business Ask AI, and its KPI view. B-03 does not copy balances or
 write stock. B-04 and B-05 extensions also call B-02 rather than defining parallel

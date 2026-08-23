@@ -743,4 +743,79 @@ describe("personal AI screen", () => {
     expect(facilityAiPresetFor("inventory")?.title).toBe("Inventory Risk");
     expect(facilityAiPresetFor("unknown")).toBeNull();
   });
+
+  it("loads a provider-safe inventory projection for the Facility inventory preset", async () => {
+    mockSearchParams = { preset: "inventory" };
+    mockApiRequest.mockImplementation(async (path: string) => {
+      if (path.includes("/business-inventory")) {
+        return {
+          items: [
+            {
+              id: "item-low",
+              sku: "LOW-1",
+              name: "Low item",
+              unit: "bags",
+              quantityOnHand: 2,
+              reorderPoint: 4,
+              vendor: "Private vendor",
+              authorizedUnitCost: 19,
+              currency: "usd",
+              alerts: {
+                lowStock: true,
+                outOfStock: false,
+                held: false,
+                expiredLots: 0,
+                expiringSoonLots: 1,
+                lotQuantityExceedsItem: false,
+                unallocatedQuantity: 0,
+                sourceAgeDays: 2
+              }
+            }
+          ]
+        };
+      }
+      return [];
+    });
+    mockAskPersonalAssistant.mockResolvedValue({
+      success: true,
+      reply: "One recorded item is at or below its reorder point.",
+      intent: "inventory_risk",
+      actions: [],
+      referencedData: [],
+      proposedWrites: []
+    });
+
+    const screen = render(
+      <AiScreen workspaceType="facility" facilityId="facility-1" />
+    );
+
+    await waitFor(() => expect(screen.getByText("Inventory Risk Context")).toBeTruthy());
+    expect(screen.getByText("Inventory items: 1")).toBeTruthy();
+    expect(screen.getByText("At or below reorder point: 1")).toBeTruthy();
+    expect(screen.getByText("Evidence alerts: 1")).toBeTruthy();
+    expect(screen.queryByLabelText(/Select AI grow/)).toBeNull();
+
+    fireEvent.press(screen.getByText("Send"));
+    await waitFor(() => expect(mockAskPersonalAssistant).toHaveBeenCalled());
+    const request = mockAskPersonalAssistant.mock.calls.at(-1)?.[0];
+    expect(request.context).toEqual(
+      expect.objectContaining({
+        facilityPreset: "inventory",
+        inventoryItems: [
+          expect.objectContaining({
+            id: "item-low",
+            sku: "LOW-1",
+            quantityOnHand: 2,
+            reorderPoint: 4,
+            alerts: expect.objectContaining({ lowStock: true })
+          })
+        ]
+      })
+    );
+    expect(request.context.inventoryItems[0]).not.toHaveProperty("vendor");
+    expect(request.context.inventoryItems[0]).not.toHaveProperty(
+      "authorizedUnitCost"
+    );
+    expect(request.context.inventoryItems[0]).not.toHaveProperty("currency");
+  });
 });
