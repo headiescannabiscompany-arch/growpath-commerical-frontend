@@ -1,6 +1,6 @@
 # GrowPathAI canonical product acceptance matrix
 
-Updated: 2026-08-21
+Updated: 2026-08-23
 
 This is the single product contract and execution order for finishing GrowPathAI.
 Detailed historical evidence remains in `CANONICAL_REMAINING_WORK_2026-08-08.md`, but
@@ -132,8 +132,8 @@ Every applicable story must preserve these invariants without repeating them in 
 | ID   | User story                                                                                                         | Status  |
 | ---- | ------------------------------------------------------------------------------------------------------------------ | ------- |
 | S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | implemented; local acceptance passed; authenticated/live acceptance open |
-| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | implemented; local acceptance passed; storage/provider/live acceptance open |
-| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | implemented; local acceptance passed; storage/provider/live acceptance open |
+| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | frontend live; backend creator scoping and outside-user acceptance open |
+| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | live owner lifecycle accepted; course reuse/archive and outside-user acceptance open |
 | S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | implemented; local acceptance passed; provider/live acceptance open |
 | S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | implemented; local acceptance passed; two-account provider/live acceptance open |
 | S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | implemented; local acceptance passed; stable-public-link/live acceptance open |
@@ -389,6 +389,22 @@ populated, provider, authenticated or multi-account evidence.
   **Next action:** authenticated production/provider acceptance followed by final-candidate
   crawl. **Do not rebuild:** the locally accepted community, media, course, sharing or retained
   Hosted Live/OBS architecture unless a current regression is reproduced.
+- **S-02/S-03 — 2026-08-23 production increment:** frontend PR `#751` merged as
+  `2ac47ea87c2ce8da230cb5b7230384de14ee7acf` after full frontend CI passed
+  (`32627752627`, job `97165635806`) and deployed as Render
+  `dep-da5at6jl550s7384vsg0`. Production acceptance confirmed the populated public video,
+  direct creator-profile link and creator library, owner storage/library, exact retained
+  GrowPath upload, editable metadata, playback, comment surface, and share actions. A
+  fabricated creator route reproduced a fail-open API defect: it returned the real creator's
+  video because production discovery ignored `ownerId`. Backend PR `#224`, commit
+  `8af2fe4b4b9078bef338d54b2ad9b79db4b6cc80`, fixes the filter and passes the focused
+  video route suite 26/26 locally. GitHub assigned no runner and ran zero steps because the
+  account reports failed payments or an Actions spending-limit block, so the backend PR is
+  intentionally unmerged. **Next action:** restore Actions, rerun required checks, merge and
+  deploy the exact backend SHA, prove a fabricated creator fails closed, and then use a
+  non-owner account for Follow/Following/comment/reply/edit/delete/report plus course
+  attach/detach and archive/reopen. **Do not rebuild:** the merged creator route, retained
+  video library/editor/player/comments/share surfaces, or storage contract.
 
 ## Immediate execution order
 
