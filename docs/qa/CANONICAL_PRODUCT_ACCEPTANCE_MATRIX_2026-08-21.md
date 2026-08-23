@@ -152,8 +152,8 @@ Every applicable story must preserve these invariants without repeating them in 
 
 | ID   | User story                                                                                                         | Status  |
 | ---- | ------------------------------------------------------------------------------------------------------------------ | ------- |
-| S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | implemented; local acceptance passed; authenticated/live acceptance open |
-| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | frontend live; backend creator scoping and outside-user acceptance open |
+| S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | owner lifecycle live accepted; outside-user/report-notification loop open |
+| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | creator scoping live accepted; outside-user discovery/comment loop open |
 | S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | live owner lifecycle and course reuse accepted; archive/outside-user acceptance open |
 | S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | live private-premiere lifecycle and empty directory accepted; public/provider acceptance open |
 | S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | implemented; local acceptance passed; two-account provider/live acceptance open |
@@ -429,22 +429,15 @@ populated, provider, authenticated or multi-account evidence.
   `Your post`, exposes no post self-report, gives each of its three owner comments the
   confirmed `Delete your comment` action, and logs no browser error. Focused route tests 7/7,
   TypeScript and lint also passed locally. No retained comment was deleted during live
-  read-only acceptance. The follow-up local candidate now derives detail and feed counts from
-  the same visible-comment policy, authorizes content-only owner edits without allowing
-  workspace/context/visibility changes, re-runs moderation and feed projection after edits,
-  validates replies against a visible parent in the same discussion, supports owner-only
-  comment edits with re-moderation, and performs an audited soft delete plus feed removal.
-  Frontend exposes the retained author Follow control, reply context, owner comment editing,
-  explicit confirmed post Edit/Delete controls and returns to Forum after post deletion.
-  Backend focused/controller and
-  Mongo-backed contract packets pass 40/40; frontend route/API tests pass 17/17 with
-  TypeScript and focused lint clean. Exact evidence is retained in
-  `FORUM_OWNER_LIFECYCLE_LOCAL_EVIDENCE_2026-08-23.md`. **Remaining gates:** merge/deploy the
-  frontend and backend candidates, live owner edit/delete/count reconciliation, then use an
-  outside account for follow/comment/reply/edit/delete/report and prove Admin/email delivery.
-  **Do not rebuild:** feed separation, thread detail, media,
-  sharing, comment composer, owner detection or the accepted author-only comment-delete
-  contract.
+  read-only acceptance. Backend PR `#225` and frontend PRs `#758`/`#759` subsequently merged,
+  passed their exact-head and merged-SHA gates, and deployed as backend `324d4025` plus
+  frontend `ffaee89e`. A disposable owner thread then passed create, comment, validated
+  reply, comment edit, post edit, reload, accessible confirmed delete, detail-unavailable and
+  feed-removal checks. Exact SHAs, CI runs, Render deploys and cleanup IDs are retained in
+  `FORUM_OWNER_LIFECYCLE_LOCAL_EVIDENCE_2026-08-23.md`. **Remaining gate:** use an outside
+  account for follow/comment/reply/edit/delete/report and prove Admin/email delivery.
+  **Do not rebuild:** feed separation, thread detail, media, sharing, comment composer, owner
+  detection or the accepted owner lifecycle.
 - **S-01 through S-08 — local acceptance:** these rows now carry `implemented; local
   acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 143 frontend
   and 154 backend assertions covering Forum/comments, video upload/library/detail, Lives and
@@ -464,15 +457,15 @@ populated, provider, authenticated or multi-account evidence.
   direct creator-profile link and creator library, owner storage/library, exact retained
   GrowPath upload, editable metadata, playback, comment surface, and share actions. A
   fabricated creator route reproduced a fail-open API defect: it returned the real creator's
-  video because production discovery ignored `ownerId`. Backend PR `#224`, commit
-  `8af2fe4b4b9078bef338d54b2ad9b79db4b6cc80`, fixes the filter and passes the focused
-  video route suite 26/26 locally. GitHub assigned no runner and ran zero steps because the
-  account reports failed payments or an Actions spending-limit block, so the backend PR is
-  intentionally unmerged. **Next action:** restore Actions, rerun required checks, merge and
-  deploy the exact backend SHA, prove a fabricated creator fails closed, and then use a
-  non-owner account for Follow/Following/comment/reply/edit/delete/report plus course
-  attach/detach and archive/reopen. **Do not rebuild:** the merged creator route, retained
-  video library/editor/player/comments/share surfaces, or storage contract.
+  video because production discovery ignored `ownerId`. Backend PR `#224` was corrected,
+  rebased and passed exact-head Backend CI plus the exhaustive 2,973-test/security gate. It
+  merged as `7cb1d63b0adca565d01c694638a15e3c8c05c536`, passed main Backend CI run
+  `32642310611`, and deployed successfully as Render `dep-da5f9ks9v7es73f5alkg`.
+  Production then proved a fabricated owner ID returned an empty video list rather than
+  unrelated videos. **Next action:** use a non-owner account for Follow/Following/comment/
+  reply/edit/delete/report plus course attach/detach and archive/reopen. **Do not rebuild:**
+  the merged creator route, retained video library/editor/player/comments/share surfaces,
+  or storage contract.
 - **S-03/S-04/S-07 — 2026-08-23 production increment:** the retained draft course
   `QA Provider Media 4d4520bd` proved a privacy-aware YouTube lesson embed, then attached a
   published GrowPath video, loaded its protected playback, detached it without deleting the
