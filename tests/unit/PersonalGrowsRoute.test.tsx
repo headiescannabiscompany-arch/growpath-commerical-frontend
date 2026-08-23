@@ -98,6 +98,8 @@ describe("PersonalGrowsRoute", () => {
       screen.getByText("Turn a blank workspace into a real grow record.")
     ).toBeTruthy();
     expect(screen.getAllByText("Create Grow").length).toBeGreaterThan(1);
+    expect(screen.queryByText("Integrations")).toBeNull();
+    expect(screen.queryByText("PDF Export")).toBeNull();
     expect(screen.getByText("Workspace summary")).toBeTruthy();
     expect(screen.getByText("No grow yet")).toBeTruthy();
     expect(screen.getByTestId("feed-personal_grows-middle")).toBeTruthy();

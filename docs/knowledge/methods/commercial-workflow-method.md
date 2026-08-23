@@ -10,6 +10,11 @@ Commercial tab navigation must expose only the active screen to web keyboard and
 
 Commercial campaign, live-event, production, trial, and task dates use the shared date picker with direct year, month, and day selection. Timed events also expose hour and minute selection. Persist stable ISO date or local date-time values while presenting readable dates; never require an ordinary Commercial user to type an ISO date string.
 
+Commercial grow tools that require grow context must never link to an empty `growId`. When
+the workspace has no grow, keep the tools visibly gated by that prerequisite and provide a
+named Create Grow action. Once a grow exists, integrations, reports, journals, timelines,
+tasks and AI actions must carry that exact authorized grow identity.
+
 At compact widths, shared page content and campaign rails must remain in normal document flow without flex shrink or overlap. A campaign card must never cover, intercept, or displace a Commercial form control.
 
 Commercial Product Lines must use one level-one page heading, level-two headings for authoring, saved lines, and guidance sections, and level-three headings for individual saved lines. Hide the duplicate navigator header when the page provides that hierarchy.
