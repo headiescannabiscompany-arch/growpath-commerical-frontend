@@ -781,13 +781,17 @@ describe("personal AI screen", () => {
       reply: "One recorded item is at or below its reorder point.",
       intent: "inventory_risk",
       actions: [],
-      referencedData: [],
+      referencedData: [
+        {
+          type: "inventory_item",
+          id: "item-low",
+          title: "Low item"
+        }
+      ],
       proposedWrites: []
     });
 
-    const screen = render(
-      <AiScreen workspaceType="facility" facilityId="facility-1" />
-    );
+    const screen = render(<AiScreen workspaceType="facility" facilityId="facility-1" />);
 
     await waitFor(() => expect(screen.getByText("Inventory Risk Context")).toBeTruthy());
     expect(screen.getByText("Inventory items: 1")).toBeTruthy();
@@ -813,9 +817,9 @@ describe("personal AI screen", () => {
       })
     );
     expect(request.context.inventoryItems[0]).not.toHaveProperty("vendor");
-    expect(request.context.inventoryItems[0]).not.toHaveProperty(
-      "authorizedUnitCost"
-    );
+    expect(request.context.inventoryItems[0]).not.toHaveProperty("authorizedUnitCost");
     expect(request.context.inventoryItems[0]).not.toHaveProperty("currency");
+    expect(screen.getByText("Referenced records")).toBeTruthy();
+    expect(screen.getByText("inventory_item: Low item")).toBeTruthy();
   });
 });

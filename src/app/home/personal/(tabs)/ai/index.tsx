@@ -1460,7 +1460,7 @@ export default function AiScreen({
         {references.length ? (
           <View style={styles.referenceCard}>
             <Text style={[styles.contextText, styles.contextTitle]}>
-              Referenced grow data
+              Referenced records
             </Text>
             {references.map((item, index) => (
               <Text key={`${item.type}-${item.id || index}`} style={styles.contextText}>
