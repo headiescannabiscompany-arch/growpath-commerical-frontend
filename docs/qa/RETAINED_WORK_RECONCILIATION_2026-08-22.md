@@ -53,6 +53,16 @@ durable decision record.
 
 ## Backend reconciliation snapshot
 
+The 2026-08-23 refresh resolved one apparently unfinished backend branch without rewriting
+anything: `codex/facility-inventory-ai-test-fix` commit `6bc82a5` was already merged by PR
+`#227` into `origin/main` `be00d33ff66fea5322fa6e7cac68fe21298d4753`. Backend CI and
+the full CI check both passed on the PR. The stale local `origin/main` reference had made the
+clean branch appear one commit ahead; after fetch it is an integrated clean ancestor. The
+three retained trichome evaluation worktrees have no unique product commits and only their
+untracked `.tmp` evidence directories; preserve those fixtures until P-08 adjudication. The
+backend root retains its previously sealed `be15ccd` evidence commit plus an untracked npm
+cache and is not a source to replay wholesale.
+
 The first refreshed 2026-08-22 19:34 EDT backend audit used `origin/main` at
 `54aa291e0877a0fc67cff7bdd1a93ca0eacce46c` and exposed the retained work below. After
 reconciliation, the 19:51 EDT audit used production candidate
