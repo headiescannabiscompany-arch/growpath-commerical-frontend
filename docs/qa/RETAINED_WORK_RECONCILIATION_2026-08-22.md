@@ -89,6 +89,14 @@ temporary state. No product patch was discarded.
 
 ### Root Plant ID branch re-audit — 2026-08-23
 
+The refreshed repository-owned audit at `2026-08-23 13:15:54 -04:00`, against
+`origin/main` `6791268981826f1154dae0db1a780a33e1fff676`, found four registered frontend
+worktrees: one clean integrated Forum-evidence candidate, the current clean B-02 evidence
+branch, the deliberately dirty/preserved hat checkout, and the root Plant ID checkout. The
+root reported 4,924 dirty paths because its directory contains nested retained checkouts and
+temporary/output trees; that count is not 4,924 unmerged product edits. No registration or
+file was removed by this audit.
+
 The registered root branch `codex/plant-id-to-grow-lifecycle` is clean in tracked files but
 still carries five commits not patch-equivalent to current `origin/main` (`b165ed4e`,
 `2a03ce3f`, `8f928240`, `50e5de4b`, `2f8e616f`). They are **preserved**, not candidates for
