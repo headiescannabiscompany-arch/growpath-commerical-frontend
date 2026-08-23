@@ -187,9 +187,9 @@ inventory, safety boundaries and mandatory production scenarios.
 | ---- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                    |
 | B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; guarded migration accepted; live role/workflow acceptance open                      |
-| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | implemented; local acceptance passed; deployment/live acceptance open                        |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | implemented; local acceptance passed; deployment/live acceptance open                        |
-| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | implemented; combined local acceptance passed; deployment/authenticated live acceptance open |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF denial accepted; authorized-role/provider/live acceptance open                |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF denial accepted; authorized-role/live acceptance open                         |
+| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; authenticated device/provider live acceptance open                                  |
 | B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | implemented; local acceptance passed; provider/live acceptance open                          |
 | B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | implemented; local acceptance passed; regulated provider/live gates open                     |
 | B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | implemented; cross-cutting local acceptance passed; provider/live acceptance open            |
@@ -284,6 +284,15 @@ offered no create or AI-review mutation; the transfer route resolved after its a
 load and showed zero records, zero drafts, `$0.00` shipped sales and the bounded STAFF
 fulfillment role. This extends the accepted STAFF denial/read-only slice without closing the
 OWNER/MANAGER mutation, import, audit, isolation or provider gates.
+
+Deployment reconciliation on 2026-08-23 proved that the retained B-03 frontend acceptance
+commit `181ea060` and subscription correction `862ae85b`, B-04 frontend implementation
+`31156f2a` and B-05 frontend integration `21387a82` are all ancestors of the exact deployed
+frontend candidate `ffaee89e`. The corresponding B-03 backend acceptance `9166c66` and
+subscription correction `dcc0209c`, B-04 backend implementation `e89eec03` and B-05 backend
+integration `c7b7674c` are ancestors of exact deployed backend `324d4025`. The rows therefore
+remain open only for their named authorized-role, provider, device, credit, audit, persistence
+and isolation acceptance slices; deployment is not a reason to rebuild them.
 
 ## Nature, Admin and release
 
