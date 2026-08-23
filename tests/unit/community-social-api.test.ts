@@ -70,6 +70,64 @@ describe("community social API", () => {
     });
   });
 
+  it("uses canonical owner edit and delete endpoints without changing session state", async () => {
+    const { deleteForumPost, updateForumPost } = require("@/api/communitySocial");
+    mockApiRequest
+      .mockResolvedValueOnce({
+        id: "forum-1",
+        title: "Revised title",
+        body: "Revised copy"
+      })
+      .mockResolvedValueOnce({ deleted: true, postId: "forum-1" });
+
+    const updated = await updateForumPost("forum-1", {
+      title: "  Revised title  ",
+      body: "  Revised copy  "
+    });
+    await deleteForumPost("forum-1");
+
+    expect(mockApiRequest).toHaveBeenNthCalledWith(1, "/api/forum/forum-1", {
+      method: "PATCH",
+      invalidateOn401: false,
+      body: {
+        title: "Revised title",
+        body: "Revised copy",
+        content: "Revised copy"
+      }
+    });
+    expect(mockApiRequest).toHaveBeenNthCalledWith(2, "/api/forum/forum-1", {
+      method: "DELETE",
+      invalidateOn401: false
+    });
+    expect(updated).toMatchObject({ id: "forum-1", body: "Revised copy" });
+  });
+
+  it("preserves reply context and uses the owner comment edit endpoint", async () => {
+    const { addForumComment, updateForumComment } = require("@/api/communitySocial");
+    mockPersistImageUris.mockResolvedValueOnce([]);
+    mockApiRequest
+      .mockResolvedValueOnce({ id: "reply-1", parentId: "comment-1" })
+      .mockResolvedValueOnce({ id: "reply-1", text: "Reviewed reply" });
+
+    await addForumComment("forum-1", "Reply copy", [], "comment-1");
+    await updateForumComment("reply-1", "  Reviewed reply  ");
+
+    expect(mockApiRequest).toHaveBeenNthCalledWith(1, "/api/forum/forum-1/comment", {
+      method: "POST",
+      invalidateOn401: false,
+      body: {
+        text: "Reply copy",
+        photos: [],
+        parentId: "comment-1"
+      }
+    });
+    expect(mockApiRequest).toHaveBeenNthCalledWith(2, "/api/forum/comment/reply-1", {
+      method: "PATCH",
+      invalidateOn401: false,
+      body: { text: "Reviewed reply" }
+    });
+  });
+
   it("sends Tier 1 crops to the server as the forum audience boundary", async () => {
     const { listForumPosts } = require("@/api/communitySocial");
     mockApiRequest.mockResolvedValueOnce({ posts: [] });

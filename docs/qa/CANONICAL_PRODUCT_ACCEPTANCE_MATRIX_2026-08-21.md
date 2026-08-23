@@ -86,8 +86,13 @@ registrations whose gitdir targets did not exist. Three further clean registrati
 `backend-admin-cleanup`) were removed only after ancestor/patch-equivalence proof; Windows
 reported long-path deletion errors for the first two directories, so any resulting disk
 remnants are non-product cleanup residue rather than hidden implementation. The open
-`s02-video-creator-filter` worktree and dirty trichome evidence remain registered and
-untouched.
+`s02-video-creator-filter` backend worktree and the three dedicated backend trichome evidence
+worktrees remain registered and untouched. The merged frontend
+`workspace-contextual-tools-accessibility` worktree was also retired after its only dirty
+item proved to be a redundant 411 MB untracked backend snapshot: all 623 non-dependency
+files (608 unique blobs) were reachable from backend Git refs, `node_modules` was generated,
+and `uploads` was empty. The redundant snapshot and the now-clean merged worktree were
+removed without deleting either repository's branches or history.
 [~] Unified reporting and the Admin control center are deployed as frontend `00f36429` and
 backend `ed85270`; signed-in Admin production acceptance remains open and must not cause
 a rewrite.
@@ -424,9 +429,20 @@ populated, provider, authenticated or multi-account evidence.
   `Your post`, exposes no post self-report, gives each of its three owner comments the
   confirmed `Delete your comment` action, and logs no browser error. Focused route tests 7/7,
   TypeScript and lint also passed locally. No retained comment was deleted during live
-  read-only acceptance. **Remaining gates:** reconcile stale counts, add a safe owner post
-  edit/delete lifecycle, then use an outside account for follow/comment/reply/edit/delete/report
-  and prove Admin/email delivery. **Do not rebuild:** feed separation, thread detail, media,
+  read-only acceptance. The follow-up local candidate now derives detail and feed counts from
+  the same visible-comment policy, authorizes content-only owner edits without allowing
+  workspace/context/visibility changes, re-runs moderation and feed projection after edits,
+  validates replies against a visible parent in the same discussion, supports owner-only
+  comment edits with re-moderation, and performs an audited soft delete plus feed removal.
+  Frontend exposes the retained author Follow control, reply context, owner comment editing,
+  explicit confirmed post Edit/Delete controls and returns to Forum after post deletion.
+  Backend focused/controller and
+  Mongo-backed contract packets pass 40/40; frontend route/API tests pass 17/17 with
+  TypeScript and focused lint clean. Exact evidence is retained in
+  `FORUM_OWNER_LIFECYCLE_LOCAL_EVIDENCE_2026-08-23.md`. **Remaining gates:** merge/deploy the
+  frontend and backend candidates, live owner edit/delete/count reconciliation, then use an
+  outside account for follow/comment/reply/edit/delete/report and prove Admin/email delivery.
+  **Do not rebuild:** feed separation, thread detail, media,
   sharing, comment composer, owner detection or the accepted author-only comment-delete
   contract.
 - **S-01 through S-08 — local acceptance:** these rows now carry `implemented; local

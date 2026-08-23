@@ -93,9 +93,13 @@ temporary state. No product patch was discarded.
 - `C:/Users/jcind/AppData/Local/Temp/growpath-harvest-evidence-reload` contains
   only its `.git` pointer while Git reports the checkout contents as deleted.
   It is a broken temporary registration, not a source of unique implementation.
-- Nineteen clean worktrees are already ancestors of or patch-equivalent to
-  current `origin/main`. They can be removed only after the remaining unique
-  work has been integrated and a final worktree audit confirms that status.
+- Clean ancestor/patch-equivalent frontend worktrees have been removed as their proof was
+  completed. The merged `workspace-contextual-tools-accessibility` checkout was the last
+  non-hat frontend checkout of that class. Its sole untracked directory was a redundant
+  backend snapshot: every one of its 623 non-`node_modules` files (608 unique blobs) was
+  reachable from backend Git refs, its 39,381 dependency files were generated, and its
+  `uploads` directory was empty. That 411 MB snapshot and the clean worktree registration
+  were removed on 2026-08-23; branches and history remain recoverable.
 
 ## Ordered extraction queue
 

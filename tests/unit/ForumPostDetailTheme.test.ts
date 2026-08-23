@@ -67,13 +67,15 @@ describe.each([
 });
 
 describe("Forum post detail theme source guards", () => {
-  it("themes its only input, pull-to-refresh, and every route color", () => {
+  it("themes every input, pull-to-refresh, and route color", () => {
     const source = fs.readFileSync(path.join(process.cwd(), ROUTE_FILE), "utf8");
     const textInputs = source.match(/<TextInput[\s\S]*?\/>/g) || [];
 
-    expect(textInputs).toHaveLength(1);
-    expect(textInputs[0]).toContain("placeholderTextColor={palette.textMuted}");
-    expect(textInputs[0]).toContain("selectionColor={palette.accent}");
+    expect(textInputs).toHaveLength(4);
+    textInputs.forEach((input) => {
+      expect(input).toContain("placeholderTextColor={palette.textMuted}");
+      expect(input).toContain("selectionColor={palette.accent}");
+    });
     expect(source).toContain("colors={[palette.accent]}");
     expect(source).toContain("tintColor={palette.accent}");
     expect(source).toContain("progressBackgroundColor={palette.surface}");

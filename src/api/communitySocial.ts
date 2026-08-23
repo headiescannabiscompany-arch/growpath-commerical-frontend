@@ -137,6 +137,21 @@ export async function getForumPost(id: string): Promise<SocialPost | null> {
   return response?.post ?? response?.data?.post ?? response;
 }
 
+export async function updateForumPost(
+  id: string,
+  data: { title: string; body: string }
+): Promise<SocialPost> {
+  const response = await communityRequest(apiRoutes.FORUM.UPDATE(id), {
+    method: "PATCH",
+    body: { title: data.title.trim(), body: data.body.trim(), content: data.body.trim() }
+  });
+  return response?.post ?? response?.data?.post ?? response;
+}
+
+export async function deleteForumPost(id: string) {
+  return communityRequest(apiRoutes.FORUM.DELETE(id), { method: "DELETE" });
+}
+
 export async function likeForumPost(id: string) {
   return communityRequest(apiRoutes.FORUM.LIKE(id), { method: "POST" });
 }
@@ -152,12 +167,24 @@ export async function listForumComments(id: string) {
   return rows<any>(response, ["comments", "items"]);
 }
 
-export async function addForumComment(id: string, text: string, photos: string[] = []) {
+export async function addForumComment(
+  id: string,
+  text: string,
+  photos: string[] = [],
+  parentId?: string
+) {
   const persistedPhotos = await persistImageUris(photos.slice(0, 10));
   const storedText = [text.trim(), ...persistedPhotos].filter(Boolean).join("\n");
   return communityRequest(apiRoutes.FORUM.COMMENT(id), {
     method: "POST",
-    body: { text: storedText, photos: persistedPhotos }
+    body: { text: storedText, photos: persistedPhotos, parentId: parentId || undefined }
+  });
+}
+
+export async function updateForumComment(commentId: string, text: string) {
+  return communityRequest(apiRoutes.FORUM.COMMENT_DETAIL(commentId), {
+    method: "PATCH",
+    body: { text: text.trim() }
   });
 }
 
