@@ -8,6 +8,7 @@ const mockCreateRecord = jest.fn();
 const mockUpdateRecord = jest.fn();
 const mockAddCare = jest.fn();
 const mockEvaluate = jest.fn();
+const mockArchive = jest.fn();
 const mockListInventory = jest.fn();
 const mockGetInventoryItem = jest.fn();
 const mockListEvidence = jest.fn();
@@ -17,7 +18,8 @@ jest.mock("@/api/horticulture", () => ({
   createHorticultureRecord: (...args: any[]) => mockCreateRecord(...args),
   updateHorticultureRecord: (...args: any[]) => mockUpdateRecord(...args),
   addHorticultureCareEvent: (...args: any[]) => mockAddCare(...args),
-  evaluateHorticultureFulfillment: (...args: any[]) => mockEvaluate(...args)
+  evaluateHorticultureFulfillment: (...args: any[]) => mockEvaluate(...args),
+  archiveHorticultureRecord: (...args: any[]) => mockArchive(...args)
 }));
 
 jest.mock("@/api/businessInventory", () => ({
@@ -35,6 +37,7 @@ jest.mock("@/theme/appTheme", () => ({
       accent: "#2455ff",
       accentText: "#ffffff",
       border: "#cccccc",
+      danger: "#b42318",
       page: "#ffffff",
       surface: "#ffffff",
       success: "#087f23",
@@ -109,6 +112,11 @@ beforeEach(() => {
     ...baseRecord,
     __v: 3,
     fulfillment: { ...baseRecord.fulfillment, readiness: "blocked" }
+  });
+  mockArchive.mockResolvedValue({
+    ...baseRecord,
+    __v: 3,
+    lifecycleStatus: "archived"
   });
   mockListInventory.mockResolvedValue([
     { id: "item-1", name: "Tomato starts", quantity: 8, unit: "plant" }
@@ -214,4 +222,28 @@ test("links same-workspace B-02 inventory and retained evidence without copying 
       })
     )
   );
+});
+
+test("requires explicit confirmation before archiving and removes only the confirmed record", async () => {
+  const screen = render(
+    <HorticultureOperationsScreen
+      workspace={{ workspaceType: "commercial" }}
+      workspaceLabel="Commercial"
+    />
+  );
+  await waitFor(() => expect(screen.getByText("Tomato starts")).toBeTruthy());
+
+  fireEvent.press(screen.getByRole("button", { name: "Archive Tomato starts" }));
+  expect(mockArchive).not.toHaveBeenCalled();
+  expect(screen.getByText("Archive Tomato starts?")).toBeTruthy();
+
+  fireEvent.press(screen.getByRole("button", { name: "Confirm archive Tomato starts" }));
+  await waitFor(() =>
+    expect(mockArchive).toHaveBeenCalledWith(
+      { workspaceType: "commercial" },
+      expect.objectContaining({ _id: "record-1", __v: 2 })
+    )
+  );
+  await waitFor(() => expect(screen.queryByText("Tomato starts")).toBeNull());
+  expect(screen.getByText(/care history and audit evidence were retained/)).toBeTruthy();
 });

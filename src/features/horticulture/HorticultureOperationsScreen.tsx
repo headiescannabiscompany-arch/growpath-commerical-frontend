@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   addHorticultureCareEvent,
+  archiveHorticultureRecord,
   createHorticultureRecord,
   evaluateHorticultureFulfillment,
   listHorticultureRecords,
@@ -48,6 +49,7 @@ export default function HorticultureOperationsScreen({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [careNotes, setCareNotes] = useState<Record<string, string>>({});
+  const [archiveCandidateId, setArchiveCandidateId] = useState<string | null>(null);
   const [inventoryItems, setInventoryItems] = useState<BusinessInventoryItem[]>([]);
   const [inventoryLots, setInventoryLots] = useState<
     Record<string, BusinessInventoryLot[]>
@@ -191,6 +193,25 @@ export default function HorticultureOperationsScreen({
     }
   }
 
+  async function archiveRecord(record: HorticultureRecord) {
+    setBusy(true);
+    try {
+      await archiveHorticultureRecord(workspace, record);
+      setRecords((current) => current.filter((item) => item._id !== record._id));
+      setArchiveCandidateId(null);
+      setMessage(
+        `Archived ${record.title}. Its care history and audit evidence were retained.`
+      );
+    } catch (error: any) {
+      setMessage(
+        error?.message ||
+          "The record changed or could not be archived. Reload and review it again."
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function linkInventory(record: HorticultureRecord, item: BusinessInventoryItem) {
     setBusy(true);
     try {
@@ -318,6 +339,9 @@ export default function HorticultureOperationsScreen({
             ))}
             <View style={styles.toggleRow}>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Change quarantine status for ${record.title}`}
+                accessibilityState={{ busy, disabled: busy }}
                 disabled={busy}
                 onPress={() =>
                   patchRecord(record, {
@@ -335,6 +359,9 @@ export default function HorticultureOperationsScreen({
                 </Text>
               </Pressable>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Change label review for ${record.title}`}
+                accessibilityState={{ busy, disabled: busy }}
                 disabled={busy}
                 onPress={() =>
                   patchRecord(record, {
@@ -356,6 +383,9 @@ export default function HorticultureOperationsScreen({
                 ["mediaComplete", "careCardComplete", "packingReviewComplete"] as const
               ).map((key) => (
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Change ${key.replace(/([A-Z])/g, " $1")} for ${record.title}`}
+                  accessibilityState={{ busy, disabled: busy }}
                   key={key}
                   disabled={busy}
                   onPress={() =>
@@ -387,6 +417,9 @@ export default function HorticultureOperationsScreen({
                   const selected = String(record.inventoryItemId || "") === id;
                   return (
                     <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`${selected ? "Linked" : "Link"} inventory ${item.name}`}
+                      accessibilityState={{ busy, disabled: busy, selected }}
                       key={id}
                       disabled={busy}
                       onPress={() => linkInventory(record, item)}
@@ -409,6 +442,9 @@ export default function HorticultureOperationsScreen({
                   const selected = String(record.inventoryLotId || "") === lotId;
                   return (
                     <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`${selected ? "Linked" : "Link"} lot ${lot.lotCode}`}
+                      accessibilityState={{ busy, disabled: busy, selected }}
                       key={lotId}
                       disabled={busy}
                       onPress={() => patchRecord(record, { inventoryLotId: lotId })}
@@ -436,6 +472,9 @@ export default function HorticultureOperationsScreen({
                   );
                   return (
                     <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`${selected ? "Unlink" : "Link"} evidence ${asset.fileName || `${asset.purpose} ${asset.assetType}`}`}
+                      accessibilityState={{ busy, disabled: busy, selected }}
                       key={asset.id}
                       disabled={busy}
                       onPress={() => linkEvidence(record, asset)}
@@ -462,6 +501,9 @@ export default function HorticultureOperationsScreen({
                 style={[styles.input, styles.careInput]}
               />
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Add inspection for ${record.title}`}
+                accessibilityState={{ busy, disabled: busy }}
                 disabled={busy}
                 onPress={() => addCare(record)}
                 style={styles.secondaryButton}
@@ -474,6 +516,9 @@ export default function HorticultureOperationsScreen({
               {record.evidenceLinks?.length || 0} linked evidence items
             </Text>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Evaluate current readiness for ${record.title}`}
+              accessibilityState={{ busy, disabled: busy }}
               disabled={busy}
               onPress={() => evaluate(record)}
               style={styles.primaryButton}
@@ -484,6 +529,48 @@ export default function HorticultureOperationsScreen({
               This check does not reserve inventory, promise availability, choose a
               substitute, or complete an order.
             </Text>
+            {archiveCandidateId === record._id ? (
+              <View style={styles.archiveBox}>
+                <Text style={styles.archiveTitle}>Archive {record.title}?</Text>
+                <Text style={styles.reason}>
+                  This removes it from the active Horticulture list while retaining its
+                  care history and audit evidence.
+                </Text>
+                <View style={styles.toggleRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Cancel archiving ${record.title}`}
+                    accessibilityState={{ busy, disabled: busy }}
+                    disabled={busy}
+                    onPress={() => setArchiveCandidateId(null)}
+                    style={styles.secondaryButton}
+                  >
+                    <Text style={styles.secondaryButtonText}>Cancel</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Confirm archive ${record.title}`}
+                    accessibilityState={{ busy, disabled: busy }}
+                    disabled={busy}
+                    onPress={() => archiveRecord(record)}
+                    style={styles.archiveButton}
+                  >
+                    <Text style={styles.archiveButtonText}>Confirm archive</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Archive ${record.title}`}
+                accessibilityState={{ busy, disabled: busy }}
+                disabled={busy}
+                onPress={() => setArchiveCandidateId(record._id)}
+                style={styles.archiveButton}
+              >
+                <Text style={styles.archiveButtonText}>Archive record</Text>
+              </Pressable>
+            )}
           </AppCard>
         );
       })}
@@ -494,6 +581,25 @@ export default function HorticultureOperationsScreen({
 function createStyles(palette: ThemePalette) {
   return StyleSheet.create({
     blocked: { color: palette.warning },
+    archiveBox: {
+      backgroundColor: palette.surface,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 14,
+      padding: 12
+    },
+    archiveButton: {
+      alignSelf: "flex-start",
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      marginTop: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 10
+    },
+    archiveButtonText: { color: palette.danger, fontSize: 12, fontWeight: "900" },
+    archiveTitle: { color: palette.text, fontSize: 14, fontWeight: "900" },
     careInput: { flex: 1, minWidth: 220 },
     careRow: {
       alignItems: "center",
