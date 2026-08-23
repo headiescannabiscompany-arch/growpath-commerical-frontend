@@ -62,6 +62,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "Never publish private data merely because Share was pressed.",
       "Never expose protected upload URLs, exact locations, operational payloads, AI receipts, credentials, or evidence permissions.",
+      "Viewer-friendly downloads must replace raw JSON, provider payloads, evidence fingerprints, private IDs and oversized machine notes with a bounded readable summary and private-record handoff.",
       "Later private edits must not silently change an already-published snapshot.",
       "Withdrawal or moderation must delete unreferenced public derivatives; restore must safely rebuild them from the protected owned source before visibility returns.",
       "Cannabis-specific public copies require the cannabis visibility and reporting gates before public release."
@@ -710,7 +711,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not compare unlike stages without an explicit limitation.",
       "Do not claim causation from an observational run comparison.",
       "Exclude synthetic QA evidence from ordinary production conclusions unless it is explicitly selected and labeled.",
-      "The deterministic comparison uses no AI credit; optional AI explanation must preserve the same evidence limits."
+      "The deterministic comparison uses no AI credit; optional AI explanation must preserve the same evidence limits.",
+      "Timeline exports must remain readable and must not expose raw machine payloads, evidence fingerprints, provider data or private identifiers."
     ],
     ["run-comparison"]
   ),

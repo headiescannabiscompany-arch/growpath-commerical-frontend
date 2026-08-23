@@ -152,7 +152,34 @@ The complete CI job passed before merge. Do not rebuild this notification handof
   and a raw internal Grow ID field. The current branch preserves the provider engine while
   hiding the duplicate header, carrying `growId` from Home, validating deep links against the
   active workspace and presenting only named owned-grow choices. Focused tests and TypeScript
-  pass; merge, deployment and live acceptance remain open.
+  pass. The repair merged as frontend `1f800c87bfb57b8f6093887a43be94664f818d70`
+  after the complete GitHub CI job `97156220951` passed; exact deployment and live regression
+  remain open.
+
+## P-10 timeline publication and export evidence
+
+- The reviewed timeline workflow was exercised with an owned disposable Grow. Cancel
+  published nothing. A cannabis-specific copy published only after exact preview and then
+  failed closed for a viewer that did not satisfy the cannabis-interest gate. Withdrawal
+  made its old URL unavailable without changing the private Grow.
+- A non-cannabis one-event timeline for Grow `6a603a8fda5c5bfdc030ac1b` published as frozen
+  version 1. Its unguessable public viewer rendered the selected event, snapshot disclaimer,
+  reporting, copy/device share and Facebook, X, Bluesky, Reddit, LinkedIn, email and text
+  actions. Withdrawal then made the same URL unavailable. No temporary public copy remains.
+- The first publish exposed an infrastructure limit rather than an application failure: the
+  MongoDB cluster had reached 500 of 500 collections. Proof-based cleanup removed only the
+  unrelated `sample_mflix` demo database (six collections) and 87 exactly empty collections
+  ending `_test` from the active production database. Source scans found no production model,
+  route or service references to those names. Production retained 105 active collections,
+  zero `_test` collections and 92 free cluster slots; API health passed afterward.
+- The viewer-friendly export loaded the real Grow package (3 logs, 4 tasks, 23 ToolRuns) and
+  downloaded a valid 15,601-byte visual-timeline HTML file. Inspection found no account,
+  workspace, authorization, database or telemetry secrets, but one saved AI journal note
+  printed a large raw JSON payload and internal `evidenceFingerprint`. Frontend `dfc10201`
+  now centralizes export formatting, preserves ordinary prose, replaces machine payloads with
+  a private-record handoff and bounds oversized prose. Focused tests and the combined full
+  112-batch test suite passed locally; merge, exact deployment and live re-download inspection
+  remain open before P-10 can close.
 
 ## Exact remaining R-03 work
 
