@@ -570,7 +570,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "Do not coerce missing batch quantity, analysis, cost, shrinkage, margin, lot or inventory values to zero.",
       "Calculate blended label analysis only from complete values expressed in compatible quantity units; inventory review never decrements stock.",
       "Never trust client-supplied storefront or Facility scope: storefront drafts require owner scope and Facility production batches require owner or manager access.",
-      "Recipe handoff never publishes a product, enables checkout, claims inventory, or decrements stock."
+      "Recipe handoff never publishes a product, enables checkout, claims inventory, or decrements stock.",
+      "Ingredient-label AI inspects retained protected evidence and creates a reviewable draft; unreadable or missing label values remain unknown until the user verifies them against the original."
     ],
     [
       "npk",

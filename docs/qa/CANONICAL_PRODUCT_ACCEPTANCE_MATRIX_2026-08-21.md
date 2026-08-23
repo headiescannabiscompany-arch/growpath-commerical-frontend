@@ -121,9 +121,9 @@ Every applicable story must preserve these invariants without repeating them in 
 | P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | implemented |
 | P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented |
 | P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | implemented |
-| P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | partial     |
-| P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | partial     |
-| P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | partial     |
+| P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | implemented; local acceptance passed; storage/provider/live acceptance open |
+| P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | implemented; local acceptance passed; ordinary-phone provider/live acceptance open |
+| P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open |
 | P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | implemented; local acceptance passed; deployment/authenticated public-live acceptance open |
 | P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | partial     |
 

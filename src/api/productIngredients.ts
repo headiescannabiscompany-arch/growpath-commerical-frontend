@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiRequest";
+import type { EvidenceReview } from "@/features/personal/evidence/evidenceReview";
 
 export type SourceRecord = {
   sourceName: string;
@@ -64,6 +65,7 @@ export type ProductIngredient = {
   sourceUrl?: string;
   sourceRecords?: SourceRecord[];
   labelExtraction?: Record<string, any> | null;
+  labelAnalysisReceipt?: EvidenceReview | null;
   labelVerifiedByUser?: boolean;
   labelVerifiedAt?: string | null;
   favorite?: boolean;
@@ -123,7 +125,10 @@ export async function archiveProductIngredient(id: string): Promise<boolean> {
   return Boolean(res?.archived ?? res?.data?.archived);
 }
 
-export async function extractIngredientLabel(evidenceAssetId: string) {
+export async function extractIngredientLabel(evidenceAssetId: string): Promise<{
+  nutrientData?: Record<string, any>;
+  analysisReceipt?: Record<string, any>;
+}> {
   const res: any = await apiRequest("/api/feeding/label", {
     method: "POST",
     body: { evidenceAssetId }
