@@ -3,8 +3,9 @@
 Updated: 2026-08-23
 Matrix row: `B-02`  
 Related rows: `F-05`, `C-03`, `B-01`, `B-04`, `B-05`, `B-08`, `B-09`  
-Status: deployed; guarded production migration accepted; live role/workflow acceptance
-remains open
+Status: deployed; guarded production migration, owner core ledger, one reviewed import,
+exports and Inventory AI accepted; remaining multi-role/import-retry/reconciliation gates
+remain open
 
 ## Frozen starting point
 
@@ -125,8 +126,9 @@ deployment gates.
    reload persistence.
 2. Exercise empty and populated item/lot histories; receive, adjust, hold/release,
    move/transfer, consume, unit/archive guards, older-page loading and private-field clearing.
-3. Exercise rejected, duplicate, conflicting, partially applied and resumed CSV imports;
-   verify terminal audit export and formula neutralization.
+3. Exercise rejected, duplicate, conflicting, partially applied and resumed CSV imports.
+   One reviewed successful import, terminal audit export and formula neutralization are live
+   accepted in `B02_PRODUCTION_ACCEPTANCE_2026-08-23.md`.
 4. Exercise one paid Storefront reconciliation, provider retry/idempotency and failure
    recovery without double decrement or false availability.
 5. Clean up only the named acceptance records and append the production evidence. Then narrow
