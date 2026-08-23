@@ -2505,6 +2505,11 @@ export default function PlatformAdminRoute() {
               ) : (
                 <View style={styles.actions}>
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Mark ${item.subject} in progress`}
+                    accessibilityState={{
+                      disabled: busyId === item._id || item.status === "in_progress"
+                    }}
                     disabled={busyId === item._id || item.status === "in_progress"}
                     style={styles.secondaryButton}
                     onPress={() => void updateSupportStatus(item, "in_progress")}
@@ -2512,6 +2517,9 @@ export default function PlatformAdminRoute() {
                     <Text style={styles.secondaryText}>Mark in progress</Text>
                   </Pressable>
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Resolve ${item.subject}`}
+                    accessibilityState={{ disabled: busyId === item._id }}
                     disabled={busyId === item._id}
                     style={styles.primaryButton}
                     onPress={() => void updateSupportStatus(item, "resolved")}

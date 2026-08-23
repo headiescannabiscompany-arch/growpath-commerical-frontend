@@ -794,9 +794,21 @@ describe("PlatformAdminRoute", () => {
 
   it("lets platform admins resolve a stored bug report", async () => {
     const screen = render(<PlatformAdminRoute />);
-    await waitFor(() => expect(screen.getByText("Resolve")).toBeTruthy());
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: `Resolve ${supportRequest.subject}` })
+      ).toBeTruthy()
+    );
 
-    fireEvent.press(screen.getByText("Resolve"));
+    expect(
+      screen.getByRole("button", {
+        name: `Mark ${supportRequest.subject} in progress`
+      })
+    ).toBeTruthy();
+
+    fireEvent.press(
+      screen.getByRole("button", { name: `Resolve ${supportRequest.subject}` })
+    );
 
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith(
