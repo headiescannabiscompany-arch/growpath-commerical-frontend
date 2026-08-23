@@ -34,6 +34,11 @@ import { useAuth } from "@/auth/AuthContext";
 import { resolveImageUrl } from "../utils/images.js";
 import { radius } from "../theme/theme";
 
+function sameUserId(left, right) {
+  if (left == null || right == null) return false;
+  return String(left) === String(right);
+}
+
 export function ForumPostDetailScreen({ route, navigation }) {
   const { id } = route.params;
   const auth = useAuth();
@@ -125,6 +130,8 @@ export function ForumPostDetailScreen({ route, navigation }) {
     mutationFn: (commentId) => deleteComment(commentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["forum-comments", id] });
+      queryClient.invalidateQueries({ queryKey: ["forum-post", id] });
+      queryClient.invalidateQueries({ queryKey: ["forum-feed"] });
     }
   });
 
@@ -141,7 +148,19 @@ export function ForumPostDetailScreen({ route, navigation }) {
   }
 
   async function handleDelete(commentId) {
-    deleteCommentMutation.mutate(commentId);
+    Alert.alert(
+      "Delete comment?",
+      "This permanently removes your comment from the discussion.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteCommentMutation.mutate(commentId)
+        }
+      ],
+      { cancelable: true }
+    );
   }
 
   async function handleSave() {
@@ -245,6 +264,7 @@ export function ForumPostDetailScreen({ route, navigation }) {
   if (!post) return null;
 
   const author = post.user || post.author || null;
+  const isPostOwner = sameUserId(author?._id ?? author?.id, currentUserId);
   const identityType = post.authorIdentity?.type || "user";
   const identityLabel =
     identityType === "commercial"
@@ -273,7 +293,11 @@ export function ForumPostDetailScreen({ route, navigation }) {
           </Text>
         </View>
         <View style={styles.headerActions}>
-          <FollowButton userId={author?._id} />
+          {isPostOwner ? (
+            <Text style={styles.ownerLabel}>Your post</Text>
+          ) : (
+            <FollowButton userId={author?._id ?? author?.id} />
+          )}
         </View>
       </View>
       <Text style={styles.threadType}>
@@ -344,7 +368,7 @@ export function ForumPostDetailScreen({ route, navigation }) {
           </TouchableOpacity>
         )}
 
-        {capabilities?.canUseForum && (
+        {capabilities?.canUseForum && !isPostOwner && (
           <TouchableOpacity onPress={handleReport}>
             <Text style={styles.actionBtn}>🚩 Report</Text>
           </TouchableOpacity>
@@ -387,33 +411,48 @@ export function ForumPostDetailScreen({ route, navigation }) {
         data={comments}
         keyExtractor={(item) => item._id}
         scrollEnabled={false}
-        renderItem={({ item }) => (
-          <View style={styles.commentRow}>
-            <View style={styles.commentContent}>
-              <Text style={styles.commentUser}>
-                {item.user?.username ||
-                  item.user?.displayName ||
-                  item.user?.name ||
-                  item.author?.username ||
-                  item.author?.displayName ||
-                  item.author?.name ||
-                  "Unknown"}
-                :
-              </Text>
-              <Text style={styles.commentText}>{item.text}</Text>
-              <TouchableOpacity onPress={() => setReportedComment(item)}>
-                <Text style={styles.actionBtn}>Report comment</Text>
-              </TouchableOpacity>
-            </View>
+        renderItem={({ item }) => {
+          const isCommentOwner = sameUserId(
+            item.user?._id ?? item.user?.id ?? item.author?._id ?? item.author?.id,
+            currentUserId
+          );
+          return (
+            <View style={styles.commentRow}>
+              <View style={styles.commentContent}>
+                <Text style={styles.commentUser}>
+                  {item.user?.username ||
+                    item.user?.displayName ||
+                    item.user?.name ||
+                    item.author?.username ||
+                    item.author?.displayName ||
+                    item.author?.name ||
+                    "Unknown"}
+                  :
+                </Text>
+                <Text style={styles.commentText}>{item.text}</Text>
+                {!isCommentOwner && capabilities?.canUseForum ? (
+                  <TouchableOpacity
+                    accessibilityLabel={`Report comment by ${
+                      item.user?.username || item.author?.username || "member"
+                    }`}
+                    onPress={() => setReportedComment(item)}
+                  >
+                    <Text style={styles.actionBtn}>Report comment</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
 
-            {(item.user?._id || item.author?._id) === currentUserId &&
-              capabilities?.canPostForum && (
-                <TouchableOpacity onPress={() => handleDelete(item._id)}>
+              {isCommentOwner && capabilities?.canPostForum ? (
+                <TouchableOpacity
+                  accessibilityLabel="Delete your comment"
+                  onPress={() => handleDelete(item._id)}
+                >
                   <Text style={styles.deleteBtn}>Delete</Text>
                 </TouchableOpacity>
-              )}
-          </View>
-        )}
+              ) : null}
+            </View>
+          );
+        }}
       />
 
       {capabilities?.canPostForum && (
@@ -470,6 +509,7 @@ const styles = StyleSheet.create({
   headerActions: {
     alignSelf: "flex-start"
   },
+  ownerLabel: { color: "#475569", fontSize: 12, fontWeight: "700" },
   content: { marginBottom: 12, fontSize: 15, lineHeight: 22 },
   photo: {
     width: "100%",

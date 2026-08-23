@@ -106,7 +106,7 @@ describe("ForumPostDetailScreen QA", () => {
 
   beforeEach(() => {
     mockUseAuth.mockReturnValue({
-      user: { _id: "user1", username: "Alice" },
+      user: { _id: "user3", username: "Casey" },
       capabilities: { canUseForum: true, canPostForum: true },
       mode: "personal"
     });
@@ -133,7 +133,7 @@ describe("ForumPostDetailScreen QA", () => {
   plans.forEach(({ name, capabilities }) => {
     it(`shows correct actions for ${name} plan (capability-driven)`, async () => {
       mockUseAuth.mockReturnValue({
-        user: { _id: "user1", username: "Alice" },
+        user: { _id: "user3", username: "Casey" },
         capabilities
       });
       const mockNavigation = { navigate: jest.fn(), goBack: jest.fn() };
@@ -168,7 +168,7 @@ describe("ForumPostDetailScreen QA", () => {
 
   it("shows error feedback on failed API call", async () => {
     mockUseAuth.mockReturnValue({
-      user: { _id: "user1", username: "Alice" },
+      user: { _id: "user3", username: "Casey" },
       capabilities: { canUseForum: true, canPostForum: true }
     });
     const mockNavigation = { navigate: jest.fn(), goBack: jest.fn() };
@@ -201,7 +201,7 @@ describe("ForumPostDetailScreen QA", () => {
 
   it("has accessible action buttons (capability-driven)", async () => {
     mockUseAuth.mockReturnValue({
-      user: { _id: "user1", username: "Alice" },
+      user: { _id: "user3", username: "Casey" },
       capabilities: { canUseForum: true, canPostForum: true }
     });
     const mockNavigation = { navigate: jest.fn(), goBack: jest.fn() };
@@ -230,6 +230,58 @@ describe("ForumPostDetailScreen QA", () => {
     expect(getByText("Product label")).toBeTruthy();
     expect(getByText(/product: product-1/i)).toBeTruthy();
     expect(getByText(/storefront: soil-brand/i)).toBeTruthy();
+  });
+
+  it("shows owner-safe controls instead of follow and self-report actions", async () => {
+    mockUseAuth.mockReturnValue({
+      user: { _id: "user1", username: "Alice" },
+      capabilities: { canUseForum: true, canPostForum: true },
+      mode: "personal"
+    });
+    const { getByText, getByLabelText, queryByText, queryByLabelText } = renderWithNav(
+      <ForumPostDetailScreen
+        route={{ params: { id: "post1" } }}
+        navigation={{ navigate: jest.fn(), goBack: jest.fn() }}
+      />
+    );
+
+    await waitFor(() => getByText("Test post content"));
+    expect(getByText("Your post")).toBeTruthy();
+    expect(queryByText(/^Follow$/i)).toBeNull();
+    expect(queryByText(/^🚩 Report$/)).toBeNull();
+    expect(getByLabelText("Delete your comment")).toBeTruthy();
+    expect(queryByLabelText("Report comment by Alice")).toBeNull();
+    expect(getByLabelText("Report comment by Bob")).toBeTruthy();
+  });
+
+  it("confirms before deleting an owned comment", async () => {
+    mockUseAuth.mockReturnValue({
+      user: { _id: "user1", username: "Alice" },
+      capabilities: { canUseForum: true, canPostForum: true },
+      mode: "personal"
+    });
+    forumApi.deleteComment.mockClear();
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    const { getByText, getByLabelText } = renderWithNav(
+      <ForumPostDetailScreen
+        route={{ params: { id: "post1" } }}
+        navigation={{ navigate: jest.fn(), goBack: jest.fn() }}
+      />
+    );
+
+    await waitFor(() => getByText("Test post content"));
+    fireEvent.press(getByLabelText("Delete your comment"));
+    expect(forumApi.deleteComment).not.toHaveBeenCalled();
+    expect(alertSpy).toHaveBeenCalledWith(
+      "Delete comment?",
+      expect.stringMatching(/permanently removes/i),
+      expect.any(Array),
+      { cancelable: true }
+    );
+    const actions = alertSpy.mock.calls.at(-1)[2];
+    actions.find((action) => action.text === "Delete").onPress();
+    await waitFor(() => expect(forumApi.deleteComment).toHaveBeenCalledWith("c2"));
+    alertSpy.mockRestore();
   });
 
   it("creates Forum tasks and shows reviewable AI suggestions", async () => {
