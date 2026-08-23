@@ -822,7 +822,20 @@ grow`, private current location without a Field Study, and an optional approxima
       revocable viewer-link publish/open/withdraw, privacy review, state reload, and cleanup.
       That is a production mutation/public-private read action, not permission to rebuild the
       accepted event aggregation, Lifecycle/Month/Week/Day views, source links, or existing
-      export/share controls.
+      export/share controls. **Canonical local completion (2026-08-22):** the retained visual
+      timeline/export implementation is unchanged; the missing Personal and Commercial
+      review/cancel/publish/reload/open/share/withdraw/republish public-copy layer now has a
+      frozen version, a new unguessable token per publication, owned protected-media
+      derivatives, derivative deletion on owner withdrawal or Admin hide, safe regeneration
+      before Admin restore, unified reporting, cannabis-interest gating and no Facility
+      publication route. Backend focused acceptance passes 7 suites / 75 assertions;
+      frontend focused acceptance passes 7 suites / 68 assertions with TypeScript and touched
+      lint clean. Detailed evidence is in
+      `P10_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`. P-10 is implemented with local acceptance
+      passed; the exact remaining gate is merge/deploy plus authenticated Personal and
+      Commercial production acceptance of preview/cancel/publish/open/share/reload/withdraw,
+      old-token 404, republish-new-token, eligible/ineligible cannabis visibility, report to
+      Admin, hide/restore, and one real protected-photo derivative lifecycle.
 
 - [~] Complete and record the independent outside-user session. Preserve the completed
   Public, Personal Free/Pro, Commercial, Facility Owner/Manager/Staff/Viewer, and

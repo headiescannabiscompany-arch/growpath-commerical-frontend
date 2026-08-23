@@ -4,11 +4,9 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import GrowTimelineScreen from "@/app/home/personal/(tabs)/grows/[growId]/timeline";
 
 const mockGetWorkspaceGrowTimeline = jest.fn();
-const mockGetWorkspaceGrow = jest.fn();
 
 jest.mock("@/features/grows/workspaceData", () => ({
   getWorkspaceGrowTimeline: (...args: any[]) => mockGetWorkspaceGrowTimeline(...args),
-  getWorkspaceGrow: (...args: any[]) => mockGetWorkspaceGrow(...args),
   growWorkspaceBasePath: (workspace: string) => `/home/${workspace}`
 }));
 
@@ -46,7 +44,6 @@ jest.mock("@/components/personal/GrowWorkspaceNav", () => {
 describe("GrowTimelineScreen", () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    mockGetWorkspaceGrow.mockResolvedValue({ id: "grow-1", name: "My grow" });
     mockGetWorkspaceGrowTimeline.mockResolvedValue([
       {
         id: "GrowLog:log-1",
@@ -151,7 +148,6 @@ describe("GrowTimelineScreen", () => {
     await waitFor(() =>
       expect(mockGetWorkspaceGrowTimeline).toHaveBeenCalledWith("personal", "grow-1")
     );
-    expect(mockGetWorkspaceGrow).toHaveBeenCalledWith("personal", "grow-1");
 
     expect(screen.getByText("Possible pH drift")).toBeTruthy();
     expect(screen.getByText("Overall health: watch")).toBeTruthy();

@@ -124,7 +124,7 @@ Every applicable story must preserve these invariants without repeating them in 
 | P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | partial     |
 | P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | partial     |
 | P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | partial     |
-| P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | partial     |
+| P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | implemented; local acceptance passed; deployment/authenticated public-live acceptance open |
 | P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | partial     |
 
 ## Community, media, courses and discovery

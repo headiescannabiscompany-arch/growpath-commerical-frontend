@@ -199,6 +199,9 @@ describe("GrowPath knowledge registries", () => {
     expect(sharing?.warnings).toContain(
       "Later private edits must not silently change an already-published snapshot."
     );
+    expect(sharing?.warnings).toContain(
+      "Withdrawal or moderation must delete unreferenced public derivatives; restore must safely rebuild them from the protected owned source before visibility returns."
+    );
   });
 
   it("limits context-specific sources to supported decisions", () => {

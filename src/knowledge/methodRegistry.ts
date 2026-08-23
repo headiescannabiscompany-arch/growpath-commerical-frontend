@@ -57,12 +57,13 @@ export const methodRegistry: GrowPathMethod[] = [
       "unguessable canonical viewer URL",
       "safe public photo derivatives",
       "reloadable publication state",
-      "audited withdrawal that never reactivates the old token"
+      "audited withdrawal that never reactivates the old token or leaves an unreferenced public photo copy"
     ],
     [
       "Never publish private data merely because Share was pressed.",
       "Never expose protected upload URLs, exact locations, operational payloads, AI receipts, credentials, or evidence permissions.",
       "Later private edits must not silently change an already-published snapshot.",
+      "Withdrawal or moderation must delete unreferenced public derivatives; restore must safely rebuild them from the protected owned source before visibility returns.",
       "Cannabis-specific public copies require the cannabis visibility and reporting gates before public release."
     ],
     ["grow-timeline", "public-share-review"]
