@@ -180,14 +180,13 @@ Platform Admin in the Admin-owned Commercial workspace, and
 launch roles are denied. Commercial AI charges the account; Facility AI charges the
 selected Facility.
 
-Retained evidence checkpoint, 2026-08-22: the shared record/calculator foundation, guarded
-routes, and the seven non-provider tool screens (`/price-margin`, `/quotes`, `/leads`,
-`/jobs`, `/expenses`, `/vendors`, and `/cash-flow`) now have local implementation and
-focused automated evidence. That evidence narrows construction; it does not close B-03.
-Combined cross-role acceptance, any remaining deterministic-slice gaps, credential-backed
-document extraction, Business Ask AI, optional merchant provider handoff, exact-SHA
-deployment, and live acceptance remain open. The canonical matrix continues to own row
-status and must be reconciled only after the combined evidence packet is complete.
+Retained evidence checkpoint, 2026-08-22: the exact eight-tool frontend assembly passes 283
+focused assertions, and the 36-suite backend assembly passes 451 assertions including the
+combined cross-role, transaction, provider-operation, attachment/privacy, payment-evidence
+and Business Ask contracts. B-03 is implemented and locally accepted. Credential-backed
+document extraction, Business Ask/provider configuration, optional merchant provider handoff,
+exact-SHA deployment, and live workspace/credit/audit acceptance remain open production gates;
+they must not reopen construction. The canonical matrix continues to own row status.
 
 | Slice                        | Route           | Required construction                                                                                                                                                                                    | Focused automated acceptance                                                                                                                                                                                                               |
 | ---------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

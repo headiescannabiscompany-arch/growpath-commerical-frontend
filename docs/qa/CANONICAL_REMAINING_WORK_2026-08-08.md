@@ -181,16 +181,22 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   and require an OWNER session plus action-time confirmation. No checkout or cancellation was
   executed during diagnosis.
 - [~] **B-03 provider-backed Business Desk actions:** deterministic tools and reviewed record
-  workflows exist. Receipt extraction, Business Ask, provider operations, workspace export
-  and Quote payment-provider handoff have independent configuration/confirmation gates.
-  Finish the canonical eight-tool acceptance and enable only the operations whose provider,
+  workflows are locally accepted. The canonical frontend lane passes 283 assertions across
+  the exact eight-tool registry/routes, seven deterministic tools and shared engines, Business
+  Ask source selection/citations/attestation/draft history, workspace boundaries and recovery.
+  The backend lane passes 451 assertions across all 36 record, exact-money, transaction,
+  provider-operation, attachment/quarantine/scanning, privacy/deletion, export, Quote payment-
+  evidence, Business Ask and combined cross-role suites. Receipt extraction, Business Ask,
+  provider operations, workspace export and Quote payment-provider handoff retain independent
+  production configuration/confirmation gates. Enable only the operations whose provider,
   malware/privacy, idempotency, audit and confirmation gates pass; show any unavailable
   operation visibly instead of hiding the tool.
   Frontend `9c55b6bca924cded23d8f7d0d09700d8b509c3d4` is deployed and the live
   Triple Bag Genetics `STAFF` denial is accepted. Owner/Manager mutation, Viewer denial,
   provider operation, reload/isolation, Facility credit/refund and audit remain the exact
   live gates; they require the corresponding authorized account sessions and must not cause
-  an eight-tool rebuild.
+  an eight-tool rebuild. The remaining work is credential/provider, exact-SHA deployment and
+  live acceptance—not B-03 construction.
 - [~] **S-05 hosted Lives/OBS:** the retained hosted-live architecture and production evidence
   are accepted and must not be rebuilt. `EXPO_PUBLIC_USE_LIVE_BACKEND` and Cloudflare
   provider readiness can bury the entry; the final route-to-entry and two-account
