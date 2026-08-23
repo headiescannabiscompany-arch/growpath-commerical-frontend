@@ -619,6 +619,13 @@ describe("sourceObjectHref", () => {
 
     expect(
       sourceObjectHref({
+        linkedTaskId: "task-personal-unscoped-1",
+        workspaceType: "personal"
+      })
+    ).toBe("/home/personal/tasks?taskId=task-personal-unscoped-1");
+
+    expect(
+      sourceObjectHref({
         linkedAlertId: "alert-1",
         workspaceType: "personal"
       })

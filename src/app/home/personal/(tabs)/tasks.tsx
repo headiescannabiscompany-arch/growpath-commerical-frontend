@@ -9,7 +9,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 
 import {
   createPersonalTask,
@@ -363,6 +363,10 @@ function scheduleSummary(task: PersonalTask) {
 }
 
 export default function PersonalTaskCenterRoute() {
+  const params = useLocalSearchParams<{ taskId?: string | string[] }>();
+  const focusedTaskId = String(
+    Array.isArray(params.taskId) ? params.taskId[0] || "" : params.taskId || ""
+  ).trim();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const entitlements = useEntitlements();
@@ -404,6 +408,7 @@ export default function PersonalTaskCenterRoute() {
   const visibleTasks = useMemo(
     () =>
       tasks.filter((task) => {
+        if (focusedTaskId) return getRowId(task) === focusedTaskId;
         const assigned = Boolean(task.assignedToUserId || task.assignedTo);
         return (
           (queueFilter === "all" ||
@@ -413,7 +418,14 @@ export default function PersonalTaskCenterRoute() {
           (sourceFilter === "all" || String(task.sourceType || "manual") === sourceFilter)
         );
       }),
-    [tasks, queueFilter, sourceFilter]
+    [focusedTaskId, tasks, queueFilter, sourceFilter]
+  );
+  const focusedTask = useMemo(
+    () =>
+      focusedTaskId
+        ? tasks.find((task) => getRowId(task) === focusedTaskId) || null
+        : null,
+    [focusedTaskId, tasks]
   );
   const availableSourceFilters = useMemo(
     () => [
@@ -510,7 +522,12 @@ export default function PersonalTaskCenterRoute() {
     return (
       <View
         key={id || `${task.growId}-${task.title}-${task.dueDate}`}
-        style={styles.card}
+        accessibilityLabel={
+          focusedTaskId && id === focusedTaskId
+            ? `Focused personal task ${focusedTaskId}`
+            : undefined
+        }
+        style={[styles.card, focusedTaskId && id === focusedTaskId && styles.focusedCard]}
       >
         <View style={styles.cardHeader}>
           <Text style={styles.taskTitle}>
@@ -618,53 +635,70 @@ export default function PersonalTaskCenterRoute() {
           </View>
         ))}
       </View>
-      <View style={styles.form}>
-        <Text style={styles.formTitle}>Queue filters</Text>
-        <View style={styles.chipRow}>
-          {(
-            [
-              "all",
-              "assigned",
-              "overdue",
-              "today",
-              "upcoming",
-              "completed"
-            ] as QueueFilter[]
-          ).map((option) => (
-            <Pressable
-              key={option}
-              accessibilityRole="button"
-              accessibilityLabel={`Personal task queue filter ${option}`}
-              onPress={() => setQueueFilter(option)}
-              style={[styles.chip, queueFilter === option && styles.chipSelected]}
-            >
-              <Text
-                style={[styles.chipText, queueFilter === option && styles.chipTextOn]}
-              >
-                {option}
-              </Text>
+      {focusedTaskId ? (
+        <View accessibilityRole="alert" style={styles.focusBanner}>
+          <Text style={styles.formTitle}>
+            {loading
+              ? "Opening the linked task…"
+              : focusedTask
+                ? "Showing the task linked from your notification."
+                : "This linked task was not found or is no longer available to this account."}
+          </Text>
+          <Link href="/home/personal/tasks" asChild>
+            <Pressable accessibilityRole="link" style={styles.ghostButton}>
+              <Text style={styles.ghostButtonText}>View all tasks</Text>
             </Pressable>
-          ))}
+          </Link>
         </View>
-        <Text style={styles.label}>Source filter</Text>
-        <View style={styles.chipRow}>
-          {availableSourceFilters.map((option) => (
-            <Pressable
-              key={option}
-              accessibilityRole="button"
-              accessibilityLabel={`Personal task source filter ${option}`}
-              onPress={() => setSourceFilter(option)}
-              style={[styles.chip, sourceFilter === option && styles.chipSelected]}
-            >
-              <Text
-                style={[styles.chipText, sourceFilter === option && styles.chipTextOn]}
+      ) : (
+        <View style={styles.form}>
+          <Text style={styles.formTitle}>Queue filters</Text>
+          <View style={styles.chipRow}>
+            {(
+              [
+                "all",
+                "assigned",
+                "overdue",
+                "today",
+                "upcoming",
+                "completed"
+              ] as QueueFilter[]
+            ).map((option) => (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                accessibilityLabel={`Personal task queue filter ${option}`}
+                onPress={() => setQueueFilter(option)}
+                style={[styles.chip, queueFilter === option && styles.chipSelected]}
               >
-                {option.replace(/_/g, " ")}
-              </Text>
-            </Pressable>
-          ))}
+                <Text
+                  style={[styles.chipText, queueFilter === option && styles.chipTextOn]}
+                >
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text style={styles.label}>Source filter</Text>
+          <View style={styles.chipRow}>
+            {availableSourceFilters.map((option) => (
+              <Pressable
+                key={option}
+                accessibilityRole="button"
+                accessibilityLabel={`Personal task source filter ${option}`}
+                onPress={() => setSourceFilter(option)}
+                style={[styles.chip, sourceFilter === option && styles.chipSelected]}
+              >
+                <Text
+                  style={[styles.chipText, sourceFilter === option && styles.chipTextOn]}
+                >
+                  {option.replace(/_/g, " ")}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
-      </View>
+      )}
       <ContextualWorkflowLinks
         title="Task planning tools"
         helper="These planners belong here because their main output is a real grow task or calendar entry. Select the grow inside the planner when one is not already in context."
@@ -854,6 +888,15 @@ const createStyles = (palette: ThemePalette) =>
       padding: 12
     },
     formTitle: { color: palette.text, fontSize: 16, fontWeight: "900" },
+    focusBanner: {
+      alignItems: "flex-start",
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 9,
+      padding: 12
+    },
     label: { color: palette.textMuted, fontSize: 12, fontWeight: "900" },
     input: {
       backgroundColor: palette.surface,
@@ -926,6 +969,7 @@ const createStyles = (palette: ThemePalette) =>
       gap: 6,
       padding: 12
     },
+    focusedCard: { borderColor: palette.accent, borderWidth: 2 },
     cardHeader: {
       alignItems: "center",
       flexDirection: "row",

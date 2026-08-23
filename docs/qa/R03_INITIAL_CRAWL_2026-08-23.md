@@ -88,6 +88,47 @@ must be presumed active. Resume through the product UI at a later mutation check
 do not use this failed interaction as evidence or rewrite the archive implementation without
 a reproduced product defect.
 
+## Continued signed-in Personal crawl
+
+The same Personal Pro session continued on the served `d3babaff` product behavior before the
+Facility repair deployment. These are live route and state checks, not permission to rewrite
+the retained implementations:
+
+- Personal Home completed its asynchronous load and exposed the real active grow plus exact
+  grow, log, photo, AI, diagnosis, task, journal and integration destinations. The empty
+  telemetry, task, diagnosis, journal and photo states remained honest and actionable.
+- The visual Grow timeline loaded one retained event with Lifecycle/Month/Week/Day controls,
+  source link, viewer-friendly and visual exports, and the separate reviewed share route.
+  The share route produced an exact private preview, stated its private-field exclusions,
+  disclosed cannabis/hemp visibility handling and exposed separate Cancel and Publish Copy
+  actions. Cancel returned to Personal without publishing.
+- AI Tools completed its live credit load at `87 / 100`, explained 13 charged requests and
+  zero refunds, and exposed Harvest Readiness Calculator by its full product name with a
+  grow-optional boundary.
+- Lives rendered an honest zero-session directory with All, Campaign-linked, Upcoming, Live
+  now, Premieres and Replays states. Live Studio retained the existing private draft,
+  live/premiere choice, outside URL or GrowPath-hosted choice, Twitch/YouTube/Kick/Facebook
+  Live/Instagram/other destinations, schedule/reminders, GrowPath chat, outside-picker feed,
+  review-before-publish flow and Discord announcement integration. No draft was changed or
+  published.
+- The published-video viewer retained native playback controls, reporting, Follow,
+  Discussion, Copy Link and reviewed external share targets. Forum rendered its honest empty
+  discussion state, diagnosis/grow templates and video-library entry. Courses rendered the
+  retained private QA course and author workflow without claiming public inventory.
+- The canonical notification center loaded real categories, device-push state, unread task
+  notifications and source actions. Live evidence exposed a bounded usability defect:
+  Personal task notifications linked only to the general task list and offered a redundant
+  Create Task action even though the source task already existed.
+- Direct Commercial and Platform Admin URLs failed closed for this non-authorized identity;
+  the session then returned to Personal.
+
+The notification defect is repaired locally on
+`codex/r03-personal-task-deep-links`: Personal task sources now carry their task ID, the Task
+Center opens only that authorized task with an explicit return to the full queue, inaccessible
+or removed IDs produce an honest state, and task-origin notifications do not offer a duplicate
+Create Task action. Three focused suites pass 15 assertions, TypeScript passes and touched
+source lint passes. Merge, deployment and live notification-to-task acceptance remain open.
+
 ## Exact remaining R-03 work
 
 1. Complete authenticated Personal, Commercial, Facility and Admin role/state/action
@@ -102,4 +143,3 @@ a reproduced product defect.
    small reversible commits.
 5. Freeze new frontend/backend SHAs, run affected plus full release gates, deploy those exact
    SHAs, and repeat the complete crawl. Only that final post-cleanup pass may close `R-03`.
-

@@ -2,7 +2,8 @@
 
 Date: 2026-08-23  
 Matrix rows exercised: `F-04`, `F-05`, `F-06`, `B-02`, `B-03`, `R-03`  
-Status: partial production evidence plus two focused frontend repairs.
+Status: partial production evidence; both focused frontend repairs are merged, deployed and
+live accepted.
 
 ## Production identity and role
 
@@ -76,8 +77,14 @@ remains the enforcement boundary.
 
 ## Remaining acceptance
 
-- Deploy the exact merged repair SHA and repeat the Facility Dashboard/AI/Inventory checks,
-  proving six tabs and no STAFF full-audit control.
+- **Repair deployment and live retest passed.** Pull request 745 passed its full
+  `lint-and-audit` workflow and merged as
+  `6d4b9c8d1138e99a478420e9ca12ed7577e21a22`. Render deployment
+  `dep-da58n3u7bikc73bgb4ag` succeeded from that exact commit. The signed-in member then
+  reopened Facility Dashboard and saw exactly Dashboard, Grows, Tasks, Compliance, More
+  and Profile; neither nested tool route appeared in the tab bar. Facility Inventory
+  remained read-only and exposed no `Full Audit CSV` control. Direct Business Desk access
+  remained denied. The session was returned to Personal after verification.
 - Exercise OWNER and MANAGER mutation, full-audit, Business Desk, Horticulture Operations,
   integrations and populated Inventory flows; exercise VIEWER full-audit and denied writes.
 - Exercise a second Facility with similar names to prove record and export isolation.
