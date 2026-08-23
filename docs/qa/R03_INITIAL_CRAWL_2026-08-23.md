@@ -320,9 +320,27 @@ harvest_readiness. Detailed evidence remains in the private GrowPath record.` an
   as a named choice, empty Product and Feed lists linked to their workspaces, raw IDs were
   absent until Advanced was opened, and Advanced restored all four exact inputs. The live
   Forum response exposed its readable content under a different field than the local fixture;
-  the follow-up candidate normalizes that field instead of accepting a generic `Forum thread`
-  label. Exact-main gates, the follow-up deployment and final live label verification remain
-  open.
+  follow-up frontend `5003760e` normalizes that field instead of accepting a generic
+  `Forum thread` label. Production then rendered the actual post text, `Testing post creation,
+navigation, and image storage.` Exact-main Frontend CI `32671739812` and Production Build
+  Preflight `32671739809` both passed. This closes the Commercial Live related-record linking
+  slice without reopening or replacing Live Studio, OBS, chat overlays or premieres.
+
+## Continued signed-in Facility and Admin-boundary crawl
+
+- The same multi-workspace owner explicitly switched from Commercial to its authorized Triple
+  Bag Genetics Facility. Dashboard, More, Rooms, Grows, Plants, Tasks, SOPs, Compliance, Team,
+  Transfers, Reports, Analytics, AI Tools, Feed and Profile loaded their expected Facility
+  headings, data or truthful empty states without an authentication, raw transport-code or
+  failed-load presentation. Dashboard exposed 15 rooms, one active grow, two inventory items,
+  one SOP, 134 audit events and four team members; those counts are retained as observed state,
+  not synthetic completion evidence. The account was explicitly returned to Commercial after
+  the pass.
+- The current owner identity does not hold the Platform Admin role. A direct `/admin` request
+  failed closed with `Platform owner access required`, described Admin as separate from
+  Facility ownership and exposed no governance data. This proves the denial boundary only.
+  Authenticated Platform Admin state/action crawling remains open and requires the separate
+  Platform Admin login; do not bypass or infer it from Facility ownership.
 
 ## Exact remaining R-03 work
 
