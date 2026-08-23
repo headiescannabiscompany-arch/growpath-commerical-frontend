@@ -207,6 +207,54 @@ export const methodRegistry: GrowPathMethod[] = [
     ]
   ),
   method(
+    "horticulture-operations",
+    "Horticulture Operations",
+    [
+      "business",
+      "horticulture",
+      "nursery",
+      "plant_intake",
+      "product_help",
+      "fulfillment"
+    ],
+    "horticulture-operations-method.md",
+    [
+      "select authorized workspace",
+      "capture reviewed plant and product context",
+      "link evidence and optional B-02 records",
+      "review label and hold state",
+      "append care history",
+      "evaluate current readiness",
+      "human confirmation"
+    ],
+    [
+      "Commercial or selected Facility workspace",
+      "owner-observed plant, product, environment, and symptom context",
+      "reviewed product label when product-use help is requested",
+      "same-workspace B-02 item and child lot when fulfillment is evaluated",
+      "reviewed quarantine, media, care-card, and pick/pack state"
+    ],
+    [
+      "workspace-scoped plant intake, product-help, or nursery-batch record",
+      "append-only actor-attributed care and inspection history",
+      "label-required advice boundary with evidence and missing-input state",
+      "deterministic blocked or ready-for-human-confirmation result with current B-02 evidence",
+      "audited version-fenced review without inventory mutation"
+    ],
+    [
+      "B-02 is the only inventory ledger; B-04 may link but never copy or mutate stock truth.",
+      "Never invent plant identity, label directions, pesticide rates, legal use, diagnosis, availability, substitutes, or fulfillment actions.",
+      "Never call readiness a reservation, sale, shipment, compliance decision, safety certification, or customer promise.",
+      "Never expose a private home, exact private location, customer data, costs, vendor terms, or internal care history through public sharing."
+    ],
+    [
+      "horticulture-operations",
+      "nursery-record",
+      "plant-product-intake",
+      "fulfillment-readiness"
+    ]
+  ),
+  method(
     "integration-workflow",
     "Integration Workflow",
     ["integration", "telemetry", "sensor", "controller"],

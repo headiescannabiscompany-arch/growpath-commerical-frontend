@@ -74,6 +74,7 @@ const COMMERCIAL_ONLY_ROUTES = [
   "/home/commercial/business-desk/vendors",
   "/home/commercial/business-desk/cash-flow",
   "/home/commercial/business-desk/ask-ai",
+  "/home/commercial/horticulture",
   "/alerts",
   "/tasks",
   "/storefront",
@@ -179,6 +180,31 @@ describe("route access policy", () => {
     expect(canAccessRoute("/storefront", commercial({}))).toBe(false);
     expect(canAccessRoute("/home/commercial/business-desk", commercial({}))).toBe(false);
     expect(canAccessRoute("/home/facility/business-desk", facility({}))).toBe(false);
+    expect(canAccessRoute("/home/commercial/horticulture", commercial({}))).toBe(false);
+    expect(canAccessRoute("/home/facility/horticulture", facility({}))).toBe(false);
+  });
+
+  it("gates B-04 horticulture to eligible Commercial and Facility owner/manager workspaces", () => {
+    const capability = { [CAPABILITY_KEYS.BUSINESS_DESK_READ]: true };
+    expect(canAccessRoute("/home/commercial/horticulture", commercial(capability))).toBe(
+      true
+    );
+    for (const role of ["OWNER", "MANAGER"]) {
+      expect(
+        canAccessRoute("/home/facility/horticulture", {
+          ...facility(capability),
+          facilityRole: role
+        })
+      ).toBe(true);
+    }
+    for (const role of ["STAFF", "VIEWER", "QA", null]) {
+      expect(
+        canAccessRoute("/home/facility/horticulture", {
+          ...facility(capability),
+          facilityRole: role
+        })
+      ).toBe(false);
+    }
   });
 
   it("allows all seven registered tools for an eligible Commercial workspace", () => {
