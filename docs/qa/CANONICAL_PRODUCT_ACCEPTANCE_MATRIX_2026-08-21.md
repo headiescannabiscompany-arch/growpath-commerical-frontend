@@ -262,6 +262,16 @@ Owner/Manager mutation, Viewer denial, provider operation, reload/isolation, cre
 audit evidence remain open and require the corresponding authorized sessions. Do not use the
 account-level `User` label on Profile as a substitute for the Facility membership role.
 
+The 2026-08-23 retention audit proves the B-03 assembly remains present after later merges.
+Frontend authorization, eight-tool, currency, combined-acceptance, subscription-ownership and
+Facility-billing commits `0539d29a`, `85253d5e`, `dc97e836`, `181ea060`, `862ae85b`,
+`9c55b6bc` and `8d397f64` are all ancestors of current frontend candidate
+`6791268981826f1154dae0db1a780a33e1fff676`. Backend workspace/record, durable-provider,
+combined-acceptance, subscription-ownership and Facility-membership commits `a364e7e`,
+`2d7a583`, `9166c66`, `dcc0209c`, `fbdd874c` and `687d635a` are all ancestors of current
+backend candidate `be00d33ff66fea5322fa6e7cac68fe21298d4753`. This is retention evidence,
+not a substitute for the still-open authorized-role/provider live scenarios.
+
 The same live pass found that the Facility Profile's billing action opened Personal Account
 billing while Triple Bag Genetics separately reported `FACILITY (trialing)`. The ownership
 correction is now deployed: frontend `8d397f648f1399e10f92e6dec64de20ce67b81ba`
