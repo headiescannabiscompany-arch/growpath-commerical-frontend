@@ -429,9 +429,17 @@ populated, provider, authenticated or multi-account evidence.
   `Your post`, exposes no post self-report, gives each of its three owner comments the
   confirmed `Delete your comment` action, and logs no browser error. Focused route tests 7/7,
   TypeScript and lint also passed locally. No retained comment was deleted during live
-  read-only acceptance. **Remaining gates:** reconcile stale counts, add a safe owner post
-  edit/delete lifecycle, then use an outside account for follow/comment/reply/edit/delete/report
-  and prove Admin/email delivery. **Do not rebuild:** feed separation, thread detail, media,
+  read-only acceptance. The follow-up local candidate now derives detail and feed counts from
+  the same visible-comment policy, authorizes content-only owner edits without allowing
+  workspace/context/visibility changes, re-runs moderation and feed projection after edits,
+  and performs an audited soft delete plus feed removal. Frontend exposes explicit confirmed
+  Edit/Delete owner controls and returns to Forum after deletion. Backend focused/controller
+  and Mongo-backed contract packets pass 37/37; frontend route/API tests pass 14/14 with
+  TypeScript and focused lint clean. Exact evidence is retained in
+  `FORUM_OWNER_LIFECYCLE_LOCAL_EVIDENCE_2026-08-23.md`. **Remaining gates:** merge/deploy the
+  frontend and backend candidates, live owner edit/delete/count reconciliation, then use an
+  outside account for follow/comment/reply/edit/delete/report and prove Admin/email delivery.
+  **Do not rebuild:** feed separation, thread detail, media,
   sharing, comment composer, owner detection or the accepted author-only comment-delete
   contract.
 - **S-01 through S-08 — local acceptance:** these rows now carry `implemented; local

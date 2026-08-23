@@ -11,11 +11,12 @@ import {
   TextInput,
   View
 } from "react-native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 
 import {
   addForumComment,
   deleteForumComment,
+  deleteForumPost,
   getForumPost,
   likeForumPost,
   listForumComments,
@@ -23,7 +24,8 @@ import {
   reportForumPost,
   saveForumPostToGrowLog,
   type SocialPost,
-  unlikeForumPost
+  unlikeForumPost,
+  updateForumPost
 } from "@/api/communitySocial";
 import { createPersonalTask } from "@/api/tasks";
 import { useAuth } from "@/auth/AuthContext";
@@ -202,6 +204,7 @@ function ForumImage({ uri, style, label }: { uri: string; style: any; label: str
 
 export default function ForumPostDetailRoute() {
   const auth = useAuth();
+  const router = useRouter();
   const [reportedComment, setReportedComment] = useState<CommentRow | null>(null);
   const params = useLocalSearchParams();
   const { palette } = useAppTheme();
@@ -223,6 +226,9 @@ export default function ForumPostDetailRoute() {
   const [saving, setSaving] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [editingPost, setEditingPost] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
 
   const loadedId = useMemo(() => postId(post), [post]);
   const isPostOwner = useMemo(() => isOwnedBy(post, auth.user), [auth.user, post]);
@@ -447,6 +453,67 @@ export default function ForumPostDetailRoute() {
     }
   }
 
+  function beginEditPost() {
+    if (!post || !isPostOwner || saving) return;
+    setEditTitle(String(post.title || ""));
+    setEditBody(bodyOf(post));
+    setEditingPost(true);
+    setFeedback("");
+  }
+
+  async function savePostEdit() {
+    const targetId = loadedId || id;
+    if (!targetId || !isPostOwner || !editBody.trim() || saving) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      const updated = await updateForumPost(targetId, {
+        title: editTitle,
+        body: editBody
+      });
+      setPost(updated);
+      setEditingPost(false);
+      setFeedback(
+        updated?.isHidden
+          ? updated.moderationNotice ||
+              "This update is hidden while a human moderator reviews it."
+          : "Post updated."
+      );
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to update this post.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function confirmDeletePost() {
+    const targetId = loadedId || id;
+    if (!targetId || !isPostOwner || saving) return;
+    Alert.alert(
+      "Delete post?",
+      "This removes the discussion from Forum and public feeds. This cannot be undone from the app.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setSaving(true);
+            setFeedback("");
+            try {
+              await deleteForumPost(targetId);
+              router.replace("/forum");
+            } catch (error: any) {
+              setFeedback(error?.message || "Unable to delete this post.");
+              setSaving(false);
+            }
+          }
+        }
+      ],
+      { cancelable: true }
+    );
+  }
+
   if (!canView || !id || (!loading && !post)) {
     const unavailableTitle = canView
       ? "Forum discussion unavailable"
@@ -526,7 +593,60 @@ export default function ForumPostDetailRoute() {
                     ? ` | ${new Date(post.createdAt).toLocaleString()}`
                     : ""}
                 </Text>
-                {bodyOf(post) ? <Text style={styles.body}>{bodyOf(post)}</Text> : null}
+                {editingPost ? (
+                  <View style={styles.editComposer}>
+                    <TextInput
+                      value={editTitle}
+                      onChangeText={setEditTitle}
+                      editable={!saving}
+                      placeholder="Post title"
+                      placeholderTextColor={palette.textMuted}
+                      selectionColor={palette.accent}
+                      style={styles.input}
+                      accessibilityLabel="Edit forum post title"
+                    />
+                    <TextInput
+                      value={editBody}
+                      onChangeText={setEditBody}
+                      editable={!saving}
+                      multiline
+                      placeholder="Post details"
+                      placeholderTextColor={palette.textMuted}
+                      selectionColor={palette.accent}
+                      style={[styles.input, styles.editBodyInput]}
+                      accessibilityLabel="Edit forum post body"
+                    />
+                    <Text style={styles.meta}>
+                      Editing changes the post copy only. Its author, workspace, links and
+                      visibility stay unchanged.
+                    </Text>
+                    <View style={styles.actions}>
+                      <Pressable
+                        disabled={!editBody.trim() || saving}
+                        onPress={savePostEdit}
+                        style={[
+                          styles.primaryBtn,
+                          (!editBody.trim() || saving) && styles.disabled
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel="Save forum post changes"
+                      >
+                        <Text style={styles.primaryText}>Save changes</Text>
+                      </Pressable>
+                      <Pressable
+                        disabled={saving}
+                        onPress={() => setEditingPost(false)}
+                        style={[styles.secondaryBtn, saving && styles.disabled]}
+                        accessibilityRole="button"
+                        accessibilityLabel="Cancel forum post editing"
+                      >
+                        <Text style={styles.secondaryText}>Cancel</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : bodyOf(post) ? (
+                  <Text style={styles.body}>{bodyOf(post)}</Text>
+                ) : null}
                 {tagsOf(post).length ? (
                   <View style={styles.tagRow}>
                     {tagsOf(post).map((tag) => (
@@ -594,7 +714,30 @@ export default function ForumPostDetailRoute() {
                     </>
                   ) : null}
                   {isPostOwner ? (
-                    <Text style={styles.meta}>Your post</Text>
+                    <>
+                      <Text style={styles.meta}>Your post</Text>
+                      <Pressable
+                        disabled={saving || editingPost}
+                        onPress={beginEditPost}
+                        style={[
+                          styles.secondaryBtn,
+                          (saving || editingPost) && styles.disabled
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel="Edit your forum post"
+                      >
+                        <Text style={styles.secondaryText}>Edit</Text>
+                      </Pressable>
+                      <Pressable
+                        disabled={saving}
+                        onPress={confirmDeletePost}
+                        style={[styles.dangerBtn, saving && styles.disabled]}
+                        accessibilityRole="button"
+                        accessibilityLabel="Delete your forum post"
+                      >
+                        <Text style={styles.dangerText}>Delete post</Text>
+                      </Pressable>
+                    </>
                   ) : (
                     <Pressable
                       disabled={!canPost || saving}
@@ -828,7 +971,15 @@ export function createForumPostDetailStyles(palette: ThemePalette) {
     cardText: { color: palette.textMuted, lineHeight: 20 },
     rowTitle: { fontWeight: "800", color: palette.text },
     meta: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
-    actions: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6 },
+    actions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      gap: 10,
+      marginTop: 6
+    },
+    editComposer: { gap: 8, marginTop: 10 },
+    editBodyInput: { minHeight: 130, textAlignVertical: "top" },
     commentComposer: { gap: 8 },
     comment: {
       borderTopWidth: 1,

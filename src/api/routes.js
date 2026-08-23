@@ -74,6 +74,8 @@ export const ROUTES = {
     FEED_TRENDING: `${PREFIX}/forum/feed/trending`,
     FEED_FOLLOWING: `${PREFIX}/forum/feed/following`,
     CREATE: `${PREFIX}/forum/create`,
+    UPDATE: (id) => `${PREFIX}/forum/${id}`,
+    DELETE: (id) => `${PREFIX}/forum/${id}`,
     LEGACY_CREATE: `${PREFIX}/forum`,
     LIKE: (id) => `${PREFIX}/forum/like/${id}`,
     UNLIKE: (id) => `${PREFIX}/forum/unlike/${id}`,

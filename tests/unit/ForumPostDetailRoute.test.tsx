@@ -7,10 +7,13 @@ const mockGetForumPost = jest.fn();
 const mockListForumComments = jest.fn();
 const mockAddForumComment = jest.fn();
 const mockDeleteForumComment = jest.fn();
+const mockDeleteForumPost = jest.fn();
 const mockLikeForumPost = jest.fn();
 const mockUnlikeForumPost = jest.fn();
 const mockReportForumPost = jest.fn();
 const mockSaveForumPostToGrowLog = jest.fn();
+const mockUpdateForumPost = jest.fn();
+const mockRouterReplace = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 let mockParams: Record<string, string> = { id: "post-1", growId: "grow-1" };
 
@@ -22,7 +25,8 @@ jest.mock("expo-router", () => {
         href,
         testID: `forum-link-${href}`
       }),
-    useLocalSearchParams: () => mockParams
+    useLocalSearchParams: () => mockParams,
+    useRouter: () => ({ replace: mockRouterReplace })
   };
 });
 
@@ -78,13 +82,15 @@ jest.mock("@/auth/AuthContext", () => ({
 jest.mock("@/api/communitySocial", () => ({
   addForumComment: (...args: any[]) => mockAddForumComment(...args),
   deleteForumComment: (...args: any[]) => mockDeleteForumComment(...args),
+  deleteForumPost: (...args: any[]) => mockDeleteForumPost(...args),
   getForumPost: (...args: any[]) => mockGetForumPost(...args),
   likeForumPost: (...args: any[]) => mockLikeForumPost(...args),
   listForumComments: (...args: any[]) => mockListForumComments(...args),
   postId: (post: any) => String(post?.id || post?._id || ""),
   reportForumPost: (...args: any[]) => mockReportForumPost(...args),
   saveForumPostToGrowLog: (...args: any[]) => mockSaveForumPostToGrowLog(...args),
-  unlikeForumPost: (...args: any[]) => mockUnlikeForumPost(...args)
+  unlikeForumPost: (...args: any[]) => mockUnlikeForumPost(...args),
+  updateForumPost: (...args: any[]) => mockUpdateForumPost(...args)
 }));
 
 jest.mock("@/api/tasks", () => ({
@@ -114,6 +120,13 @@ describe("ForumPostDetailRoute", () => {
     mockCreatePersonalTask.mockResolvedValue({ id: "task-1" });
     mockAddForumComment.mockResolvedValue({ id: "comment-new" });
     mockDeleteForumComment.mockResolvedValue({ ok: true });
+    mockDeleteForumPost.mockResolvedValue({ deleted: true });
+    mockUpdateForumPost.mockImplementation(async (_id, data) => ({
+      id: "post-1",
+      title: data.title,
+      body: data.body,
+      author: { username: "EtGU_Jay" }
+    }));
   });
 
   it("shows an action-free handoff when no post id is present", async () => {
@@ -254,6 +267,8 @@ describe("ForumPostDetailRoute", () => {
     await waitFor(() => expect(screen.getByText("Owner post")).toBeTruthy());
 
     expect(screen.getByText("Your post")).toBeTruthy();
+    expect(screen.getByLabelText("Edit your forum post")).toBeTruthy();
+    expect(screen.getByLabelText("Delete your forum post")).toBeTruthy();
     expect(screen.queryByLabelText("Report forum post")).toBeNull();
     expect(screen.queryByLabelText("Report forum comment")).toBeNull();
     fireEvent.press(screen.getByLabelText("Delete your comment"));
@@ -262,6 +277,54 @@ describe("ForumPostDetailRoute", () => {
       expect(mockDeleteForumComment).toHaveBeenCalledWith("comment-owner")
     );
     expect(screen.getByText("Comment deleted.")).toBeTruthy();
+    alert.mockRestore();
+  });
+
+  it("edits an owned post without exposing workspace or visibility controls", async () => {
+    mockGetForumPost.mockResolvedValueOnce({
+      id: "post-1",
+      title: "Owner post",
+      body: "Original copy",
+      author: { username: "EtGU_Jay" }
+    });
+    mockListForumComments.mockResolvedValueOnce([]);
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Owner post")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Edit your forum post"));
+    expect(screen.queryByLabelText(/visibility/i)).toBeNull();
+    fireEvent.changeText(screen.getByLabelText("Edit forum post title"), "Revised");
+    fireEvent.changeText(screen.getByLabelText("Edit forum post body"), "Revised copy");
+    fireEvent.press(screen.getByLabelText("Save forum post changes"));
+
+    await waitFor(() =>
+      expect(mockUpdateForumPost).toHaveBeenCalledWith("post-1", {
+        title: "Revised",
+        body: "Revised copy"
+      })
+    );
+    expect(screen.getByText("Post updated.")).toBeTruthy();
+  });
+
+  it("confirms owner post deletion before returning to Forum", async () => {
+    mockGetForumPost.mockResolvedValueOnce({
+      id: "post-1",
+      title: "Owner post",
+      author: { username: "EtGU_Jay" }
+    });
+    const alert = jest
+      .spyOn(require("react-native").Alert, "alert")
+      .mockImplementation((...args: unknown[]) => {
+        const buttons = args[2] as any[];
+        buttons.find((button) => button.text === "Delete")?.onPress();
+      });
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Owner post")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Delete your forum post"));
+
+    await waitFor(() => expect(mockDeleteForumPost).toHaveBeenCalledWith("post-1"));
+    expect(mockRouterReplace).toHaveBeenCalledWith("/forum");
     alert.mockRestore();
   });
 

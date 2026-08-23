@@ -137,6 +137,21 @@ export async function getForumPost(id: string): Promise<SocialPost | null> {
   return response?.post ?? response?.data?.post ?? response;
 }
 
+export async function updateForumPost(
+  id: string,
+  data: { title: string; body: string }
+): Promise<SocialPost> {
+  const response = await communityRequest(apiRoutes.FORUM.UPDATE(id), {
+    method: "PATCH",
+    body: { title: data.title.trim(), body: data.body.trim(), content: data.body.trim() }
+  });
+  return response?.post ?? response?.data?.post ?? response;
+}
+
+export async function deleteForumPost(id: string) {
+  return communityRequest(apiRoutes.FORUM.DELETE(id), { method: "DELETE" });
+}
+
 export async function likeForumPost(id: string) {
   return communityRequest(apiRoutes.FORUM.LIKE(id), { method: "POST" });
 }
