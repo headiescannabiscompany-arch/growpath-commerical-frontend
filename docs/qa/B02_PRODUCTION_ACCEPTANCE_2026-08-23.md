@@ -12,6 +12,13 @@ remaining multi-role, import retry and paid reconciliation gates stay open
 - Canonical evidence merge: `41ecdcb7123128899f64e49952e14f8955086ecb`.
 - Facility workspace: Triple Bag Genetics, signed-in Facility Owner.
 
+The production profile identified account `jcindc2003@yahoo.com`, plan `Facility`, Facility
+`Triple Bag Genetics, llc` (`6a563bec2fb9f669d2319fa5`) and Facility-owned AI balance. The
+Team page explicitly identified the same account as `Triple Bag Genetics — OWNER` and
+retained the expected Manager, Staff and Viewer roster. The populated inventory route exposed
+Owner-only create/import controls plus audit export, confirming this was not merely a
+Facility URL reached by a lower role.
+
 This is a bounded production checkpoint, not full acceptance of `B-02`, `F-05` or `C-03`.
 The named synthetic records remain pending confirmed cleanup after the remaining role and
 history checks.
