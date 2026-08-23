@@ -363,6 +363,12 @@ navigation, and image storage.` Exact-main Frontend CI `32671739812` and Product
   describing its governance scope; activating it returned to the deployed `/admin` owner hub.
   This closes the previously missing/buried Admin entry-path regression without adding Admin
   controls to Personal, Commercial or Facility ownership.
+- The approved QA-only support lifecycle then passed create/email delivery, in-progress,
+  resolution, hard-reload persistence, reason-required reopen, final resolution and a second
+  hard reload. Admin returned to 0 active / 13 completed with the record retained in completed
+  history. This live run exposed two bounded A-02 gaps: support assignment/case-note controls
+  are absent, and the active transition controls are not exposed as buttons. Moderation
+  hide/restore remains separate; do not repeat the completed support transition loop.
 
 ## Exact remaining R-03 work
 

@@ -62,6 +62,12 @@ authority. The frontend has no one-click approval or disclosure action.
 - **A-02:** with approved disposable records, create/assign/note/resolve/reopen moderation and
   support cases, exercise allowed account/content actions, reload, and verify retained audit plus
   outside-user visibility effects and cleanup.
+  A clearly labeled QA-only Technical support record was created in production with confirmed
+  email delivery, moved to in-progress, resolved, hard-reloaded, reopened with a required audit
+  reason, resolved again and hard-reloaded. The queue returned to 0 active / 13 completed and
+  retained the record in completed history. The live UI exposes no support assignment or case-note
+  controls, and its active transition controls lack button semantics; those bounded product gaps
+  plus the approved reversible moderation hide/restore loop remain before A-02 can close.
 - **A-03 exact external blocker:** production truthfully reports `Sentry Admin read access is
   not configured`. Protected provider access and a redacted test event are still required to
   prove the project/environment tally, detail/deep link and no-secret response. Do not present
