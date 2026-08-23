@@ -126,6 +126,11 @@ describe("FacilityAiToolsRoute", () => {
     expect(mockPush).toHaveBeenLastCalledWith(
       "/home/facility/tools/npk?workspace=facility&facilityId=facility-headies"
     );
+
+    fireEvent.press(screen.getByRole("button", { name: "Open pH / EC Range Check" }));
+    expect(mockPush).toHaveBeenLastCalledWith(
+      "/home/facility/tools/ph-ec?workspace=facility&facilityId=facility-headies"
+    );
   });
 
   it("surfaces AI templates for Facility users and gates the validation lab entry to a capable owner", () => {

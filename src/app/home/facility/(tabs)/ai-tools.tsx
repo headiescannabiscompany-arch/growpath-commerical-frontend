@@ -168,6 +168,7 @@ export const FACILITY_CANNABIS_TOOLS: readonly FacilityToolHubItem[] = [
 ] as const;
 
 export const FACILITY_LIBRARY = [
+  ["pH / EC Range Check", "/home/facility/tools/ph-ec"],
   ["Nutrient Mix Builder", "/home/facility/tools/npk"],
   ["Soil Mix Builder", "/home/facility/tools/soil-builder"],
   ["Products & Label Library", "/home/facility/tools/ingredient-library"]

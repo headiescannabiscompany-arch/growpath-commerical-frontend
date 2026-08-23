@@ -184,4 +184,37 @@ describe("EnvironmentAnalysisToolScreen", () => {
       )
     );
   });
+
+  it("keeps Facility analysis, saved results, and tasks in the Facility scope", async () => {
+    const screen = render(
+      <EnvironmentAnalysisToolScreen
+        backFallbackHref="/home/facility/ai-tools"
+        workspaceType="facility"
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText("Analyze environment"));
+
+    await waitFor(() =>
+      expect(mockAnalyzeEnvironment).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          workspaceType: "facility"
+        })
+      )
+    );
+    await waitFor(() => expect(screen.getByText("Create Environment Task")).toBeTruthy());
+
+    fireEvent.press(screen.getByText("Create Environment Task"));
+
+    await waitFor(() =>
+      expect(mockSaveToolRunAndCreateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          growId: "grow-1",
+          workspaceType: "facility",
+          toolKey: "environment-analysis"
+        })
+      )
+    );
+  });
 });

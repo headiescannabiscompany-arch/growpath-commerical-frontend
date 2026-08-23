@@ -131,31 +131,31 @@ Every applicable story must preserve these invariants without repeating them in 
 
 | ID   | User story                                                                                                         | Status  |
 | ---- | ------------------------------------------------------------------------------------------------------------------ | ------- |
-| S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | partial |
-| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | partial |
-| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | partial |
-| S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | partial |
-| S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | partial |
-| S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | partial |
-| S-07 | Courses support deliberate cover/banner hierarchy, lessons/media, edit/publish/archive and paid enrollment returns | partial |
-| S-08 | Discover provides useful storefront/course/video/forum/live/Nature previews, filters, links and empty states       | partial |
+| S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | implemented; local acceptance passed; authenticated/live acceptance open |
+| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | implemented; local acceptance passed; storage/provider/live acceptance open |
+| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | implemented; local acceptance passed; storage/provider/live acceptance open |
+| S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | implemented; local acceptance passed; provider/live acceptance open |
+| S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | implemented; local acceptance passed; two-account provider/live acceptance open |
+| S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | implemented; local acceptance passed; stable-public-link/live acceptance open |
+| S-07 | Courses support deliberate cover/banner hierarchy, lessons/media, edit/publish/archive and paid enrollment returns | implemented; local acceptance passed; payment/provider/live acceptance open |
+| S-08 | Discover provides useful storefront/course/video/forum/live/Nature previews, filters, links and empty states       | implemented; local acceptance passed; populated/live acceptance open |
 
 ## Commercial and Facility
 
 | ID   | User story                                                                                                        | Status  |
 | ---- | ----------------------------------------------------------------------------------------------------------------- | ------- |
-| C-01 | Commercial retains Personal capabilities plus brand tools                                                         | partial |
-| C-02 | Brand owner manages storefront identity/media/slug/sections/contact/social/location/publication                   | partial |
-| C-03 | Products expose media/inventory/pricing and only lawfully authorized transaction or external-handoff capabilities | partial |
-| C-04 | Commercial courses/content/campaigns and analytics work without duplicate navigation                              | partial |
-| C-05 | Admin brand can explicitly use Commercial tools while retaining Platform Admin                                    | partial |
-| F-01 | Facility Owner sets up rooms/grows/plants/team with role-aware create/edit/import/assignment/audit                | partial |
-| F-02 | Assigned staff work links to the required record/action and persists evidence/completion                          | partial |
-| F-03 | SOP/compliance supports approve/assign/run/compare/evidence/exceptions and audit history                          | partial |
-| F-04 | Facility has the full applicable AI toolset, correct credits/context and role/write gates                         | partial |
-| F-05 | Inventory/transfers/reports/logs have correct routes, populated states and exports                                | partial |
-| F-06 | Reviewed sensor/controller imports map rooms/history safely and protect API keys                                  | partial |
-| F-07 | Owner/admin can reach social/course/storefront tools without polluting staff navigation                           | partial |
+| C-01 | Commercial retains Personal capabilities plus brand tools                                                         | implemented; local acceptance passed; multi-capability/live acceptance open |
+| C-02 | Brand owner manages storefront identity/media/slug/sections/contact/social/location/publication                   | implemented; local acceptance passed; populated/live acceptance open |
+| C-03 | Products expose media/inventory/pricing and only lawfully authorized transaction or external-handoff capabilities | implemented; local acceptance passed; migration/provider/live acceptance open |
+| C-04 | Commercial courses/content/campaigns and analytics work without duplicate navigation                              | implemented; local acceptance passed; provider/live acceptance open |
+| C-05 | Admin brand can explicitly use Commercial tools while retaining Platform Admin                                    | implemented; local acceptance passed; Admin-brand/live acceptance open |
+| F-01 | Facility Owner sets up rooms/grows/plants/team with role-aware create/edit/import/assignment/audit                | implemented; local acceptance passed; multi-role/live acceptance open |
+| F-02 | Assigned staff work links to the required record/action and persists evidence/completion                          | implemented; local acceptance passed; assigned-role/live acceptance open |
+| F-03 | SOP/compliance supports approve/assign/run/compare/evidence/exceptions and audit history                          | implemented; local acceptance passed; populated/live acceptance open |
+| F-04 | Facility has the full applicable AI toolset, correct credits/context and role/write gates                         | implemented; local acceptance passed; provider/credit/live acceptance open |
+| F-05 | Inventory/transfers/reports/logs have correct routes, populated states and exports                                | implemented; local acceptance passed; migration/populated/live acceptance open |
+| F-06 | Reviewed sensor/controller imports map rooms/history safely and protect API keys                                  | implemented; local acceptance passed; device-provider/live acceptance open |
+| F-07 | Owner/admin can reach social/course/storefront tools without polluting staff navigation                           | implemented; local acceptance passed; owner-role/live acceptance open |
 
 ## Business operations and AI
 
@@ -164,7 +164,7 @@ inventory, safety boundaries and mandatory production scenarios.
 
 | ID   | User story                                                                                                    | Status                                                                                       |
 | ---- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | partially implemented/evidenced through B-02/B-03; dedicated acceptance and live gates open  |
+| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                    |
 | B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | implemented; local acceptance passed; deployment/live acceptance open                        |
 | B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | implemented; local acceptance passed; deployment/live acceptance open                        |
 | B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | implemented; local acceptance passed; deployment/live acceptance open                        |
@@ -187,7 +187,7 @@ B-06 through B-09 local construction and verification evidence is retained in
 `B06_B09_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`. These rows must not be rebuilt to satisfy
 their remaining provider, production, regulated-policy or multi-account live gates.
 
-B-01 is no longer unstarted. The locally accepted B-02 ledger (frontend `1d283450`,
+B-01 local construction is accepted. The locally accepted B-02 ledger (frontend `1d283450`,
 backend `f00d674`) implements authenticated Commercial/Facility workspace scope, role and
 field permissions, stable records, reviewed import provenance, idempotent writes and
 workspace-scoped audit/export. The active B-03 foundation (frontend authorization
@@ -195,11 +195,12 @@ foundation `0539d29a`; backend record/workspace foundation `a364e7e` and durable
 provider/credit foundation `2d7a583`) adds own-workspace/selected-Facility authorization,
 solo calculators without fabricated Facility/location/approval records, stable
 revision/review controls, protected-source provenance, correct AI-credit ownership and
-audited/idempotent actions. This is partial implementation and feature-specific local
-evidence, not dedicated B-01 acceptance. A frozen B-01 evidence packet, combined
-two-organization/two-Facility multi-role acceptance, the B-02 production migration,
-exact-SHA deployment, and live isolation/reload/import/approval/credit/audit scenarios
-remain open.
+audited/idempotent actions. `B01_CANONICAL_FOUNDATION_LOCAL_EVIDENCE_2026-08-22.md`
+maps every B-01 invariant to those already accepted assemblies and the consolidated Batch 5
+role/scope lanes. This closes local construction without creating a second identity, role,
+approval, import or audit system. Combined two-organization/two-Facility multi-role
+production acceptance, the guarded B-02 migration, exact-SHA deployment, and live
+isolation/reload/import/approval/credit/audit scenarios remain open.
 
 B-03 is no longer an unstarted row. Frontend `85253d5e` retains the reviewed Business Ask
 provider/evidence/citation/KPI/draft workflow, frontend `dc97e836` retains the explicit IANA
@@ -371,7 +372,8 @@ populated, provider, authenticated or multi-account evidence.
   cleanup never cross accounts, followed by the final role/load isolation check. **Next
   action:** production concurrency/security acceptance. **Do not rebuild or replace:** the
   Cloudflare/OBS channel, player, chat overlay, lifecycle, stop, or replay architecture.
-- **S-01 through S-08 — local acceptance:** the frozen Batch 4 candidate passes 143 frontend
+- **S-01 through S-08 — local acceptance:** these rows now carry `implemented; local
+  acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 143 frontend
   and 154 backend assertions covering Forum/comments, video upload/library/detail, Lives and
   Studio, hosted publication/lifecycle/limits, OBS, GrowPath chat/overlay, signed playback and
   replay, Commercial Lives, courses and ownership, enrollment/payment lifecycle, stable share

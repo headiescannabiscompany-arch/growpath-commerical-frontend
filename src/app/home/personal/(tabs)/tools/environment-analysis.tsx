@@ -23,7 +23,6 @@ import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { askPersonalAssistant } from "@/api/personalAssistant";
-import { createTaskFromToolRun, saveToolRunToLog } from "@/api/toolRuns";
 
 function coerceParam(value?: string | string[]) {
   if (typeof value === "string") return value;
@@ -99,18 +98,32 @@ export default function EnvironmentAnalysisToolScreen({
   workspaceType = "personal"
 }: {
   backFallbackHref?: string;
-  workspaceType?: "personal" | "commercial";
+  workspaceType?: "personal" | "commercial" | "facility";
 } = {}) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createEnvironmentAnalysisStyles(palette), [palette]);
-  const { growId: rawGrowId, plantId: rawPlantId } = useLocalSearchParams<{
+  const {
+    growId: rawGrowId,
+    plantId: rawPlantId,
+    facilityId: rawFacilityId
+  } = useLocalSearchParams<{
     growId?: string | string[];
     plantId?: string | string[];
+    facilityId?: string | string[];
   }>();
   const growId = useMemo(() => coerceParam(rawGrowId), [rawGrowId]);
   const initialPlantId = useMemo(() => coerceParam(rawPlantId), [rawPlantId]);
-  const plantContext = useToolPlantContext(growId, initialPlantId, true, workspaceType);
   const entitlements = useEntitlements();
+  const facilityId =
+    workspaceType === "facility"
+      ? String(entitlements.facilityId || coerceParam(rawFacilityId) || "").trim()
+      : "";
+  const plantContext = useToolPlantContext(
+    growId,
+    initialPlantId,
+    workspaceType !== "facility",
+    workspaceType === "commercial" ? "commercial" : "personal"
+  );
   const enabled = entitlements.can(CAPABILITY_KEYS.AI_ASSISTANT);
 
   const [stage, setStage] = useState("Veg");
@@ -134,6 +147,7 @@ export default function EnvironmentAnalysisToolScreen({
     try {
       const response = await askPersonalAssistant({
         growId,
+        facilityId: facilityId || undefined,
         plantId: plantContext.plantId || undefined,
         workspaceType,
         context: {
@@ -203,6 +217,7 @@ export default function EnvironmentAnalysisToolScreen({
       const response = await analyzeEnvironment({
         growId: growId || undefined,
         workspaceType,
+        facilityId: facilityId || undefined,
         ...plantContext.toolRunContext,
         stage,
         tempDayC: numeric(tempDayC),
@@ -226,39 +241,10 @@ export default function EnvironmentAnalysisToolScreen({
     if (!growId || !result) throw new Error("Select a grow before saving.");
     const issues = list(assessment.issues);
     const riskFlags = list(assessment.riskFlags);
-    if (workspaceType === "commercial") {
-      const toolRunId = resultToolRunId(result);
-      if (!toolRunId) throw new Error("Save the Commercial result before linking it.");
-      await saveToolRunToLog(
-        toolRunId,
-        {
-          growId,
-          linkedGrowId: growId,
-          plantId: plantContext.plantId || undefined,
-          linkedPlantId: plantContext.plantId || undefined,
-          linkedToolRunId: toolRunId,
-          title: `Environment analysis: ${assessment.status || stage}`,
-          notes: [
-            `Stage: ${stage}`,
-            `Status: ${assessment.status || "n/a"}`,
-            `Local environment risk: ${environmentReview.riskLevel}`,
-            environmentReview.warnings.length
-              ? `Local warnings: ${environmentReview.warnings.join("; ")}`
-              : "",
-            issues.length ? `Issues: ${issues.join("; ")}` : "",
-            riskFlags.length ? `Risk flags: ${riskFlags.join("; ")}` : "",
-            recommendations.length ? `Actions: ${recommendations.join("; ")}` : ""
-          ]
-            .filter(Boolean)
-            .join("\n")
-        },
-        { workspaceType: "commercial" }
-      );
-      setFeedback("Saved environment analysis to Commercial grow journal.");
-      return;
-    }
     const created = await saveToolRunAndCreateLog({
       growId,
+      workspaceType,
+      facilityId: facilityId || undefined,
       ...plantContext.toolRunContext,
       toolKey: "environment-analysis",
       toolRunId: resultToolRunId(result),
@@ -302,7 +288,7 @@ export default function EnvironmentAnalysisToolScreen({
       tags: ["environment", "ai_analysis"]
     });
     if (!created.ok) throw new Error(created.error);
-    setFeedback("Saved environment analysis to grow journal.");
+    setFeedback(`Saved environment analysis to ${workspaceType} grow journal.`);
   }
 
   return (
@@ -317,7 +303,8 @@ export default function EnvironmentAnalysisToolScreen({
         </Text>
         <Text style={styles.subtitle}>
           Review grow-room readings with GrowPath rules, then save the result or create a
-          linked follow-up task. This review uses no AI credits.
+          linked follow-up task. The deterministic review is free; optional AI telemetry
+          prefill uses AI credits belonging to the active workspace.
         </Text>
         <PersonalFeedPlacement
           placement="top"
@@ -546,54 +533,10 @@ export default function EnvironmentAnalysisToolScreen({
                     onPress: async () => {
                       const issues = list(assessment.issues);
                       const riskFlags = list(assessment.riskFlags);
-                      if (workspaceType === "commercial") {
-                        const toolRunId = resultToolRunId(result);
-                        if (!toolRunId)
-                          throw new Error(
-                            "Save the Commercial result before linking it."
-                          );
-                        await createTaskFromToolRun(
-                          toolRunId,
-                          {
-                            growId,
-                            linkedGrowId: growId,
-                            plantId: plantContext.plantId || undefined,
-                            linkedPlantId: plantContext.plantId || undefined,
-                            linkedToolRunId: toolRunId,
-                            title: "Review environment analysis",
-                            description: [
-                              `Status: ${assessment.status || "analysis complete"}`,
-                              `Local risk: ${environmentReview.riskLevel}`,
-                              ...environmentReview.warnings.map(
-                                (warning) => `Warning: ${warning}`
-                              ),
-                              issues.length ? `Issues: ${issues.join("; ")}` : "",
-                              riskFlags.length
-                                ? `Risk flags: ${riskFlags.join("; ")}`
-                                : "",
-                              recommendations.length
-                                ? `Recommended actions: ${recommendations.join("; ")}`
-                                : ""
-                            ]
-                              .filter(Boolean)
-                              .join("\n"),
-                            priority:
-                              riskFlags.length || environmentReview.riskLevel === "high"
-                                ? "high"
-                                : "medium",
-                            dueDate: dueTomorrow(),
-                            ...environmentTaskMetadata(
-                              riskFlags.length > 0 ||
-                                environmentReview.riskLevel === "high"
-                            )
-                          },
-                          { workspaceType: "commercial" }
-                        );
-                        setFeedback("Created Commercial environment review task.");
-                        return;
-                      }
                       const taskResult = await saveToolRunAndCreateTask({
                         growId,
+                        workspaceType,
+                        facilityId: facilityId || undefined,
                         ...plantContext.toolRunContext,
                         toolKey: "environment-analysis",
                         toolRunId: resultToolRunId(result),
@@ -637,7 +580,7 @@ export default function EnvironmentAnalysisToolScreen({
                         )
                       });
                       if (!taskResult.ok) throw new Error(taskResult.error);
-                      setFeedback("Created environment review task.");
+                      setFeedback(`Created ${workspaceType} environment review task.`);
                     }
                   }
                 ]

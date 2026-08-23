@@ -92,7 +92,13 @@ function phEcTaskPlan(outputs: Record<string, any>): LinkedTaskDraft[] {
   ];
 }
 
-export default function PhEcToolScreen() {
+export default function PhEcToolScreen({
+  backFallbackHref = "/home/personal/tools",
+  workspaceType = "personal"
+}: {
+  backFallbackHref?: string;
+  workspaceType?: "personal" | "commercial" | "facility";
+} = {}) {
   const params = useLocalSearchParams<{
     projectId?: string | string[];
   }>();
@@ -107,6 +113,8 @@ export default function PhEcToolScreen() {
           ? "Log a root-zone measurement inside the selected Crop Steering project. This interprets ranges and trends; it does not dose pH Up/Down."
           : "Compare input and runoff pH/EC against medium and stage ranges without pretending to dose pH Up/Down."
       }
+      backFallbackHref={backFallbackHref}
+      workspaceTypeOverride={workspaceType}
       aiPrefill={{
         buttonLabel: "Fill pH / EC review from grow",
         clearUnfilled: true,
@@ -359,7 +367,15 @@ export default function PhEcToolScreen() {
         dueDate: tomorrow(outputs.retestTaskSuggestion?.dueInDays || 1),
         ...phEcCalendarMetadata("ph_ec_retest")
       })}
-      buildActions={({ outputs, payload, toolRun, growId, plantContext }) => [
+      buildActions={({
+        outputs,
+        payload,
+        toolRun,
+        growId,
+        facilityId,
+        workspaceType: activeWorkspaceType,
+        plantContext
+      }) => [
         {
           key: "create-ph-ec-tasks",
           label: "Create pH / EC Task Plan",
@@ -370,6 +386,8 @@ export default function PhEcToolScreen() {
           onPress: async () => {
             const result = await saveToolRunAndCreateTasks({
               growId,
+              workspaceType: activeWorkspaceType,
+              facilityId: activeWorkspaceType === "facility" ? facilityId : undefined,
               ...plantContext.toolRunContext,
               toolKey: "ph-ec-check",
               toolRunId: toolRun?.id || toolRun?._id,
