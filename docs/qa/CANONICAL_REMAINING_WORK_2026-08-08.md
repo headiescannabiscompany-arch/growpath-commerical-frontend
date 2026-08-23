@@ -39,6 +39,16 @@ starts or finishes; do not create another active todo document.
    assignment/reopen/preservation, Sentry-provider and backend disclosure/chain-of-custody live
    slices remain open. Continue Batch 3 local reconciliation while these exact authenticated
    production actions wait; do not rebuild either accepted assembly.
+   Batch 3's retained grow/evidence/AI assembly now passes 129 frontend assertions and 129
+   backend assertions across Personal home/grows, Grow overview/archive/timeline, accessible
+   workspace navigation, reviewed evidence and exact inspection views, Harvest Readiness,
+   Diagnosis, IPM hypothesis/credit settlement, run comparison, device mapping/history and
+   Facility grow authorization. Backend PR 213
+   (`5c602e07beb5a83fb126d67626e803451091164e`) corrected the test topology so billed
+   evidence-backed Diagnosis and IPM reserve/refund paths run against a real replica set rather
+   than returning false standalone-Mongo transaction failures. Batch 3 remains open only for
+   its named production media/provider, timeline publish/withdrawal/export, populated comparison,
+   device-provider and cross-role live actions; do not rebuild its locally accepted assembly.
 3. **Release crawl and cleanup:** after the in-scope product/workflow items are closed, run the complete
    live route, button, responsive, theme, accessibility, persistence, security, and visual
    presentation crawl and repair the defects it finds. Include a route-to-visible-entry
