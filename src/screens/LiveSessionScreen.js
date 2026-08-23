@@ -797,7 +797,7 @@ export default function LiveSessionScreen({ route }) {
             </View>
           ) : null}
 
-          {isGrowPathHosted && hostedPlayback?.playerUrl ? (
+          {session.sessionType === "premiere" ? null : isGrowPathHosted && hostedPlayback?.playerUrl ? (
             <View style={styles.embedWrap}>
               <GrowPathHostedLivePlayer playerUrl={String(hostedPlayback.playerUrl)} />
             </View>
