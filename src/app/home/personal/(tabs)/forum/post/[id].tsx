@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -240,6 +239,8 @@ export default function ForumPostDetailRoute() {
   const [editingPost, setEditingPost] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
+  const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState("");
+  const [confirmingDeletePost, setConfirmingDeletePost] = useState(false);
 
   const loadedId = useMemo(() => postId(post), [post]);
   const isPostOwner = useMemo(() => isOwnedBy(post, auth.user), [auth.user, post]);
@@ -333,36 +334,23 @@ export default function ForumPostDetailRoute() {
     }
   }
 
-  function confirmDeleteComment(comment: CommentRow) {
+  async function deleteOwnedComment(comment: CommentRow) {
     const commentId = String(comment._id || comment.id || "");
-    if (!commentId || !isOwnedBy(comment, auth.user)) return;
-    Alert.alert(
-      "Delete comment?",
-      "This permanently removes your comment from the discussion.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            setSaving(true);
-            setFeedback("");
-            try {
-              await deleteForumComment(commentId);
-              setComments((current) =>
-                current.filter((item) => String(item._id || item.id || "") !== commentId)
-              );
-              setFeedback("Comment deleted.");
-            } catch (error: any) {
-              setFeedback(error?.message || "Unable to delete this comment.");
-            } finally {
-              setSaving(false);
-            }
-          }
-        }
-      ],
-      { cancelable: true }
-    );
+    if (!commentId || !isOwnedBy(comment, auth.user) || saving) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      await deleteForumComment(commentId);
+      setComments((current) =>
+        current.filter((item) => String(item._id || item.id || "") !== commentId)
+      );
+      setPendingDeleteCommentId("");
+      setFeedback("Comment deleted.");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to delete this comment.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function beginEditComment(comment: CommentRow) {
@@ -388,7 +376,18 @@ export default function ForumPostDetailRoute() {
         setComments((current) =>
           current.map((comment) =>
             String(comment._id || comment.id || "") === commentId
-              ? { ...comment, ...updated }
+              ? {
+                  ...comment,
+                  ...updated,
+                  author:
+                    updated?.author && typeof updated.author === "object"
+                      ? updated.author
+                      : comment.author,
+                  user:
+                    updated?.user && typeof updated.user === "object"
+                      ? updated.user
+                      : comment.user
+                }
               : comment
           )
         );
@@ -522,7 +521,16 @@ export default function ForumPostDetailRoute() {
         title: editTitle,
         body: editBody
       });
-      setPost(updated);
+      setPost((current) => ({
+        ...(current || {}),
+        ...updated,
+        author:
+          updated?.author && typeof updated.author === "object"
+            ? updated.author
+            : current?.author,
+        user:
+          updated?.user && typeof updated.user === "object" ? updated.user : current?.user
+      }));
       setEditingPost(false);
       setFeedback(
         updated?.isHidden
@@ -537,32 +545,18 @@ export default function ForumPostDetailRoute() {
     }
   }
 
-  function confirmDeletePost() {
+  async function deleteOwnedPost() {
     const targetId = loadedId || id;
     if (!targetId || !isPostOwner || saving) return;
-    Alert.alert(
-      "Delete post?",
-      "This removes the discussion from Forum and public feeds. This cannot be undone from the app.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            setSaving(true);
-            setFeedback("");
-            try {
-              await deleteForumPost(targetId);
-              router.replace("/forum");
-            } catch (error: any) {
-              setFeedback(error?.message || "Unable to delete this post.");
-              setSaving(false);
-            }
-          }
-        }
-      ],
-      { cancelable: true }
-    );
+    setSaving(true);
+    setFeedback("");
+    try {
+      await deleteForumPost(targetId);
+      router.replace("/forum");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to delete this post.");
+      setSaving(false);
+    }
   }
 
   if (!canView || !id || (!loading && !post)) {
@@ -786,13 +780,41 @@ export default function ForumPostDetailRoute() {
                       </Pressable>
                       <Pressable
                         disabled={saving}
-                        onPress={confirmDeletePost}
+                        onPress={() => setConfirmingDeletePost(true)}
                         style={[styles.dangerBtn, saving && styles.disabled]}
                         accessibilityRole="button"
                         accessibilityLabel="Delete your forum post"
                       >
                         <Text style={styles.dangerText}>Delete post</Text>
                       </Pressable>
+                      {confirmingDeletePost ? (
+                        <View style={styles.confirmation} accessibilityRole="alert">
+                          <Text style={styles.cardText}>
+                            Delete this discussion from Forum and public feeds? This
+                            cannot be undone from the app.
+                          </Text>
+                          <View style={styles.actions}>
+                            <Pressable
+                              disabled={saving}
+                              onPress={deleteOwnedPost}
+                              style={[styles.dangerBtn, saving && styles.disabled]}
+                              accessibilityRole="button"
+                              accessibilityLabel="Confirm delete forum post"
+                            >
+                              <Text style={styles.dangerText}>Confirm delete</Text>
+                            </Pressable>
+                            <Pressable
+                              disabled={saving}
+                              onPress={() => setConfirmingDeletePost(false)}
+                              style={[styles.secondaryBtn, saving && styles.disabled]}
+                              accessibilityRole="button"
+                              accessibilityLabel="Cancel forum post deletion"
+                            >
+                              <Text style={styles.secondaryText}>Cancel</Text>
+                            </Pressable>
+                          </View>
+                        </View>
+                      ) : null}
                     </>
                   ) : (
                     <Pressable
@@ -920,6 +942,7 @@ export default function ForumPostDetailRoute() {
               const commentId = String(comment._id || comment.id || "");
               const isEditingThisComment =
                 commentId === String(editingComment?._id || editingComment?.id || "");
+              const isConfirmingDelete = commentId === pendingDeleteCommentId;
               return (
                 <View
                   key={String(comment._id || comment.id || bodyOf(comment))}
@@ -996,7 +1019,7 @@ export default function ForumPostDetailRoute() {
                             accessibilityRole="button"
                             accessibilityLabel="Delete your comment"
                             disabled={saving}
-                            onPress={() => confirmDeleteComment(comment)}
+                            onPress={() => setPendingDeleteCommentId(commentId)}
                             style={[styles.dangerBtn, saving && styles.disabled]}
                           >
                             <Text style={styles.dangerText}>Delete</Text>
@@ -1012,6 +1035,33 @@ export default function ForumPostDetailRoute() {
                           <Text style={styles.secondaryText}>Report comment</Text>
                         </Pressable>
                       )}
+                    </View>
+                  ) : null}
+                  {isConfirmingDelete ? (
+                    <View style={styles.confirmation} accessibilityRole="alert">
+                      <Text style={styles.cardText}>
+                        Permanently remove this comment from the discussion?
+                      </Text>
+                      <View style={styles.actions}>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel="Confirm delete forum comment"
+                          disabled={saving}
+                          onPress={() => deleteOwnedComment(comment)}
+                          style={[styles.dangerBtn, saving && styles.disabled]}
+                        >
+                          <Text style={styles.dangerText}>Confirm delete</Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel="Cancel forum comment deletion"
+                          disabled={saving}
+                          onPress={() => setPendingDeleteCommentId("")}
+                          style={[styles.secondaryBtn, saving && styles.disabled]}
+                        >
+                          <Text style={styles.secondaryText}>Cancel</Text>
+                        </Pressable>
+                      </View>
                     </View>
                   ) : null}
                   {commentPhotos(comment).length ? (
@@ -1116,6 +1166,16 @@ export function createForumPostDetailStyles(palette: ThemePalette) {
     },
     authorActions: { alignItems: "flex-start", marginTop: 4 },
     editComposer: { gap: 8, marginTop: 10 },
+    confirmation: {
+      width: "100%",
+      gap: 8,
+      marginTop: 8,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: palette.danger,
+      borderRadius: radius.card,
+      backgroundColor: palette.surfaceMuted
+    },
     editBodyInput: { minHeight: 130, textAlignVertical: "top" },
     commentComposer: { gap: 8 },
     replyContext: {
