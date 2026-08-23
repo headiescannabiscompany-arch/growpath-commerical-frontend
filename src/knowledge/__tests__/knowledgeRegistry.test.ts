@@ -134,6 +134,9 @@ describe("GrowPath knowledge registries", () => {
     expect(inventory?.requiredOutputs).toContain(
       "explicit unknown currency until an authorized cost is paired with a reviewed three-letter currency code"
     );
+    expect(inventory?.requiredOutputs).toContain(
+      "provider-safe Facility Inventory Risk context with authorized item counts, units, reorder points, freshness and deterministic alerts, excluding vendor and authorized cost/currency"
+    );
     expect(inventory?.warnings).toContain(
       "Never expose authorized inventory cost, currency, vendor, or internal balance history through Storefront, public sharing, or discovery."
     );
@@ -151,6 +154,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(inventory?.warnings).toContain(
       "Never call a live mutable-state inventory export a database point-in-time snapshot, let a client choose a system audit action, or promote unverified legacy evidence to system origin."
+    );
+    expect(inventory?.warnings).toContain(
+      "Never answer an Inventory Risk request with an unrelated grow summary, combine quantities across unlike units, or invent use rates, par levels, supplier timing, missing counts, or stock changes."
     );
     expect(methodsForTool("commercial-inventory").map((entry) => entry.id)).toEqual([
       "business-inventory"

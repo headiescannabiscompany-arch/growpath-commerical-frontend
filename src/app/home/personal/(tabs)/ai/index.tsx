@@ -241,6 +241,7 @@ interface ContextData {
   recipes: any[];
   environmentHistory: any[];
   facilityCompliance: FacilityComplianceExport | null;
+  inventoryItems: any[];
   failedSources: string[];
 }
 
@@ -662,7 +663,8 @@ export default function AiScreen({
           "tasks",
           "tool runs",
           "diagnoses",
-          "recipes"
+          "recipes",
+          "inventory"
         ];
         const contextRequests: Array<Promise<any[]>> = facilityScoped
           ? [
@@ -684,11 +686,17 @@ export default function AiScreen({
                 ...(selectedGrowId ? { growId: selectedGrowId } : {})
               }),
               Promise.resolve([]),
-              Promise.resolve([])
+              Promise.resolve([]),
+              facilityPreset?.key === "inventory"
+                ? apiRequest(endpoints.inventory(activeFacilityId)).then((value) =>
+                    envelopeRows(value, ["items"])
+                  )
+                : Promise.resolve([])
             ]
           : workspaceType === "commercial"
             ? [
                 fetchCommercialGrows(),
+                Promise.resolve([]),
                 Promise.resolve([]),
                 Promise.resolve([]),
                 Promise.resolve([]),
@@ -705,14 +713,23 @@ export default function AiScreen({
                 listPersonalTasks(),
                 listToolRuns(),
                 getDiagnosisHistory(),
-                listNutrientRecipes(selectedGrowId || undefined)
+                listNutrientRecipes(selectedGrowId || undefined),
+                Promise.resolve([])
               ];
         const settledContext = await Promise.allSettled(contextRequests);
         const failedSources = settledContext.flatMap((result, index) =>
           result.status === "rejected" ? [sourceLabels[index]] : []
         );
-        const [grows, plants, logs, tasks, toolRuns, diagnoses, recipes] =
-          settledContext.map((result) =>
+        const [
+          grows,
+          plants,
+          logs,
+          tasks,
+          toolRuns,
+          diagnoses,
+          recipes,
+          inventoryItems
+        ] = settledContext.map((result) =>
             result.status === "fulfilled" && Array.isArray(result.value)
               ? result.value
               : []
@@ -772,6 +789,7 @@ export default function AiScreen({
           recipes,
           environmentHistory,
           facilityCompliance,
+          inventoryItems,
           failedSources
         });
         if (!selectedGrowId && activeGrowId) setSelectedGrowId(activeGrowId);
@@ -792,6 +810,7 @@ export default function AiScreen({
           recipes: [],
           environmentHistory: [],
           facilityCompliance: null,
+          inventoryItems: [],
           failedSources: [
             "grows",
             "plants",
@@ -799,7 +818,8 @@ export default function AiScreen({
             "tasks",
             "tool runs",
             "diagnoses",
-            "recipes"
+            "recipes",
+            "inventory"
           ]
         });
       }
@@ -858,7 +878,22 @@ export default function AiScreen({
             counts: context.facilityCompliance.counts,
             evidenceSummary: context.facilityCompliance.evidenceSummary || null
           }
-        : null
+        : null,
+      inventoryItems: (context?.inventoryItems || []).slice(0, 100).map((item) => ({
+        id: item.id || item._id || null,
+        sku: item.sku || "",
+        name: item.name || "",
+        unit: item.unit || "",
+        quantityOnHand: Number(item.quantityOnHand ?? item.quantity ?? 0),
+        reorderPoint: Number(item.reorderPoint ?? 0),
+        status: item.status || item.itemStatus || "active",
+        category: item.category || "",
+        locationId: item.locationId || item.location || "",
+        sourceFreshnessAt: item.sourceFreshnessAt || null,
+        updatedAt: item.updatedAt || null,
+        alerts:
+          item.alerts && typeof item.alerts === "object" ? item.alerts : null
+      }))
     };
   }
 
@@ -1161,6 +1196,52 @@ export default function AiScreen({
                   before requesting a readiness review.
                 </Text>
               )
+            ) : facilityPreset?.key === "inventory" ? (
+              <>
+                <Text style={styles.contextText}>
+                  Inventory items: {context.inventoryItems.length}
+                </Text>
+                <Text style={styles.contextText}>
+                  Out of stock:{" "}
+                  {
+                    context.inventoryItems.filter(
+                      (item) =>
+                        Number(item.quantityOnHand ?? item.quantity ?? 0) <= 0
+                    ).length
+                  }
+                </Text>
+                <Text style={styles.contextText}>
+                  At or below reorder point: {context.inventoryItems.filter((item) => {
+                    const quantity = Number(item.quantityOnHand ?? item.quantity ?? 0);
+                    const reorderPoint = Number(item.reorderPoint ?? 0);
+                    return quantity > 0 && reorderPoint > 0 && quantity <= reorderPoint;
+                  }).length}
+                </Text>
+                <Text style={styles.contextText}>
+                  Evidence alerts: {context.inventoryItems.filter((item) => {
+                    const alerts = item.alerts || {};
+                    return Boolean(
+                      alerts.lowStock ||
+                        alerts.outOfStock ||
+                        alerts.held ||
+                        Number(alerts.expiredLots || 0) > 0 ||
+                        Number(alerts.expiringSoonLots || 0) > 0 ||
+                        alerts.lotQuantityExceedsItem ||
+                        Number(alerts.unallocatedQuantity || 0) > 0 ||
+                        alerts.sourceAgeDays === null
+                    );
+                  }).length}
+                </Text>
+                <Text style={styles.contextText}>
+                  Counts with different stock units are never combined into one total.
+                </Text>
+                {context.failedSources.includes("inventory") ? (
+                  <Text style={[styles.contextText, { color: palette.warning }]}>
+                    Inventory records could not be loaded. Refresh before spending another
+                    AI credit.
+                  </Text>
+                ) : null}
+              </>
             ) : (
               <>
                 <Text style={styles.contextText}>Grows: {context.growCount}</Text>
@@ -1204,7 +1285,9 @@ export default function AiScreen({
                 ) : null}
               </>
             )}
-            {facilityPreset?.key !== "compliance" && context.grows.length ? (
+            {facilityPreset?.key !== "compliance" &&
+            facilityPreset?.key !== "inventory" &&
+            context.grows.length ? (
               <View
                 accessibilityRole="radiogroup"
                 accessibilityLabel="AI grow context"
@@ -1231,7 +1314,8 @@ export default function AiScreen({
                   );
                 })}
               </View>
-            ) : facilityPreset?.key === "compliance" ? null : workspaceType ===
+            ) : facilityPreset?.key === "compliance" ||
+              facilityPreset?.key === "inventory" ? null : workspaceType ===
               "facility" ? (
               <Text style={styles.contextText}>
                 No Facility grows are recorded. Facility tasks and operational records

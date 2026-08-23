@@ -188,7 +188,8 @@ export const methodRegistry: GrowPathMethod[] = [
       "explicitly reviewed inventory imports with detected-column mapping, conflict evidence, version fences, atomic row checkpoints, and withdrawal",
       "workspace-scoped full audit export covering items, lots, movements, imports, provenance, and import-row before/after evidence",
       "audit export manifest with fixed membership cutoffs, read timestamps, changed-after-start flags, terminal counts, and explicit system, user, or legacy-unverified origin",
-      "explicit unknown currency until an authorized cost is paired with a reviewed three-letter currency code"
+      "explicit unknown currency until an authorized cost is paired with a reviewed three-letter currency code",
+      "provider-safe Facility Inventory Risk context with authorized item counts, units, reorder points, freshness and deterministic alerts, excluding vendor and authorized cost/currency"
     ],
     [
       "Never expose authorized inventory cost, currency, vendor, or internal balance history through Storefront, public sharing, or discovery.",
@@ -198,6 +199,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never call a live mutable-state inventory export a database point-in-time snapshot, let a client choose a system audit action, or promote unverified legacy evidence to system origin.",
       "Never let a B-03 status, AI draft, provider webhook, payment redirect, or public product view adjust, reserve, receive, consume, or promise inventory.",
       "Never infer or coerce missing cost or currency to zero or USD; migrated legacy currency without proof remains blank and unknown.",
+      "Never answer an Inventory Risk request with an unrelated grow summary, combine quantities across unlike units, or invent use rates, par levels, supplier timing, missing counts, or stock changes.",
       "Never let a legacy Facility endpoint become a second ledger or bypass canonical transaction, archive, provenance, movement, and audit rules."
     ],
     [
