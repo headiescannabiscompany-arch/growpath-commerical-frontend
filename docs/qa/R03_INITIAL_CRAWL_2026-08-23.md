@@ -350,11 +350,19 @@ navigation, and image storage.` Exact-main Frontend CI `32671739812` and Product
   removed. The scoped legal-request form was also inspected and canceled without creating a
   request; its live copy correctly separates intake, preservation, approval and disclosure.
 - Exact-email user search returned the Platform Admin account. Its five account actions were
-  visually present but exposed no button semantics in the live accessibility tree. The
-  candidate preserves every action and confirmation boundary while adding real button roles,
+  visually present but exposed no button semantics in the live accessibility tree. Frontend
+  `530afd7e` preserves every action and confirmation boundary while adding real button roles,
   account-specific accessible names and disabled/busy state. `PlatformAdminRoute.test.tsx`
-  proves the semantics and all 43 focused Admin tests pass. No token refresh, notice,
-  suspension, ban or test-account cleanup action was triggered during acceptance.
+  proves the semantics and all 43 focused Admin tests pass. Exact-main Production Build
+  Preflight `32673832150` and Frontend CI `32673832168` passed. Production then exposed all
+  five account-action families as named buttons on desktop and at a 390-by-844 mobile
+  viewport, retained one `Administration` H1 and had no horizontal overflow. The moderation
+  queue still showed no active cases. No token refresh, notice, suspension, restoration, ban
+  or test-account cleanup action was triggered during acceptance.
+- The signed-in Admin account workspace exposed a distinct `Platform Administration` entry
+  describing its governance scope; activating it returned to the deployed `/admin` owner hub.
+  This closes the previously missing/buried Admin entry-path regression without adding Admin
+  controls to Personal, Commercial or Facility ownership.
 
 ## Exact remaining R-03 work
 

@@ -50,13 +50,23 @@ authority. The frontend has no one-click approval or disclosure action.
 
 ## Remaining live gates
 
-- **A-01:** open the deployed Admin identity on desktop and mobile; verify every queue tally,
-  truthful empty/populated/error state, exact source link and contextual Admin entry.
+- **A-01: production accepted on frontend `530afd7e`.** The authenticated Platform Admin
+  loaded the deployed owner dashboard on desktop and at 390-by-844 mobile width with one
+  `Administration` H1, no horizontal overflow, truthful connected/unconfigured security
+  source coverage, regulated-commerce review, product activity, knowledge governance, exact
+  user search, zero-active/completed moderation state and legal-request boundaries. The
+  account workspace exposed the contextual `Platform Administration` entry and returned to
+  `/admin`. All five user-action families exposed account-specific button names. Focused Admin
+  tests passed 43 assertions; exact-main Production Build Preflight `32673832150` and Frontend
+  CI `32673832168` passed. No account or legal-request mutation was invoked.
 - **A-02:** with approved disposable records, create/assign/note/resolve/reopen moderation and
   support cases, exercise allowed account/content actions, reload, and verify retained audit plus
   outside-user visibility effects and cleanup.
-- **A-03:** configure protected Sentry read access, prove the expected project/environment issue
-  tally/detail/deep link using a redacted test event, and verify no token or secret is returned.
+- **A-03 exact external blocker:** production truthfully reports `Sentry Admin read access is
+  not configured`. Protected provider access and a redacted test event are still required to
+  prove the project/environment tally, detail/deep link and no-secret response. Do not present
+  Sentry as connected or rebuild the accepted Admin source adapter while that credential gate
+  remains unmet.
 - **A-04:** in production, prove that direct invalid approval/disclosure attempts fail closed; run
   a synthetic preservation/identity/legal-review/reject-or-close lifecycle and retained audit.
   Approval or disclosure of real account data requires an authentic request, reviewed legal
@@ -65,3 +75,8 @@ authority. The frontend has no one-click approval or disclosure action.
 - **A-05:** use the final candidate across Free, Pro, Commercial, Facility and Admin identities to
   prove expiry, reload, logout, direct-URL denial, identity-to-identity cleanup and explicit
   authorized workspace switching without Living Soil Labs/Triple Bag Genetics ownership leakage.
+  Current production evidence proves one boundary: the Platform Admin identity was denied at a
+  direct Facility Dashboard URL with one `Access denied` H1 and `only available in facility mode`,
+  then returned to `/admin` without exposing Triple Bag Genetics. Free/Pro/Commercial/Facility
+  identity chains, expiry/logout/reload and explicit authorized switching remain open; do not
+  repeat the accepted Admin-to-Facility denial.
