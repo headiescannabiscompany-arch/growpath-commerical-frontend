@@ -60,6 +60,20 @@ starts or finishes; do not create another active todo document.
    labeling, course publish/enroll/payment/archive, report-to-Admin/email delivery, and stable
    public-link review. Do not rebuild its locally accepted assembly; continue with Batch 5 while
    those exact authenticated/provider actions wait.
+   Batch 5's first consolidated local reconciliation passes 425 frontend assertions: 115 for
+   the shared B-01/B-02 scope, role, inventory, import, integration and navigation foundation;
+   161 for Commercial products/lines/batches/trials/evidence, inventory, storefront, orders,
+   analytics, Feed, tasks, tools and public projections; and 149 for Facility rooms, grows,
+   plants, team, tasks, SOP/compliance, audit, inventory/transfers, analytics/reports, AI and
+   navigation. The matching backend lane passes 120 assertions across Facility scope/team/
+   billing authority, integration configuration/mapping/import/normalization, compatibility
+   writes and audit evidence, ledger transfers, Commercial storefront/workflows and Facility
+   analytics. Backend PR 214 (`f90435b21c0e0bb1439dcbb74b28672da32fdc0e`)
+   assigned inventory-touching broad suites to the required replica-set topology and replaced
+   stale pre-B-02 expectations with the canonical paid-entitlement, audit-action and stocked-
+   item archive rules. Batch 5 remains in progress for the rest of its bounded local lanes and
+   the already named guarded B-02 migration, exact-SHA deployment and multi-workspace/multi-role
+   production acceptance; do not rebuild the accepted ledger or these passing assemblies.
 3. **Release crawl and cleanup:** after the in-scope product/workflow items are closed, run the complete
    live route, button, responsive, theme, accessibility, persistence, security, and visual
    presentation crawl and repair the defects it finds. Include a route-to-visible-entry
