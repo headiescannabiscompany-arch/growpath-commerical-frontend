@@ -437,7 +437,22 @@ describe("PlatformAdminRoute", () => {
     expect(screen.getByText(/owner visible-area estimate 30%/)).toBeTruthy();
     expect(screen.getByText(/Not ground truth/)).toBeTruthy();
 
-    fireEvent.press(screen.getByText("Refresh tokens"));
+    expect(
+      screen.getByRole("button", { name: "Email notice to member@example.com" })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Suspend member@example.com" })
+    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Ban member@example.com" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: "Review test-account cleanup for member@example.com"
+      })
+    ).toBeTruthy();
+
+    fireEvent.press(
+      screen.getByRole("button", { name: "Refresh tokens for member@example.com" })
+    );
     await waitFor(() =>
       expect(mockApiRequest).toHaveBeenCalledWith("/api/admin/users/user-1/tokens", {
         method: "POST",

@@ -320,13 +320,45 @@ harvest_readiness. Detailed evidence remains in the private GrowPath record.` an
   as a named choice, empty Product and Feed lists linked to their workspaces, raw IDs were
   absent until Advanced was opened, and Advanced restored all four exact inputs. The live
   Forum response exposed its readable content under a different field than the local fixture;
-  the follow-up candidate normalizes that field instead of accepting a generic `Forum thread`
-  label. Exact-main gates, the follow-up deployment and final live label verification remain
-  open.
+  follow-up frontend `5003760e` normalizes that field instead of accepting a generic
+  `Forum thread` label. Production then rendered the actual post text, `Testing post creation,
+navigation, and image storage.` Exact-main Frontend CI `32671739812` and Production Build
+  Preflight `32671739809` both passed. This closes the Commercial Live related-record linking
+  slice without reopening or replacing Live Studio, OBS, chat overlays or premieres.
+
+## Continued signed-in Facility and Admin-boundary crawl
+
+- The same multi-workspace owner explicitly switched from Commercial to its authorized Triple
+  Bag Genetics Facility. Dashboard, More, Rooms, Grows, Plants, Tasks, SOPs, Compliance, Team,
+  Transfers, Reports, Analytics, AI Tools, Feed and Profile loaded their expected Facility
+  headings, data or truthful empty states without an authentication, raw transport-code or
+  failed-load presentation. Dashboard exposed 15 rooms, one active grow, two inventory items,
+  one SOP, 134 audit events and four team members; those counts are retained as observed state,
+  not synthetic completion evidence. The account was explicitly returned to Commercial after
+  the pass.
+- The Facility owner identity does not hold the Platform Admin role. A direct `/admin`
+  request failed closed with `Platform owner access required`, described Admin as separate
+  from Facility ownership and exposed no governance data. A later explicit Platform Admin
+  sign-in loaded the owner dashboard, actual user/activity counts, security and investigation
+  coverage, regulated-commerce review, knowledge governance, user search, moderation, support
+  and legal-evidence-request surfaces without weakening that denial boundary.
+- The authenticated owner inspected all three active moderation cases before acting. Two were
+  retained reports against the explicitly QA-only paid-course lifecycle record and one was a
+  non-dangerous owner Forum feedback post. `Leave content / close case` preserved each report
+  and its decision history while moving the queue from 3 active / 9 completed to 0 active /
+  12 completed. The completed view retained the reviewed records; no content or account was
+  removed. The scoped legal-request form was also inspected and canceled without creating a
+  request; its live copy correctly separates intake, preservation, approval and disclosure.
+- Exact-email user search returned the Platform Admin account. Its five account actions were
+  visually present but exposed no button semantics in the live accessibility tree. The
+  candidate preserves every action and confirmation boundary while adding real button roles,
+  account-specific accessible names and disabled/busy state. `PlatformAdminRoute.test.tsx`
+  proves the semantics and all 43 focused Admin tests pass. No token refresh, notice,
+  suspension, ban or test-account cleanup action was triggered during acceptance.
 
 ## Exact remaining R-03 work
 
-1. Complete authenticated Personal, Commercial, Facility and Admin role/state/action
+1. Complete the remaining authenticated Personal, Commercial, Facility and Admin role/state/action
    scenarios, including populated, empty, denied, retry, persistence and cleanup evidence.
 2. Complete provider/device gates already named by their owning matrix rows. Record an exact
    blocker where an owner credential, physical device or fresh real-world observation is

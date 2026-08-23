@@ -2247,7 +2247,12 @@ export default function PlatformAdminRoute() {
             onSubmitEditing={() => void load()}
             style={styles.input}
           />
-          <Pressable style={styles.primaryButton} onPress={() => void load()}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Search users"
+            style={styles.primaryButton}
+            onPress={() => void load()}
+          >
             <Text style={styles.primaryText}>Search</Text>
           </Pressable>
         </View>
@@ -2285,6 +2290,9 @@ export default function PlatformAdminRoute() {
             </Text>
             <View style={styles.actions}>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Refresh tokens for ${item.email}`}
+                accessibilityState={{ disabled: busyId === item._id }}
                 disabled={busyId === item._id}
                 style={styles.secondaryButton}
                 onPress={() => void refreshTokens(item)}
@@ -2292,6 +2300,8 @@ export default function PlatformAdminRoute() {
                 <Text style={styles.secondaryText}>Refresh tokens</Text>
               </Pressable>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Email notice to ${item.email}`}
                 style={styles.secondaryButton}
                 onPress={() => setNoticeUser(item)}
               >
@@ -2299,6 +2309,9 @@ export default function PlatformAdminRoute() {
               </Pressable>
               {item.accountStatus === "active" ? (
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Suspend ${item.email}`}
+                  accessibilityState={{ disabled: busyId === item._id }}
                   disabled={busyId === item._id}
                   style={styles.warningButton}
                   onPress={() => void changeStatus(item, "suspended")}
@@ -2307,6 +2320,9 @@ export default function PlatformAdminRoute() {
                 </Pressable>
               ) : (
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Restore ${item.email}`}
+                  accessibilityState={{ disabled: busyId === item._id }}
                   disabled={busyId === item._id}
                   style={styles.secondaryButton}
                   onPress={() => void changeStatus(item, "active")}
@@ -2315,6 +2331,9 @@ export default function PlatformAdminRoute() {
                 </Pressable>
               )}
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Ban ${item.email}`}
+                accessibilityState={{ disabled: busyId === item._id }}
                 disabled={busyId === item._id}
                 style={styles.dangerButton}
                 onPress={() => void changeStatus(item, "banned")}
@@ -2322,6 +2341,9 @@ export default function PlatformAdminRoute() {
                 <Text style={styles.dangerText}>Ban</Text>
               </Pressable>
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Review test-account cleanup for ${item.email}`}
+                accessibilityState={{ disabled: busyId === item._id }}
                 disabled={busyId === item._id}
                 style={styles.secondaryButton}
                 onPress={() => void reviewSyntheticCleanup(item)}
