@@ -25,6 +25,11 @@ function createExportRoot() {
     path.join(root, "scripts", "export-production-web.cjs"),
     path.join(tempRoot, "scripts", "export-production-web.cjs")
   );
+  writeFile(
+    tempRoot,
+    "src/seo/publicRouteMetadata.json",
+    fs.readFileSync(path.join(root, "src", "seo", "publicRouteMetadata.json"), "utf8")
+  );
 
   writeFile(
     tempRoot,
@@ -92,7 +97,7 @@ describe("production web export", () => {
 
     const indexHtml = fs.readFileSync(path.join(tempRoot, "dist", "index.html"), "utf8");
     expect(indexHtml).toContain("https://api.growpathai.com");
-    expect(indexHtml).not.toContain("https://\"");
+    expect(indexHtml).not.toContain('https://"');
     expect(indexHtml).toMatch(
       /\/_expo\/static\/js\/web\/index-stable\.js\?v=[a-f0-9]{12}/
     );

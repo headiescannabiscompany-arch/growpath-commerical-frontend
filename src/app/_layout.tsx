@@ -16,6 +16,7 @@ import GlobalReportBugButton from "../components/GlobalReportBugButton";
 import { RouteAccessGuard } from "../navigation/RouteAccessGuard";
 import { initMonitoring, wrapWithMonitoring } from "@/utils/monitoring";
 import { useNotificationDeepLinks } from "@/notifications/useNotificationDeepLinks";
+import { applyPublicRouteMetadata } from "@/seo/publicRouteMetadata";
 
 enableScreens(true);
 initUnauthorizedHandler();
@@ -33,6 +34,9 @@ function RootShell() {
   const pathname = usePathname();
   const { palette } = useAppTheme();
   useNotificationDeepLinks();
+  useEffect(() => {
+    applyPublicRouteMetadata(pathname);
+  }, [pathname]);
   const navigationTheme = useMemo(
     () => ({
       ...DefaultTheme,

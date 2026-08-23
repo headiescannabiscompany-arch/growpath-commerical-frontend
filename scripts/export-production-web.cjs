@@ -278,13 +278,9 @@ function revisionStaticJavaScript(html) {
 const revisionedIndexHtml = revisionStaticJavaScript(rawIndexHtml);
 const siteUrl = "https://growpathai.com";
 const indexNowKey = "growpathai-2026-indexnow-7f4b2a91c6d8e305";
+const publicRouteMetadata = require("../src/seo/publicRouteMetadata.json");
 
-const defaultSeo = {
-  title: "GrowPath",
-  description:
-    "GrowPath helps growers plan, track, diagnose, and improve gardens, commercial storefronts, courses, communities, and facility workflows.",
-  index: true
-};
+const defaultSeo = publicRouteMetadata.default;
 
 const routeSeo = new Map(
   [
@@ -530,7 +526,10 @@ const routeSeo = new Map(
         index: false
       }
     ]
-  ].map(([route, seo]) => [route, { ...defaultSeo, ...seo }])
+  ].map(([route, seo]) => [
+    route,
+    { ...defaultSeo, ...seo, ...(publicRouteMetadata.routes[route] || {}) }
+  ])
 );
 
 const sitemapRoutes = [
