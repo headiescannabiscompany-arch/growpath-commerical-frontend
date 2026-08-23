@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import ScreenContainer from "../components/ScreenContainer";
@@ -29,6 +29,7 @@ export default function EditLessonScreen({ route, navigation }) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const { lessonId, lesson: routeLesson } = route.params;
+  const navigationRef = useRef(navigation);
 
   const [lesson, setLesson] = useState(null);
   const [title, setTitle] = useState("");
@@ -43,6 +44,10 @@ export default function EditLessonScreen({ route, navigation }) {
   );
 
   useEffect(() => {
+    navigationRef.current = navigation;
+  }, [navigation]);
+
+  useEffect(() => {
     if (routeLesson) {
       const l = routeLesson;
       setLesson(l);
@@ -55,9 +60,9 @@ export default function EditLessonScreen({ route, navigation }) {
       setGrowInterestSelections(groupTagsByTier(l.growTags || []));
     } else {
       Alert.alert("Missing lesson data");
-      navigation.goBack();
+      navigationRef.current.goBack();
     }
-  }, [navigation, routeLesson]);
+  }, [routeLesson]);
 
   async function pickVideo() {
     try {

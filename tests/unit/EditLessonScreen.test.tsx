@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { fireEvent, render } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 
 import EditLessonScreen, { createStyles } from "@/screens/EditLessonScreen";
@@ -100,5 +100,28 @@ describe("EditLessonScreen theme", () => {
     );
     expect(dayStyles.btn.backgroundColor).toBe(dayPalette.accent);
     expect(dayStyles.btnText.color).toBe(dayPalette.accentText);
+  });
+
+  it("preserves unsaved lesson edits when the parent supplies a new navigation object", async () => {
+    const lesson = {
+      id: "lesson-1",
+      title: "Saved title",
+      order: 2,
+      content: "Saved body"
+    };
+    const route = { params: { lessonId: "lesson-1", lesson } };
+    const screen = render(
+      <EditLessonScreen route={route} navigation={{ goBack: jest.fn() }} />
+    );
+
+    fireEvent.changeText(await screen.findByDisplayValue("Saved title"), "Unsaved title");
+    expect(screen.getByDisplayValue("Unsaved title")).toBeTruthy();
+
+    screen.rerender(
+      <EditLessonScreen route={route} navigation={{ goBack: jest.fn() }} />
+    );
+
+    expect(screen.getByDisplayValue("Unsaved title")).toBeTruthy();
+    expect(screen.queryByDisplayValue("Saved title")).toBeNull();
   });
 });
