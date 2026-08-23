@@ -153,8 +153,14 @@ The complete CI job passed before merge. Do not rebuild this notification handof
   hiding the duplicate header, carrying `growId` from Home, validating deep links against the
   active workspace and presenting only named owned-grow choices. Focused tests and TypeScript
   pass. The repair merged as frontend `1f800c87bfb57b8f6093887a43be94664f818d70`
-  after the complete GitHub CI job `97156220951` passed; exact deployment and live regression
-  remain open.
+  after the complete GitHub CI job `97156220951` passed and deployed successfully as Render
+  `dep-da59lo3bc2fs73am0rr0`. Live Personal regression proved one page heading, four named
+  owned-grow choices, no raw Grow ID input, a selected Grow revealing the retained mapping
+  and read-only provider controls, and the Home telemetry action preserving exact active Grow
+  `6a8a27ee0ad1a2c8f9e57fa6`. A fabricated deep-linked Grow ID produced the explicit
+  workspace-unavailable alert, selected nothing and kept provider/mapping actions gated.
+  Personal Data Integrations is live accepted; Commercial remains a separate authorized-login
+  role regression, not a reason to rebuild this shared screen.
 
 ## P-10 timeline publication and export evidence
 
