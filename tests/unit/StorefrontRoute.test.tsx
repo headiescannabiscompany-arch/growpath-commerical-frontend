@@ -497,6 +497,9 @@ describe("Storefront route", () => {
       screen.getByLabelText("Product external purchase URL"),
       "https://shop.example.com/living-soil"
     );
+    expect(screen.queryByLabelText("Product Stripe price ID")).toBeNull();
+    expect(screen.queryByLabelText("Linked recipe id")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Show advanced product links"));
     fireEvent.changeText(
       screen.getByLabelText("Product Stripe price ID"),
       "price_storefront_quick"

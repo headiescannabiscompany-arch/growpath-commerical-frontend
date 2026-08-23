@@ -101,6 +101,13 @@ Commercial storefront preview links require the saved real public slug. When no 
 
 The Commercial storefront workspace must use one level-one page heading and explicit level-two headings for setup, launch, product lines, courses, settings, discovery, lives, campaigns, product creation, and saved products. Storefront loading is single-flight, while storefront saves, quick-product creation, and setup-task creation are mutually exclusive confirmed writes. Lock conflicting fields and controls while an action is active; retain storefront and product drafts after failure; and expose load retry, progress, success, upload/location errors, and write failures inside the page. Validate coordinate ranges, two-letter dispensary states, support email, HTTPS public handoffs, and non-negative product prices rather than silently omitting invalid values. An incomplete quick product may be retained as a draft but must not be published until its public card and checkout or dispensary handoff are ready.
 
+Commercial Storefront product creation must present readable, owner-scoped Product Line and
+B-02 Inventory choices as the normal linking workflow. Stripe identifiers and direct
+Product Line, Inventory, recipe, batch, evidence-run, and course IDs remain available only
+inside an explicitly opened advanced section with guidance not to guess technical IDs. An
+empty named-choice list is a truthful optional-link state, not a reason to force an ordinary
+owner to paste database identifiers.
+
 The owner Storefront shows only active owner-manageable Products. Archived, deleted, removed, cancelled, and hidden records remain audit history and must not be counted as storefront-ready inventory or rendered as draft cards. If an exact Product detail is missing or unavailable, show a truthful read-only unavailable state with safe list and Storefront actions; never render a generic editable product shell after a not-found response.
 
 Commercial Orders and Analytics must distinguish loading, failed requests, truthful zero activity, and retained previously loaded data. Orders loading and fulfillment writes are single-flight and mutually exclusive; lock every competing fulfillment control while a write is active, show progress and in-page results, retain the current order list after a failed write or refresh, and require a separate confirmation before canceling an order. Analytics must not render a failed initial request as a valid zero snapshot, must retain the last successful event-backed snapshot when refresh fails, and must prevent duplicate refreshes. Internal order counts and revenue require recorded GrowPath checkout state; external handoffs remain views, clicks, inquiries, or leads rather than orders.

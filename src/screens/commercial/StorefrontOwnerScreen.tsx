@@ -416,6 +416,7 @@ export default function Storefront({
     linkedTrialId: "",
     linkedCourseId: ""
   });
+  const [showAdvancedProductLinks, setShowAdvancedProductLinks] = useState(false);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -2261,54 +2262,7 @@ export default function Storefront({
                 />
               ) : null}
             </View>
-          ) : (
-            <>
-              <TextInput
-                value={productDraft.stripeProductId}
-                editable={!interactionBusy}
-                onChangeText={(stripeProductId) =>
-                  setProductDraft((draft) => ({ ...draft, stripeProductId }))
-                }
-                accessibilityLabel="Product Stripe product ID"
-                placeholder="Stripe product ID"
-                autoCapitalize="none"
-                style={styles.input}
-              />
-              <TextInput
-                value={productDraft.stripePriceId}
-                editable={!interactionBusy}
-                onChangeText={(stripePriceId) =>
-                  setProductDraft((draft) => ({ ...draft, stripePriceId }))
-                }
-                accessibilityLabel="Product Stripe price ID"
-                placeholder="Stripe price ID"
-                autoCapitalize="none"
-                style={styles.input}
-              />
-            </>
-          )}
-          <TextInput
-            value={productDraft.inventoryItemId}
-            editable={!interactionBusy}
-            onChangeText={(inventoryItemId) =>
-              setProductDraft((draft) => ({ ...draft, inventoryItemId }))
-            }
-            accessibilityLabel="Product inventory item id"
-            placeholder="Inventory item id"
-            autoCapitalize="none"
-            style={styles.input}
-          />
-          <TextInput
-            value={productDraft.productLineId}
-            editable={!interactionBusy}
-            onChangeText={(productLineId) =>
-              setProductDraft((draft) => ({ ...draft, productLineId }))
-            }
-            accessibilityLabel="Product line id"
-            placeholder="Product line id, or choose an existing line below"
-            autoCapitalize="none"
-            style={styles.input}
-          />
+          ) : null}
           {productLines.length ? (
             <View style={styles.objectActions}>
               {productLines.slice(0, 4).map((line) => {
@@ -2334,53 +2288,12 @@ export default function Storefront({
                 );
               })}
             </View>
-          ) : null}
-          <View style={styles.linkGrid}>
-            <TextInput
-              value={productDraft.linkedRecipeId}
-              editable={!interactionBusy}
-              onChangeText={(linkedRecipeId) =>
-                setProductDraft((draft) => ({ ...draft, linkedRecipeId }))
-              }
-              accessibilityLabel="Linked recipe id"
-              placeholder="Linked recipe id"
-              autoCapitalize="none"
-              style={[styles.input, styles.linkInput]}
-            />
-            <TextInput
-              value={productDraft.linkedBatchId}
-              editable={!interactionBusy}
-              onChangeText={(linkedBatchId) =>
-                setProductDraft((draft) => ({ ...draft, linkedBatchId }))
-              }
-              accessibilityLabel="Linked batch id"
-              placeholder="Linked batch id"
-              autoCapitalize="none"
-              style={[styles.input, styles.linkInput]}
-            />
-            <TextInput
-              value={productDraft.linkedTrialId}
-              editable={!interactionBusy}
-              onChangeText={(linkedTrialId) =>
-                setProductDraft((draft) => ({ ...draft, linkedTrialId }))
-              }
-              accessibilityLabel="Linked evidence run id"
-              placeholder="Linked evidence run id"
-              autoCapitalize="none"
-              style={[styles.input, styles.linkInput]}
-            />
-            <TextInput
-              value={productDraft.linkedCourseId}
-              editable={!interactionBusy}
-              onChangeText={(linkedCourseId) =>
-                setProductDraft((draft) => ({ ...draft, linkedCourseId }))
-              }
-              accessibilityLabel="Linked course id"
-              placeholder="Linked course id"
-              autoCapitalize="none"
-              style={[styles.input, styles.linkInput]}
-            />
-          </View>
+          ) : (
+            <Text style={styles.muted}>
+              No saved product lines yet. You can create this product without one and link
+              a line later.
+            </Text>
+          )}
           {inventory.length ? (
             <View style={styles.chipRow}>
               {inventory.slice(0, 6).map((item) => {
@@ -2411,6 +2324,131 @@ export default function Storefront({
                   </Pressable>
                 );
               })}
+            </View>
+          ) : (
+            <Text style={styles.muted}>
+              No inventory item is available to link. The product can remain an unstocked
+              draft until inventory is created.
+            </Text>
+          )}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              showAdvancedProductLinks
+                ? "Hide advanced product links"
+                : "Show advanced product links"
+            }
+            accessibilityState={{ expanded: showAdvancedProductLinks }}
+            disabled={interactionBusy}
+            onPress={() => setShowAdvancedProductLinks((shown) => !shown)}
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryText}>
+              {showAdvancedProductLinks
+                ? "Hide advanced product links"
+                : "Advanced product links"}
+            </Text>
+          </Pressable>
+          {showAdvancedProductLinks ? (
+            <View>
+              <Text style={styles.muted}>
+                Use technical IDs only for an existing provider or GrowPath record. Do not
+                guess them; named choices above are the normal linking workflow.
+              </Text>
+              {!isDispensary ? (
+                <>
+                  <TextInput
+                    value={productDraft.stripeProductId}
+                    editable={!interactionBusy}
+                    onChangeText={(stripeProductId) =>
+                      setProductDraft((draft) => ({ ...draft, stripeProductId }))
+                    }
+                    accessibilityLabel="Product Stripe product ID"
+                    placeholder="Stripe product ID"
+                    autoCapitalize="none"
+                    style={styles.input}
+                  />
+                  <TextInput
+                    value={productDraft.stripePriceId}
+                    editable={!interactionBusy}
+                    onChangeText={(stripePriceId) =>
+                      setProductDraft((draft) => ({ ...draft, stripePriceId }))
+                    }
+                    accessibilityLabel="Product Stripe price ID"
+                    placeholder="Stripe price ID"
+                    autoCapitalize="none"
+                    style={styles.input}
+                  />
+                </>
+              ) : null}
+              <TextInput
+                value={productDraft.inventoryItemId}
+                editable={!interactionBusy}
+                onChangeText={(inventoryItemId) =>
+                  setProductDraft((draft) => ({ ...draft, inventoryItemId }))
+                }
+                accessibilityLabel="Product inventory item id"
+                placeholder="Inventory item id"
+                autoCapitalize="none"
+                style={styles.input}
+              />
+              <TextInput
+                value={productDraft.productLineId}
+                editable={!interactionBusy}
+                onChangeText={(productLineId) =>
+                  setProductDraft((draft) => ({ ...draft, productLineId }))
+                }
+                accessibilityLabel="Product line id"
+                placeholder="Product line id, or choose an existing line below"
+                autoCapitalize="none"
+                style={styles.input}
+              />
+              <View style={styles.linkGrid}>
+                <TextInput
+                  value={productDraft.linkedRecipeId}
+                  editable={!interactionBusy}
+                  onChangeText={(linkedRecipeId) =>
+                    setProductDraft((draft) => ({ ...draft, linkedRecipeId }))
+                  }
+                  accessibilityLabel="Linked recipe id"
+                  placeholder="Linked recipe id"
+                  autoCapitalize="none"
+                  style={[styles.input, styles.linkInput]}
+                />
+                <TextInput
+                  value={productDraft.linkedBatchId}
+                  editable={!interactionBusy}
+                  onChangeText={(linkedBatchId) =>
+                    setProductDraft((draft) => ({ ...draft, linkedBatchId }))
+                  }
+                  accessibilityLabel="Linked batch id"
+                  placeholder="Linked batch id"
+                  autoCapitalize="none"
+                  style={[styles.input, styles.linkInput]}
+                />
+                <TextInput
+                  value={productDraft.linkedTrialId}
+                  editable={!interactionBusy}
+                  onChangeText={(linkedTrialId) =>
+                    setProductDraft((draft) => ({ ...draft, linkedTrialId }))
+                  }
+                  accessibilityLabel="Linked evidence run id"
+                  placeholder="Linked evidence run id"
+                  autoCapitalize="none"
+                  style={[styles.input, styles.linkInput]}
+                />
+                <TextInput
+                  value={productDraft.linkedCourseId}
+                  editable={!interactionBusy}
+                  onChangeText={(linkedCourseId) =>
+                    setProductDraft((draft) => ({ ...draft, linkedCourseId }))
+                  }
+                  accessibilityLabel="Linked course id"
+                  placeholder="Linked course id"
+                  autoCapitalize="none"
+                  style={[styles.input, styles.linkInput]}
+                />
+              </View>
             </View>
           ) : null}
           <TextInput

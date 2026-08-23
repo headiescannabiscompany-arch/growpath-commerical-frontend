@@ -278,6 +278,27 @@ harvest_readiness. Detailed evidence remains in the private GrowPath record.` an
   download in a download-enabled browser; repeated automatic downloads were not emitted by
   the in-app browser after the prior QA file was preserved and removed.
 
+## Continued signed-in Commercial crawl
+
+- The signed-in Living Soil Labs owner crawl loaded Storefront, Feed / Campaigns, Forum,
+  More and Profile under the same explicit Commercial workspace. The Storefront remained a
+  truthful unpublished draft at 2/14 launch checks; Feed retained an empty-state draft
+  boundary; Forum displayed the existing support discussion under the verified brand; and
+  More retained visible links to Commercial destinations intentionally omitted from the
+  compact six-tab bar.
+- The crawl found one bounded usability defect in quick product creation: the ordinary form
+  exposed Stripe IDs and raw Inventory, Product Line, recipe, batch, evidence-run and course
+  IDs even though readable owner-scoped Inventory and Product Line choices were already
+  loaded. The candidate branch now makes those named choices the normal workflow and moves
+  every technical identifier behind an explicitly opened `Advanced product links` control.
+  Empty named-choice lists remain truthful optional-link states. The raw fields and their
+  existing payload behavior remain available to authorized advanced users rather than being
+  removed.
+- Local acceptance is complete: `StorefrontRoute.test.tsx` proves the raw controls are absent
+  initially, become available after expansion and still submit the exact links; all 10
+  focused tests pass and `tsc --noEmit` passes. Deployment and live visual verification of
+  this change remain open and must be recorded against the merged frontend SHA.
+
 ## Exact remaining R-03 work
 
 1. Complete authenticated Personal, Commercial, Facility and Admin role/state/action
