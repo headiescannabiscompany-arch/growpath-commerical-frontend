@@ -161,6 +161,12 @@ export async function addForumComment(id: string, text: string, photos: string[]
   });
 }
 
+export async function deleteForumComment(commentId: string) {
+  return communityRequest(apiRoutes.FORUM.COMMENT_DETAIL(commentId), {
+    method: "DELETE"
+  });
+}
+
 export async function saveForumPostToGrowLog(id: string, growId?: string) {
   return communityRequest(apiRoutes.FORUM.TO_GROWLOG(id), {
     method: "POST",

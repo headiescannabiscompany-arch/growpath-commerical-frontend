@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -14,6 +15,7 @@ import { Link, useLocalSearchParams } from "expo-router";
 
 import {
   addForumComment,
+  deleteForumComment,
   getForumPost,
   likeForumPost,
   listForumComments,
@@ -24,6 +26,7 @@ import {
   unlikeForumPost
 } from "@/api/communitySocial";
 import { createPersonalTask } from "@/api/tasks";
+import { useAuth } from "@/auth/AuthContext";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
 import ReportModal from "@/components/ReportModal";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
@@ -62,6 +65,41 @@ function param(value: unknown): string {
 function authorName(row: any) {
   const author = row?.author || row?.user;
   return String(author?.name || author?.username || row?.authorName || "Forum member");
+}
+
+function identityValues(value: any): string[] {
+  if (!value) return [];
+  if (typeof value === "string" || typeof value === "number") {
+    return [String(value).trim().toLowerCase()].filter(Boolean);
+  }
+  return [
+    value._id,
+    value.id,
+    value.userId,
+    value.email,
+    value.username,
+    value.displayName,
+    value.name
+  ]
+    .map((candidate) =>
+      String(candidate || "")
+        .trim()
+        .toLowerCase()
+    )
+    .filter(Boolean);
+}
+
+function isOwnedBy(row: any, currentUser: any) {
+  const viewer = new Set(identityValues(currentUser));
+  if (!viewer.size) return false;
+  const authoredBy = [
+    row?.author,
+    row?.user,
+    row?.authorId,
+    row?.userId,
+    row?.createdBy
+  ].flatMap(identityValues);
+  return authoredBy.some((candidate) => viewer.has(candidate));
 }
 
 function bodyOf(row: any) {
@@ -163,6 +201,7 @@ function ForumImage({ uri, style, label }: { uri: string; style: any; label: str
 }
 
 export default function ForumPostDetailRoute() {
+  const auth = useAuth();
   const [reportedComment, setReportedComment] = useState<CommentRow | null>(null);
   const params = useLocalSearchParams();
   const { palette } = useAppTheme();
@@ -186,6 +225,7 @@ export default function ForumPostDetailRoute() {
   const [feedback, setFeedback] = useState("");
 
   const loadedId = useMemo(() => postId(post), [post]);
+  const isPostOwner = useMemo(() => isOwnedBy(post, auth.user), [auth.user, post]);
 
   const load = useCallback(
     async (opts?: { refresh?: boolean }) => {
@@ -272,6 +312,38 @@ export default function ForumPostDetailRoute() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function confirmDeleteComment(comment: CommentRow) {
+    const commentId = String(comment._id || comment.id || "");
+    if (!commentId || !isOwnedBy(comment, auth.user)) return;
+    Alert.alert(
+      "Delete comment?",
+      "This permanently removes your comment from the discussion.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setSaving(true);
+            setFeedback("");
+            try {
+              await deleteForumComment(commentId);
+              setComments((current) =>
+                current.filter((item) => String(item._id || item.id || "") !== commentId)
+              );
+              setFeedback("Comment deleted.");
+            } catch (error: any) {
+              setFeedback(error?.message || "Unable to delete this comment.");
+            } finally {
+              setSaving(false);
+            }
+          }
+        }
+      ],
+      { cancelable: true }
+    );
   }
 
   async function pickCommentPhotos() {
@@ -521,15 +593,19 @@ export default function ForumPostDetailRoute() {
                       </Pressable>
                     </>
                   ) : null}
-                  <Pressable
-                    disabled={!canPost || saving}
-                    onPress={reportPost}
-                    style={[styles.dangerBtn, (!canPost || saving) && styles.disabled]}
-                    accessibilityRole="button"
-                    accessibilityLabel="Report forum post"
-                  >
-                    <Text style={styles.dangerText}>Report</Text>
-                  </Pressable>
+                  {isPostOwner ? (
+                    <Text style={styles.meta}>Your post</Text>
+                  ) : (
+                    <Pressable
+                      disabled={!canPost || saving}
+                      onPress={reportPost}
+                      style={[styles.dangerBtn, (!canPost || saving) && styles.disabled]}
+                      accessibilityRole="button"
+                      accessibilityLabel="Report forum post"
+                    >
+                      <Text style={styles.dangerText}>Report</Text>
+                    </Pressable>
+                  )}
                   <Text style={styles.meta}>{likes} likes</Text>
                 </View>
               </>
@@ -628,37 +704,52 @@ export default function ForumPostDetailRoute() {
               <Text style={styles.cardText}>Commenting requires `FORUM_POST`.</Text>
             )}
 
-            {comments.map((comment) => (
-              <View
-                key={String(comment._id || comment.id || bodyOf(comment))}
-                style={styles.comment}
-              >
-                <Text style={styles.rowTitle}>{authorName(comment)}</Text>
-                {visibleCommentBody(comment) ? (
-                  <Text style={styles.cardText}>{visibleCommentBody(comment)}</Text>
-                ) : null}
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Report forum comment"
-                  onPress={() => setReportedComment(comment)}
-                  style={styles.secondaryBtn}
+            {comments.map((comment) => {
+              const isCommentOwner = isOwnedBy(comment, auth.user);
+              return (
+                <View
+                  key={String(comment._id || comment.id || bodyOf(comment))}
+                  style={styles.comment}
                 >
-                  <Text style={styles.secondaryText}>Report comment</Text>
-                </Pressable>
-                {commentPhotos(comment).length ? (
-                  <View style={styles.photoGrid}>
-                    {commentPhotos(comment).map((photo, index) => (
-                      <ForumImage
-                        key={`${photo}-${index}`}
-                        uri={photo}
-                        style={styles.commentPhoto}
-                        label={`Forum comment photo ${index + 1}`}
-                      />
-                    ))}
-                  </View>
-                ) : null}
-              </View>
-            ))}
+                  <Text style={styles.rowTitle}>{authorName(comment)}</Text>
+                  {visibleCommentBody(comment) ? (
+                    <Text style={styles.cardText}>{visibleCommentBody(comment)}</Text>
+                  ) : null}
+                  {isCommentOwner ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Delete your comment"
+                      disabled={saving}
+                      onPress={() => confirmDeleteComment(comment)}
+                      style={[styles.dangerBtn, saving && styles.disabled]}
+                    >
+                      <Text style={styles.dangerText}>Delete</Text>
+                    </Pressable>
+                  ) : (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Report forum comment"
+                      onPress={() => setReportedComment(comment)}
+                      style={styles.secondaryBtn}
+                    >
+                      <Text style={styles.secondaryText}>Report comment</Text>
+                    </Pressable>
+                  )}
+                  {commentPhotos(comment).length ? (
+                    <View style={styles.photoGrid}>
+                      {commentPhotos(comment).map((photo, index) => (
+                        <ForumImage
+                          key={`${photo}-${index}`}
+                          uri={photo}
+                          style={styles.commentPhoto}
+                          label={`Forum comment photo ${index + 1}`}
+                        />
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })}
             {!comments.length ? (
               <Text style={styles.cardText}>No comments yet.</Text>
             ) : null}

@@ -6,6 +6,7 @@ import ForumPostDetailRoute from "@/app/home/personal/(tabs)/forum/post/[id]";
 const mockGetForumPost = jest.fn();
 const mockListForumComments = jest.fn();
 const mockAddForumComment = jest.fn();
+const mockDeleteForumComment = jest.fn();
 const mockLikeForumPost = jest.fn();
 const mockUnlikeForumPost = jest.fn();
 const mockReportForumPost = jest.fn();
@@ -63,8 +64,20 @@ jest.mock("@/entitlements", () => ({
   })
 }));
 
+jest.mock("@/auth/AuthContext", () => ({
+  useAuth: () => ({
+    isAuthed: true,
+    user: {
+      id: "viewer-1",
+      username: "EtGU_Jay",
+      email: "viewer@example.com"
+    }
+  })
+}));
+
 jest.mock("@/api/communitySocial", () => ({
   addForumComment: (...args: any[]) => mockAddForumComment(...args),
+  deleteForumComment: (...args: any[]) => mockDeleteForumComment(...args),
   getForumPost: (...args: any[]) => mockGetForumPost(...args),
   likeForumPost: (...args: any[]) => mockLikeForumPost(...args),
   listForumComments: (...args: any[]) => mockListForumComments(...args),
@@ -100,6 +113,7 @@ describe("ForumPostDetailRoute", () => {
     ]);
     mockCreatePersonalTask.mockResolvedValue({ id: "task-1" });
     mockAddForumComment.mockResolvedValue({ id: "comment-new" });
+    mockDeleteForumComment.mockResolvedValue({ ok: true });
   });
 
   it("shows an action-free handoff when no post id is present", async () => {
@@ -214,5 +228,49 @@ describe("ForumPostDetailRoute", () => {
     );
     expect(screen.getByLabelText("Forum comment").props.value).toContain("for sale");
     expect(mockListForumComments).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides self-reporting and exposes confirmed deletion for the owner's comment", async () => {
+    mockGetForumPost.mockResolvedValueOnce({
+      id: "post-1",
+      title: "Owner post",
+      author: { username: "EtGU_Jay" }
+    });
+    mockListForumComments.mockResolvedValueOnce([
+      {
+        id: "comment-owner",
+        body: "My correction",
+        user: { id: "viewer-1", username: "EtGU_Jay" }
+      }
+    ]);
+    const alert = jest
+      .spyOn(require("react-native").Alert, "alert")
+      .mockImplementation((...args: unknown[]) => {
+        const buttons = args[2] as any[];
+        buttons.find((button) => button.text === "Delete")?.onPress();
+      });
+
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Owner post")).toBeTruthy());
+
+    expect(screen.getByText("Your post")).toBeTruthy();
+    expect(screen.queryByLabelText("Report forum post")).toBeNull();
+    expect(screen.queryByLabelText("Report forum comment")).toBeNull();
+    fireEvent.press(screen.getByLabelText("Delete your comment"));
+
+    await waitFor(() =>
+      expect(mockDeleteForumComment).toHaveBeenCalledWith("comment-owner")
+    );
+    expect(screen.getByText("Comment deleted.")).toBeTruthy();
+    alert.mockRestore();
+  });
+
+  it("keeps report controls for content owned by another member", async () => {
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
+
+    expect(screen.getByLabelText("Report forum post")).toBeTruthy();
+    expect(screen.getByLabelText("Report forum comment")).toBeTruthy();
+    expect(screen.queryByLabelText("Delete your comment")).toBeNull();
   });
 });
