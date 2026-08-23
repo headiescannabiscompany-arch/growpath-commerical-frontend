@@ -27,15 +27,18 @@ starts or finishes; do not create another active todo document.
    provider, populated-compare, role and recovery slices remain explicitly open. Admin mutation,
    assignment/reopen/preservation and backend disclosure/chain-of-custody slices remain
    explicitly open. Do not repeat the accepted routes without a reproduced regression.
-2. **Active next product batch:** close P-03 through P-06 and the populated N-01/N-03 acceptance
-   slice with one new ordinary production observation. Source date/location may come from
-   retained-media metadata, separately authorized device GPS, or a reviewed manual pin;
-   all remain private until a distinct publish confirmation. Legacy Cary/Maydale recovery
-   is optional and nonblocking. The separate house crape myrtle and all potted-house records
-   remain private. Then finish the still-open Personal/Commercial/Facility/public workflow
-   and mutation slices, including P-10 persisted export and share review/cancel/publish/
-   withdrawal. Do not reopen retained Hosted Live/OBS, crop-to-grow, Plant ID transport, or
-   another checked implementation unless a current regression is reproduced.
+2. **Active construction cursor:** Batch 1's retained Plant ID/Grow/Nature assembly passes
+   65 frontend and 32 backend focused assertions. Its remaining production upload, disposable-
+   Grow cleanup, public-pin reload/withdrawal and privacy checks are queued for an authenticated
+   Browser session; Browser control is unavailable in the current task, so no live result is
+   inferred. Batch 2's Admin/identity/workspace assembly passes 69 frontend and 93 backend
+   assertions after backend PR 212 (`1c745036f24a9b8a4a03755c89fd184a4bfed885`) corrected a
+   stale test that incorrectly treated an active account subscription as a Facility-owned
+   subscription. Current behavior preserves direct Facility ownership while reporting Facility
+   billing as free/inactive until a `FacilitySubscription` exists. Admin mutation,
+   assignment/reopen/preservation, Sentry-provider and backend disclosure/chain-of-custody live
+   slices remain open. Continue Batch 3 local reconciliation while these exact authenticated
+   production actions wait; do not rebuild either accepted assembly.
 3. **Release crawl and cleanup:** after the in-scope product/workflow items are closed, run the complete
    live route, button, responsive, theme, accessibility, persistence, security, and visual
    presentation crawl and repair the defects it finds. Include a route-to-visible-entry
