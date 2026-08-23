@@ -1,10 +1,10 @@
 # B-02 canonical inventory local acceptance evidence
 
-Updated: 2026-08-22  
+Updated: 2026-08-23
 Matrix row: `B-02`  
 Related rows: `F-05`, `C-03`, `B-01`, `B-04`, `B-05`, `B-08`, `B-09`  
-Status: implemented and locally accepted; guarded production migration, deployment and
-live role/workflow acceptance remain open
+Status: deployed; guarded production migration accepted; live role/workflow acceptance
+remains open
 
 ## Frozen starting point
 
@@ -16,9 +16,34 @@ live role/workflow acceptance remain open
 - Backend implementation commit: `f00d674631de166c50d391ecb697b65c0cc045e0`.
 - Canonical evidence reconciliation: the commit containing this document.
 
-This record is local implementation evidence. It is not a deployment record and does not
-claim that production data was migrated or that Commercial/Facility workflows were accepted
-live.
+This record contains local implementation evidence plus the bounded production migration
+evidence below. It does not claim that Commercial/Facility workflows are fully accepted live.
+
+## Production migration evidence — 2026-08-23
+
+- The deployed backend contained implementation commit `f00d674631de166c50d391ecb697b65c0cc045e0`
+  as an ancestor of production backend `324d4025905cab6f3163e911db6eb486444df7fd`.
+- A production dry-run connected through the running Render service, verified the actual
+  database identity and all seven expected collection namespaces, and reported zero legacy
+  rows, invalid rows, generated SKUs, item writes, movement writes, audit-backfill candidates,
+  unresolved audit scopes, product references and blockers.
+- The only planned difference was replacement of the recognized legacy
+  `facilityId_1_sku_1` unique index with the canonical partial definition that requires a
+  string `facilityId`, string `sku` and `deletedAt: null`.
+- Before apply, production contained four canonical items and no lots, movements or imports.
+  The two authorized Facility inventory writers had last been active on August 21 and July 23,
+  respectively. The bounded maintenance apply enabled the explicit database, apply and
+  write-quiescence gates.
+- Apply performed exactly two index actions and zero item, movement or audit-backfill writes.
+  Its built-in verification returned zero blockers, zero pending item/movement/index actions
+  and zero audit-backfill differences.
+- A separate post-apply dry-run again returned zero blockers and a true zero diff, including
+  an empty index-action list. Legacy records remained retained throughout.
+- The signed-in `EtGU_Jay` acceptance account then loaded Triple Bag Genetics Facility
+  inventory as `STAFF`; the empty state rendered, mutation/import controls remained denied,
+  and database inspection confirmed this was the correct role boundary rather than a broken
+  Facility subscription. Triple Bag Genetics' Facility owner and Facility subscription are
+  both currently `trialing`.
 
 ## Coherent assembly completed
 
@@ -95,18 +120,14 @@ deployment gates.
 
 ## Production acceptance still required
 
-1. Run the guarded migration in dry-run mode against the intended production database;
-   review owner/SKU collisions, cross-owner rows, planned writes, baseline movements and
-   index differences. Apply only with the explicit database, apply and quiesce gates.
-2. Deploy the exact SHAs and verify the served frontend/backend fingerprints.
-3. Exercise two similarly named Commercial workspaces plus two Facility workspaces as
+1. Exercise two similarly named Commercial workspaces plus two Facility workspaces as
    Owner, Manager, Staff and audit-capable Viewer/QA. Prove denial, no cross-tenant data and
    reload persistence.
-4. Exercise empty and populated item/lot histories; receive, adjust, hold/release,
+2. Exercise empty and populated item/lot histories; receive, adjust, hold/release,
    move/transfer, consume, unit/archive guards, older-page loading and private-field clearing.
-5. Exercise rejected, duplicate, conflicting, partially applied and resumed CSV imports;
+3. Exercise rejected, duplicate, conflicting, partially applied and resumed CSV imports;
    verify terminal audit export and formula neutralization.
-6. Exercise one paid Storefront reconciliation, provider retry/idempotency and failure
+4. Exercise one paid Storefront reconciliation, provider retry/idempotency and failure
    recovery without double decrement or false availability.
-7. Clean up only the named acceptance records and append the production evidence. Then narrow
+5. Clean up only the named acceptance records and append the production evidence. Then narrow
    or close `B-02`; do not claim all of `F-05` or `C-03` from this packet alone.

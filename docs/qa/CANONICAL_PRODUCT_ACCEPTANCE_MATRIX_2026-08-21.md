@@ -174,7 +174,7 @@ Every applicable story must preserve these invariants without repeating them in 
 | F-02 | Assigned staff work links to the required record/action and persists evidence/completion                          | implemented; local acceptance passed; assigned-role/live acceptance open |
 | F-03 | SOP/compliance supports approve/assign/run/compare/evidence/exceptions and audit history                          | implemented; local acceptance passed; populated/live acceptance open |
 | F-04 | Facility has the full applicable AI toolset, correct credits/context and role/write gates                         | implemented; local acceptance passed; provider/credit/live acceptance open |
-| F-05 | Inventory/transfers/reports/logs have correct routes, populated states and exports                                | implemented; local acceptance passed; migration/populated/live acceptance open |
+| F-05 | Inventory/transfers/reports/logs have correct routes, populated states and exports                                | deployed; guarded migration accepted; populated/live acceptance open |
 | F-06 | Reviewed sensor/controller imports map rooms/history safely and protect API keys                                  | implemented; local acceptance passed; device-provider/live acceptance open |
 | F-07 | Owner/admin can reach social/course/storefront tools without polluting staff navigation                           | implemented; local acceptance passed; owner-role/live acceptance open |
 
@@ -186,7 +186,7 @@ inventory, safety boundaries and mandatory production scenarios.
 | ID   | User story                                                                                                    | Status                                                                                       |
 | ---- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                    |
-| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | implemented; local acceptance passed; deployment/live acceptance open                        |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; guarded migration accepted; live role/workflow acceptance open                      |
 | B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | implemented; local acceptance passed; deployment/live acceptance open                        |
 | B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | implemented; local acceptance passed; deployment/live acceptance open                        |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | implemented; combined local acceptance passed; deployment/authenticated live acceptance open |
