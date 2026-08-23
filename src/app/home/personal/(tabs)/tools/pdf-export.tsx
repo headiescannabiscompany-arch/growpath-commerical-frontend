@@ -13,7 +13,10 @@ import LockedToolCard from "@/features/personal/tools/LockedToolCard";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { exportToCsv } from "@/utils/exportToCsv";
 import { type PersonalGrowTimelineEvent } from "@/api/grows";
-import { exportVisualTimeline as downloadVisualTimeline } from "@/utils/exportVisualTimeline";
+import {
+  exportVisualTimeline as downloadVisualTimeline,
+  timelineSummaryForExport
+} from "@/utils/exportVisualTimeline";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -195,7 +198,7 @@ export default function PdfExportScreen({
                           {row.date || "No date"} | {row.type} | {row.title}
                         </Text>
                         <Text style={styles.previewDetail} numberOfLines={2}>
-                          {row.detail || "No detail"}
+                          {timelineSummaryForExport(row.detail) || "No detail"}
                         </Text>
                       </View>
                     ))}
