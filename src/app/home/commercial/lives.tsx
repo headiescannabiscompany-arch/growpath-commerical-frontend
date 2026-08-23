@@ -176,7 +176,18 @@ function recordId(record: any) {
 }
 
 function recordLabel(record: any, fallback: string) {
-  return String(record?.title || record?.name || record?.label || fallback).trim();
+  const label = String(
+    record?.title ||
+      record?.name ||
+      record?.label ||
+      record?.headline ||
+      record?.subject ||
+      record?.question ||
+      record?.text ||
+      record?.content ||
+      fallback
+  ).trim();
+  return label.length > 80 ? `${label.slice(0, 77).trimEnd()}...` : label;
 }
 
 function liveFeedCampaignId(live: CommercialLiveEvent) {
