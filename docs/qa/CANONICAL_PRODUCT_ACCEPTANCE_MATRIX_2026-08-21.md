@@ -115,16 +115,16 @@ Every applicable story must preserve these invariants without repeating them in 
 
 | ID   | User story                                                                                                           | Status      |
 | ---- | -------------------------------------------------------------------------------------------------------------------- | ----------- |
-| P-01 | Home provides a useful mixed feed, active-grow context and frequent actions                                          | implemented; local acceptance passed; populated/live navigation acceptance open |
+| P-01 | Home provides a useful mixed feed, active-grow context and frequent actions                                          | live accepted; final-candidate regression only |
 | P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | implemented; local acceptance passed; full-loop/live acceptance open |
 | P-03 | Identify a plant and save its photos/result without requiring a grow, Field Study or public pin                      | implemented; local acceptance passed; ordinary-media live acceptance open |
-| P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | implemented; local acceptance passed; cleanup/final-live regression open |
+| P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | live create accepted; owner archive cleanup/final regression open |
 | P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented; local acceptance passed; publish/withdraw live acceptance open |
 | P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | implemented; local acceptance passed; public/private live regression open |
 | P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | implemented; local acceptance passed; storage/provider/live acceptance open |
 | P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | implemented; local acceptance passed; ordinary-phone provider/live acceptance open |
 | P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open |
-| P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | implemented; live publish/view/withdraw accepted; sanitized-export deployment/live regression open |
+| P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | live accepted; final-candidate regression only |
 | P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | implemented; local acceptance passed; provider/multi-account/live acceptance open |
 
 ## Community, media, courses and discovery
@@ -336,13 +336,14 @@ populated, provider, authenticated or multi-account evidence.
   Lifecycle/Month/Week/Day views, source links, exact review/cancel, frozen publication,
   public viewing/report/share, cannabis fail-closed behavior, withdrawal and permanent old-link
   invalidation. A real viewer-friendly HTML export also downloaded successfully. Inspection
-  found one raw saved-AI JSON payload in that otherwise private-safe file; frontend `dfc10201`
-  centralizes and sanitizes those summaries without changing the source record. **Remaining
-  gate:** merge/deploy that exact fix, re-download the same real timeline and verify readable
-  content with no raw JSON, `evidenceFingerprint`, provider payload or private identifier.
-  **Next action:** exact-SHA deployment and one live export regression. **Do not rebuild:**
-  event aggregation, visual/zoom controls, source links, reviewed public-copy lifecycle or
-  existing export entry points.
+  found one raw saved-AI JSON payload in that otherwise private-safe file. Frontend merges
+  `e3d33b53` and `c32c8676` now apply the shared bounded formatter to the HTML/text export and
+  private on-screen preview. Exact Render deployments succeeded, both complete CI jobs passed,
+  and the real production package shows a readable private-record handoff with no visible raw
+  JSON or `evidenceFingerprint`. **Remaining gate:** ordinary final-candidate regression only,
+  including one fresh OS-level download in a download-enabled browser. **Next action:** final
+  crawl regression. **Do not rebuild:** event aggregation, visual/zoom controls, source links,
+  reviewed public-copy lifecycle or existing export entry points.
 - **N-01 — retained evidence:** the production globe, controls, search/review filters, broad
   fallback viewport, compact/public entry points, and honest zero-pin list are accepted.
   **Remaining gate:** reuse the P-05 observation to verify the populated map and list,
@@ -398,9 +399,8 @@ populated, provider, authenticated or multi-account evidence.
    retained-media metadata, authorized device GPS, or a reviewed manual pin. Legacy
    Cary/Maydale recovery is optional and does not block the future workflow.
 3. Reconcile every `partial` row against retained evidence; close only live-accepted slices.
-   P-10 now needs only the sanitized-export deployment and live re-download regression; its
-   reviewed share/cancel/publish/view/withdraw lifecycle is live accepted and must not be
-   rebuilt.
+   P-10 is live accepted and needs only ordinary final-candidate regression; its visual,
+   export, review/cancel/publish/view/withdraw lifecycle must not be rebuilt.
 4. Complete only the lightweight business foundations and acceptance boundaries retained in
    B-01 through B-09 for existing GrowPath workflows. Do not reintroduce the removed POS,
    regulator, serialized-recall, forecasting, CRM/ERP/accounting, dynamic-pricing,

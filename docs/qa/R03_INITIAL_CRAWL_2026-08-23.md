@@ -82,11 +82,12 @@ The two known disposable Plant-ID grow IDs remain:
 - `6a8a27ee0ad1a2c8f9e57fa6`
 - `6a8a27d80ad1a2c8f9e57f95`
 
-The in-app Archive control was reached, but its JavaScript confirmation blocked browser
-automation before a result could be observed. No archive success is claimed and the records
-must be presumed active. Resume through the product UI at a later mutation checkpoint;
-do not use this failed interaction as evidence or rewrite the archive implementation without
-a reproduced product defect.
+The in-app Archive control was reached again on deployed frontend `c32c8676`. Both semantic
+and visible-DOM clicks stalled at the JavaScript confirmation boundary, while a fresh tab
+still showed four active grows and both Archive controls. No archive success is claimed: both
+records are verified active. The exact remaining action is for the owner to accept the two
+reversible archive confirmations in the product UI. Do not use the automation limitation as
+evidence of a product defect or rebuild Archive without a human reproduction.
 
 ## Continued signed-in Personal crawl
 
@@ -183,9 +184,20 @@ The complete CI job passed before merge. Do not rebuild this notification handof
   workspace, authorization, database or telemetry secrets, but one saved AI journal note
   printed a large raw JSON payload and internal `evidenceFingerprint`. Frontend `dfc10201`
   now centralizes export formatting, preserves ordinary prose, replaces machine payloads with
-  a private-record handoff and bounds oversized prose. Focused tests and the combined full
-  112-batch test suite passed locally; merge, exact deployment and live re-download inspection
-  remain open before P-10 can close.
+  a private-record handoff and bounds oversized prose. It merged in PR 748 as
+  `e3d33b5302613492324e697d7a094b5681f0c873` after GitHub job `97158494956` passed and
+  deployed successfully as Render `dep-da59vjuq1p3s73b2h8n0`.
+- Live regression then found the same raw payload in the private on-screen eight-row preview,
+  although the download generator was sanitized. The preview now reuses the same formatter
+  while leaving the evidence-oriented CSV unchanged. PR 749 passed the complete GitHub job
+  `97160455770`, merged as `c32c8676b31d17a80b784b08e526407d4412e86b` and deployed as
+  Render `dep-da5a7gs9v7es73f1pq50`. The real production package now displays `Tool:
+  harvest_readiness. Detailed evidence remains in the private GrowPath record.` and contains
+  no visible raw JSON or `evidenceFingerprint`. Together with the previously inspected real
+  HTML file, exact shared formatter, focused sanitizer tests and both complete CI passes, this
+  closes P-10 live acceptance. The ordinary final-candidate crawl should repeat one file
+  download in a download-enabled browser; repeated automatic downloads were not emitted by
+  the in-app browser after the prior QA file was preserved and removed.
 
 ## Exact remaining R-03 work
 
