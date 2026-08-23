@@ -304,6 +304,16 @@ harvest_readiness. Detailed evidence remains in the private GrowPath record.` an
   replaces those unusable links with a direct Create Grow prerequisite action while retaining
   the exact grow-scoped links once a grow exists. Local and live acceptance of this repair
   remain open.
+- A read-only Commercial route pass also loaded Discover, Notifications, Tasks, Courses,
+  Lives, External Channels, Orders, Analytics, Product Lines, Product Batches, Product Trials,
+  Inventory Support, Horticulture Operations, Public Links and AI Tools without authentication,
+  transport-code or failed-load presentation. Truthful empty states remained distinct from
+  failures. Lives retained the existing direct Live Studio entry for GrowPath/OBS streaming,
+  chat overlays and premieres while separately reporting that Twitch OAuth is not configured.
+- One lower-priority Commercial Lives usability item remains open from that pass: related
+  course, product, campaign and Forum records still use raw ID inputs instead of readable
+  owner-scoped choices with an advanced-ID fallback. This is recorded for repair before the
+  final candidate rather than being mistaken for completed live-authoring polish.
 
 ## Exact remaining R-03 work
 
