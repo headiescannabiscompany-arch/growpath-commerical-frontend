@@ -243,6 +243,12 @@ signed-out/cross-device claim, entitlement, recovery/expiry, refund/dispute, dup
 migration/index, worker and live-webhook gates pass. Notification categories persist
 independently; real iOS and Android receipt/tap evidence is required.
 
+R-01 and R-02 are now locally accepted on the evidence recorded in
+`R01_R02_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`. Continue only with its exact production
+provider, authenticated mutation, email-delivery and physical-device gates. Do not rebuild the
+accepted billing, gift, entitlement, data-rights, preference, delivery-record or deep-link
+architecture to obtain live evidence.
+
 ### Batch 8 — freeze, crawl, independent review, hats and stores
 
 Order is fixed: `R-03` → `R-04` → `R-05` → `R-06`.
