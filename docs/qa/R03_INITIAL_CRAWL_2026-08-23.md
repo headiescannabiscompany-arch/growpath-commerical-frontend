@@ -52,6 +52,22 @@ and backend candidate `be00d33ff66fea5322fa6e7cac68fe21298d4753`:
 
 This advances the automated/public crawl only. It does not replace the still-open signed-in
 role, mutation, provider, responsive/theme, accessibility or recovery passes.
+
+### Nested-worktree test-runner portability repair
+
+The current candidate audit exposed a Windows-only test-discovery defect when the repository
+was run from a nested `.codex-worktrees` path. Jest combined `<rootDir>` globs with mixed slash
+styles and reported zero tests even though the suites were present. `jest.config.cjs` now uses
+root-independent discovery globs and slash-independent, escaped absolute ignore patterns. A
+focused regression suite protects both discovery and the frontend exclusions for embedded
+backend and dependency directories.
+
+After the repair, `npm run verify:connected-workflows` passed end to end from the nested
+worktree: lint passed, all 59 selected suites and 478 tests passed, and the production web
+export passed. The run retained existing React `act(...)` warnings in Communities, Forum,
+VirtualizedList and BackendCalculatorToolScreen output; those warnings remain visible as
+test-quality findings and were not suppressed or misreported as failures.
+
 - `npm run validate:v1-matrix`, `npm run validate:v1-ui-surface`,
   `npm run validate:frontend-runtime-contract`, and
   `npm run validate:backend-route-contract`: passed.
