@@ -8,7 +8,25 @@ export type EquipmentItem = {
   type?: string;
   roomId?: string;
   status?: string;
+  version?: number;
+  serviceIntervalDays?: number;
+  calibrationIntervalDays?: number;
   nextMaintenance?: string;
+  nextMaintenanceAt?: string;
+  nextCalibrationAt?: string;
+  spareParts?: string[];
+  maintenanceLogs?: Array<{
+    date?: string;
+    details?: string;
+    result?: string;
+    nextDueAt?: string;
+  }>;
+  calibrationLogs?: Array<{
+    date?: string;
+    details?: string;
+    result?: string;
+    nextDueAt?: string;
+  }>;
   provider?: string;
   metrics?: string[];
   integrationMapping?: Record<string, any>;
@@ -51,7 +69,11 @@ export async function createEquipment(
     type?: string;
     roomId?: string;
     status?: string;
-    nextMaintenance?: string;
+    serviceIntervalDays?: number;
+    calibrationIntervalDays?: number;
+    nextMaintenanceAt?: string;
+    nextCalibrationAt?: string;
+    spareParts?: string[];
     provider?: string;
     metrics?: string[];
     integrationMapping?: Record<string, any>;
@@ -62,6 +84,52 @@ export async function createEquipment(
     body: data
   });
   return response?.created ?? response?.equipment ?? response?.item ?? response;
+}
+
+export async function recordEquipmentMaintenance(
+  facilityId: string,
+  equipmentId: string,
+  data: {
+    details: string;
+    result?: string;
+    nextDueAt?: string;
+    sparePartsUsed?: string[];
+  }
+): Promise<EquipmentItem> {
+  const response = await apiRequest(
+    `${endpoints.equipmentItem(facilityId, equipmentId)}/maintenance`,
+    {
+      method: "POST",
+      body: data
+    }
+  );
+  return response?.equipment ?? response;
+}
+
+export async function recordEquipmentCalibration(
+  facilityId: string,
+  equipmentId: string,
+  data: { details: string; result?: string; nextDueAt?: string }
+): Promise<EquipmentItem> {
+  const response = await apiRequest(
+    `${endpoints.equipmentItem(facilityId, equipmentId)}/calibration`,
+    {
+      method: "POST",
+      body: data
+    }
+  );
+  return response?.equipment ?? response;
+}
+
+export async function archiveEquipment(
+  facilityId: string,
+  equipmentId: string,
+  expectedVersion?: number
+): Promise<void> {
+  await apiRequest(endpoints.equipmentItem(facilityId, equipmentId), {
+    method: "DELETE",
+    body: expectedVersion ? { expectedVersion } : {}
+  });
 }
 
 export async function listBatchCycles(

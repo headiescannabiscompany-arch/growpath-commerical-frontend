@@ -15,6 +15,9 @@ const mockCreateEquipment = jest.fn();
 const mockDeleteBatchCycle = jest.fn();
 const mockListBatchCycles = jest.fn();
 const mockListEquipment = jest.fn();
+const mockRecordEquipmentMaintenance = jest.fn();
+const mockRecordEquipmentCalibration = jest.fn();
+const mockArchiveEquipment = jest.fn();
 const mockRouter = { replace: mockReplace, push: mockPush };
 let mockRoomParams: Record<string, string> = {};
 let mockFacilityRole = "OWNER";
@@ -50,9 +53,12 @@ jest.mock("@/api/rooms", () => ({
 jest.mock("@/api/facilityWorkflows", () => ({
   createBatchCycle: (...args: any[]) => mockCreateBatchCycle(...args),
   createEquipment: (...args: any[]) => mockCreateEquipment(...args),
+  archiveEquipment: (...args: any[]) => mockArchiveEquipment(...args),
   deleteBatchCycle: (...args: any[]) => mockDeleteBatchCycle(...args),
   listBatchCycles: (...args: any[]) => mockListBatchCycles(...args),
-  listEquipment: (...args: any[]) => mockListEquipment(...args)
+  listEquipment: (...args: any[]) => mockListEquipment(...args),
+  recordEquipmentMaintenance: (...args: any[]) => mockRecordEquipmentMaintenance(...args),
+  recordEquipmentCalibration: (...args: any[]) => mockRecordEquipmentCalibration(...args)
 }));
 
 jest.mock("@/components/ScreenBoundary", () => {
@@ -97,6 +103,9 @@ describe("FacilityRoomsTab", () => {
       ...input
     }));
     mockCreateEquipment.mockResolvedValue({ id: "eq-new" });
+    mockRecordEquipmentMaintenance.mockResolvedValue({ id: "eq-existing" });
+    mockRecordEquipmentCalibration.mockResolvedValue({ id: "eq-existing" });
+    mockArchiveEquipment.mockResolvedValue(undefined);
     mockReorderRooms.mockImplementation((_facilityId, roomIds) =>
       Promise.resolve(
         roomIds.map((id: string) =>
@@ -420,6 +429,44 @@ describe("FacilityRoomsTab", () => {
       screen.getByRole("radio", { name: "Set new room tracking mode to batch" }).props
         .accessibilityState
     ).toEqual({ checked: true });
+  });
+
+  it("records reviewed equipment maintenance from the room workspace", async () => {
+    mockRoomParams = { roomId: "room-existing" };
+    const screen = render(<FacilityRoomsTab />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Existing Dry Room Temp/RH")).toBeTruthy()
+    );
+    expect(screen.getByText(/Maintenance due date not set/)).toBeTruthy();
+    fireEvent.press(
+      screen.getByLabelText("Record maintenance for Existing Dry Room Temp/RH")
+    );
+    fireEvent.changeText(
+      screen.getByLabelText("maintenance details"),
+      "Cleaned and compared against reference."
+    );
+    fireEvent.press(
+      screen.getByRole("radio", {
+        name: "Set maintenance result to needs follow up"
+      })
+    );
+    expect(
+      screen.getByLabelText("Open Facility Tasks for corrective follow-up")
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Save maintenance record"));
+
+    await waitFor(() =>
+      expect(mockRecordEquipmentMaintenance).toHaveBeenCalledWith(
+        "facility-1",
+        "eq-existing",
+        {
+          details: "Cleaned and compared against reference.",
+          result: "needs_follow_up",
+          nextDueAt: undefined
+        }
+      )
+    );
   });
 
   it("creates manual facility rooms with zone and stage context", async () => {

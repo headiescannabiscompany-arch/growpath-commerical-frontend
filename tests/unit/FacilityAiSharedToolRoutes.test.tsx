@@ -2,12 +2,19 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 
 import FacilityIpmScoutToolRoute from "@/app/home/facility/(tabs)/tools/ipm-scout";
+import FacilityAutoGrowCalendarToolRoute from "@/app/home/facility/(tabs)/tools/auto-grow-calendar";
 import FacilitySavedRunsToolRoute from "@/app/home/facility/(tabs)/tools/saved-runs";
 import FacilitySpeciesCropIdToolRoute from "@/app/home/facility/(tabs)/tools/species-crop-id";
 
 const mockIpmRoute = jest.fn((_props: any) => null);
 const mockSavedRunsRoute = jest.fn((_props: any) => null);
 const mockSpeciesRoute = jest.fn((_props: any) => null);
+const mockCalendarRoute = jest.fn((_props: any) => null);
+
+jest.mock("@/app/home/personal/(tabs)/tools/auto-grow-calendar", () => ({
+  __esModule: true,
+  default: (props: any) => mockCalendarRoute(props)
+}));
 
 jest.mock("@/app/home/personal/(tabs)/tools/ipm-scout", () => ({
   __esModule: true,
@@ -41,5 +48,13 @@ describe("Facility shared AI tool routes", () => {
   it("opens the shared saved-run surface in the active Facility route context", () => {
     render(<FacilitySavedRunsToolRoute />);
     expect(mockSavedRunsRoute).toHaveBeenCalledWith({});
+  });
+
+  it("opens crop planning in the selected Facility workspace", () => {
+    render(<FacilityAutoGrowCalendarToolRoute />);
+    expect(mockCalendarRoute).toHaveBeenCalledWith({
+      backFallbackHref: "/home/facility/ai-tools",
+      workspaceType: "facility"
+    });
   });
 });

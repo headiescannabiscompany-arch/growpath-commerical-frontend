@@ -14,9 +14,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   createBatchCycle,
   createEquipment,
+  archiveEquipment,
   deleteBatchCycle,
   listBatchCycles,
   listEquipment,
+  recordEquipmentCalibration,
+  recordEquipmentMaintenance,
   type BatchCycle,
   type EquipmentItem
 } from "@/api/facilityWorkflows";
@@ -31,6 +34,7 @@ import {
 import { askFormAssistant, type FormAssistantResponse } from "@/api/formAssistant";
 import { InlineError } from "@/components/InlineError";
 import { ScreenBoundary } from "@/components/ScreenBoundary";
+import CalendarDateField from "@/components/forms/CalendarDateField";
 import FacilityContextualTools from "@/components/facility/FacilityContextualTools";
 import { useEntitlements } from "@/entitlements";
 import { getFacilityRoomAccess } from "@/features/facility/roomAccess";
@@ -366,6 +370,13 @@ export default function FacilityRoomsTab() {
 
   const [equipmentName, setEquipmentName] = useState("");
   const [equipmentType, setEquipmentType] = useState("light");
+  const [equipmentActionId, setEquipmentActionId] = useState("");
+  const [equipmentAction, setEquipmentAction] = useState<"maintenance" | "calibration">(
+    "maintenance"
+  );
+  const [equipmentActionResult, setEquipmentActionResult] = useState("completed");
+  const [equipmentActionDetails, setEquipmentActionDetails] = useState("");
+  const [equipmentNextDue, setEquipmentNextDue] = useState("");
 
   const [cycleName, setCycleName] = useState("");
   const [cycleStage, setCycleStage] = useState("flower");
@@ -742,6 +753,54 @@ export default function FacilityRoomsTab() {
       });
       setEquipmentName("");
       setFeedback("Equipment added.");
+      await load({ refresh: true });
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveEquipmentAction() {
+    if (!facilityId || !equipmentActionId || !equipmentActionDetails.trim()) return;
+    setSaving(true);
+    setFeedback("");
+    clearError();
+    try {
+      const payload = {
+        details: equipmentActionDetails.trim(),
+        result: equipmentActionResult,
+        nextDueAt: equipmentNextDue ? `${equipmentNextDue}T12:00:00.000Z` : undefined
+      };
+      if (equipmentAction === "maintenance") {
+        await recordEquipmentMaintenance(facilityId, equipmentActionId, payload);
+      } else {
+        await recordEquipmentCalibration(facilityId, equipmentActionId, payload);
+      }
+      setEquipmentActionId("");
+      setEquipmentActionDetails("");
+      setEquipmentNextDue("");
+      setEquipmentActionResult("completed");
+      setFeedback(
+        `${equipmentAction === "maintenance" ? "Maintenance" : "Calibration"} history recorded.`
+      );
+      await load({ refresh: true });
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeEquipment(item: EquipmentItem) {
+    const id = rowId(item);
+    if (!facilityId || !id || !canManageEquipmentCycles) return;
+    setSaving(true);
+    setFeedback("");
+    clearError();
+    try {
+      await archiveEquipment(facilityId, id, item.version);
+      setFeedback("Equipment archived; its service history remains in the audit record.");
       await load({ refresh: true });
     } catch (e) {
       handleApiError(e);
@@ -1451,6 +1510,132 @@ export default function FacilityRoomsTab() {
                         .filter(Boolean)
                         .join(" | ")}
                     </Text>
+                    <Text style={styles.rowMeta}>
+                      {`Maintenance ${item.nextMaintenanceAt ? `due ${item.nextMaintenanceAt.slice(0, 10)}` : "due date not set"} | Calibration ${item.nextCalibrationAt ? `due ${item.nextCalibrationAt.slice(0, 10)}` : "due date not set"}`}
+                    </Text>
+                    <Text style={styles.rowMeta}>
+                      {`${item.maintenanceLogs?.length || 0} maintenance records | ${item.calibrationLogs?.length || 0} calibration records`}
+                    </Text>
+                    {canManageEquipmentCycles ? (
+                      <View style={styles.pillRow}>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Record maintenance for ${item.name || "equipment"}`}
+                          onPress={() => {
+                            setEquipmentActionId(rowId(item));
+                            setEquipmentAction("maintenance");
+                            setEquipmentActionResult("completed");
+                          }}
+                          style={styles.pill}
+                        >
+                          <Text style={styles.pillText}>Maintenance</Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Record calibration for ${item.name || "equipment"}`}
+                          onPress={() => {
+                            setEquipmentActionId(rowId(item));
+                            setEquipmentAction("calibration");
+                            setEquipmentActionResult("unknown");
+                          }}
+                          style={styles.pill}
+                        >
+                          <Text style={styles.pillText}>Calibration</Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Archive ${item.name || "equipment"}`}
+                          onPress={() => removeEquipment(item)}
+                          disabled={saving}
+                          style={styles.pill}
+                        >
+                          <Text style={styles.pillText}>Archive</Text>
+                        </Pressable>
+                      </View>
+                    ) : null}
+                    {equipmentActionId === rowId(item) ? (
+                      <View style={styles.form}>
+                        <Text style={styles.muted}>
+                          {equipmentAction === "maintenance"
+                            ? "Maintenance"
+                            : "Calibration"}{" "}
+                          record
+                        </Text>
+                        <TextInput
+                          value={equipmentActionDetails}
+                          onChangeText={setEquipmentActionDetails}
+                          style={styles.input}
+                          accessibilityLabel={`${equipmentAction} details`}
+                          placeholder="Work performed, result, or follow-up needed"
+                          placeholderTextColor={palette.textMuted}
+                          multiline
+                        />
+                        <View style={styles.pillRow}>
+                          {(equipmentAction === "maintenance"
+                            ? ["completed", "needs_follow_up", "out_of_service"]
+                            : ["passed", "adjusted", "failed", "unknown"]
+                          ).map((result) => (
+                            <Pressable
+                              key={result}
+                              accessibilityRole="radio"
+                              accessibilityLabel={`Set ${equipmentAction} result to ${result.replaceAll("_", " ")}`}
+                              accessibilityState={{
+                                checked: equipmentActionResult === result
+                              }}
+                              onPress={() => setEquipmentActionResult(result)}
+                              style={[
+                                styles.pill,
+                                equipmentActionResult === result && styles.pillSelected
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.pillText,
+                                  equipmentActionResult === result &&
+                                    styles.pillTextSelected
+                                ]}
+                              >
+                                {result.replaceAll("_", " ")}
+                              </Text>
+                            </Pressable>
+                          ))}
+                        </View>
+                        <CalendarDateField
+                          accessibilityLabel="Next due date"
+                          disabled={saving}
+                          label="Next due date (optional)"
+                          onChange={setEquipmentNextDue}
+                          placeholder="Choose next due date"
+                          value={equipmentNextDue}
+                        />
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Save ${equipmentAction} record`}
+                          onPress={saveEquipmentAction}
+                          disabled={saving || !equipmentActionDetails.trim()}
+                          style={[
+                            styles.primaryBtn,
+                            (saving || !equipmentActionDetails.trim()) && styles.disabled
+                          ]}
+                        >
+                          <Text style={styles.primaryText}>Save record</Text>
+                        </Pressable>
+                        {equipmentActionResult === "needs_follow_up" ||
+                        equipmentActionResult === "out_of_service" ||
+                        equipmentActionResult === "failed" ? (
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel="Open Facility Tasks for corrective follow-up"
+                            onPress={() => router.push("/home/facility/tasks")}
+                            style={styles.pill}
+                          >
+                            <Text style={styles.pillText}>
+                              Open Tasks for corrective follow-up
+                            </Text>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    ) : null}
                   </View>
                 ))
               ) : (

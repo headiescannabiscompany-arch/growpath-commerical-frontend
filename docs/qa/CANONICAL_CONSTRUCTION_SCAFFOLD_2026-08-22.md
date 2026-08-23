@@ -345,6 +345,14 @@ a linked evidence document. Do not create another independent status list.
 - Matrix/evidence update:
 ```
 
+### B-05 checkpoint — retained intelligence and equipment/service history
+
+- Baseline/status: B-04 merged frontend `207c2b24f979b4afc3801381204bb95e8768e802` and backend `288e8e57b9be73a31aa16a13cae85c81afbae1f7`; B-05 remains open as one packet.
+- Retained evidence: frontend integration/telemetry/crop/environment/room/harvest API lane passed 13 suites / 60 assertions; backend integration/telemetry/room/SOP/environment lane passed 11 suites / 69 assertions.
+- Proven gap: equipment had an unmounted plural router plus a separate singular compatibility implementation with different validation, authorization, mutation, and response behavior.
+- Completed local slice: both URLs now delegate to the same Facility-scoped record; member reads and owner/manager writes are enforced; maintenance/calibration entries preserve actor/result/due/spare evidence and audit; stale updates conflict; archive retains history and rejects later mutation. Backend equipment/compatibility lane passes 2 suites / 8 assertions. Frontend room/equipment and role lane passes 2 suites / 12 assertions, with TypeScript clean. Facility AI now exposes the retained crop lifecycle planner in selected-Facility scope; its route/hub/calculator lane passes 3 suites / 10 assertions. Calendar/task/inventory/compliance coverage passes 14 suites / 81 assertions, and grow timeline/run comparison/SOP coverage passes 6 suites / 51 assertions. The standalone SOP harness now supplies the `sharp.cache` contract it previously obtained only by test ordering.
+- Combined local gate: frontend 26 suites / 132 assertions and backend 23 suites / 149 assertions pass. Device cards preserve read-only status and display exact connection-test, sync, unknown-freshness, and provider-error evidence; equipment results expose an explicit human-controlled corrective-task path. B-05 implementation/local acceptance is closed. Deployment and authenticated live acceptance remain open and are not claimed.
+
 ## Worktree and release discipline
 
 - One packet has one integration owner and one primary branch. Parallel investigation may
