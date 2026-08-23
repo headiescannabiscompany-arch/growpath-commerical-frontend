@@ -271,6 +271,10 @@ combined-acceptance, subscription-ownership and Facility-membership commits `a36
 `2d7a583`, `9166c66`, `dcc0209c`, `fbdd874c` and `687d635a` are all ancestors of current
 backend candidate `be00d33ff66fea5322fa6e7cac68fe21298d4753`. This is retention evidence,
 not a substitute for the still-open authorized-role/provider live scenarios.
+The same audit confirms B-04 frontend `31156f2a`, B-05 frontend `21387a82` and
+`99b5ab32`, B-04 backend `e89eec03`, and B-05 backend `c7b7674c` and `a05eff28` are
+ancestors of those current candidates. Their remaining work is likewise authenticated
+provider/device/live acceptance, not reconstruction.
 
 The same live pass found that the Facility Profile's billing action opened Personal Account
 billing while Triple Bag Genetics separately reported `FACILITY (trialing)`. The ownership
