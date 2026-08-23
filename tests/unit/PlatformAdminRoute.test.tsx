@@ -267,6 +267,7 @@ describe("PlatformAdminRoute", () => {
     "videoComment",
     "liveSession",
     "liveChatMessage",
+    "growTimelinePublicCopy",
     "course",
     "forumPost",
     "comment",
@@ -330,6 +331,24 @@ describe("PlatformAdminRoute", () => {
         }
       })
     ).toBe("/store/living-soil-labs/products/product-1");
+  });
+
+  it("preserves the report's exact public grow timeline URL", () => {
+    const token = "A".repeat(43);
+    expect(
+      moderationTargetHref({
+        _id: "case-1",
+        targetType: "growTimelinePublicCopy",
+        targetId: "507f1f77bcf86cd799439012",
+        reason: "Reported",
+        severity: "medium",
+        status: "open",
+        action: "none",
+        evidenceSnapshot: {
+          targetUrl: `https://growpathai.com/grow-timeline/${token}`
+        }
+      })
+    ).toBe(`/grow-timeline/${token}`);
   });
 
   it.each([

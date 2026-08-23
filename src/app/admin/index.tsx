@@ -173,7 +173,8 @@ const MODERATABLE_TARGETS = new Set([
   "video",
   "videoComment",
   "liveSession",
-  "liveChatMessage"
+  "liveChatMessage",
+  "growTimelinePublicCopy"
 ]);
 
 export function supportsModerationActions(targetType: string) {
@@ -199,6 +200,9 @@ function matchesModerationTargetRoute(targetType: string, pathname: string) {
   }
   if (targetType === "liveSession" || targetType === "liveChatMessage") {
     return pathname === "/live-session";
+  }
+  if (targetType === "growTimelinePublicCopy") {
+    return pathname.startsWith("/grow-timeline/");
   }
   if (targetType === "user") return pathname === "/profile";
   return false;

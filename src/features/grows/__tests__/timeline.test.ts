@@ -102,6 +102,20 @@ describe("buildGrowTimeline", () => {
 });
 
 describe("visual grow timeline", () => {
+  it("keeps persisted relative evidence photos available for authenticated review", () => {
+    expect(
+      timelineEventPhotos({
+        payload: {
+          url: "/api/evidence-assets/uploads/507f1f77bcf86cd799439011/object"
+        },
+        photos: ["/uploads/grows/week-one.jpg"]
+      })
+    ).toEqual([
+      "/uploads/grows/week-one.jpg",
+      "/api/evidence-assets/uploads/507f1f77bcf86cd799439011/object"
+    ]);
+  });
+
   it("extracts unique photos from event and payload records", () => {
     expect(
       timelineEventPhotos({

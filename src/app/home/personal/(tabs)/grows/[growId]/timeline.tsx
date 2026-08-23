@@ -11,7 +11,7 @@ import {
   View
 } from "react-native";
 
-import { type PersonalGrow, type PersonalGrowTimelineEvent } from "@/api/grows";
+import { type PersonalGrowTimelineEvent } from "@/api/grows";
 import GrowWorkspaceNav from "@/components/personal/GrowWorkspaceNav";
 import ContextualWorkflowLinks from "@/components/personal/ContextualWorkflowLinks";
 import { coerceParam, fmtDate } from "@/features/grows/routeUtils";
@@ -20,13 +20,13 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { sourceObjectHref } from "@/utils/sourceLinks";
 import { savedRunSourceHref } from "@/features/personal/tools/savedRunRoutes";
+import { resolveImageUri } from "@/utils/photoUploads";
 import {
   groupTimelineEvents,
   timelineEventPhotos,
   type GrowTimelineZoom
 } from "@/features/grows/timeline";
 import {
-  getWorkspaceGrow,
   getWorkspaceGrowTimeline,
   growWorkspaceBasePath,
   type GrowWorkspace
@@ -323,7 +323,6 @@ export default function GrowTimelineScreen({
   const basePath = growWorkspaceBasePath(workspace);
 
   const [events, setEvents] = useState<PersonalGrowTimelineEvent[]>([]);
-  const [grow, setGrow] = useState<PersonalGrow | null>(null);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
   const [zoom, setZoom] = useState<GrowTimelineZoom>("lifecycle");
   const [loading, setLoading] = useState(true);
@@ -338,12 +337,8 @@ export default function GrowTimelineScreen({
     setLoading(true);
     setError("");
     try {
-      const [timelineRows, currentGrow] = await Promise.all([
-        getWorkspaceGrowTimeline(workspace, growId),
-        getWorkspaceGrow(workspace, growId)
-      ]);
+      const timelineRows = await getWorkspaceGrowTimeline(workspace, growId);
       setEvents(timelineRows);
-      setGrow(currentGrow);
     } catch {
       setEvents([]);
       setError("Failed to load grow timeline.");
@@ -366,32 +361,7 @@ export default function GrowTimelineScreen({
     () => groupTimelineEvents(visibleEvents, zoom),
     [visibleEvents, zoom]
   );
-  const selectedPhotos = useMemo(
-    () =>
-      Array.from(
-        new Set([
-          ...(grow?.photos || []).filter(Boolean),
-          ...visibleEvents.flatMap((event) => timelineEventPhotos(event as any))
-        ])
-      ).slice(0, 10),
-    [grow, visibleEvents]
-  );
-  const shareHref = useMemo(() => {
-    const query = new URLSearchParams({
-      growId,
-      title: `Grow timeline: ${grow?.name || "My grow"}`,
-      body:
-        visibleEvents
-          .slice(0, 8)
-          .map(
-            (event) =>
-              `${fmtDate(event.timestamp)} — ${event.title}${event.summary ? `: ${event.summary}` : ""}`
-          )
-          .join("\n") || "Sharing a visual grow timeline from GrowPath."
-    });
-    if (selectedPhotos.length) query.set("photos", selectedPhotos.join(","));
-    return `${workspace === "commercial" ? "/home/commercial/community" : "/home/personal/forum/new-post"}?${query.toString()}`;
-  }, [grow?.name, growId, selectedPhotos, visibleEvents, workspace]);
+  const shareHref = `${basePath}/grows/${encodeURIComponent(growId)}/share`;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -519,7 +489,7 @@ export default function GrowTimelineScreen({
                       .map((photo, index) => (
                         <Image
                           key={`${photo}-${index}`}
-                          source={{ uri: photo }}
+                          source={{ uri: resolveImageUri(photo) }}
                           style={styles.photo}
                           resizeMode="cover"
                           accessibilityLabel={`Timeline photo for ${event.title}`}

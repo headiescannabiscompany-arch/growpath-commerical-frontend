@@ -23,7 +23,9 @@ const PHOTO_KEYS = [
   "attachments",
   "photoUrl",
   "imageUrl",
-  "thumbnailUrl"
+  "thumbnailUrl",
+  "url",
+  "uri"
 ] as const;
 
 function addPhotoCandidate(target: string[], value: unknown) {
@@ -40,7 +42,12 @@ function addPhotoCandidate(target: string[], value: unknown) {
     return;
   }
   const candidate = String(value || "").trim();
-  if (/^(https?:|data:image\/|blob:)/i.test(candidate) && !target.includes(candidate))
+  if (
+    (/^(https?:|data:image\/|blob:)/i.test(candidate) ||
+      candidate.startsWith("/uploads/") ||
+      candidate.startsWith("/api/evidence-assets/uploads/")) &&
+    !target.includes(candidate)
+  )
     target.push(candidate);
 }
 

@@ -25,9 +25,19 @@ the private grow and an audit-safe withdrawn record. Republishing creates a new 
 old revoked link never comes back to life. The owner can reload the current publication
 state and open, copy or use the device share sheet for the canonical viewer URL.
 
+Withdrawal or an administrator hide also removes public photo derivatives that are no
+longer referenced by another visible Nature publication or visible published timeline.
+The withdrawn/hidden owner response exposes no photo URLs. An administrator restore must
+rebuild each derivative from its still-owned protected source before making the timeline
+visible; if any selected source can no longer produce a safe derivative, restoration fails
+closed. This prevents a known derivative URL from surviving publication withdrawal while
+preserving a derivative that another authorized publication still needs.
+
 The public viewer is read-only, understandable without the editor, and labels the content
 as an owner-selected snapshot rather than a compliance report, scientific proof or live
 operational state. It renders only the frozen sanitized fields and safe public photo copies.
 It exposes no editor actions, source IDs, owner email, workspace secrets or private deep
-links. Reports and cannabis-visibility rules must be added before cannabis-specific timeline
-copies are opened to unrelated or signed-out viewers.
+links. Every public viewer provides the unified report action and opens the exact timeline
+target in the Admin queue. Cannabis-specific copies follow the shared cannabis-interest
+gate: signed-out and ineligible viewers receive the same unavailable response as a missing,
+withdrawn or moderated copy.
