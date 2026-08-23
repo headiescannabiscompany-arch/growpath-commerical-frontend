@@ -224,6 +224,29 @@ test("links same-workspace B-02 inventory and retained evidence without copying 
   );
 });
 
+test("hydrates and displays a persisted linked lot after reload", async () => {
+  mockListRecords.mockResolvedValueOnce([
+    {
+      ...baseRecord,
+      inventoryItemId: "item-1",
+      inventoryLotId: "lot-1"
+    }
+  ]);
+
+  const screen = render(
+    <HorticultureOperationsScreen
+      workspace={{ workspaceType: "commercial" }}
+      workspaceLabel="Commercial"
+    />
+  );
+
+  await waitFor(() =>
+    expect(mockGetInventoryItem).toHaveBeenCalledWith({}, "item-1")
+  );
+  expect(screen.getByText(/Linked lot: TOM-A/)).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Linked lot TOM-A" })).toBeTruthy();
+});
+
 test("requires explicit confirmation before archiving and removes only the confirmed record", async () => {
   const screen = render(
     <HorticultureOperationsScreen

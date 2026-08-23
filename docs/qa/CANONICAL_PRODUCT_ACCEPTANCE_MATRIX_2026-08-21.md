@@ -186,9 +186,9 @@ inventory, safety boundaries and mandatory production scenarios.
 | ID   | User story                                                                                                    | Status                                                                                                                                          |
 | ---- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                                                                      |
-| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; migration, owner ledger, Inventory AI, reviewed import and terminal exports accepted; remaining role/import-retry/reconciliation open |
-| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF denial accepted; authorized-role/provider/live acceptance open                                                                  |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF denial and Facility OWNER care/blocked-readiness/archive/audit accepted; Manager/Commercial/link/passing-readiness live gates open |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; owner ledger, Manager mutation, Inventory AI, reviewed import and terminal exports accepted; Staff/Viewer, isolation, history, import-retry/reconciliation open |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF/VIEWER denial and Facility MANAGER create/reload/archive/audit accepted; provider/Commercial/isolation live gates open           |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF/VIEWER denial and Facility OWNER care/blocked-readiness/archive/audit accepted; Manager/Commercial/link/passing-readiness live gates open |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; authenticated device/provider live acceptance open                                                                                    |
 | B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | implemented; local acceptance passed; provider/live acceptance open                                                                             |
 | B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | implemented; local acceptance passed; regulated provider/live gates open                                                                        |
@@ -298,6 +298,46 @@ offered no create or AI-review mutation; the transfer route resolved after its a
 load and showed zero records, zero drafts, `$0.00` shipped sales and the bounded STAFF
 fulfillment role. This extends the accepted STAFF denial/read-only slice without closing the
 OWNER/MANAGER mutation, import, audit, isolation or provider gates.
+
+The 2026-08-23 Manager pass separately authenticated
+`exploringthegrowinguniverse@gmail.com`, verified its explicit Triple Bag Genetics
+`MANAGER` membership, and used the existing B-02 owner item for one reversible hold/release
+cycle. Both states survived reopening, both immutable audit events were present, and the
+item returned to `11 each`. This closes the Manager mutation/reload/audit slice without
+rebuilding the ledger. Staff/Viewer forced-write denial, permission-specific audit export,
+workspace isolation, naturally paginated history, interrupted import resume, paid
+reconciliation and cleanup remain open. Audit Detail still presents the actor as
+`Recorded facility member` instead of the available readable name/role and remains a final-
+crawl presentation defect.
+
+The subsequent authenticated `headiescannabiscompany@gmail.com` Staff pass loaded the
+populated two-item inventory, retained the correct `11 each` and `5 each` balances, exposed
+no create/full-audit/movement controls, disabled reviewed import with truthful role copy and
+allowed Facility Audit Logs independently of inventory write permission. This closes the
+populated Staff UI and audit-read slice. Staff forced backend `403` remains open because the
+available Browser execution surface could not use the app transport without inspecting or
+duplicating stored credentials; no unauthenticated response was mislabeled as role evidence.
+
+The authenticated `john.collins15@alumni.morgan.edu` Viewer pass then loaded the same
+populated items, lots and immutable movement history with every save/movement action disabled,
+no create/remove control and reviewed import disabled. Viewer correctly retained Full Audit
+CSV and Audit Logs under its separate `AUDIT_READ` capability. This closes the populated
+Viewer UI/audit-read slice. Only authenticated Staff and Viewer forced backend `403` probes
+remain in the B-02 role gate.
+
+The same authenticated Viewer session opened the direct Facility Business Desk and
+Horticulture Operations routes. Both failed closed at the route boundary with `Access
+denied` before either workspace tool surface or data loaded. This closes the B-03 and B-04
+live Viewer-denial slices without reopening their implementations or changing data.
+
+The authenticated Triple Bag Genetics Manager subsequently opened all eight Business Desk
+launches, created one no-contact-data Lead Follow-up record, reopened the route and verified
+revision 1, then archived it with a reason. The active list returned to empty and Facility
+Audit Logs retained separate `Business Desk.Record.Create` and
+`Business Desk.Record.Archive` events. This closes the Facility Manager mutation/reload/
+archive/audit slice. Business Ask truthfully reported that provider-backed help is not
+configured for this workspace and disabled Ask, so provider/credit/refund acceptance remains
+an exact configuration blocker rather than a manufactured success.
 
 The 2026-08-23 B-04 owner pass is retained in
 `B04_HORTICULTURE_PRODUCTION_EVIDENCE_2026-08-23.md`. Backend main `7442cf8a` fixes the

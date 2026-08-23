@@ -180,6 +180,26 @@ B-02's exact implementation, test evidence and remaining gates are recorded in
 `docs/knowledge/methods/business-inventory-method.md`; Small Business Desk prompts receive
 only authorized B-02 references rather than the ledger's implementation contract.
 
+Production checkpoint, 2026-08-23: the existing Manager completed a reversible audited
+hold/release on the accepted owner item, verified both states after reopening, and left the
+balance unchanged at `11 each`. Do not repeat this slice. Continue 5B with Staff/Viewer
+forced-write denial and audit-read boundaries, two-Commercial/two-Facility isolation,
+naturally paginated history, controlled partial-import resume, signed Stripe reconciliation
+and confirmed synthetic cleanup. Retain the generic Audit Detail actor/omitted-role finding
+for the final-crawl presentation fix.
+
+The existing Staff subsequently loaded the populated inventory read-only, retained ordinary
+CSV export and Inventory AI access, saw reviewed import disabled, and opened Facility Audit
+Logs while full-audit export and every stock mutation remained absent. Do not repeat this UI
+slice. Continue with the Staff forced backend `403` and the Viewer boundary before moving to
+workspace isolation.
+
+The existing Viewer subsequently loaded the same populated item and movement history with
+all mutation controls disabled, import disabled and no create/remove action. Viewer retained
+Audit Logs and Full Audit CSV under its separate `AUDIT_READ` capability. Do not repeat this
+UI slice; only the authenticated Staff/Viewer forced backend `403` probes remain before 5B
+moves to workspace isolation.
+
 ### Batch 6 — Small Business Desk and retained domain acceptance
 
 Primary rows: `B-03` through `B-09`.
@@ -217,6 +237,13 @@ and Business Ask contracts. B-03 is implemented and locally accepted. Credential
 document extraction, Business Ask/provider configuration, optional merchant provider handoff,
 exact-SHA deployment, and live workspace/credit/audit acceptance remain open production gates;
 they must not reopen construction. The canonical matrix continues to own row status.
+
+Production checkpoint, 2026-08-23: Triple Bag Genetics Manager create/reload/archive/audit
+passed with one bounded Lead Follow-up revision and no retained active synthetic record.
+Staff and Viewer direct-route denial are also accepted. Business Ask loaded the correct
+Facility boundary but truthfully disabled provider submission because provider-backed help is
+not configured for this workspace. Do not repeat the accepted role slices; configure the
+approved provider before the remaining cited-result/credit/refund evidence.
 
 | Slice                        | Route           | Required construction                                                                                                                                                                                    | Focused automated acceptance                                                                                                                                                                                                               |
 | ---------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
