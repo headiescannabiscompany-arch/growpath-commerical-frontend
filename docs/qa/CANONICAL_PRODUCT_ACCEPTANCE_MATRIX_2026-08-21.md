@@ -188,7 +188,7 @@ inventory, safety boundaries and mandatory production scenarios.
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                                                                      |
 | B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; migration, owner ledger, Inventory AI, reviewed import and terminal exports accepted; remaining role/import-retry/reconciliation open |
 | B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF denial accepted; authorized-role/provider/live acceptance open                                                                  |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF denial accepted; authorized-role/live acceptance open                                                                           |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF denial and Facility OWNER care/blocked-readiness/archive/audit accepted; Manager/Commercial/link/passing-readiness live gates open |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; authenticated device/provider live acceptance open                                                                                    |
 | B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | implemented; local acceptance passed; provider/live acceptance open                                                                             |
 | B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | implemented; local acceptance passed; regulated provider/live gates open                                                                        |
@@ -298,6 +298,17 @@ offered no create or AI-review mutation; the transfer route resolved after its a
 load and showed zero records, zero drafts, `$0.00` shipped sales and the bounded STAFF
 fulfillment role. This extends the accepted STAFF denial/read-only slice without closing the
 OWNER/MANAGER mutation, import, audit, isolation or provider gates.
+
+The 2026-08-23 B-04 owner pass is retained in
+`B04_HORTICULTURE_PRODUCTION_EVIDENCE_2026-08-23.md`. Backend main `7442cf8a` fixes the
+observed write-then-audit-error defect by committing every Horticulture mutation and audit
+event in one transaction. Frontend main `f4cbb5c0` exposes version-fenced, explicitly
+confirmed archive and named action semantics. In the selected Triple Bag Genetics Facility,
+the owner added care history, reloaded it, received six truthful blocked-readiness reasons,
+reloaded that result, canceled one archive confirmation, then confirmed archive and reloaded
+the empty active list. Facility Audit Logs retained care, evaluation and archive events. This
+closes the Facility OWNER care/blocked-readiness/archive/audit slice without claiming Manager,
+Commercial, B-02/evidence-link, passing-readiness or actor-name presentation acceptance.
 
 Deployment reconciliation on 2026-08-23 proved that the retained B-03 frontend acceptance
 commit `181ea060` and subscription correction `862ae85b`, B-04 frontend implementation

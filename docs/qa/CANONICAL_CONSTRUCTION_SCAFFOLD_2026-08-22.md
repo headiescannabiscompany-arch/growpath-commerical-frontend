@@ -256,6 +256,14 @@ blocked-readiness, passing-readiness and denied-role acceptance remain the bound
 gate. Cross-cutting durable mutation retry/idempotency remains owned by B-08 and does not
 justify rebuilding this B-04 record model.
 
+Production checkpoint, 2026-08-23: backend main `7442cf8a` now commits each B-04 mutation and
+its audit event atomically after the live owner create exposed a write-then-audit-error defect.
+Frontend main `f4cbb5c0` adds the missing confirmed archive workflow and named action
+semantics. Triple Bag Genetics Facility OWNER care, reload, deterministic blocked readiness,
+archive cancel/confirm/reload and audit-list retention are accepted. See
+`B04_HORTICULTURE_PRODUCTION_EVIDENCE_2026-08-23.md` for exact evidence and the remaining
+Manager, Commercial, B-02/evidence-link, passing-readiness and actor-name presentation gates.
+
 ### Batch 7 — money, notifications and data rights
 
 Primary rows: `R-01`, `R-02`.  
