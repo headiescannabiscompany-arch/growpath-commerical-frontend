@@ -101,6 +101,17 @@ copies. Final acceptance must verify title, description, canonical and social me
 client navigation as well as in each exported HTML entry. This defect is now explicit and is
 not permission to rebuild the public pages that otherwise passed.
 
+The metadata defect is live accepted on frontend main
+`c8b50286957805b43171e5219a51f8b56319d7bf` (PR `#769`). The production exporter and
+runtime now consume one shared route-metadata registry. Focused DOM acceptance proved title,
+description, robots, Open Graph and canonical changes, and the production export plus SEO
+verifier passed. PR CI run `32658736562` passed completely; exact-main Frontend CI run
+`32659415264` and Production Build Preflight run `32659415253` also passed. In production, a fresh navigation to
+`/features?verify=runtime-public-metadata-live` rendered title and `og:title`
+`GrowPathAI Features | Connected cultivation workflows`, the route-specific description,
+`index,follow`, and canonical `https://growpathai.com/features`. This closes only the bounded
+public runtime-metadata defect; it does not close the remaining final-candidate crawl below.
+
 - `npm run validate:v1-matrix`, `npm run validate:v1-ui-surface`,
   `npm run validate:frontend-runtime-contract`, and
   `npm run validate:backend-route-contract`: passed.
@@ -260,7 +271,7 @@ The complete CI job passed before merge. Do not rebuild this notification handof
   while leaving the evidence-oriented CSV unchanged. PR 749 passed the complete GitHub job
   `97160455770`, merged as `c32c8676b31d17a80b784b08e526407d4412e86b` and deployed as
   Render `dep-da5a7gs9v7es73f1pq50`. The real production package now displays `Tool:
-  harvest_readiness. Detailed evidence remains in the private GrowPath record.` and contains
+harvest_readiness. Detailed evidence remains in the private GrowPath record.` and contains
   no visible raw JSON or `evidenceFingerprint`. Together with the previously inspected real
   HTML file, exact shared formatter, focused sanitizer tests and both complete CI passes, this
   closes P-10 live acceptance. The ordinary final-candidate crawl should repeat one file
