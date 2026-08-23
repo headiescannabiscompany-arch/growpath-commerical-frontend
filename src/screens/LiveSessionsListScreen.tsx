@@ -323,6 +323,7 @@ export default function LiveSessionsListScreen() {
     activeFilter === "all"
       ? sections
       : sections.filter((section) => section.key === activeFilter);
+  const hasActiveDirectoryFilter = activeFilter !== "all" || Boolean(query.trim());
 
   function openSession(item: LiveSession) {
     const id = sessionIdOf(item);
@@ -544,10 +545,14 @@ export default function LiveSessionsListScreen() {
         ) : (
           <View style={styles.emptyCard}>
             <Text accessibilityRole="header" aria-level={2} style={styles.emptyTitle}>
-              No live opportunities matched
+              {hasActiveDirectoryFilter
+                ? "No live opportunities matched"
+                : "No live sessions are published yet"}
             </Text>
             <Text style={styles.muted}>
-              Clear the filters or search for a different campaign, session, or replay.
+              {hasActiveDirectoryFilter
+                ? "Clear the filters or search for a different campaign, session, or replay."
+                : "When creators publish a live, premiere, or replay, it will appear here. You can create or manage your own from Live Studio."}
             </Text>
           </View>
         )

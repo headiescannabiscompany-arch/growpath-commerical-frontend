@@ -123,4 +123,25 @@ describe("LiveSessionsListScreen", () => {
     );
     expect(mockApiRequest).toHaveBeenCalledTimes(2);
   });
+
+  it("distinguishes an empty directory from an empty filtered result", async () => {
+    mockApiRequest.mockResolvedValue([]);
+
+    const screen = render(<LiveSessionsListScreen />);
+
+    expect(
+      await screen.findByRole("header", { name: "No live sessions are published yet" })
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/When creators publish a live, premiere, or replay/)
+    ).toBeTruthy();
+    expect(screen.queryByText(/Clear the filters/)).toBeNull();
+
+    fireEvent.changeText(screen.getByLabelText("Search live opportunities"), "tomatoes");
+
+    expect(
+      screen.getByRole("header", { name: "No live opportunities matched" })
+    ).toBeTruthy();
+    expect(screen.getByText(/Clear the filters/)).toBeTruthy();
+  });
 });
