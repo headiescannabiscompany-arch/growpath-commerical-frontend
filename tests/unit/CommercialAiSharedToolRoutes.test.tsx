@@ -138,7 +138,8 @@ describe("Commercial shared AI tool aliases", () => {
       );
     }
     expect(mockIntegrationsRoute).toHaveBeenCalledWith({
-      workspaceType: "commercial"
+      workspaceType: "commercial",
+      showHeading: false
     });
   });
 });
