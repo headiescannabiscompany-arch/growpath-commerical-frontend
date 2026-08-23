@@ -162,17 +162,17 @@ Every applicable story must preserve these invariants without repeating them in 
 See `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21.md` for the complete tool
 inventory, safety boundaries and mandatory production scenarios.
 
-| ID   | User story                                                                                                    | Status                                                                                      |
-| ---- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | partially implemented/evidenced through B-02/B-03; dedicated acceptance and live gates open |
-| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | implemented; local acceptance passed; deployment/live acceptance open                       |
-| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | implemented; local acceptance passed; deployment/live acceptance open                       |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | implemented; local acceptance passed; deployment/live acceptance open                       |
+| ID   | User story                                                                                                    | Status                                                                                       |
+| ---- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | partially implemented/evidenced through B-02/B-03; dedicated acceptance and live gates open  |
+| B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | implemented; local acceptance passed; deployment/live acceptance open                        |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | implemented; local acceptance passed; deployment/live acceptance open                        |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | implemented; local acceptance passed; deployment/live acceptance open                        |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | implemented; combined local acceptance passed; deployment/authenticated live acceptance open |
-| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | partial; business acceptance open                                                           |
-| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | partial; regulated gates open                                                               |
-| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | defined; cross-cutting acceptance open                                                      |
-| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | defined; final acceptance open                                                              |
+| B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | implemented; local acceptance passed; provider/live acceptance open                          |
+| B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | implemented; local acceptance passed; regulated provider/live gates open                     |
+| B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | implemented; cross-cutting local acceptance passed; provider/live acceptance open            |
+| B-09 | Realistic multi-tenant/role/import/error/public-sharing business acceptance scenarios                         | implemented; local acceptance passed; final multi-account/live acceptance open               |
 
 Full regulator/POS adapters, serialized recall workflows, advanced forecasting, full CRM/ERP/accounting,
 dynamic pricing, marketplace/payout/tax tooling, and cross-platform creator analytics are
@@ -182,6 +182,10 @@ reconsideration rule is owned by `BUSINESS_OPERATIONS_AI_REQUIREMENTS_2026-08-21
 B-02 local construction and verification evidence is retained in
 `B02_CANONICAL_INVENTORY_LOCAL_EVIDENCE_2026-08-22.md`. It does not close the guarded
 production migration, deployment or live multi-role workflow gate.
+
+B-06 through B-09 local construction and verification evidence is retained in
+`B06_B09_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`. These rows must not be rebuilt to satisfy
+their remaining provider, production, regulated-policy or multi-account live gates.
 
 B-01 is no longer unstarted. The locally accepted B-02 ledger (frontend `1d283450`,
 backend `f00d674`) implements authenticated Commercial/Facility workspace scope, role and

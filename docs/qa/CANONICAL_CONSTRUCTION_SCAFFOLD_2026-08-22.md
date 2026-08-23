@@ -170,6 +170,12 @@ reconsideration gate. AI produces reviewable drafts/tasks, never autonomous cont
 ordering, equipment control, compliance certification, pricing, publishing or legal
 decisions.
 
+B-06 through B-09 are now locally accepted on the evidence recorded in
+`B06_B09_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`. Continue only with its exact
+provider/production, regulated-capability and multi-account live gates; do not reopen the
+creator, Hosted Live/OBS, storefront, approval or isolation architecture without a reproduced
+current-candidate defect.
+
 #### B-03 construction and automated-acceptance contract
 
 The one B-03 matrix row is built as an engine foundation followed by eight independently
