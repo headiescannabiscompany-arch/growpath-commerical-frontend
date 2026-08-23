@@ -87,6 +87,20 @@ temporary state. No product patch was discarded.
 
 ## Registration and workspace noise
 
+### Root Plant ID branch re-audit — 2026-08-23
+
+The registered root branch `codex/plant-id-to-grow-lifecycle` is clean in tracked files but
+still carries five commits not patch-equivalent to current `origin/main` (`b165ed4e`,
+`2a03ce3f`, `8f928240`, `50e5de4b`, `2f8e616f`). They are **preserved**, not candidates for
+blind replay or deletion. Current `main` already contains the named product surfaces from
+those commits: the reviewed crop-lifecycle registry and matcher, crop common/scientific-name
+grow setup, saved Plant ID to reviewed-grow handoff, completed-image evidence recovery,
+Discover's Nature globe link, and private map placement. Current versions are substantially
+newer and have broader route/tests; replaying the old commits wholesale would therefore risk
+removing later safeguards. Final dead-code cleanup must compare any remaining semantic hunk
+against these current owners before classifying the branch as superseded and removing its
+registration.
+
 - The root `codex/plant-id-to-grow-lifecycle` checkout reports many untracked
   paths because it contains the retained worktrees and historical temporary
   output. Its tracked frontend diff is not the source of those product changes.
