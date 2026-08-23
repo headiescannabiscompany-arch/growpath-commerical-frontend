@@ -60,6 +60,15 @@ starts or finishes; do not create another active todo document.
    labeling, course publish/enroll/payment/archive, report-to-Admin/email delivery, and stable
    public-link review. Do not rebuild its locally accepted assembly; continue with Batch 5 while
    those exact authenticated/provider actions wait.
+   B-06 therefore carries `implemented; local acceptance passed` rather than `partial`.
+   Current-baseline reconciliation also closes B-07 through B-09 locally: 123 focused
+   frontend assertions cover truthful storefront, regulated-policy, external-handoff,
+   money-safety and public-share surfaces; 105 backend assertions cover storefront,
+   policy decisions, payments/webhooks, course-payment lifecycle, reporting and inventory
+   boundaries; and the expanded current media/community backend gate passes 178 assertions
+   after two test-order defects were removed. The remaining B-06 through B-09 work is only
+   the named production/provider, regulated-capability and multi-account live acceptance in
+   `B06_B09_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`; do not rebuild those products.
    Batch 5's consolidated local reconciliation passes 465 frontend assertions: 115 for
    the shared B-01/B-02 scope, role, inventory, import, integration and navigation foundation;
    161 for Commercial products/lines/batches/trials/evidence, inventory, storefront, orders,
