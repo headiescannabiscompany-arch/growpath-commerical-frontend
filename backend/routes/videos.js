@@ -374,6 +374,8 @@ router.get("/discover", async (req, res) => {
   }
   if (!viewer.cannabisEligible) query.cannabisSpecific = false;
   const q = cleanString(req.query.q);
+  const ownerId = cleanString(req.query.ownerId);
+  if (ownerId) query.ownerUserId = ownerId;
   if (q) {
     const regex = { $regex: escapeRegex(q), $options: "i" };
     query.$and.push({

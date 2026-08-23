@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -33,6 +33,7 @@ import { radius } from "@/theme/theme";
 
 export default function VideoDetailRoute() {
   const params = useLocalSearchParams<{ videoId?: string }>();
+  const router = useRouter();
   const auth = useAuth();
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -160,9 +161,19 @@ export default function VideoDetailRoute() {
           <AppCard>
             <View style={styles.ownerRow}>
               <View style={styles.ownerCopy}>
-                <Text style={styles.owner}>
-                  {video.owner?.displayName || "GrowPath member"}
-                </Text>
+                <Pressable
+                  accessibilityLabel={`Open ${video.owner?.displayName || "GrowPath member"} profile`}
+                  accessibilityRole="link"
+                  onPress={() =>
+                    router.push(
+                      `/creators/${encodeURIComponent(video.owner?.id || "")}` as any
+                    )
+                  }
+                >
+                  <Text style={styles.owner}>
+                    {video.owner?.displayName || "GrowPath member"}
+                  </Text>
+                </Pressable>
                 <Text style={styles.meta}>
                   {[
                     video.owner?.workspaceType,
@@ -441,7 +452,12 @@ export const createStyles = (palette: ThemePalette) =>
       justifyContent: "space-between"
     },
     ownerCopy: { flex: 1 },
-    owner: { color: palette.text, fontSize: 17, fontWeight: "800" },
+    owner: {
+      color: palette.text,
+      fontSize: 17,
+      fontWeight: "800",
+      textDecorationLine: "underline"
+    },
     meta: {
       color: palette.textMuted,
       fontSize: 12,

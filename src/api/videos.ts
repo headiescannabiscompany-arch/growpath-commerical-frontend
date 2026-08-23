@@ -181,6 +181,7 @@ export async function searchVideos(
     sort?: "new" | "popular";
     limit?: number;
     followingOnly?: boolean;
+    ownerId?: string;
   } = {}
 ): Promise<GrowPathVideo[]> {
   const result = await apiRequest("/api/videos/discover", {

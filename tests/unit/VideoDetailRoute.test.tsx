@@ -9,9 +9,11 @@ let mockReportProps: any = null;
 let mockLessonMediaCardProps: any = null;
 let mockAppPageProps: any = null;
 let mockUserId = "viewer-1";
+const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ videoId: "video-1" })
+  useLocalSearchParams: () => ({ videoId: "video-1" }),
+  useRouter: () => ({ push: mockPush })
 }));
 
 jest.mock("@/auth/AuthContext", () => ({
@@ -135,6 +137,15 @@ describe("VideoDetailRoute reporting", () => {
         })
       })
     );
+  });
+
+  it("opens the canonical creator profile from the video owner", async () => {
+    render(<VideoDetailRoute />);
+
+    await waitFor(() => expect(screen.getByText("Living Soil Labs")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("Open Living Soil Labs profile"));
+
+    expect(mockPush).toHaveBeenCalledWith("/creators/owner-1");
   });
 
   it("does not offer an owner a report action on their own video", async () => {

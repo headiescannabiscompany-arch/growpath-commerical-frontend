@@ -278,6 +278,12 @@ describe("shared video routes", () => {
       "followed-1-video"
     ]);
 
+    const creatorResponse = await request(createApp({ userId: "viewer-1" })).get(
+      "/api/videos/discover?ownerId=public-owner"
+    );
+    expect(creatorResponse.status).toBe(200);
+    expect(creatorResponse.body.videos.map((video) => video.id)).toEqual(["public-1"]);
+
     const viewed = await request(createApp({ userId: "viewer-1" })).get(
       "/api/videos/public-1"
     );
