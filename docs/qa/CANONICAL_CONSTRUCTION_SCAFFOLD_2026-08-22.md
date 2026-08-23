@@ -298,6 +298,16 @@ same-workspace B-02 item/lot linking and `ready_for_human_confirmation` are acce
 unchanged stock. Continue only with Commercial owner, protected-evidence/cross-workspace
 denial and Audit Detail actor-name/role presentation.
 
+Commercial follow-up checkpoint: the Living Soil Labs owner created an isolated B-02 item
+and lot, linked both to a reviewed Horticulture record, retained those links plus care and
+passing readiness after full hydration, preserved the `5 each` item and `2 each` lot balances,
+and confirmed archive cleanup. Commercial owner B-04 is closed. A bounded Commercial
+Business Desk lead likewise survived reload at revision 1 and was archived; all eight tools
+were reachable, while Business Ask truthfully remained disabled because provider-backed help
+is not configured. Continue B-03 only with provider and remaining cross-workspace isolation;
+continue B-04 only with protected-evidence/cross-workspace denial and Audit Detail actor
+presentation.
+
 ### Batch 7 — money, notifications and data rights
 
 Primary rows: `R-01`, `R-02`.  

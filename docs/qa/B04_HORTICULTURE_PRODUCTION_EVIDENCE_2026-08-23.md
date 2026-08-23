@@ -93,12 +93,34 @@ This closes Facility Manager mutation/reload/audit, same-workspace B-02 item/lot
 the safe passing-readiness result. Neither defect nor this acceptance slice should be rebuilt
 or repeated.
 
+## Live Commercial owner acceptance
+
+The authenticated Living Soil Labs owner `jcindc2003@yahoo.com` opened the Commercial
+workspace with zero inventory, independently confirming that the Triple Bag Genetics
+Facility ledger did not leak into the Commercial scope. The owner created bounded B-02 item
+`QA B02 COMMERCIAL 0823` (`6a8b6262a096d5b7b0f04b9a`) and lot
+`LOT-COM-0823-001`, then received `2 each` into that lot. The item showed `5 each` on hand
+and the lot `2 each` after hard reload.
+
+The owner created `QA B04 COMMERCIAL 0823 Tomato starts` (record
+`6a8b62afa096d5b7b0f04be5`), linked that same-workspace item and lot, recorded reviewed
+label, clear quarantine, media, care-card and packing facts, and added one bounded inspection.
+Readiness returned exactly `Ready for human fulfillment confirmation`; the screen retained
+its explicit no-reservation/no-availability/no-order-promise boundary. A later full hydration
+restored the record, item/lot links, readiness and care-history count. Production API logs
+independently showed the reload GET returning the complete record (`200`, 1517-byte response),
+so an earlier empty frame was correctly classified as loading time rather than data loss.
+The B-02 balances remained `5 each` and `2 each`. The owner then used confirmed archive;
+the active list returned to empty while explicitly retaining care and audit evidence.
+
+This closes Commercial owner create/link/reload/care/readiness/archive acceptance. Do not
+repeat the Commercial owner lifecycle unless a concrete regression is reproduced.
+
 ## Exact remaining B-04 gates
 
 Do not rebuild the Horticulture engine. The row remains partially open only for:
 
-1. Commercial owner create/link/reload/care/readiness/archive acceptance;
-2. protected evidence linking and cross-workspace item/lot/evidence denial;
-3. final-crawl improvement of Facility Audit Detail when a resolvable member name/role is
+1. protected evidence linking and cross-workspace item/lot/evidence denial;
+2. final-crawl improvement of Facility Audit Detail when a resolvable member name/role is
    available. The current event is immutable and scoped, but the primary detail displayed
    `Recorded facility member` instead of a readable actor and did not surface its role.
