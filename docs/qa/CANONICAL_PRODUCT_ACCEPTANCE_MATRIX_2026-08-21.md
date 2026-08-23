@@ -187,7 +187,7 @@ inventory, safety boundaries and mandatory production scenarios.
 | ---- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                                                                      |
 | B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; owner ledger, Manager mutation, Inventory AI, reviewed import and terminal exports accepted; Staff/Viewer, isolation, history, import-retry/reconciliation open |
-| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF and VIEWER denial accepted; authorized-role/provider/live acceptance open                                                       |
+| B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF/VIEWER denial and Facility MANAGER create/reload/archive/audit accepted; provider/Commercial/isolation live gates open           |
 | B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF/VIEWER denial and Facility OWNER care/blocked-readiness/archive/audit accepted; Manager/Commercial/link/passing-readiness live gates open |
 | B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; authenticated device/provider live acceptance open                                                                                    |
 | B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | implemented; local acceptance passed; provider/live acceptance open                                                                             |
@@ -329,6 +329,15 @@ The same authenticated Viewer session opened the direct Facility Business Desk a
 Horticulture Operations routes. Both failed closed at the route boundary with `Access
 denied` before either workspace tool surface or data loaded. This closes the B-03 and B-04
 live Viewer-denial slices without reopening their implementations or changing data.
+
+The authenticated Triple Bag Genetics Manager subsequently opened all eight Business Desk
+launches, created one no-contact-data Lead Follow-up record, reopened the route and verified
+revision 1, then archived it with a reason. The active list returned to empty and Facility
+Audit Logs retained separate `Business Desk.Record.Create` and
+`Business Desk.Record.Archive` events. This closes the Facility Manager mutation/reload/
+archive/audit slice. Business Ask truthfully reported that provider-backed help is not
+configured for this workspace and disabled Ask, so provider/credit/refund acceptance remains
+an exact configuration blocker rather than a manufactured success.
 
 The 2026-08-23 B-04 owner pass is retained in
 `B04_HORTICULTURE_PRODUCTION_EVIDENCE_2026-08-23.md`. Backend main `7442cf8a` fixes the

@@ -238,6 +238,13 @@ document extraction, Business Ask/provider configuration, optional merchant prov
 exact-SHA deployment, and live workspace/credit/audit acceptance remain open production gates;
 they must not reopen construction. The canonical matrix continues to own row status.
 
+Production checkpoint, 2026-08-23: Triple Bag Genetics Manager create/reload/archive/audit
+passed with one bounded Lead Follow-up revision and no retained active synthetic record.
+Staff and Viewer direct-route denial are also accepted. Business Ask loaded the correct
+Facility boundary but truthfully disabled provider submission because provider-backed help is
+not configured for this workspace. Do not repeat the accepted role slices; configure the
+approved provider before the remaining cited-result/credit/refund evidence.
+
 | Slice                        | Route           | Required construction                                                                                                                                                                                    | Focused automated acceptance                                                                                                                                                                                                               |
 | ---------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Engine foundation            | Desk root       | Workspace/field authorization, exact money, protected staging/extraction, audited/idempotent drafts, Commercial/Facility credits, and account-deletion/legal-hold disposition                            | Two Commercial/two Facility isolation; denied roles; permission change; credit debit/refund; duplicate/prompt-injection/file-safety/export guards; Commercial erasure and Facility actor deidentification                                  |
