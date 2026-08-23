@@ -33,6 +33,41 @@ The following commands passed from a clean frontend worktree:
 - `npm run audit:growpath-system`: all 32 registered modules present; decision checks
   passed.
 - `npm run verify:codex-workflow`: all 11 workflow requirements passed.
+
+### Current-candidate continuation — 2026-08-23 17:25 UTC
+
+The same non-authenticated packet was rerun after the B-02/business retention reconciliation,
+with current production frontend candidate `6791268981826f1154dae0db1a780a33e1fff676`
+and backend candidate `be00d33ff66fea5322fa6e7cac68fe21298d4753`:
+
+- `node scripts/verify-live-urls.cjs` passed 12/12 targets: Privacy, Terms, Support,
+  Communities, Personal grow deep link, account deletion, workspace choice/switch, gift
+  claim, API health, readiness and API-health alias. The retained result is
+  `tmp/spec/live-url-checks/2026-08-23T17-25-25-363Z.json`.
+- `npm run scan:release` passed 1,127 files with only the two approved local URL entries.
+- `npm run audit:full-surface` found 336 frontend route files, 323 frontend routes and 225
+  backend route declarations with zero errors and zero warnings.
+- `npm run audit:growpath-system` found all 32 registered foundations present.
+- `npm run verify:codex-workflow` passed all 11 workflow requirements.
+
+This advances the automated/public crawl only. It does not replace the still-open signed-in
+role, mutation, provider, responsive/theme, accessibility or recovery passes.
+
+### Nested-worktree test-runner portability repair
+
+The current candidate audit exposed a Windows-only test-discovery defect when the repository
+was run from a nested `.codex-worktrees` path. Jest combined `<rootDir>` globs with mixed slash
+styles and reported zero tests even though the suites were present. `jest.config.cjs` now uses
+root-independent discovery globs and slash-independent, escaped absolute ignore patterns. A
+focused regression suite protects both discovery and the frontend exclusions for embedded
+backend and dependency directories.
+
+After the repair, `npm run verify:connected-workflows` passed end to end from the nested
+worktree: lint passed, all 59 selected suites and 478 tests passed, and the production web
+export passed. The run retained existing React `act(...)` warnings in Communities, Forum,
+VirtualizedList and BackendCalculatorToolScreen output; those warnings remain visible as
+test-quality findings and were not suppressed or misreported as failures.
+
 - `npm run validate:v1-matrix`, `npm run validate:v1-ui-surface`,
   `npm run validate:frontend-runtime-contract`, and
   `npm run validate:backend-route-contract`: passed.

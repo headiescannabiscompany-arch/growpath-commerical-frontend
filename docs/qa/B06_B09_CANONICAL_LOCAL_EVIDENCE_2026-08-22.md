@@ -5,6 +5,12 @@ Frontend B-05 merge baseline: `99b5ab329a1f12ed8d97003c1cd85539f19155ba`
 Backend B-05 merge baseline: `a05eff286b4c4f4a42d843e57a373e93f3b9d8fc`  
 Backend reconciliation candidate: `f78ddfb46de3b02a963a5411df7958b1b3053325`
 
+Retention recheck: on 2026-08-23, the frontend baseline remained an ancestor of current
+frontend candidate `6791268981826f1154dae0db1a780a33e1fff676`, and both backend commits
+remained ancestors of current backend candidate
+`be00d33ff66fea5322fa6e7cac68fe21298d4753`. B-06 through B-09 therefore retain their
+accepted construction; only the named production/provider scenarios below remain.
+
 ## Status decision
 
 Rows B-06 through B-09 are implemented and locally accepted. They are not production- or

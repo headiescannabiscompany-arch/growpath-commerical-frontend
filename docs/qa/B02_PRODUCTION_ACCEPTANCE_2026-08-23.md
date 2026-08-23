@@ -9,7 +9,27 @@ remaining multi-role, import retry and paid reconciliation gates stay open
 
 - Frontend behavior SHA: `88699a8257f2b009e73e8d67f6c82aeec9d2d33a`.
 - Backend behavior SHA: `be00d33ff66fea5322fa6e7cac68fe21298d4753`.
+- Exact backend post-merge run `32650803500` passed on that SHA. Its containerized test job
+  completed install, drift stopper and the contract pack successfully; debug-only open-handle
+  steps were correctly skipped because their preceding gates passed.
 - Canonical evidence merge: `41ecdcb7123128899f64e49952e14f8955086ecb`.
+- Owner-membership evidence merge: `6791268981826f1154dae0db1a780a33e1fff676`.
+- Exact post-merge Frontend CI run `32653375100` passed on that merge SHA in
+  `9m30s`. Install, Expo Doctor, production dependency audit, lint, TypeScript,
+  sensitive-copy guard, Browser workflow contract, delivery guard and the full test step
+  all completed successfully. The only annotation was GitHub's action-runtime notice that
+  `actions/checkout@v4` and `actions/setup-node@v4` were being forced from Node 20 to Node 24;
+  it did not fail the gate.
+- At `2026-08-23T17:19:04Z`, production `/health`, `/ready` and `/api/health` all returned
+  HTTP 200; readiness reported the database connected. Backend uptime placed the current
+  process start at approximately `2026-08-23T16:10:38Z`, about one minute after backend
+  merge `be00d33f` at `16:09:32Z`. The public endpoint no longer publishes its Git
+  fingerprint, so this timing correlation is deployment evidence but is not mislabeled as a
+  direct SHA header.
+- The production frontend response was last modified at `2026-08-23T17:01:14Z`, about two
+  minutes after frontend merge `67912689` at `16:59:08Z`, and served bundle
+  `index-b00e54ff415ca6b258ada3205c0e36fb.js`. Exact Render-deploy identity remains a separate
+  dashboard record; the public response does not expose a commit header.
 - Facility workspace: Triple Bag Genetics, signed-in Facility Owner.
 
 The production profile identified account `jcindc2003@yahoo.com`, plan `Facility`, Facility
@@ -91,6 +111,18 @@ no inventory write. The implementation and live evidence are recorded in
 `FACILITY_INVENTORY_AI_PRODUCTION_EVIDENCE_2026-08-23.md`.
 
 ## Exact remaining production gates
+
+These are evidence gaps, not permission to rebuild the accepted ledger. The local behavior
+that each live check exercises is already named below so later work resumes at acceptance:
+
+| Gate | Retained automated evidence | Exact live evidence still needed |
+| --- | --- | --- |
+| Facility roles | `tests/facility/rolePolicy.test.ts` keeps inventory writes at Manager-or-higher; `BusinessInventoryImportPanel.test.tsx` proves the read-only import state; `FacilityInventoryRoute.test.tsx` proves separate `AUDIT_READ` visibility | Existing Manager makes and reloads one reversible audited change; existing Staff and Viewer see read-only inventory and receive backend `403` for a forced write; each role's audit-export visibility matches its permission |
+| Workspace isolation | Business-inventory API/screen suites pin explicit Commercial or Facility scope; backend B-02 route suites cover workspace authorization | Two similarly named Commercial workspaces and two Facilities load distinct items/private fields/audit after navigation and reload |
+| Older history | `BusinessInventoryOperations.test.tsx` and `FacilityInventoryItemDetailRoute.test.tsx` prove explicit older-page loading, append and de-duplication | A naturally populated item with more than one server page loads the older page without manufacturing meaningless production movements |
+| Import failure/retry | `BusinessInventoryImportPanel.test.tsx` covers failed apply refetch/re-review, interrupted-response recovery, duplicate reviewed resume/withdrawal, audited conflicts, raw duplicate rejection, applied-duplicate preservation, single-flight preview, malformed headers/rows and semantic locking after partial apply | Safe production fixtures visibly exercise rejected, duplicate/conflicting and resumable partial states without bypassing review or replaying a committed row |
+| Paid reconciliation | `tests/routes/payments.webhook.test.js` proves signed paid-event fulfillment, idempotent ledger retry, duplicate delivery with one sales-accounting write, inventory exception visibility and no ledger call for an unlinked product | One owner-authorized Stripe test/live Storefront operation in the correct environment proves the provider round trip and exactly-once decrement; production exposes no unsigned admin/synthetic webhook bypass, so this cannot be manufactured without weakening the boundary or initiating an unapproved charge |
+| Cleanup | Ledger/archive tests preserve immutable movements and audit | Owner confirms cleanup; only the named synthetic records are zeroed/archived and then reloaded while immutable history remains |
 
 1. Facility Manager mutation plus Staff/Viewer denial and forced backend `403` evidence;
    full-audit access must follow audit-read permission independently of inventory write.

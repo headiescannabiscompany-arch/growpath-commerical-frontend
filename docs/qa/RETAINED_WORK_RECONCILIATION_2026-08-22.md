@@ -53,6 +53,16 @@ durable decision record.
 
 ## Backend reconciliation snapshot
 
+The 2026-08-23 refresh resolved one apparently unfinished backend branch without rewriting
+anything: `codex/facility-inventory-ai-test-fix` commit `6bc82a5` was already merged by PR
+`#227` into `origin/main` `be00d33ff66fea5322fa6e7cac68fe21298d4753`. Backend CI and
+the full CI check both passed on the PR. The stale local `origin/main` reference had made the
+clean branch appear one commit ahead; after fetch it is an integrated clean ancestor. The
+three retained trichome evaluation worktrees have no unique product commits and only their
+untracked `.tmp` evidence directories; preserve those fixtures until P-08 adjudication. The
+backend root retains its previously sealed `be15ccd` evidence commit plus an untracked npm
+cache and is not a source to replay wholesale.
+
 The first refreshed 2026-08-22 19:34 EDT backend audit used `origin/main` at
 `54aa291e0877a0fc67cff7bdd1a93ca0eacce46c` and exposed the retained work below. After
 reconciliation, the 19:51 EDT audit used production candidate
@@ -86,6 +96,28 @@ temporary state. No product patch was discarded.
 | `codex/root-unfinished-preservation`                                                                              | The dirty root checkout was sealed at `be15ccd` before reconciliation. Its upload and user-route edits are older or weaker than current `main` and must not be replayed. Its birth-date additions target legacy files under `tests/acceptance`, but current Jest configuration explicitly ignores that directory and the advertised `npm run test:acceptance` command exits with “No tests found.” Preserve the branch as evidence; replace any still-valued scenarios in current core/system suites, then remove the excluded legacy suite only during the post-crawl proven-dead cleanup. The root checkout now has no tracked modifications.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 ## Registration and workspace noise
+
+### Root Plant ID branch re-audit — 2026-08-23
+
+The refreshed repository-owned audit at `2026-08-23 13:15:54 -04:00`, against
+`origin/main` `6791268981826f1154dae0db1a780a33e1fff676`, found four registered frontend
+worktrees: one clean integrated Forum-evidence candidate, the current clean B-02 evidence
+branch, the deliberately dirty/preserved hat checkout, and the root Plant ID checkout. The
+root reported 4,924 dirty paths because its directory contains nested retained checkouts and
+temporary/output trees; that count is not 4,924 unmerged product edits. No registration or
+file was removed by this audit.
+
+The registered root branch `codex/plant-id-to-grow-lifecycle` is clean in tracked files but
+still carries five commits not patch-equivalent to current `origin/main` (`b165ed4e`,
+`2a03ce3f`, `8f928240`, `50e5de4b`, `2f8e616f`). They are **preserved**, not candidates for
+blind replay or deletion. Current `main` already contains the named product surfaces from
+those commits: the reviewed crop-lifecycle registry and matcher, crop common/scientific-name
+grow setup, saved Plant ID to reviewed-grow handoff, completed-image evidence recovery,
+Discover's Nature globe link, and private map placement. Current versions are substantially
+newer and have broader route/tests; replaying the old commits wholesale would therefore risk
+removing later safeguards. Final dead-code cleanup must compare any remaining semantic hunk
+against these current owners before classifying the branch as superseded and removing its
+registration.
 
 - The root `codex/plant-id-to-grow-lifecycle` checkout reports many untracked
   paths because it contains the retained worktrees and historical temporary

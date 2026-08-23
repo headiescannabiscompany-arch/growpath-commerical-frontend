@@ -1,3 +1,14 @@
+const path = require("node:path");
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function absoluteDirectoryPattern(...segments) {
+  const normalized = path.resolve(__dirname, ...segments).replace(/\\/g, "/");
+  return `^${escapeRegex(normalized).replace(/\//g, "[/\\\\]")}[/\\\\]`;
+}
+
 /** @type {import("jest").Config} */
 module.exports = {
   preset: "jest-expo",
@@ -7,39 +18,36 @@ module.exports = {
   // Do NOT use jsdom globally for React Native / Expo.
   // If a specific test needs DOM, add: /** @jest-environment jsdom */ at the top of that test file.
 
-  testMatch: [
-    "<rootDir>/**/__tests__/**/*.(test|spec).[jt]s?(x)",
-    "<rootDir>/**/*.(test|spec).[jt]s?(x)"
-  ],
+  testMatch: ["**/__tests__/**/*.(test|spec).[jt]s?(x)", "**/*.(test|spec).[jt]s?(x)"],
 
   // Keep Jest focused on unit/QA tests.
   // Playwright tests must be run via: npx playwright test
   testPathIgnorePatterns: [
-    "/node_modules/",
-    "<rootDir>/tests/core/",
-    "<rootDir>/tests/playwright/",
-    "<rootDir>/e2e/",
-    "<rootDir>/backend/",
-    "<rootDir>/backend-media-storage/",
-    "<rootDir>/.artifacts/",
-    "<rootDir>/.tools/",
-    "<rootDir>/tmp/",
-    "<rootDir>/tests/growLogs.spec.js"
+    absoluteDirectoryPattern("node_modules"),
+    absoluteDirectoryPattern("tests", "core"),
+    absoluteDirectoryPattern("tests", "playwright"),
+    absoluteDirectoryPattern("e2e"),
+    absoluteDirectoryPattern("backend"),
+    absoluteDirectoryPattern("backend-media-storage"),
+    absoluteDirectoryPattern(".artifacts"),
+    absoluteDirectoryPattern(".tools"),
+    absoluteDirectoryPattern("tmp"),
+    `^${escapeRegex(
+      path.resolve(__dirname, "tests", "growLogs.spec.js").replace(/\\/g, "/")
+    ).replace(/\//g, "[/\\\\]")}$`
   ],
 
   // Embedded backend worktrees and temporary checkouts have their own Jest
   // configs and mocks. Exclude them from the frontend haste map as well as
   // frontend test discovery.
   modulePathIgnorePatterns: [
-    "<rootDir>/backend-media-storage/",
-    "<rootDir>/.artifacts/",
-    "<rootDir>/.tools/",
-    "<rootDir>/tmp/"
+    absoluteDirectoryPattern("backend-media-storage"),
+    absoluteDirectoryPattern(".artifacts"),
+    absoluteDirectoryPattern(".tools"),
+    absoluteDirectoryPattern("tmp")
   ],
 
-  setupFiles: [
-    "<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js"
-  ],
+  setupFiles: ["<rootDir>/node_modules/react-native-gesture-handler/jestSetup.js"],
 
   setupFilesAfterEnv: [
     "<rootDir>/tests/jest.setup.cjs",
