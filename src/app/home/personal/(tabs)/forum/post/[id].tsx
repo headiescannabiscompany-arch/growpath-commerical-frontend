@@ -25,6 +25,7 @@ import {
   saveForumPostToGrowLog,
   type SocialPost,
   unlikeForumPost,
+  updateForumComment,
   updateForumPost
 } from "@/api/communitySocial";
 import { createPersonalTask } from "@/api/tasks";
@@ -51,6 +52,7 @@ type CommentRow = {
   createdAt?: string;
   photos?: string[];
   attachments?: any[];
+  parentId?: string | null;
 };
 
 function getId(params: Record<string, any>): string {
@@ -226,6 +228,9 @@ export default function ForumPostDetailRoute() {
   const [saving, setSaving] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [replyingTo, setReplyingTo] = useState<CommentRow | null>(null);
+  const [editingComment, setEditingComment] = useState<CommentRow | null>(null);
+  const [editCommentText, setEditCommentText] = useState("");
   const [editingPost, setEditingPost] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
@@ -300,7 +305,8 @@ export default function ForumPostDetailRoute() {
       const created: any = await addForumComment(
         targetId,
         text || "Photo comment",
-        commentPhotoUris
+        commentPhotoUris,
+        String(replyingTo?._id || replyingTo?.id || "") || undefined
       );
       if (created?.isHidden || created?.moderationStatus === "held") {
         setFeedback(
@@ -311,6 +317,7 @@ export default function ForumPostDetailRoute() {
       }
       setCommentText("");
       setCommentPhotoUris([]);
+      setReplyingTo(null);
       const nextComments = await listForumComments(targetId);
       setComments(nextComments);
     } catch (error: any) {
@@ -350,6 +357,44 @@ export default function ForumPostDetailRoute() {
       ],
       { cancelable: true }
     );
+  }
+
+  function beginEditComment(comment: CommentRow) {
+    if (!isOwnedBy(comment, auth.user) || saving) return;
+    setEditingComment(comment);
+    setEditCommentText(visibleCommentBody(comment));
+    setFeedback("");
+  }
+
+  async function saveCommentEdit() {
+    const commentId = String(editingComment?._id || editingComment?.id || "");
+    if (!commentId || !editCommentText.trim() || saving) return;
+    setSaving(true);
+    setFeedback("");
+    try {
+      const updated = await updateForumComment(commentId, editCommentText);
+      if (updated?.isHidden || updated?.moderationStatus === "held") {
+        setFeedback(
+          updated?.moderationNotice ||
+            "This update is hidden while a human moderator reviews it."
+        );
+      } else {
+        setComments((current) =>
+          current.map((comment) =>
+            String(comment._id || comment.id || "") === commentId
+              ? { ...comment, ...updated }
+              : comment
+          )
+        );
+        setFeedback("Comment updated.");
+      }
+      setEditingComment(null);
+      setEditCommentText("");
+    } catch (error: any) {
+      setFeedback(error?.message || "Unable to update this comment.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function pickCommentPhotos() {
@@ -783,6 +828,18 @@ export default function ForumPostDetailRoute() {
             </Text>
             {canPost ? (
               <View style={styles.commentComposer}>
+                {replyingTo ? (
+                  <View style={styles.replyContext}>
+                    <Text style={styles.meta}>Replying to {authorName(replyingTo)}</Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Cancel forum comment reply"
+                      onPress={() => setReplyingTo(null)}
+                    >
+                      <Text style={styles.secondaryText}>Cancel reply</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
                 <TextInput
                   value={commentText}
                   onChangeText={setCommentText}
@@ -849,35 +906,100 @@ export default function ForumPostDetailRoute() {
 
             {comments.map((comment) => {
               const isCommentOwner = isOwnedBy(comment, auth.user);
+              const commentId = String(comment._id || comment.id || "");
+              const isEditingThisComment =
+                commentId === String(editingComment?._id || editingComment?.id || "");
               return (
                 <View
                   key={String(comment._id || comment.id || bodyOf(comment))}
-                  style={styles.comment}
+                  style={[styles.comment, comment.parentId ? styles.replyComment : null]}
                 >
                   <Text style={styles.rowTitle}>{authorName(comment)}</Text>
-                  {visibleCommentBody(comment) ? (
+                  {comment.parentId ? <Text style={styles.meta}>Reply</Text> : null}
+                  {isEditingThisComment ? (
+                    <View style={styles.editComposer}>
+                      <TextInput
+                        value={editCommentText}
+                        onChangeText={setEditCommentText}
+                        editable={!saving}
+                        multiline
+                        style={[styles.input, styles.commentInput]}
+                        accessibilityLabel="Edit forum comment"
+                      />
+                      <View style={styles.actions}>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel="Save forum comment changes"
+                          disabled={!editCommentText.trim() || saving}
+                          onPress={saveCommentEdit}
+                          style={[
+                            styles.primaryBtn,
+                            (!editCommentText.trim() || saving) && styles.disabled
+                          ]}
+                        >
+                          <Text style={styles.primaryText}>Save comment</Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel="Cancel forum comment editing"
+                          disabled={saving}
+                          onPress={() => setEditingComment(null)}
+                          style={[styles.secondaryBtn, saving && styles.disabled]}
+                        >
+                          <Text style={styles.secondaryText}>Cancel</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  ) : visibleCommentBody(comment) ? (
                     <Text style={styles.cardText}>{visibleCommentBody(comment)}</Text>
                   ) : null}
-                  {isCommentOwner ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel="Delete your comment"
-                      disabled={saving}
-                      onPress={() => confirmDeleteComment(comment)}
-                      style={[styles.dangerBtn, saving && styles.disabled]}
-                    >
-                      <Text style={styles.dangerText}>Delete</Text>
-                    </Pressable>
-                  ) : (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel="Report forum comment"
-                      onPress={() => setReportedComment(comment)}
-                      style={styles.secondaryBtn}
-                    >
-                      <Text style={styles.secondaryText}>Report comment</Text>
-                    </Pressable>
-                  )}
+                  {!isEditingThisComment ? (
+                    <View style={styles.actions}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Reply to ${authorName(comment)}`}
+                        disabled={saving}
+                        onPress={() => {
+                          setReplyingTo(comment);
+                          setCommentText("");
+                        }}
+                        style={[styles.secondaryBtn, saving && styles.disabled]}
+                      >
+                        <Text style={styles.secondaryText}>Reply</Text>
+                      </Pressable>
+                      {isCommentOwner ? (
+                        <>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel="Edit your comment"
+                            disabled={saving}
+                            onPress={() => beginEditComment(comment)}
+                            style={[styles.secondaryBtn, saving && styles.disabled]}
+                          >
+                            <Text style={styles.secondaryText}>Edit</Text>
+                          </Pressable>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel="Delete your comment"
+                            disabled={saving}
+                            onPress={() => confirmDeleteComment(comment)}
+                            style={[styles.dangerBtn, saving && styles.disabled]}
+                          >
+                            <Text style={styles.dangerText}>Delete</Text>
+                          </Pressable>
+                        </>
+                      ) : (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel="Report forum comment"
+                          onPress={() => setReportedComment(comment)}
+                          style={styles.secondaryBtn}
+                        >
+                          <Text style={styles.secondaryText}>Report comment</Text>
+                        </Pressable>
+                      )}
+                    </View>
+                  ) : null}
                   {commentPhotos(comment).length ? (
                     <View style={styles.photoGrid}>
                       {commentPhotos(comment).map((photo, index) => (
@@ -981,12 +1103,23 @@ export function createForumPostDetailStyles(palette: ThemePalette) {
     editComposer: { gap: 8, marginTop: 10 },
     editBodyInput: { minHeight: 130, textAlignVertical: "top" },
     commentComposer: { gap: 8 },
+    replyContext: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8,
+      borderLeftWidth: 3,
+      borderLeftColor: palette.accent,
+      paddingLeft: 10
+    },
     comment: {
       borderTopWidth: 1,
       borderTopColor: palette.border,
       paddingTop: 10,
       gap: 4
     },
+    replyComment: { marginLeft: 18, borderLeftWidth: 3, borderLeftColor: palette.border },
     input: {
       borderWidth: 1,
       borderColor: palette.border,

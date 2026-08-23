@@ -167,12 +167,24 @@ export async function listForumComments(id: string) {
   return rows<any>(response, ["comments", "items"]);
 }
 
-export async function addForumComment(id: string, text: string, photos: string[] = []) {
+export async function addForumComment(
+  id: string,
+  text: string,
+  photos: string[] = [],
+  parentId?: string
+) {
   const persistedPhotos = await persistImageUris(photos.slice(0, 10));
   const storedText = [text.trim(), ...persistedPhotos].filter(Boolean).join("\n");
   return communityRequest(apiRoutes.FORUM.COMMENT(id), {
     method: "POST",
-    body: { text: storedText, photos: persistedPhotos }
+    body: { text: storedText, photos: persistedPhotos, parentId: parentId || undefined }
+  });
+}
+
+export async function updateForumComment(commentId: string, text: string) {
+  return communityRequest(apiRoutes.FORUM.COMMENT_DETAIL(commentId), {
+    method: "PATCH",
+    body: { text: text.trim() }
   });
 }
 

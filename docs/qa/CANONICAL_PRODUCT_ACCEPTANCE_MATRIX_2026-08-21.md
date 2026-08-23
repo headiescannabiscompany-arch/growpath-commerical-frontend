@@ -432,9 +432,11 @@ populated, provider, authenticated or multi-account evidence.
   read-only acceptance. The follow-up local candidate now derives detail and feed counts from
   the same visible-comment policy, authorizes content-only owner edits without allowing
   workspace/context/visibility changes, re-runs moderation and feed projection after edits,
-  and performs an audited soft delete plus feed removal. Frontend exposes explicit confirmed
-  Edit/Delete owner controls and returns to Forum after deletion. Backend focused/controller
-  and Mongo-backed contract packets pass 37/37; frontend route/API tests pass 14/14 with
+  validates replies against a visible parent in the same discussion, supports owner-only
+  comment edits with re-moderation, and performs an audited soft delete plus feed removal.
+  Frontend exposes reply context, owner comment editing, explicit confirmed post Edit/Delete
+  controls and returns to Forum after post deletion. Backend focused/controller and
+  Mongo-backed contract packets pass 40/40; frontend route/API tests pass 17/17 with
   TypeScript and focused lint clean. Exact evidence is retained in
   `FORUM_OWNER_LIFECYCLE_LOCAL_EVIDENCE_2026-08-23.md`. **Remaining gates:** merge/deploy the
   frontend and backend candidates, live owner edit/delete/count reconciliation, then use an

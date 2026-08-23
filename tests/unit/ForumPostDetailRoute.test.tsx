@@ -13,6 +13,7 @@ const mockUnlikeForumPost = jest.fn();
 const mockReportForumPost = jest.fn();
 const mockSaveForumPostToGrowLog = jest.fn();
 const mockUpdateForumPost = jest.fn();
+const mockUpdateForumComment = jest.fn();
 const mockRouterReplace = jest.fn();
 const mockCreatePersonalTask = jest.fn();
 let mockParams: Record<string, string> = { id: "post-1", growId: "grow-1" };
@@ -90,6 +91,7 @@ jest.mock("@/api/communitySocial", () => ({
   reportForumPost: (...args: any[]) => mockReportForumPost(...args),
   saveForumPostToGrowLog: (...args: any[]) => mockSaveForumPostToGrowLog(...args),
   unlikeForumPost: (...args: any[]) => mockUnlikeForumPost(...args),
+  updateForumComment: (...args: any[]) => mockUpdateForumComment(...args),
   updateForumPost: (...args: any[]) => mockUpdateForumPost(...args)
 }));
 
@@ -126,6 +128,10 @@ describe("ForumPostDetailRoute", () => {
       title: data.title,
       body: data.body,
       author: { username: "EtGU_Jay" }
+    }));
+    mockUpdateForumComment.mockImplementation(async (_id, text) => ({
+      id: "comment-owner",
+      text
     }));
   });
 
@@ -335,5 +341,54 @@ describe("ForumPostDetailRoute", () => {
     expect(screen.getByLabelText("Report forum post")).toBeTruthy();
     expect(screen.getByLabelText("Report forum comment")).toBeTruthy();
     expect(screen.queryByLabelText("Delete your comment")).toBeNull();
+  });
+
+  it("replies to a visible comment with its parent id", async () => {
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Leaf spot follow-up")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Reply to Soil Helper"));
+    expect(screen.getByText("Replying to Soil Helper")).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Forum comment"), "Follow-up detail");
+    fireEvent.press(screen.getByLabelText("Submit forum comment"));
+
+    await waitFor(() =>
+      expect(mockAddForumComment).toHaveBeenCalledWith(
+        "post-1",
+        "Follow-up detail",
+        [],
+        "comment-1"
+      )
+    );
+  });
+
+  it("edits an owned comment and keeps delete available", async () => {
+    mockGetForumPost.mockResolvedValueOnce({
+      id: "post-1",
+      title: "Owner post",
+      author: { username: "EtGU_Jay" }
+    });
+    mockListForumComments.mockResolvedValueOnce([
+      {
+        id: "comment-owner",
+        body: "Original comment",
+        user: { id: "viewer-1" }
+      }
+    ]);
+    const screen = render(<ForumPostDetailRoute />);
+    await waitFor(() => expect(screen.getByText("Original comment")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("Edit your comment"));
+    fireEvent.changeText(screen.getByLabelText("Edit forum comment"), "Revised comment");
+    fireEvent.press(screen.getByLabelText("Save forum comment changes"));
+
+    await waitFor(() =>
+      expect(mockUpdateForumComment).toHaveBeenCalledWith(
+        "comment-owner",
+        "Revised comment"
+      )
+    );
+    expect(screen.getByText("Comment updated.")).toBeTruthy();
+    expect(screen.getByLabelText("Delete your comment")).toBeTruthy();
   });
 });
