@@ -68,6 +68,20 @@ export passed. The run retained existing React `act(...)` warnings in Communitie
 VirtualizedList and BackendCalculatorToolScreen output; those warnings remain visible as
 test-quality findings and were not suppressed or misreported as failures.
 
+The repair and evidence merged through frontend PRs 767 and 768. The resulting exact-main
+frontend candidate is `b0708b16f95ef50b46c2f43e888dd7ab554944f8`. Production Build
+Preflight run `32657135541` passed, and exact-main Frontend CI run `32657135493` passed every
+step in 11m42s: install, Expo version verification, Expo Doctor, production dependency audit,
+lint, TypeScript, sensitive-copy guard, Browser workflow contract, delivery guard and the
+full batched test suite. The only annotation was GitHub's Node action-runtime deprecation
+notice; it did not fail the gate.
+
+Production was last modified at `2026-08-23T18:11:41Z` and continued to serve the unchanged
+product bundle `index-b00e54ff415ca6b258ada3205c0e36fb.js`; the candidate changed test and
+evidence infrastructure, not shipped product behavior. The public packet passed 12/12 again
+at `2026-08-23T18:14:25Z`, retained as
+`tmp/spec/live-url-checks/2026-08-23T18-14-25-578Z.json`. Backend health remained green.
+
 - `npm run validate:v1-matrix`, `npm run validate:v1-ui-surface`,
   `npm run validate:frontend-runtime-contract`, and
   `npm run validate:backend-route-contract`: passed.

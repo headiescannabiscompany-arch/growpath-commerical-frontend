@@ -43,6 +43,20 @@ This is a bounded production checkpoint, not full acceptance of `B-02`, `F-05` o
 The named synthetic records remain pending confirmed cleanup after the remaining role and
 history checks.
 
+### Current owner-session boundary — 2026-08-23 18:12 UTC
+
+The pre-existing in-app tab initially retained the previously authorized Triple Bag Genetics
+dashboard view, including the Facility name and aggregate counts. A fresh Facility navigation
+then failed closed with `Access denied`, and Personal Profile reported a blank email plus
+`Not authenticated`. No new Facility data loaded after that boundary check. The tab was left
+at `/login?next=%2Fhome%2Ffacility%2Fdashboard` for the owner to sign in as
+`jcindc2003@yahoo.com`.
+
+This is an exact authentication blocker for the remaining role mutations, not evidence that
+the owner or role implementation was removed. Do not treat a retained pre-logout page as a
+current authenticated session, and do not repeat or rebuild the accepted owner ledger until
+the owner login is restored.
+
 ## Owner ledger lifecycle accepted
 
 The Owner created `QA B02 OWNER 0823-863080` (`QA-B02-0823-863080`) and verified after
