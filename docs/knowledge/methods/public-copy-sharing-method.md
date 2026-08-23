@@ -41,3 +41,11 @@ links. Every public viewer provides the unified report action and opens the exac
 target in the Admin queue. Cannabis-specific copies follow the shared cannabis-interest
 gate: signed-out and ineligible viewers receive the same unavailable response as a missing,
 withdrawn or moderated copy.
+
+Viewer-friendly downloads follow the same disclosure boundary even when the file remains
+private. They render short human-readable event summaries, not embedded model JSON, provider
+payloads, internal evidence fingerprints, receipts or record identifiers. When a saved note
+contains a machine payload, the export keeps any readable owner-authored prefix and directs
+the owner back to the private GrowPath record for the detailed evidence. Long prose is
+bounded so one event cannot make the exported timeline unusable; the private source record
+remains authoritative and unchanged.

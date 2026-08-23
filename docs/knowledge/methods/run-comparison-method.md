@@ -16,4 +16,10 @@ Save a `run_comparison` ToolRun and module record containing the selected grow I
 
 The grow timeline is also a viewer-friendly lifecycle record, separate from compliance and run comparison. It may combine owner-visible photos, journal notes, tasks, tool results, diagnoses, stage changes and automation events from the exact grow. Lifecycle, month, week and day views change presentation density only; zooming must not invent intermediate events or imply continuous measurement. A closer view may reveal more saved notes, evidence and photos for that period. Viewer export must preserve dates, titles, selected notes, photo attribution or source links and record provenance in a readable narrative format rather than presenting a regulatory packet.
 
+The viewer export must translate saved machine-shaped notes into a bounded readable summary.
+It must not print raw JSON, model/provider response bodies, internal evidence fingerprints,
+private IDs, credentials or telemetry payloads. If the machine detail cannot be safely and
+faithfully summarized, retain the human-authored context and point to the unchanged private
+source record instead of guessing or leaking the payload.
+
 A private grow never becomes public merely because its timeline can be exported or shared. Outside sharing requires a deliberate reviewed public-copy workflow. Include only the summary, photos and approximate context selected by the owner; exclude exact locations, account data and private operational fields by default. A public copy must remain distinct from the owner-editable grow and must not allow viewers to change the source record.

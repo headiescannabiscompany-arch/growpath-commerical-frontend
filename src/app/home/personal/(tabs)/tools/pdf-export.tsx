@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { Platform, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { type PersonalLog } from "@/api/logs";
 import { type PersonalPlant } from "@/api/plants";
@@ -13,7 +13,7 @@ import LockedToolCard from "@/features/personal/tools/LockedToolCard";
 import ToolResultSurface from "@/features/personal/tools/ToolResultSurface";
 import { exportToCsv } from "@/utils/exportToCsv";
 import { type PersonalGrowTimelineEvent } from "@/api/grows";
-import { timelineEventPhotos } from "@/features/grows/timeline";
+import { exportVisualTimeline as downloadVisualTimeline } from "@/utils/exportVisualTimeline";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -122,55 +122,15 @@ export default function PdfExportScreen({
       setFeedback("No timeline events are available to export.");
       return;
     }
-    const plainText = [
+    const method = await downloadVisualTimeline(
       `${growName} — Visual Grow Timeline`,
-      "",
-      ...timeline.map(
-        (event) =>
-          `${new Date(event.timestamp).toLocaleDateString()} — ${event.title}${event.summary ? `\n${event.summary}` : ""}`
-      )
-    ].join("\n\n");
-    if (Platform.OS !== "web" || typeof document === "undefined") {
-      await Share.share({
-        title: `${growName} — Visual Grow Timeline`,
-        message: plainText
-      });
-      setFeedback("Timeline share sheet opened.");
-      return;
-    }
-    const escape = (value: unknown) =>
-      String(value || "").replace(
-        /[&<>"]/g,
-        (character) =>
-          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[character] ||
-          character
-      );
-    const eventHtml = timeline
-      .map((event) => {
-        const photos = timelineEventPhotos(event as any)
-          .map(
-            (photo) =>
-              `<img src="${escape(photo)}" alt="Timeline evidence for ${escape(event.title)}" />`
-          )
-          .join("");
-        return `<article><time>${escape(new Date(event.timestamp).toLocaleString())}</time><h2>${escape(event.title)}</h2>${event.summary ? `<p>${escape(event.summary)}</p>` : ""}<div class="photos">${photos}</div></article>`;
-      })
-      .join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(growName)} — Visual Grow Timeline</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:auto;padding:32px;color:#17231b}header,article{border:1px solid #ccd8cf;border-radius:14px;padding:18px;margin:0 0 18px}time{color:#607064;font-size:14px}h1,h2{margin:6px 0}.photos{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.photos img{width:220px;max-height:180px;object-fit:cover;border-radius:10px}@media print{body{padding:0}article{break-inside:avoid}}</style></head><body><header><h1>${escape(growName)} — Visual Grow Timeline</h1><p>Viewer-friendly saved grow history. This is not a compliance report.</p></header>${eventHtml}</body></html>`;
-    const url = URL.createObjectURL(
-      new Blob([html], { type: "text/html;charset=utf-8" })
+      timeline
     );
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${
-      growName
-        .replace(/[^a-z0-9]+/gi, "-")
-        .replace(/^-|-$/g, "")
-        .toLowerCase() || "grow"
-    }-visual-timeline.html`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-    setFeedback("Viewer-friendly timeline download prepared.");
+    setFeedback(
+      method === "web-download"
+        ? "Viewer-friendly timeline download prepared."
+        : "Timeline share sheet opened."
+    );
   }
 
   return (

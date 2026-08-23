@@ -124,7 +124,7 @@ Every applicable story must preserve these invariants without repeating them in 
 | P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | implemented; local acceptance passed; storage/provider/live acceptance open |
 | P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | implemented; local acceptance passed; ordinary-phone provider/live acceptance open |
 | P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open |
-| P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | implemented; local acceptance passed; deployment/authenticated public-live acceptance open |
+| P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | implemented; live publish/view/withdraw accepted; sanitized-export deployment/live regression open |
 | P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | implemented; local acceptance passed; provider/multi-account/live acceptance open |
 
 ## Community, media, courses and discovery
@@ -332,13 +332,17 @@ populated, provider, authenticated or multi-account evidence.
   explicitly selected observation becomes public and that Grow save, house records, and
   nearby/same-date records remain private. **Next action:** production privacy assertion
   coupled to P-05. **Do not rebuild:** private-by-default storage or the no-inference rules.
-- **P-10 — retained evidence:** frontend `e699e5fe` and the current populated 60-event Grow
-  prove the visual timeline, Lifecycle/Month/Week/Day views, source links, and export/share
-  entry points. **Remaining gate:** persist an export and exercise share review/cancel,
-  publish a revocable privacy-safe viewer link, open it as a viewer, withdraw it, and reload
-  every state. **Next action:** production mutation, public/private read, and cleanup. **Do
-  not rebuild:** event aggregation, visual/zoom controls, source links, or existing export
-  and share entry points.
+- **P-10 — retained evidence:** production now proves the visual timeline,
+  Lifecycle/Month/Week/Day views, source links, exact review/cancel, frozen publication,
+  public viewing/report/share, cannabis fail-closed behavior, withdrawal and permanent old-link
+  invalidation. A real viewer-friendly HTML export also downloaded successfully. Inspection
+  found one raw saved-AI JSON payload in that otherwise private-safe file; frontend `dfc10201`
+  centralizes and sanitizes those summaries without changing the source record. **Remaining
+  gate:** merge/deploy that exact fix, re-download the same real timeline and verify readable
+  content with no raw JSON, `evidenceFingerprint`, provider payload or private identifier.
+  **Next action:** exact-SHA deployment and one live export regression. **Do not rebuild:**
+  event aggregation, visual/zoom controls, source links, reviewed public-copy lifecycle or
+  existing export entry points.
 - **N-01 — retained evidence:** the production globe, controls, search/review filters, broad
   fallback viewport, compact/public entry points, and honest zero-pin list are accepted.
   **Remaining gate:** reuse the P-05 observation to verify the populated map and list,
@@ -394,8 +398,9 @@ populated, provider, authenticated or multi-account evidence.
    retained-media metadata, authorized device GPS, or a reviewed manual pin. Legacy
    Cary/Maydale recovery is optional and does not block the future workflow.
 3. Reconcile every `partial` row against retained evidence; close only live-accepted slices.
-   P-10 remains explicitly open for persisted export plus share review/cancel/publish/
-   withdrawal even though the visual timeline and deep link are live.
+   P-10 now needs only the sanitized-export deployment and live re-download regression; its
+   reviewed share/cancel/publish/view/withdraw lifecycle is live accepted and must not be
+   rebuilt.
 4. Complete only the lightweight business foundations and acceptance boundaries retained in
    B-01 through B-09 for existing GrowPath workflows. Do not reintroduce the removed POS,
    regulator, serialized-recall, forecasting, CRM/ERP/accounting, dynamic-pricing,
