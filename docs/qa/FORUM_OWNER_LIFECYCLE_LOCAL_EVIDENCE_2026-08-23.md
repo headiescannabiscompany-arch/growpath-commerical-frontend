@@ -1,7 +1,7 @@
 # Forum Owner Lifecycle Local Evidence — 2026-08-23
 
-Status: locally accepted; merge, deployment and authenticated production mutation remain
-open.
+Status: owner lifecycle live accepted; outside-account participation and delivered
+notification evidence remain open.
 
 ## Exact gap closed
 
@@ -33,7 +33,7 @@ Rebuilding the Forum, sharing, media or reporting architecture was explicitly ou
 
 ## Local verification
 
-Backend candidate `e312e0d`:
+Backend final feature head `fc6bdc1fb4b8561998cc4da9921a49a7e4212409`:
 
 - `tests/routes/forum.test.js`
 - `tests/contracts/forum-actions.contract.test.js`
@@ -46,8 +46,7 @@ Backend candidate `e312e0d`:
   across an owner post edit; soft-deletes as the owner; returns 404 from detail; and removes
   the post from the feed.
 
-Frontend candidate `499f7a5f7d657866b9dd504e9ee042c6f6e67e18` is on
-`codex/cleanup-evidence-and-forum-lifecycle`:
+Frontend feature head `ba5bb39cd7a7f3a14bb5ef2cce98b3b86ae20760`:
 
 - `tests/unit/ForumPostDetailRoute.test.tsx` and
   `tests/unit/community-social-api.test.ts`: 17/17 passed;
@@ -64,12 +63,37 @@ Express 5 installation. It failed before loading Forum routes at the application
 `app.options("*", cors())` line. The packet above was rerun with a worktree-local junction to
 the exact locked Express 4 dependencies and passed; the temporary junction was then removed.
 
-## Remaining production gate
+## Merge, deployment and production acceptance
 
-Frontend CI run `32637192209` is running on the exact corrected frontend SHA. GitHub Actions
-is currently prevented from starting backend jobs by the account payment or Actions
-spending-limit state. After the frontend gate passes and the owner restores backend Actions,
-merge and deploy both exact candidates, then on a disposable owner thread verify corrected
-counts, reply, comment edit, post edit/reload, confirmed delete, detail 404 and feed removal.
-A separate outside account must still verify follow/comment/reply/report boundaries and Admin
-plus delivered-email notification evidence.
+- Backend PR `#225` merged as `324d4025905cab6f3163e911db6eb486444df7fd`.
+  Its rebased feature head passed Backend CI run `32642557443` and exhaustive CI run
+  `32642557445` (2,973 tests plus the API security scan). The merged SHA passed main Backend
+  CI run `32643240601` and deployed successfully through Render deploy
+  `dep-da5fi715efls739lr120`.
+- Frontend PR `#758` merged as `317cf4d119cde37b3147cc8b4424fce93f9011ea`.
+  Exact-head Frontend CI run `32637232720`, merged-SHA Frontend CI run `32643391799`, and
+  Production Build Preflight `32643391724` passed. Render deploy
+  `dep-da5fjjm7bikc73bkt35g` succeeded.
+- Authenticated production mutation created disposable thread
+  `6a8afc491b46e1d6f0350149`, created an owner comment and validated reply, edited the
+  comment, edited the post, and proved the edited title/body/author/comment/reply survived
+  reload. This exposed one web-only defect: the native `Alert` confirmation rendered but
+  did not invoke its destructive callback in the web build.
+- Frontend PR `#759` replaced the native-only confirmation with an accessible in-page
+  confirmation and preserved populated author display immediately after edit responses.
+  Feature head `7262ad2224c1f21705847e44117c23c8c4aa58d9` passed 17/17 focused tests, TypeScript,
+  lint, formatting and full Frontend CI run `32644615434`. It merged as
+  `ffaee89e7e4f80c34720cc7845b6c2aab42f2660`; main Frontend CI run `32645134610` and
+  Production Build Preflight `32645134594` passed. Render deploy
+  `dep-da5g3cgae00c73b93dfg` succeeded.
+- On the exact live SHAs, the same owner opened the in-page warning, confirmed deletion,
+  returned to Forum, received the unavailable detail state on reload, and verified the
+  deleted title was absent from All Discussions.
+
+## Exact remaining boundary
+
+A separate outside account must verify follow, comment, reply and report boundaries plus
+Admin and delivered-email notification evidence. Two disposable posts created while
+deliberately exercising cannabis-visibility filtering remain hidden from this viewer and
+are queued for Admin synthetic-data cleanup: `6a8afaf61b46e1d6f0350083` and
+`6a8afb981b46e1d6f03500e6`. They must not be treated as user content or silently forgotten.
