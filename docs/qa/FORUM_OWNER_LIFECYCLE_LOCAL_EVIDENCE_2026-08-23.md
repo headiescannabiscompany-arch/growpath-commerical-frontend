@@ -46,10 +46,15 @@ Backend candidate `e312e0d`:
   across an owner post edit; soft-deletes as the owner; returns 404 from detail; and removes
   the post from the feed.
 
-Frontend candidate is on `codex/cleanup-evidence-and-forum-lifecycle`:
+Frontend candidate `499f7a5f7d657866b9dd504e9ee042c6f6e67e18` is on
+`codex/cleanup-evidence-and-forum-lifecycle`:
 
 - `tests/unit/ForumPostDetailRoute.test.tsx` and
   `tests/unit/community-social-api.test.ts`: 17/17 passed;
+- `tests/unit/ForumPostDetailTheme.test.ts`: 4/4 passed after the complete CI packet
+  correctly found that its old one-input source guard had not been expanded for the three
+  new edit inputs. All four inputs now explicitly use the active palette for placeholder
+  and selection colors, and the guard checks every input;
 - `npx tsc --noEmit`: passed;
 - focused source lint: zero errors;
 - `git diff --check`: passed.
@@ -61,9 +66,10 @@ the exact locked Express 4 dependencies and passed; the temporary junction was t
 
 ## Remaining production gate
 
-GitHub Actions is currently prevented from starting backend jobs by the account payment or
-Actions spending-limit state. After the owner restores Actions, merge and deploy both exact
-candidates, then on a disposable owner thread verify corrected counts, reply, comment edit,
-post edit/reload, confirmed delete, detail 404 and feed removal. A separate outside account
-must still verify follow/comment/reply/report boundaries and Admin plus delivered-email
-notification evidence.
+Frontend CI run `32637192209` is running on the exact corrected frontend SHA. GitHub Actions
+is currently prevented from starting backend jobs by the account payment or Actions
+spending-limit state. After the frontend gate passes and the owner restores backend Actions,
+merge and deploy both exact candidates, then on a disposable owner thread verify corrected
+counts, reply, comment edit, post edit/reload, confirmed delete, detail 404 and feed removal.
+A separate outside account must still verify follow/comment/reply/report boundaries and Admin
+plus delivered-email notification evidence.
