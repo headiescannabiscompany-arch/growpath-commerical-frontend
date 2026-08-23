@@ -147,13 +147,18 @@ describe("workspace bottom tabs at narrow widths", () => {
       "business-desk/jobs",
       "business-desk/expenses",
       "business-desk/vendors",
-      "business-desk/cash-flow"
+      "business-desk/cash-flow",
+      "business-desk/ask-ai",
+      "business-desk/source"
     ]);
     expect(
       allScreens
         .filter((child) => child.props.name.startsWith("business-desk/"))
         .every((child) => child.props.options?.href === null)
     ).toBe(true);
+    expect(
+      allScreens.find((child) => child.props.name === "horticulture")?.props.options?.href
+    ).toBeNull();
     expect(
       allScreens.find((child) => child.props.name === "regulated-commerce")?.props.options
         ?.href

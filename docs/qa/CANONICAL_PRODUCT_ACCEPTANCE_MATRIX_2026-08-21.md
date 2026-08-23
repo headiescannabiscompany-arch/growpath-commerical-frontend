@@ -188,8 +188,8 @@ inventory, safety boundaries and mandatory production scenarios.
 | B-01 | Scoped organization/location/role, stable record, import-provenance and audit foundation                      | implemented; local acceptance passed; multi-workspace/live acceptance open                                                                      |
 | B-02 | One complete inventory/lot/receiving/movement/hold/consumption/import/export engine reused by B-04 and B-05   | deployed; owner ledger, Manager mutation, Inventory AI, reviewed import and terminal exports accepted; Staff/Viewer, isolation, history, import-retry/reconciliation open |
 | B-03 | Small Business Desk ships price/margin, quote, lead, job, receipt, vendor, cash-flow and Ask AI tools         | deployed; STAFF/VIEWER denial and Facility MANAGER create/reload/archive/audit accepted; provider/Commercial/isolation live gates open           |
-| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; STAFF/VIEWER denial and Facility OWNER care/blocked-readiness/archive/audit accepted; Manager/Commercial/link/passing-readiness live gates open |
-| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; authenticated device/provider live acceptance open                                                                                    |
+| B-04 | Horticulture/nursery evidence-aware help, basic care history and fulfillment readiness                        | deployed; Facility role, item/lot link, blocked/passing-readiness, reload/archive/audit accepted; Commercial/protected-evidence/cross-workspace/actor-display open |
+| B-05 | Reviewed device/crop/room/SOP/maintenance intelligence with no autonomous equipment control                   | deployed; Manager setup boundary accepted; Pulse credential/provider and TrolMaster adapter live acceptance open                                |
 | B-06 | Creator essentials: approved assets, lives, community, sharing, reporting and moderation                      | implemented; local acceptance passed; provider/live acceptance open                                                                             |
 | B-07 | Truthful storefront and external lawful-commerce handoff only; no native payment, tax or promotion automation | implemented; local acceptance passed; regulated provider/live gates open                                                                        |
 | B-08 | Evidence, review, idempotency, redaction and audit boundary for every business AI result                      | implemented; cross-cutting local acceptance passed; provider/live acceptance open                                                               |
@@ -338,6 +338,21 @@ Audit Logs retained separate `Business Desk.Record.Create` and
 archive/audit slice. Business Ask truthfully reported that provider-backed help is not
 configured for this workspace and disabled Ask, so provider/credit/refund acceptance remains
 an exact configuration blocker rather than a manufactured success.
+
+The same Manager session closed B-04 Facility Manager mutation, existing B-02 item/lot link,
+care, passing-readiness, reload, archive and audit acceptance. The pass found and closed two
+current-candidate defects rather than bypassing them: backend main `23d0bf97` preserves
+inventory links across partial updates, and frontend main `20e423c1` hydrates a persisted
+linked lot after reload. The accepted result remained explicitly for human confirmation and
+did not reserve or decrement the item (`11 each`) or lot (`3 each`). B-04 now remains open
+only for Commercial owner, protected-evidence/cross-workspace denial and Audit Detail actor-
+name/role presentation.
+
+The B-05 Manager setup boundary also loaded correctly. Pulse presented encrypted grow-scoped
+API-key verification/discovery and made no connection without a key. TrolMaster truthfully
+reported developer-access/key-storage planning and that its read-only adapter is not yet
+implemented. No credential, device, mapping, room or reading changed. Pulse credential-backed
+acceptance and TrolMaster adapter implementation/verification remain exact blockers.
 
 The 2026-08-23 B-04 owner pass is retained in
 `B04_HORTICULTURE_PRODUCTION_EVIDENCE_2026-08-23.md`. Backend main `7442cf8a` fixes the

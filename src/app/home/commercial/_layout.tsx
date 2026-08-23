@@ -206,6 +206,18 @@ export default function CommercialTabsLayout() {
         options={{ title: "Cash-Flow Snapshot", href: null, headerShown: false }}
       />
       <Tabs.Screen
+        name="business-desk/ask-ai"
+        options={{ title: "Business Ask AI", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="business-desk/source"
+        options={{ title: "Business Ask AI Source", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
+        name="horticulture"
+        options={{ title: "Horticulture", href: null, headerShown: false }}
+      />
+      <Tabs.Screen
         name="more"
         options={{
           title: "More",
