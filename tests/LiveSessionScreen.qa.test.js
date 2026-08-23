@@ -248,6 +248,30 @@ describe("LiveSessionScreen QA", () => {
     expect(queryByText("Share this stream")).toBeNull();
   });
 
+  it("shows an attached premiere video without claiming its destination is missing", async () => {
+    mockUseAuth.mockReturnValue({ user: { _id: "host-1" } });
+    mockUseEntitlements.mockReturnValue({ can: () => false });
+    mockApiRequest.mockResolvedValueOnce({
+      _id: "premiere-1",
+      owner: { id: "host-1" },
+      title: "Garden premiere",
+      sessionType: "premiere",
+      sourceVideoId: "video-1",
+      status: "draft",
+      visibility: "private",
+      isPublished: false,
+      chatEnabled: true
+    });
+
+    const { getByTestId, getByText, queryByText } = renderWithNav({
+      sessionId: "premiere-1"
+    });
+
+    await waitFor(() => expect(getByText("GrowPath video premiere")).toBeTruthy());
+    expect(getByTestId("live-link-/videos/video-1")).toBeTruthy();
+    expect(queryByText("No video destination is attached to this live yet.")).toBeNull();
+  });
+
   it("creates a personal task at the configured live-stream date", async () => {
     mockUseAuth.mockReturnValue({ user: { _id: "user1" } });
     mockUseEntitlements.mockReturnValue({ can: () => false });
