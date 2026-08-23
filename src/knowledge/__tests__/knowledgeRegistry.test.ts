@@ -160,6 +160,29 @@ describe("GrowPath knowledge registries", () => {
     );
   });
 
+  it("keeps B-04 horticulture operations linked to B-02 without a parallel ledger", () => {
+    const horticulture = getMethod("horticulture-operations");
+    expect(horticulture?.documentPath).toBe(
+      "docs/knowledge/methods/horticulture-operations-method.md"
+    );
+    expect(horticulture?.primaryWorkflow).toEqual(
+      expect.arrayContaining([
+        "link evidence and optional B-02 records",
+        "evaluate current readiness",
+        "human confirmation"
+      ])
+    );
+    expect(horticulture?.requiredOutputs).toContain(
+      "deterministic blocked or ready-for-human-confirmation result with current B-02 evidence"
+    );
+    expect(horticulture?.warnings).toContain(
+      "B-02 is the only inventory ledger; B-04 may link but never copy or mutate stock truth."
+    );
+    expect(methodsForTool("horticulture-operations").map((entry) => entry.id)).toEqual([
+      "horticulture-operations"
+    ]);
+  });
+
   it("keeps public copies separate, frozen, sanitized and revocable", () => {
     const sharing = getMethod("public-copy-sharing");
     expect(sharing?.primaryWorkflow).toEqual([

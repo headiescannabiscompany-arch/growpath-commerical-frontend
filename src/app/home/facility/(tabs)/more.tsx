@@ -102,6 +102,12 @@ const workspaceGroups: Array<{
         href: "/home/facility/business-desk",
         description:
           "Open the owner/manager business tools for pricing, quotes, vendors, expenses, and cash flow."
+      },
+      {
+        label: "Horticulture Operations",
+        href: "/home/facility/horticulture",
+        description:
+          "Review plant and product evidence, nursery care history, holds, and fulfillment readiness."
       }
     ]
   },
@@ -236,7 +242,9 @@ export default function FacilityMoreRoute() {
             {group.destinations
               .filter(
                 (destination) =>
-                  destination.label !== "Business Desk" ||
+                  !["Business Desk", "Horticulture Operations"].includes(
+                    destination.label
+                  ) ||
                   (hasBusinessDeskFacilityRole(entitlements.facilityRole) &&
                     entitlements.can(CAPABILITY_KEYS.BUSINESS_DESK_READ))
               )

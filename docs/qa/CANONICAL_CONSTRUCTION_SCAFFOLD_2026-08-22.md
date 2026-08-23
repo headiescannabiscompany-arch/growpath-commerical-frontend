@@ -205,6 +205,27 @@ snapshot is an Ask view, and an invoice/payment-request draft is a Quote handoff
 documentation and navigation contract tests must require the exact eight ordered tool IDs so
 none can silently become a ninth launch product.
 
+#### B-04 retained horticulture acceptance checkpoint
+
+Local checkpoint, 2026-08-22: B-04 now has one workspace-scoped Horticulture Operations
+surface for Commercial and selected Facility owner/manager workspaces. It captures reviewed
+plant/product context, optional same-workspace B-02 item/lot links, retained private photo/
+video and exact Plant ID/diagnosis references, label review, nursery batch/bench/stage/hold
+state, append-only actor-attributed care history, and a deterministic fulfillment-readiness
+check. The passing result is deliberately named `ready_for_human_confirmation`; it never
+reserves inventory, fulfills an order, chooses a substitute, certifies plant health, or
+promises availability. B-02 remains the only stock writer.
+
+Focused frontend acceptance passes 30 assertions across the Horticulture screen/API,
+knowledge registry and Commercial/Facility route/role gates. The retained navigation and
+B-02 UI regression lane passes another 109 assertions. Focused backend model/service/route/
+mount acceptance passes 12 assertions, and the reused workspace/B-02 authorization lane
+passes 107 assertions. TypeScript, touched-file lint and diff checks pass. Exact-SHA
+deployment and live Commercial plus Facility owner/manager create, link, reload, care,
+blocked-readiness, passing-readiness and denied-role acceptance remain the bounded production
+gate. Cross-cutting durable mutation retry/idempotency remains owned by B-08 and does not
+justify rebuilding this B-04 record model.
+
 ### Batch 7 — money, notifications and data rights
 
 Primary rows: `R-01`, `R-02`.  

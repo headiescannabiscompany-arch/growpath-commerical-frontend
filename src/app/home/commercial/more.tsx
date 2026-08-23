@@ -126,6 +126,12 @@ const workspaceGroups: Array<{
         href: "/home/commercial/inventory",
         description:
           "Track supporting ingredients, lots, costs, and availability records."
+      },
+      {
+        label: "Horticulture Operations",
+        href: "/home/commercial/horticulture",
+        description:
+          "Review plant and product evidence, nursery care history, holds, and fulfillment readiness."
       }
     ]
   },
@@ -202,8 +208,9 @@ export default function CommercialMoreRoute() {
             {group.destinations
               .filter(
                 (destination) =>
-                  destination.label !== "Business Desk" ||
-                  entitlements.can(CAPABILITY_KEYS.BUSINESS_DESK_READ)
+                  !["Business Desk", "Horticulture Operations"].includes(
+                    destination.label
+                  ) || entitlements.can(CAPABILITY_KEYS.BUSINESS_DESK_READ)
               )
               .map((destination) => (
                 <WorkspaceLink key={destination.href} {...destination} />

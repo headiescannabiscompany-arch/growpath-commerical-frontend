@@ -40,6 +40,11 @@ function hasValidSelectedFacility(value: unknown) {
 
 const COMMERCIAL_RULES: RouteRule[] = [
   {
+    matches: startsWith("/home/commercial/horticulture"),
+    mode: "commercial",
+    capabilities: [CAPABILITY_KEYS.BUSINESS_DESK_READ]
+  },
+  {
     matches: (pathname) =>
       isRegisteredBusinessDeskRoute(BUSINESS_DESK_ROUTE_ROOTS.commercial, pathname),
     mode: "commercial",
@@ -137,6 +142,13 @@ const PERSONAL_RULES: RouteRule[] = [
 
 const FACILITY_RULES: RouteRule[] = [
   {
+    matches: startsWith("/home/facility/horticulture"),
+    mode: "facility",
+    capabilities: [CAPABILITY_KEYS.BUSINESS_DESK_READ],
+    requiresFacility: true,
+    requiresBusinessDeskFacilityRole: true
+  },
+  {
     matches: (pathname) =>
       isRegisteredBusinessDeskRoute(BUSINESS_DESK_ROUTE_ROOTS.facility, pathname),
     mode: "facility",
@@ -220,6 +232,7 @@ export function canAccessRoute(pathname: string, snapshot: RouteAccessSnapshot):
     snapshot.mode === "commercial" &&
     pathname.startsWith("/home/commercial") &&
     !pathname.startsWith("/home/commercial/business-desk") &&
+    !pathname.startsWith("/home/commercial/horticulture") &&
     !pathname.startsWith("/home/commercial/inventory/new") &&
     !pathname.startsWith("/home/commercial/inventory-create");
   if (commercialPreview) return true;
