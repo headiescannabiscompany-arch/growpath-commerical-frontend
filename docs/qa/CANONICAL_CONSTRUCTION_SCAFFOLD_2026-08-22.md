@@ -110,6 +110,13 @@ Genetics ownership. Reporting, investigation and security cases retain evidence 
 Preservation is not disclosure. Approval/disclosure UI remains unavailable until the
 backend and reviewed operating procedure satisfy the lawful-request contract.
 
+A-01 through A-05 are now locally accepted on the evidence recorded in
+`A01_A05_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`. Backend merge
+`2000d69dd0af5744b3d46eb398aa949c97997cb9` enforces the transition, verification,
+minimum-scope, custody, recipient, delivery and immutable-manifest boundary. The approval/
+disclosure UI remains unavailable until the reviewed operating procedure and exact production
+fail-closed gates pass. Continue with live evidence; do not rebuild Admin or session isolation.
+
 ### Batch 3 — grow workspace and evidence-aware AI
 
 Primary rows: `P-01`, `P-02`, `P-07`, `P-08`, `P-09`, `P-10`.  

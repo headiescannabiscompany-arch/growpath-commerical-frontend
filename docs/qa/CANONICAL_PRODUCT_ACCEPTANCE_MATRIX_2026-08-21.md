@@ -257,23 +257,23 @@ performed.
 
 ## Nature, Admin and release
 
-| ID   | User story                                                                                                             | Status                                                                         |
-| ---- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | partial                                                                        |
-| N-02 | Discover shows a compact Nature preview even with zero public pins                                                     | live accepted                                                                  |
-| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented                                                                    |
-| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented                                                                    |
-| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | partial                                                                        |
-| A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                           | partial                                                                        |
-| A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                      | partial                                                                        |
-| A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                     | partial                                                                        |
-| A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated     | partial                                                                        |
-| R-01 | Subscriptions (including gifts), paid courses/products, returns/webhooks/receipts and management work where authorized | implemented; local acceptance passed; production provider/live acceptance open |
-| R-02 | Email/device notifications respect preferences and deliver supported events                                            | implemented; local acceptance passed; email/device live acceptance open        |
-| R-03 | Initial crawl, proof-based dead-code cleanup, and final full acceptance pass on new frozen SHAs                        | open                                                                           |
-| R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                             | open                                                                           |
-| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate                                                                |
-| R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                       | open                                                                           |
+| ID   | User story                                                                                                             | Status                                                                            |
+| ---- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | partial                                                                           |
+| N-02 | Discover shows a compact Nature preview even with zero public pins                                                     | live accepted                                                                     |
+| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented                                                                       |
+| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented                                                                       |
+| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | implemented; local acceptance passed; populated/live acceptance open              |
+| A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                           | implemented; local acceptance passed; authenticated mutation/live acceptance open |
+| A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                      | implemented; local acceptance passed; Sentry/live acceptance open                 |
+| A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                     | implemented; local safety acceptance passed; legal operating/live acceptance open |
+| A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated     | implemented; local acceptance passed; multi-account/live acceptance open          |
+| R-01 | Subscriptions (including gifts), paid courses/products, returns/webhooks/receipts and management work where authorized | implemented; local acceptance passed; production provider/live acceptance open    |
+| R-02 | Email/device notifications respect preferences and deliver supported events                                            | implemented; local acceptance passed; email/device live acceptance open           |
+| R-03 | Initial crawl, proof-based dead-code cleanup, and final full acceptance pass on new frozen SHAs                        | open                                                                              |
+| R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                             | open                                                                              |
+| R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate                                                                   |
+| R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                       | open                                                                              |
 
 ## Frozen Plant ID stories
 
@@ -296,6 +296,12 @@ R-01 and R-02 local construction evidence and exact remaining gates are retained
 `R01_R02_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`. Money, gift, notification and data-rights
 features must not be rebuilt to satisfy provider or physical-device evidence. Gift checkout
 remains fail-closed until the enablement gates in that record pass.
+
+A-01 through A-05 local construction evidence and exact remaining live gates are retained in
+`A01_A05_CANONICAL_LOCAL_EVIDENCE_2026-08-22.md`. The backend safety contract is enforced, but
+the frontend continues to withhold lawful-request approval/disclosure until the reviewed
+operating procedure and production fail-closed evidence exist. Do not rebuild Admin to obtain
+populated, provider, authenticated or multi-account evidence.
 
 - **P-03 — retained evidence:** frontend `4829d2ff`, backend `1144dadc`, and ToolRun
   `6a77f67895931a1ea2ab10d9` already prove multi-photo/private-video analysis, server-frame
