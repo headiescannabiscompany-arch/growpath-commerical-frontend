@@ -194,6 +194,12 @@ Logs while full-audit export and every stock mutation remained absent. Do not re
 slice. Continue with the Staff forced backend `403` and the Viewer boundary before moving to
 workspace isolation.
 
+The existing Viewer subsequently loaded the same populated item and movement history with
+all mutation controls disabled, import disabled and no create/remove action. Viewer retained
+Audit Logs and Full Audit CSV under its separate `AUDIT_READ` capability. Do not repeat this
+UI slice; only the authenticated Staff/Viewer forced backend `403` probes remain before 5B
+moves to workspace isolation.
+
 ### Batch 6 — Small Business Desk and retained domain acceptance
 
 Primary rows: `B-03` through `B-09`.

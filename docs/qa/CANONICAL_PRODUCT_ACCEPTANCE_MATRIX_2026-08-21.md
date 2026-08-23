@@ -318,6 +318,13 @@ populated Staff UI and audit-read slice. Staff forced backend `403` remains open
 available Browser execution surface could not use the app transport without inspecting or
 duplicating stored credentials; no unauthenticated response was mislabeled as role evidence.
 
+The authenticated `john.collins15@alumni.morgan.edu` Viewer pass then loaded the same
+populated items, lots and immutable movement history with every save/movement action disabled,
+no create/remove control and reviewed import disabled. Viewer correctly retained Full Audit
+CSV and Audit Logs under its separate `AUDIT_READ` capability. This closes the populated
+Viewer UI/audit-read slice. Only authenticated Staff and Viewer forced backend `403` probes
+remain in the B-02 role gate.
+
 The 2026-08-23 B-04 owner pass is retained in
 `B04_HORTICULTURE_PRODUCTION_EVIDENCE_2026-08-23.md`. Backend main `7442cf8a` fixes the
 observed write-then-audit-error defect by committing every Horticulture mutation and audit
