@@ -1196,8 +1196,7 @@ export default function AiScreen({
                   Out of stock:{" "}
                   {
                     context.inventoryItems.filter(
-                      (item) =>
-                        Number(item.quantityOnHand ?? item.quantity ?? 0) <= 0
+                      (item) => Number(item.quantityOnHand ?? item.quantity ?? 0) <= 0
                     ).length
                   }
                 </Text>
@@ -1205,9 +1204,7 @@ export default function AiScreen({
                   At or below reorder point:{" "}
                   {
                     context.inventoryItems.filter((item) => {
-                      const quantity = Number(
-                        item.quantityOnHand ?? item.quantity ?? 0
-                      );
+                      const quantity = Number(item.quantityOnHand ?? item.quantity ?? 0);
                       const reorderPoint = Number(item.reorderPoint ?? 0);
                       return quantity > 0 && reorderPoint > 0 && quantity <= reorderPoint;
                     }).length
@@ -1220,13 +1217,13 @@ export default function AiScreen({
                       const alerts = item.alerts || {};
                       return Boolean(
                         alerts.lowStock ||
-                          alerts.outOfStock ||
-                          alerts.held ||
-                          Number(alerts.expiredLots || 0) > 0 ||
-                          Number(alerts.expiringSoonLots || 0) > 0 ||
-                          alerts.lotQuantityExceedsItem ||
-                          Number(alerts.unallocatedQuantity || 0) > 0 ||
-                          alerts.sourceAgeDays === null
+                        alerts.outOfStock ||
+                        alerts.held ||
+                        Number(alerts.expiredLots || 0) > 0 ||
+                        Number(alerts.expiringSoonLots || 0) > 0 ||
+                        alerts.lotQuantityExceedsItem ||
+                        Number(alerts.unallocatedQuantity || 0) > 0 ||
+                        alerts.sourceAgeDays === null
                       );
                     }).length
                   }
