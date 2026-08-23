@@ -116,11 +116,11 @@ Every applicable story must preserve these invariants without repeating them in 
 | ID   | User story                                                                                                           | Status      |
 | ---- | -------------------------------------------------------------------------------------------------------------------- | ----------- |
 | P-01 | Home provides a useful mixed feed, active-grow context and frequent actions                                          | implemented; local acceptance passed; populated/live navigation acceptance open |
-| P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | partial     |
-| P-03 | Identify a plant and save its photos/result without requiring a grow, Field Study or public pin                      | partial     |
-| P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | implemented |
-| P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented |
-| P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | implemented |
+| P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | implemented; local acceptance passed; full-loop/live acceptance open |
+| P-03 | Identify a plant and save its photos/result without requiring a grow, Field Study or public pin                      | implemented; local acceptance passed; ordinary-media live acceptance open |
+| P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | implemented; local acceptance passed; cleanup/final-live regression open |
+| P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented; local acceptance passed; publish/withdraw live acceptance open |
+| P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | implemented; local acceptance passed; public/private live regression open |
 | P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | implemented; local acceptance passed; storage/provider/live acceptance open |
 | P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | implemented; local acceptance passed; ordinary-phone provider/live acceptance open |
 | P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open |
@@ -260,10 +260,10 @@ performed.
 
 | ID   | User story                                                                                                             | Status                                                                            |
 | ---- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | partial                                                                           |
+| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | implemented; local acceptance passed; populated/live acceptance open             |
 | N-02 | Discover shows a compact Nature preview even with zero public pins                                                     | live accepted                                                                     |
-| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented                                                                       |
-| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented                                                                       |
+| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented; local acceptance passed; public/private live regression open         |
+| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented; local acceptance passed; final-candidate privacy regression open     |
 | A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | implemented; local acceptance passed; populated/live acceptance open              |
 | A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                           | implemented; local acceptance passed; authenticated mutation/live acceptance open |
 | A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                      | implemented; local acceptance passed; Sentry/live acceptance open                 |
