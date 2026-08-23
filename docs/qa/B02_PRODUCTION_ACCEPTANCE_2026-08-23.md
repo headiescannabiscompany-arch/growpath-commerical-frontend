@@ -9,6 +9,9 @@ remaining multi-role, import retry and paid reconciliation gates stay open
 
 - Frontend behavior SHA: `88699a8257f2b009e73e8d67f6c82aeec9d2d33a`.
 - Backend behavior SHA: `be00d33ff66fea5322fa6e7cac68fe21298d4753`.
+- Exact backend post-merge run `32650803500` passed on that SHA. Its containerized test job
+  completed install, drift stopper and the contract pack successfully; debug-only open-handle
+  steps were correctly skipped because their preceding gates passed.
 - Canonical evidence merge: `41ecdcb7123128899f64e49952e14f8955086ecb`.
 - Owner-membership evidence merge: `6791268981826f1154dae0db1a780a33e1fff676`.
 - Exact post-merge Frontend CI run `32653375100` passed on that merge SHA in
