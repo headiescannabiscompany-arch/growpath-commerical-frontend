@@ -49,6 +49,17 @@ starts or finishes; do not create another active todo document.
    than returning false standalone-Mongo transaction failures. Batch 3 remains open only for
    its named production media/provider, timeline publish/withdrawal/export, populated comparison,
    device-provider and cross-role live actions; do not rebuild its locally accepted assembly.
+   Batch 4's retained community/media/Lives/course/sharing assembly passes 143 frontend
+   assertions and 154 backend assertions across Forum and comments, video upload/library/detail,
+   Lives directory and Studio, hosted-live publication/lifecycle/concurrency limits, OBS ingest,
+   GrowPath chat/overlay, signed playback/replay, Commercial Lives, courses, ownership,
+   enrollment/payment lifecycle, public sharing, reporting notifications, storage and workspace
+   isolation. This is local acceptance, not provider or production acceptance. Batch 4 remains
+   open only for configured production object storage and video upload/playback, a bounded
+   two-account hosted-Live/OBS isolation run with chat/stop/replay/cleanup, provider-state
+   labeling, course publish/enroll/payment/archive, report-to-Admin/email delivery, and stable
+   public-link review. Do not rebuild its locally accepted assembly; continue with Batch 5 while
+   those exact authenticated/provider actions wait.
 3. **Release crawl and cleanup:** after the in-scope product/workflow items are closed, run the complete
    live route, button, responsive, theme, accessibility, persistence, security, and visual
    presentation crawl and repair the defects it finds. Include a route-to-visible-entry

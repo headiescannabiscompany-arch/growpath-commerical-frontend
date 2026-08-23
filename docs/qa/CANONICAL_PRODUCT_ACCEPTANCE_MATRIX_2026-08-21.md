@@ -356,6 +356,17 @@ second queue. `Production mutation`, `production read-only`, `final-candidate cr
   cleanup never cross accounts, followed by the final role/load isolation check. **Next
   action:** production concurrency/security acceptance. **Do not rebuild or replace:** the
   Cloudflare/OBS channel, player, chat overlay, lifecycle, stop, or replay architecture.
+- **S-01 through S-08 — local acceptance:** the frozen Batch 4 candidate passes 143 frontend
+  and 154 backend assertions covering Forum/comments, video upload/library/detail, Lives and
+  Studio, hosted publication/lifecycle/limits, OBS, GrowPath chat/overlay, signed playback and
+  replay, Commercial Lives, courses and ownership, enrollment/payment lifecycle, stable share
+  actions, reporting notifications, storage and workspace isolation. **Remaining gates:**
+  configured production storage/provider behavior; video upload/playback/comments/premiere;
+  the S-05 two-account concurrency/security run; honest outside-provider states; course
+  publish/enroll/payment/archive; report-to-Admin/email delivery; and public-link privacy/reload.
+  **Next action:** authenticated production/provider acceptance followed by final-candidate
+  crawl. **Do not rebuild:** the locally accepted community, media, course, sharing or retained
+  Hosted Live/OBS architecture unless a current regression is reproduced.
 
 ## Immediate execution order
 
