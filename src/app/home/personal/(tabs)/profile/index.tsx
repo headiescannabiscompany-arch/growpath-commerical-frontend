@@ -15,6 +15,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "@/auth/AuthContext";
 import { useEntitlements } from "@/entitlements";
 import { requestEmailVerification, updateContentControls } from "@/api/auth";
+import { getVideoQuota, type VideoQuota } from "@/api/videos";
 import {
   deleteAccount,
   exportPrivacyData,
@@ -214,6 +215,16 @@ export function getPersonalProfilePlanActions(plan: string): PlanAction[] {
   return actions;
 }
 
+export function formatProfileStorage(bytes: number) {
+  const value = Math.max(0, Number(bytes || 0));
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  if (value < 1024 * 1024 * 1024) {
+    return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  }
+  return `${(value / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
+
 export default function ProfileScreen() {
   const router = useRouter();
   const auth = useAuth();
@@ -244,6 +255,9 @@ export default function ProfileScreen() {
   const [logoutConfirming, setLogoutConfirming] = useState(false);
   const [logoutBusy, setLogoutBusy] = useState(false);
   const [logoutError, setLogoutError] = useState("");
+  const [videoQuota, setVideoQuota] = useState<VideoQuota | null>(null);
+  const [videoQuotaLoading, setVideoQuotaLoading] = useState(true);
+  const [videoQuotaError, setVideoQuotaError] = useState("");
   const mode = ent.mode || "personal";
   const plan = ent.plan || "free";
   const planActions = getPersonalProfilePlanActions(plan);
@@ -271,6 +285,28 @@ export default function ProfileScreen() {
       ...storedPrefs
     });
   }, [auth.user]);
+
+  const loadVideoQuota = async () => {
+    setVideoQuotaLoading(true);
+    setVideoQuotaError("");
+    try {
+      const quota = await getVideoQuota("personal");
+      if (!quota || !Number.isFinite(Number(quota.limitBytes))) {
+        throw new Error("Storage usage is unavailable.");
+      }
+      setVideoQuota(quota);
+    } catch (error: any) {
+      setVideoQuota(null);
+      setVideoQuotaError(error?.message || "Unable to load storage usage.");
+    } finally {
+      setVideoQuotaLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadVideoQuota();
+    // Reload only when the signed-in identity changes; quota has its own explicit retry.
+  }, [auth.user?.id]);
 
   const handleSaveEmail = async () => {
     const nextEmail = emailDraft.trim().toLowerCase();
@@ -613,6 +649,51 @@ export default function ProfileScreen() {
         <TokenBalanceWidget
           onPress={() => router.push("/home/personal/profile/billing" as any)}
         />
+      </View>
+
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.rowLabel, mutedTextStyle]}>Video storage</Text>
+        {videoQuotaLoading ? (
+          <Text style={[styles.mutedText, mutedTextStyle]}>Loading storage usage...</Text>
+        ) : videoQuota ? (
+          <>
+            <Text style={[styles.rowValue, textStyle]}>
+              {formatProfileStorage(videoQuota.usedBytes)} used of{" "}
+              {formatProfileStorage(videoQuota.limitBytes)}
+            </Text>
+            <Text style={[styles.mutedText, mutedTextStyle]}>
+              {formatProfileStorage(videoQuota.remainingBytes)} remains for
+              GrowPath-hosted video uploads in this Personal workspace. Externally hosted
+              video links do not use this allowance.
+            </Text>
+          </>
+        ) : (
+          <Text style={styles.error} accessibilityRole="alert">
+            {videoQuotaError || "Unable to load storage usage."}
+          </Text>
+        )}
+        <View style={styles.actionGrid}>
+          <Pressable
+            style={[styles.accountAction, { backgroundColor: palette.surface }]}
+            onPress={() => router.push("/videos?tab=library" as any)}
+            accessibilityRole="button"
+            accessibilityLabel="Open video storage library"
+          >
+            <Text style={[styles.accountActionText, textStyle]}>Manage My Videos</Text>
+          </Pressable>
+          {videoQuotaError ? (
+            <Pressable
+              style={[styles.accountAction, { backgroundColor: palette.surface }]}
+              onPress={() => void loadVideoQuota()}
+              accessibilityRole="button"
+              accessibilityLabel="Retry video storage usage"
+            >
+              <Text style={[styles.accountActionText, textStyle]}>
+                Retry Storage Usage
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
 
       <View style={[styles.card, cardStyle]}>
