@@ -350,11 +350,32 @@ navigation, and image storage.` Exact-main Frontend CI `32671739812` and Product
   removed. The scoped legal-request form was also inspected and canceled without creating a
   request; its live copy correctly separates intake, preservation, approval and disclosure.
 - Exact-email user search returned the Platform Admin account. Its five account actions were
-  visually present but exposed no button semantics in the live accessibility tree. The
-  candidate preserves every action and confirmation boundary while adding real button roles,
+  visually present but exposed no button semantics in the live accessibility tree. Frontend
+  `530afd7e` preserves every action and confirmation boundary while adding real button roles,
   account-specific accessible names and disabled/busy state. `PlatformAdminRoute.test.tsx`
-  proves the semantics and all 43 focused Admin tests pass. No token refresh, notice,
-  suspension, ban or test-account cleanup action was triggered during acceptance.
+  proves the semantics and all 43 focused Admin tests pass. Exact-main Production Build
+  Preflight `32673832150` and Frontend CI `32673832168` passed. Production then exposed all
+  five account-action families as named buttons on desktop and at a 390-by-844 mobile
+  viewport, retained one `Administration` H1 and had no horizontal overflow. The moderation
+  queue still showed no active cases. No token refresh, notice, suspension, restoration, ban
+  or test-account cleanup action was triggered during acceptance.
+- The signed-in Admin account workspace exposed a distinct `Platform Administration` entry
+  describing its governance scope; activating it returned to the deployed `/admin` owner hub.
+  This closes the previously missing/buried Admin entry-path regression without adding Admin
+  controls to Personal, Commercial or Facility ownership.
+- The approved QA-only support lifecycle then passed create/email delivery, in-progress,
+  resolution, hard-reload persistence, reason-required reopen, final resolution and a second
+  hard reload. Admin returned to 0 active / 13 completed with the record retained in completed
+  history. This live run exposed two bounded A-02 gaps: support assignment/case-note controls
+  were absent, and the active transition controls were not exposed as buttons. Frontend PR #782
+  and backend PR #230 implement and locally verify those bounded gaps; deployment and fresh
+  QA-only live ownership/note acceptance remain. Do not repeat the completed support transition
+  loop.
+- The approved existing QA-only paid-course moderation case passed a reversible production loop
+  without changing real-user content. Its retained audit advanced `leave -> hide -> restore ->
+  leave`; the exact reported-content deep link showed `Reported course is unavailable` while
+  hidden, reopened the course after restore, and a hard reload retained the final `Closed` state
+  and full audit. This moderation loop is complete and must not be repeated.
 
 ## Exact remaining R-03 work
 

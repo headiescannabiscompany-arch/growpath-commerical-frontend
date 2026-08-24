@@ -334,6 +334,14 @@ type SupportRequest = {
   status: "open" | "in_progress" | "resolved" | "spam";
   createdAt: string;
   emailDelivery?: { sent?: boolean };
+  assignedTo?: string | null;
+  assignedAt?: string | null;
+  adminNotes?: Array<{
+    _id?: string;
+    body: string;
+    createdBy?: string;
+    createdAt?: string;
+  }>;
 };
 
 type KnowledgeEntry = {
@@ -644,6 +652,7 @@ export default function PlatformAdminRoute() {
   const [supportReopenReasons, setSupportReopenReasons] = useState<
     Record<string, string>
   >({});
+  const [supportCaseNotes, setSupportCaseNotes] = useState<Record<string, string>>({});
   const [evidenceReasons, setEvidenceReasons] = useState<Record<string, string>>({});
   const [evidenceAudit, setEvidenceAudit] = useState<
     Record<string, { loading: boolean; error: string; events: AdminAuditEvent[] }>
@@ -1261,6 +1270,36 @@ export default function PlatformAdminRoute() {
       await load();
     } catch (err: any) {
       setError(err?.message || "Support request update failed.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function updateSupportOwnership(
+    item: SupportRequest,
+    options: { assignToSelf?: boolean; note?: string }
+  ) {
+    const note = String(options.note || "").trim();
+    if (!options.assignToSelf && !note) {
+      setError("Enter a case note or assign the request before saving support triage.");
+      return;
+    }
+    setBusyId(item._id);
+    setError("");
+    try {
+      await apiRequest(`/api/admin/support-requests/${item._id}`, {
+        method: "PATCH",
+        body: {
+          ...(options.assignToSelf ? { assignToSelf: true } : {}),
+          ...(note ? { note, reason: "Platform owner support case note" } : {})
+        }
+      });
+      if (note) {
+        setSupportCaseNotes((current) => ({ ...current, [item._id]: "" }));
+      }
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Support assignment or case note failed.");
     } finally {
       setBusyId("");
     }
@@ -2467,6 +2506,22 @@ export default function PlatformAdminRoute() {
                 <Text style={styles.meta}>
                   Email delivery: {item.emailDelivery?.sent ? "sent" : "not confirmed"}
                 </Text>
+                <Text style={styles.meta}>
+                  Assignment:{" "}
+                  {item.assignedTo ? "assigned to an administrator" : "unassigned"}
+                  {item.assignedAt
+                    ? ` · ${new Date(item.assignedAt).toLocaleString()}`
+                    : ""}
+                </Text>
+                {(item.adminNotes || []).slice(-5).map((note, index) => (
+                  <Text key={note._id || `${item._id}-note-${index}`} style={styles.meta}>
+                    Case note
+                    {note.createdAt
+                      ? ` · ${new Date(note.createdAt).toLocaleString()}`
+                      : ""}
+                    : {note.body}
+                  </Text>
+                ))}
               </View>
               {["resolved", "spam"].includes(item.status) ? (
                 <View style={styles.caseCopy}>
@@ -2503,21 +2558,79 @@ export default function PlatformAdminRoute() {
                   </Pressable>
                 </View>
               ) : (
-                <View style={styles.actions}>
-                  <Pressable
-                    disabled={busyId === item._id || item.status === "in_progress"}
-                    style={styles.secondaryButton}
-                    onPress={() => void updateSupportStatus(item, "in_progress")}
-                  >
-                    <Text style={styles.secondaryText}>Mark in progress</Text>
-                  </Pressable>
-                  <Pressable
-                    disabled={busyId === item._id}
-                    style={styles.primaryButton}
-                    onPress={() => void updateSupportStatus(item, "resolved")}
-                  >
-                    <Text style={styles.primaryText}>Resolve</Text>
-                  </Pressable>
+                <View style={styles.caseCopy}>
+                  <View style={styles.actions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Assign ${item.subject} to me`}
+                      accessibilityState={{ disabled: busyId === item._id }}
+                      disabled={busyId === item._id}
+                      style={styles.secondaryButton}
+                      onPress={() =>
+                        void updateSupportOwnership(item, { assignToSelf: true })
+                      }
+                    >
+                      <Text style={styles.secondaryText}>Assign to me</Text>
+                    </Pressable>
+                  </View>
+                  <TextInput
+                    {...inputThemeProps}
+                    accessibilityLabel={`Case note for ${item.subject}`}
+                    value={supportCaseNotes[item._id] || ""}
+                    onChangeText={(note) =>
+                      setSupportCaseNotes((current) => ({ ...current, [item._id]: note }))
+                    }
+                    placeholder="Internal case note"
+                    multiline
+                    style={styles.input}
+                  />
+                  <View style={styles.actions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add case note to ${item.subject}`}
+                      accessibilityState={{
+                        disabled:
+                          busyId === item._id ||
+                          !String(supportCaseNotes[item._id] || "").trim()
+                      }}
+                      disabled={
+                        busyId === item._id ||
+                        !String(supportCaseNotes[item._id] || "").trim()
+                      }
+                      style={styles.secondaryButton}
+                      onPress={() =>
+                        void updateSupportOwnership(item, {
+                          note: supportCaseNotes[item._id]
+                        })
+                      }
+                    >
+                      <Text style={styles.secondaryText}>Add case note</Text>
+                    </Pressable>
+                  </View>
+                  <View style={styles.actions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Mark ${item.subject} in progress`}
+                      accessibilityState={{
+                        disabled: busyId === item._id || item.status === "in_progress"
+                      }}
+                      disabled={busyId === item._id || item.status === "in_progress"}
+                      style={styles.secondaryButton}
+                      onPress={() => void updateSupportStatus(item, "in_progress")}
+                    >
+                      <Text style={styles.secondaryText}>Mark in progress</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Resolve ${item.subject}`}
+                      accessibilityState={{ disabled: busyId === item._id }}
+                      disabled={busyId === item._id}
+                      style={styles.primaryButton}
+                      onPress={() => void updateSupportStatus(item, "resolved")}
+                    >
+                      <Text style={styles.primaryText}>Resolve</Text>
+                    </Pressable>
+                  </View>
                 </View>
               )}
             </View>
