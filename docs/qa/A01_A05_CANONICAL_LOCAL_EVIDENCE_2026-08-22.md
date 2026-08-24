@@ -91,6 +91,11 @@ authority. The frontend has no one-click approval or disclosure action.
   authorized workspace switching without Living Soil Labs/Triple Bag Genetics ownership leakage.
   Current production evidence proves one boundary: the Platform Admin identity was denied at a
   direct Facility Dashboard URL with one `Access denied` H1 and `only available in facility mode`,
-  then returned to `/admin` without exposing Triple Bag Genetics. Free/Pro/Commercial/Facility
-  identity chains, expiry/logout/reload and explicit authorized switching remain open; do not
-  repeat the accepted Admin-to-Facility denial.
+  then returned to `/admin` without exposing Triple Bag Genetics. On frontend `c71c96b8`, the
+  same Admin identity was denied a direct Commercial URL until it explicitly selected its own
+  authorized Commercial workspace. That switch loaded the Admin-owned brand shell without Living
+  Soil Labs or Triple Bag Genetics data, survived reload, returned explicitly to Personal, and
+  retained the independent Platform Administration entry in both modes. Personal/Commercial mode
+  persistence and Admin separation are therefore accepted. Distinct Free/Pro/Commercial/Facility
+  identity-to-identity, expiry and final logout chains remain open; do not repeat the accepted
+  Admin direct-denial or authorized-switch scenarios.
