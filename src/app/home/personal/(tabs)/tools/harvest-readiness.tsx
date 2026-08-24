@@ -51,6 +51,7 @@ import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
 import { businessDeskProviderSignatureSha256 } from "@/features/businessDesk/providerOperationPersistence";
+import { restorableHarvestEvidence } from "@/features/personal/evidence/harvestEvidenceRestore";
 
 const MIN_HARVEST_PHOTOS = 4;
 const MAX_HARVEST_PROVIDER_IMAGES = 80;
@@ -598,17 +599,9 @@ function HarvestPhotoAnalyzer({
     }
     setRestoreFeedback("");
 
-    if (!growId) {
-      onEvidenceAssetsChange([]);
-      setRestoringEvidence(false);
-      return () => {
-        active = false;
-      };
-    }
-
     setRestoringEvidence(true);
     const assetsPromise = listEvidenceAssets({
-      growId,
+      ...(growId ? { growId } : {}),
       ...(workspaceType !== "personal"
         ? {
             workspaceType,
@@ -631,23 +624,13 @@ function HarvestPhotoAnalyzer({
               exactRetryIds.has(String(asset._id || asset.id || ""))
             )
           : assets;
-        const savedPhotos = eligibleAssets
-          .filter(
-            (asset: EvidenceAsset) =>
-              asset.purpose === "harvest" &&
-              asset.assetType === "photo" &&
-              asset.uploadStatus === "uploaded" &&
-              Boolean(asset.durableUrl)
-          )
-          .slice(0, MAX_HARVEST_PROVIDER_IMAGES);
-        const savedVideo = eligibleAssets.find(
-          (asset: EvidenceAsset) =>
-            asset.purpose === "harvest" &&
-            asset.assetType === "video" &&
-            asset.uploadStatus === "uploaded" &&
-            Boolean(asset.durableUrl)
+        const restored = restorableHarvestEvidence(
+          eligibleAssets,
+          growId,
+          MAX_HARVEST_PROVIDER_IMAGES
         );
-        const restored = savedVideo ? [...savedPhotos, savedVideo] : savedPhotos;
+        const savedPhotos = restored.filter((asset) => asset.assetType === "photo");
+        const savedVideo = restored.find((asset) => asset.assetType === "video");
 
         if (retryToolRunId && !exactRetryIds.size) {
           onEvidenceAssetsChange([]);
@@ -673,7 +656,9 @@ function HarvestPhotoAnalyzer({
               retryToolRunId ? "exact " : "saved "
             }harvest photo${
               savedPhotos.length === 1 ? "" : "s"
-            }${savedVideo ? " and 1 source video" : ""} for this grow.`
+            }${savedVideo ? " and 1 source video" : ""} for this ${
+              growId ? "grow" : "standalone workspace review"
+            }.`
           );
         }
       })
