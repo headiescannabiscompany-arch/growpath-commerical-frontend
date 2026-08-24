@@ -176,6 +176,7 @@ function harvestAnalysisScopeKey(input: {
   sampleLocation: string;
   notes?: string;
   daysSinceFlip?: number;
+  cropContext?: "cannabis" | "hemp";
 }) {
   // The quote binds provider context as well as media. Persist and compare only a
   // deterministic digest so private notes never enter operation metadata or scope keys.
@@ -192,7 +193,8 @@ function harvestAnalysisScopeKey(input: {
       daysSinceFlip:
         typeof input.daysSinceFlip === "number" && Number.isFinite(input.daysSinceFlip)
           ? input.daysSinceFlip
-          : null
+          : null,
+      cropContext: String(input.cropContext || "")
     })
   )}`;
 }
@@ -388,6 +390,8 @@ function HarvestPhotoAnalyzer({
   const [selectedFrameExportIds, setSelectedFrameExportIds] = useState<string[]>([]);
   const [frameExportBusy, setFrameExportBusy] = useState(false);
   const [frameExportFeedback, setFrameExportFeedback] = useState("");
+  const [standaloneCropContextConfirmed, setStandaloneCropContextConfirmed] =
+    useState(false);
   const [resultShareBusy, setResultShareBusy] = useState(false);
   const [resultShareFeedback, setResultShareFeedback] = useState("");
   const inspectedBreakdown = useMemo(
@@ -491,7 +495,8 @@ function HarvestPhotoAnalyzer({
     plantId,
     evidenceAssetIds: normalizedEvidenceAssetIds,
     sampleLocation: "mixed_bud_sites",
-    notes
+    notes,
+    cropContext: !growId && standaloneCropContextConfirmed ? "cannabis" : undefined
   });
   const analysisScopeKeyRef = useRef(analysisScopeKey);
   const previousAnalysisScopeKeyRef = useRef(analysisScopeKey);
@@ -501,6 +506,8 @@ function HarvestPhotoAnalyzer({
   const analysisInput = useMemo(
     () => ({
       growId: growId || undefined,
+      cropContext:
+        !growId && standaloneCropContextConfirmed ? ("cannabis" as const) : undefined,
       plantId: plantId || undefined,
       evidenceAssetIds: normalizedEvidenceAssetIds,
       workspaceType,
@@ -515,6 +522,7 @@ function HarvestPhotoAnalyzer({
       normalizedEvidenceAssetIds,
       notes,
       plantId,
+      standaloneCropContextConfirmed,
       workspaceId,
       workspaceType
     ]
@@ -1178,6 +1186,7 @@ function HarvestPhotoAnalyzer({
     photoCount < MIN_HARVEST_PHOTOS ||
     quoteMissing ||
     deepQuoteUnaccepted ||
+    (!growId && !standaloneCropContextConfirmed) ||
     deepReviewOperation.operation
   );
 
@@ -1200,6 +1209,28 @@ function HarvestPhotoAnalyzer({
         -image review ceiling. That ceiling is not a target, and extra images never
         replace the required macro roles.
       </Text>
+      {!growId ? (
+        <View style={photoStyles.checklist} accessibilityLabel="Standalone crop context">
+          <Text
+            accessibilityRole="header"
+            aria-level={3}
+            style={photoStyles.checklistTitle}
+          >
+            Confirm standalone crop context
+          </Text>
+          <View style={photoStyles.consentRow}>
+            <Switch
+              accessibilityLabel="Confirm this standalone evidence is cannabis or hemp flower"
+              value={standaloneCropContextConfirmed}
+              onValueChange={setStandaloneCropContextConfirmed}
+            />
+            <Text style={[photoStyles.help, { flex: 1 }]}>
+              This evidence is cannabis or hemp flower. This confirmation enables the
+              cannabis-specific review without attaching it to a Grow.
+            </Text>
+          </View>
+        </View>
+      ) : null}
       <View style={photoStyles.checklist} accessibilityLabel="Harvest photo checklist">
         <Text
           accessibilityRole="header"
@@ -1488,14 +1519,22 @@ function HarvestPhotoAnalyzer({
                 accessibilityLabel="Get exact harvest review quote"
                 accessibilityState={{
                   disabled: Boolean(
-                    deepReviewOperation.busy || !videoFrameSelection.ready
+                    deepReviewOperation.busy ||
+                    !videoFrameSelection.ready ||
+                    (!growId && !standaloneCropContextConfirmed)
                   )
                 }}
-                disabled={Boolean(deepReviewOperation.busy || !videoFrameSelection.ready)}
+                disabled={Boolean(
+                  deepReviewOperation.busy ||
+                  !videoFrameSelection.ready ||
+                  (!growId && !standaloneCropContextConfirmed)
+                )}
                 onPress={deepReviewOperation.requestQuote}
                 style={[
                   photoStyles.secondaryButton,
-                  (deepReviewOperation.busy || !videoFrameSelection.ready) &&
+                  (deepReviewOperation.busy ||
+                    !videoFrameSelection.ready ||
+                    (!growId && !standaloneCropContextConfirmed)) &&
                     photoStyles.disabled
                 ]}
               >

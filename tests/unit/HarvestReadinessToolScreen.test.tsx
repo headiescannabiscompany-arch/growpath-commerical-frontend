@@ -1059,12 +1059,20 @@ describe("HarvestReadinessToolRoute", () => {
     ).toBeTruthy();
     expect(screen.queryByText("Grow context: facility-grow-only")).toBeNull();
 
+    fireEvent(
+      screen.getByLabelText(
+        "Confirm this standalone evidence is cannabis or hemp flower"
+      ),
+      "valueChange",
+      true
+    );
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
     await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
     await waitFor(() =>
       expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
         expect.objectContaining({
           growId: undefined,
+          cropContext: "cannabis",
           workspaceType: "facility",
           workspaceId: "facility-1",
           facilityId: "facility-1"
