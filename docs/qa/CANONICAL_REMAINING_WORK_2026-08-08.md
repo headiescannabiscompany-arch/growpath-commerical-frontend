@@ -317,21 +317,21 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       Tools/Storefront paths are redirects or compatibility guards into canonical workflows,
       not separate unfinished products. Preserve their stale-link behavior until final
       crawl/dead-code evidence proves a redirect is no longer required.
-- [~] **Complete buried-feature inventory:** source reconciliation on 2026-08-22 now compares
+- [x] **Complete buried-feature inventory:** source reconciliation on 2026-08-22 now compares
   315 frontend routes, 319 inventoried backend routes, 226 legacy feature rows, 32 system
   foundations, provider/environment gates, workers and webhooks. The full-surface audit
   reports 315 frontend routes, 225 directly parsed backend declarations and zero static
   errors/warnings. Runtime-gated user capabilities are individually named above, and the
   65 misleading legacy `planned` rows are classified as internal supporting operations
   under canonical matrix owners rather than hidden products. The remaining gate is the
-  final-candidate route-to-visible-entry crawl: for every user-facing feature record its
-  workspace/role, visible entry, canonical URL, Back path, empty/populated states and
-  intentional internal/redirect status. Before construction closes, compare registered
+  final-candidate route-to-visible-entry crawl now records every canonical user-facing
+  feature's workspace/role, visible entry, canonical URL, Back path, empty/populated states
+  and intentional internal/redirect status in
+  `R03_FINAL_ROUTE_ENTRY_MATRIX_2026-08-24.md`. The comparison covers registered
   frontend routes, visible navigation/deep links, backend route inventory, release matrix,
-  provider/environment gates, workers/webhooks and production configuration. Add every
-  additional user-facing orphan or runtime-gated feature to its owning matrix row, then
-  make it reachable and accepted or record an explicit owner rejection. Access-control,
-  privacy and safety-hidden data are not buried features and must remain protected.
+  provider/environment gates, workers/webhooks and production configuration. No additional
+  user-facing orphan was found. Runtime-gated features remain explicitly owned above rather
+  than hidden. Access-control, privacy and safety-hidden data remain protected.
 - [x] **Reconcile the legacy V1 feature matrix:** all 65 formerly `planned`/`internal` rows are
       live backend routes, not 65 missing products. They are now `supporting_operation` rows
       with explicit canonical owners across `P-02`, `P-11`, `S-01`, `S-02`, `S-07`, `C-02`,
