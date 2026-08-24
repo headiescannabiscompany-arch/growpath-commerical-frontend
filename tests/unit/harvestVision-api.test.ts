@@ -264,7 +264,7 @@ describe("Harvest vision receipt policies", () => {
     expect(mockApiRequest).toHaveBeenCalledWith("/api/ai/harvest/trichomes", {
       method: "POST",
       signal: undefined,
-      timeoutMs: 45000,
+      timeoutMs: 120000,
       retries: 0,
       headers: { "X-Client-Request-Id": "harvest-deep-stable-key-1" },
       body: expect.objectContaining({
