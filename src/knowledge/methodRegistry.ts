@@ -733,7 +733,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "three macro bud-site photos plus one wider context photo",
       "up to 12 direct role-diverse photos when additional representative bud sites are needed, within a combined 80-image provider-ready ceiling",
-      "one optional private source video up to 9 minutes 59 seconds, scanned server-side at roughly one low-resolution temporary candidate per second up to 600 and reduced to a quality-, diversity-, timeline-, and byte-bounded retained frame set",
+      "one optional private source video up to 9 minutes 59 seconds and 512 MiB for protected frame extraction, with reliable local oversize preflight before upload and authoritative server rejection before analysis or credit when size metadata is unavailable, scanned server-side at roughly one low-resolution temporary candidate per second up to 600 and reduced to a quality-, diversity-, timeline-, and byte-bounded retained frame set",
       "maturity",
       "telemetry",
       "sensory",
