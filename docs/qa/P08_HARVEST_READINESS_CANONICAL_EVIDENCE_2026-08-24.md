@@ -61,6 +61,24 @@ test, merge or deployment is not live acceptance.
   bounded private frame/result share, deletion/cleanup and the remaining failure/role evidence
   named below. Do not rebuild the accepted upload, extraction or restoration slices.
 
+### 2026-08-24 standalone crop-context and exact-quote evidence
+
+- The restored Facility standalone review initially reproduced
+  `CANNABIS_CONTEXT_REQUIRED` when requesting a free exact quote even though no Grow is required.
+- Backend PR `#234` merged as `d9d5e68d4d283d0645265bf7bab24e304b08d9e3` and deployed as
+  `dep-da68tm8ae00c73e3418g`. Frontend PR `#788` merged as
+  `4651b597b0a0bb819ba7748afb005c88a3ebc28d` and deployed as
+  `dep-da68us7avr4c73fmv5v0` after backend production succeeded.
+- The standalone screen now requires an explicit cannabis/hemp flower confirmation. It enables
+  only this crop-specific review; it does not create/attach a Grow, change global visibility,
+  publish evidence, or bypass workspace, role, evidence, or Facility-credit authorization.
+- A clean production load restored the same 80 frames and one source video. Before confirmation,
+  the quote button was disabled. After confirmation, the server returned: 80 selected stills,
+  80 unique originals, 0 exact duplicates, 7 signed batches and an exact 7-credit quote.
+- Quote preparation sent no media to OpenAI and used no credit. The 7-credit acceptance switch
+  remains off and Analyze was not pressed. Paid provider/result acceptance therefore remains
+  open and requires explicit owner authorization at that financial/privacy boundary.
+
 ## Frozen user outcomes
 
 1. The product is **Harvest Readiness**, not a trichome estimator. It combines sampled visible
