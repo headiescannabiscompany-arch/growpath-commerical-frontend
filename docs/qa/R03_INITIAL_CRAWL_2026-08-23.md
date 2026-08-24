@@ -5,6 +5,46 @@ Matrix row: `R-03`
 Status: partial — initial automated and signed-in Personal slices passed; the complete
 cross-role crawl, proof-based cleanup, post-cleanup freeze and final full pass remain open.
 
+## Frozen-candidate continuation — 2026-08-24
+
+R-03's proof-based cleanup merged as frontend
+`7f758970f20dad29da161e3a7904dac907fc20bc`. Its exact-main Production Build Preflight
+run `32678256394` and Frontend CI run `32678256411` passed. The cleanup removed only the
+unrouted duplicate `ComputeVPDScreen` and `ECRecommendScreen`; the canonical Environment
+Review, shared pH/EC Range Check, harvest tools and their retained data contracts remain.
+
+The final Admin-owned Commercial crawl reproduced one bounded regression at
+`/home/commercial/inventory`: the route rejected Platform Admin even after the explicit
+Admin-owned Commercial workspace switch. Production attaches `req.user` as a Mongoose
+document, and the inventory scope guard spread that document before checking access. The
+spread omitted schema getters such as `role`; other Commercial routes that read the role
+directly remained healthy. Backend `e572552c94d8dedc9db9713f0fb4660b272f797c` reads the
+authoritative role directly while continuing to scope non-Facility inventory to the
+signed-in user's own ID. PR CI passed focused tests, the full suite, lint, dependency audit
+and ZAP; exact-main Backend CI run `32678879318` passed. Production served that exact
+fingerprint and the same Admin session then loaded the correct zero-item inventory state,
+with Create, reviewed CSV import and full audit export actions, one H1, no overflow and no
+permission error. No other brand or Facility scope was granted.
+
+The frozen-candidate public packet passed 12/12 and is retained at
+`tmp/spec/live-url-checks/2026-08-24T01-12-40-653Z.json`. Release scanning, full-surface
+audit, all 32 system foundations, workflow contract, V1 matrix/UI surface and frontend/
+backend route contracts passed. The signed-in final crawl then passed all 10 public pages,
+20 Admin-owned Commercial top-level routes, `/admin`, and the canonical Admin-owned Personal
+Home, Discover, Grows, AI, media, community, Nature, integrations, notifications and Profile
+entries without an application/access error or horizontal overflow. Exact paths and the
+intentional non-routes found by guessed URLs are retained in
+`R03_FINAL_ROUTE_ENTRY_MATRIX_2026-08-24.md`.
+
+At that checkpoint, the remaining R-03 gate was only the human multi-account chain and
+physical responsive/keyboard spot check: current Free, Commercial-owner, Facility
+Owner/Staff/Viewer and logout/expiry sessions. The owner subsequently authorized the P-08
+Harvest max-80 ranked-video/Deep Review expansion. That product-row change deliberately
+unfreezes the candidate: retain this crawl as pre-change regression evidence, complete and
+accept P-08 without rebuilding the <=12 path, then rerun the affected routes and the final
+frozen-candidate crawl. Provider-backed actions remain in their owning product rows and are
+not fabricated as R-03 completion.
+
 ## Candidate identity
 
 - Frontend production bundle exercised: `d3babaff35570564e849379fab2f68f391931b9c`.

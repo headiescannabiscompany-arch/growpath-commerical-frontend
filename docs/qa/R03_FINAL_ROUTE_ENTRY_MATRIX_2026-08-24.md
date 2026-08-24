@@ -1,0 +1,124 @@
+# R-03 final route-to-visible-entry matrix
+
+Date: 2026-08-24  
+Frontend candidate: `7f758970f20dad29da161e3a7904dac907fc20bc`  
+Backend candidate: `e572552c94d8dedc9db9713f0fb4660b272f797c`
+
+This is the pre-Harvest-expansion final-candidate discoverability record required by R-03. Its
+candidate SHAs remain the frozen pre-expansion baseline. The P-08 row now also names the
+implemented expansion states that must be exercised after PRs `#232` and `#784` deploy; it does
+not claim those states exist in the baseline candidate. The matrix maps every user-facing
+canonical product story to its ordinary entry and route. Backend-only
+supporting operations remain owned by their canonical story and are intentionally not
+presented as separate products. Protected records hidden by role, privacy, moderation or
+content-interest policy are not buried features.
+
+The owner-authorized P-08 max-80 ranked-video/Deep Review slice now unfreezes the listed
+candidate without invalidating its retained route evidence. Complete that slice, deploy exact
+new SHAs, rerun affected P-08 routes, and then rerun this full matrix before release.
+
+`Back` means the visible Back control returns to the named parent without changing the
+selected workspace. Unless narrowed below, every row owns loading, honest empty, populated,
+permission/error and reload states. Dynamic IDs are represented as `:id`.
+
+## Personal, Nature and community
+
+| Story | Intended workspace / role | Visible entry | Canonical URL | Back / state and alternate-path contract |
+| --- | --- | --- | --- | --- |
+| P-01 | Personal, any signed-in user | Personal tab / `Your Garden` | `/home/personal` | Back to workspace choice; sparse content is an honest guided state. |
+| P-02 | Personal owner | Home/Grows / `Grows` | `/home/personal/grows`; `/home/personal/grows/:growId` | Back to Personal/Grows; create, active, archived, unknown-crop and populated Grow states. |
+| P-03 | Personal user | AI Tools / `Species / Crop ID` | `/home/personal/tools/species-crop-id` | Back to AI Tools; identify-only is valid and creates neither Grow nor public pin. |
+| P-04 | Personal owner with a usable Plant ID | Plant ID result / `Start a Grow` | `/home/personal/grows/new?plantId=:id` | Cancel returns to the saved result; only explicit save creates a Grow. |
+| P-05 | Personal owner | Plant ID result or Field Studies / `Publish to Nature` | `/home/personal/tools/species-crop-id`; `/home/personal/field-studies/:id` | Back to private source; incomplete-location/date/media, preview, published and withdrawn states. |
+| P-06 | Personal owner | Same Plant ID/Nature review surface | same as P-03/P-05 | House/potted/private is the default; no proximity/date inference or bulk publication path exists. |
+| P-07 | Personal/Commercial/Facility permitted tool user | AI Tools, Grow AI Tools, Facility AI Tools | `/home/personal/tools`; `/home/commercial/tools`; `/home/facility/ai-tools` | Back to active tool hub; no-evidence, provider-limited, saved, retry and protected zoom/export states. |
+| P-08 | Personal/Commercial/Facility permitted user | `Harvest Readiness` | `/home/personal/tools/harvest-readiness`; workspace equivalents | Back to active tool hub; Grow is optional. Exercise direct-photo Standard and ranked-video Deep quote/cancel/accept, extracting/queued/processing/reload-restore/success/reconciliation, visible color and structural morphology, private frame selection/export/share, sanitized signed-result share, saved deletion/unsaved discard, credit/permission/privacy and failed-extractor states. |
+| P-09 | Personal/Commercial/Facility permitted user | `Plant Issue Diagnosis` / `IPM Scout` | `/home/personal/diagnose`; `/home/personal/tools/ipm-scout`; workspace equivalents | Back to tool hub; ranked, incomplete-evidence, retry/refund and saved-result states. `/home/personal/tools/diagnose` is not a route. |
+| P-10 | Personal or Commercial Grow owner | Grow / `Timeline` | `/home/personal/grows/:growId/timeline`; Commercial equivalent | Back to Grow; private, visual export, reviewed public copy and withdrawn-copy states. |
+| P-11 | Signed-in user | Profile tab / `Profile` | `/home/personal/profile` | Back to Personal; plan, credits, storage, notification, theme, data-rights, logout and workspace choices. |
+| N-01 | Public/signed-in viewer | Personal Home mini globe or Discover / `Explore the living world` | `/field-observations` | Back to source; map/list, zero-pin, loading, filter, cluster and populated card states. `/globe` is not a route. |
+| N-02 | Personal/Commercial Discover viewer | Discover / `Discovery Nature` | `/home/personal/discover`; `/home/commercial/discover` | Back to workspace; zero and populated compact preview link to N-01. |
+| N-03 | Observation owner and eligible viewer | Nature publication review / privacy controls | P-05 routes and `/field-observations` | Exact private source never appears publicly; approximate point and cannabis eligibility are enforced on list and direct URL. |
+| N-04 | Legacy record owner | Saved Plant ID/Field Study review | `/home/personal/tools/saved-runs`; `/home/personal/field-studies/:id` | Legacy items remain private until individually completed and published; no bulk recovery/publish alternate. |
+| S-01 | Eligible signed-in community user | Forum tab / `Forum / Q&A` | `/forum`; `/forum/post/:id` | Back to source list; empty, post, comment, follow, report and moderation-unavailable states. |
+| S-02 | Public/eligible signed-in viewer | Forum/Discover / `Videos` | `/videos`; `/videos/:id` | Back to library/discovery; Public, Following and My Library plus honest empty tabs. |
+| S-03 | Video owner | Videos / `Upload video` and My Library | `/videos/upload`; `/videos/:id/edit` | Back to library/detail; quota, upload, processing, draft, published, course-linked and archived states. |
+| S-04 | Public/eligible signed-in viewer | Home/Discover/Commercial / `Lives` | `/lives`; `/live-session?sessionId=:id` | Back to directory; upcoming, live, premiere, replay, volume/chat and honest empty states. `/home/personal/lives` is not a route. |
+| S-05 | Eligible creator | Lives / `Open Live Studio` | `/live-studio` | Back to Lives; retained hosted/OBS draft, ingest, chat overlay, go-live, stop and replay states. |
+| S-06 | Owner/viewer as allowed by source | Source record / `Share`, `Copy Link`, feed/external targets | source-specific reviewed share/viewer routes | Back to source; private preview, stable public link, revoked/unavailable and unsupported-provider states. |
+| S-07 | Author or enrolled learner | Courses / author course list | `/courses`; `/courses/:id`; author/edit routes | Back to course list; free/paid, draft, preview, published, enrollment, progress and archived states. |
+| S-08 | Public/signed-in viewer | Home tab / `Discover` | `/home/personal/discover`; `/home/commercial/discover` | Back to workspace; storefront/course/video/forum/live/Nature sections retain honest sparse states. |
+
+## Commercial, Facility and business operations
+
+| Story | Intended workspace / role | Visible entry | Canonical URL | Back / state and alternate-path contract |
+| --- | --- | --- | --- | --- |
+| C-01 | Selected Commercial workspace | Workspace chooser / `Open Commercial` | `/home/commercial` | Back to workspace choice; applicable Personal tools plus brand dashboard. |
+| C-02 | Commercial owner | Commercial Profile / `Brand Profile & Billing` | `/home/commercial/profile`; `/home/commercial/storefront` | Back to dashboard; unpublished checklist, preview, media/identity and published states. |
+| C-03 | Commercial owner; public viewer where published | Commercial / `Products`, `Inventory`, `Storefront` | `/home/commercial/products`; `/home/commercial/inventory`; `/home/commercial/storefront` | Back to Commercial; legal capability and inventory links are independently gated. |
+| C-04 | Commercial owner | Commercial / `Courses`, `Feed / Campaigns`, `Analytics` | `/home/commercial/courses`; `/home/commercial/feed`; `/home/commercial/analytics` | Back to dashboard/More; no duplicate primary Products/Feed destinations. |
+| C-05 | Platform Admin in explicitly selected Admin-owned Commercial mode | Workspace chooser / `Manage Commercial Brand` | `/home/commercial`; Admin remains `/admin` | Back to workspace choice; direct other-brand/Facility access remains denied. |
+| F-01 | Selected Facility Owner/Manager as permitted | Facility dashboard / Rooms, Grows, Plants, Team | `/home/facility/dashboard`; `/home/facility/rooms`; `/home/facility/grows`; `/home/facility/plants`; `/home/facility/team` | Back to Facility dashboard; role-aware empty/populated/import/edit/audit states. |
+| F-02 | Assigned Facility member | Facility / `Tasks` or exact notification source | `/home/facility/tasks`; exact task/SOP/record routes | Back to queue/source; assigned, evidence, completion and Viewer-denied states. |
+| F-03 | Facility Owner/Manager/assigned runner | Facility / `SOP & Compliance` | `/home/facility/sops`; `/home/facility/sop-runs`; `/home/facility/sop-runs/compare` | Back to Facility/queue; approve, assign, run, evidence, compare, exception and audit states. |
+| F-04 | Facility role permitted for the selected action | Facility / `AI Tools` | `/home/facility/ai-tools` | Back to Facility; all applicable tools, Facility context/credits and explicit role gates. |
+| F-05 | Facility role permitted for selected read/write/export | Facility / `Inventory`, `Transfers`, `Reports`, `Logs` | `/home/facility/inventory`; `/home/facility/transfers`; `/home/facility/reports` | Back to Facility; one scoped empty/populated/history/export path per function. |
+| F-06 | Facility Owner/Manager | Facility / `Data Integrations` | `/home/facility/integrations` | Back to Facility; visible provider readiness, credential test, mapping preview and idempotent import states. |
+| F-07 | Facility Owner/Admin | Facility owner/More surface / social, courses, storefront | owner-only linked routes | Back to Facility; Staff navigation intentionally omits business/social owner tools. |
+| B-01 | Commercial owner/Admin-brand or Facility Owner/Manager | Selected Commercial/Facility workspace | owning C/F routes | Scope, stable record, approval and audit are supporting contracts, not a separate product tile. |
+| B-02 | Commercial owner/Admin-brand; Facility Owner/Manager write, authorized read roles | `Inventory` | `/home/commercial/inventory`; `/home/facility/inventory` | Back to workspace; items/lots/movements/holds/consumption/import review/history/export, with explicit empty state. B-04/B-05 reference this engine. |
+| B-03 | Commercial owner/Admin-brand; Facility Owner/Manager | `Business Desk` | `/home/commercial/business-desk`; `/home/facility/business-desk` | Each of eight tools returns to Desk; deterministic, saved, provider-limited, retry, export and archived states. |
+| B-04 | Commercial owner/Admin-brand; Facility Owner/Manager | `Horticulture Operations` | `/home/commercial/horticulture`; `/home/facility/horticulture` | Back to workspace; care/evidence/fulfillment states reference B-02 inventory rather than duplicating it. |
+| B-05 | Facility Owner/Manager; Commercial owner where applicable | Data Integrations and Facility workflow intelligence | `/home/facility/integrations`; `/home/commercial/tools/integrations` | Back to workspace; reviewed mapping/import only, visible provider blockers, no autonomous equipment control. |
+| B-06 | Eligible creator/business owner | Videos, Lives, Courses, Forum, sharing/reporting entries | S-01–S-07 routes | Creator capability is composed from retained canonical products, not a hidden creator subsystem. |
+| B-07 | Authorized seller and eligible viewer | Storefront/product regulated-commerce handoff | `/home/commercial/storefront`; `/home/commercial/regulated-commerce`; public storefront/product routes | Informational/default, external handoff and unavailable legal-capability states are truthful; no hidden native automation. |
+| B-08 | Business AI user/reviewer | Result review/save/export/audit controls inside B-03–B-05 | owning tool/result routes | Cross-cutting evidence/review/idempotency/redaction contract; intentionally no separate navigation item. |
+| B-09 | QA/live acceptance identities | Same canonical Commercial/Facility entries | owning routes | Cross-tenant/role/import/error/public-share scenario pack; intentionally no customer-facing tile. |
+
+## Administration and release operations
+
+| Story | Intended workspace / role | Visible entry | Canonical URL | Back / state and alternate-path contract |
+| --- | --- | --- | --- | --- |
+| A-01 | Platform Admin | Workspace chooser/Profile / `Open Admin Tools` | `/admin` | Back to prior workspace; overview, users, reports, security, moderation, billing/content/system queues and deep links. |
+| A-02 | Platform Admin | Admin / Support and Moderation queues | `/admin` plus exact case/request links | Back to Admin queue; assign, note, leave/hide/restore, resolve/reopen and retained audit/context states. |
+| A-03 | Platform Admin | Admin / `Security Center` | `/admin` | Back to Admin; tally, severity, owner, safe evidence and configured/unavailable Sentry states without secrets. |
+| A-04 | Platform Admin operating under documented legal process | Admin / lawful request and emergency workflow | `/admin` plus exact evidence-request route | Back to Admin; preservation is separate from approval, disclosure and receipt/custody states. No automatic police contact path. |
+| A-05 | Free, Pro, Commercial, Facility and Admin identities | Login, workspace choice, Profile switch/logout | `/login`; `/account/workspace`; `/home/*/profile`; `/admin` | Unauthorized direct URLs fail closed; reload/expiry/logout/switch clear prior identity/workspace state. |
+| R-01 | Purchaser/recipient/authorized billing owner | Pricing/Profile/Course/Product / checkout, manage, claim gift | `/pricing`; `/claim-gift`; owning billing/return routes | Back to source; provider disabled, pending, success, duplicate, refund/dispute and entitlement states. |
+| R-02 | Signed-in user/Admin as applicable | Notification Center and Profile preferences | `/home/notifications`; `/home/personal/profile` | Back to source/Profile; category preferences, in-app/email/device delivery, exact source and suppressed/unavailable states. `/notifications` is not a route. |
+
+## Final-candidate evidence and remaining human gates
+
+- Public final crawl: 10/10 pages loaded one H1, no overflow and no application/access error.
+- Admin-owned Commercial final crawl: 20/20 top-level routes plus `/admin` loaded one H1,
+  no overflow and no application/access error. Commercial Inventory's production role-loss
+  regression was corrected by backend `e572552c` and reloaded with the signed-in Admin's
+  own empty inventory state.
+- Admin-owned Personal final crawl: canonical Home, Discover, Grows, AI Tools, Saved Runs,
+  Plant ID, Harvest Readiness, Diagnosis, IPM, Data Integrations, Videos, Courses, Forum,
+  Nature, Lives, Notifications and Profile entries loaded without an access/application
+  error. Data Integrations completed its asynchronous load with named owned-Grow choices and
+  visible provider readiness.
+- Triple Bag Genetics Facility-owner retention pass: the authenticated workspace chooser named
+  `Triple Bag Genetics` and Facility mode, and the Facility Team page identified
+  `jcindc2003@yahoo.com` as `OWNER` beside one manager, one staff member and one viewer. The
+  owner session loaded 29/29 canonical Facility surfaces without an access or application error:
+  Dashboard, Grows, Rooms, Plants, Inventory, Tasks, Compliance, Audit Logs, Team, Integrations,
+  AI Tools, Analytics, Reports, Grow Journal, SOP Runs, SOP Library, SOP comparison, Outreach,
+  Licensed Sales & Transfers, Profile, and all nine Business Desk tools. Populated evidence
+  remained truthful: 15 rooms, one active grow, two inventory items, four team members, completed
+  SOP history, 135 audit events and the Facility-owned `2000 / 2000` AI-credit balance. This is
+  live owner-role/route retention evidence on the pre-Harvest-expansion candidate; the same chain
+  must be rerun after the new frontend/backend SHAs are frozen and is not final-candidate closure.
+- Intentional nonexistent guesses found during crawl are recorded above (`/globe`,
+  `/notifications`, `/home/personal/lives`, `/home/personal/tools/diagnose` and
+  `/home/personal/data-integrations`). They are not compatibility contracts and must not be
+  added merely because a tester guessed them; the visible entries point to the canonical URLs.
+- Remaining human-account gate: a current Free identity, Commercial owner identity, Facility
+  Owner plus Staff/Viewer identities, and logout/expiry transition are still required for
+  the final multi-account A-05/F/B role chain. Do not infer those sessions from the Admin
+  account or rebuild their locally accepted implementations.
+- Remaining physical/provider gates stay in their owning matrix rows (email/device push,
+  storage/video, hosted-live two-account isolation, Stripe/gifts, Sentry, METRC and named
+  device-provider credentials). Their explicit unavailable state is part of this route
+  matrix; R-03 does not fabricate provider acceptance.

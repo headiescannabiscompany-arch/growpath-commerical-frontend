@@ -1,6 +1,6 @@
 # GrowPathAI canonical product acceptance matrix
 
-Updated: 2026-08-23
+Updated: 2026-08-24
 
 This is the single product contract and execution order for finishing GrowPathAI.
 Detailed historical evidence remains in `CANONICAL_REMAINING_WORK_2026-08-08.md`, but
@@ -54,6 +54,9 @@ close a populated or mutating story.
 - `CANONICAL_PARITY_LIVE_EVIDENCE_2026-08-21.md` records the exact-SHA production slices
   exercised after the workspace/Nature parity merge, including the reproduced grow-link
   defect and the positive-role acceptance that remains.
+- `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md` freezes the current P-08
+  implementation, no-rewrite boundary, exact deployment order and live acceptance script. It
+  is evidence for this row and cannot create or close a second queue.
 - A new request must map to an existing row or add one new row here before implementation.
 - A regression reopens only the affected acceptance slice, not the entire product area.
 
@@ -143,7 +146,7 @@ Every applicable story must preserve these invariants without repeating them in 
 | P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented; local acceptance passed; publish/withdraw live acceptance open        |
 | P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | implemented; local acceptance passed; public/private live regression open          |
 | P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | implemented; local acceptance passed; storage/provider/live acceptance open        |
-| P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | implemented; local acceptance passed; ordinary-phone provider/live acceptance open |
+| P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | implemented; local/CI verified; backend-first signing/deploy plus FFmpeg/old-private-video/reload/share/delete exact-SHA live acceptance open |
 | P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open                |
 | P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | live accepted; final-candidate regression only                                     |
 | P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | implemented; local acceptance passed; provider/multi-account/live acceptance open  |
@@ -406,7 +409,7 @@ stay open. See `FACILITY_INVENTORY_AI_PRODUCTION_EVIDENCE_2026-08-23.md`.
 | A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated     | implemented; local acceptance passed; multi-account/live acceptance open                                                                                                                                                                       |
 | R-01 | Subscriptions (including gifts), paid courses/products, returns/webhooks/receipts and management work where authorized | implemented; local acceptance passed; production provider/live acceptance open                                                                                                                                                                 |
 | R-02 | Email/device notifications respect preferences and deliver supported events                                            | implemented; local acceptance passed; email/device live acceptance open                                                                                                                                                                        |
-| R-03 | Initial crawl, proof-based dead-code cleanup, and final full acceptance pass on new frozen SHAs                        | partial; automated, signed-in Personal and Facility-member slices passed; Facility and Personal task-link repairs live accepted; Data Integrations grow-selection repair local; remaining roles, proven cleanup and final frozen-SHA pass open |
+| R-03 | Initial crawl, proof-based dead-code cleanup, and final full acceptance pass on new frozen SHAs                        | partial; cleanup, exact-main gates, public/Admin-owned Personal/Commercial/Admin crawl and route-entry matrix passed on frontend `7f758970` / backend `e572552c`; Free, Commercial-owner, Facility Owner/Staff/Viewer, logout/expiry and physical responsive/keyboard chain open |
 | R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                             | open                                                                                                                                                                                                                                           |
 | R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate                                                                                                                                                                                                                                |
 | R-06 | App Store and Play Store credentials/builds/smoke/privacy/listing/submission/monitoring complete                       | open                                                                                                                                                                                                                                           |

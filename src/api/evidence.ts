@@ -3,6 +3,7 @@ import type {
   EvidenceAsset,
   EvidenceAssetCreateInput,
   AiInspectionView,
+  EvidenceFramePreselectionRecord,
   EvidenceFrameExtractionStatus,
   EvidenceLinks,
   EvidenceWorkspaceType,
@@ -45,12 +46,17 @@ export async function loadAiInspectionView(
 export type EvidenceFrameExtraction = {
   status: EvidenceFrameExtractionStatus;
   attemptCount: number;
+  requestedFrameCount?: number;
   version?: string;
   startedAt?: string;
   completedAt?: string;
   error?: string;
+  errorCode?: string;
   retryable: boolean;
+  cleanupPending?: boolean;
+  partialFrameCount?: number;
   frames: EvidenceAsset[];
+  preselection?: EvidenceFramePreselectionRecord;
 };
 
 export type EvidenceFrameExtractionResult = {
@@ -75,7 +81,7 @@ export type EvidencePhotoSourceMetadata = EvidenceSourceMetadata;
 
 export type ExtractEvidenceVideoFramesInput = EvidenceWorkspaceScope & {
   maxFrames?: number;
-  purpose?: "crop_identification";
+  purpose?: "crop_identification" | "harvest";
   growId?: string;
   plantId?: string;
 };
@@ -121,6 +127,9 @@ function normalizeFrameExtraction(value: any): EvidenceFrameExtraction {
     attemptCount: Number.isFinite(rawAttemptCount)
       ? Math.max(0, Math.trunc(rawAttemptCount))
       : 0,
+    requestedFrameCount: Number.isFinite(Number(value?.requestedFrameCount))
+      ? Math.max(1, Math.min(80, Math.trunc(Number(value.requestedFrameCount))))
+      : undefined,
     version: value?.version ? String(value.version) : undefined,
     startedAt: value?.startedAt ? String(value.startedAt) : undefined,
     completedAt: value?.completedAt ? String(value.completedAt) : undefined,
@@ -129,8 +138,19 @@ function normalizeFrameExtraction(value: any): EvidenceFrameExtraction {
       : value?.errorMessage
         ? String(value.errorMessage)
         : undefined,
+    errorCode: value?.errorCode ? String(value.errorCode) : undefined,
     retryable: value?.retryable !== false,
-    frames: (Array.isArray(value?.frames) ? value.frames : []).map(normalizeEvidenceAsset)
+    cleanupPending: value?.cleanupPending === true,
+    partialFrameCount: Number.isFinite(Number(value?.partialFrameCount))
+      ? Math.max(0, Math.trunc(Number(value.partialFrameCount)))
+      : undefined,
+    frames: (Array.isArray(value?.frames) ? value.frames : []).map(
+      normalizeEvidenceAsset
+    ),
+    preselection:
+      value?.preselection && typeof value.preselection === "object"
+        ? (value.preselection as EvidenceFramePreselectionRecord)
+        : undefined
   };
 }
 

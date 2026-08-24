@@ -3,7 +3,9 @@
 Date: 2026-08-13
 
 Status: Reconciled against `main` at frontend `d6f39cdb` and the evidence linked from
-`docs/qa/CANONICAL_REMAINING_WORK_2026-08-08.md`.
+`docs/qa/CANONICAL_REMAINING_WORK_2026-08-08.md`; P-08 additions were reconciled on
+2026-08-24 against frontend PR `#784` and backend PR `#232` without marking their open live
+acceptance complete.
 
 This ledger records the product requests added during the long production-review
 thread. It is the readable history of what was requested and what has been delivered.
@@ -194,6 +196,33 @@ Legend:
       without rewriting the signed AI result.
 - [x] Harvest results use visible-sample ranges and do not claim a whole-plant trichome
       percentage from selected areas.
+- [x] Canonical P-08 now defines the requested private-video path correctly: roughly one
+      temporary technical candidate per second, no more than 600 candidates for a video shorter
+      than ten minutes, and at most 80 retained quality/diversity/timeline/byte-bounded JPEGs.
+      Eighty is a ceiling rather than a target; rejected candidates are deleted and generic
+      Plant ID/vision limits are unchanged.
+- [x] The implemented Harvest contract explicitly records gland-head development and structural
+      evidence separately from color: developing, intact/turgid, swollen, wrinkled, collapsed,
+      ruptured, resin-exuding, fused, detached/missing and bare stalks, with repeated resolved
+      advanced senescence. It never labels image evidence as biological death, oxidation,
+      chemistry or potency.
+- [x] Standard and Deep costs are defined before provider use: four-through-twelve unique images
+      is one credit; thirteen-through-eighty is an accepted `ceil(unique / 12)` quote with
+      durable batches, restore/replay and one signed all-or-nothing aggregate. Personal/free use
+      needs sufficient credits but no second paid-plan gate.
+- [x] Owner-selected retained frames can be privately saved/exported/shared in repeatable
+      packages of at most 12 frames and 24 MiB, and a separate signed result can be shared as a
+      sanitized readable summary. Neither action creates a public post/link or includes source
+      video, rejected/unselected frames, GPS/EXIF, private IDs/URLs, provider IDs or secrets.
+- [x] Saved-result deletion and unsaved Deep-result discard are separate confirmed lifecycles;
+      source-video keep/delete choice, retained references, calibration/publication/legal holds,
+      tombstones and truthful language that deletion/discard does not refund completed provider
+      work are preserved. This does not change the pre-dispatch-failure refund rule.
+- [ ] The max-80/Deep/structural/share/delete implementation passed local and CI gates in
+      frontend PR `#784` and backend PR `#232`. Production receipt configuration, backend-first
+      deploy/readiness/FFmpeg proof and one owner-authorized older-private-video live acceptance
+      run remain. Exact scope and the no-rewrite rule are frozen in
+      `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`.
 - [~] IPM/Diagnosis governed-case execution against the primary path plus GPT second
       opinion is implemented as a resumable, staging-only, dry-run-by-default harness.
       Authorized 252-case staging execution, billing, linked-record checks, and cleanup

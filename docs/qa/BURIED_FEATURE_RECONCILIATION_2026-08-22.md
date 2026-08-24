@@ -39,10 +39,10 @@ non-user-visible, UI-less and mapped to a canonical owner. The legacy matrix pol
 disallows planned endpoints, preventing generated backend names from silently becoming a
 second backlog.
 
-## What remains
+## Final route-to-entry record
 
-The final-candidate crawl must still prove visibility and navigation for every user-facing
-capability. Its route-to-visible-entry record must name the intended workspace and role,
-visible label, canonical URL, Back path, empty and populated states, and whether any alternate
-route is an intentional internal path or compatibility redirect. Privacy-, safety- and
-authorization-hidden records remain protected and are not product-discoverability defects.
+The required final-candidate visibility/navigation record now lives in
+`R03_FINAL_ROUTE_ENTRY_MATRIX_2026-08-24.md`. It names every canonical user-facing story's
+workspace/role, visible label, canonical URL, Back path, state contract and intentional
+supporting/alternate-path boundary. Privacy-, safety- and authorization-hidden records remain
+protected and are not product-discoverability defects.

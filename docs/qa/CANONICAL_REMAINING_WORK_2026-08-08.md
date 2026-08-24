@@ -1,10 +1,11 @@
 # GrowPathAI Canonical Remaining Work
 
-Date: 2026-08-20
+Updated: 2026-08-24
 
 Status: Detailed evidence and remainder ledger; reconciled against retained production
-evidence on 2026-08-21. A checked sub-scope stays checked even when its larger end-to-end
-workflow has a separately named open remainder.
+evidence on 2026-08-21, with the P-08 implementation/evidence freeze reconciled on
+2026-08-24. A checked sub-scope stays checked even when its larger end-to-end workflow has a
+separately named open remainder.
 
 `CANONICAL_PRODUCT_ACCEPTANCE_MATRIX_2026-08-21.md` is the single authoritative product
 contract and execution order. This file supplies its detailed evidence and precise open
@@ -20,6 +21,17 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
+**Current active cursor (2026-08-24):** finish P-08 exactly as frozen in
+`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Frontend PR `#784` and backend PR
+`#232` are implemented and locally/CI verified, not merged, deployed or live accepted. The
+remaining order is: commit this canonical packet; save the dedicated production receipt-signing
+configuration with owner confirmation; merge and deploy backend; require `/ready` database and
+Harvest worker readiness; prove real FFmpeg/ffprobe decode and bounded preselection with one
+owner-authorized older private video; merge and deploy frontend; run reload, signed result,
+private frame/result sharing, both deletion lifecycles, credit/privacy and cleanup acceptance;
+record exact SHAs/deploy IDs/evidence; then close only P-08 and return to the matrix order. The
+older batch cursor below is retained history and cannot override this exact active slice.
+
 1. **Completed current release-candidate slice:** exact-candidate Personal, paid Commercial
    and Platform Admin read-only acceptance is recorded. The reproduced missing Admin return
    path from Personal/Commercial/workspace selection is repaired and production-accepted on
@@ -29,9 +41,10 @@ starts or finishes; do not create another active todo document.
    explicitly open. Do not repeat the accepted routes without a reproduced regression.
 2. **Active construction cursor:** Batch 1's retained Plant ID/Grow/Nature assembly passes
    65 frontend and 32 backend focused assertions. Its remaining production upload, disposable-
-   Grow cleanup, public-pin reload/withdrawal and privacy checks are queued for an authenticated
-   Browser session; Browser control is unavailable in the current task, so no live result is
-   inferred. Batch 2's Admin/identity/workspace assembly passes 69 frontend and 93 backend
+   Grow cleanup, public-pin reload/withdrawal and privacy checks were queued for an authenticated
+   Browser session; Browser control was unavailable when that retained evidence was recorded, so
+   no live result was inferred. That historical limitation is not a claim about the current task.
+   Batch 2's Admin/identity/workspace assembly passes 69 frontend and 93 backend
    assertions after backend PR 212 (`1c745036f24a9b8a4a03755c89fd184a4bfed885`) corrected a
    stale test that incorrectly treated an active account subscription as a Facility-owned
    subscription. Current behavior preserves direct Facility ownership while reporting Facility
@@ -317,21 +330,21 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       Tools/Storefront paths are redirects or compatibility guards into canonical workflows,
       not separate unfinished products. Preserve their stale-link behavior until final
       crawl/dead-code evidence proves a redirect is no longer required.
-- [~] **Complete buried-feature inventory:** source reconciliation on 2026-08-22 now compares
-  315 frontend routes, 319 inventoried backend routes, 226 legacy feature rows, 32 system
-  foundations, provider/environment gates, workers and webhooks. The full-surface audit
-  reports 315 frontend routes, 225 directly parsed backend declarations and zero static
-  errors/warnings. Runtime-gated user capabilities are individually named above, and the
-  65 misleading legacy `planned` rows are classified as internal supporting operations
-  under canonical matrix owners rather than hidden products. The remaining gate is the
-  final-candidate route-to-visible-entry crawl: for every user-facing feature record its
-  workspace/role, visible entry, canonical URL, Back path, empty/populated states and
-  intentional internal/redirect status. Before construction closes, compare registered
-  frontend routes, visible navigation/deep links, backend route inventory, release matrix,
-  provider/environment gates, workers/webhooks and production configuration. Add every
-  additional user-facing orphan or runtime-gated feature to its owning matrix row, then
-  make it reachable and accepted or record an explicit owner rejection. Access-control,
-  privacy and safety-hidden data are not buried features and must remain protected.
+- [x] **Complete buried-feature inventory:** source reconciliation on 2026-08-22 now compares
+      315 frontend routes, 319 inventoried backend routes, 226 legacy feature rows, 32 system
+      foundations, provider/environment gates, workers and webhooks. The full-surface audit
+      reports 315 frontend routes, 225 directly parsed backend declarations and zero static
+      errors/warnings. Runtime-gated user capabilities are individually named above, and the
+      65 misleading legacy `planned` rows are classified as internal supporting operations
+      under canonical matrix owners rather than hidden products. The remaining gate is the
+      final-candidate route-to-visible-entry crawl now records every canonical user-facing
+      feature's workspace/role, visible entry, canonical URL, Back path, empty/populated states
+      and intentional internal/redirect status in
+      `R03_FINAL_ROUTE_ENTRY_MATRIX_2026-08-24.md`. The comparison covers registered
+      frontend routes, visible navigation/deep links, backend route inventory, release matrix,
+      provider/environment gates, workers/webhooks and production configuration. No additional
+      user-facing orphan was found. Runtime-gated features remain explicitly owned above rather
+      than hidden. Access-control, privacy and safety-hidden data remain protected.
 - [x] **Reconcile the legacy V1 feature matrix:** all 65 formerly `planned`/`internal` rows are
       live backend routes, not 65 missing products. They are now `supporting_operation` rows
       with explicit canonical owners across `P-02`, `P-11`, `S-01`, `S-02`, `S-07`, `C-02`,
@@ -701,6 +714,72 @@ grow`, private current location without a Field Study, and an optional approxima
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
   inference warnings, pistil/bud-development context, top/middle/lower/context
   sampling, video frames, exact retake guidance, and saved-run comparisons.
+  **Current canonical P-08 freeze:**
+  `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md` owns the exact current
+  implementation/evidence record, deployment order, live script and anti-rewrite boundary.
+  Frontend PR `#784` code head `4b502abb` and backend PR `#232` code head `aa6cb3e`
+  passed their focused and full CI gates. They are not merged, deployed or live accepted in
+  this entry; do not convert those states into completion.
+  **Authorized max-80 completion slice (open; reuse, do not rebuild):** preserve the
+  existing upload transport, protected source-video storage, server extraction, dedicated
+  Harvest model, exact evidence receipts, Saved Runs, correction, calculator, and existing
+  four-through-twelve review behavior. Extend only Harvest video preparation to scan at most
+  600 temporary low-resolution candidates and retain at most 80 quality-, diversity-,
+  timeline-, and byte-bounded frames; keep Plant ID and generic vision at 12. Direct uploads
+  remain capped at 12 and direct photos plus retained frames remain capped at 80. Standard
+  reviews remain one credit. Thirteen through eighty is an explicitly quoted durable Deep
+  Review at `ceil(images / 12)` credits, grouped into no more than 12 originals per provider
+  call with deterministic server aggregation and one signed all-or-nothing receipt. A failure
+  durably proven to precede every provider dispatch refunds the complete reservation once. Once
+  any dispatch begins or an earlier group completes, expose no partial result, never redispatch,
+  and retain the accepted reservation for support reconciliation if a safe final result cannot
+  commit. This supersedes the older inaccurate automatic-refund promise. Rejected candidates are deleted immediately;
+  retain only their compact technical rejection/coverage manifest, never biological claims.
+  The owner explicitly approved Deep Review for Personal/free accounts when the account has
+  enough AI credits; do not add a second paid-plan entitlement gate beyond the accepted exact
+  credit quote. The owner also approved provider dispatch of no more than 80 explicitly
+  selected private still images after accepting the exact image count and credit cost. Send
+  neither the source video, rejected candidates, GPS/EXIF data, nor unrelated account data.
+  For live acceptance only, the owner authorized reuse of their previously uploaded older
+  videos after synthetic and local gates pass. Preserve the exact run and evidence IDs in the
+  acceptance record, keep each source video private, and dispatch only its explicitly accepted
+  retained still frames. This narrow authorization is not general production-media consent and
+  does not permit real user media in development or automated tests.
+  **Private save/share completion (implemented and locally tested; live acceptance open):**
+  retained frames stay unselected and private by default. An authenticated owner may explicitly
+  select only verified retained JPEGs and save or send them through protected retrieval and the
+  device share sheet in repeatable packages of at most 12 frames and 24 MiB. The package omits
+  source video, rejected or unselected frames, GPS/EXIF, record/upload IDs, storage URLs,
+  provider identifiers, and receipt secrets, and creates no public link, feed item, or implicit
+  publication. A separate explicit action may share only a revalidated signed Harvest result as
+  a sanitized readable summary. Failed, deleted, incomplete, or unattested results remain
+  unshareable. Production status remains open until the authorized live video run proves exact
+  selection, protected export, sanitized result sharing, reload, and privacy boundaries.
+  **Unsaved Deep-result discard completion (implemented and locally tested; live acceptance
+  open):** after a succeeded Deep Review, the owner receives a separate confirmation-gated
+  result-only discard. It permanently tombstones the unsaved signed result and provider-result
+  metadata, keeps the private source video and retained frames, and does not refund already
+  charged credits. The backend refuses saved ToolRuns, calibration references, and legal or
+  preservation holds; saved results remain in the guarded Saved Runs deletion lifecycle.
+  This expansion reuses the deployment-managed OpenAI and protected-object-storage
+  credentials; no new OpenAI/provider API key is needed to raise the application image ceiling.
+  Production signing does require a dedicated random `HARVEST_ANALYSIS_RECEIPT_SECRET` and
+  public `HARVEST_ANALYSIS_RECEIPT_KEY_ID`; do not reuse another application secret or copy any
+  production secret into either worktree. Perform the already
+  scheduled credential rotation only after the final release candidate is frozen and
+  verified, so rotation does not become another partially completed feature dependency.
+  Exact retained result frames remain until the owner uses the guarded permanent-result
+  deletion lifecycle. Required closure is focused local/CI coverage, exact-SHA deployment,
+  one authorized short-video live run plus reload/save/delete/refund-safe evidence, then the
+  final frozen-candidate crawl. Do not substitute another 12-frame implementation or rewrite
+  the already accepted standard path.
+  The structural-development result is also implemented and locally/CI tested independently
+  from clear/cloudy/amber color: small/developing, intact/turgid, swollen, wrinkled, collapsed,
+  ruptured, resin-exuding, fused, detached/missing and bare-stalk evidence plus repeated resolved
+  advanced senescence. Color or one image never proves biological death, oxidation, chemistry,
+  potency or time. Required deployment is backend first after receipt-key configuration, then
+  `/ready` with the Harvest worker ready, real FFmpeg decode/preselection, frontend deployment,
+  and the authorized old-private-video reload/share/delete acceptance script.
   Production retained run `6a77ea01b6f7eb6b90cd3595` returns an Aug 5-19
   planning range centered Aug 12, explains the user's approximate date and
   declining smell as reasons the window may be open, and preserves unfinished

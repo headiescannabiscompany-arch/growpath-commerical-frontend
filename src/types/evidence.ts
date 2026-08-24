@@ -63,16 +63,59 @@ export type EvidenceFrameExtractionStatus =
   | "partial"
   | "failed";
 
+export type EvidenceFramePreselectionRecord = {
+  policyVersion: string;
+  candidateIntervalSeconds?: number;
+  candidateLimit: number;
+  sampledCount: number;
+  qualityUsableCount: number;
+  qualityRejectedCount: number;
+  rejectedReasons: {
+    decodeError: number;
+    invalidMetrics: number;
+    obviousBlur: number;
+    underexposed: number;
+    overexposedOrGlare: number;
+  };
+  distinctCandidateCount: number;
+  duplicateCandidateCount: number;
+  duplicateClusterCount: number;
+  targetFrameCount: number;
+  selectedCount: number;
+  coveredBucketCount: number;
+  selectedBytesTotal: number;
+  selectedByteLimit: number;
+  selected: Array<{
+    frameIndex: number;
+    evidenceAssetId: string;
+    candidateIndex: number;
+    requestedTimeSeconds: number;
+    qualityScore: number;
+    coverageBucket: number;
+    sequenceGroupId?: string;
+    sequenceRole: "anchor" | "adjacent" | "standalone";
+    countingEligible: boolean;
+  }>;
+};
+
 export type EvidenceFrameExtractionRecord = {
   status: EvidenceFrameExtractionStatus;
   attemptCount?: number;
+  /** Exact user-selected retained-frame request ceiling for retry/reload fidelity. */
+  requestedFrameCount?: number;
   version?: string;
   startedAt?: string;
   completedAt?: string;
   error?: string;
   errorMessage?: string;
+  errorCode?: string;
+  retryable?: boolean;
+  cleanupPending?: boolean;
   frameAssetIds?: string[];
   frameCount?: number;
+  partialFrameCount?: number;
+  /** Bounded audit summary; rejected ephemeral candidates are never retained as assets. */
+  preselection?: EvidenceFramePreselectionRecord;
 };
 
 export type EvidenceLinks = {

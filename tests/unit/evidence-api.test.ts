@@ -497,4 +497,39 @@ describe("providerEvidencePayload", () => {
       }
     );
   });
+
+  it("preserves the protected retained-frame cleanup state without inventing completed frames", async () => {
+    mockApiRequest.mockResolvedValue({
+      sourceVideo: { _id: "video-retained-1", assetType: "video" },
+      extraction: {
+        status: "partial",
+        attemptCount: 3,
+        retryable: true,
+        cleanupPending: true,
+        errorCode: "EVIDENCE_FRAME_SET_RETAINED",
+        errorMessage:
+          "Unreferenced frames were removed. Remove the protected reference before extracting a replacement set.",
+        frameAssetIds: ["retained-frame-1"],
+        frameCount: 1,
+        partialFrameCount: 1,
+        frames: []
+      }
+    });
+
+    await expect(
+      getEvidenceVideoFrameExtraction("video-retained-1", {
+        workspaceType: "personal"
+      })
+    ).resolves.toEqual({
+      sourceVideo: expect.objectContaining({ id: "video-retained-1" }),
+      extraction: expect.objectContaining({
+        status: "partial",
+        retryable: true,
+        cleanupPending: true,
+        partialFrameCount: 1,
+        errorCode: "EVIDENCE_FRAME_SET_RETAINED",
+        frames: []
+      })
+    });
+  });
 });

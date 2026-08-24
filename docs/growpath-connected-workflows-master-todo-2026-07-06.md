@@ -1141,6 +1141,16 @@ Completed and pushed:
 
 693. Add owner-controlled purchase-intent concept trials for pre-launch merchandise. The Commercial owner chooses one exact owner-approved concept, supplies a positive hypothetical price, and asks `Would you buy this hat for {price}?`; authenticated users may answer `Yes`, `Maybe`, or `No` and revise that one answer. Every surface must state `Concept trial only — not for sale`, keep inventory at zero, show no checkout, and guarantee that responses create no reservation, order, payment, production commitment, or shipping promise. Results are aggregate-only to the owner. The approved GrowPathAI black and tonal-sage Circuit Leaf presentations may use this flow; Triple Bag concepts containing third-party marks remain blocked from public trials until rights review is documented. Implementation and local focused contracts are in progress; merge, deployment, live owner creation, public response/revision, hard-reload persistence, trial closure, and cleanup evidence remain open.
 
+694. Superseding P-08 completion packet: retain the accepted Harvest Readiness architecture and
+finish the owner-approved max-80 ranked-video/Deep Review extension rather than rebuilding it.
+The frozen packet includes bounded max-600 temporary candidate sampling with immediate reject
+cleanup, max-80 retained stills, exact Standard/Deep quotes and durable deterministic aggregate,
+structural gland-head morphology separate from color, receipt-backed private selected-frame and
+sanitized-result sharing, guarded saved/unsaved deletion, backend-first signing/readiness/FFmpeg
+deployment and one authorized older-private-video live run. The authoritative current record is
+`docs/qa/P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`; old item 661 remains historical
+evidence for the prior <=12 workflow and must not be used to reopen or replace this packet.
+
 - Final execution order: complete all remaining product/workflow sections first. Merchandise/hats is the second-to-last section; App Store submission is the final section.
 - Hat section order: confirm the exact BLVNK blank model, fabric, available color, sample, decoration limits, and landed cost; finish the approved images/build specifications for every GrowPathAI and Triple Bag Genetics concept; keep third-party-mark concepts private pending rights review; give the platform Admin account Commercial tools and use its separate owner-scoped workspace for GrowPathAI concepts; use the Triple Bag Genetics workspace for rights-cleared TBG concepts; publish only rights-cleared zero-stock `Not for sale` research presentations; then run owner-priced purchase-intent trials with no checkout, reservation, payment, production promise, or shipping promise.
 - Do not start App Store submission merely because the hat section is complete. First run the final app-wide tightening, live role/workspace verification, release gates, and store-readiness evidence required by the App Store checklists.

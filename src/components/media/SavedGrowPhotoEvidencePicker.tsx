@@ -20,6 +20,7 @@ type Props = {
   value: EvidenceAsset[];
   onChange: React.Dispatch<React.SetStateAction<EvidenceAsset[]>>;
   maxPhotos?: number;
+  maxUserPhotos?: number;
 };
 
 function displayDate(value: string) {
@@ -33,7 +34,8 @@ export default function SavedGrowPhotoEvidencePicker({
   purpose,
   value,
   onChange,
-  maxPhotos = 10
+  maxPhotos = 10,
+  maxUserPhotos
 }: Props) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createSavedGrowPhotoEvidenceStyles(palette), [palette]);
@@ -75,7 +77,16 @@ export default function SavedGrowPhotoEvidencePicker({
       (asset) => asset.durableUrl === candidate.url || asset.originalUri === candidate.url
     );
     const photoCount = value.filter((asset) => asset.assetType === "photo").length;
-    if (addingId || selected || photoCount >= maxPhotos) return;
+    const userPhotoCount = value.filter(
+      (asset) => asset.assetType === "photo" && asset.source !== "generated"
+    ).length;
+    if (
+      addingId ||
+      selected ||
+      photoCount >= maxPhotos ||
+      userPhotoCount >= (maxUserPhotos ?? maxPhotos)
+    )
+      return;
 
     setAddingId(candidate.id);
     setStatus("");
@@ -108,6 +119,9 @@ export default function SavedGrowPhotoEvidencePicker({
         ? "harvest readiness"
         : "diagnosis";
   const photoCount = value.filter((asset) => asset.assetType === "photo").length;
+  const userPhotoCount = value.filter(
+    (asset) => asset.assetType === "photo" && asset.source !== "generated"
+  ).length;
 
   return (
     <View style={styles.section} accessibilityLabel="Saved grow photo evidence">
@@ -131,7 +145,8 @@ export default function SavedGrowPhotoEvidencePicker({
                 asset.durableUrl === candidate.url || asset.originalUri === candidate.url
             );
             const busy = addingId === candidate.id;
-            const limitReached = photoCount >= maxPhotos;
+            const limitReached =
+              photoCount >= maxPhotos || userPhotoCount >= (maxUserPhotos ?? maxPhotos);
             const capturedDate = displayDate(candidate.capturedAt);
             return (
               <View key={candidate.id} style={styles.card}>
