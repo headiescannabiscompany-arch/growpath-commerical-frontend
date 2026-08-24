@@ -319,7 +319,7 @@ describe("GrowPath knowledge registries", () => {
       "visible gland-head development signals that may include swelling, wrinkling, collapse, exudation, fusion, ruptured heads, bare stalks, or detached/missing heads while remaining separate from color tallies and any oxidation, chemistry, potency, or head-death claim"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
-      "authenticated cannabis-enabled Personal, Commercial, or Facility workspace scope with an optional authorized grow, plus Facility write-role and Facility-credit enforcement"
+      "authenticated cannabis-enabled Personal, Commercial, or Facility workspace scope with an optional authorized grow or explicit standalone cannabis/hemp flower confirmation, plus Facility write-role and Facility-credit enforcement"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "user-reviewed trichome values saved as a manual override while the exact attested photo result remains separately visible"

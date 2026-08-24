@@ -174,6 +174,7 @@ export type HarvestTrichomeFeedbackInput = {
 
 export type HarvestTrichomeAnalysisInput = {
   growId?: string;
+  cropContext?: "cannabis" | "hemp";
   evidenceAssetIds: string[];
   workspaceType: EvidenceWorkspaceType;
   workspaceId?: string;
