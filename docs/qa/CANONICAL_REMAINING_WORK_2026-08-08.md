@@ -25,9 +25,10 @@ starts or finishes; do not create another active todo document.
 `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Backend
 `e2de8912117dd35adee15e59043f1ce9c06784fe` and frontend
 `4a3084354359ae24cc63ce600830fd195ed77d35` are live. Production passed the 512 MiB client
-guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames, and exact standalone
-source/frame restoration after clean reload without AI dispatch or credit. Do not repeat those
-slices. Remaining order: visually review the retained frames; obtain/cancel/accept the exact
+guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames, exact standalone
+source/frame restoration after clean reload, and varied first/middle/final thumbnail groups
+without AI dispatch or credit. Do not repeat those slices. Remaining order: confirm required
+macro-role sufficiency at review resolution; obtain/cancel/accept the exact
 quote only with owner credit authorization; prove durable paid result/reload and sanitized
 frame/result sharing; exercise the proportionate deletion/cleanup and remaining role/failure
 gates; update exact evidence; close P-08; then return to the next matrix row. The older batch

@@ -52,7 +52,12 @@ test, merge or deployment is not live acceptance.
   `dep-da684g7lk1mc73e3mve0`, restored `80 selected frames · 1/1 video`, the exact technical
   manifest, Deep selection, private export controls and no-credit quote control after a clean
   route load. No re-upload, re-extraction, provider dispatch or credit charge occurred.
-- Still open: visual frame-quality review, exact quote/cancel/accept and paid durable result,
+- Read-only visual sampling of the first, middle and final retained groups showed real sequence
+  progression from whole-canopy context through distinct bud sites to closer trichome-covered
+  flowers rather than 80 identical frames. The rendered thumbnails do not establish that every
+  required top/middle/lower macro resolves individual intact gland heads; that sufficiency must
+  remain an explicit review/result finding. Temporary export selections were returned to zero.
+- Still open: full-resolution macro-role sufficiency, exact quote/cancel/accept and paid durable result,
   bounded private frame/result share, deletion/cleanup and the remaining failure/role evidence
   named below. Do not rebuild the accepted upload, extraction or restoration slices.
 
