@@ -4,6 +4,7 @@ const path = require("path");
 const PATTERNS = ["\\$enc", "New-Object", "<!doctype html", "</html>"];
 const HTML_EXPORT_MODULES = new Set([
   "src/app/home/personal/(tabs)/tools/pdf-export.tsx",
+  "src/features/personal/tools/harvestPrivateSharing.ts",
   "src/utils/aiInspectionEvidenceExport.ts",
   "src/utils/exportVisualTimeline.ts"
 ]);
