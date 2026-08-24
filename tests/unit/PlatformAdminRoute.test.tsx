@@ -821,6 +821,46 @@ describe("PlatformAdminRoute", () => {
     );
   });
 
+  it("lets platform admins assign support to themselves and retain an internal case note", async () => {
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Admin work queue");
+
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: `Assign ${supportRequest.subject} to me`
+      })
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/support-requests/support-1",
+        { method: "PATCH", body: { assignToSelf: true } }
+      )
+    );
+
+    const note = "Reviewed reproduction and retained the next action.";
+    fireEvent.changeText(
+      screen.getByLabelText(`Case note for ${supportRequest.subject}`),
+      note
+    );
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: `Add case note to ${supportRequest.subject}`
+      })
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/support-requests/support-1",
+        {
+          method: "PATCH",
+          body: {
+            note,
+            reason: "Platform owner support case note"
+          }
+        }
+      )
+    );
+  });
+
   it("requires a typed reason before reopening completed support work", async () => {
     const resolvedSupport = {
       ...supportRequest,
