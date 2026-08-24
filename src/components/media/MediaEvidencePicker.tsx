@@ -34,7 +34,10 @@ import { resolveImageUri } from "@/utils/photoUploads";
 import { parsePickerSourceCaptureMetadata } from "@/utils/sourceCaptureMetadata";
 
 type Props = {
+  /** Combined ceiling for user-selected photos and generated still frames. */
   maxPhotos?: number;
+  /** Optional separate ceiling for photos selected directly by the user. */
+  maxUserPhotos?: number;
   allowVideo?: boolean;
   extractFramesFromVideo?: boolean;
   /** Save a private source video only; a separate durable server job extracts frames. */
@@ -54,6 +57,17 @@ type Props = {
   disabled?: boolean;
   /** Existing Saved Run assets that Remove should only deselect, never delete. */
   retainOnRemoveAssetIds?: readonly string[];
+  /** Collapse large generated-frame sets while keeping every frame reviewable on demand. */
+  generatedFramePreviewLimit?: number;
+  /** Server-attested frame sets are removed through their source video, not one-by-one. */
+  generatedFramesReadOnly?: boolean;
+  /** Optional private-export selection for an already verified generated-frame set. */
+  generatedFrameExportSelection?: {
+    eligibleAssetIds: readonly string[];
+    selectedAssetIds: readonly string[];
+    onChange: (selectedAssetIds: string[]) => void;
+    disabled?: boolean;
+  };
 };
 
 function localId() {
@@ -186,6 +200,7 @@ function toVideoFrameAsset(
 
 export default function MediaEvidencePicker({
   maxPhotos = 10,
+  maxUserPhotos,
   allowVideo = false,
   extractFramesFromVideo = false,
   serverFrameExtractionOnly = false,
@@ -201,7 +216,10 @@ export default function MediaEvidencePicker({
   videoWorkspaceId,
   onBusyChange,
   disabled = false,
-  retainOnRemoveAssetIds = []
+  retainOnRemoveAssetIds = [],
+  generatedFramePreviewLimit,
+  generatedFramesReadOnly = false,
+  generatedFrameExportSelection
 }: Props) {
   const { palette } = useAppTheme();
   const styles = createStyles(palette);
@@ -215,6 +233,7 @@ export default function MediaEvidencePicker({
     () => new Set()
   );
   const [activeJobIds, setActiveJobIds] = useState<Set<string>>(() => new Set());
+  const [showAllGeneratedFrames, setShowAllGeneratedFrames] = useState(false);
   const localWebFiles = useRef(new Map<string, Blob>());
   const localPreviewUris = useRef(new Map<string, string>());
   const protectedPreviewUrlsRef = useRef<Record<string, string>>({});
@@ -236,6 +255,11 @@ export default function MediaEvidencePicker({
   const assets = value || internalAssets;
   assetsRef.current = assets;
   const photoCount = assets.filter((asset) => asset.assetType === "photo").length;
+  const generatedFrameCount = assets.filter(
+    (asset) => asset.assetType === "photo" && asset.source === "generated"
+  ).length;
+  const userPhotoCount = photoCount - generatedFrameCount;
+  const userPhotoLimit = Math.min(maxPhotos, maxUserPhotos ?? maxPhotos);
   const videoCount = assets.filter((asset) => asset.assetType === "video").length;
   const busy =
     activeJobIds.size > 0 || assets.some((asset) => asset.uploadStatus === "uploading");
@@ -268,6 +292,44 @@ export default function MediaEvidencePicker({
       ),
     [retainOnRemoveAssetIds]
   );
+  const generatedFrameExportEligibleIdSet = useMemo(
+    () =>
+      new Set(
+        (generatedFrameExportSelection?.eligibleAssetIds || [])
+          .map((id) => String(id || "").trim())
+          .filter(Boolean)
+      ),
+    [generatedFrameExportSelection?.eligibleAssetIds]
+  );
+  const generatedFrameExportSelectedIdSet = useMemo(
+    () =>
+      new Set(
+        (generatedFrameExportSelection?.selectedAssetIds || [])
+          .map((id) => String(id || "").trim())
+          .filter((id) => generatedFrameExportEligibleIdSet.has(id))
+      ),
+    [generatedFrameExportEligibleIdSet, generatedFrameExportSelection?.selectedAssetIds]
+  );
+
+  function toggleGeneratedFrameExport(asset: EvidenceAsset) {
+    if (
+      !generatedFrameExportSelection ||
+      generatedFrameExportSelection.disabled ||
+      disabled
+    ) {
+      return;
+    }
+    const id = String(asset._id || asset.id || "").trim();
+    if (!id || !generatedFrameExportEligibleIdSet.has(id)) return;
+    const next = new Set(generatedFrameExportSelectedIdSet);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    generatedFrameExportSelection.onChange(
+      generatedFrameExportSelection.eligibleAssetIds
+        .map((eligibleId) => String(eligibleId || "").trim())
+        .filter((eligibleId) => next.has(eligibleId))
+    );
+  }
   const protectedPreviewInputKey = useMemo(
     () =>
       assets
@@ -427,8 +489,43 @@ export default function MediaEvidencePicker({
 
   const summary = useMemo(
     () =>
-      `${photoCount}/${maxPhotos} photos${allowVideo ? ` · ${videoCount}/1 video` : ""}`,
-    [allowVideo, maxPhotos, photoCount, videoCount]
+      maxUserPhotos === undefined
+        ? `${photoCount}/${maxPhotos} photos${allowVideo ? ` · ${videoCount}/1 video` : ""}`
+        : `${userPhotoCount}/${userPhotoLimit} added photos · ${generatedFrameCount} selected frame${
+            generatedFrameCount === 1 ? "" : "s"
+          }${allowVideo ? ` · ${videoCount}/1 video` : ""}`,
+    [
+      allowVideo,
+      generatedFrameCount,
+      maxPhotos,
+      maxUserPhotos,
+      photoCount,
+      userPhotoCount,
+      userPhotoLimit,
+      videoCount
+    ]
+  );
+  const visibleAssets = useMemo(() => {
+    if (
+      showAllGeneratedFrames ||
+      generatedFramePreviewLimit === undefined ||
+      generatedFramePreviewLimit < 0
+    ) {
+      return assets;
+    }
+    let visibleGenerated = 0;
+    return assets.filter((asset) => {
+      if (asset.assetType !== "photo" || asset.source !== "generated") return true;
+      visibleGenerated += 1;
+      return visibleGenerated <= generatedFramePreviewLimit;
+    });
+  }, [assets, generatedFramePreviewLimit, showAllGeneratedFrames]);
+  const hiddenGeneratedFrameCount = Math.max(
+    0,
+    generatedFrameCount -
+      (showAllGeneratedFrames
+        ? generatedFrameCount
+        : Math.max(0, generatedFramePreviewLimit ?? generatedFrameCount))
   );
 
   function commit(next: EvidenceAsset[]) {
@@ -790,7 +887,10 @@ export default function MediaEvidencePicker({
   }
 
   async function choosePhotos() {
-    const remaining = Math.max(0, maxPhotos - photoCount);
+    const remaining = Math.max(
+      0,
+      Math.min(maxPhotos - photoCount, userPhotoLimit - userPhotoCount)
+    );
     if (!remaining || busy || disabledRef.current || pickerActive.current) return;
     const pickerJobId = "picker_photos";
     pickerActive.current = true;
@@ -1036,28 +1136,42 @@ export default function MediaEvidencePicker({
     if (disabledRef.current) return;
     const cascadeGeneratedFrames = options.cascadeGeneratedFrames !== false;
     const restoreOnDeleteFailure = options.restoreOnDeleteFailure !== false;
+    const previousAssets = assetsRef.current;
+    const linkedGeneratedFrames: EvidenceAsset[] = [];
     if (cascadeGeneratedFrames && asset.assetType === "video") {
       const sourceIds = new Set(
         [asset.id, asset._id].map((id) => String(id || "").trim()).filter(Boolean)
       );
-      assetsRef.current
-        .filter(
+      linkedGeneratedFrames.push(
+        ...previousAssets.filter(
           (candidate) =>
             candidate.assetType === "photo" &&
             candidate.source === "generated" &&
             sourceIds.has(String(candidate.sourceVideoEvidenceAssetId || "").trim())
         )
-        .forEach((frame) =>
-          removeAsset(frame, {
-            cascadeGeneratedFrames: false,
-            // The source-video delete is authoritative and cascades its generated
-            // children on the server. Never put a child frame back into the active
-            // review after the user removed its source video.
-            restoreOnDeleteFailure: false
-          })
+      );
+      // The source-video DELETE is the one authoritative server cascade. Remove the
+      // read-only generated set from the UI as one optimistic mutation and never send
+      // up to 80 separate child DELETE requests.
+      for (const frame of linkedGeneratedFrames) {
+        removedAssetIds.current.add(frame.id);
+        uploadControllers.current.get(frame.id)?.abort();
+        uploadControllers.current.delete(frame.id);
+        localWebFiles.current.delete(frame.id);
+        localPreviewUris.current.delete(frame.id);
+        protectedPreviewUrlsRef.current = Object.fromEntries(
+          Object.entries(protectedPreviewUrlsRef.current).filter(
+            ([id]) => id !== frame.id
+          )
         );
+        delete protectedPreviewExpiries.current[frame.id];
+        const timer = protectedPreviewRefreshTimers.current.get(frame.id);
+        if (timer) clearTimeout(timer);
+        protectedPreviewRefreshTimers.current.delete(frame.id);
+        markRetryable(frame.id, false);
+        clearProgress(frame.id);
+      }
     }
-    const originalIndex = assetsRef.current.findIndex((item) => item.id === asset.id);
     const persistedId = String(asset._id || "");
     const retainDurableRecord = [asset.id, asset._id].some((id) =>
       retainOnRemoveAssetIdSet.has(String(id || "").trim())
@@ -1113,21 +1227,38 @@ export default function MediaEvidencePicker({
     ) {
       URL.revokeObjectURL(asset.originalUri);
     }
-    commit(assetsRef.current.filter((item) => item.id !== asset.id));
+    const optimisticallyRemovedIds = new Set([
+      asset.id,
+      ...linkedGeneratedFrames.map((frame) => frame.id)
+    ]);
+    commit(previousAssets.filter((item) => !optimisticallyRemovedIds.has(item.id)));
     if (persistedId && !retainDurableRecord) {
       void deleteEvidenceAsset(persistedId, uploadWorkspace, { timeoutMs: 5000 }).catch(
         () => {
           if (disposed.current) return;
           if (!restoreOnDeleteFailure) return;
           removedAssetIds.current.delete(asset.id);
-          const restored = {
-            ...asset,
-            error:
-              "GrowPath could not remove this saved evidence. It has been restored; check your connection and try again."
-          };
-          const next = [...assetsRef.current];
-          next.splice(Math.max(0, Math.min(originalIndex, next.length)), 0, restored);
-          commit(next);
+          for (const frame of linkedGeneratedFrames) {
+            removedAssetIds.current.delete(frame.id);
+          }
+          const previousIds = new Set(previousAssets.map((item) => item.id));
+          const restoredSet = previousAssets.map((item) =>
+            item.id === asset.id
+              ? {
+                  ...item,
+                  error:
+                    asset.assetType === "video"
+                      ? "GrowPath could not remove this saved evidence. The source video and its selected frames were restored; check your connection and try again."
+                      : "GrowPath could not remove this saved evidence. It has been restored; check your connection and try again."
+                }
+              : item
+          );
+          const next = [
+            ...restoredSet,
+            ...assetsRef.current.filter((item) => !previousIds.has(item.id))
+          ];
+          // Preserve the original source/frame order; later additions remain after it.
+          commit(next.length ? next : previousAssets);
         }
       );
     }
@@ -1188,12 +1319,27 @@ export default function MediaEvidencePicker({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Add evidence photos"
-          accessibilityState={{ disabled: disabled || busy || photoCount >= maxPhotos }}
-          disabled={disabled || busy || photoCount >= maxPhotos}
+          accessibilityState={{
+            disabled:
+              disabled ||
+              busy ||
+              photoCount >= maxPhotos ||
+              userPhotoCount >= userPhotoLimit
+          }}
+          disabled={
+            disabled ||
+            busy ||
+            photoCount >= maxPhotos ||
+            userPhotoCount >= userPhotoLimit
+          }
           onPress={choosePhotos}
           style={[
             styles.button,
-            (disabled || busy || photoCount >= maxPhotos) && styles.disabled
+            (disabled ||
+              busy ||
+              photoCount >= maxPhotos ||
+              userPhotoCount >= userPhotoLimit) &&
+              styles.disabled
           ]}
         >
           <Text style={styles.buttonText}>Add Photos</Text>
@@ -1219,8 +1365,38 @@ export default function MediaEvidencePicker({
           {videoFeedback}
         </Text>
       ) : null}
+      {generatedFrameCount && generatedFramePreviewLimit !== undefined ? (
+        <View style={styles.frameReviewSummary}>
+          <Text style={styles.help}>
+            {showAllGeneratedFrames
+              ? `Reviewing all ${generatedFrameCount} server-selected frames.`
+              : `Showing ${Math.min(
+                  generatedFrameCount,
+                  Math.max(0, generatedFramePreviewLimit)
+                )} of ${generatedFrameCount} server-selected frames.`}
+          </Text>
+          {hiddenGeneratedFrameCount > 0 || showAllGeneratedFrames ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                showAllGeneratedFrames
+                  ? "Show fewer server-selected frames"
+                  : `Review all ${generatedFrameCount} server-selected frames`
+              }
+              onPress={() => setShowAllGeneratedFrames((current) => !current)}
+              style={styles.frameReviewButton}
+            >
+              <Text style={styles.frameReviewButtonText}>
+                {showAllGeneratedFrames
+                  ? "Show Fewer Frames"
+                  : `Review All ${generatedFrameCount} Frames`}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
       <View style={styles.grid}>
-        {assets.map((asset, index) => (
+        {visibleAssets.map((asset, index) => (
           <View key={asset.id} style={styles.asset}>
             {asset.assetType === "photo" ? (
               <Image
@@ -1269,16 +1445,66 @@ export default function MediaEvidencePicker({
                 <Text style={styles.retryText}>Retry</Text>
               </Pressable>
             ) : null}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Remove evidence ${asset.id}`}
-              accessibilityState={{ disabled }}
-              disabled={disabled}
-              onPress={() => removeAsset(asset)}
-              style={[styles.remove, disabled && styles.disabled]}
-            >
-              <Text style={styles.removeText}>Remove</Text>
-            </Pressable>
+            {generatedFramesReadOnly && asset.source === "generated" ? (
+              <>
+                <Text style={styles.generatedFrameNote}>
+                  Server-selected frame. Remove the private source video to remove this
+                  complete frame set.
+                </Text>
+                {generatedFrameExportEligibleIdSet.has(
+                  String(asset._id || asset.id || "")
+                ) ? (
+                  <Pressable
+                    accessibilityRole="checkbox"
+                    accessibilityLabel={`Select retained video frame ${
+                      Number.isInteger(Number(asset.frameIndex))
+                        ? Number(asset.frameIndex) + 1
+                        : index + 1
+                    } for private save or share`}
+                    accessibilityHint="Nothing is exported or made public until you use the separate private save or share action."
+                    accessibilityState={{
+                      checked: generatedFrameExportSelectedIdSet.has(
+                        String(asset._id || asset.id || "")
+                      ),
+                      disabled: Boolean(
+                        disabled || generatedFrameExportSelection?.disabled
+                      )
+                    }}
+                    disabled={Boolean(
+                      disabled || generatedFrameExportSelection?.disabled
+                    )}
+                    onPress={() => toggleGeneratedFrameExport(asset)}
+                    style={[
+                      styles.frameExportChoice,
+                      generatedFrameExportSelectedIdSet.has(
+                        String(asset._id || asset.id || "")
+                      ) && styles.frameExportChoiceSelected,
+                      (disabled || generatedFrameExportSelection?.disabled) &&
+                        styles.disabled
+                    ]}
+                  >
+                    <Text style={styles.frameExportChoiceText}>
+                      {generatedFrameExportSelectedIdSet.has(
+                        String(asset._id || asset.id || "")
+                      )
+                        ? "Selected for Private Export"
+                        : "Select for Private Export"}
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Remove evidence ${asset.id}`}
+                accessibilityState={{ disabled }}
+                disabled={disabled}
+                onPress={() => removeAsset(asset)}
+                style={[styles.remove, disabled && styles.disabled]}
+              >
+                <Text style={styles.removeText}>Remove</Text>
+              </Pressable>
+            )}
           </View>
         ))}
       </View>
@@ -1339,6 +1565,53 @@ const createStyles = (palette: ThemePalette) =>
     videoText: { color: palette.text, fontWeight: "800" },
     videoMeta: { color: palette.textMuted, marginTop: 4 },
     videoFeedback: { color: palette.textMuted, lineHeight: 18 },
+    frameReviewSummary: {
+      alignItems: "flex-start",
+      backgroundColor: palette.surfaceMuted,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 6,
+      padding: 10
+    },
+    frameReviewButton: {
+      alignItems: "center",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 8
+    },
+    frameReviewButtonText: { color: palette.text, fontWeight: "800" },
+    generatedFrameNote: {
+      color: palette.textMuted,
+      fontSize: 11,
+      lineHeight: 16,
+      marginTop: 4
+    },
+    frameExportChoice: {
+      alignItems: "center",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      marginTop: 6,
+      minHeight: 44,
+      paddingHorizontal: 8,
+      paddingVertical: 7
+    },
+    frameExportChoiceSelected: {
+      backgroundColor: palette.accentSoft,
+      borderColor: palette.accent
+    },
+    frameExportChoiceText: {
+      color: palette.link,
+      fontSize: 11,
+      fontWeight: "800",
+      textAlign: "center"
+    },
     status: {
       color: palette.textMuted,
       fontSize: 12,

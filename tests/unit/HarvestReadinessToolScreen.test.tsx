@@ -2,12 +2,19 @@ import React from "react";
 import {
   fireEvent,
   fireEventAsync,
+  render,
   renderAsync,
   waitFor
 } from "@testing-library/react-native";
 
 import HarvestReadinessToolRoute, {
-  createHarvestPhotoStyles
+  createHarvestPhotoStyles,
+  harvestAnalyzedGlobalIndexes,
+  harvestBatchSummariesCoverEvidence,
+  harvestHeadDevelopmentSignalLabel,
+  harvestVideoReviewPlan,
+  savedHarvestAnalysis,
+  UnsavedHarvestDeepResultDiscard
 } from "@/app/home/personal/(tabs)/tools/harvest-readiness";
 import { getThemePalette } from "@/theme/appTheme";
 
@@ -25,6 +32,54 @@ describe("Harvest Readiness Night theme", () => {
     expect(styles.button.backgroundColor).toBe(palette.accent);
     expect(styles.qualityChecks.backgroundColor).toBe(palette.surface);
   });
+
+  it("requires explicit confirmation before discarding only an unsaved Deep result", () => {
+    const onDiscard = jest.fn();
+    const screen = render(
+      <UnsavedHarvestDeepResultDiscard
+        operation={
+          {
+            id: "operation-deep-1",
+            status: "succeeded",
+            analysisMode: "deep",
+            clientOperationKey: "stable-client-operation-key",
+            requestDigest: "a".repeat(64),
+            batchCount: 2,
+            completedBatches: 2,
+            creditsQuoted: 2,
+            creditState: "charged"
+          } as any
+        }
+        busy={false}
+        onDiscard={onDiscard}
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText("Discard unsaved Deep result"));
+    expect(screen.getByText(/source video and retained frames are kept/i)).toBeTruthy();
+    expect(screen.getByText(/credits already charged.*not refunded/i)).toBeTruthy();
+    expect(
+      screen.getByLabelText("Permanently discard unsaved Deep result")
+    ).toBeDisabled();
+
+    fireEvent(
+      screen.getByLabelText(
+        "I understand unsaved Deep result discard is permanent and not refunded"
+      ),
+      "valueChange",
+      true
+    );
+    expect(
+      screen.getByLabelText("Permanently discard unsaved Deep result")
+    ).not.toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Permanently discard unsaved Deep result"));
+    expect(onDiscard).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders the explicit ruptured-head and bare-stalk morphology labels", () => {
+    expect(harvestHeadDevelopmentSignalLabel("ruptured_heads")).toBe("ruptured heads");
+    expect(harvestHeadDevelopmentSignalLabel("bare_stalks")).toBe("bare stalks");
+  });
 });
 
 const mockRunCalculator = jest.fn();
@@ -35,12 +90,19 @@ const mockGetHarvestBatch = jest.fn();
 const mockListHarvestBatches = jest.fn();
 const mockUpdateHarvestBatch = jest.fn();
 const mockAnalyzeTrichomePhotos = jest.fn();
+const mockQuoteDeepTrichomeReview = jest.fn();
+const mockStartDeepTrichomeReview = jest.fn();
+const mockFindDeepTrichomeReviewOperation = jest.fn();
+const mockGetDeepTrichomeReviewOperation = jest.fn();
 const mockSubmitHarvestTrichomeFeedback = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
 const mockListPersonalGrows = jest.fn();
 const mockListFacilityGrows = jest.fn();
 const mockFetchCommercialGrows = jest.fn();
 const mockListEvidenceAssets = jest.fn();
+const mockExtractEvidenceVideoFrames = jest.fn();
+const mockGetEvidenceVideoFrameExtraction = jest.fn();
+const mockGetEvidenceAssetsByIds = jest.fn();
 const mockSavedGrowPhotoEvidencePicker = jest.fn();
 const mockMediaEvidencePickerProps = jest.fn();
 let mockRouteParams: Record<string, string> = { growId: "grow-1" };
@@ -79,7 +141,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
     source: "library",
     purpose: "harvest",
     uploadStatus: "uploaded",
-    aiUsable: true,
+    aiUsable: false,
     qualityWarnings: []
   };
   const frameAsset = (index: number) => ({
@@ -88,7 +150,7 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
     _id: `64b00000000000000000001${index}`,
     source: "generated",
     sourceVideoEvidenceAssetId: videoAsset._id,
-    frameExtractionVersion: "client-harvest-v1",
+    frameExtractionVersion: "harvest-video-server-v2",
     frameExtractionAttempt: 1,
     frameIndex: index,
     frameTimeSeconds: index * 2
@@ -117,15 +179,17 @@ jest.mock("@/components/media/MediaEvidencePicker", () => {
       React.createElement(
         Pressable,
         {
-          accessibilityLabel: "Add harvest video and extracted frames",
+          accessibilityLabel: "Add duplicate-heavy harvest photo set",
           onPress: () =>
-            props.onChange([
-              videoAsset,
-              frameAsset(1),
-              frameAsset(2),
-              frameAsset(3),
-              frameAsset(4)
-            ])
+            props.onChange(Array.from({ length: 13 }, (_, index) => asset(index + 1)))
+        },
+        React.createElement(Text, null, "Add Duplicate-heavy Photo Set")
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityLabel: "Add harvest video and extracted frames",
+          onPress: () => props.onChange([videoAsset])
         },
         React.createElement(Text, null, "Add Video And Frames")
       ),
@@ -154,8 +218,227 @@ jest.mock("@/api/evidence", () => {
   const actual = jest.requireActual("@/api/evidence");
   return {
     ...actual,
-    listEvidenceAssets: (...args: any[]) => mockListEvidenceAssets(...args)
+    listEvidenceAssets: (...args: any[]) => mockListEvidenceAssets(...args),
+    extractEvidenceVideoFrames: (...args: any[]) =>
+      mockExtractEvidenceVideoFrames(...args),
+    getEvidenceVideoFrameExtraction: (...args: any[]) =>
+      mockGetEvidenceVideoFrameExtraction(...args),
+    getEvidenceAssetsByIds: (...args: any[]) => mockGetEvidenceAssetsByIds(...args)
   };
+});
+
+describe("Harvest saved Deep review integrity", () => {
+  const digest = (character: string) => character.repeat(64);
+  const selectedEvidenceAssetIds = Array.from(
+    { length: 13 },
+    (_, index) => `saved-evidence-${index + 1}`
+  );
+  const deepAnalysis = {
+    photoUsable: true,
+    analysisId: "saved-deep-analysis-1",
+    analysisMode: "deep",
+    selectedEvidenceAssetIds,
+    evidenceUsed: selectedEvidenceAssetIds,
+    imagesAnalyzed: 13,
+    batchCount: 2,
+    batchSize: 12,
+    aggregationVersion: "harvest-aggregate-v1",
+    creditsQuoted: 2,
+    aiCreditsUsed: 2,
+    manifestDigest: digest("a"),
+    selectedEvidenceDigest: digest("b"),
+    analyzedEvidenceDigest: digest("c"),
+    batchSummaries: [
+      {
+        batchIndex: 0,
+        imageCount: 12,
+        globalImageIndexes: Array.from({ length: 12 }, (_, index) => index + 1),
+        inputDigest: digest("d"),
+        resultDigest: digest("e")
+      },
+      {
+        batchIndex: 1,
+        imageCount: 1,
+        globalImageIndexes: [13],
+        inputDigest: digest("f"),
+        resultDigest: digest("1")
+      }
+    ],
+    analysisReceipt: {
+      kind: "harvest_vision_aggregate",
+      version: 2,
+      signature: digest("3"),
+      keyId: "aggregate-key-1",
+      manifestDigest: digest("a"),
+      selectedEvidenceDigest: digest("b"),
+      analyzedEvidenceDigest: digest("c"),
+      aiUsageEventId: "saved-deep-analysis-1",
+      normalizedHarvestResultDigest: digest("2"),
+      evidenceFingerprint: [...selectedEvidenceAssetIds].sort().join("|"),
+      reviewPolicyVersion: "harvest-trichome-server-attestation-v4-batched-evidence"
+    },
+    aggregateReceipt: {
+      kind: "harvest_vision_aggregate",
+      version: 2,
+      signature: digest("3"),
+      keyId: "aggregate-key-1",
+      manifestDigest: digest("a"),
+      selectedEvidenceDigest: digest("b"),
+      analyzedEvidenceDigest: digest("c")
+    }
+  };
+
+  it("restores only when the aggregate receipt binds the exact top-level digests", () => {
+    expect(
+      savedHarvestAnalysis({
+        outputs: { photoAnalysis: deepAnalysis }
+      } as any)
+    ).toEqual(expect.objectContaining({ analysisId: "saved-deep-analysis-1" }));
+
+    expect(
+      savedHarvestAnalysis({
+        outputs: {
+          photoAnalysis: {
+            ...deepAnalysis,
+            aggregateReceipt: {
+              ...deepAnalysis.aggregateReceipt,
+              selectedEvidenceDigest: digest("9")
+            }
+          }
+        }
+      } as any)
+    ).toBeNull();
+    expect(
+      savedHarvestAnalysis({
+        outputs: {
+          photoAnalysis: { ...deepAnalysis, aggregateReceipt: undefined }
+        }
+      } as any)
+    ).toBeNull();
+
+    const selectedWithLeadingDuplicate = [
+      "saved-byte-duplicate",
+      ...selectedEvidenceAssetIds
+    ];
+    const gappedReplay = {
+      ...deepAnalysis,
+      selectedEvidenceAssetIds: selectedWithLeadingDuplicate,
+      analysisReceipt: {
+        ...deepAnalysis.analysisReceipt,
+        evidenceFingerprint: [...selectedWithLeadingDuplicate].sort().join("|")
+      },
+      batchSummaries: [
+        {
+          ...deepAnalysis.batchSummaries[0],
+          globalImageIndexes: Array.from({ length: 12 }, (_, index) => index + 2)
+        },
+        {
+          ...deepAnalysis.batchSummaries[1],
+          globalImageIndexes: [14]
+        }
+      ]
+    };
+    expect(
+      savedHarvestAnalysis({ outputs: { photoAnalysis: gappedReplay } } as any)
+    ).toEqual(expect.objectContaining({ analysisId: "saved-deep-analysis-1" }));
+  });
+
+  it("requires complete one-based aggregate batch coverage", () => {
+    expect(
+      harvestBatchSummariesCoverEvidence(
+        deepAnalysis.batchSummaries,
+        Array.from({ length: 13 }, (_, index) => index + 1),
+        2
+      )
+    ).toBe(true);
+    expect(
+      harvestBatchSummariesCoverEvidence(
+        [
+          {
+            ...deepAnalysis.batchSummaries[0],
+            globalImageIndexes: Array.from({ length: 12 }, (_, index) => index)
+          },
+          deepAnalysis.batchSummaries[1]
+        ],
+        Array.from({ length: 13 }, (_, index) => index + 1),
+        2
+      )
+    ).toBe(false);
+  });
+
+  it("accepts the exact gapped global indexes when duplicates occur before or inside the unique set", () => {
+    const analyzedIds = Array.from({ length: 13 }, (_, index) => `unique-${index + 1}`);
+    const duplicateFirstSelected = ["duplicate-copy", ...analyzedIds];
+    const duplicateMiddleSelected = [
+      ...analyzedIds.slice(0, 6),
+      "duplicate-copy",
+      ...analyzedIds.slice(6)
+    ];
+    const firstIndexes = harvestAnalyzedGlobalIndexes(
+      duplicateFirstSelected,
+      analyzedIds
+    );
+    const middleIndexes = harvestAnalyzedGlobalIndexes(
+      duplicateMiddleSelected,
+      analyzedIds
+    );
+    expect(firstIndexes).toEqual(Array.from({ length: 13 }, (_, index) => index + 2));
+    expect(middleIndexes).toEqual([1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14]);
+
+    const summaries = [
+      {
+        batchIndex: 0,
+        imageCount: 12,
+        globalImageIndexes: firstIndexes!.slice(0, 12),
+        inputDigest: digest("4"),
+        resultDigest: digest("5")
+      },
+      {
+        batchIndex: 1,
+        imageCount: 1,
+        globalImageIndexes: firstIndexes!.slice(12),
+        inputDigest: digest("6"),
+        resultDigest: digest("7")
+      }
+    ];
+    expect(harvestBatchSummariesCoverEvidence(summaries, firstIndexes!, 2)).toBe(true);
+    expect(
+      harvestBatchSummariesCoverEvidence(
+        summaries,
+        Array.from({ length: 13 }, (_, index) => index + 1),
+        2
+      )
+    ).toBe(false);
+  });
+});
+
+describe("Harvest server-video plan restoration", () => {
+  it("never silently retries a failed Standard extraction with the Deep ceiling", () => {
+    expect(
+      harvestVideoReviewPlan({
+        status: "failed",
+        chosenCeiling: 12,
+        requestedFrameCount: 80,
+        targetFrameCount: 80
+      })
+    ).toEqual({
+      selectedCeiling: 12,
+      effectiveCeiling: 12,
+      restoreLocked: false
+    });
+    expect(
+      harvestVideoReviewPlan({
+        status: "completed",
+        chosenCeiling: 12,
+        requestedFrameCount: 80,
+        selectedCount: 48
+      })
+    ).toEqual({
+      selectedCeiling: 80,
+      effectiveCeiling: 80,
+      restoreLocked: true
+    });
+  });
 });
 
 jest.mock("expo-router", () => ({
@@ -180,6 +463,14 @@ jest.mock("@/api/commercialWorkflows", () => ({
 jest.mock("@/entitlements", () => ({
   useEntitlements: () => mockEntitlements
 }));
+
+jest.mock("@/auth/AuthContext", () => {
+  const actual = jest.requireActual("@/auth/AuthContext");
+  return {
+    ...actual,
+    useOptionalAuth: () => ({ user: { id: "account-1" } })
+  };
+});
 
 jest.mock("@/components/feed/FeedBanner", () => {
   const React = require("react");
@@ -228,6 +519,12 @@ jest.mock("@/api/harvestVision", () => {
   return {
     ...actual,
     analyzeTrichomePhotos: (...args: any[]) => mockAnalyzeTrichomePhotos(...args),
+    quoteDeepTrichomeReview: (...args: any[]) => mockQuoteDeepTrichomeReview(...args),
+    startDeepTrichomeReview: (...args: any[]) => mockStartDeepTrichomeReview(...args),
+    findDeepTrichomeReviewOperation: (...args: any[]) =>
+      mockFindDeepTrichomeReviewOperation(...args),
+    getDeepTrichomeReviewOperation: (...args: any[]) =>
+      mockGetDeepTrichomeReviewOperation(...args),
     submitHarvestTrichomeFeedback: (...args: any[]) =>
       mockSubmitHarvestTrichomeFeedback(...args)
   };
@@ -257,6 +554,7 @@ describe("HarvestReadinessToolRoute", () => {
     mockListFacilityGrows.mockResolvedValue([]);
     mockFetchCommercialGrows.mockResolvedValue([]);
     mockListEvidenceAssets.mockResolvedValue([]);
+    mockFindDeepTrichomeReviewOperation.mockResolvedValue(null);
     mockGetToolRun.mockResolvedValue(null);
     mockListHarvestBatches.mockResolvedValue([]);
     mockAskPersonalAssistant.mockRejectedValue(new Error("assistant unavailable"));
@@ -584,14 +882,15 @@ describe("HarvestReadinessToolRoute", () => {
     expect(screen.getByText(/trichome gland heads on bud calyxes/i)).toBeTruthy();
     expect(screen.getByText(/neutral white light/i)).toBeTruthy();
     expect(
-      screen.getByText(/even 12 wide photos cannot replace three true macros/i)
+      screen.getByText(/Image count is not coverage.*cannot replace three true macros/i)
     ).toBeTruthy();
     expect(screen.getByText(/No trichome evidence is ready/i)).toBeTruthy();
     expect(mockSavedGrowPhotoEvidencePicker).toHaveBeenCalledWith(
       expect.objectContaining({
         growId: "grow-1",
         purpose: "harvest",
-        maxPhotos: 12
+        maxPhotos: 80,
+        maxUserPhotos: 12
       })
     );
     expect(mockMediaEvidencePickerProps).toHaveBeenLastCalledWith(
@@ -1005,14 +1304,20 @@ describe("HarvestReadinessToolRoute", () => {
     const screen = await renderHarvestReadinessTool();
 
     await waitFor(() =>
-      expect(screen.getByText("Review ID: saved-analysis-1")).toBeTruthy()
+      expect(
+        screen.getByText("AI estimate: 52% cloudy, 1% amber, 17% clear.")
+      ).toBeTruthy()
     );
     await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
     await waitFor(() =>
-      expect(screen.getByText("Review ID: fresh-analysis-2")).toBeTruthy()
+      expect(
+        screen.getByText("AI estimate: 69% cloudy, 23% amber, 8% clear.")
+      ).toBeTruthy()
     );
-    expect(screen.queryByText("Review ID: saved-analysis-1")).toBeNull();
+    expect(
+      screen.queryByText("AI estimate: 52% cloudy, 1% amber, 17% clear.")
+    ).toBeNull();
     expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledTimes(1);
   });
 
@@ -1025,6 +1330,184 @@ describe("HarvestReadinessToolRoute", () => {
     expect(screen.getByText(/no AI credit will be used yet/i)).toBeTruthy();
     await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
     expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
+  });
+
+  it("keeps a >12 selected exact manifest on the standard path when server dedupe finds 12 unique images", async () => {
+    const selectedIds = Array.from(
+      { length: 13 },
+      (_, index) => `64b00000000000000000000${index + 1}`
+    );
+    const analyzedIds = selectedIds.slice(0, 12);
+    mockQuoteDeepTrichomeReview.mockResolvedValue({
+      version: "harvest-analysis-quote-v1",
+      token: null,
+      analysisMode: "standard",
+      selectedEvidenceCount: 13,
+      analyzedEvidenceCount: 12,
+      duplicateEvidenceCount: 1,
+      sourceVideoSelected: false,
+      evidenceCount: 12,
+      batchCount: 1,
+      creditsQuoted: 1,
+      manifestDigest: "a".repeat(64),
+      selectedEvidenceDigest: "b".repeat(64),
+      analyzedEvidenceDigest: "c".repeat(64),
+      expiresAt: null
+    });
+    mockAnalyzeTrichomePhotos.mockResolvedValueOnce({
+      photoUsable: true,
+      imageQuality: "usable",
+      clear: 0.12,
+      cloudy: 0.73,
+      amber: 0.15,
+      confidence: 0.81,
+      dominant: "cloudy",
+      visibleTraits: ["Intact opaque gland heads"],
+      evidence: ["Mostly opaque gland heads"],
+      recommendation: "Confirm across additional bud sites.",
+      limitations: [],
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      analysisMode: "standard",
+      selectedEvidenceAssetIds: selectedIds,
+      imagesAnalyzed: 12,
+      evidenceUsed: analyzedIds,
+      analysisId: "usage-standard-dedupe-1",
+      analysisReceipt: {
+        aiUsageEventId: "usage-standard-dedupe-1",
+        normalizedHarvestResultDigest: "d".repeat(64),
+        evidenceFingerprint: [...selectedIds].sort().join("|"),
+        reviewPolicyVersion: "harvest-trichome-server-attestation-v3-head-development"
+      },
+      aiCreditsUsed: 1,
+      creditStatus: "charged"
+    });
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add duplicate-heavy harvest photo set"));
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Get exact harvest review quote").props.accessibilityState
+          .disabled
+      ).toBe(false)
+    );
+    fireEvent.press(screen.getByLabelText("Get exact harvest review quote"));
+    expect(
+      await screen.findByText(/Standard review: 1 signed batch · 1 AI credit/i)
+    ).toBeTruthy();
+    expect(screen.queryByText(/Quote expires/i)).toBeNull();
+    expect(screen.queryByText(/1970/i)).toBeNull();
+
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest photo notes"),
+      "Changed private provider context"
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Get exact harvest review quote").props.accessibilityState
+          .disabled
+      ).toBe(false)
+    );
+    expect(screen.getByText(/Exact Quote Required/i)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText("Get exact harvest review quote"));
+    expect(
+      await screen.findByText(/Standard review: 1 signed batch · 1 AI credit/i)
+    ).toBeTruthy();
+
+    await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await waitFor(() =>
+      expect(mockAnalyzeTrichomePhotos).toHaveBeenCalledWith(
+        expect.objectContaining({
+          evidenceAssetIds: selectedIds,
+          notes: "Changed private provider context"
+        })
+      )
+    );
+    expect(mockStartDeepTrichomeReview).not.toHaveBeenCalled();
+    expect(await screen.findByText("Qualified macro evidence")).toBeTruthy();
+  });
+
+  it("allows a credited Personal/free account to use Deep review only after explicit acceptance", async () => {
+    mockEntitlements = {
+      plan: "free",
+      mode: "personal",
+      facilityId: null,
+      can: () => true
+    };
+    mockQuoteDeepTrichomeReview.mockResolvedValueOnce({
+      version: "harvest-analysis-quote-v1",
+      tokenVersion: "harvest-deep-quote-v1",
+      token: "signed-deep-token",
+      keyId: "harvest-receipt-key-1",
+      analysisMode: "deep",
+      selectedEvidenceCount: 13,
+      analyzedEvidenceCount: 13,
+      duplicateEvidenceCount: 0,
+      sourceVideoSelected: false,
+      evidenceCount: 13,
+      batchCount: 2,
+      creditsQuoted: 2,
+      manifestDigest: "a".repeat(64),
+      selectedEvidenceDigest: "b".repeat(64),
+      analyzedEvidenceDigest: "c".repeat(64),
+      expiresAt: "2099-08-23T18:00:00.000Z"
+    });
+    mockStartDeepTrichomeReview.mockImplementationOnce(async (input) => ({
+      operation: {
+        id: "operation-deep-screen-1",
+        status: "queued",
+        analysisMode: "deep",
+        clientOperationKey: input.clientOperationKey,
+        requestDigest: "d".repeat(64),
+        batchCount: 2,
+        completedBatches: 0,
+        creditsQuoted: 2
+      }
+    }));
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add duplicate-heavy harvest photo set"));
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Get exact harvest review quote").props.accessibilityState
+          .disabled
+      ).toBe(false)
+    );
+    fireEvent.press(screen.getByLabelText("Get exact harvest review quote"));
+    expect(
+      await screen.findByText(/Deep review: 2 signed batches · 2 AI credits/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        /send the 13 unique still images from this exact selected set privately to OpenAI/i
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/GPS\/EXIF location or capture-date metadata.*not sent/i)
+    ).toBeTruthy();
+    expect(mockStartDeepTrichomeReview).not.toHaveBeenCalled();
+
+    fireEvent(
+      screen.getByLabelText(
+        "Accept 2-credit Deep review and private OpenAI image dispatch"
+      ),
+      "valueChange",
+      true
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Analyze harvest trichome photo").props.accessibilityState
+          .disabled
+      ).toBe(false)
+    );
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+
+    await waitFor(() => expect(mockStartDeepTrichomeReview).toHaveBeenCalledTimes(1));
+    expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(/Deep review is queued.*0 of 2 provider batches/i)
+    ).toBeTruthy();
   });
 
   it("analyzes a complete evidence set before filling trichome percentages", async () => {
@@ -1060,7 +1543,8 @@ describe("HarvestReadinessToolRoute", () => {
     expect(screen.getByText(/highlight moved/i)).toBeTruthy();
     expect(screen.getByText(/run the rule-based readiness estimate/)).toBeTruthy();
     expect(screen.getByText(/1 charged · 58 remaining/i)).toBeTruthy();
-    expect(screen.getByText(/usage-harvest-1/i)).toBeTruthy();
+    expect(screen.getByLabelText("Share signed Harvest review summary")).toBeTruthy();
+    expect(screen.queryByText(/usage-harvest-1/i)).toBeNull();
 
     fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
     await waitFor(() =>
@@ -1119,7 +1603,7 @@ describe("HarvestReadinessToolRoute", () => {
     fireEvent.press(screen.getByLabelText("Add complete harvest photo set"));
     await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
     await waitFor(() =>
-      expect(screen.getByText(/evidence receipt that does not match/i)).toBeTruthy()
+      expect(screen.getByText(/evidence receipt does not match/i)).toBeTruthy()
     );
     expect(screen.queryByDisplayValue("73")).toBeNull();
     expect(screen.queryByText("Qualified macro evidence")).toBeNull();
@@ -1134,6 +1618,94 @@ describe("HarvestReadinessToolRoute", () => {
       "64b000000000000000000014"
     ];
     const analyzedFrameIds = exactEvidenceIds.slice(1);
+    const extractionVersion = "harvest-video-server-v2";
+    const manifest = {
+      policyVersion: "harvest-video-preselection-v1",
+      candidateIntervalSeconds: 1,
+      candidateLimit: 600,
+      sampledCount: 40,
+      qualityUsableCount: 18,
+      qualityRejectedCount: 22,
+      rejectedReasons: {
+        decodeError: 0,
+        invalidMetrics: 0,
+        obviousBlur: 10,
+        underexposed: 4,
+        overexposedOrGlare: 8
+      },
+      distinctCandidateCount: 12,
+      duplicateCandidateCount: 6,
+      duplicateClusterCount: 3,
+      targetFrameCount: 4,
+      selectedCount: 4,
+      coveredBucketCount: 4,
+      selectedBytesTotal: 400_000,
+      selectedByteLimit: 2_000_000,
+      selected: analyzedFrameIds.map((evidenceAssetId, frameIndex) => ({
+        frameIndex,
+        evidenceAssetId,
+        candidateIndex: frameIndex * 5,
+        requestedTimeSeconds: frameIndex * 5,
+        qualityScore: 0.9,
+        coverageBucket: frameIndex,
+        sequenceRole: "standalone",
+        countingEligible: true
+      }))
+    };
+    const exactSource = {
+      id: "source-video-1",
+      _id: exactEvidenceIds[0],
+      assetType: "video",
+      originalUri: "file:///trichomes.mov",
+      durableUrl: "/uploads/trichomes.mov",
+      mimeType: "video/quicktime",
+      growId: "grow-1",
+      source: "library",
+      purpose: "harvest",
+      uploadStatus: "uploaded",
+      aiUsable: false,
+      qualityWarnings: [],
+      frameExtraction: {
+        status: "completed",
+        attemptCount: 1,
+        version: extractionVersion,
+        frameAssetIds: analyzedFrameIds,
+        frameCount: analyzedFrameIds.length,
+        preselection: manifest
+      }
+    };
+    const exactFrames = analyzedFrameIds.map((id, frameIndex) => ({
+      id: `video-frame-${frameIndex}`,
+      _id: id,
+      assetType: "photo",
+      originalUri: `/api/evidence-assets/uploads/private-frame-${frameIndex}/object`,
+      durableUrl: `/api/evidence-assets/uploads/private-frame-${frameIndex}/object`,
+      mimeType: "image/jpeg",
+      growId: "grow-1",
+      source: "generated",
+      purpose: "harvest",
+      uploadStatus: "uploaded",
+      aiUsable: true,
+      qualityWarnings: [],
+      sourceVideoEvidenceAssetId: exactEvidenceIds[0],
+      frameExtractionVersion: extractionVersion,
+      frameExtractionAttempt: 1,
+      frameIndex,
+      frameTimeSeconds: frameIndex * 5,
+      frameTimeBasis: "requested"
+    }));
+    mockExtractEvidenceVideoFrames.mockResolvedValueOnce({
+      sourceVideo: exactSource,
+      extraction: {
+        status: "completed",
+        attemptCount: 1,
+        version: extractionVersion,
+        retryable: false,
+        frames: exactFrames,
+        preselection: manifest
+      }
+    });
+    mockGetEvidenceAssetsByIds.mockResolvedValueOnce([exactSource, ...exactFrames]);
     mockAnalyzeTrichomePhotos.mockResolvedValueOnce({
       photoUsable: true,
       imageQuality: "usable",
@@ -1165,6 +1737,30 @@ describe("HarvestReadinessToolRoute", () => {
     const screen = await renderHarvestReadinessTool();
 
     fireEvent.press(screen.getByLabelText("Add harvest video and extracted frames"));
+    await fireEventAsync.press(screen.getByLabelText("Select Best Video Frames"));
+    await waitFor(() =>
+      expect(screen.getByText(/4 server-selected frames are retained/i)).toBeTruthy()
+    );
+    expect(
+      screen.getByText(
+        /Selected for this private package: 0 of 12 maximum; 4 retained available/i
+      )
+    ).toBeTruthy();
+    expect(
+      mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0].generatedFrameExportSelection
+    ).toEqual(
+      expect.objectContaining({
+        eligibleAssetIds: analyzedFrameIds,
+        selectedAssetIds: []
+      })
+    );
+    expect(
+      mockMediaEvidencePickerProps.mock.calls
+        .at(-1)?.[0]
+        .generatedFrameExportSelection.eligibleAssetIds.includes(exactEvidenceIds[0])
+    ).toBe(false);
+    expect(screen.queryByText("Select All Retained")).toBeNull();
+    expect(screen.getByText(/Choose up to 12 frames per package/i)).toBeTruthy();
     await fireEventAsync.press(screen.getByLabelText("Analyze harvest trichome photo"));
 
     await waitFor(() =>

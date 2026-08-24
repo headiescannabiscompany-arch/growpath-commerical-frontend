@@ -99,6 +99,26 @@ export type ToolRunWorkspaceScope = {
   facilityId?: string;
 };
 
+export type PermanentToolRunDeletionResult = {
+  deleted: true;
+  permanent: true;
+  toolRunId: string;
+  deleteSourceVideo: boolean;
+  sourceVideoDeleted: boolean;
+  deletedFrameCount: number;
+  retainedSharedFrameCount: number;
+  retainedCalibrationAnalyzedEvidenceCount: number;
+  removedModuleRecordCount: number;
+  scrubbedReviewCount: number;
+  removedInspectionViewReviewCount: number;
+  scrubbedDeepOperationCount: number;
+  cleanupPending: boolean;
+  cleanupStatus: "completed" | "cleanup_pending";
+  logicalDeletedAt: string;
+  completedAt?: string | null;
+  cleanupErrorCode?: string | null;
+};
+
 function workspaceQuery(scope: ToolRunWorkspaceScope = {}) {
   return {
     ...(scope.workspaceType ? { workspaceType: scope.workspaceType } : {}),
@@ -431,6 +451,61 @@ export async function archiveToolRun(
   } catch (_err) {
     return false;
   }
+}
+
+export async function permanentlyDeleteToolRun(
+  toolRunId: string,
+  input: { confirmPermanentDelete: true; deleteSourceVideo: boolean },
+  scope: ToolRunWorkspaceScope = {}
+): Promise<PermanentToolRunDeletionResult> {
+  const expectedId = String(toolRunId || "").trim();
+  if (!expectedId || input.confirmPermanentDelete !== true) {
+    throw new Error("Explicit permanent-delete confirmation is required.");
+  }
+  const res: any = await apiRequest(
+    `/api/tools/runs/${encodeURIComponent(expectedId)}/permanent`,
+    {
+      method: "DELETE",
+      body: { ...input, ...workspaceBody(scope) }
+    }
+  );
+  const body = res?.data ?? res;
+  const countFields = [
+    "deletedFrameCount",
+    "retainedSharedFrameCount",
+    "retainedCalibrationAnalyzedEvidenceCount",
+    "removedModuleRecordCount",
+    "scrubbedReviewCount",
+    "removedInspectionViewReviewCount",
+    "scrubbedDeepOperationCount"
+  ];
+  if (
+    body?.deleted !== true ||
+    body?.permanent !== true ||
+    String(body?.toolRunId || "") !== expectedId ||
+    body?.deleteSourceVideo !== input.deleteSourceVideo ||
+    typeof body?.sourceVideoDeleted !== "boolean" ||
+    countFields.some(
+      (field) =>
+        typeof body?.[field] !== "number" ||
+        !Number.isInteger(body[field]) ||
+        body[field] < 0
+    ) ||
+    typeof body?.cleanupPending !== "boolean" ||
+    !["completed", "cleanup_pending"].includes(body?.cleanupStatus) ||
+    body.cleanupPending !== (body.cleanupStatus === "cleanup_pending") ||
+    typeof body?.logicalDeletedAt !== "string" ||
+    !Number.isFinite(new Date(body.logicalDeletedAt).getTime()) ||
+    (body.cleanupPending && body?.completedAt != null) ||
+    (!body.cleanupPending &&
+      (typeof body?.completedAt !== "string" ||
+        !Number.isFinite(new Date(body.completedAt).getTime())))
+  ) {
+    throw new Error(
+      "GrowPath returned an incomplete permanent-deletion cleanup receipt."
+    );
+  }
+  return body as PermanentToolRunDeletionResult;
 }
 
 export async function updatePlantIdCorrection(

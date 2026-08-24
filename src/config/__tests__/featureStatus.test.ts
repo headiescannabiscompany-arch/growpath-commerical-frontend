@@ -390,6 +390,7 @@ describe("personal feature status manifest", () => {
     expect(byKey["tools.harvest_readiness_ai"].href).toBe(
       "/home/personal/tools/harvest-readiness"
     );
+    expect(byKey["tools.harvest_readiness_ai"].freePlanAccess).toBe(true);
     expect(byKey["tools.inventory"].status).toBe("remove_from_user_app");
     expect(byKey["tools.inventory"].href).toBeUndefined();
     expect(byKey["tools.soil_nutrient_batch_planner"].title).not.toMatch(

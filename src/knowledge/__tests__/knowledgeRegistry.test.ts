@@ -292,13 +292,31 @@ describe("GrowPath knowledge registries", () => {
       "authorized immutable ToolRun follow-up beside the original result with exact evidence, provider, pixel-inspection status, limitations, and one-credit disclosure"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
-      "server-attested harvest image receipt bound to the authenticated workspace, optional canonical grow, optional plant, exact evidence set, normalized result digest, evidence fingerprint, and review-policy version"
+      "server-attested signed Harvest image receipt bound to the succeeded AI-usage event, authenticated workspace, optional canonical grow, optional plant, exact selected/analyzed evidence sets, normalized result digest, evidence fingerprint, selection-manifest digest, aggregate batch digest, charged credits, and review-policy version"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "additive reviewable trichome-percentage drafts that preserve manual maturity observations and retain visual provenance"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
-      "exact selected Harvest media set separated from the analyzed still/frame set, with a private source video retained as non-AI provenance"
+      "exact ordered selected still/frame set separated from the deduplicated analyzed still/frame set, with a private source video separately bound by evidence ID and stable provenance digest"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "compact digest-bound video-preselection manifest with candidate/rejection/duplicate/timeline counts, selected timestamps, quality scores, adjacent comparison roles, retained byte totals, and exact retained-frame IDs while rejected candidate files are deleted"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "deterministic Deep Review groups of no more than 12 originals with local-to-global evidence mapping, exact provider response IDs and usage, one server aggregate without a second AI synthesis call, and all-or-nothing receipt completion"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "durable asynchronous Deep Review operation with authorized polling/reload restoration, deterministic byte-aware packing into the quoted group count, serialized provider dispatch, and idempotent group claims"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "owner-confirmed permanent discard of an unsaved succeeded Deep Review operation that keeps the private source video and retained frames, issues no credit refund, tombstones provider/result metadata, and defers saved or referenced results to Saved Runs deletion"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "private-by-default retained-frame export with explicit exact-frame selection, protected authenticated retrieval, no more than 12 frames and 24 MiB of normalized still bytes per repeatable package, non-sensitive frame context, and no implicit GrowPath publication, plus a separately explicit sanitized share of only a revalidated signed Harvest result"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "visible gland-head development signals that may include swelling, wrinkling, collapse, exudation, fusion, ruptured heads, bare stalks, or detached/missing heads while remaining separate from color tallies and any oxidation, chemistry, potency, or head-death claim"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "authenticated cannabis-enabled Personal, Commercial, or Facility workspace scope with an optional authorized grow, plus Facility write-role and Facility-credit enforcement"
@@ -320,6 +338,9 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "overlapping full-area macro coverage for every original in the minimum four-photo Harvest set, reaching the left, right, top, and bottom image bounds while deduplicating overlap by position"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "buffer-only Standard provider originals normalized sequentially without metadata and capped at 48 MiB total after normalization, with complete bounded coverage for the exact four-photo minimum and up to 24 supplemental derived views or 48 MiB added round-robin without blocking a five-to-twelve-original set"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "client preflight that accepts ordinary 1080p phone photos without claiming trichome heads are unresolved from dimensions alone, leaving subject scale, focus, compression, glare, lighting, calyx placement, and head detail to server review"
@@ -367,10 +388,28 @@ describe("GrowPath knowledge registries", () => {
       "Never trust client-supplied harvest provider metadata, AI percentages, evidence IDs, or an analysis ID as proof of image analysis; validate the exact server receipt and reconstruct the saved photo result."
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Keep four through twelve images at one disclosed AI credit. For thirteen through eighty images, require an explicit Deep Review quote acceptance at ceil(image count / 12), reserve the quoted credits once, and process deterministic groups of no more than 12. Refund the full reservation only when failure is durably proven to precede every provider dispatch. Once any group reaches its durable dispatch boundary or an earlier group completed, publish no partial aggregate, never redispatch it, and keep the accepted reservation for support reconciliation when no safe final result can be committed. An eligible Personal/free account with enough AI credits may use Deep Review without a separate paid-plan entitlement gate; Commercial and Facility authorization and billing boundaries still apply."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never remount Harvest Readiness or overwrite manual maturity fields when applying AI trichome percentages; invalidate only unreviewed visual drafts when their evidence changes."
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
-      "Never omit an attached private source video from the selected receipt set, count it as visually analyzed, accept only a subset of its active client-generated Harvest frames, or accept a generated frame without the selected protected source and matching workspace, grow, plant, and purpose lineage."
+      "Never include an attached private source video's bytes in the selected or analyzed still/frame sets, count it as visually analyzed, omit its separate evidence-ID and provenance-digest binding, accept a subset, superset, reorder, stale extraction attempt, or unsigned retained-frame set, count an adjacent comparison frame independently, or accept a generated frame without the protected source and matching workspace, grow, plant, purpose, version, selection manifest, and byte budget."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never send the source video, rejected candidates, GPS or EXIF metadata, or unrelated account data to the Harvest vision provider."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never keep rejected video candidates as evidence, claim biological analysis from their technical metrics, call 80 images a target, dispatch an undisclosed multi-credit review, settle a partial batch result, or perform a second AI synthesis that breaks per-image provenance."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never keep a client request open across a multi-group Deep Review, exceed 12 originals or 24 MiB of original bytes in one provider group, exceed 12 derived views or 12 MiB of derived bytes in one group, exceed 80 MiB selected overall, silently add an unquoted group, redispatch a group after its durable provider boundary, automatically refund a reservation after any provider dispatch or earlier completed group, or let a different client-operation key bypass a same-workspace exact-evidence reconciliation hold."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never preselect or publicly publish retained Harvest frames or a Harvest result. A private export may contain only owner-selected verified retained stills and non-sensitive frame context, bounded to 12 frames and 24 MiB of normalized bytes per repeatable package; omit the source video, rejected or unselected frames, GPS/EXIF, raw record/upload IDs, storage URLs, provider identifiers, and receipt secrets. Share a result only after revalidating its signed attestation, and reject failed, deleted, incomplete, or unattested results."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never use unsaved-operation discard for a saved ToolRun, calibration reference, or legal/preservation hold; never delete its private source video or retained frames, imply charged credits are refunded, or expose provider result metadata after the deletion tombstone."
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never trust a route account or grow ID as shared-workspace authority, spend individual credits for a Facility Harvest run, or allow a Facility viewer to run the analysis."
@@ -380,6 +419,12 @@ describe("GrowPath knowledge registries", () => {
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never count bright pixels, sparkles, pistils, plant hairs, colored plant tissue, blurred circles, compression artifacts, sugar-leaf edge heads, or the same head repeated in overlapping crops as resolved trichome heads; ambiguous resolved white heads belong in cloudy-or-glare, while resolved yellow/orange/tan/brown heads that cannot be separated from warm light belong in amber-or-warm-light and define only the possible-amber upper bound. Under mixed or warm light, audit every clear head against adjacent highlights, transparent heads, and transmitted background so colored uncertainty cannot remain clear merely because the entire image is warm."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never send a Harvest image URL for the provider to fetch, exceed the 48 MiB post-normalization Standard-original limit, silently truncate the exact four-photo full-area plan, let supplemental crops block a valid five-to-twelve-original request, or claim an omitted crop was inspected."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never infer oxidation, chemistry, potency, rupture, bare-stalk formation, or gland-head death from color alone; require resolved repeated morphology and keep those visible development signals separate from clear/cloudy/amber tallies."
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never accept a free-text harvest-batch database ID, let AI select a batch, or retain a batch selection after grow context changes; an estimate remains valid without batch write-back."

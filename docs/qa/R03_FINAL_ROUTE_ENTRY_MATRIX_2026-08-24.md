@@ -4,11 +4,15 @@ Date: 2026-08-24
 Frontend candidate: `7f758970f20dad29da161e3a7904dac907fc20bc`  
 Backend candidate: `e572552c94d8dedc9db9713f0fb4660b272f797c`
 
-This is the final-candidate discoverability record required by R-03. It maps every
+This is the pre-Harvest-expansion final-candidate discoverability record required by R-03. It maps every
 user-facing canonical product story to its ordinary entry and route. Backend-only
 supporting operations remain owned by their canonical story and are intentionally not
 presented as separate products. Protected records hidden by role, privacy, moderation or
 content-interest policy are not buried features.
+
+The owner-authorized P-08 max-80 ranked-video/Deep Review slice now unfreezes the listed
+candidate without invalidating its retained route evidence. Complete that slice, deploy exact
+new SHAs, rerun affected P-08 routes, and then rerun this full matrix before release.
 
 `Back` means the visible Back control returns to the named parent without changing the
 selected workspace. Unless narrowed below, every row owns loading, honest empty, populated,
@@ -92,6 +96,17 @@ permission/error and reload states. Dynamic IDs are represented as `:id`.
   Nature, Lives, Notifications and Profile entries loaded without an access/application
   error. Data Integrations completed its asynchronous load with named owned-Grow choices and
   visible provider readiness.
+- Triple Bag Genetics Facility-owner retention pass: the authenticated workspace chooser named
+  `Triple Bag Genetics` and Facility mode, and the Facility Team page identified
+  `jcindc2003@yahoo.com` as `OWNER` beside one manager, one staff member and one viewer. The
+  owner session loaded 29/29 canonical Facility surfaces without an access or application error:
+  Dashboard, Grows, Rooms, Plants, Inventory, Tasks, Compliance, Audit Logs, Team, Integrations,
+  AI Tools, Analytics, Reports, Grow Journal, SOP Runs, SOP Library, SOP comparison, Outreach,
+  Licensed Sales & Transfers, Profile, and all nine Business Desk tools. Populated evidence
+  remained truthful: 15 rooms, one active grow, two inventory items, four team members, completed
+  SOP history, 135 audit events and the Facility-owned `2000 / 2000` AI-credit balance. This is
+  live owner-role/route retention evidence on the pre-Harvest-expansion candidate; the same chain
+  must be rerun after the new frontend/backend SHAs are frozen and is not final-candidate closure.
 - Intentional nonexistent guesses found during crawl are recorded above (`/globe`,
   `/notifications`, `/home/personal/lives`, `/home/personal/tools/diagnose` and
   `/home/personal/data-integrations`). They are not compatibility contracts and must not be

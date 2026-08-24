@@ -648,6 +648,7 @@ export const personalToolFeatures: readonly FeatureDefinition[] = [
     href: "/home/personal/tools/harvest-readiness",
     hubVisible: true,
     acceptsGrowContext: true,
+    freePlanAccess: true,
     experience: {
       mode: "ai_assisted",
       aiCredits: "optional",

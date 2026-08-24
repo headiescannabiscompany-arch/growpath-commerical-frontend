@@ -12,6 +12,10 @@ const mockGetToolRun = jest.fn();
 const mockListToolRuns = jest.fn();
 const mockUpdateToolRun = jest.fn();
 const mockUpdatePlantIdCorrection = jest.fn();
+const mockPermanentlyDeleteToolRun = jest.fn();
+const mockLoadPendingHarvestDeletion = jest.fn();
+const mockRememberPendingHarvestDeletion = jest.fn();
+const mockForgetPendingHarvestDeletion = jest.fn();
 const mockGetFieldStudy = jest.fn();
 const mockListFieldStudies = jest.fn();
 const mockCreateFieldStudy = jest.fn();
@@ -21,6 +25,7 @@ const mockUpdateFieldObservation = jest.fn();
 const mockRequestCurrentCoordinates = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
 const mockGetEvidenceSourceMetadata = jest.fn();
+const mockShareSignedHarvestResult = jest.fn();
 let mockSearchParams: Record<string, string> = {
   toolRunId: "run-1",
   growId: "grow-1",
@@ -56,9 +61,23 @@ jest.mock("@/api/toolRuns", () => ({
   createTaskFromToolRun: jest.fn(),
   getToolRun: (...args: any[]) => mockGetToolRun(...args),
   listToolRuns: (...args: any[]) => mockListToolRuns(...args),
+  permanentlyDeleteToolRun: (...args: any[]) => mockPermanentlyDeleteToolRun(...args),
   saveToolRunToLog: jest.fn(),
   updateToolRun: (...args: any[]) => mockUpdateToolRun(...args),
   updatePlantIdCorrection: (...args: any[]) => mockUpdatePlantIdCorrection(...args)
+}));
+
+jest.mock("@/auth/AuthContext", () => ({
+  useOptionalAuth: () => ({ user: { id: "account-1" } })
+}));
+
+jest.mock("@/features/personal/tools/harvestResultDeletionPersistence", () => ({
+  loadPendingHarvestResultDeletion: (...args: any[]) =>
+    mockLoadPendingHarvestDeletion(...args),
+  rememberPendingHarvestResultDeletion: (...args: any[]) =>
+    mockRememberPendingHarvestDeletion(...args),
+  forgetPendingHarvestResultDeletion: (...args: any[]) =>
+    mockForgetPendingHarvestDeletion(...args)
 }));
 
 jest.mock("@/api/fieldStudies", () => ({
@@ -142,8 +161,18 @@ jest.mock("@/components/fieldStudies/PrivateLocationPicker", () => {
 
 jest.mock("@/features/personal/tools/ToolResultSurface", () => {
   const React = require("react");
-  const { Text } = require("react-native");
-  return ({ title, summary, metrics, notices, outputs, details, followUp }: any) =>
+  const { Pressable, Text } = require("react-native");
+  return ({
+    title,
+    summary,
+    metrics,
+    notices,
+    outputs,
+    details,
+    followUp,
+    actions,
+    feedback
+  }: any) =>
     React.createElement(
       React.Fragment,
       null,
@@ -155,9 +184,31 @@ jest.mock("@/features/personal/tools/ToolResultSurface", () => {
       ...(notices || []).map((notice: any) =>
         React.createElement(Text, { key: notice.key }, notice.message)
       ),
+      ...(actions || []).map((action: any) =>
+        React.createElement(
+          Pressable,
+          {
+            key: action.key,
+            accessibilityRole: "button",
+            accessibilityLabel: action.label,
+            disabled: action.disabled,
+            onPress: action.onPress
+          },
+          React.createElement(Text, null, action.label)
+        )
+      ),
+      feedback ? React.createElement(Text, null, feedback) : null,
       details,
       followUp
     );
+});
+
+jest.mock("@/features/personal/tools/harvestPrivateSharing", () => {
+  const actual = jest.requireActual("@/features/personal/tools/harvestPrivateSharing");
+  return {
+    ...actual,
+    shareSignedHarvestResult: (...args: any[]) => mockShareSignedHarvestResult(...args)
+  };
 });
 
 describe("SavedToolRunsRoute", () => {
@@ -201,6 +252,7 @@ describe("SavedToolRunsRoute", () => {
     };
     mockEntitlementMode = "personal";
     mockEntitlementFacilityId = "";
+    mockShareSignedHarvestResult.mockResolvedValue("web-clipboard");
     mockListToolRuns.mockResolvedValue([
       {
         id: "run-1",
@@ -227,10 +279,257 @@ describe("SavedToolRunsRoute", () => {
       accuracyMeters: 25
     });
     mockUpdatePlantIdCorrection.mockResolvedValue(null);
+    mockLoadPendingHarvestDeletion.mockResolvedValue(null);
+    mockForgetPendingHarvestDeletion.mockResolvedValue(undefined);
     mockListFieldStudies.mockResolvedValue([]);
     mockGetEvidenceSourceMetadata.mockRejectedValue(
       new Error("No retained photo metadata")
     );
+  });
+
+  it("offers a direct attestation-gated share for a valid saved Harvest result", async () => {
+    const evidenceIds = ["top", "middle", "lower", "context"];
+    const harvestRun = {
+      id: "signed-harvest-run-1",
+      _id: "signed-harvest-run-1",
+      toolType: "harvest_readiness",
+      summary: "Signed Harvest review.",
+      inputs: { evidenceAssetIds: evidenceIds },
+      outputs: {
+        photoAnalysis: {
+          photoUsable: true,
+          imageQuality: "usable",
+          clear: 0.15,
+          cloudy: 0.7,
+          amber: 0.15,
+          confidence: 0.81,
+          dominant: "cloudy",
+          visibleTraits: [],
+          evidence: [],
+          recommendation: "Review the whole plant.",
+          limitations: [],
+          provider: "openai",
+          providerLabel: "OpenAI Harvest image review",
+          providerModel: "private-model",
+          imagesAnalyzed: 4,
+          evidenceUsed: evidenceIds,
+          analysisId: "harvest-usage-event-1",
+          analysisReceipt: {
+            aiUsageEventId: "harvest-usage-event-1",
+            normalizedHarvestResultDigest: "a".repeat(64),
+            evidenceFingerprint: evidenceIds.join("|"),
+            reviewPolicyVersion: "harvest-trichome-server-attestation-v3-head-development"
+          },
+          aiCreditsUsed: 1,
+          creditStatus: "charged"
+        }
+      }
+    };
+    mockSearchParams = { toolRunId: "signed-harvest-run-1" };
+    mockListToolRuns.mockResolvedValue([harvestRun]);
+    mockGetToolRun.mockResolvedValue(harvestRun);
+    const screen = render(<SavedToolRunsRoute />);
+
+    const shareAction = await screen.findByLabelText("Share signed Harvest result");
+    await act(async () => {
+      fireEvent.press(shareAction);
+    });
+
+    expect(mockShareSignedHarvestResult).toHaveBeenCalledWith(
+      expect.objectContaining({ analysisId: "harvest-usage-event-1" })
+    );
+    expect(
+      await screen.findByText(/attestation-gated Harvest summary was copied/i)
+    ).toBeTruthy();
+  });
+
+  it("does not offer the signed Harvest share action for an unattested saved result", async () => {
+    const harvestRun = {
+      id: "unattested-harvest-run-1",
+      _id: "unattested-harvest-run-1",
+      toolType: "harvest_readiness",
+      summary: "Unattested Harvest review.",
+      inputs: { evidenceAssetIds: ["top", "middle", "lower", "context"] },
+      outputs: {
+        photoAnalysis: {
+          photoUsable: true,
+          imageQuality: "usable",
+          imagesAnalyzed: 4,
+          creditStatus: "charged"
+        }
+      }
+    };
+    mockSearchParams = { toolRunId: "unattested-harvest-run-1" };
+    mockListToolRuns.mockResolvedValue([harvestRun]);
+    mockGetToolRun.mockResolvedValue(harvestRun);
+    const screen = render(<SavedToolRunsRoute />);
+
+    await waitFor(() =>
+      expect(mockGetToolRun).toHaveBeenCalledWith("unattested-harvest-run-1")
+    );
+    expect(screen.queryByLabelText("Share signed Harvest result")).toBeNull();
+    expect(mockShareSignedHarvestResult).not.toHaveBeenCalled();
+  });
+
+  it("permanently deletes a Harvest result only after exact confirmation and resumes pending cleanup", async () => {
+    const harvestRun = {
+      id: "harvest-delete-1",
+      _id: "harvest-delete-1",
+      toolType: "harvest_readiness",
+      growId: "grow-1",
+      summary: "Private harvest review.",
+      inputs: { evidenceAssetIds: ["photo-1", "source-video-1"] },
+      outputs: { photoAnalysis: { performed: true } }
+    };
+    const pending = {
+      accountDigest: "a".repeat(64),
+      workspaceDigest: "b".repeat(64),
+      toolRunId: "harvest-delete-1",
+      deleteSourceVideo: true,
+      requestedAt: "2026-08-23T12:00:00.000Z"
+    };
+    mockSearchParams = { toolRunId: "harvest-delete-1" };
+    mockListToolRuns.mockResolvedValue([harvestRun]);
+    mockGetToolRun.mockResolvedValue(harvestRun);
+    mockRememberPendingHarvestDeletion.mockResolvedValue(pending);
+    mockPermanentlyDeleteToolRun
+      .mockResolvedValueOnce({
+        deleted: true,
+        permanent: true,
+        toolRunId: "harvest-delete-1",
+        deleteSourceVideo: true,
+        sourceVideoDeleted: false,
+        deletedFrameCount: 12,
+        retainedSharedFrameCount: 0,
+        retainedCalibrationAnalyzedEvidenceCount: 0,
+        removedModuleRecordCount: 1,
+        scrubbedReviewCount: 1,
+        removedInspectionViewReviewCount: 1,
+        scrubbedDeepOperationCount: 1,
+        cleanupPending: true,
+        cleanupStatus: "cleanup_pending",
+        logicalDeletedAt: "2026-08-23T12:01:00.000Z",
+        completedAt: null,
+        cleanupErrorCode: null
+      })
+      .mockResolvedValueOnce({
+        deleted: true,
+        permanent: true,
+        toolRunId: "harvest-delete-1",
+        deleteSourceVideo: true,
+        sourceVideoDeleted: true,
+        deletedFrameCount: 12,
+        retainedSharedFrameCount: 0,
+        retainedCalibrationAnalyzedEvidenceCount: 0,
+        removedModuleRecordCount: 1,
+        scrubbedReviewCount: 1,
+        removedInspectionViewReviewCount: 1,
+        scrubbedDeepOperationCount: 1,
+        cleanupPending: false,
+        cleanupStatus: "completed",
+        logicalDeletedAt: "2026-08-23T12:01:00.000Z",
+        completedAt: "2026-08-23T12:02:00.000Z",
+        cleanupErrorCode: null
+      });
+    const screen = render(<SavedToolRunsRoute />);
+
+    fireEvent.press(
+      await screen.findByLabelText("Permanently delete this Harvest result")
+    );
+    expect(
+      screen.getByLabelText("Keep the private source video")
+    ).toHaveAccessibilityState({
+      checked: true
+    });
+    expect(screen.getByLabelText("Confirm permanent Harvest deletion")).toBeDisabled();
+    fireEvent.press(screen.getByLabelText("Delete the private source video"));
+    fireEvent.press(
+      screen.getByLabelText("I understand permanent Harvest deletion cannot be undone")
+    );
+    fireEvent.press(screen.getByLabelText("Confirm permanent Harvest deletion"));
+
+    await waitFor(() => expect(mockPermanentlyDeleteToolRun).toHaveBeenCalledTimes(1));
+    expect(mockPermanentlyDeleteToolRun).toHaveBeenCalledWith(
+      "harvest-delete-1",
+      { confirmPermanentDelete: true, deleteSourceVideo: true },
+      {}
+    );
+    expect(
+      await screen.findByLabelText("Pending Harvest result deletion cleanup")
+    ).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText("Retry pending Harvest deletion cleanup"));
+    await waitFor(() => expect(mockPermanentlyDeleteToolRun).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(
+        screen.queryByLabelText("Pending Harvest result deletion cleanup")
+      ).toBeNull()
+    );
+    expect(mockForgetPendingHarvestDeletion).toHaveBeenCalledWith(pending);
+  });
+
+  it("restores a pending Harvest cleanup receipt after a reload without the deleted ToolRun", async () => {
+    mockSearchParams = {};
+    mockListToolRuns.mockResolvedValue([]);
+    mockGetToolRun.mockResolvedValue(null);
+    mockLoadPendingHarvestDeletion.mockResolvedValue({
+      accountDigest: "a".repeat(64),
+      workspaceDigest: "b".repeat(64),
+      toolRunId: "harvest-delete-reload-1",
+      deleteSourceVideo: false,
+      requestedAt: "2026-08-23T12:00:00.000Z"
+    });
+    const screen = render(<SavedToolRunsRoute />);
+
+    expect(await screen.findByText(/saved source-video choice is.*keep/i)).toBeTruthy();
+    expect(screen.getByLabelText("Retry pending Harvest deletion cleanup")).toBeTruthy();
+    expect(screen.queryByText("harvest-delete-reload-1")).toBeNull();
+  });
+
+  it("keeps a completed server cleanup retryable when the local receipt cannot be cleared", async () => {
+    const pending = {
+      accountDigest: "a".repeat(64),
+      workspaceDigest: "b".repeat(64),
+      toolRunId: "harvest-delete-reload-2",
+      deleteSourceVideo: false,
+      requestedAt: "2026-08-23T12:00:00.000Z"
+    };
+    mockSearchParams = {};
+    mockListToolRuns.mockResolvedValue([]);
+    mockLoadPendingHarvestDeletion.mockResolvedValue(pending);
+    mockForgetPendingHarvestDeletion.mockRejectedValueOnce(
+      new Error("device storage unavailable")
+    );
+    mockPermanentlyDeleteToolRun.mockResolvedValueOnce({
+      deleted: true,
+      permanent: true,
+      toolRunId: pending.toolRunId,
+      deleteSourceVideo: false,
+      sourceVideoDeleted: false,
+      deletedFrameCount: 0,
+      retainedSharedFrameCount: 0,
+      retainedCalibrationAnalyzedEvidenceCount: 0,
+      removedModuleRecordCount: 1,
+      scrubbedReviewCount: 1,
+      removedInspectionViewReviewCount: 0,
+      scrubbedDeepOperationCount: 1,
+      cleanupPending: false,
+      cleanupStatus: "completed",
+      logicalDeletedAt: "2026-08-23T12:01:00.000Z",
+      completedAt: "2026-08-23T12:02:00.000Z",
+      cleanupErrorCode: null
+    });
+    const screen = render(<SavedToolRunsRoute />);
+
+    fireEvent.press(
+      await screen.findByLabelText("Retry pending Harvest deletion cleanup")
+    );
+    expect(
+      await screen.findByText(
+        /cleanup completed.*could not clear its local retry receipt/i
+      )
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Pending Harvest result deletion cleanup")).toBeTruthy();
   });
 
   it("keeps exact AI inspection views available from a saved run", async () => {

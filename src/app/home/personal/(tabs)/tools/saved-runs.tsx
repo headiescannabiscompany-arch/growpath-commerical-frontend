@@ -16,6 +16,7 @@ import {
   createTaskFromToolRun,
   getToolRun,
   listToolRuns,
+  permanentlyDeleteToolRun,
   saveToolRunToLog,
   updatePlantIdCorrection,
   updateToolRun,
@@ -71,10 +72,22 @@ import {
   type PublicCoordinates
 } from "@/utils/locationSearch";
 import { useEntitlements } from "@/entitlements";
+import { useOptionalAuth } from "@/auth/AuthContext";
+import {
+  forgetPendingHarvestResultDeletion,
+  loadPendingHarvestResultDeletion,
+  rememberPendingHarvestResultDeletion,
+  type PendingHarvestResultDeletion
+} from "@/features/personal/tools/harvestResultDeletionPersistence";
 import {
   resolveToolWorkspaceType,
   toolWorkspaceIdentity
 } from "@/features/personal/tools/toolWorkspaceScope";
+import {
+  isShareableSignedHarvestResult,
+  savedHarvestAnalysis,
+  shareSignedHarvestResult
+} from "@/features/personal/tools/harvestPrivateSharing";
 
 const DIRECT_NATURE_COLLECTION_TITLE = "My Nature Finds";
 const DIRECT_NATURE_COLLECTION_DESCRIPTION =
@@ -1321,6 +1334,8 @@ export default function SavedToolRunsScreen({
 } = {}) {
   const { palette } = useAppTheme();
   const entitlements = useEntitlements();
+  const auth = useOptionalAuth();
+  const accountId = String(auth?.user?.id || auth?.user?._id || "").trim();
   const styles = useMemo(() => createSavedToolRunsStyles(palette), [palette]);
   const params = useLocalSearchParams<{
     growId?: string | string[];
@@ -1449,6 +1464,12 @@ export default function SavedToolRunsScreen({
   const [publishingNature, setPublishingNature] = useState(false);
   const [natureFeedback, setNatureFeedback] = useState("");
   const [savingFieldObservation, setSavingFieldObservation] = useState(false);
+  const [showPermanentDelete, setShowPermanentDelete] = useState(false);
+  const [permanentDeleteConfirmed, setPermanentDeleteConfirmed] = useState(false);
+  const [deleteSourceVideo, setDeleteSourceVideo] = useState(false);
+  const [deletingPermanently, setDeletingPermanently] = useState(false);
+  const [pendingHarvestDeletion, setPendingHarvestDeletion] =
+    useState<PendingHarvestResultDeletion | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const pendingFocusRunIdRef = useRef("");
   const selectedRunIdRef = useRef("");
@@ -1532,7 +1553,33 @@ export default function SavedToolRunsScreen({
     setPublishingNature(false);
     setNatureFeedback("");
     setSavingFieldObservation(false);
+    setShowPermanentDelete(false);
+    setPermanentDeleteConfirmed(false);
+    setDeleteSourceVideo(false);
+    setDeletingPermanently(false);
+    setPendingHarvestDeletion(null);
   }, [initialToolType, workspaceIdentityKey]);
+
+  useEffect(() => {
+    let active = true;
+    setPendingHarvestDeletion(null);
+    if (!accountId || !workspaceIdentityKey) {
+      return () => {
+        active = false;
+      };
+    }
+    void loadPendingHarvestResultDeletion({
+      accountId,
+      workspaceKey: workspaceIdentityKey
+    }).then((pending) => {
+      if (active && currentWorkspaceIdentityRef.current === workspaceIdentityKey) {
+        setPendingHarvestDeletion(pending);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [accountId, workspaceIdentityKey]);
 
   const load = useCallback(async () => {
     const requestWorkspaceIdentity = workspaceIdentityKey;
@@ -1675,6 +1722,9 @@ export default function SavedToolRunsScreen({
       selectedRunIdRef.current = id;
       pendingFocusRunIdRef.current = id;
       setFeedback("");
+      setShowPermanentDelete(false);
+      setPermanentDeleteConfirmed(false);
+      setDeleteSourceVideo(false);
       setPrivateLocationFeedback("");
       const full = toolRunScope.workspaceType
         ? await getToolRun(id, toolRunScope)
@@ -1717,6 +1767,9 @@ export default function SavedToolRunsScreen({
       selectedRunIdRef.current = targetToolRunId;
       pendingFocusRunIdRef.current = targetToolRunId;
       setFeedback("");
+      setShowPermanentDelete(false);
+      setPermanentDeleteConfirmed(false);
+      setDeleteSourceVideo(false);
       const full = toolRunScope.workspaceType
         ? await getToolRun(targetToolRunId, toolRunScope)
         : await getToolRun(targetToolRunId);
@@ -1818,6 +1871,97 @@ export default function SavedToolRunsScreen({
     setSummaryDraft("");
     setFeedback("Saved run archived.");
     await load();
+  }
+
+  async function runPermanentHarvestDeletion(pending: PendingHarvestResultDeletion) {
+    const requestWorkspaceIdentity = workspaceIdentityKey;
+    setDeletingPermanently(true);
+    setFeedback("");
+    try {
+      const receipt = await permanentlyDeleteToolRun(
+        pending.toolRunId,
+        {
+          confirmPermanentDelete: true,
+          deleteSourceVideo: pending.deleteSourceVideo
+        },
+        toolRunScope
+      );
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setRuns((current) => current.filter((run) => idFor(run) !== pending.toolRunId));
+      if (selectedRunIdRef.current === pending.toolRunId) {
+        selectedRunIdRef.current = "";
+        setSelectedRun(null);
+        setSummaryDraft("");
+      }
+      setShowPermanentDelete(false);
+      setPermanentDeleteConfirmed(false);
+      if (receipt.cleanupPending) {
+        setPendingHarvestDeletion(pending);
+        setFeedback(
+          `Harvest result permanently deleted. Protected-media cleanup is still pending. Retry the same saved cleanup receipt; the source video choice remains ${pending.deleteSourceVideo ? "delete" : "keep"}.`
+        );
+      } else {
+        const localReceiptCleared = await forgetPendingHarvestResultDeletion(pending)
+          .then(() => true)
+          .catch(() => false);
+        if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+        if (!localReceiptCleared) {
+          setPendingHarvestDeletion(pending);
+          setFeedback(
+            "Protected-media cleanup completed, but this device could not clear its local retry receipt. Retry the exact cleanup once connectivity or device storage is available; the server will return the same completed receipt without repeating logical deletion."
+          );
+          return;
+        }
+        setPendingHarvestDeletion(null);
+        setFeedback(
+          `Harvest result and its private analysis artifacts were permanently deleted. ${receipt.deletedFrameCount} retained frame${receipt.deletedFrameCount === 1 ? " was" : "s were"} removed; the private source video was ${receipt.sourceVideoDeleted ? "deleted" : "kept"}.`
+        );
+      }
+    } catch (deleteError: any) {
+      if (currentWorkspaceIdentityRef.current !== requestWorkspaceIdentity) return;
+      setPendingHarvestDeletion(pending);
+      setFeedback(
+        deleteError?.message
+          ? `Permanent deletion status could not be confirmed: ${deleteError.message} Retry this exact saved request; do not change the source-video choice.`
+          : "Permanent deletion status could not be confirmed. Retry this exact saved request; do not change the source-video choice."
+      );
+    } finally {
+      if (currentWorkspaceIdentityRef.current === requestWorkspaceIdentity) {
+        setDeletingPermanently(false);
+      }
+    }
+  }
+
+  async function permanentlyDeleteSelectedHarvest() {
+    const id = selectedRun ? idFor(selectedRun) : "";
+    if (
+      !id ||
+      !selectedRun ||
+      !isHarvestRun(selectedRun) ||
+      !permanentDeleteConfirmed ||
+      !accountId
+    )
+      return;
+    try {
+      const pending = await rememberPendingHarvestResultDeletion({
+        accountId,
+        workspaceKey: workspaceIdentityKey,
+        toolRunId: id,
+        deleteSourceVideo
+      });
+      if (
+        currentWorkspaceIdentityRef.current !== workspaceIdentityKey ||
+        selectedRunIdRef.current !== id
+      )
+        return;
+      setPendingHarvestDeletion(pending);
+      await runPermanentHarvestDeletion(pending);
+    } catch (deleteError: any) {
+      setFeedback(
+        deleteError?.message ||
+          "The permanent-deletion retry receipt could not be saved, so nothing was deleted."
+      );
+    }
   }
 
   async function capturePrivateFieldLocation() {
@@ -2411,6 +2555,8 @@ export default function SavedToolRunsScreen({
   const selectedRunIsCannabis = selectedRun
     ? isCannabisPlantIdentification(displayOutputsFor(selectedRun))
     : false;
+  const selectedSignedHarvestAnalysis =
+    selectedRun && isHarvestRun(selectedRun) ? savedHarvestAnalysis(selectedRun) : null;
   const selectedEvidenceReview = selectedRun
     ? inferEvidenceReview(runOutputs(selectedRun), runInputs(selectedRun))
     : null;
@@ -2430,6 +2576,27 @@ export default function SavedToolRunsScreen({
   );
   const actions: ToolResultAction[] = selectedRunId
     ? [
+        ...(selectedSignedHarvestAnalysis &&
+        isShareableSignedHarvestResult(selectedSignedHarvestAnalysis)
+          ? [
+              {
+                key: "share-signed-harvest-result",
+                label: "Share signed Harvest result",
+                variant: "secondary" as const,
+                pendingLabel: "Opening...",
+                onPress: async () => {
+                  const method = await shareSignedHarvestResult(
+                    selectedSignedHarvestAnalysis
+                  );
+                  setFeedback(
+                    method === "web-clipboard"
+                      ? "The attestation-gated Harvest summary was copied. It includes no media, private IDs, receipt secrets, or location metadata."
+                      : "Share options opened for the attestation-gated Harvest summary. GrowPath cannot observe recipient delivery; no media, private IDs, receipt secrets, or location metadata were included."
+                  );
+                }
+              }
+            ]
+          : []),
         {
           key: "save-log",
           label: "Save to Grow Log",
@@ -2523,6 +2690,33 @@ export default function SavedToolRunsScreen({
           />
           {growId ? <Text style={styles.context}>Grow context: {growId}</Text> : null}
         </View>
+
+        {pendingHarvestDeletion ? (
+          <View
+            style={styles.confirmationPanel}
+            accessibilityLabel="Pending Harvest result deletion cleanup"
+          >
+            <Text style={styles.cardTitle}>Private cleanup still pending</Text>
+            <Text style={styles.cardText}>
+              The Harvest result is already logically and permanently deleted. GrowPath
+              retained only this local retry receipt so protected-media cleanup can be
+              resumed after a reload. The saved source-video choice is{" "}
+              {pendingHarvestDeletion.deleteSourceVideo ? "delete" : "keep"} and cannot be
+              changed for this request.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Retry pending Harvest deletion cleanup"
+              disabled={deletingPermanently}
+              onPress={() => void runPermanentHarvestDeletion(pendingHarvestDeletion)}
+              style={[styles.secondary, deletingPermanently && styles.disabled]}
+            >
+              <Text style={styles.secondaryText}>
+                {deletingPermanently ? "Checking Cleanup..." : "Retry Exact Cleanup"}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         <View style={styles.filters}>
           {TOOL_FILTERS.map((filter) => {
@@ -2661,6 +2855,138 @@ export default function SavedToolRunsScreen({
                     </Pressable>
                   </Link>
                 </View>
+              </View>
+            ) : null}
+            {isHarvestRun(selectedRun) ? (
+              <View style={styles.editor}>
+                {!showPermanentDelete ? (
+                  <>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Permanently delete this Harvest result"
+                      accessibilityState={{
+                        disabled: Boolean(pendingHarvestDeletion || !accountId)
+                      }}
+                      disabled={Boolean(pendingHarvestDeletion || !accountId)}
+                      onPress={() => {
+                        setShowPermanentDelete(true);
+                        setPermanentDeleteConfirmed(false);
+                        setDeleteSourceVideo(false);
+                        setFeedback("");
+                      }}
+                      style={[
+                        styles.secondary,
+                        (pendingHarvestDeletion || !accountId) && styles.disabled
+                      ]}
+                    >
+                      <Text style={styles.secondaryText}>
+                        Permanently Delete Harvest Result...
+                      </Text>
+                    </Pressable>
+                    {!accountId ? (
+                      <Text style={styles.cardText}>
+                        Sign in before permanently deleting a saved Harvest result.
+                      </Text>
+                    ) : pendingHarvestDeletion ? (
+                      <Text style={styles.cardText}>
+                        Finish the saved cleanup request above before permanently deleting
+                        another Harvest result in this workspace.
+                      </Text>
+                    ) : null}
+                  </>
+                ) : (
+                  <View
+                    style={styles.confirmationPanel}
+                    accessibilityLabel="Confirm permanent Harvest result deletion"
+                  >
+                    <Text style={styles.cardTitle}>
+                      Permanently delete this Harvest result?
+                    </Text>
+                    <Text style={styles.cardText}>
+                      This cannot be undone. GrowPath removes the saved result, its
+                      analysis receipts, retained inspection views, generated frames that
+                      are safe to remove, and linked private analysis artifacts. Shared or
+                      calibration-authorized evidence is retained only where required.
+                    </Text>
+                    <Text style={styles.label}>Private source video</Text>
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: !deleteSourceVideo }}
+                      accessibilityLabel="Keep the private source video"
+                      onPress={() => setDeleteSourceVideo(false)}
+                      style={[
+                        styles.secondary,
+                        !deleteSourceVideo && styles.choiceSelected
+                      ]}
+                    >
+                      <Text style={styles.secondaryText}>
+                        {!deleteSourceVideo ? "✓ " : ""}Keep source video
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: deleteSourceVideo }}
+                      accessibilityLabel="Delete the private source video"
+                      onPress={() => setDeleteSourceVideo(true)}
+                      style={[
+                        styles.secondary,
+                        deleteSourceVideo && styles.choiceSelected
+                      ]}
+                    >
+                      <Text style={styles.secondaryText}>
+                        {deleteSourceVideo ? "✓ " : ""}Delete source video too
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: permanentDeleteConfirmed }}
+                      accessibilityLabel="I understand permanent Harvest deletion cannot be undone"
+                      onPress={() =>
+                        setPermanentDeleteConfirmed((confirmed) => !confirmed)
+                      }
+                      style={[
+                        styles.secondary,
+                        permanentDeleteConfirmed && styles.choiceSelected
+                      ]}
+                    >
+                      <Text style={styles.secondaryText}>
+                        {permanentDeleteConfirmed ? "✓ " : ""}I understand this result and
+                        its private analysis history cannot be recovered
+                      </Text>
+                    </Pressable>
+                    <View style={styles.buttonRow}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Confirm permanent Harvest deletion"
+                        disabled={!permanentDeleteConfirmed || deletingPermanently}
+                        onPress={() => void permanentlyDeleteSelectedHarvest()}
+                        style={[
+                          styles.primary,
+                          (!permanentDeleteConfirmed || deletingPermanently) &&
+                            styles.disabled
+                        ]}
+                      >
+                        <Text style={styles.primaryText}>
+                          {deletingPermanently
+                            ? "Deleting Permanently..."
+                            : "Permanently Delete"}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={deletingPermanently}
+                        onPress={() => {
+                          setShowPermanentDelete(false);
+                          setPermanentDeleteConfirmed(false);
+                          setDeleteSourceVideo(false);
+                        }}
+                        style={styles.secondary}
+                      >
+                        <Text style={styles.secondaryText}>Cancel</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
               </View>
             ) : null}
             {isSpeciesCropRun(selectedRun) ? (

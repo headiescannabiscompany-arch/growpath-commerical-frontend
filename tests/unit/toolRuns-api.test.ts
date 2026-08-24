@@ -10,6 +10,7 @@ const {
   createToolRun,
   getToolRun,
   listToolRuns,
+  permanentlyDeleteToolRun,
   runCalculator,
   saveToolRunToLog,
   updatePlantIdCorrection,
@@ -206,6 +207,78 @@ describe("toolRuns API", () => {
       method: "DELETE",
       body: scope
     });
+  });
+
+  it("permanently deletes a Harvest result with an exact workspace and source-video choice", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      deleted: true,
+      permanent: true,
+      toolRunId: "harvest-run-1",
+      deleteSourceVideo: false,
+      sourceVideoDeleted: false,
+      deletedFrameCount: 80,
+      retainedSharedFrameCount: 1,
+      retainedCalibrationAnalyzedEvidenceCount: 2,
+      removedModuleRecordCount: 1,
+      scrubbedReviewCount: 1,
+      removedInspectionViewReviewCount: 3,
+      scrubbedDeepOperationCount: 1,
+      cleanupPending: true,
+      cleanupStatus: "cleanup_pending",
+      logicalDeletedAt: "2026-08-23T12:00:00.000Z",
+      completedAt: null,
+      cleanupErrorCode: "OBJECT_CLEANUP_RETRY"
+    });
+
+    await expect(
+      permanentlyDeleteToolRun(
+        "harvest-run-1",
+        { confirmPermanentDelete: true, deleteSourceVideo: false },
+        { workspaceType: "facility", facilityId: "facility-1" }
+      )
+    ).resolves.toEqual(
+      expect.objectContaining({ cleanupPending: true, deleteSourceVideo: false })
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/tools/runs/harvest-run-1/permanent",
+      {
+        method: "DELETE",
+        body: {
+          confirmPermanentDelete: true,
+          deleteSourceVideo: false,
+          workspaceType: "facility",
+          facilityId: "facility-1"
+        }
+      }
+    );
+  });
+
+  it("rejects a permanent-deletion receipt that changes the source-video choice", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      deleted: true,
+      permanent: true,
+      toolRunId: "harvest-run-1",
+      deleteSourceVideo: true,
+      sourceVideoDeleted: true,
+      deletedFrameCount: 1,
+      retainedSharedFrameCount: 0,
+      retainedCalibrationAnalyzedEvidenceCount: 0,
+      removedModuleRecordCount: 1,
+      scrubbedReviewCount: 1,
+      removedInspectionViewReviewCount: 0,
+      scrubbedDeepOperationCount: 0,
+      cleanupPending: false,
+      cleanupStatus: "completed",
+      logicalDeletedAt: "2026-08-23T12:00:00.000Z",
+      completedAt: "2026-08-23T12:01:00.000Z"
+    });
+
+    await expect(
+      permanentlyDeleteToolRun("harvest-run-1", {
+        confirmPermanentDelete: true,
+        deleteSourceVideo: false
+      })
+    ).rejects.toThrow(/incomplete permanent-deletion cleanup receipt/i);
   });
 
   it("sends facility scope when listing shared Saved Runs", async () => {

@@ -36,10 +36,14 @@ entries without an application/access error or horizontal overflow. Exact paths 
 intentional non-routes found by guessed URLs are retained in
 `R03_FINAL_ROUTE_ENTRY_MATRIX_2026-08-24.md`.
 
-The remaining R-03 gate is now only the human multi-account chain and physical responsive/
-keyboard spot check: current Free, Commercial-owner, Facility Owner/Staff/Viewer and logout/
-expiry sessions. Provider-backed actions remain in their owning product rows and are not
-fabricated as R-03 completion.
+At that checkpoint, the remaining R-03 gate was only the human multi-account chain and
+physical responsive/keyboard spot check: current Free, Commercial-owner, Facility
+Owner/Staff/Viewer and logout/expiry sessions. The owner subsequently authorized the P-08
+Harvest max-80 ranked-video/Deep Review expansion. That product-row change deliberately
+unfreezes the candidate: retain this crawl as pre-change regression evidence, complete and
+accept P-08 without rebuilding the <=12 path, then rerun the affected routes and the final
+frozen-candidate crawl. Provider-backed actions remain in their owning product rows and are
+not fabricated as R-03 completion.
 
 ## Candidate identity
 

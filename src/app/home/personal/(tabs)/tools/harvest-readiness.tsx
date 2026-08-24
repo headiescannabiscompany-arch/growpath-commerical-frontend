@@ -6,6 +6,7 @@ import BackendCalculatorToolScreen, {
   tomorrow
 } from "@/features/personal/tools/BackendCalculatorToolScreen";
 import { saveToolRunAndCreateTasks } from "@/features/personal/tools/saveToolRunAndOpenJournal";
+import { useHarvestDeepReview } from "@/features/personal/tools/useHarvestDeepReview";
 import {
   getHarvestBatch,
   listHarvestBatches,
@@ -17,12 +18,15 @@ import {
   analyzeTrichomePhotos,
   isSupportedHarvestReviewPolicy,
   submitHarvestTrichomeFeedback,
+  type HarvestDeepReviewOperation,
+  type HarvestDeepReviewQuote,
   type TrichomeVisionResult
 } from "@/api/harvestVision";
 import type { VideoWorkspaceType } from "@/api/videos";
 import { listEvidenceAssets, providerEvidencePayload } from "@/api/evidence";
 import { getToolRun, type ToolRun } from "@/api/toolRuns";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import { useServerVideoFrameExtraction } from "@/components/media/useServerVideoFrameExtraction";
 import SavedGrowPhotoEvidencePicker from "@/components/media/SavedGrowPhotoEvidencePicker";
 import EvidenceReviewPanel from "@/components/personal/EvidenceReviewPanel";
 import { PLANT_REVIEW_PHOTO_LIMIT } from "@/features/personal/diagnosis/photoEvidenceQuality";
@@ -33,12 +37,32 @@ import {
   inspectedPhotoEstimates,
   strongestInspectedAmberSignal
 } from "@/features/personal/tools/harvestVisibleSample";
+import {
+  exportSelectedHarvestFrames,
+  HARVEST_PRIVATE_FRAME_EXPORT_LIMIT,
+  harvestAnalyzedGlobalIndexes,
+  harvestBatchSummariesCoverEvidence,
+  harvestRetainedFrameExportCandidates,
+  isShareableSignedHarvestResult,
+  savedHarvestAnalysis,
+  shareSignedHarvestResult
+} from "@/features/personal/tools/harvestPrivateSharing";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import type { EvidenceAsset } from "@/types/evidence";
+import { businessDeskProviderSignatureSha256 } from "@/features/businessDesk/providerOperationPersistence";
 
 const MIN_HARVEST_PHOTOS = 4;
+const MAX_HARVEST_PROVIDER_IMAGES = 80;
+const MAX_HARVEST_USER_PHOTOS = PLANT_REVIEW_PHOTO_LIMIT;
+const HARVEST_FRAME_PREVIEW_LIMIT = 12;
 const HARVEST_CONTEXT_SCOPED_FIELDS = ["harvestBatchId"];
+
+export {
+  harvestAnalyzedGlobalIndexes,
+  harvestBatchSummariesCoverEvidence,
+  savedHarvestAnalysis
+};
 
 const HARVEST_CALIBRATION_CHOICES = [
   { key: "close", label: "Estimate looks close" },
@@ -52,9 +76,54 @@ const HARVEST_PHOTO_CHECKLIST = [
   "Focus on intact trichome gland heads on bud calyxes, not pistils or sugar-leaf edges.",
   "Use neutral white light; avoid purple LEDs, glare, blur, digital zoom, and heavy compression.",
   "Include one wider bud-context photo so each macro sample has a clear location.",
-  "A short video can supply candidate still frames, but each extracted frame must independently pass the same focus, glare, and bud-site checks.",
-  "Photo count is not coverage: even 12 wide photos cannot replace three true macros where individual intact gland heads are visible."
+  "A short video can be scanned for a bounded set of distinct, usable still frames; every retained frame still must pass the same focus, glare, and bud-site checks.",
+  "Image count is not coverage: many wide views cannot replace three true macros where individual intact gland heads are visible."
 ];
+
+function readableEvidenceBytes(value: unknown) {
+  const bytes = Number(value || 0);
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 bytes";
+  if (bytes < 1024) return `${Math.round(bytes)} bytes`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function harvestReviewCreditEstimate(imageCount: number) {
+  const boundedCount = Math.min(
+    MAX_HARVEST_PROVIDER_IMAGES,
+    Math.max(1, Math.trunc(Number(imageCount) || 0))
+  );
+  return Math.min(7, Math.max(1, Math.ceil(boundedCount / 12)));
+}
+
+export function harvestVideoReviewPlan(input: {
+  status: "idle" | "processing" | "completed" | "partial" | "failed";
+  chosenCeiling: 12 | 80;
+  requestedFrameCount?: number;
+  targetFrameCount?: number;
+  selectedCount?: number;
+}) {
+  const persistedCount = Math.max(
+    Number(input.requestedFrameCount || 0),
+    Number(input.targetFrameCount || 0),
+    Number(input.selectedCount || 0)
+  );
+  const persistedCeiling: 12 | 80 | null = persistedCount
+    ? persistedCount > 12
+      ? 80
+      : 12
+    : null;
+  const restoreLocked = input.status === "processing" || input.status === "completed";
+  return {
+    selectedCeiling: restoreLocked
+      ? (persistedCeiling ?? input.chosenCeiling)
+      : input.chosenCeiling,
+    effectiveCeiling: restoreLocked
+      ? (persistedCeiling ?? input.chosenCeiling)
+      : input.chosenCeiling,
+    restoreLocked
+  };
+}
 
 type HarvestAnalysisDraft = {
   result: TrichomeVisionResult;
@@ -62,6 +131,18 @@ type HarvestAnalysisDraft = {
   revisionKey: string;
   growId: string;
 };
+
+type HarvestReviewResultContext = Pick<
+  HarvestDeepReviewQuote,
+  | "analysisMode"
+  | "selectedEvidenceCount"
+  | "analyzedEvidenceCount"
+  | "batchCount"
+  | "creditsQuoted"
+  | "manifestDigest"
+  | "selectedEvidenceDigest"
+  | "analyzedEvidenceDigest"
+> & { operationId?: string };
 
 function savedHarvestEvidenceIds(run: ToolRun | null) {
   const inputs = (run?.inputs || run?.input || run?.params || {}) as Record<string, any>;
@@ -84,33 +165,6 @@ function savedHarvestEvidenceIds(run: ToolRun | null) {
     .filter(Boolean);
 }
 
-function savedHarvestAnalysis(run: ToolRun | null): TrichomeVisionResult | null {
-  const outputs = (run?.outputs || run?.result || {}) as Record<string, any>;
-  const photoAnalysis = outputs.photoAnalysis;
-  if (!photoAnalysis || typeof photoAnalysis !== "object") return null;
-
-  const receipt =
-    photoAnalysis.analysisReceipt && typeof photoAnalysis.analysisReceipt === "object"
-      ? photoAnalysis.analysisReceipt
-      : {
-          aiUsageEventId: photoAnalysis.aiUsageEventId,
-          normalizedHarvestResultDigest: photoAnalysis.normalizedHarvestResultDigest,
-          evidenceFingerprint: photoAnalysis.evidenceFingerprint,
-          reviewPolicyVersion: photoAnalysis.reviewPolicyVersion
-        };
-  const securelyAttested = Boolean(
-    typeof photoAnalysis.photoUsable === "boolean" &&
-    String(photoAnalysis.analysisId || "").trim() &&
-    String(receipt?.aiUsageEventId || "").trim() &&
-    /^[a-f0-9]{64}$/i.test(String(receipt?.normalizedHarvestResultDigest || "").trim()) &&
-    String(receipt?.evidenceFingerprint || "").trim() &&
-    isSupportedHarvestReviewPolicy(receipt?.reviewPolicyVersion)
-  );
-  return securelyAttested
-    ? ({ ...photoAnalysis, analysisReceipt: receipt } as TrichomeVisionResult)
-    : null;
-}
-
 function harvestAnalysisScopeKey(input: {
   workspaceType: VideoWorkspaceType;
   workspaceId?: string;
@@ -118,20 +172,28 @@ function harvestAnalysisScopeKey(input: {
   growId: string;
   plantId: string;
   evidenceAssetIds: string[];
+  sampleLocation: string;
+  notes?: string;
+  daysSinceFlip?: number;
 }) {
-  const evidenceKey = [...input.evidenceAssetIds]
-    .map(String)
-    .filter(Boolean)
-    .sort()
-    .join(",");
-  return [
-    input.workspaceType,
-    String(input.workspaceId || "self"),
-    String(input.facilityId || "no-facility"),
-    String(input.growId || "no-grow"),
-    String(input.plantId || "no-plant"),
-    evidenceKey || "no-evidence"
-  ].join("::");
+  // The quote binds provider context as well as media. Persist and compare only a
+  // deterministic digest so private notes never enter operation metadata or scope keys.
+  return `harvest-analysis::${businessDeskProviderSignatureSha256(
+    JSON.stringify({
+      workspaceType: input.workspaceType,
+      workspaceId: String(input.workspaceId || ""),
+      facilityId: String(input.facilityId || ""),
+      growId: String(input.growId || ""),
+      plantId: String(input.plantId || ""),
+      evidenceAssetIds: input.evidenceAssetIds.map(String).filter(Boolean),
+      sampleLocation: String(input.sampleLocation || ""),
+      notes: String(input.notes || "").trim(),
+      daysSinceFlip:
+        typeof input.daysSinceFlip === "number" && Number.isFinite(input.daysSinceFlip)
+          ? input.daysSinceFlip
+          : null
+    })
+  )}`;
 }
 
 function harvestAnalysisRevisionKey(result: TrichomeVisionResult, scopeKey: string) {
@@ -167,6 +229,12 @@ function trichomeHeadTallyLabel(
   return ` · tally: ${counts.clear} clear / ${counts.cloudy} cloudy / ${counts.amber} confirmed amber / ${counts.amberOrWarmLight || 0} amber or warm light / ${counts.cloudyOrGlare} cloudy or glare (${total} heads, ${finding.countingConfidence || "low"} confidence)`;
 }
 
+export function harvestHeadDevelopmentSignalLabel(signal: string) {
+  if (signal === "ruptured_heads") return "ruptured heads";
+  if (signal === "bare_stalks") return "bare stalks";
+  return String(signal || "uncertain").replaceAll("_", " ");
+}
+
 function harvestPhotoRecoveryMessage(detail?: string) {
   return [
     detail || "Photo analysis could not run.",
@@ -176,6 +244,102 @@ function harvestPhotoRecoveryMessage(detail?: string) {
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+export function UnsavedHarvestDeepResultDiscard({
+  operation,
+  busy,
+  onDiscard
+}: {
+  operation: HarvestDeepReviewOperation | null;
+  busy: boolean;
+  onDiscard: () => Promise<boolean> | boolean;
+}) {
+  const { palette } = useAppTheme();
+  const photoStyles = useMemo(() => createHarvestPhotoStyles(palette), [palette]);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+
+  useEffect(() => {
+    setConfirmationOpen(false);
+    setConfirmed(false);
+  }, [operation?.id, operation?.status]);
+
+  if (!operation || operation.status !== "succeeded") return null;
+
+  if (!confirmationOpen) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Discard unsaved Deep result"
+        disabled={busy}
+        onPress={() => setConfirmationOpen(true)}
+        style={[photoStyles.secondaryButton, busy && photoStyles.disabled]}
+      >
+        <Text style={photoStyles.secondaryButtonText}>
+          Discard Unsaved Deep Result...
+        </Text>
+      </Pressable>
+    );
+  }
+
+  return (
+    <View
+      accessibilityLabel="Confirm unsaved Deep result discard"
+      style={photoStyles.qualityChecks}
+    >
+      <Text style={photoStyles.checklistTitle}>Permanent result-only discard</Text>
+      <Text style={photoStyles.warning}>
+        This permanently removes this unsaved signed Deep result and its provider-result
+        metadata. It cannot be undone. The private source video and retained frames are
+        kept and are not deleted. AI credits already charged for the completed review are
+        not refunded.
+      </Text>
+      <Text style={photoStyles.help}>
+        GrowPath will refuse this action if the result was saved, is used for calibration,
+        or is under a legal or preservation hold. Delete a saved result from Saved Runs or
+        remove the protected reference instead.
+      </Text>
+      <View style={photoStyles.consentRow}>
+        <Switch
+          accessibilityLabel="I understand unsaved Deep result discard is permanent and not refunded"
+          value={confirmed}
+          onValueChange={setConfirmed}
+          disabled={busy}
+        />
+        <Text style={photoStyles.consentText}>
+          I understand this result-only discard is permanent, keeps the private media, and
+          does not refund the charged AI credits.
+        </Text>
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Permanently discard unsaved Deep result"
+        disabled={!confirmed || busy}
+        onPress={() => void onDiscard()}
+        style={[
+          photoStyles.secondaryButton,
+          (!confirmed || busy) && photoStyles.disabled
+        ]}
+      >
+        <Text style={photoStyles.removeText}>
+          {busy ? "Discarding Unsaved Result..." : "Permanently Discard Unsaved Result"}
+        </Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Cancel unsaved Deep result discard"
+        disabled={busy}
+        onPress={() => {
+          setConfirmationOpen(false);
+          setConfirmed(false);
+        }}
+        style={[photoStyles.secondaryButton, busy && photoStyles.disabled]}
+      >
+        <Text style={photoStyles.secondaryButtonText}>Cancel</Text>
+      </Pressable>
+    </View>
+  );
 }
 
 function HarvestPhotoAnalyzer({
@@ -207,6 +371,7 @@ function HarvestPhotoAnalyzer({
   const photoStyles = useMemo(() => createHarvestPhotoStyles(palette), [palette]);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [evidenceUploadBusy, setEvidenceUploadBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [restoreFeedback, setRestoreFeedback] = useState("");
   const [restoringEvidence, setRestoringEvidence] = useState(false);
@@ -218,6 +383,12 @@ function HarvestPhotoAnalyzer({
   const [calibrationRightsConfirmed, setCalibrationRightsConfirmed] = useState(false);
   const [calibrationBusy, setCalibrationBusy] = useState(false);
   const [calibrationStatus, setCalibrationStatus] = useState("");
+  const [videoReviewImageCeiling, setVideoReviewImageCeiling] = useState<12 | 80>(12);
+  const [selectedFrameExportIds, setSelectedFrameExportIds] = useState<string[]>([]);
+  const [frameExportBusy, setFrameExportBusy] = useState(false);
+  const [frameExportFeedback, setFrameExportFeedback] = useState("");
+  const [resultShareBusy, setResultShareBusy] = useState(false);
+  const [resultShareFeedback, setResultShareFeedback] = useState("");
   const inspectedBreakdown = useMemo(
     () => inspectedPhotoEstimates(analysis?.imageFindings),
     [analysis?.imageFindings]
@@ -228,22 +399,169 @@ function HarvestPhotoAnalyzer({
   );
   const previousGrowIdRef = useRef(growId);
   const mountedAnalysisRef = useRef(initialAnalysis);
-  const evidence = providerEvidencePayload(evidenceAssets);
+  const evidenceWorkspace = useMemo(
+    () => ({
+      workspaceType,
+      ...(workspaceId ? { workspaceId } : {}),
+      ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
+    }),
+    [facilityId, workspaceId, workspaceType]
+  );
+  const directPhotoCount = evidenceAssets.filter(
+    (asset) => asset.assetType === "photo" && asset.source !== "generated"
+  ).length;
+  const currentHarvestSourceVideo = evidenceAssets.find(
+    (asset) => asset.assetType === "video" && asset.purpose === "harvest"
+  );
+  const persistedFrameExtraction = currentHarvestSourceVideo?.frameExtraction;
+  const persistedVideoPlan = harvestVideoReviewPlan({
+    status: persistedFrameExtraction?.status || "idle",
+    chosenCeiling: videoReviewImageCeiling,
+    requestedFrameCount: persistedFrameExtraction?.requestedFrameCount,
+    targetFrameCount: persistedFrameExtraction?.preselection?.targetFrameCount,
+    selectedCount: persistedFrameExtraction?.preselection?.selectedCount
+  });
+  const effectiveVideoReviewImageCeiling = persistedVideoPlan.effectiveCeiling;
+  const videoFrameSelection = useServerVideoFrameExtraction({
+    assets: evidenceAssets,
+    onChange: updateEvidence,
+    workspace: evidenceWorkspace,
+    purpose: "harvest",
+    growId,
+    plantId,
+    maxProviderReadyPhotos: effectiveVideoReviewImageCeiling,
+    disabled: busy || evidenceUploadBusy,
+    workflowLabel: "Harvest Readiness"
+  });
+  const frameExportCandidates = useMemo(
+    () =>
+      videoFrameSelection.ready
+        ? harvestRetainedFrameExportCandidates({
+            sourceVideo: videoFrameSelection.sourceVideo,
+            extraction: videoFrameSelection.extraction,
+            frames: videoFrameSelection.selectedFrames
+          })
+        : [],
+    [
+      videoFrameSelection.extraction,
+      videoFrameSelection.ready,
+      videoFrameSelection.selectedFrames,
+      videoFrameSelection.sourceVideo
+    ]
+  );
+  const frameExportCandidateIds = useMemo(
+    () =>
+      frameExportCandidates.map((candidate) =>
+        String(candidate.asset._id || candidate.asset.id)
+      ),
+    [frameExportCandidates]
+  );
+  const frameExportCandidateKey = frameExportCandidateIds.join("|");
+  const frameExportCandidateIdsRef = useRef(frameExportCandidateIds);
+  frameExportCandidateIdsRef.current = frameExportCandidateIds;
+  const selectedFrameExportKnownBytes = useMemo(() => {
+    const selectedIds = new Set(selectedFrameExportIds);
+    return frameExportCandidates.reduce((total, candidate) => {
+      const candidateId = String(candidate.asset._id || candidate.asset.id || "");
+      const fileSizeBytes = Number(candidate.asset.fileSizeBytes || 0);
+      return (
+        total +
+        (selectedIds.has(candidateId) &&
+        Number.isFinite(fileSizeBytes) &&
+        fileSizeBytes > 0
+          ? fileSizeBytes
+          : 0)
+      );
+    }, 0);
+  }, [frameExportCandidates, selectedFrameExportIds]);
+  const evidence = providerEvidencePayload(videoFrameSelection.providerReadyAssets);
   const photoCount = evidence.images.length;
-  const evidenceAssetKey = evidence.evidenceAssetIds.map(String).sort().join("|");
+  const reviewQuoteRequired = photoCount > 12;
+  const evidenceAssetKey = evidence.evidenceAssetIds.map(String).join("|");
+  const normalizedEvidenceAssetIds = useMemo(
+    () => (evidenceAssetKey ? evidenceAssetKey.split("|") : []),
+    [evidenceAssetKey]
+  );
   const analysisScopeKey = harvestAnalysisScopeKey({
     workspaceType,
     workspaceId,
     facilityId,
     growId,
     plantId,
-    evidenceAssetIds: evidence.evidenceAssetIds
+    evidenceAssetIds: normalizedEvidenceAssetIds,
+    sampleLocation: "mixed_bud_sites",
+    notes
   });
   const analysisScopeKeyRef = useRef(analysisScopeKey);
   const previousAnalysisScopeKeyRef = useRef(analysisScopeKey);
   const analysisRequestRevisionRef = useRef(0);
   const signedAnalysisRestoreKeyRef = useRef("");
   analysisScopeKeyRef.current = analysisScopeKey;
+  const analysisInput = useMemo(
+    () => ({
+      growId: growId || undefined,
+      plantId: plantId || undefined,
+      evidenceAssetIds: normalizedEvidenceAssetIds,
+      workspaceType,
+      workspaceId,
+      facilityId,
+      sampleLocation: "mixed_bud_sites",
+      notes: notes.trim() || undefined
+    }),
+    [
+      facilityId,
+      growId,
+      normalizedEvidenceAssetIds,
+      notes,
+      plantId,
+      workspaceId,
+      workspaceType
+    ]
+  );
+  const deepReviewOperation = useHarvestDeepReview({
+    enabled:
+      reviewQuoteRequired &&
+      videoFrameSelection.ready &&
+      photoCount >= MIN_HARVEST_PHOTOS,
+    scopeKey: analysisScopeKey,
+    workspaceKey: [
+      workspaceType,
+      workspaceId || "self",
+      facilityId || "no-facility"
+    ].join("::"),
+    expectedImageCount: photoCount,
+    analysisInput,
+    onResult: (result, context) =>
+      acceptAnalysisResult(
+        result,
+        analysisScopeKeyRef.current,
+        analysisRequestRevisionRef.current,
+        { ...context, analysisMode: "deep" }
+      ),
+    onDiscarded: () => {
+      mountedAnalysisRef.current = null;
+      setAnalysis(null);
+      onAnalysisDraft(null);
+      setResultShareFeedback("");
+      setFeedback(
+        "The unsaved signed Deep result was permanently discarded. The private source video and retained frames were kept, and the completed review's charged credits were not refunded."
+      );
+    }
+  });
+  const analysisBusy =
+    busy || Boolean(deepReviewOperation.busy) || deepReviewOperation.operationActive;
+
+  useEffect(() => {
+    const eligible = new Set(frameExportCandidateIdsRef.current);
+    setSelectedFrameExportIds((current) => {
+      const next = current.filter((id) => eligible.has(id));
+      return next.length === current.length &&
+        next.every((id, index) => id === current[index])
+        ? current
+        : next;
+    });
+    setFrameExportFeedback("");
+  }, [frameExportCandidateKey]);
 
   useEffect(() => {
     onScopeKeyChange(analysisScopeKey);
@@ -264,6 +582,7 @@ function HarvestPhotoAnalyzer({
     setCalibrationConsent(false);
     setCalibrationRightsConfirmed(false);
     setCalibrationStatus("");
+    setResultShareFeedback("");
   }, [analysis?.analysisId]);
 
   useEffect(() => {
@@ -320,7 +639,7 @@ function HarvestPhotoAnalyzer({
               asset.uploadStatus === "uploaded" &&
               Boolean(asset.durableUrl)
           )
-          .slice(0, PLANT_REVIEW_PHOTO_LIMIT);
+          .slice(0, MAX_HARVEST_PROVIDER_IMAGES);
         const savedVideo = eligibleAssets.find(
           (asset: EvidenceAsset) =>
             asset.purpose === "harvest" &&
@@ -431,7 +750,9 @@ function HarvestPhotoAnalyzer({
           facilityId,
           growId,
           plantId,
-          evidenceAssetIds: currentEvidenceAssetIds
+          evidenceAssetIds: currentEvidenceAssetIds,
+          sampleLocation: "mixed_bud_sites",
+          notes
         });
         mountedAnalysisRef.current = restoredAnalysis;
         setAnalysis(restoredAnalysis);
@@ -462,6 +783,7 @@ function HarvestPhotoAnalyzer({
     facilityId,
     growId,
     onAnalysisDraft,
+    notes,
     plantId,
     retryToolRunId,
     workspaceId,
@@ -493,66 +815,188 @@ function HarvestPhotoAnalyzer({
     );
   };
 
+  function acceptAnalysisResult(
+    result: TrichomeVisionResult,
+    requestScopeKey: string,
+    requestRevision: number,
+    quoteContext?: HarvestReviewResultContext
+  ) {
+    const expectedSelectedOrdered = evidence.imageEvidenceAssetIds.map(String);
+    const expectedSelectedSorted = [...expectedSelectedOrdered].sort();
+    const actualAnalyzedOrdered = (result.evidenceUsed || []).map(String);
+    const returnedSelected = Array.isArray(result.selectedEvidenceAssetIds)
+      ? result.selectedEvidenceAssetIds.map(String)
+      : null;
+    const receipt = result.analysisReceipt;
+    const analyzedGlobalIndexes = returnedSelected
+      ? harvestAnalyzedGlobalIndexes(returnedSelected, actualAnalyzedOrdered)
+      : null;
+    const expectedCredits = quoteContext?.creditsQuoted ?? 1;
+    const selectedSetMatches = returnedSelected
+      ? returnedSelected.length === expectedSelectedOrdered.length &&
+        returnedSelected.every((id, index) => id === expectedSelectedOrdered[index])
+      : receipt?.evidenceFingerprint === expectedSelectedSorted.join("|");
+    const baseReceiptMatches = Boolean(
+      receipt &&
+      expectedSelectedOrdered.length >= MIN_HARVEST_PHOTOS &&
+      expectedSelectedOrdered.length <= MAX_HARVEST_PROVIDER_IMAGES &&
+      selectedSetMatches &&
+      receipt.evidenceFingerprint === expectedSelectedSorted.join("|") &&
+      actualAnalyzedOrdered.length > 0 &&
+      new Set(actualAnalyzedOrdered).size === actualAnalyzedOrdered.length &&
+      result.imagesAnalyzed === actualAnalyzedOrdered.length &&
+      result.imagesAnalyzed <= expectedSelectedOrdered.length &&
+      result.aiCreditsUsed === expectedCredits &&
+      result.creditStatus === "charged" &&
+      isSupportedHarvestReviewPolicy(receipt.reviewPolicyVersion) &&
+      receipt.aiUsageEventId === result.analysisId
+    );
+
+    let quoteAndAggregateMatch = true;
+    if (quoteContext) {
+      quoteAndAggregateMatch = Boolean(
+        quoteContext.selectedEvidenceCount === expectedSelectedOrdered.length &&
+        quoteContext.analyzedEvidenceCount === actualAnalyzedOrdered.length &&
+        quoteContext.creditsQuoted === result.aiCreditsUsed
+      );
+      if (quoteContext.analysisMode === "deep") {
+        const aggregateReceipt = result.aggregateReceipt;
+        quoteAndAggregateMatch = Boolean(
+          quoteAndAggregateMatch &&
+          receipt?.reviewPolicyVersion ===
+            "harvest-trichome-server-attestation-v4-batched-evidence" &&
+          result.analysisMode === "deep" &&
+          quoteContext.batchCount >= 2 &&
+          quoteContext.batchCount <= 7 &&
+          result.batchCount === quoteContext.batchCount &&
+          result.batchSize === 12 &&
+          result.creditsQuoted === quoteContext.creditsQuoted &&
+          String(result.aggregationVersion || "").trim() &&
+          result.manifestDigest === quoteContext.manifestDigest &&
+          result.selectedEvidenceDigest === quoteContext.selectedEvidenceDigest &&
+          result.analyzedEvidenceDigest === quoteContext.analyzedEvidenceDigest &&
+          analyzedGlobalIndexes !== null &&
+          harvestBatchSummariesCoverEvidence(
+            result.batchSummaries,
+            analyzedGlobalIndexes,
+            quoteContext.batchCount
+          ) &&
+          aggregateReceipt?.kind === "harvest_vision_aggregate" &&
+          aggregateReceipt?.version === 2 &&
+          /^[a-f0-9]{64}$/.test(String(aggregateReceipt?.signature || "")) &&
+          /^[A-Za-z0-9][A-Za-z0-9._:-]{2,79}$/.test(
+            String(aggregateReceipt?.keyId || "")
+          ) &&
+          receipt?.kind === aggregateReceipt.kind &&
+          receipt?.version === aggregateReceipt.version &&
+          receipt?.signature === aggregateReceipt.signature &&
+          receipt?.keyId === aggregateReceipt.keyId &&
+          aggregateReceipt?.manifestDigest === quoteContext.manifestDigest &&
+          receipt?.manifestDigest === aggregateReceipt.manifestDigest &&
+          aggregateReceipt?.selectedEvidenceDigest ===
+            quoteContext.selectedEvidenceDigest &&
+          receipt?.selectedEvidenceDigest === aggregateReceipt.selectedEvidenceDigest &&
+          aggregateReceipt?.analyzedEvidenceDigest ===
+            quoteContext.analyzedEvidenceDigest &&
+          receipt?.analyzedEvidenceDigest === aggregateReceipt.analyzedEvidenceDigest
+        );
+      } else {
+        quoteAndAggregateMatch = Boolean(
+          quoteAndAggregateMatch &&
+          quoteContext.analyzedEvidenceCount <= 12 &&
+          quoteContext.creditsQuoted === 1 &&
+          (!result.analysisMode || result.analysisMode === "standard")
+        );
+      }
+    } else {
+      quoteAndAggregateMatch = Boolean(
+        expectedSelectedOrdered.length <= 12 && result.aiCreditsUsed === 1
+      );
+    }
+
+    if (!baseReceiptMatches || !quoteAndAggregateMatch) {
+      throw new Error(
+        "The evidence receipt does not match the exact selected photos, retained frames, server quote, and aggregate evidence manifest. No trichome fields were filled."
+      );
+    }
+    if (
+      analysisScopeKeyRef.current !== requestScopeKey ||
+      analysisRequestRevisionRef.current !== requestRevision
+    ) {
+      return;
+    }
+    setAnalysis(result);
+    onAnalysisDraft({
+      result,
+      scopeKey: requestScopeKey,
+      revisionKey: harvestAnalysisRevisionKey(result, requestScopeKey),
+      growId
+    });
+    const modeLabel = result.analysisMode === "deep" ? "Deep review" : "review";
+    setFeedback(
+      result.photoUsable
+        ? `${result.imagesAnalyzed} unique photos or retained frames were inspected in one ${modeLabel} and ${result.aiCreditsUsed} AI credit${result.aiCreditsUsed === 1 ? " was" : "s were"} charged. The clear, cloudy, and amber fields below are filled. Review the evidence and other maturity signals before running the readiness estimate.`
+        : [
+            `${result.imagesAnalyzed} unique photos or retained frames were inspected in one ${modeLabel} and ${result.aiCreditsUsed} AI credit${result.aiCreditsUsed === 1 ? " was" : "s were"} charged, but the set is not reliable enough to fill trichome percentages.`,
+            result.recommendation,
+            ...(result.limitations || []),
+            ...HARVEST_PHOTO_CHECKLIST
+          ]
+            .filter(Boolean)
+            .join(" ")
+    );
+  }
+
   async function analyze() {
-    if (photoCount < MIN_HARVEST_PHOTOS || busy || restoringEvidence) return;
+    if (
+      photoCount < MIN_HARVEST_PHOTOS ||
+      analysisBusy ||
+      restoringEvidence ||
+      evidenceUploadBusy ||
+      !videoFrameSelection.ready
+    )
+      return;
+    const quote = deepReviewOperation.quote;
+    if (reviewQuoteRequired && !quote) {
+      setFeedback(
+        "Request the exact server quote first. Quote preparation validates the saved evidence and exact duplicates without sending media to OpenAI or using a credit."
+      );
+      return;
+    }
+    if (quote?.analysisMode === "deep") {
+      if (!deepReviewOperation.quoteAccepted) {
+        setFeedback(
+          "Accept the exact Deep review image count, private OpenAI dispatch, and credit total before starting."
+        );
+        return;
+      }
+      setFeedback("");
+      await deepReviewOperation.start();
+      return;
+    }
+
     const requestScopeKey = analysisScopeKey;
     const requestRevision = analysisRequestRevisionRef.current;
     setBusy(true);
     setFeedback("");
     try {
-      const result = await analyzeTrichomePhotos({
-        growId: growId || undefined,
-        plantId: plantId || undefined,
-        // The receipt is bound to the exact selected set, including a private source
-        // video and every linked extracted frame. The backend filters provider inputs
-        // down to authorized photos/frames after validating this complete set.
-        evidenceAssetIds: evidence.evidenceAssetIds,
-        workspaceType,
-        workspaceId,
-        facilityId,
-        sampleLocation: "mixed_bud_sites",
-        notes: notes.trim() || undefined
-      });
-      const expectedAnalyzedIds = [...evidence.imageEvidenceAssetIds].map(String).sort();
-      const actualAnalyzedIds = [...(result.evidenceUsed || [])].map(String).sort();
-      const receipt = result.analysisReceipt;
-      const receiptMatchesEvidence =
-        Boolean(receipt) &&
-        expectedAnalyzedIds.length === actualAnalyzedIds.length &&
-        expectedAnalyzedIds.every((id, index) => id === actualAnalyzedIds[index]) &&
-        receipt?.evidenceFingerprint === expectedAnalyzedIds.join("|") &&
-        result.imagesAnalyzed === expectedAnalyzedIds.length &&
-        isSupportedHarvestReviewPolicy(receipt?.reviewPolicyVersion) &&
-        receipt?.aiUsageEventId === result.analysisId;
-      if (!receiptMatchesEvidence) {
-        throw new Error(
-          "The photo review returned an evidence receipt that does not match this exact photo and video-frame set. No trichome fields were filled."
-        );
-      }
-      if (
-        analysisScopeKeyRef.current !== requestScopeKey ||
-        analysisRequestRevisionRef.current !== requestRevision
-      ) {
-        return;
-      }
-      setAnalysis(result);
-      onAnalysisDraft({
+      const result = await analyzeTrichomePhotos(analysisInput);
+      acceptAnalysisResult(
         result,
-        scopeKey: requestScopeKey,
-        revisionKey: harvestAnalysisRevisionKey(result, requestScopeKey),
-        growId
-      });
-      setFeedback(
-        result.photoUsable
-          ? `${result.imagesAnalyzed} photos were inspected and 1 AI credit was charged. The clear, cloudy, and amber fields below are filled. Review the evidence and other maturity signals before running the readiness estimate.`
-          : [
-              `${result.imagesAnalyzed} photos were inspected and 1 AI credit was charged, but the set is not reliable enough to fill trichome percentages.`,
-              result.recommendation,
-              ...(result.limitations || []),
-              ...HARVEST_PHOTO_CHECKLIST
-            ]
-              .filter(Boolean)
-              .join(" ")
+        requestScopeKey,
+        requestRevision,
+        quote
+          ? {
+              analysisMode: quote.analysisMode,
+              selectedEvidenceCount: quote.selectedEvidenceCount,
+              analyzedEvidenceCount: quote.analyzedEvidenceCount,
+              batchCount: quote.batchCount,
+              creditsQuoted: quote.creditsQuoted,
+              manifestDigest: quote.manifestDigest,
+              selectedEvidenceDigest: quote.selectedEvidenceDigest,
+              analyzedEvidenceDigest: quote.analyzedEvidenceDigest
+            }
+          : undefined
       );
     } catch (error: any) {
       if (
@@ -572,6 +1016,68 @@ function HarvestPhotoAnalyzer({
       );
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function exportSelectedFrames() {
+    if (frameExportBusy) return;
+    setFrameExportBusy(true);
+    setFrameExportFeedback("");
+    try {
+      const result = await exportSelectedHarvestFrames({
+        candidates: frameExportCandidates,
+        selectedAssetIds: selectedFrameExportIds,
+        workspace: evidenceWorkspace
+      });
+      setFrameExportFeedback(
+        result.method === "web-download"
+          ? `Downloaded a ${readableEvidenceBytes(result.exportedBytes)} private package containing only the ${result.exportedCount} selected retained frame${result.exportedCount === 1 ? "" : "s"}. Nothing was published.`
+          : `Opened the device share sheet for a ${readableEvidenceBytes(result.exportedBytes)} private package containing only the ${result.exportedCount} selected retained frame${result.exportedCount === 1 ? "" : "s"}. GrowPath cannot observe recipient delivery. Nothing was published in GrowPath.`
+      );
+    } catch (error: any) {
+      setFrameExportFeedback(
+        error?.message || "The selected retained frames could not be saved or shared."
+      );
+    } finally {
+      setFrameExportBusy(false);
+    }
+  }
+
+  function updateFrameExportSelection(nextAssetIds: string[]) {
+    const requestedIds = new Set(nextAssetIds.map(String).filter(Boolean));
+    const exactSelection = frameExportCandidateIds.filter((id) => requestedIds.has(id));
+    if (
+      exactSelection.length !== requestedIds.size ||
+      exactSelection.length > HARVEST_PRIVATE_FRAME_EXPORT_LIMIT
+    ) {
+      setFrameExportFeedback(
+        exactSelection.length > HARVEST_PRIVATE_FRAME_EXPORT_LIMIT
+          ? `Choose up to ${HARVEST_PRIVATE_FRAME_EXPORT_LIMIT} retained frames per private package, then export another package for additional frames.`
+          : "The retained frame set changed. Review the exact frames and select them again."
+      );
+      return;
+    }
+    setSelectedFrameExportIds(exactSelection);
+    setFrameExportFeedback("");
+  }
+
+  async function shareSignedResult() {
+    if (!analysis || resultShareBusy || !isShareableSignedHarvestResult(analysis)) return;
+    setResultShareBusy(true);
+    setResultShareFeedback("");
+    try {
+      const method = await shareSignedHarvestResult(analysis);
+      setResultShareFeedback(
+        method === "web-clipboard"
+          ? "The sanitized signed-result summary was copied. No media, IDs, receipt secrets, or private metadata were included."
+          : "Share options opened for the sanitized signed-result summary. GrowPath cannot observe recipient delivery. No media, IDs, receipt secrets, or private metadata were included."
+      );
+    } catch (error: any) {
+      setResultShareFeedback(
+        error?.message || "The signed Harvest result could not be shared."
+      );
+    } finally {
+      setResultShareBusy(false);
     }
   }
 
@@ -647,6 +1153,49 @@ function HarvestPhotoAnalyzer({
     }
   }
 
+  const frameSelectionManifest = videoFrameSelection.extraction?.preselection;
+  const frameSelectionMutationLocked =
+    videoFrameSelection.requestBusy ||
+    videoFrameSelection.status === "processing" ||
+    videoFrameSelection.verificationPending;
+  const activeVideoPlan = harvestVideoReviewPlan({
+    status: videoFrameSelection.status,
+    chosenCeiling: videoReviewImageCeiling,
+    requestedFrameCount: videoFrameSelection.extraction?.requestedFrameCount,
+    targetFrameCount: frameSelectionManifest?.targetFrameCount,
+    selectedCount: frameSelectionManifest?.selectedCount
+  });
+  const selectedVideoPlanCeiling = activeVideoPlan.selectedCeiling;
+  const videoPlanLocked = Boolean(
+    activeVideoPlan.restoreLocked || frameSelectionMutationLocked
+  );
+  const selectedFrameBytePercent = frameSelectionManifest?.selectedByteLimit
+    ? Math.min(
+        100,
+        Math.round(
+          (Number(frameSelectionManifest.selectedBytesTotal || 0) /
+            Number(frameSelectionManifest.selectedByteLimit)) *
+            100
+        )
+      )
+    : 0;
+  const exactReviewQuote = deepReviewOperation.quote;
+  const exactQuotedCredits = exactReviewQuote?.creditsQuoted;
+  const quoteMissing = reviewQuoteRequired && !exactReviewQuote;
+  const deepQuoteUnaccepted = Boolean(
+    exactReviewQuote?.analysisMode === "deep" && !deepReviewOperation.quoteAccepted
+  );
+  const analyzeDisabled = Boolean(
+    analysisBusy ||
+    restoringEvidence ||
+    evidenceUploadBusy ||
+    !videoFrameSelection.ready ||
+    photoCount < MIN_HARVEST_PHOTOS ||
+    quoteMissing ||
+    deepQuoteUnaccepted ||
+    deepReviewOperation.operation
+  );
+
   return (
     <View style={photoStyles.card}>
       <Text accessibilityRole="header" aria-level={2} style={photoStyles.title}>
@@ -654,11 +1203,17 @@ function HarvestPhotoAnalyzer({
       </Text>
       <Text style={photoStyles.help}>
         The free readiness calculator works from observations you enter. Optional AI photo
-        review costs 1 AI credit only after a complete four-photo set is submitted. A
-        provider failure is refunded automatically. Photo review never makes the harvest
-        decision by itself. You can add up to {PLANT_REVIEW_PHOTO_LIMIT} photos when extra
-        top, middle, lower, or zoomed-out samples are needed, but the extra photo count
-        does not replace the required macro roles.
+        review uses 1 AI credit for 4–12 unique images. For a larger selected set, the
+        server first removes exact duplicate bytes and returns the exact signed Deep
+        review batch and credit quote (maximum 7 credits). Credits are reserved only when
+        you press Analyze. A failure proven to precede every provider dispatch refunds the
+        full reservation. After dispatch starts, GrowPath never resends the batch; if no
+        safe aggregate can be committed, the accepted reservation stays held for support
+        reconciliation. Photo review never makes the harvest decision by itself. You can
+        add up to {MAX_HARVEST_USER_PHOTOS} direct photos. A private video can be scanned
+        for distinct, usable frames within the combined {MAX_HARVEST_PROVIDER_IMAGES}
+        -image review ceiling. That ceiling is not a target, and extra images never
+        replace the required macro roles.
       </Text>
       <View style={photoStyles.checklist} accessibilityLabel="Harvest photo checklist">
         <Text
@@ -681,7 +1236,8 @@ function HarvestPhotoAnalyzer({
           purpose="harvest"
           value={evidenceAssets}
           onChange={addSavedGrowEvidence}
-          maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
+          maxPhotos={MAX_HARVEST_PROVIDER_IMAGES}
+          maxUserPhotos={MAX_HARVEST_USER_PHOTOS}
         />
       ) : null}
       {restoringEvidence ? (
@@ -689,11 +1245,149 @@ function HarvestPhotoAnalyzer({
       ) : restoreFeedback ? (
         <Text style={photoStyles.feedback}>{restoreFeedback}</Text>
       ) : null}
+      {videoFrameSelection.sourceVideo ? (
+        <View
+          style={photoStyles.frameSelectionPanel}
+          accessibilityLabel="Harvest video frame selection"
+        >
+          <Text
+            accessibilityRole="header"
+            aria-level={3}
+            style={photoStyles.checklistTitle}
+          >
+            Private video review preparation
+          </Text>
+          <Text style={photoStyles.help}>
+            GrowPath scans roughly one low-resolution candidate per second, up to the
+            server&apos;s bounded candidate limit. Blur, severe exposure/glare, decode
+            failures, and near-duplicates are rejected before durable storage. Only the
+            private source video, compact audit manifest, and retained review frames are
+            saved. Rejected candidates are temporary and are not kept as evidence.
+          </Text>
+          <Text style={photoStyles.help}>
+            Choose the retained-image ceiling before extraction. Standard keeps the
+            complete review at 12 images or fewer. Deep can retain more only after you
+            choose it, and still requires a later exact server quote and explicit credit
+            acceptance before OpenAI receives any images.
+          </Text>
+          <View style={photoStyles.frameSelectionMetrics}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Use standard video frame selection"
+              accessibilityState={{
+                selected: selectedVideoPlanCeiling === 12,
+                disabled: videoPlanLocked
+              }}
+              disabled={videoPlanLocked}
+              onPress={() => setVideoReviewImageCeiling(12)}
+              style={[
+                photoStyles.secondaryButton,
+                videoPlanLocked && photoStyles.disabled
+              ]}
+            >
+              <Text style={photoStyles.secondaryButtonText}>
+                {selectedVideoPlanCeiling === 12 ? "Selected: " : ""}
+                Standard · 12 Total Images
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Use Deep video frame selection"
+              accessibilityState={{
+                selected: selectedVideoPlanCeiling === 80,
+                disabled: videoPlanLocked
+              }}
+              disabled={videoPlanLocked}
+              onPress={() => setVideoReviewImageCeiling(80)}
+              style={[
+                photoStyles.secondaryButton,
+                videoPlanLocked && photoStyles.disabled
+              ]}
+            >
+              <Text style={photoStyles.secondaryButtonText}>
+                {selectedVideoPlanCeiling === 80 ? "Selected: " : ""}
+                Deep · Up to 80 Total Images
+              </Text>
+            </Pressable>
+          </View>
+          <Text style={photoStyles.help}>
+            The final retained count is chosen for quality, timeline coverage, and
+            sequence comparison. Up to{" "}
+            {Math.max(0, selectedVideoPlanCeiling - directPhotoCount)} frame slots are
+            currently available under the selected {selectedVideoPlanCeiling}-image
+            ceiling. A ceiling is not a recommendation.
+          </Text>
+          {frameSelectionManifest ? (
+            <View style={photoStyles.frameSelectionMetrics}>
+              <Text style={photoStyles.metricText}>
+                Candidates sampled: {frameSelectionManifest.sampledCount} /{" "}
+                {frameSelectionManifest.candidateLimit}
+              </Text>
+              <Text style={photoStyles.metricText}>
+                Quality-usable: {frameSelectionManifest.qualityUsableCount} · rejected:{" "}
+                {frameSelectionManifest.qualityRejectedCount} · near-duplicates removed:{" "}
+                {frameSelectionManifest.duplicateCandidateCount}
+              </Text>
+              <Text style={photoStyles.metricText}>
+                Distinct candidates: {frameSelectionManifest.distinctCandidateCount} ·
+                retained frames: {frameSelectionManifest.selectedCount} · timeline buckets
+                covered: {frameSelectionManifest.coveredBucketCount}
+              </Text>
+              <Text style={photoStyles.metricText}>
+                Retained-frame storage:{" "}
+                {readableEvidenceBytes(frameSelectionManifest.selectedBytesTotal)} /{" "}
+                {readableEvidenceBytes(frameSelectionManifest.selectedByteLimit)}{" "}
+                {selectedFrameBytePercent
+                  ? `(${selectedFrameBytePercent}% of the extraction byte budget)`
+                  : ""}
+              </Text>
+              <Text style={photoStyles.metricText}>
+                Sequence frames marked for adjacent comparison are reviewed for
+                persistence versus glare but are not counted as independent heads.
+              </Text>
+            </View>
+          ) : (
+            <Text style={photoStyles.help}>
+              Source video:{" "}
+              {readableEvidenceBytes(videoFrameSelection.sourceVideo.fileSizeBytes)}. The
+              server applies a separate retained-frame byte budget before saving the
+              selected set.
+            </Text>
+          )}
+          {videoFrameSelection.notice ? (
+            <Text accessibilityLiveRegion="polite" style={photoStyles.feedback}>
+              {videoFrameSelection.notice}
+            </Text>
+          ) : null}
+          {videoFrameSelection.error ? (
+            <Text accessibilityRole="alert" style={photoStyles.warning}>
+              {videoFrameSelection.error}
+            </Text>
+          ) : null}
+          {!videoFrameSelection.ready ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={videoFrameSelection.actionLabel}
+              accessibilityState={{ disabled: videoFrameSelection.actionDisabled }}
+              disabled={videoFrameSelection.actionDisabled}
+              onPress={videoFrameSelection.action}
+              style={[
+                photoStyles.secondaryButton,
+                videoFrameSelection.actionDisabled && photoStyles.disabled
+              ]}
+            >
+              <Text style={photoStyles.secondaryButtonText}>
+                {videoFrameSelection.actionLabel}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
       <MediaEvidencePicker
-        maxPhotos={PLANT_REVIEW_PHOTO_LIMIT}
+        maxPhotos={MAX_HARVEST_PROVIDER_IMAGES}
+        maxUserPhotos={MAX_HARVEST_USER_PHOTOS}
         allowVideo
-        extractFramesFromVideo
-        maxExtractedVideoFrames={12}
+        serverFrameExtractionOnly
         maxVideoSeconds={599}
         purpose="harvest"
         aiUsable
@@ -706,27 +1400,268 @@ function HarvestPhotoAnalyzer({
         videoWorkspaceId={workspaceId}
         value={evidenceAssets}
         onChange={updateEvidence}
+        onBusyChange={setEvidenceUploadBusy}
+        disabled={analysisBusy || frameSelectionMutationLocked}
+        generatedFramePreviewLimit={HARVEST_FRAME_PREVIEW_LIMIT}
+        generatedFramesReadOnly
+        generatedFrameExportSelection={{
+          eligibleAssetIds: frameExportCandidateIds,
+          selectedAssetIds: selectedFrameExportIds,
+          onChange: updateFrameExportSelection,
+          disabled: frameExportBusy || frameSelectionMutationLocked
+        }}
       />
+      {frameExportCandidates.length ? (
+        <View
+          accessibilityLabel="Private retained-frame save and share"
+          style={photoStyles.frameSelectionPanel}
+        >
+          <Text
+            accessibilityRole="header"
+            aria-level={3}
+            style={photoStyles.checklistTitle}
+          >
+            Save or share selected retained frames
+          </Text>
+          <Text style={photoStyles.help}>
+            Nothing is selected or public by default. Use the checkbox on an exact
+            server-retained frame above, then export only those selected frames through an
+            authenticated download or your device share sheet. The package never includes
+            the source video, rejected or unselected frames, GPS/EXIF, private record IDs,
+            storage URLs, or AI receipt secrets, and it does not create a GrowPath post or
+            public link. Choose up to {HARVEST_PRIVATE_FRAME_EXPORT_LIMIT} frames per
+            package (24 MiB maximum), then repeat with another selection if you want more.
+          </Text>
+          <Text style={photoStyles.metricText}>
+            Selected for this private package: {selectedFrameExportIds.length} of{" "}
+            {HARVEST_PRIVATE_FRAME_EXPORT_LIMIT} maximum; {frameExportCandidates.length}{" "}
+            retained available
+            {selectedFrameExportKnownBytes
+              ? ` · ${readableEvidenceBytes(selectedFrameExportKnownBytes)} known retained bytes`
+              : ""}
+          </Text>
+          <View style={photoStyles.frameSelectionMetrics}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear retained video frame export selection"
+              disabled={frameExportBusy || !selectedFrameExportIds.length}
+              onPress={() => setSelectedFrameExportIds([])}
+              style={[
+                photoStyles.secondaryButton,
+                (frameExportBusy || !selectedFrameExportIds.length) &&
+                  photoStyles.disabled
+              ]}
+            >
+              <Text style={photoStyles.secondaryButtonText}>Clear Selection</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Save or share selected retained video frames privately"
+              disabled={frameExportBusy || !selectedFrameExportIds.length}
+              onPress={() => void exportSelectedFrames()}
+              style={[
+                photoStyles.secondaryButton,
+                (frameExportBusy || !selectedFrameExportIds.length) &&
+                  photoStyles.disabled
+              ]}
+            >
+              <Text style={photoStyles.secondaryButtonText}>
+                {frameExportBusy
+                  ? "Preparing Private Package..."
+                  : "Save / Share Selected"}
+              </Text>
+            </Pressable>
+          </View>
+          {frameExportFeedback ? (
+            <Text accessibilityLiveRegion="polite" style={photoStyles.feedback}>
+              {frameExportFeedback}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+      {reviewQuoteRequired ? (
+        <View
+          style={photoStyles.frameSelectionPanel}
+          accessibilityLabel="Exact harvest review quote"
+        >
+          <Text
+            accessibilityRole="header"
+            aria-level={3}
+            style={photoStyles.checklistTitle}
+          >
+            Exact image and credit quote
+          </Text>
+          {!exactReviewQuote && !deepReviewOperation.operationActive ? (
+            <>
+              <Text style={photoStyles.help}>
+                GrowPath must first verify the exact saved still/frame manifest and
+                exact-byte duplicates. Preparing this quote does not send media to OpenAI
+                and does not use a credit.
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Get exact harvest review quote"
+                accessibilityState={{
+                  disabled: Boolean(
+                    deepReviewOperation.busy || !videoFrameSelection.ready
+                  )
+                }}
+                disabled={Boolean(deepReviewOperation.busy || !videoFrameSelection.ready)}
+                onPress={deepReviewOperation.requestQuote}
+                style={[
+                  photoStyles.secondaryButton,
+                  (deepReviewOperation.busy || !videoFrameSelection.ready) &&
+                    photoStyles.disabled
+                ]}
+              >
+                <Text style={photoStyles.secondaryButtonText}>
+                  {deepReviewOperation.busy === "quoting"
+                    ? "Preparing Exact Quote..."
+                    : "Get Exact Review Quote"}
+                </Text>
+              </Pressable>
+            </>
+          ) : null}
+          {exactReviewQuote ? (
+            <View style={photoStyles.frameSelectionMetrics}>
+              <Text style={photoStyles.metricText}>
+                Selected stills/retained frames: {exactReviewQuote.selectedEvidenceCount}
+                {exactReviewQuote.sourceVideoSelected
+                  ? " · private source video retained as provenance"
+                  : ""}
+              </Text>
+              <Text style={photoStyles.metricText}>
+                Unique originals for analysis: {exactReviewQuote.analyzedEvidenceCount} ·
+                exact duplicates not resent: {exactReviewQuote.duplicateEvidenceCount}
+              </Text>
+              <Text style={photoStyles.metricText}>
+                {exactReviewQuote.analysisMode === "deep"
+                  ? `Deep review: ${exactReviewQuote.batchCount} signed batches · ${exactReviewQuote.creditsQuoted} AI credits`
+                  : "Standard review: 1 signed batch · 1 AI credit"}
+              </Text>
+              <Text style={photoStyles.warning}>
+                When you press Analyze, GrowPath will send the
+                {` ${exactReviewQuote.analyzedEvidenceCount} `}
+                unique still images from this exact selected set privately to OpenAI for
+                this Harvest review. The private source video, rejected candidates, and
+                exact duplicate bytes are not sent. GPS/EXIF location or capture-date
+                metadata and unrelated account data are not sent. Preparing or accepting
+                this quote alone sends no media and uses no credit.
+              </Text>
+              {exactReviewQuote.analysisMode === "deep" && exactReviewQuote.expiresAt ? (
+                <Text style={photoStyles.help}>
+                  Quote expires {new Date(exactReviewQuote.expiresAt).toLocaleString()}.
+                </Text>
+              ) : null}
+              {exactReviewQuote.analysisMode === "deep" ? (
+                <View style={photoStyles.consentRow}>
+                  <Switch
+                    accessibilityLabel={`Accept ${exactReviewQuote.creditsQuoted}-credit Deep review and private OpenAI image dispatch`}
+                    value={deepReviewOperation.quoteAccepted}
+                    onValueChange={deepReviewOperation.acceptQuote}
+                    disabled={Boolean(
+                      deepReviewOperation.busy || deepReviewOperation.operationActive
+                    )}
+                  />
+                  <Text style={photoStyles.consentText}>
+                    I accept this exact private image dispatch and
+                    {` ${exactReviewQuote.creditsQuoted}-credit `}
+                    Deep review. One aggregate result appears only after every signed
+                    batch completes. A failure before every provider dispatch refunds the
+                    full reservation; after dispatch starts, GrowPath will not resend it
+                    and may hold the accepted reservation for support reconciliation.
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+          {deepReviewOperation.operation || deepReviewOperation.recoveryPending ? (
+            <View style={photoStyles.frameSelectionMetrics}>
+              <Text style={photoStyles.metricText}>
+                Durable Deep review:{" "}
+                {deepReviewOperation.operation?.status || "recovering saved request"}
+                {deepReviewOperation.operation
+                  ? ` · ${deepReviewOperation.operation.completedBatches || 0} of ${deepReviewOperation.operation.batchCount} batches complete`
+                  : ""}
+              </Text>
+              <UnsavedHarvestDeepResultDiscard
+                operation={deepReviewOperation.operation}
+                busy={Boolean(deepReviewOperation.busy)}
+                onDiscard={deepReviewOperation.discardSucceeded}
+              />
+              {!deepReviewOperation.terminalResetAllowed ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Check Deep review progress"
+                  disabled={Boolean(deepReviewOperation.busy)}
+                  onPress={deepReviewOperation.refresh}
+                  style={[
+                    photoStyles.secondaryButton,
+                    deepReviewOperation.busy && photoStyles.disabled
+                  ]}
+                >
+                  <Text style={photoStyles.secondaryButtonText}>
+                    {deepReviewOperation.busy === "polling"
+                      ? "Checking Deep Review..."
+                      : deepReviewOperation.recoveryPending &&
+                          !deepReviewOperation.operation
+                        ? "Recover / Retry Same Accepted Review"
+                        : "Check Deep Review Progress"}
+                  </Text>
+                </Pressable>
+              ) : (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Prepare a new harvest review quote"
+                  disabled={Boolean(deepReviewOperation.busy)}
+                  onPress={deepReviewOperation.resetTerminal}
+                  style={[
+                    photoStyles.secondaryButton,
+                    deepReviewOperation.busy && photoStyles.disabled
+                  ]}
+                >
+                  <Text style={photoStyles.secondaryButtonText}>
+                    Prepare a New Review Quote
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          ) : null}
+          {deepReviewOperation.notice ? (
+            <Text accessibilityLiveRegion="polite" style={photoStyles.feedback}>
+              {deepReviewOperation.notice}
+            </Text>
+          ) : null}
+          {deepReviewOperation.error ? (
+            <Text accessibilityRole="alert" style={photoStyles.warning}>
+              {deepReviewOperation.error}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
       <TextInput
         accessibilityLabel="Harvest photo notes"
         value={notes}
         onChangeText={setNotes}
         placeholder="Optional but helpful: Photo 1 top macro, Photo 2 middle macro, Photo 3 lower macro, Photo 4 context; include lens/magnification and lighting"
         placeholderTextColor={palette.textMuted}
+        editable={!analysisBusy}
         style={photoStyles.input}
       />
       <Pressable
         accessibilityLabel="Analyze harvest trichome photo"
         onPress={analyze}
-        disabled={busy || restoringEvidence || photoCount < MIN_HARVEST_PHOTOS}
-        style={[
-          photoStyles.button,
-          (busy || restoringEvidence || photoCount < MIN_HARVEST_PHOTOS) &&
-            photoStyles.disabled
-        ]}
+        disabled={analyzeDisabled}
+        style={[photoStyles.button, analyzeDisabled && photoStyles.disabled]}
       >
         <Text style={photoStyles.buttonText}>
-          {busy ? "Inspecting Photos..." : "Analyze Photos / Frames (1 AI Credit)"}
+          {analysisBusy
+            ? exactReviewQuote?.analysisMode === "deep"
+              ? "Running Deep Review..."
+              : "Inspecting Photos..."
+            : reviewQuoteRequired && !exactReviewQuote
+              ? "Analyze Photos / Frames (Exact Quote Required)"
+              : `${exactReviewQuote?.analysisMode === "deep" ? "Start Accepted Deep Review" : "Analyze Photos / Frames"} (${exactQuotedCredits ?? 1} AI Credit${(exactQuotedCredits ?? 1) === 1 ? "" : "s"})`}
         </Text>
       </Pressable>
       {!growId ? (
@@ -767,9 +1702,16 @@ function HarvestPhotoAnalyzer({
             {Math.round(analysis.confidence * 100)}%
           </Text>
           <Text style={photoStyles.feedback}>
-            Inspected by {analysis.providerLabel} ({analysis.providerModel}) · Photos:{" "}
-            {analysis.imagesAnalyzed}
+            Inspected by {analysis.providerLabel} ({analysis.providerModel}) · photos or
+            retained frames: {analysis.imagesAnalyzed}
           </Text>
+          {analysis.batchSummaries?.length ? (
+            <Text style={photoStyles.feedback}>
+              Provider batches: {analysis.batchSummaries.length}. GrowPath reconciled them
+              into this one evidence-bound review and one aggregate receipt. The charged
+              credit total below covers the complete review.
+            </Text>
+          ) : null}
           {typeof analysis.diagnosticViewsAnalyzed === "number" ? (
             <Text style={photoStyles.feedback}>
               Enlarged diagnostic views inspected: {analysis.diagnosticViewsAnalyzed}.
@@ -787,9 +1729,33 @@ function HarvestPhotoAnalyzer({
               ? ` · ${analysis.aiTokensRemaining} remaining`
               : ""}
           </Text>
-          <Text style={photoStyles.feedback}>
-            Review ID: {analysis.analysisId || "not provided"}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Share signed Harvest review summary"
+            accessibilityHint="Shares a sanitized readable summary only. It does not share images, private IDs, or receipt secrets."
+            disabled={resultShareBusy || !isShareableSignedHarvestResult(analysis)}
+            onPress={() => void shareSignedResult()}
+            style={[
+              photoStyles.secondaryButton,
+              (resultShareBusy || !isShareableSignedHarvestResult(analysis)) &&
+                photoStyles.disabled
+            ]}
+          >
+            <Text style={photoStyles.secondaryButtonText}>
+              {resultShareBusy ? "Opening Share Options..." : "Share Signed Summary"}
+            </Text>
+          </Pressable>
+          <Text style={photoStyles.help}>
+            This explicit share contains a sanitized readable summary only. It does not
+            include images, the source video, notes, location/date metadata, private IDs,
+            provider IDs, signatures, digests, or storage URLs, and it does not publish a
+            GrowPath record.
           </Text>
+          {resultShareFeedback ? (
+            <Text accessibilityLiveRegion="polite" style={photoStyles.feedback}>
+              {resultShareFeedback}
+            </Text>
+          ) : null}
           {analysis.inspectionViews?.length ? (
             <EvidenceReviewPanel
               review={{
@@ -805,7 +1771,11 @@ function HarvestPhotoAnalyzer({
                       ? "medium"
                       : "low",
                 providerLabel: analysis.providerLabel,
-                evidenceUsed: analysis.evidenceUsed || [],
+                evidenceUsed: [
+                  `${analysis.imagesAnalyzed} authenticated private still image${
+                    analysis.imagesAnalyzed === 1 ? "" : "s"
+                  } inspected; private evidence identifiers are intentionally hidden`
+                ],
                 counterEvidence: [],
                 missingInformation: [],
                 requiredNextPhotos: [],
@@ -891,7 +1861,7 @@ function HarvestPhotoAnalyzer({
             Gland-head development:{" "}
             {(analysis.headDevelopmentObservation || "uncertain").replaceAll("_", " ")}
             {analysis.headDevelopmentSignals?.length
-              ? ` · ${analysis.headDevelopmentSignals.map((signal) => signal.replaceAll("_", " ")).join(", ")}`
+              ? ` · ${analysis.headDevelopmentSignals.map(harvestHeadDevelopmentSignalLabel).join(", ")}`
               : ""}
             {analysis.headDevelopmentBasis ? ` · ${analysis.headDevelopmentBasis}` : ""}
           </Text>
@@ -1096,11 +2066,6 @@ function HarvestPhotoAnalyzer({
               Limitation: {item}
             </Text>
           ))}
-          {analysis.evidenceUsed?.length ? (
-            <Text style={photoStyles.feedback}>
-              Evidence IDs: {analysis.evidenceUsed.join(", ")}
-            </Text>
-          ) : null}
         </View>
       ) : null}
     </View>
@@ -1388,7 +2353,7 @@ export default function HarvestReadinessToolRoute({
       toolKey="harvest-readiness"
       title="Harvest Readiness Estimate"
       subtitle="Review breeder timing, flower day, macro trichome evidence, pistils, bud swell, aroma trend, and whole-plant maturity together. Unknown values stay blank. A photo estimate is never a harvest order."
-      aiCreditMessage="The readiness calculator is free. Fill from grow and Analyze Photo Set are separate optional AI actions; each successful action uses 1 AI credit, and provider failures are refunded."
+      aiCreditMessage="The readiness calculator is free. Fill from grow uses 1 AI credit. Photo review uses 1 credit for 4–12 unique images. Larger selected sets receive an exact server-signed Deep review batch and credit quote (maximum 7). Failures proven to occur before provider dispatch are refunded; after dispatch, GrowPath never resends the batch and may hold the accepted reservation for support reconciliation instead of exposing a partial result."
       aiPrefill={{
         buttonLabel: "Fill readiness review from grow",
         clearUnfilled: true,
@@ -1620,18 +2585,6 @@ export default function HarvestReadinessToolRoute({
             : "Not used"
         },
         {
-          key: "photo-review-id",
-          label: "Photo review ID",
-          value: outputs.photoAnalysis?.analysisId || undefined
-        },
-        {
-          key: "photo-evidence-ids",
-          label: "Photo evidence IDs",
-          value: Array.isArray(outputs.photoAnalysis?.evidenceUsed)
-            ? outputs.photoAnalysis.evidenceUsed.join(", ")
-            : undefined
-        },
-        {
           key: "aroma-advice",
           label: "Smell / flavor",
           value: outputs.aromaFlavorInterpretation
@@ -1802,6 +2755,21 @@ export const createHarvestPhotoStyles = (palette: ThemePalette) =>
     },
     checklistTitle: { color: palette.text, fontWeight: "800" },
     checklistItem: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
+    frameSelectionPanel: {
+      backgroundColor: palette.surface,
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: 8,
+      padding: 10
+    },
+    frameSelectionMetrics: {
+      backgroundColor: palette.surfaceMuted,
+      borderRadius: radius.card,
+      gap: 4,
+      padding: 9
+    },
+    metricText: { color: palette.textMuted, fontSize: 12, lineHeight: 18 },
     previewGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
     previewWrap: { flexBasis: 150, flexGrow: 1, maxWidth: 240, minWidth: 130 },
     preview: {
@@ -1834,6 +2802,17 @@ export const createHarvestPhotoStyles = (palette: ThemePalette) =>
       alignItems: "center"
     },
     buttonText: { color: palette.accentText, fontWeight: "800" },
+    secondaryButton: {
+      alignItems: "center",
+      borderColor: palette.border,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      justifyContent: "center",
+      minHeight: 44,
+      paddingHorizontal: 12,
+      paddingVertical: 9
+    },
+    secondaryButtonText: { color: palette.text, fontWeight: "800" },
     disabled: { opacity: 0.45 },
     warning: { color: palette.warning, fontWeight: "700" },
     feedback: { color: palette.textMuted },

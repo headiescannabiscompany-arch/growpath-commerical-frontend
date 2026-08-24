@@ -318,20 +318,20 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       not separate unfinished products. Preserve their stale-link behavior until final
       crawl/dead-code evidence proves a redirect is no longer required.
 - [x] **Complete buried-feature inventory:** source reconciliation on 2026-08-22 now compares
-  315 frontend routes, 319 inventoried backend routes, 226 legacy feature rows, 32 system
-  foundations, provider/environment gates, workers and webhooks. The full-surface audit
-  reports 315 frontend routes, 225 directly parsed backend declarations and zero static
-  errors/warnings. Runtime-gated user capabilities are individually named above, and the
-  65 misleading legacy `planned` rows are classified as internal supporting operations
-  under canonical matrix owners rather than hidden products. The remaining gate is the
-  final-candidate route-to-visible-entry crawl now records every canonical user-facing
-  feature's workspace/role, visible entry, canonical URL, Back path, empty/populated states
-  and intentional internal/redirect status in
-  `R03_FINAL_ROUTE_ENTRY_MATRIX_2026-08-24.md`. The comparison covers registered
-  frontend routes, visible navigation/deep links, backend route inventory, release matrix,
-  provider/environment gates, workers/webhooks and production configuration. No additional
-  user-facing orphan was found. Runtime-gated features remain explicitly owned above rather
-  than hidden. Access-control, privacy and safety-hidden data remain protected.
+      315 frontend routes, 319 inventoried backend routes, 226 legacy feature rows, 32 system
+      foundations, provider/environment gates, workers and webhooks. The full-surface audit
+      reports 315 frontend routes, 225 directly parsed backend declarations and zero static
+      errors/warnings. Runtime-gated user capabilities are individually named above, and the
+      65 misleading legacy `planned` rows are classified as internal supporting operations
+      under canonical matrix owners rather than hidden products. The remaining gate is the
+      final-candidate route-to-visible-entry crawl now records every canonical user-facing
+      feature's workspace/role, visible entry, canonical URL, Back path, empty/populated states
+      and intentional internal/redirect status in
+      `R03_FINAL_ROUTE_ENTRY_MATRIX_2026-08-24.md`. The comparison covers registered
+      frontend routes, visible navigation/deep links, backend route inventory, release matrix,
+      provider/environment gates, workers/webhooks and production configuration. No additional
+      user-facing orphan was found. Runtime-gated features remain explicitly owned above rather
+      than hidden. Access-control, privacy and safety-hidden data remain protected.
 - [x] **Reconcile the legacy V1 feature matrix:** all 65 formerly `planned`/`internal` rows are
       live backend routes, not 65 missing products. They are now `supporting_operation` rows
       with explicit canonical owners across `P-02`, `P-11`, `S-01`, `S-02`, `S-07`, `C-02`,
@@ -701,6 +701,54 @@ grow`, private current location without a Field Study, and an optional approxima
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
   inference warnings, pistil/bud-development context, top/middle/lower/context
   sampling, video frames, exact retake guidance, and saved-run comparisons.
+  **Authorized max-80 completion slice (open; reuse, do not rebuild):** preserve the
+  existing upload transport, protected source-video storage, server extraction, dedicated
+  Harvest model, exact evidence receipts, Saved Runs, correction, calculator, and existing
+  four-through-twelve review behavior. Extend only Harvest video preparation to scan at most
+  600 temporary low-resolution candidates and retain at most 80 quality-, diversity-,
+  timeline-, and byte-bounded frames; keep Plant ID and generic vision at 12. Direct uploads
+  remain capped at 12 and direct photos plus retained frames remain capped at 80. Standard
+  reviews remain one credit. Thirteen through eighty is an explicitly quoted durable Deep
+  Review at `ceil(images / 12)` credits, grouped into no more than 12 originals per provider
+  call with deterministic server aggregation, one signed all-or-nothing receipt, and a full
+  refund on any failed group or completion. Rejected candidates are deleted immediately;
+  retain only their compact technical rejection/coverage manifest, never biological claims.
+  The owner explicitly approved Deep Review for Personal/free accounts when the account has
+  enough AI credits; do not add a second paid-plan entitlement gate beyond the accepted exact
+  credit quote. The owner also approved provider dispatch of no more than 80 explicitly
+  selected private still images after accepting the exact image count and credit cost. Send
+  neither the source video, rejected candidates, GPS/EXIF data, nor unrelated account data.
+  For live acceptance only, the owner authorized reuse of their previously uploaded older
+  videos after synthetic and local gates pass. Preserve the exact run and evidence IDs in the
+  acceptance record, keep each source video private, and dispatch only its explicitly accepted
+  retained still frames. This narrow authorization is not general production-media consent and
+  does not permit real user media in development or automated tests.
+  **Private save/share completion (implemented and locally tested; live acceptance open):**
+  retained frames stay unselected and private by default. An authenticated owner may explicitly
+  select only verified retained JPEGs and save or send them through protected retrieval and the
+  device share sheet in repeatable packages of at most 12 frames and 24 MiB. The package omits
+  source video, rejected or unselected frames, GPS/EXIF, record/upload IDs, storage URLs,
+  provider identifiers, and receipt secrets, and creates no public link, feed item, or implicit
+  publication. A separate explicit action may share only a revalidated signed Harvest result as
+  a sanitized readable summary. Failed, deleted, incomplete, or unattested results remain
+  unshareable. Production status remains open until the authorized live video run proves exact
+  selection, protected export, sanitized result sharing, reload, and privacy boundaries.
+  **Unsaved Deep-result discard completion (implemented and locally tested; live acceptance
+  open):** after a succeeded Deep Review, the owner receives a separate confirmation-gated
+  result-only discard. It permanently tombstones the unsaved signed result and provider-result
+  metadata, keeps the private source video and retained frames, and does not refund already
+  charged credits. The backend refuses saved ToolRuns, calibration references, and legal or
+  preservation holds; saved results remain in the guarded Saved Runs deletion lifecycle.
+  This expansion reuses the deployment-managed OpenAI and protected-object-storage
+  credentials; a new key does not raise the application image ceiling and is not a
+  prerequisite. Do not copy production secrets into either worktree. Perform the already
+  scheduled credential rotation only after the final release candidate is frozen and
+  verified, so rotation does not become another partially completed feature dependency.
+  Exact retained result frames remain until the owner uses the guarded permanent-result
+  deletion lifecycle. Required closure is focused local/CI coverage, exact-SHA deployment,
+  one authorized short-video live run plus reload/save/delete/refund-safe evidence, then the
+  final frozen-candidate crawl. Do not substitute another 12-frame implementation or rewrite
+  the already accepted standard path.
   Production retained run `6a77ea01b6f7eb6b90cd3595` returns an Aug 5-19
   planning range centered Aug 12, explains the user's approximate date and
   declining smell as reasons the window may be open, and preserves unfinished

@@ -445,22 +445,163 @@ describe("MediaEvidencePicker", () => {
     expect(screen.queryByLabelText("Remove evidence generated-frame-one")).toBeNull();
     expect(screen.queryByLabelText("Remove evidence generated-frame-two")).toBeNull();
     expect(screen.getByLabelText("Remove evidence unrelated-photo")).toBeTruthy();
-    await waitFor(() => expect(mockDeleteEvidence).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(mockDeleteEvidence).toHaveBeenCalledTimes(1));
     expect(mockDeleteEvidence).toHaveBeenCalledWith(
       "source-video-record",
       { workspaceType: "personal" },
       { timeoutMs: 5000 }
     );
-    expect(mockDeleteEvidence).toHaveBeenCalledWith(
+    expect(mockDeleteEvidence).not.toHaveBeenCalledWith(
       "generated-frame-record-one",
-      { workspaceType: "personal" },
-      { timeoutMs: 5000 }
+      expect.anything(),
+      expect.anything()
     );
-    expect(mockDeleteEvidence).toHaveBeenCalledWith(
+    expect(mockDeleteEvidence).not.toHaveBeenCalledWith(
       "generated-frame-record-two",
-      { workspaceType: "personal" },
-      { timeoutMs: 5000 }
+      expect.anything(),
+      expect.anything()
     );
+  });
+
+  it("restores the complete source-and-frame set when the one cascade DELETE fails", async () => {
+    mockDeleteEvidence.mockRejectedValueOnce(new Error("Unable to reach server"));
+    function Harness() {
+      const [value, setValue] = React.useState<any[]>([
+        {
+          id: "source-video-local",
+          _id: "source-video-record",
+          assetType: "video",
+          originalUri: "/api/videos/assets/source-video/stream",
+          durableUrl: "/api/videos/assets/source-video/stream",
+          source: "upload",
+          purpose: "harvest",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        },
+        {
+          id: "generated-frame-one",
+          _id: "generated-frame-record-one",
+          sourceVideoEvidenceAssetId: "source-video-record",
+          assetType: "photo",
+          originalUri: "/uploads/generated-frame-one.jpg",
+          durableUrl: "/uploads/generated-frame-one.jpg",
+          source: "generated",
+          purpose: "harvest",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        },
+        {
+          id: "generated-frame-two",
+          _id: "generated-frame-record-two",
+          sourceVideoEvidenceAssetId: "source-video-record",
+          assetType: "photo",
+          originalUri: "/uploads/generated-frame-two.jpg",
+          durableUrl: "/uploads/generated-frame-two.jpg",
+          source: "generated",
+          purpose: "harvest",
+          uploadStatus: "uploaded",
+          qualityWarnings: []
+        }
+      ]);
+      return (
+        <MediaEvidencePicker
+          allowVideo
+          purpose="harvest"
+          value={value}
+          onChange={setValue}
+        />
+      );
+    }
+    const screen = render(<Harness />);
+
+    fireEvent.press(screen.getByLabelText("Remove evidence source-video-local"));
+
+    expect(
+      await screen.findByText(
+        "GrowPath could not remove this saved evidence. The source video and its selected frames were restored; check your connection and try again."
+      )
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Remove evidence source-video-local")).toBeTruthy();
+    expect(screen.getByLabelText("Remove evidence generated-frame-one")).toBeTruthy();
+    expect(screen.getByLabelText("Remove evidence generated-frame-two")).toBeTruthy();
+    expect(mockDeleteEvidence).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves private frame export unselected and only toggles verified eligible frames", async () => {
+    const onSelectionChange = jest.fn();
+    const value: any[] = [
+      {
+        id: "source-video-local",
+        _id: "source-video-record",
+        assetType: "video",
+        originalUri: "/api/videos/assets/source-video/stream",
+        durableUrl: "/api/videos/assets/source-video/stream",
+        source: "upload",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        qualityWarnings: []
+      },
+      {
+        id: "generated-frame-one",
+        _id: "generated-frame-record-one",
+        sourceVideoEvidenceAssetId: "source-video-record",
+        assetType: "photo",
+        originalUri: "/api/evidence-assets/uploads/frame-one/object",
+        durableUrl: "/api/evidence-assets/uploads/frame-one/object",
+        source: "generated",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        qualityWarnings: [],
+        frameIndex: 0
+      },
+      {
+        id: "generated-frame-two",
+        _id: "generated-frame-record-two",
+        sourceVideoEvidenceAssetId: "source-video-record",
+        assetType: "photo",
+        originalUri: "/api/evidence-assets/uploads/frame-two/object",
+        durableUrl: "/api/evidence-assets/uploads/frame-two/object",
+        source: "generated",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        qualityWarnings: [],
+        frameIndex: 1
+      }
+    ];
+    const screen = render(
+      <MediaEvidencePicker
+        allowVideo
+        purpose="harvest"
+        value={value}
+        generatedFramesReadOnly
+        generatedFrameExportSelection={{
+          eligibleAssetIds: ["generated-frame-record-one"],
+          selectedAssetIds: [],
+          onChange: onSelectionChange
+        }}
+      />
+    );
+
+    const firstChoice = screen.getByLabelText(
+      "Select retained video frame 1 for private save or share"
+    );
+    expect(firstChoice.props.accessibilityState).toEqual(
+      expect.objectContaining({ checked: false })
+    );
+    expect(
+      screen.queryByLabelText("Select retained video frame 2 for private save or share")
+    ).toBeNull();
+
+    fireEvent.press(firstChoice);
+    expect(onSelectionChange).toHaveBeenCalledWith(["generated-frame-record-one"]);
+    await waitFor(() =>
+      expect(mockGetEvidencePlayback).toHaveBeenCalledWith("frame-one", {
+        workspaceType: "personal"
+      })
+    );
+    expect(mockGetEvidencePlayback).toHaveBeenCalledWith("frame-two", {
+      workspaceType: "personal"
+    });
   });
 
   it("only deselects recovered Saved Run photos and videos without deleting them", () => {
