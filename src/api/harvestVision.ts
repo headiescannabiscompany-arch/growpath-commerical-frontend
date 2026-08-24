@@ -483,7 +483,10 @@ export async function startDeepTrichomeReview(
   const response = await apiRequest<any>("/api/ai/harvest/trichomes", {
     method: "POST",
     signal: options.signal,
-    timeoutMs: 45000,
+    // Deep start revalidates as many as 80 protected originals before the
+    // durable queue record is returned. Keep this longer than the bounded R2
+    // read deadline so a slow-but-valid start is not mistaken for a lost one.
+    timeoutMs: 120000,
     retries: 0,
     headers: { "X-Client-Request-Id": clientOperationKey },
     body: { ...input, clientOperationKey }

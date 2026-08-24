@@ -24,7 +24,10 @@ import {
 
 const POLL_DELAYS_MS = [1500, 2500, 4000, 6000, 9000, 12000, 20000, 30000];
 const MAX_AUTOMATIC_POLLS = 60;
-const LOST_START_CLEAR_GRACE_MS = 60_000;
+// The backend performs bounded protected-object revalidation before it can
+// persist the queue record. Never clear a same-ID recovery marker while that
+// accepted start can still be settling server-side.
+const LOST_START_CLEAR_GRACE_MS = 180_000;
 
 type ResultContext = {
   manifestDigest: string;
