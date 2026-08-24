@@ -17,6 +17,7 @@ import {
   assessEvidencePhoto,
   PHOTO_CAPTURE_GUIDANCE
 } from "@/features/personal/diagnosis/photoEvidenceQuality";
+import { protectedVideoSourceSizeError } from "@/features/personal/evidence/protectedVideoSource";
 import {
   extractVideoFrameCandidates,
   type VideoFrameCandidate
@@ -967,6 +968,15 @@ export default function MediaEvidencePicker({
         local.error = `Video must be ${readableDuration(maxVideoSeconds)} or shorter.`;
         commit([...assetsRef.current, local]);
         return;
+      }
+      if (serverFrameExtractionOnly) {
+        const sourceSizeError = protectedVideoSourceSizeError(local.fileSizeBytes);
+        if (sourceSizeError) {
+          local.uploadStatus = "failed";
+          local.error = sourceSizeError;
+          commit([...assetsRef.current, local]);
+          return;
+        }
       }
       if (Platform.OS === "web" && picked.assets[0].file) {
         localWebFiles.current.set(local.id, picked.assets[0].file);

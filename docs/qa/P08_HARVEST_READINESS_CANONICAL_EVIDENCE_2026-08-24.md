@@ -27,11 +27,11 @@ test, merge or deployment is not live acceptance.
 | Layer | State | Evidence / exact remaining gate |
 | --- | --- | --- |
 | Retained Standard workflow | live slices retained | Four-to-twelve-image ordinary-phone review, one-credit provider use, Saved Run replay, correction, visible-sample ranges, source-bound zoom views, optional Grow, grow-log/task write-back and Facility entry already have production evidence in the detailed remainder ledger. |
-| Max-80 frontend | implemented; local and CI verified | PR `#784`; code-bearing head `4b502abbc5c3d6c55d03eee53fca04fa213c0b0f`; 13 focused suites / 203 tests, TypeScript, targeted lint and the full frontend guard passed; Frontend CI run `32695337558` passed. |
-| Durable backend | implemented; local and CI verified | PR `#232`; code-bearing head `aa6cb3ea7329e3d991feb5b83c9ec3b50ebb9a3d`; four corrected focused suites / 77 tests passed locally using retained dependencies; Backend CI run `32697428866` passed lint, production dependency audit, 311 suites with one intentional skip, 3,139 tests with two intentional skips, startup and ZAP API scan. PR documentation head `89e6424a8275f0ae1d7ae170b2fdfbd2bb8fe250` also passed PR checks `32698278329` and `32698278392`. |
-| Production configuration | blocked pending explicit owner-confirmed secret save | Production `growpath-api` is `srv-d8tdngn7f7vs73c5qamg`. Add the dedicated receipt secret and key ID before backend merge; do not reuse another application secret. |
-| Deployment | open | Backend first, then exact `/ready` and endpoint verification, then frontend. Neither PR is merged or deployed in this record. |
-| Live P-08 acceptance | open | Use one owner-authorized older private video and execute the exact script below, including FFmpeg, reload, sharing and deletion evidence. |
+| Max-80 frontend | merged and live; size-preflight correction in progress | PR `#784` merged as `1d6ef91f138769d698fdeeaf47b5ce087571af87`. Production exposed the max-80 Deep selector. A follow-up client preflight now prevents uploading a source above the extractor's 512 MiB ceiling; verification/deployment is still open. |
+| Durable backend | merged and live | PR `#232` merged; Facility source lineage follow-up PR `#233` is live as `e2de8912117dd35adee15e59043f1ce9c06784fe`. `/ready` returned the required database and Harvest worker readiness before the production extraction attempt. |
+| Production configuration | configured | The dedicated Harvest receipt configuration is present; no secret value is recorded here. |
+| Deployment | follow-up open | The max-80 frontend and backend are live. Deploy the client source-size preflight before the next acceptance upload. |
+| Live P-08 acceptance | in progress; truthful failed-extractor evidence retained | In Triple Bag Genetics Facility QA grow, production accepted owner-authorized `IMG_2072.MOV` (240 seconds, 1,612.3 MB) and then correctly failed protected extraction before AI dispatch or credit because it exceeded 512 MiB. Continue with the confirmed bounded candidate after the preflight deploy; reload/share/delete evidence remains open. |
 
 ## Frozen user outcomes
 
@@ -52,6 +52,11 @@ test, merge or deployment is not live acceptance.
 
 - Direct upload accepts at most 12 photos. Four provider-ready images remain the minimum.
 - One private source video may be shorter than ten minutes; 9:59 is the enforced maximum.
+- Protected frame extraction has a separate 512 MiB source ceiling even though the general
+  video library accepts files up to 5 GB. When reliable local size is available, the picker
+  must reject an oversized file before upload and explain the exact 512 MB recovery boundary.
+  If local size is unavailable, the server remains authoritative and must fail before analysis
+  dispatch or credit reservation.
 - The server samples roughly one low-resolution technical candidate per second, capped at 600
   temporary candidates. Six hundred is a candidate ceiling for a ten-minute video, not frames
   per second and not a retention or provider target.
