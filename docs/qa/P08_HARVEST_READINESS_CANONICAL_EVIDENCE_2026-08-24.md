@@ -27,11 +27,39 @@ test, merge or deployment is not live acceptance.
 | Layer | State | Evidence / exact remaining gate |
 | --- | --- | --- |
 | Retained Standard workflow | live slices retained | Four-to-twelve-image ordinary-phone review, one-credit provider use, Saved Run replay, correction, visible-sample ranges, source-bound zoom views, optional Grow, grow-log/task write-back and Facility entry already have production evidence in the detailed remainder ledger. |
-| Max-80 frontend | merged and live; size-preflight correction in progress | PR `#784` merged as `1d6ef91f138769d698fdeeaf47b5ce087571af87`. Production exposed the max-80 Deep selector. A follow-up client preflight now prevents uploading a source above the extractor's 512 MiB ceiling; verification/deployment is still open. |
+| Max-80 frontend | merged, deployed and live-accepted through retained-frame restore | PR `#784` merged as `1d6ef91f138769d698fdeeaf47b5ce087571af87`. Oversize preflight PR `#785` deployed as `98e84c939ec0053b7e97eeee57ea753cdeb6dfda`; standalone restore PR `#786` deployed as `4a3084354359ae24cc63ce600830fd195ed77d35`. Production proved both boundaries without another upload or extraction. |
 | Durable backend | merged and live | PR `#232` merged; Facility source lineage follow-up PR `#233` is live as `e2de8912117dd35adee15e59043f1ce9c06784fe`. `/ready` returned the required database and Harvest worker readiness before the production extraction attempt. |
 | Production configuration | configured | The dedicated Harvest receipt configuration is present; no secret value is recorded here. |
-| Deployment | follow-up open | The max-80 frontend and backend are live. Deploy the client source-size preflight before the next acceptance upload. |
-| Live P-08 acceptance | in progress; truthful failed-extractor evidence retained | In Triple Bag Genetics Facility QA grow, production accepted owner-authorized `IMG_2072.MOV` (240 seconds, 1,612.3 MB) and then correctly failed protected extraction before AI dispatch or credit because it exceeded 512 MiB. Continue with the confirmed bounded candidate after the preflight deploy; reload/share/delete evidence remains open. |
+| Deployment | current slice live | Backend `e2de8912117dd35adee15e59043f1ce9c06784fe`; frontend `4a3084354359ae24cc63ce600830fd195ed77d35`, Render deploy `dep-da684g7lk1mc73e3mve0`. PR `#786` full CI run `32756909152` passed. |
+| Live P-08 acceptance | bounded extraction and standalone reload passed; quote/provider/share/delete remain open | Production rejected owner-authorized 1,612.3 MB `IMG_2072.MOV` locally at the 512 MiB extraction boundary with no upload. It then uploaded 269.2 MB `OOFC0208.MOV`, retained 80 of 270 usable candidates across 40 timeline buckets, and restored that exact source/frame set after a clean standalone Facility reload. No AI analysis or credit was used. |
+
+### 2026-08-24 live extraction and restoration evidence
+
+- Account/workspace: authorized Triple Bag Genetics Facility owner; Facility
+  `6a563bec2fb9f669d2319fa5`; standalone Harvest review with no Grow selected.
+- Oversize guard: `IMG_2072.MOV` (240 seconds, 1,612.3 MB) was rejected before upload with the
+  explicit 512 MB protected-extraction recovery message on frontend
+  `98e84c939ec0053b7e97eeee57ea753cdeb6dfda`.
+- Accepted private source: `OOFC0208.MOV` (270 seconds, 269.2 MB), EvidenceAsset
+  `db95985f486244cbb1a2cacc`; AI use remained disabled for the source video.
+- Durable selection: 270 of 600 candidates sampled; 270 quality-usable; 0 rejected; 0
+  near-duplicates removed; 270 distinct candidates; 80 retained frames; 40 timeline buckets;
+  19.5 MB of the 80.0 MB retained-frame budget.
+- Reload defect: the server data survived, but the old client cleared evidence whenever no Grow
+  was selected. PR `#786` added workspace-scoped standalone restoration and exact newest-source
+  frame matching so unrelated historical standalone frame sets cannot mix.
+- Live restoration: frontend `4a3084354359ae24cc63ce600830fd195ed77d35`, Render deploy
+  `dep-da684g7lk1mc73e3mve0`, restored `80 selected frames · 1/1 video`, the exact technical
+  manifest, Deep selection, private export controls and no-credit quote control after a clean
+  route load. No re-upload, re-extraction, provider dispatch or credit charge occurred.
+- Read-only visual sampling of the first, middle and final retained groups showed real sequence
+  progression from whole-canopy context through distinct bud sites to closer trichome-covered
+  flowers rather than 80 identical frames. The rendered thumbnails do not establish that every
+  required top/middle/lower macro resolves individual intact gland heads; that sufficiency must
+  remain an explicit review/result finding. Temporary export selections were returned to zero.
+- Still open: full-resolution macro-role sufficiency, exact quote/cancel/accept and paid durable result,
+  bounded private frame/result share, deletion/cleanup and the remaining failure/role evidence
+  named below. Do not rebuild the accepted upload, extraction or restoration slices.
 
 ## Frozen user outcomes
 
@@ -186,7 +214,7 @@ must not be replaced by manufacturing a production outage.
       state. Use only the owner's previously authorized private video.
 - [ ] Open the ordinary Harvest Readiness entry in Personal and confirm Commercial/Facility
       workspace routing and role/credit isolation without exposing another workspace's record.
-- [ ] Restore or attach the private source video; prove decode, candidate sampling, technical
+- [x] Restore or attach the private source video; prove decode, candidate sampling, technical
       selected/rejected counts, timestamps, retained byte total, at-most-80 ceiling and temporary
       candidate cleanup. No source/rejected/GPS data is sent to the provider.
 - [ ] Confirm the exact Standard/Deep classification, image count, batch count and credit quote.

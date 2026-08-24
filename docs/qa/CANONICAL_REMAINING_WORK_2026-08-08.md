@@ -22,15 +22,17 @@ This section is the stable handoff point. Update it when a coherent acceptance b
 starts or finishes; do not create another active todo document.
 
 **Current active cursor (2026-08-24):** finish P-08 exactly as frozen in
-`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Frontend PR `#784` and backend PR
-`#232` are implemented and locally/CI verified, not merged, deployed or live accepted. The
-remaining order is: commit this canonical packet; save the dedicated production receipt-signing
-configuration with owner confirmation; merge and deploy backend; require `/ready` database and
-Harvest worker readiness; prove real FFmpeg/ffprobe decode and bounded preselection with one
-owner-authorized older private video; merge and deploy frontend; run reload, signed result,
-private frame/result sharing, both deletion lifecycles, credit/privacy and cleanup acceptance;
-record exact SHAs/deploy IDs/evidence; then close only P-08 and return to the matrix order. The
-older batch cursor below is retained history and cannot override this exact active slice.
+`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Backend
+`e2de8912117dd35adee15e59043f1ce9c06784fe` and frontend
+`4a3084354359ae24cc63ce600830fd195ed77d35` are live. Production passed the 512 MiB client
+guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames, exact standalone
+source/frame restoration after clean reload, and varied first/middle/final thumbnail groups
+without AI dispatch or credit. Do not repeat those slices. Remaining order: confirm required
+macro-role sufficiency at review resolution; obtain/cancel/accept the exact
+quote only with owner credit authorization; prove durable paid result/reload and sanitized
+frame/result sharing; exercise the proportionate deletion/cleanup and remaining role/failure
+gates; update exact evidence; close P-08; then return to the next matrix row. The older batch
+cursor below is retained history and cannot override this exact active slice.
 
 1. **Completed current release-candidate slice:** exact-candidate Personal, paid Commercial
    and Platform Admin read-only acceptance is recorded. The reproduced missing Admin return
@@ -717,9 +719,9 @@ grow`, private current location without a Field Study, and an optional approxima
   **Current canonical P-08 freeze:**
   `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md` owns the exact current
   implementation/evidence record, deployment order, live script and anti-rewrite boundary.
-  Frontend PR `#784` code head `4b502abb` and backend PR `#232` code head `aa6cb3e`
-  passed their focused and full CI gates. They are not merged, deployed or live accepted in
-  this entry; do not convert those states into completion.
+  Frontend PR `#784` and backend PR `#232` are merged and live. Follow-ups `#785` and `#786`
+  passed full CI and production acceptance for pre-upload size rejection, bounded extraction,
+  and standalone reload restoration. Those accepted slices must not be rebuilt.
   **Authorized max-80 completion slice (open; reuse, do not rebuild):** preserve the
   existing upload transport, protected source-video storage, server extraction, dedicated
   Harvest model, exact evidence receipts, Saved Runs, correction, calculator, and existing
