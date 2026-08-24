@@ -22,14 +22,15 @@ This section is the stable handoff point. Update it when a coherent acceptance b
 starts or finishes; do not create another active todo document.
 
 **Current active cursor (2026-08-24):** finish P-08 exactly as frozen in
-`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Backend
-`e2de8912117dd35adee15e59043f1ce9c06784fe` and frontend
-`4a3084354359ae24cc63ce600830fd195ed77d35` are live. Production passed the 512 MiB client
+`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Frontend
+`4651b597b0a0bb819ba7748afb005c88a3ebc28d` and backend
+`d9d5e68d4d283d0645265bf7bab24e304b08d9e3` are live. Production passed the 512 MiB client
 guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames, exact standalone
 source/frame restoration after clean reload, and varied first/middle/final thumbnail groups
-without AI dispatch or credit. Do not repeat those slices. Remaining order: confirm required
-macro-role sufficiency at review resolution; obtain/cancel/accept the exact
-quote only with owner credit authorization; prove durable paid result/reload and sanitized
+without AI dispatch or credit. Explicit standalone cannabis/hemp confirmation and a free exact
+quote also passed: 80 unique images, 0 duplicates, 7 signed batches, 7 credits. Do not repeat
+those slices. Remaining order: confirm required macro-role sufficiency at review resolution;
+accept the exact quote only with owner credit authorization; prove durable paid result/reload and sanitized
 frame/result sharing; exercise the proportionate deletion/cleanup and remaining role/failure
 gates; update exact evidence; close P-08; then return to the next matrix row. The older batch
 cursor below is retained history and cannot override this exact active slice.
