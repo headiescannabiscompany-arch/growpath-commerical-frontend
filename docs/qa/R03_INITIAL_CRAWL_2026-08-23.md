@@ -367,8 +367,15 @@ navigation, and image storage.` Exact-main Frontend CI `32671739812` and Product
   resolution, hard-reload persistence, reason-required reopen, final resolution and a second
   hard reload. Admin returned to 0 active / 13 completed with the record retained in completed
   history. This live run exposed two bounded A-02 gaps: support assignment/case-note controls
-  are absent, and the active transition controls are not exposed as buttons. Moderation
-  hide/restore remains separate; do not repeat the completed support transition loop.
+  were absent, and the active transition controls were not exposed as buttons. Frontend PR #782
+  and backend PR #230 implement and locally verify those bounded gaps; deployment and fresh
+  QA-only live ownership/note acceptance remain. Do not repeat the completed support transition
+  loop.
+- The approved existing QA-only paid-course moderation case passed a reversible production loop
+  without changing real-user content. Its retained audit advanced `leave -> hide -> restore ->
+  leave`; the exact reported-content deep link showed `Reported course is unavailable` while
+  hidden, reopened the course after restore, and a hard reload retained the final `Closed` state
+  and full audit. This moderation loop is complete and must not be repeated.
 
 ## Exact remaining R-03 work
 

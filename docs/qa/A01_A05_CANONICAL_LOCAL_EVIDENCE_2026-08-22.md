@@ -65,9 +65,14 @@ authority. The frontend has no one-click approval or disclosure action.
   A clearly labeled QA-only Technical support record was created in production with confirmed
   email delivery, moved to in-progress, resolved, hard-reloaded, reopened with a required audit
   reason, resolved again and hard-reloaded. The queue returned to 0 active / 13 completed and
-  retained the record in completed history. The live UI exposes no support assignment or case-note
-  controls, and its active transition controls lack button semantics; those bounded product gaps
-  plus the approved reversible moderation hide/restore loop remain before A-02 can close.
+  retained the record in completed history. The approved existing QA-only paid-course report then
+  passed the reversible moderation loop: `leave -> hide -> restore -> leave`. While hidden, its
+  exact reported-content deep link returned `Reported course is unavailable`; after restore the
+  same course opened again; after final close and reload the case was `Closed` with the complete
+  audit retained. No real-user content was changed. Frontend PR #782 and backend PR #230 add the
+  remaining support button semantics, self-assignment and internal case notes with audit. Their
+  exact-main deployment and a fresh QA-only live ownership/note lifecycle remain before A-02 can
+  close; do not repeat either completed transition or moderation loop.
 - **A-03 exact external blocker:** production truthfully reports `Sentry Admin read access is
   not configured`. Protected provider access and a redacted test event are still required to
   prove the project/environment tally, detail/deep link and no-secret response. Do not present
