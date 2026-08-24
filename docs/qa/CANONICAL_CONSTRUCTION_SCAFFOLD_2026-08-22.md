@@ -1,6 +1,6 @@
 # GrowPathAI canonical construction scaffold
 
-Updated: 2026-08-22  
+Updated: 2026-08-24
 Baseline frontend: `689474493cd82a866e6c8b20df781950c37fb378`
 
 Batch 0 retained work is tracked in
@@ -126,6 +126,14 @@ stay editable. AI uses selected evidence, preserves originals and exact source-b
 views, exposes uncertainty/counter-evidence, and requires confirmation before writes.
 Timeline sharing/export is separate from the private editor. Harvest Readiness and
 Diagnosis/IPM are repaired against their existing architectures rather than replaced.
+
+P-08 checkpoint: the retained Standard photo/upload/evidence/Saved Run/calculator workflow is
+not rebuilt. The max-80 packet adds bounded private-video preselection, exact Standard/Deep
+quotes, durable deterministic aggregation, structural morphology separate from color, signed
+receipts, private selected-frame/result sharing and guarded deletion. The exact implemented and
+remaining production gates live in `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`.
+Backend receipt configuration/deploy/readiness/FFmpeg precede frontend deployment and the one
+authorized old-private-video acceptance run.
 
 P-01 local closure: the retained Personal command center, sparse state and frequent actions
 remain intact. The six-card discovery assembly now requests the Home placement, excludes
@@ -365,7 +373,7 @@ surfaces to inspect, not proof that the story is complete.
 | `P-02`        | Personal/Commercial grow routes, grow APIs/models, lifecycle registry, integrations, timeline/archive/export   | Crop-aware create/import, attached history, reversible archive, ownership                                                                       |
 | `P-03`–`P-06` | Species/Crop ID, saved ToolRuns, Create Grow draft, field-observation draft/publish APIs                       | Three independent branches, evidence identity, explicit save/publish/withdrawal                                                                 |
 | `P-07`        | Shared result/evidence panels, media upload/crop manifests, ToolRun APIs, AI policy/registries                 | Originals/derived views, export, provenance, uncertainty, retry/next action                                                                     |
-| `P-08`        | Harvest Readiness screens/services/calculators, trichome fixtures/evaluation                                   | Ordinary-phone range, glare/unreadable share, harvest/wait evidence, optional Grow                                                              |
+| `P-08`        | Harvest Readiness UI/API, server video extraction/preselection, durable operations/receipts, Saved Runs/share/delete, method and evaluation | Ordinary-phone range; max-80 technical selection; Standard/Deep quote/restore; color vs structural morphology; private share/delete; optional Grow; exact-SHA live evidence |
 | `P-09`        | Diagnosis/IPM screens, ETGU/GPT verification, method/source registries                                         | Ranked differential, counter-evidence, decisive follow-up, safe treatment boundary                                                              |
 | `P-10`        | Grow timeline routes/components/export/share viewer and grow-history APIs                                      | Zoomable persisted events, revocable link, redacted viewer export                                                                               |
 | `P-11`        | Profile, billing, credits/storage, preferences, data rights, auth/workspace session                            | Truthful plan/actions, category settings, export/delete/logout/isolation                                                                        |

@@ -4,8 +4,11 @@ Date: 2026-08-24
 Frontend candidate: `7f758970f20dad29da161e3a7904dac907fc20bc`  
 Backend candidate: `e572552c94d8dedc9db9713f0fb4660b272f797c`
 
-This is the pre-Harvest-expansion final-candidate discoverability record required by R-03. It maps every
-user-facing canonical product story to its ordinary entry and route. Backend-only
+This is the pre-Harvest-expansion final-candidate discoverability record required by R-03. Its
+candidate SHAs remain the frozen pre-expansion baseline. The P-08 row now also names the
+implemented expansion states that must be exercised after PRs `#232` and `#784` deploy; it does
+not claim those states exist in the baseline candidate. The matrix maps every user-facing
+canonical product story to its ordinary entry and route. Backend-only
 supporting operations remain owned by their canonical story and are intentionally not
 presented as separate products. Protected records hidden by role, privacy, moderation or
 content-interest policy are not buried features.
@@ -29,7 +32,7 @@ permission/error and reload states. Dynamic IDs are represented as `:id`.
 | P-05 | Personal owner | Plant ID result or Field Studies / `Publish to Nature` | `/home/personal/tools/species-crop-id`; `/home/personal/field-studies/:id` | Back to private source; incomplete-location/date/media, preview, published and withdrawn states. |
 | P-06 | Personal owner | Same Plant ID/Nature review surface | same as P-03/P-05 | House/potted/private is the default; no proximity/date inference or bulk publication path exists. |
 | P-07 | Personal/Commercial/Facility permitted tool user | AI Tools, Grow AI Tools, Facility AI Tools | `/home/personal/tools`; `/home/commercial/tools`; `/home/facility/ai-tools` | Back to active tool hub; no-evidence, provider-limited, saved, retry and protected zoom/export states. |
-| P-08 | Personal/Commercial/Facility permitted user | `Harvest Readiness` | `/home/personal/tools/harvest-readiness`; workspace equivalents | Back to active tool hub; Grow selection is optional and unreadable/glare remains an explicit result. |
+| P-08 | Personal/Commercial/Facility permitted user | `Harvest Readiness` | `/home/personal/tools/harvest-readiness`; workspace equivalents | Back to active tool hub; Grow is optional. Exercise direct-photo Standard and ranked-video Deep quote/cancel/accept, extracting/queued/processing/reload-restore/success/reconciliation, visible color and structural morphology, private frame selection/export/share, sanitized signed-result share, saved deletion/unsaved discard, credit/permission/privacy and failed-extractor states. |
 | P-09 | Personal/Commercial/Facility permitted user | `Plant Issue Diagnosis` / `IPM Scout` | `/home/personal/diagnose`; `/home/personal/tools/ipm-scout`; workspace equivalents | Back to tool hub; ranked, incomplete-evidence, retry/refund and saved-result states. `/home/personal/tools/diagnose` is not a route. |
 | P-10 | Personal or Commercial Grow owner | Grow / `Timeline` | `/home/personal/grows/:growId/timeline`; Commercial equivalent | Back to Grow; private, visual export, reviewed public copy and withdrawn-copy states. |
 | P-11 | Signed-in user | Profile tab / `Profile` | `/home/personal/profile` | Back to Personal; plan, credits, storage, notification, theme, data-rights, logout and workspace choices. |

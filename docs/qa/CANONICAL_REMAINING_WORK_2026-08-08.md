@@ -1,10 +1,11 @@
 # GrowPathAI Canonical Remaining Work
 
-Date: 2026-08-20
+Updated: 2026-08-24
 
 Status: Detailed evidence and remainder ledger; reconciled against retained production
-evidence on 2026-08-21. A checked sub-scope stays checked even when its larger end-to-end
-workflow has a separately named open remainder.
+evidence on 2026-08-21, with the P-08 implementation/evidence freeze reconciled on
+2026-08-24. A checked sub-scope stays checked even when its larger end-to-end workflow has a
+separately named open remainder.
 
 `CANONICAL_PRODUCT_ACCEPTANCE_MATRIX_2026-08-21.md` is the single authoritative product
 contract and execution order. This file supplies its detailed evidence and precise open
@@ -20,6 +21,17 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
+**Current active cursor (2026-08-24):** finish P-08 exactly as frozen in
+`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Frontend PR `#784` and backend PR
+`#232` are implemented and locally/CI verified, not merged, deployed or live accepted. The
+remaining order is: commit this canonical packet; save the dedicated production receipt-signing
+configuration with owner confirmation; merge and deploy backend; require `/ready` database and
+Harvest worker readiness; prove real FFmpeg/ffprobe decode and bounded preselection with one
+owner-authorized older private video; merge and deploy frontend; run reload, signed result,
+private frame/result sharing, both deletion lifecycles, credit/privacy and cleanup acceptance;
+record exact SHAs/deploy IDs/evidence; then close only P-08 and return to the matrix order. The
+older batch cursor below is retained history and cannot override this exact active slice.
+
 1. **Completed current release-candidate slice:** exact-candidate Personal, paid Commercial
    and Platform Admin read-only acceptance is recorded. The reproduced missing Admin return
    path from Personal/Commercial/workspace selection is repaired and production-accepted on
@@ -29,9 +41,10 @@ starts or finishes; do not create another active todo document.
    explicitly open. Do not repeat the accepted routes without a reproduced regression.
 2. **Active construction cursor:** Batch 1's retained Plant ID/Grow/Nature assembly passes
    65 frontend and 32 backend focused assertions. Its remaining production upload, disposable-
-   Grow cleanup, public-pin reload/withdrawal and privacy checks are queued for an authenticated
-   Browser session; Browser control is unavailable in the current task, so no live result is
-   inferred. Batch 2's Admin/identity/workspace assembly passes 69 frontend and 93 backend
+   Grow cleanup, public-pin reload/withdrawal and privacy checks were queued for an authenticated
+   Browser session; Browser control was unavailable when that retained evidence was recorded, so
+   no live result was inferred. That historical limitation is not a claim about the current task.
+   Batch 2's Admin/identity/workspace assembly passes 69 frontend and 93 backend
    assertions after backend PR 212 (`1c745036f24a9b8a4a03755c89fd184a4bfed885`) corrected a
    stale test that incorrectly treated an active account subscription as a Facility-owned
    subscription. Current behavior preserves direct Facility ownership while reporting Facility
@@ -701,6 +714,12 @@ grow`, private current location without a Field Study, and an optional approxima
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
   inference warnings, pistil/bud-development context, top/middle/lower/context
   sampling, video frames, exact retake guidance, and saved-run comparisons.
+  **Current canonical P-08 freeze:**
+  `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md` owns the exact current
+  implementation/evidence record, deployment order, live script and anti-rewrite boundary.
+  Frontend PR `#784` code head `4b502abb` and backend PR `#232` code head `aa6cb3e`
+  passed their focused and full CI gates. They are not merged, deployed or live accepted in
+  this entry; do not convert those states into completion.
   **Authorized max-80 completion slice (open; reuse, do not rebuild):** preserve the
   existing upload transport, protected source-video storage, server extraction, dedicated
   Harvest model, exact evidence receipts, Saved Runs, correction, calculator, and existing
@@ -710,8 +729,11 @@ grow`, private current location without a Field Study, and an optional approxima
   remain capped at 12 and direct photos plus retained frames remain capped at 80. Standard
   reviews remain one credit. Thirteen through eighty is an explicitly quoted durable Deep
   Review at `ceil(images / 12)` credits, grouped into no more than 12 originals per provider
-  call with deterministic server aggregation, one signed all-or-nothing receipt, and a full
-  refund on any failed group or completion. Rejected candidates are deleted immediately;
+  call with deterministic server aggregation and one signed all-or-nothing receipt. A failure
+  durably proven to precede every provider dispatch refunds the complete reservation once. Once
+  any dispatch begins or an earlier group completes, expose no partial result, never redispatch,
+  and retain the accepted reservation for support reconciliation if a safe final result cannot
+  commit. This supersedes the older inaccurate automatic-refund promise. Rejected candidates are deleted immediately;
   retain only their compact technical rejection/coverage manifest, never biological claims.
   The owner explicitly approved Deep Review for Personal/free accounts when the account has
   enough AI credits; do not add a second paid-plan entitlement gate beyond the accepted exact
@@ -740,8 +762,10 @@ grow`, private current location without a Field Study, and an optional approxima
   charged credits. The backend refuses saved ToolRuns, calibration references, and legal or
   preservation holds; saved results remain in the guarded Saved Runs deletion lifecycle.
   This expansion reuses the deployment-managed OpenAI and protected-object-storage
-  credentials; a new key does not raise the application image ceiling and is not a
-  prerequisite. Do not copy production secrets into either worktree. Perform the already
+  credentials; no new OpenAI/provider API key is needed to raise the application image ceiling.
+  Production signing does require a dedicated random `HARVEST_ANALYSIS_RECEIPT_SECRET` and
+  public `HARVEST_ANALYSIS_RECEIPT_KEY_ID`; do not reuse another application secret or copy any
+  production secret into either worktree. Perform the already
   scheduled credential rotation only after the final release candidate is frozen and
   verified, so rotation does not become another partially completed feature dependency.
   Exact retained result frames remain until the owner uses the guarded permanent-result
@@ -749,6 +773,13 @@ grow`, private current location without a Field Study, and an optional approxima
   one authorized short-video live run plus reload/save/delete/refund-safe evidence, then the
   final frozen-candidate crawl. Do not substitute another 12-frame implementation or rewrite
   the already accepted standard path.
+  The structural-development result is also implemented and locally/CI tested independently
+  from clear/cloudy/amber color: small/developing, intact/turgid, swollen, wrinkled, collapsed,
+  ruptured, resin-exuding, fused, detached/missing and bare-stalk evidence plus repeated resolved
+  advanced senescence. Color or one image never proves biological death, oxidation, chemistry,
+  potency or time. Required deployment is backend first after receipt-key configuration, then
+  `/ready` with the Harvest worker ready, real FFmpeg decode/preselection, frontend deployment,
+  and the authorized old-private-video reload/share/delete acceptance script.
   Production retained run `6a77ea01b6f7eb6b90cd3595` returns an Aug 5-19
   planning range centered Aug 12, explains the user's approximate date and
   declining smell as reasons the window may be open, and preserves unfinished

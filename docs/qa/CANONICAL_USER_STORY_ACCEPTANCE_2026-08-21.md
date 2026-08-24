@@ -1,6 +1,6 @@
 # GrowPathAI canonical user-story acceptance
 
-Updated: 2026-08-21
+Updated: 2026-08-24
 
 This document defines acceptance scenarios for the IDs in
 `CANONICAL_PRODUCT_ACCEPTANCE_MATRIX_2026-08-21.md`. The matrix alone owns status and
@@ -54,9 +54,33 @@ responsive behavior, and no console/application error.
   preserves useful detail, permits full-size review/export, separates observations from
   inference and asks for the smallest useful next evidence set.
 - P-08: Harvest Readiness accepts ordinary phone media without requiring microscopy, reports
-  visible-sample clear/cloudy/amber ranges plus unreadable/glare share, distinguishes trichome
-  heads from plant pigmentation, weighs swelling/pistils/date/aroma and explains both harvest
-  and wait evidence. A Grow is optional.
+  the exact visible-sample buckets clear, cloudy, confirmed amber, amber-or-warm-light and
+  cloudy-or-glare, and distinguishes intact gland heads
+  from pistils, leaf edges, plant pigmentation and artifacts, weighs swelling/pistils/date/aroma
+  and explains both harvest and wait evidence. A Grow is optional in Personal, Commercial and
+  authorized Facility use; workspace credit and write boundaries remain isolated.
+- A direct set is capped at 12 photos. One private video shorter than ten minutes may produce at
+  most 600 temporary technical candidates and no more than 80 retained, quality/diversity/
+  timeline/byte-bounded stills; temporary rejects are deleted and only accepted stills may be
+  provider input. Standard four-through-twelve review is one credit. Thirteen-through-eighty is
+  an exact accepted Deep quote at `ceil(unique images / 12)` credits with deterministic batches,
+  durable poll/reload restore, idempotent replay, no partial result and one signed aggregate.
+- Color maturity stays separate from visible structural development. Results may record
+  developing, intact/turgid, swollen, wrinkled, collapsed, ruptured, resin-exuding, fused,
+  detached/missing or bare-stalk morphology and repeated resolved advanced senescence. They may
+  not infer gland-head death, oxidation, chemistry, potency or elapsed time from color or one
+  image.
+- Retained frames are private/unselected by default. Explicit owner-selected packages are at
+  most 12 frames and 24 MiB; separate receipt-revalidated result sharing is sanitized. Source
+  video, rejects, GPS/EXIF, private IDs/URLs, provider IDs and secrets never enter a package or
+  implicit public post. Saved deletion and unsaved-result discard are distinct confirmed,
+  ownership-scoped lifecycles with source-video choice, reference/hold checks and truthful credit
+  treatment.
+- Complete acceptance requires backend-first exact-SHA deployment, production receipt-signing
+  configuration, `/ready` worker proof, real FFmpeg decode/preselection, one authorized older
+  private-video Deep run, cancel/restore/reload/share/delete/privacy checks, cleanup and the
+  affected route/final-candidate crawl recorded in
+  `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`.
 - P-09: Diagnosis and IPM rank multiple hypotheses, distinguish pests, residue and disease,
   show supporting/counter evidence and request decisive follow-ups before high confidence.
   Treatment guidance respects crop, label, jurisdiction and escalation boundaries.

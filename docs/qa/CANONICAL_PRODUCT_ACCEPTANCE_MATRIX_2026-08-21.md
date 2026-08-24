@@ -1,6 +1,6 @@
 # GrowPathAI canonical product acceptance matrix
 
-Updated: 2026-08-23
+Updated: 2026-08-24
 
 This is the single product contract and execution order for finishing GrowPathAI.
 Detailed historical evidence remains in `CANONICAL_REMAINING_WORK_2026-08-08.md`, but
@@ -54,6 +54,9 @@ close a populated or mutating story.
 - `CANONICAL_PARITY_LIVE_EVIDENCE_2026-08-21.md` records the exact-SHA production slices
   exercised after the workspace/Nature parity merge, including the reproduced grow-link
   defect and the positive-role acceptance that remains.
+- `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md` freezes the current P-08
+  implementation, no-rewrite boundary, exact deployment order and live acceptance script. It
+  is evidence for this row and cannot create or close a second queue.
 - A new request must map to an existing row or add one new row here before implementation.
 - A regression reopens only the affected acceptance slice, not the entire product area.
 
@@ -143,7 +146,7 @@ Every applicable story must preserve these invariants without repeating them in 
 | P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented; local acceptance passed; publish/withdraw live acceptance open        |
 | P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | implemented; local acceptance passed; public/private live regression open          |
 | P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | implemented; local acceptance passed; storage/provider/live acceptance open        |
-| P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | standard <=12 retained; max-80 ranked-video/Deep aggregate implementation and exact-SHA live acceptance open |
+| P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | implemented; local/CI verified; backend-first signing/deploy plus FFmpeg/old-private-video/reload/share/delete exact-SHA live acceptance open |
 | P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open                |
 | P-10 | Grow timeline is visual, zoomable, private/shareable/exportable and viewer-friendly                                  | live accepted; final-candidate regression only                                     |
 | P-11 | Profile supports plan/credits, billing/cancel, notifications, theme, export/delete, logout and workspace switch      | implemented; local acceptance passed; provider/multi-account/live acceptance open  |
