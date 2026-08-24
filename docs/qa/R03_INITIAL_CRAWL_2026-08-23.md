@@ -376,6 +376,18 @@ navigation, and image storage.` Exact-main Frontend CI `32671739812` and Product
   leave`; the exact reported-content deep link showed `Reported course is unavailable` while
   hidden, reopened the course after restore, and a hard reload retained the final `Closed` state
   and full audit. This moderation loop is complete and must not be repeated.
+- Frontend `c71c96b8` and backend `422111d` deployed the bounded Admin support ownership repair.
+  Fresh QA-only request `6a8b9252b0780482197dfa62` proved sent-email state, exact accessible
+  names for Assign/Add note/In progress/Resolve, self-assignment, internal-note persistence,
+  in-progress and resolve, required-reason reopen, final resolve, reload and retained history.
+  Admin returned to 0 active / 14 completed. This closes A-02; do not create another support or
+  moderation record for this gate.
+- The current candidate inventory reports 323 frontend routes across 336 route files, 225 directly
+  parsed backend declarations, 319 inventoried backend routes, all 32 system foundations present,
+  and zero full-surface errors or warnings. The first named cleanup candidate was proven by route
+  inventory and repository-wide import tracing: the old standalone Facility VPD/EC screens had no
+  route, stack, navigation or runtime import. PR #783 removes only that superseded UI lane while
+  retaining Environment Review, pH/EC Range Check and the backend AI functions.
 
 ## Exact remaining R-03 work
 

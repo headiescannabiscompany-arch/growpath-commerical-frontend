@@ -59,9 +59,10 @@ authority. The frontend has no one-click approval or disclosure action.
   `/admin`. All five user-action families exposed account-specific button names. Focused Admin
   tests passed 43 assertions; exact-main Production Build Preflight `32673832150` and Frontend
   CI `32673832168` passed. No account or legal-request mutation was invoked.
-- **A-02:** with approved disposable records, create/assign/note/resolve/reopen moderation and
-  support cases, exercise allowed account/content actions, reload, and verify retained audit plus
-  outside-user visibility effects and cleanup.
+- **A-02: production accepted on frontend `c71c96b8` and backend `422111d`.** With approved
+  disposable records, create/assign/note/resolve/reopen moderation and support cases, exercise
+  allowed account/content actions, reload, and verify retained audit plus outside-user visibility
+  effects and cleanup.
   A clearly labeled QA-only Technical support record was created in production with confirmed
   email delivery, moved to in-progress, resolved, hard-reloaded, reopened with a required audit
   reason, resolved again and hard-reloaded. The queue returned to 0 active / 13 completed and
@@ -69,10 +70,12 @@ authority. The frontend has no one-click approval or disclosure action.
   passed the reversible moderation loop: `leave -> hide -> restore -> leave`. While hidden, its
   exact reported-content deep link returned `Reported course is unavailable`; after restore the
   same course opened again; after final close and reload the case was `Closed` with the complete
-  audit retained. No real-user content was changed. Frontend PR #782 and backend PR #230 add the
-  remaining support button semantics, self-assignment and internal case notes with audit. Their
-  exact-main deployment and a fresh QA-only live ownership/note lifecycle remain before A-02 can
-  close; do not repeat either completed transition or moderation loop.
+  audit retained. No real-user content was changed. Frontend PR #782 and backend PR #230 then
+  deployed the remaining support button semantics, self-assignment and internal case notes with
+  audit. Fresh QA-only request `6a8b9252b0780482197dfa62` proved email delivery, four exact named
+  action buttons, self-assignment, internal-note persistence, in-progress/resolution,
+  reason-required reopen, final resolution and hard-reload retention. The queue returned to
+  0 active / 14 completed. A-02 is closed; do not repeat either completed lifecycle.
 - **A-03 exact external blocker:** production truthfully reports `Sentry Admin read access is
   not configured`. Protected provider access and a redacted test event are still required to
   prove the project/environment tally, detail/deep link and no-secret response. Do not present
