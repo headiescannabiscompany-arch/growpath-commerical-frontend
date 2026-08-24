@@ -180,26 +180,6 @@
         "gatingCaps":  "(feature.enabled + requires.growId)"
     },
     {
-        "id":  "climate-vpd",
-        "routeOrScreen":  "ComputeVPD",
-        "location":  "Facility AI Tools (matrix)",
-        "shell":  "facility",
-        "source":  "src/features/ai/aiFeatureMatrix.ts",
-        "label":  "Compute VPD",
-        "status":  "disabled",
-        "gatingCaps":  "(feature.enabled)"
-    },
-    {
-        "id":  "ec-recommend",
-        "routeOrScreen":  "ECRecommend",
-        "location":  "Facility AI Tools (matrix)",
-        "shell":  "facility",
-        "source":  "src/features/ai/aiFeatureMatrix.ts",
-        "label":  "EC Recommendation",
-        "status":  "disabled",
-        "gatingCaps":  "(feature.enabled)"
-    },
-    {
         "id":  "facility-ai-ask",
         "routeOrScreen":  "/home/facility/ai/ask",
         "location":  "Facility AI Tools tab tile",

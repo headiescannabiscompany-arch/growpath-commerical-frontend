@@ -4,8 +4,6 @@ const SUPPORTED_FACILITY_AI = new Set([
   "harvest.analyzeTrichomes",
   "harvest.estimateHarvestWindow",
   "environment.assessDewPointRisk",
-  "climate.computeVPD",
-  "ec.recommendCorrection",
   "compliance.buildReadinessChecklist",
   "inventory.assessStockRisk"
 ]);
@@ -22,9 +20,7 @@ describe("AI feature matrix", () => {
   it("keeps the expected AI tool surface visible", () => {
     expect(AI_FEATURES.map((feature) => feature.id)).toEqual([
       "harvest-trichomes",
-      "harvest-window",
-      "climate-vpd",
-      "ec-recommend"
+      "harvest-window"
     ]);
   });
 });

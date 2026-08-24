@@ -59,9 +59,10 @@ authority. The frontend has no one-click approval or disclosure action.
   `/admin`. All five user-action families exposed account-specific button names. Focused Admin
   tests passed 43 assertions; exact-main Production Build Preflight `32673832150` and Frontend
   CI `32673832168` passed. No account or legal-request mutation was invoked.
-- **A-02:** with approved disposable records, create/assign/note/resolve/reopen moderation and
-  support cases, exercise allowed account/content actions, reload, and verify retained audit plus
-  outside-user visibility effects and cleanup.
+- **A-02: production accepted on frontend `c71c96b8` and backend `422111d`.** With approved
+  disposable records, create/assign/note/resolve/reopen moderation and support cases, exercise
+  allowed account/content actions, reload, and verify retained audit plus outside-user visibility
+  effects and cleanup.
   A clearly labeled QA-only Technical support record was created in production with confirmed
   email delivery, moved to in-progress, resolved, hard-reloaded, reopened with a required audit
   reason, resolved again and hard-reloaded. The queue returned to 0 active / 13 completed and
@@ -69,10 +70,12 @@ authority. The frontend has no one-click approval or disclosure action.
   passed the reversible moderation loop: `leave -> hide -> restore -> leave`. While hidden, its
   exact reported-content deep link returned `Reported course is unavailable`; after restore the
   same course opened again; after final close and reload the case was `Closed` with the complete
-  audit retained. No real-user content was changed. Frontend PR #782 and backend PR #230 add the
-  remaining support button semantics, self-assignment and internal case notes with audit. Their
-  exact-main deployment and a fresh QA-only live ownership/note lifecycle remain before A-02 can
-  close; do not repeat either completed transition or moderation loop.
+  audit retained. No real-user content was changed. Frontend PR #782 and backend PR #230 then
+  deployed the remaining support button semantics, self-assignment and internal case notes with
+  audit. Fresh QA-only request `6a8b9252b0780482197dfa62` proved email delivery, four exact named
+  action buttons, self-assignment, internal-note persistence, in-progress/resolution,
+  reason-required reopen, final resolution and hard-reload retention. The queue returned to
+  0 active / 14 completed. A-02 is closed; do not repeat either completed lifecycle.
 - **A-03 exact external blocker:** production truthfully reports `Sentry Admin read access is
   not configured`. Protected provider access and a redacted test event are still required to
   prove the project/environment tally, detail/deep link and no-secret response. Do not present
@@ -88,6 +91,11 @@ authority. The frontend has no one-click approval or disclosure action.
   authorized workspace switching without Living Soil Labs/Triple Bag Genetics ownership leakage.
   Current production evidence proves one boundary: the Platform Admin identity was denied at a
   direct Facility Dashboard URL with one `Access denied` H1 and `only available in facility mode`,
-  then returned to `/admin` without exposing Triple Bag Genetics. Free/Pro/Commercial/Facility
-  identity chains, expiry/logout/reload and explicit authorized switching remain open; do not
-  repeat the accepted Admin-to-Facility denial.
+  then returned to `/admin` without exposing Triple Bag Genetics. On frontend `c71c96b8`, the
+  same Admin identity was denied a direct Commercial URL until it explicitly selected its own
+  authorized Commercial workspace. That switch loaded the Admin-owned brand shell without Living
+  Soil Labs or Triple Bag Genetics data, survived reload, returned explicitly to Personal, and
+  retained the independent Platform Administration entry in both modes. Personal/Commercial mode
+  persistence and Admin separation are therefore accepted. Distinct Free/Pro/Commercial/Facility
+  identity-to-identity, expiry and final logout chains remain open; do not repeat the accepted
+  Admin direct-denial or authorized-switch scenarios.

@@ -27,8 +27,8 @@ Facility structured AI tools:
 - Implemented tool screens:
   - `TrichomeAnalysisScreen` (`harvest.analyzeTrichomes`)
   - `HarvestWindowScreen` (`harvest.estimateHarvestWindow`)
-  - `ComputeVPDScreen` (`climate.computeVPD`)
-  - `ECRecommendScreen` (`ec.recommendCorrection`, confirmation loop added)
+  - The former unmounted `ComputeVPDScreen` and `ECRecommendScreen` were removed during R-03;
+    their current user-facing replacements are Environment Review and pH/EC Range Check.
 - Feature matrix source:
   - `src/features/ai/aiFeatureMatrix.ts`
 

@@ -178,9 +178,7 @@ Source: src/app/** + src/screens/** (excluding *.bak)
 - src\screens\facility\AutomationScreen.tsx | type: screen
 - src\screens\facility\BillingAndReportingScreen.js | type: screen
 - src\screens\facility\ComplianceLogsScreen.tsx | type: screen
-- src\screens\facility\ComputeVPDScreen.tsx | type: screen
 - src\screens\facility\DeviationHandlingScreen.js | type: screen
-- src\screens\facility\ECRecommendScreen.tsx | type: screen
 - src\screens\facility\FacilityDashboardScreen.tsx | type: screen
 - src\screens\facility\FacilityGuard.tsx | type: screen
 - src\screens\facility\FacilityPicker.js | type: screen

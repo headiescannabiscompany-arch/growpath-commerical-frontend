@@ -756,21 +756,7 @@
         "notes":  null
     },
     {
-        "file":  "src\\screens\\facility\\ECRecommendScreen.tsx",
-        "route":  null,
-        "shell":  null,
-        "type":  "screen",
-        "notes":  null
-    },
-    {
         "file":  "src\\screens\\facility\\DeviationHandlingScreen.js",
-        "route":  null,
-        "shell":  null,
-        "type":  "screen",
-        "notes":  null
-    },
-    {
-        "file":  "src\\screens\\facility\\ComputeVPDScreen.tsx",
         "route":  null,
         "shell":  null,
         "type":  "screen",

@@ -307,8 +307,11 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       pH/EC Range Check directly from its Tool Library. The shared routes retain Facility
       scope through analysis, ToolRun, log, and task-plan writes; the unsafe legacy
       "EC correction" wording is not revived as a dosing authority. Focused local acceptance
-      passed 5 suites / 37 tests on 2026-08-23. The unreachable legacy components remain only
-      as named final-crawl dead-code candidates, not as hidden or unfinished products.
+      passed 5 suites / 37 tests on 2026-08-23. R-03 route inventory plus repository-wide import
+      tracing then proved the old `ComputeVPDScreen` and `ECRecommendScreen` had no route, stack,
+      navigation or runtime import. Their two stale matrix cards and screen implementations were
+      removed in a separate reversible cleanup while the canonical Environment Review and shared
+      pH/EC Range Check stayed intact.
 - [x] **Compatibility routes are not secret products:** the current system audit proves the
       old Logs, Orders, Campaigns, Storefront, Create Post, Social Tools and legacy native
       Tools/Storefront paths are redirects or compatibility guards into canonical workflows,

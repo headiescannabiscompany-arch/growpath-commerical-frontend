@@ -103,13 +103,10 @@ Backend REGISTRY key:
 4. ✅ Tap has no effect
 5. **Result:** Never reaches HarvestWindowScreen with empty growId ✅
 
-### Scenario: User Taps Compute VPD Card (growId = "")
+### Historical Scenario: Compute VPD card (unmounted lane removed in R-03)
 
-1. ✅ AIToolsHomeScreen receives `growId = ""`
-2. ✅ ToolCard.canRun = true (enabled && !requires.growId)
-3. ✅ Card is enabled + navigable
-4. ✅ ComputeVPDScreen({ facilityId: "fac123" }) - no growId needed
-5. **Result:** Screen loads, user can run VPD metric ✅
+The former standalone card and `ComputeVPDScreen` are no longer mounted. Environment Review now
+owns VPD/dew-point work without requiring a grow.
 
 ### Scenario: Backend Returns Unexpected Write Counts
 

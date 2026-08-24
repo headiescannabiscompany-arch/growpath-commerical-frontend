@@ -145,22 +145,6 @@
   gatingCaps: (feature.enabled + requires.growId)
   status: enabled
   source: src/features/ai/aiFeatureMatrix.ts
-- id: climate-vpd
-  label: Compute VPD
-  shell: facility
-  location: Facility AI Tools (matrix)
-  routeOrScreen: ComputeVPD
-  gatingCaps: (feature.enabled)
-  status: disabled
-  source: src/features/ai/aiFeatureMatrix.ts
-- id: ec-recommend
-  label: EC Recommendation
-  shell: facility
-  location: Facility AI Tools (matrix)
-  routeOrScreen: ECRecommend
-  gatingCaps: (feature.enabled)
-  status: disabled
-  source: src/features/ai/aiFeatureMatrix.ts
 - id: facility-ai-ask
   label: Ask AI
   shell: facility

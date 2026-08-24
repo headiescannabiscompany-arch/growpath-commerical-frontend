@@ -376,6 +376,47 @@ navigation, and image storage.` Exact-main Frontend CI `32671739812` and Product
   leave`; the exact reported-content deep link showed `Reported course is unavailable` while
   hidden, reopened the course after restore, and a hard reload retained the final `Closed` state
   and full audit. This moderation loop is complete and must not be repeated.
+- Frontend `c71c96b8` and backend `422111d` deployed the bounded Admin support ownership repair.
+  Fresh QA-only request `6a8b9252b0780482197dfa62` proved sent-email state, exact accessible
+  names for Assign/Add note/In progress/Resolve, self-assignment, internal-note persistence,
+  in-progress and resolve, required-reason reopen, final resolve, reload and retained history.
+  Admin returned to 0 active / 14 completed. This closes A-02; do not create another support or
+  moderation record for this gate.
+- The current candidate inventory reports 323 frontend routes across 336 route files, 225 directly
+  parsed backend declarations, 319 inventoried backend routes, all 32 system foundations present,
+  and zero full-surface errors or warnings. The first named cleanup candidate was proven by route
+  inventory and repository-wide import tracing: the old standalone Facility VPD/EC screens had no
+  route, stack, navigation or runtime import. PR #783 removes only that superseded UI lane while
+  retaining Environment Review, pH/EC Range Check and the backend AI functions.
+- Admin workspace isolation on `c71c96b8` passed another non-destructive slice. A direct Commercial
+  URL failed closed until the Admin explicitly selected its own available Commercial workspace;
+  that workspace survived reload, contained neither Living Soil Labs nor Triple Bag Genetics data,
+  returned explicitly to Personal, and retained Platform Administration in both modes. The Admin
+  page retained one `Administration` H1 and 1280/1280 client/scroll width with a clean queue.
+
+## Exact provider and physical-device gates
+
+These are release dependencies or truthful external blockers, not permission to rebuild accepted
+features:
+
+- Sentry Admin reading remains visibly `not configured`; protected project read access and a
+  redacted production event are required. Client crash capture separately requires the production
+  DSN/release and real web/iOS/Android event receipt.
+- Pulse, UbiBot and ZENTRA have read-only adapters; Growlink requires provider access and
+  TrolMaster requires the customer's API key/subscribed endpoint contract. A real provider account
+  or exported device file is required to prove discovery, reviewed space mapping, bounded history,
+  partial-failure receipts and disconnect/deletion. Contract/access candidates remain labeled as
+  such and cannot be represented as connected equipment.
+- METRC remains disabled without a real authorized jurisdiction/account, reviewed scope, interval
+  and reconciliation evidence. No synthetic credential or compliance claim may close that gate.
+- Hosted GrowPath Live/OBS and Cloudflare ingest/playback/chat/replay evidence is retained and must
+  not be rebuilt. Its remaining concurrency/isolation gate needs two distinct broadcaster accounts.
+  Twitch and Discord are optional outside-provider targets and must remain visibly unconfigured
+  unless their own credentials and delivery receipts pass.
+- Stripe settlement/gifts/Connect, protected object storage and malware/PDF workers, native push
+  receipt/tap behavior, and real iOS/Android crash capture retain their separately documented
+  provider, payment, worker or physical-device gates. Local routes and configuration-shaped code
+  are not completion evidence.
 
 ## Exact remaining R-03 work
 
