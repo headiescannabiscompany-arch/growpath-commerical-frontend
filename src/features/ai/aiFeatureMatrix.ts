@@ -6,20 +6,17 @@
  * Flip enabled: true/false to control shipping.
  */
 
-export type AITool = "harvest" | "climate" | "ec";
+export type AITool = "harvest";
 export type AIFunction =
   | "analyzeTrichomes"
-  | "estimateHarvestWindow"
-  | "computeVPD"
-  | "recommendCorrection";
+  | "estimateHarvestWindow";
 
 export type AIWriteType =
   | "TrichomeAnalysis"
   | "HarvestDecision"
-  | "CalendarEvent"
-  | "Task";
+  | "CalendarEvent";
 
-export type AIUIKind = "form" | "metric" | "wizard";
+export type AIUIKind = "form" | "wizard";
 
 export type AIFeature = {
   id: string;
@@ -72,31 +69,5 @@ export const AI_FEATURES: AIFeature[] = [
     requires: { facilityId: true, growId: true },
     writes: ["HarvestDecision", "CalendarEvent"],
     writeCounts: { HarvestDecision: 1, CalendarEvent: 3 }
-  },
-
-  // Phase 1.1 (ready to flip on once you want)
-  {
-    id: "climate-vpd",
-    label: "Compute VPD",
-    description: "Calculate vapor pressure deficit from temp & RH",
-    tool: "climate",
-    fn: "computeVPD",
-    enabled: true,
-    ui: "metric",
-    screen: "ComputeVPD",
-    requires: { facilityId: true, growId: false }
-  },
-  {
-    id: "ec-recommend",
-    label: "EC Recommendation",
-    description: "Suggest EC correction (may require confirmation gate)",
-    tool: "ec",
-    fn: "recommendCorrection",
-    enabled: true,
-    ui: "form",
-    screen: "ECRecommend",
-    requires: { facilityId: true, growId: false },
-    writes: ["Task"],
-    writeCounts: { Task: 1 }
   }
 ];

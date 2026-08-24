@@ -1,5 +1,11 @@
 # AI Feature Catalog — Mechanical Architecture
 
+> Historical architecture note: the unmounted Facility `ComputeVPDScreen` and
+> `ECRecommendScreen` lane was removed during the R-03 proof-based cleanup. Current VPD/dew-point
+> work lives in Environment Review and current EC interpretation lives in the shared pH/EC Range
+> Check. The remaining legacy harvest catalog below is retained only for compatibility until its
+> own route/import proof is reviewed.
+
 ## Overview
 
 The "buttons/features attached to AI" are now built from a **single source of truth**: the feature matrix. Adding a new AI tool requires only:
