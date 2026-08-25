@@ -258,6 +258,29 @@ function defaultAdminApi(path: string) {
     return Promise.resolve({ proposals: [] });
   if (path === "/api/ai/training/harvest-trichome-calibration")
     return Promise.resolve({ items: [harvestCalibrationCandidate] });
+  if (path === "/api/admin/harvest-operations")
+    return Promise.resolve({
+      operations: [
+        {
+          operationId: "6a8d51854cf08c2ed47a99d1",
+          workspaceType: "facility",
+          workspaceId: "facility-workspace",
+          facilityId: "6a563bec2fb9f669d2319fa5",
+          selectedEvidenceCount: 80,
+          analyzedEvidenceCount: 80,
+          batchCount: 7,
+          completedBatchCount: 3,
+          customerCredits: 7,
+          state: "failed",
+          creditState: "reserved",
+          error: {
+            code: "HARVEST_DEEP_DISPATCH_RECONCILIATION_REQUIRED",
+            message: "Support review required.",
+            retryable: false
+          }
+        }
+      ]
+    });
   return Promise.resolve({ ok: true });
 }
 
@@ -433,6 +456,8 @@ describe("PlatformAdminRoute", () => {
     expect(screen.getByText("Active users · 7 days")).toBeTruthy();
     expect(screen.getByText(/Bug report - personal - tasks/)).toBeTruthy();
     expect(screen.getByText("Harvest trichome calibration queue")).toBeTruthy();
+    expect(screen.getByText("Harvest provider reconciliation")).toBeTruthy();
+    expect(screen.getByText(/3\/7 provider batches completed/)).toBeTruthy();
     expect(screen.getByText(/AI amber 1% to 23%/)).toBeTruthy();
     expect(screen.getByText(/owner visible-area estimate 30%/)).toBeTruthy();
     expect(screen.getByText(/Not ground truth/)).toBeTruthy();
@@ -458,6 +483,33 @@ describe("PlatformAdminRoute", () => {
         method: "POST",
         body: { reason: "Platform owner token refresh" }
       })
+    );
+  });
+
+  it("records an explicit audited Harvest refund", async () => {
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("Harvest provider reconciliation");
+    fireEvent.changeText(
+      screen.getByPlaceholderText("Required audited reason"),
+      "Render exhausted memory after three completed provider batches."
+    );
+    fireEvent.press(
+      screen.getByRole("button", {
+        name: "Record refund for Harvest operation 6a8d51854cf08c2ed47a99d1"
+      })
+    );
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/harvest-operations/6a8d51854cf08c2ed47a99d1/reconcile",
+        {
+          method: "POST",
+          body: {
+            action: "refund",
+            reason: "Render exhausted memory after three completed provider batches.",
+            reconciliationKey: "admin-6a8d51854cf08c2ed47a99d1-refund-v1"
+          }
+        }
+      )
     );
   });
 

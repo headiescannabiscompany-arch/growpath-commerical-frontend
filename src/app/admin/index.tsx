@@ -403,6 +403,24 @@ type HarvestCalibrationCandidate = {
   };
 };
 
+type HarvestReconciliationOperation = {
+  operationId: string;
+  workspaceType: string;
+  workspaceId: string;
+  facilityId?: string | null;
+  selectedEvidenceCount: number;
+  analyzedEvidenceCount: number;
+  batchCount: number;
+  completedBatchCount: number;
+  customerCredits: number;
+  state: string;
+  creditState: string;
+  error?: { code?: string; message?: string; retryable?: boolean } | null;
+  reconciliationDisposition?: string;
+  reconciledAt?: string | null;
+  updatedAt?: string;
+};
+
 function percentLabel(value: number | null | undefined) {
   if (!Number.isFinite(Number(value))) return "not available";
   const numeric = Number(value);
@@ -619,6 +637,15 @@ export default function PlatformAdminRoute() {
   const [harvestCalibrationCandidates, setHarvestCalibrationCandidates] = useState<
     HarvestCalibrationCandidate[]
   >([]);
+  const [harvestOperations, setHarvestOperations] = useState<
+    HarvestReconciliationOperation[]
+  >([]);
+  const [harvestReconciliationReasons, setHarvestReconciliationReasons] = useState<
+    Record<string, string>
+  >({});
+  const [harvestReconciliationActions, setHarvestReconciliationActions] = useState<
+    Record<string, "refund" | "charge">
+  >({});
   const [reviewMethodId, setReviewMethodId] = useState("");
   const [knowledgeDraft, setKnowledgeDraft] = useState({
     entryId: "",
@@ -763,7 +790,8 @@ export default function PlatformAdminRoute() {
         "Support requests",
         "Knowledge registry",
         "Method review",
-        "Harvest calibration queue"
+        "Harvest calibration queue",
+        "Harvest provider reconciliation"
       ];
       const settled = await Promise.allSettled([
         apiRequest("/api/admin/overview"),
@@ -776,7 +804,8 @@ export default function PlatformAdminRoute() {
         apiRequest("/api/admin/support-requests"),
         apiRequest("/api/admin/knowledge-registry"),
         apiRequest("/api/admin/method-review-proposals"),
-        apiRequest("/api/ai/training/harvest-trichome-calibration")
+        apiRequest("/api/ai/training/harvest-trichome-calibration"),
+        apiRequest("/api/admin/harvest-operations")
       ]);
       const failures: string[] = [];
       const responseAt = (index: number) => {
@@ -798,6 +827,7 @@ export default function PlatformAdminRoute() {
       const knowledgeResponse = responseAt(8);
       const methodReviewResponse = responseAt(9);
       const harvestCalibrationResponse = responseAt(10);
+      const harvestOperationsResponse = responseAt(11);
 
       if (overviewResponse) setOverview(overviewResponse.overview || null);
       if (usageResponse) setUsage(usageResponse.usage || null);
@@ -859,6 +889,12 @@ export default function PlatformAdminRoute() {
             ? harvestCalibrationResponse.items
             : []
         );
+      if (harvestOperationsResponse)
+        setHarvestOperations(
+          Array.isArray(harvestOperationsResponse.operations)
+            ? harvestOperationsResponse.operations
+            : []
+        );
       setError(
         failures.length
           ? `Some administration sections could not load. ${failures.join("; ")}`
@@ -870,6 +906,36 @@ export default function PlatformAdminRoute() {
       setLoading(false);
     }
   }, [isAdmin, query]);
+
+  async function reconcileHarvestOperation(item: HarvestReconciliationOperation) {
+    const action = harvestReconciliationActions[item.operationId] || "refund";
+    const reason = String(harvestReconciliationReasons[item.operationId] || "").trim();
+    if (reason.length < 12) {
+      setError("Enter a specific reconciliation reason of at least 12 characters.");
+      return;
+    }
+    setBusyId(`harvest-reconcile-${item.operationId}`);
+    setError("");
+    try {
+      await apiRequest(`/api/admin/harvest-operations/${item.operationId}/reconcile`, {
+        method: "POST",
+        body: {
+          action,
+          reason,
+          reconciliationKey: `admin-${item.operationId}-${action}-v1`
+        }
+      });
+      setHarvestReconciliationReasons((current) => ({
+        ...current,
+        [item.operationId]: ""
+      }));
+      await load();
+    } catch (err: any) {
+      setError(err?.message || "Harvest reconciliation failed.");
+    } finally {
+      setBusyId("");
+    }
+  }
 
   async function reviewRegulatedAuthorization(
     authorizationId: string,
@@ -1927,6 +1993,101 @@ export default function PlatformAdminRoute() {
           <Text style={styles.meta}>{usage.note}</Text>
         </AppCard>
       ) : null}
+
+      <AppCard
+        title="Harvest provider reconciliation"
+        titleLevel={2}
+        subtitle="Failed provider operations with credits held for an audited decision. This view excludes submitted media and provider payloads."
+      >
+        {harvestOperations.length ? (
+          harvestOperations.map((item) => {
+            const action = harvestReconciliationActions[item.operationId] || "refund";
+            const busy = busyId === `harvest-reconcile-${item.operationId}`;
+            return (
+              <View key={item.operationId} style={styles.caseRow}>
+                <View style={styles.caseCopy}>
+                  <Text style={styles.caseTitle}>Operation {item.operationId}</Text>
+                  <Text style={styles.meta}>
+                    {item.workspaceType} workspace · {item.completedBatchCount}/
+                    {item.batchCount} provider batches completed · {item.customerCredits}{" "}
+                    credits {item.creditState}
+                  </Text>
+                  <Text style={styles.meta}>
+                    {item.selectedEvidenceCount} selected · {item.analyzedEvidenceCount}{" "}
+                    analyzed · status {item.state}
+                  </Text>
+                  <Text style={styles.evidencePreview}>
+                    {item.error?.code || "failure code unavailable"}:{" "}
+                    {item.error?.message || "No safe failure detail was recorded."}
+                  </Text>
+                  <View style={styles.searchRow}>
+                    {(["refund", "charge"] as const).map((candidate) => (
+                      <Pressable
+                        key={candidate}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${candidate} Harvest credits`}
+                        accessibilityState={{ selected: action === candidate }}
+                        style={
+                          action === candidate
+                            ? styles.primaryButton
+                            : styles.secondaryButton
+                        }
+                        onPress={() =>
+                          setHarvestReconciliationActions((current) => ({
+                            ...current,
+                            [item.operationId]: candidate
+                          }))
+                        }
+                      >
+                        <Text
+                          style={
+                            action === candidate
+                              ? styles.primaryText
+                              : styles.secondaryText
+                          }
+                        >
+                          {candidate === "refund"
+                            ? "Refund held credits"
+                            : "Charge used credits"}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  <TextInput
+                    {...inputThemeProps}
+                    value={harvestReconciliationReasons[item.operationId] || ""}
+                    onChangeText={(reason) =>
+                      setHarvestReconciliationReasons((current) => ({
+                        ...current,
+                        [item.operationId]: reason
+                      }))
+                    }
+                    placeholder="Required audited reason"
+                    multiline
+                    style={styles.input}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Record ${action} for Harvest operation ${item.operationId}`}
+                    accessibilityState={{ disabled: busy }}
+                    disabled={busy}
+                    style={styles.primaryButton}
+                    onPress={() => void reconcileHarvestOperation(item)}
+                  >
+                    <Text style={styles.primaryText}>
+                      {busy ? "Recording…" : `Record ${action}`}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            );
+          })
+        ) : (
+          <Text style={styles.meta}>
+            No failed Harvest operations currently hold credits for reconciliation.
+          </Text>
+        )}
+      </AppCard>
 
       <AppCard
         title="Harvest trichome calibration queue"
