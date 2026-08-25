@@ -24,7 +24,12 @@ import AppCard from "@/components/layout/AppCard";
 import PersonalFeedPlacement from "@/components/feed/PersonalFeedPlacement";
 import BackButton from "@/components/nav/BackButton";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
-import { listWorkspaceGrows, type GrowWorkspace } from "@/features/grows/workspaceData";
+import {
+  listWorkspaceGrows,
+  listWorkspaceLogs,
+  type GrowWorkspace
+} from "@/features/grows/workspaceData";
+import { growPhotoCount, growPhotoRecordId } from "@/features/grows/photoCount";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -79,10 +84,6 @@ function growSummary(grow?: PersonalGrow | null) {
   return parts.length
     ? parts.join(" • ")
     : "Keep the grow labeled with photos, logs, tasks, and AI runs.";
-}
-
-function growPhotoCount(grow?: PersonalGrow | null) {
-  return Array.isArray(grow?.photos) ? grow.photos.length : 0;
 }
 
 function growTimestamp(grow?: PersonalGrow | null) {
@@ -181,6 +182,7 @@ export default function PersonalGrowsRoute({
     workspace === "commercial" || ent.can(CAPABILITY_KEYS.GROWS_PERSONAL_WRITE);
   const [items, setItems] = useState<PersonalGrow[]>([]);
   const [archivedItems, setArchivedItems] = useState<PersonalGrow[]>([]);
+  const [photoCounts, setPhotoCounts] = useState<Record<string, number>>({});
   const [showArchived, setShowArchived] = useState(false);
   const [changingGrowId, setChangingGrowId] = useState("");
   const [notice, setNotice] = useState("");
@@ -199,11 +201,31 @@ export default function PersonalGrowsRoute({
         listWorkspaceGrows(workspace),
         workspace === "personal" ? listPersonalGrows({ archived: true }) : []
       ]);
-      setItems(Array.isArray(activeRows) ? activeRows : []);
-      setArchivedItems(Array.isArray(archivedRows) ? archivedRows : []);
+      const nextItems = Array.isArray(activeRows) ? activeRows : [];
+      const nextArchivedItems = Array.isArray(archivedRows) ? archivedRows : [];
+      setItems(nextItems);
+      setArchivedItems(nextArchivedItems);
+
+      const rowsById = new Map<string, PersonalGrow>();
+      [...nextItems, ...nextArchivedItems].forEach((grow) => {
+        const growId = growPhotoRecordId(grow);
+        if (growId) rowsById.set(growId, grow);
+      });
+      const countPairs = await Promise.all(
+        [...rowsById.entries()].map(async ([growId, grow]) => {
+          try {
+            const logs = await listWorkspaceLogs(workspace, growId);
+            return [growId, growPhotoCount(grow, logs)] as const;
+          } catch {
+            return [growId, growPhotoCount(grow)] as const;
+          }
+        })
+      );
+      setPhotoCounts(Object.fromEntries(countPairs));
     } catch (e) {
       setError(String((e as any)?.message || e || "Failed to load grows"));
       setItems([]);
+      setPhotoCounts({});
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -249,9 +271,18 @@ export default function PersonalGrowsRoute({
     workspace === "commercial"
       ? `${basePath}/tools/report?growId=${growId}`
       : `/home/personal/tools/pdf-export?growId=${growId}`;
+  const visiblePhotoCount = useCallback(
+    (grow?: PersonalGrow | null) => {
+      const growId = growPhotoRecordId(grow);
+      return growId && Object.prototype.hasOwnProperty.call(photoCounts, growId)
+        ? photoCounts[growId]
+        : growPhotoCount(grow);
+    },
+    [photoCounts]
+  );
   const totalPhotos = useMemo(
-    () => sortedGrows.reduce((sum, grow) => sum + growPhotoCount(grow), 0),
-    [sortedGrows]
+    () => sortedGrows.reduce((sum, grow) => sum + visiblePhotoCount(grow), 0),
+    [sortedGrows, visiblePhotoCount]
   );
 
   const statusCounts = useMemo(
@@ -593,7 +624,7 @@ export default function PersonalGrowsRoute({
               >
                 <Text style={styles.statusChipValue}>{growStatus(latestGrow)}</Text>
                 <Text style={styles.statusChipLabel}>
-                  {growPhotoCount(latestGrow)} photos
+                  {visiblePhotoCount(latestGrow)} photos
                 </Text>
               </View>
             ) : null}
@@ -765,7 +796,7 @@ export default function PersonalGrowsRoute({
                   <View style={[styles.statusChip, statusTone(status, styles)]}>
                     <Text style={styles.statusChipValue}>{status}</Text>
                     <Text style={styles.statusChipLabel}>
-                      {growPhotoCount(grow)} photos
+                      {visiblePhotoCount(grow)} photos
                     </Text>
                   </View>
                 </View>
