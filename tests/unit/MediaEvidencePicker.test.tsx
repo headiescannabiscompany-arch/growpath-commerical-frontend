@@ -278,6 +278,30 @@ describe("MediaEvidencePicker", () => {
     );
   });
 
+  it("prefers a recovered durable preview over a stale device-local URI", () => {
+    const screen = render(
+      <MediaEvidencePicker
+        purpose="crop_identification"
+        value={[
+          {
+            id: "recovered-photo",
+            assetType: "photo",
+            originalUri: "file:///private/var/mobile/Containers/old-photo.jpg",
+            durableUrl: "/uploads/recovered-photo.jpg",
+            source: "upload",
+            purpose: "crop_identification",
+            uploadStatus: "uploaded",
+            qualityWarnings: []
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByLabelText("Evidence photo 1").props.source.uri).toBe(
+      `${API_URL}/uploads/recovered-photo.jpg`
+    );
+  });
+
   it("refreshes protected photo playback before the signed URL expires", async () => {
     jest.useFakeTimers();
     const screen = render(

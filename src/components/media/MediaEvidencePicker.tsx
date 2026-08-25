@@ -1414,7 +1414,11 @@ export default function MediaEvidencePicker({
                   uri:
                     protectedPreviewUrls[asset.id] ||
                     localPreviewUris.current.get(asset.id) ||
-                    resolveImageUri(asset.originalUri || asset.durableUrl)
+                    // A recovered EvidenceAsset can retain the device-local URI from
+                    // its original upload. That URI is no longer readable on another
+                    // browser or device, so uploaded records must prefer their durable
+                    // server reference. Fresh in-session previews still win above.
+                    resolveImageUri(asset.durableUrl || asset.originalUri)
                 }}
                 style={styles.preview}
                 accessibilityLabel={`Evidence photo ${index + 1}`}
