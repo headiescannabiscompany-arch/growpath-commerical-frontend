@@ -145,7 +145,7 @@ Every applicable story must preserve these invariants without repeating them in 
 | ID   | User story                                                                                                           | Status                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ---- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | P-01 | Home provides a useful mixed feed, active-grow context and frequent actions                                          | live accepted; final-candidate regression only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | implemented; local acceptance passed; full-loop/live acceptance open                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | crop context, journal/task persistence, calendar date, timeline routes, archive/restore, CSV export and integration entry live accepted; retained-photo and real provider/import attachment remain open                                                                                                                                                                                                                                                                                                                                  |
 | P-03 | Identify a plant and save its photos/result without requiring a grow, Field Study or public pin                      | ordinary-photo no-grow result/save/reload live accepted; final-candidate regression only                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | live create accepted; owner archive cleanup/final regression open                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented; local acceptance passed; publish/withdraw live acceptance open                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -625,6 +625,29 @@ acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 
   ordinary-photo no-grow result/save/reload and private-location boundary are live accepted.
   Public Nature publish/withdraw remains P-05, and mutations such as correction, follow-up,
   grow/task/forum/share remain under their owning acceptance slices.
+
+- **P-02 — 2026-08-25 crop-aware grow production increment:** Existing QA tomato grow
+  `6a86c181e4f8953edcc6ec11` loaded its crop identity, climate-dependent lifecycle summary,
+  calendar, plants, journal, tasks, AI Tools, automation, timeline, comparison, integrations,
+  report and share entry points under the same grow ID. A temporary private journal record
+  created and reloaded on that grow, exposing a real date-only rendering defect: August 25
+  displayed as August 24 in America/New_York. Frontend PR `#797` replaced the UTC-derived
+  default with local calendar parts, preserved date-only/midnight-UTC calendar values,
+  passed the full 11m47s CI suite, merged as
+  `844f84eee6b35e3380511fa1079ca137e2caecdf`, and deployed successfully as Render deploy
+  `dep-da6qmkbm8hqs738uqlv0` in 2m07s. Production then saved and reloaded August 25 as August
+  25. A temporary grow-sourced task created, completed, survived reload as `Done`, retained
+  its exact grow source link, and was deleted. The QA grow archived into the explained
+  retained-history surface, reduced the active list, restored to the same ID, and recovered
+  every route. The post-fix journal appeared as one grow-scoped export row; `Export CSV`
+  completed with `CSV download prepared`, and the journal was deleted afterward. The
+  integration surface reopened with the same tomato grow selected and truthfully separated
+  implemented read-only providers from access-required, contract-pending and gateway-required
+  providers without equipment controls. **Do not rebuild:** crop context, journal/task
+  persistence, calendar-day handling, archive/restore, timeline/report routes, CSV export and
+  the reviewed integration entry are live accepted. **Remaining P-02 slices:** retained-photo
+  attachment/reload/export and one authorized real provider or file-import attachment with
+  provenance; provider-specific acceptance also remains under F-06/B-05.
 
 - **Non-Harvest closure — 2026-08-25 production increment:** The authenticated
   `admin@growpathai.com` identity explicitly entered Commercial mode and retained a visible
