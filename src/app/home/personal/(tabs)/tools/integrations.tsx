@@ -676,6 +676,8 @@ export default function DataIntegrationsScreen({
     }
   }
 
+  const selectedGrow = grows.find((grow) => entityId(grow) === growId);
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -758,7 +760,37 @@ export default function DataIntegrationsScreen({
       </View>
 
       {growId ? (
-        <GrowIntegrationBuildPanel mode={workspaceType} targetRef={growId} />
+        <>
+          <GrowIntegrationBuildPanel mode={workspaceType} targetRef={growId} />
+          <View style={styles.growlinkPanel}>
+            <Text style={styles.sectionTitle}>Import controller history file</Text>
+            <Text style={styles.meta}>
+              Review an AC Infinity, Bluelab, or compatible telemetry CSV before it
+              creates a read-only source. Confirm the provider, grow, room or space,
+              timezone, file identity, and column mapping first.
+            </Text>
+            <Link
+              asChild
+              href={
+                {
+                  pathname: "/home/personal/tools/history-import",
+                  params: {
+                    growId,
+                    growName: selectedGrow ? growLabel(selectedGrow) : "Selected grow"
+                  }
+                } as any
+              }
+            >
+              <Pressable
+                accessibilityRole="link"
+                accessibilityLabel="Open reviewed controller history import"
+                style={styles.primaryButton}
+              >
+                <Text style={styles.primaryText}>Open reviewed CSV import</Text>
+              </Pressable>
+            </Link>
+          </View>
+        </>
       ) : (
         <Text style={styles.selectionPrompt}>
           Choose a grow to review provider mapping and import telemetry.

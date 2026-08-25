@@ -139,6 +139,7 @@ describe("Data Integrations Growlink flow", () => {
     expect(await screen.findByRole("header", { name: "Data Integrations" })).toBeTruthy();
     expect(screen.queryByPlaceholderText("Grow ID")).toBeNull();
     expect(await screen.findByText("Tomato Patio Grow · Tomato")).toBeTruthy();
+    expect(screen.getByLabelText("Open reviewed controller history import")).toBeTruthy();
     await waitFor(() =>
       expect(screen.getByText("Growlink read-only telemetry")).toBeTruthy()
     );
