@@ -177,7 +177,7 @@ Every applicable story must preserve these invariants without repeating them in 
 | C-02 | Brand owner manages storefront identity/media/slug/sections/contact/social/location/publication                   | implemented; local acceptance passed; populated/live acceptance open          |
 | C-03 | Products expose media/inventory/pricing and only lawfully authorized transaction or external-handoff capabilities | implemented; local acceptance passed; migration/provider/live acceptance open |
 | C-04 | Commercial courses/content/campaigns and analytics work without duplicate navigation                              | implemented; local acceptance passed; provider/live acceptance open           |
-| C-05 | Admin brand can explicitly use Commercial tools while retaining Platform Admin                                    | implemented; local acceptance passed; Admin-brand/live acceptance open        |
+| C-05 | Admin brand can explicitly use Commercial tools while retaining Platform Admin                                    | live accepted; final-candidate regression only                                |
 | F-01 | Facility Owner sets up rooms/grows/plants/team with role-aware create/edit/import/assignment/audit                | implemented; local acceptance passed; multi-role/live acceptance open         |
 | F-02 | Assigned staff work links to the required record/action and persists evidence/completion                          | implemented; local acceptance passed; assigned-role/live acceptance open      |
 | F-03 | SOP/compliance supports approve/assign/run/compare/evidence/exceptions and audit history                          | implemented; local acceptance passed; populated/live acceptance open          |
