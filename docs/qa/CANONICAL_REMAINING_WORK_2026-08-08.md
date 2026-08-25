@@ -717,10 +717,13 @@ grow`, private current location without a Field Study, and an optional approxima
     privacy/security acceptance, not a projection/policy rewrite.
   - **N-04 (`implemented`; legacy recovery is nonblocking):** retain the current safe default: no legacy Cary,
     Maydale, house, duplicate, or unresolved record was inferred or published. The remaining
-    required action is only a final-candidate read-only privacy regression. Individual legacy
-    recovery is optional and owner-triggered; if chosen, require the newest defensible
+    required action is only a final-candidate read-only privacy regression. The owner has now
+    chosen the bounded Cary/Maydale recovery documented in
+    `NATURE_CARY_MAYDALE_RECOVERY_2026-08-25.md`; require the newest defensible
     nonduplicate identity and a known place. Do not rebuild deduplication, uncertainty, or
-    no-location-inference rules, and do not block future pins on old media.
+    no-location-inference rules, and do not block future pins on old media. Complete every
+    retained Cary set and each distinct Maryland visit, including the separate Maryland
+    water-lily observations; do not accept a representative subset.
 
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
