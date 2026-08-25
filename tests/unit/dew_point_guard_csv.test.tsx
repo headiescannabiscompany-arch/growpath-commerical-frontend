@@ -456,6 +456,8 @@ describe("Dew Point Guard CSV flow", () => {
       "one sample per day"
     );
     fireEvent.changeText(screen.getByTestId("dpg-csv-room-name"), "Flower A");
+    fireEvent.press(screen.getByTestId("dpg-csv-light-controller-state"));
+    expect(screen.getByTestId("dpg-csv-light-state-note").props.children).toBeTruthy();
     fireEvent.press(screen.getByTestId("dpg-confirm-csv-review"));
     await waitFor(() =>
       expect(screen.getByTestId("dpg-csv-review-confirmed")).toBeTruthy()
@@ -478,7 +480,8 @@ describe("Dew Point Guard CSV flow", () => {
             growId: "g1",
             roomName: "Flower A",
             workspaceType: "personal",
-            timezone: "America/New_York"
+            timezone: "America/New_York",
+            lightingColumnMeaning: "controller_state"
           }),
           columns: expect.arrayContaining([
             "Inside Temperature",
@@ -502,7 +505,7 @@ describe("Dew Point Guard CSV flow", () => {
         vpdKpa: 1.22,
         co2Ppm: 606,
         lightValue: 2.5,
-        lightUnit: "manufacturer_reported"
+        lightUnit: "controller_reported_lighting_state"
       })
     );
   });

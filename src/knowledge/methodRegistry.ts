@@ -287,6 +287,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "raw metric evidence",
       "workspace-isolated connections",
       "file import review provenance",
+      "reviewed lighting-column meaning separated from raw provider values",
       "tool input context",
       "field-use declarations",
       "draft alerts",
@@ -295,6 +296,7 @@ export const methodRegistry: GrowPathMethod[] = [
     [
       "Read-only first; never invent metrics, units, mappings, or control access.",
       "Never use a Facility identifier as a grow target or mix a provider export into an unrelated source.",
+      "Never infer an illuminance detector from a LIGHT column, convert controller lighting state to lux, or reconstruct transitions and duration from sparse snapshots.",
       "Validate deep-linked grow targets against the active workspace and use named owned-grow choices instead of user-entered internal IDs."
     ],
     ["data-integrations", "facility-integrations", "telemetry"]

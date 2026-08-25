@@ -104,6 +104,12 @@ export const INTEGRATION_DATA_USE_REGISTRY: IntegrationDataUseRule[] = [
     consumers: ["display", "analytics", "AI", "exports"]
   },
   {
+    field: "lightingColumnMeaning",
+    description:
+      "User-reviewed distinction between measured lux, controller lighting state/output, and an unknown raw provider value.",
+    consumers: ["display", "analytics", "AI", "search", "exports"]
+  },
+  {
     field: "roomMapping",
     description: "Reviewed room or grow-space name attached to the imported source.",
     consumers: ["display", "analytics", "AI", "search", "tasks", "alerts", "exports"]

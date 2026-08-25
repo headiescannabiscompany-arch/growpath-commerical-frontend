@@ -420,7 +420,8 @@ export default function DewPointGuardTool({
         timestampColumn: csvTsHeader,
         temperatureColumn: csvTempHeader,
         humidityColumn: csvRhHeader,
-        temperatureUnit: csvTempUnit
+        temperatureUnit: csvTempUnit,
+        lightingColumnMeaning: csvDetectedExtras.lightKind || null
       }),
     [
       csvFileIdentity,
@@ -429,7 +430,8 @@ export default function DewPointGuardTool({
       csvReview,
       csvTempHeader,
       csvTempUnit,
-      csvTsHeader
+      csvTsHeader,
+      csvDetectedExtras.lightKind
     ]
   );
   const csvReviewComplete =
@@ -671,6 +673,7 @@ export default function DewPointGuardTool({
                   roomName: csvRoomName.trim(),
                   timezone: sourceTimezone.trim(),
                   sourceFileIdentity: csvFileIdentity,
+                  lightingColumnMeaning: csvDetectedExtras.lightKind || null,
                   reviewedAt: new Date().toISOString()
                 }
               }
@@ -1893,6 +1896,62 @@ export default function DewPointGuardTool({
                         {csvTempUnit} | {r.rh}% {r.valid ? "" : "(invalid)"}
                       </Text>
                     ))}
+                  </View>
+                ) : null}
+                {csvDetectedExtras.lightCol != null ? (
+                  <View style={[styles.panel, { gap: 8, marginBottom: 10, padding: 10 }]}>
+                    <Text style={styles.sectionTitle}>Lighting column meaning</Text>
+                    <Text style={styles.mutedText}>
+                      Tell GrowPath what this controller column represents. A light
+                      detector is different from a controller-reported lights-on/off or
+                      output state. Raw values are retained and are never converted to lux
+                      unless you choose measured illuminance.
+                    </Text>
+                    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                      <Chip
+                        testID="dpg-csv-light-controller-state"
+                        label="Controller lights on/off or output"
+                        active={csvDetectedExtras.lightKind === "controller_state"}
+                        onPress={() => {
+                          setConfirmedCsvReviewSignature("");
+                          setCsvDetectedExtras((previous) => ({
+                            ...previous,
+                            lightKind: "controller_state"
+                          }));
+                        }}
+                      />
+                      <Chip
+                        testID="dpg-csv-light-lux"
+                        label="Measured illuminance (lux)"
+                        active={csvDetectedExtras.lightKind === "lux"}
+                        onPress={() => {
+                          setConfirmedCsvReviewSignature("");
+                          setCsvDetectedExtras((previous) => ({
+                            ...previous,
+                            lightKind: "lux"
+                          }));
+                        }}
+                      />
+                      <Chip
+                        testID="dpg-csv-light-unmapped"
+                        label="Unknown — preserve raw only"
+                        active={csvDetectedExtras.lightKind === "unmapped"}
+                        onPress={() => {
+                          setConfirmedCsvReviewSignature("");
+                          setCsvDetectedExtras((previous) => ({
+                            ...previous,
+                            lightKind: "unmapped"
+                          }));
+                        }}
+                      />
+                    </View>
+                    {csvDetectedExtras.lightKind === "controller_state" ? (
+                      <Text testID="dpg-csv-light-state-note" style={styles.successText}>
+                        Stored as controller-reported lighting state/output, not measured
+                        brightness. Sparse samples cannot reconstruct every transition or
+                        lights-on duration.
+                      </Text>
+                    ) : null}
                   </View>
                 ) : null}
                 <View style={[styles.panel, { gap: 8, marginBottom: 10, padding: 10 }]}>
