@@ -20,11 +20,26 @@ import {
   exportAiInspectionEvidence,
   saveAiInspectionImage
 } from "@/utils/aiInspectionEvidenceExport";
-import type { AiInspectionView } from "@/types/evidence";
+import {
+  aiInspectionViewIdentityKey,
+  type AiInspectionView,
+  type EvidenceWorkspaceType
+} from "@/types/evidence";
 
 type Props = {
   review: EvidenceReview;
   onAddEvidence?: () => void | Promise<void>;
+  inspectionWorkspace?: {
+    workspaceType: EvidenceWorkspaceType;
+    workspaceId?: string;
+    facilityId?: string;
+  };
+  feedDraftSelection?: {
+    selectedViewKeys: string[];
+    maxSelected: number;
+    disabled?: boolean;
+    onChange: (selectedViewKeys: string[]) => void;
+  };
 };
 
 function status(review: EvidenceReview) {
@@ -32,6 +47,26 @@ function status(review: EvidenceReview) {
   if (!review.performed) return "Pixels not analyzed";
   const count = review.photosAnalyzed || review.photoCount;
   return `${count} photo${count === 1 ? "" : "s"} inspected`;
+}
+
+function staleInspectionRequestError() {
+  return Object.assign(
+    new Error("The inspection review changed before loading finished."),
+    {
+      name: "AbortError",
+      code: "STALE_INSPECTION_REQUEST"
+    }
+  );
+}
+
+function inspectionRequestWasCancelled(error: any) {
+  const code = String(error?.code || "").toUpperCase();
+  return (
+    error?.name === "AbortError" ||
+    error?.code === "STALE_INSPECTION_REQUEST" ||
+    code === "ABORT_ERR" ||
+    code === "ABORTED"
+  );
 }
 
 export const createEvidenceReviewPanelStyles = (palette: ThemePalette) =>
@@ -82,6 +117,10 @@ export const createEvidenceReviewPanelStyles = (palette: ThemePalette) =>
       gap: 8,
       padding: 10,
       width: 250
+    },
+    inspectionCardSelected: {
+      borderColor: palette.accent,
+      borderWidth: 2
     },
     inspectionImage: {
       backgroundColor: palette.page,
@@ -144,12 +183,23 @@ function list(values: string[], label: string, styles: EvidenceReviewPanelStyles
   );
 }
 
-export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
+export default function EvidenceReviewPanel({
+  review,
+  onAddEvidence,
+  inspectionWorkspace,
+  feedDraftSelection
+}: Props) {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createEvidenceReviewPanelStyles(palette), [palette]);
   const inspectionViews = review.inspectionViews || [];
   const nextChecks = evidenceReviewNextChecks(review);
   const reviewFingerprint = JSON.stringify({ review, nextChecks });
+  const inspectionRequestFingerprint = JSON.stringify([
+    reviewFingerprint,
+    inspectionWorkspace?.workspaceType || "",
+    inspectionWorkspace?.workspaceId || "",
+    inspectionWorkspace?.facilityId || ""
+  ]);
   const [followUpFeedback, setFollowUpFeedback] = useState("");
   const [inspectionFeedback, setInspectionFeedback] = useState("");
   const [loadedViews, setLoadedViews] = useState<Record<string, AiInspectionView>>({});
@@ -157,15 +207,35 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
     useState<AiInspectionView | null>(null);
   const followUpBusyRef = useRef(false);
   const previousReviewFingerprintRef = useRef(reviewFingerprint);
+  const inspectionRequestFingerprintRef = useRef(inspectionRequestFingerprint);
+  const inspectionRequestGenerationRef = useRef(0);
+  const inspectionRequestControllerRef = useRef<AbortController | null>(null);
+  const openInspectionNonceRef = useRef(0);
+  const openInspectionControllerRef = useRef<AbortController | null>(null);
+  inspectionRequestFingerprintRef.current = inspectionRequestFingerprint;
 
   useEffect(() => {
     if (previousReviewFingerprintRef.current === reviewFingerprint) return;
     previousReviewFingerprintRef.current = reviewFingerprint;
     setFollowUpFeedback("");
-    setInspectionFeedback("");
-    setLoadedViews({});
-    setActiveInspectionView(null);
   }, [reviewFingerprint]);
+
+  useEffect(() => {
+    inspectionRequestGenerationRef.current += 1;
+    inspectionRequestControllerRef.current?.abort();
+    openInspectionNonceRef.current += 1;
+    openInspectionControllerRef.current?.abort();
+    openInspectionControllerRef.current = null;
+    const controller = new AbortController();
+    inspectionRequestControllerRef.current = controller;
+    setInspectionFeedback((current) => (current ? "" : current));
+    setLoadedViews((current) => (Object.keys(current).length ? {} : current));
+    setActiveInspectionView((current) => (current ? null : current));
+    return () => {
+      controller.abort();
+      openInspectionControllerRef.current?.abort();
+    };
+  }, [inspectionRequestFingerprint]);
 
   async function showRequestedEvidenceGuidance() {
     if (!onAddEvidence || followUpBusyRef.current) return;
@@ -183,20 +253,72 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
   }
 
   function viewKey(view: AiInspectionView) {
-    return `${view.sourceEvidenceAssetId}:${view.sha256}`;
+    return aiInspectionViewIdentityKey(view);
   }
 
-  async function loadView(view: AiInspectionView) {
+  function toggleFeedDraftView(view: AiInspectionView) {
+    if (!feedDraftSelection || feedDraftSelection.disabled) return;
+    const key = viewKey(view);
+    const current = new Set(feedDraftSelection.selectedViewKeys);
+    if (current.has(key)) current.delete(key);
+    else {
+      if (current.size >= feedDraftSelection.maxSelected) return;
+      current.add(key);
+    }
+    feedDraftSelection.onChange(
+      inspectionViews.map(viewKey).filter((candidate) => current.has(candidate))
+    );
+  }
+
+  function inspectionRequestIsCurrent(
+    fingerprint: string,
+    generation: number,
+    controller: AbortController | null
+  ) {
+    return Boolean(
+      controller &&
+      !controller.signal.aborted &&
+      inspectionRequestControllerRef.current === controller &&
+      inspectionRequestFingerprintRef.current === fingerprint &&
+      inspectionRequestGenerationRef.current === generation
+    );
+  }
+
+  async function loadView(
+    view: AiInspectionView,
+    request?: { signal: AbortSignal; isCurrent: () => boolean }
+  ) {
+    const requestFingerprint = inspectionRequestFingerprint;
+    const requestGeneration = inspectionRequestGenerationRef.current;
+    const controller = inspectionRequestControllerRef.current;
+    const requestIsCurrent =
+      request?.isCurrent ||
+      (() =>
+        inspectionRequestIsCurrent(requestFingerprint, requestGeneration, controller));
+    const signal = request?.signal || controller?.signal;
+    if (!signal || signal.aborted || !requestIsCurrent()) {
+      throw staleInspectionRequestError();
+    }
     const key = viewKey(view);
     if (loadedViews[key]?.dataUrl) return loadedViews[key];
     setInspectionFeedback(
       `Loading ${view.kind} from source photo ${view.sourceImageIndex}...`
     );
-    const loaded = await loadAiInspectionView(view, {
-      workspaceType: view.workspaceType || "personal",
-      workspaceId: view.workspaceId,
-      facilityId: view.facilityId
-    });
+    const loaded = await loadAiInspectionView(
+      view,
+      {
+        workspaceType:
+          inspectionWorkspace?.workspaceType || view.workspaceType || "personal",
+        workspaceId: inspectionWorkspace?.workspaceId || view.workspaceId,
+        facilityId: inspectionWorkspace?.facilityId || view.facilityId
+      },
+      {
+        signal
+      }
+    );
+    if (signal.aborted || !requestIsCurrent()) {
+      throw staleInspectionRequestError();
+    }
     setLoadedViews((current) => ({ ...current, [key]: loaded }));
     setInspectionFeedback(
       `Opened the exact ${view.kind} inspected from source photo ${view.sourceImageIndex}.`
@@ -205,39 +327,100 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
   }
 
   async function saveView(view: AiInspectionView) {
+    const requestFingerprint = inspectionRequestFingerprint;
+    const requestGeneration = inspectionRequestGenerationRef.current;
+    const controller = inspectionRequestControllerRef.current;
     try {
       const loaded = await loadView(view);
+      if (
+        !inspectionRequestIsCurrent(requestFingerprint, requestGeneration, controller)
+      ) {
+        return;
+      }
       await saveAiInspectionImage(loaded);
+      if (
+        !inspectionRequestIsCurrent(requestFingerprint, requestGeneration, controller)
+      ) {
+        return;
+      }
       setInspectionFeedback(
         "Inspection image saved or opened in the device share sheet."
       );
     } catch (error: any) {
+      if (inspectionRequestWasCancelled(error)) return;
       setInspectionFeedback(error?.message || "The inspection image could not be saved.");
     }
   }
 
   async function openView(view: AiInspectionView) {
+    const requestFingerprint = inspectionRequestFingerprint;
+    const requestGeneration = inspectionRequestGenerationRef.current;
+    const reviewController = inspectionRequestControllerRef.current;
+    openInspectionNonceRef.current += 1;
+    const nonce = openInspectionNonceRef.current;
+    openInspectionControllerRef.current?.abort();
+    const controller = new AbortController();
+    openInspectionControllerRef.current = controller;
+    const openRequestIsCurrent = () =>
+      inspectionRequestIsCurrent(
+        requestFingerprint,
+        requestGeneration,
+        reviewController
+      ) &&
+      !controller.signal.aborted &&
+      openInspectionControllerRef.current === controller &&
+      openInspectionNonceRef.current === nonce;
     try {
-      const loaded = await loadView(view);
+      const loaded = await loadView(view, {
+        signal: controller.signal,
+        isCurrent: openRequestIsCurrent
+      });
+      if (!openRequestIsCurrent()) return;
       setActiveInspectionView(loaded);
     } catch (error: any) {
+      if (controller.signal.aborted || inspectionRequestWasCancelled(error)) return;
       setInspectionFeedback(error?.message || "The inspection view could not be opened.");
+    } finally {
+      if (openInspectionControllerRef.current === controller) {
+        openInspectionControllerRef.current = null;
+      }
     }
   }
 
   async function exportViews() {
+    const requestFingerprint = inspectionRequestFingerprint;
+    const requestGeneration = inspectionRequestGenerationRef.current;
+    const controller = inspectionRequestControllerRef.current;
     try {
       setInspectionFeedback("Loading the exact inspected views for export...");
       const complete: AiInspectionView[] = [];
-      for (const view of inspectionViews) complete.push(await loadView(view));
+      for (const view of inspectionViews) {
+        if (
+          !inspectionRequestIsCurrent(requestFingerprint, requestGeneration, controller)
+        ) {
+          throw staleInspectionRequestError();
+        }
+        complete.push(await loadView(view));
+      }
+      if (
+        !inspectionRequestIsCurrent(requestFingerprint, requestGeneration, controller)
+      ) {
+        throw staleInspectionRequestError();
+      }
       await exportAiInspectionEvidence("GrowPathAI inspection evidence", complete, {
         analysisId: review.analysisId,
         reviewPolicyVersion: review.reviewPolicyVersion,
         providerModel: review.providerModel,
         imageDetail: review.imageDetail
       });
+      if (
+        !inspectionRequestIsCurrent(requestFingerprint, requestGeneration, controller)
+      ) {
+        return;
+      }
       setInspectionFeedback("Inspection evidence package exported.");
     } catch (error: any) {
+      if (inspectionRequestWasCancelled(error)) return;
       setInspectionFeedback(
         error?.message || "Inspection evidence could not be exported."
       );
@@ -280,8 +463,23 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
           >
             {inspectionViews.map((view) => {
               const loaded = loadedViews[viewKey(view)];
+              const selectedForFeedDraft = Boolean(
+                feedDraftSelection?.selectedViewKeys.includes(viewKey(view))
+              );
+              const feedDraftSelectionAtLimit = Boolean(
+                feedDraftSelection &&
+                !selectedForFeedDraft &&
+                feedDraftSelection.selectedViewKeys.length >=
+                  feedDraftSelection.maxSelected
+              );
               return (
-                <View key={viewKey(view)} style={styles.inspectionCard}>
+                <View
+                  key={viewKey(view)}
+                  style={[
+                    styles.inspectionCard,
+                    selectedForFeedDraft && styles.inspectionCardSelected
+                  ]}
+                >
                   {loaded?.dataUrl ? (
                     <Image
                       source={{ uri: loaded.dataUrl }}
@@ -321,6 +519,34 @@ export default function EvidenceReviewPanel({ review, onAddEvidence }: Props) {
                     >
                       <Text style={styles.buttonText}>Save</Text>
                     </Pressable>
+                    {feedDraftSelection ? (
+                      <Pressable
+                        accessibilityRole="checkbox"
+                        accessibilityState={{
+                          checked: selectedForFeedDraft,
+                          disabled:
+                            Boolean(feedDraftSelection.disabled) ||
+                            feedDraftSelectionAtLimit
+                        }}
+                        accessibilityLabel={`${
+                          selectedForFeedDraft ? "Remove" : "Add"
+                        } ${view.kind} from source photo ${view.sourceImageIndex} ${
+                          selectedForFeedDraft ? "from" : "to"
+                        } the private Feed review draft`}
+                        disabled={
+                          Boolean(feedDraftSelection.disabled) ||
+                          feedDraftSelectionAtLimit
+                        }
+                        onPress={() => toggleFeedDraftView(view)}
+                        style={styles.button}
+                      >
+                        <Text style={styles.buttonText}>
+                          {selectedForFeedDraft
+                            ? "Selected for Feed draft"
+                            : "Add to Feed draft"}
+                        </Text>
+                      </Pressable>
+                    ) : null}
                   </View>
                 </View>
               );

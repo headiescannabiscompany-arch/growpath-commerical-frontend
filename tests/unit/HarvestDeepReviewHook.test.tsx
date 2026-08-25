@@ -8,6 +8,7 @@ const mockQuote = jest.fn();
 const mockStart = jest.fn();
 const mockFind = jest.fn();
 const mockGet = jest.fn();
+const mockRetry = jest.fn();
 const mockDiscard = jest.fn();
 const mockLoad = jest.fn();
 const mockPrepare = jest.fn();
@@ -26,6 +27,7 @@ jest.mock("@/api/harvestVision", () => ({
   startDeepTrichomeReview: (...args: any[]) => mockStart(...args),
   findDeepTrichomeReviewOperation: (...args: any[]) => mockFind(...args),
   getDeepTrichomeReviewOperation: (...args: any[]) => mockGet(...args),
+  retryPristineDeepTrichomeReviewOperation: (...args: any[]) => mockRetry(...args),
   discardUnsavedDeepTrichomeReview: (...args: any[]) => mockDiscard(...args)
 }));
 
@@ -56,6 +58,23 @@ const quote = {
   selectedEvidenceDigest: digest("b"),
   analyzedEvidenceDigest: digest("c"),
   expiresAt
+};
+const savedDeepResult = {
+  analysisMode: "deep" as const,
+  analysisId: "saved-analysis-1",
+  manifestDigest: quote.manifestDigest,
+  selectedEvidenceDigest: quote.selectedEvidenceDigest,
+  analyzedEvidenceDigest: quote.analyzedEvidenceDigest,
+  selectedEvidenceAssetIds: Array.from(
+    { length: 13 },
+    (_, index) => `evidence-${index + 1}`
+  ),
+  evidenceUsed: Array.from({ length: 13 }, (_, index) => `evidence-${index + 1}`),
+  batchCount: 2,
+  creditsQuoted: 2,
+  analysisReceipt: {
+    normalizedHarvestResultDigest: digest("8")
+  }
 };
 const prepared = {
   accountDigest: digest("d"),
@@ -116,6 +135,16 @@ function Probe({ scopeKey = "scope-1" }: { scopeKey?: string }) {
       <Pressable accessibilityLabel="accept" onPress={review.acceptQuote} />
       <Pressable accessibilityLabel="start" onPress={review.start} />
       <Pressable accessibilityLabel="recover" onPress={review.refresh} />
+      <Pressable
+        accessibilityLabel="retry same"
+        onPress={() => review.recoverAndRetryFailedById("operation-deep-1")}
+      />
+      <Pressable
+        accessibilityLabel="recover saved"
+        onPress={() =>
+          review.recoverSucceededById("operation-deep-saved-1", savedDeepResult as any)
+        }
+      />
       <Pressable accessibilityLabel="reset" onPress={review.resetTerminal} />
       <Pressable accessibilityLabel="discard" onPress={review.discardSucceeded} />
       <Text>{review.busy || "idle"}</Text>
@@ -149,6 +178,13 @@ describe("Harvest Deep review durable frontend operation", () => {
     mockForget.mockResolvedValue(undefined);
     mockFind.mockResolvedValue(null);
     mockGet.mockResolvedValue(operation("processing"));
+    mockRetry.mockResolvedValue({
+      operation: {
+        ...operation("queued").operation,
+        creditState: "not_reserved"
+      },
+      retried: true
+    });
     mockDiscard.mockResolvedValue({
       success: true,
       discarded: true,
@@ -271,7 +307,7 @@ describe("Harvest Deep review durable frontend operation", () => {
     expect(mockStart).not.toHaveBeenCalled();
   });
 
-  it("allows a fresh quote only after a failed operation confirms no credit was reserved", async () => {
+  it("retains and retries the same accepted operation after a pristine uncharged failure", async () => {
     mockStart.mockResolvedValue({
       operation: {
         ...operation("queued").operation,
@@ -288,14 +324,30 @@ describe("Harvest Deep review durable frontend operation", () => {
     await waitFor(() =>
       expect(screen.getByText("Provider unavailable before reservation.")).toBeTruthy()
     );
-    expect(latestHook?.terminalResetAllowed).toBe(true);
-    expect(mockForget).toHaveBeenCalledWith(
-      expect.objectContaining({ clientOperationKey: prepared.clientOperationKey })
-    );
+    expect(latestHook?.terminalResetAllowed).toBe(false);
+    expect(latestHook?.retryablePristineFailure).toBe(true);
+    expect(mockForget).not.toHaveBeenCalled();
 
-    fireEvent.press(screen.getByLabelText("reset"));
-    await waitFor(() => expect(screen.getByText("no-operation")).toBeTruthy());
-    expect(screen.getByText("no-quote")).toBeTruthy();
+    mockGet.mockResolvedValueOnce({
+      operation: {
+        ...operation("queued").operation,
+        status: "failed",
+        creditState: "not_reserved",
+        errorCode: "PROVIDER_UNAVAILABLE",
+        failureMessage: "Provider unavailable before reservation."
+      }
+    });
+    fireEvent.press(screen.getByLabelText("retry same"));
+    await waitFor(() => expect(latestHook?.operation?.status).toBe("queued"));
+
+    expect(mockRetry).toHaveBeenCalledWith(
+      "operation-deep-1",
+      { workspaceType: "personal" },
+      expect.objectContaining({ signal: expect.anything() })
+    );
+    expect(mockPrepare).toHaveBeenCalledTimes(1);
+    expect(mockStart).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/same accepted Deep review is queued safely/i)).toBeTruthy();
   });
 
   it("keeps a failed dispatched reservation recoverable for support reconciliation", async () => {
@@ -305,8 +357,7 @@ describe("Harvest Deep review durable frontend operation", () => {
         status: "failed",
         creditState: "reserved",
         errorCode: "HARVEST_DEEP_DISPATCH_RECONCILIATION_REQUIRED",
-        failureMessage:
-          "The accepted credits remain reserved for support reconciliation."
+        failureMessage: "The accepted credits remain reserved for support reconciliation."
       }
     });
     const screen = render(<Probe />);
@@ -374,6 +425,8 @@ describe("Harvest Deep review durable frontend operation", () => {
       { photoUsable: true },
       expect.objectContaining({ operationId: "operation-deep-1", creditsQuoted: 2 })
     );
+    expect(screen.getByText("no-recovery")).toBeTruthy();
+    expect(mockForget).not.toHaveBeenCalled();
 
     fireEvent.press(screen.getByLabelText("discard"));
     await waitFor(() => expect(screen.getByText("no-operation")).toBeTruthy());
@@ -388,6 +441,109 @@ describe("Harvest Deep review durable frontend operation", () => {
     expect(screen.getByText(/source video and retained frames were kept/i)).toBeTruthy();
   });
 
+  it("restores a completed result and its operation id after a reload", async () => {
+    const persistedOperation = {
+      ...prepared,
+      operationId: "operation-deep-1",
+      requestDigest: digest("9"),
+      dispatchAttemptCount: 1,
+      lastDispatchAt: "2026-08-23T12:01:00.000Z"
+    };
+    mockLoad.mockResolvedValueOnce(persistedOperation);
+    mockGet.mockResolvedValueOnce({
+      ...operation("succeeded"),
+      result: { photoUsable: true }
+    });
+
+    const screen = render(<Probe />);
+
+    await waitFor(() => expect(screen.getByText("operation-deep-1")).toBeTruthy());
+    expect(mockOnResult).toHaveBeenCalledWith(
+      { photoUsable: true },
+      expect.objectContaining({ operationId: "operation-deep-1", creditsQuoted: 2 })
+    );
+    expect(screen.getByText("no-recovery")).toBeTruthy();
+    expect(mockForget).not.toHaveBeenCalled();
+    expect(mockStart).not.toHaveBeenCalled();
+  });
+
+  it("recovers the exact saved-run operation when local mapping is missing", async () => {
+    mockGet.mockResolvedValueOnce({
+      operation: {
+        ...operation("succeeded").operation,
+        id: "operation-deep-saved-1"
+      },
+      result: savedDeepResult
+    });
+    const screen = render(<Probe />);
+    await waitFor(() => expect(screen.getByText("idle")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("recover saved"));
+
+    await waitFor(() => expect(screen.getByText("operation-deep-saved-1")).toBeTruthy());
+    expect(mockGet).toHaveBeenCalledWith(
+      "operation-deep-saved-1",
+      { workspaceType: "personal" },
+      expect.objectContaining({ signal: expect.anything() })
+    );
+    expect(mockOnResult).toHaveBeenCalledWith(
+      savedDeepResult,
+      expect.objectContaining({
+        operationId: "operation-deep-saved-1",
+        selectedEvidenceCount: 13,
+        creditsQuoted: 2
+      })
+    );
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(mockPrepare).not.toHaveBeenCalled();
+  });
+
+  it("durably clears a completed operation when the owner prepares a new review", async () => {
+    let durableOperation: typeof prepared | null = null;
+    mockLoad.mockImplementation(async () => durableOperation);
+    mockPrepare.mockImplementationOnce(async () => {
+      durableOperation = prepared;
+      return prepared;
+    });
+    mockRememberDispatch.mockImplementationOnce(async (entry) => {
+      durableOperation = {
+        ...entry,
+        dispatchAttemptCount: entry.dispatchAttemptCount + 1,
+        lastDispatchAt: "2026-08-23T12:01:00.000Z"
+      };
+      return durableOperation;
+    });
+    mockRememberOperation.mockImplementationOnce(async (entry, identity) => {
+      durableOperation = {
+        ...entry,
+        operationId: identity.operationId,
+        requestDigest: identity.requestDigest
+      };
+      return durableOperation;
+    });
+    mockForget.mockImplementationOnce(async () => {
+      durableOperation = null;
+    });
+    mockStart.mockResolvedValue({
+      ...operation("succeeded"),
+      result: { photoUsable: true }
+    });
+    const screen = render(<Probe />);
+    await quoteAndAccept(screen);
+
+    fireEvent.press(screen.getByLabelText("start"));
+    await waitFor(() => expect(screen.getByText("operation-deep-1")).toBeTruthy());
+    fireEvent.press(screen.getByLabelText("reset"));
+    await waitFor(() => expect(screen.getByText("no-operation")).toBeTruthy());
+    expect(mockForget).toHaveBeenCalledTimes(1);
+
+    screen.unmount();
+    const reloaded = render(<Probe />);
+    await waitFor(() => expect(reloaded.getByText("idle")).toBeTruthy());
+    expect(reloaded.getByText("no-operation")).toBeTruthy();
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
   it("invalidates the quote immediately when its evidence or provider context scope changes", async () => {
     const screen = render(<Probe />);
     await quoteAndAccept(screen);
@@ -396,5 +552,27 @@ describe("Harvest Deep review durable frontend operation", () => {
     await waitFor(() => expect(screen.getByText("no-quote")).toBeTruthy());
     expect(screen.getByText("not-accepted")).toBeTruthy();
     expect(latestHook?.recoveryPending).toBe(false);
+  });
+
+  it("treats an apiRequest ABORTED rejection after scope cancellation as cancellation", async () => {
+    let rejectQuote: ((reason: any) => void) | undefined;
+    const delayedQuote = new Promise((_resolve, reject) => {
+      rejectQuote = reject;
+    });
+    mockQuote.mockReturnValueOnce(delayedQuote);
+    const screen = render(<Probe />);
+    await waitFor(() => expect(screen.getByText("idle")).toBeTruthy());
+
+    fireEvent.press(screen.getByLabelText("quote"));
+    await waitFor(() => expect(screen.getByText("quoting")).toBeTruthy());
+    const signal = mockQuote.mock.calls[0][1].signal;
+    screen.rerender(<Probe scopeKey="scope-after-abort" />);
+    await waitFor(() => expect(signal.aborted).toBe(true));
+    rejectQuote?.(Object.assign(new Error("request aborted"), { code: "ABORTED" }));
+    await delayedQuote.catch(() => undefined);
+
+    await waitFor(() => expect(screen.getByText("idle")).toBeTruthy());
+    expect(screen.getByText("no-error")).toBeTruthy();
+    expect(screen.queryByText("request aborted")).toBeNull();
   });
 });

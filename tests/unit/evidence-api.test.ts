@@ -173,16 +173,30 @@ describe("providerEvidencePayload", () => {
   it("loads an exact fingerprinted AI inspection view in its authorized workspace", async () => {
     const view = {
       sourceEvidenceAssetId: "photo/1",
-      sourceImageIndex: 1,
+      sourceImageIndex: 13,
       kind: "upper coverage",
       cropStrategy: "coverage" as const,
+      derivationVersion: "retained-original-macro-jpeg-v1" as const,
+      sourceBounds: {
+        left: 10,
+        top: 20,
+        width: 900,
+        height: 900,
+        sourceWidth: 1920,
+        sourceHeight: 1080
+      },
       width: 900,
       height: 900,
       mimeType: "image/jpeg" as const,
       sha256: "b".repeat(64)
     };
     mockApiRequest.mockResolvedValue({
-      view: { ...view, dataUrl: "data:image/jpeg;base64,eA==" }
+      view: {
+        ...view,
+        sourceImageIndex: 1,
+        workspaceType: "personal",
+        dataUrl: "data:image/jpeg;base64,eA=="
+      }
     });
 
     await expect(
@@ -192,7 +206,13 @@ describe("providerEvidencePayload", () => {
         facilityId: "facility-1"
       })
     ).resolves.toEqual(
-      expect.objectContaining({ dataUrl: expect.stringContaining("base64") })
+      expect.objectContaining({
+        sourceImageIndex: 13,
+        workspaceType: "facility",
+        workspaceId: "facility-1",
+        facilityId: "facility-1",
+        dataUrl: expect.stringContaining("base64")
+      })
     );
 
     expect(mockApiRequest).toHaveBeenCalledWith(
@@ -203,12 +223,81 @@ describe("providerEvidencePayload", () => {
           sha256: "b".repeat(64),
           kind: "upper coverage",
           cropStrategy: "coverage",
+          derivationVersion: "retained-original-macro-jpeg-v1",
+          sourceBounds: JSON.stringify(view.sourceBounds),
+          width: 900,
+          height: 900,
           format: "json",
           workspaceType: "facility",
           facilityId: "facility-1"
         })
       })
     );
+  });
+
+  it("keeps an unversioned historical inspection request on the legacy path", async () => {
+    const view = {
+      sourceEvidenceAssetId: "legacy-photo-1",
+      sourceImageIndex: 1,
+      kind: "center",
+      cropStrategy: "focus" as const,
+      sourceBounds: null,
+      width: 640,
+      height: 640,
+      mimeType: "image/jpeg" as const,
+      sha256: "c".repeat(64)
+    };
+    mockApiRequest.mockResolvedValue({
+      view: { ...view, dataUrl: "data:image/jpeg;base64,eA==" }
+    });
+
+    await loadAiInspectionView(view, { workspaceType: "personal" });
+
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/evidence-assets/legacy-photo-1/inspection-view",
+      expect.objectContaining({
+        params: expect.not.objectContaining({
+          derivationVersion: expect.anything(),
+          sourceBounds: expect.anything(),
+          width: expect.anything(),
+          height: expect.anything()
+        })
+      })
+    );
+  });
+
+  it("rejects a regenerated inspection image that drifts from its signed descriptor", async () => {
+    const view = {
+      sourceEvidenceAssetId: "photo-13",
+      sourceImageIndex: 13,
+      kind: "macro center",
+      cropStrategy: "macro_coverage" as const,
+      derivationVersion: "retained-original-macro-jpeg-v1" as const,
+      sourceBounds: {
+        left: 100,
+        top: 50,
+        width: 800,
+        height: 800,
+        sourceWidth: 1800,
+        sourceHeight: 1200
+      },
+      width: 800,
+      height: 800,
+      mimeType: "image/jpeg" as const,
+      sha256: "d".repeat(64)
+    };
+    mockApiRequest.mockResolvedValue({
+      view: {
+        ...view,
+        sourceImageIndex: 1,
+        sha256: "e".repeat(64),
+        dataUrl: "data:image/jpeg;base64,eA=="
+      }
+    });
+
+    await expect(
+      loadAiInspectionView(view, { workspaceType: "personal" })
+    ).rejects.toThrow(/did not match its signed result descriptor/i);
   });
 
   it("loads private GPS and capture date from one retained original", async () => {

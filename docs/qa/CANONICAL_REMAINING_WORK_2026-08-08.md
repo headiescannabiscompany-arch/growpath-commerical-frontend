@@ -22,18 +22,27 @@ This section is the stable handoff point. Update it when a coherent acceptance b
 starts or finishes; do not create another active todo document.
 
 **Current active cursor (2026-08-24):** finish P-08 exactly as frozen in
-`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Frontend
-`4651b597b0a0bb819ba7748afb005c88a3ebc28d` and backend
-`d9d5e68d4d283d0645265bf7bab24e304b08d9e3` are live. Production passed the 512 MiB client
-guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames, exact standalone
-source/frame restoration after clean reload, and varied first/middle/final thumbnail groups
-without AI dispatch or credit. Explicit standalone cannabis/hemp confirmation and a free exact
-quote also passed: 80 unique images, 0 duplicates, 7 signed batches, 7 credits. Do not repeat
-those slices. Remaining order: confirm required macro-role sufficiency at review resolution;
-accept the exact quote only with owner credit authorization; prove durable paid result/reload and sanitized
-frame/result sharing; exercise the proportionate deletion/cleanup and remaining role/failure
-gates; update exact evidence; close P-08; then return to the next matrix row. The older batch
-cursor below is retained history and cannot override this exact active slice.
+`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Production already passed the
+512 MiB client guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames,
+exact standalone source/frame restoration, explicit standalone cannabis/hemp confirmation, and
+the exact 80-image/7-batch/7-credit quote. The owner accepted that quote once as Facility
+operation `6a8ca7b234ec1d260c179e0b`; authoritative state proves all seven batches remain
+`not_started`, credits remain `not_reserved`, and no provider response/result exists. Do not
+repeat upload, extraction, restoration, quote, or start, and do not create another operation.
+The ownership/lifecycle packet is now frozen across the Harvest method, app-readable registry,
+construction scaffold, backend contract and P-08 record: Personal/Commercial is account-owned;
+Facility is Facility-owned; private Feed review is non-public; replay, deletion, account erasure
+and legal holds share one fenced state machine. Backend-focused ownership/race/export/
+availability acceptance is now closed, including direct source holds, whole-Facility erasure,
+sequential consent retention, failed/reserved reconciliation, consent revocation and
+subscriber-aware zoom deadlines. The matching frontend passes static reconciliation, with its
+added deletion, saved-operation recovery, draft-reset and stale/latest-zoom regressions plus the
+exact-lock production export reserved for one networked CI run. Remaining order: deploy backend
+then frontend; recover that exact operation once; prove its
+signed result/reload and sanitized exact zooms; create only the
+owner-private Feed review draft; stop for owner review; complete proportionate deletion/cleanup
+evidence; update exact evidence and close P-08. Publication and Facebook are later explicit
+owner actions. The older batch cursor below is retained history and cannot override this slice.
 
 1. **Completed current release-candidate slice:** exact-candidate Personal, paid Commercial
    and Platform Admin read-only acceptance is recorded. The reproduced missing Admin return
@@ -720,6 +729,11 @@ grow`, private current location without a Field Study, and an optional approxima
   **Current canonical P-08 freeze:**
   `P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md` owns the exact current
   implementation/evidence record, deployment order, live script and anti-rewrite boundary.
+  Its ownership and transition tables are binding: Personal/Commercial records are account-owned;
+  Facility operations, saved results, evidence and private Feed drafts are Facility-owned; current
+  role is fenced at commit; account deletion, saved-result deletion, direct discard, legal holds,
+  exact replay and private-to-public review cannot use conflicting route-local rules. The focused
+  acceptance cells in that record must pass before deployment; they are not a second queue.
   Frontend PR `#784` and backend PR `#232` are merged and live. Follow-ups `#785` and `#786`
   passed full CI and production acceptance for pre-upload size rejection, bounded extraction,
   and standalone reload restoration. Those accepted slices must not be rebuilt.

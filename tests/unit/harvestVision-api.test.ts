@@ -10,7 +10,11 @@ const {
   startDeepTrichomeReview,
   findDeepTrichomeReviewOperation,
   getDeepTrichomeReviewOperation,
+  retryPristineDeepTrichomeReviewOperation,
   discardUnsavedDeepTrichomeReview,
+  createHarvestFeedReviewDraft,
+  deleteHarvestFeedReviewDraft,
+  getHarvestFeedReviewDraft,
   isSupportedHarvestReviewPolicy,
   submitHarvestTrichomeFeedback
 } = require("@/api/harvestVision");
@@ -353,6 +357,51 @@ describe("Harvest vision receipt policies", () => {
     ).rejects.toThrow(/invalid Deep review operation/i);
   });
 
+  it("retries one pristine failed operation without creating a replacement request", async () => {
+    mockApiRequest.mockResolvedValue({
+      retried: true,
+      operation: {
+        id: "operation-deep-1",
+        state: "queued",
+        analysisMode: "deep",
+        clientOperationKey: "harvest-deep-stable-key-1",
+        requestDigest: digest("d"),
+        batchCount: 2,
+        completedBatches: 0,
+        creditsQuoted: 2,
+        creditState: "not_reserved"
+      }
+    });
+
+    await expect(
+      retryPristineDeepTrichomeReviewOperation("operation-deep-1", {
+        workspaceType: "facility",
+        workspaceId: "facility-1",
+        facilityId: "facility-1"
+      })
+    ).resolves.toEqual(
+      expect.objectContaining({
+        operation: expect.objectContaining({
+          id: "operation-deep-1",
+          status: "queued",
+          creditState: "not_reserved"
+        })
+      })
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/ai/harvest/trichomes/operations/operation-deep-1/retry",
+      expect.objectContaining({
+        method: "POST",
+        retries: 0,
+        body: {
+          workspaceType: "facility",
+          workspaceId: "facility-1",
+          facilityId: "facility-1"
+        }
+      })
+    );
+  });
+
   it("permanently discards only one confirmed unsaved succeeded Deep result without media deletion", async () => {
     mockApiRequest.mockResolvedValue({
       success: true,
@@ -401,6 +450,192 @@ describe("Harvest vision receipt policies", () => {
         }
       }
     );
+  });
+
+  it("creates and reloads only a private receipt-bound Harvest Feed review draft", async () => {
+    const selectedView = {
+      sourceEvidenceAssetId: "64b000000000000000000001",
+      sourceImageIndex: 4,
+      kind: "macro-grid-2",
+      cropStrategy: "macro_coverage" as const,
+      derivationVersion: "retained-original-macro-jpeg-v1" as const,
+      sourceBounds: {
+        left: 100,
+        top: 200,
+        width: 800,
+        height: 800,
+        sourceWidth: 1920,
+        sourceHeight: 1080
+      },
+      width: 800,
+      height: 800,
+      mimeType: "image/jpeg" as const,
+      sha256: digest("f")
+    };
+    const response = {
+      success: true,
+      idempotentReplay: false,
+      draft: {
+        id: "64c000000000000000000001",
+        status: "draft",
+        type: "education",
+        sourceType: "harvest_readiness",
+        title: "Harvest Readiness review",
+        body: "A bounded signed review of visible sampled areas.",
+        tags: ["harvest-readiness"],
+        contentLabels: ["cannabis", "education"],
+        selectedViewCount: 1,
+        selectionDigest: digest("e"),
+        selectedViews: [selectedView]
+      }
+    };
+    mockApiRequest.mockResolvedValueOnce(response).mockResolvedValueOnce({
+      ...response,
+      idempotentReplay: true
+    });
+
+    await expect(
+      createHarvestFeedReviewDraft(
+        "operation-deep-1",
+        {
+          workspaceType: "facility",
+          workspaceId: "facility-1",
+          facilityId: "facility-1"
+        },
+        [selectedView]
+      )
+    ).resolves.toEqual(
+      expect.objectContaining({
+        idempotentReplay: false,
+        draft: expect.objectContaining({ status: "draft", selectedViewCount: 1 })
+      })
+    );
+    expect(mockApiRequest).toHaveBeenLastCalledWith(
+      "/api/ai/harvest/trichomes/operations/operation-deep-1/feed-draft",
+      expect.objectContaining({
+        method: "POST",
+        retries: 0,
+        body: expect.objectContaining({ selectedViews: [selectedView] })
+      })
+    );
+
+    await expect(
+      getHarvestFeedReviewDraft("operation-deep-1", {
+        workspaceType: "facility",
+        workspaceId: "facility-1",
+        facilityId: "facility-1"
+      })
+    ).resolves.toEqual(expect.objectContaining({ idempotentReplay: true }));
+    expect(mockApiRequest).toHaveBeenLastCalledWith(
+      "/api/ai/harvest/trichomes/operations/operation-deep-1/feed-draft",
+      expect.objectContaining({
+        params: expect.objectContaining({ facilityId: "facility-1" })
+      })
+    );
+  });
+
+  it("deletes a private Feed draft once with the exact workspace query", async () => {
+    const controller = new AbortController();
+    mockApiRequest.mockResolvedValueOnce({
+      success: true,
+      deleted: true,
+      draftId: "64c000000000000000000001"
+    });
+
+    await expect(
+      deleteHarvestFeedReviewDraft(
+        "operation-deep-1",
+        {
+          workspaceType: "facility",
+          workspaceId: "facility-1",
+          facilityId: "facility-1"
+        },
+        { signal: controller.signal }
+      )
+    ).resolves.toEqual({
+      deleted: true,
+      draftId: "64c000000000000000000001"
+    });
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/ai/harvest/trichomes/operations/operation-deep-1/feed-draft",
+      {
+        method: "DELETE",
+        signal: controller.signal,
+        timeoutMs: 60000,
+        retries: 0,
+        params: {
+          workspaceType: "facility",
+          workspaceId: "facility-1",
+          facilityId: "facility-1"
+        }
+      }
+    );
+  });
+
+  it.each([
+    ["missing success", { deleted: true, draftId: "64c000000000000000000001" }],
+    [
+      "a non-deletion",
+      { success: true, deleted: false, draftId: "64c000000000000000000001" }
+    ],
+    ["an empty draft ID", { success: true, deleted: true, draftId: "" }],
+    ["a non-string draft ID", { success: true, deleted: true, draftId: {} }],
+    ["a malformed draft ID", { success: true, deleted: true, draftId: "draft-1" }]
+  ])("rejects %s in a Feed-draft deletion response", async (_label, response) => {
+    mockApiRequest.mockResolvedValueOnce(response);
+
+    await expect(
+      deleteHarvestFeedReviewDraft("operation-deep-1", {
+        workspaceType: "personal"
+      })
+    ).rejects.toThrow(/did not confirm deletion/i);
+  });
+
+  it("rejects a Feed draft whose inspection derivation version is unknown", async () => {
+    mockApiRequest.mockResolvedValue({
+      success: true,
+      idempotentReplay: false,
+      draft: {
+        id: "64c000000000000000000002",
+        status: "draft",
+        type: "education",
+        sourceType: "harvest_readiness",
+        title: "Harvest Readiness review",
+        body: "A bounded signed review of visible sampled areas.",
+        tags: ["harvest-readiness"],
+        contentLabels: ["cannabis", "education"],
+        selectedViewCount: 1,
+        selectionDigest: digest("e"),
+        selectedViews: [
+          {
+            sourceEvidenceAssetId: "64b000000000000000000001",
+            sourceImageIndex: 1,
+            kind: "macro-grid-1",
+            cropStrategy: "macro_coverage",
+            derivationVersion: "untrusted-future-recipe",
+            sourceBounds: {
+              left: 0,
+              top: 0,
+              width: 800,
+              height: 800,
+              sourceWidth: 1080,
+              sourceHeight: 1920
+            },
+            width: 800,
+            height: 800,
+            mimeType: "image/jpeg",
+            sha256: digest("f")
+          }
+        ]
+      }
+    });
+
+    await expect(
+      getHarvestFeedReviewDraft("operation-deep-1", {
+        workspaceType: "personal"
+      })
+    ).rejects.toThrow(/complete private Harvest Feed review draft/i);
   });
 
   it("submits only the owner correction fields for server binding", async () => {

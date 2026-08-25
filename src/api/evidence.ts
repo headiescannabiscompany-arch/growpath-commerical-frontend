@@ -17,6 +17,71 @@ export type EvidenceWorkspaceScope = {
   facilityId?: string;
 };
 
+function inspectionBoundsMatch(expected: AiInspectionView, actual: any) {
+  const expectedBounds = expected.sourceBounds ?? null;
+  const actualBounds = actual?.sourceBounds ?? null;
+  if (!expectedBounds || !actualBounds) return expectedBounds === actualBounds;
+  return (
+    Number(actualBounds.left) === Number(expectedBounds.left) &&
+    Number(actualBounds.top) === Number(expectedBounds.top) &&
+    Number(actualBounds.width) === Number(expectedBounds.width) &&
+    Number(actualBounds.height) === Number(expectedBounds.height) &&
+    Number(actualBounds.sourceWidth) === Number(expectedBounds.sourceWidth) &&
+    Number(actualBounds.sourceHeight) === Number(expectedBounds.sourceHeight)
+  );
+}
+
+function validatedInspectionView(
+  requested: AiInspectionView,
+  workspace: EvidenceWorkspaceScope,
+  actual: any
+): AiInspectionView {
+  const matchesSignedDescriptor =
+    actual &&
+    String(actual.sourceEvidenceAssetId || "") ===
+      String(requested.sourceEvidenceAssetId || "") &&
+    String(actual.kind || "") === String(requested.kind || "") &&
+    String(actual.cropStrategy || "") === String(requested.cropStrategy || "") &&
+    String(actual.derivationVersion || "") ===
+      String(requested.derivationVersion || "") &&
+    inspectionBoundsMatch(requested, actual) &&
+    Number(actual.width) === Number(requested.width) &&
+    Number(actual.height) === Number(requested.height) &&
+    String(actual.mimeType || "").toLowerCase() ===
+      String(requested.mimeType || "").toLowerCase() &&
+    String(actual.sha256 || "").toLowerCase() ===
+      String(requested.sha256 || "").toLowerCase() &&
+    /^data:image\/jpeg;base64,/i.test(String(actual.dataUrl || ""));
+
+  if (!matchesSignedDescriptor) {
+    throw new Error(
+      "The regenerated inspection image did not match its signed result descriptor."
+    );
+  }
+
+  return {
+    sourceEvidenceAssetId: requested.sourceEvidenceAssetId,
+    workspaceType: workspace.workspaceType,
+    ...(workspace.workspaceId ? { workspaceId: workspace.workspaceId } : {}),
+    ...(workspace.facilityId ? { facilityId: workspace.facilityId } : {}),
+    // The single-asset rendering route has a local index of 1. Preserve the
+    // signed aggregate's global index so Photo 13 cannot become Photo 1.
+    sourceImageIndex: requested.sourceImageIndex,
+    kind: requested.kind,
+    cropStrategy: requested.cropStrategy,
+    ...(requested.derivationVersion
+      ? { derivationVersion: requested.derivationVersion }
+      : {}),
+    sourceBounds: requested.sourceBounds ?? null,
+    width: requested.width,
+    height: requested.height,
+    mimeType: requested.mimeType,
+    sha256: requested.sha256,
+    dataUrl: String(actual.dataUrl),
+    ...(actual.limitation ? { limitation: String(actual.limitation) } : {})
+  };
+}
+
 export async function loadAiInspectionView(
   view: AiInspectionView,
   workspace: EvidenceWorkspaceScope,
@@ -33,6 +98,14 @@ export async function loadAiInspectionView(
         sha256: view.sha256,
         kind: view.kind,
         cropStrategy: view.cropStrategy,
+        ...(view.derivationVersion
+          ? {
+              derivationVersion: view.derivationVersion,
+              sourceBounds: JSON.stringify(view.sourceBounds ?? null),
+              width: view.width,
+              height: view.height
+            }
+          : {}),
         format: "json",
         workspaceType: workspace.workspaceType,
         ...(workspace.workspaceId ? { workspaceId: workspace.workspaceId } : {}),
@@ -40,7 +113,7 @@ export async function loadAiInspectionView(
       }
     }
   );
-  return response?.view as AiInspectionView;
+  return validatedInspectionView(view, workspace, response?.view);
 }
 
 export type EvidenceFrameExtraction = {

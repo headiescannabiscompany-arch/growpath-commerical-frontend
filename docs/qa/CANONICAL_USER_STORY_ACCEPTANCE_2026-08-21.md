@@ -76,6 +76,16 @@ responsive behavior, and no console/application error.
   implicit public post. Saved deletion and unsaved-result discard are distinct confirmed,
   ownership-scoped lifecycles with source-video choice, reference/hold checks and truthful credit
   treatment.
+- Personal and Commercial Harvest evidence/operations/Saved Runs/private drafts are account-owned.
+  Facility records are Facility-owned; the initiating actor is audit provenance only. Current
+  Facility authority is fenced again inside every mutation, another current owner/manager can
+  resume the same immutable cleanup receipt, and deleting the actor retains/deidentifies Facility
+  content rather than deleting it.
+- One through eight exact signed zooms may create an owner-private, idempotent Feed review draft.
+  It remains absent from public Feed/discovery, analytics, engagement, campaign and reporting
+  projections until a later explicit reviewed publication. Account deletion, Saved Run deletion,
+  direct discard and legal holds use the same atomic transition/fence rules; user data export
+  excludes provider, storage, receipt, digest and security internals.
 - Complete acceptance requires backend-first exact-SHA deployment, production receipt-signing
   configuration, `/ready` worker proof, real FFmpeg decode/preselection, one authorized older
   private-video Deep run, cancel/restore/reload/share/delete/privacy checks, cleanup and the

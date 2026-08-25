@@ -310,10 +310,25 @@ describe("GrowPath knowledge registries", () => {
       "durable asynchronous Deep Review operation with authorized polling/reload restoration, deterministic byte-aware packing into the quoted group count, serialized provider dispatch, and idempotent group claims"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "one bounded mutation-free pre-reservation phase that reauthorizes and cryptographically revalidates the complete selected set and deterministic signed batch plan while loading original bytes only for the current at-most-12-image batch, plus a hard deadline around the complete provider response lifecycle"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "owner-confirmed permanent discard of an unsaved succeeded Deep Review operation that keeps the private source video and retained frames, issues no credit refund, tombstones provider/result metadata, and defers saved or referenced results to Saved Runs deletion"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "private-by-default retained-frame export with explicit exact-frame selection, protected authenticated retrieval, no more than 12 frames and 24 MiB of normalized still bytes per repeatable package, non-sensitive frame context, and no implicit GrowPath publication, plus a separately explicit sanitized share of only a revalidated signed Harvest result"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "owner-only GrowPath Feed review draft for a succeeded charged receipt-valid Deep Review, idempotently bound to one through eight explicitly selected signed inspection views that the server regenerates and hash-verifies from protected originals before any later publication action"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "one Harvest ownership contract in which Personal and Commercial evidence, operations, saved results, and private Feed drafts are account-owned while Facility records are Facility-owned and the initiating actor remains audit provenance rather than continuing authority"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "commit-time account and Facility-role fences for operation creation, private-draft writes, unsaved-operation discard, saved-result deletion, exact cleanup replay, account erasure, and legal-hold changes, with every mutating transaction awaited to a known commit or abort outcome"
+    );
+    expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
+      "legal-hold serialization for Harvest operation, private-draft, evidence-asset/video, ToolRun, usage-event, and module-record references, including a release-only recovery when account deletion is already pending"
     );
     expect(getMethod("harvest-dry-cure")?.requiredOutputs).toContain(
       "visible gland-head development signals that may include swelling, wrinkling, collapse, exudation, fusion, ruptured heads, bare stalks, or detached/missing heads while remaining separate from color tallies and any oxidation, chemistry, potency, or head-death claim"
@@ -406,10 +421,22 @@ describe("GrowPath knowledge registries", () => {
       "Never keep a client request open across a multi-group Deep Review, exceed 12 originals or 24 MiB of original bytes in one provider group, exceed 12 derived views or 12 MiB of derived bytes in one group, exceed 80 MiB selected overall, silently add an unquoted group, redispatch a group after its durable provider boundary, automatically refund a reservation after any provider dispatch or earlier completed group, or let a different client-operation key bypass a same-workspace exact-evidence reconciliation hold."
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
-      "Never preselect or publicly publish retained Harvest frames or a Harvest result. A private export may contain only owner-selected verified retained stills and non-sensitive frame context, bounded to 12 frames and 24 MiB of normalized bytes per repeatable package; omit the source video, rejected or unselected frames, GPS/EXIF, raw record/upload IDs, storage URLs, provider identifiers, and receipt secrets. Share a result only after revalidating its signed attestation, and reject failed, deleted, incomplete, or unattested results."
+      "Never reserve Deep Review credits until the bounded pre-reservation phase has reauthorized the full selected set and recomputed its signed selection, preselection, analyzed-set, deterministic-plan, per-batch and provider-configuration invariants. Never load all selected original bytes for every batch when metadata can prove the full plan and only the current bounded batch needs provider bytes; never let an expired preparation or provider response continue into a late reservation, send, or automatic resend."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never preselect or implicitly publish retained Harvest frames or a Harvest result. A private export may contain only owner-selected verified retained stills and non-sensitive frame context, bounded to 12 frames and 24 MiB of normalized bytes per repeatable package. A Feed review draft requires a succeeded charged receipt-valid Deep Review and one through eight owner-selected signed inspection views regenerated and hash-verified by the server; keep it owner-only until a later explicit publication action and label zooms as supplemental, not independent samples. In every path omit the source video, rejected or unselected frames, GPS/EXIF, private notes, raw record/upload IDs, storage URLs, provider identifiers, receipt secrets, and unrelated data."
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never use unsaved-operation discard for a saved ToolRun, calibration reference, or legal/preservation hold; never delete its private source video or retained frames, imply charged credits are refunded, or expose provider result metadata after the deletion tombstone."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never use a Facility operation's initiating actor as continuing ownership or authorization. Fence the current account, Facility, and membership inside every mutating commit; creator removal or deletion must preserve Facility-owned records, and a current owner or manager must be able to resume the same immutable cleanup receipt."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never expose an owner-private Harvest Feed draft to public Feed, discovery, analytics, campaigns, like/save, report, or ordinary moderation paths. Preserve legacy public posts with no status while rejecting an explicit draft."
+    );
+    expect(getMethod("harvest-dry-cure")?.warnings).toContain(
+      "Never claim a Harvest preservation hold is serialized unless every supported operation, draft, evidence asset/video, ToolRun, usage event, and module record is resolved and fenced. While account deletion is pending, permit only a governed hold release/close, not enablement or added evidence."
     );
     expect(getMethod("harvest-dry-cure")?.warnings).toContain(
       "Never trust a route account or grow ID as shared-workspace authority, spend individual credits for a Facility Harvest run, or allow a Facility viewer to run the analysis."
