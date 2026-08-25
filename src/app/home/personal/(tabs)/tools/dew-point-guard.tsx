@@ -366,7 +366,10 @@ export default function DewPointGuardTool({
   const [csvImportSummary, setCsvImportSummary] = useState("");
   const [csvWarnings, setCsvWarnings] = useState<string[]>([]);
   const [csvDetectedExtras, setCsvDetectedExtras] = useState<
-    Pick<CsvMapping, "vpdCol" | "co2Col" | "lightCol" | "lightKind">
+    Pick<
+      CsvMapping,
+      "vpdCol" | "co2Col" | "luxCol" | "ppfdCol" | "dliCol" | "lightCol" | "lightKind"
+    >
   >({});
   const [csvSourceConfig, setCsvSourceConfig] = useState<Record<string, any>>({});
   const [csvFileIdentity, setCsvFileIdentity] = useState<CsvFileIdentity | null>(null);
@@ -864,6 +867,9 @@ export default function DewPointGuardTool({
         ? {
             vpdCol: suggested.vpdCol,
             co2Col: suggested.co2Col,
+            luxCol: suggested.luxCol,
+            ppfdCol: suggested.ppfdCol,
+            dliCol: suggested.dliCol,
             lightCol: suggested.lightCol,
             lightKind: suggested.lightKind
           }
@@ -2047,6 +2053,20 @@ export default function DewPointGuardTool({
                       </Text>
                     ) : null}
                   </View>
+                ) : null}
+                {csvDetectedExtras.luxCol != null ||
+                csvDetectedExtras.ppfdCol != null ||
+                csvDetectedExtras.dliCol != null ? (
+                  <Text
+                    testID="dpg-csv-measured-light-columns"
+                    style={styles.successText}
+                  >
+                    Measured light channels detected:
+                    {csvDetectedExtras.luxCol != null ? " lux" : ""}
+                    {csvDetectedExtras.ppfdCol != null ? " PPFD" : ""}
+                    {csvDetectedExtras.dliCol != null ? " DLI" : ""}. Each channel keeps
+                    its own value and unit meaning.
+                  </Text>
                 ) : null}
                 <View style={[styles.panel, { gap: 8, marginBottom: 10, padding: 10 }]}>
                   <Text style={styles.sectionTitle}>Review import destination</Text>

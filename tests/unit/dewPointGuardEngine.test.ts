@@ -40,6 +40,9 @@ describe("telemetry CSV parsing", () => {
       tempUnit: "F",
       vpdCol: 4,
       co2Col: 1,
+      luxCol: undefined,
+      ppfdCol: undefined,
+      dliCol: undefined,
       lightCol: undefined,
       lightKind: undefined
     });
@@ -81,27 +84,33 @@ describe("telemetry CSV parsing", () => {
     );
   });
 
-  it.each([
-    ["lux", "Illuminance", "lux", { lightLux: 18000 }],
-    ["ppfd", "PPFD", "ppfd", { ppfd: 420 }],
-    ["dli", "Daily Light Integral", "dli", { dliMolM2Day: 23.4 }]
-  ] as const)(
-    "maps a reviewed %s sensor column without relabeling another light metric",
-    (_label, header, lightKind, expected) => {
-      const measuredValue = String(Object.values(expected)[0]);
-      const parsed = parseCsvText(
-        [
-          `"Time","${header}","Inside Temperature","Inside Relative Humidity"`,
-          `"2026-08-25T12:00:00.000Z","${measuredValue}","75","55"`
-        ].join("\n")
-      );
-      const suggested = suggestedTelemetryMapping(parsed);
-      expect(suggested).toEqual(expect.objectContaining({ lightCol: 1, lightKind }));
-      const [point] = mapCsvToPoints(parsed, suggested!);
-      expect(point).toEqual(expect.objectContaining(expected));
-      expect(point.lightValue).toBeNull();
-    }
-  );
+  it("imports simultaneous measured lux, PPFD, and DLI without relabeling them", () => {
+    const parsed = parseCsvText(
+      [
+        '"Time","Illuminance","PPFD","Daily Light Integral","Inside Temperature","Inside Relative Humidity"',
+        '"2026-08-25T12:00:00.000Z","18000","420","23.4","75","55"'
+      ].join("\n")
+    );
+    const suggested = suggestedTelemetryMapping(parsed);
+    expect(suggested).toEqual(
+      expect.objectContaining({
+        luxCol: 1,
+        ppfdCol: 2,
+        dliCol: 3,
+        lightCol: undefined,
+        lightKind: undefined
+      })
+    );
+    const [point] = mapCsvToPoints(parsed, suggested!);
+    expect(point).toEqual(
+      expect.objectContaining({
+        lightLux: 18000,
+        ppfd: 420,
+        dliMolM2Day: 23.4,
+        lightValue: null
+      })
+    );
+  });
 
   it("converts only complete mapped rows and preserves chronological order", () => {
     const parsed = parseCsvText(acInfinityFixture);

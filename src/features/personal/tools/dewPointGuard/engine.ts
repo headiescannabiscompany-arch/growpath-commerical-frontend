@@ -137,16 +137,10 @@ export function suggestedTelemetryMapping(parsed: ParsedCsv): CsvMapping | null 
     }
     return undefined;
   };
-  const lightCol = optionalExact(
-    "light (sensor 1)",
-    "light",
-    "lux",
-    "illuminance",
-    "ppfd",
-    "par",
-    "dli",
-    "daily light integral"
-  );
+  const lightCol = optionalExact("light (sensor 1)", "light");
+  const luxCol = optionalExact("lux", "illuminance");
+  const ppfdCol = optionalExact("ppfd", "par");
+  const dliCol = optionalExact("dli", "daily light integral");
   const lightHeader = lightCol == null ? "" : normalized[lightCol];
   return {
     tsCol,
@@ -155,6 +149,9 @@ export function suggestedTelemetryMapping(parsed: ParsedCsv): CsvMapping | null 
     tempUnit: units.includes("C") ? "C" : "F",
     vpdCol: optionalExact("inside vpd", "vpd"),
     co2Col: optionalExact("co₂ (sensor 1)", "co2 (sensor 1)", "co₂", "co2"),
+    luxCol,
+    ppfdCol,
+    dliCol,
     lightCol,
     lightKind:
       lightCol == null
@@ -252,6 +249,9 @@ export type CsvMapping = {
   tempUnit: "F" | "C";
   vpdCol?: number;
   co2Col?: number;
+  luxCol?: number;
+  ppfdCol?: number;
+  dliCol?: number;
   lightCol?: number;
   lightKind?: "lux" | "ppfd" | "dli" | "controller_state" | "unmapped";
 };
@@ -312,9 +312,15 @@ export function mapCsvToPoints(
       rh: rhRaw,
       vpdKpa: optionalValue(mapping.vpdCol),
       co2Ppm: optionalValue(mapping.co2Col),
-      lightLux: mapping.lightKind === "lux" ? optionalValue(mapping.lightCol) : null,
-      ppfd: mapping.lightKind === "ppfd" ? optionalValue(mapping.lightCol) : null,
-      dliMolM2Day: mapping.lightKind === "dli" ? optionalValue(mapping.lightCol) : null,
+      lightLux:
+        optionalValue(mapping.luxCol) ??
+        (mapping.lightKind === "lux" ? optionalValue(mapping.lightCol) : null),
+      ppfd:
+        optionalValue(mapping.ppfdCol) ??
+        (mapping.lightKind === "ppfd" ? optionalValue(mapping.lightCol) : null),
+      dliMolM2Day:
+        optionalValue(mapping.dliCol) ??
+        (mapping.lightKind === "dli" ? optionalValue(mapping.lightCol) : null),
       lightValue:
         mapping.lightKind === "controller_state" || mapping.lightKind === "unmapped"
           ? optionalValue(mapping.lightCol)
