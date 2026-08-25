@@ -300,6 +300,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Never infer an illuminance detector from a LIGHT column, convert controller lighting state to lux, or reconstruct transitions and duration from sparse snapshots.",
       "Never substitute fixture model/count for measured lux, PPFD, DLI, uniformity, dimmer output, photoperiod, or light-leak evidence.",
       "Never coerce a blank mapped temperature or humidity cell to zero; incomplete required environment rows are skipped and remain distinct from normalized point counts.",
+      "Telemetry-source removal requires current write authority, explicit confirmation, credential scrubbing, atomic point cleanup, and a truthful deleted-point receipt.",
       "Validate deep-linked grow targets against the active workspace and use named owned-grow choices instead of user-entered internal IDs."
     ],
     ["data-integrations", "facility-integrations", "telemetry"]

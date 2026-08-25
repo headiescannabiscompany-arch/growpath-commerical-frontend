@@ -58,6 +58,7 @@ const mockGetTelemetryPoints = jest.fn();
 const mockBulkIngestTelemetryPoints = jest.fn();
 const mockPullPulseWindow = jest.fn();
 const mockCreateTelemetrySource = jest.fn();
+const mockDeleteTelemetrySource = jest.fn();
 const mockVerifyPulseApiKey = jest.fn();
 const mockListPulseDevices = jest.fn();
 
@@ -67,6 +68,7 @@ jest.mock("@/api/telemetry", () => ({
   bulkIngestTelemetryPoints: (...args: any[]) => mockBulkIngestTelemetryPoints(...args),
   pullPulseWindow: (...args: any[]) => mockPullPulseWindow(...args),
   createTelemetrySource: (...args: any[]) => mockCreateTelemetrySource(...args),
+  deleteTelemetrySource: (...args: any[]) => mockDeleteTelemetrySource(...args),
   verifyPulseApiKey: (...args: any[]) => mockVerifyPulseApiKey(...args),
   listPulseDevices: (...args: any[]) => mockListPulseDevices(...args)
 }));
@@ -152,6 +154,11 @@ describe("Dew Point Guard CSV flow", () => {
       isActive: true,
       ...input
     }));
+    mockDeleteTelemetrySource.mockResolvedValue({
+      sourceId: "s-upload",
+      deletedAt: "2026-08-25T18:00:00.000Z",
+      deletedPointCount: 119
+    });
   });
 
   async function prepareReviewedGenericCsv(screen: ReturnType<typeof render>) {
@@ -232,6 +239,33 @@ describe("Dew Point Guard CSV flow", () => {
       inputs.length
     );
     expect(source).not.toMatch(/#[0-9a-f]{3,8}|rgba?\(|\b(?:white|black)\b/i);
+  });
+
+  it("requires confirmation and removes the selected source with its imported history", async () => {
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation((title, _message, buttons) => {
+        if (title === "Remove telemetry source and history?") {
+          buttons?.find((button) => button.style === "destructive")?.onPress?.();
+        }
+      });
+    const screen = render(<DewPointGuard />);
+    fireEvent.press(screen.getByTestId("dpg-mode-source"));
+    fireEvent.press(screen.getByTestId("dpg-load-sources"));
+    await waitFor(() => expect(screen.getByTestId("dpg-source-s-upload")).toBeTruthy());
+
+    fireEvent.press(screen.getByTestId("dpg-remove-selected-source"));
+
+    await waitFor(() =>
+      expect(mockDeleteTelemetrySource).toHaveBeenCalledWith("s-upload")
+    );
+    await waitFor(() => expect(screen.queryByTestId("dpg-source-s-upload")).toBeNull());
+    expect(alertSpy).toHaveBeenCalledWith(
+      "Remove telemetry source and history?",
+      expect.stringMatching(/permanently removes every imported reading/i),
+      expect.any(Array)
+    );
+    alertSpy.mockRestore();
   });
 
   it("parses pasted CSV, maps columns, ingests, and refreshes window", async () => {

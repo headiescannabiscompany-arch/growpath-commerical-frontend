@@ -26,6 +26,7 @@ import {
 import {
   bulkIngestTelemetryPoints,
   createTelemetrySource,
+  deleteTelemetrySource,
   getTelemetryPoints,
   listTelemetrySources,
   listPulseDevices,
@@ -320,6 +321,7 @@ export default function DewPointGuardTool({
   const [sources, setSources] = useState<TelemetrySource[]>([]);
   const [loadingSources, setLoadingSources] = useState(false);
   const [creatingSource, setCreatingSource] = useState(false);
+  const [deletingSourceId, setDeletingSourceId] = useState("");
   const [selectedSourceId, setSelectedSourceId] = useState("");
   const [pulseApiKey, setPulseApiKey] = useState("");
   const [verifyingPulse, setVerifyingPulse] = useState(false);
@@ -688,6 +690,46 @@ export default function DewPointGuardTool({
     } finally {
       setCreatingSource(false);
     }
+  }
+
+  async function removeTelemetrySource(source: TelemetrySource) {
+    setDeletingSourceId(source.id);
+    try {
+      const receipt = await deleteTelemetrySource(source.id);
+      const remaining = sources.filter((item) => item.id !== source.id);
+      setSources(remaining);
+      if (selectedSourceId === source.id) {
+        setSelectedSourceId(remaining[0]?.id || "");
+        setTelemetryPoints([]);
+      }
+      setIngestStatus(
+        `Removed source and ${receipt.deletedPointCount} imported point${receipt.deletedPointCount === 1 ? "" : "s"}.`
+      );
+      Alert.alert(
+        "Telemetry source removed",
+        `${source.name} and ${receipt.deletedPointCount} imported point${receipt.deletedPointCount === 1 ? "" : "s"} were removed.`
+      );
+    } catch (error: any) {
+      const auth = telemetryAuthMessage(error);
+      Alert.alert("Could not remove source", auth || formatApiError(error));
+    } finally {
+      setDeletingSourceId("");
+    }
+  }
+
+  function confirmRemoveTelemetrySource(source: TelemetrySource) {
+    Alert.alert(
+      "Remove telemetry source and history?",
+      `This permanently removes every imported reading stored under ${source.name}. It does not delete the Grow or the original file on your device.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove source + history",
+          style: "destructive",
+          onPress: () => void removeTelemetrySource(source)
+        }
+      ]
+    );
   }
 
   async function verifyPulseAndLoadDevices() {
@@ -1179,6 +1221,8 @@ export default function DewPointGuardTool({
         vpdKpa: point.vpdKpa,
         co2Ppm: point.co2Ppm,
         lightLux: point.lightLux,
+        ppfd: point.ppfd,
+        dliMolM2Day: point.dliMolM2Day,
         lightValue: point.lightValue,
         lightUnit: point.lightUnit
       }));
@@ -1706,6 +1750,31 @@ export default function DewPointGuardTool({
               No sources loaded yet. Create one before using telemetry mode.
             </Text>
           )}
+          {selectedSource ? (
+            <Pressable
+              testID="dpg-remove-selected-source"
+              accessibilityRole="button"
+              accessibilityLabel={`Remove ${selectedSource.name} telemetry source and imported history`}
+              onPress={() => confirmRemoveTelemetrySource(selectedSource)}
+              disabled={deletingSourceId === selectedSource.id}
+              style={[
+                styles.secondaryButton,
+                {
+                  opacity: deletingSourceId === selectedSource.id ? 0.6 : 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginBottom: 10,
+                  alignItems: "center"
+                }
+              ]}
+            >
+              <Text style={styles.errorText}>
+                {deletingSourceId === selectedSource.id
+                  ? "Removing source..."
+                  : "Remove selected source + imported history"}
+              </Text>
+            </Pressable>
+          ) : null}
 
           <View
             style={[
@@ -1904,8 +1973,9 @@ export default function DewPointGuardTool({
                     <Text style={styles.mutedText}>
                       Tell GrowPath what this controller column represents. A light
                       detector is different from a controller-reported lights-on/off or
-                      output state. Raw values are retained and are never converted to lux
-                      unless you choose measured illuminance.
+                      output state. Raw values are retained. Lux, PPFD, and DLI are stored
+                      as separate measured channels and are never substituted for one
+                      another.
                     </Text>
                     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                       <Chip
@@ -1929,6 +1999,30 @@ export default function DewPointGuardTool({
                           setCsvDetectedExtras((previous) => ({
                             ...previous,
                             lightKind: "lux"
+                          }));
+                        }}
+                      />
+                      <Chip
+                        testID="dpg-csv-light-ppfd"
+                        label="Measured PPFD (umol/m2/s)"
+                        active={csvDetectedExtras.lightKind === "ppfd"}
+                        onPress={() => {
+                          setConfirmedCsvReviewSignature("");
+                          setCsvDetectedExtras((previous) => ({
+                            ...previous,
+                            lightKind: "ppfd"
+                          }));
+                        }}
+                      />
+                      <Chip
+                        testID="dpg-csv-light-dli"
+                        label="Measured DLI (mol/m2/day)"
+                        active={csvDetectedExtras.lightKind === "dli"}
+                        onPress={() => {
+                          setConfirmedCsvReviewSignature("");
+                          setCsvDetectedExtras((previous) => ({
+                            ...previous,
+                            lightKind: "dli"
                           }));
                         }}
                       />
