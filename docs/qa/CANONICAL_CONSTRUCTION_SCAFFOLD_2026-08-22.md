@@ -347,6 +347,11 @@ architecture to obtain live evidence.
 
 Order is fixed: `R-03` → `R-04` → `R-05` → `R-06`.
 
+Owner order override recorded 2026-08-25: finish every other pre-hat functional packet,
+then resume the already-scaffolded P-08 Deep video Harvest acceptance packet, and only then
+enter this batch. P-08 is deferred, not removed or reopened; retain its existing implementation,
+evidence and no-resend/refund history.
+
 1. Freeze exact frontend/backend SHAs only after all in-scope functional packets are closed
    or carry an owner-approved, time-bounded exception.
 2. Run an initial complete cross-role, route/action, populated/empty, persistence, recovery,
