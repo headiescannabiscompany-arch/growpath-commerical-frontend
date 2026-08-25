@@ -18,9 +18,9 @@ describe("Personal top-level back controls", () => {
     if (_name === "grows") {
       expect(source).toContain("const basePath = `/home/${workspace}`");
       expect(source).toContain("<BackButton fallbackHref={basePath} />");
-      expect(source).toContain(
-        'import { listWorkspaceGrows, type GrowWorkspace } from "@/features/grows/workspaceData"'
-      );
+      expect(source).toContain("listWorkspaceGrows,");
+      expect(source).toContain("type GrowWorkspace");
+      expect(source).toContain('from "@/features/grows/workspaceData"');
     } else {
       expect(source).toContain('<BackButton fallbackHref="/home/personal" />');
     }
