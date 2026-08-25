@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -721,18 +722,24 @@ export default function DewPointGuardTool({
   }
 
   function confirmRemoveTelemetrySource(source: TelemetrySource) {
-    Alert.alert(
-      "Remove telemetry source and history?",
-      `This permanently removes every imported reading stored under ${source.name}. It does not delete the Grow or the original file on your device.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove source + history",
-          style: "destructive",
-          onPress: () => void removeTelemetrySource(source)
-        }
-      ]
-    );
+    const title = "Remove telemetry source and history?";
+    const message = `This permanently removes every imported reading stored under ${source.name}. It does not delete the Grow or the original file on your device.`;
+
+    if (Platform.OS === "web") {
+      if (globalThis.confirm(`${title}\n\n${message}`)) {
+        void removeTelemetrySource(source);
+      }
+      return;
+    }
+
+    Alert.alert(title, message, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove source + history",
+        style: "destructive",
+        onPress: () => void removeTelemetrySource(source)
+      }
+    ]);
   }
 
   async function verifyPulseAndLoadDevices() {
