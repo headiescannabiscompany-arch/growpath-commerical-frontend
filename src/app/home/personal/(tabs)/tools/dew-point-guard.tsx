@@ -844,7 +844,7 @@ export default function DewPointGuardTool({
         end: parsed.metadata?.["End Time"] || null,
         sampleFrequency: parsed.metadata?.["Sample Frequency"] || null
       },
-      temperatureUnit: parsed.metadata?.["Temperature Units"] || null
+      temperatureUnit: suggested?.tempUnit || null
     });
     setCsvLimitNotice("");
   }

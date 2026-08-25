@@ -475,6 +475,7 @@ describe("Dew Point Guard CSV flow", () => {
         config: expect.objectContaining({
           provider: "ac_infinity",
           importMode: "csv",
+          temperatureUnit: "F",
           importReview: expect.objectContaining({
             provider: "ac_infinity",
             growId: "g1",
