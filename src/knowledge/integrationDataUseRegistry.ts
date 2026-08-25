@@ -84,6 +84,31 @@ export const INTEGRATION_DATA_USE_REGISTRY: IntegrationDataUseRule[] = [
     consumers: ["display", "analytics", "search", "exports"]
   },
   {
+    field: "headerRowIndex",
+    description: "Reviewed CSV header-row position used to reproduce parsing.",
+    consumers: ["display", "analytics", "exports"]
+  },
+  {
+    field: "columns",
+    description: "Bounded source column names presented during import review.",
+    consumers: ["display", "analytics", "AI", "search", "exports"]
+  },
+  {
+    field: "historyWindow",
+    description: "Provider-declared history start, end, and sampling interval.",
+    consumers: ["display", "analytics", "AI", "search", "exports"]
+  },
+  {
+    field: "temperatureUnit",
+    description: "Reviewed source temperature unit used for deterministic conversion.",
+    consumers: ["display", "analytics", "AI", "exports"]
+  },
+  {
+    field: "roomMapping",
+    description: "Reviewed room or grow-space name attached to the imported source.",
+    consumers: ["display", "analytics", "AI", "search", "tasks", "alerts", "exports"]
+  },
+  {
     field: "importReview",
     description:
       "Confirmed provider, workspace, grow, room, timezone, file, and column-review provenance.",

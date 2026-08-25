@@ -189,6 +189,7 @@ type CsvFileIdentity = {
   uriScheme: string | null;
 };
 const CSV_MAX_ROWS = 5000;
+const CSV_MAX_FILE_BYTES = 25 * 1024 * 1024;
 const PULSE_IMPORTED_METRICS = [
   "air_temperature",
   "relative_humidity",
@@ -832,6 +833,7 @@ export default function DewPointGuardTool({
     setCsvSourceConfig({
       provider: parsed.provider || "generic",
       importMode: "csv",
+      sourceFormat: parsed.provider === "ac_infinity" ? "controller_csv" : "generic_csv",
       headerRowIndex: parsed.headerRowIndex || 0,
       columns: parsed.headers,
       historyWindow: {
@@ -860,6 +862,15 @@ export default function DewPointGuardTool({
       if (result.canceled) return;
       const asset = result.assets?.[0];
       if (!asset) return;
+
+      const pickedSize = Number(asset.size || 0);
+      if (Number.isFinite(pickedSize) && pickedSize > CSV_MAX_FILE_BYTES) {
+        Alert.alert(
+          "History file is too large",
+          "Choose a CSV no larger than 25 MB. Export a shorter date range if needed."
+        );
+        return;
+      }
 
       const uri = String(asset.uri || "");
       const identity: CsvFileIdentity = {
@@ -904,6 +915,13 @@ export default function DewPointGuardTool({
   }
 
   function parsePastedCsv() {
+    if (csvText.length > CSV_MAX_FILE_BYTES) {
+      Alert.alert(
+        "Pasted history is too large",
+        "Paste no more than 25 MB of CSV text, or choose a shorter export."
+      );
+      return;
+    }
     applyParsedCsv(csvText, {
       source: "pasted",
       name: "Pasted controller history.csv",
