@@ -163,6 +163,26 @@ approval. House and potted-plant exclusions remain unchanged.
   observation IDs. Keep the pins live; do not perform the old publish-then-withdraw cleanup
   script unless the owner asks to remove them.
 
+### 2026-08-25 production acceptance increment
+
+- Frontend merge `a0bf0b4e892ee8f66e8bff287eba39561a4278f2` exposed the generic
+  named park/trip-pin control in production. The live Personal Plant ID page staged the
+  reviewed Maydale park point, retained the `Maydale Conservation Park` label, and accepted
+  four JPEG evidence copies derived from originals `IMG_2880.HEIC` through
+  `IMG_2883.HEIC`; the originals were not modified.
+- The live AI pass inspected all four photos and returned a cautious medium-confidence
+  `Asclepias` genus candidate in Apocynaceae. The contributor review decision remained
+  `not_sure`; neither the app nor this recovery record promotes that result to a verified
+  species.
+- The observation dated August 21, 2026 was deliberately published with an approximate
+  Maydale pin and an uncertainty-safe contributor description. The public globe showed one
+  observation in view, and the generated `My Nature Finds` collection visibly rendered all
+  four distinct photos, the date, description, approximate-location label, and candidate
+  status. The saved module record is `6a8e2a37548a5dc10cae2ace`.
+- This accepts the first Maydale publication path only. The remaining populated-globe gate is
+  a second distinct plant at the same retained Maydale point to prove grouped-pin enumeration,
+  followed by the separate Cary point and the already-listed privacy/mobile/search checks.
+
 ## No-rebuild boundary
 
 Do not rebuild Plant ID, Saved Runs, Field Studies, the globe, projection, publication,
