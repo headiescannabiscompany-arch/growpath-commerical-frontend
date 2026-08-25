@@ -429,6 +429,15 @@ Declining either branch leaves the standalone Plant ID intact. Same-day proximit
 location evidence. The separate house crape myrtle and all potted-house records, including
 Dipladenia/Mandevilla, are excluded from the Cary/Maydale publication batch.
 
+The owner-directed Cary/Maydale recovery is now governed by
+`NATURE_CARY_MAYDALE_RECOVERY_2026-08-25.md`. The owner confirmed that Cary was one
+same-day in-person Plant ID trip; this is positive trip-association evidence, not a new rule
+that permits date-based inference. Per-evidence deduplication, the unresolved crape mapping,
+Maryland's separate multi-visit/lily-pad inventory, private exclusions, exact remaining gates
+and live-pin retention decision are recorded there. Every retained trip evidence set requires
+an explicit public/private/duplicate/unrecoverable/unresolved disposition; a representative
+subset does not complete acceptance.
+
 ## Reconciled evidence and no-rebuild boundaries
 
 These row annotations name what is retained and the one exact gate that remains. They do
