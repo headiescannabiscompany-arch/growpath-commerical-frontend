@@ -267,8 +267,11 @@ export function mapCsvToPoints(
 
   for (const row of parsed.rows) {
     const tsRaw = String(row[mapping.tsCol] ?? "").trim();
-    const tempRaw = Number(String(row[mapping.tempCol] ?? "").trim());
-    const rhRaw = Number(String(row[mapping.rhCol] ?? "").trim());
+    const tempText = String(row[mapping.tempCol] ?? "").trim();
+    const rhText = String(row[mapping.rhCol] ?? "").trim();
+    if (!tempText || !rhText) continue;
+    const tempRaw = Number(tempText);
+    const rhRaw = Number(rhText);
     const optionalValue = (index: number | undefined) => {
       if (index == null || index < 0) return null;
       const raw = String(row[index] ?? "").trim();
