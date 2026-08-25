@@ -1,7 +1,8 @@
 # A-01 through A-05 canonical local evidence
 
-Updated: 2026-08-22  
+Updated: 2026-08-25
 Frontend acceptance baseline: `81844d9bc57c441da85b0b41a4664e7071581341`  
+Frontend mobile Admin navigation merge: `8b84ef325139f6b0569307da89cbe83262e87283`
 Backend lawful-request merge: `2000d69dd0af5744b3d46eb398aa949c97997cb9`
 
 ## Status decision
@@ -58,7 +59,19 @@ authority. The frontend has no one-click approval or disclosure action.
   account workspace exposed the contextual `Platform Administration` entry and returned to
   `/admin`. All five user-action families exposed account-specific button names. Focused Admin
   tests passed 43 assertions; exact-main Production Build Preflight `32673832150` and Frontend
-  CI `32673832168` passed. No account or legal-request mutation was invoked.
+  CI `32673832168` passed. Frontend merge
+  `8b84ef325139f6b0569307da89cbe83262e87283` then added the missing compact-navigation entry:
+  Personal `More`, Commercial `More`, and Facility `Profile` now expose `Admin Tools` only when
+  the platform account role is `admin`. Focused route acceptance passed 46 assertions and full
+  Frontend CI `32900461079` passed before merge. Render deployment
+  `dep-da70jp95efls7383e93g` succeeded in 2m03s. The authenticated Platform Admin live-accepted
+  Personal and its explicitly selected Admin-owned Commercial workspace at a 391-pixel viewport:
+  each showed `Platform administration` plus `/admin`, `scrollWidth` equaled `innerWidth`, and
+  Personal navigation opened the populated `Administration` H1 at `/admin`. The session was
+  returned to Personal mode and the temporary viewport override was reset. Facility positive-role
+  evidence remains in A-05 because this Admin account has no Facility membership; the local
+  Facility role-gate regression passed and must not be rebuilt. No account, report, security, or
+  legal-request record was mutated.
 - **A-02: production accepted on frontend `c71c96b8` and backend `422111d`.** With approved
   disposable records, create/assign/note/resolve/reopen moderation and support cases, exercise
   allowed account/content actions, reload, and verify retained audit plus outside-user visibility
