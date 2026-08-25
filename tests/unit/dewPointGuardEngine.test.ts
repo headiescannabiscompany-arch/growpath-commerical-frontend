@@ -101,4 +101,31 @@ describe("telemetry CSV parsing", () => {
     );
     expect(points[0].airTempC).toBeCloseTo(18.17, 2);
   });
+
+  it("skips rows whose mapped inside temperature or RH cell is blank", () => {
+    const parsed = parseCsvText(
+      [
+        '"Device ID","Test Controller"',
+        '"Temperature Units","°F"',
+        '"Time","Inside Temperature","Inside Relative Humidity","Outside Temperature","Outside Relative Humidity"',
+        '"03/17/2026 1:28 AM","","","69.4","44.6"',
+        '"03/18/2026 1:28 AM","64.7","41.2","69.9","30.6"'
+      ].join("\n")
+    );
+    const mapping = suggestedTelemetryMapping(parsed);
+    expect(mapping).not.toBeNull();
+
+    const points = mapCsvToPoints(parsed, mapping!, {
+      normalizeTimestamp: (value) =>
+        normalizeTelemetryTimestamp(value, "America/New_York")
+    });
+
+    expect(points).toHaveLength(1);
+    expect(points[0]).toEqual(
+      expect.objectContaining({
+        ts: "2026-03-18T05:28:00.000Z",
+        rh: 41.2
+      })
+    );
+  });
 });
