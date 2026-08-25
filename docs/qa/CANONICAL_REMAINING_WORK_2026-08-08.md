@@ -1116,9 +1116,12 @@ grow`, private current location without a Field Study, and an optional approxima
   no new content-report alert; it did not claim access to the separate Admin mailbox.
   Delivered Admin-email clicks plus retained Feed, product, video, and live-session
   report cases therefore remain.
-- [ ] Complete the final Admin workspace and moderation acceptance as a distinct
-      final-crawl role. Give the platform owner one clearly labeled Admin entry/tab
-      and a consolidated Admin Tools hub while also placing contextual moderation
+- [~] Complete the final Admin workspace and moderation acceptance as a distinct
+      final-crawl role. The role-gated Admin Tools entry and consolidated hub are live
+      accepted from Personal and the Admin-owned Commercial workspace on frontend
+      `8b84ef32`; the Facility entry passes local role-gate acceptance and its positive-role
+      production check remains in the A-05 multi-account crawl. Continue by verifying
+      contextual moderation
       actions on the content/account surfaces they govern. The hub must combine
       moderation cases, security and safety reports, delivery/integration failures,
       actionable notifications, open/resolved tallies, retained resolution history,
