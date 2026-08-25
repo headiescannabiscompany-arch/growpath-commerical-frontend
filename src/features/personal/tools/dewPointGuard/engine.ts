@@ -151,7 +151,7 @@ export function suggestedTelemetryMapping(parsed: ParsedCsv): CsvMapping | null 
         ? undefined
         : normalized[lightCol].includes("lux")
           ? "lux"
-          : "manufacturer_reported"
+          : "unmapped"
   };
 }
 
@@ -239,7 +239,7 @@ export type CsvMapping = {
   vpdCol?: number;
   co2Col?: number;
   lightCol?: number;
-  lightKind?: "lux" | "manufacturer_reported";
+  lightKind?: "lux" | "controller_state" | "unmapped";
 };
 
 export type TelemetryPointLike = {
@@ -295,11 +295,15 @@ export function mapCsvToPoints(
       co2Ppm: optionalValue(mapping.co2Col),
       lightLux: mapping.lightKind === "lux" ? optionalValue(mapping.lightCol) : null,
       lightValue:
-        mapping.lightKind === "manufacturer_reported"
+        mapping.lightKind === "controller_state" || mapping.lightKind === "unmapped"
           ? optionalValue(mapping.lightCol)
           : null,
       lightUnit:
-        mapping.lightKind === "manufacturer_reported" ? "manufacturer_reported" : null
+        mapping.lightKind === "controller_state"
+          ? "controller_reported_lighting_state"
+          : mapping.lightKind === "unmapped"
+            ? "provider_reported_unknown"
+            : null
     });
   }
 

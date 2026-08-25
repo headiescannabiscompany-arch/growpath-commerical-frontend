@@ -54,6 +54,33 @@ describe("telemetry CSV parsing", () => {
     );
   });
 
+  it("keeps a non-lux LIGHT column unmapped until the setup meaning is reviewed", () => {
+    const parsed = parseCsvText(
+      [
+        '"Device ID","Test Controller"',
+        '"Temperature Units","°F"',
+        '"Time","LIGHT (Sensor 1)","Inside Temperature","Inside Relative Humidity"',
+        '"03/18/2026 1:28 AM","2.5","64.7","41.2"'
+      ].join("\n")
+    );
+    const suggested = suggestedTelemetryMapping(parsed);
+
+    expect(suggested).toEqual(
+      expect.objectContaining({ lightCol: 1, lightKind: "unmapped" })
+    );
+    const points = mapCsvToPoints(parsed, {
+      ...suggested!,
+      lightKind: "controller_state"
+    });
+    expect(points[0]).toEqual(
+      expect.objectContaining({
+        lightValue: 2.5,
+        lightUnit: "controller_reported_lighting_state",
+        lightLux: null
+      })
+    );
+  });
+
   it("converts only complete mapped rows and preserves chronological order", () => {
     const parsed = parseCsvText(acInfinityFixture);
     const mapping = suggestedTelemetryMapping(parsed);
