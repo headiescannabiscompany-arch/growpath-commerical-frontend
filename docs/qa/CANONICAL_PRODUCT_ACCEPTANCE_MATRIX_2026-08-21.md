@@ -145,7 +145,7 @@ Every applicable story must preserve these invariants without repeating them in 
 | ID   | User story                                                                                                           | Status                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ---- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | P-01 | Home provides a useful mixed feed, active-grow context and frequent actions                                          | live accepted; final-candidate regression only                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | crop context, journal/task persistence, retained-photo count/reload/export, calendar date, timeline routes, archive/restore, CSV export and integration entry live accepted; one authorized real provider or file-import attachment with provenance remains open                                                                                                                                                                                                                                                                      |
+| P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | live accepted, including reviewed AC Infinity attachment, provenance, corrected idempotent import/reload, separate measured light channels and safe source cleanup; final-candidate regression only                                                                                                                                                                                                                                                                                                                                  |
 | P-03 | Identify a plant and save its photos/result without requiring a grow, Field Study or public pin                      | ordinary-photo no-grow result/save/reload live accepted; final-candidate regression only                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | live create accepted; owner archive cleanup/final regression open                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented; local acceptance passed; publish/withdraw live acceptance open                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -644,9 +644,9 @@ published` and `No device location saved`; publish remained disabled and no grow
   implemented read-only providers from access-required, contract-pending and gateway-required
   providers without equipment controls. **Do not rebuild:** crop context, journal/task
   persistence, calendar-day handling, archive/restore, timeline/report routes, CSV export and
-  the reviewed integration entry are live accepted. **Remaining P-02 slice:** one authorized
-  real provider or file-import attachment with provenance; provider-specific acceptance also
-  remains under F-06/B-05.
+  the reviewed integration entry are live accepted. The authorized file-import attachment was
+  subsequently accepted in the production increment below. Provider-specific Commercial and
+  Facility acceptance remains under F-06/B-05 and does not reopen P-02.
 
 - **P-02 — 2026-08-25 retained-photo production increment:** A private temporary journal
   record `6a8db3f000316df4aa3597da` on grow `6a86c181e4f8953edcc6ec11` retained its
@@ -661,16 +661,24 @@ published` and `No device location saved`; publish remained disabled and no grow
   retained-photo persistence, reload, grow-list counting and grow-scoped export are live
   accepted. The temporary record remains private pending owner-approved cleanup.
 
-- **P-02 — 2026-08-25 telemetry acceptance checkpoint:** AC Infinity CSV source
-  `6a8dcdc9c266b3acbaa97f84` proved source creation and idempotent replay (`122` inserted,
-  then `122` updated), but is explicitly **not accepted** because three rows with blank mapped
-  inside temperature/RH were coerced to zero. Frontend PR `#804` fixes that normalization and
-  is awaiting its full CI/deploy gate. The owner confirmed that this setup had no light
-  detector: its `LIGHT` column is controller-reported state/output, not lux. The reviewed
-  equipment context is two Mars Hydro FC-E4800 fixtures in one 4 x 8; this does not establish
-  measured PPFD, DLI, uniformity or light leaks. P-02 remains open until the contaminated
-  private source is removed, the corrected import/reimport/reload receipt passes, measured
-  lux/PPFD/DLI remain distinct supported sensor channels, and the exact evidence is frozen.
+- **P-02 — 2026-08-25 telemetry production acceptance:** The contaminated private AC Infinity
+  source `6a8dcdc9c266b3acbaa97f84` and its `122` imported points were permanently removed through
+  the signed-in UI; the Grow and original local file were retained. The corrected reviewed
+  source `6a8e0236c4a2df0a9707e305` attached `AC INFINITY Data.csv` to Personal grow
+  `6a86c181e4f8953edcc6ec11`, room `QA tomato grow space`, timezone
+  `America/New_York`, with `LIGHT` explicitly classified as controller-reported state/output.
+  The first import returned `Ingested=119 Updated=0 Skipped=0`; replay returned
+  `Ingested=0 Updated=119 Skipped=0`; and the March 14–July 15 production window reloaded and
+  analyzed all `119` points. The three rows lacking mapped inside temperature/RH were excluded
+  rather than converted to zero. Backend PR `#247` merged as
+  `8fe192d51c376b43cd10228c7fa4098971e3a4c3` and reached Render deploy
+  `dep-da6vcff10e5c73evenlg`. Frontend PRs `#805` and `#807` merged as
+  `1ceb36d21e681b7ead2b4eec15d5eab8cee5ebd8` and
+  `2fc69467bb4236509e0c4d3098b357776b7195d7`, reaching deploys
+  `dep-da6ve7ip6svc73b5j0sg` and `dep-da70272p6svc73b6dh40`. Full CI passed for each accepted
+  merge. Lux, PPFD and DLI remain separate measured channels; no fixture model or controller
+  state is converted into those measurements. Two Mars Hydro FC-E4800 fixtures in one 4 x 8
+  remain equipment context only. **P-02 is live accepted; do not rebuild.**
 
 - **Non-Harvest closure — 2026-08-25 production increment:** The authenticated
   `admin@growpathai.com` identity explicitly entered Commercial mode and retained a visible

@@ -1237,9 +1237,12 @@ public visibility, or screenshot/video acceptance still called out below.
   `dep-d9vpo6jncjis73enofb0` reached Live. Signed-in Admin production verified the
   Personal provider catalog, read-only provenance copy, and Commercial history-import
   route, then restored Personal mode. That account had zero Personal grows and zero
-  Commercial evidence runs, so no fake record or credential was created. Production
-  acceptance must still confirm Personal, Commercial, and Facility mapping/reload plus
-  one real timestamped history import before this becomes `[x]`.
+  Commercial evidence runs, so no fake record or credential was created. Personal
+  acceptance closed on 2026-08-25 with reviewed AC Infinity source
+  `6a8e0236c4a2df0a9707e305`: `119` inserted, duplicate-safe replay updated the same `119`,
+  and the historical window reloaded/analyzed all `119` points after the contaminated
+  122-point source was removed. Commercial and Facility mapping/reload remain under
+  their provider-specific acceptance rows before this shared item becomes `[x]`.
 
 - [~] Complete populated commercial brand/storefront acceptance: profile, slug,
   products, zero-stock/TBD launch state, shipping, images, labels, external links,
