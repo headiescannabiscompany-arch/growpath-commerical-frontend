@@ -439,7 +439,9 @@ an explicit public/private/duplicate/unrecoverable/unresolved disposition; a rep
 subset does not complete acceptance. The owner-highlighted August 21 originals are now
 partitioned once into four exact evidence sets covering all 18 files (`IMG_2880.HEIC` through
 `IMG_2897.HEIC`); their identities, Tool Run linkage, place and publication decisions remain
-open under that recovery record and must not be rediscovered by re-sorting the files.
+open under that recovery record and must not be rediscovered by re-sorting the files. The
+owner confirmed the private house crape myrtle is not part of that August 21 set, so the house
+exclusion does not block the four highlighted-trip observations.
 
 ## Reconciled evidence and no-rebuild boundaries
 

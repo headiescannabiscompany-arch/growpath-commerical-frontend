@@ -95,6 +95,9 @@ August 5 evidence without requiring a new trip to the park:
 On 2026-08-25 the owner highlighted one contiguous 18-photo trip set in the imported iPhone
 folder. Read-only review confirmed that the retained originals are `IMG_2880.HEIC` through
 `IMG_2897.HEIC`, captured on the camera-local date 2026-08-21 between 4:01 PM and 4:06 PM.
+The owner separately confirmed that the private house crape myrtle was not photographed on
+this trip/date and is not a member of this 18-photo set. It must not block or be considered a
+candidate for this trip's publication batch.
 The Photos metadata surface did not expose a GPS value for the inspected original. The date,
 file order and visible scene are grouping evidence only; they do not establish a public point
 or externally verify an identity.

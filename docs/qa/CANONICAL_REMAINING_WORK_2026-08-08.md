@@ -727,7 +727,9 @@ grow`, private current location without a Field Study, and an optional approxima
     August 21 originals have been visually partitioned into four exact evidence sets covering
     all 18 files (`IMG_2880.HEIC` through `IMG_2897.HEIC`) in the canonical recovery record.
     Reuse those boundaries; the still-open work is Tool Run linkage, exact-place review,
-    identity/reference review and explicit per-set publication disposition.
+    identity/reference review and explicit per-set publication disposition. The owner
+    confirmed the private house crape myrtle is not part of the August 21 set, so it is not a
+    publication blocker for those four observations.
 
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
