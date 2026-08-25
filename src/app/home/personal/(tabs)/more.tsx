@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { useAuth } from "@/auth/AuthContext";
 import { useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 
@@ -105,6 +106,8 @@ function MoreLink({ description, href, label }: Destination) {
 
 export default function PersonalMoreRoute() {
   const { palette } = useAppTheme();
+  const auth = useAuth();
+  const isPlatformAdmin = String(auth.user?.role || "").toLowerCase() === "admin";
 
   return (
     <AppPage
@@ -141,6 +144,24 @@ export default function PersonalMoreRoute() {
           </View>
         </AppCard>
       ))}
+      {isPlatformAdmin ? (
+        <AppCard>
+          <Text
+            accessibilityRole="header"
+            aria-level={2}
+            style={[styles.groupTitle, { color: palette.text }]}
+          >
+            Platform administration
+          </Text>
+          <View style={styles.destinationGrid}>
+            <MoreLink
+              label="Admin Tools"
+              href="/admin"
+              description="Review moderation, reports, security, accounts, and platform operations."
+            />
+          </View>
+        </AppCard>
+      ) : null}
     </AppPage>
   );
 }

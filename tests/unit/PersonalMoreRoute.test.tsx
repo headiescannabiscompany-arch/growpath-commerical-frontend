@@ -3,7 +3,10 @@ import { render } from "@testing-library/react-native";
 
 import PersonalMoreRoute from "@/app/home/personal/(tabs)/more";
 
+const mockUseAuth = jest.fn();
+
 jest.mock("expo-router", () => ({ Link: ({ children }: any) => children }));
+jest.mock("@/auth/AuthContext", () => ({ useAuth: () => mockUseAuth() }));
 jest.mock("@/components/layout/AppPage", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -16,6 +19,10 @@ jest.mock("@/components/layout/AppCard", () => {
 });
 
 describe("PersonalMoreRoute", () => {
+  beforeEach(() => {
+    mockUseAuth.mockReturnValue({ user: { role: "user" } });
+  });
+
   it("keeps overflow tools and learning routes reachable", () => {
     const screen = render(<PersonalMoreRoute />);
 
@@ -26,5 +33,15 @@ describe("PersonalMoreRoute", () => {
     expect(screen.getByLabelText("Open Field Studies")).toBeTruthy();
     expect(screen.getByLabelText("Open Discovery Nature")).toBeTruthy();
     expect(screen.getByLabelText("Open Switch workspace")).toBeTruthy();
+    expect(screen.queryByLabelText("Open Admin Tools")).toBeNull();
+  });
+
+  it("exposes platform administration to an admin on compact navigation", () => {
+    mockUseAuth.mockReturnValue({ user: { role: "admin" } });
+
+    const screen = render(<PersonalMoreRoute />);
+
+    expect(screen.getByText("Platform administration")).toBeTruthy();
+    expect(screen.getByLabelText("Open Admin Tools")).toBeTruthy();
   });
 });

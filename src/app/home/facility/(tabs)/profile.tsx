@@ -122,6 +122,7 @@ export default function FacilityProfileRoute() {
   const { palette } = useAppTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const auth = useAuth();
+  const isPlatformAdmin = String(auth.user?.role || "").toLowerCase() === "admin";
   const { selectedId: facilityId, selected: selectedFacility } = useFacility();
 
   const apiErr: any = useApiErrorHandler();
@@ -317,6 +318,24 @@ export default function FacilityProfileRoute() {
             />
           </View>
         </View>
+
+        {isPlatformAdmin ? (
+          <View style={styles.card}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.h1}>
+              Platform administration
+            </Text>
+            <Text style={styles.mutedText}>
+              Review moderation, reports, security, accounts, and platform operations.
+            </Text>
+            <View style={styles.actionRow}>
+              <ProfileAction
+                label="Admin Tools"
+                accessibilityLabel="Open Admin Tools"
+                onPress={() => router.push("/admin" as any)}
+              />
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.card}>
           <Text accessibilityRole="header" aria-level={2} style={styles.h1}>
