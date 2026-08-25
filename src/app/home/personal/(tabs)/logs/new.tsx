@@ -29,6 +29,7 @@ import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
 import { isPersistedImageUri, persistImageUris } from "@/utils/photoUploads";
 import { createWorkspaceLog } from "@/features/grows/workspaceData";
+import { localCalendarDate } from "@/features/grows/routeUtils";
 
 type SelectedPhoto = {
   uri: string;
@@ -69,7 +70,7 @@ export default function NewLogScreen({ workspace = "personal" }: NewLogScreenPro
     useToolPlantContext(growId, initialPlantId, true, workspace);
 
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => localCalendarDate());
   const [notes, setNotes] = useState("");
   const [logType, setLogType] = useState("other");
   const [error, setError] = useState("");
