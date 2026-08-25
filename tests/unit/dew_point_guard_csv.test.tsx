@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import React from "react";
-import { Alert, Platform } from "react-native";
+import { Alert } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import DewPointGuard, {
@@ -242,74 +242,33 @@ describe("Dew Point Guard CSV flow", () => {
   });
 
   it("requires confirmation and removes the selected source with its imported history", async () => {
-    const alertSpy = jest
-      .spyOn(Alert, "alert")
-      .mockImplementation((title, _message, buttons) => {
-        if (title === "Remove telemetry source and history?") {
-          buttons?.find((button) => button.style === "destructive")?.onPress?.();
-        }
-      });
     const screen = render(<DewPointGuard />);
     fireEvent.press(screen.getByTestId("dpg-mode-source"));
     fireEvent.press(screen.getByTestId("dpg-load-sources"));
     await waitFor(() => expect(screen.getByTestId("dpg-source-s-upload")).toBeTruthy());
 
     fireEvent.press(screen.getByTestId("dpg-remove-selected-source"));
+    expect(mockDeleteTelemetrySource).not.toHaveBeenCalled();
+    expect(screen.getByTestId("dpg-remove-source-confirmation")).toBeTruthy();
+    fireEvent.press(screen.getByTestId("dpg-confirm-remove-source"));
 
     await waitFor(() =>
       expect(mockDeleteTelemetrySource).toHaveBeenCalledWith("s-upload")
     );
     await waitFor(() => expect(screen.queryByTestId("dpg-source-s-upload")).toBeNull());
-    expect(alertSpy).toHaveBeenCalledWith(
-      "Remove telemetry source and history?",
-      expect.stringMatching(/permanently removes every imported reading/i),
-      expect.any(Array)
-    );
-    alertSpy.mockRestore();
   });
 
-  it("uses a working browser confirmation before removing imported history on web", async () => {
-    const platformDescriptor = Object.getOwnPropertyDescriptor(Platform, "OS");
-    const originalConfirm = globalThis.confirm;
-    const confirmSpy = jest.fn(() => true);
-    Object.defineProperty(Platform, "OS", {
-      configurable: true,
-      value: "web"
-    });
-    Object.defineProperty(globalThis, "confirm", {
-      configurable: true,
-      writable: true,
-      value: confirmSpy
-    });
+  it("can cancel source removal without deleting data", async () => {
+    const screen = render(<DewPointGuard />);
+    fireEvent.press(screen.getByTestId("dpg-mode-source"));
+    fireEvent.press(screen.getByTestId("dpg-load-sources"));
+    await waitFor(() => expect(screen.getByTestId("dpg-source-s-upload")).toBeTruthy());
 
-    try {
-      const screen = render(<DewPointGuard />);
-      fireEvent.press(screen.getByTestId("dpg-mode-source"));
-      fireEvent.press(screen.getByTestId("dpg-load-sources"));
-      await waitFor(() => expect(screen.getByTestId("dpg-source-s-upload")).toBeTruthy());
+    fireEvent.press(screen.getByTestId("dpg-remove-selected-source"));
+    fireEvent.press(screen.getByTestId("dpg-cancel-remove-source"));
 
-      fireEvent.press(screen.getByTestId("dpg-remove-selected-source"));
-
-      expect(confirmSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/permanently removes every imported reading/i)
-      );
-      await waitFor(() =>
-        expect(mockDeleteTelemetrySource).toHaveBeenCalledWith("s-upload")
-      );
-    } finally {
-      if (platformDescriptor) {
-        Object.defineProperty(Platform, "OS", platformDescriptor);
-      }
-      if (originalConfirm) {
-        Object.defineProperty(globalThis, "confirm", {
-          configurable: true,
-          writable: true,
-          value: originalConfirm
-        });
-      } else {
-        delete (globalThis as { confirm?: typeof confirm }).confirm;
-      }
-    }
+    expect(mockDeleteTelemetrySource).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("dpg-remove-source-confirmation")).toBeNull();
   });
 
   it("parses pasted CSV, maps columns, ingests, and refreshes window", async () => {

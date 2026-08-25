@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -324,6 +323,8 @@ export default function DewPointGuardTool({
   const [creatingSource, setCreatingSource] = useState(false);
   const [deletingSourceId, setDeletingSourceId] = useState("");
   const [selectedSourceId, setSelectedSourceId] = useState("");
+  const [pendingSourceRemoval, setPendingSourceRemoval] =
+    useState<TelemetrySource | null>(null);
   const [pulseApiKey, setPulseApiKey] = useState("");
   const [verifyingPulse, setVerifyingPulse] = useState(false);
   const [loadingPulseDevices, setLoadingPulseDevices] = useState(false);
@@ -709,6 +710,7 @@ export default function DewPointGuardTool({
       setIngestStatus(
         `Removed source and ${receipt.deletedPointCount} imported point${receipt.deletedPointCount === 1 ? "" : "s"}.`
       );
+      setPendingSourceRemoval(null);
       Alert.alert(
         "Telemetry source removed",
         `${source.name} and ${receipt.deletedPointCount} imported point${receipt.deletedPointCount === 1 ? "" : "s"} were removed.`
@@ -722,24 +724,7 @@ export default function DewPointGuardTool({
   }
 
   function confirmRemoveTelemetrySource(source: TelemetrySource) {
-    const title = "Remove telemetry source and history?";
-    const message = `This permanently removes every imported reading stored under ${source.name}. It does not delete the Grow or the original file on your device.`;
-
-    if (Platform.OS === "web") {
-      if (globalThis.confirm(`${title}\n\n${message}`)) {
-        void removeTelemetrySource(source);
-      }
-      return;
-    }
-
-    Alert.alert(title, message, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Remove source + history",
-        style: "destructive",
-        onPress: () => void removeTelemetrySource(source)
-      }
-    ]);
+    setPendingSourceRemoval(source);
   }
 
   async function verifyPulseAndLoadDevices() {
@@ -1787,6 +1772,59 @@ export default function DewPointGuardTool({
                   : "Remove selected source + imported history"}
               </Text>
             </Pressable>
+          ) : null}
+          {pendingSourceRemoval ? (
+            <View
+              testID="dpg-remove-source-confirmation"
+              accessibilityRole="alert"
+              style={[
+                styles.panel,
+                { padding: 12, marginBottom: 10, borderColor: palette.danger }
+              ]}
+            >
+              <Text style={[styles.sectionTitle, styles.errorText]}>
+                Remove telemetry source and history?
+              </Text>
+              <Text style={[styles.mutedText, { marginTop: 6, marginBottom: 10 }]}>
+                This permanently removes every imported reading stored under{" "}
+                {pendingSourceRemoval.name}. It does not delete the Grow or the original
+                file on your device.
+              </Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                <Pressable
+                  testID="dpg-cancel-remove-source"
+                  accessibilityRole="button"
+                  onPress={() => setPendingSourceRemoval(null)}
+                  disabled={deletingSourceId === pendingSourceRemoval.id}
+                  style={[
+                    styles.secondaryButton,
+                    { paddingVertical: 10, paddingHorizontal: 12, marginRight: 8 }
+                  ]}
+                >
+                  <Text style={styles.secondaryButtonText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  testID="dpg-confirm-remove-source"
+                  accessibilityRole="button"
+                  onPress={() => void removeTelemetrySource(pendingSourceRemoval)}
+                  disabled={deletingSourceId === pendingSourceRemoval.id}
+                  style={[
+                    styles.secondaryButton,
+                    {
+                      paddingVertical: 10,
+                      paddingHorizontal: 12,
+                      borderColor: palette.danger
+                    }
+                  ]}
+                >
+                  <Text style={styles.errorText}>
+                    {deletingSourceId === pendingSourceRemoval.id
+                      ? "Removing source..."
+                      : "Permanently remove source + history"}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
           ) : null}
 
           <View
