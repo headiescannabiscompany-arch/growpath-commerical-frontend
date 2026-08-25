@@ -10,6 +10,7 @@ const {
   startDeepTrichomeReview,
   findDeepTrichomeReviewOperation,
   getDeepTrichomeReviewOperation,
+  retryPristineDeepTrichomeReviewOperation,
   discardUnsavedDeepTrichomeReview,
   createHarvestFeedReviewDraft,
   deleteHarvestFeedReviewDraft,
@@ -354,6 +355,51 @@ describe("Harvest vision receipt policies", () => {
         workspaceType: "personal"
       })
     ).rejects.toThrow(/invalid Deep review operation/i);
+  });
+
+  it("retries one pristine failed operation without creating a replacement request", async () => {
+    mockApiRequest.mockResolvedValue({
+      retried: true,
+      operation: {
+        id: "operation-deep-1",
+        state: "queued",
+        analysisMode: "deep",
+        clientOperationKey: "harvest-deep-stable-key-1",
+        requestDigest: digest("d"),
+        batchCount: 2,
+        completedBatches: 0,
+        creditsQuoted: 2,
+        creditState: "not_reserved"
+      }
+    });
+
+    await expect(
+      retryPristineDeepTrichomeReviewOperation("operation-deep-1", {
+        workspaceType: "facility",
+        workspaceId: "facility-1",
+        facilityId: "facility-1"
+      })
+    ).resolves.toEqual(
+      expect.objectContaining({
+        operation: expect.objectContaining({
+          id: "operation-deep-1",
+          status: "queued",
+          creditState: "not_reserved"
+        })
+      })
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "/api/ai/harvest/trichomes/operations/operation-deep-1/retry",
+      expect.objectContaining({
+        method: "POST",
+        retries: 0,
+        body: {
+          workspaceType: "facility",
+          workspaceId: "facility-1",
+          facilityId: "facility-1"
+        }
+      })
+    );
   });
 
   it("permanently discards only one confirmed unsaved succeeded Deep result without media deletion", async () => {

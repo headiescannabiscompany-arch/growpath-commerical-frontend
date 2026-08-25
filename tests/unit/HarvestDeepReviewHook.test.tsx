@@ -8,6 +8,7 @@ const mockQuote = jest.fn();
 const mockStart = jest.fn();
 const mockFind = jest.fn();
 const mockGet = jest.fn();
+const mockRetry = jest.fn();
 const mockDiscard = jest.fn();
 const mockLoad = jest.fn();
 const mockPrepare = jest.fn();
@@ -26,6 +27,7 @@ jest.mock("@/api/harvestVision", () => ({
   startDeepTrichomeReview: (...args: any[]) => mockStart(...args),
   findDeepTrichomeReviewOperation: (...args: any[]) => mockFind(...args),
   getDeepTrichomeReviewOperation: (...args: any[]) => mockGet(...args),
+  retryPristineDeepTrichomeReviewOperation: (...args: any[]) => mockRetry(...args),
   discardUnsavedDeepTrichomeReview: (...args: any[]) => mockDiscard(...args)
 }));
 
@@ -134,6 +136,10 @@ function Probe({ scopeKey = "scope-1" }: { scopeKey?: string }) {
       <Pressable accessibilityLabel="start" onPress={review.start} />
       <Pressable accessibilityLabel="recover" onPress={review.refresh} />
       <Pressable
+        accessibilityLabel="retry same"
+        onPress={() => review.recoverAndRetryFailedById("operation-deep-1")}
+      />
+      <Pressable
         accessibilityLabel="recover saved"
         onPress={() =>
           review.recoverSucceededById("operation-deep-saved-1", savedDeepResult as any)
@@ -172,6 +178,13 @@ describe("Harvest Deep review durable frontend operation", () => {
     mockForget.mockResolvedValue(undefined);
     mockFind.mockResolvedValue(null);
     mockGet.mockResolvedValue(operation("processing"));
+    mockRetry.mockResolvedValue({
+      operation: {
+        ...operation("queued").operation,
+        creditState: "not_reserved"
+      },
+      retried: true
+    });
     mockDiscard.mockResolvedValue({
       success: true,
       discarded: true,
@@ -294,7 +307,7 @@ describe("Harvest Deep review durable frontend operation", () => {
     expect(mockStart).not.toHaveBeenCalled();
   });
 
-  it("allows a fresh quote only after a failed operation confirms no credit was reserved", async () => {
+  it("retains and retries the same accepted operation after a pristine uncharged failure", async () => {
     mockStart.mockResolvedValue({
       operation: {
         ...operation("queued").operation,
@@ -311,14 +324,30 @@ describe("Harvest Deep review durable frontend operation", () => {
     await waitFor(() =>
       expect(screen.getByText("Provider unavailable before reservation.")).toBeTruthy()
     );
-    expect(latestHook?.terminalResetAllowed).toBe(true);
-    expect(mockForget).toHaveBeenCalledWith(
-      expect.objectContaining({ clientOperationKey: prepared.clientOperationKey })
-    );
+    expect(latestHook?.terminalResetAllowed).toBe(false);
+    expect(latestHook?.retryablePristineFailure).toBe(true);
+    expect(mockForget).not.toHaveBeenCalled();
 
-    fireEvent.press(screen.getByLabelText("reset"));
-    await waitFor(() => expect(screen.getByText("no-operation")).toBeTruthy());
-    expect(screen.getByText("no-quote")).toBeTruthy();
+    mockGet.mockResolvedValueOnce({
+      operation: {
+        ...operation("queued").operation,
+        status: "failed",
+        creditState: "not_reserved",
+        errorCode: "PROVIDER_UNAVAILABLE",
+        failureMessage: "Provider unavailable before reservation."
+      }
+    });
+    fireEvent.press(screen.getByLabelText("retry same"));
+    await waitFor(() => expect(latestHook?.operation?.status).toBe("queued"));
+
+    expect(mockRetry).toHaveBeenCalledWith(
+      "operation-deep-1",
+      { workspaceType: "personal" },
+      expect.objectContaining({ signal: expect.anything() })
+    );
+    expect(mockPrepare).toHaveBeenCalledTimes(1);
+    expect(mockStart).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/same accepted Deep review is queued safely/i)).toBeTruthy();
   });
 
   it("keeps a failed dispatched reservation recoverable for support reconciliation", async () => {
