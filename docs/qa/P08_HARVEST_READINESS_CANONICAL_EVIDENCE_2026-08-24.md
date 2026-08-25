@@ -376,6 +376,24 @@ must not be replaced by manufacturing a production outage.
 
 ## Required corrective deployment order
 
+### 2026-08-25 owner-directed pause and operation reconciliation
+
+Deep video acceptance is deliberately paused until every other pre-hat functional matrix row
+is closed. Preserve this packet and return to its remaining live script afterward; do not
+remove the feature, rewrite accepted architecture or treat the pause as completion.
+
+Production operation `6a8d51854cf08c2ed47a99d1` selected/analyzed 80 images, completed
+three of seven provider batches and then failed when the Render service exceeded its 512 MiB
+memory limit. No aggregate result was used and the operation was not resent. Backend merge
+`0bf6647874bfbd6b8376af268f313777d42394bc` bounded diagnostic/provider memory and deployed
+healthy. The privacy-bounded Admin reconciliation queue then shipped in backend merge
+`d3fec55c2191e65a30a835dba510cae0964825f8` and frontend merge
+`940c7bb69d50f353074a90c2eedbf7a7f6c760e8`. Signed-in production displayed the exact
+operation, 3/7 progress and seven reserved credits; the owner-authorized audited refund removed
+it from the held queue. This closes that failed operation and its credit disposition only.
+It does not prove a paid Deep result and must not trigger another attempt before this packet
+resumes in canonical order.
+
 The original backend-first max-80 deployment and FFmpeg proof are complete and retained above.
 Do not repeat them. The only current order is:
 
