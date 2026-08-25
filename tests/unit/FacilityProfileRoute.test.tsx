@@ -21,7 +21,8 @@ const mockAuth = {
   user: {
     id: "facility-user-1",
     email: "facility@example.com",
-    displayName: "Facility Lead"
+    displayName: "Facility Lead",
+    role: "user"
   },
   logout: (...args: any[]) => mockLogout(...args),
   retryMe: (...args: any[]) => mockRetryMe(...args)
@@ -93,6 +94,7 @@ describe("FacilityProfileRoute", () => {
     mockHandleApiError.mockReset();
     mockUpdateNotificationPreferences.mockReset();
     mockUpdateNotificationPreferences.mockResolvedValue({});
+    mockAuth.user.role = "user";
     mockFacilitySelection = { selectedId: null };
     mockApiRequest.mockImplementation((path: string) =>
       Promise.resolve(
@@ -137,9 +139,20 @@ describe("FacilityProfileRoute", () => {
     await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
     expect(mockReplace).toHaveBeenCalledWith("/login");
     expect(screen.queryByText("Report Bug")).toBeNull();
+    expect(screen.queryByLabelText("Open Admin Tools")).toBeNull();
     await waitFor(() =>
       expect(mockReplace).toHaveBeenCalledWith("/home/facility/select")
     );
+  });
+
+  it("exposes platform administration to a platform admin", () => {
+    mockAuth.user.role = "admin";
+
+    const screen = render(<FacilityProfileRoute />);
+    fireEvent.press(screen.getByLabelText("Open Admin Tools"));
+
+    expect(screen.getByText("Platform administration")).toBeTruthy();
+    expect(mockPush).toHaveBeenCalledWith("/admin");
   });
 
   it("shows the selected facility id when Viewer data has no facility record", async () => {

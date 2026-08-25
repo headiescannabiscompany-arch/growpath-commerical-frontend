@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import AppCard from "@/components/layout/AppCard";
 import AppPage from "@/components/layout/AppPage";
+import { useAuth } from "@/auth/AuthContext";
 import { CAPABILITY_KEYS, useEntitlements } from "@/entitlements";
 import { type ThemePalette, useAppTheme } from "@/theme/appTheme";
 import { radius } from "@/theme/theme";
@@ -180,8 +181,10 @@ function WorkspaceLink({ description, href, label }: WorkspaceDestination) {
 
 export default function CommercialMoreRoute() {
   const { palette } = useAppTheme();
+  const auth = useAuth();
   const entitlements = useEntitlements();
   const styles = useMemo(() => createCommercialMoreStyles(palette), [palette]);
+  const isPlatformAdmin = String(auth.user?.role || "").toLowerCase() === "admin";
 
   return (
     <AppPage
@@ -218,6 +221,20 @@ export default function CommercialMoreRoute() {
           </View>
         </AppCard>
       ))}
+      {isPlatformAdmin ? (
+        <AppCard>
+          <Text accessibilityRole="header" aria-level={2} style={styles.groupTitle}>
+            Platform administration
+          </Text>
+          <View style={styles.destinationGrid}>
+            <WorkspaceLink
+              label="Admin Tools"
+              href="/admin"
+              description="Review moderation, reports, security, accounts, and platform operations."
+            />
+          </View>
+        </AppCard>
+      ) : null}
     </AppPage>
   );
 }

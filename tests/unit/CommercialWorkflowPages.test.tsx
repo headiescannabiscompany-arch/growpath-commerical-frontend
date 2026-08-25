@@ -768,10 +768,7 @@ describe("commercial workflow pages", () => {
           }
         });
       }
-      if (
-        path === "/api/business-inventory/inventory-1" &&
-        options?.method === "PATCH"
-      ) {
+      if (path === "/api/business-inventory/inventory-1" && options?.method === "PATCH") {
         return Promise.resolve({
           item: {
             id: "inventory-1",
@@ -3461,6 +3458,22 @@ describe("commercial workflow pages", () => {
 
     expect(screen.queryByRole("link", { name: "Open Business Desk" })).toBeNull();
     expect(screen.getByRole("link", { name: "Open Analytics" })).toBeTruthy();
+  });
+
+  it("exposes platform administration only to a platform admin", () => {
+    const memberScreen = render(<CommercialMoreRoute />);
+    expect(memberScreen.queryByRole("link", { name: "Open Admin Tools" })).toBeNull();
+    memberScreen.unmount();
+
+    mockUseAuth.mockReturnValue({
+      user: { email: "admin@growpathai.com", role: "admin" },
+      logout: jest.fn()
+    });
+
+    const adminScreen = render(<CommercialMoreRoute />);
+    expect(adminScreen.getByRole("link", { name: "Open Admin Tools" }).props.href).toBe(
+      "/admin"
+    );
   });
 
   it("loads commercial analytics overview including ad clicks", async () => {
