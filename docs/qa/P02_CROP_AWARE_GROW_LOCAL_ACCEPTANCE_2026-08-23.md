@@ -20,6 +20,8 @@ The accepted boundary keeps unsupported crops editable and unknown, excludes arc
 
 ## Remaining acceptance — do not reconstruct
 
+- Complete the in-progress real AC Infinity CSV acceptance on grow `6a86c181e4f8953edcc6ec11`: skip blank mapped inside-temperature/RH rows rather than coercing them to zero; preserve the reviewed `LIGHT` values as controller state/output because this setup had no light detector; retain two Mars Hydro FC-E4800 fixtures in one 4 x 8 as equipment context only; and separately accept measured lux, PPFD and DLI when a reviewed sensor/export actually supplies those units. Remove the contaminated private QA source before the corrected idempotent import is accepted.
+
 - On the frozen production candidate, create one disposable Grow from a reviewed supported crop and one from an explicit unknown crop; cancel one draft and save/reload the other.
 - Attach an ordinary photo, journal entry and task; connect or import one reviewed data source, map it to the Grow, verify bounded history and reload.
 - Verify the same Grow's overview, calendar and timeline preserve sourced lifecycle facts without overwriting user edits.

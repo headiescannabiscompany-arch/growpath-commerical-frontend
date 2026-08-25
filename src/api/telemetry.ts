@@ -3,6 +3,7 @@ import type {
   BulkIngestTelemetryPointsInput,
   BulkIngestTelemetryPointsResult,
   CreateTelemetrySourceInput,
+  DeleteTelemetrySourceResult,
   GrowlinkController,
   GrowlinkPullResult,
   GrowlinkVerifyResult,
@@ -219,6 +220,21 @@ export async function createTelemetrySource(
   const res = await apiRequest(TELEMETRY_ROUTES.SOURCES, { method: "POST", body });
   const created = unwrapCreated(res);
   return normalizeSource(created);
+}
+
+export async function deleteTelemetrySource(
+  sourceId: string
+): Promise<DeleteTelemetrySourceResult> {
+  const res = await apiRequest(
+    `${TELEMETRY_ROUTES.SOURCES}/${encodeURIComponent(sourceId)}`,
+    { method: "DELETE" }
+  );
+  const data = unwrapData(res);
+  return {
+    sourceId: String(data?.sourceId ?? sourceId),
+    deletedAt: String(data?.deletedAt ?? ""),
+    deletedPointCount: Number(data?.deletedPointCount ?? 0)
+  };
 }
 
 export async function bulkIngestTelemetryPoints(

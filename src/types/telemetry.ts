@@ -102,6 +102,7 @@ export type BulkIngestTelemetryPointsInput = {
     lightValue?: number | null;
     lightUnit?: string | null;
     ppfd?: number | null;
+    dliMolM2Day?: number | null;
     airPressureHpa?: number | null;
     voc?: number | null;
     observations?: Array<{
@@ -119,6 +120,12 @@ export type BulkIngestTelemetryPointsResult = {
   ingested: number;
   updated: number;
   skipped: number;
+};
+
+export type DeleteTelemetrySourceResult = {
+  sourceId: string;
+  deletedAt: string;
+  deletedPointCount: number;
 };
 
 export type TelemetryPointsQuery = {

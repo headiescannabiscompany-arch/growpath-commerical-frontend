@@ -1,5 +1,6 @@
 import {
   createTelemetrySource,
+  deleteTelemetrySource,
   listGrowlinkControllers,
   listTelemetrySources,
   pullGrowlinkCurrentReadings,
@@ -227,6 +228,25 @@ describe("telemetry Growlink API", () => {
         targetRef: "grow_1",
         config: { growlink: { controllerId: "controller-1" } }
       }
+    });
+  });
+
+  test("removes a telemetry source and returns the cleanup receipt", async () => {
+    mockApiRequest.mockResolvedValueOnce({
+      data: {
+        sourceId: "source_1",
+        deletedAt: "2026-08-25T18:00:00.000Z",
+        deletedPointCount: 119
+      }
+    });
+
+    await expect(deleteTelemetrySource("source_1")).resolves.toEqual({
+      sourceId: "source_1",
+      deletedAt: "2026-08-25T18:00:00.000Z",
+      deletedPointCount: 119
+    });
+    expect(mockApiRequest).toHaveBeenCalledWith(`${TELEMETRY_ROUTES.SOURCES}/source_1`, {
+      method: "DELETE"
     });
   });
 });

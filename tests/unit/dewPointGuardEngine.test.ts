@@ -40,6 +40,9 @@ describe("telemetry CSV parsing", () => {
       tempUnit: "F",
       vpdCol: 4,
       co2Col: 1,
+      luxCol: undefined,
+      ppfdCol: undefined,
+      dliCol: undefined,
       lightCol: undefined,
       lightKind: undefined
     });
@@ -77,6 +80,34 @@ describe("telemetry CSV parsing", () => {
         lightValue: 2.5,
         lightUnit: "controller_reported_lighting_state",
         lightLux: null
+      })
+    );
+  });
+
+  it("imports simultaneous measured lux, PPFD, and DLI without relabeling them", () => {
+    const parsed = parseCsvText(
+      [
+        '"Time","Illuminance","PPFD","Daily Light Integral","Inside Temperature","Inside Relative Humidity"',
+        '"2026-08-25T12:00:00.000Z","18000","420","23.4","75","55"'
+      ].join("\n")
+    );
+    const suggested = suggestedTelemetryMapping(parsed);
+    expect(suggested).toEqual(
+      expect.objectContaining({
+        luxCol: 1,
+        ppfdCol: 2,
+        dliCol: 3,
+        lightCol: undefined,
+        lightKind: undefined
+      })
+    );
+    const [point] = mapCsvToPoints(parsed, suggested!);
+    expect(point).toEqual(
+      expect.objectContaining({
+        lightLux: 18000,
+        ppfd: 420,
+        dliMolM2Day: 23.4,
+        lightValue: null
       })
     );
   });
