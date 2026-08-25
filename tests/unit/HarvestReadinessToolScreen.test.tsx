@@ -1,5 +1,7 @@
 import React from "react";
+import { Alert, type AlertButton } from "react-native";
 import {
+  act,
   fireEvent,
   fireEventAsync,
   render,
@@ -14,6 +16,7 @@ import HarvestReadinessToolRoute, {
   harvestHeadDevelopmentSignalLabel,
   harvestVideoReviewPlan,
   savedHarvestAnalysis,
+  savedHarvestAnalysisOperationId,
   UnsavedHarvestDeepResultDiscard
 } from "@/app/home/personal/(tabs)/tools/harvest-readiness";
 import { getThemePalette } from "@/theme/appTheme";
@@ -94,6 +97,9 @@ const mockQuoteDeepTrichomeReview = jest.fn();
 const mockStartDeepTrichomeReview = jest.fn();
 const mockFindDeepTrichomeReviewOperation = jest.fn();
 const mockGetDeepTrichomeReviewOperation = jest.fn();
+const mockCreateHarvestFeedReviewDraft = jest.fn();
+const mockDeleteHarvestFeedReviewDraft = jest.fn();
+const mockGetHarvestFeedReviewDraft = jest.fn();
 const mockSubmitHarvestTrichomeFeedback = jest.fn();
 const mockAskPersonalAssistant = jest.fn();
 const mockListPersonalGrows = jest.fn();
@@ -343,6 +349,26 @@ describe("Harvest saved Deep review integrity", () => {
     ).toEqual(expect.objectContaining({ analysisId: "saved-deep-analysis-1" }));
   });
 
+  it("restores only a valid Deep operation id retained with the signed saved result", () => {
+    expect(
+      savedHarvestAnalysisOperationId({
+        outputs: {
+          photoAnalysis: {
+            ...deepAnalysis,
+            operationId: "operation-deep-saved-1"
+          }
+        }
+      } as any)
+    ).toBe("operation-deep-saved-1");
+    expect(
+      savedHarvestAnalysisOperationId({
+        outputs: {
+          photoAnalysis: { ...deepAnalysis, operationId: "bad/id" }
+        }
+      } as any)
+    ).toBe("");
+  });
+
   it("requires complete one-based aggregate batch coverage", () => {
     expect(
       harvestBatchSummariesCoverEvidence(
@@ -525,6 +551,11 @@ jest.mock("@/api/harvestVision", () => {
       mockFindDeepTrichomeReviewOperation(...args),
     getDeepTrichomeReviewOperation: (...args: any[]) =>
       mockGetDeepTrichomeReviewOperation(...args),
+    createHarvestFeedReviewDraft: (...args: any[]) =>
+      mockCreateHarvestFeedReviewDraft(...args),
+    deleteHarvestFeedReviewDraft: (...args: any[]) =>
+      mockDeleteHarvestFeedReviewDraft(...args),
+    getHarvestFeedReviewDraft: (...args: any[]) => mockGetHarvestFeedReviewDraft(...args),
     submitHarvestTrichomeFeedback: (...args: any[]) =>
       mockSubmitHarvestTrichomeFeedback(...args)
   };
@@ -538,6 +569,202 @@ async function renderHarvestReadinessTool(
   props: React.ComponentProps<typeof HarvestReadinessToolRoute> = {}
 ) {
   return renderAsync(<HarvestReadinessToolRoute {...props} />);
+}
+
+const feedDraftDigest = (character: string) => character.repeat(64);
+
+function deepFeedReviewQuote() {
+  return {
+    version: "harvest-analysis-quote-v1",
+    tokenVersion: "harvest-deep-quote-v1",
+    token: "signed-deep-token",
+    keyId: "harvest-receipt-key-1",
+    analysisMode: "deep",
+    selectedEvidenceCount: 13,
+    analyzedEvidenceCount: 13,
+    duplicateEvidenceCount: 0,
+    sourceVideoSelected: false,
+    evidenceCount: 13,
+    batchCount: 2,
+    creditsQuoted: 2,
+    manifestDigest: feedDraftDigest("a"),
+    selectedEvidenceDigest: feedDraftDigest("b"),
+    analyzedEvidenceDigest: feedDraftDigest("c"),
+    expiresAt: "2099-08-23T18:00:00.000Z"
+  };
+}
+
+function deepFeedReviewPacket(input: any, operationId = "operation-deep-feed-delete") {
+  const selectedIds = input.evidenceAssetIds.map(String);
+  const aggregateReceipt = {
+    kind: "harvest_vision_aggregate",
+    version: 2,
+    signature: feedDraftDigest("3"),
+    keyId: "aggregate-key-1",
+    manifestDigest: feedDraftDigest("a"),
+    selectedEvidenceDigest: feedDraftDigest("b"),
+    analyzedEvidenceDigest: feedDraftDigest("c")
+  };
+  return {
+    operation: {
+      id: operationId,
+      status: "succeeded",
+      analysisMode: "deep",
+      clientOperationKey: input.clientOperationKey,
+      requestDigest: feedDraftDigest("d"),
+      batchCount: 2,
+      completedBatches: 2,
+      creditsQuoted: 2,
+      creditState: "charged"
+    },
+    result: {
+      photoUsable: true,
+      imageQuality: "usable",
+      clear: 0.1,
+      cloudy: 0.75,
+      amber: 0.15,
+      confidence: 0.82,
+      dominant: "cloudy",
+      visibleTraits: ["Resolved intact gland heads"],
+      evidence: ["Thirteen authenticated stills"],
+      recommendation: "Review the complete sampled-area evidence.",
+      limitations: [],
+      provider: "openai",
+      providerLabel: "OpenAI trichome image review",
+      providerModel: "gpt-4o-mini",
+      imageDetail: "high",
+      imagesAnalyzed: 13,
+      evidenceUsed: selectedIds,
+      selectedEvidenceAssetIds: selectedIds,
+      analysisId: `usage-${operationId}`,
+      analysisMode: "deep",
+      batchCount: 2,
+      batchSize: 12,
+      aggregationVersion: "harvest-aggregate-v1",
+      creditsQuoted: 2,
+      aiCreditsUsed: 2,
+      creditStatus: "charged",
+      manifestDigest: feedDraftDigest("a"),
+      selectedEvidenceDigest: feedDraftDigest("b"),
+      analyzedEvidenceDigest: feedDraftDigest("c"),
+      batchSummaries: [
+        {
+          batchIndex: 0,
+          imageCount: 12,
+          globalImageIndexes: Array.from({ length: 12 }, (_, index) => index + 1),
+          inputDigest: feedDraftDigest("4"),
+          resultDigest: feedDraftDigest("5")
+        },
+        {
+          batchIndex: 1,
+          imageCount: 1,
+          globalImageIndexes: [13],
+          inputDigest: feedDraftDigest("6"),
+          resultDigest: feedDraftDigest("7")
+        }
+      ],
+      inspectionViews: [
+        {
+          sourceEvidenceAssetId: selectedIds[12],
+          sourceImageIndex: 13,
+          kind: "macro coverage row 1 column 1",
+          cropStrategy: "macro_coverage",
+          derivationVersion: "retained-original-macro-jpeg-v1",
+          sourceBounds: {
+            left: 0,
+            top: 0,
+            width: 640,
+            height: 640,
+            sourceWidth: 1280,
+            sourceHeight: 1280
+          },
+          width: 640,
+          height: 640,
+          mimeType: "image/jpeg",
+          sha256: feedDraftDigest("8")
+        }
+      ],
+      analysisReceipt: {
+        ...aggregateReceipt,
+        aiUsageEventId: `usage-${operationId}`,
+        normalizedHarvestResultDigest: feedDraftDigest("2"),
+        evidenceFingerprint: [...selectedIds].sort().join("|"),
+        reviewPolicyVersion: "harvest-trichome-server-attestation-v4-batched-evidence"
+      },
+      aggregateReceipt
+    }
+  };
+}
+
+function privateFeedReviewDraft() {
+  return {
+    success: true,
+    idempotentReplay: true,
+    draft: {
+      id: "64c000000000000000000001",
+      status: "draft",
+      type: "education",
+      sourceType: "harvest_readiness",
+      title: "Private Harvest Readiness review",
+      body: "A bounded signed review of visible sampled areas.",
+      tags: ["harvest-readiness"],
+      contentLabels: ["cannabis", "education"],
+      selectedViewCount: 1,
+      selectionDigest: feedDraftDigest("9"),
+      selectedViews: [
+        {
+          ...deepFeedReviewPacket({
+            evidenceAssetIds: Array.from(
+              { length: 13 },
+              (_, index) => `64b0000000000000000000${index + 1}`
+            ),
+            clientOperationKey: "not-used"
+          }).result.inspectionViews[0]
+        }
+      ]
+    }
+  };
+}
+
+async function renderCompletedDeepFeedReview() {
+  mockQuoteDeepTrichomeReview.mockResolvedValueOnce(deepFeedReviewQuote());
+  mockStartDeepTrichomeReview.mockImplementationOnce(async (input) =>
+    deepFeedReviewPacket(input)
+  );
+  const screen = await renderHarvestReadinessTool();
+
+  fireEvent.press(screen.getByLabelText("Add duplicate-heavy harvest photo set"));
+  await waitFor(() =>
+    expect(
+      screen.getByLabelText("Get exact harvest review quote").props.accessibilityState
+        .disabled
+    ).toBe(false)
+  );
+  fireEvent.press(screen.getByLabelText("Get exact harvest review quote"));
+  await screen.findByText(/Deep review: 2 signed batches · 2 AI credits/i);
+  fireEvent(
+    screen.getByLabelText(
+      "Accept 2-credit Deep review and private OpenAI image dispatch"
+    ),
+    "valueChange",
+    true
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByLabelText("Analyze harvest trichome photo").props.accessibilityState
+        .disabled
+    ).toBe(false)
+  );
+  fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+  await screen.findByText("GrowPath Feed review draft");
+  return screen;
+}
+
+async function renderRestoredPrivateFeedDraft() {
+  mockGetHarvestFeedReviewDraft.mockResolvedValueOnce(privateFeedReviewDraft());
+  const screen = await renderCompletedDeepFeedReview();
+  await screen.findByLabelText("Private Harvest Feed draft preview");
+  return screen;
 }
 
 describe("HarvestReadinessToolRoute", () => {
@@ -555,6 +782,9 @@ describe("HarvestReadinessToolRoute", () => {
     mockFetchCommercialGrows.mockResolvedValue([]);
     mockListEvidenceAssets.mockResolvedValue([]);
     mockFindDeepTrichomeReviewOperation.mockResolvedValue(null);
+    mockGetHarvestFeedReviewDraft.mockRejectedValue(
+      Object.assign(new Error("not found"), { status: 404 })
+    );
     mockGetToolRun.mockResolvedValue(null);
     mockListHarvestBatches.mockResolvedValue([]);
     mockAskPersonalAssistant.mockRejectedValue(new Error("assistant unavailable"));
@@ -1226,6 +1456,62 @@ describe("HarvestReadinessToolRoute", () => {
     expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
   });
 
+  it("recovers a saved Deep operation and private draft without local mapping or a new dispatch", async () => {
+    mockRouteParams = { growId: "grow-1", retryToolRunId: "harvest-deep-run-1" };
+    const retainedIds = Array.from(
+      { length: 13 },
+      (_, index) => `64b0000000000000000000${index + 1}`
+    );
+    const packet = deepFeedReviewPacket(
+      { evidenceAssetIds: retainedIds, clientOperationKey: "saved-run-client-key" },
+      "operation-deep-saved-run"
+    );
+    mockGetToolRun.mockResolvedValue({
+      id: "harvest-deep-run-1",
+      toolType: "harvest_readiness",
+      growId: "grow-1",
+      inputs: { evidenceAssetIds: retainedIds },
+      outputs: {
+        photoAnalysis: {
+          ...packet.result,
+          operationId: "operation-deep-saved-run"
+        }
+      }
+    });
+    mockListEvidenceAssets.mockResolvedValue(
+      retainedIds.map((id, index) => ({
+        id,
+        _id: id,
+        growId: "grow-1",
+        assetType: "photo",
+        originalUri: `/uploads/deep-retained-${index + 1}.jpg`,
+        durableUrl: `/uploads/deep-retained-${index + 1}.jpg`,
+        mimeType: "image/jpeg",
+        source: "library",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        aiUsable: true,
+        qualityWarnings: []
+      }))
+    );
+    mockGetDeepTrichomeReviewOperation.mockResolvedValueOnce(packet);
+    mockGetHarvestFeedReviewDraft.mockResolvedValueOnce(privateFeedReviewDraft());
+
+    const screen = await renderHarvestReadinessTool();
+
+    expect(
+      await screen.findByLabelText("Private Harvest Feed draft preview")
+    ).toBeTruthy();
+    expect(mockGetDeepTrichomeReviewOperation).toHaveBeenCalledWith(
+      "operation-deep-saved-run",
+      { workspaceType: "personal" },
+      expect.objectContaining({ signal: expect.anything() })
+    );
+    expect(screen.getByText("Private Harvest Readiness review")).toBeTruthy();
+    expect(mockStartDeepTrichomeReview).not.toHaveBeenCalled();
+    expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
+  });
+
   it("preserves a fresh analysis after restoring a saved Harvest run", async () => {
     mockRouteParams = { growId: "grow-1", retryToolRunId: "harvest-run-1" };
     const retainedIds = [1, 2, 3, 4].map((index) => `64c00000000000000000000${index}`);
@@ -1516,6 +1802,346 @@ describe("HarvestReadinessToolRoute", () => {
     expect(
       await screen.findByText(/Deep review is queued.*0 of 2 provider batches/i)
     ).toBeTruthy();
+  });
+
+  it("aborts and ignores a private Feed draft response after the bound review changes", async () => {
+    const digest = (character: string) => character.repeat(64);
+    mockQuoteDeepTrichomeReview.mockResolvedValueOnce({
+      version: "harvest-analysis-quote-v1",
+      tokenVersion: "harvest-deep-quote-v1",
+      token: "signed-deep-token",
+      keyId: "harvest-receipt-key-1",
+      analysisMode: "deep",
+      selectedEvidenceCount: 13,
+      analyzedEvidenceCount: 13,
+      duplicateEvidenceCount: 0,
+      sourceVideoSelected: false,
+      evidenceCount: 13,
+      batchCount: 2,
+      creditsQuoted: 2,
+      manifestDigest: digest("a"),
+      selectedEvidenceDigest: digest("b"),
+      analyzedEvidenceDigest: digest("c"),
+      expiresAt: "2099-08-23T18:00:00.000Z"
+    });
+    mockStartDeepTrichomeReview.mockImplementationOnce(async (input) => {
+      const selectedIds = input.evidenceAssetIds.map(String);
+      const aggregateReceipt = {
+        kind: "harvest_vision_aggregate",
+        version: 2,
+        signature: digest("3"),
+        keyId: "aggregate-key-1",
+        manifestDigest: digest("a"),
+        selectedEvidenceDigest: digest("b"),
+        analyzedEvidenceDigest: digest("c")
+      };
+      return {
+        operation: {
+          id: "operation-deep-feed-a",
+          status: "succeeded",
+          analysisMode: "deep",
+          clientOperationKey: input.clientOperationKey,
+          requestDigest: digest("d"),
+          batchCount: 2,
+          completedBatches: 2,
+          creditsQuoted: 2,
+          creditState: "charged"
+        },
+        result: {
+          photoUsable: true,
+          imageQuality: "usable",
+          clear: 0.1,
+          cloudy: 0.75,
+          amber: 0.15,
+          confidence: 0.82,
+          dominant: "cloudy",
+          visibleTraits: ["Resolved intact gland heads"],
+          evidence: ["Thirteen authenticated stills"],
+          recommendation: "Review the complete sampled-area evidence.",
+          limitations: [],
+          provider: "openai",
+          providerLabel: "OpenAI trichome image review",
+          providerModel: "gpt-4o-mini",
+          imageDetail: "high",
+          imagesAnalyzed: 13,
+          evidenceUsed: selectedIds,
+          selectedEvidenceAssetIds: selectedIds,
+          analysisId: "usage-deep-feed-a",
+          analysisMode: "deep",
+          batchCount: 2,
+          batchSize: 12,
+          aggregationVersion: "harvest-aggregate-v1",
+          creditsQuoted: 2,
+          aiCreditsUsed: 2,
+          creditStatus: "charged",
+          manifestDigest: digest("a"),
+          selectedEvidenceDigest: digest("b"),
+          analyzedEvidenceDigest: digest("c"),
+          batchSummaries: [
+            {
+              batchIndex: 0,
+              imageCount: 12,
+              globalImageIndexes: Array.from({ length: 12 }, (_, index) => index + 1),
+              inputDigest: digest("4"),
+              resultDigest: digest("5")
+            },
+            {
+              batchIndex: 1,
+              imageCount: 1,
+              globalImageIndexes: [13],
+              inputDigest: digest("6"),
+              resultDigest: digest("7")
+            }
+          ],
+          inspectionViews: [
+            {
+              sourceEvidenceAssetId: selectedIds[12],
+              sourceImageIndex: 13,
+              kind: "macro coverage row 1 column 1",
+              cropStrategy: "macro_coverage",
+              derivationVersion: "retained-original-macro-jpeg-v1",
+              sourceBounds: {
+                left: 0,
+                top: 0,
+                width: 640,
+                height: 640,
+                sourceWidth: 1280,
+                sourceHeight: 1280
+              },
+              width: 640,
+              height: 640,
+              mimeType: "image/jpeg",
+              sha256: digest("8")
+            }
+          ],
+          analysisReceipt: {
+            ...aggregateReceipt,
+            aiUsageEventId: "usage-deep-feed-a",
+            normalizedHarvestResultDigest: digest("2"),
+            evidenceFingerprint: [...selectedIds].sort().join("|"),
+            reviewPolicyVersion: "harvest-trichome-server-attestation-v4-batched-evidence"
+          },
+          aggregateReceipt
+        }
+      };
+    });
+    let resolveDraft: ((value: any) => void) | undefined;
+    const delayedDraft = new Promise((resolve) => {
+      resolveDraft = resolve;
+    });
+    mockCreateHarvestFeedReviewDraft.mockReturnValueOnce(delayedDraft);
+    const screen = await renderHarvestReadinessTool();
+
+    fireEvent.press(screen.getByLabelText("Add duplicate-heavy harvest photo set"));
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Get exact harvest review quote").props.accessibilityState
+          .disabled
+      ).toBe(false)
+    );
+    fireEvent.press(screen.getByLabelText("Get exact harvest review quote"));
+    await screen.findByText(/Deep review: 2 signed batches · 2 AI credits/i);
+    fireEvent(
+      screen.getByLabelText(
+        "Accept 2-credit Deep review and private OpenAI image dispatch"
+      ),
+      "valueChange",
+      true
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Analyze harvest trichome photo").props.accessibilityState
+          .disabled
+      ).toBe(false)
+    );
+    fireEvent.press(screen.getByLabelText("Analyze harvest trichome photo"));
+    await screen.findByText("GrowPath Feed review draft");
+    fireEvent.press(
+      screen.getByLabelText(
+        "Add macro coverage row 1 column 1 from source photo 13 to the private Feed review draft"
+      )
+    );
+    fireEvent.press(screen.getByLabelText("Create private GrowPath Feed review draft"));
+    await waitFor(() =>
+      expect(mockCreateHarvestFeedReviewDraft).toHaveBeenCalledTimes(1)
+    );
+    expect(screen.getByLabelText("Prepare a new harvest review quote")).toBeDisabled();
+    const signal = mockCreateHarvestFeedReviewDraft.mock.calls[0][3].signal;
+
+    fireEvent.changeText(
+      screen.getByLabelText("Harvest photo notes"),
+      "Changed after the private draft request began"
+    );
+    await waitFor(() => expect(signal.aborted).toBe(true));
+    await act(async () => {
+      resolveDraft?.({
+        idempotentReplay: false,
+        draft: {
+          id: "stale-draft-a",
+          title: "Stale review A must not render",
+          body: "Old result",
+          selectedViewCount: 1,
+          selectedViews: []
+        }
+      });
+      await delayedDraft;
+    });
+
+    expect(screen.queryByText("Stale review A must not render")).toBeNull();
+    expect(screen.queryByLabelText("Private Harvest Feed draft preview")).toBeNull();
+  });
+
+  it("keeps Prepare New unavailable until the private Feed draft lookup settles", async () => {
+    let rejectLookup: ((reason: any) => void) | undefined;
+    const delayedLookup = new Promise((_resolve, reject) => {
+      rejectLookup = reject;
+    });
+    mockGetHarvestFeedReviewDraft.mockReturnValueOnce(delayedLookup);
+    const screen = await renderCompletedDeepFeedReview();
+
+    expect(screen.getByLabelText("Prepare a new harvest review quote")).toBeDisabled();
+    await act(async () => {
+      rejectLookup?.(Object.assign(new Error("not found"), { status: 404 }));
+      await delayedLookup.catch(() => undefined);
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("Prepare a new harvest review quote")
+      ).not.toBeDisabled()
+    );
+  });
+
+  it("confirms private Feed draft deletion and preserves the signed result and evidence", async () => {
+    mockDeleteHarvestFeedReviewDraft.mockResolvedValueOnce({
+      deleted: true,
+      draftId: "64c000000000000000000001"
+    });
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation(
+        (_title: string, _message?: string, buttons?: AlertButton[]) => {
+          buttons?.find((button) => button.text === "Delete Draft")?.onPress?.();
+        }
+      );
+
+    try {
+      const screen = await renderRestoredPrivateFeedDraft();
+      expect(screen.getByText("Private Harvest Readiness review")).toBeTruthy();
+      expect(screen.getByLabelText("Prepare a new harvest review quote")).toBeDisabled();
+
+      fireEvent.press(screen.getByLabelText("Delete private GrowPath Feed review draft"));
+
+      await waitFor(() =>
+        expect(mockDeleteHarvestFeedReviewDraft).toHaveBeenCalledTimes(1)
+      );
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Delete private Feed draft?",
+        expect.stringMatching(
+          /does not delete the signed Harvest result, retained source video, or zoom-source photos/i
+        ),
+        expect.arrayContaining([
+          expect.objectContaining({ text: "Keep Draft", style: "cancel" }),
+          expect.objectContaining({ text: "Delete Draft", style: "destructive" })
+        ])
+      );
+      expect(mockDeleteHarvestFeedReviewDraft).toHaveBeenCalledWith(
+        "operation-deep-feed-delete",
+        { workspaceType: "personal" },
+        { signal: expect.any(AbortSignal) }
+      );
+      await screen.findByText(
+        /private Feed review draft was deleted.*signed Harvest result and source evidence were kept/i
+      );
+      expect(screen.queryByLabelText("Private Harvest Feed draft preview")).toBeNull();
+      expect(screen.getByLabelText("Share signed Harvest review summary")).toBeTruthy();
+      expect(
+        screen.getByText(/AI estimate: 75% cloudy, 15% amber, 10% clear/i)
+      ).toBeTruthy();
+      expect(
+        screen.getByLabelText(
+          "Add macro coverage row 1 column 1 from source photo 13 to the private Feed review draft"
+        )
+      ).toBeTruthy();
+      expect(mockMediaEvidencePickerProps.mock.calls.at(-1)?.[0].value).toHaveLength(13);
+      expect(mockStartDeepTrichomeReview).toHaveBeenCalledTimes(1);
+      expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
+    } finally {
+      alertSpy.mockRestore();
+    }
+  });
+
+  it("keeps the displayed private Feed draft when DELETE confirms a different draft id", async () => {
+    mockDeleteHarvestFeedReviewDraft.mockResolvedValueOnce({
+      deleted: true,
+      draftId: "64c000000000000000000099"
+    });
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation(
+        (_title: string, _message?: string, buttons?: AlertButton[]) => {
+          buttons?.find((button) => button.text === "Delete Draft")?.onPress?.();
+        }
+      );
+
+    try {
+      const screen = await renderRestoredPrivateFeedDraft();
+      fireEvent.press(screen.getByLabelText("Delete private GrowPath Feed review draft"));
+
+      expect(
+        await screen.findByText(/confirmed deletion for a different private Feed draft/i)
+      ).toBeTruthy();
+      expect(screen.getByLabelText("Private Harvest Feed draft preview")).toBeTruthy();
+      expect(screen.getByText("Private Harvest Readiness review")).toBeTruthy();
+    } finally {
+      alertSpy.mockRestore();
+    }
+  });
+
+  it("aborts and ignores a stale private Feed draft deletion after the review changes", async () => {
+    let resolveDelete: ((value: any) => void) | undefined;
+    const delayedDelete = new Promise((resolve) => {
+      resolveDelete = resolve;
+    });
+    mockDeleteHarvestFeedReviewDraft.mockReturnValueOnce(delayedDelete);
+    const alertSpy = jest
+      .spyOn(Alert, "alert")
+      .mockImplementation(
+        (_title: string, _message?: string, buttons?: AlertButton[]) => {
+          buttons?.find((button) => button.text === "Delete Draft")?.onPress?.();
+        }
+      );
+
+    try {
+      const screen = await renderRestoredPrivateFeedDraft();
+      fireEvent.press(screen.getByLabelText("Delete private GrowPath Feed review draft"));
+      await waitFor(() =>
+        expect(mockDeleteHarvestFeedReviewDraft).toHaveBeenCalledTimes(1)
+      );
+      expect(screen.getByLabelText("Prepare a new harvest review quote")).toBeDisabled();
+      const signal = mockDeleteHarvestFeedReviewDraft.mock.calls[0][2].signal;
+
+      fireEvent.changeText(
+        screen.getByLabelText("Harvest photo notes"),
+        "Changed after the private draft deletion began"
+      );
+      await waitFor(() => expect(signal.aborted).toBe(true));
+      await act(async () => {
+        resolveDelete?.({
+          deleted: true,
+          draftId: "64c000000000000000000001"
+        });
+        await delayedDelete;
+      });
+
+      expect(
+        screen.queryByText(/private Feed review draft was deleted.*source evidence/i)
+      ).toBeNull();
+      expect(screen.queryByText("Private Harvest Readiness review")).toBeNull();
+      expect(screen.queryByLabelText("Private Harvest Feed draft preview")).toBeNull();
+      expect(mockStartDeepTrichomeReview).toHaveBeenCalledTimes(1);
+    } finally {
+      alertSpy.mockRestore();
+    }
   });
 
   it("analyzes a complete evidence set before filling trichome percentages", async () => {

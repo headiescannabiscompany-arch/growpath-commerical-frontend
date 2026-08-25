@@ -51,10 +51,12 @@ type Options = {
 };
 
 function isAbort(error: any, signal?: AbortSignal) {
+  const code = String(error?.code || "").toUpperCase();
   return (
     signal?.aborted ||
     error?.name === "AbortError" ||
-    String(error?.code || "").toUpperCase() === "ABORT_ERR"
+    code === "ABORT_ERR" ||
+    code === "ABORTED"
   );
 }
 
@@ -88,6 +90,80 @@ async function recoverPersistedOperation(
   }
 }
 
+function exactOrderedStrings(value: unknown) {
+  return Array.isArray(value) ? value.map(String) : [];
+}
+
+function sameOrderedStrings(left: unknown, right: unknown) {
+  const leftValues = exactOrderedStrings(left);
+  const rightValues = exactOrderedStrings(right);
+  return (
+    leftValues.length === rightValues.length &&
+    leftValues.every((value, index) => value === rightValues[index])
+  );
+}
+
+function savedResultMatchesRecoveredOperation(
+  expected: TrichomeVisionResult,
+  recovered: TrichomeVisionResult
+) {
+  return Boolean(
+    expected.analysisMode === "deep" &&
+    recovered.analysisMode === "deep" &&
+    String(expected.analysisId || "") === String(recovered.analysisId || "") &&
+    String(expected.analysisReceipt?.normalizedHarvestResultDigest || "") ===
+      String(recovered.analysisReceipt?.normalizedHarvestResultDigest || "") &&
+    String(expected.manifestDigest || "") === String(recovered.manifestDigest || "") &&
+    String(expected.selectedEvidenceDigest || "") ===
+      String(recovered.selectedEvidenceDigest || "") &&
+    String(expected.analyzedEvidenceDigest || "") ===
+      String(recovered.analyzedEvidenceDigest || "") &&
+    sameOrderedStrings(
+      expected.selectedEvidenceAssetIds,
+      recovered.selectedEvidenceAssetIds
+    ) &&
+    sameOrderedStrings(expected.evidenceUsed, recovered.evidenceUsed)
+  );
+}
+
+function recoveredResultContext(
+  operation: HarvestDeepReviewOperation,
+  result: TrichomeVisionResult
+): ResultContext | null {
+  const selectedEvidenceCount = exactOrderedStrings(
+    result.selectedEvidenceAssetIds
+  ).length;
+  const analyzedEvidenceCount = exactOrderedStrings(result.evidenceUsed).length;
+  const batchCount = Number(result.batchCount);
+  const creditsQuoted = Number(result.creditsQuoted);
+  if (
+    result.analysisMode !== "deep" ||
+    !/^[a-f0-9]{64}$/.test(String(result.manifestDigest || "")) ||
+    !/^[a-f0-9]{64}$/.test(String(result.selectedEvidenceDigest || "")) ||
+    !/^[a-f0-9]{64}$/.test(String(result.analyzedEvidenceDigest || "")) ||
+    selectedEvidenceCount < 13 ||
+    selectedEvidenceCount > 80 ||
+    analyzedEvidenceCount < 13 ||
+    analyzedEvidenceCount > selectedEvidenceCount ||
+    !Number.isInteger(batchCount) ||
+    batchCount !== operation.batchCount ||
+    !Number.isInteger(creditsQuoted) ||
+    creditsQuoted !== operation.creditsQuoted
+  ) {
+    return null;
+  }
+  return {
+    manifestDigest: String(result.manifestDigest),
+    selectedEvidenceDigest: String(result.selectedEvidenceDigest),
+    analyzedEvidenceDigest: String(result.analyzedEvidenceDigest),
+    selectedEvidenceCount,
+    analyzedEvidenceCount,
+    batchCount,
+    creditsQuoted,
+    operationId: operation.id
+  };
+}
+
 export function useHarvestDeepReview({
   enabled,
   scopeKey,
@@ -112,7 +188,13 @@ export function useHarvestDeepReview({
   const [acceptedQuoteToken, setAcceptedQuoteToken] = useState("");
   const [operation, setOperation] = useState<HarvestDeepReviewOperation | null>(null);
   const [busy, setBusy] = useState<
-    "restoring" | "quoting" | "starting" | "polling" | "discarding" | null
+    | "restoring"
+    | "recovering_saved"
+    | "quoting"
+    | "starting"
+    | "polling"
+    | "discarding"
+    | null
   >(null);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -128,10 +210,14 @@ export function useHarvestDeepReview({
   const persistedRef = useRef<PersistedHarvestDeepReview | null>(null);
   const pollCountRef = useRef(0);
   const refreshRef = useRef<(() => Promise<void>) | null>(null);
+  const busyRef = useRef(busy);
+  const operationRef = useRef(operation);
   scopeKeyRef.current = scopeKey;
   inputRef.current = analysisInput;
   onResultRef.current = onResult;
   onDiscardedRef.current = onDiscarded;
+  busyRef.current = busy;
+  operationRef.current = operation;
 
   const beginRequest = useCallback(() => {
     generationRef.current += 1;
@@ -202,6 +288,11 @@ export function useHarvestDeepReview({
       setBusy(null);
       if (packet.operation.status === "succeeded" && packet.result) {
         setError("");
+        // Keep the completed operation identity in durable storage. The signed
+        // result and its owner-private Feed draft are addressed by this exact
+        // operation after reload; forgetting it here made a successful review
+        // impossible to restore even though the server still retained it.
+        setRecoveryPending(false);
         setNotice(
           `Deep review completed across ${packet.operation.batchCount} batches. GrowPath is validating the one signed aggregate result.`
         );
@@ -215,7 +306,6 @@ export function useHarvestDeepReview({
           creditsQuoted: context.creditsQuoted,
           operationId: packet.operation.id
         });
-        await clearPersisted();
         return;
       }
       if (
@@ -810,8 +900,96 @@ export function useHarvestDeepReview({
         (["not_reserved", "not_charged"].includes(String(operation.creditState || "")) ||
           Number(operation.creditsRefunded || 0) >= operation.creditsQuoted)))
   );
-  const resetTerminal = useCallback(() => {
-    if (operation && !terminalResetAllowed) return;
+
+  const recoverSucceededById = useCallback(
+    async (operationId: string, expectedResult: TrichomeVisionResult) => {
+      const requestedOperationId = String(operationId || "").trim();
+      if (
+        !enabled ||
+        !scopeKey ||
+        !accountId ||
+        !/^[A-Za-z0-9_-]{8,160}$/.test(requestedOperationId) ||
+        (busyRef.current && busyRef.current !== "restoring")
+      ) {
+        return false;
+      }
+      if (
+        operationRef.current?.id === requestedOperationId &&
+        operationRef.current.status === "succeeded"
+      ) {
+        return true;
+      }
+
+      const requestScopeKey = scopeKey;
+      const { generation, controller } = beginRequest();
+      setBusy("recovering_saved");
+      setError("");
+      setNotice(
+        "Recovering the exact completed Deep review recorded by this saved run. No new review is being submitted and no AI credit is used."
+      );
+      try {
+        const packet = await getDeepTrichomeReviewOperation(
+          requestedOperationId,
+          workspace,
+          { signal: controller.signal }
+        );
+        if (!requestIsCurrent(requestScopeKey, generation)) return false;
+        const context = packet.result
+          ? recoveredResultContext(packet.operation, packet.result)
+          : null;
+        if (
+          packet.operation.id !== requestedOperationId ||
+          packet.operation.status !== "succeeded" ||
+          !packet.result ||
+          !context ||
+          !savedResultMatchesRecoveredOperation(expectedResult, packet.result)
+        ) {
+          throw new Error(
+            "The completed Deep review no longer matches the exact signed result recorded by this saved run."
+          );
+        }
+
+        // A saved ToolRun is itself the durable pointer for this exact operation.
+        // Do not erase an unrelated newer local mapping for the same evidence scope.
+        if (
+          persistedRef.current?.operationId &&
+          persistedRef.current.operationId !== requestedOperationId
+        ) {
+          persistedRef.current = null;
+        }
+        setOperation(packet.operation);
+        setAutoPoll(false);
+        setRecoveryPending(false);
+        setError("");
+        setNotice(
+          "Restored the exact completed Deep review and its private Feed-draft address from Saved Runs. No AI credit was used."
+        );
+        onResultRef.current(packet.result, context);
+        return true;
+      } catch (caught: any) {
+        if (
+          isAbort(caught, controller.signal) ||
+          !requestIsCurrent(requestScopeKey, generation)
+        ) {
+          return false;
+        }
+        setError(
+          caught?.message ||
+            "GrowPath could not recover the exact completed Deep review recorded by this saved run."
+        );
+        setNotice(
+          "The saved signed result remains available for review, but its private Feed draft cannot be addressed until the exact operation is restored."
+        );
+        return false;
+      } finally {
+        if (requestIsCurrent(requestScopeKey, generation)) setBusy(null);
+      }
+    },
+    [accountId, beginRequest, enabled, requestIsCurrent, scopeKey, workspace]
+  );
+
+  const resetTerminal = useCallback(async () => {
+    if (operation && !terminalResetAllowed) return false;
     setOperation(null);
     setQuote(null);
     setQuoteScopeKey("");
@@ -819,7 +997,9 @@ export function useHarvestDeepReview({
     setNotice("");
     setError("");
     setRecoveryPending(false);
-  }, [operation, terminalResetAllowed]);
+    await clearPersisted();
+    return true;
+  }, [clearPersisted, operation, terminalResetAllowed]);
 
   const discardSucceeded = useCallback(async () => {
     const completedOperation = operation;
@@ -892,6 +1072,7 @@ export function useHarvestDeepReview({
     acceptQuote,
     start,
     refresh,
+    recoverSucceededById,
     resetTerminal,
     discardSucceeded
   };

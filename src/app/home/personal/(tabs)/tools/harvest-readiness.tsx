@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
 import BackendCalculatorToolScreen, {
@@ -16,10 +24,16 @@ import {
 } from "@/api/harvestBatches";
 import {
   analyzeTrichomePhotos,
+  createHarvestFeedReviewDraft,
+  deleteHarvestFeedReviewDraft,
+  getHarvestFeedReviewDraft,
+  HARVEST_FEED_DRAFT_MAX_VIEWS,
   isSupportedHarvestReviewPolicy,
   submitHarvestTrichomeFeedback,
   type HarvestDeepReviewOperation,
   type HarvestDeepReviewQuote,
+  type HarvestFeedDraftView,
+  type HarvestFeedReviewDraft,
   type TrichomeVisionResult
 } from "@/api/harvestVision";
 import type { VideoWorkspaceType } from "@/api/videos";
@@ -45,11 +59,16 @@ import {
   harvestRetainedFrameExportCandidates,
   isShareableSignedHarvestResult,
   savedHarvestAnalysis,
+  savedHarvestAnalysisOperationId,
   shareSignedHarvestResult
 } from "@/features/personal/tools/harvestPrivateSharing";
 import { radius } from "@/theme/theme";
 import { useAppTheme, type ThemePalette } from "@/theme/appTheme";
-import type { EvidenceAsset } from "@/types/evidence";
+import {
+  aiInspectionViewIdentityKey,
+  type AiInspectionView,
+  type EvidenceAsset
+} from "@/types/evidence";
 import { businessDeskProviderSignatureSha256 } from "@/features/businessDesk/providerOperationPersistence";
 import { restorableHarvestEvidence } from "@/features/personal/evidence/harvestEvidenceRestore";
 
@@ -62,7 +81,8 @@ const HARVEST_CONTEXT_SCOPED_FIELDS = ["harvestBatchId"];
 export {
   harvestAnalyzedGlobalIndexes,
   harvestBatchSummariesCoverEvidence,
-  savedHarvestAnalysis
+  savedHarvestAnalysis,
+  savedHarvestAnalysisOperationId
 };
 
 const HARVEST_CALIBRATION_CHOICES = [
@@ -87,6 +107,21 @@ function readableEvidenceBytes(value: unknown) {
   if (bytes < 1024) return `${Math.round(bytes)} bytes`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function harvestFeedDraftView(view: AiInspectionView): HarvestFeedDraftView {
+  return {
+    sourceEvidenceAssetId: view.sourceEvidenceAssetId,
+    sourceImageIndex: view.sourceImageIndex,
+    kind: view.kind,
+    cropStrategy: view.cropStrategy,
+    ...(view.derivationVersion ? { derivationVersion: view.derivationVersion } : {}),
+    sourceBounds: view.sourceBounds || null,
+    width: view.width,
+    height: view.height,
+    mimeType: view.mimeType,
+    sha256: view.sha256
+  };
 }
 
 export function harvestReviewCreditEstimate(imageCount: number) {
@@ -131,6 +166,7 @@ type HarvestAnalysisDraft = {
   scopeKey: string;
   revisionKey: string;
   growId: string;
+  operationId?: string;
 };
 
 type HarvestReviewResultContext = Pick<
@@ -199,7 +235,11 @@ function harvestAnalysisScopeKey(input: {
   )}`;
 }
 
-function harvestAnalysisRevisionKey(result: TrichomeVisionResult, scopeKey: string) {
+function harvestAnalysisRevisionKey(
+  result: TrichomeVisionResult,
+  scopeKey: string,
+  operationId = ""
+) {
   const receipt = result.analysisReceipt;
   return [
     scopeKey,
@@ -207,7 +247,8 @@ function harvestAnalysisRevisionKey(result: TrichomeVisionResult, scopeKey: stri
     String(receipt?.aiUsageEventId || "no-usage-event"),
     String(receipt?.normalizedHarvestResultDigest || "no-result-digest"),
     String(receipt?.evidenceFingerprint || "no-evidence-fingerprint"),
-    String(receipt?.reviewPolicyVersion || "no-review-policy")
+    String(receipt?.reviewPolicyVersion || "no-review-policy"),
+    String(operationId || "no-operation-id")
   ].join("::");
 }
 
@@ -247,6 +288,16 @@ function harvestPhotoRecoveryMessage(detail?: string) {
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+function harvestRequestWasCancelled(error: any, signal?: AbortSignal) {
+  const code = String(error?.code || "").toUpperCase();
+  return (
+    signal?.aborted ||
+    error?.name === "AbortError" ||
+    code === "ABORT_ERR" ||
+    code === "ABORTED"
+  );
 }
 
 export function UnsavedHarvestDeepResultDiscard({
@@ -351,6 +402,7 @@ function HarvestPhotoAnalyzer({
   evidenceAssets,
   onEvidenceAssetsChange,
   initialAnalysis,
+  initialAnalysisOperationId,
   onAnalysisDraft,
   onScopeKeyChange,
   workspaceType,
@@ -363,6 +415,7 @@ function HarvestPhotoAnalyzer({
   evidenceAssets: EvidenceAsset[];
   onEvidenceAssetsChange: React.Dispatch<React.SetStateAction<EvidenceAsset[]>>;
   initialAnalysis: TrichomeVisionResult | null;
+  initialAnalysisOperationId?: string;
   onAnalysisDraft: React.Dispatch<React.SetStateAction<HarvestAnalysisDraft | null>>;
   onScopeKeyChange: React.Dispatch<React.SetStateAction<string>>;
   workspaceType: VideoWorkspaceType;
@@ -379,6 +432,9 @@ function HarvestPhotoAnalyzer({
   const [restoreFeedback, setRestoreFeedback] = useState("");
   const [restoringEvidence, setRestoringEvidence] = useState(false);
   const [analysis, setAnalysis] = useState<TrichomeVisionResult | null>(initialAnalysis);
+  const [analysisOperationId, setAnalysisOperationId] = useState(
+    String(initialAnalysisOperationId || "")
+  );
   const [calibrationChoice, setCalibrationChoice] = useState("");
   const [observedAmberPercent, setObservedAmberPercent] = useState("");
   const [calibrationNotes, setCalibrationNotes] = useState("");
@@ -394,6 +450,17 @@ function HarvestPhotoAnalyzer({
     useState(false);
   const [resultShareBusy, setResultShareBusy] = useState(false);
   const [resultShareFeedback, setResultShareFeedback] = useState("");
+  const [selectedFeedDraftViewKeys, setSelectedFeedDraftViewKeys] = useState<string[]>(
+    []
+  );
+  const [feedReviewDraft, setFeedReviewDraft] = useState<HarvestFeedReviewDraft | null>(
+    null
+  );
+  const [feedReviewDraftBusy, setFeedReviewDraftBusy] = useState(false);
+  const [feedReviewDraftFeedback, setFeedReviewDraftFeedback] = useState("");
+  const [feedDraftLookupBusy, setFeedDraftLookupBusy] = useState(false);
+  const [feedDraftLookupSettledOperationId, setFeedDraftLookupSettledOperationId] =
+    useState("");
   const inspectedBreakdown = useMemo(
     () => inspectedPhotoEstimates(analysis?.imageFindings),
     [analysis?.imageFindings]
@@ -404,6 +471,11 @@ function HarvestPhotoAnalyzer({
   );
   const previousGrowIdRef = useRef(growId);
   const mountedAnalysisRef = useRef(initialAnalysis);
+  const mountedAnalysisOperationIdRef = useRef(String(initialAnalysisOperationId || ""));
+  const feedReviewDraftRef = useRef(feedReviewDraft);
+  const feedDraftLookupControllerRef = useRef<AbortController | null>(null);
+  const feedDraftCreateControllerRef = useRef<AbortController | null>(null);
+  const feedDraftDeleteControllerRef = useRef<AbortController | null>(null);
   const evidenceWorkspace = useMemo(
     () => ({
       workspaceType,
@@ -549,16 +621,90 @@ function HarvestPhotoAnalyzer({
       ),
     onDiscarded: () => {
       mountedAnalysisRef.current = null;
+      mountedAnalysisOperationIdRef.current = "";
       setAnalysis(null);
+      setAnalysisOperationId("");
       onAnalysisDraft(null);
       setResultShareFeedback("");
+      setSelectedFeedDraftViewKeys([]);
+      setFeedReviewDraft(null);
+      setFeedReviewDraftFeedback("");
       setFeedback(
         "The unsaved signed Deep result was permanently discarded. The private source video and retained frames were kept, and the completed review's charged credits were not refunded."
       );
     }
   });
+  const recoverSavedDeepReview = deepReviewOperation.recoverSucceededById;
   const analysisBusy =
     busy || Boolean(deepReviewOperation.busy) || deepReviewOperation.operationActive;
+  const feedDraftOperationId =
+    deepReviewOperation.operation?.status === "succeeded" &&
+    analysis?.analysisMode === "deep" &&
+    analysisOperationId === deepReviewOperation.operation.id
+      ? deepReviewOperation.operation.id
+      : "";
+  const succeededDeepReviewOperationId =
+    deepReviewOperation.operation?.status === "succeeded"
+      ? deepReviewOperation.operation.id
+      : "";
+  const feedDraftEligibleViews = useMemo(
+    () =>
+      analysis?.analysisMode === "deep" && Array.isArray(analysis.inspectionViews)
+        ? analysis.inspectionViews.filter(
+            (view) =>
+              Boolean(String(view.sourceEvidenceAssetId || "").trim()) &&
+              /^[a-f0-9]{64}$/.test(String(view.sha256 || ""))
+          )
+        : [],
+    [analysis?.analysisMode, analysis?.inspectionViews]
+  );
+  const selectedFeedDraftViews = useMemo(() => {
+    const selected = new Set(selectedFeedDraftViewKeys);
+    return feedDraftEligibleViews
+      .filter((view) => selected.has(aiInspectionViewIdentityKey(view)))
+      .slice(0, HARVEST_FEED_DRAFT_MAX_VIEWS);
+  }, [feedDraftEligibleViews, selectedFeedDraftViewKeys]);
+  const feedDraftRequestIdentity = JSON.stringify([
+    analysisScopeKey,
+    String(analysis?.analysisId || ""),
+    analysisOperationId,
+    feedDraftOperationId,
+    evidenceWorkspace.workspaceType,
+    evidenceWorkspace.workspaceId || "",
+    evidenceWorkspace.facilityId || ""
+  ]);
+  const feedDraftRequestIdentityRef = useRef(feedDraftRequestIdentity);
+  feedDraftRequestIdentityRef.current = feedDraftRequestIdentity;
+  feedReviewDraftRef.current = feedReviewDraft;
+  const privateFeedDraftLifecycleSettled = Boolean(
+    !succeededDeepReviewOperationId ||
+    (feedDraftOperationId === succeededDeepReviewOperationId &&
+      feedDraftLookupSettledOperationId === succeededDeepReviewOperationId)
+  );
+  const prepareNewReviewBlocked = Boolean(
+    deepReviewOperation.busy ||
+    feedDraftLookupBusy ||
+    feedReviewDraftBusy ||
+    feedReviewDraft ||
+    !privateFeedDraftLifecycleSettled
+  );
+
+  useEffect(() => {
+    feedDraftLookupControllerRef.current?.abort();
+    feedDraftLookupControllerRef.current = null;
+    feedDraftCreateControllerRef.current?.abort();
+    feedDraftCreateControllerRef.current = null;
+    feedDraftDeleteControllerRef.current?.abort();
+    feedDraftDeleteControllerRef.current = null;
+    setFeedDraftLookupBusy(false);
+    setFeedDraftLookupSettledOperationId("");
+    setFeedReviewDraftBusy(false);
+    return () => {
+      feedDraftLookupControllerRef.current?.abort();
+      feedDraftCreateControllerRef.current?.abort();
+      feedDraftDeleteControllerRef.current?.abort();
+    };
+  }, [feedDraftRequestIdentity]);
 
   useEffect(() => {
     const eligible = new Set(frameExportCandidateIdsRef.current);
@@ -580,7 +726,10 @@ function HarvestPhotoAnalyzer({
     if (previousAnalysisScopeKeyRef.current === analysisScopeKey) return;
     previousAnalysisScopeKeyRef.current = analysisScopeKey;
     analysisRequestRevisionRef.current += 1;
+    mountedAnalysisRef.current = null;
+    mountedAnalysisOperationIdRef.current = "";
     setAnalysis(null);
+    setAnalysisOperationId("");
     onAnalysisDraft(null);
   }, [analysisScopeKey, onAnalysisDraft]);
 
@@ -592,7 +741,80 @@ function HarvestPhotoAnalyzer({
     setCalibrationRightsConfirmed(false);
     setCalibrationStatus("");
     setResultShareFeedback("");
+    setSelectedFeedDraftViewKeys([]);
+    setFeedReviewDraft(null);
+    setFeedReviewDraftFeedback("");
   }, [analysis?.analysisId]);
+
+  useEffect(() => {
+    if (!feedDraftOperationId || analysis?.analysisMode !== "deep") {
+      setFeedDraftLookupBusy(false);
+      setFeedDraftLookupSettledOperationId("");
+      return;
+    }
+    const requestIdentity = feedDraftRequestIdentity;
+    const operationId = feedDraftOperationId;
+    const controller = new AbortController();
+    feedDraftLookupControllerRef.current?.abort();
+    feedDraftLookupControllerRef.current = controller;
+    setFeedDraftLookupBusy(true);
+    setFeedDraftLookupSettledOperationId("");
+    void getHarvestFeedReviewDraft(operationId, evidenceWorkspace, {
+      signal: controller.signal
+    })
+      .then((packet) => {
+        if (
+          controller.signal.aborted ||
+          feedDraftLookupControllerRef.current !== controller ||
+          feedDraftRequestIdentityRef.current !== requestIdentity
+        ) {
+          return;
+        }
+        setFeedReviewDraft(packet.draft);
+        const restored = new Set(
+          packet.draft.selectedViews.map(aiInspectionViewIdentityKey)
+        );
+        setSelectedFeedDraftViewKeys(
+          feedDraftEligibleViews
+            .map(aiInspectionViewIdentityKey)
+            .filter((key) => restored.has(key))
+        );
+        setFeedReviewDraftFeedback(
+          "Your private GrowPath Feed review draft was restored. It is not public."
+        );
+        setFeedDraftLookupSettledOperationId(operationId);
+      })
+      .catch((error: any) => {
+        if (
+          harvestRequestWasCancelled(error, controller.signal) ||
+          feedDraftLookupControllerRef.current !== controller ||
+          feedDraftRequestIdentityRef.current !== requestIdentity
+        ) {
+          return;
+        }
+        if (Number(error?.status || 0) === 404) {
+          setFeedReviewDraft(null);
+          setFeedDraftLookupSettledOperationId(operationId);
+          return;
+        }
+        setFeedReviewDraftFeedback(
+          error?.message || "GrowPath could not check for an existing Feed review draft."
+        );
+      })
+      .finally(() => {
+        if (feedDraftLookupControllerRef.current === controller) {
+          feedDraftLookupControllerRef.current = null;
+          setFeedDraftLookupBusy(false);
+        }
+      });
+    return () => controller.abort();
+  }, [
+    analysis?.analysisMode,
+    evidenceWorkspace,
+    feedDraftEligibleViews,
+    feedDraftOperationId,
+    feedDraftRequestIdentity
+  ]);
 
   useEffect(() => {
     let active = true;
@@ -600,10 +822,14 @@ function HarvestPhotoAnalyzer({
     previousGrowIdRef.current = growId;
     if (growChanged || !mountedAnalysisRef.current) {
       if (growChanged) analysisRequestRevisionRef.current += 1;
+      mountedAnalysisRef.current = null;
+      mountedAnalysisOperationIdRef.current = "";
       setAnalysis(null);
+      setAnalysisOperationId("");
       onAnalysisDraft(null);
     } else {
       setAnalysis(mountedAnalysisRef.current);
+      setAnalysisOperationId(mountedAnalysisOperationIdRef.current);
     }
     setRestoreFeedback("");
 
@@ -702,7 +928,6 @@ function HarvestPhotoAnalyzer({
     if (
       !retryToolRunId ||
       workspaceType !== "personal" ||
-      !growId ||
       !currentEvidenceAssetIds.length
     ) {
       return () => {
@@ -726,6 +951,7 @@ function HarvestPhotoAnalyzer({
         if (!active) return;
         const restoredAnalysis = savedHarvestAnalysis(retryRun);
         if (!restoredAnalysis) return;
+        const restoredOperationId = savedHarvestAnalysisOperationId(retryRun);
 
         const retainedIds = new Set(savedHarvestEvidenceIds(retryRun));
         const currentIds = new Set(currentEvidenceAssetIds);
@@ -735,7 +961,12 @@ function HarvestPhotoAnalyzer({
         ) {
           return;
         }
-        if (analysis?.analysisId === restoredAnalysis.analysisId) return;
+        if (
+          analysis?.analysisId === restoredAnalysis.analysisId &&
+          (!restoredOperationId || analysisOperationId === restoredOperationId)
+        ) {
+          return;
+        }
 
         const restoredScopeKey = harvestAnalysisScopeKey({
           workspaceType,
@@ -748,17 +979,31 @@ function HarvestPhotoAnalyzer({
           notes
         });
         mountedAnalysisRef.current = restoredAnalysis;
+        mountedAnalysisOperationIdRef.current = restoredOperationId;
         setAnalysis(restoredAnalysis);
+        setAnalysisOperationId(restoredOperationId);
         onAnalysisDraft({
           result: restoredAnalysis,
           scopeKey: restoredScopeKey,
-          revisionKey: harvestAnalysisRevisionKey(restoredAnalysis, restoredScopeKey),
-          growId
+          revisionKey: harvestAnalysisRevisionKey(
+            restoredAnalysis,
+            restoredScopeKey,
+            restoredOperationId
+          ),
+          growId,
+          ...(restoredOperationId ? { operationId: restoredOperationId } : {})
         });
         setRestoreFeedback(
           (current) =>
-            `${current ? `${current} ` : ""}Restored the signed photo analysis for zero-credit review.`
+            `${current ? `${current} ` : ""}Restored the signed photo analysis for zero-credit review.${
+              restoredOperationId
+                ? " Recovering its exact completed operation and private Feed-draft address from Saved Runs."
+                : ""
+            }`
         );
+        if (restoredOperationId) {
+          void recoverSavedDeepReview(restoredOperationId, restoredAnalysis);
+        }
       })
       .catch(() => {
         if (active && signedAnalysisRestoreKeyRef.current === restoreKey) {
@@ -772,9 +1017,11 @@ function HarvestPhotoAnalyzer({
     };
   }, [
     analysis?.analysisId,
+    analysisOperationId,
     evidenceAssetKey,
     facilityId,
     growId,
+    recoverSavedDeepReview,
     onAnalysisDraft,
     notes,
     plantId,
@@ -786,7 +1033,10 @@ function HarvestPhotoAnalyzer({
   function updateEvidence(next: EvidenceAsset[]) {
     analysisRequestRevisionRef.current += 1;
     onEvidenceAssetsChange(next);
+    mountedAnalysisRef.current = null;
+    mountedAnalysisOperationIdRef.current = "";
     setAnalysis(null);
+    setAnalysisOperationId("");
     onAnalysisDraft(null);
     const nextPhotoCount = providerEvidencePayload(next).images.length;
     setFeedback(
@@ -801,7 +1051,10 @@ function HarvestPhotoAnalyzer({
   ) => {
     analysisRequestRevisionRef.current += 1;
     onEvidenceAssetsChange(update);
+    mountedAnalysisRef.current = null;
+    mountedAnalysisOperationIdRef.current = "";
     setAnalysis(null);
+    setAnalysisOperationId("");
     onAnalysisDraft(null);
     setFeedback(
       "Saved grow photo added. Confirm it is a sharp macro or context view before analysis."
@@ -854,11 +1107,13 @@ function HarvestPhotoAnalyzer({
       );
       if (quoteContext.analysisMode === "deep") {
         const aggregateReceipt = result.aggregateReceipt;
+        const operationId = String(quoteContext.operationId || "").trim();
         quoteAndAggregateMatch = Boolean(
           quoteAndAggregateMatch &&
           receipt?.reviewPolicyVersion ===
             "harvest-trichome-server-attestation-v4-batched-evidence" &&
           result.analysisMode === "deep" &&
+          /^[A-Za-z0-9_-]{8,160}$/.test(operationId) &&
           quoteContext.batchCount >= 2 &&
           quoteContext.batchCount <= 7 &&
           result.batchCount === quoteContext.batchCount &&
@@ -918,12 +1173,22 @@ function HarvestPhotoAnalyzer({
     ) {
       return;
     }
+    const acceptedOperationId =
+      result.analysisMode === "deep" ? String(quoteContext?.operationId || "") : "";
+    mountedAnalysisRef.current = result;
+    mountedAnalysisOperationIdRef.current = acceptedOperationId;
     setAnalysis(result);
+    setAnalysisOperationId(acceptedOperationId);
     onAnalysisDraft({
       result,
       scopeKey: requestScopeKey,
-      revisionKey: harvestAnalysisRevisionKey(result, requestScopeKey),
-      growId
+      revisionKey: harvestAnalysisRevisionKey(
+        result,
+        requestScopeKey,
+        acceptedOperationId
+      ),
+      growId,
+      ...(acceptedOperationId ? { operationId: acceptedOperationId } : {})
     });
     const modeLabel = result.analysisMode === "deep" ? "Deep review" : "review";
     setFeedback(
@@ -998,7 +1263,10 @@ function HarvestPhotoAnalyzer({
       ) {
         return;
       }
+      mountedAnalysisRef.current = null;
+      mountedAnalysisOperationIdRef.current = "";
       setAnalysis(null);
+      setAnalysisOperationId("");
       onAnalysisDraft(null);
       setFeedback(
         harvestPhotoRecoveryMessage(
@@ -1072,6 +1340,185 @@ function HarvestPhotoAnalyzer({
     } finally {
       setResultShareBusy(false);
     }
+  }
+
+  function updateFeedDraftViewSelection(nextViewKeys: string[]) {
+    if (feedReviewDraft) return;
+    const requested = new Set(nextViewKeys.map(String).filter(Boolean));
+    const exactSelection = feedDraftEligibleViews
+      .map(aiInspectionViewIdentityKey)
+      .filter((key) => requested.has(key));
+    if (
+      exactSelection.length !== requested.size ||
+      exactSelection.length > HARVEST_FEED_DRAFT_MAX_VIEWS
+    ) {
+      setFeedReviewDraftFeedback(
+        exactSelection.length > HARVEST_FEED_DRAFT_MAX_VIEWS
+          ? `Choose no more than ${HARVEST_FEED_DRAFT_MAX_VIEWS} inspected zoom images for this Feed review draft.`
+          : "The signed inspection-view set changed. Review the zoom images and select them again."
+      );
+      return;
+    }
+    setSelectedFeedDraftViewKeys(exactSelection);
+    setFeedReviewDraftFeedback("");
+  }
+
+  async function createFeedReviewDraft() {
+    if (
+      feedReviewDraftBusy ||
+      feedReviewDraft ||
+      !feedDraftOperationId ||
+      analysis?.analysisMode !== "deep" ||
+      !isShareableSignedHarvestResult(analysis) ||
+      selectedFeedDraftViews.length < 1 ||
+      selectedFeedDraftViews.length > HARVEST_FEED_DRAFT_MAX_VIEWS
+    ) {
+      return;
+    }
+    const requestIdentity = feedDraftRequestIdentity;
+    const operationId = feedDraftOperationId;
+    const controller = new AbortController();
+    feedDraftCreateControllerRef.current?.abort();
+    feedDraftCreateControllerRef.current = controller;
+    setFeedReviewDraftBusy(true);
+    setFeedReviewDraftFeedback(
+      "Revalidating the signed result and selected zoom images before creating the private Feed review draft..."
+    );
+    try {
+      const packet = await createHarvestFeedReviewDraft(
+        operationId,
+        evidenceWorkspace,
+        selectedFeedDraftViews.map(harvestFeedDraftView),
+        { signal: controller.signal }
+      );
+      if (
+        controller.signal.aborted ||
+        feedDraftCreateControllerRef.current !== controller ||
+        feedDraftRequestIdentityRef.current !== requestIdentity
+      ) {
+        return;
+      }
+      setFeedReviewDraft(packet.draft);
+      setFeedReviewDraftFeedback(
+        packet.idempotentReplay
+          ? "The exact private GrowPath Feed review draft already existed and was restored. Nothing was published."
+          : "Private GrowPath Feed review draft created. Review the result and selected zooms below before any publication."
+      );
+    } catch (error: any) {
+      if (
+        harvestRequestWasCancelled(error, controller.signal) ||
+        feedDraftCreateControllerRef.current !== controller ||
+        feedDraftRequestIdentityRef.current !== requestIdentity
+      ) {
+        return;
+      }
+      setFeedReviewDraftFeedback(
+        error?.message || "GrowPath could not create the private Feed review draft."
+      );
+    } finally {
+      if (feedDraftCreateControllerRef.current === controller) {
+        feedDraftCreateControllerRef.current = null;
+        setFeedReviewDraftBusy(false);
+      }
+    }
+  }
+
+  function confirmDeleteFeedReviewDraft() {
+    if (!feedReviewDraft || feedReviewDraftBusy || !feedDraftOperationId) return;
+    Alert.alert(
+      "Delete private Feed draft?",
+      "This removes only the owner-review Feed draft. It does not delete the signed Harvest result, retained source video, or zoom-source photos.",
+      [
+        { text: "Keep Draft", style: "cancel" },
+        {
+          text: "Delete Draft",
+          style: "destructive",
+          onPress: () => void deleteFeedReviewDraft()
+        }
+      ]
+    );
+  }
+
+  async function deleteFeedReviewDraft() {
+    if (!feedReviewDraft || feedReviewDraftBusy || !feedDraftOperationId) return;
+    const requestIdentity = feedDraftRequestIdentity;
+    const displayedDraftId = String(feedReviewDraft.id || "").trim();
+    const controller = new AbortController();
+    feedDraftDeleteControllerRef.current?.abort();
+    feedDraftDeleteControllerRef.current = controller;
+    setFeedReviewDraftBusy(true);
+    setFeedReviewDraftFeedback("Deleting the private Feed review draft...");
+    try {
+      const deletion = await deleteHarvestFeedReviewDraft(
+        feedDraftOperationId,
+        evidenceWorkspace,
+        { signal: controller.signal }
+      );
+      if (
+        controller.signal.aborted ||
+        feedDraftDeleteControllerRef.current !== controller ||
+        feedDraftRequestIdentityRef.current !== requestIdentity
+      ) {
+        return;
+      }
+      if (
+        deletion.draftId !== displayedDraftId ||
+        String(feedReviewDraftRef.current?.id || "").trim() !== displayedDraftId
+      ) {
+        throw new Error(
+          "GrowPath confirmed deletion for a different private Feed draft. The displayed draft remains visible until its exact ID is verified."
+        );
+      }
+      setFeedReviewDraft(null);
+      setFeedReviewDraftFeedback(
+        "The private Feed review draft was deleted. Nothing was published, and the signed Harvest result and source evidence were kept."
+      );
+    } catch (error: any) {
+      if (
+        harvestRequestWasCancelled(error, controller.signal) ||
+        feedDraftDeleteControllerRef.current !== controller ||
+        feedDraftRequestIdentityRef.current !== requestIdentity
+      ) {
+        return;
+      }
+      setFeedReviewDraftFeedback(
+        error?.message || "GrowPath could not delete the private Feed review draft."
+      );
+    } finally {
+      if (feedDraftDeleteControllerRef.current === controller) {
+        feedDraftDeleteControllerRef.current = null;
+        setFeedReviewDraftBusy(false);
+      }
+    }
+  }
+
+  async function prepareNewReviewQuote() {
+    if (feedReviewDraft) {
+      setFeedReviewDraftFeedback(
+        "Delete the private GrowPath Feed review draft before preparing a new review. The completed operation remains saved so this draft cannot be orphaned."
+      );
+      return;
+    }
+    if (feedDraftLookupBusy || feedReviewDraftBusy || !privateFeedDraftLifecycleSettled) {
+      setFeedReviewDraftFeedback(
+        "GrowPath must finish checking the completed operation for a private Feed draft before preparing a new review. Its durable operation address has not been cleared."
+      );
+      return;
+    }
+    const reset = await deepReviewOperation.resetTerminal();
+    if (!reset) return;
+    analysisRequestRevisionRef.current += 1;
+    mountedAnalysisRef.current = null;
+    mountedAnalysisOperationIdRef.current = "";
+    setAnalysis(null);
+    setAnalysisOperationId("");
+    onAnalysisDraft(null);
+    setSelectedFeedDraftViewKeys([]);
+    setFeedReviewDraft(null);
+    setFeedReviewDraftFeedback("");
+    setFeedback(
+      "GrowPath confirmed there is no private Feed draft before clearing this screen's completed-operation mapping. A saved review remains available from Saved Runs. You can now prepare a new exact quote."
+    );
   }
 
   async function submitCalibrationFeedback() {
@@ -1637,11 +2084,11 @@ function HarvestPhotoAnalyzer({
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Prepare a new harvest review quote"
-                  disabled={Boolean(deepReviewOperation.busy)}
-                  onPress={deepReviewOperation.resetTerminal}
+                  disabled={prepareNewReviewBlocked}
+                  onPress={() => void prepareNewReviewQuote()}
                   style={[
                     photoStyles.secondaryButton,
-                    deepReviewOperation.busy && photoStyles.disabled
+                    prepareNewReviewBlocked && photoStyles.disabled
                   ]}
                 >
                   <Text style={photoStyles.secondaryButtonText}>
@@ -1649,6 +2096,13 @@ function HarvestPhotoAnalyzer({
                   </Text>
                 </Pressable>
               )}
+              {deepReviewOperation.terminalResetAllowed && prepareNewReviewBlocked ? (
+                <Text style={photoStyles.help}>
+                  {feedReviewDraft
+                    ? "Delete the existing private Feed review draft first. GrowPath keeps the completed operation address until that exact draft is gone."
+                    : "GrowPath is checking this completed operation for a private Feed review draft. Prepare New Review stays unavailable until that check finishes."}
+                </Text>
+              ) : null}
             </View>
           ) : null}
           {deepReviewOperation.notice ? (
@@ -1806,7 +2260,96 @@ function HarvestPhotoAnalyzer({
                 limitations: analysis.limitations || [],
                 inspectionViews: analysis.inspectionViews
               }}
+              inspectionWorkspace={evidenceWorkspace}
+              feedDraftSelection={
+                analysis.analysisMode === "deep" && feedDraftOperationId
+                  ? {
+                      selectedViewKeys: selectedFeedDraftViewKeys,
+                      maxSelected: HARVEST_FEED_DRAFT_MAX_VIEWS,
+                      disabled: feedReviewDraftBusy || Boolean(feedReviewDraft),
+                      onChange: updateFeedDraftViewSelection
+                    }
+                  : undefined
+              }
             />
+          ) : null}
+          {analysis.analysisMode === "deep" && feedDraftOperationId ? (
+            <View
+              accessibilityLabel="GrowPath Feed Harvest review draft"
+              style={photoStyles.qualityChecks}
+            >
+              <Text style={photoStyles.checklistTitle}>GrowPath Feed review draft</Text>
+              <Text style={photoStyles.help}>
+                Choose 1–{HARVEST_FEED_DRAFT_MAX_VIEWS} useful inspected zoom images
+                above. GrowPath revalidates this signed aggregate and regenerates each
+                selected crop from its protected original. The source video, GPS/EXIF,
+                private notes, storage links, provider IDs, receipt values, and unrelated
+                data are excluded. Creating this draft does not publish it.
+              </Text>
+              <Text style={photoStyles.feedback}>
+                Selected zoom images: {selectedFeedDraftViews.length} of{" "}
+                {HARVEST_FEED_DRAFT_MAX_VIEWS}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Create private GrowPath Feed review draft"
+                accessibilityHint="Creates an owner-only draft for review and does not publish it."
+                disabled={
+                  feedReviewDraftBusy ||
+                  Boolean(feedReviewDraft) ||
+                  selectedFeedDraftViews.length < 1
+                }
+                onPress={() => void createFeedReviewDraft()}
+                style={[
+                  photoStyles.secondaryButton,
+                  (feedReviewDraftBusy ||
+                    Boolean(feedReviewDraft) ||
+                    selectedFeedDraftViews.length < 1) &&
+                    photoStyles.disabled
+                ]}
+              >
+                <Text style={photoStyles.secondaryButtonText}>
+                  {feedReviewDraft
+                    ? "Private Feed Draft Ready"
+                    : feedReviewDraftBusy
+                      ? "Creating Private Feed Draft..."
+                      : "Create Private Feed Review Draft"}
+                </Text>
+              </Pressable>
+              {feedReviewDraft ? (
+                <View accessibilityLabel="Private Harvest Feed draft preview">
+                  <Text style={photoStyles.analysisTitle}>{feedReviewDraft.title}</Text>
+                  <Text style={photoStyles.feedback}>{feedReviewDraft.body}</Text>
+                  <Text style={photoStyles.help}>
+                    Draft · owner review only · {feedReviewDraft.selectedViewCount}{" "}
+                    selected supplemental zoom image
+                    {feedReviewDraft.selectedViewCount === 1 ? "" : "s"}. These images do
+                    not count as independent samples. Nothing has been posted publicly or
+                    sent to Facebook.
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Delete private GrowPath Feed review draft"
+                    accessibilityHint="Asks for confirmation, then deletes only this private owner-review draft."
+                    disabled={feedReviewDraftBusy}
+                    onPress={confirmDeleteFeedReviewDraft}
+                    style={[
+                      photoStyles.secondaryButton,
+                      feedReviewDraftBusy && photoStyles.disabled
+                    ]}
+                  >
+                    <Text style={photoStyles.secondaryButtonText}>
+                      Delete Private Feed Draft
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : null}
+              {feedReviewDraftFeedback ? (
+                <Text accessibilityLiveRegion="polite" style={photoStyles.feedback}>
+                  {feedReviewDraftFeedback}
+                </Text>
+              ) : null}
+            </View>
           ) : null}
           {analysis.photoUsable ? (
             <Text style={photoStyles.feedback}>
@@ -2358,7 +2901,10 @@ export default function HarvestReadinessToolRoute({
             metadata: {
               photoAnalysis: {
                 ...visionDraft.result,
-                performed: true
+                performed: true,
+                ...(visionDraft.operationId
+                  ? { operationId: visionDraft.operationId }
+                  : {})
               }
             }
           }
@@ -2404,6 +2950,7 @@ export default function HarvestReadinessToolRoute({
             evidenceAssets={evidenceAssets}
             onEvidenceAssetsChange={setEvidenceAssets}
             initialAnalysis={vision}
+            initialAnalysisOperationId={visionDraft?.operationId}
             onAnalysisDraft={setVisionDraft}
             onScopeKeyChange={setActiveAnalysisScopeKey}
             workspaceType={activeWorkspaceType}
@@ -2522,7 +3069,10 @@ export default function HarvestReadinessToolRoute({
         photoAnalysis: vision
           ? {
               ...vision,
-              performed: true
+              performed: true,
+              ...(visionDraft?.operationId
+                ? { operationId: visionDraft.operationId }
+                : {})
             }
           : undefined,
         harvestBatchId: String(values.harvestBatchId || "").trim() || undefined,

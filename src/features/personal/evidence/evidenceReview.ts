@@ -1,4 +1,4 @@
-import type { AiInspectionView } from "@/types/evidence";
+import { isAiInspectionDerivationVersion, type AiInspectionView } from "@/types/evidence";
 
 export type EvidenceReviewConfidence = "high" | "medium" | "low" | "unknown";
 
@@ -42,6 +42,9 @@ function inspectionViews(value: unknown): AiInspectionView[] {
       )
         ? item.cropStrategy
         : "focus",
+      ...(isAiInspectionDerivationVersion(item.derivationVersion)
+        ? { derivationVersion: item.derivationVersion }
+        : {}),
       sourceBounds: item.sourceBounds || null,
       width: Math.max(0, Math.trunc(Number(item.width) || 0)),
       height: Math.max(0, Math.trunc(Number(item.height) || 0)),

@@ -152,6 +152,7 @@ describe("evidence review contract", () => {
               sourceImageIndex: 1,
               kind: "macro-r0-c0",
               cropStrategy: "macro_coverage",
+              derivationVersion: "retained-original-macro-jpeg-v1",
               sourceBounds: {
                 left: 0,
                 top: 0,
@@ -180,6 +181,7 @@ describe("evidence review contract", () => {
           sourceEvidenceAssetId: "photo-1",
           kind: "macro-r0-c0",
           cropStrategy: "macro_coverage",
+          derivationVersion: "retained-original-macro-jpeg-v1",
           sha256
         }
       ]

@@ -33,6 +33,11 @@ an individual crop or export the complete viewer-friendly crop set with source-p
 strategy, source rectangle, output dimensions, review provenance, and the inspected-area-only
 limitation. Regenerate a view only from its retained original and serve it only when its digest
 matches; never silently substitute a newly chosen crop or imply that a crop is another sample.
+Every new descriptor must record the exact `retained-original-macro-jpeg-v1` derivation version. A
+versioned descriptor with source bounds is regenerated as one exact bounded crop. A historical
+descriptor without a version may use only a deadline- and budget-bounded compatibility lookup and
+must still match its recorded digest; never insert a default version into a historical signed
+snapshot.
 
 When a large source photo produces more detector tiles than the staging trichome counter can inspect within its bounded request, tile selection must preserve spatial coverage of the photographed area before filling remaining slots by sharpness. Global sharpness ranking alone must not concentrate the sample in one bright or textured area and silently omit the rest of the photographed bud. This improves use of the supplied image; it does not turn tiles into independent sites or make an unrepresentative photo representative of the plant.
 
@@ -48,13 +53,26 @@ A harvest user may attach one private source video shorter than 10 minutes, with
 
 The exact retained frames are private Harvest evidence and must independently satisfy the ordinary macro, site-role, focus, lighting, and glare rules. Preserve selected adjacent pairs when they support comparison of the same gland head or tightly matching region. Mark one frame in each pair as the counting anchor and the other as comparison-only; the comparison frame may inform persistence versus glare but must never add an independent head tally. Diffuse whiteness that persists while focus, camera angle, or the highlight position meaningfully changes may be recorded as lower-confidence `likely_cloudy_persistent`; it is a bounded visual observation, not a chemical measurement, and cannot by itself make a complete distribution usable. Whiteness that blooms, clips, glows, flashes, or moves with the light or viewing angle is `glare_obscured` and must not count as cloudy. Unrelated photos are not a sequence, and sampled frames do not establish continuous motion. A sharp neutral-light still that directly resolves opaque gland-head contents may support `direct_cloudy`. Amber may be easier to distinguish, but it still requires persistent coloration in a sharp visible gland head rather than one warm reflection. If selection fails, preserve the private source-video record, use no incomplete or orphan frame as AI evidence, spend no analysis credit, and let the user retry the durable job or add sharp still photos.
 
-Retained frames remain private and unselected for export by default. After the complete server-attested frame set is restored and verified, let the authenticated workspace owner explicitly select exact retained frames to save or send through protected authenticated downloads and the device share sheet. Export only the chosen normalized still bytes plus non-sensitive frame order, timestamp, and anchor/comparison labels. Bound each repeatable private package to no more than 12 retained frames and 24 MiB of normalized bytes so an 80-frame review cannot create an unsafe in-memory mobile export; the owner may make another explicit selection for a later package. Never include the source video, rejected candidates, unselected frames, GPS/EXIF, private record or upload IDs, storage URLs, provider identifiers, or receipt secrets, and never turn the action into a feed post, public link, or other publication. A completed securely attested Harvest result may likewise be shared only through a separate explicit action that revalidates the receipt and produces a bounded readable summary without media or technical identifiers. Failed, deleted, incomplete, or unattested results are not shareable. Any future public Harvest copy must use the separately reviewed public-copy lifecycle rather than this private export path.
+Retained frames remain private and unselected for export by default. After the complete server-attested frame set is restored and verified, let the authenticated workspace owner explicitly select exact retained frames to save or send through protected authenticated downloads and the device share sheet. Export only the chosen normalized still bytes plus non-sensitive frame order, timestamp, and anchor/comparison labels. Bound each repeatable private package to no more than 12 retained frames and 24 MiB of normalized bytes so an 80-frame review cannot create an unsafe in-memory mobile export; the owner may make another explicit selection for a later package. Never include the source video, rejected candidates, unselected frames, GPS/EXIF, private record or upload IDs, storage URLs, provider identifiers, or receipt secrets, and never turn the action into a feed post, public link, or other publication. A completed securely attested Harvest result may likewise be shared only through a separate explicit action that revalidates the receipt and produces a bounded readable summary without media or technical identifiers. Failed, deleted, incomplete, or unattested results are not shareable.
+
+A GrowPath Feed copy is a third, separately reviewed lifecycle. Only the account owner or a current Facility `OWNER`/`MANAGER` of a succeeded, charged, receipt-valid Deep Review may create it. The client must retain the accepted operation ID beside that exact validated analysis and require equality with the currently restored succeeded operation before offering selection, restore, or creation; an older analysis and newer operation must never be paired. The owner explicitly selects one through eight exact signed inspection views; the server must find each descriptor in the signed result, regenerate the crop from its protected original, verify the crop hash, and build a sanitized educational draft. The draft remains owner-only and is excluded from public Feed reads, discovery, analytics, campaigns, likes, saves, reports, and ordinary moderation snapshots. Existing public Feed records that predate the status field remain public-capable; only an explicit private-draft state is withheld. The draft is idempotently bound to the operation and ordered selection so a changed selection cannot silently replace it. Abort and ignore in-flight zoom or draft requests when the signed review, operation, workspace, or evidence scope changes so a delayed response cannot appear in or export from another review. Its readable copy must retain the inspected-visible-area and non-chemistry boundary, and its media must remain supplemental zooms rather than independent samples. Source video, retained originals, GPS/EXIF, private notes, storage/provider/receipt/internal identifiers and unrelated data never enter the public copy. Publication is a later explicit owner action after preview; external sharing such as Facebook uses only the reviewed public GrowPath URL after publication.
+
+A saved Deep Review must retain its exact operation ID inside the signed `photoAnalysis`
+packet so Saved Runs can recover the succeeded server operation and owner-private Feed draft when
+device-local operation mapping is missing. Preparing a new review may clear that mapping only
+after the exact operation's private-draft lookup has settled, no lookup/create/delete request is
+in flight, and no private draft remains; otherwise the completed operation address stays durable.
+Within one unchanged review, each View action aborts the preceding View request and only the latest
+open nonce may select the full-size image. A private-draft DELETE clears the displayed draft only
+when the server's deleted draft ID exactly equals the draft ID shown to the owner.
 
 Enforce cannabis/hemp eligibility at the API boundary as well as in navigation. Eligible context can come from structured account interests/content visibility, structured grow tags/interests, an untagged legacy grow's strain/cultivar field, an existing cannabis-only workflow record, or an explicit cannabis/hemp confirmation made inside the standalone Harvest workflow. The standalone confirmation is crop context only: it must not create or attach a Grow, change the user's global content-visibility preference, publish evidence, or bypass workspace/role/credit authorization. A crop-neutral account and unrelated horticulture grow without that explicit standalone confirmation must be rejected before evidence bytes are loaded or an AI credit is reserved.
 
 Server results and saved readiness runs must retain the review ID, exact ordered selected and analyzed evidence IDs, number of images inspected, provider label and model, provider image-detail setting, set-level quality checks, per-image findings, visible traits, limitations, recommendation, confidence, credit status, credits used, and remaining balance. A Deep Review divides the exact ordered input into deterministic groups of no more than 12 originals, keeps every selected adjacent pair in one group, maps each provider-local image index back to one global evidence ID, and performs no second AI synthesis call. Persist each group's exact evidence IDs, global indexes, provider response ID, prompt/model/detail, token usage, normalized-result digest, and completion status. The server alone deterministically combines the validated per-image findings; a comparison-only adjacent frame is excluded from every independent tally. Publish one result only after every group succeeds and the aggregate covers each expected image exactly once.
 
-Run Deep Review as a durable asynchronous operation rather than keeping one HTTP request open across as many as seven provider calls. Return an operation ID, let authorized clients poll and restore it after navigation or reload, and serialize groups by default. Durably record the exact dispatch start immediately before each provider request. Never redispatch or recharge a dispatched or unknown group; a claimed group may be refunded only when the durable record proves dispatch never started. Before reserving credits, deterministically pack the exact evidence into the quoted number of groups while enforcing at most 12 originals and 24 MiB of original bytes per group, at most 12 derived views and 12 MiB of derived bytes per group, no more than 80 MiB of selected original bytes overall, and the configured output-token limit. If the fixed quote cannot satisfy those bounds, reject before spending rather than silently creating another group or omitting evidence.
+Run Deep Review as a durable asynchronous operation rather than keeping one HTTP request open across as many as seven provider calls. Return an operation ID, let authorized clients poll and restore it after navigation or reload, and serialize groups by default. Keep the succeeded operation mapping after completion so the signed result and any owner-private Feed draft can be restored after reload; clear it only through an explicit discard, prepare-new-review reset, or replacement lifecycle, never merely because the first success response was rendered. Durably record the exact dispatch start immediately before each provider request. Never redispatch or recharge a dispatched or unknown group; a claimed group may be refunded only when the durable record proves dispatch never started. Before reserving credits, deterministically pack the exact evidence into the quoted number of groups while enforcing at most 12 originals and 24 MiB of original bytes per group, at most 12 derived views and 12 MiB of derived bytes per group, no more than 80 MiB of selected original bytes overall, and the configured output-token limit. If the fixed quote cannot satisfy those bounds, reject before spending rather than silently creating another group or omitting evidence.
+
+Bound the complete mutation-free pre-reservation preparation phase with one server deadline and keep its lease longer than that deadline. Reauthorize the full selected set, validate the complete generated-frame lineage and signed preselection manifest, recompute the selected/analyzed evidence digests and deterministic batch plan, and prove the current operation and batch snapshots still match before any credit is reserved. That full-plan proof may use metadata for all selected images while loading original bytes only for the current at-most-12-image batch; it must never repeatedly load all 80 originals merely to send one batch. Hard-bound the complete provider request and response-body lifecycle as well as the SDK transport. A pre-reservation timeout is a retryable no-charge failure. After the durable provider-dispatch boundary, a timeout, abort, process drain, or unknown response is a reconciliation state and must not cause an automatic resend.
 
 When a server-attested visible-sample estimate is usable, the calculator and saved run must also retain its five maturity buckets, counted-head total, count source, counting confidence, exact region basis, directly confirmed amber floor, possible amber total, cloudy-versus-glare uncertainty, and the inspected-area-only boundary. The directly confirmed amber value is a strict evidence floor, not a most-likely low estimate; the possible total includes resolved colored heads that lighting or adjacent tissue prevents classifying as confirmed amber. Results must present those components separately rather than implying every point in a wide confirmed-to-possible interval is equally plausible. This bounded evidence must remain visible even when representative calculator autofill stays blank. Counting confidence must be capped by both the number of resolved heads and the weighted per-photo counting confidence; a large low-confidence tally must never become high confidence from volume alone, and a finding marked `not_counted` must not contribute heads. Duplicate findings for one original image must not double-count it. A finding also cannot contribute a resolved-head tally when its own quality fields say the image is blurred, glare is blocking, or head detail is unresolved; the bounded low-confidence proportion fallback may remain available when its separate requirements are satisfied. A usable trichome distribution requires the complete acquisition set, usable image quality, neutral lighting, sufficient visible-head detail, non-blocking glare, confirmed top/middle/lower macro roles, a context view, numeric clear/cloudy/amber values totaling about 100%, and server-attested pixel analysis. Otherwise all three percentages remain blank. Manual calculator fields start unknown rather than using example maturity defaults, and missing or invalid trichome values are excluded from readiness scoring instead of silently becoming zero.
 
@@ -80,22 +98,61 @@ retained evidence IDs. Reject a subset, superset, reorder, stale attempt, compar
 as independent, or missing source. Analysis and save must agree on both exact sets and on the
 optional plant scope.
 
-Saving a result does not make its evidence immortal. Provide an explicit permanent-delete action
-for an authorized Harvest result that atomically removes the saved result, its derived inspection
-views, and only the retained frames no longer referenced by another protected record. Let the
-owner separately choose whether the private source video is also deleted. Recheck current
-workspace ownership or Facility role, legal/preservation holds, and every retained reference at
-commit time; fail closed and report retryable cleanup state rather than deleting partially or
-silently retaining an unreferenced frame set.
+Harvest ownership follows the workspace, not a route parameter or an actor retained in an old
+receipt. Personal and Commercial evidence, operations, saved results, and owner-private Feed
+drafts are account-owned. Facility evidence, operations, saved results, and owner-private Feed
+drafts are Facility-owned; the initiating person remains audit provenance only. Current authorized
+Facility members may restore only the records their capability permits, and every mutation must
+reauthorize the current role. Creating or deleting a private Feed draft, permanently deleting a
+saved result, and discarding an unsaved succeeded operation require the account owner or a current
+Facility `OWNER`/`MANAGER`, with Facility and membership authority fenced again inside the commit
+transaction. Removing or deleting the initiating actor must not remove a Facility-owned result or
+make another person's account its owner.
 
-An authenticated owner may also permanently discard a succeeded Deep Review operation only
-while its signed result remains unsaved and unreferenced. Require a separate explicit
-confirmation that the result/provider metadata deletion cannot be undone, the already charged
-AI credits are not refunded, and the private source video and retained frames are kept. Replace
-the operation with a non-retryable `HARVEST_RESULT_DELETED` tombstone and expose no provider
-result. Refuse this result-only path when a ToolRun, calibration record, legal hold, or
-preservation hold references the result; saved results must use the guarded Saved Runs deletion
-lifecycle instead.
+Operation creation also fences an active non-deleting account and the current workspace authority
+in the same transaction that persists the operation. A quote prepared before account deletion or
+Facility-role removal cannot create a late orphan operation after deletion or demotion commits.
+Facility exact replay and cleanup receipts are keyed by Facility workspace plus immutable request,
+result, and source-video-deletion choices rather than the initiating actor; a different current
+owner or manager may resume the same `cleanup_pending` outcome, but cannot change its committed
+source-video choice.
+
+Saving a result does not make its evidence immortal. Provide an explicit permanent-delete action
+for an authorized Harvest result that atomically removes its dependent owner-private Feed draft,
+the saved `ToolRun`, derived inspection views, and only retained frames no longer referenced by
+another protected record; scrub or tombstone the linked operation and provider/private-result
+metadata in the same logical transition. Let the owner separately choose whether the private
+source video is also deleted, and bind that choice to the idempotent deletion receipt. Recheck
+current workspace ownership or Facility role, legal/preservation holds, account-deletion state,
+and every retained reference at commit time. Await the transaction to a known commit or abort
+outcome; a request timeout may signal cancellation but must not race a detached write and report
+failure before that write later commits. Physical object cleanup may resume idempotently after the
+logical commit, but partial logical deletion must fail closed.
+
+An authenticated owner may also permanently discard a succeeded Deep Review operation only while
+its signed result remains unsaved and unreferenced. Require a separate explicit confirmation that
+the result/provider metadata deletion cannot be undone, the already charged AI credits are not
+refunded, and the private source video and retained frames are kept. A dependent private Feed
+draft blocks this path and must be explicitly deleted first. Replace an allowed operation with a
+non-retryable `HARVEST_RESULT_DELETED` tombstone and expose no provider result. Refuse this
+result-only path when a `ToolRun`, calibration record, Feed draft, legal hold, or preservation hold
+references the result; saved results must use the guarded Saved Runs deletion lifecycle instead.
+
+Confirmed Personal or Commercial account deletion atomically removes account-owned Harvest saved
+results, private Feed drafts, operations, and unreferenced evidence under the same deletion/hold
+fence; it must not delete operations and assets while leaving a signed `ToolRun` result packet
+behind. Deleting a Facility actor account preserves Facility-owned Harvest content and deidentifies
+the actor reference where lawful. Account export serializes only user-facing observations,
+limitations, guidance, and safe activity facts: omit provider response IDs, storage paths,
+operation/usage/evidence identifiers, hashes, receipt internals, and immutable security snapshots.
+A former Facility actor receives activity/audit metadata, not Facility-owned Harvest content.
+
+Legal preservation must serialize with every destructive transition. Creating or enabling a hold
+or adding protected Harvest evidence must resolve and fence the related operation and source
+records for supported operation, private-draft, evidence-asset/video, saved-`ToolRun`, usage-event,
+and module-record identifiers before commit; an unresolved Harvest reference cannot be described
+as safely fenced. When account deletion is already pending, allow only a governed release/close-
+only hold update so deletion can be retried; enabling the hold or adding evidence remains blocked.
 
 Harvest Readiness may run without a grow in Personal, Commercial, or Facility when the
 authenticated account or workspace has structured cannabis/hemp visibility, prior eligible
@@ -110,6 +167,13 @@ grow is selected. A route account or grow identifier is never authority by itsel
 supplied identifier against the authenticated workspace before evidence is loaded or a credit is
 reserved, and validate the same canonical workspace and optional grow again when the result is
 saved. Persist a supplied canonical grow ID rather than a route alias.
+
+Withdrawing an evidence asset's permission for future provider AI use prevents a new analysis but
+does not orphan an already signed retained result. While that private result and original remain
+lawfully retained, an authenticated workspace may reconstruct an exact digest-matched local crop
+for review without treating the reconstruction as a new provider-AI use. Bound crop reconstruction
+by pixel, byte and time ceilings, actor/workspace rate limits, bounded concurrency, and identical
+in-flight request coalescing so repeated private reads cannot exhaust the API.
 
 Personal Harvest Readiness may write a saved review back to an existing harvest batch only
 through an owned-batch selector populated for the currently selected grow. Do not ask users to

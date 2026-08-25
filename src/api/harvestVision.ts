@@ -1,6 +1,9 @@
 import { apiRequest } from "./apiRequest";
-import type { EvidenceWorkspaceType } from "@/types/evidence";
-import type { AiInspectionView } from "@/types/evidence";
+import {
+  isAiInspectionDerivationVersion,
+  type AiInspectionView,
+  type EvidenceWorkspaceType
+} from "@/types/evidence";
 
 export const SUPPORTED_HARVEST_REVIEW_POLICIES = [
   "harvest-trichome-server-attestation-v1",
@@ -245,6 +248,96 @@ export type HarvestDeepReviewDiscardReceipt = {
     result: null;
   };
 };
+
+export const HARVEST_FEED_DRAFT_MAX_VIEWS = 8;
+
+export type HarvestFeedDraftView = Pick<
+  AiInspectionView,
+  | "sourceEvidenceAssetId"
+  | "sourceImageIndex"
+  | "kind"
+  | "cropStrategy"
+  | "derivationVersion"
+  | "sourceBounds"
+  | "width"
+  | "height"
+  | "mimeType"
+  | "sha256"
+>;
+
+export type HarvestFeedReviewDraft = {
+  id: string;
+  status: "draft";
+  type: "education";
+  sourceType: "harvest_readiness";
+  title: string;
+  body: string;
+  tags: string[];
+  contentLabels: string[];
+  selectedViewCount: number;
+  selectionDigest: string;
+  selectedViews: HarvestFeedDraftView[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type HarvestFeedReviewDraftPacket = {
+  success: true;
+  idempotentReplay: boolean;
+  draft: HarvestFeedReviewDraft;
+};
+
+type HarvestFeedReviewDraftWorkspace = {
+  workspaceType: EvidenceWorkspaceType;
+  workspaceId?: string;
+  facilityId?: string;
+  commercialAccountId?: string;
+};
+
+function normalizedHarvestFeedReviewDraft(value: any): HarvestFeedReviewDraftPacket {
+  const packet = value?.data ?? value;
+  const draft = packet?.draft;
+  const selectedViews = Array.isArray(draft?.selectedViews) ? draft.selectedViews : [];
+  const selectedViewCount = Number(draft?.selectedViewCount);
+  if (
+    packet?.success !== true ||
+    !String(draft?.id || "").trim() ||
+    draft?.status !== "draft" ||
+    draft?.type !== "education" ||
+    draft?.sourceType !== "harvest_readiness" ||
+    !String(draft?.title || "").trim() ||
+    !String(draft?.body || "").trim() ||
+    !Array.isArray(draft?.tags) ||
+    !Array.isArray(draft?.contentLabels) ||
+    !Number.isInteger(selectedViewCount) ||
+    selectedViewCount < 1 ||
+    selectedViewCount > HARVEST_FEED_DRAFT_MAX_VIEWS ||
+    selectedViews.length !== selectedViewCount ||
+    !/^[a-f0-9]{64}$/.test(String(draft?.selectionDigest || "")) ||
+    selectedViews.some(
+      (view: any) =>
+        !String(view?.sourceEvidenceAssetId || "").trim() ||
+        !Number.isInteger(Number(view?.sourceImageIndex)) ||
+        !String(view?.kind || "").trim() ||
+        !["focus", "coverage", "macro_coverage"].includes(
+          String(view?.cropStrategy || "")
+        ) ||
+        (view?.derivationVersion !== undefined &&
+          !isAiInspectionDerivationVersion(view.derivationVersion)) ||
+        view?.mimeType !== "image/jpeg" ||
+        !/^[a-f0-9]{64}$/.test(String(view?.sha256 || ""))
+    )
+  ) {
+    throw new Error(
+      "GrowPath did not return a complete private Harvest Feed review draft."
+    );
+  }
+  return {
+    success: true,
+    idempotentReplay: packet?.idempotentReplay === true,
+    draft: { ...draft, selectedViewCount, selectedViews }
+  } as HarvestFeedReviewDraftPacket;
+}
 
 function normalizedTrichomeVisionResult(value: any): TrichomeVisionResult {
   const result = value?.result ?? value?.data?.result ?? value?.data ?? value;
@@ -546,7 +639,7 @@ export async function getDeepTrichomeReviewOperation(
     `/api/ai/harvest/trichomes/operations/${encodeURIComponent(operationId)}`,
     {
       signal: options.signal,
-      timeoutMs: 30000,
+      timeoutMs: 60000,
       params: workspace
     }
   );
@@ -601,6 +694,84 @@ export async function discardUnsavedDeepTrichomeReview(
     );
   }
   return receipt as HarvestDeepReviewDiscardReceipt;
+}
+
+export async function createHarvestFeedReviewDraft(
+  operationId: string,
+  workspace: HarvestFeedReviewDraftWorkspace,
+  selectedViews: HarvestFeedDraftView[],
+  options: { signal?: AbortSignal } = {}
+) {
+  const id = String(operationId || "").trim();
+  if (!id) throw new Error("A completed Deep Harvest review is required.");
+  if (
+    !Array.isArray(selectedViews) ||
+    selectedViews.length < 1 ||
+    selectedViews.length > HARVEST_FEED_DRAFT_MAX_VIEWS
+  ) {
+    throw new Error(
+      `Choose 1–${HARVEST_FEED_DRAFT_MAX_VIEWS} inspected zoom images for the Feed review draft.`
+    );
+  }
+  const response = await apiRequest<any>(
+    `/api/ai/harvest/trichomes/operations/${encodeURIComponent(id)}/feed-draft`,
+    {
+      method: "POST",
+      signal: options.signal,
+      timeoutMs: 60000,
+      retries: 0,
+      body: { ...workspace, selectedViews }
+    }
+  );
+  return normalizedHarvestFeedReviewDraft(response);
+}
+
+export async function deleteHarvestFeedReviewDraft(
+  operationId: string,
+  workspace: HarvestFeedReviewDraftWorkspace,
+  options: { signal?: AbortSignal } = {}
+) {
+  const id = String(operationId || "").trim();
+  if (!id) throw new Error("A completed Deep Harvest review is required.");
+  const response = await apiRequest<any>(
+    `/api/ai/harvest/trichomes/operations/${encodeURIComponent(id)}/feed-draft`,
+    {
+      method: "DELETE",
+      signal: options.signal,
+      timeoutMs: 60000,
+      retries: 0,
+      params: workspace
+    }
+  );
+  if (
+    response?.success !== true ||
+    response?.deleted !== true ||
+    typeof response?.draftId !== "string" ||
+    !/^[a-f0-9]{24}$/.test(response.draftId)
+  ) {
+    throw new Error(
+      "GrowPath did not confirm deletion of the private Feed review draft."
+    );
+  }
+  return { deleted: true as const, draftId: response.draftId };
+}
+
+export async function getHarvestFeedReviewDraft(
+  operationId: string,
+  workspace: HarvestFeedReviewDraftWorkspace,
+  options: { signal?: AbortSignal } = {}
+) {
+  const id = String(operationId || "").trim();
+  if (!id) throw new Error("A completed Deep Harvest review is required.");
+  const response = await apiRequest<any>(
+    `/api/ai/harvest/trichomes/operations/${encodeURIComponent(id)}/feed-draft`,
+    {
+      signal: options.signal,
+      timeoutMs: 30000,
+      params: workspace
+    }
+  );
+  return normalizedHarvestFeedReviewDraft(response);
 }
 
 export function submitHarvestTrichomeFeedback(input: HarvestTrichomeFeedbackInput) {

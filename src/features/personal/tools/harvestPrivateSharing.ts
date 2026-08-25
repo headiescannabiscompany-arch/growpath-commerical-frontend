@@ -223,6 +223,17 @@ export function savedHarvestAnalysis(run: ToolRun | null): TrichomeVisionResult 
     : null;
 }
 
+export function savedHarvestAnalysisOperationId(run: ToolRun | null) {
+  const outputs = (run?.outputs || run?.result || {}) as Record<string, any>;
+  const photoAnalysis = outputs.photoAnalysis;
+  const restoredAnalysis = savedHarvestAnalysis(run);
+  const operationId = String(photoAnalysis?.operationId || "").trim();
+  return restoredAnalysis?.analysisMode === "deep" &&
+    /^[A-Za-z0-9_-]{8,160}$/.test(operationId)
+    ? operationId
+    : "";
+}
+
 function percent(value: unknown) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? `${Math.round(numeric * 100)}%` : "unknown";

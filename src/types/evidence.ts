@@ -20,6 +20,21 @@ export type EvidenceSource = "camera" | "library" | "upload" | "generated" | "ex
 
 export type EvidenceWorkspaceType = "personal" | "commercial" | "facility";
 
+export const AI_INSPECTION_DERIVATION_VERSIONS = [
+  "retained-original-macro-jpeg-v1"
+] as const;
+
+export type AiInspectionDerivationVersion =
+  (typeof AI_INSPECTION_DERIVATION_VERSIONS)[number];
+
+export function isAiInspectionDerivationVersion(
+  value: unknown
+): value is AiInspectionDerivationVersion {
+  return AI_INSPECTION_DERIVATION_VERSIONS.includes(
+    String(value || "") as AiInspectionDerivationVersion
+  );
+}
+
 export type EvidenceSourceCaptureMetadata = {
   latitude?: number;
   longitude?: number;
@@ -40,6 +55,8 @@ export type AiInspectionView = {
   sourceImageIndex: number;
   kind: string;
   cropStrategy: "focus" | "coverage" | "macro_coverage";
+  /** Exact server derivation recipe. Historical manifests intentionally omit it. */
+  derivationVersion?: AiInspectionDerivationVersion;
   sourceBounds?: {
     left: number;
     top: number;
@@ -55,6 +72,35 @@ export type AiInspectionView = {
   dataUrl?: string;
   limitation?: string;
 };
+
+export function aiInspectionViewIdentityKey(view: AiInspectionView) {
+  const bounds = view.sourceBounds
+    ? [
+        view.sourceBounds.left,
+        view.sourceBounds.top,
+        view.sourceBounds.width,
+        view.sourceBounds.height,
+        view.sourceBounds.sourceWidth,
+        view.sourceBounds.sourceHeight
+      ].map(Number)
+    : null;
+  return JSON.stringify([
+    String(view.sourceEvidenceAssetId || "").trim(),
+    Number(view.sourceImageIndex),
+    view.derivationVersion || "legacy-unversioned",
+    String(view.kind || "").trim(),
+    view.cropStrategy,
+    bounds,
+    Number(view.width),
+    Number(view.height),
+    String(view.mimeType || "")
+      .trim()
+      .toLowerCase(),
+    String(view.sha256 || "")
+      .trim()
+      .toLowerCase()
+  ]);
+}
 
 export type EvidenceFrameExtractionStatus =
   | "idle"
