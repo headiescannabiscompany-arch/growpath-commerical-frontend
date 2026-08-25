@@ -695,17 +695,23 @@ grow`, private current location without a Field Study, and an optional approxima
     manual setup, navigation, lifecycle model, or accepted cancel/return/save/reload behavior.
   - **P-05 (`implemented`):** retain the separate explicit Nature draft, required inputs,
     approximate projection, consent, sensitive/cannabis gates, and withdrawal path. The exact
-    remaining action is one non-sensitive publication, Saved Run/public card-photo-pin reload,
-    withdrawal, absence-after-reload, and cleanup. Do not make Field Study or Grow mandatory
-    and do not replace the publication/projection/withdrawal path.
+    candidate now also includes a named park/trip-pin mode that keeps one reviewed public
+    point active across separate Plant ID evidence sets without merging their identities,
+    photos, descriptions, ToolRuns, or final publish actions. The remaining action is focused
+    local verification, deployment, then legitimate same-point Maydale publications and a
+    separate Cary point with Saved Run/public card-photo-group reload and privacy checks.
+    Do not make Field Study or Grow mandatory and do not replace the existing
+    publication/projection/withdrawal path.
   - **P-06 (`implemented`):** retain private-by-default storage, Grow/Nature separation,
     no-proximity inference, and the house/potted exclusions. During P-05, compare before/after
     and prove only the selected record is public and Grow save publishes nothing. This is a
     production privacy assertion, not a privacy-model rebuild.
   - **N-01 (`partial`):** retain the live globe/map-list runtime, search/review filters,
-    location fallback, and honest zero-pin state. Reuse P-05 to verify the populated card,
-    photo/date/description/identity, search/filter, viewport, and responsive/accessibility
-    states; clustering waits for legitimate density. Do not fabricate pins or rebuild the map.
+    location fallback, and honest zero-pin state. Reuse the legitimate same-point Maydale
+    P-05 records to verify the selected pin group enumerates all distinct findings with the
+    correct photo/date/description/identity, then verify the separate Cary group,
+    search/filter, viewport, and responsive/accessibility states. Do not fabricate pins or
+    rebuild the map.
   - **N-02 (`live accepted`):** retain the current-candidate compact zero-pin Discover globe
     and canonical link. No action remains beyond final-candidate regression checking. The
     older duplicate-preview removal is superseded history, not a request to remove this
@@ -723,7 +729,13 @@ grow`, private current location without a Field Study, and an optional approxima
     nonduplicate identity and a known place. Do not rebuild deduplication, uncertainty, or
     no-location-inference rules, and do not block future pins on old media. Complete every
     retained Cary set and each distinct Maryland visit, including the separate Maryland
-    water-lily observations; do not accept a representative subset.
+    water-lily observations; do not accept a representative subset. The owner-highlighted
+    August 21 originals have been visually partitioned into four exact evidence sets covering
+    all 18 files (`IMG_2880.HEIC` through `IMG_2897.HEIC`) in the canonical recovery record.
+    Reuse those boundaries; the still-open work is Tool Run linkage, exact-place review,
+    identity/reference review and explicit per-set publication disposition. The owner
+    confirmed the private house crape myrtle is not part of the August 21 set, so it is not a
+    publication blocker for those four observations.
 
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
@@ -1120,30 +1132,30 @@ grow`, private current location without a Field Study, and an optional approxima
   Delivered Admin-email clicks plus retained Feed, product, video, and live-session
   report cases therefore remain.
 - [~] Complete the final Admin workspace and moderation acceptance as a distinct
-      final-crawl role. The role-gated Admin Tools entry and consolidated hub are live
-      accepted from Personal and the Admin-owned Commercial workspace on frontend
-      `8b84ef32`; the Facility entry passes local role-gate acceptance and its positive-role
-      production check remains in the A-05 multi-account crawl. Continue by verifying
-      contextual moderation
-      actions on the content/account surfaces they govern. The hub must combine
-      moderation cases, security and safety reports, delivery/integration failures,
-      actionable notifications, open/resolved tallies, retained resolution history,
-      exact source links, account context, assignment/status/notes, and audited
-      resolve/reopen/escalate/account-enforcement actions. Reported items must be
-      removable from the active queue only through an explicit disposition, not by
-      hiding or deleting the audit history. Define a high-severity human-safety path
-      for credible imminent-danger, exploitation, trafficking, or child-safety reports
-      with restricted access, evidence preservation, emergency/contact guidance, and
-      documented escalation; do not automatically contact authorities or expose private
-      account data from an unverified user report. Add a controlled legal-request flow
-      for subpoenas, warrants, emergency disclosure requests, preservation requests,
-      and account-holder data production that requires request authentication, legal/
-      owner authorization, minimum-necessary scope, export manifest, chain-of-custody,
-      immutable audit events, and disclosure/denial status. Final acceptance must crawl
-      every Admin page and contextual action in Day/Night/Auto, desktop/mobile, empty and
-      populated states, verify non-admin denial, and exercise safe temporary report and
-      resolution records through reload and cleanup without fabricating a real emergency
-      or disclosing unrelated private user data.
+  final-crawl role. The role-gated Admin Tools entry and consolidated hub are live
+  accepted from Personal and the Admin-owned Commercial workspace on frontend
+  `8b84ef32`; the Facility entry passes local role-gate acceptance and its positive-role
+  production check remains in the A-05 multi-account crawl. Continue by verifying
+  contextual moderation
+  actions on the content/account surfaces they govern. The hub must combine
+  moderation cases, security and safety reports, delivery/integration failures,
+  actionable notifications, open/resolved tallies, retained resolution history,
+  exact source links, account context, assignment/status/notes, and audited
+  resolve/reopen/escalate/account-enforcement actions. Reported items must be
+  removable from the active queue only through an explicit disposition, not by
+  hiding or deleting the audit history. Define a high-severity human-safety path
+  for credible imminent-danger, exploitation, trafficking, or child-safety reports
+  with restricted access, evidence preservation, emergency/contact guidance, and
+  documented escalation; do not automatically contact authorities or expose private
+  account data from an unverified user report. Add a controlled legal-request flow
+  for subpoenas, warrants, emergency disclosure requests, preservation requests,
+  and account-holder data production that requires request authentication, legal/
+  owner authorization, minimum-necessary scope, export manifest, chain-of-custody,
+  immutable audit events, and disclosure/denial status. Final acceptance must crawl
+  every Admin page and contextual action in Day/Night/Auto, desktop/mobile, empty and
+  populated states, verify non-admin denial, and exercise safe temporary report and
+  resolution records through reload and cleanup without fabricating a real emergency
+  or disclosing unrelated private user data.
 - [~] Approved temporary production records verified populated Facility Grow, Plant,
   Journal, Inventory, Compliance, SOP comparison, and Owner-only AI Validation Lab
   states. Live reload/navigation and immutable create/update/delete/resolve/SOP

@@ -21,6 +21,12 @@ the Plant ID, Field Study, Nature publication, privacy, or deduplication contrac
   Dipladenia/Mandevilla, remain private. Trip membership never overrides that exclusion.
 - Exact source coordinates remain private. Public records use a reviewed approximate park
   point and the existing explicit Nature consent/publish flow.
+- Exact photo GPS is not required for this bounded recovery. The owner may deliberately name
+  and place one reviewed public Maydale park point and reuse it across the trip's separate
+  plant observations; use a separate reviewed Cary park point for the Cary observations.
+  Reuse must never be inferred. Each plant remains a separate photo-backed observation with
+  its own identity, date, contributor-authored description and final publish action, while
+  the globe groups same-point observations into a selectable pin group.
 - Pins remain published after acceptance unless the owner later requests withdrawal.
 - Completion requires an explicit disposition for every retained Plant ID evidence set in a
   confirmed trip: public, private, older duplicate, failed/unrecoverable upload, or unresolved
@@ -34,14 +40,14 @@ duplicate each. No additional 2026-08-02 Plant ID Tool Run appears in the owner'
 Saved Runs history. Media that was never successfully submitted is outside this nine-run
 ledger and must not be represented as retained evidence.
 
-| Evidence group | Newest retained Tool Run | Older duplicate | Evidence | Publication rule |
-| --- | --- | --- | ---: | --- |
-| Crape myrtle candidate A | `6a6fa0f5510a22fe5a5e31c1` | `6a6fa0a2510a22fe5a5e31a8` | 3 photos | Review restored photos and retain only if this is the Cary set. |
-| Crape myrtle candidate B | `6a6fa267510a22fe5a5e32cd` | `6a6fa24c510a22fe5a5e32b5` | 5 photos | One crape group is the explicit house exclusion; restored-photo review must determine which group before either is published. |
-| Water-lily candidate | `6a6faab1510a22fe5a5e343b` | `6a6faa9d510a22fe5a5e3424` | 4 photos | Public copy must say `Unverified water-lily candidate (Nymphaea spp.)`; never relabel it as lotus. |
-| Brazilian-verbena candidate | `6a6fab3a510a22fe5a5e346d` | none known | 1 photo | Preserve candidate uncertainty; do not imply external verification. |
-| Magnolia candidate | `6a6fad99510a22fe5a5e352d` | none known | 1 photo | Preserve candidate uncertainty; do not imply external verification. |
-| Potted Dipladenia/Mandevilla | `6a6facd0510a22fe5a5e34d4` | none known | 3 photos | Explicitly private; never include in Cary or Nature. |
+| Evidence group               | Newest retained Tool Run   | Older duplicate            | Evidence | Publication rule                                                                                                              |
+| ---------------------------- | -------------------------- | -------------------------- | -------: | ----------------------------------------------------------------------------------------------------------------------------- |
+| Crape myrtle candidate A     | `6a6fa0f5510a22fe5a5e31c1` | `6a6fa0a2510a22fe5a5e31a8` | 3 photos | Review restored photos and retain only if this is the Cary set.                                                               |
+| Crape myrtle candidate B     | `6a6fa267510a22fe5a5e32cd` | `6a6fa24c510a22fe5a5e32b5` | 5 photos | One crape group is the explicit house exclusion; restored-photo review must determine which group before either is published. |
+| Water-lily candidate         | `6a6faab1510a22fe5a5e343b` | `6a6faa9d510a22fe5a5e3424` | 4 photos | Public copy must say `Unverified water-lily candidate (Nymphaea spp.)`; never relabel it as lotus.                            |
+| Brazilian-verbena candidate  | `6a6fab3a510a22fe5a5e346d` | none known                 |  1 photo | Preserve candidate uncertainty; do not imply external verification.                                                           |
+| Magnolia candidate           | `6a6fad99510a22fe5a5e352d` | none known                 |  1 photo | Preserve candidate uncertainty; do not imply external verification.                                                           |
+| Potted Dipladenia/Mandevilla | `6a6facd0510a22fe5a5e34d4` | none known                 | 3 photos | Explicitly private; never include in Cary or Nature.                                                                          |
 
 The owner statement is positive trip-association evidence for the in-person Cary session. It
 does not decide which of the two crape evidence groups is the separate house record; that
@@ -90,6 +96,49 @@ August 5 evidence without requiring a new trip to the park:
 - Use the reviewed public location for Maydale Conservation Park / Nature Classroom, not a
   saved device point or nearby private address.
 
+### Owner-highlighted August 21 trip evidence
+
+On 2026-08-25 the owner highlighted one contiguous 18-photo trip set in the imported iPhone
+folder. Read-only review confirmed that the retained originals are `IMG_2880.HEIC` through
+`IMG_2897.HEIC`, captured on the camera-local date 2026-08-21 between 4:01 PM and 4:06 PM.
+The owner separately confirmed that the private house crape myrtle was not photographed on
+this trip/date and is not a member of this 18-photo set. It must not block or be considered a
+candidate for this trip's publication batch.
+The Photos metadata surface did not expose a GPS value for the inspected original. The date,
+file order and visible scene are grouping evidence only; they do not establish a public point
+or externally verify an identity.
+
+The 18 photos resolve into four distinct evidence sets. Preserve these exact boundaries so a
+later AI review, Saved Run match or Nature draft cannot silently mix plants or count multiple
+views as independent observations:
+
+| Evidence set                     | Original files                  | Photo count | Read-only visual disposition                                                                                                                                                                                                                                           |
+| -------------------------------- | ------------------------------- | ----------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Milkweed with mature pods        | `IMG_2880.HEIC`-`IMG_2883.HEIC` |           4 | Strong working candidate for common milkweed (`Asclepias syriaca`) from the opposite broad leaves and mature warty follicles; still a provisional identity pending the normal app/reference review.                                                                    |
+| Pale-purple composite            | `IMG_2884.HEIC`-`IMG_2889.HEIC` |           6 | Strong working candidate for Carolina elephant's-foot (`Elephantopus carolinianus`) from the small pale-lavender disk-flower clusters, leafy bracts and alternate rough lanceolate leaves. Keep it provisional pending the normal app review and lookalike separation. |
+| White umbel and curled seed head | `IMG_2890.HEIC`-`IMG_2894.HEIC` |           5 | Working wild-carrot/Queen Anne's lace candidate (`Daucus carota`) from the white umbel and curled mature head; preserve uncertainty and require ordinary lookalike/source review.                                                                                      |
+| Pink water lily                  | `IMG_2895.HEIC`-`IMG_2897.HEIC` |           3 | Working water-lily candidate (`Nymphaea spp.`); do not call it lotus or assign an exact species from this review.                                                                                                                                                      |
+
+Read-only source review on 2026-08-25 supports, but does not confirm, the three narrower
+working candidates. USDA NRCS describes common milkweed with opposite broad ovate-to-elliptic
+leaves and hairy spindle-shaped follicles. Kew records `Elephantopus carolinianus` as an
+accepted Asteraceae species native in Maryland, and Missouri State describes its alternate
+lanceolate leaves plus small pale-blue disk-flower heads. Kew describes `Daucus carota` white
+umbels that contract into bird's-nest-like seed heads. These are morphology/name/range checks,
+not specimen determinations:
+
+- USDA NRCS common milkweed guide: https://plants.usda.gov/DocumentLibrary/plantguide/pdf/cs_assy.pdf
+- Kew Carolina elephant's-foot record: https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:202920-1
+- Missouri State Carolina elephant's-foot morphology: https://ag.missouristate.edu/PBTrewatha/Carolina-Elephantsfoot.htm
+- Kew wild-carrot description: https://powo.science.kew.org/taxon/841063-1/general-information
+
+This set is not yet published and has not been matched to a Tool Run. The four-photo count of
+`6a88b3a43d7226fb7aaa06c3` is not enough to prove that it is the milkweed set; match it only
+after its restored evidence is visibly compared. Before any Nature write, confirm the trip's
+place, review the four candidate identities, retain a contributor-authored public description
+for each selected observation, and show the owner the exact proposed records for action-time
+approval. House and potted-plant exclusions remain unchanged.
+
 ## Retained implementation and exact remaining gates
 
 - Retained Saved Runs could recover durable evidence IDs but the browser preview preferred a
@@ -100,6 +149,11 @@ August 5 evidence without requiring a new trip to the park:
   evidence set, including every later Maryland candidate run. Record the exact trip,
   public/private/duplicate/unrecoverable/unresolved decision for each set; do not infer it
   from date, proximity or a duplicate title.
+- The highlighted August 21 originals are now visually partitioned into four complete evidence
+  sets (4 + 6 + 5 + 3 = 18). Their Tool Run linkage, AI/reference review and publication
+  decisions remain open; exact photo GPS is not a gate because the owner approved a reviewed
+  shared Maydale park point. Do not re-sort or re-inspect the local files merely to rediscover
+  these boundaries.
 - Publish only the positively matched non-sensitive park observations with their complete
   retained photo sets, observation date, uncertainty-safe description and approximate public
   point. The final publish action requires the owner's action-time confirmation.
@@ -112,5 +166,7 @@ August 5 evidence without requiring a new trip to the park:
 ## No-rebuild boundary
 
 Do not rebuild Plant ID, Saved Runs, Field Studies, the globe, projection, publication,
-withdrawal, deduplication or privacy policy to complete this recovery. Fix and accept only the
-retained-photo preview defect, then execute the bounded review/publication workflow above.
+withdrawal, deduplication or privacy policy to complete this recovery. The only approved
+workflow addition is the generic named park/trip-pin control that reuses one deliberately
+reviewed point across separate observations and relies on the retained globe clustering.
+After focused verification, execute the bounded review/publication workflow above.

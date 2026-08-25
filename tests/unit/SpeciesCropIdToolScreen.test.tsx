@@ -4241,6 +4241,76 @@ describe("SpeciesCropIdToolRoute", () => {
     expect(screen.getByText(/No Field Study setup is required/)).toBeTruthy();
   });
 
+  it("reuses one named park pin across separate Plant ID evidence sets", async () => {
+    mockSearchParams = {};
+    mockCreateFieldStudy.mockResolvedValueOnce({
+      id: "nature-collection-1",
+      _id: "nature-collection-1",
+      title: "My Nature Finds",
+      description:
+        "Plant IDs deliberately shared from the direct Discovery Nature workflow.",
+      purpose: "biodiversity_survey",
+      slug: "my-nature-finds",
+      visibility: "public",
+      defaultLocationPrivacy: "public_approximate",
+      obscureSensitiveSpecies: true,
+      accessRole: "owner"
+    });
+    const screen = render(<SpeciesCropIdToolRoute />);
+
+    fireEvent.press(screen.getByText("Reuse this point for this park / trip"));
+    fireEvent.changeText(
+      screen.getByLabelText("Shared park or trip pin name"),
+      "Maydale Conservation Park"
+    );
+    fireEvent.press(screen.getByText("Place Pin on Map"));
+    fireEvent.changeText(screen.getByLabelText("Plant latitude"), "39.10407");
+    fireEvent.changeText(screen.getByLabelText("Plant longitude"), "-76.973493");
+    fireEvent.press(screen.getByText("Use These Coordinates Privately"));
+
+    expect(await screen.findByText(/Maydale Conservation Park is active/)).toBeTruthy();
+
+    openLocationAndSharing(screen);
+    fireEvent.press(screen.getByText("Nature map — approximate pin"));
+    enterNatureDescription(
+      screen,
+      "Milkweed beside the public meadow path at Maydale Conservation Park."
+    );
+    fireEvent.press(
+      screen.getByText(/This is Cannabis\/hemp.*review public-context sharing/)
+    );
+    chooseObservationDate(screen, "2026-08-21");
+    fireEvent.press(screen.getByText("Identify Plant from Photos"));
+    fireEvent.press(await screen.findByText("Publish Approximate Pin to Nature"));
+
+    await waitFor(() =>
+      expect(mockCreateFieldObservation).toHaveBeenCalledWith(
+        "nature-collection-1",
+        expect.objectContaining({
+          location: expect.objectContaining({
+            latitude: 39.10407,
+            longitude: -76.973493,
+            label: "Maydale Conservation Park",
+            precision: "approximate",
+            privacy: "public_approximate",
+            exactLocationPublicConfirmed: false
+          }),
+          publication: expect.objectContaining({
+            status: "published",
+            publicNotes:
+              "Milkweed beside the public meadow path at Maydale Conservation Park."
+          })
+        })
+      )
+    );
+
+    fireEvent.press(screen.getByLabelText("Replace test evidence"));
+    expect(screen.getByText(/Maydale Conservation Park is active/)).toBeTruthy();
+    expect(screen.getByLabelText("Shared park or trip pin name").props.value).toBe(
+      "Maydale Conservation Park"
+    );
+  });
+
   it("does not publish a Nature pin until the contributor reviews a public description", async () => {
     mockSearchParams = { fieldStudyId: "study-1" };
     mockListFieldStudies.mockResolvedValueOnce([

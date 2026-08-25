@@ -1222,6 +1222,8 @@ export default function SpeciesCropIdToolRoute({
   const [sensitiveSpecies, setSensitiveSpecies] = useState(false);
   const [locationBusy, setLocationBusy] = useState(false);
   const [showManualLocation, setShowManualLocation] = useState(false);
+  const [reuseParkTripPin, setReuseParkTripPin] = useState(false);
+  const [parkTripLabel, setParkTripLabel] = useState("");
   const [identificationBusy, setIdentificationBusy] = useState(false);
   const [evidenceBusy, setEvidenceBusy] = useState(false);
   const [newStudyTitle, setNewStudyTitle] = useState("");
@@ -1429,6 +1431,8 @@ export default function SpeciesCropIdToolRoute({
     setSensitiveSpecies(false);
     setLocationBusy(false);
     setShowManualLocation(false);
+    setReuseParkTripPin(false);
+    setParkTripLabel("");
     setIdentificationBusy(false);
     setEvidenceBusy(false);
     setFieldStudies([]);
@@ -2250,6 +2254,14 @@ export default function SpeciesCropIdToolRoute({
         : "Deliberate approximate-pin sharing selected"
     },
     { ready: Boolean(observationLocation), label: "Plant location added" },
+    ...(reuseParkTripPin
+      ? [
+          {
+            ready: Boolean(parkTripLabel.trim()),
+            label: "Shared park / trip pin named"
+          }
+        ]
+      : []),
     {
       ready: Boolean(observationDate),
       label: "Observation date added"
@@ -2773,6 +2785,61 @@ export default function SpeciesCropIdToolRoute({
                     }. Not shared.`
                 : "Optional. Plant ID works without a device location."}
             </Text>
+            {workspaceType === "personal" ? (
+              <View style={styles.tripPinPanel}>
+                <Text style={styles.evidenceTitle}>Shared park / trip pin</Text>
+                <Text style={styles.evidenceGuidance}>
+                  For several plants observed at one public park, place the park point
+                  once and keep it active while you identify each plant separately. Each
+                  result keeps its own photos and identity; Nature groups the published
+                  observations at this pin so viewers can open every finding.
+                </Text>
+                <Pressable
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: reuseParkTripPin }}
+                  onPress={() => setReuseParkTripPin((value) => !value)}
+                  style={[
+                    styles.choiceButton,
+                    reuseParkTripPin && styles.choiceButtonSelected
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.choiceText,
+                      reuseParkTripPin && styles.choiceTextSelected
+                    ]}
+                  >
+                    Reuse this point for this park / trip
+                  </Text>
+                </Pressable>
+                {reuseParkTripPin ? (
+                  <>
+                    <Text style={styles.fieldLabel}>Public park or trip name</Text>
+                    <TextInput
+                      accessibilityLabel="Shared park or trip pin name"
+                      maxLength={120}
+                      onChangeText={setParkTripLabel}
+                      placeholder="Maydale Conservation Park"
+                      placeholderTextColor={palette.textMuted}
+                      style={styles.studyInput}
+                      value={parkTripLabel}
+                    />
+                    <Text
+                      accessibilityLiveRegion="polite"
+                      style={
+                        observationLocation && parkTripLabel.trim()
+                          ? styles.statusGood
+                          : styles.statusWarning
+                      }
+                    >
+                      {observationLocation && parkTripLabel.trim()
+                        ? `${parkTripLabel.trim()} is active. Replace the photos for each new Plant ID; this park point stays selected until you end the trip or leave the page.`
+                        : "Name the public park or trip and place its point before publishing. Do not use a home address."}
+                    </Text>
+                  </>
+                ) : null}
+              </View>
+            ) : null}
           </View>
           {fieldStudyError ? (
             <Text accessibilityRole="alert" style={styles.fieldStudyError}>
@@ -3934,7 +4001,12 @@ export default function SpeciesCropIdToolRoute({
               }
               if (wantsNatureMap && !observationLocation) {
                 throw new Error(
-                  "Use Current Location before publishing an approximate Nature map pin."
+                  "Add a device location or place the park pin before publishing an approximate Nature map pin."
+                );
+              }
+              if (wantsNatureMap && reuseParkTripPin && !parkTripLabel.trim()) {
+                throw new Error(
+                  "Name the shared public park or trip before publishing this Nature pin."
                 );
               }
               if (wantsNatureMap && !naturePublicNotes.trim()) {
@@ -4098,9 +4170,15 @@ export default function SpeciesCropIdToolRoute({
                   .map((item) => item.url),
                 location: {
                   ...(observationLocation || {}),
-                  label: wantsNatureMap
-                    ? ""
-                    : String(payload.observationContext?.region || ""),
+                  label:
+                    wantsNatureMap && reuseParkTripPin
+                      ? parkTripLabel.trim()
+                      : wantsNatureMap
+                        ? ""
+                        : String(payload.observationContext?.region || ""),
+                  precision: wantsNatureMap
+                    ? ("approximate" as const)
+                    : ("exact" as const),
                   privacy: locationPrivacy,
                   exactLocationPublicConfirmed: false
                 },
@@ -4175,6 +4253,14 @@ export function createSpeciesCropIdStyles(palette: ThemePalette) {
       borderWidth: 1,
       gap: 8,
       padding: 12
+    },
+    tripPinPanel: {
+      borderColor: palette.borderSoft,
+      borderRadius: 10,
+      borderTopWidth: 1,
+      gap: 8,
+      marginTop: 4,
+      paddingTop: 12
     },
     frameExtractionPanel: {
       backgroundColor: palette.surfaceMuted,

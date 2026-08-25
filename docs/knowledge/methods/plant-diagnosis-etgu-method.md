@@ -607,6 +607,17 @@ public only as part of the same explicit direct-publish intent, contains no publ
 observation until the final publish action succeeds, and does not change the protected
 exact ToolRun location.
 
+For a contributor-confirmed public outing, the contributor may name and deliberately keep
+one reviewed park or trip point active while identifying several separate plants. Reuse is
+an explicit current-workflow choice, never an inference from capture date, file order,
+proximity, or another observation. Every photo set still creates or updates its own
+ToolRun-backed observation with its own identity, evidence, date, contributor-authored
+description, and final publication action. Observations that share the approved point remain
+separate records; the public Nature globe clusters them into one selectable pin group whose
+viewer can open every finding. Ending the trip or leaving the workflow ends the reuse state.
+Never use this path for a home address, a private-property point, or a sensitive-species
+location.
+
 Direct Nature publishing must require a nonblank, contributor-authored public description
 that the contributor reviews before the final publish action. Preserve that text as
 `publicNotes` and show it with the public pin and photo card. It is user context, not AI evidence and not an identity or
@@ -688,6 +699,9 @@ is allowed to see; it must never use the protected exact point for viewport filt
 that could reveal hidden precision through repeated map requests. The accessible
 observation list is a synchronized alternative to the globe, and selecting a cluster
 or pin must expose the same identification evidence, review status, and Field Study link.
+When several separately published observations deliberately share a named park/trip point,
+the cluster selection must enumerate those distinct findings rather than merging their
+photos, identities, descriptions, or source ToolRuns into one observation.
 
 Cannabis/hemp identification remains allowed from deliberately submitted evidence, but
 ordinary public horticulture discovery excludes those observations. A cannabis/hemp
