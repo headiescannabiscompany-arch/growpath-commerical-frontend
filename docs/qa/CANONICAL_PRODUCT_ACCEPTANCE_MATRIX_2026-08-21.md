@@ -436,7 +436,10 @@ that permits date-based inference. Per-evidence deduplication, the unresolved cr
 Maryland's separate multi-visit/lily-pad inventory, private exclusions, exact remaining gates
 and live-pin retention decision are recorded there. Every retained trip evidence set requires
 an explicit public/private/duplicate/unrecoverable/unresolved disposition; a representative
-subset does not complete acceptance.
+subset does not complete acceptance. The owner-highlighted August 21 originals are now
+partitioned once into four exact evidence sets covering all 18 files (`IMG_2880.HEIC` through
+`IMG_2897.HEIC`); their identities, Tool Run linkage, place and publication decisions remain
+open under that recovery record and must not be rediscovered by re-sorting the files.
 
 ## Reconciled evidence and no-rebuild boundaries
 
@@ -521,7 +524,8 @@ populated, provider, authenticated or multi-account evidence.
   owner-triggered action and does not block P-03 through P-06 or future Nature pins. If used,
   each result requires a newest defensible nonduplicate identity and a known place. **Next
   action:** final-candidate read-only check or optional owner recovery. **Do not rebuild:**
-  legacy selection, deduplication, uncertainty, or no-location-inference rules.
+  legacy selection, deduplication, uncertainty, no-location-inference rules, or the recorded
+  four-set boundary for the owner-highlighted August 21 trip.
 - **S-05 — retained evidence:** reusable private RTMPS, OBS ingest, signed playback and
   viewer volume, GrowPath chat/overlay, stop, recording-ready replay, retention, and key
   rotation have production evidence and remain accepted. **Remaining gate:** one bounded

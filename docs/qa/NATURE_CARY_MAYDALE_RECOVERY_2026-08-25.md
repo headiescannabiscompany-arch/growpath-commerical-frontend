@@ -90,6 +90,46 @@ August 5 evidence without requiring a new trip to the park:
 - Use the reviewed public location for Maydale Conservation Park / Nature Classroom, not a
   saved device point or nearby private address.
 
+### Owner-highlighted August 21 trip evidence
+
+On 2026-08-25 the owner highlighted one contiguous 18-photo trip set in the imported iPhone
+folder. Read-only review confirmed that the retained originals are `IMG_2880.HEIC` through
+`IMG_2897.HEIC`, captured on the camera-local date 2026-08-21 between 4:01 PM and 4:06 PM.
+The Photos metadata surface did not expose a GPS value for the inspected original. The date,
+file order and visible scene are grouping evidence only; they do not establish a public point
+or externally verify an identity.
+
+The 18 photos resolve into four distinct evidence sets. Preserve these exact boundaries so a
+later AI review, Saved Run match or Nature draft cannot silently mix plants or count multiple
+views as independent observations:
+
+| Evidence set | Original files | Photo count | Read-only visual disposition |
+| --- | --- | ---: | --- |
+| Milkweed with mature pods | `IMG_2880.HEIC`-`IMG_2883.HEIC` | 4 | Strong working candidate for common milkweed (`Asclepias syriaca`) from the opposite broad leaves and mature warty follicles; still a provisional identity pending the normal app/reference review. |
+| Pale-purple composite | `IMG_2884.HEIC`-`IMG_2889.HEIC` | 6 | Strong working candidate for Carolina elephant's-foot (`Elephantopus carolinianus`) from the small pale-lavender disk-flower clusters, leafy bracts and alternate rough lanceolate leaves. Keep it provisional pending the normal app review and lookalike separation. |
+| White umbel and curled seed head | `IMG_2890.HEIC`-`IMG_2894.HEIC` | 5 | Working wild-carrot/Queen Anne's lace candidate (`Daucus carota`) from the white umbel and curled mature head; preserve uncertainty and require ordinary lookalike/source review. |
+| Pink water lily | `IMG_2895.HEIC`-`IMG_2897.HEIC` | 3 | Working water-lily candidate (`Nymphaea spp.`); do not call it lotus or assign an exact species from this review. |
+
+Read-only source review on 2026-08-25 supports, but does not confirm, the three narrower
+working candidates. USDA NRCS describes common milkweed with opposite broad ovate-to-elliptic
+leaves and hairy spindle-shaped follicles. Kew records `Elephantopus carolinianus` as an
+accepted Asteraceae species native in Maryland, and Missouri State describes its alternate
+lanceolate leaves plus small pale-blue disk-flower heads. Kew describes `Daucus carota` white
+umbels that contract into bird's-nest-like seed heads. These are morphology/name/range checks,
+not specimen determinations:
+
+- USDA NRCS common milkweed guide: https://plants.usda.gov/DocumentLibrary/plantguide/pdf/cs_assy.pdf
+- Kew Carolina elephant's-foot record: https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:202920-1
+- Missouri State Carolina elephant's-foot morphology: https://ag.missouristate.edu/PBTrewatha/Carolina-Elephantsfoot.htm
+- Kew wild-carrot description: https://powo.science.kew.org/taxon/841063-1/general-information
+
+This set is not yet published and has not been matched to a Tool Run. The four-photo count of
+`6a88b3a43d7226fb7aaa06c3` is not enough to prove that it is the milkweed set; match it only
+after its restored evidence is visibly compared. Before any Nature write, confirm the trip's
+place, review the four candidate identities, retain a contributor-authored public description
+for each selected observation, and show the owner the exact proposed records for action-time
+approval. House and potted-plant exclusions remain unchanged.
+
 ## Retained implementation and exact remaining gates
 
 - Retained Saved Runs could recover durable evidence IDs but the browser preview preferred a
@@ -100,6 +140,10 @@ August 5 evidence without requiring a new trip to the park:
   evidence set, including every later Maryland candidate run. Record the exact trip,
   public/private/duplicate/unrecoverable/unresolved decision for each set; do not infer it
   from date, proximity or a duplicate title.
+- The highlighted August 21 originals are now visually partitioned into four complete evidence
+  sets (4 + 6 + 5 + 3 = 18). Their Tool Run linkage, exact place, AI/reference review and
+  publication decisions remain open; do not re-sort or re-inspect the local files merely to
+  rediscover these boundaries.
 - Publish only the positively matched non-sensitive park observations with their complete
   retained photo sets, observation date, uncertainty-safe description and approximate public
   point. The final publish action requires the owner's action-time confirmation.

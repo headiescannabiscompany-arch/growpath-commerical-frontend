@@ -723,7 +723,11 @@ grow`, private current location without a Field Study, and an optional approxima
     nonduplicate identity and a known place. Do not rebuild deduplication, uncertainty, or
     no-location-inference rules, and do not block future pins on old media. Complete every
     retained Cary set and each distinct Maryland visit, including the separate Maryland
-    water-lily observations; do not accept a representative subset.
+    water-lily observations; do not accept a representative subset. The owner-highlighted
+    August 21 originals have been visually partitioned into four exact evidence sets covering
+    all 18 files (`IMG_2880.HEIC` through `IMG_2897.HEIC`) in the canonical recovery record.
+    Reuse those boundaries; the still-open work is Tool Run linkage, exact-place review,
+    identity/reference review and explicit per-set publication disposition.
 
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
