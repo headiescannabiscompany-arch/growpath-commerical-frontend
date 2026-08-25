@@ -408,7 +408,8 @@ function HarvestPhotoAnalyzer({
   workspaceType,
   workspaceId,
   facilityId,
-  retryToolRunId
+  retryToolRunId,
+  recoverDeepOperationId
 }: {
   growId: string;
   plantId: string;
@@ -422,6 +423,7 @@ function HarvestPhotoAnalyzer({
   workspaceId?: string;
   facilityId?: string;
   retryToolRunId?: string;
+  recoverDeepOperationId?: string;
 }) {
   const { palette } = useAppTheme();
   const photoStyles = useMemo(() => createHarvestPhotoStyles(palette), [palette]);
@@ -635,6 +637,31 @@ function HarvestPhotoAnalyzer({
     }
   });
   const recoverSavedDeepReview = deepReviewOperation.recoverSucceededById;
+  const recoverAndRetryFailedDeepReview = deepReviewOperation.recoverAndRetryFailedById;
+  const attemptedDeepRecoveryRef = useRef("");
+  useEffect(() => {
+    const operationId = String(recoverDeepOperationId || "").trim();
+    if (
+      !/^[A-Za-z0-9_-]{8,160}$/.test(operationId) ||
+      !reviewQuoteRequired ||
+      !videoFrameSelection.ready ||
+      photoCount < MIN_HARVEST_PHOTOS ||
+      !analysisScopeKey
+    ) {
+      return;
+    }
+    const attemptKey = `${analysisScopeKey}:${operationId}`;
+    if (attemptedDeepRecoveryRef.current === attemptKey) return;
+    attemptedDeepRecoveryRef.current = attemptKey;
+    void recoverAndRetryFailedDeepReview(operationId);
+  }, [
+    analysisScopeKey,
+    photoCount,
+    recoverAndRetryFailedDeepReview,
+    recoverDeepOperationId,
+    reviewQuoteRequired,
+    videoFrameSelection.ready
+  ]);
   const analysisBusy =
     busy || Boolean(deepReviewOperation.busy) || deepReviewOperation.operationActive;
   const feedDraftOperationId =
@@ -2060,6 +2087,28 @@ function HarvestPhotoAnalyzer({
                 busy={Boolean(deepReviewOperation.busy)}
                 onDiscard={deepReviewOperation.discardSucceeded}
               />
+              {deepReviewOperation.retryablePristineFailure ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry the same accepted Deep review"
+                  disabled={Boolean(deepReviewOperation.busy)}
+                  onPress={() =>
+                    void deepReviewOperation.recoverAndRetryFailedById(
+                      deepReviewOperation.operation?.id || ""
+                    )
+                  }
+                  style={[
+                    photoStyles.secondaryButton,
+                    deepReviewOperation.busy && photoStyles.disabled
+                  ]}
+                >
+                  <Text style={photoStyles.secondaryButtonText}>
+                    {deepReviewOperation.busy === "restoring"
+                      ? "Validating Same Review..."
+                      : "Retry Same Accepted Review"}
+                  </Text>
+                </Pressable>
+              ) : null}
               {!deepReviewOperation.terminalResetAllowed ? (
                 <Pressable
                   accessibilityRole="button"
@@ -2813,10 +2862,14 @@ export default function HarvestReadinessToolRoute({
 } = {}) {
   const routeParams = useLocalSearchParams<{
     retryToolRunId?: string | string[];
+    recoverDeepOperationId?: string | string[];
   }>();
   const retryToolRunId = Array.isArray(routeParams.retryToolRunId)
     ? routeParams.retryToolRunId[0] || ""
     : routeParams.retryToolRunId || "";
+  const recoverDeepOperationId = Array.isArray(routeParams.recoverDeepOperationId)
+    ? routeParams.recoverDeepOperationId[0] || ""
+    : routeParams.recoverDeepOperationId || "";
   const [visionDraft, setVisionDraft] = useState<HarvestAnalysisDraft | null>(null);
   const [activeAnalysisScopeKey, setActiveAnalysisScopeKey] = useState("");
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
@@ -2959,6 +3012,7 @@ export default function HarvestReadinessToolRoute({
               activeWorkspaceType === "facility" ? facilityId || workspaceId : undefined
             }
             retryToolRunId={retryToolRunId}
+            recoverDeepOperationId={recoverDeepOperationId}
           />
         );
       }}

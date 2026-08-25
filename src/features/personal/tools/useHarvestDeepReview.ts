@@ -5,6 +5,7 @@ import {
   findDeepTrichomeReviewOperation,
   getDeepTrichomeReviewOperation,
   quoteDeepTrichomeReview,
+  retryPristineDeepTrichomeReviewOperation,
   startDeepTrichomeReview,
   type HarvestDeepReviewOperation,
   type HarvestDeepReviewOperationPacket,
@@ -364,7 +365,10 @@ export function useHarvestDeepReview({
             packet.operation.errorCode ||
             "The Deep review did not complete."
         );
-        await clearPersisted();
+        // Preserve an untouched, uncharged operation address so the owner can
+        // use the guarded same-operation retry. Clearing it here previously
+        // hid recoverable work and encouraged a duplicate quote/operation.
+        if (failureWasFullyRefunded) await clearPersisted();
         return;
       }
       setNotice("");
@@ -893,12 +897,16 @@ export function useHarvestDeepReview({
   const operationActive = Boolean(
     recoveryPending || (operation && ["queued", "processing"].includes(operation.status))
   );
+  const retryablePristineFailure = Boolean(
+    operation?.status === "failed" &&
+    ["not_reserved", "not_charged"].includes(String(operation.creditState || "")) &&
+    Number(operation.completedBatches || 0) === 0
+  );
   const terminalResetAllowed = Boolean(
     operation &&
     (["succeeded", "refunded"].includes(operation.status) ||
       (operation.status === "failed" &&
-        (["not_reserved", "not_charged"].includes(String(operation.creditState || "")) ||
-          Number(operation.creditsRefunded || 0) >= operation.creditsQuoted)))
+        Number(operation.creditsRefunded || 0) >= operation.creditsQuoted))
   );
 
   const recoverSucceededById = useCallback(
@@ -988,6 +996,81 @@ export function useHarvestDeepReview({
     [accountId, beginRequest, enabled, requestIsCurrent, scopeKey, workspace]
   );
 
+  const recoverAndRetryFailedById = useCallback(
+    async (operationId: string) => {
+      const requestedOperationId = String(operationId || "").trim();
+      if (
+        !enabled ||
+        !scopeKey ||
+        !accountId ||
+        !/^[A-Za-z0-9_-]{8,160}$/.test(requestedOperationId) ||
+        busyRef.current
+      ) {
+        return false;
+      }
+      const requestScopeKey = scopeKey;
+      const { generation, controller } = beginRequest();
+      setBusy("restoring");
+      setError("");
+      setNotice(
+        "Checking the exact failed Deep review before a guarded same-operation retry. No replacement operation, quote, extraction, or credit charge is created by this check."
+      );
+      try {
+        const current = await getDeepTrichomeReviewOperation(
+          requestedOperationId,
+          workspace,
+          { signal: controller.signal }
+        );
+        if (!requestIsCurrent(requestScopeKey, generation)) return false;
+        if (
+          current.operation.id !== requestedOperationId ||
+          current.operation.status !== "failed" ||
+          !["not_reserved", "not_charged"].includes(
+            String(current.operation.creditState || "")
+          ) ||
+          Number(current.operation.completedBatches || 0) !== 0
+        ) {
+          setOperation(current.operation);
+          throw new Error(
+            "This Deep review is not an untouched, uncharged failure and cannot use the guarded retry."
+          );
+        }
+        setOperation(current.operation);
+        const retried = await retryPristineDeepTrichomeReviewOperation(
+          requestedOperationId,
+          workspace,
+          { signal: controller.signal }
+        );
+        if (!requestIsCurrent(requestScopeKey, generation)) return false;
+        setOperation(retried.operation);
+        setRecoveryPending(false);
+        setAutoPoll(true);
+        pollCountRef.current = 0;
+        setNotice(
+          `The same accepted Deep review is queued safely. GrowPath will revalidate its signed ${retried.operation.batchCount}-batch plan before reserving any credit.`
+        );
+        setError("");
+        return true;
+      } catch (caught: any) {
+        if (
+          isAbort(caught, controller.signal) ||
+          !requestIsCurrent(requestScopeKey, generation)
+        ) {
+          return false;
+        }
+        setAutoPoll(false);
+        setError(
+          caught?.message ||
+            "GrowPath could not safely retry this exact Deep review. No replacement operation was submitted."
+        );
+        return false;
+      } finally {
+        if (requestIsCurrent(requestScopeKey, generation)) setBusy(null);
+      }
+    },
+    [accountId, beginRequest, enabled, requestIsCurrent, scopeKey, workspace]
+  );
+
   const resetTerminal = useCallback(async () => {
     if (operation && !terminalResetAllowed) return false;
     setOperation(null);
@@ -1064,6 +1147,7 @@ export function useHarvestDeepReview({
     operation,
     busy,
     operationActive,
+    retryablePristineFailure,
     terminalResetAllowed,
     recoveryPending,
     notice,
@@ -1073,6 +1157,7 @@ export function useHarvestDeepReview({
     start,
     refresh,
     recoverSucceededById,
+    recoverAndRetryFailedById,
     resetTerminal,
     discardSucceeded
   };

@@ -646,6 +646,46 @@ export async function getDeepTrichomeReviewOperation(
   return normalizedDeepOperationPacket(response);
 }
 
+export async function retryPristineDeepTrichomeReviewOperation(
+  operationId: string,
+  workspace: {
+    workspaceType: EvidenceWorkspaceType;
+    workspaceId?: string;
+    facilityId?: string;
+  },
+  options: { signal?: AbortSignal } = {}
+) {
+  const id = String(operationId || "").trim();
+  if (!id) throw new Error("A failed Deep review operation ID is required.");
+  const response = await apiRequest<any>(
+    `/api/ai/harvest/trichomes/operations/${encodeURIComponent(id)}/retry`,
+    {
+      method: "POST",
+      signal: options.signal,
+      timeoutMs: 240000,
+      retries: 0,
+      body: {
+        workspaceType: workspace.workspaceType,
+        ...(workspace.workspaceId ? { workspaceId: workspace.workspaceId } : {}),
+        ...(workspace.facilityId ? { facilityId: workspace.facilityId } : {})
+      }
+    }
+  );
+  const packet = normalizedDeepOperationPacket(response);
+  const retried = response?.retried ?? response?.data?.retried;
+  if (
+    retried !== true ||
+    packet.operation.id !== id ||
+    packet.operation.status !== "queued" ||
+    !["not_reserved", "not_charged"].includes(String(packet.operation.creditState || ""))
+  ) {
+    throw new Error(
+      "GrowPath did not confirm the guarded same-operation retry. No replacement review was submitted."
+    );
+  }
+  return packet;
+}
+
 export async function discardUnsavedDeepTrichomeReview(
   operationId: string,
   workspace: {
