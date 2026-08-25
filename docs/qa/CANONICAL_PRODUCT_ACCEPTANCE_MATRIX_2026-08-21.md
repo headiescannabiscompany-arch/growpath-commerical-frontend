@@ -407,7 +407,7 @@ stay open. See `FACILITY_INVENTORY_AI_PRODUCTION_EVIDENCE_2026-08-23.md`.
 | N-02 | Discover shows a compact Nature preview even with zero public pins                                                     | live accepted                                                                                                                                                                                                                                                                    |
 | N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented; local acceptance passed; public/private live regression open                                                                                                                                                                                                        |
 | N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented; local acceptance passed; final-candidate privacy regression open                                                                                                                                                                                                    |
-| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | populated Harvest system queue and notification-to-closed-moderation exact deep link live accepted; remaining cross-queue/final regression open                                                                                                                                  |
+| A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | populated Harvest system queue and notification-to-closed-moderation exact deep link live accepted; mobile Admin currently lacks a dependable visible menu entry to Admin tools, which remains open with the cross-queue/final regression                                                                                                        |
 | A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                           | authenticated audited Harvest reconciliation accepted; report/support assignment-resolution-reopen live slice remains open                                                                                                                                                       |
 | A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                      | implemented; local acceptance passed; Sentry/live acceptance open                                                                                                                                                                                                                |
 | A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                     | implemented; local safety acceptance passed; legal operating/live acceptance open                                                                                                                                                                                                |
@@ -661,6 +661,17 @@ acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 
   grow while the detail image and one-log export remained available. **Do not rebuild:**
   retained-photo persistence, reload, grow-list counting and grow-scoped export are live
   accepted. The temporary record remains private pending owner-approved cleanup.
+
+- **P-02 — 2026-08-25 telemetry acceptance checkpoint:** AC Infinity CSV source
+  `6a8dcdc9c266b3acbaa97f84` proved source creation and idempotent replay (`122` inserted,
+  then `122` updated), but is explicitly **not accepted** because three rows with blank mapped
+  inside temperature/RH were coerced to zero. Frontend PR `#804` fixes that normalization and
+  is awaiting its full CI/deploy gate. The owner confirmed that this setup had no light
+  detector: its `LIGHT` column is controller-reported state/output, not lux. The reviewed
+  equipment context is two Mars Hydro FC-E4800 fixtures in one 4 x 8; this does not establish
+  measured PPFD, DLI, uniformity or light leaks. P-02 remains open until the contaminated
+  private source is removed, the corrected import/reimport/reload receipt passes, measured
+  lux/PPFD/DLI remain distinct supported sensor channels, and the exact evidence is frozen.
 
 - **Non-Harvest closure — 2026-08-25 production increment:** The authenticated
   `admin@growpathai.com` identity explicitly entered Commercial mode and retained a visible

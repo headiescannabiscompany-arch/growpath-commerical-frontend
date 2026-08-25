@@ -288,6 +288,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "workspace-isolated connections",
       "file import review provenance",
       "reviewed lighting-column meaning separated from raw provider values",
+      "measured lux, PPFD, and DLI retained as separate sensor channels",
       "tool input context",
       "field-use declarations",
       "draft alerts",
@@ -297,6 +298,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "Read-only first; never invent metrics, units, mappings, or control access.",
       "Never use a Facility identifier as a grow target or mix a provider export into an unrelated source.",
       "Never infer an illuminance detector from a LIGHT column, convert controller lighting state to lux, or reconstruct transitions and duration from sparse snapshots.",
+      "Never substitute fixture model/count for measured lux, PPFD, DLI, uniformity, dimmer output, photoperiod, or light-leak evidence.",
       "Never coerce a blank mapped temperature or humidity cell to zero; incomplete required environment rows are skipped and remain distinct from normalized point counts.",
       "Validate deep-linked grow targets against the active workspace and use named owned-grow choices instead of user-entered internal IDs."
     ],
