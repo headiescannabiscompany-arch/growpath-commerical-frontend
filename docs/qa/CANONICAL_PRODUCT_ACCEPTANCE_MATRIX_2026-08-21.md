@@ -481,7 +481,11 @@ populated, provider, authenticated or multi-account evidence.
   disabled-until-complete state and the honest empty globe. The current candidate also adds
   an explicit named park/trip-pin mode: one reviewed point remains active across separate
   Plant ID evidence sets, while each set retains its own identity, photos, description and
-  publish action. **Remaining gate:** publish at least two non-sensitive ordinary
+  publish action. Production merge `a0bf0b4e` and module record
+  `6a8e2a37548a5dc10cae2ace` now prove the first Maydale record end to end: four photos,
+  medium-confidence `Asclepias` candidate, `not_sure` contributor review, August 21, 2026
+  date, reviewed public description, approximate park pin, public globe card, and four-photo
+  collection reload. **Remaining gate:** publish one more distinct non-sensitive ordinary
   observations at the same reviewed park point, verify their grouped Nature pin and distinct
   viewer records, then repeat the flow with a different Cary point. Reload Saved Runs and the
   public cards, and verify withdrawal on a disposable observation if cleanup is requested.
@@ -507,8 +511,10 @@ populated, provider, authenticated or multi-account evidence.
   crawl regression. **Do not rebuild:** event aggregation, visual/zoom controls, source links,
   reviewed public-copy lifecycle or existing export entry points.
 - **N-01 — retained evidence:** the production globe, controls, search/review filters, broad
-  fallback viewport, compact/public entry points, and honest zero-pin list are accepted.
-  **Remaining gate:** reuse the legitimate same-park P-05 observations to verify one
+  fallback viewport, compact/public entry points, and honest zero-pin list are accepted. The
+  first legitimate Maydale observation now renders in production with its candidate, date,
+  description, approximate-location label, and four-photo public collection.
+  **Remaining gate:** add the second legitimate same-park P-05 observation to verify one
   selectable cluster/pin group enumerates every distinct plant finding with the correct
   photo/date/description/identity card, then verify the separate Cary group, search/filter,
   public viewport, and applicable responsive/accessibility states. Never fabricate records.
