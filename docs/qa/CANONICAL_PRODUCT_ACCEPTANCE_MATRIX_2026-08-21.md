@@ -158,32 +158,32 @@ Every applicable story must preserve these invariants without repeating them in 
 
 ## Community, media, courses and discovery
 
-| ID   | User story                                                                                                         | Status                                                                                                                                                     |
-| ---- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | owner lifecycle live accepted; outside-user/report-notification loop open                                                                                  |
-| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | populated public discovery/player, truthful following/comment empty states, and Admin-owned Commercial library live accepted; follow/comment mutation open |
-| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | live owner lifecycle, course reuse, and Admin-owned Commercial library access accepted; archive/outside-user acceptance open                               |
-| S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | live private-premiere lifecycle and empty directory accepted; public/provider acceptance open                                                              |
-| S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | implemented; local acceptance passed; two-account provider/live acceptance open                                                                            |
-| S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | saved AI-result sharing/export live accepted; remaining stable-public-link acceptance open                                                                 |
-| S-07 | Courses support deliberate cover/banner hierarchy, lessons/media, edit/publish/archive and paid enrollment returns | provider and GrowPath-video reuse live accepted; publish/payment/outside-user acceptance open                                                              |
-| S-08 | Discover provides useful storefront/course/video/forum/live/Nature previews, filters, links and empty states       | populated video plus Nature/Feed/store/course/live empty-state composition accepted; remaining populated-family acceptance open                            |
+| ID   | User story                                                                                                         | Status                                                                                                                                                                   |
+| ---- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | owner lifecycle live accepted; outside-user/report-notification loop open                                                                                                |
+| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | public/following/library/player plus reversible follow and comment create/edit/delete/reload live accepted; configured production upload/storage regression remains open |
+| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | owner lifecycle, course reuse, private-draft archive/reload and outside-user denial live accepted; configured production upload/storage regression remains open          |
+| S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | live private-premiere lifecycle and empty directory accepted; public/provider acceptance open                                                                            |
+| S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | implemented; local acceptance passed; two-account provider/live acceptance open                                                                                          |
+| S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | saved AI-result sharing/export live accepted; remaining stable-public-link acceptance open                                                                               |
+| S-07 | Courses support deliberate cover/banner hierarchy, lessons/media, edit/publish/archive and paid enrollment returns | provider and GrowPath-video reuse live accepted; publish/payment/outside-user acceptance open                                                                            |
+| S-08 | Discover provides useful storefront/course/video/forum/live/Nature previews, filters, links and empty states       | populated video plus Nature/Feed/store/course/live empty-state composition accepted; remaining populated-family acceptance open                                          |
 
 ## Commercial and Facility
 
 | ID   | User story                                                                                                        | Status                                                                                                                                                                                                                                |
 | ---- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C-01 | Commercial retains Personal capabilities plus brand tools                                                         | implemented; local acceptance passed; multi-capability/live acceptance open                                                                                                                                                           |
+| C-01 | Commercial retains Personal capabilities plus brand tools                                                         | Free/Single/Creator/Commercial/Facility/Admin production entitlement matrix and Admin own-Commercial dashboard live accepted; provider-specific owner mutations remain open                                                           |
 | C-02 | Brand owner manages storefront identity/media/slug/sections/contact/social/location/publication                   | Admin-owned draft identity/slug/contact/description/grow-interest persistence live accepted; media/publication/generic-owner gates open                                                                                               |
 | C-03 | Products expose media/inventory/pricing and only lawfully authorized transaction or external-handoff capabilities | implemented; local acceptance passed; migration/provider/live acceptance open                                                                                                                                                         |
-| C-04 | Commercial courses/content/campaigns and analytics work without duplicate navigation                              | implemented; local acceptance passed; provider/live acceptance open                                                                                                                                                                   |
+| C-04 | Commercial courses/content/campaigns and analytics work without duplicate navigation                              | Commercial-content owner API role matrix and Admin own-Commercial dashboard live accepted; populated provider-specific mutation acceptance remains open                                                                               |
 | C-05 | Admin brand can explicitly use Commercial tools while retaining Platform Admin                                    | live accepted for explicit own-Commercial entry, Storefront, Business Desk, Lives, Video Library, Saved Runs, evidence/AI and Harvest while retaining Platform Admin; cross-account denial is covered and final-crawl regression only |
 | F-01 | Facility Owner sets up rooms/grows/plants/team with role-aware create/edit/import/assignment/audit                | implemented; local acceptance passed; multi-role/live acceptance open                                                                                                                                                                 |
 | F-02 | Assigned staff work links to the required record/action and persists evidence/completion                          | implemented; local acceptance passed; assigned-role/live acceptance open                                                                                                                                                              |
 | F-03 | SOP/compliance supports approve/assign/run/compare/evidence/exceptions and audit history                          | implemented; local acceptance passed; populated/live acceptance open                                                                                                                                                                  |
 | F-04 | Facility has the full applicable AI toolset, correct credits/context and role/write gates                         | Inventory Risk live accepted; remaining provider/credit/tool acceptance open                                                                                                                                                          |
 | F-05 | Inventory/transfers/reports/logs have correct routes, populated states and exports                                | deployed; guarded migration accepted; populated/live acceptance open                                                                                                                                                                  |
-| F-06 | Reviewed sensor/controller imports map rooms/history safely and protect API keys                                  | implemented; local acceptance passed; device-provider/live acceptance open                                                                                                                                                            |
+| F-06 | Reviewed sensor/controller imports map rooms/history safely and protect API keys                                  | provider catalog truthfulness and Admin-owned Commercial empty state live accepted; real credential/discovery/mapping/import/disconnect acceptance remains provider-account gated                                                     |
 | F-07 | Owner/admin can reach social/course/storefront tools without polluting staff navigation                           | implemented; local acceptance passed; owner-role/live acceptance open                                                                                                                                                                 |
 
 ## Business operations and AI
@@ -413,7 +413,7 @@ stay open. See `FACILITY_INVENTORY_AI_PRODUCTION_EVIDENCE_2026-08-23.md`.
 | A-04 | Emergency and lawful data requests follow documented preservation/escalation/disclosure procedures                     | safe intake/review/rejection/audit and terminal hold guards live accepted; authentic approval/disclosure remains an external legal operating gate                                                                                                                                |
 | A-05 | Free/Pro/Commercial/Facility/Admin sessions, roles, expiry, reload, logout and workspace switching remain isolated     | implemented; local acceptance passed; multi-account/live acceptance open                                                                                                                                                                                                         |
 | R-01 | Subscriptions (including gifts), paid courses/products, returns/webhooks/receipts and management work where authorized | implemented; local acceptance passed; production provider/live acceptance open                                                                                                                                                                                                   |
-| R-02 | Email/device notifications respect preferences and deliver supported events                                            | implemented; local acceptance passed; email/device live acceptance open                                                                                                                                                                                                          |
+| R-02 | Email/device notifications respect preferences and deliver supported events                                            | in-app preferences, inbox, receipts, deep links and truthful registered-device prerequisite live accepted; actual email/device delivery and failure receipt remain provider/device gated                                                                                         |
 | R-03 | Initial crawl, proof-based dead-code cleanup, and final full acceptance pass on new frozen SHAs                        | partial; cleanup, exact-main gates, public/Admin-owned Personal/Commercial/Admin crawl and route-entry matrix passed on frontend `7f758970` / backend `e572552c`; Free, Commercial-owner, Facility Owner/Staff/Viewer, logout/expiry and physical responsive/keyboard chain open |
 | R-04 | Independent reviewer suggestions are isolated, itemized and deliberately accepted/rejected                             | open                                                                                                                                                                                                                                                                             |
 | R-05 | Owner-directed GrowPathAI-only hat designs/specifications/rights/BLVNK approval and non-sale trials complete           | open; stop gate                                                                                                                                                                                                                                                                  |
@@ -424,6 +424,17 @@ GrowPathAI-hosted Lives or OBS ingest. The 2026-08-25 Admin-owned Commercial pro
 truthfully showed Twitch OAuth unconfigured, disabled connection, and EventSub not connected
 without changing any record. C-04/S-06 is therefore accepted in its fail-closed optional state;
 configure and re-test it only if the owner later chooses Twitch account linkage.
+
+Backend PR `#253` passed both dependency-backed CI lanes and merged as
+`6387095f44ee31e34f0f620262f0bd04e072da24`; Render deploy
+`dep-da75hp6gekts73bq5ah0` reached Live on that exact SHA. Reversible production acceptance
+proved that Free and Personal Single accounts receive `403 COMMERCIAL_CONTENT_REQUIRED` from
+Commercial owner APIs; active Creator, Commercial and Facility accounts receive `200`; Creator
+still receives `403` from B-02 inventory and regulated-commerce APIs; and public storefront and
+Personal Feed reads remain available. The signed-in Platform Admin then loaded its own
+Commercial dashboard and retained the visible Platform Administration destination. This closes
+the C-01/C-04/C-05 entitlement-role contract without granting Creator inventory, another
+owner's records or regulated commerce.
 
 ## Frozen Plant ID stories
 
@@ -608,6 +619,25 @@ acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 
   reply/edit/delete/report plus course attach/detach and archive/reopen. **Do not rebuild:**
   the merged creator route, retained video library/editor/player/comments/share surfaces,
   or storage contract.
+- **S-02/S-03 — 2026-08-25 production closure increment:** backend PR `#253` passed
+  both dependency-backed CI lanes, including the exhaustive lint/test/ZAP gate, and merged as
+  `6387095f44ee31e34f0f620262f0bd04e072da24`. Render deploy
+  `dep-da75hp6gekts73bq5ah0` reached Live on that exact SHA. A reversible production run with
+  synthetic Free and Commercial accounts used retained published video
+  `6a6a52f42ac7c03b4303a7d6` to prove Follow state, the `Following` filter, comment
+  create/edit/list/delete/reload, idempotent repeat deletion and restoration of the original
+  engagement total. The run restored the original follow state. A temporary private
+  Commercial video draft then survived archive/reload, returned `404` to the outside Free
+  account and was deleted. PR `#253` also corrected the reproduced counter defect: deleting a
+  visible comment now atomically decrements and clamps engagement, while repeated deletion is
+  idempotent. Focused video, entitlement, storefront and Live coverage passed 84/84 locally;
+  dependency-backed CI is the authority for the full transaction suite because the local
+  memory database has no replica-set transaction support. **Closed here:** deliberate
+  follow/unfollow, Following discovery, comment create/edit/delete/reload, private archive,
+  outside-user denial and engagement reconciliation. **Remaining gate:** one configured
+  production upload/storage-usage regression on the frozen final candidate. **Do not
+  rebuild:** the accepted video social, archive, ownership, player, course-reuse or counter
+  paths.
 - **S-03/S-04/S-07 — 2026-08-23 production increment:** the retained draft course
   `QA Provider Media 4d4520bd` proved a privacy-aware YouTube lesson embed, then attached a
   published GrowPath video, loaded its protected playback, detached it without deleting the

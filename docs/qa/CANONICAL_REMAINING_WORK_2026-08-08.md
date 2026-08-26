@@ -300,8 +300,14 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   then returned the truthful `0 B used of 10 GB` quota, zero workspace/my/published/draft
   counts, enabled provider/visibility/structured-interest authoring controls, and an empty
   library without `VIDEO_WORKSPACE_DENIED`. This closes the Admin-library authorization
-  correction. Preserve the architecture; the remaining S-02/S-03 gates are follow/comment
-  mutation and archive/outside-user acceptance.
+  correction. Backend PR `#253` passed both dependency-backed CI lanes and merged as
+  `6387095f44ee31e34f0f620262f0bd04e072da24`; exact Render deploy
+  `dep-da75hp6gekts73bq5ah0` reached Live. Reversible synthetic Free/Commercial production
+  acceptance then proved Follow plus the Following filter, comment create/edit/list/delete/
+  reload, repeat-delete idempotency, correct engagement reconciliation, private-draft
+  archive/reload, outside-Free denial and cleanup. The original follow state and engagement
+  total were restored. Preserve the architecture; S-02/S-03 now remain open only for one
+  configured production upload/storage-usage regression on the frozen final candidate.
 - [x] **C-04/S-06 Twitch connection:** Twitch is an optional external publication/provider
       integration, not the GrowPath Live host and not a launch dependency. Draft-safe OAuth UI and
       backend callback routes remain available for later owner credential configuration. A fresh
@@ -351,9 +357,14 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   `in-app only` delivery receipts. It also exposed one presentation defect: the top status
   called the push preference “enabled” without proving a registered device. The frontend now
   says `Device push preference is on. Delivery requires a registered app device.`; the focused
-  Notification Center suite passes 8/8. This copy correction does not close email/device
-  delivery—the remaining gate is still a real registered-device/provider delivery and failure
-  receipt, not another notification-system rebuild.
+  Notification Center suite passes 8/8. Frontend PR `#817` passed its full CI, merged as
+  `53d3f762083997265d3af913f758f25147e34221`, and Render deploy
+  `dep-da750rrl550s73agg2pg` reached Live. The cache-busted production Notification Center then
+  showed the corrected registered-device prerequisite, retained both in-app-only moderation
+  receipts and their focused source links, and did not claim email or device delivery. This
+  closes the truthful in-app presentation slice. Email/device delivery remains a real
+  registered-device/provider delivery and failure-receipt gate, not another notification-system
+  rebuild.
 - [~] **F-06 device-provider adapters and provider catalog:** the provider catalog contains
   implemented read-only adapters for Pulse, UbiBot and ZENTRA, an access-required Growlink
   adapter, customer-key TrolMaster setup, and additional contract-pending/access-required/
@@ -363,6 +374,14 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   launch provider, prove credential storage, discovery, reviewed space mapping, bounded history
   import, partial-failure receipts, disconnect/deletion and no equipment control; visibly label
   all other entries by their exact access/contract status.
+  A 2026-08-25 read-only Admin-owned Commercial production pass accepted the no-grow empty state
+  and the truthful catalog: Pulse, UbiBot and ZENTRA were labeled `implemented`; TrolMaster,
+  Growlink and Monnit were labeled `access_required`; SensorPush, Aranet, HOBOlink, Tempest,
+  WeatherLink, Ecowitt, Rachio, Shelly, Particle, Home Assistant, Bluelab and OpenSprinkler were
+  labeled `contract_pending`; Agrowtek was labeled `gateway_required`. No entry was presented as
+  connected and no credential, mapping, grow or telemetry record was changed. The remaining
+  gate requires a real customer/provider account and authorized grow; it is not permission to
+  create another catalog or adapter layer.
 - [~] **B-03 protected business-document runtime:** receipt/document extraction and Business
   Desk attachments have implemented coordination, retention and fail-closed policy, but launch
   use additionally depends on protected object bytes, malware-scanner health/attestation, PDF
@@ -1100,8 +1119,10 @@ found` and neither appeared in the active list, so cleanup is accepted without r
   cross-platform Share and Copy Link actions, topics, and the empty Discussion state
   with a disabled blank-comment submit. No account was followed, report filed, link
   shared, or comment posted. This closes discovery/list/detail/player/filter and
-  empty-comment rendering for retained production data; deliberate follow/unfollow,
-  comment create/reload/reply/moderation, and independent-user acceptance remain.
+  empty-comment rendering for retained production data. The later PR `#253` production
+  run closes deliberate follow/unfollow, Following discovery, comment create/edit/delete/
+  reload and private archive/outside-user denial; reporting remains owned by the unified
+  S-01/A-01 reporting row rather than reopening S-02/S-03.
 - [~] Verify login/session/workspace selection and recovery across Free, Pro,
   Commercial, Facility Owner/Manager/Staff/Viewer, invalid-token, expired-token,
   server-down, reload, logout, and multi-workspace states. The same Personal Pro

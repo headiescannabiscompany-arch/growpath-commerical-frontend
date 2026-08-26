@@ -783,6 +783,12 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never honor deterministic test identity headers as production authentication."
     );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "server-verified Commercial content ownership for Admin-own, active Creator, Commercial, or Facility accounts while retaining signed-in Personal reactions and public viewer routes"
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never let a Personal Free or Pro account create or manage Commercial owner records through a direct API call, or treat Creator content access as B-02 inventory or regulated-transaction authority."
+    );
     expect(getMethod("commercial-workflow")?.warnings).toContain(
       "Never repeat a trial for the same paid plan or consume another paid plan's trial when one plan's trial is used."
     );
