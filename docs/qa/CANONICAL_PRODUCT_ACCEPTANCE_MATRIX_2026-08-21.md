@@ -1,6 +1,6 @@
 # GrowPathAI canonical product acceptance matrix
 
-Updated: 2026-08-24
+Updated: 2026-08-25
 
 This is the single product contract and execution order for finishing GrowPathAI.
 Detailed historical evidence remains in `CANONICAL_REMAINING_WORK_2026-08-08.md`, but
@@ -161,8 +161,8 @@ Every applicable story must preserve these invariants without repeating them in 
 | ID   | User story                                                                                                         | Status                                                                                                                                                                   |
 | ---- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | S-01 | Forum/Q&A supports posts, comments, follows, media, reporting and notifications                                    | owner lifecycle live accepted; outside-user/report-notification loop open                                                                                                |
-| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | public/following/library/player plus reversible follow and comment create/edit/delete/reload live accepted; configured production upload/storage regression remains open |
-| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | owner lifecycle, course reuse, private-draft archive/reload and outside-user denial live accepted; configured production upload/storage regression remains open          |
+| S-02 | Videos support public/following/library discovery, comments, creators/storefronts and storage usage                | live accepted, including protected production upload/playback, exact quota accounting and storage release; final-candidate regression only |
+| S-03 | Video upload/edit/interests/visibility/reuse/course attachment/archive persists                                    | live accepted, including private protected upload, archive/reload, outside-user denial and cleanup; final-candidate regression only          |
 | S-04 | Lives/Premieres expose upcoming/live/replay, player volume, chat, creator follow/share and honest empty states     | live private-premiere lifecycle and empty directory accepted; public/provider acceptance open                                                                            |
 | S-05 | GrowPath-hosted OBS Live supports reusable private RTMPS, chat overlay, signed playback, stop and replay           | implemented; local acceptance passed; two-account provider/live acceptance open                                                                                          |
 | S-06 | Lives, videos, AI results, journals, timelines, forum and Nature have appropriate internal/external share actions  | saved AI-result sharing/export live accepted; remaining stable-public-link acceptance open                                                                               |
@@ -638,6 +638,20 @@ acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 
   production upload/storage-usage regression on the frozen final candidate. **Do not
   rebuild:** the accepted video social, archive, ownership, player, course-reuse or counter
   paths.
+- **S-02/S-03 — 2026-08-25 production storage closure:** on frontend
+  `e67206c3dbe050e54713a5e131a16ba1ec50c402` (Render
+  `dep-da75rm7lk1mc73ecf8m0`) and backend
+  `6387095f44ee31e34f0f620262f0bd04e072da24` (Render
+  `dep-da75hp6gekts73bq5ah0`), a bounded production run used the synthetic Commercial
+  owner and synthetic outside Free account with owner-authorized 135,214-byte
+  `IMG_2706.MOV`. Starting state was zero Commercial videos and `0 B` used. Production
+  reserved one protected multipart part, R2 returned an ETag, completion activated the
+  exact byte count, and the private draft raised quota by exactly 135,214 bytes. Owner
+  detail and signed playback succeeded (`200`, signed object range `206`); outside detail
+  and playback both returned `404`. The record survived archive/library reload, permanent
+  removal reported storage `released`, and quota returned exactly to `0 B`. The record was
+  never published and no test video or upload remained. This closes the last named S-02/
+  S-03 production upload/storage remainder; only final-candidate regression can reopen it.
 - **S-03/S-04/S-07 — 2026-08-23 production increment:** the retained draft course
   `QA Provider Media 4d4520bd` proved a privacy-aware YouTube lesson embed, then attached a
   published GrowPath video, loaded its protected playback, detached it without deleting the
@@ -656,6 +670,19 @@ acceptance passed` in the canonical matrix. The frozen Batch 4 candidate passes 
   outside-user course enrollment, payment return and archive/reopen. **Do not rebuild:** the
   accepted provider embed, GrowPath video reuse, protected playback, private premiere or
   empty-directory surfaces.
+- **S-04/S-07 — 2026-08-25 private regression increment:** frontend
+  `e67206c3dbe050e54713a5e131a16ba1ec50c402` and backend
+  `6387095f44ee31e34f0f620262f0bd04e072da24` served a signed-in Platform Admin Commercial
+  run. Temporary private course `6a8e613df1139368577357f2` entered lesson edit with title,
+  body and reviewed YouTube source `QT7vv46368M`; switching Drafts and Workspace Library
+  filters and waiting for the asynchronous library refresh did not reset any unsaved field.
+  Save persisted the changed lesson and provider URL across a direct reload while the course
+  remained private/draft. The course was then archived and disappeared from the active list.
+  This closes the unsaved-course-edit regression. A temporary private video draft was also
+  created and removed with zero storage use, but Live Studio correctly offered premieres only
+  from a published workspace video. The Admin Commercial workspace has no published video,
+  so the attached-video premiere-copy regression remains an owner/publication gate; no content
+  was published merely to manufacture acceptance evidence.
 - **S-06/P-07 — 2026-08-23 production increment:** Saved Tool Runs reopened the newest
   retained four-photo Plant ID result and displayed its low-confidence/unusable-image
   decision, explicit limitations, missing evidence, suggested retakes, source-verification
