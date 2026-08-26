@@ -22,24 +22,27 @@ This section is the stable handoff point. Update it when a coherent acceptance b
 starts or finishes; do not create another active todo document.
 
 **Current active cursor (2026-08-26):** the reachable non-Harvest production increment is closed;
-resume P-08 at step 5 exactly as frozen in
-`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. P-08 is the active final functional
-row, not reopened or replaced. Current frontend and backend main are CI-green, the focused
-frontend Harvest packet passes 88/88 assertions, the Harvest history contract passes, and
-production reports the database and required Harvest worker ready. The in-app Browser session
-was signed out at the private-operation gate, so the next action is to sign in as the authorized
-Triple Bag Genetics Facility owner and inspect retained operation `6a8ca7b234ec1d260c179e0b` before
-using its same-operation recovery control. Do not perform any code rewrite, new upload,
-re-extraction, quote, start or replacement operation for this gate.
+P-08 remains the active final functional row exactly as frozen in
+`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Current frontend and backend main are
+CI-green, the focused frontend Harvest packet passes 88/88 assertions, the Harvest history
+contract passes, and production reports the database and required Harvest worker ready. The
+authorized Facility owner restored the retained zero-of-seven operation and exercised only its
+same-operation recovery guard; the server refused because the operation was no longer an
+untouched, uncharged failure. Frontend PR `#824`, live as
+`d526543f570954de8a9581f37cd7debc9f65eb0e`, then exposed the existing backend recent-failure
+ledger to Platform Admin. Production proved the operation was already terminally reconciled and
+all seven credits refunded after ambiguous provider work, with no resend and no credits held.
+The old operation cannot be reopened. Do not perform a code rewrite, re-upload, re-extraction or
+replacement operation under the earlier same-operation authorization.
 After P-08 closes, proceed to the final crawl/fixes, proven dead-code cleanup, frozen-SHA
 release rerun, external review, and then stop at hats. Production already passed the
 512 MiB client guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames,
 exact standalone source/frame restoration, explicit standalone cannabis/hemp confirmation, and
-the exact 80-image/7-batch/7-credit quote. The owner accepted that quote once as Facility
-operation `6a8ca7b234ec1d260c179e0b`; authoritative state proves all seven batches remain
-   `not_started`, credits remain `not_reserved`, and no provider response/result existed at the
-   retained pre-recovery checkpoint. Do not
-repeat upload, extraction, restoration, quote, or start, and do not create another operation.
+the exact 80-image/7-batch/7-credit quote. The owner accepted that quote once as a Facility
+operation. Its retained pre-dispatch checkpoint showed all seven batches `not_started` and no
+result; the later audited Admin ledger is the terminal authority and shows all seven credits
+refunded after ambiguous provider work. Do not repeat upload, extraction, restoration, quote, or
+start, and do not create another operation without new explicit owner authorization.
 The ownership/lifecycle packet is now frozen across the Harvest method, app-readable registry,
 construction scaffold, backend contract and P-08 record: Personal/Commercial is account-owned;
 Facility is Facility-owned; private Feed review is non-public; replay, deletion, account erasure
@@ -49,11 +52,11 @@ sequential consent retention, failed/reserved reconciliation, consent revocation
 subscriber-aware zoom deadlines. The matching frontend passes static reconciliation, with its
 added deletion, saved-operation recovery, draft-reset and stale/latest-zoom regressions plus the
 exact-lock production export reserved for one networked CI run. Remaining order: deploy backend
-then frontend; recover that exact operation once; prove its
-signed result/reload and sanitized exact zooms; create only the
-owner-private Feed review draft; stop for owner review; complete proportionate deletion/cleanup
-evidence; update exact evidence and close P-08. Publication and Facebook are later explicit
-owner actions. The older batch cursor below is retained history and cannot override this slice.
+then frontend; the exact same-operation recovery/credit gate is now closed by its guarded refusal
+and audited refund. A signed result/reload, sanitized exact zooms, owner-private Feed review draft
+and result deletion/cleanup require a separately authorized new paid operation. Stop at that
+authorization boundary. Publication and Facebook remain later explicit owner actions. The older
+batch cursor below is retained history and cannot override this slice.
 
 The 2026-08-25 safe non-Harvest production increment is complete: C-01/C-04/C-05 own-
 Commercial entitlement and Admin entry are accepted; S-02/S-03 upload, exact quota,
@@ -63,9 +66,8 @@ already named external gates—paid provider credentials/evaluation authority, r
 email delivery, disposable-account deletion, real Facility role identities, a published
 premiere source, simultaneous broadcasters or multi-organization populated data. Do not
 manufacture those states, send messages, publish content, charge money or create misleading
-fixtures. Record them as exact blockers, continue unrelated work, and now resume P-08 at step 5
-of its frozen script using only the existing Facility operation. No new Deep operation is
-authorized.
+fixtures. Record them as exact blockers and continue unrelated work. P-08's retained operation
+is terminally refunded and cannot be retried; no new Deep operation is authorized.
 
 1. **Completed current release-candidate slice:** exact-candidate Personal, paid Commercial
    and Platform Admin read-only acceptance is recorded. The reproduced missing Admin return
