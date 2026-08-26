@@ -805,7 +805,7 @@ export default function PlatformAdminRoute() {
         apiRequest("/api/admin/knowledge-registry"),
         apiRequest("/api/admin/method-review-proposals"),
         apiRequest("/api/ai/training/harvest-trichome-calibration"),
-        apiRequest("/api/admin/harvest-operations")
+        apiRequest("/api/admin/harvest-operations?includeSettled=true")
       ]);
       const failures: string[] = [];
       const responseAt = (index: number) => {
@@ -1546,6 +1546,13 @@ export default function PlatformAdminRoute() {
     }
   }
 
+  const harvestOperationsHeldForDecision = harvestOperations.filter(
+    (item) => item.state === "failed" && item.creditState === "reserved"
+  );
+  const harvestOperationsWithoutHeldCredits = harvestOperations.filter(
+    (item) => !(item.state === "failed" && item.creditState === "reserved")
+  );
+
   if (!isAdmin) {
     return (
       <View accessibilityRole="alert" style={styles.denied}>
@@ -2003,10 +2010,10 @@ export default function PlatformAdminRoute() {
       <AppCard
         title="Harvest provider reconciliation"
         titleLevel={2}
-        subtitle="Failed provider operations with credits held for an audited decision. This view excludes submitted media and provider payloads."
+        subtitle="Failed provider operations with credits held for an audited decision, plus recent settled failures for verification. This view excludes submitted media and provider payloads."
       >
-        {harvestOperations.length ? (
-          harvestOperations.map((item) => {
+        {harvestOperationsHeldForDecision.length ? (
+          harvestOperationsHeldForDecision.map((item) => {
             const action = harvestReconciliationActions[item.operationId] || "refund";
             const busy = busyId === `harvest-reconcile-${item.operationId}`;
             return (
@@ -2093,6 +2100,48 @@ export default function PlatformAdminRoute() {
             No failed Harvest operations currently hold credits for reconciliation.
           </Text>
         )}
+        {harvestOperationsWithoutHeldCredits.length ? (
+          <View style={styles.caseRow}>
+            <View style={styles.caseCopy}>
+              <Text style={styles.caseTitle}>
+                Recent Harvest failures without held credits
+              </Text>
+              <Text style={styles.meta}>
+                Read-only audit history. These entries do not require an Admin credit
+                decision; retry availability is determined by the exact Harvest operation
+                state.
+              </Text>
+              {harvestOperationsWithoutHeldCredits.map((item) => (
+                <View key={item.operationId} style={styles.caseRow}>
+                  <View style={styles.caseCopy}>
+                    <Text style={styles.caseTitle}>Operation {item.operationId}</Text>
+                    <Text style={styles.meta}>
+                      {item.workspaceType} workspace · {item.completedBatchCount}/
+                      {item.batchCount} provider batches completed ·{" "}
+                      {item.customerCredits} credits {item.creditState}
+                    </Text>
+                    <Text style={styles.meta}>
+                      {item.selectedEvidenceCount} selected · {item.analyzedEvidenceCount}{" "}
+                      analyzed · status {item.state}
+                    </Text>
+                    <Text style={styles.evidencePreview}>
+                      {item.error?.code || "settled without a failure code"}:{" "}
+                      {item.error?.message || "No safe failure detail was recorded."}
+                    </Text>
+                    {item.reconciliationDisposition ? (
+                      <Text style={styles.meta}>
+                        Audited disposition: {item.reconciliationDisposition}
+                        {item.reconciledAt
+                          ? ` · ${new Date(item.reconciledAt).toLocaleString()}`
+                          : ""}
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
       </AppCard>
 
       <AppCard
