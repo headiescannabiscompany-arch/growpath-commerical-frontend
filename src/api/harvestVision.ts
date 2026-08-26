@@ -388,8 +388,30 @@ function normalizedTrichomeVisionResult(value: any): TrichomeVisionResult {
       "The photo analysis was not securely attested, so no trichome fields were filled. Please run the photo review again."
     );
   }
+  const aggregationVersion = String(
+    result.aggregationVersion ||
+      result.aggregationPolicyVersion ||
+      aggregateReceipt?.aggregationVersion ||
+      ""
+  ).trim();
+  const batchSummaries = Array.isArray(result.batchSummaries)
+    ? result.batchSummaries.map((summary: any) => {
+        if (
+          summary?.imageCount !== undefined ||
+          !Array.isArray(summary?.globalImageIndexes)
+        ) {
+          return summary;
+        }
+        return {
+          ...summary,
+          imageCount: summary.globalImageIndexes.length
+        };
+      })
+    : result.batchSummaries;
   return {
     ...result,
+    ...(aggregationVersion ? { aggregationVersion } : {}),
+    ...(Array.isArray(batchSummaries) ? { batchSummaries } : {}),
     ...(aggregateReceipt ? { aggregateReceipt } : {}),
     analysisReceipt
   } as TrichomeVisionResult;
