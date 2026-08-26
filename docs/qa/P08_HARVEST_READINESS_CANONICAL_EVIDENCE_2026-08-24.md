@@ -30,8 +30,8 @@ test, merge or deployment is not live acceptance.
 | Max-80 frontend              | merged, deployed and live-accepted through retained-frame restore                                                  | PR `#784` merged as `1d6ef91f138769d698fdeeaf47b5ce087571af87`. Oversize preflight PR `#785` deployed as `98e84c939ec0053b7e97eeee57ea753cdeb6dfda`; standalone restore PR `#786` deployed as `4a3084354359ae24cc63ce600830fd195ed77d35`. Production proved both boundaries without another upload or extraction.                                                                                                                                                                                                                          |
 | Durable backend              | merged and live                                                                                                    | PR `#232` merged; Facility source lineage follow-up PR `#233` is live as `e2de8912117dd35adee15e59043f1ce9c06784fe`. `/ready` returned the required database and Harvest worker readiness before the production extraction attempt.                                                                                                                                                                                                                                                                                                        |
 | Production configuration     | configured                                                                                                         | The dedicated Harvest receipt configuration is present; no secret value is recorded here.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Deployment                   | corrective code is on current main and CI-green; exact Render deploy IDs remain to record                          | Backend main `6387095f44ee31e34f0f620262f0bd04e072da24` passed Backend CI; it contains bounded-memory Harvest merge `0bf6647`. Frontend main `b4e3e93592a00c4c6abd459b1d02fd95779c4557` passed Frontend CI; it contains the retained private-review merge `c6c89f3f`. On 2026-08-26 production `/ready` returned `ready=true`, `dbReady=true`, and `harvestVisionOperationWorker.ready=true`. The exact Render deploy IDs and served production SHA markers still must be captured before closure. Earlier accepted extraction/restoration evidence remains bound to the exact SHAs and deploy IDs below. |
-| Live P-08 acceptance         | extraction, restoration, exact quote and durable-start acceptance passed; provider/result/share/delete remain open | Production accepted the owner-approved 80-image, seven-batch, seven-credit Deep Review as operation `6a8ca7b234ec1d260c179e0b`. Authoritative operation state proves it stalled before credit reservation or provider dispatch: all 80 images were selected/analyzed in the plan, all seven batches remained `not_started`, credit state remained `not_reserved`, and no provider response IDs or result existed. The operation is retained for one safe recovery after the bounded worker repair; it must not be resubmitted in parallel. |
+| Deployment                   | corrective code is on current main and CI-green; exact Render deploy IDs remain to record                          | Backend main `6387095f44ee31e34f0f620262f0bd04e072da24` passed Backend CI; it contains bounded-memory Harvest merge `0bf6647`. Frontend main `d526543f570954de8a9581f37cd7debc9f65eb0e` includes the live Admin failure ledger from PR `#824`. On 2026-08-26 production `/ready` returned `ready=true`, `dbReady=true`, and `harvestVisionOperationWorker.ready=true`. The exact Render deploy IDs and served production SHA markers still must be captured before closure. Earlier accepted extraction/restoration evidence remains bound to the exact SHAs and deploy IDs below. |
+| Live P-08 acceptance         | extraction, restoration, exact quote, durable start/restore and audited refund passed; signed result/share/delete remain open | Production accepted one owner-approved 80-image, seven-batch, seven-credit Deep Review. The restored operation showed zero completed batches, but the same-operation guard correctly refused to reopen it. The live Admin ledger then proved that the operation had already reached a terminal audited refund after ambiguous provider work, with all seven credits refunded and no resend. It cannot produce a result or be retried. A new paid dispatch requires a new explicit owner authorization; no replacement operation is currently authorized. |
 | Ownership/lifecycle contract | frozen; backend focused acceptance passed; exact-lock CI and live acceptance open                                  | The entity ownership, authorization, privacy, legal-hold, deletion, exact-replay and publication transitions below are the one P-08 lifecycle. Focused backend acceptance and the existing frontend packet are locally reconciled; the newly added frontend deletion regressions, exact-lock production export, exact-SHA deployment and named live acceptance remain CI/live gates before this row can close.                                                                                                                             |
 
 ### 2026-08-26 resumption and anti-rewrite evidence
@@ -49,21 +49,29 @@ test, merge or deployment is not live acceptance.
 - Production `GET https://api.growpathai.com/ready` returned HTTP 200 with database and required
   Harvest worker ready. The worker was idle, not stale, and reported no active operation or last
   error at `2026-08-26T05:12:59.316Z`.
-- The available in-app Browser session was signed out when the exact Facility recovery gate was
-  reached. Direct Facility and Platform Admin routes therefore failed closed, as required. The
-  next action is not code work: sign in as the authorized Triple Bag Genetics Facility owner,
-  restore operation `6a8ca7b234ec1d260c179e0b`, and inspect that record before any recovery
-  control is used. Do not create, quote, upload, extract, or submit another Deep operation.
+- The authorized Facility owner restored the retained zero-of-seven operation and invoked only
+  its same-operation recovery control. The server refused the guarded retry because the operation
+  was no longer an untouched, uncharged failure. No replacement operation, upload, extraction,
+  quote, provider resend or credit charge occurred.
+- Frontend PR `#824`, live as `d526543f570954de8a9581f37cd7debc9f65eb0e`, exposed the
+  backend's existing recent-failure ledger to Platform Admin while keeping reconciliation controls
+  limited to failures with credits still reserved. Production then showed the retained operation
+  as failed with zero of seven batches completed, seven credits refunded, and an audited
+  reconciled-refund disposition. The Admin held-credit queue remained empty.
+- This closes the retained operation's recovery/credit question. It is terminal and must not be
+  retried. The signed-result/share/delete acceptance cells require a separately authorized new
+  paid operation; no such replacement is currently authorized.
 
 ### 2026-08-24 live extraction and restoration evidence
 
-- Account/workspace: authorized Triple Bag Genetics Facility owner; Facility
-  `6a563bec2fb9f669d2319fa5`; standalone Harvest review with no Grow selected.
+- Account/workspace: authorized Triple Bag Genetics Facility owner; standalone Harvest review
+  with no Grow selected. Production identifiers remain in the private operational ledger, not
+  this public repository.
 - Oversize guard: `IMG_2072.MOV` (240 seconds, 1,612.3 MB) was rejected before upload with the
   explicit 512 MB protected-extraction recovery message on frontend
   `98e84c939ec0053b7e97eeee57ea753cdeb6dfda`.
-- Accepted private source: `OOFC0208.MOV` (270 seconds, 269.2 MB), EvidenceAsset
-  `db95985f486244cbb1a2cacc`; AI use remained disabled for the source video.
+- Accepted private source: one owner-authorized 270-second, 269.2 MB video; AI use remained
+  disabled for the source video. Its protected asset identifier remains private.
 - Durable selection: 270 of 600 candidates sampled; 270 quality-usable; 0 rejected; 0
   near-duplicates removed; 270 distinct candidates; 80 retained frames; 40 timeline buckets;
   19.5 MB of the 80.0 MB retained-frame budget.
@@ -103,11 +111,11 @@ test, merge or deployment is not live acceptance.
   remains off and Analyze was not pressed. Paid provider/result acceptance therefore remains
   open and requires explicit owner authorization at that financial/privacy boundary.
 
-### 2026-08-24 accepted-operation stall and no-dispatch proof
+### 2026-08-24 accepted-operation initial pre-dispatch checkpoint
 
 - The owner subsequently accepted the exact 80-image, seven-batch, seven-credit quote once.
-  Production created durable operation `6a8ca7b234ec1d260c179e0b` at
-  `2026-08-24T20:21:06.155Z` for Facility `6a563bec2fb9f669d2319fa5`.
+  Production created one durable Facility operation. Its private identifiers remain in the
+  operational database and Admin ledger, not this public repository.
 - An authenticated operation response captured after the visible UI remained at `0 of 7`
   reported `status=processing`, `version=37`, `selectedEvidenceCount=80`,
   `analyzedEvidenceCount=80`, `duplicateEvidenceCount=0`, `batchCount=7` and
@@ -115,7 +123,9 @@ test, merge or deployment is not live acceptance.
 - Every durable batch remained `not_started`; no batch input digest, result digest or provider
   response ID existed. The operation had `creditState=not_reserved`, `result=null` and
   `error=null`. This is authoritative proof that the accepted evidence had not been sent to the
-  provider and no credit had been reserved or charged.
+  provider and no credit had been reserved or charged at that captured checkpoint. The later
+  audited refund supersedes this as the terminal credit/dispatch state and proves ambiguous
+  provider work was not resent.
 - Version `37` with no settled batch is consistent with repeated lease acquisition while the
   old worker stalled in pre-reservation evidence preparation. The old worker also swallowed its
   run-loop rejection, leaving the UI truthfully incomplete but without a terminal explanation.
@@ -403,8 +413,8 @@ Deep video acceptance is deliberately paused until every other pre-hat functiona
 is closed. Preserve this packet and return to its remaining live script afterward; do not
 remove the feature, rewrite accepted architecture or treat the pause as completion.
 
-Production operation `6a8d51854cf08c2ed47a99d1` selected/analyzed 80 images, completed
-three of seven provider batches and then failed when the Render service exceeded its 512 MiB
+The first retained production operation selected/analyzed 80 images, completed three of seven
+provider batches and then failed when the Render service exceeded its 512 MiB
 memory limit. No aggregate result was used and the operation was not resent. Backend merge
 `0bf6647874bfbd6b8376af268f313777d42394bc` bounded diagnostic/provider memory and deployed
 healthy. The privacy-bounded Admin reconciliation queue then shipped in backend merge
@@ -430,12 +440,12 @@ Do not repeat them. The only current order is:
    and `harvestVisionOperationWorker.ready: true`. `/health` alone is insufficient.
 4. Merge and deploy the matching frontend only after the backend is live. Record the exact main
    SHA, Render deployment and served bundle; do not deploy the obsolete duplicate service.
-5. Recover existing Facility operation `6a8ca7b234ec1d260c179e0b` exactly once. Do not create a
-   second operation. It must either finish the stored seven-batch package or settle to a proven
-   retryable pre-dispatch/no-charge failure; ambiguous provider work is never resent.
-6. If the same operation succeeds, reload its exact signed result and zooms, save/reopen as needed,
-   then create only the owner-private Feed review draft from one through eight chosen signed zooms.
-   Stop for owner review. Do not publish or send to Facebook in this pass.
+5. The existing Facility operation was restored and its same-operation guard was exercised once.
+   The guard refused to reopen it, and the live Admin ledger proved it had already been audited and
+   refunded after ambiguous provider work. It is terminal; do not resend or rewrite it.
+6. A signed result, zoom reload, save/reopen, private Feed review and bounded share/delete proof now
+   require a separately authorized new paid operation. Stop at that authorization boundary. Do not
+   create a replacement, publish, or send to Facebook under the earlier same-operation consent.
 7. Complete the remaining deletion/role/hold acceptance using the existing result where safe and
    exact-SHA automated evidence where another charged production result would be disproportionate.
    Update this record, the detailed ledger and the single matrix row; do not create another queue.
@@ -452,10 +462,11 @@ Do not repeat them. The only current order is:
       candidate cleanup. No source/rejected/GPS data is sent to the provider.
 - [x] Confirm the exact Standard/Deep classification, image count, batch count and credit quote.
       The first quote was left unaccepted with no dispatch/charge; the exact 80-image, seven-batch,
-      seven-credit quote was then accepted once as operation `6a8ca7b234ec1d260c179e0b`.
-- [~] Start the durable operation; observe queued/processing progress and restore the same
-  operation after navigation/reload. Durable start and pre-dispatch stall proof are complete;
-  corrected same-operation recovery without duplicate provider dispatch or charge remains.
+      seven-credit quote was then accepted once as the retained Facility operation.
+- [x] Start and restore the durable operation, exercise its same-operation recovery guard once,
+      and reconcile its credit state. Production proved the guard refused a terminal operation;
+      Platform Admin proved all seven credits were already refunded after ambiguous provider work,
+      with no resend and no held credits.
 - [ ] Verify one signed all-or-nothing result: selected/analyzed counts, per-image evidence,
       clear/cloudy/amber ambiguity, structural-development observation/signals and bases,
       broader harvest/wait evidence, limitations and next collection step.
