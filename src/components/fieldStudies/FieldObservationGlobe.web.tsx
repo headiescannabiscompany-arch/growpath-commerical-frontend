@@ -181,9 +181,9 @@ export function focusMapOnObservations(
   compact = false
 ) {
   if (!map) return false;
-  const coordinates = observationsToGeoJson(observations).features.map(
-    (feature: any) => feature.geometry.coordinates as [number, number]
-  );
+  const coordinates: Array<[number, number]> = observationsToGeoJson(
+    observations
+  ).features.map((feature: any) => feature.geometry.coordinates as [number, number]);
   if (!coordinates.length) return false;
 
   const west = Math.min(...coordinates.map(([longitude]) => longitude));
