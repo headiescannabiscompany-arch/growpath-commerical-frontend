@@ -843,16 +843,16 @@ found` and neither appeared in the active list, so cleanup is accepted without r
     no-proximity inference, and the house/potted exclusions. Production proved only the four
     explicitly selected Maydale records became public. Final-crawl privacy regression remains;
     this is not a privacy-model rebuild.
-  - **N-01 (`bounded visibility correction in acceptance`):** retain the live globe/map-list
+  - **N-01 (`live accepted`):** retain the live globe/map-list
     runtime, clustering, review filters, location fallback, and honest zero-pin state. Four
     same-point Maydale observations and all 18 detail photos passed production read acceptance.
     Frontend `b941755b` and backend `413612f` prove search against approved public place text
     and the correct observation count in production. A 2026-08-26 Browser pass reproduced that
     their shared cluster could begin off-screen even while all four cards loaded. The bounded
-    focus/return control is live at `0f1f0964`, but the production WebGL circle remained
-    invisible and did not receive a center click. The follow-up candidate retains clustering
-    and adds one visible keyboard-operable marker per privacy-safe coordinate group; local and
-    production selection acceptance remain open. Do not fabricate pins or rebuild the map.
+    focus/return control is live at `0f1f0964`. The bounded marker follow-up is live at
+    `d836ab31`: production displayed the orange approximate Maydale marker labeled `4`, and
+    activating it opened all four distinct field findings while retaining all cards/photos.
+    Only final-crawl regression remains. Do not fabricate pins or rebuild the map.
   - **N-02 (`live accepted`):** retain the current-candidate compact zero-pin Discover globe
     and canonical link. No action remains beyond final-candidate regression checking. The
     older duplicate-preview removal is superseded history, not a request to remove this
