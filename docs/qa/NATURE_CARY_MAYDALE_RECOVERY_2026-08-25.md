@@ -243,8 +243,15 @@ approval. House and potted-plant exclusions remain unchanged.
 - The follow-up candidate retains MapLibre clustering and adds one visible keyboard-operable
   HTML marker for every unique privacy-safe public coordinate group. The marker count opens
   every separate observation at that point; this supplements rather than replaces the map,
-  cards, publication, projection, withdrawal, or privacy workflow. Production deployment,
-  visible `4` marker evidence, and selecting all four Maydale findings remain open.
+  cards, publication, projection, withdrawal, or privacy workflow.
+- Frontend merge `d836ab31a2acc59cb7b1a12841041912e5eb6e0f` and Render deploy
+  `dep-da76piivcj2c73d5iq8g` completed the follow-up. A cache-busted production Browser pass
+  showed the orange approximate-location marker labeled `4` at the focused Maydale point.
+  Its accessible name was `4 published observations at this approximate map place`.
+  Activating it rendered **Selected pin group — 4 field findings** with water lily, Queen
+  Anne's lace, Carolina elephant's-foot, and Asclepias as four separate selectable records.
+  The list retained all four cards and 18 photos. This bounded visibility regression is live
+  accepted; N-01 returns to final-crawl regression only.
 
 ## No-rebuild boundary
 
