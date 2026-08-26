@@ -242,7 +242,9 @@ export default function PublicStorefrontRoute() {
       routeKey="store-public"
       header={
         <View>
-          <Text style={styles.title}>{storefront?.name || "Storefront"}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
+            {storefront?.name || "Storefront"}
+          </Text>
           {storefrontImage ? (
             <Image
               accessibilityLabel={`${storefront?.name || "Storefront"} storefront image`}
