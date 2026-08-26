@@ -1309,6 +1309,19 @@ describe("HarvestReadinessToolRoute", () => {
         })
       )
     );
+    fireEvent.press(screen.getByLabelText("Run Harvest Readiness Estimate"));
+    await waitFor(() =>
+      expect(mockRunCalculator).toHaveBeenCalledWith(
+        "harvest-readiness",
+        expect.objectContaining({
+          growId: undefined,
+          cropContext: "cannabis",
+          workspaceType: "facility",
+          workspaceId: "facility-1",
+          facilityId: "facility-1"
+        })
+      )
+    );
     expect(screen.queryByText("Create Harvest Follow-up Tasks")).toBeNull();
     expect(screen.queryByText("Save Harvest Review")).toBeNull();
   });
