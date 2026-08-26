@@ -693,24 +693,25 @@ grow`, private current location without a Field Study, and an optional approxima
     be missed or silently repeated. The only remaining action is archive both disposable
     records and verify their absence from the active list. Do not rebuild the crop registry,
     manual setup, navigation, lifecycle model, or accepted cancel/return/save/reload behavior.
-  - **P-05 (`live accepted`; bounded correction pending):** retain the separate explicit Nature
+  - **P-05 (`live accepted`):** retain the separate explicit Nature
     draft, required inputs, approximate projection, consent, sensitive/cannabis gates,
     withdrawal, and named park/trip-point reuse. Four Maydale observations now share one
     reviewed approximate point while retaining four separate identities and 18 total photos;
-    production public detail verified every photo/date/description. Deploy and live-verify the
-    public-place search and observation-count wording correction, then leave this item to the
-    final crawl. Do not make Field Study or Grow mandatory and do not replace the existing
-    publication/projection/withdrawal path.
+    production public detail verified every photo/date/description. Frontend `b941755b` and
+    backend `413612f` are live; production `Maydale` search returns all four records and the UI
+    correctly counts observations. Only final-crawl regression remains. Do not make Field
+    Study or Grow mandatory and do not replace the existing publication/projection/withdrawal
+    path.
   - **P-06 (`live accepted`):** retain private-by-default storage, Grow/Nature separation,
     no-proximity inference, and the house/potted exclusions. Production proved only the four
     explicitly selected Maydale records became public. Final-crawl privacy regression remains;
     this is not a privacy-model rebuild.
-  - **N-01 (`live accepted`; bounded correction pending):** retain the live globe/map-list
+  - **N-01 (`live accepted`):** retain the live globe/map-list
     runtime, clustering, review filters, location fallback, and honest zero-pin state. Four
     same-point Maydale observations and all 18 detail photos passed production read acceptance.
-    Deploy and verify search against public notes/region text and label the count as
-    observations, then perform only responsive/accessibility final-crawl checks. Do not
-    fabricate pins or rebuild the map.
+    Frontend `b941755b` and backend `413612f` prove search against approved public place text
+    and the correct observation count in production. Perform only responsive/accessibility
+    final-crawl checks. Do not fabricate pins or rebuild the map.
   - **N-02 (`live accepted`):** retain the current-candidate compact zero-pin Discover globe
     and canonical link. No action remains beyond final-candidate regression checking. The
     older duplicate-preview removal is superseded history, not a request to remove this
