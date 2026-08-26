@@ -314,7 +314,7 @@ export default function PublicFieldObservationsScreen() {
         </View>
         <Text style={styles.mapHelp}>
           {Platform.OS === "web"
-            ? "Zoom, rotate, or select a cluster to explore. The globe starts near your permitted location, or over the United States when location is not enabled."
+            ? "The globe focuses the matching published observations. Zoom, rotate, or select a cluster to explore; use Show published observations to return to the results after moving the map."
             : "Select a mapped finding to open its public photos, identity, and review details. Only contributor-approved public regions and precision are shown."}
         </Text>
         <FieldObservationGlobe
