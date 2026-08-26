@@ -422,7 +422,11 @@ describe("NotificationCenterRoute", () => {
     await waitFor(() =>
       expect(screen.getByText("Live starts in 15 minutes")).toBeTruthy()
     );
-    expect(screen.getByText("Device push is enabled for this account.")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Device push preference is on. Delivery requires a registered app device."
+      )
+    ).toBeTruthy();
     expect(screen.getByText(/Join the soil mixing demo/)).toBeTruthy();
     expect(screen.getByLabelText("Focused notification notification-1")).toBeTruthy();
     expect(screen.getByText(/Source live/)).toBeTruthy();

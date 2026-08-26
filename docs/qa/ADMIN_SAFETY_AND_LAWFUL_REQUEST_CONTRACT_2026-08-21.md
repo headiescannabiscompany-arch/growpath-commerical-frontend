@@ -1,6 +1,6 @@
 # Admin safety and lawful-request contract
 
-Updated: 2026-08-21
+Updated: 2026-08-25
 
 This contract refines canonical stories A-01 through A-05. It does not make a legal
 determination, authorize a disclosure, or close production acceptance. Legal counsel and
@@ -71,9 +71,10 @@ disposition sends the hold release in the same audited transition so the request
 terminal record with an unreachable hold. Corrected work begins through the explicit reopen path
 or a new scoped request; it does not mutate a disposed request in place.
 
-Until the reviewed operating procedure and production fail-closed gates pass, a stored
-`approved` or `disclosed` record is read-only in this frontend and must be escalated through
-that procedure rather than acted on from the page.
+The safe synthetic production gate has passed, but the reviewed operating procedure and an
+authentic legally approved request remain prerequisites for any real approval or disclosure. A
+stored `approved` or `disclosed` record is read-only in this frontend and must be escalated
+through that procedure rather than acted on from the page.
 
 ## Admin deep links and account isolation
 
@@ -89,8 +90,12 @@ workspace is not logout and remains an explicit action.
 
 ## Acceptance still open
 
-Focused automated tests locally accept the A-01 through A-05 implementation; they are not
-production evidence. The exact frontend/backend SHAs must still pass production role,
-direct-link, populated, reload, expiry, logout, cross-account, error-recovery, theme, mobile,
-accessibility, provider and retained-audit checks. Approval and disclosure remain unavailable in
-the frontend pending the reviewed legal operating procedure and production fail-closed evidence.
+Frontend merge `c1e9f3142ecea4f8227eaac068c32babf2c315b0` and backend merge
+`2fdcc7eb23a6a7397a7450d7e89ff355a98434c8` passed focused tests, GitHub CI, successful Render
+deployment, and the safe synthetic production lifecycle/reload gate. The production Admin page
+retained the four exact actor/reason/timestamped audit events, exposed no approval/disclosure
+action, and exposed no new hold action on the rejected request. This closes A-04 product-code and
+safe synthetic-live acceptance. A-01/A-02/A-03/A-05 retain only their specifically named
+provider, representative-content, and cross-account/final-candidate gates. Approval and
+disclosure remain unavailable pending the reviewed legal operating procedure and an authentic
+legally approved request.

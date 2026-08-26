@@ -485,7 +485,7 @@ export default function NotificationCenterRoute() {
     }))
   ];
   const pushStatusText = notificationPrefs.pushEnabled
-    ? "Device push is enabled for this account."
+    ? "Device push preference is on. Delivery requires a registered app device."
     : "Device push is off. Notifications still appear in-app.";
 
   return (
