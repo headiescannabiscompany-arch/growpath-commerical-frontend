@@ -225,7 +225,7 @@ export default function AnalyticsScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" aria-level={1} style={styles.title}>
             Grow Analytics
           </Text>
           <Text style={styles.subtitle}>
@@ -302,7 +302,7 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Last 7 Days
         </Text>
         <View style={styles.row}>
@@ -324,7 +324,7 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Measured History
         </Text>
         <View style={styles.row}>
@@ -347,7 +347,7 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Grow Activity
         </Text>
         {topEntries(analytics.logCountsByGrow).length ? (
@@ -363,7 +363,7 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Plant Stages
         </Text>
         {topEntries(analytics.stageCounts).length ? (
@@ -379,7 +379,7 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Tool Mix
         </Text>
         {topEntries(analytics.toolCounts).length ? (
@@ -397,7 +397,7 @@ export default function AnalyticsScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Needs Attention
         </Text>
         {analytics.overdueTasks.slice(0, 4).map((task) => (

@@ -75,7 +75,7 @@ export default function FieldStudiesScreen() {
       contentContainerStyle={styles.content}
     >
       <BackButton fallbackHref="/home/personal/more" />
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" aria-level={1} style={styles.title}>
         Field Studies
       </Text>
       <Text style={styles.subtitle}>
@@ -129,7 +129,7 @@ export default function FieldStudiesScreen() {
       </View>
 
       <View style={styles.sectionHeader}>
-        <Text accessibilityRole="header" style={styles.sectionTitle}>
+        <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
           Your studies
         </Text>
         <Link href="/field-observations" asChild>

@@ -188,6 +188,14 @@ describe("Personal Field Studies theme and workflow", () => {
     const palette = getThemePalette("night", "dark");
 
     await waitFor(() => expect(screen.getByText("Patapsco plant survey")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "Field Studies" })).toHaveProp(
+      "aria-level",
+      1
+    );
+    expect(screen.getByRole("header", { name: "Your studies" })).toHaveProp(
+      "aria-level",
+      2
+    );
     expect(screen.getByLabelText("Field Study title").props.placeholderTextColor).toBe(
       palette.textMuted
     );

@@ -21,6 +21,7 @@ import { createFacilityTask } from "@/api/facilityTasks";
 import { fetchCommercialGrows } from "@/api/commercialWorkflows";
 import { providerEvidencePayload } from "@/api/evidence";
 import MediaEvidencePicker from "@/components/media/MediaEvidencePicker";
+import BackButton from "@/components/nav/BackButton";
 import type { EvidenceAsset } from "@/types/evidence";
 import {
   askPersonalAssistant,
@@ -1091,6 +1092,15 @@ export default function AiScreen({
   return (
     <View style={styles.container}>
       <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 24 }}>
+        <BackButton
+          fallbackHref={
+            workspaceType === "facility"
+              ? "/home/facility/ai-tools"
+              : workspaceType === "commercial"
+                ? "/home/commercial/tools"
+                : "/home/personal/tools"
+          }
+        />
         <View style={styles.workspaceCard}>
           <Text
             accessibilityRole="header"

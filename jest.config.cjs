@@ -13,6 +13,11 @@ function absoluteDirectoryPattern(...segments) {
 module.exports = {
   preset: "jest-expo",
   rootDir: ".",
+  // Only the canonical frontend source and test trees belong to this suite.
+  // Local Codex/worktree checkouts may sit beside them during development;
+  // excluding those roots prevents duplicate mocks and accidental retesting of
+  // stale copies of the application.
+  roots: ["<rootDir>/src", "<rootDir>/tests"],
 
   // IMPORTANT:
   // Do NOT use jsdom globally for React Native / Expo.
