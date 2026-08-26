@@ -308,7 +308,9 @@ export default function PublicFieldObservationsScreen() {
           <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
             {Platform.OS === "web" ? "Discovery globe" : "Mapped Nature observations"}
           </Text>
-          <Text style={styles.mapCount}>{mappedCount} pins in view</Text>
+          <Text style={styles.mapCount}>
+            {mappedCount} {mappedCount === 1 ? "observation" : "observations"} in view
+          </Text>
         </View>
         <Text style={styles.mapHelp}>
           {Platform.OS === "web"

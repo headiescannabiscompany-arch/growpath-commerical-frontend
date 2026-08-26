@@ -693,49 +693,40 @@ grow`, private current location without a Field Study, and an optional approxima
     be missed or silently repeated. The only remaining action is archive both disposable
     records and verify their absence from the active list. Do not rebuild the crop registry,
     manual setup, navigation, lifecycle model, or accepted cancel/return/save/reload behavior.
-  - **P-05 (`implemented`):** retain the separate explicit Nature draft, required inputs,
-    approximate projection, consent, sensitive/cannabis gates, and withdrawal path. The exact
-    candidate now also includes a named park/trip-pin mode that keeps one reviewed public
-    point active across separate Plant ID evidence sets without merging their identities,
-    photos, descriptions, ToolRuns, or final publish actions. The remaining action is focused
-    local verification, deployment, then legitimate same-point Maydale publications and a
-    separate Cary point with Saved Run/public card-photo-group reload and privacy checks.
-    Do not make Field Study or Grow mandatory and do not replace the existing
+  - **P-05 (`live accepted`; bounded correction pending):** retain the separate explicit Nature
+    draft, required inputs, approximate projection, consent, sensitive/cannabis gates,
+    withdrawal, and named park/trip-point reuse. Four Maydale observations now share one
+    reviewed approximate point while retaining four separate identities and 18 total photos;
+    production public detail verified every photo/date/description. Deploy and live-verify the
+    public-place search and observation-count wording correction, then leave this item to the
+    final crawl. Do not make Field Study or Grow mandatory and do not replace the existing
     publication/projection/withdrawal path.
-  - **P-06 (`implemented`):** retain private-by-default storage, Grow/Nature separation,
-    no-proximity inference, and the house/potted exclusions. During P-05, compare before/after
-    and prove only the selected record is public and Grow save publishes nothing. This is a
-    production privacy assertion, not a privacy-model rebuild.
-  - **N-01 (`partial`):** retain the live globe/map-list runtime, search/review filters,
-    location fallback, and honest zero-pin state. Reuse the legitimate same-point Maydale
-    P-05 records to verify the selected pin group enumerates all distinct findings with the
-    correct photo/date/description/identity, then verify the separate Cary group,
-    search/filter, viewport, and responsive/accessibility states. Do not fabricate pins or
-    rebuild the map.
+  - **P-06 (`live accepted`):** retain private-by-default storage, Grow/Nature separation,
+    no-proximity inference, and the house/potted exclusions. Production proved only the four
+    explicitly selected Maydale records became public. Final-crawl privacy regression remains;
+    this is not a privacy-model rebuild.
+  - **N-01 (`live accepted`; bounded correction pending):** retain the live globe/map-list
+    runtime, clustering, review filters, location fallback, and honest zero-pin state. Four
+    same-point Maydale observations and all 18 detail photos passed production read acceptance.
+    Deploy and verify search against public notes/region text and label the count as
+    observations, then perform only responsive/accessibility final-crawl checks. Do not
+    fabricate pins or rebuild the map.
   - **N-02 (`live accepted`):** retain the current-candidate compact zero-pin Discover globe
     and canonical link. No action remains beyond final-candidate regression checking. The
     older duplicate-preview removal is superseded history, not a request to remove this
     accepted preview again.
-  - **N-03 (`implemented`):** retain exact/private projection, selected precision,
-    sensitive-species, cannabis consent/interest, and identity-redaction rules. During P-05,
-    prove the source point is absent from the public response/card/viewport, approximation is
-    honored, and relevant consent views reveal no private cannabis data. This is production
-    privacy/security acceptance, not a projection/policy rewrite.
-  - **N-04 (`implemented`; legacy recovery is nonblocking):** retain the current safe default: no legacy Cary,
-    Maydale, house, duplicate, or unresolved record was inferred or published. The remaining
-    required action is only a final-candidate read-only privacy regression. The owner has now
-    chosen the bounded Cary/Maydale recovery documented in
-    `NATURE_CARY_MAYDALE_RECOVERY_2026-08-25.md`; require the newest defensible
-    nonduplicate identity and a known place. Do not rebuild deduplication, uncertainty, or
-    no-location-inference rules, and do not block future pins on old media. Complete every
-    retained Cary set and each distinct Maryland visit, including the separate Maryland
-    water-lily observations; do not accept a representative subset. The owner-highlighted
-    August 21 originals have been visually partitioned into four exact evidence sets covering
-    all 18 files (`IMG_2880.HEIC` through `IMG_2897.HEIC`) in the canonical recovery record.
-    Reuse those boundaries; the still-open work is Tool Run linkage, exact-place review,
-    identity/reference review and explicit per-set publication disposition. The owner
-    confirmed the private house crape myrtle is not part of the August 21 set, so it is not a
-    publication blocker for those four observations.
+  - **N-03 (`live accepted`):** retain exact/private projection, selected precision,
+    sensitive-species, cannabis consent/interest, and identity-redaction rules. Production
+    exposed only the approved Maydale approximation and omitted the private source coordinate
+    and house/potted records. Only final-crawl privacy/security regression remains.
+  - **N-04 (`live accepted`; legacy recovery closed):** retain the safe rule that no house,
+    potted, duplicate, unresolved or unavailable record is inferred or published. All four
+    August 21 Maydale sets (18 files) were reviewed and published separately at the approved
+    approximate park point. Legacy Cary IDs no longer resolve and matching source media is not
+    available locally, so those sets are closed unavailable/private without fabrication. A
+    future Cary re-upload may use the retained workflow but is not a release blocker. Only a
+    final-candidate read-only privacy regression remains. See
+    `NATURE_CARY_MAYDALE_RECOVERY_2026-08-25.md`.
 
 - [~] Complete Harvest Readiness real-photo evaluation for ordinary phone photos:
   visible-sample clear/cloudy/amber/unresolved estimates, glare handling, crop-wide
