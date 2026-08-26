@@ -5,6 +5,7 @@ import renderer, { act } from "react-test-renderer";
 
 import FieldObservationGlobe, {
   focusMapOnObservations,
+  groupObservationsByPublicCoordinate,
   maintainMapLibreControlAccessibleNames,
   observationsToGeoJson
 } from "@/components/fieldStudies/FieldObservationGlobe.web";
@@ -27,6 +28,38 @@ jest.mock("@/theme/appTheme", () => ({
 }));
 
 describe("FieldObservationGlobe web lifecycle", () => {
+  it("groups separate observations at one privacy-safe park point into one marker", () => {
+    expect(
+      groupObservationsByPublicCoordinate([
+        {
+          id: "milkweed",
+          location: { latitude: 39.1, longitude: -76.97, precision: "approximate" }
+        },
+        {
+          id: "water-lily",
+          location: { latitude: 39.1, longitude: -76.97, precision: "approximate" }
+        },
+        {
+          id: "cary",
+          location: { latitude: 35.78, longitude: -78.78, precision: "approximate" }
+        }
+      ] as any)
+    ).toEqual([
+      {
+        coordinates: [-76.97, 39.1],
+        key: "-76.97:39.1",
+        observationIds: ["milkweed", "water-lily"],
+        precision: "approximate"
+      },
+      {
+        coordinates: [-78.78, 35.78],
+        key: "-78.78:35.78",
+        observationIds: ["cary"],
+        precision: "approximate"
+      }
+    ]);
+  });
+
   it("focuses coincident park observations as one visible cluster destination", () => {
     const easeTo = jest.fn();
     const fitBounds = jest.fn();
@@ -117,6 +150,8 @@ describe("FieldObservationGlobe web lifecycle", () => {
     const setData = jest.fn();
     const setPaintProperty = jest.fn();
     const remove = jest.fn();
+    const removeMarker = jest.fn();
+    const markerElements: HTMLButtonElement[] = [];
     const onSelectObservations = jest.fn();
     const onViewportChange = jest.fn();
     const getCurrentPosition = jest.fn((success) =>
@@ -176,10 +211,24 @@ describe("FieldObservationGlobe web lifecycle", () => {
       setProjection() {}
     }
 
+    class FakeMarker {
+      constructor({ element }: { element: HTMLButtonElement }) {
+        markerElements.push(element);
+      }
+      addTo() {
+        return this;
+      }
+      remove = removeMarker;
+      setLngLat() {
+        return this;
+      }
+    }
+
     Object.defineProperty(window, "__growpathMapLibre", {
       configurable: true,
       value: {
         Map: FakeMap,
+        Marker: FakeMarker,
         NavigationControl: class {},
         GlobeControl: class {},
         FullscreenControl: class {},
@@ -252,6 +301,13 @@ describe("FieldObservationGlobe web lifecycle", () => {
     expect(easeTo).toHaveBeenCalledWith(
       expect.objectContaining({ center: [-77.04, 38.9], zoom: 9.5 })
     );
+    expect(markerElements).toHaveLength(1);
+    expect(markerElements[0].textContent).toBe("1");
+    expect(markerElements[0].getAttribute("aria-label")).toBe(
+      "1 published observation at this approximate map place"
+    );
+    markerElements[0].click();
+    expect(onSelectObservations).toHaveBeenCalledWith(["observation-2"]);
     const showPublishedButton = tree.root.find(
       (node: any) =>
         node.type === "button" && node.props.children === "Show published observations"
@@ -273,6 +329,7 @@ describe("FieldObservationGlobe web lifecycle", () => {
 
     await act(async () => tree.unmount());
     expect(remove).toHaveBeenCalledTimes(1);
+    expect(removeMarker).toHaveBeenCalledTimes(1);
   });
 
   it("does not crash navigation when WebKit has already cleared MapLibre's painter", async () => {

@@ -5,6 +5,7 @@ type MapLibreMap = any;
 type MapLibreGeoJSONSource = any;
 type MapLibreModule = {
   Map: new (options: any) => MapLibreMap;
+  Marker: new (options?: any) => any;
   NavigationControl: new (options?: any) => any;
   GlobeControl: new () => any;
   FullscreenControl: new () => any;
@@ -175,6 +176,40 @@ export function observationsToGeoJson(observations: FieldObservation[]) {
   } as any;
 }
 
+export type ObservationCoordinateGroup = {
+  key: string;
+  coordinates: [number, number];
+  observationIds: string[];
+  precision: "exact" | "approximate";
+};
+
+export function groupObservationsByPublicCoordinate(
+  observations: FieldObservation[]
+): ObservationCoordinateGroup[] {
+  const groups = new Map<string, ObservationCoordinateGroup>();
+  observations.forEach((observation) => {
+    const coordinates = publicObservationCoordinates(observation);
+    const id = observationId(observation);
+    if (!coordinates || !id) return;
+    const key = `${coordinates.longitude}:${coordinates.latitude}`;
+    const existing = groups.get(key);
+    const precision =
+      observation.location?.precision === "exact" ? "exact" : "approximate";
+    if (existing) {
+      if (!existing.observationIds.includes(id)) existing.observationIds.push(id);
+      if (precision === "approximate") existing.precision = "approximate";
+      return;
+    }
+    groups.set(key, {
+      key,
+      coordinates: [coordinates.longitude, coordinates.latitude],
+      observationIds: [id],
+      precision
+    });
+  });
+  return [...groups.values()];
+}
+
 export function focusMapOnObservations(
   map: MapLibreMap | null,
   observations: FieldObservation[],
@@ -264,6 +299,10 @@ export default function FieldObservationGlobe({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const observationsRef = useRef(observations);
+  const observationMarkersRef = useRef<any[]>([]);
+  const refreshObservationMarkersRef = useRef<(next: FieldObservation[]) => void>(
+    () => undefined
+  );
   const initialObservationFocusRef = useRef(false);
   const onSelectRef = useRef(onSelectObservations);
   const onViewportRef = useRef(onViewportChange);
@@ -280,6 +319,7 @@ export default function FieldObservationGlobe({
       | MapLibreGeoJSONSource
       | undefined;
     source?.setData(observationsToGeoJson(observations));
+    refreshObservationMarkersRef.current(observations);
     if (
       source &&
       !initialObservationFocusRef.current &&
@@ -364,6 +404,38 @@ export default function FieldObservationGlobe({
         });
         map = activeMap;
         mapRef.current = activeMap;
+
+        const clearObservationMarkers = () => {
+          observationMarkersRef.current.forEach((marker) => marker.remove?.());
+          observationMarkersRef.current = [];
+        };
+        const refreshObservationMarkers = (nextObservations: FieldObservation[]) => {
+          clearObservationMarkers();
+          if (typeof maplibregl.Marker !== "function") return;
+          observationMarkersRef.current = groupObservationsByPublicCoordinate(
+            nextObservations
+          ).map((group) => {
+            const button = document.createElement("button");
+            const count = group.observationIds.length;
+            button.className = "growpath-observation-dom-marker";
+            button.dataset.precision = group.precision;
+            button.type = "button";
+            button.textContent = String(count);
+            button.title = `${count} published ${
+              count === 1 ? "observation" : "observations"
+            } at this ${group.precision} map place`;
+            button.setAttribute("aria-label", button.title);
+            button.addEventListener("click", (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onSelectRef.current(group.observationIds);
+            });
+            return new maplibregl.Marker({ anchor: "center", element: button })
+              .setLngLat(group.coordinates)
+              .addTo(activeMap);
+          });
+        };
+        refreshObservationMarkersRef.current = refreshObservationMarkers;
 
         const emitViewport = () => {
           onViewportRef.current(viewportFromMap(activeMap));
@@ -454,6 +526,7 @@ export default function FieldObservationGlobe({
           activeMap.on("mouseleave", CLUSTER_LAYER_ID, clearPointer);
           activeMap.on("mouseenter", PIN_LAYER_ID, showPointer);
           activeMap.on("mouseleave", PIN_LAYER_ID, clearPointer);
+          refreshObservationMarkers(observationsRef.current);
           activeMap.on("moveend", emitViewport);
           setReady(true);
           emitViewport();
@@ -552,6 +625,9 @@ export default function FieldObservationGlobe({
 
     return () => {
       disposed = true;
+      refreshObservationMarkersRef.current = () => undefined;
+      observationMarkersRef.current.forEach((marker) => marker.remove?.());
+      observationMarkersRef.current = [];
       stopMaintainingControlNames();
       if (mapRef.current === map) mapRef.current = null;
       safelyRemoveMapLibreMap(map, container);
@@ -687,6 +763,28 @@ export default function FieldObservationGlobe({
         }
         .growpath-field-globe .maplibregl-ctrl-attrib a {
           color: ${palette.link};
+        }
+        .growpath-field-globe .growpath-observation-dom-marker {
+          align-items: center;
+          background: #d97706;
+          border: 3px solid #ffffff;
+          border-radius: 999px;
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.48);
+          color: #ffffff;
+          cursor: pointer;
+          display: flex;
+          font: 900 14px/1 system-ui, sans-serif;
+          height: 34px;
+          justify-content: center;
+          min-width: 34px;
+          padding: 0 7px;
+        }
+        .growpath-field-globe .growpath-observation-dom-marker[data-precision="exact"] {
+          background: #15803d;
+        }
+        .growpath-field-globe .growpath-observation-dom-marker:focus-visible {
+          outline: 3px solid ${palette.link};
+          outline-offset: 3px;
         }
         @media (max-width: 640px) {
           .growpath-field-globe {

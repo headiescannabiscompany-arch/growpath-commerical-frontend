@@ -700,6 +700,10 @@ off-screen at a country-wide or viewer-location default. Results that deliberate
 one reviewed park or trip point remain one visible selectable cluster. After a visitor
 pans or zooms, an explicit return-to-published-results control must refit the current
 result set; using the visitor's location remains a separate deliberate action.
+Every mappable result coordinate group must also have a visible, keyboard-operable marker;
+an observation count or accessible list does not prove that a WebGL point layer painted.
+An accessible HTML marker may supplement the retained clustered map layer so shared park
+points remain selectable when a browser or graphics path fails to paint custom circles.
 The server queries only the rounded or explicitly approved public point that the visitor
 is allowed to see; it must never use the protected exact point for viewport filtering, as
 that could reveal hidden precision through repeated map requests. The accessible

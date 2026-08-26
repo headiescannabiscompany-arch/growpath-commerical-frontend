@@ -425,7 +425,7 @@ export const methodRegistry: GrowPathMethod[] = [
       "visible map-readiness status for editable study, public study visibility, evidence, explicit observation publication, public location privacy, and separately captured coordinates",
       "public observation projection that excludes private coordinates and owner-only provenance",
       "distinct identification verification, plant-health assessment, and jurisdiction-specific invasive status",
-      "interactive clustered globe that initially focuses the current privacy-safe public result bounds, provides an explicit return-to-results control after panning, and remains synchronized with a keyboard-accessible observation list",
+      "interactive clustered globe with a visible keyboard-operable marker for every public coordinate group, initial focus on current privacy-safe result bounds, an explicit return-to-results control after panning, and a synchronized accessible observation list",
       "signed-out photo-ready non-cannabis observations with optional-auth cannabis/hemp policy enrichment",
       "cannabis/hemp pins gated by deliberate publication and public context plus viewer grow-interest or content controls"
     ],
