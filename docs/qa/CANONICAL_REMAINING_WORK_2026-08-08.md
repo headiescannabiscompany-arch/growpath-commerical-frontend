@@ -1855,11 +1855,22 @@ public visibility, or screenshot/video acceptance still called out below.
       workspace/tool/community/Nature entries and the intentional cannabis-interest
       gate on direct Harvest Readiness. It found bounded heading hierarchy defects in
       Field Studies, Environment Review and Grow Analytics plus a missing visible Back
-      action in AI Assistant. Those defects are implemented together with focused
-      53/53 verification, but remain open here until the exact fix is deployed and the
-      same live routes pass. The frontend Jest root was also constrained to canonical
+      action in AI Assistant. Frontend merge
+      `14e62750000274c5559db4b09894e545dc7b5801` deployed successfully and all four
+      exact production routes passed with one level-one heading, intended level-two
+      sections and visible Back. Focused/config verification passed 55/55. The frontend
+      Jest root was also constrained to canonical
       `src` and `tests` so stale local checkout folders cannot contaminate or multiply
-      suite execution. Browser route/DOM evidence exists; screenshot capture was
+      suite execution. The next Living Soil Labs Commercial slice passed 32/34 routes;
+      New Grow and Data Integrations were usable and correctly scoped but lacked a
+      level-one heading. Their existing visible titles are now semantic headings and
+      await focused verification, deployment and exact live recheck. All eight Business
+      Desk tools passed. The next frequent-tool slice passed 10/13; Plant ID and IPM
+      Scout had hidden navigator headings while Diagnose exposed both navigator and
+      content headings. The Commercial route policy now gives each one heading owner
+      and awaits the same focused/deployed recheck. The final creation/import/report
+      batch passed 8/9 routes; Auto Grow Calendar repeated the hidden navigator-heading
+      pattern and is included in the same fix/recheck batch. Browser route/DOM evidence exists; screenshot capture was
       unavailable, so responsive visual/theme/assistive-tech evidence is not claimed.
       A non-mutating signed-in desktop production batch on 2026-08-20 covered the
       Admin Personal Home, Grows, AI Tools, Forum/Q&A, Discover, Courses, and Profile

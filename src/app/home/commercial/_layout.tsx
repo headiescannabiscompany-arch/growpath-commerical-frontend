@@ -358,7 +358,10 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="product-lines/[lineId]" options={{ href: null }} />
       <Tabs.Screen name="trials/[trialId]" options={{ href: null }} />
       <Tabs.Screen name="tools/ask-ai" options={{ title: "Ask AI", href: null }} />
-      <Tabs.Screen name="tools/diagnose" options={{ title: "Diagnose", href: null }} />
+      <Tabs.Screen
+        name="tools/diagnose"
+        options={{ title: "Diagnose", headerShown: false, href: null }}
+      />
       <Tabs.Screen
         name="tools/environment"
         options={{ title: "Environment Review", headerShown: false, href: null }}
@@ -416,7 +419,7 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="tools/auto-grow-calendar"
-        options={{ title: "Auto Grow Calendar", href: null, headerShown: false }}
+        options={{ title: "Auto Grow Calendar", href: null, headerShown: true }}
       />
       <Tabs.Screen
         name="tools/history-import"
@@ -424,7 +427,7 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="tools/ipm-scout"
-        options={{ title: "IPM Scout", href: null, headerShown: false }}
+        options={{ title: "IPM Scout", href: null, headerShown: true }}
       />
       <Tabs.Screen
         name="tools/saved-runs"
@@ -432,7 +435,11 @@ export default function CommercialTabsLayout() {
       />
       <Tabs.Screen
         name="tools/species-crop-id"
-        options={{ title: "Plant & Crop Identification", href: null, headerShown: false }}
+        options={{
+          title: "Plant & Crop Identification",
+          href: null,
+          headerShown: true
+        }}
       />
     </Tabs>
   );

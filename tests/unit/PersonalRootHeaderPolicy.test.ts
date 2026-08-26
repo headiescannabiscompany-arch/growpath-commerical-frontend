@@ -43,6 +43,23 @@ describe("Personal root header policy", () => {
     );
   });
 
+  test("gives Commercial shared AI tools exactly one heading owner", () => {
+    const commercialLayout = read("src/app/home/commercial/_layout.tsx");
+
+    expect(commercialLayout).toContain(
+      'options={{ title: "Diagnose", headerShown: false, href: null }}'
+    );
+    expect(commercialLayout).toContain(
+      'options={{ title: "IPM Scout", href: null, headerShown: true }}'
+    );
+    expect(commercialLayout).toMatch(
+      /title: "Plant & Crop Identification",[\s\S]*?headerShown: true/
+    );
+    expect(commercialLayout).toContain(
+      'options={{ title: "Auto Grow Calendar", href: null, headerShown: true }}'
+    );
+  });
+
   test("uses the Upgrade Account page heading without exposing route-template titles", () => {
     const personalLayout = read("src/app/home/personal/_layout.tsx");
     const upgrade = read("src/features/billing/screens/UpgradePlan.tsx");
