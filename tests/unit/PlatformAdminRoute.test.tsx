@@ -258,7 +258,7 @@ function defaultAdminApi(path: string) {
     return Promise.resolve({ proposals: [] });
   if (path === "/api/ai/training/harvest-trichome-calibration")
     return Promise.resolve({ items: [harvestCalibrationCandidate] });
-  if (path === "/api/admin/harvest-operations")
+  if (path === "/api/admin/harvest-operations?includeSettled=true")
     return Promise.resolve({
       operations: [
         {
@@ -278,6 +278,26 @@ function defaultAdminApi(path: string) {
             message: "Support review required.",
             retryable: false
           }
+        },
+        {
+          operationId: "6b0000000000000000000002",
+          workspaceType: "facility",
+          workspaceId: "facility-workspace",
+          facilityId: "6a563bec2fb9f669d2319fa5",
+          selectedEvidenceCount: 80,
+          analyzedEvidenceCount: 80,
+          batchCount: 7,
+          completedBatchCount: 0,
+          customerCredits: 7,
+          state: "failed",
+          creditState: "refunded",
+          error: {
+            code: "HARVEST_DEEP_DISPATCH_RECONCILED_REFUNDED",
+            message: "Administrative reconciliation refunded the reserved credits.",
+            retryable: false
+          },
+          reconciliationDisposition: "refunded",
+          reconciledAt: "2026-08-26T05:30:00.000Z"
         }
       ]
     });
@@ -458,6 +478,14 @@ describe("PlatformAdminRoute", () => {
     expect(screen.getByText("Harvest trichome calibration queue")).toBeTruthy();
     expect(screen.getByText("Harvest provider reconciliation")).toBeTruthy();
     expect(screen.getByText(/3\/7 provider batches completed/)).toBeTruthy();
+    expect(screen.getByText("Recent Harvest failures without held credits")).toBeTruthy();
+    expect(screen.getByText(/0\/7 provider batches completed/)).toBeTruthy();
+    expect(screen.getByText(/Audited disposition: refunded/)).toBeTruthy();
+    expect(
+      screen.queryByRole("button", {
+        name: "Record refund for Harvest operation 6b0000000000000000000002"
+      })
+    ).toBeNull();
     expect(screen.getByText(/AI amber 1% to 23%/)).toBeTruthy();
     expect(screen.getByText(/owner visible-area estimate 30%/)).toBeTruthy();
     expect(screen.getByText(/Not ground truth/)).toBeTruthy();
