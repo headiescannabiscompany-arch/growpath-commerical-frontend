@@ -905,6 +905,7 @@ export function useHarvestDeepReview({
   const terminalResetAllowed = Boolean(
     operation &&
     (["succeeded", "refunded"].includes(operation.status) ||
+      operation.creditState === "refunded" ||
       (operation.status === "failed" &&
         Number(operation.creditsRefunded || 0) >= operation.creditsQuoted))
   );
