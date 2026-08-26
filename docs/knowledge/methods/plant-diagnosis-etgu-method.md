@@ -694,6 +694,12 @@ The main Discover directory includes a compact globe preview that opens this can
 public discovery surface. The preview remains visible when there are zero public
 observations and must say that no public pins exist; an empty result must not collapse
 into text-only navigation that makes the globe appear missing.
+When the canonical discovery surface first receives one or more mappable results, it must
+fit the privacy-safe public result coordinates into view rather than leaving their pins
+off-screen at a country-wide or viewer-location default. Results that deliberately share
+one reviewed park or trip point remain one visible selectable cluster. After a visitor
+pans or zooms, an explicit return-to-published-results control must refit the current
+result set; using the visitor's location remains a separate deliberate action.
 The server queries only the rounded or explicitly approved public point that the visitor
 is allowed to see; it must never use the protected exact point for viewport filtering, as
 that could reveal hidden precision through repeated map requests. The accessible

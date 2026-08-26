@@ -4,6 +4,7 @@ import React from "react";
 import renderer, { act } from "react-test-renderer";
 
 import FieldObservationGlobe, {
+  focusMapOnObservations,
   maintainMapLibreControlAccessibleNames,
   observationsToGeoJson
 } from "@/components/fieldStudies/FieldObservationGlobe.web";
@@ -26,6 +27,42 @@ jest.mock("@/theme/appTheme", () => ({
 }));
 
 describe("FieldObservationGlobe web lifecycle", () => {
+  it("focuses coincident park observations as one visible cluster destination", () => {
+    const easeTo = jest.fn();
+    const fitBounds = jest.fn();
+    const focused = focusMapOnObservations({ easeTo, fitBounds }, [
+      { id: "milkweed", location: { latitude: 39.1, longitude: -76.97 } },
+      { id: "water-lily", location: { latitude: 39.1, longitude: -76.97 } }
+    ] as any);
+
+    expect(focused).toBe(true);
+    expect(easeTo).toHaveBeenCalledWith({
+      center: [-76.97, 39.1],
+      duration: 700,
+      zoom: 9.5
+    });
+    expect(fitBounds).not.toHaveBeenCalled();
+  });
+
+  it("fits geographically separate observation results without over-zooming", () => {
+    const easeTo = jest.fn();
+    const fitBounds = jest.fn();
+    const focused = focusMapOnObservations({ easeTo, fitBounds }, [
+      { id: "maryland", location: { latitude: 39.1, longitude: -76.97 } },
+      { id: "cary", location: { latitude: 35.78, longitude: -78.78 } }
+    ] as any);
+
+    expect(focused).toBe(true);
+    expect(fitBounds).toHaveBeenCalledWith(
+      [
+        [-78.78, 35.78],
+        [-76.97, 39.1]
+      ],
+      { duration: 700, maxZoom: 9.5, padding: 56 }
+    );
+    expect(easeTo).not.toHaveBeenCalled();
+  });
+
   it("maps only complete bounded public coordinate pairs", () => {
     const geoJson = observationsToGeoJson([
       {
@@ -76,6 +113,7 @@ describe("FieldObservationGlobe web lifecycle", () => {
 
   it("retains the active map so geolocation and pin updates work", async () => {
     const easeTo = jest.fn();
+    const fitBounds = jest.fn();
     const setData = jest.fn();
     const setPaintProperty = jest.fn();
     const remove = jest.fn();
@@ -95,6 +133,7 @@ describe("FieldObservationGlobe web lifecycle", () => {
       addLayer() {}
       addSource() {}
       easeTo = easeTo;
+      fitBounds = fitBounds;
       getBounds() {
         return {
           getWest: () => -130,
@@ -209,6 +248,19 @@ describe("FieldObservationGlobe web lifecycle", () => {
           })
         ]
       })
+    );
+    expect(easeTo).toHaveBeenCalledWith(
+      expect.objectContaining({ center: [-77.04, 38.9], zoom: 9.5 })
+    );
+    const showPublishedButton = tree.root.find(
+      (node: any) =>
+        node.type === "button" && node.props.children === "Show published observations"
+    );
+    await act(async () => {
+      showPublishedButton.props.onClick();
+    });
+    expect(easeTo).toHaveBeenLastCalledWith(
+      expect.objectContaining({ center: [-77.04, 38.9], zoom: 9.5 })
     );
 
     await act(async () => {

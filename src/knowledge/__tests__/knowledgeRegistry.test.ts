@@ -564,6 +564,9 @@ describe("GrowPath knowledge registries", () => {
     expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
       "required user-reviewed contributor-authored public Nature description stored as publicNotes and shown with the public photo pin without converting it into AI evidence"
     );
+    expect(getMethod("plant-diagnosis-etgu")?.requiredOutputs).toContain(
+      "interactive clustered globe that initially focuses the current privacy-safe public result bounds, provides an explicit return-to-results control after panning, and remains synchronized with a keyboard-accessible observation list"
+    );
     expect(getMethod("plant-diagnosis-etgu")?.warnings).toContain(
       "Do not synthesize a public Nature description from AI output, fall back to a private note, or encourage personal names, exact addresses, private-property details, or sensitive-species directions."
     );

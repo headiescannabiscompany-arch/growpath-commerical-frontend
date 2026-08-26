@@ -221,6 +221,24 @@ approval. House and potted-plant exclusions remain unchanged.
   actual `Maydale` search. P-05, P-06, N-01, N-03 and N-04 now require only ordinary
   final-crawl regression.
 
+### 2026-08-26 bounded globe-visibility regression
+
+- A production Browser pass reproduced a presentation defect without reopening the accepted
+  publication or privacy workflow: all four Maydale observation cards loaded, but the globe
+  remained at a country-wide/viewer-location view and did not bring their shared approximate
+  park cluster on-screen.
+- The bounded frontend correction fits the current privacy-safe public result coordinates on
+  first load and adds **Show published observations** so a visitor can return to those results
+  after panning or using their location. Coincident Maydale records remain four separate
+  observations behind one selectable park cluster; no exact or private coordinate changes.
+- Downtown Cary Park remains the separately named North Carolina place at 327 S. Academy
+  Street, Cary, near Raleigh. The address is sufficient for a future reviewed shared park
+  point, but it is not plant evidence. Cary observations still require owner re-upload of one
+  photo/video evidence set per distinct plant and must not be fabricated from the address.
+- Local focused acceptance currently passes 18 tests across globe behavior, public list
+  request ordering/photo details, and the app-readable knowledge registry. Production deploy
+  and visual cluster selection remain the only open checks for this bounded regression.
+
 ## No-rebuild boundary
 
 Do not rebuild Plant ID, Saved Runs, Field Studies, the globe, projection, publication,

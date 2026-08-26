@@ -143,6 +143,7 @@ const DEFAULT_TILE_URL =
   "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const DEFAULT_ATTRIBUTION =
   process.env.EXPO_PUBLIC_FIELD_MAP_ATTRIBUTION || "© OpenStreetMap contributors";
+const OBSERVATION_FOCUS_ZOOM = 9.5;
 
 function observationId(observation: FieldObservation) {
   return String(observation.id || observation._id || "");
@@ -172,6 +173,44 @@ export function observationsToGeoJson(observations: FieldObservation[]) {
       ];
     })
   } as any;
+}
+
+export function focusMapOnObservations(
+  map: MapLibreMap | null,
+  observations: FieldObservation[],
+  compact = false
+) {
+  if (!map) return false;
+  const coordinates: Array<[number, number]> = observationsToGeoJson(
+    observations
+  ).features.map((feature: any) => feature.geometry.coordinates as [number, number]);
+  if (!coordinates.length) return false;
+
+  const west = Math.min(...coordinates.map(([longitude]) => longitude));
+  const east = Math.max(...coordinates.map(([longitude]) => longitude));
+  const south = Math.min(...coordinates.map(([, latitude]) => latitude));
+  const north = Math.max(...coordinates.map(([, latitude]) => latitude));
+  if (west === east && south === north) {
+    map.easeTo({
+      center: [west, south],
+      zoom: compact ? 7.5 : OBSERVATION_FOCUS_ZOOM,
+      duration: 700
+    });
+    return true;
+  }
+
+  map.fitBounds(
+    [
+      [west, south],
+      [east, north]
+    ],
+    {
+      duration: 700,
+      maxZoom: compact ? 7.5 : OBSERVATION_FOCUS_ZOOM,
+      padding: compact ? 28 : 56
+    }
+  );
+  return true;
 }
 
 export function fallbackStyle() {
@@ -225,6 +264,7 @@ export default function FieldObservationGlobe({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const observationsRef = useRef(observations);
+  const initialObservationFocusRef = useRef(false);
   const onSelectRef = useRef(onSelectObservations);
   const onViewportRef = useRef(onViewportChange);
   const [ready, setReady] = useState(false);
@@ -232,6 +272,7 @@ export default function FieldObservationGlobe({
   const [locationMessage, setLocationMessage] = useState(
     "Showing the United States while location access is checked."
   );
+  const mappedObservationCount = observationsToGeoJson(observations).features.length;
 
   useEffect(() => {
     observationsRef.current = observations;
@@ -239,7 +280,19 @@ export default function FieldObservationGlobe({
       | MapLibreGeoJSONSource
       | undefined;
     source?.setData(observationsToGeoJson(observations));
-  }, [observations]);
+    if (
+      source &&
+      !initialObservationFocusRef.current &&
+      focusMapOnObservations(mapRef.current, observations, compact)
+    ) {
+      initialObservationFocusRef.current = true;
+      setLocationMessage(
+        `Showing ${mappedObservationCount} published ${
+          mappedObservationCount === 1 ? "observation" : "observations"
+        } on the globe.`
+      );
+    }
+  }, [compact, mappedObservationCount, observations]);
 
   useEffect(() => {
     onSelectRef.current = onSelectObservations;
@@ -279,6 +332,15 @@ export default function FieldObservationGlobe({
       { enableHighAccuracy: false, maximumAge: 300000, timeout: 8000 }
     );
   }, []);
+
+  const focusPublishedObservations = useCallback(() => {
+    if (!focusMapOnObservations(mapRef.current, observations, compact)) return;
+    setLocationMessage(
+      `Showing ${mappedObservationCount} published ${
+        mappedObservationCount === 1 ? "observation" : "observations"
+      } on the globe.`
+    );
+  }, [compact, mappedObservationCount, observations]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -395,6 +457,18 @@ export default function FieldObservationGlobe({
           activeMap.on("moveend", emitViewport);
           setReady(true);
           emitViewport();
+          if (
+            !initialObservationFocusRef.current &&
+            focusMapOnObservations(activeMap, observationsRef.current, compact)
+          ) {
+            initialObservationFocusRef.current = true;
+            const count = observationsToGeoJson(observationsRef.current).features.length;
+            setLocationMessage(
+              `Showing ${count} published ${
+                count === 1 ? "observation" : "observations"
+              } on the globe.`
+            );
+          }
 
           const permissions = (navigator as any)?.permissions;
           if (permissions?.query) {
@@ -402,21 +476,33 @@ export default function FieldObservationGlobe({
               .query({ name: "geolocation" })
               .then((result: PermissionStatus) => {
                 if (result.state === "granted") {
-                  centerOnUser(false);
+                  if (initialObservationFocusRef.current) {
+                    setLocationMessage(
+                      "Showing the published observations. Your location is available from Use my location."
+                    );
+                  } else {
+                    centerOnUser(false);
+                  }
                 } else {
                   setLocationMessage(
-                    "Location is not enabled, so the globe is showing the United States."
+                    initialObservationFocusRef.current
+                      ? "Showing the published observations. Location is not enabled."
+                      : "Location is not enabled, so the globe is showing the United States."
                   );
                 }
               })
               .catch(() => {
                 setLocationMessage(
-                  "Location is not enabled, so the globe is showing the United States."
+                  initialObservationFocusRef.current
+                    ? "Showing the published observations. Location is not enabled."
+                    : "Location is not enabled, so the globe is showing the United States."
                 );
               });
           } else {
             setLocationMessage(
-              "Location is not enabled, so the globe is showing the United States."
+              initialObservationFocusRef.current
+                ? "Showing the published observations. Location is not enabled."
+                : "Location is not enabled, so the globe is showing the United States."
             );
           }
         });
@@ -471,7 +557,7 @@ export default function FieldObservationGlobe({
       safelyRemoveMapLibreMap(map, container);
       map = null;
     };
-  }, [centerOnUser]);
+  }, [centerOnUser, compact]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -503,6 +589,13 @@ export default function FieldObservationGlobe({
         </div>
       ) : null}
       <div className="growpath-field-globe-location">
+        <button
+          disabled={!ready || mappedObservationCount === 0}
+          onClick={focusPublishedObservations}
+          type="button"
+        >
+          Show published observations
+        </button>
         <button disabled={!ready} onClick={() => centerOnUser(true)} type="button">
           Use my location
         </button>
