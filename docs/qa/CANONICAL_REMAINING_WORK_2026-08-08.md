@@ -1,6 +1,6 @@
 # GrowPathAI Canonical Remaining Work
 
-Updated: 2026-08-25
+Updated: 2026-08-26
 
 Status: Detailed evidence and remainder ledger; reconciled against retained production
 evidence on 2026-08-21, with the P-08 implementation/evidence freeze reconciled on
@@ -21,17 +21,24 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-**Current active cursor (2026-08-25):** close every remaining non-Harvest production gate
-in matrix dependency order, then return once to P-08 exactly as frozen in
-`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. P-08 is deliberately deferred,
-not reopened or replaced, while the other product/provider/multi-account gates close.
+**Current active cursor (2026-08-26):** the reachable non-Harvest production increment is closed;
+resume P-08 at step 5 exactly as frozen in
+`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. P-08 is the active final functional
+row, not reopened or replaced. Current frontend and backend main are CI-green, the focused
+frontend Harvest packet passes 88/88 assertions, the Harvest history contract passes, and
+production reports the database and required Harvest worker ready. The in-app Browser session
+was signed out at the private-operation gate, so the next action is to sign in as the authorized
+Triple Bag Genetics Facility owner and inspect retained operation `6a8ca7b234ec1d260c179e0b` before
+using its same-operation recovery control. Do not perform any code rewrite, new upload,
+re-extraction, quote, start or replacement operation for this gate.
 After P-08 closes, proceed to the final crawl/fixes, proven dead-code cleanup, frozen-SHA
 release rerun, external review, and then stop at hats. Production already passed the
 512 MiB client guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames,
 exact standalone source/frame restoration, explicit standalone cannabis/hemp confirmation, and
 the exact 80-image/7-batch/7-credit quote. The owner accepted that quote once as Facility
 operation `6a8ca7b234ec1d260c179e0b`; authoritative state proves all seven batches remain
-`not_started`, credits remain `not_reserved`, and no provider response/result exists. Do not
+   `not_started`, credits remain `not_reserved`, and no provider response/result existed at the
+   retained pre-recovery checkpoint. Do not
 repeat upload, extraction, restoration, quote, or start, and do not create another operation.
 The ownership/lifecycle packet is now frozen across the Harvest method, app-readable registry,
 construction scaffold, backend contract and P-08 record: Personal/Commercial is account-owned;

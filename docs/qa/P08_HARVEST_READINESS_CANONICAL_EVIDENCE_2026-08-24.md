@@ -1,6 +1,6 @@
 # P-08 Harvest Readiness canonical completion record
 
-Updated: 2026-08-24
+Updated: 2026-08-26
 
 This is the single current implementation and acceptance record for canonical matrix row
 `P-08`. It is evidence, not a second product queue. The product status remains owned by
@@ -30,9 +30,30 @@ test, merge or deployment is not live acceptance.
 | Max-80 frontend              | merged, deployed and live-accepted through retained-frame restore                                                  | PR `#784` merged as `1d6ef91f138769d698fdeeaf47b5ce087571af87`. Oversize preflight PR `#785` deployed as `98e84c939ec0053b7e97eeee57ea753cdeb6dfda`; standalone restore PR `#786` deployed as `4a3084354359ae24cc63ce600830fd195ed77d35`. Production proved both boundaries without another upload or extraction.                                                                                                                                                                                                                          |
 | Durable backend              | merged and live                                                                                                    | PR `#232` merged; Facility source lineage follow-up PR `#233` is live as `e2de8912117dd35adee15e59043f1ce9c06784fe`. `/ready` returned the required database and Harvest worker readiness before the production extraction attempt.                                                                                                                                                                                                                                                                                                        |
 | Production configuration     | configured                                                                                                         | The dedicated Harvest receipt configuration is present; no secret value is recorded here.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Deployment                   | current diagnostic slice live                                                                                      | Backend `290eda123db5279ed61a7943d236725a225e5cf2`; frontend `889d49ed2e0d3e4ec0518e8ba46f52d00592c9b4`. The exact corrective worker SHAs and Render deploy IDs remain to be recorded after CI and deployment. Earlier accepted extraction/restoration evidence remains bound to the exact SHAs and deploy IDs below.                                                                                                                                                                                                                      |
+| Deployment                   | corrective code is on current main and CI-green; exact Render deploy IDs remain to record                          | Backend main `6387095f44ee31e34f0f620262f0bd04e072da24` passed Backend CI; it contains bounded-memory Harvest merge `0bf6647`. Frontend main `b4e3e93592a00c4c6abd459b1d02fd95779c4557` passed Frontend CI; it contains the retained private-review merge `c6c89f3f`. On 2026-08-26 production `/ready` returned `ready=true`, `dbReady=true`, and `harvestVisionOperationWorker.ready=true`. The exact Render deploy IDs and served production SHA markers still must be captured before closure. Earlier accepted extraction/restoration evidence remains bound to the exact SHAs and deploy IDs below. |
 | Live P-08 acceptance         | extraction, restoration, exact quote and durable-start acceptance passed; provider/result/share/delete remain open | Production accepted the owner-approved 80-image, seven-batch, seven-credit Deep Review as operation `6a8ca7b234ec1d260c179e0b`. Authoritative operation state proves it stalled before credit reservation or provider dispatch: all 80 images were selected/analyzed in the plan, all seven batches remained `not_started`, credit state remained `not_reserved`, and no provider response IDs or result existed. The operation is retained for one safe recovery after the bounded worker repair; it must not be resubmitted in parallel. |
 | Ownership/lifecycle contract | frozen; backend focused acceptance passed; exact-lock CI and live acceptance open                                  | The entity ownership, authorization, privacy, legal-hold, deletion, exact-replay and publication transitions below are the one P-08 lifecycle. Focused backend acceptance and the existing frontend packet are locally reconciled; the newly added frontend deletion regressions, exact-lock production export, exact-SHA deployment and named live acceptance remain CI/live gates before this row can close.                                                                                                                             |
+
+### 2026-08-26 resumption and anti-rewrite evidence
+
+- Current frontend main `b4e3e93592a00c4c6abd459b1d02fd95779c4557` passed Frontend CI run
+  `32930936382`. Current backend main `6387095f44ee31e34f0f620262f0bd04e072da24`
+  passed Backend CI run `32925389112`.
+- Bounded-memory backend merge `0bf6647` passed its GitHub check run
+  `32830042724`. Retained private-review frontend merge `c6c89f3f` passed Release preflight and
+  lint/audit in runs `32821252544` and `32821252543`.
+- A focused current-main frontend run passed all 88 assertions across the eight Harvest API,
+  screen, durable-operation, persistence, private-sharing, visible-sample and deletion suites.
+  `validate:harvest-history-contract` also passed; corruption markers and diff corruption were
+  absent from `src`, `tests`, `scripts` and `docs`.
+- Production `GET https://api.growpathai.com/ready` returned HTTP 200 with database and required
+  Harvest worker ready. The worker was idle, not stale, and reported no active operation or last
+  error at `2026-08-26T05:12:59.316Z`.
+- The available in-app Browser session was signed out when the exact Facility recovery gate was
+  reached. Direct Facility and Platform Admin routes therefore failed closed, as required. The
+  next action is not code work: sign in as the authorized Triple Bag Genetics Facility owner,
+  restore operation `6a8ca7b234ec1d260c179e0b`, and inspect that record before any recovery
+  control is used. Do not create, quote, upload, extract, or submit another Deep operation.
 
 ### 2026-08-24 live extraction and restoration evidence
 
