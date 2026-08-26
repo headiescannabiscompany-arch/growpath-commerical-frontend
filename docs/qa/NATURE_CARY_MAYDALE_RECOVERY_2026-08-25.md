@@ -213,8 +213,13 @@ approval. House and potted-plant exclusions remain unchanged.
   separate Downtown Cary Park collection using the already-implemented named park/trip-pin
   workflow; this is new content entry and does not block the accepted Maydale workflow.
 - This section supersedes the earlier incremental statement that a second Maydale publication
-  or legacy Cary publication remained required. After the search/count correction is deployed
-  and verified, P-05, P-06, N-01, N-03 and N-04 require only ordinary final-crawl regression.
+  or legacy Cary publication remained required. Frontend PR `#814`, merge `b941755b`, Render
+  deploy `dep-da73b015efls738663dg`, backend PR `#248`, merge `413612f`, and Render deploy
+  `dep-da73c9142hec73f1096g` completed the bounded correction. The production API query
+  `q=Maydale` returned exactly the four approved observations, each at `39.1`, `-76.97`; the
+  deployed public UI showed `4 observations in view` and retained all four cards after an
+  actual `Maydale` search. P-05, P-06, N-01, N-03 and N-04 now require only ordinary
+  final-crawl regression.
 
 ## No-rebuild boundary
 
