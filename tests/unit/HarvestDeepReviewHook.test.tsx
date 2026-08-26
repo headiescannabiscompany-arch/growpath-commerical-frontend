@@ -384,6 +384,32 @@ describe("Harvest Deep review durable frontend operation", () => {
     expect(screen.getByText("operation-deep-1")).toBeTruthy();
   });
 
+  it("allows a fresh quote after a failed operation is authoritatively refunded", async () => {
+    mockStart.mockResolvedValue({
+      operation: {
+        ...operation("queued").operation,
+        status: "failed",
+        creditState: "refunded",
+        errorCode: "HARVEST_DEEP_DISPATCH_RECONCILED_REFUNDED",
+        failureMessage:
+          "Administrative reconciliation refunded the reserved credits without resending ambiguous provider work."
+      }
+    });
+    const screen = render(<Probe />);
+    await quoteAndAccept(screen);
+
+    fireEvent.press(screen.getByLabelText("start"));
+    await waitFor(() => expect(screen.getByText("operation-deep-1")).toBeTruthy());
+    expect(latestHook?.terminalResetAllowed).toBe(true);
+    expect(latestHook?.retryablePristineFailure).toBe(false);
+
+    fireEvent.press(screen.getByLabelText("reset"));
+    await waitFor(() => expect(screen.getByText("no-operation")).toBeTruthy());
+
+    expect(mockForget).toHaveBeenCalledTimes(1);
+    expect(mockStart).toHaveBeenCalledTimes(1);
+  });
+
   it("clears an owner-deleted completed-result tombstone without promising retry or refund", async () => {
     mockStart.mockResolvedValue({
       operation: {
