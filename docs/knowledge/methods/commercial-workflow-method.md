@@ -75,6 +75,16 @@ Hidden and soft-removed Forum posts must be removed from every shared feed proje
 
 Commercial is Pro grow workflow plus brand/storefront, products/lines, formulas/batches/lots, trials, inventory, courses, lives, campaigns, forum presence, orders and analytics. Commercial users still have grows: product, soil, nutrient, genetics, demo or education trials.
 
+Commercial content ownership is a server-verified entitlement boundary, not a client-menu
+choice. Storefront, product/catalog import, campaign, Live, seller-order, and Commercial Feed
+authoring require the authenticated account to be a platform administrator operating only its
+own Commercial workspace, an active or trialing Creator, or an active or trialing Commercial or
+Facility subscriber. Personal Free and Pro accounts may use intentionally public storefront,
+catalog, checkout, and Feed projections and may react to public Feed posts while signed in, but
+they may not create or manage Commercial owner records through direct API calls. Creator content
+access does not grant B-02 inventory mutation, regulated-commerce evidence, or transaction
+authority; those retain their stricter plan, workspace, role, policy, and audit gates.
+
 The Commercial AI hub must keep crop-neutral Plant/Crop Identification, Plant Diagnosis,
 IPM Scout, environment review, mix builders, and Commercial-scoped Saved AI Runs reachable
 inside Commercial. Shared tool screens must use Commercial-local entry routes, retain the
