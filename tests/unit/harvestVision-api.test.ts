@@ -142,6 +142,59 @@ describe("Harvest vision receipt policies", () => {
     );
   });
 
+  it("normalizes durable Deep aggregate aliases without weakening the signed receipt", async () => {
+    const aggregateReceipt = {
+      kind: "harvest_vision_aggregate",
+      version: 2,
+      signature: digest("e"),
+      keyId: "harvest-receipt-key-1",
+      manifestDigest: digest("b"),
+      selectedEvidenceDigest: digest("c"),
+      analyzedEvidenceDigest: digest("d"),
+      aggregationVersion: "harvest-deterministic-aggregate-v1"
+    };
+    mockApiRequest.mockResolvedValueOnce({
+      result: {
+        ...responseForPolicy("harvest-trichome-server-attestation-v4-batched-evidence")
+          .result,
+        analysisMode: "deep",
+        aggregationPolicyVersion: "harvest-deterministic-aggregate-v1",
+        manifestDigest: digest("b"),
+        selectedEvidenceDigest: digest("c"),
+        analyzedEvidenceDigest: digest("d"),
+        batchSummaries: [
+          {
+            batchIndex: 0,
+            globalImageIndexes: [1],
+            inputDigest: digest("f"),
+            resultDigest: digest("0")
+          }
+        ],
+        analysisReceipt: {
+          ...aggregateReceipt,
+          aiUsageEventId: "usage-1",
+          normalizedHarvestResultDigest: digest("a"),
+          evidenceFingerprint: "evidence-1",
+          reviewPolicyVersion: "harvest-trichome-server-attestation-v4-batched-evidence"
+        },
+        aggregateReceipt
+      }
+    });
+
+    await expect(analyzeTrichomePhotos(exactAnalysisInput)).resolves.toEqual(
+      expect.objectContaining({
+        aggregationVersion: "harvest-deterministic-aggregate-v1",
+        batchSummaries: [
+          expect.objectContaining({
+            batchIndex: 0,
+            imageCount: 1,
+            globalImageIndexes: [1]
+          })
+        ]
+      })
+    );
+  });
+
   it("accepts a duplicate-heavy selected set as a standard one-credit quote", async () => {
     mockApiRequest.mockResolvedValue({
       quote: {
