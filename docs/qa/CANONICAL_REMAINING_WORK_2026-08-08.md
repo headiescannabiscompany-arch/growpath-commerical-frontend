@@ -1,6 +1,6 @@
 # GrowPathAI Canonical Remaining Work
 
-Updated: 2026-08-24
+Updated: 2026-08-25
 
 Status: Detailed evidence and remainder ledger; reconciled against retained production
 evidence on 2026-08-21, with the P-08 implementation/evidence freeze reconciled on
@@ -47,6 +47,18 @@ signed result/reload and sanitized exact zooms; create only the
 owner-private Feed review draft; stop for owner review; complete proportionate deletion/cleanup
 evidence; update exact evidence and close P-08. Publication and Facebook are later explicit
 owner actions. The older batch cursor below is retained history and cannot override this slice.
+
+The 2026-08-25 safe non-Harvest production increment is complete: C-01/C-04/C-05 own-
+Commercial entitlement and Admin entry are accepted; S-02/S-03 upload, exact quota,
+protected playback, privacy, archive and storage release are accepted; and S-07 unsaved
+course-media edits are accepted and cleaned up. Remaining non-Harvest rows retain only their
+already named external gates—paid provider credentials/evaluation authority, real payment or
+email delivery, disposable-account deletion, real Facility role identities, a published
+premiere source, simultaneous broadcasters or multi-organization populated data. Do not
+manufacture those states, send messages, publish content, charge money or create misleading
+fixtures. Record them as exact blockers, continue unrelated work, and now resume P-08 at step 5
+of its frozen script using only the existing Facility operation. No new Deep operation is
+authorized.
 
 1. **Completed current release-candidate slice:** exact-candidate Personal, paid Commercial
    and Platform Admin read-only acceptance is recorded. The reproduced missing Admin return
@@ -286,7 +298,8 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   announcement configuration. No session or provider record was changed. This closes the
   current entry/configuration regression; only the named two-account simultaneous-stream and
   final-candidate isolation regression remains.
-- [~] **S-02/S-03 video uploads:** production upload depends on configured R2/object storage.
+- [x] **S-02/S-03 video uploads:** configured R2/object storage, exact quota accounting,
+  protected playback, privacy, lifecycle and release are production accepted.
   Verify the visible upload/library/following/comment/premiere paths and configured storage
   in the final candidate; a local route without production storage is not completion.
   The 2026-08-25 Admin-owned Commercial pass exposed one exact authorization mismatch: the
@@ -306,8 +319,28 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   acceptance then proved Follow plus the Following filter, comment create/edit/list/delete/
   reload, repeat-delete idempotency, correct engagement reconciliation, private-draft
   archive/reload, outside-Free denial and cleanup. The original follow state and engagement
-  total were restored. Preserve the architecture; S-02/S-03 now remain open only for one
-  configured production upload/storage-usage regression on the frozen final candidate.
+  total were restored. The final configured-storage regression then ran on frontend
+  `e67206c3dbe050e54713a5e131a16ba1ec50c402` (Render
+  `dep-da75rm7lk1mc73ecf8m0`) and backend
+  `6387095f44ee31e34f0f620262f0bd04e072da24` (Render
+  `dep-da75hp6gekts73bq5ah0`). A synthetic Commercial owner uploaded the owner-authorized
+  135,214-byte `IMG_2706.MOV` as one protected R2 multipart part. The active private draft
+  increased storage from `0` to exactly `135214` bytes, owner playback returned a signed
+  URL whose range read returned `206`, and the outside Free account received `404` for both
+  detail and playback. Archive/reload persisted. Permanent removal reported storage
+  `released` and exact quota returned to `0`; the record was never published and cleanup
+  left no test video or upload. Preserve the architecture; S-02/S-03 are closed except for
+  final-candidate regression.
+- [~] **S-04/S-07 private regression:** frontend `e67206c` and backend `6387095` served a
+  2026-08-25 signed-in Admin Commercial run. Temporary private course
+  `6a8e613df1139368577357f2` retained unsaved lesson title, body and reviewed YouTube URL
+  while Drafts/Workspace Library filters forced the asynchronous reusable-video refresh.
+  Save and direct reload persisted all three values while the course remained private/draft;
+  archive then removed it from the active list. This closes the unsaved-course-edit slice.
+  A temporary private video draft was also created and removed with zero storage use, but
+  Live Studio correctly requires a published workspace video for a premiere and this Admin
+  Commercial workspace has none. The attached-video premiere-copy regression remains an
+  owner/publication gate; GrowPath did not publish test content to fake acceptance.
 - [x] **C-04/S-06 Twitch connection:** Twitch is an optional external publication/provider
       integration, not the GrowPath Live host and not a launch dependency. Draft-safe OAuth UI and
       backend callback routes remain available for later owner credential configuration. A fresh
