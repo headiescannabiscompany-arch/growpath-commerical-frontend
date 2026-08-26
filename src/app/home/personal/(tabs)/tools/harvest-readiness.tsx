@@ -202,6 +202,19 @@ function savedHarvestEvidenceIds(run: ToolRun | null) {
     .filter(Boolean);
 }
 
+function getHarvestToolRun(
+  toolRunId: string,
+  workspaceType: VideoWorkspaceType,
+  facilityId?: string
+) {
+  return workspaceType === "personal"
+    ? getToolRun(toolRunId)
+    : getToolRun(toolRunId, {
+        workspaceType,
+        ...(workspaceType === "facility" && facilityId ? { facilityId } : {})
+      });
+}
+
 function harvestAnalysisScopeKey(input: {
   workspaceType: VideoWorkspaceType;
   workspaceId?: string;
@@ -877,10 +890,9 @@ function HarvestPhotoAnalyzer({
           }
         : {})
     });
-    const retryRunPromise =
-      retryToolRunId && workspaceType === "personal"
-        ? getToolRun(retryToolRunId).catch(() => null)
-        : Promise.resolve(null);
+    const retryRunPromise = retryToolRunId
+      ? getHarvestToolRun(retryToolRunId, workspaceType, facilityId).catch(() => null)
+      : Promise.resolve(null);
 
     Promise.all([assetsPromise, retryRunPromise])
       .then(([assets, retryRun]: [EvidenceAsset[], ToolRun | null]) => {
@@ -960,8 +972,8 @@ function HarvestPhotoAnalyzer({
       : [];
     if (
       !retryToolRunId ||
-      workspaceType !== "personal" ||
-      !currentEvidenceAssetIds.length
+      !currentEvidenceAssetIds.length ||
+      (!growId && !standaloneCropContextConfirmed)
     ) {
       return () => {
         active = false;
@@ -979,7 +991,7 @@ function HarvestPhotoAnalyzer({
     }
     signedAnalysisRestoreKeyRef.current = restoreKey;
 
-    void getToolRun(retryToolRunId)
+    void getHarvestToolRun(retryToolRunId, workspaceType, facilityId)
       .then((retryRun) => {
         if (!active) return;
         const restoredAnalysis = savedHarvestAnalysis(retryRun);
@@ -1009,7 +1021,8 @@ function HarvestPhotoAnalyzer({
           plantId,
           evidenceAssetIds: currentEvidenceAssetIds,
           sampleLocation: "mixed_bud_sites",
-          notes
+          notes,
+          cropContext: !growId && standaloneCropContextConfirmed ? "cannabis" : undefined
         });
         mountedAnalysisRef.current = restoredAnalysis;
         mountedAnalysisOperationIdRef.current = restoredOperationId;
@@ -1059,6 +1072,7 @@ function HarvestPhotoAnalyzer({
     notes,
     plantId,
     retryToolRunId,
+    standaloneCropContextConfirmed,
     workspaceId,
     workspaceType
   ]);

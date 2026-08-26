@@ -1525,6 +1525,88 @@ describe("HarvestReadinessToolRoute", () => {
     expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
   });
 
+  it("recovers an exact standalone Facility Deep run after crop confirmation", async () => {
+    mockRouteParams = { retryToolRunId: "facility-harvest-deep-run-1" };
+    mockEntitlements = {
+      plan: "facility",
+      mode: "facility",
+      facilityId: "facility-1",
+      can: () => true
+    };
+    const retainedIds = Array.from(
+      { length: 13 },
+      (_, index) => `64b0000000000000000000${index + 1}`
+    );
+    const packet = deepFeedReviewPacket(
+      { evidenceAssetIds: retainedIds, clientOperationKey: "facility-saved-run-key" },
+      "operation-deep-facility-saved-run"
+    );
+    mockGetToolRun.mockResolvedValue({
+      id: "facility-harvest-deep-run-1",
+      toolType: "harvest_readiness",
+      inputs: { evidenceAssetIds: retainedIds, cropContext: "cannabis" },
+      outputs: {
+        photoAnalysis: {
+          ...packet.result,
+          operationId: "operation-deep-facility-saved-run"
+        }
+      }
+    });
+    mockListEvidenceAssets.mockResolvedValue(
+      retainedIds.map((id, index) => ({
+        id,
+        _id: id,
+        assetType: "photo",
+        originalUri: `/uploads/facility-deep-${index + 1}.jpg`,
+        durableUrl: `/uploads/facility-deep-${index + 1}.jpg`,
+        mimeType: "image/jpeg",
+        source: "library",
+        purpose: "harvest",
+        uploadStatus: "uploaded",
+        aiUsable: true,
+        qualityWarnings: []
+      }))
+    );
+    mockGetDeepTrichomeReviewOperation.mockResolvedValueOnce(packet);
+    mockGetHarvestFeedReviewDraft.mockResolvedValueOnce(privateFeedReviewDraft());
+
+    const screen = await renderHarvestReadinessTool({
+      workspaceType: "facility",
+      workspaceId: "facility-1"
+    });
+
+    await screen.findByText(
+      /Restored 13 exact harvest photos for this standalone workspace review/i
+    );
+    expect(screen.queryByText("Help correct this estimate")).toBeNull();
+    fireEvent(
+      screen.getByLabelText(
+        "Confirm this standalone evidence is cannabis or hemp flower"
+      ),
+      "valueChange",
+      true
+    );
+
+    expect(
+      await screen.findByLabelText("Private Harvest Feed draft preview")
+    ).toBeTruthy();
+    expect(mockGetToolRun).toHaveBeenCalledWith("facility-harvest-deep-run-1", {
+      workspaceType: "facility",
+      facilityId: "facility-1"
+    });
+    expect(mockGetDeepTrichomeReviewOperation).toHaveBeenCalledWith(
+      "operation-deep-facility-saved-run",
+      {
+        workspaceType: "facility",
+        workspaceId: "facility-1",
+        facilityId: "facility-1"
+      },
+      expect.objectContaining({ signal: expect.anything() })
+    );
+    expect(mockStartDeepTrichomeReview).not.toHaveBeenCalled();
+    expect(mockAnalyzeTrichomePhotos).not.toHaveBeenCalled();
+  });
+
   it("preserves a fresh analysis after restoring a saved Harvest run", async () => {
     mockRouteParams = { growId: "grow-1", retryToolRunId: "harvest-run-1" };
     const retainedIds = [1, 2, 3, 4].map((index) => `64c00000000000000000000${index}`);
