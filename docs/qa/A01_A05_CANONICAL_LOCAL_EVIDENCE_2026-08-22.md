@@ -90,12 +90,13 @@ authority. The frontend has no one-click approval or disclosure action.
   reason-required reopen, final resolution and hard-reload retention. The queue returned to
   0 active / 14 completed. A-02 is closed; do not repeat either completed lifecycle.
 - **A-03 exact external blocker:** production truthfully reports `Sentry Admin read access is
-  not configured`. Protected provider access and a redacted test event are still required to
+not configured`. Protected provider access and a redacted test event are still required to
   prove the project/environment tally, detail/deep link and no-secret response. Do not present
   Sentry as connected or rebuild the accepted Admin source adapter while that credential gate
   remains unmet.
-- **A-04:** in production, prove that direct invalid approval/disclosure attempts fail closed; run
-  a synthetic preservation/identity/legal-review/reject-or-close lifecycle and retained audit.
+- **A-04:** safe product acceptance is complete. Production proved that the unavailable
+  approval/disclosure surface remains fail closed and ran a synthetic
+  preservation/identity/legal-review/reject lifecycle with retained audit.
   Approval or disclosure of real account data requires an authentic request, reviewed legal
   authority, the approved operating procedure, and the backend gates; never fabricate a police or
   emergency request merely to satisfy release QA.
@@ -104,8 +105,13 @@ authority. The frontend has no one-click approval or disclosure action.
   `received -> identity_review -> legal_review -> rejected` without approval, disclosure, or
   account data. Reloading its retained audit returned all four exact actor/reason/timestamped
   events. The follow-up safety correction prevents any new hold after approval or disposition
-  and makes a held reject/close release the hold in the same audited request; deploy and
-  live-accept that correction before closing A-04.
+  and makes a held reject/close release the hold in the same audited request. Frontend merge
+  `c1e9f3142ecea4f8227eaac068c32babf2c315b0` and backend merge
+  `2fdcc7eb23a6a7397a7450d7e89ff355a98434c8` passed CI and reached successful Render deploys.
+  The cache-busted Admin production page reloaded all four exact audit events, still exposed no
+  approval/disclosure action, and no longer offered a hold action on the terminal rejected
+  request. Authentic approval or disclosure remains an external legal operating gate, not
+  unfinished product code, and must not be fabricated for release QA.
 - **A-05:** use the final candidate across Free, Pro, Commercial, Facility and Admin identities to
   prove expiry, reload, logout, direct-URL denial, identity-to-identity cleanup and explicit
   authorized workspace switching without Living Soil Labs/Triple Bag Genetics ownership leakage.

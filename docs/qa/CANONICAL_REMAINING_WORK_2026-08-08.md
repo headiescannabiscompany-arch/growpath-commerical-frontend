@@ -21,8 +21,12 @@ execution boundaries and the evidence needed not to reopen completed work.
 This section is the stable handoff point. Update it when a coherent acceptance batch
 starts or finishes; do not create another active todo document.
 
-**Current active cursor (2026-08-24):** finish P-08 exactly as frozen in
-`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. Production already passed the
+**Current active cursor (2026-08-25):** close every remaining non-Harvest production gate
+in matrix dependency order, then return once to P-08 exactly as frozen in
+`P08_HARVEST_READINESS_CANONICAL_EVIDENCE_2026-08-24.md`. P-08 is deliberately deferred,
+not reopened or replaced, while the other product/provider/multi-account gates close.
+After P-08 closes, proceed to the final crawl/fixes, proven dead-code cleanup, frozen-SHA
+release rerun, external review, and then stop at hats. Production already passed the
 512 MiB client guard, real FFmpeg preselection of `OOFC0208.MOV` into 80 retained frames,
 exact standalone source/frame restoration, explicit standalone cannabis/hemp confirmation, and
 the exact 80-image/7-batch/7-credit quote. The owner accepted that quote once as Facility
@@ -222,6 +226,12 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       checkout is gated by `GIFT_SUBSCRIPTION_ENABLED`, refund-worker readiness, email,
       Stripe/webhook capability, secrets and index readiness. Complete and live-accept the
       entire lifecycle, then enable it; do not leave it as a dormant foundation.
+      The 2026-08-25 signed-in production pass truthfully exposed `Gifts you sent` while
+      disabling `Gift someone else` with the exact recipient-fulfillment/claim-delivery
+      prerequisite and `No gift payment can be started`; ordinary Stripe checkout remained
+      labeled as live and capable of charging a real card. No checkout opened and no payment,
+      gift, recipient record, or email was created. This accepts the fail-closed presentation,
+      not the gift lifecycle or launch.
 - [~] **R-01 account and Facility billing:** Stripe checkout/webhooks exist and cancellation
   retains paid-through access, but the active safety correction must prove source-aware
   cancellation, duplicate prevention and exact-Facility entitlement across multiple
@@ -254,21 +264,66 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   live gates; they require the corresponding authorized account sessions and must not cause
   an eight-tool rebuild. The remaining work is credential/provider, exact-SHA deployment and
   live acceptance—not B-03 construction.
+  The 2026-08-25 Admin-owned Commercial production pass confirmed all eight tools are visibly
+  reachable with truthful boundaries. Business Ask showed the bounded question/date/source and
+  one-credit contract but disabled submission because provider operations are not configured;
+  Expense / Receipt Helper likewise exposed private image/PDF intake and manual entry while
+  disabling extraction. Both histories were empty and no provider request, credit, document, or
+  business record was created. The exact next action remains the protected enablement checklist
+  in `docs/backend/business-desk-provider-operations.md`: configuration guard, indexes, dedicated
+  safety salt/models, worker readiness, and—only for receipt extraction—protected object bytes,
+  scanner, parser and decoder evidence. This live unavailable state is accepted; enabling a flag
+  without those prerequisites is not.
 - [~] **S-05 hosted Lives/OBS:** the retained hosted-live architecture and production evidence
   are accepted and must not be rebuilt. `EXPO_PUBLIC_USE_LIVE_BACKEND` and Cloudflare
   provider readiness can bury the entry; the final route-to-entry and two-account
   concurrency regression must prove it remains visible, configured and isolated.
+  A fresh read-only Admin-owned Commercial pass on 2026-08-25 opened `/live-studio`, reloaded
+  the four retained private/replay QA sessions, and selected `Broadcast live in GrowPath`.
+  Production exposed the reusable `GrowPathAI production OBS` channel, 159 of 240 hosted minutes,
+  a 120-minute session limit, GrowPath chat/slow mode, outside-picker entry export, video
+  premieres, viewer-control copy, explicit private-draft publication, and optional Discord
+  announcement configuration. No session or provider record was changed. This closes the
+  current entry/configuration regression; only the named two-account simultaneous-stream and
+  final-candidate isolation regression remains.
 - [~] **S-02/S-03 video uploads:** production upload depends on configured R2/object storage.
   Verify the visible upload/library/following/comment/premiere paths and configured storage
   in the final candidate; a local route without production storage is not completion.
-- [~] **C-04/S-06 Twitch connection:** draft-safe OAuth UI and backend callback routes exist,
-  but credentials are optional and may be unconfigured. Decide from the canonical sharing
-  contract whether Twitch connection is a launch integration, then either configure and
-  live-accept it or label it visibly as an optional unavailable provider; do not imply a
-  connected channel.
+  The 2026-08-25 Admin-owned Commercial pass exposed one exact authorization mismatch: the
+  shared `/videos` UI correctly selected Commercial storage but its API returned
+  `VIDEO_WORKSPACE_DENIED` because `routes/videos.js` recognized Commercial/Facility plans and
+  omitted the server-verified Platform Admin exception already used by the other own-Commercial
+  services. Backend PR `#251` permits only the Admin account's own Commercial video workspace,
+  retains cross-account workspace denial, and adds both positive and negative route coverage.
+  It merged as `d43438c32a1c60bd619e252549e88041a933c76c`; Render deploy
+  `dep-da74d22vcj2c73d3s3mg` reached Live. The cache-busted Admin-owned Commercial library
+  then returned the truthful `0 B used of 10 GB` quota, zero workspace/my/published/draft
+  counts, enabled provider/visibility/structured-interest authoring controls, and an empty
+  library without `VIDEO_WORKSPACE_DENIED`. This closes the Admin-library authorization
+  correction. Preserve the architecture; the remaining S-02/S-03 gates are follow/comment
+  mutation and archive/outside-user acceptance.
+- [x] **C-04/S-06 Twitch connection:** Twitch is an optional external publication/provider
+      integration, not the GrowPath Live host and not a launch dependency. Draft-safe OAuth UI and
+      backend callback routes remain available for later owner credential configuration. A fresh
+      read-only Admin-owned Commercial production pass on 2026-08-25 opened the retained Lives page
+      and truthfully displayed `Twitch OAuth is not configured on this deployment`, disabled
+      `Connect Twitch`, and showed EventSub `Not connected`; it did not imply a connected channel
+      or mutate a record. Hosted GrowPathAI Lives/OBS, platform-neutral destination URLs and in-app
+      chat remain the accepted core path. Reopen this row only when the owner elects to configure
+      Twitch credentials, then live-accept OAuth/callback/EventSub without rebuilding Lives.
 - [~] **P-07 protected evidence storage:** evidence routes contain a fail-closed provider gate.
   Prove originals/derived views, authorized access, retention/export and production storage
   configuration for each launch AI-media workflow.
+  Backend PR `#252` consolidated the final three plan-only Commercial exceptions onto the
+  server-verified own-Commercial resolver for evidence assets, AI evidence and Harvest, kept
+  cross-workspace denial, and added positive Admin-own plus negative cross-workspace tests for
+  every corrected surface. Both CI lanes passed, including the full test/security-scan job; it
+  merged as `0add3194d41ca91ee5232a6389688c35706529cb` and Render deploy
+  `dep-da74kgm7bikc73fg8be0` reached Live. Cache-busted Admin-owned Commercial production passes
+  then loaded Plant ID direct evidence, an empty Saved Runs history and standalone Harvest
+  Readiness without an access denial, provider call, credit, upload or publication. This closes
+  C-05 own-Commercial authorization and leaves P-07 open only for its named real-storage
+  originals/derivatives/retention/export acceptance; do not rebuild workspace authorization.
 - [~] **A-03 Sentry investigation:** Sentry issue reading is implemented but requires Admin
   provider access. Configure and live-accept the Admin tally/detail/deep-link workflow or
   retain the exact credential dependency without claiming that Sentry is visible in Admin.
@@ -291,6 +346,14 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   depends on the notification worker. Prove supported events from creation through preference,
   delivery/failure, Admin visibility and retry; do not count an in-app record as proof that an
   email or device notification was delivered.
+  A 2026-08-25 Admin-owned Commercial read-only pass verified the shared Notification Center,
+  category controls, two retained moderation notifications, source deep links and truthful
+  `in-app only` delivery receipts. It also exposed one presentation defect: the top status
+  called the push preference “enabled” without proving a registered device. The frontend now
+  says `Device push preference is on. Delivery requires a registered app device.`; the focused
+  Notification Center suite passes 8/8. This copy correction does not close email/device
+  delivery—the remaining gate is still a real registered-device/provider delivery and failure
+  receipt, not another notification-system rebuild.
 - [~] **F-06 device-provider adapters and provider catalog:** the provider catalog contains
   implemented read-only adapters for Pulse, UbiBot and ZENTRA, an access-required Growlink
   adapter, customer-key TrolMaster setup, and additional contract-pending/access-required/
@@ -373,22 +436,22 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       an intentional compatibility boundary, not a hidden product. This classification does
       not close the owning product row's separate live acceptance.
 - [~] **Close retained worktrees without losing work:** the 2026-08-25 follow-up audit removed
-      five verified-clean, fully merged duplicates: frontend Admin-mobile and retained-photo
-      trees, backend Facility-inventory and P-02 import trees inside the current workspace, and
-      the external durable-enqueue tree. Branch history remains available. The audit explicitly
-      retained the unique P-08 standalone-quote, standalone-context and Feed-review commits;
-      the uncommitted hat work; and the deferred trichome worktrees with temporary evaluation
-      artifacts. The root rescue commit `be15ccd` was deliberately rejected as superseded: its
-      legacy upload, quota, deletion-state, protected-course-media, notification-preference and
-      soft-deleted-profile behavior is weaker than current main. Its primary checkout is kept,
-      but that commit is not an integration candidate. The merged horticulture tree was
-      deregistered, but its
-      physical directory still contains source, uploads and temporary data; recursive deletion
-      was refused pending an explicit content review, so it remains a visible cleanup item.
-      Continue classifying each retained unique commit/diff against the canonical matrix and
-      newer implementation, integrate and accept useful behavior, or record a deliberate
-      rejection with its superseding path. Worktree count is not a product-completion metric,
-      and deleting a directory is never a substitute for resolving its work.
+  five verified-clean, fully merged duplicates: frontend Admin-mobile and retained-photo
+  trees, backend Facility-inventory and P-02 import trees inside the current workspace, and
+  the external durable-enqueue tree. Branch history remains available. The audit explicitly
+  retained the unique P-08 standalone-quote, standalone-context and Feed-review commits;
+  the uncommitted hat work; and the deferred trichome worktrees with temporary evaluation
+  artifacts. The root rescue commit `be15ccd` was deliberately rejected as superseded: its
+  legacy upload, quota, deletion-state, protected-course-media, notification-preference and
+  soft-deleted-profile behavior is weaker than current main. Its primary checkout is kept,
+  but that commit is not an integration candidate. The merged horticulture tree was
+  deregistered, but its
+  physical directory still contains source, uploads and temporary data; recursive deletion
+  was refused pending an explicit content review, so it remains a visible cleanup item.
+  Continue classifying each retained unique commit/diff against the canonical matrix and
+  newer implementation, integrate and accept useful behavior, or record a deliberate
+  rejection with its superseding path. Worktree count is not a product-completion metric,
+  and deleting a directory is never a substitute for resolving its work.
 
 - [x] Auto theme no longer requests device location on startup. Production frontend
       `d84b0c80` resolves Auto from saved sunrise/sunset coordinates when the user has
@@ -449,20 +512,27 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       `SENTRY_ORG_SLUG`; `SENTRY_ADMIN_ENVIRONMENT` and `SENTRY_API_BASE_URL` remain optional
       overrides. No secret was revealed or changed. Connecting Sentry remains a protected
       credential action and must be retested here before its source can be called connected.
-- [~] A bounded Admin safety and session-isolation frontend slice is implemented locally on
-  2026-08-21 without removing any existing Admin tool. The Admin header now exposes
-  Switch workspace and confirmed logout; investigation links acknowledge and prioritize
-  returned support, moderation, account, security, and legal/evidence targets; completed
-  support can be reopened only with a typed reason; and legal/evidence records expose the
-  safe requester/authority/scope/date/notice/manifest fields already returned by the API.
-  Admin can create a scoped received request, place an orthogonal preservation hold,
-  advance only through identity/legal review, reject/close before approval, and load the
-  exact retained audit. Approval and disclosure are intentionally unavailable. Hard logout
-  and identity-to-identity login clear preferred mode plus global/legacy workspace state.
-  Focused Admin/auth tests, source lint, and TypeScript pass locally. This is not deployed
-  or live-accepted; backend transition enforcement, manifest/custody/recipient safeguards,
-  legal operating approval, assignment/notes, and final production role/session evidence
-  remain open. See `ADMIN_SAFETY_AND_LAWFUL_REQUEST_CONTRACT_2026-08-21.md`.
+- [x] The bounded Admin lawful-request safety slice is deployed and live accepted. It began on
+      2026-08-21 without removing any existing Admin tool. The Admin header now exposes
+      Switch workspace and confirmed logout; investigation links acknowledge and prioritize
+      returned support, moderation, account, security, and legal/evidence targets; completed
+      support can be reopened only with a typed reason; and legal/evidence records expose the
+      safe requester/authority/scope/date/notice/manifest fields already returned by the API.
+      Admin can create a scoped received request, place an orthogonal preservation hold,
+      advance only through identity/legal review, reject/close before approval, and load the
+      exact retained audit. Approval and disclosure are intentionally unavailable. Hard logout
+      and identity-to-identity login clear preferred mode plus global/legacy workspace state.
+      Focused Admin/auth tests, source lint, TypeScript, backend workflow tests, and GitHub CI pass.
+      Frontend merge `c1e9f3142ecea4f8227eaac068c32babf2c315b0` and backend merge
+      `2fdcc7eb23a6a7397a7450d7e89ff355a98434c8` reached successful Render deployments. Production
+      reloaded the exact four actor/reason/timestamped events for the QA-only
+      `received -> identity_review -> legal_review -> rejected` lifecycle, exposed no approval or
+      disclosure control, and no longer offered a new preservation hold on the rejected request.
+      Backend tests additionally prove all terminal statuses reject a new hold, while held rejection
+      and closure release the hold in the same audited transition. This closes product-code and safe
+      synthetic-live acceptance. Authentic legal approval/disclosure remains an external operating
+      procedure and authority gate and must never be fabricated for QA. See
+      `ADMIN_SAFETY_AND_LAWFUL_REQUEST_CONTRACT_2026-08-21.md`.
 - [x] The governed Diagnosis/IPM catalog assembly is complete at 252 reviewed cases and
       504 rights-reviewed images. Executing all cases against authorized staging remains a
       separate open action because it spends credits and writes records.
@@ -704,7 +774,7 @@ grow`, private current location without a Field Study, and an optional approxima
     zero tasks, zero Tool Runs, and its creation timeline event. A second empty disposable
     record, `6a8a27d80ad1a2c8f9e57f95`, was created when the successful modal-based first save was
     mistaken for a non-navigation failure. On 2026-08-25 both exact IDs returned `Grow not
-    found` and neither appeared in the active list, so cleanup is accepted without recreating
+found` and neither appeared in the active list, so cleanup is accepted without recreating
     either record merely to archive it. Only final-candidate regression remains. Do not rebuild
     the crop registry, manual setup, navigation, lifecycle model, or accepted
     cancel/return/save/reload behavior.
@@ -1291,6 +1361,23 @@ public visibility, or screenshot/video acceptance still called out below.
   passed. Populated signed-in Commercial create/edit/reload, public discovery,
   and screenshot/video acceptance remain open. See
   `docs/qa/COMMERCIAL_STOREFRONT_STATE_ACCESSIBILITY_PRODUCTION_EVIDENCE_2026-08-11.md`.
+  On 2026-08-25, the authenticated Platform Admin explicitly entered its Commercial
+  workspace and saved/reloaded the private GrowPathAI brand draft: canonical name and
+  `growpathai` slug, technology-platform account type, website, support address,
+  forum display name, bio, storefront description, and US country persisted while
+  the storefront remained `draft` and unpublished. This accepts the Admin-owned
+  identity/contact/slug/description slice without claiming public discovery. The same
+  live pass exposed a real contract gap: Storefront returned success for
+  `growInterests`, but the API omitted the field from create/update persistence and
+  the strict Mongoose schema discarded it. Backend PR `#250` merged as
+  `afad981baceaf7ede7bf9293c75f2b15a471559a`, and Render deploy
+  `dep-da746kf10e5c738jsdq0` reached Live. The cache-busted owner route then saved the
+  approved GrowPathAI interests (`indoor growing`, `outdoor growing`, `soil`,
+  `hydroponics`, `vegetables`, `fruit`, `flowers`, `trees`, and `cannabis`), moved the
+  setup checklist from 5/14 to 6/14, and retained the exact list after a full reload.
+  This closes grow-interest persistence without publishing the draft. Logo/banner,
+  publication, generic-owner acceptance, and public discovery remain open;
+  hat/product launch media remains at the later owner-controlled hat gate.
 - [~] Complete commercial course create/edit/publish acceptance for cover,
   category/grow interests, modules, lessons, uploads/external video sources, tasks,
   products, lives, Forum links, storefront display, and learner access.

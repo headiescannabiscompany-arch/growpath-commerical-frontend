@@ -610,6 +610,12 @@ describe("GrowPath knowledge registries", () => {
       "post-login workspace choice for every multi-workspace identity"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
+      "server-verified own-workspace Commercial evidence, Video Library, AI evidence review, Saved Runs, and Harvest Readiness access after a platform administrator explicitly selects Commercial"
+    );
+    expect(getMethod("commercial-workflow")?.warnings).toContain(
+      "Never use a platform Admin role to cross Commercial account boundaries, inherit Facility membership or credits, control another subscriber's billing, publish a draft, or grant regulated-transaction authority."
+    );
+    expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
       "one 30-day trial per paid plan for Pro, Commercial, and Facility, with legacy trial use mapped to Pro and a second price-labeled confirmation before immediate Stripe billing"
     );
     expect(getMethod("commercial-workflow")?.requiredOutputs).toContain(
