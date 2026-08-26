@@ -148,8 +148,8 @@ Every applicable story must preserve these invariants without repeating them in 
 | P-02 | Create/manage a crop-aware grow with photos, records, tasks, devices/imports, timeline, archive/export               | live accepted, including reviewed AC Infinity attachment, provenance, corrected idempotent import/reload, separate measured light channels and safe source cleanup; final-candidate regression only                                                                                                                                                                                                                                                                                                                                   |
 | P-03 | Identify a plant and save its photos/result without requiring a grow, Field Study or public pin                      | ordinary-photo no-grow result/save/reload live accepted; final-candidate regression only                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | P-04 | Optionally open a reviewed create-grow draft from a usable Plant ID; explicit save creates it                        | live create accepted; owner archive cleanup/final regression open                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | implemented; local acceptance passed; publish/withdraw live acceptance open                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | private no-location/no-Nature Plant ID live accepted; public Nature publish/withdraw regression remains under P-05                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| P-05 | Optionally publish a dated/described/photo-backed, privacy-safe Nature pin; explicit opt-in and withdrawal           | live accepted with four Maydale observations and 18-photo public collection; public-place search/count correction pending deployment                                                                                                                                                                                                                                                                                                                                                                                                 |
+| P-06 | House/potted observations remain private; no place is inferred from date or proximity                                | live accepted; house crape myrtle and potted evidence excluded while only four selected Maydale records became public                                                                                                                                                                                                                                                                                                                                                                                                                |
 | P-07 | AI tools expose evidence, zoom views, uncertainty, missing evidence, follow-ups, save/retry and correct next actions | Plant ID provider/storage/reload and exact inspection-view actions live accepted; remaining module-specific action mutations stay open under their owning rows                                                                                                                                                                                                                                                                                                                                                                        |
 | P-08 | Harvest Readiness works from ordinary phone media with sample ranges and reasons to harvest/wait                     | explicitly deferred until every other pre-hat functional row is closed: max-80 extraction/restore, 512 MiB guard, standalone context and exact quote are live; operation `6a8d51854cf08c2ed47a99d1` proved 3/7-batch progress before a Render 512 MiB OOM, was not resent, and its seven held credits were refunded through the live audited Admin queue after the bounded-memory repair deployed; paid result, full-resolution role sufficiency, private Feed review/export and live deletion/privacy/cleanup acceptance remain open |
 | P-09 | Diagnosis/IPM rank hypotheses, counter-evidence and next checks without false certainty                              | implemented; local acceptance passed; provider/live acceptance open                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
@@ -403,10 +403,10 @@ stay open. See `FACILITY_INVENTORY_AI_PRODUCTION_EVIDENCE_2026-08-23.md`.
 
 | ID   | User story                                                                                                             | Status                                                                                                                                                                                                                                                                                                                          |
 | ---- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | implemented; local acceptance passed; populated/live acceptance open                                                                                                                                                                                                                                                            |
+| N-01 | Globe supports zoom/cluster/list/search/filter plus photo/date/description cards and an honest zero-pin state          | populated production accepted; four coincident Maydale observations and all 18 detail photos verified; public-place search/count correction pending deployment                                                                                                                                                                  |
 | N-02 | Discover shows a compact Nature preview even with zero public pins                                                     | live accepted                                                                                                                                                                                                                                                                                                                   |
-| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | implemented; local acceptance passed; public/private live regression open                                                                                                                                                                                                                                                       |
-| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | implemented; local acceptance passed; final-candidate privacy regression open                                                                                                                                                                                                                                                   |
+| N-03 | Exact/private/sensitive/cannabis location and visibility boundaries hold                                               | live accepted for Maydale approximate projection and house/potted exclusion; final-crawl regression only                                                                                                                                                                                                                        |
+| N-04 | Legacy park records remain private unless individually reviewed and republished; never infer a house or park location  | live accepted; Maydale recovered explicitly, unavailable Cary legacy media closed private without fabrication; final-crawl regression only                                                                                                                                                                                      |
 | A-01 | Admin control center exposes accounts, reports, security, moderation, billing/content/system queues and deep links     | populated Harvest system queue, notification-to-closed-moderation exact deep link, and dependable role-gated mobile Admin Tools entries in Personal and Commercial live accepted on `8b84ef32`; Facility entry locally accepted with positive-role live evidence retained under A-05; cross-queue/final regression remains open |
 | A-02 | Admin can investigate, assign, note, resolve/reopen and retain audit/account/content context                           | authenticated audited Harvest reconciliation accepted; report/support assignment-resolution-reopen live slice remains open                                                                                                                                                                                                      |
 | A-03 | Security issues show severity/tally/details/status/owner/evidence without secrets                                      | implemented; local acceptance passed; Sentry/live acceptance open                                                                                                                                                                                                                                                               |
@@ -476,28 +476,21 @@ populated, provider, authenticated or multi-account evidence.
   mutation and cleanup. **Do not rebuild:** the crop registry, manual crop setup, draft
   navigation, or lifecycle model.
 - **P-05 — retained evidence:** the separate Nature draft, required photo, date, description,
-  and private-source-location inputs, explicit approximate-pin consent, sensitive-species and
-  cannabis boundaries, and withdrawal path are implemented; production already proves the
-  disabled-until-complete state and the honest empty globe. The current candidate also adds
-  an explicit named park/trip-pin mode: one reviewed point remains active across separate
-  Plant ID evidence sets, while each set retains its own identity, photos, description and
-  publish action. Production merge `a0bf0b4e` and module record
-  `6a8e2a37548a5dc10cae2ace` now prove the first Maydale record end to end: four photos,
-  medium-confidence `Asclepias` candidate, `not_sure` contributor review, August 21, 2026
-  date, reviewed public description, approximate park pin, public globe card, and four-photo
-  collection reload. **Remaining gate:** publish one more distinct non-sensitive ordinary
-  observations at the same reviewed park point, verify their grouped Nature pin and distinct
-  viewer records, then repeat the flow with a different Cary point. Reload Saved Runs and the
-  public cards, and verify withdrawal on a disposable observation if cleanup is requested.
-  **Next action:** focused tests, deployment, owner upload/publication, public read, and
-  privacy verification. **Do not rebuild:** direct publication, approximate projection,
-  withdrawal, or the optional Field Study boundary.
+  private-source-location inputs, explicit approximate-pin consent, sensitive-species and
+  cannabis boundaries, withdrawal, and named park/trip-point reuse are retained. Production
+  now proves four deliberate Maydale publications at one approximate point: Asclepias spp.
+  (four photos), Carolina elephant's-foot (six), Queen Anne's lace (five), and water lily
+  (three). The public collection returned all 18 photos with dates, descriptions and cautious
+  identities. **Remaining gate:** deploy and live-verify the bounded public-place search and
+  observation-count wording correction, then ordinary final-candidate regression. Withdrawal
+  is already retained and need not remove these owner-approved live records. **Do not
+  rebuild:** direct publication, approximate projection, withdrawal, Field Studies, or the
+  named park/trip workflow.
 - **P-06 — retained evidence:** Grow creation and Nature publication are separate, proximity
   inference is forbidden, and the house crape myrtle plus every potted-house record remain
-  excluded. **Remaining gate:** before and after the P-05 publication, prove that only the
-  explicitly selected observation becomes public and that Grow save, house records, and
-  nearby/same-date records remain private. **Next action:** production privacy assertion
-  coupled to P-05. **Do not rebuild:** private-by-default storage or the no-inference rules.
+  excluded. Production before/after reads proved only the four explicitly selected Maydale
+  records became public. **Remaining gate:** ordinary final-candidate privacy regression.
+  **Do not rebuild:** private-by-default storage or the no-inference rules.
 - **P-10 — retained evidence:** production now proves the visual timeline,
   Lifecycle/Month/Week/Day views, source links, exact review/cancel, frozen publication,
   public viewing/report/share, cannabis fail-closed behavior, withdrawal and permanent old-link
@@ -510,16 +503,14 @@ populated, provider, authenticated or multi-account evidence.
   including one fresh OS-level download in a download-enabled browser. **Next action:** final
   crawl regression. **Do not rebuild:** event aggregation, visual/zoom controls, source links,
   reviewed public-copy lifecycle or existing export entry points.
-- **N-01 — retained evidence:** the production globe, controls, search/review filters, broad
-  fallback viewport, compact/public entry points, and honest zero-pin list are accepted. The
-  first legitimate Maydale observation now renders in production with its candidate, date,
-  description, approximate-location label, and four-photo public collection.
-  **Remaining gate:** add the second legitimate same-park P-05 observation to verify one
-  selectable cluster/pin group enumerates every distinct plant finding with the correct
-  photo/date/description/identity card, then verify the separate Cary group, search/filter,
-  public viewport, and applicable responsive/accessibility states. Never fabricate records.
-  **Next action:** populated production read plus final-candidate crawl.
-  **Do not rebuild:** the globe, map/list runtime, filters, or zero-pin state.
+- **N-01 — retained evidence:** the production globe, controls, review filters, broad fallback
+  viewport, compact/public entry points, and honest zero-pin state are accepted. Four distinct
+  Maydale observations render at one shared approximate point with correct cards, dates,
+  descriptions and identities; the detail collection renders all 18 photos. Live search found
+  a bounded omission for approved public place text, and the count incorrectly called four
+  observations four pins. **Remaining gate:** deploy and live-verify those two corrections,
+  then responsive/accessibility final-crawl regression. **Do not rebuild:** the globe,
+  clustering, map/list runtime, filters, or zero-pin state.
 - **N-02 — retained evidence:** the current candidate renders the compact Discover Nature
   globe with zero pins and opens the canonical Nature experience. **Remaining gate:** none;
   its status stays `live accepted`, with only ordinary final-crawl regression coverage.
@@ -527,19 +518,17 @@ populated, provider, authenticated or multi-account evidence.
   canonical link; the older duplicate-preview removal is superseded history.
 - **N-03 — retained evidence:** exact/private projection, selected public precision,
   sensitive-species handling, cannabis interest/consent, and identity-redaction rules are
-  implemented and their pre-publish boundary is live. **Remaining gate:** during P-05 prove
-  the exact source point never appears in the public response/card/viewport, the selected
-  approximation is honored, and the relevant consent/visibility views do not expose private
-  cannabis data. **Next action:** production privacy/security acceptance. **Do not rebuild:**
-  the projection or visibility policy.
-- **N-04 — retained evidence:** current production has not guessed, merged, or published the
-  legacy Cary, Maydale, house, duplicate, or unresolved records. **Remaining gate:** a
-  final-candidate read-only privacy regression; individual legacy recovery is an optional,
-  owner-triggered action and does not block P-03 through P-06 or future Nature pins. If used,
-  each result requires a newest defensible nonduplicate identity and a known place. **Next
-  action:** final-candidate read-only check or optional owner recovery. **Do not rebuild:**
-  legacy selection, deduplication, uncertainty, no-location-inference rules, or the recorded
-  four-set boundary for the owner-highlighted August 21 trip.
+  implemented. Production returned the approved Maydale projection (`39.1`, `-76.97`) and did
+  not return the private source point (`39.102350`, `-76.972543`); house/potted records remained
+  absent. **Remaining gate:** ordinary final-candidate privacy/security regression. **Do not
+  rebuild:** the projection or visibility policy.
+- **N-04 — retained evidence:** the four owner-highlighted August 21 Maydale sets were reviewed
+  and published separately without guessing a species or exact location. The old Cary Saved
+  Run IDs no longer resolve and matching Cary media is not present locally, so those legacy
+  sets are closed unavailable and private. A future Cary re-upload may use a separate park
+  point, but is not an acceptance blocker. **Remaining gate:** final-candidate read-only privacy
+  regression. **Do not rebuild:** legacy selection, deduplication, uncertainty,
+  no-location-inference, or named park/trip workflows; never fabricate a Cary record.
 - **S-05 — retained evidence:** reusable private RTMPS, OBS ingest, signed playback and
   viewer volume, GrowPath chat/overlay, stop, recording-ready replay, retention, and key
   rotation have production evidence and remain accepted. **Remaining gate:** one bounded

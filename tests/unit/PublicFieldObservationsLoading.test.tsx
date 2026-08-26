@@ -129,6 +129,8 @@ describe("Public Field Observations request ordering", () => {
     render(<PublicFieldObservationsScreen />);
 
     expect(await screen.findByLabelText("Evidence for Mapped rose")).toBeTruthy();
+    expect(screen.getByText("1 observation in view")).toBeTruthy();
+    expect(screen.queryByText("1 pins in view")).toBeNull();
     expect(
       screen.getByText("Native plants beside a shaded trail at Maydale Nature Classroom.")
     ).toBeTruthy();

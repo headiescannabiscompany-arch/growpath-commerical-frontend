@@ -183,6 +183,39 @@ approval. House and potted-plant exclusions remain unchanged.
   a second distinct plant at the same retained Maydale point to prove grouped-pin enumeration,
   followed by the separate Cary point and the already-listed privacy/mobile/search checks.
 
+### 2026-08-25 completed Maydale production acceptance
+
+- The owner deliberately published all four reviewed August 21 Maydale evidence sets at the
+  same approximate public park point (`39.1`, `-76.97`). The records are Asclepias spp.
+  (`6a8e2a50548a5dc10cae2afd`, four photos), Carolina elephant's-foot
+  (`6a8e2cdc9e88ddc8a2705d24`, six photos), Queen Anne's lace
+  (`6a8e2f17f0ee40741bb1c1ba`, five photos), and water lily
+  (`6a8e2fdaf0ee40741bb1c324`, three photos). Their saved module records are respectively
+  `6a8e2a37548a5dc10cae2ace`, `6a8e2cbf9e88ddc8a2705cf1`,
+  `6a8e2efcf0ee40741bb1c18e`, and `6a8e2fbff0ee40741bb1c2ee`.
+- Production public detail rendered all 18 retained photos with the contributor-approved
+  descriptions, August 21 date, cautious identities and `not_sure` review state. The public
+  list rendered four distinct observation cards. Because all four public records deliberately
+  share one projected coordinate and the retained globe clusters coincident points, the map
+  represents one Maydale place containing four observations; the count label must describe
+  observations rather than claim four separate physical pins.
+- The public projection returned only the owner-approved approximate coordinate. The private
+  source coordinate (`39.102350`, `-76.972543`) was absent from the public response. The house
+  crape myrtle and all potted-house evidence remained private and were not included in the
+  Maydale collection.
+- Live acceptance found one bounded defect: public search ignored the contributor-approved
+  description and study region, so `Maydale` returned no records. The corrective backend
+  change searches only public notes and public study-region text; it expressly does not search
+  owner-only notes. The frontend count copy is also corrected from `pins` to `observations`.
+- The legacy Cary Saved Run IDs no longer resolve and no matching Cary plant media is available
+  in the supplied local folders. Those legacy sets are therefore closed as unavailable and
+  private, not regenerated, guessed, or published. A future owner re-upload can create a
+  separate Downtown Cary Park collection using the already-implemented named park/trip-pin
+  workflow; this is new content entry and does not block the accepted Maydale workflow.
+- This section supersedes the earlier incremental statement that a second Maydale publication
+  or legacy Cary publication remained required. After the search/count correction is deployed
+  and verified, P-05, P-06, N-01, N-03 and N-04 require only ordinary final-crawl regression.
+
 ## No-rebuild boundary
 
 Do not rebuild Plant ID, Saved Runs, Field Studies, the globe, projection, publication,
