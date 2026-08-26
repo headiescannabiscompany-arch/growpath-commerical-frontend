@@ -50,10 +50,23 @@ deployed application candidate named below.
   usable and workspace-scoped but repeated the same hidden-navigator-heading pattern; it now uses
   the navigator title as its sole level-one heading and joins the pending exact recheck batch.
 - The signed-in public continuation confirmed Pricing, Store, Courses, Videos, Lives, Forum/Q&A,
-  Nature, Feed/Campaigns, Privacy and Terms. The published Living Soil Labs storefront loaded its
-  saved image/profile state and Back action but its visible brand title lacked heading semantics;
-  that title now owns the public page's level-one heading. Signed-out public state and the exact
-  deployed storefront recheck remain open.
+  Nature, Feed/Campaigns, Privacy and Terms. The direct Living Soil Labs slug honestly returns
+  `Storefront not found` while the brand remains draft; its fallback `Storefront` title now owns
+  the page H1 on exact frontend release `a7322f21dd499acd87b8c62599d4932d193b1464`.
+  Populated brand-title semantics pass the public storefront fixture. Signed-out public state and
+  an owner-authorized published-storefront handoff remain open.
+- Exact release `a7322f21dd499acd87b8c62599d4932d193b1464` also rechecked all six Commercial
+  heading-owner fixes: New Grow, Data Integrations, Plant & Crop Identification, Plant Issue
+  Diagnosis, IPM Scout and Auto Grow Calendar each expose one H1, Back and no access/application
+  error.
+- Commercial logout on that release cleared the authenticated workspace and returned to the
+  one-heading `/login` page. The resulting signed-out session then passed 13/13 public routes:
+  landing, Pricing, Store, the honest draft-storefront not-found state, Courses, Videos, Lives,
+  Forum/Q&A, Nature, Campaigns, Privacy, Terms and Support. Each exposed one H1 and no
+  access/application error; every interior route exposed Back.
+- The same non-admin identity correctly failed closed at `/admin` with `Platform owner access
+  required`, confirming that Facility ownership does not imply Platform Admin. The positive Admin
+  workspace crawl now requires the Platform Admin identity and is the next human-account gate.
 - The repository test runner also discovered stale nested checkout folders as duplicate Jest
   projects. The canonical frontend suite is now rooted only in `src` and `tests`, so retained local
   checkouts cannot multiply or contaminate a verification run.

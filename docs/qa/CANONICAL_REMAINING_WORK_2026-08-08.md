@@ -1871,10 +1871,17 @@ public visibility, or screenshot/video acceptance still called out below.
       and awaits the same focused/deployed recheck. The final creation/import/report
       batch passed 8/9 routes; Auto Grow Calendar repeated the hidden navigator-heading
       pattern and is included in the same fix/recheck batch. The signed-in public
-      continuation confirmed ten canonical catalog/community/Nature/legal routes; the
-      published Living Soil Labs storefront loaded correctly but its visible brand title
-      lacked heading semantics. The brand title now owns the page H1 and joins the same
-      pending fix/deploy/recheck batch. Browser route/DOM evidence exists; screenshot capture was
+      continuation confirmed ten canonical catalog/community/Nature/legal routes. The
+      direct Living Soil Labs slug honestly returns `Storefront not found` while the
+      brand remains draft; its fallback `Storefront` title now owns the page H1 on exact
+      frontend release `a7322f21dd499acd87b8c62599d4932d193b1464`, while populated
+      brand-title semantics pass the public fixture. That exact release also passed all
+      six Commercial heading-owner rechecks with one H1 and Back. Signed-out public state
+      then passed 13/13 landing/catalog/community/Nature/legal/support routes after
+      Commercial logout correctly cleared the session to `/login`. The draft storefront
+      remained honestly unavailable. The jcindc non-admin identity also failed closed at
+      `/admin`, proving Facility ownership does not imply Platform Admin. Positive Admin
+      acceptance and owner-authorized published-storefront acceptance remain. Browser route/DOM evidence exists; screenshot capture was
       unavailable, so responsive visual/theme/assistive-tech evidence is not claimed.
       A non-mutating signed-in desktop production batch on 2026-08-20 covered the
       Admin Personal Home, Grows, AI Tools, Forum/Q&A, Discover, Courses, and Profile
