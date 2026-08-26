@@ -138,10 +138,19 @@ describe("AnalyticsScreen", () => {
 
     await waitFor(() => expect(screen.getByText("Flower Room")).toBeTruthy());
 
-    expect(screen.getByRole("header", { name: "Grow Analytics" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Grow Analytics" })).toHaveProp(
+      "aria-level",
+      1
+    );
     expect(screen.getByText("personal workspace · pro plan")).toBeTruthy();
-    expect(screen.getByRole("header", { name: "Last 7 Days" })).toBeTruthy();
-    expect(screen.getByRole("header", { name: "Grow Activity" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Last 7 Days" })).toHaveProp(
+      "aria-level",
+      2
+    );
+    expect(screen.getByRole("header", { name: "Grow Activity" })).toHaveProp(
+      "aria-level",
+      2
+    );
     expect(screen.getByRole("button", { name: "Refresh grow analytics" })).toBeTruthy();
     expect(screen.getByLabelText("Grow consistency: 50%")).toBeTruthy();
     expect(screen.getByText("Grow consistency")).toBeTruthy();

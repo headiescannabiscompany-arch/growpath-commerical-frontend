@@ -187,6 +187,7 @@ describe("personal AI screen", () => {
   it("answers VPD commands and context-aware task prompts", async () => {
     const screen = render(<AiScreen />);
 
+    expect(screen.getByRole("button", { name: "Back" })).toBeTruthy();
     await waitFor(() => expect(screen.getByText("Context Loaded")).toBeTruthy());
     expect(screen.getByText("Grows: 1")).toBeTruthy();
     expect(screen.getByPlaceholderText("Type here...").props).toMatchObject({

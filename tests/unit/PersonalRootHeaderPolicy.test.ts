@@ -31,6 +31,18 @@ describe("Personal root header policy", () => {
     expect(aiLayout).toContain('options={{ title: "AI Assistant" }}');
   });
 
+  test("lets Environment Review own one semantic page heading", () => {
+    const toolsLayout = read("src/app/home/personal/(tabs)/tools/_layout.tsx");
+    const commercialLayout = read("src/app/home/commercial/_layout.tsx");
+
+    expect(toolsLayout).toContain(
+      'options={{ title: "Environment Review", headerShown: false }}'
+    );
+    expect(commercialLayout).toContain(
+      'options={{ title: "Environment Review", headerShown: false, href: null }}'
+    );
+  });
+
   test("uses the Upgrade Account page heading without exposing route-template titles", () => {
     const personalLayout = read("src/app/home/personal/_layout.tsx");
     const upgrade = read("src/features/billing/screens/UpgradePlan.tsx");

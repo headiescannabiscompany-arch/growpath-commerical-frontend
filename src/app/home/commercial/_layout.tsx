@@ -361,7 +361,7 @@ export default function CommercialTabsLayout() {
       <Tabs.Screen name="tools/diagnose" options={{ title: "Diagnose", href: null }} />
       <Tabs.Screen
         name="tools/environment"
-        options={{ title: "Environment Review", href: null }}
+        options={{ title: "Environment Review", headerShown: false, href: null }}
       />
       <Tabs.Screen
         name="tools/recipe-builder"

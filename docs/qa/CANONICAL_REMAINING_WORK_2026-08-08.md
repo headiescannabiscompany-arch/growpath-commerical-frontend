@@ -1848,6 +1848,19 @@ public visibility, or screenshot/video acceptance still called out below.
       common path forward from every page, not only route loading, and retain exact
       role/account, viewport, theme, URL, timestamp, screenshot/video, deployment, and
       defect/fix evidence.
+      The post-P-08 rerun began on 2026-08-26 against deployed frontend candidate
+      `276086091e5db2e4fa8348c00a54afcb7f834127`. The Triple Bag Genetics Facility
+      Owner passed 35/35 visible route entries, including settled populated room, team,
+      transfer and audit states. The first Personal batch confirmed its canonical
+      workspace/tool/community/Nature entries and the intentional cannabis-interest
+      gate on direct Harvest Readiness. It found bounded heading hierarchy defects in
+      Field Studies, Environment Review and Grow Analytics plus a missing visible Back
+      action in AI Assistant. Those defects are implemented together with focused
+      53/53 verification, but remain open here until the exact fix is deployed and the
+      same live routes pass. The frontend Jest root was also constrained to canonical
+      `src` and `tests` so stale local checkout folders cannot contaminate or multiply
+      suite execution. Browser route/DOM evidence exists; screenshot capture was
+      unavailable, so responsive visual/theme/assistive-tech evidence is not claimed.
       A non-mutating signed-in desktop production batch on 2026-08-20 covered the
       Admin Personal Home, Grows, AI Tools, Forum/Q&A, Discover, Courses, and Profile
       routes and the Admin Commercial Dashboard, Grows, Storefront, Products, Courses,

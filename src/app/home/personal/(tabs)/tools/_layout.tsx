@@ -148,7 +148,7 @@ export default function ToolsLayout() {
       <Stack.Screen name="dew-point-guard" options={{ title: "Dew Point Guard" }} />
       <Stack.Screen
         name="environment-analysis"
-        options={{ title: "Environment Review" }}
+        options={{ title: "Environment Review", headerShown: false }}
       />
       <Stack.Screen name="integrations" options={{ headerShown: false }} />
       <Stack.Screen name="ppfd" options={{ title: "PPFD / DLI Planner" }} />
