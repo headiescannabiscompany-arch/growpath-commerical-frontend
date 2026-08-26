@@ -64,6 +64,13 @@ The backend records that an independently completed delivery occurred; it does n
 export or transmit account data, contact an authority, or turn a content report into a legal
 request.
 
+A new hold is valid only while a request is `received`, in `identity_review`, in
+`legal_review`, or in the retained legacy `preserved` state. Approval, disclosure, rejection,
+or closure may not acquire a new hold. When an active request is rejected or closed, the Admin
+disposition sends the hold release in the same audited transition so the request cannot become a
+terminal record with an unreachable hold. Corrected work begins through the explicit reopen path
+or a new scoped request; it does not mutate a disposed request in place.
+
 Until the reviewed operating procedure and production fail-closed gates pass, a stored
 `approved` or `disclosed` record is read-only in this frontend and must be escalated through
 that procedure rather than acted on from the page.

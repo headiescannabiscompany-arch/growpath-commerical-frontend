@@ -99,6 +99,13 @@ authority. The frontend has no one-click approval or disclosure action.
   Approval or disclosure of real account data requires an authentic request, reviewed legal
   authority, the approved operating procedure, and the backend gates; never fabricate a police or
   emergency request merely to satisfy release QA.
+  On 2026-08-25 a QA-only request with no target account proved that hold placement fails closed
+  with `PRESERVATION_HOLD_TARGET_USER_REQUIRED`, then completed
+  `received -> identity_review -> legal_review -> rejected` without approval, disclosure, or
+  account data. Reloading its retained audit returned all four exact actor/reason/timestamped
+  events. The follow-up safety correction prevents any new hold after approval or disposition
+  and makes a held reject/close release the hold in the same audited request; deploy and
+  live-accept that correction before closing A-04.
 - **A-05:** use the final candidate across Free, Pro, Commercial, Facility and Admin identities to
   prove expiry, reload, logout, direct-URL denial, identity-to-identity cleanup and explicit
   authorized workspace switching without Living Soil Labs/Triple Bag Genetics ownership leakage.

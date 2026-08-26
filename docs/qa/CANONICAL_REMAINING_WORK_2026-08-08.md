@@ -280,6 +280,12 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
   prove that unavailable providers do not consume credits or invent evidence, and live-accept
   the configured launch models plus photo/video extraction. This is configuration acceptance,
   not permission to replace the already implemented tools.
+  For P-09 specifically, the governed Diagnosis/IPM catalog is complete at 252 cases / 504
+  rights-reviewed images and `scripts/run-diagnosis-ipm-evaluation.cjs` is the retained
+  execution path. The 2026-08-25 environment check found every required staging execution
+  input absent: evaluation enablement, paid-run confirmation, namespace, staging URL, bearer
+  token and deployed Git SHA. Do not rebuild the runner or rerun the catalog. Execute the paid
+  pack only after those exact staging inputs are supplied and verified together.
 - [~] **R-02 notification delivery:** in-app notification records and preferences exist, while
   email delivery depends on the reviewed email provider/from-address and asynchronous delivery
   depends on the notification worker. Prove supported events from creation through preference,
@@ -366,15 +372,23 @@ accepted, or retain its exact blocker and next action in its owning matrix row.
       planned endpoints are disallowed. The one deprecated hidden Personal Logs route remains
       an intentional compatibility boundary, not a hidden product. This classification does
       not close the owning product row's separate live acceptance.
-- [ ] **Close retained worktrees without losing work:** the 2026-08-22 read-only Git audit
-      found 19 patches not patch-equivalent to the current construction candidate across 12
-      retained frontend branches, alongside already patch-equivalent branches and several
-      dirty directories. Classify each unique commit/diff against the canonical matrix and
-      newer implementation, integrate and accept the useful current behavior, or record a
-      deliberate rejection with its superseding path. Commit or preserve any legitimate dirty
-      diff first; then remove only clean integrated/rejected worktrees. Worktree count is not a
-      product-completion metric, and deleting a directory is never a substitute for resolving
-      its work.
+- [~] **Close retained worktrees without losing work:** the 2026-08-25 follow-up audit removed
+      five verified-clean, fully merged duplicates: frontend Admin-mobile and retained-photo
+      trees, backend Facility-inventory and P-02 import trees inside the current workspace, and
+      the external durable-enqueue tree. Branch history remains available. The audit explicitly
+      retained the unique P-08 standalone-quote, standalone-context and Feed-review commits;
+      the uncommitted hat work; and the deferred trichome worktrees with temporary evaluation
+      artifacts. The root rescue commit `be15ccd` was deliberately rejected as superseded: its
+      legacy upload, quota, deletion-state, protected-course-media, notification-preference and
+      soft-deleted-profile behavior is weaker than current main. Its primary checkout is kept,
+      but that commit is not an integration candidate. The merged horticulture tree was
+      deregistered, but its
+      physical directory still contains source, uploads and temporary data; recursive deletion
+      was refused pending an explicit content review, so it remains a visible cleanup item.
+      Continue classifying each retained unique commit/diff against the canonical matrix and
+      newer implementation, integrate and accept useful behavior, or record a deliberate
+      rejection with its superseding path. Worktree count is not a product-completion metric,
+      and deleting a directory is never a substitute for resolving its work.
 
 - [x] Auto theme no longer requests device location on startup. Production frontend
       `d84b0c80` resolves Auto from saved sunrise/sunset coordinates when the user has
@@ -672,12 +686,12 @@ grow`, private current location without a Field Study, and an optional approxima
   assertions across Plant ID result integrity, publication projection and the complete
   Field Study/public-observation route contract. These local results narrow the remainder to
   the production actions below; they do not replace live write/reload/withdrawal evidence.
-  - **P-03 (`partial`):** retain the verified photo/video transport, ten server-extracted
-    frames, uncertain result, evidence receipt, Saved Run reload, correction, refund, and
-    no-grow behavior. The exact remaining action is one ordinary frozen-candidate production
-    upload/analyze/save/reload plus back/error/retry proof with no Grow, Field Study, or public
-    pin. Do not rebuild transport, extraction, receipts, Saved Runs, or correction.
-  - **P-04 (`implemented`):** retain the deployed reviewed-draft safety boundary and live
+  - **P-03 (`live accepted`):** retain the verified photo/video transport, ten server-extracted
+    frames, uncertain result, evidence receipt, Saved Run reload, correction, refund, no-grow
+    behavior, and the 2026-08-25 ordinary-photo production save/reload with no Grow, Field
+    Study, public pin or private-location leak. Only final-candidate regression remains. Do not
+    rebuild transport, extraction, receipts, Saved Runs, or correction.
+  - **P-04 (`live accepted`):** retain the deployed reviewed-draft safety boundary and live
     known/unknown crop setup. On 2026-08-22, retained Plant ID
     `6a77f67895931a1ea2ab10d9` opened a reviewed Personal Grow draft with the corrected common
     identity, aliases, source-run provenance, blank unverified scientific name, and unknown
@@ -689,10 +703,11 @@ grow`, private current location without a Field Study, and an optional approxima
     scientific name, unknown lifecycle facts, soil system, start date, zero journal entries,
     zero tasks, zero Tool Runs, and its creation timeline event. A second empty disposable
     record, `6a8a27d80ad1a2c8f9e57f95`, was created when the successful modal-based first save was
-    mistaken for a non-navigation failure; both exact IDs are retained here so cleanup cannot
-    be missed or silently repeated. The only remaining action is archive both disposable
-    records and verify their absence from the active list. Do not rebuild the crop registry,
-    manual setup, navigation, lifecycle model, or accepted cancel/return/save/reload behavior.
+    mistaken for a non-navigation failure. On 2026-08-25 both exact IDs returned `Grow not
+    found` and neither appeared in the active list, so cleanup is accepted without recreating
+    either record merely to archive it. Only final-candidate regression remains. Do not rebuild
+    the crop registry, manual setup, navigation, lifecycle model, or accepted
+    cancel/return/save/reload behavior.
   - **P-05 (`live accepted`):** retain the separate explicit Nature
     draft, required inputs, approximate projection, consent, sensitive/cannabis gates,
     withdrawal, and named park/trip-point reuse. Four Maydale observations now share one
@@ -1148,6 +1163,17 @@ grow`, private current location without a Field Study, and an optional approxima
   populated states, verify non-admin denial, and exercise safe temporary report and
   resolution records through reload and cleanup without fabricating a real emergency
   or disclosing unrelated private user data.
+  On 2026-08-25, the production Admin hub showed the consolidated security,
+  regulated-commerce, product-activity, Harvest-reconciliation, knowledge, account,
+  support, moderation and legal sections; `Active: 0 · Completed: 14`; and explicit
+  disconnected Sentry status. Opening completed work retained the approved support
+  lifecycle evidence for create, assign, note, resolve, reload, reopen and resolve
+  again, plus completed moderation histories including leave/hide/restore, content
+  deep links and cannabis/content controls. This closes A-01/A-02 construction and
+  their retained-history live slice. The remaining work is the named Facility/non-admin
+  role crawl, representative delivered-email/content-type links, the controlled legal
+  request backend, high-severity safety exercise, and final responsive/accessibility
+  regression—not another Admin hub rebuild.
 - [~] Approved temporary production records verified populated Facility Grow, Plant,
   Journal, Inventory, Compliance, SOP comparison, and Owner-only AI Validation Lab
   states. Live reload/navigation and immutable create/update/delete/resolve/SOP

@@ -1380,9 +1380,15 @@ export default function PlatformAdminRoute() {
     setBusyId(item._id);
     setError("");
     try {
+      const releasesPreservationHold =
+        item.preservationHold && ["rejected", "closed"].includes(status);
       await apiRequest(`/api/admin/evidence-requests/${item._id}`, {
         method: "PATCH",
-        body: { status, reason }
+        body: {
+          status,
+          reason,
+          ...(releasesPreservationHold ? { preservationHold: false } : {})
+        }
       });
       setEvidenceReasons((current) => ({ ...current, [item._id]: "" }));
       await load();
@@ -2985,9 +2991,11 @@ export default function PlatformAdminRoute() {
         subtitle="Preservation is separate from disclosure. Identity, authority, legal review, minimization, approval, and a disclosure manifest remain distinct controls."
       >
         <Text style={styles.evidencePreview}>
-          Approval and disclosure are unavailable here until the backend enforces legal
-          approval, minimum-scope manifests, recipient/method recording, and chain of
-          custody. This screen cannot release account data.
+          The backend enforces legal approval, minimum-scope manifests, recipient/method
+          recording, immutable custody, and audited transitions. Approval and disclosure
+          controls remain unavailable here until the reviewed operating procedure and
+          production fail-closed acceptance are complete. This screen cannot release
+          account data.
         </Text>
         <Pressable
           accessibilityRole="button"
@@ -3159,7 +3167,13 @@ export default function PlatformAdminRoute() {
               "legal_review",
               "preserved"
             ].includes(item.status);
-            const canClose = canRejectOrClose && !item.preservationHold;
+            const canClose = canRejectOrClose;
+            const canPlaceHold = [
+              "received",
+              "identity_review",
+              "legal_review",
+              "preserved"
+            ].includes(item.status);
             return (
               <View
                 key={item._id}
@@ -3253,28 +3267,30 @@ export default function PlatformAdminRoute() {
                     style={styles.input}
                   />
                   <View style={styles.actions}>
-                    <Pressable
-                      accessibilityRole="button"
-                      disabled={busyId === item._id || item.preservationHold}
-                      style={
-                        item.preservationHold
-                          ? styles.secondaryButton
-                          : styles.primaryButton
-                      }
-                      onPress={() => void preserveEvidence(item)}
-                    >
-                      <Text
+                    {canPlaceHold ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        disabled={busyId === item._id || item.preservationHold}
                         style={
                           item.preservationHold
-                            ? styles.secondaryText
-                            : styles.primaryText
+                            ? styles.secondaryButton
+                            : styles.primaryButton
                         }
+                        onPress={() => void preserveEvidence(item)}
                       >
-                        {item.preservationHold
-                          ? "Preservation active"
-                          : "Place preservation hold"}
-                      </Text>
-                    </Pressable>
+                        <Text
+                          style={
+                            item.preservationHold
+                              ? styles.secondaryText
+                              : styles.primaryText
+                          }
+                        >
+                          {item.preservationHold
+                            ? "Preservation active"
+                            : "Place preservation hold"}
+                        </Text>
+                      </Pressable>
+                    ) : null}
                     {canBeginIdentity ? (
                       <Pressable
                         accessibilityRole="button"
@@ -3302,7 +3318,11 @@ export default function PlatformAdminRoute() {
                         style={styles.warningButton}
                         onPress={() => void updateEvidenceStatus(item, "rejected")}
                       >
-                        <Text style={styles.warningText}>Reject request</Text>
+                        <Text style={styles.warningText}>
+                          {item.preservationHold
+                            ? "Reject request and release hold"
+                            : "Reject request"}
+                        </Text>
                       </Pressable>
                     ) : null}
                     {canClose ? (
@@ -3312,7 +3332,11 @@ export default function PlatformAdminRoute() {
                         style={styles.secondaryButton}
                         onPress={() => void updateEvidenceStatus(item, "closed")}
                       >
-                        <Text style={styles.secondaryText}>Close without disclosure</Text>
+                        <Text style={styles.secondaryText}>
+                          {item.preservationHold
+                            ? "Close without disclosure and release hold"
+                            : "Close without disclosure"}
+                        </Text>
                       </Pressable>
                     ) : null}
                     <Pressable

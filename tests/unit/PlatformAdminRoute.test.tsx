@@ -1102,6 +1102,61 @@ describe("PlatformAdminRoute", () => {
     ).toBe(false);
   });
 
+  it("releases an active hold with a rejected disposition and hides new holds afterward", async () => {
+    const evidenceRequest = {
+      _id: "legal-held-1",
+      requestType: "preservation",
+      requesterName: "GrowPathAI QA",
+      requesterEmail: "support@growpathai.com",
+      authorityDescription: "QA-only synthetic request.",
+      jurisdiction: "Internal QA",
+      targetUserId: "user-1",
+      scope: "No account data; lifecycle verification only.",
+      status: "legal_review",
+      preservationHold: true,
+      userNoticeStatus: "not_reviewed",
+      evidenceItems: [],
+      createdBy: "admin-1"
+    };
+    mockApiRequest.mockImplementation((path: string, options?: any) => {
+      if (path === "/api/admin/evidence-requests" && !options) {
+        return Promise.resolve({ requests: [evidenceRequest] });
+      }
+      return defaultAdminApi(path);
+    });
+
+    const screen = render(<PlatformAdminRoute />);
+    await screen.findByText("preservation · legal_review");
+    fireEvent.changeText(
+      screen.getByLabelText("Review reason for preservation request"),
+      "Reject the synthetic request and release its hold."
+    );
+    fireEvent.press(
+      screen.getByRole("button", { name: "Reject request and release hold" })
+    );
+
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith(
+        "/api/admin/evidence-requests/legal-held-1",
+        {
+          method: "PATCH",
+          body: {
+            status: "rejected",
+            reason: "Reject the synthetic request and release its hold.",
+            preservationHold: false
+          }
+        }
+      )
+    );
+
+    evidenceRequest.status = "rejected";
+    evidenceRequest.preservationHold = false;
+    screen.rerender(<PlatformAdminRoute />);
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Place preservation hold" })).toBeNull()
+    );
+  });
+
   it("keeps resolved support and actioned moderation out of the active work queue", async () => {
     const resolvedSupport = {
       ...supportRequest,
