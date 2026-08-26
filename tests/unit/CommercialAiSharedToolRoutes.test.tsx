@@ -139,7 +139,7 @@ describe("Commercial shared AI tool aliases", () => {
     }
     expect(mockIntegrationsRoute).toHaveBeenCalledWith({
       workspaceType: "commercial",
-      showHeading: false
+      showHeading: true
     });
   });
 });

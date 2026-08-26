@@ -151,6 +151,7 @@ describe("NewGrowScreen access", () => {
     render(<NewGrowScreen />);
 
     await waitFor(() => expect(screen.getByLabelText("Grow name")).toBeTruthy());
+    expect(screen.getByRole("header", { name: "New Grow" })).toHaveProp("aria-level", 1);
     expect(screen.getByText("Shared Back /home/personal/grows history")).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText("Grow name"), "First Free Grow");
     chooseDate(screen, "Anchor date", "2026-01-01");

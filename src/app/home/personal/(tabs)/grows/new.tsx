@@ -654,7 +654,11 @@ export default function NewGrowScreen({
           style={{ flex: 1, backgroundColor: palette.page }}
           contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
         >
-          <Text style={{ color: palette.text, fontSize: 22, fontWeight: "700" }}>
+          <Text
+            accessibilityRole="header"
+            aria-level={1}
+            style={{ color: palette.text, fontSize: 22, fontWeight: "700" }}
+          >
             New Grow
           </Text>
           <ActivityIndicator color={palette.accent} />
@@ -695,7 +699,11 @@ export default function NewGrowScreen({
         style={{ flex: 1, backgroundColor: palette.page }}
         contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 32 }}
       >
-        <Text style={{ color: palette.text, fontSize: 22, fontWeight: "700" }}>
+        <Text
+          accessibilityRole="header"
+          aria-level={1}
+          style={{ color: palette.text, fontSize: 22, fontWeight: "700" }}
+        >
           New Grow
         </Text>
         <Text style={{ color: palette.textMuted }}>

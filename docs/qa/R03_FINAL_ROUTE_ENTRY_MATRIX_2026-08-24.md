@@ -32,8 +32,23 @@ deployed application candidate named below.
   in Field Studies, Environment Review and Grow Analytics, plus no visible in-content Back action
   in AI Assistant. The implementation now assigns one level-one page heading, demotes section
   headings, suppresses the duplicate Environment stack title in Personal and Commercial, and adds
-  a workspace-aware AI Assistant Back action. Focused verification passes 53/53; exact live-route
-  rechecks remain required after deployment.
+  a workspace-aware AI Assistant Back action. Frontend merge
+  `14e62750000274c5559db4b09894e545dc7b5801` deployed successfully; all four exact production
+  routes then passed with one level-one heading, the intended level-two sections, and visible Back.
+  Focused verification passed 55/55 including the canonical Jest-root guard.
+- Living Soil Labs Commercial mode then passed 32/34 ordinary brand, storefront, catalog,
+  evidence, education, sales, analytics, community, regulated-commerce, tool and Business Desk
+  entries. New Grow and Data Integrations were usable and correctly workspace-scoped but lacked a
+  level-one page heading. Their shared screens now expose the existing visible titles as semantic
+  level-one headings; focused verification and exact deployment rechecks remain required.
+- All eight Commercial Business Desk tools passed their ordinary entry, one-heading and Back
+  checks. A further 10/13 frequent Commercial AI-tool routes passed; Plant ID and IPM Scout had
+  hidden navigator headings while Diagnose exposed both navigator and content headings. The
+  Commercial route policy now gives each shared tool exactly one heading owner. Focused
+  verification and exact live rechecks remain required.
+- The final Commercial creation/import/report batch passed 8/9 routes. Auto Grow Calendar was
+  usable and workspace-scoped but repeated the same hidden-navigator-heading pattern; it now uses
+  the navigator title as its sole level-one heading and joins the pending exact recheck batch.
 - The repository test runner also discovered stale nested checkout folders as duplicate Jest
   projects. The canonical frontend suite is now rooted only in `src` and `tests`, so retained local
   checkouts cannot multiply or contaminate a verification run.
