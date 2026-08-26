@@ -405,6 +405,7 @@ function HarvestPhotoAnalyzer({
   initialAnalysisOperationId,
   onAnalysisDraft,
   onScopeKeyChange,
+  onStandaloneCropContextChange,
   workspaceType,
   workspaceId,
   facilityId,
@@ -419,6 +420,7 @@ function HarvestPhotoAnalyzer({
   initialAnalysisOperationId?: string;
   onAnalysisDraft: React.Dispatch<React.SetStateAction<HarvestAnalysisDraft | null>>;
   onScopeKeyChange: React.Dispatch<React.SetStateAction<string>>;
+  onStandaloneCropContextChange: (confirmed: boolean) => void;
   workspaceType: VideoWorkspaceType;
   workspaceId?: string;
   facilityId?: string;
@@ -486,6 +488,10 @@ function HarvestPhotoAnalyzer({
     }),
     [facilityId, workspaceId, workspaceType]
   );
+  useEffect(() => {
+    setStandaloneCropContextConfirmed(false);
+    onStandaloneCropContextChange(false);
+  }, [facilityId, growId, onStandaloneCropContextChange, workspaceId, workspaceType]);
   const directPhotoCount = evidenceAssets.filter(
     (asset) => asset.assetType === "photo" && asset.source !== "generated"
   ).length;
@@ -1696,7 +1702,10 @@ function HarvestPhotoAnalyzer({
             <Switch
               accessibilityLabel="Confirm this standalone evidence is cannabis or hemp flower"
               value={standaloneCropContextConfirmed}
-              onValueChange={setStandaloneCropContextConfirmed}
+              onValueChange={(confirmed) => {
+                setStandaloneCropContextConfirmed(confirmed);
+                onStandaloneCropContextChange(confirmed);
+              }}
             />
             <Text style={[photoStyles.help, { flex: 1 }]}>
               This evidence is cannabis or hemp flower. This confirmation enables the
@@ -2872,6 +2881,8 @@ export default function HarvestReadinessToolRoute({
     : routeParams.recoverDeepOperationId || "";
   const [visionDraft, setVisionDraft] = useState<HarvestAnalysisDraft | null>(null);
   const [activeAnalysisScopeKey, setActiveAnalysisScopeKey] = useState("");
+  const [standaloneCropContextConfirmed, setStandaloneCropContextConfirmed] =
+    useState(false);
   const [evidenceAssets, setEvidenceAssets] = useState<EvidenceAsset[]>([]);
   const [activeGrowId, setActiveGrowId] = useState("");
   const [harvestBatches, setHarvestBatches] = useState<HarvestBatch[]>([]);
@@ -3006,6 +3017,7 @@ export default function HarvestReadinessToolRoute({
             initialAnalysisOperationId={visionDraft?.operationId}
             onAnalysisDraft={setVisionDraft}
             onScopeKeyChange={setActiveAnalysisScopeKey}
+            onStandaloneCropContextChange={setStandaloneCropContextConfirmed}
             workspaceType={activeWorkspaceType}
             workspaceId={activeWorkspaceId}
             facilityId={
@@ -3115,6 +3127,9 @@ export default function HarvestReadinessToolRoute({
         ...(facilityId ? { facilityId, workspaceId: facilityId } : {}),
         ...plantContext.toolRunContext,
         ...values,
+        ...(!growId && standaloneCropContextConfirmed
+          ? { cropContext: "cannabis" as const }
+          : {}),
         budSwell: values.budSwellStatus,
         smellNotes: values.aromaIntensity,
         trichomeSource: vision?.photoUsable ? "ai_photo_estimate" : "manual_entry",
